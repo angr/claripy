@@ -1,10 +1,5 @@
 import functools
 
-try:
-    import z3
-except ImportError:
-    pass
-
 def compare_bits(f):
     @functools.wraps(f)
     def compare_guard(self, o):
@@ -17,13 +12,8 @@ def compare_bits(f):
 def normalize_types(f):
     @functools.wraps(f)
     def normalizer(self, o):
-        uo = unwrap(o)
-        if hasattr(uo, '__module__') and uo.__module__ == 'z3':
-            z = self.as_z3()
-            if isinstance(o, Wrapper) or isinstance(o, Node):
-                z = wrap(z)
-            return getattr(z, f.__name__)(o)
-
+        if hasattr(o, '__module__') and o.__module__ == 'z3':
+            o = BVV(o.as_long(), o.size())
         if type(o) in (int, long):
             o = BVV(o, self.bits)
         if type(self) in (int, long):
@@ -32,19 +22,9 @@ def normalize_types(f):
 
     return normalizer
 
-class BV(object):
-    def __init__(self, bits):
-        self.bits = bits
-
-class BVN(BV):
-    def __init__(self, bits, name):
-        BV.__init__(self, bits)
-        self.bits = bits
-        self.name = name
-
-class BVV(BV):
+class BVV(object):
     def __init__(self, value, bits):
-        BV.__init__(self, bits)
+        self.bits = bits
         self._value = 0
         self.mod = 2**bits
         self.value = value
@@ -222,12 +202,6 @@ class BVV(BV):
     # Conversions
     #
 
-    def as_node(self):
-        return Node(op='z3.BitVecVal', args=(self.value, self.bits))
-
-    def as_z3(self):
-        return z3.BitVecVal(self.value, self.bits)
-
     def size(self):
         return self.bits
 
@@ -332,8 +306,7 @@ def test():
     assert Concat(e, e, e, e) == 0b1010101010101010
     assert Concat(e,f,f) == 0b10101111
 
+    print "OK"
+
 if __name__ == '__main__':
     test()
-
-from .node import Node
-from .wrapper import Wrapper, wrap, unwrap
