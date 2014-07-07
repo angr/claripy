@@ -23,19 +23,19 @@ class ActualExpression(Expression):
 
     def _do_op(self, op_name, args):
         raw_args = [ ]
-        variables = set()
-        symbolic = [ ]
+        variables = set(self.variables)
+        symbolic = self.symbolic
 
         for a in args:
             if type(a) == ActualExpression:
                 variables |= a.variables
-                symbolic.append(a.symbolic)
+                symbolic |= a.symbolic
                 raw_args.append(a._obj)
             else:
                 raw_args.append(a)
 
         op, op_args = self._op_args(self._backend, op_name, raw_args, obj=self._obj)
-        return ActualExpression(self._backend, op(*op_args), variables=variables, symbolic=any(symbolic))
+        return ActualExpression(self._backend, op(*op_args), variables=variables, symbolic=symbolic)
 
     def abstract(self):
         return self._backend.abstract(self._obj)
