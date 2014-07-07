@@ -13,13 +13,14 @@ else:
 	z3_path = "/opt/python/lib/"
 z3.init(z3_path + "libz3.so")
 
-class BackendZ3(object):
-	whitelist = [ 'If', 'And', 'Not', 'Or', 'UGE', 'ULE', 'UGT', 'ULT', 'BoolVal', 'BitVec', 'BitVecVal', 'Concat', 'Extract', 'LShR', 'SignExt', 'ZeroExt' ]
+from .backend import Backend
 
-	def op(self, op_name):
-		if op_name not in self.whitelist:
-			raise Exception("unknown op %s requested from %s" % (op_name, self.__class__.__name__))
-		return getattr(z3, op_name)
+ops = [ 'If', 'And', 'Not', 'Or', 'UGE', 'ULE', 'UGT', 'ULT', 'BoolVal', 'BitVec', 'BitVecVal', 'Concat', 'Extract', 'LShR', 'SignExt', 'ZeroExt' ]
+
+class BackendZ3(Backend):
+	def __init__(self):
+		Backend.__init__(self)
+		self._make_ops(ops, op_module=z3)
 
 	def abstract(self, z):
 		children = [ self.abstract(c) for c in z.children() ]
@@ -104,4 +105,3 @@ function_map['if'] = 'z3.If'
 function_map['bvlshr'] = 'z3.LShR'
 
 from ..expressions import AbstractExpression, Expression
-
