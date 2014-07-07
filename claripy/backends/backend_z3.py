@@ -18,7 +18,7 @@ from .backend import Backend, ops
 class BackendZ3(Backend):
 	def __init__(self):
 		Backend.__init__(self)
-		self._make_ops(ops, op_module=z3)
+		self._make_raw_ops(ops, op_module=z3)
 
 	def abstract(self, z):
 		children = [ self.abstract(c) for c in z.children() ]
