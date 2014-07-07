@@ -4,6 +4,14 @@ l = logging.getLogger("claripy.test")
 
 import claripy.backends, claripy.expressions
 
+def test_abstract():
+    ba = claripy.backends.BackendAbstract()
+    bc = claripy.backends.BackendConcrete()
+    a = claripy.expressions.Expression([ba], obj=5, variables=set(), symbolic=False)
+    b = a+a
+    b.actualize([bc])
+    nose.tools.assert_equal(b._obj, 10)
+
 def test_expressions():
     # to and from actual
     a = claripy.expressions.AbstractExpression(op='BitVec', args=('x', 32), variables={'x'}, symbolic=True)
@@ -26,5 +34,5 @@ def test_expressions():
     #nose.tools.assert_equal(str(d), str(c))
 
 if __name__ == '__main__':
-    test_expressions()
+    test_abstract()
     print "WOO"
