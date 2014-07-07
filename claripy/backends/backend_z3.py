@@ -13,9 +13,7 @@ else:
 	z3_path = "/opt/python/lib/"
 z3.init(z3_path + "libz3.so")
 
-from .backend import Backend
-
-ops = [ 'If', 'And', 'Not', 'Or', 'UGE', 'ULE', 'UGT', 'ULT', 'BoolVal', 'BitVec', 'BitVecVal', 'Concat', 'Extract', 'LShR', 'SignExt', 'ZeroExt' ]
+from .backend import Backend, ops
 
 class BackendZ3(Backend):
 	def __init__(self):
