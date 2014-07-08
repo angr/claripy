@@ -5,14 +5,14 @@
 import logging
 l = logging.getLogger("claripy.expressions.expression")
 
-class Expression(object):
+class E(object):
 	'''
 	A base class to wrap Z3 objects.
 	'''
 
 	def __init__(self, backends, variables=None, symbolic=None, uuid=None, obj=None):
 		if (uuid is None) and (variables is None or symbolic is None and obj is None):
-			raise ValueError("invalid arguments passed to Expression()")
+			raise ValueError("invalid arguments passed to E()")
 
 		self.variables = variables
 		self.symbolic = symbolic
@@ -22,7 +22,7 @@ class Expression(object):
 		self._backends = backends
 
 	def __repr__(self):
-		return "<Expression uuid=%s obj=%s>" % (self._uuid, self._obj)
+		return "<E uuid=%s obj=%s>" % (self._uuid, self._obj)
 
 	def _do_op(self, op_name, args):
 		for b in self._backends:
@@ -34,7 +34,7 @@ class Expression(object):
 		raise Exception("no backend can handle operation %s", op_name)
 
 	def actualize(self, new_backends=None):
-		if not isinstance(self._obj, AbstractCall):
+		if not isinstance(self._obj, A):
 			raise Exception("actualize() called with a non-abstract obj")
 
 		if new_backends is not None:
@@ -74,7 +74,7 @@ def wrap_operator(cls, op_name):
 def make_methods(cls):
 	for name in ops:
 		wrap_operator(cls, name)
-make_methods(Expression)
+make_methods(E)
 
-from ..backends.backend import BackendError
-from ..backends.abstract_call import AbstractCall
+from .backends.backend import BackendError
+from .abstract_call import A

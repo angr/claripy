@@ -20,14 +20,14 @@ class BackendZ3(Backend):
 		Backend.__init__(self)
 		self._make_raw_ops(ops, op_module=z3)
 
-	def abstract(self, z):
+	def abstract(self, z, backends=None):
 		children = [ self.abstract(c) for c in z.children() ]
 		name = z.decl().name()
 
-		symbolic = any([ c.symbolic if isinstance(c, Expression) else False for c in children ])
+		symbolic = any([ c.symbolic if isinstance(c, E) else False for c in children ])
 		variables = set()
 		for c in children:
-			if isinstance(c, Expression):
+			if isinstance(c, E):
 				variables |= c.variables
 
 		if len(children) == 0:
@@ -61,7 +61,7 @@ class BackendZ3(Backend):
 				args = children
 			op = function_map[name]
 
-		return AbstractExpression(op=op, args=args, variables=variables, symbolic=symbolic)
+		return E(backends if backends is not None else [ ], obj=A(op=op, args=args), variables=variables, symbolic=symbolic)
 
 #
 # this is for the actual->abstract conversion above
@@ -102,4 +102,5 @@ function_map['not'] = 'z3.Not'
 function_map['if'] = 'z3.If'
 function_map['bvlshr'] = 'z3.LShR'
 
-from ..expressions import AbstractExpression, Expression
+from ..expression import E
+from ..abstract_call import A

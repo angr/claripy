@@ -35,7 +35,7 @@ class Backend(object):
 		#abstract = False
 
 		for a in args:
-			if isinstance(a, Expression):
+			if isinstance(a, E):
 				variables |= a.variables
 				symbolic |= a.symbolic
 				op_args.append(a._obj)
@@ -64,8 +64,8 @@ class Backend(object):
 		else:
 			op = getattr(op_args[0], name)
 			obj = op(*op_args[1:])
-		r = Expression([self], variables, symbolic, obj=obj)
+		r = E([self], variables, symbolic, obj=obj)
 		l.debug("Returning expression %s", r)
 		return r
 
-from ..expressions import Expression
+from ..expression import E

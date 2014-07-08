@@ -1,10 +1,10 @@
 import logging
-l = logging.getLogger("claripy.backends.abstract_call")
+l = logging.getLogger("claripy.abstract_call")
 l.setLevel(logging.DEBUG)
 
-class AbstractCall(object):
+class A(object):
     '''
-    An AbstractCall tracks a tree of calls (including operations) on arguments.
+    An A(bstractCall) tracks a tree of calls (including operations) on arguments.
     '''
 
     def __init__(self, op, args):
@@ -14,7 +14,7 @@ class AbstractCall(object):
     def apply(self, backend):
         args = [ ]
         for a in self._args:
-            if isinstance(a, AbstractCall):
+            if isinstance(a, A):
                 args.append(a.apply(self))
             else:
                 args.append(a)
