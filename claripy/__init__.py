@@ -6,6 +6,7 @@ import logging
 l = logging.getLogger("claripy")
 
 from .expression import E, A
+from . import bv
 
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap

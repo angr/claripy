@@ -27,8 +27,7 @@ class Backend(object):
 			return op_func(*normalized_args)
 		return op
 
-	@staticmethod
-	def combined_info(args):
+	def combined_info(self, args):
 		op_args = [ ]
 		variables = set()
 		symbolic = False
@@ -39,12 +38,14 @@ class Backend(object):
 				variables |= a.variables
 				symbolic |= a.symbolic
 				op_args.append(a._obj)
-			elif type(a) in { str, int, long }:
-				op_args.append(a)
 			else:
-				raise TypeError("invalid type passed to Backend.call()")
+				op_args.append(a)
 
-		return variables, symbolic, op_args
+		processed_args = self.process_args(op_args, args)
+		return variables, symbolic, processed_args
+
+	def process_args(self, args, exprs): #pylint:disable=R0201,W0613
+		return args
 
 	def call(self, name, args):
 		'''
@@ -77,14 +78,14 @@ class Backend(object):
 				obj = op(op_args[0])
 
 			if obj is NotImplemented:
-				raise BackendError("neither %s nor %s apply on %s", name, opposites[name], op_args)
+				l.debug("%s neither %s nor %s apply on %s", self, name, opposites[name], op_args)
+				raise BackendError("unable to apply operation on provided args")
 
-		r = E([self], variables, symbolic, obj=obj)
+		r = E([self], variables=variables, symbolic=symbolic, obj=obj)
 		l.debug("Returning expression %s", r)
 		return r
 
 	def abstract(self, e): #pylint:disable=W0613,R0201
-		print "WTF"
 		raise BackendError("backend doesn't implement abstract()")
 
 from ..expression import E, opposites

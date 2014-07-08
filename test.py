@@ -24,6 +24,13 @@ def test_fallback_abstraction():
     e = b+5
     f = b+b
 
+    nose.tools.assert_false(a.symbolic)
+    nose.tools.assert_true(b.symbolic)
+    nose.tools.assert_true(c.symbolic)
+    nose.tools.assert_true(d.symbolic)
+    nose.tools.assert_true(e.symbolic)
+    nose.tools.assert_true(f.symbolic)
+
     a.actualize([bc, bz])
     nose.tools.assert_equal(str(a._obj), '5')
     nose.tools.assert_is(type(a._obj), int)
@@ -48,6 +55,31 @@ def test_fallback_abstraction():
     f.actualize([bc, bz])
     nose.tools.assert_equal(str(f._obj), 'x + x')
 
+def test_mixed_z3():
+    ba = claripy.backends.BackendAbstract()
+    bc = claripy.backends.BackendConcrete()
+    bz = claripy.backends.BackendZ3()
+
+    a = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
+    b = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    c = a+b
+    nose.tools.assert_true(b.symbolic)
+
+    a.actualize()
+    b.actualize()
+
+    nose.tools.assert_is(type(a._obj), claripy.bv.BVV)
+    nose.tools.assert_equal(b._obj.__module__, 'z3')
+    nose.tools.assert_is(c._obj, None)
+
+    d = a + b
+    nose.tools.assert_equal(d._obj.__module__, 'z3')
+    nose.tools.assert_equal(str(d._obj), '0 + x')
+
+    c.actualize()
+    nose.tools.assert_equal(c._obj.__module__, 'z3')
+    nose.tools.assert_equal(str(c._obj), '0 + x')
+
 if __name__ == '__main__':
     import logging
     logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
@@ -58,4 +90,5 @@ if __name__ == '__main__':
 
     test_actualization()
     test_fallback_abstraction()
+    test_mixed_z3()
     print "WOO"

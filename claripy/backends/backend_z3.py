@@ -14,11 +14,27 @@ else:
 z3.init(z3_path + "libz3.so")
 
 from .backend import Backend, BackendError, ops
+from .. import bv
 
 class BackendZ3(Backend):
 	def __init__(self):
 		Backend.__init__(self)
 		self._make_raw_ops(ops, op_module=z3)
+
+	def process_args(self, args, exprs): #pylint:disable=W0613
+		processed = [ ]
+		for a in args:
+			if type(a) is bv.BVV:
+				processed.append(z3.BitVecVal(a.value, a.bits))
+			elif type(a) in (int, long, float, str):
+				processed.append(a)
+			elif hasattr(a, '__module__') and a.__module__ == 'z3':
+				processed.append(a)
+			else:
+				l.debug("BackendZ3 encountered unexpected type %s", type(a))
+				raise BackendError("unexpected type %s encountered in BackendZ3", type(a))
+
+		return processed
 
 	def abstract(self, e):
 		if e._obj.__module__ != 'z3':
