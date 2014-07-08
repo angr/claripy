@@ -12,37 +12,50 @@ def test_actualization():
     b.actualize([bc])
     nose.tools.assert_equal(b._obj, 10)
 
-#def test_fallback_abstraction():
-#   ba = claripy.backends.BackendAbstract()
-#   bc = claripy.backends.BackendConcrete()
-#   a = claripy.expressions.Expression([bc, ba], obj=5, variables=set(), symbolic=False)
-#   b = claripy.expressions.Expression([bc, ba], obj=claripy.expressions.AbstractCall(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-#
-#   b = a+a
-#   b.actualize([bc])
-#   nose.tools.assert_equal(b._obj, 10)
-#
-#def test_expressions():
-#   # to and from actual
-#   a = claripy.expressions.AbstractExpression(op='BitVec', args=('x', 32), variables={'x'}, symbolic=True)
-#   z = claripy.backends.BackendZ3()
-#   b = a.actualize(z)
-#   c = b+b
-#   nose.tools.assert_equal(str(c), 'ActualExpression(x + x)')
-#   d = c.abstract().actualize(z)
-#   nose.tools.assert_true(d.symbolic)
-#   nose.tools.assert_equal(str(d), str(c))
-#
-#   # concrete stuff
-#   #b_c = claripy.backends.BackendConcrete()
-#   #a = claripy.expressions.AbstractExpression(op='BitVecVal', args=(0, 32), variables=set(), symbolic=False)
-#   #b = claripy.expressions.AbstractExpression(op='BitVecVal', args=(1, 32), variables=set(), symbolic=False)
-#   #b = a.actualize(z)
-#   #c = b+b
-#   #nose.tools.assert_equal(str(c), 'ActualExpression(x + x)')
-#   #d = c.abstract().actualize(z)
-#   #nose.tools.assert_equal(str(d), str(c))
+def test_fallback_abstraction():
+    ba = claripy.backends.BackendAbstract()
+    bc = claripy.backends.BackendConcrete()
+    bz = claripy.backends.BackendZ3()
+
+    a = claripy.E([bc, ba], obj=5, variables=set(), symbolic=False)
+    b = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    c = a+b
+    d = 5+b
+    e = b+5
+    f = b+b
+
+    a.actualize([bc, bz])
+    nose.tools.assert_equal(str(a._obj), '5')
+    nose.tools.assert_is(type(a._obj), int)
+
+    b.actualize([bc, bz])
+    nose.tools.assert_equal(str(b._obj), 'x')
+    nose.tools.assert_equal(b._obj.__module__, 'z3')
+
+    c.actualize([bc, bz])
+    d.actualize([bc, bz])
+    e.actualize([bc, bz])
+    f.actualize([bc, bz])
+
+    nose.tools.assert_equal(str(c._obj), '5 + x')
+    nose.tools.assert_equal(str(d._obj), '5 + x')
+    nose.tools.assert_equal(str(e._obj), 'x + 5')
+    nose.tools.assert_equal(str(f._obj), 'x + x')
+
+    f._ast = None
+    f.abstract([bc, bz])
+    f._obj = None
+    f.actualize([bc, bz])
+    nose.tools.assert_equal(str(f._obj), 'x + x')
 
 if __name__ == '__main__':
+    import logging
+    logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.backends.backend').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.backends.backend_concrete').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.backends.backend_abstract').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.backends.backend_z3').setLevel(logging.DEBUG)
+
     test_actualization()
+    test_fallback_abstraction()
     print "WOO"

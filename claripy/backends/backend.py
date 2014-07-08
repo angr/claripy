@@ -46,13 +46,14 @@ class Backend(object):
 
 		return variables, symbolic, op_args
 
-
 	def call(self, name, args):
 		'''
 		Calls operation 'name' on 'obj' with arguments 'args'.
 
 		@returns an Expression with the result.
 		'''
+
+		l.debug("call(name=%s, args=%s)", name, args)
 
 		if name in self._op_expr:
 			return self._op_expr[name](*args)
@@ -61,11 +62,29 @@ class Backend(object):
 
 		if name in self._op_raw:
 			obj = self._op_raw[name](*op_args)
+		elif not name.startswith("__"):
+			raise BackendError("backend has no operation %s", name)
 		else:
-			op = getattr(op_args[0], name)
-			obj = op(*op_args[1:])
+			obj = NotImplemented
+
+			# first, try the operation with the first guy
+			if hasattr(op_args[0], name):
+				op = getattr(op_args[0], name)
+				obj = op(*op_args[1:])
+			# now try the reverse operation with the second guy
+			if obj is NotImplemented and len(op_args) == 2 and hasattr(op_args[1], opposites[name]):
+				op = getattr(op_args[1], opposites[name])
+				obj = op(op_args[0])
+
+			if obj is NotImplemented:
+				raise BackendError("neither %s nor %s apply on %s", name, opposites[name], op_args)
+
 		r = E([self], variables, symbolic, obj=obj)
 		l.debug("Returning expression %s", r)
 		return r
 
-from ..expression import E
+	def abstract(self, e): #pylint:disable=W0613,R0201
+		print "WTF"
+		raise BackendError("backend doesn't implement abstract()")
+
+from ..expression import E, opposites

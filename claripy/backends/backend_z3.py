@@ -13,15 +13,23 @@ else:
 	z3_path = "/opt/python/lib/"
 z3.init(z3_path + "libz3.so")
 
-from .backend import Backend, ops
+from .backend import Backend, BackendError, ops
 
 class BackendZ3(Backend):
 	def __init__(self):
 		Backend.__init__(self)
 		self._make_raw_ops(ops, op_module=z3)
 
-	def abstract(self, z, backends=None):
-		children = [ self.abstract(c) for c in z.children() ]
+	def abstract(self, e):
+		if e._obj.__module__ != 'z3':
+			l.debug("unable to abstract non-Z3 object")
+			raise BackendError("unable to abstract non-Z3 object")
+
+		z = e._obj
+		return self.abstract_z3(z, backends=e._backends)
+
+	def abstract_z3(self, z, backends=None):
+		children = [ self.abstract_z3(c) for c in z.children() ]
 		name = z.decl().name()
 
 		symbolic = any([ c.symbolic if isinstance(c, E) else False for c in children ])
@@ -61,7 +69,7 @@ class BackendZ3(Backend):
 				args = children
 			op = function_map[name]
 
-		return E(backends if backends is not None else [ ], obj=A(op=op, args=args), variables=variables, symbolic=symbolic)
+		return E(backends if backends is not None else [ self ], ast=A(op, args), variables=variables, symbolic=symbolic)
 
 #
 # this is for the actual->abstract conversion above
@@ -102,5 +110,4 @@ function_map['not'] = 'z3.Not'
 function_map['if'] = 'z3.If'
 function_map['bvlshr'] = 'z3.LShR'
 
-from ..expression import E
-from ..abstract_call import A
+from ..expression import E, A
