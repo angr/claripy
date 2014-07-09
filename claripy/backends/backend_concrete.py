@@ -12,7 +12,6 @@ class BackendConcrete(Backend):
     def process_args(self, args, exprs):
         processed = [ ]
         for a,e in zip(args, exprs):
-            if isinstance(e, E): print e, e.symbolic
             if isinstance(e, E) and e.symbolic:
                 raise BackendError("BackendConcrete.process_args() aborting on symbolic expression")
 

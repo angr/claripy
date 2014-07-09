@@ -121,6 +121,17 @@ class E(object):
 
 		raise Exception("abstraction failed with available backends")
 
+	def __getstate__(self):
+		if self._ast is None:
+			self.abstract()
+
+		return self._uuid, self._ast, self.variables, self.symbolic
+
+	def __setstate__(self, s):
+		self._uuid, self._ast, self.variables, self.symbolic = s
+		self._obj = None
+		self._backends = [ ]
+
 #
 # Wrap stuff
 #

@@ -2,6 +2,7 @@ import nose
 import logging
 l = logging.getLogger("claripy.test")
 
+import pickle
 import claripy, claripy.backends
 
 def test_actualization():
@@ -80,6 +81,27 @@ def test_mixed_z3():
     nose.tools.assert_equal(c._obj.__module__, 'z3')
     nose.tools.assert_equal(str(c._obj), '0 + x')
 
+def test_pickle():
+    ba = claripy.backends.BackendAbstract()
+    bc = claripy.backends.BackendConcrete()
+    bz = claripy.backends.BackendZ3()
+
+    a = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
+    b = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    a.actualize(); a._ast = None
+    b.actualize(); a._ast = None
+
+    c = a+b
+    nose.tools.assert_equal(c._obj.__module__, 'z3')
+    nose.tools.assert_equal(str(c._obj), '0 + x')
+
+    c_copy = pickle.loads(pickle.dumps(c))
+    nose.tools.assert_is(c_copy._obj, None)
+    c_copy._backends = [bc, bz, ba]
+    c_copy.actualize()
+    nose.tools.assert_equal(c_copy._obj.__module__, 'z3')
+    nose.tools.assert_equal(str(c_copy._obj), '0 + x')
+
 if __name__ == '__main__':
     import logging
     logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
@@ -91,4 +113,5 @@ if __name__ == '__main__':
     test_actualization()
     test_fallback_abstraction()
     test_mixed_z3()
+    test_pickle()
     print "WOO"
