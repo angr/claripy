@@ -3,7 +3,11 @@ import logging
 l = logging.getLogger("claripy.test")
 
 import pickle
+import tempfile
 import claripy, claripy.backends
+
+import logging
+l = logging.getLogger("claripy.test")
 
 def test_actualization():
     ba = claripy.backends.BackendAbstract()
@@ -102,16 +106,51 @@ def test_pickle():
     nose.tools.assert_equal(c_copy._obj.__module__, 'z3')
     nose.tools.assert_equal(str(c_copy._obj), '0 + x')
 
+def test_datalayer():
+    l.info("Running test_datalayer")
+
+    ba = claripy.backends.BackendAbstract()
+    bc = claripy.backends.BackendConcrete()
+    bz = claripy.backends.BackendZ3()
+    pickle_dir = tempfile.mkdtemp()
+    l.debug("Pickling to %s",pickle_dir)
+    claripy.datalayer.init(pickle_dir=pickle_dir)
+
+    a = claripy.E([bc, ba], ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
+    b = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+
+    a.actualize(); a._ast = None
+    b.store()
+    #b.actualize(); b._ast = None
+    c = a + b
+    c.store()
+
+    c.actualize([ bc, bz ])
+    nose.tools.assert_equal(str(c._obj), '0 + x')
+
+    d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
+    d.store()
+
+    l.debug("Loading stage!")
+    claripy.datalayer.init(pickle_dir=pickle_dir)
+    nose.tools.assert_equal(len(claripy.datalayer.dl._cache), 0)
+
+    e = claripy.datalayer.dl.load_expression(c._uuid)
+    e.actualize([ bc, bz ])
+    nose.tools.assert_equal(str(e._obj), '0 + x')
+
 if __name__ == '__main__':
-    import logging
+    logging.getLogger('claripy.test').setLevel(logging.DEBUG)
     logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
     logging.getLogger('claripy.backends.backend').setLevel(logging.DEBUG)
     logging.getLogger('claripy.backends.backend_concrete').setLevel(logging.DEBUG)
     logging.getLogger('claripy.backends.backend_abstract').setLevel(logging.DEBUG)
     logging.getLogger('claripy.backends.backend_z3').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.datalayer').setLevel(logging.DEBUG)
 
     test_actualization()
     test_fallback_abstraction()
     test_mixed_z3()
     test_pickle()
+    test_datalayer()
     print "WOO"
