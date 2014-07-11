@@ -13,25 +13,25 @@ class A(object):
         self._op = op
         self._args = args
 
-    def apply(self, backends):
+    def eval(self, backends, save, model=None):
         args = [ ]
         for a in self._args:
             if isinstance(a, E):
-                a.actualize(backends=backends)
-                args.append(a)
+                args.append(a.eval(backends=backends, save=save, model=model))
             elif isinstance(a, A):
-                args.append(a.apply(self))
+                args.append(a.eval(backends, save, model=model))
             else:
                 args.append(a)
 
         for b in backends:
-            l.debug("trying actualization with %s", b)
+            l.debug("trying evaluation with %s", b)
             try:
-                return b.call(self._op, args)
+                return b.call(self._op, args, model=model)
             except BackendError:
+                l.debug("... failed")
                 continue
 
-        raise Exception("actualization failed with available backends")
+        raise Exception("eval failed with available backends")
 
     def __repr__(self):
         if '__' in self._op:
@@ -95,21 +95,29 @@ class E(object):
 
         raise Exception("no backend can handle operation %s", op_name)
 
-    def actualize(self, backends=None):
+    def eval(self, backends=None, save=True, model=None):
         if self._obj is not None:
-            l.debug("actualize() called with an existing obj")
-            return
+            l.debug("eval() called with an existing obj")
+            return self._obj
 
         if isinstance(self._ast, A):
-            r = self._ast.apply(backends if backends is not None else self._backends)
-            if isinstance(r, E):
-                self._obj = r._obj
-                self.variables = r.variables
-                self.symbolic = r.symbolic
+            r = self._ast.eval(backends if backends is not None else self._backends, save=save, model=model)
+            if save:
+                if isinstance(r, E):
+                    self._obj = r._obj
+                    self.variables = r.variables
+                    self.symbolic = r.symbolic
+                else:
+                    self._obj = r
+                return self
             else:
-                self._obj = r
+                return r
         else:
-            self._obj = self._ast
+            r = self._ast
+            if save:
+                self._obj = r
+                return self
+            return r
 
     def abstract(self, backends=None):
         if self._ast is not None:

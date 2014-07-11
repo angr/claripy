@@ -2,7 +2,7 @@ import logging
 l = logging.getLogger('claripy.backends.backend')
 l.setLevel(logging.DEBUG)
 
-ops = { 'If', 'And', 'Not', 'Or', 'UGE', 'ULE', 'UGT', 'ULT', 'BoolVal', 'BitVec', 'BitVecVal', 'Concat', 'Extract', 'LShR', 'SignExt', 'ZeroExt' }
+ops = { 'If', 'And', 'Not', 'Or', 'UGE', 'ULE', 'UGT', 'ULT', 'BoolVal', 'BitVec', 'BitVecVal', 'Concat', 'Extract', 'LShR', 'SignExt', 'ZeroExt', 'RotateLeft', 'RotateRight' }
 
 class BackendError(Exception):
 	pass
@@ -18,7 +18,7 @@ class Backend(object):
 			self._op_raw[o] = self._make_raw_op(o, op_func)
 
 	def _make_raw_op(self, op_name, op_func):
-		def op(*args):
+		def op(*args, **kwargs): #pylint:disable=W0613
 			if hasattr(self, 'normalize_args'):
 				normalized_args = getattr(self, 'normalize_args')(op_name, args)
 			else:
@@ -27,7 +27,7 @@ class Backend(object):
 			return op_func(*normalized_args)
 		return op
 
-	def combined_info(self, args):
+	def combined_info(self, args, model=None):
 		op_args = [ ]
 		variables = set()
 		symbolic = False
@@ -41,13 +41,13 @@ class Backend(object):
 			else:
 				op_args.append(a)
 
-		processed_args = self.process_args(op_args, args)
+		processed_args = self.process_args(op_args, args, model=model)
 		return variables, symbolic, processed_args
 
-	def process_args(self, args, exprs): #pylint:disable=R0201,W0613
+	def process_args(self, args, exprs, model=None): #pylint:disable=R0201,W0613
 		return args
 
-	def call(self, name, args):
+	def call(self, name, args, model=None):
 		'''
 		Calls operation 'name' on 'obj' with arguments 'args'.
 
@@ -57,14 +57,15 @@ class Backend(object):
 		l.debug("call(name=%s, args=%s)", name, args)
 
 		if name in self._op_expr:
-			return self._op_expr[name](*args)
+			return self._op_expr[name](*args, model=model)
 
-		variables, symbolic, op_args = self.combined_info(args)
+		variables, symbolic, op_args = self.combined_info(args, model=model)
 
 		if name in self._op_raw:
-			obj = self._op_raw[name](*op_args)
+			obj = self._op_raw[name](*op_args, model=model)
 		elif not name.startswith("__"):
-			raise BackendError("backend has no operation %s", name)
+			l.debug("backend has no operation %s", name)
+			raise BackendError("backend has no operation %s" % name)
 		else:
 			obj = NotImplemented
 

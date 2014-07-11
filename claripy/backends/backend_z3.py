@@ -21,7 +21,7 @@ class BackendZ3(Backend):
 		Backend.__init__(self)
 		self._make_raw_ops(ops, op_module=z3)
 
-	def process_args(self, args, exprs): #pylint:disable=W0613
+	def process_args(self, args, exprs, model=None): #pylint:disable=W0613
 		processed = [ ]
 		for a in args:
 			if type(a) is bv.BVV:

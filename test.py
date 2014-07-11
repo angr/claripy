@@ -14,7 +14,7 @@ def test_actualization():
     bc = claripy.backends.BackendConcrete()
     a = claripy.E([ba], obj=5, variables=set(), symbolic=False)
     b = a+a
-    b.actualize([bc])
+    b.eval([bc])
     nose.tools.assert_equal(b._obj, 10)
 
 def test_fallback_abstraction():
@@ -36,18 +36,18 @@ def test_fallback_abstraction():
     nose.tools.assert_true(e.symbolic)
     nose.tools.assert_true(f.symbolic)
 
-    a.actualize([bc, bz])
+    a.eval([bc, bz])
     nose.tools.assert_equal(str(a._obj), '5')
     nose.tools.assert_is(type(a._obj), int)
 
-    b.actualize([bc, bz])
+    b.eval([bc, bz])
     nose.tools.assert_equal(str(b._obj), 'x')
     nose.tools.assert_equal(b._obj.__module__, 'z3')
 
-    c.actualize([bc, bz])
-    d.actualize([bc, bz])
-    e.actualize([bc, bz])
-    f.actualize([bc, bz])
+    c.eval([bc, bz])
+    d.eval([bc, bz])
+    e.eval([bc, bz])
+    f.eval([bc, bz])
 
     nose.tools.assert_equal(str(c._obj), '5 + x')
     nose.tools.assert_equal(str(d._obj), '5 + x')
@@ -57,7 +57,7 @@ def test_fallback_abstraction():
     f._ast = None
     f.abstract([bc, bz])
     f._obj = None
-    f.actualize([bc, bz])
+    f.eval([bc, bz])
     nose.tools.assert_equal(str(f._obj), 'x + x')
 
 def test_mixed_z3():
@@ -70,8 +70,8 @@ def test_mixed_z3():
     c = a+b
     nose.tools.assert_true(b.symbolic)
 
-    a.actualize()
-    b.actualize()
+    a.eval()
+    b.eval()
 
     nose.tools.assert_is(type(a._obj), claripy.bv.BVV)
     nose.tools.assert_equal(b._obj.__module__, 'z3')
@@ -81,7 +81,7 @@ def test_mixed_z3():
     nose.tools.assert_equal(d._obj.__module__, 'z3')
     nose.tools.assert_equal(str(d._obj), '0 + x')
 
-    c.actualize()
+    c.eval()
     nose.tools.assert_equal(c._obj.__module__, 'z3')
     nose.tools.assert_equal(str(c._obj), '0 + x')
 
@@ -92,8 +92,8 @@ def test_pickle():
 
     a = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
     b = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-    a.actualize(); a._ast = None
-    b.actualize(); a._ast = None
+    a.eval(); a._ast = None
+    b.eval(); a._ast = None
 
     c = a+b
     nose.tools.assert_equal(c._obj.__module__, 'z3')
@@ -102,7 +102,7 @@ def test_pickle():
     c_copy = pickle.loads(pickle.dumps(c))
     nose.tools.assert_is(c_copy._obj, None)
     c_copy._backends = [bc, bz, ba]
-    c_copy.actualize()
+    c_copy.eval()
     nose.tools.assert_equal(c_copy._obj.__module__, 'z3')
     nose.tools.assert_equal(str(c_copy._obj), '0 + x')
 
@@ -119,13 +119,13 @@ def test_datalayer():
     a = claripy.E([bc, ba], ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
     b = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
 
-    a.actualize(); a._ast = None
+    a.eval(); a._ast = None
     b.store()
-    #b.actualize(); b._ast = None
+    #b.eval(); b._ast = None
     c = a + b
     c.store()
 
-    c.actualize([ bc, bz ])
+    c.eval([ bc, bz ])
     nose.tools.assert_equal(str(c._obj), '0 + x')
 
     d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
@@ -136,8 +136,23 @@ def test_datalayer():
     nose.tools.assert_equal(len(claripy.datalayer.dl._cache), 0)
 
     e = claripy.datalayer.dl.load_expression(c._uuid)
-    e.actualize([ bc, bz ])
+    e.eval([ bc, bz ])
     nose.tools.assert_equal(str(e._obj), '0 + x')
+
+def test_model():
+    bc = claripy.backends.BackendConcrete()
+    ba = claripy.backends.BackendAbstract()
+
+    a = claripy.E([bc, ba], ast=claripy.A(op='BitVecVal', args=(5, 32)), variables=set(), symbolic=False)
+    b = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+
+    c = a + b
+
+    r_c = c.eval(backends=[bc], save=False, model={'x': 10})
+    nose.tools.assert_equal(r_c._obj, 15)
+    r_d = c.eval(backends=[bc], model={'x': 15}, save=False)
+    nose.tools.assert_equal(r_c._obj, 15)
+    nose.tools.assert_equal(r_d._obj, 20)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
@@ -153,4 +168,5 @@ if __name__ == '__main__':
     test_mixed_z3()
     test_pickle()
     test_datalayer()
+    test_model()
     print "WOO"

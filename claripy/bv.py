@@ -233,6 +233,12 @@ def Concat(*args):
         total_bits += o.bits
     return BVV(total_value, total_bits)
 
+def RotateRight(self, bits):
+    raise NotImplementedError()
+
+def RotateLeft(self, bits):
+    raise NotImplementedError()
+
 @normalize_types
 @compare_bits
 def ULT(self, o):

@@ -4,7 +4,7 @@ from ..expression import operations as attr_ops
 
 class BackendAbstract(Backend):
     def _make_abstract_op(self, name):
-        def op(*args):
+        def op(*args, **kwargs): #pylint:disable=W0613
             backends = [ self ]
             for a in args:
                 if isinstance(a, E):
