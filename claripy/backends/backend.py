@@ -93,16 +93,16 @@ class Backend(object):
 	# Solver support.
 	#
 
-	def solver(self):
+	def solver(self): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def add_constraints(self, s, c):
+	def add_constraints(self, s, c): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def solve(self, s):
+	def solve(self, s): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def eval(self, s, expr, n, extra_constraints=None):
+	def eval(self, s, expr, n, extra_constraints=None): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
 from ..expression import E, opposites

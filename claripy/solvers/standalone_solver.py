@@ -20,9 +20,8 @@ symbolic_count = itertools.count()
 
 class StandaloneSolver(Solver):
 	def __init__(self, claripy, solver_backend, results_backend, timeout=None):
-		Solver.__init__(self)
+		Solver.__init__(self, claripy)
 
-		self._claripy = claripy
 		self._result = None
 		self._timeout = timeout if timeout is not None else 300000
 		self.constraints = [ ]
@@ -51,11 +50,12 @@ class StandaloneSolver(Solver):
 
 		self._result = None
 
+		self.constraints += constraints
 		for e in constraints:
 			self.variables.update(e.variables)
-
-		self.constraints += constraints
-		self._solver.add(*[ e.eval() for e in constraints ])
+			e_raw = e.eval(backends=[self._solver_backend])
+			l.debug("adding %r", e_raw)
+			self._solver.add(e_raw)
 
 	#
 	# Solving
@@ -76,11 +76,11 @@ class StandaloneSolver(Solver):
 
 	def eval(self, e, n, extra_constraints=None):
 		if not e.symbolic:
-			return [ e.eval() ]
+			return [ e.eval(backends=[self._results_backend]) ]
 
 		if n == 1 and extra_constraints is None:
 			self.check()
-			return [ E([self._results_backend], symbolic=False, variables=set(), obj=e.eval(backends=[self._results_backend], model=self._result.model)) ]
+			return [ e.eval(backends=[self._results_backend], model=self._result.model) ]
 		else:
 			return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints)
 

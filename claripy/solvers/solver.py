@@ -3,9 +3,6 @@
 import logging
 l = logging.getLogger("claripy.solvers.solver")
 
-sat = 'sat'
-unsat = 'unsat'
-
 class Solver(object):
     def __init__(self, claripy):
         self._claripy = claripy

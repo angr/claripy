@@ -4,7 +4,7 @@ l = logging.getLogger("claripy.test")
 
 import pickle
 import tempfile
-import claripy, claripy.backends
+import claripy, claripy.backends, claripy.solvers
 
 import logging
 l = logging.getLogger("claripy.test")
@@ -14,7 +14,7 @@ def test_actualization():
     bc = claripy.backends.BackendConcrete()
     a = claripy.E([ba], obj=5, variables=set(), symbolic=False)
     b = a+a
-    b.eval([bc])
+    b.eval(backends=[bc], save=True)
     nose.tools.assert_equal(b._obj, 10)
 
 def test_fallback_abstraction():
@@ -36,18 +36,18 @@ def test_fallback_abstraction():
     nose.tools.assert_true(e.symbolic)
     nose.tools.assert_true(f.symbolic)
 
-    a.eval([bc, bz])
+    a.eval(backends=[bc, bz], save=True)
     nose.tools.assert_equal(str(a._obj), '5')
     nose.tools.assert_is(type(a._obj), int)
 
-    b.eval([bc, bz])
+    b.eval(backends=[bc, bz], save=True)
     nose.tools.assert_equal(str(b._obj), 'x')
     nose.tools.assert_equal(b._obj.__module__, 'z3')
 
-    c.eval([bc, bz])
-    d.eval([bc, bz])
-    e.eval([bc, bz])
-    f.eval([bc, bz])
+    c.eval(backends=[bc, bz], save=True)
+    d.eval(backends=[bc, bz], save=True)
+    e.eval(backends=[bc, bz], save=True)
+    f.eval(backends=[bc, bz], save=True)
 
     nose.tools.assert_equal(str(c._obj), '5 + x')
     nose.tools.assert_equal(str(d._obj), '5 + x')
@@ -57,7 +57,7 @@ def test_fallback_abstraction():
     f._ast = None
     f.abstract([bc, bz])
     f._obj = None
-    f.eval([bc, bz])
+    f.eval(backends=[bc, bz], save=True)
     nose.tools.assert_equal(str(f._obj), 'x + x')
 
 def test_mixed_z3():
@@ -125,7 +125,7 @@ def test_datalayer():
     c = a + b
     c.store()
 
-    c.eval([ bc, bz ])
+    c.eval([ bc, bz ], save=True)
     nose.tools.assert_equal(str(c._obj), '0 + x')
 
     d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
@@ -136,7 +136,7 @@ def test_datalayer():
     nose.tools.assert_equal(len(claripy.datalayer.dl._cache), 0)
 
     e = claripy.datalayer.dl.load_expression(c._uuid)
-    e.eval([ bc, bz ])
+    e.eval([ bc, bz ], save=True)
     nose.tools.assert_equal(str(e._obj), '0 + x')
 
 def test_model():
@@ -149,10 +149,23 @@ def test_model():
     c = a + b
 
     r_c = c.eval(backends=[bc], save=False, model={'x': 10})
-    nose.tools.assert_equal(r_c._obj, 15)
+    nose.tools.assert_equal(r_c, 15)
     r_d = c.eval(backends=[bc], model={'x': 15}, save=False)
-    nose.tools.assert_equal(r_c._obj, 15)
-    nose.tools.assert_equal(r_d._obj, 20)
+    nose.tools.assert_equal(r_c, 15)
+    nose.tools.assert_equal(r_d, 20)
+
+def test_solver():
+    bc = claripy.backends.BackendConcrete()
+    bz = claripy.backends.BackendZ3()
+    ba = claripy.backends.BackendAbstract()
+
+    s = claripy.solvers.StandaloneSolver(None, bz, bc)
+    x = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    l.debug("adding constraints")
+    s.add(x == 10)
+    l.debug("checking")
+    nose.tools.assert_equal(s.check(), claripy.sat)
+    nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
@@ -162,6 +175,7 @@ if __name__ == '__main__':
     logging.getLogger('claripy.backends.backend_abstract').setLevel(logging.DEBUG)
     logging.getLogger('claripy.backends.backend_z3').setLevel(logging.DEBUG)
     logging.getLogger('claripy.datalayer').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.solvers.standalone_solver').setLevel(logging.DEBUG)
 
     test_actualization()
     test_fallback_abstraction()
@@ -169,4 +183,5 @@ if __name__ == '__main__':
     test_pickle()
     test_datalayer()
     test_model()
+    test_solver()
     print "WOO"

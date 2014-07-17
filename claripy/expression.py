@@ -95,28 +95,28 @@ class E(object):
 
         raise Exception("no backend can handle operation %s", op_name)
 
-    def eval(self, backends=None, save=True, model=None):
+    def eval(self, backends=None, save=False, model=None):
         if self._obj is not None:
             l.debug("eval() called with an existing obj")
             return self._obj
 
         if isinstance(self._ast, A):
             r = self._ast.eval(backends if backends is not None else self._backends, save=save, model=model)
-            if save:
+            if save or backends is None:
                 if isinstance(r, E):
                     self._obj = r._obj
                     self.variables = r.variables
                     self.symbolic = r.symbolic
                 else:
                     self._obj = r
-                return self
+                return self._obj
             else:
-                return r
+                return r._obj
         else:
             r = self._ast
-            if save:
+            if save or backends is None:
                 self._obj = r
-                return self
+                return self._obj
             return r
 
     def abstract(self, backends=None):

@@ -17,6 +17,8 @@ from .backend import Backend, BackendError, ops
 from .. import bv
 
 class BackendZ3(Backend):
+	_split_on = { 'And', 'Or' }
+
 	def __init__(self):
 		Backend.__init__(self)
 		self._make_raw_ops(ops, op_module=z3)
@@ -42,17 +44,16 @@ class BackendZ3(Backend):
 			raise BackendError("unable to abstract non-Z3 object")
 
 		z = e._obj
-		return self.abstract_z3(z, backends=e._backends)
+		s, v, a = self.abstract_z3(z, self._split_on, e._backends)
+		return E(e._backends, symbolic=s, variables=v, ast=a)
 
-	def abstract_z3(self, z, backends=None):
-		children = [ self.abstract_z3(c) for c in z.children() ]
+	def abstract_z3(self, z, split_on, backends):
 		name = z.decl().name()
+		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
+		children = [ self.abstract_z3(c, new_split_on, backends) for c in z.children() ]
 
-		symbolic = any([ c.symbolic if isinstance(c, E) else False for c in children ])
+		symbolic = False
 		variables = set()
-		for c in children:
-			if isinstance(c, E):
-				variables |= c.variables
 
 		if len(children) == 0:
 			if z.__class__ == z3.BitVecRef:
@@ -72,20 +73,29 @@ class BackendZ3(Backend):
 			else:
 				raise TypeError("Unable to wrap type %s", z.__class__.__name__)
 		else:
+			raw_args = [ ]
+			for s, v, a in children:
+				if function_map[name] in split_on:
+					raw_args.append(E(backends=[self], ast=a, variables=v, symbolic=s))
+				else:
+					raw_args.append(a)
+				symbolic |= s
+				variables |= v
+
 			if name == 'extract':
 				# GAH
-				args = [ int(non_decimal.sub('', i)) for i in str(z).split(',')[:2] ] + children
+				args = [ int(non_decimal.sub('', i)) for i in str(z).split(',')[:2] ] + raw_args
 			elif name in ('sign_extend', 'zero_extend'):
-				args = int(str(z).split('(')[1].split(', ')[0]) + children
+				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
 			elif name == 'zero_extend':
-				args = int(str(z).split('(')[1].split(', ')[0]) + children
+				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
 			else:
-				if len(children) != 2 and not (name == 'bvnot' and len(children) == 1) and not (name == 'concat' and len(children) > 0):
-					raise TypeError("%d children received for operation %s!" % (len(children), name))
-				args = children
+				if len(raw_args) != 2 and not (name == 'bvnot' and len(raw_args) == 1) and not (name == 'concat' and len(raw_args) > 0):
+					raise TypeError("%d children received for operation %s!" % (len(raw_args), name))
+				args = raw_args
 			op = function_map[name]
 
-		return E(backends if backends is not None else [ self ], ast=A(op, args), variables=variables, symbolic=symbolic)
+		return symbolic, variables, A(op, args)
 
 	def solver(self):
 		return z3.Solver()
@@ -95,11 +105,18 @@ class BackendZ3(Backend):
 
 	def solve(self, s):
 		if s.check() == z3.sat:
-			satness = "sat"
+			l.debug("sat!")
+			satness = sat
 			z3_model = s.model()
-			model = { m.name(): z3_model.eval(m) for m in z3_model }
+			l.debug("model is %r", z3_model)
+			model = { }
+			for m_f in z3_model:
+				n = m_f.name()
+				m = m_f()
+				model[n] = z3_model.eval(m)
 		else:
-			satness = "unsat"
+			l.debug("unsat!")
+			satness = unsat
 			model = None
 
 		return Result(satness, model)
@@ -240,17 +257,17 @@ function_map['bvsgt'] = '__gt__'
 function_map['bvsge'] = '__ge__'
 function_map['bvslt'] = '__lt__'
 function_map['bvsle'] = '__le__'
-function_map['bvuge'] = 'z3.UGE'
-function_map['bvugt'] = 'z3.UGT'
-function_map['bvule'] = 'z3.ULE'
-function_map['bvult'] = 'z3.ULT'
-function_map['concat'] = 'z3.Concat'
-function_map['extract'] = 'z3.Extract'
-function_map['or'] = 'z3.Or'
-function_map['and'] = 'z3.And'
-function_map['not'] = 'z3.Not'
-function_map['if'] = 'z3.If'
-function_map['bvlshr'] = 'z3.LShR'
+function_map['bvuge'] = 'UGE'
+function_map['bvugt'] = 'UGT'
+function_map['bvule'] = 'ULE'
+function_map['bvult'] = 'ULT'
+function_map['concat'] = 'Concat'
+function_map['extract'] = 'Extract'
+function_map['or'] = 'Or'
+function_map['and'] = 'And'
+function_map['not'] = 'Not'
+function_map['if'] = 'If'
+function_map['bvlshr'] = 'LShR'
 
 from ..expression import E, A
-from ..result import Result, UnsatError
+from ..result import Result, UnsatError, sat, unsat

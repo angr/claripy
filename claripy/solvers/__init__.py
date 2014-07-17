@@ -1,3 +1,2 @@
-from .client_solver import ClientSolver
-from .server_solver import ServerSolver
+from .standalone_solver import StandaloneSolver
 from .solver import Solver
