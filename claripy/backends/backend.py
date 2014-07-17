@@ -89,4 +89,20 @@ class Backend(object):
 	def abstract(self, e): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't implement abstract()")
 
+	#
+	# Solver support.
+	#
+
+	def solver(self):
+		raise BackendError("backend doesn't support solving")
+
+	def add_constraints(self, s, c):
+		raise BackendError("backend doesn't support solving")
+
+	def solve(self, s):
+		raise BackendError("backend doesn't support solving")
+
+	def eval(self, s, expr, n, extra_constraints=None):
+		raise BackendError("backend doesn't support solving")
+
 from ..expression import E, opposites

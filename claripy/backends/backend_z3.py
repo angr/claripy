@@ -87,6 +87,132 @@ class BackendZ3(Backend):
 
 		return E(backends if backends is not None else [ self ], ast=A(op, args), variables=variables, symbolic=symbolic)
 
+	def solver(self):
+		return z3.Solver()
+
+	def add_constraints(self, s, c):
+		s.add(*c)
+
+	def solve(self, s):
+		if s.check() == z3.sat:
+			satness = "sat"
+			z3_model = s.model()
+			model = { m.name(): z3_model.eval(m) for m in z3_model }
+		else:
+			satness = "unsat"
+			model = None
+
+		return Result(satness, model)
+
+	def eval(self, s, expr, n, extra_constraints=None):
+		expr_z3 = expr.eval(backends=[self])
+
+		results = [ ]
+		if extra_constraints is not None or n != 1:
+			s.push()
+		if extra_constraints is not None:
+			s.add(*[e.eval(backends=[self]) for e in extra_constraints])
+
+		for i in range(n):
+			if s.check() == z3.sat:
+				v = s.model().eval(expr_z3)
+				results.append(E([self], symbolic=False, variables=set(), obj=v))
+			else:
+				break
+
+			if i + 1 != n:
+				s.add(expr_z3 != v)
+
+		if extra_constraints is not None or n != 1:
+			s.pop()
+
+		if len(results) == 0:
+			raise UnsatError("constraints are unsat")
+
+		return results
+
+	def min(self, s, expr, extra_constraints=None):
+		expr_z3 = expr.eval(backends=[self])
+
+		lo = 0
+		hi = 2**expr_z3.size()-1
+
+		numpop = 0
+		if extra_constraints is not None:
+			s.push()
+			numpop += 1
+			s.add(*[e.eval(backends=[self]) for e in extra_constraints])
+
+		while hi-lo > 1:
+			middle = (lo + hi)/2
+			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
+
+			s.push()
+			s.add(self.call('UGE', (expr_z3, lo)), self.call('ULT', (expr_z3, middle)))
+			numpop += 1
+
+			if s.check() == z3.sat:
+				 hi = middle - 1
+			else:
+				 lo = middle
+				 s.constraints.pop()
+				 numpop -= 1
+
+			for _ in range(numpop):
+				s.constraints.pop()
+
+		if hi == lo: return lo
+		else:
+			s.push()
+			s.add(expr_z3 == lo)
+			if s.check() == z3.sat:
+				s.pop()
+				return lo
+			else:
+				s.pop()
+		return hi
+
+	def max(self, s, expr, extra_constraints=None):
+		expr_z3 = expr.eval(backends=[self])
+
+		lo = 0
+		hi = 2**expr_z3.size()-1
+
+		numpop = 0
+		if extra_constraints is not None:
+			s.push()
+			numpop += 1
+			s.add(*[e.eval(backends=[self]) for e in extra_constraints])
+
+		while hi-lo > 1:
+			middle = (lo + hi)/2
+			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
+
+			s.push()
+			s.add(self.call('UGT', (expr_z3, middle)), self.call('ULE', (expr_z3, hi)))
+			numpop += 1
+
+			if s.check() == z3.sat:
+				 lo = middle - 1
+			else:
+				 hi = middle
+				 s.constraints.pop()
+				 numpop -= 1
+
+			for _ in range(numpop):
+				s.constraints.pop()
+
+		if hi == lo: return lo
+		else:
+			s.push()
+			s.add(expr_z3 == hi)
+			if s.check() == z3.sat:
+				s.pop()
+				return hi
+			else:
+				s.pop()
+		return lo
+
 #
 # this is for the actual->abstract conversion above
 #
@@ -127,3 +253,4 @@ function_map['if'] = 'z3.If'
 function_map['bvlshr'] = 'z3.LShR'
 
 from ..expression import E, A
+from ..result import Result, UnsatError
