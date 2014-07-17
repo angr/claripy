@@ -39,7 +39,7 @@ class BackendConcrete(Backend):
 
         return processed
 
-    def abstract(self, e):
+    def abstract(self, e, split_on=None):
         if type(e._obj) in (bv.BVV, int, long, str, float):
             return e._obj
 

@@ -159,13 +159,23 @@ def test_solver():
     bz = claripy.backends.BackendZ3()
     ba = claripy.backends.BackendAbstract()
 
-    s = claripy.solvers.StandaloneSolver(None, bz, bc)
+    s = claripy.solvers.CoreSolver(None, bz, bc)
     x = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    y = claripy.E([bc, ba], ast=claripy.A(op='BitVec', args=('y', 32)), variables={'y'}, symbolic=True)
+
     l.debug("adding constraints")
     s.add(x == 10)
     l.debug("checking")
     nose.tools.assert_equal(s.check(), claripy.sat)
     nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
+
+    s.add(y == 15)
+    shards = s.split()
+    nose.tools.assert_equal(len(shards), 2)
+    nose.tools.assert_equal(len(shards[0].variables), 1)
+    nose.tools.assert_equal(len(shards[1].variables), 1)
+    nose.tools.assert_equal(len(shards[0].constraints), 1)
+    nose.tools.assert_equal(len(shards[1].constraints), 1)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

@@ -143,6 +143,18 @@ class E(object):
 
         raise Exception("abstraction failed with available backends")
 
+    def split(self, split_on, backends=None):
+        self.abstract(backends=backends)
+        if self._ast._op in split_on:
+            l.debug("Trying to split: %r", self._ast)
+            if all(isinstance(a, E) for a in self._ast._args):
+                return self._ast._args[:]
+            else:
+                raise Exception('wtf')
+        else:
+            l.debug("no split for you")
+            return [ self ]
+
     #
     # Storing and loading of expressions
     #

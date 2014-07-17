@@ -38,13 +38,13 @@ class BackendZ3(Backend):
 
 		return processed
 
-	def abstract(self, e):
+	def abstract(self, e, split_on=None):
 		if e._obj.__module__ != 'z3':
 			l.debug("unable to abstract non-Z3 object")
 			raise BackendError("unable to abstract non-Z3 object")
 
 		z = e._obj
-		s, v, a = self.abstract_z3(z, self._split_on, e._backends)
+		s, v, a = self.abstract_z3(z, self._split_on if split_on is None else split_on, e._backends)
 		return E(e._backends, symbolic=s, variables=v, ast=a)
 
 	def abstract_z3(self, z, split_on, backends):
@@ -229,6 +229,33 @@ class BackendZ3(Backend):
 			else:
 				s.pop()
 		return lo
+
+	def simplify(self, expr):
+		expr_raw = expr.eval(backends=[self])
+		symbolic = expr.symbolic
+		variables = expr.variables
+
+		if isinstance(expr_raw, z3.BoolRef):
+			tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
+			s = tactics(expr_raw).as_expr()
+
+			if s == 'true':
+				s = True
+				symbolic = False
+				variables = set()
+			elif s == 'false':
+				s = False
+				symbolic = False
+				variables = set()
+		elif isinstance(expr_raw, z3.BitVecRef):
+			s = z3.simplify(expr_raw)
+			symbolic = not isinstance(expr, z3.BitVecNumRef)
+			if not symbolic:
+				variables = set()
+		else:
+			s = expr_raw
+
+		return E(backends=[expr._backends], symbolic=symbolic, variables=variables, obj=s)
 
 #
 # this is for the actual->abstract conversion above

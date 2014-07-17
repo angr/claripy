@@ -8,9 +8,8 @@ class Solver(object):
         self._claripy = claripy
         self._finalized = None
         self._results = None
-        self._constraints = None
         self._variables = None
-        self._id = None
+        self._simplified = True
 
     #
     # Constraints
@@ -48,6 +47,9 @@ class Solver(object):
     def finalize(self):
         raise NotImplementedError()
 
+    def simplify(self):
+        raise NotImplementedError()
+
     def branch(self):
         raise NotImplementedError()
 
@@ -55,11 +57,9 @@ class Solver(object):
         raise NotImplementedError()
 
     def combine(self, others):
-        combined = self._claripy.solver(self._claripy)
-        combined.add(self._constraints)
-        for o in others:
-            combined.add(*o.constraints)
-        return combined
+        raise NotImplementedError()
 
     def split(self):
         raise NotImplementedError()
+
+from ..result import sat

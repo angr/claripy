@@ -18,19 +18,20 @@ from .solver import Solver
 import itertools
 symbolic_count = itertools.count()
 
-class StandaloneSolver(Solver):
+class CoreSolver(Solver):
 	def __init__(self, claripy, solver_backend, results_backend, timeout=None):
 		Solver.__init__(self, claripy)
 
-		self._result = None
 		self._timeout = timeout if timeout is not None else 300000
-		self.constraints = [ ]
-		self.variables = set()
-
 		self._solver_backend = solver_backend
 		self._results_backend = results_backend
+
 		self._solver = None
 		self._create_solver()
+
+		self._result = None
+		self.constraints = [ ]
+		self.variables = set()
 
 	#
 	# Util stuff
@@ -56,6 +57,8 @@ class StandaloneSolver(Solver):
 			e_raw = e.eval(backends=[self._solver_backend])
 			l.debug("adding %r", e_raw)
 			self._solver.add(e_raw)
+
+		self._simplified = False
 
 	#
 	# Solving
@@ -94,26 +97,12 @@ class StandaloneSolver(Solver):
 	# Merging/splitting
 	#
 
-	def independent_constraints(self):
-		'''
-		Returns independent constraints, split from this Solver's constraints.
-		'''
+	def simplify(self):
+		if self._simplified:
+			return
 
-		l.debug("Splitting solver.")
-		sets_list = [ ]
-		for i in self._constraints:
-			sets_list.extend(i.split('And', independent=True))
-
-		set_sets = { }
-		for s in sets_list:
-			c = [ ]
-			for v in s.variables:
-				if v in set_sets:
-					c.extend(set_sets[v])
-			for v in s.variables:
-				set_sets[v] = c
-
-		return set_sets
+		self.constraints = [ self._solver_backend.simplify(self._solver_backend.call('And', self.constraints)) ]
+		self._simplified = True
 
 	def merge(self, others, merge_flag, merge_values):
 		merged = self._solver_backend.solver()
@@ -132,4 +121,50 @@ class StandaloneSolver(Solver):
 			combined.add(*o.constraints)
 		return combined
 
-from ..expression import E
+	def _independent_constraints(self):
+		'''
+		Returns independent constraints, split from this Solver's constraints.
+		'''
+
+		sets_list = [ ]
+		for i in self.constraints:
+			sets_list.extend(i.split(['And']))
+
+		l.debug("... sets_list: %r", sets_list)
+
+		set_sets = { }
+		for s in sets_list:
+			l.debug("... processing %r with variables %r", s, s.variables)
+			c = [ s ]
+			for v in s.variables:
+				if v in set_sets:
+					c.extend(set_sets[v])
+			for v in s.variables:
+				set_sets[v] = c
+
+		l.debug("... set_sets: %r", set_sets)
+
+		results = [ ]
+		for c_list in set_sets.values():
+			variables = set()
+			for c in c_list:
+				variables |= c.variables
+			results.append((variables, c_list))
+
+		return results
+
+	def split(self):
+		results = [ ]
+		l.debug("Splitting!")
+		for variables,c_list in self._independent_constraints():
+			l.debug("... got %d constraints with variables %r", len(c_list), variables)
+
+			s = self.__class__(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout)
+			s.add(*c_list)
+			results.append(s)
+		return results
+
+	def branch(self):
+		raise Exception("CoreSolver can't branch, yo!")
+	def finalize(self):
+		raise Exception("CoreSolver can't finalize, yo!")

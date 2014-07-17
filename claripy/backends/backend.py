@@ -86,7 +86,7 @@ class Backend(object):
 		l.debug("Returning expression %s", r)
 		return r
 
-	def abstract(self, e): #pylint:disable=W0613,R0201
+	def abstract(self, e, split_on=None): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't implement abstract()")
 
 	#
