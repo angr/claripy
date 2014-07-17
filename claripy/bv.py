@@ -206,7 +206,7 @@ class BVV(object):
         return self.bits
 
     def __repr__(self):
-        return 'BV(%d, %d)' % (self.value, self.bits)
+        return 'BVV(%d, %d)' % (self.value, self.bits)
 
 #
 # External stuff
