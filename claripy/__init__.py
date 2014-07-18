@@ -9,6 +9,16 @@ from .expression import E, A
 from . import bv
 from . import datalayer
 from .result import sat, unsat, Result
+from .claripy_standalone import ClaripyStandalone
+from .datalayer import DataLayer
+
+claripy = None
+def set_claripy(c):
+    global claripy
+    claripy = c
+
+def init_standalone():
+    set_claripy(ClaripyStandalone())
 
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap

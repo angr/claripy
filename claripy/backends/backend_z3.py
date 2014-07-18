@@ -19,16 +19,16 @@ from .. import bv
 class BackendZ3(Backend):
 	_split_on = { 'And', 'Or' }
 
-	def __init__(self):
-		Backend.__init__(self)
+	def __init__(self, claripy):
+		Backend.__init__(self, claripy)
 		self._make_raw_ops(ops, op_module=z3)
 		self._op_expr['BitVec'] = self.BitVec
 
 	def BitVec(self, name, size, model=None):
 		if model and name in model:
-			return E([self], obj=model[name], variables=set(), symbolic=False)
+			return E(self._claripy, obj=model[name], variables=set(), symbolic=False)
 		else:
-			return E([self], obj=z3.BitVec(name, size), variables={'x'}, symbolic=True)
+			return E(self._claripy, obj=z3.BitVec(name, size), variables={'x'}, symbolic=True)
 
 	def process_arg(self, a, model=None): #pylint:disable=W0613
 		if isinstance(a, E):
@@ -52,13 +52,13 @@ class BackendZ3(Backend):
 			raise BackendError("unable to abstract non-Z3 object")
 
 		z = e._obj
-		s, v, a = self.abstract_z3(z, self._split_on if split_on is None else split_on, e._backends)
-		return E(e._backends, symbolic=s, variables=v, ast=a)
+		s, v, a = self.abstract_z3(z, self._split_on if split_on is None else split_on)
+		return E(self._claripy, symbolic=s, variables=v, ast=a)
 
-	def abstract_z3(self, z, split_on, backends):
+	def abstract_z3(self, z, split_on):
 		name = z.decl().name()
 		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
-		children = [ self.abstract_z3(c, new_split_on, backends) for c in z.children() ]
+		children = [ self.abstract_z3(c, new_split_on) for c in z.children() ]
 
 		symbolic = False
 		variables = set()
@@ -84,7 +84,7 @@ class BackendZ3(Backend):
 			raw_args = [ ]
 			for s, v, a in children:
 				if function_map[name] in split_on:
-					raw_args.append(E(backends=[self], ast=a, variables=v, symbolic=s))
+					raw_args.append(E(self._claripy, ast=a, variables=v, symbolic=s))
 				else:
 					raw_args.append(a)
 				symbolic |= s
@@ -141,7 +141,7 @@ class BackendZ3(Backend):
 		for i in range(n):
 			if s.check() == z3.sat:
 				v = s.model().eval(expr_z3)
-				results.append(E([self], symbolic=False, variables=set(), obj=v))
+				results.append(E(self._claripy, symbolic=False, variables=set(), obj=v))
 			else:
 				break
 
@@ -263,7 +263,7 @@ class BackendZ3(Backend):
 		else:
 			s = expr_raw
 
-		return E(backends=[expr._backends], symbolic=symbolic, variables=variables, obj=s)
+		return E(self._claripy, symbolic=symbolic, variables=variables, obj=s)
 
 #
 # this is for the actual->abstract conversion above

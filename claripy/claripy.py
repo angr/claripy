@@ -1,6 +1,8 @@
 class Claripy(object):
-    def __init__(self, backends):
-        self._backends = backends
+    def __init__(self, expression_backends, solver_backend, results_backend):
+        self.expression_backends = expression_backends
+        self.solver_backend = solver_backend
+        self.results_backend = results_backend
 
     #
     # Solvers
@@ -15,7 +17,7 @@ class Claripy(object):
     # Operations
     #
     def _do_op(self, name, args):
-        for b in self._backends:
+        for b in self.expression_backends:
             try:
                 return b.call(name, args)
             except BackendError:

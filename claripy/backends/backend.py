@@ -10,7 +10,8 @@ class BackendError(Exception):
 	pass
 
 class Backend(object):
-	def __init__(self):
+	def __init__(self, claripy):
+		self._claripy = claripy
 		self._op_raw = { }
 		self._op_expr = { }
 
@@ -62,7 +63,7 @@ class Backend(object):
 				l.debug("%s neither %s nor %s apply on %s", self, name, opposites[name], op_args)
 				raise BackendError("unable to apply operation on provided args")
 
-		r = E([self], variables=variables, symbolic=symbolic, obj=obj)
+		r = E(self._claripy, variables=variables, symbolic=symbolic, obj=obj)
 		l.debug("Returning expression %s", r)
 		return r
 

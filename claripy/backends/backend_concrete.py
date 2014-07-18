@@ -5,8 +5,8 @@ from .backend import Backend, ops, BackendError
 from .. import bv
 
 class BackendConcrete(Backend):
-    def __init__(self):
-        Backend.__init__(self)
+    def __init__(self, claripy):
+        Backend.__init__(self, claripy)
         self._make_raw_ops(set(ops) - { 'BitVec' }, op_module=bv)
         self._op_expr['BitVec'] = self.BitVec
 

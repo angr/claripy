@@ -44,19 +44,19 @@ class E(object):
     A base class to wrap Z3 objects.
     '''
 
-    def __init__(self, backends, variables=None, symbolic=None, uuid=None, obj=None, ast=None, stored=False):
+    def __init__(self, claripy, variables=None, symbolic=None, uuid=None, obj=None, ast=None, stored=False):
         have_uuid = uuid is not None
         have_data = not (variables is None or symbolic is None or (obj is None and ast is None))
+        self._claripy = claripy
 
         if have_uuid and not have_data:
-            e = datalayer.dl.load_expression(uuid)
+            e = claripy.dl.load_expression(uuid)
             self.variables = e.variables
             self.symbolic = e.symbolic
 
             self._uuid = e._uuid
             self._obj = e._obj
             self._ast = e._ast
-            self._backends = e._backends
             self._stored = e._stored
         elif have_data:
             self.variables = variables
@@ -65,8 +65,6 @@ class E(object):
             self._uuid = uuid
             self._obj = obj
             self._ast = ast
-            self._ast = ast
-            self._backends = backends
             self._stored = stored
         else:
             raise ValueError("invalid arguments passed to E()")
@@ -92,7 +90,7 @@ class E(object):
             return name + "(uuid=%s)" % self._uuid
 
     def _do_op(self, op_name, args):
-        for b in self._backends:
+        for b in self._claripy.expression_backends:
             try:
                 return b.call(op_name, (self,)+args)
             except BackendError:
@@ -105,7 +103,7 @@ class E(object):
             l.debug("eval() called with an existing obj %r", self._obj)
             ret = self._obj
         elif isinstance(self._ast, A):
-            r = self._ast.eval(backends if backends is not None else self._backends, save=save, model=model)
+            r = self._ast.eval(backends if backends is not None else self._claripy.expression_backends, save=save, model=model)
             if save or backends is None:
                 if isinstance(r, E):
                     self._obj = r._obj
@@ -134,7 +132,7 @@ class E(object):
             l.debug("abstract() called with an existing ast")
             return
 
-        for b in backends if backends is not None else self._backends:
+        for b in backends if backends is not None else self._claripy.expression_backends:
             l.debug("trying abstraction with %s", b)
             try:
                 r = b.abstract(self)
@@ -170,7 +168,7 @@ class E(object):
     #
 
     def store(self):
-        datalayer.dl.store_expression(self)
+        self._claripy.dl.store_expression(self)
 
     def __getstate__(self):
         if self._uuid is not None:
@@ -263,4 +261,3 @@ def make_methods(cls):
 make_methods(E)
 
 from .backends.backend import BackendError
-from . import datalayer

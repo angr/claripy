@@ -6,16 +6,6 @@ import uuid as uuid_module
 import logging
 l = logging.getLogger("claripy.datalayer")
 
-# This is the global datalayer.
-dl = None
-
-def init(*args, **kwargs):
-    '''
-    Initializes the global DataLayer.
-    '''
-    global dl
-    dl = DataLayer(*args, **kwargs)
-
 class DataLayer:
     '''
     The DataLayer handles storing and retrieving UUID-identified objects
