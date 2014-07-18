@@ -22,21 +22,29 @@ class BackendZ3(Backend):
 	def __init__(self):
 		Backend.__init__(self)
 		self._make_raw_ops(ops, op_module=z3)
+		self._op_expr['BitVec'] = self.BitVec
 
-	def process_args(self, args, exprs, model=None): #pylint:disable=W0613
-		processed = [ ]
-		for a in args:
-			if type(a) is bv.BVV:
-				processed.append(z3.BitVecVal(a.value, a.bits))
-			elif type(a) in (int, long, float, str):
-				processed.append(a)
-			elif hasattr(a, '__module__') and a.__module__ == 'z3':
-				processed.append(a)
-			else:
-				l.debug("BackendZ3 encountered unexpected type %s", type(a))
-				raise BackendError("unexpected type %s encountered in BackendZ3", type(a))
+	def BitVec(self, name, size, model=None):
+		if model and name in model:
+			return E([self], obj=model[name], variables=set(), symbolic=False)
+		else:
+			return E([self], obj=z3.BitVec(name, size), variables={'x'}, symbolic=True)
 
-		return processed
+	def process_arg(self, a, model=None): #pylint:disable=W0613
+		if isinstance(a, E):
+			obj = a.eval(backends=[self])
+		else:
+			obj = a
+
+		if type(obj) is bv.BVV:
+			return z3.BitVecVal(obj.value, obj.bits)
+		elif type(obj) in (int, long, float, str):
+			return obj
+		elif hasattr(obj, '__module__') and obj.__module__ == 'z3':
+			return obj
+		else:
+			l.debug("BackendZ3 encountered unexpected type %s", type(obj))
+			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
 
 	def abstract(self, e, split_on=None):
 		if e._obj.__module__ != 'z3':
@@ -239,11 +247,11 @@ class BackendZ3(Backend):
 			tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
 			s = tactics(expr_raw).as_expr()
 
-			if s == 'true':
+			if s.sexpr() == 'true':
 				s = True
 				symbolic = False
 				variables = set()
-			elif s == 'false':
+			elif s.sexpr() == 'false':
 				s = False
 				symbolic = False
 				variables = set()

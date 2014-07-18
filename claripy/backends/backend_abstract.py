@@ -1,3 +1,5 @@
+import operator
+
 from .backend import Backend
 from .backend import ops as func_ops
 from ..expression import operations as attr_ops
@@ -11,7 +13,8 @@ class BackendAbstract(Backend):
                     backends = a._backends
                     break
 
-            variables, symbolic, _ = self.combined_info(args)
+            variables = reduce(operator.or_, (a.variables for a in args if isinstance(a, E)), set())
+            symbolic = any((a.symbolic for a in args if isinstance(a, E)))
             return E(backends, variables=variables, symbolic=symbolic, ast=A(name, args))
         op.__name__ = name
         return op

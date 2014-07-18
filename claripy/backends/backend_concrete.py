@@ -8,7 +8,7 @@ class BackendConcrete(Backend):
     def __init__(self):
         Backend.__init__(self)
         self._make_raw_ops(set(ops) - { 'BitVec' }, op_module=bv)
-        self._op_raw['BitVec'] = self.BitVec
+        self._op_expr['BitVec'] = self.BitVec
 
     def BitVec(self, name, size, model=None): #pylint:disable=W0613,R0201
         if model is None:
@@ -17,27 +17,28 @@ class BackendConcrete(Backend):
         else:
             return model[name]
 
-    def process_args(self, args, exprs, model=None):
-        processed = [ ]
-        for a,e in zip(args, exprs):
-            if isinstance(e, E) and e.symbolic:
+    def process_arg(self, e, model=None):
+        if isinstance(e, E):
+            if e.symbolic:
                 l.debug("BackendConcrete.process_args() aborting on symbolic expression")
                 raise BackendError("BackendConcrete.process_args() aborting on symbolic expression")
 
-            if type(a) is None:
-                l.debug("BackendConcrete doesn't handle abstract stuff")
-                raise BackendError("BackendConcrete doesn't handle abstract stuff")
+            a = e.eval()
+        else:
+            a = e
 
-            if hasattr(a, '__module__') and a.__module__ == 'z3':
-                if hasattr(a, 'as_long'):
-                    processed.append(bv.BVV(a.as_long(), a.size()))
-                else:
-                    l.warning("TODO: support more complex non-symbolic expressions, maybe?")
-                    raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+        if type(a) is None:
+            l.debug("BackendConcrete doesn't handle abstract stuff")
+            raise BackendError("BackendConcrete doesn't handle abstract stuff")
+
+        if hasattr(a, '__module__') and a.__module__ == 'z3':
+            if hasattr(a, 'as_long'):
+                return bv.BVV(a.as_long(), a.size())
             else:
-                processed.append(a)
-
-        return processed
+                l.warning("TODO: support more complex non-symbolic expressions, maybe?")
+                raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+        else:
+            return a
 
     def abstract(self, e, split_on=None):
         if type(e._obj) in (bv.BVV, int, long, str, float):

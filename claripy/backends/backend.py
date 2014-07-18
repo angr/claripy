@@ -1,3 +1,5 @@
+import operator
+
 import logging
 l = logging.getLogger('claripy.backends.backend')
 l.setLevel(logging.DEBUG)
@@ -14,38 +16,13 @@ class Backend(object):
 
 	def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
 		for o in op_list:
-			op_func = op_dict[o] if op_dict is not None else getattr(op_module, o)
-			self._op_raw[o] = self._make_raw_op(o, op_func)
+			self._op_raw[o] = op_dict[o] if op_dict is not None else getattr(op_module, o)
 
-	def _make_raw_op(self, op_name, op_func):
-		def op(*args, **kwargs): #pylint:disable=W0613
-			if hasattr(self, 'normalize_args'):
-				normalized_args = getattr(self, 'normalize_args')(op_name, args)
-			else:
-				normalized_args = args
+	def process_arg(self, a, model=None): #pylint:disable=R0201
+		return a.eval(backends=[self], model=model) if isinstance(a, E) else a
 
-			return op_func(*normalized_args)
-		return op
-
-	def combined_info(self, args, model=None):
-		op_args = [ ]
-		variables = set()
-		symbolic = False
-		#abstract = False
-
-		for a in args:
-			if isinstance(a, E):
-				variables |= a.variables
-				symbolic |= a.symbolic
-				op_args.append(a._obj)
-			else:
-				op_args.append(a)
-
-		processed_args = self.process_args(op_args, args, model=model)
-		return variables, symbolic, processed_args
-
-	def process_args(self, args, exprs, model=None): #pylint:disable=R0201,W0613
-		return args
+	def process_args(self, args, model=None):
+		return [ self.process_arg(a, model=model) for a in args ]
 
 	def call(self, name, args, model=None):
 		'''
@@ -54,15 +31,18 @@ class Backend(object):
 		@returns an Expression with the result.
 		'''
 
-		l.debug("call(name=%s, args=%s)", name, args)
+		l.debug("%s.call(name=%s, args=%s)", self.__class__.__name__, name, args)
 
 		if name in self._op_expr:
 			return self._op_expr[name](*args, model=model)
 
-		variables, symbolic, op_args = self.combined_info(args, model=model)
+		variables = reduce(operator.or_, (a.variables for a in args if isinstance(a, E)), set())
+		symbolic = any((a.symbolic for a in args if isinstance(a, E)))
+		op_args = self.process_args(args)
 
 		if name in self._op_raw:
-			obj = self._op_raw[name](*op_args, model=model)
+			# the raw ops don't get the model, cause, for example, Z3 stuff can't take it
+			obj = self._op_raw[name](*op_args)
 		elif not name.startswith("__"):
 			l.debug("backend has no operation %s", name)
 			raise BackendError("backend has no operation %s" % name)

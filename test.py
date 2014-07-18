@@ -14,6 +14,9 @@ def test_actualization():
     bc = claripy.backends.BackendConcrete()
     a = claripy.E([ba], obj=5, variables=set(), symbolic=False)
     b = a+a
+    nose.tools.assert_is(b._obj, None)
+    nose.tools.assert_is(type(b._ast), claripy.A)
+
     b.eval(backends=[bc], save=True)
     nose.tools.assert_equal(b._obj, 10)
 
@@ -67,15 +70,16 @@ def test_mixed_z3():
 
     a = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
     b = claripy.E([bc, bz, ba], ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    nose.tools.assert_true(b.symbolic)
     c = a+b
     nose.tools.assert_true(b.symbolic)
+    nose.tools.assert_true(c.symbolic)
 
     a.eval()
     b.eval()
 
     nose.tools.assert_is(type(a._obj), claripy.bv.BVV)
     nose.tools.assert_equal(b._obj.__module__, 'z3')
-    nose.tools.assert_is(c._obj, None)
 
     d = a + b
     nose.tools.assert_equal(d._obj.__module__, 'z3')
@@ -176,6 +180,13 @@ def test_solver():
     nose.tools.assert_equal(len(shards[1].variables), 1)
     nose.tools.assert_equal(len(shards[0].constraints), 1)
     nose.tools.assert_equal(len(shards[1].constraints), 1)
+
+    s = claripy.solvers.CoreSolver(None, bz, bc)
+    s.add(x > 10)
+    s.add(x > 20)
+    s.simplify()
+    nose.tools.assert_equal(len(s.constraints), 1)
+    nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(x <= 20)")
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

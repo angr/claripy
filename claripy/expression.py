@@ -65,6 +65,7 @@ class E(object):
             self._uuid = uuid
             self._obj = obj
             self._ast = ast
+            self._ast = ast
             self._backends = backends
             self._stored = stored
         else:
@@ -79,12 +80,16 @@ class E(object):
         return self._obj is not None
 
     def __repr__(self):
+        name = "E"
+        if self.symbolic:
+            name += "S"
+
         if self._obj is not None:
-            return "E(%s)" % self._obj
+            return name + "(%s)" % self._obj
         elif self._ast is not None:
-            return "E(%s)" % self._ast
+            return name + "(%s)" % self._ast
         elif self._uuid is not None:
-            return "E(uuid=%s)" % self._uuid
+            return name + "(uuid=%s)" % self._uuid
 
     def _do_op(self, op_name, args):
         for b in self._backends:
@@ -97,10 +102,9 @@ class E(object):
 
     def eval(self, backends=None, save=False, model=None):
         if self._obj is not None:
-            l.debug("eval() called with an existing obj")
-            return self._obj
-
-        if isinstance(self._ast, A):
+            l.debug("eval() called with an existing obj %r", self._obj)
+            ret = self._obj
+        elif isinstance(self._ast, A):
             r = self._ast.eval(backends if backends is not None else self._backends, save=save, model=model)
             if save or backends is None:
                 if isinstance(r, E):
@@ -109,15 +113,21 @@ class E(object):
                     self.symbolic = r.symbolic
                 else:
                     self._obj = r
-                return self._obj
+                ret = r
             else:
-                return r._obj
+                ret = r._obj if isinstance(r, E) else r
         else:
+            if self._ast is None:
+                raise Exception("AST is None in abstract E!")
+
             r = self._ast
             if save or backends is None:
                 self._obj = r
-                return self._obj
-            return r
+            ret = r
+
+        #if ret is None:
+        #   raise Exception("got NULL ret in eval()")
+        return ret
 
     def abstract(self, backends=None):
         if self._ast is not None:
