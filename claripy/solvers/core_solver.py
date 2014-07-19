@@ -93,16 +93,16 @@ class CoreSolver(Solver):
 		self._simplified = True
 
 	def merge(self, others, merge_flag, merge_values):
-		merged = self._solver_backend.solver()
+		merged = CoreSolver(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
 		options = [ ]
 
 		for s, v in zip([self]+others, merge_values):
 			options.append(self._solver_backend.call('And', [[ merge_flag == v ] + s.constraints]))
-		merged.add_constraints(*options)
+		merged.add(*options)
 		return merged
 
 	def combine(self, others):
-		combined = self._solver_backend.solver()
+		combined = CoreSolver(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
 
 		combined.add(*self.constraints)
 		for o in others:

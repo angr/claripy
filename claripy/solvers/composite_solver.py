@@ -6,12 +6,14 @@ symbolic_count = itertools.count()
 from copy import copy
 
 from .solver import Solver
+from .core_solver import CoreSolver
 
 class CompositeSolver(Solver):
-	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None):
+	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver_class=CoreSolver):
 		Solver.__init__(self, claripy, solver_backend=solver_backend, results_backend=results_backend, timeout=timeout)
 		self._results = None
 		self._solvers = { }
+		self._solver_class = solver_class
 
 	@property
 	def _solver_list(self):
@@ -58,11 +60,11 @@ class CompositeSolver(Solver):
 
 		return [ solvers_by_id[s] for s in common_solvers ]
 
-	def _all_varsets(self):
-		return { s.variables for s in self._solvers }
+	def _variable_sets(self):
+		return { s.variables for s in self._solver_list }
 
 	def _shared_varsets(self, others):
-		common_varsets = self.all_varsets()
+		common_varsets = self._variable_sets()
 		for o in others: common_varsets &= o.all_varsets()
 		return common_varsets
 
@@ -134,13 +136,42 @@ class CompositeSolver(Solver):
 		return c
 
 	def merge(self, others, merge_flag, merge_values):
-		raise NotImplementedError()
+		l.debug("Merging %s with %d other solvers.", self, len(others))
+		merged = CompositeSolver(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+		common_solvers = self._shared_solvers(others)
+		common_ids = { s._id for s in common_solvers }
+		l.debug("... %s common solvers", len(common_solvers))
+
+		merged.variables = copy(self.variables)
+
+		for s in common_solvers:
+			for v in s.variables:
+				merged._solvers[v] = s.branch()
+
+		noncommon_solvers = [ [ s for s in cs._solvers if s._id not in common_ids ] for cs in [self]+others ]
+
+		l.debug("... merging noncommon solvers")
+		combined_noncommons = [ ]
+		for ns in noncommon_solvers:
+			l.debug("... %d", len(ns))
+			if len(ns) == 0:
+				s = CoreSolver(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+				s.add(True)
+				combined_noncommons.append(s)
+			elif len(ns) == 1:
+				combined_noncommons.append(ns[0])
+			else:
+				combined_noncommons.append(ns[0].combine(ns[1:]))
+
+		merged_noncommon = combined_noncommons[0].merge(combined_noncommons[1:], merge_flag, merge_values)
+		for v in merged_noncommon.variables:
+			merged.variables_to_solvers[v] = merged_noncommon
+
+		return merged
 
 	def combine(self, others):
 		raise NotImplementedError()
 
-	def split(self):
-		raise NotImplementedError()
 
 
 
@@ -224,50 +255,6 @@ class OldCompositeSolver():
 	#
 	# Branching and merging stuff
 	#
-
-	def merge(self, others, merge_flag, merge_values):
-		l.debug("Merging %s with %d other solvers.", self, len(others))
-		merged = CompositeSolver()
-		common_solvers = self.shared_solvers(others)
-		common_ids = { s._id for s in common_solvers }
-		l.debug("... %s common solvers", len(common_solvers))
-
-		merged.variables = copy(self.variables)
-
-		for s in common_solvers:
-			for v in s.variables:
-				merged.variables_to_solvers[v] = s
-
-		# NOTE: the code below makes the sets non-independent, but it'd be nice...
-		#common_varsets = self.shared_varsets(others) - { s.variables for s in common_solvers }
-		#for vs in common_varsets:
-		#	v = vs.__iter__().next()
-		#	my_solver = [ self.variables_to_solvers[v] ]
-		#	their_solvers = [ o.variables_to_solvers[v] for o in others ]
-		#	merged_solver = my_solver.merge(their_solvers, merge_flag, merge_values)
-		#	for v in vs:
-		#		merged.variables_to_solvers[v] = merged_solver
-
-		noncommon_solvers = [ [ s for s in cs._solvers if s._id not in common_ids ] for cs in [self]+others ]
-
-		l.debug("... merging noncommon solvers")
-		combined_noncommons = [ ]
-		for ns in noncommon_solvers:
-			l.debug("... %d", len(ns))
-			if len(ns) == 0:
-				s = Solver()
-				s.add(True)
-				combined_noncommons.append(s)
-			elif len(ns) == 1:
-				combined_noncommons.append(ns[0])
-			else:
-				combined_noncommons.append(ns[0].combine(ns[1:]))
-
-		merged_noncommon = combined_noncommons[0].merge(combined_noncommons[1:], merge_flag, merge_values)
-		for v in merged_noncommon.variables:
-			merged.variables_to_solvers[v] = merged_noncommon
-
-		return merged
 
 
 from ..result import Result, sat, unsat
