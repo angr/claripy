@@ -6,10 +6,10 @@ symbolic_count = itertools.count()
 from copy import copy
 
 from .solver import Solver
-from .core_solver import CoreSolver
+from .branching_solver import BranchingSolver
 
 class CompositeSolver(Solver):
-	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver_class=CoreSolver):
+	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver_class=BranchingSolver):
 		Solver.__init__(self, claripy, solver_backend=solver_backend, results_backend=results_backend, timeout=timeout)
 		self._results = None
 		self._solvers = { }
@@ -130,7 +130,7 @@ class CompositeSolver(Solver):
 
 			# invalidate the solution cache and update solvers, and don't forget the concrete one!
 			for n in new_solver.variables | (names & {"CONCRETE"}):
-				self._variables[n] = new_solver
+				self._solvers[n] = new_solver
 		l.debug("Solvers after: %d", len(self._solvers))
 
 	#

@@ -1,3 +1,6 @@
+import logging
+l = logging.getLogger('claripy.solvers.branching_solver')
+
 from .core_solver import CoreSolver
 
 class BranchingSolver(CoreSolver):
@@ -7,9 +10,11 @@ class BranchingSolver(CoreSolver):
 
     def add(self, *constraints):
         if self._finalized:
+            l.debug("%r is finalized...", self)
             self._solver = self._create_solver()
             self._finalized = False
-            CoreSolver.add(self, *self.constraints)
+            self._solver.add(*[e.eval(backends=[self._solver_backend]) for e in self.constraints])
+            l.debug("... de-finalized with %d constriants", len(self.constraints))
 
         CoreSolver.add(self, *constraints)
 

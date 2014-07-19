@@ -19,6 +19,12 @@ class Backend(object):
 		for o in op_list:
 			self._op_raw[o] = op_dict[o] if op_dict is not None else getattr(op_module, o)
 
+	def convert(self, r, model=None): #pylint:disable=W0613,R0201
+		'''
+		Converts r to something usable by this backend.
+		'''
+		return r
+
 	def process_arg(self, a, model=None): #pylint:disable=R0201
 		return a.eval(backends=[self], model=model) if isinstance(a, E) else a
 

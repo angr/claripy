@@ -30,12 +30,7 @@ class BackendZ3(Backend):
 		else:
 			return E(self._claripy, obj=z3.BitVec(name, size), variables={'x'}, symbolic=True)
 
-	def process_arg(self, a, model=None): #pylint:disable=W0613
-		if isinstance(a, E):
-			obj = a.eval(backends=[self])
-		else:
-			obj = a
-
+	def convert(self, obj, model=None):
 		if type(obj) is bv.BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
 		elif type(obj) in (int, long, float, str):
@@ -45,6 +40,12 @@ class BackendZ3(Backend):
 		else:
 			l.debug("BackendZ3 encountered unexpected type %s", type(obj))
 			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
+
+
+	def process_arg(self, a, model=None): #pylint:disable=W0613
+		if isinstance(a, E): obj = a.eval(backends=[self])
+		else: obj = a
+		return self.convert(obj, model=model)
 
 	def abstract(self, e, split_on=None):
 		if e._obj.__module__ != 'z3':

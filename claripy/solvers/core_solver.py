@@ -64,7 +64,7 @@ class CoreSolver(Solver):
 
 	def check(self):
 		if self._result is not None:
-			return self._result
+			return self._result.sat
 
 		# check it!
 		l.debug("Checking SATness of %d constraints", len(self.constraints))
@@ -95,16 +95,16 @@ class CoreSolver(Solver):
 		self._simplified = True
 
 	def merge(self, others, merge_flag, merge_values):
-		merged = CoreSolver(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+		merged = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
 		options = [ ]
 
 		for s, v in zip([self]+others, merge_values):
-			options.append(self._solver_backend.call('And', [[ merge_flag == v ] + s.constraints]))
-		merged.add(*options)
+			options.append(self._solver_backend.call('And', [ merge_flag == v ] + s.constraints))
+		merged.add(self._solver_backend.call('Or', options))
 		return merged
 
 	def combine(self, others):
-		combined = CoreSolver(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+		combined = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
 
 		combined.add(*self.constraints)
 		for o in others:

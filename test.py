@@ -242,6 +242,132 @@ def test_solver_branching():
 	nose.tools.assert_equals(s.eval(y, 1)[0], 2)
 	nose.tools.assert_false(t.check() == claripy.sat)
 
+def test_combine():
+	clrp = claripy.ClaripyStandalone()
+	s10 = clrp.solver()
+	s20 = clrp.solver()
+	s30 = clrp.solver()
+	x = clrp.BitVec("x", 32)
+
+	s10.add(x >= 10)
+	s20.add(x <= 20)
+	s30.add(x == 30)
+
+	nose.tools.assert_true(s10.satisfiable())
+	nose.tools.assert_true(s20.satisfiable())
+	nose.tools.assert_true(s30.satisfiable())
+	nose.tools.assert_true(s10.combine([s20]).satisfiable())
+	nose.tools.assert_true(s20.combine([s10]).satisfiable())
+	nose.tools.assert_true(s30.combine([s10]).satisfiable())
+	nose.tools.assert_false(s30.combine([s20]).satisfiable())
+	nose.tools.assert_equal(s30.combine([s10]).eval(x, 1), [ 30 ])
+	nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
+
+def test_bv():
+	claripy.bv.test()
+
+def test_simple_merging():
+	clrp = claripy.ClaripyStandalone()
+	s1 = clrp.solver()
+	s2 = clrp.solver()
+	w = clrp.BitVec("w", 8)
+	x = clrp.BitVec("x", 8)
+	y = clrp.BitVec("y", 8)
+	z = clrp.BitVec("z", 8)
+	m = clrp.BitVec("m", 8)
+
+	s1.add(x == 1, y == 10)
+	s2.add(x == 2, z == 20, w == 5)
+	sm = s1.merge([s2], m, [ 0, 1 ])
+
+	nose.tools.assert_equal(s1.eval(x, 1), [1])
+	nose.tools.assert_equal(s2.eval(x, 1), [2])
+
+	sm1 = sm.branch()
+	sm1.add(x == 1)
+	nose.tools.assert_equal(sm1.eval(x, 1), [1])
+	nose.tools.assert_equal(sm1.eval(y, 1), [10])
+	nose.tools.assert_equal(sm1.eval(z, 1), [0])
+	nose.tools.assert_equal(sm1.eval(w, 1), [0])
+
+	sm2 = sm.branch()
+	sm2.add(x == 2)
+	nose.tools.assert_equal(sm2.eval(x, 1), [2])
+	nose.tools.assert_equal(sm2.eval(y, 1), [0])
+	nose.tools.assert_equal(sm2.eval(z, 1), [20])
+	nose.tools.assert_equal(sm2.eval(w, 1), [5])
+
+	sm1 = sm.branch()
+	sm1.add(m == 0)
+	nose.tools.assert_equal(sm1.eval(x, 1), [1])
+	nose.tools.assert_equal(sm1.eval(y, 1), [10])
+	nose.tools.assert_equal(sm1.eval(z, 1), [0])
+	nose.tools.assert_equal(sm1.eval(w, 1), [0])
+
+	sm2 = sm.branch()
+	sm2.add(m == 1)
+	nose.tools.assert_equal(sm2.eval(x, 1), [2])
+	nose.tools.assert_equal(sm2.eval(y, 1), [0])
+	nose.tools.assert_equal(sm2.eval(z, 1), [20])
+	nose.tools.assert_equal(sm2.eval(w, 1), [5])
+
+	m2 = clrp.BitVec("m2", 32)
+	smm = sm1.merge([sm2], m2, [0, 1])
+
+	smm_1 = smm.branch()
+	smm_1.add(x == 1)
+	nose.tools.assert_equal(smm_1.eval(x, 1), [1])
+	nose.tools.assert_equal(smm_1.eval(y, 1), [10])
+	nose.tools.assert_equal(smm_1.eval(z, 1), [0])
+	nose.tools.assert_equal(smm_1.eval(w, 1), [0])
+
+	smm_2 = smm.branch()
+	smm_2.add(m == 1)
+	nose.tools.assert_equal(smm_2.eval(x, 1), [2])
+	nose.tools.assert_equal(smm_2.eval(y, 1), [0])
+	nose.tools.assert_equal(smm_2.eval(z, 1), [20])
+	nose.tools.assert_equal(smm_2.eval(w, 1), [5])
+
+	so = clrp.solver()
+	so.add(w == 0)
+
+	sa = so.branch()
+	sb = so.branch()
+	sa.add(x == 1)
+	sb.add(x == 2)
+	sm = sa.merge([sb], m, [0, 1])
+
+	smc = sm.branch()
+	smd = sm.branch()
+	smc.add(y == 3)
+	smd.add(y == 4)
+
+	smm = smc.merge([smd], m2, [0, 1])
+	wxy = clrp.Concat(w, x, y)
+
+	smm_1 = smm.branch()
+	smm_1.add(wxy == 0x000103)
+	nose.tools.assert_true(smm_1.satisfiable())
+
+	smm_1 = smm.branch()
+	smm_1.add(wxy == 0x000104)
+	nose.tools.assert_true(smm_1.satisfiable())
+
+	smm_1 = smm.branch()
+	smm_1.add(wxy == 0x000203)
+	nose.tools.assert_true(smm_1.satisfiable())
+
+	smm_1 = smm.branch()
+	smm_1.add(wxy == 0x000204)
+	nose.tools.assert_true(smm_1.satisfiable())
+
+	smm_1 = smm.branch()
+	smm_1.add(wxy != 0x000103)
+	smm_1.add(wxy != 0x000104)
+	smm_1.add(wxy != 0x000203)
+	smm_1.add(wxy != 0x000204)
+	nose.tools.assert_false(smm_1.satisfiable())
+
 if __name__ == '__main__':
 	logging.getLogger('claripy.test').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
@@ -251,6 +377,7 @@ if __name__ == '__main__':
 	logging.getLogger('claripy.backends.backend_z3').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.datalayer').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.core_solver').setLevel(logging.DEBUG)
+	logging.getLogger('claripy.solvers.branching_solver').setLevel(logging.DEBUG)
 
 	test_actualization()
 	test_fallback_abstraction()
@@ -260,4 +387,7 @@ if __name__ == '__main__':
 	test_model()
 	test_solver()
 	test_solver_branching()
+	test_combine()
+	test_bv()
+	test_simple_merging()
 	print "WOO"

@@ -11,6 +11,7 @@ from . import datalayer
 from .result import sat, unsat, Result
 from .claripy_standalone import ClaripyStandalone
 from .datalayer import DataLayer
+from .bv import BVV
 
 claripy = None
 def set_claripy(c):

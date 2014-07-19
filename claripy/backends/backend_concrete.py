@@ -17,6 +17,27 @@ class BackendConcrete(Backend):
         else:
             return model[name]
 
+    def convert(self, a, model=None):
+        if type(a) is None:
+            l.debug("BackendConcrete doesn't handle abstract stuff")
+            raise BackendError("BackendConcrete doesn't handle abstract stuff")
+
+        if hasattr(a, '__module__') and a.__module__ == 'z3':
+            if hasattr(a, 'as_long'):
+                return bv.BVV(a.as_long(), a.size())
+            elif model is not None:
+                name = a.decl().name()
+                if name in model:
+                    return bv.BVV(model[name], a.size())
+                else:
+                    l.debug("returning 0 for %s (not in model %r)", name, model)
+                    return bv.BVV(0, a.size())
+            else:
+                l.warning("TODO: support more complex non-symbolic expressions, maybe?")
+                raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+        else:
+            return a
+
     def process_arg(self, e, model=None):
         if isinstance(e, E):
             if e.symbolic:
@@ -26,19 +47,7 @@ class BackendConcrete(Backend):
             a = e.eval()
         else:
             a = e
-
-        if type(a) is None:
-            l.debug("BackendConcrete doesn't handle abstract stuff")
-            raise BackendError("BackendConcrete doesn't handle abstract stuff")
-
-        if hasattr(a, '__module__') and a.__module__ == 'z3':
-            if hasattr(a, 'as_long'):
-                return bv.BVV(a.as_long(), a.size())
-            else:
-                l.warning("TODO: support more complex non-symbolic expressions, maybe?")
-                raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
-        else:
-            return a
+        return self.convert(a)
 
     def abstract(self, e, split_on=None):
         if type(e._obj) in (bv.BVV, int, long, str, float):
