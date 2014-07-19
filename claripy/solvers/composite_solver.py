@@ -73,7 +73,65 @@ class CompositeSolver(Solver):
 	#
 
 	def add(self, *constraints, **kwargs):
-		raise NotImplementedError()
+		if len(constraints) == 0:
+			return
+
+		self._result = None
+
+		#print "GOT CONSTRAINTS:", constraints
+
+		# first, flatten the constraints
+		split = self._independent_constraints(constraints=constraints)
+
+		#print "AFTER SPLIT:", split
+
+		l.debug("%s, solvers before: %d", self, len(self._solvers))
+		for names, set_constraints in split:
+			l.debug("Checking %d constraints for names %s", len(set_constraints), names)
+
+			#print "=============================="
+			#for i in set_constraints:
+			#	print "-------------------------"
+			#	print i
+			#print "==========================---="
+
+			# this signifies that we are setting some variable to be concrete
+			#if len(names) == 1:
+			#	self._time_to_split = True
+
+			# handle concrete-only constraints
+			if len(names) == 0:
+				names = { "CONCRETE" }
+
+			existing_solvers = self._solvers_for_variables(names)
+
+			# totally unrelated to existing constraints
+			if len(existing_solvers) == 0:
+				l.debug("... got a new set of constraints!")
+				new_solver = self._solver_class(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+
+			# fits within an existing solver
+			elif len(existing_solvers) == 1:
+				# TODO: split
+				l.debug("... constraints fit into an existing solver.")
+				new_solver = existing_solvers[0]
+
+			# have to merge two solvers
+			else:
+				l.debug("... merging %d solvers.", len(existing_solvers))
+				new_solver = existing_solvers[0].combine(existing_solvers[1:])
+
+			# add the constraint tot he new solver
+			new_solver.add(*set_constraints)
+
+			# sanity checking
+			if len(names - new_solver.variables - {"CONCRETE"}) > 0:
+				raise Exception("Something went wrong with solver merging. Nag Yan!")
+
+			# invalidate the solution cache and update solvers, and don't forget the concrete one!
+			for n in new_solver.variables | (names & {"CONCRETE"}):
+				self._variables[n] = new_solver
+		l.debug("Solvers after: %d", len(self._solvers))
 
 	#
 	# Solving
@@ -155,7 +213,7 @@ class CompositeSolver(Solver):
 		for ns in noncommon_solvers:
 			l.debug("... %d", len(ns))
 			if len(ns) == 0:
-				s = CoreSolver(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+				s = self._solver_class(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
 				s.add(True)
 				combined_noncommons.append(s)
 			elif len(ns) == 1:
@@ -165,96 +223,11 @@ class CompositeSolver(Solver):
 
 		merged_noncommon = combined_noncommons[0].merge(combined_noncommons[1:], merge_flag, merge_values)
 		for v in merged_noncommon.variables:
-			merged.variables_to_solvers[v] = merged_noncommon
+			merged._solvers[v] = merged_noncommon
 
 		return merged
 
 	def combine(self, others):
 		raise NotImplementedError()
-
-
-
-
-
-
-
-class OldCompositeSolver():
-	def __init__(self):
-		self.variables_to_solvers = { }
-		self.unconstrained = set()
-		self.cache = { }
-		self.variables = { }
-
-		self._stored_combined_solver = combined_solver
-		self._stack = [ ]
-		self._time_to_split = False
-
-	def add(self, *constraints):
-		if len(constraints) == 0:
-			return
-
-		#print "GOT CONSTRAINTS:", constraints
-
-		# first, flatten the constraints
-		split = split_constraints(constraints)
-
-		#print "AFTER SPLIT:", split
-
-		l.debug("%s, solvers before: %d", self, len(self._solvers))
-		for names, set_constraints in split:
-			l.debug("Checking %d constraints for names %s", len(set_constraints), names)
-
-			#print "=============================="
-			#for i in set_constraints:
-			#	print "-------------------------"
-			#	print i
-			#print "==========================---="
-
-			# this signifies that we are setting some variable to be concrete
-			if len(names) == 1:
-				self._time_to_split = True
-
-			# handle concrete-only constraints
-			if len(names) == 0:
-				names = { "CONCRETE" }
-
-			existing_solvers = self.solvers_for_variables(names)
-
-			# totally unrelated to existing constraints
-			if len(existing_solvers) == 0:
-				l.debug("... got a new set of constraints!")
-				new_solver = Solver()
-
-			# fits within an existing solver
-			elif len(existing_solvers) == 1:
-				# TODO: split
-				l.debug("... constraints fit into an existing solver.")
-				new_solver = existing_solvers[0]
-
-			# have to merge two solvers
-			else:
-				l.debug("... merging %d solvers.", len(existing_solvers))
-				new_solver = Solver()
-				for e in existing_solvers:
-					new_solver.add(*e.constraints)
-
-			# add the constraint tot he new solver
-			new_solver.add(*set_constraints)
-
-			# sanity checking
-			if len(names - new_solver.variables - {"CONCRETE"}) > 0:
-				raise Exception("Something went wrong with solver merging. Nag Yan!")
-
-			# invalidate the solution cache and update solvers, and don't forget the concrete one!
-			for n in new_solver.variables | (names & {"CONCRETE"}):
-				self.variables_to_solvers[n] = new_solver
-				self.cache.pop(n, None)
-			self._stored_combined_solver = None
-		l.debug("Solvers after: %d", len(self._solvers))
-
-	#
-	# Branching and merging stuff
-	#
-
 
 from ..result import Result, sat, unsat
