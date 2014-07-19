@@ -178,19 +178,21 @@ def test_solver():
     bc = claripy.backends.BackendConcrete(clrp)
     bz = claripy.backends.BackendZ3(clrp)
     ba = claripy.backends.BackendAbstract(clrp)
-    clrp.expression_backends = [ bc, ba ]
+    clrp.expression_backends = [ bc, ba, bz ]
 
-    s = claripy.solvers.CoreSolver(None, bz, bc)
-    x = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-    y = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('y', 32)), variables={'y'}, symbolic=True)
+    s = clrp.solver()
+    x = clrp.BitVec('x', 32)
+    y = clrp.BitVec('y', 32)
+    z = clrp.BitVec('z', 32)
 
     l.debug("adding constraints")
+
     s.add(x == 10)
+    s.add(y == 15)
     l.debug("checking")
     nose.tools.assert_equal(s.check(), claripy.sat)
     nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
 
-    s.add(y == 15)
     shards = s.split()
     nose.tools.assert_equal(len(shards), 2)
     nose.tools.assert_equal(len(shards[0].variables), 1)
@@ -198,12 +200,21 @@ def test_solver():
     nose.tools.assert_equal(len(shards[0].constraints), 1)
     nose.tools.assert_equal(len(shards[1].constraints), 1)
 
-    s = claripy.solvers.CoreSolver(None, bz, bc)
+    s = clrp.solver()
+    clrp.expression_backends = [ bc, ba, bz ]
     s.add(x > 10)
     s.add(x > 20)
     s.simplify()
     nose.tools.assert_equal(len(s.constraints), 1)
     nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(x <= 20)")
+
+    s.add(y > x)
+    s.add(z < 5)
+
+    ss = s.split()
+    nose.tools.assert_equal(len(ss), 2)
+    nose.tools.assert_equal(len(ss[1].constraints), 1)
+    nose.tools.assert_equal(len(ss[0].constraints), 2)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
@@ -213,7 +224,7 @@ if __name__ == '__main__':
     logging.getLogger('claripy.backends.backend_abstract').setLevel(logging.DEBUG)
     logging.getLogger('claripy.backends.backend_z3').setLevel(logging.DEBUG)
     logging.getLogger('claripy.datalayer').setLevel(logging.DEBUG)
-    logging.getLogger('claripy.solvers.standalone_solver').setLevel(logging.DEBUG)
+    logging.getLogger('claripy.solvers.core_solver').setLevel(logging.DEBUG)
 
     test_actualization()
     test_fallback_abstraction()

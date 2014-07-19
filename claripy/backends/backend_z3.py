@@ -98,7 +98,7 @@ class BackendZ3(Backend):
 			elif name == 'zero_extend':
 				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
 			else:
-				if len(raw_args) != 2 and not (name == 'bvnot' and len(raw_args) == 1) and not (name == 'concat' and len(raw_args) > 0):
+				if len(raw_args) != 2 and not (name in {'bvnot', 'not'} and len(raw_args) == 1) and not (name == 'concat' and len(raw_args) > 0):
 					raise TypeError("%d children received for operation %s!" % (len(raw_args), name))
 				args = raw_args
 			op = function_map[name]

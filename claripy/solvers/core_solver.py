@@ -5,7 +5,7 @@
 import time
 import logging
 
-l = logging.getLogger("claripy.solvers.standalone_solver")
+l = logging.getLogger("claripy.solvers.core_solver")
 
 # we need to:
 #  receive constraints
@@ -136,19 +136,30 @@ class CoreSolver(Solver):
 		for s in sets_list:
 			l.debug("... processing %r with variables %r", s, s.variables)
 			c = [ s ]
+			vv = set(s.variables)
+
 			for v in s.variables:
 				if v in set_sets:
+					for sv in set_sets[v]:
+						vv.update(sv.variables)
 					c.extend(set_sets[v])
-			for v in s.variables:
+			for v in vv:
+				l.debug("...... setting %s to %r", v, c)
 				set_sets[v] = c
 
 		l.debug("... set_sets: %r", set_sets)
 
 		results = [ ]
+		seen_lists = set()
 		for c_list in set_sets.values():
+			if id(c_list) in seen_lists:
+				continue
+
+			seen_lists.add(id(c_list))
 			variables = set()
 			for c in c_list:
 				variables |= c.variables
+			l.debug("... appending variables %r with constraints %r", variables, c_list)
 			results.append((variables, c_list))
 
 		return results

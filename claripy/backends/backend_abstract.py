@@ -10,6 +10,10 @@ class BackendAbstract(Backend):
 
         for o in func_ops | attr_ops:
             self._op_expr[o] = self._make_abstract_op(o)
+        self._op_expr['BitVec'] = self.BitVec
+
+    def BitVec(self, name, size, model=None): #pylint:disable=W0613
+        return E(self._claripy, variables={name}, symbolic=True, ast=A('BitVec', (name, size)))
 
     def _make_abstract_op(self, name):
         def op(*args, **kwargs): #pylint:disable=W0613

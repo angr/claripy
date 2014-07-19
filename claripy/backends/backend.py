@@ -40,6 +40,7 @@ class Backend(object):
 		variables = reduce(operator.or_, (a.variables for a in args if isinstance(a, E)), set())
 		symbolic = any((a.symbolic for a in args if isinstance(a, E)))
 		op_args = self.process_args(args)
+		l.debug("op_args = %r", op_args)
 
 		if name in self._op_raw:
 			# the raw ops don't get the model, cause, for example, Z3 stuff can't take it

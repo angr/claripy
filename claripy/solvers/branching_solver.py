@@ -11,7 +11,7 @@ class BranchingSolver(CoreSolver):
             self._finalized = False
             CoreSolver.add(self, self.constraints)
 
-        CoreSolver.add(self, constraints)
+        CoreSolver.add(self, *constraints)
 
     def branch(self):
         s = BranchingSolver(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout)
