@@ -11,7 +11,6 @@ class Solver(object):
 
 		self._finalized = None
 		self._result = None
-		self._variables = None
 		self._simplified = True
 		self.constraints = [ ]
 		self._timeout = timeout if timeout is not None else 300000

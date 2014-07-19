@@ -19,11 +19,10 @@ import itertools
 symbolic_count = itertools.count()
 
 class CoreSolver(Solver):
-	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None):
+	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None):
 		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend)
 
-		self._solver = None
-		self._create_solver()
+		self._solver = self._create_solver() if solver is None else solver
 
 		self._result = None
 		self.variables = set()
@@ -33,8 +32,9 @@ class CoreSolver(Solver):
 	#
 
 	def _create_solver(self):
-		self._solver = self._solver_backend.solver()
-		self._solver.set('timeout', self._timeout)
+		solver = self._solver_backend.solver()
+		solver.set('timeout', self._timeout)
+		return solver
 
 	#
 	# Constraints
@@ -43,6 +43,9 @@ class CoreSolver(Solver):
 	def add(self, *constraints):
 		if len(constraints) == 0:
 			return None
+
+		if type(constraints[0]) in (list, tuple):
+			raise Exception("don't pass lists to Solver.add()!")
 
 		self._result = None
 
