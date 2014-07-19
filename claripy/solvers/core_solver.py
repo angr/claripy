@@ -20,11 +20,7 @@ symbolic_count = itertools.count()
 
 class CoreSolver(Solver):
 	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None):
-		Solver.__init__(self, claripy)
-
-		self._timeout = timeout if timeout is not None else 300000
-		self._solver_backend = solver_backend if solver_backend is not None else claripy.solver_backend
-		self._results_backend = results_backend if results_backend is not None else claripy.results_backend
+		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend)
 
 		self._solver = None
 		self._create_solver()
@@ -77,20 +73,12 @@ class CoreSolver(Solver):
 
 		return self._result.sat
 
-	def eval(self, e, n, extra_constraints=None):
-		if not e.symbolic:
-			return [ e.eval(backends=[self._results_backend]) ]
-
-		if n == 1 and extra_constraints is None:
-			self.check()
-			return [ e.eval(backends=[self._results_backend], model=self._result.model) ]
-		else:
-			return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints)
-
-	def max(self, e, extra_constraints=None):
-		return self._solver_backend.max(e, extra_constraints=None)
-	def min(self, e, extra_constraints=None):
-		return self._solver_backend.min(e, extra_constraints=None)
+	def _eval(self, e, n, extra_constraints=None):
+		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints)
+	def _max(self, e, extra_constraints=None):
+		return self._solver_backend.max(e, extra_constraints=extra_constraints)
+	def _min(self, e, extra_constraints=None):
+		return self._solver_backend.min(e, extra_constraints=extra_constraints)
 
 
 	#
