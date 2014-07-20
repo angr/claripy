@@ -83,7 +83,7 @@ class CompositeSolver(Solver):
 		# first, flatten the constraints
 		split = self._independent_constraints(constraints=constraints)
 
-		#print "AFTER SPLIT:", split
+		print "AFTER SPLIT:", split
 
 		l.debug("%s, solvers before: %d", self, len(self._solvers))
 		for names, set_constraints in split:
@@ -130,8 +130,9 @@ class CompositeSolver(Solver):
 
 			# invalidate the solution cache and update solvers, and don't forget the concrete one!
 			for n in new_solver.variables | (names & {"CONCRETE"}):
+				l.debug("... adding solver %r for %r", new_solver, n)
 				self._solvers[n] = new_solver
-		l.debug("Solvers after: %d", len(self._solvers))
+		l.debug("... solvers after add of %r: %d", constraints, len(self._solver_list))
 
 	#
 	# Solving
@@ -150,7 +151,7 @@ class CompositeSolver(Solver):
 				break
 
 			l.debug("... %r: True", s)
-			model.update(s._results.model)
+			model.update(s._result.model)
 
 		l.debug("... ok!")
 		self._results = Result(satness, model)
@@ -173,9 +174,12 @@ class CompositeSolver(Solver):
 		raise NotImplementedError()
 
 	def simplify(self):
-		for s in self._solvers:
+		l.debug("Simplifying %r", self)
+		for s in self._solver_list:
 			s.simplify()
 			split = s.split()
+
+			l.debug("... can split solver %r into %d parts", s, len(split))
 			if len(split) > 1:
 				for s in split:
 					for v in s.variables:
@@ -183,7 +187,7 @@ class CompositeSolver(Solver):
 
 	def branch(self):
 		c = CompositeSolver(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
-		for s in self._solvers:
+		for s in self._solver_list:
 			c_s = s.branch()
 			for v in c_s.variables:
 				c._solvers[v] = c_s

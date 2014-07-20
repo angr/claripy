@@ -33,7 +33,7 @@ class BackendZ3(Backend):
 	def convert(self, obj, model=None):
 		if type(obj) is bv.BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
-		elif type(obj) in (int, long, float, str):
+		elif type(obj) in (int, long, bool, float, str):
 			return obj
 		elif hasattr(obj, '__module__') and obj.__module__ == 'z3':
 			return obj
@@ -48,7 +48,7 @@ class BackendZ3(Backend):
 		return self.convert(obj, model=model)
 
 	def abstract(self, e, split_on=None):
-		if e._obj.__module__ != 'z3':
+		if not hasattr(e._obj, '__module__') or e._obj.__module__ != 'z3':
 			l.debug("unable to abstract non-Z3 object")
 			raise BackendError("unable to abstract non-Z3 object")
 
@@ -99,8 +99,6 @@ class BackendZ3(Backend):
 			elif name == 'zero_extend':
 				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
 			else:
-				if len(raw_args) != 2 and not (name in {'bvnot', 'not'} and len(raw_args) == 1) and not (name == 'concat' and len(raw_args) > 0):
-					raise TypeError("%d children received for operation %s!" % (len(raw_args), name))
 				args = raw_args
 			op = function_map[name]
 

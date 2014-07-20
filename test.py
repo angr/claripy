@@ -368,6 +368,38 @@ def test_simple_merging():
 	smm_1.add(wxy != 0x000204)
 	nose.tools.assert_false(smm_1.satisfiable())
 
+def test_composite_solver():
+	clrp = claripy.ClaripyStandalone()
+	s = clrp.composite_solver()
+	x = clrp.BitVec("x", 32)
+	y = clrp.BitVec("y", 32)
+	z = clrp.BitVec("z", 32)
+	c = clrp.And(x == 1, y == 2, z == 3)
+	s.add(c)
+	nose.tools.assert_equals(len(s._solver_list), 3)
+	nose.tools.assert_true(s.satisfiable())
+
+	s.add(x < y)
+	nose.tools.assert_equal(len(s._solver_list), 2)
+	nose.tools.assert_true(s.satisfiable())
+
+	s.simplify()
+	nose.tools.assert_equal(len(s._solver_list), 3)
+	nose.tools.assert_true(s.satisfiable())
+
+	s1 = s.branch()
+	s1.add(x > y)
+	nose.tools.assert_equal(len(s1._solver_list), 2)
+	nose.tools.assert_false(s1.satisfiable())
+	nose.tools.assert_equal(len(s._solver_list), 3)
+	nose.tools.assert_true(s.satisfiable())
+
+	import ipdb; ipdb.set_trace()
+
+	s.add(clrp.BitVecVal(1, 32) == clrp.BitVecVal(2, 32))
+	nose.tools.assert_equal(len(s._solver_list), 4) # the CONCRETE one
+	nose.tools.assert_false(s.satisfiable())
+
 if __name__ == '__main__':
 	logging.getLogger('claripy.test').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
@@ -378,6 +410,7 @@ if __name__ == '__main__':
 	logging.getLogger('claripy.datalayer').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.core_solver').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.branching_solver').setLevel(logging.DEBUG)
+	logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
 
 	test_actualization()
 	test_fallback_abstraction()
@@ -390,4 +423,5 @@ if __name__ == '__main__':
 	test_combine()
 	test_bv()
 	test_simple_merging()
+	test_composite_solver()
 	print "WOO"

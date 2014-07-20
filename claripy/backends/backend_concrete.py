@@ -50,7 +50,7 @@ class BackendConcrete(Backend):
         return self.convert(a)
 
     def abstract(self, e, split_on=None):
-        if type(e._obj) in (bv.BVV, int, long, str, float):
+        if type(e._obj) in (bv.BVV, int, long, bool, str, float):
             return e._obj
 
         l.debug("%s unable to abstract %s", self.__class__, e._obj.__class__)

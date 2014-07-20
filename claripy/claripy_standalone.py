@@ -1,5 +1,6 @@
 from .claripy import Claripy
 from .solvers import BranchingSolver
+from .solvers import CompositeSolver
 from .backends import BackendZ3, BackendConcrete
 from .datalayer import DataLayer
 
@@ -14,3 +15,6 @@ class ClaripyStandalone(Claripy):
 
     def solver(self):
         return BranchingSolver(self)
+
+    def composite_solver(self):
+        return CompositeSolver(self)
