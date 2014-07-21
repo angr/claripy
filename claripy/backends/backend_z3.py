@@ -140,7 +140,7 @@ class BackendZ3(Backend):
 		for i in range(n):
 			if s.check() == z3.sat:
 				v = s.model().eval(expr_z3)
-				results.append(E(self._claripy, symbolic=False, variables=set(), obj=v))
+				results.append(v)
 			else:
 				break
 

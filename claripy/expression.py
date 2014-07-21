@@ -69,6 +69,9 @@ class E(object):
         else:
             raise ValueError("invalid arguments passed to E()")
 
+    def __nonzero__(self):
+        raise Exception('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
+
     @property
     def is_abstract(self):
         return self._obj is None
@@ -201,6 +204,48 @@ class E(object):
 
         uuid, ast, variables, symbolic = s
         self.__init__([ ], variables=variables, symbolic=symbolic, ast=ast, uuid=uuid)
+
+    #
+    # BV operations
+    #
+
+    def __len__(self):
+        return self.eval().size()
+
+    def __iter__(self):
+        for i in self.chop(1):
+            yield i
+
+    def chop(self, bits=1):
+        s = len(self)
+        if s % bits != 0:
+            raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
+        elif s == bits:
+            return [ self ]
+        else:
+            return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
+
+    def reversed(self, chunk_bits=8):
+        '''
+        Reverses the expression.
+        '''
+        s = self.chop(bits=chunk_bits)
+        if len(s) == 1:
+            return s[0]
+        else:
+            return self._claripy.Concat(*reversed(s))
+
+    def __getitem__(self, rng):
+        if type(rng) is slice:
+            return self._claripy.Extract(rng.start, rng.stop, self)
+        else:
+            return self._claripy.Extract(rng, rng, self)
+
+    def zero_extend(self, n):
+        return self._claripy.ZeroExt(n, self)
+
+    def sign_extend(self, n):
+        return self._claripy.SignExt(n, self)
 
 #
 # Wrap stuff

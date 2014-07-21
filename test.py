@@ -9,6 +9,34 @@ import claripy
 import logging
 l = logging.getLogger("claripy.test")
 
+def test_expression():
+	clrp = claripy.ClaripyStandalone()
+
+	e = clrp.BitVecVal(0x01020304, 32)
+	nose.tools.assert_equal(len(e), 32)
+	r = e.reversed()
+	nose.tools.assert_equal(r.eval(), 0x04030201)
+	nose.tools.assert_equal(len(r), 32)
+
+	nose.tools.assert_equal([ i.eval() for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
+
+	e1 = r[31:24]
+	nose.tools.assert_equal(e1.eval(), 0x04)
+	nose.tools.assert_equal(len(e1), 8)
+	nose.tools.assert_equal(e1[2].eval(), 1)
+	nose.tools.assert_equal(e1[1].eval(), 0)
+
+	ee1 = e1.zero_extend(8)
+	nose.tools.assert_equal(ee1.eval(), 0x0004)
+	nose.tools.assert_equal(len(ee1), 16)
+
+	ee1 = clrp.BitVecVal(0xfe, 8).sign_extend(8)
+	nose.tools.assert_equal(ee1.eval(), 0xfffe)
+	nose.tools.assert_equal(len(ee1), 16)
+
+	xe1 = [ i.eval() for i in e1 ]
+	nose.tools.assert_equal(xe1, [ 0, 0, 0, 0, 0, 1, 0, 0 ])
+
 def test_actualization():
 	clrp = claripy.ClaripyStandalone()
 
@@ -192,6 +220,10 @@ def test_solver():
 	l.debug("checking")
 	nose.tools.assert_equal(s.check(), claripy.sat)
 	nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
+	nose.tools.assert_true(s.solution(x + 5, 15))
+	nose.tools.assert_true(s.solution(x, 10))
+	nose.tools.assert_true(s.solution(y, 15))
+	nose.tools.assert_false(s.solution(y, 13))
 
 	shards = s.split()
 	nose.tools.assert_equal(len(shards), 2)
@@ -411,6 +443,7 @@ if __name__ == '__main__':
 	logging.getLogger('claripy.solvers.branching_solver').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
 
+	test_expression()
 	test_actualization()
 	test_fallback_abstraction()
 	test_mixed_z3()
