@@ -37,6 +37,10 @@ class Solver(object):
 					for sv in set_sets[v]:
 						vv.update(sv.variables)
 					c.extend(set_sets[v])
+
+			if len(vv) == 0:
+				vv = { "CONSTANT" }
+
 			for v in vv:
 				l.debug("...... setting %s to %r", v, c)
 				set_sets[v] = c

@@ -394,8 +394,6 @@ def test_composite_solver():
 	nose.tools.assert_equal(len(s._solver_list), 3)
 	nose.tools.assert_true(s.satisfiable())
 
-	import ipdb; ipdb.set_trace()
-
 	s.add(clrp.BitVecVal(1, 32) == clrp.BitVecVal(2, 32))
 	nose.tools.assert_equal(len(s._solver_list), 4) # the CONCRETE one
 	nose.tools.assert_false(s.satisfiable())
@@ -408,6 +406,7 @@ if __name__ == '__main__':
 	logging.getLogger('claripy.backends.backend_abstract').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.backends.backend_z3').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.datalayer').setLevel(logging.DEBUG)
+	logging.getLogger('claripy.solvers.solver').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.core_solver').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.branching_solver').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
