@@ -206,7 +206,7 @@ class BVV(object):
         return self.bits
 
     def __repr__(self):
-        return 'BVV(%d, %d)' % (self.value, self.bits)
+        return 'BVV(0x%x, %d)' % (self.value, self.bits)
 
 #
 # External stuff
@@ -270,7 +270,7 @@ def And(*args):
     return all(args)
 
 def Or(*args):
-    return all(args)
+    return any(args)
 
 def Not(b):
     return not b
