@@ -1,3 +1,6 @@
+import itertools
+bitvec_counter = itertools.count()
+
 class Claripy(object):
     def __init__(self, expression_backends, solver_backend, results_backend):
         self.expression_backends = expression_backends
@@ -25,13 +28,16 @@ class Claripy(object):
 
         raise Exception("no backend can handle operation %s" % name)
 
+    def BitVec(self, name, size):
+        name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
+        return self._do_op('BitVec', (name, size))
+
     def And(self, *args): return self._do_op('And', args)
     def BitVecVal(self, *args): return self._do_op('BitVecVal', args)
     def ULT(self, *args): return self._do_op('ULT', args)
     def SignExt(self, *args): return self._do_op('SignExt', args)
     def LShR(self, *args): return self._do_op('LShR', args)
     def BoolVal(self, *args): return self._do_op('BoolVal', args)
-    def BitVec(self, *args): return self._do_op('BitVec', args)
     def ZeroExt(self, *args): return self._do_op('ZeroExt', args)
     def UGE(self, *args): return self._do_op('UGE', args)
     def If(self, *args): return self._do_op('If', args)
