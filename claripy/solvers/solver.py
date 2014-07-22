@@ -84,12 +84,16 @@ class Solver(object):
 		return self.eval(expr, 1, extra_constraints)[0]
 
 	def eval(self, e, n, extra_constraints=None):
-		if type(e) in { int, float, long, bool, str }: return [ e ]
+		if type(e) in { int, float, long, bool, str }:
+			if extra_constraints is None:
+				return [ e ]
+			else:
+				e = E(self._claripy, variables=set(), symbolic=False, obj=e)
 
 		if self._result is None and self.check() != sat:
 			raise UnsatError('unsat')
 
-		if not e.symbolic:
+		if not e.symbolic and extra_constraints is None:
 			return [ e.eval(backends=[self._results_backend]) ]
 
 		#if n == 1 and extra_constraints is None:
@@ -158,3 +162,4 @@ class Solver(object):
 		raise NotImplementedError()
 
 from ..result import sat, UnsatError
+from ..expression import E
