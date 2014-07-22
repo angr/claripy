@@ -172,18 +172,22 @@ class BackendZ3(Backend):
 			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
 			s.push()
-			s.add(self.call('UGE', (expr_z3, lo)), self.call('ULT', (expr_z3, middle)))
+			s.add(z3.UGE(expr_z3, lo), z3.ULE(expr_z3, middle))
 			numpop += 1
 
 			if s.check() == z3.sat:
-				 hi = middle - 1
+				l.debug("... still sat")
+				hi = middle
 			else:
-				 lo = middle
-				 s.constraints.pop()
-				 numpop -= 1
+				l.debug("... now unsat")
+				lo = middle
+				s.pop()
+				numpop -= 1
 
-			for _ in range(numpop):
-				s.constraints.pop()
+		for _ in range(numpop):
+			s.pop()
+
+		l.debug("final hi/lo: %d, %d", hi, lo)
 
 		if hi == lo: return lo
 		else:
@@ -213,18 +217,22 @@ class BackendZ3(Backend):
 			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
 			s.push()
-			s.add(self.call('UGT', (expr_z3, middle)), self.call('ULE', (expr_z3, hi)))
+			s.add(z3.UGT(expr_z3, middle), z3.ULE(expr_z3, hi))
 			numpop += 1
+			print s
 
 			if s.check() == z3.sat:
-				 lo = middle - 1
+				l.debug("... still sat")
+				lo = middle
 			else:
-				 hi = middle
-				 s.constraints.pop()
-				 numpop -= 1
+				l.debug("... now unsat")
+				hi = middle
+				s.pop()
+				numpop -= 1
+			l.debug("    now: %d %d %d %d", hi, middle, lo, hi-lo)
 
-			for _ in range(numpop):
-				s.constraints.pop()
+		for _ in range(numpop):
+			s.pop()
 
 		if hi == lo: return lo
 		else:

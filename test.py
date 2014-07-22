@@ -203,10 +203,10 @@ def test_model():
 
 def test_solver():
 	clrp = claripy.ClaripyStandalone()
-	bc = claripy.backends.BackendConcrete(clrp)
-	bz = claripy.backends.BackendZ3(clrp)
-	ba = claripy.backends.BackendAbstract(clrp)
-	clrp.expression_backends = [ bc, ba, bz ]
+	#bc = claripy.backends.BackendConcrete(clrp)
+	#bz = claripy.backends.BackendZ3(clrp)
+	#ba = claripy.backends.BackendAbstract(clrp)
+	#clrp.expression_backends = [ bc, bz, ba ]
 
 	s = clrp.solver()
 	x = clrp.BitVec('x', 32)
@@ -233,15 +233,20 @@ def test_solver():
 	nose.tools.assert_equal(len(shards[1].constraints), 1)
 
 	s = clrp.solver()
-	clrp.expression_backends = [ bc, ba, bz ]
-	s.add(x > 10)
-	s.add(x > 20)
+	#clrp.expression_backends = [ bc, ba, bz ]
+	s.add(clrp.UGT(x, 10))
+	s.add(clrp.UGT(x, 20))
 	s.simplify()
 	nose.tools.assert_equal(len(s.constraints), 1)
-	nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(x <= 20)")
+	#nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(ULE(x <= 20))")
 
-	s.add(y > x)
-	s.add(z < 5)
+	s.add(clrp.UGT(y, x))
+	s.add(clrp.ULT(z, 5))
+
+	nose.tools.assert_equal(s.max(z), 4)
+	nose.tools.assert_equal(s.min(z), 0)
+	nose.tools.assert_equal(s.min(y), 22)
+	nose.tools.assert_equal(s.max(y), 2**y.size()-1)
 
 	ss = s.split()
 	nose.tools.assert_equal(len(ss), 2)

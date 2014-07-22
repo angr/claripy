@@ -25,7 +25,7 @@ class BackendConcrete(Backend):
         if hasattr(a, '__module__') and a.__module__ == 'z3':
             if hasattr(a, 'as_long'):
                 return bv.BVV(a.as_long(), a.size())
-            elif model is not None:
+            elif model is not None and a.num_args() == 0:
                 name = a.decl().name()
                 if name in model:
                     return bv.BVV(model[name], a.size())

@@ -78,9 +78,9 @@ class CoreSolver(Solver):
 	def _eval(self, e, n, extra_constraints=None):
 		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints)
 	def _max(self, e, extra_constraints=None):
-		return self._solver_backend.max(e, extra_constraints=extra_constraints)
+		return self._solver_backend.max(self._solver, e, extra_constraints=extra_constraints)
 	def _min(self, e, extra_constraints=None):
-		return self._solver_backend.min(e, extra_constraints=extra_constraints)
+		return self._solver_backend.min(self._solver, e, extra_constraints=extra_constraints)
 
 
 	#

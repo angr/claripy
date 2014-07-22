@@ -81,7 +81,7 @@ class Solver(object):
 		return self.check() == sat
 
 	def any(self, expr, extra_constraints=None):
-		return self._results_backend.convert(self.eval(expr, 1, extra_constraints)[0])
+		return self.eval(expr, 1, extra_constraints)[0]
 
 	def eval(self, e, n, extra_constraints=None):
 		if self._result is None and self.check() != sat:
@@ -90,11 +90,11 @@ class Solver(object):
 		if not e.symbolic:
 			return [ e.eval(backends=[self._results_backend]) ]
 
-		if n == 1 and extra_constraints is None:
-			self.check()
-			return [ e.eval(backends=[self._results_backend], model=self._result.model) ]
+		#if n == 1 and extra_constraints is None:
+		#	self.check()
+		#	return [ e.eval(backends=[self._results_backend], model=self._result.model) ]
 
-		return [ self._results_backend.convert(i) for i in self._eval(e, n, extra_constraints=extra_constraints) ]
+		return [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(e, n, extra_constraints=extra_constraints) ]
 
 	def max(self, e, extra_constraints=None):
 		if self._result is None and self.check() != sat:
@@ -102,7 +102,7 @@ class Solver(object):
 
 		if not e.symbolic:
 			return [ e.eval(backends=[self._results_backend]) ]
-		return self._results_backend.convert(self._max(e, extra_constraints=extra_constraints))
+		return self._results_backend.convert(self._max(e, extra_constraints=extra_constraints), model=self._result.model)
 
 	def min(self, e, extra_constraints=None):
 		if self._result is None and self.check() != sat:
@@ -110,7 +110,7 @@ class Solver(object):
 
 		if not e.symbolic:
 			return [ e.eval(backends=[self._results_backend]) ]
-		return self._results_backend.convert(self._min(e, extra_constraints=extra_constraints))
+		return self._results_backend.convert(self._min(e, extra_constraints=extra_constraints), model=self._result.model)
 
 	def _eval(self, e, n, extra_constraints=None):
 		raise NotImplementedError()
