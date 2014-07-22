@@ -28,7 +28,7 @@ class BackendZ3(Backend):
 		if model and name in model:
 			return E(self._claripy, obj=model[name], variables=set(), symbolic=False)
 		else:
-			return E(self._claripy, obj=z3.BitVec(name, size), variables={'x'}, symbolic=True)
+			return E(self._claripy, obj=z3.BitVec(name, size), variables={name}, symbolic=True)
 
 	def convert(self, obj, model=None):
 		if type(obj) is bv.BVV:
@@ -129,17 +129,20 @@ class BackendZ3(Backend):
 		return Result(satness, model)
 
 	def eval(self, s, expr, n, extra_constraints=None):
-		expr_z3 = expr.eval(backends=[self])
+		expr_z3 = self.process_arg(expr)
 
 		results = [ ]
 		if extra_constraints is not None or n != 1:
 			s.push()
 		if extra_constraints is not None:
-			s.add(*[e.eval(backends=[self]) for e in extra_constraints])
+			s.add(*[self.process_arg(e) for e in extra_constraints])
 
 		for i in range(n):
 			if s.check() == z3.sat:
-				v = s.model().eval(expr_z3, model_completion=True)
+				if not type(expr_z3) in { int, float, str, bool, long }:
+					v = s.model().eval(expr_z3, model_completion=True)
+				else:
+					v = expr_z3
 				results.append(v)
 			else:
 				break
@@ -156,7 +159,7 @@ class BackendZ3(Backend):
 		return results
 
 	def min(self, s, expr, extra_constraints=None):
-		expr_z3 = expr.eval(backends=[self])
+		expr_z3 = self.process_arg(expr)
 
 		lo = 0
 		hi = 2**expr_z3.size()-1
@@ -165,7 +168,7 @@ class BackendZ3(Backend):
 		if extra_constraints is not None:
 			s.push()
 			numpop += 1
-			s.add(*[e.eval(backends=[self]) for e in extra_constraints])
+			s.add(*[self.process_arg(e) for e in extra_constraints])
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
@@ -201,7 +204,7 @@ class BackendZ3(Backend):
 		return hi
 
 	def max(self, s, expr, extra_constraints=None):
-		expr_z3 = expr.eval(backends=[self])
+		expr_z3 = self.process_arg(expr)
 
 		lo = 0
 		hi = 2**expr_z3.size()-1
@@ -210,7 +213,7 @@ class BackendZ3(Backend):
 		if extra_constraints is not None:
 			s.push()
 			numpop += 1
-			s.add(*[e.eval(backends=[self]) for e in extra_constraints])
+			s.add(*[self.process_arg(e) for e in extra_constraints])
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
@@ -245,7 +248,7 @@ class BackendZ3(Backend):
 		return lo
 
 	def simplify(self, expr):
-		expr_raw = expr.eval(backends=[self])
+		expr_raw = self.process_arg(expr)
 		symbolic = expr.symbolic
 		variables = expr.variables
 
