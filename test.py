@@ -250,8 +250,8 @@ def test_solver():
 
 	ss = s.split()
 	nose.tools.assert_equal(len(ss), 2)
-	nose.tools.assert_equal(len(ss[1].constraints), 1)
-	nose.tools.assert_equal(len(ss[0].constraints), 2)
+	nose.tools.assert_equal(len(ss[1].constraints), 2)
+	nose.tools.assert_equal(len(ss[0].constraints), 1)
 
 def test_solver_branching():
 	clrp = claripy.ClaripyStandalone()
@@ -474,6 +474,19 @@ def test_ite():
 	nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 1, 10, 100 ])
 	nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 2, 20, 200 ])
 
+def test_bool():
+	clrp = claripy.ClaripyStandalone()
+
+	a = clrp.And(*[False, False, True])
+	nose.tools.assert_equal(a.eval(), False)
+	a = clrp.And(*[True, True, True])
+	nose.tools.assert_equal(a.eval(), True)
+
+	o = clrp.Or(*[False, False, True])
+	nose.tools.assert_equal(o.eval(), True)
+	o = clrp.Or(*[False, False, False])
+	nose.tools.assert_equal(o.eval(), False)
+
 if __name__ == '__main__':
 	logging.getLogger('claripy.test').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
@@ -501,4 +514,5 @@ if __name__ == '__main__':
 	test_simple_merging()
 	test_composite_solver()
 	test_ite()
+	test_bool()
 	print "WOO"
