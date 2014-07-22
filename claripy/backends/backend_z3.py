@@ -139,7 +139,7 @@ class BackendZ3(Backend):
 
 		for i in range(n):
 			if s.check() == z3.sat:
-				v = s.model().eval(expr_z3)
+				v = s.model().eval(expr_z3, model_completion=True)
 				results.append(v)
 			else:
 				break
@@ -219,7 +219,6 @@ class BackendZ3(Backend):
 			s.push()
 			s.add(z3.UGT(expr_z3, middle), z3.ULE(expr_z3, hi))
 			numpop += 1
-			print s
 
 			if s.check() == z3.sat:
 				l.debug("... still sat")
