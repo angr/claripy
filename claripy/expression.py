@@ -243,9 +243,9 @@ class E(object):
 
     def __getitem__(self, rng):
         if type(rng) is slice:
-            return self._claripy.Extract(rng.start, rng.stop, self)
+            return self._claripy.Extract(int(rng.start), int(rng.stop), self)
         else:
-            return self._claripy.Extract(rng, rng, self)
+            return self._claripy.Extract(int(rng), int(rng), self)
 
     def zero_extend(self, n):
         return self._claripy.ZeroExt(n, self)
