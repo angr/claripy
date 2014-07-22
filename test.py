@@ -435,6 +435,45 @@ def test_composite_solver():
 	nose.tools.assert_equal(len(s._solver_list), 4) # the CONCRETE one
 	nose.tools.assert_false(s.satisfiable())
 
+def test_ite():
+	clrp = claripy.ClaripyStandalone()
+	s = clrp.solver()
+	x = clrp.BitVec("x", 32)
+	y = clrp.BitVec("y", 32)
+	z = clrp.BitVec("z", 32)
+
+	ite = clrp.ite_dict(x, {1:11, 2:22, 3:33, 4:44, 5:55, 6:66, 7:77, 8:88, 9:99}, clrp.BitVecVal(0, 32))
+	nose.tools.assert_equal(sorted(s.eval(ite, 100)), [ 0, 11, 22, 33, 44, 55, 66, 77, 88, 99 ] )
+
+	ss = s.branch()
+	ss.add(ite == 88)
+	nose.tools.assert_equal(sorted(ss.eval(ite, 100)), [ 88 ] )
+	nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 8 ] )
+
+	ity = clrp.ite_dict(x, {1:11, 2:22, 3:y, 4:44, 5:55, 6:66, 7:77, 8:88, 9:99}, clrp.BitVecVal(0, 32))
+	ss = s.branch()
+	ss.add(ity != 11)
+	ss.add(ity != 22)
+	ss.add(ity != 33)
+	ss.add(ity != 44)
+	ss.add(ity != 55)
+	ss.add(ity != 66)
+	ss.add(ity != 77)
+	ss.add(ity != 88)
+	ss.add(ity != 0)
+	ss.add(y == 123)
+	nose.tools.assert_equal(sorted(ss.eval(ity, 100)), [ 99, 123 ] )
+	nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 3, 9 ] )
+	nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 123 ] )
+
+	itz = clrp.ite_cases([ (clrp.And(x == 10, y == 20), 33), (clrp.And(x==1, y==2), 3), (clrp.And(x==100, y==200), 333) ], clrp.BitVecVal(0, 32))
+	ss = s.branch()
+	ss.add(z == itz)
+	ss.add(itz != 0)
+	nose.tools.assert_equal(ss.eval(y/x, 100), [ 2 ])
+	nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 1, 10, 100 ])
+	nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 2, 20, 200 ])
+
 if __name__ == '__main__':
 	logging.getLogger('claripy.test').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
@@ -461,4 +500,5 @@ if __name__ == '__main__':
 	test_bv()
 	test_simple_merging()
 	test_composite_solver()
+	test_ite()
 	print "WOO"

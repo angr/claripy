@@ -44,4 +44,13 @@ class Claripy(object):
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
 
+    def ite_dict(self, i, d, default):
+        return self.ite_cases([ (i == c, v) for c,v in d.items() ], default)
+
+    def ite_cases(self, cases, default):
+        sofar = default
+        for c,v in reversed(cases):
+            sofar = self.If(c, v, sofar)
+        return sofar
+
 from .backends import BackendError
