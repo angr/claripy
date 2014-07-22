@@ -92,6 +92,8 @@ class CoreSolver(Solver):
 			return
 
 		self.constraints = [ self._solver_backend.simplify(self._solver_backend.call('And', self.constraints)) ]
+		self._solver = self._create_solver()
+		self._solver.add(*[e.eval(backends=[self._solver_backend]) for e in self.constraints])
 		self._simplified = True
 
 	def merge(self, others, merge_flag, merge_values):
