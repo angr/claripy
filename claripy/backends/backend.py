@@ -2,7 +2,6 @@ import operator
 
 import logging
 l = logging.getLogger('claripy.backends.backend')
-l.setLevel(logging.DEBUG)
 
 ops = { 'If', 'And', 'Not', 'Or', 'UGE', 'ULE', 'UGT', 'ULT', 'BoolVal', 'BitVec', 'BitVecVal', 'Concat', 'Extract', 'LShR', 'SignExt', 'ZeroExt', 'RotateLeft', 'RotateRight' }
 
@@ -92,5 +91,8 @@ class Backend(object):
 
 	def eval(self, s, expr, n, extra_constraints=None): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
+
+	def simplify(self, e): # pylint:disable=R0201
+		return e
 
 from ..expression import E, opposites

@@ -2,7 +2,6 @@
 
 import logging
 l = logging.getLogger("claripy.expression")
-l.setLevel(logging.DEBUG)
 
 class A(object):
     '''
@@ -211,10 +210,17 @@ class E(object):
 
     def __len__(self):
         return self.eval().size()
+    size = __len__
 
     def __iter__(self):
         for i in self.chop(1):
             yield i
+
+    def simplify(self):
+        for b in self._claripy.expression_backends:
+            return b.simplify(self)
+
+        raise Exception("unable to simplify")
 
     def chop(self, bits=1):
         s = len(self)
