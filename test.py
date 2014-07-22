@@ -253,6 +253,22 @@ def test_solver():
 	nose.tools.assert_equal(len(ss[1].constraints), 2)
 	nose.tools.assert_equal(len(ss[0].constraints), 1)
 
+	# test that False makes it unsat
+	s = clrp.solver()
+	s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(1,1))
+	nose.tools.assert_true(s.satisfiable())
+	s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(0,1))
+	nose.tools.assert_false(s.satisfiable())
+
+	# test extra constraints
+	s = clrp.solver()
+	x = clrp.BitVec('x', 32)
+	nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), [ 10 ])
+	s.add(x == 10)
+	nose.tools.assert_false(s.solution(x, 2))
+	nose.tools.assert_true(s.solution(x, 10))
+
+
 def test_solver_branching():
 	clrp = claripy.ClaripyStandalone()
 	s = clrp.solver()
