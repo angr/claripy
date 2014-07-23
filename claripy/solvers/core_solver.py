@@ -52,7 +52,7 @@ class CoreSolver(Solver):
 		self.constraints += constraints
 		for e in constraints:
 			self.variables.update(e.variables)
-			e_raw = e.eval(backends=[self._solver_backend])
+			e_raw = self._solver_backend.process_arg(self._solver_backend.simplify(e))
 			l.debug("adding %r", e_raw)
 			self._solver.add(e_raw)
 
@@ -76,11 +76,11 @@ class CoreSolver(Solver):
 		return self._result.sat
 
 	def _eval(self, e, n, extra_constraints=None):
-		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints)
+		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints, model=self._result.backend_model)
 	def _max(self, e, extra_constraints=None):
-		return self._solver_backend.max(self._solver, e, extra_constraints=extra_constraints)
+		return self._solver_backend.max(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
 	def _min(self, e, extra_constraints=None):
-		return self._solver_backend.min(self._solver, e, extra_constraints=extra_constraints)
+		return self._solver_backend.min(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
 
 	#

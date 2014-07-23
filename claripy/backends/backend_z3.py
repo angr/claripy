@@ -1,6 +1,9 @@
 import logging
 l = logging.getLogger("claripy.backends.backend_z3")
 
+solve_count = 0
+cache_count = 0
+
 # import and set up Z3
 import os
 import z3
@@ -111,6 +114,8 @@ class BackendZ3(Backend):
 		s.add(*c)
 
 	def solve(self, s):
+		global solve_count
+		solve_count += 1
 		if s.check() == z3.sat:
 			l.debug("sat!")
 			satness = sat
@@ -125,30 +130,45 @@ class BackendZ3(Backend):
 			l.debug("unsat!")
 			satness = unsat
 			model = None
+			z3_model = None
 
-		return Result(satness, model)
+		return Result(satness, model, backend_model=z3_model)
 
-	def eval(self, s, expr, n, extra_constraints=None):
+	def eval(self, s, expr, n, extra_constraints=None, model=None):
+		global solve_count, cache_count
+
 		expr_z3 = self.process_arg(expr)
+
+		if n == 1 and model is None:
+			import ipdb; ipdb.set_trace()
 
 		results = [ ]
 		if extra_constraints is not None or n != 1:
 			s.push()
 		if extra_constraints is not None:
 			s.add(*[self.process_arg(e) for e in extra_constraints])
+			model = None
 
 		for i in range(n):
-			if s.check() == z3.sat:
-				if not type(expr_z3) in { int, float, str, bool, long }:
-					v = s.model().eval(expr_z3, model_completion=True)
-				else:
-					v = expr_z3
-				results.append(v)
+			if model is None:
+				solve_count += 1
+				if s.check() == z3.sat:
+					model = s.model()
 			else:
+				cache_count += 1
+
+			if model is None:
 				break
 
+			if not type(expr_z3) in { int, float, str, bool, long }:
+				v = model.eval(expr_z3, model_completion=True)
+			else:
+				v = expr_z3
+
+			results.append(v)
 			if i + 1 != n:
 				s.add(expr_z3 != v)
+				model = None
 
 		if extra_constraints is not None or n != 1:
 			s.pop()
@@ -158,7 +178,9 @@ class BackendZ3(Backend):
 
 		return results
 
-	def min(self, s, expr, extra_constraints=None):
+	def min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
+		global solve_count
+
 		expr_z3 = self.process_arg(expr)
 
 		lo = 0
@@ -178,6 +200,7 @@ class BackendZ3(Backend):
 			s.add(z3.UGE(expr_z3, lo), z3.ULE(expr_z3, middle))
 			numpop += 1
 
+			solve_count += 1
 			if s.check() == z3.sat:
 				l.debug("... still sat")
 				hi = middle
@@ -203,7 +226,9 @@ class BackendZ3(Backend):
 				s.pop()
 		return hi
 
-	def max(self, s, expr, extra_constraints=None):
+	def max(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
+		global solve_count
+
 		expr_z3 = self.process_arg(expr)
 
 		lo = 0
@@ -223,6 +248,7 @@ class BackendZ3(Backend):
 			s.add(z3.UGT(expr_z3, middle), z3.ULE(expr_z3, hi))
 			numpop += 1
 
+			solve_count += 1
 			if s.check() == z3.sat:
 				l.debug("... still sat")
 				lo = middle
@@ -248,9 +274,13 @@ class BackendZ3(Backend):
 		return lo
 
 	def simplify(self, expr):
+		l.debug("SIMPLIFYING EXPRESSION")
+
 		expr_raw = self.process_arg(expr)
 		symbolic = expr.symbolic
 		variables = expr.variables
+
+		l.debug("... before: %s", expr_raw)
 
 		if isinstance(expr_raw, z3.BoolRef):
 			tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
@@ -269,8 +299,12 @@ class BackendZ3(Backend):
 			symbolic = not isinstance(expr, z3.BitVecNumRef)
 			if not symbolic:
 				variables = set()
+
+			import ipdb; ipdb.set_trace()
 		else:
 			s = expr_raw
+
+		l.debug("... after: %s", s)
 
 		return E(self._claripy, symbolic=symbolic, variables=variables, obj=s)
 

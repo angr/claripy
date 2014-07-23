@@ -89,7 +89,7 @@ class Backend(object):
 	def solve(self, s): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def eval(self, s, expr, n, extra_constraints=None): #pylint:disable=W0613,R0201
+	def eval(self, s, expr, n, extra_constraints=None, model=None): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
 	def simplify(self, e): # pylint:disable=R0201

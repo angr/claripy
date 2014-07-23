@@ -158,13 +158,13 @@ class CompositeSolver(Solver):
 		return satness
 
 	def _eval(self, e, n, extra_constraints=None):
-		self._merged_solver_for(e.variables).eval(e, n, extra_constraints=extra_constraints)
+		return self._merged_solver_for(e.variables).eval(e, n, extra_constraints=extra_constraints)
 
 	def _max(self, e, extra_constraints=None):
-		self._merged_solver_for(e.variables).max(e, extra_constraints=extra_constraints)
+		return self._merged_solver_for(e.variables).max(e, extra_constraints=extra_constraints)
 
 	def _min(self, e, extra_constraints=None):
-		self._merged_solver_for(e.variables).min(e, extra_constraints=extra_constraints)
+		return self._merged_solver_for(e.variables).min(e, extra_constraints=extra_constraints)
 
 	#
 	# Merging and splitting

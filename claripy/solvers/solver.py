@@ -105,21 +105,25 @@ class Solver(object):
 	def max(self, e, extra_constraints=None):
 		if type(e) in { int, float, long, bool, str }: return e
 
+		self.simplify()
 		if self._result is None and self.check() != sat:
 			raise UnsatError('unsat')
 
 		if not e.symbolic:
 			return e.eval(backends=[self._results_backend])
+
 		return self._results_backend.convert(self._max(e, extra_constraints=extra_constraints), model=self._result.model)
 
 	def min(self, e, extra_constraints=None):
 		if type(e) in { int, float, long, bool, str }: return e
 
+		self.simplify()
 		if self._result is None and self.check() != sat:
 			raise UnsatError('unsat')
 
 		if not e.symbolic:
 			return e.eval(backends=[self._results_backend])
+
 		return self._results_backend.convert(self._min(e, extra_constraints=extra_constraints), model=self._result.model)
 
 	def _eval(self, e, n, extra_constraints=None):
