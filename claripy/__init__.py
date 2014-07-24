@@ -8,7 +8,7 @@ l = logging.getLogger("claripy")
 from .expression import E, A
 from . import bv
 from . import datalayer
-from .result import sat, unsat, Result, UnsatError
+from .result import Result, UnsatError
 from .claripy_standalone import ClaripyStandalone
 from .datalayer import DataLayer
 from .bv import BVV

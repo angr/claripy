@@ -1,6 +1,3 @@
-sat = 'sat'
-unsat = 'unsat'
-
 import copy
 
 class Result(object):

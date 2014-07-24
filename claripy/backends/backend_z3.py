@@ -29,9 +29,9 @@ class BackendZ3(Backend):
 
 	def BitVec(self, name, size, model=None):
 		if model and name in model:
-			return E(self._claripy, obj=model[name], variables=set(), symbolic=False)
+			return self.wrap(model[name], variables=set(), symbolic=False)
 		else:
-			return E(self._claripy, obj=z3.BitVec(name, size), variables={name}, symbolic=True)
+			return self.wrap(z3.BitVec(name, size), variables={name}, symbolic=True)
 
 	def convert(self, obj, model=None):
 		if type(obj) is bv.BVV:
@@ -45,7 +45,7 @@ class BackendZ3(Backend):
 			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
 
 
-	def process_arg(self, a, model=None): #pylint:disable=W0613
+	def convert_expr(self, a, model=None): #pylint:disable=W0613
 		if isinstance(a, E): obj = a.eval(backends=[self])
 		else: obj = a
 		return self.convert(obj, model=model)
@@ -110,43 +110,53 @@ class BackendZ3(Backend):
 	def solver(self):
 		return z3.Solver()
 
-	def add_constraints(self, s, c):
+	def add(self, s, c):
 		s.add(*c)
 
-	def solve(self, s):
+	def check(self, s, extra_constraints=None): #pylint:disable=R0201
 		global solve_count
 		solve_count += 1
-		if s.check() == z3.sat:
+		if extra_constraints is not None:
+			s.push()
+			s.add(*extra_constraints)
+
+		satness = s.check() == z3.sat
+
+		if extra_constraints is not None:
+			s.pop()
+		return satness
+
+	def results(self, s, extra_constraints=None, generic_model=True):
+		satness = self.check(s, extra_constraints=extra_constraints)
+		model = None
+		z3_model = None
+
+		if satness:
 			l.debug("sat!")
-			satness = sat
 			z3_model = s.model()
 			l.debug("model is %r", z3_model)
-			model = { }
-			for m_f in z3_model:
-				n = m_f.name()
-				m = m_f()
-				model[n] = z3_model.eval(m)
+			if generic_model:
+				model = { }
+				for m_f in z3_model:
+					n = m_f.name()
+					m = m_f()
+					model[n] = z3_model.eval(m)
 		else:
 			l.debug("unsat!")
-			satness = unsat
-			model = None
-			z3_model = None
 
 		return Result(satness, model, backend_model=z3_model)
 
 	def eval(self, s, expr, n, extra_constraints=None, model=None):
 		global solve_count, cache_count
 
-		expr_z3 = self.process_arg(expr)
-
-		if n == 1 and model is None:
-			import ipdb; ipdb.set_trace()
+		#if n == 1 and model is None:
+		#	import ipdb; ipdb.set_trace()
 
 		results = [ ]
 		if extra_constraints is not None or n != 1:
 			s.push()
 		if extra_constraints is not None:
-			s.add(*[self.process_arg(e) for e in extra_constraints])
+			s.add(*[self.convert_expr(e) for e in extra_constraints])
 			model = None
 
 		for i in range(n):
@@ -160,14 +170,14 @@ class BackendZ3(Backend):
 			if model is None:
 				break
 
-			if not type(expr_z3) in { int, float, str, bool, long }:
-				v = model.eval(expr_z3, model_completion=True)
+			if not type(expr) in { int, float, str, bool, long }:
+				v = model.eval(expr, model_completion=True)
 			else:
-				v = expr_z3
+				v = expr
 
 			results.append(v)
 			if i + 1 != n:
-				s.add(expr_z3 != v)
+				s.add(expr != v)
 				model = None
 
 		if extra_constraints is not None or n != 1:
@@ -181,23 +191,21 @@ class BackendZ3(Backend):
 	def min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
 		global solve_count
 
-		expr_z3 = self.process_arg(expr)
-
 		lo = 0
-		hi = 2**expr_z3.size()-1
+		hi = 2**expr.size()-1
 
 		numpop = 0
 		if extra_constraints is not None:
 			s.push()
 			numpop += 1
-			s.add(*[self.process_arg(e) for e in extra_constraints])
+			s.add(*[self.convert_expr(e) for e in extra_constraints])
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
 			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
 			s.push()
-			s.add(z3.UGE(expr_z3, lo), z3.ULE(expr_z3, middle))
+			s.add(z3.UGE(expr, lo), z3.ULE(expr, middle))
 			numpop += 1
 
 			solve_count += 1
@@ -218,7 +226,7 @@ class BackendZ3(Backend):
 		if hi == lo: return lo
 		else:
 			s.push()
-			s.add(expr_z3 == lo)
+			s.add(expr == lo)
 			if s.check() == z3.sat:
 				s.pop()
 				return lo
@@ -229,23 +237,21 @@ class BackendZ3(Backend):
 	def max(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
 		global solve_count
 
-		expr_z3 = self.process_arg(expr)
-
 		lo = 0
-		hi = 2**expr_z3.size()-1
+		hi = 2**expr.size()-1
 
 		numpop = 0
 		if extra_constraints is not None:
 			s.push()
 			numpop += 1
-			s.add(*[self.process_arg(e) for e in extra_constraints])
+			s.add(*[self.convert_expr(e) for e in extra_constraints])
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
 			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
 			s.push()
-			s.add(z3.UGT(expr_z3, middle), z3.ULE(expr_z3, hi))
+			s.add(z3.UGT(expr, middle), z3.ULE(expr, hi))
 			numpop += 1
 
 			solve_count += 1
@@ -265,7 +271,7 @@ class BackendZ3(Backend):
 		if hi == lo: return lo
 		else:
 			s.push()
-			s.add(expr_z3 == hi)
+			s.add(expr == hi)
 			if s.check() == z3.sat:
 				s.pop()
 				return hi
@@ -273,10 +279,13 @@ class BackendZ3(Backend):
 				s.pop()
 		return lo
 
-	def simplify(self, expr):
+	def simplify(self, expr): #pylint:disable=W0613,R0201
+		raise Exception("This shouldn't be called. But Yan.")
+
+	def simplify_expr(self, expr):
 		l.debug("SIMPLIFYING EXPRESSION")
 
-		expr_raw = self.process_arg(expr)
+		expr_raw = self.convert_expr(expr)
 		symbolic = expr.symbolic
 		variables = expr.variables
 
@@ -300,13 +309,13 @@ class BackendZ3(Backend):
 			if not symbolic:
 				variables = set()
 
-			import ipdb; ipdb.set_trace()
+			#import ipdb; ipdb.set_trace()
 		else:
 			s = expr_raw
 
 		l.debug("... after: %s", s)
 
-		return E(self._claripy, symbolic=symbolic, variables=variables, obj=s)
+		return self.wrap(s, symbolic=symbolic, variables=variables)
 
 #
 # this is for the actual->abstract conversion above
@@ -348,4 +357,4 @@ function_map['if'] = 'If'
 function_map['bvlshr'] = 'LShR'
 
 from ..expression import E, A
-from ..result import Result, UnsatError, sat, unsat
+from ..result import Result, UnsatError

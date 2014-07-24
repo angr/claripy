@@ -24,11 +24,21 @@ class Backend(object):
 		'''
 		return r
 
-	def process_arg(self, a, model=None): #pylint:disable=R0201
+	def wrap(self, r, variables=None, symbolic=False): #pylint:disable=R0201
+		return E(self._claripy, variables=variables if variables is not None else set(), symbolic=symbolic, obj=r)
+
+	def convert_expr(self, a, model=None): #pylint:disable=R0201
 		return a.eval(backends=[self], model=model) if isinstance(a, E) else a
 
-	def process_args(self, args, model=None):
-		return [ self.process_arg(a, model=model) for a in args ]
+	def convert_exprs(self, args, model=None):
+		return [ self.convert_expr(a, model=model) for a in args ]
+
+	def primitive(self, o): #pylint:disable=W0613
+		'''
+		Should return a primitive (int, float, etc) of this value.
+		'''
+
+		raise BackendError("Primitive conversion not implemented for %s." % self.__class__.__name__)
 
 	def call(self, name, args, model=None):
 		'''
@@ -44,7 +54,7 @@ class Backend(object):
 
 		variables = reduce(operator.or_, (a.variables for a in args if isinstance(a, E)), set())
 		symbolic = any((a.symbolic for a in args if isinstance(a, E)))
-		op_args = self.process_args(args)
+		op_args = self.convert_exprs(args)
 		l.debug("op_args = %r", op_args)
 
 		if name in self._op_raw:
@@ -69,7 +79,7 @@ class Backend(object):
 				l.debug("%s neither %s nor %s apply on %s", self, name, opposites[name], op_args)
 				raise BackendError("unable to apply operation on provided args")
 
-		r = E(self._claripy, variables=variables, symbolic=symbolic, obj=obj)
+		r = self.wrap(obj, variables=variables, symbolic=symbolic)
 		l.debug("Returning expression %s", r)
 		return r
 
@@ -83,16 +93,42 @@ class Backend(object):
 	def solver(self): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def add_constraints(self, s, c): #pylint:disable=W0613,R0201
+	def add(self, s, c): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def solve(self, s): #pylint:disable=W0613,R0201
+	def check(self, s, extra_constraints=None): #pylint:disable=W0613,R0201
+		raise BackendError("backend doesn't support solving")
+
+	def results(self, s, extra_constraints=None, generic_model=True): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
 	def eval(self, s, expr, n, extra_constraints=None, model=None): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
+	def min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613,R0201
+		raise BackendError("backend doesn't support solving")
+
+	def max(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613,R0201
+		raise BackendError("backend doesn't support solving")
+
 	def simplify(self, e): # pylint:disable=R0201
 		return e
+
+	def eval_expr(self, s, expr, n, extra_constraints=None, model=None):
+		o = self.eval(s, self.convert_expr(expr), n, extra_constraints=extra_constraints, model=model)
+		return self.wrap(o)
+	def min_expr(self, s, expr, extra_constraints=None, model=None):
+		o = self.min(s, self.convert_expr(expr), extra_constraints=extra_constraints, model=model)
+		return self.wrap(o)
+	def max_expr(self, s, expr, extra_constraints=None, model=None):
+		o = self.max(s, self.convert_expr(expr), extra_constraints=extra_constraints, model=model)
+		return self.wrap(o)
+	def add_exprs(self, s, c):
+		return self.add(s, self.convert_exprs(c))
+	def simplify_expr(self, e):
+		o = self.simplify(self.convert_exprs(e))
+		return self.wrap(o, variables=e.variables, symbolic=e.symbolic) # TODO: keep UUID
+	def primitive_expr(self, e):
+		return self.primitive(self.convert_expr(e))
 
 from ..expression import E, opposites

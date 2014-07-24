@@ -138,16 +138,16 @@ class CompositeSolver(Solver):
 	# Solving
 	#
 
-	def check(self):
+	def solve(self):
 		l.debug("%r checking satisfiability...", self)
 
 		model = { }
-		satness = sat
+		satness = True
 
 		for s in self._solver_list:
-			if not s.check() == sat:
+			if not s.solve():
 				l.debug("... %r: False", s)
-				satness = unsat
+				satness = False
 				break
 
 			l.debug("... %r: True", s)
@@ -234,4 +234,4 @@ class CompositeSolver(Solver):
 	def combine(self, others):
 		raise NotImplementedError()
 
-from ..result import Result, sat, unsat
+from ..result import Result

@@ -52,24 +52,22 @@ class CoreSolver(Solver):
 		self.constraints += constraints
 		for e in constraints:
 			self.variables.update(e.variables)
-			e_raw = self._solver_backend.process_arg(self._solver_backend.simplify(e))
-			l.debug("adding %r", e_raw)
-			self._solver.add(e_raw)
 
+		self._solver_backend.add_exprs(self._solver, constraints)
 		self._simplified = False
 
 	#
 	# Solving
 	#
 
-	def check(self):
+	def solve(self):
 		if self._result is not None:
 			return self._result.sat
 
 		# check it!
 		l.debug("Checking SATness of %d constraints", len(self.constraints))
 		a = time.time()
-		self._result = self._solver_backend.solve(self._solver)
+		self._result = self._solver_backend.results(self._solver)
 		b = time.time()
 		l.debug("... %s in %s seconds", self._result.sat, b - a)
 
@@ -82,6 +80,8 @@ class CoreSolver(Solver):
 	def _min(self, e, extra_constraints=None):
 		return self._solver_backend.min(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
+	def solution(self, e, v):
+		return self._solver_backend.check(self._solver, extra_constraints=[self._solver_backend.convert_expr(e==v)])
 
 	#
 	# Merging/splitting
@@ -91,38 +91,10 @@ class CoreSolver(Solver):
 		if self._simplified:
 			return
 
-		self.constraints = [ self._solver_backend.simplify(self._solver_backend.call('And', self.constraints)) ]
+		self.constraints = [ self._solver_backend.simplify_expr(self._solver_backend.call('And', self.constraints)) ]
 		self._solver = self._create_solver()
-		self._solver.add(*[e.eval(backends=[self._solver_backend]) for e in self.constraints])
+		self._solver_backend.add_exprs(self._solver, self.constraints)
 		self._simplified = True
-
-	def merge(self, others, merge_flag, merge_values):
-		merged = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
-		options = [ ]
-
-		for s, v in zip([self]+others, merge_values):
-			options.append(self._solver_backend.call('And', [ merge_flag == v ] + s.constraints))
-		merged.add(self._solver_backend.call('Or', options))
-		return merged
-
-	def combine(self, others):
-		combined = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
-
-		combined.add(*self.constraints)
-		for o in others:
-			combined.add(*o.constraints)
-		return combined
-
-	def split(self):
-		results = [ ]
-		l.debug("Splitting!")
-		for variables,c_list in self._independent_constraints():
-			l.debug("... got %d constraints with variables %r", len(c_list), variables)
-
-			s = self.__class__(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout)
-			s.add(*c_list)
-			results.append(s)
-		return results
 
 	def branch(self):
 		raise Exception("CoreSolver can't branch, yo!")

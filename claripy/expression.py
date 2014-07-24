@@ -3,6 +3,8 @@
 import logging
 l = logging.getLogger("claripy.expression")
 
+import operator
+
 class A(object):
     '''
     An A(ST) tracks a tree of calls (including operations) on arguments.
@@ -92,6 +94,9 @@ class E(object):
             return name + "(uuid=%s)" % self._uuid
 
     def _do_op(self, op_name, args):
+        if all([ type(a) in {int, long, float, str, bool} for a in (self._obj,)+args ]) and hasattr(operator, op_name):
+            return getattr(operator, op_name)(*((self._obj,)+args))
+
         for b in self._claripy.expression_backends:
             try:
                 e = b.call(op_name, (self,)+args)
@@ -101,7 +106,7 @@ class E(object):
             except BackendError:
                 continue
 
-        raise Exception("no backend can handle operation %s", op_name)
+        raise Exception("no backend can handle operation %s" % op_name)
 
     def eval(self, backends=None, save=False, model=None):
         if type(self._obj) in { int, long, str }:
@@ -218,7 +223,7 @@ class E(object):
 
     def simplify(self):
         for b in self._claripy.expression_backends:
-            return b.simplify(self)
+            return b.simplify_expr(self)
 
         raise Exception("unable to simplify")
 

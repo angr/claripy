@@ -74,57 +74,51 @@ class Solver(object):
 	# Solving
 	#
 
-	def check(self):
+	def solve(self):
 		raise NotImplementedError()
 
 	def satisfiable(self):
-		return self.check() == sat
+		return self.solve()
 
 	def any(self, expr, extra_constraints=None):
 		return self.eval(expr, 1, extra_constraints)[0]
 
 	def eval(self, e, n, extra_constraints=None):
-		if type(e) in { int, float, long, bool, str }:
-			if extra_constraints is None:
-				return [ e ]
-			else:
-				e = E(self._claripy, variables=set(), symbolic=False, obj=e)
-
-		if self._result is None and self.check() != sat:
-			raise UnsatError('unsat')
+		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
+		if self._result is None and not self.satisfiable(): raise UnsatError('unsat')
 
 		if not e.symbolic and extra_constraints is None:
-			return [ e.eval(backends=[self._results_backend]) ]
-
-		#if n == 1 and extra_constraints is None:
-		#	self.check()
-		#	return [ e.eval(backends=[self._results_backend], model=self._result.model) ]
-
-		return [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(e, n, extra_constraints=extra_constraints) ]
+			r = [ e.eval(backends=[self._results_backend]) ]
+		elif not e.symbolic and extra_constraints is not None:
+			if not self._solver_backend.check(extra_constraints=extra_constraints):
+				raise UnsatError('unsat')
+			r = [ self._results_backend.convert_expr(e) ]
+		else:
+			o = self._solver_backend.convert_expr(e)
+			r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
+		return [ self._results_backend.wrap(i) for i in r ]
 
 	def max(self, e, extra_constraints=None):
-		if type(e) in { int, float, long, bool, str }: return e
-
 		self.simplify()
-		if self._result is None and self.check() != sat:
-			raise UnsatError('unsat')
 
-		if not e.symbolic:
-			return e.eval(backends=[self._results_backend])
+		two = self.eval(e, 2, extra_constraints=extra_constraints)
+		if len(two) == 1: return two[0]
 
-		return self._results_backend.convert(self._max(e, extra_constraints=extra_constraints), model=self._result.model)
+		o = self._solver_backend.convert_expr(e)
+		c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.UGE(e, two[0]) ]
+		r = self._results_backend.convert(self._max(o, extra_constraints=c), model=self._result.model)
+		return self._results_backend.wrap(r)
 
 	def min(self, e, extra_constraints=None):
-		if type(e) in { int, float, long, bool, str }: return e
-
 		self.simplify()
-		if self._result is None and self.check() != sat:
-			raise UnsatError('unsat')
 
-		if not e.symbolic:
-			return e.eval(backends=[self._results_backend])
+		two = self.eval(e, 2, extra_constraints=extra_constraints)
+		if len(two) == 1: return two[0]
 
-		return self._results_backend.convert(self._min(e, extra_constraints=extra_constraints), model=self._result.model)
+		o = self._solver_backend.convert_expr(e)
+		c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.ULE(e, two[0]) ]
+		r = self._results_backend.convert(self._min(o, extra_constraints=c), model=self._result.model)
+		return self._results_backend.wrap(r)
 
 	def _eval(self, e, n, extra_constraints=None):
 		raise NotImplementedError()
@@ -134,14 +128,17 @@ class Solver(object):
 		raise NotImplementedError()
 
 	def solution(self, e, v):
-		try:
-			n = self.any(e, extra_constraints=[e==v])
-			if n != v:
-				raise Exception("wtf")
+		raise NotImplementedError()
+		return self._solver_backend.check(extra_constraints=[e==v])
 
-			return True
-		except UnsatError:
-			return False
+	def eval_value(self, e, n, extra_constraints=None):
+		return [ self._results_backend.primitive_expr(r) for r in self.eval(e, n, extra_constraints=extra_constraints) ]
+	def min_value(self, e, extra_constraints=None):
+		return self._results_backend.primitive_expr(self.min(e, extra_constraints=extra_constraints))
+	def max_value(self, e, extra_constraints=None):
+		return self._results_backend.primitive_expr(self.max(e, extra_constraints=extra_constraints))
+	def any_value(self, expr, extra_constraints=None):
+		return self._results_backend.primitive_expr(self.eval(expr, 1, extra_constraints)[0])
 
 	#
 	# Merging and splitting
@@ -157,13 +154,32 @@ class Solver(object):
 		raise NotImplementedError()
 
 	def merge(self, others, merge_flag, merge_values):
-		raise NotImplementedError()
+		merged = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+		options = [ ]
+
+		for s, v in zip([self]+others, merge_values):
+			options.append(self._solver_backend.call('And', [ merge_flag == v ] + s.constraints))
+		merged.add(self._solver_backend.call('Or', options))
+		return merged
 
 	def combine(self, others):
-		raise NotImplementedError()
+		combined = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+
+		combined.add(*self.constraints)
+		for o in others:
+			combined.add(*o.constraints)
+		return combined
 
 	def split(self):
-		raise NotImplementedError()
+		results = [ ]
+		l.debug("Splitting!")
+		for variables,c_list in self._independent_constraints():
+			l.debug("... got %d constraints with variables %r", len(c_list), variables)
 
-from ..result import sat, UnsatError
+			s = self.__class__(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout)
+			s.add(*c_list)
+			results.append(s)
+		return results
+
+from ..result import UnsatError
 from ..expression import E

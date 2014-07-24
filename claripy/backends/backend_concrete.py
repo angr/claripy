@@ -38,11 +38,11 @@ class BackendConcrete(Backend):
         else:
             return a
 
-    def process_arg(self, e, model=None):
+    def convert_expr(self, e, model=None):
         if isinstance(e, E):
             if e.symbolic:
-                l.debug("BackendConcrete.process_args() aborting on symbolic expression")
-                raise BackendError("BackendConcrete.process_args() aborting on symbolic expression")
+                l.debug("BackendConcrete.convert_exprs() aborting on symbolic expression")
+                raise BackendError("BackendConcrete.convert_exprs() aborting on symbolic expression")
 
             a = e.eval()
         else:
@@ -56,4 +56,13 @@ class BackendConcrete(Backend):
         l.debug("%s unable to abstract %s", self.__class__, e._obj.__class__)
         raise BackendError("unable to abstract non-concrete stuff")
 
+    def primitive(self, o):
+        if type(o) in (int, long, bool, str, float):
+            return o
+        elif type(o) is bv.BVV:
+            return o.value
+        else:
+            raise BackendError("unable to convert type %s to primitive" % o.__class__.__name__)
+
 from ..expression import E
+#from .backend_z3 import BackendZ3
