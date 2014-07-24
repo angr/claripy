@@ -218,12 +218,14 @@ class E(object):
     size = __len__
 
     def __iter__(self):
-        for i in self.chop(1):
-            yield i
+        raise Exception("Please don't iterate over Expressions!")
 
     def simplify(self):
         for b in self._claripy.expression_backends:
-            return b.simplify_expr(self)
+            try:
+                return b.simplify_expr(self)
+            except BackendError:
+                pass
 
         raise Exception("unable to simplify")
 

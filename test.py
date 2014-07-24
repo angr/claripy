@@ -34,7 +34,7 @@ def test_expression():
 	nose.tools.assert_equal(ee1.eval(), 0xfffe)
 	nose.tools.assert_equal(len(ee1), 16)
 
-	xe1 = [ i.eval() for i in e1 ]
+	xe1 = [ i.eval() for i in e1.chop(1) ]
 	nose.tools.assert_equal(xe1, [ 0, 0, 0, 0, 0, 1, 0, 0 ])
 
 def test_actualization():
