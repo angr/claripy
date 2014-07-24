@@ -129,16 +129,15 @@ class Solver(object):
 
 	def solution(self, e, v):
 		raise NotImplementedError()
-		return self._solver_backend.check(extra_constraints=[e==v])
 
 	def eval_value(self, e, n, extra_constraints=None):
-		return [ self._results_backend.primitive_expr(r) for r in self.eval(e, n, extra_constraints=extra_constraints) ]
+		return [ self._results_backend.convert_expr(r) for r in self.eval(e, n, extra_constraints=extra_constraints) ]
 	def min_value(self, e, extra_constraints=None):
-		return self._results_backend.primitive_expr(self.min(e, extra_constraints=extra_constraints))
+		return self._results_backend.convert_expr(self.min(e, extra_constraints=extra_constraints))
 	def max_value(self, e, extra_constraints=None):
-		return self._results_backend.primitive_expr(self.max(e, extra_constraints=extra_constraints))
+		return self._results_backend.convert_expr(self.max(e, extra_constraints=extra_constraints))
 	def any_value(self, expr, extra_constraints=None):
-		return self._results_backend.primitive_expr(self.eval(expr, 1, extra_constraints)[0])
+		return self._results_backend.convert_expr(self.eval(expr, 1, extra_constraints)[0])
 
 	#
 	# Merging and splitting

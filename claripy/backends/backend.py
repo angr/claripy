@@ -126,7 +126,7 @@ class Backend(object):
 	def add_exprs(self, s, c):
 		return self.add(s, self.convert_exprs(c))
 	def simplify_expr(self, e):
-		o = self.simplify(self.convert_exprs(e))
+		o = self.simplify(self.convert_expr(e))
 		return self.wrap(o, variables=e.variables, symbolic=e.symbolic) # TODO: keep UUID
 	def primitive_expr(self, e):
 		return self.primitive(self.convert_expr(e))
