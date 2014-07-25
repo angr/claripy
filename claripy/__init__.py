@@ -12,6 +12,7 @@ from .result import Result, UnsatError
 from .claripy_standalone import ClaripyStandalone
 from .datalayer import DataLayer
 from .bv import BVV
+from . import backends
 
 claripy = None
 def set_claripy(c):
