@@ -289,7 +289,7 @@ class BackendZ3(Backend):
 		symbolic = expr.symbolic
 		variables = expr.variables
 
-		l.debug("... before: %s", expr_raw)
+		l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
 
 		if isinstance(expr_raw, z3.BoolRef):
 			tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
@@ -305,15 +305,16 @@ class BackendZ3(Backend):
 				variables = set()
 		elif isinstance(expr_raw, z3.BitVecRef):
 			s = z3.simplify(expr_raw)
-			symbolic = not isinstance(expr, z3.BitVecNumRef)
+			symbolic = not isinstance(s, z3.BitVecNumRef)
 			if not symbolic:
+				l.debug("... not symbolic!")
 				variables = set()
 
 			#import ipdb; ipdb.set_trace()
 		else:
 			s = expr_raw
 
-		l.debug("... after: %s", s)
+		l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
 		return self.wrap(s, symbolic=symbolic, variables=variables)
 

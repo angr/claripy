@@ -140,6 +140,13 @@ class Solver(object):
 		return self._results_backend.convert_expr(self.eval(expr, 1, extra_constraints)[0])
 
 	#
+	# Serialization and such.
+	#
+
+	def downsize(self): #pylint:disable=R0201
+		return
+
+	#
 	# Merging and splitting
 	#
 
