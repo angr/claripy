@@ -355,6 +355,7 @@ function_map['or'] = 'Or'
 function_map['and'] = 'And'
 function_map['not'] = 'Not'
 function_map['if'] = 'If'
+function_map['iff'] = 'If'
 function_map['bvlshr'] = 'LShR'
 
 from ..expression import E, A
