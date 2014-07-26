@@ -3,6 +3,9 @@ l = logging.getLogger("claripy.backends.backend_concrete")
 
 from .backend import Backend, ops, BackendError
 from .. import bv
+import z3
+zTrue = z3.BoolVal(True)
+zFalse = z3.BoolVal(False)
 
 class BackendConcrete(Backend):
     def __init__(self, claripy):
@@ -22,21 +25,24 @@ class BackendConcrete(Backend):
             l.debug("BackendConcrete doesn't handle abstract stuff")
             raise BackendError("BackendConcrete doesn't handle abstract stuff")
 
-        if hasattr(a, '__module__') and a.__module__ == 'z3':
-            if hasattr(a, 'as_long'):
-                return bv.BVV(a.as_long(), a.size())
-            elif model is not None and a.num_args() == 0:
-                name = a.decl().name()
-                if name in model:
-                    return bv.BVV(model[name], a.size())
-                else:
-                    l.debug("returning 0 for %s (not in model %r)", name, model)
-                    return bv.BVV(0, a.size())
-            else:
-                l.warning("TODO: support more complex non-symbolic expressions, maybe?")
-                raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
-        else:
+        if not (hasattr(a, '__module__') and a.__module__ == 'z3'):
             return a
+        if hasattr(a, 'as_long'):
+            return bv.BVV(a.as_long(), a.size())
+        elif isinstance(a, z3.BoolRef) and a.eq(zTrue):
+            return True
+        elif isinstance(a, z3.BoolRef) and a.eq(zFalse):
+            return False
+        elif model is not None and a.num_args() == 0:
+            name = a.decl().name()
+            if name in model:
+                return bv.BVV(model[name], a.size())
+            else:
+                l.debug("returning 0 for %s (not in model %r)", name, model)
+                return bv.BVV(0, a.size())
+        else:
+            l.warning("TODO: support more complex non-symbolic expressions, maybe?")
+            raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
 
     def convert_expr(self, e, model=None):
         if isinstance(e, E):
