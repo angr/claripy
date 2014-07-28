@@ -91,7 +91,8 @@ class CoreSolver(Solver):
 		if self._simplified:
 			return
 
-		self.constraints = [ self._solver_backend.simplify_expr(self._solver_backend.call('And', self.constraints)) ]
+		converted = [ self._solver_backend.convert_expr(c) for c in self.constraints ]
+		self.constraints = [ self._solver_backend.simplify_expr(self._solver_backend.call('And', converted)) ]
 		self._solver = self._create_solver()
 		self._solver_backend.add_exprs(self._solver, self.constraints)
 		self._simplified = True
