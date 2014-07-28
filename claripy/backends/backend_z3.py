@@ -36,7 +36,11 @@ class BackendZ3(Backend):
 	def convert(self, obj, model=None):
 		if type(obj) is bv.BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
-		elif type(obj) in (int, long, bool, float, str):
+		elif obj is True:
+			return z3.BoolVal(True)
+		elif obj is False:
+			return z3.BoolVal(False)
+		elif type(obj) in (int, long, float, str):
 			return obj
 		elif hasattr(obj, '__module__') and obj.__module__ == 'z3':
 			return obj

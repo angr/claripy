@@ -28,7 +28,7 @@ class Backend(object):
 		return E(self._claripy, variables=variables if variables is not None else set(), symbolic=symbolic, obj=r)
 
 	def convert_expr(self, a, model=None): #pylint:disable=R0201
-		return a.eval(backends=[self], model=model) if isinstance(a, E) else a
+		return self.convert(a.eval(backends=[self], model=model) if isinstance(a, E) else a, model=model)
 
 	def convert_exprs(self, args, model=None):
 		return [ self.convert_expr(a, model=model) for a in args ]
