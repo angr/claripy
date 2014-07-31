@@ -6,6 +6,7 @@ class Claripy(object):
         self.expression_backends = expression_backends
         self.solver_backend = solver_backend
         self.results_backend = results_backend
+        self.unique_names = True
 
     #
     # Solvers
@@ -29,7 +30,8 @@ class Claripy(object):
         raise Exception("no backend can handle operation %s" % name)
 
     def BitVec(self, name, size):
-        name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
+        if self.unique_names:
+            name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
         return self._do_op('BitVec', (name, size))
 
     def And(self, *args): return self._do_op('And', args)
