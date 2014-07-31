@@ -19,12 +19,11 @@ import itertools
 symbolic_count = itertools.count()
 
 class CoreSolver(Solver):
-	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None):
+	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None, result=None):
 		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend)
 
 		self._solver = self._create_solver() if solver is None else solver
-
-		self._result = None
+		self._result = result
 		self.variables = set()
 
 	#

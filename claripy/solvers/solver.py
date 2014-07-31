@@ -85,10 +85,13 @@ class Solver(object):
 
 	def eval(self, e, n, extra_constraints=None):
 		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
-		if self._result is None and not self.satisfiable(): raise UnsatError('unsat')
 
-		if not e.symbolic and extra_constraints is None:
-			r = [ e.eval(backends=[self._results_backend]) ]
+		if not e.symbolic:
+			#if extra_constraints is None:
+			#	l.warning("returning non-symbolic expression despite having extra_constraints. Could lead to subtle issues in analyses.")
+			r = [ self._results_backend.convert_expr(e) ]
+
+		if self._result is None and not self.satisfiable(): raise UnsatError('unsat')
 		elif not e.symbolic and extra_constraints is not None:
 			if not self._solver_backend.check(extra_constraints=extra_constraints):
 				raise UnsatError('unsat')

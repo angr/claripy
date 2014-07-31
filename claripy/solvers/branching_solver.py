@@ -4,8 +4,8 @@ l = logging.getLogger('claripy.solvers.branching_solver')
 from .core_solver import CoreSolver
 
 class BranchingSolver(CoreSolver):
-    def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None):
-        CoreSolver.__init__(self, claripy, solver_backend=solver_backend, results_backend=results_backend, timeout=timeout, solver=solver)
+    def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None, result=None):
+        CoreSolver.__init__(self, claripy, solver_backend=solver_backend, results_backend=results_backend, timeout=timeout, solver=solver, result=None)
         self._finalized = False
 
     def add(self, *constraints):
@@ -19,9 +19,8 @@ class BranchingSolver(CoreSolver):
         CoreSolver.add(self, *constraints)
 
     def branch(self):
-        s = BranchingSolver(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout, solver=self._solver)
+        s = BranchingSolver(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout, solver=self._solver, result=self._result)
         s.constraints = self.constraints[:]
-        s._result = self._result
         s.variables = set(self.variables)
 
         self.finalize()
