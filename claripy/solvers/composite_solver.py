@@ -138,8 +138,11 @@ class CompositeSolver(Solver):
 	# Solving
 	#
 
-	def solve(self):
+	def solve(self, extra_constraints=None):
 		l.debug("%r checking satisfiability...", self)
+
+		if extra_constraints is not None:
+			raise NotImplementedError("extra_constraints not supported yet")
 
 		model = { }
 		satness = True
@@ -158,12 +161,18 @@ class CompositeSolver(Solver):
 		return satness
 
 	def _eval(self, e, n, extra_constraints=None):
+		if extra_constraints is not None:
+			raise NotImplementedError("extra_constraints not supported yet")
 		return self._merged_solver_for(e.variables).eval(e, n, extra_constraints=extra_constraints)
 
 	def _max(self, e, extra_constraints=None):
+		if extra_constraints is not None:
+			raise NotImplementedError("extra_constraints not supported yet")
 		return self._merged_solver_for(e.variables).max(e, extra_constraints=extra_constraints)
 
 	def _min(self, e, extra_constraints=None):
+		if extra_constraints is not None:
+			raise NotImplementedError("extra_constraints not supported yet")
 		return self._merged_solver_for(e.variables).min(e, extra_constraints=extra_constraints)
 
 	#

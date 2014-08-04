@@ -219,11 +219,13 @@ def test_solver():
 	s.add(y == 15)
 	l.debug("checking")
 	nose.tools.assert_true(s.satisfiable())
+	nose.tools.assert_false(s.satisfiable(extra_constraints=[x == 5]))
 	nose.tools.assert_equal(s.eval_value(x + 5, 1)[0], 15)
 	nose.tools.assert_true(s.solution(x + 5, 15))
 	nose.tools.assert_true(s.solution(x, 10))
 	nose.tools.assert_true(s.solution(y, 15))
 	nose.tools.assert_false(s.solution(y, 13))
+
 
 	shards = s.split()
 	nose.tools.assert_equal(len(shards), 2)

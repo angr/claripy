@@ -59,18 +59,22 @@ class CoreSolver(Solver):
 	# Solving
 	#
 
-	def solve(self):
-		if self._result is not None:
+	def solve(self, extra_constraints=None):
+		if extra_constraints is None and self._result is not None:
 			return self._result.sat
 
 		# check it!
 		l.debug("Checking SATness of %d constraints", len(self.constraints))
 		a = time.time()
-		self._result = self._solver_backend.results(self._solver)
+		r = self._solver_backend.results(self._solver, extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None)
 		b = time.time()
-		l.debug("... %s in %s seconds", self._result.sat, b - a)
+		l.debug("... %s in %s seconds", r.sat, b - a)
 
-		return self._result.sat
+		if extra_constraints is None:
+			self._result = r
+
+		return r.sat
+
 
 	def _eval(self, e, n, extra_constraints=None):
 		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints, model=self._result.backend_model)

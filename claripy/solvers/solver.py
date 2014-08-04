@@ -74,11 +74,11 @@ class Solver(object):
 	# Solving
 	#
 
-	def solve(self):
+	def solve(self, extra_constraints=None):
 		raise NotImplementedError()
 
-	def satisfiable(self):
-		return self.solve()
+	def satisfiable(self, extra_constraints=None):
+		return self.solve(extra_constraints=extra_constraints)
 
 	def any(self, expr, extra_constraints=None):
 		return self.eval(expr, 1, extra_constraints)[0]
