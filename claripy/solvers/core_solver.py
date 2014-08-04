@@ -53,13 +53,17 @@ class CoreSolver(Solver):
 
 		to_add = [ ]
 		for e in constraints:
-			if not e.symbolic and self._results_backend.convert_expr(e):
+			e_simp = self._solver_backend.simplify_expr(e)
+			if not e_simp.symbolic and self._results_backend.convert_expr(e_simp):
 				continue
+			elif not e_simp.symbolic and not self._results_backend.convert_expr(e_simp):
+				self._result = Result(False, { })
+				return
 
 			self._result = None
-			self.constraints.append(e)
-			to_add.append(e)
-			self.variables.update(e.variables)
+			self.constraints.append(e_simp)
+			to_add.append(e_simp)
+			self.variables.update(e_simp.variables)
 
 		self._solver_backend.add_exprs(self._solver, to_add)
 		self._simplified = False
@@ -111,3 +115,5 @@ class CoreSolver(Solver):
 		raise Exception("CoreSolver can't branch, yo!")
 	def finalize(self):
 		raise Exception("CoreSolver can't finalize, yo!")
+
+from ..result import Result

@@ -7,6 +7,8 @@ cached_evals = 0
 cached_min = 0
 cached_max = 0
 cached_solve = 0
+filter_true = 0
+filter_false = 0
 
 class Solver(object):
 	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None):
@@ -72,8 +74,34 @@ class Solver(object):
 	# Solving
 	#
 
+	def _constraint_filter(self, ec):
+		global filter_true, filter_false
+		if ec is None: return None
+
+		fc = [ ]
+		for e in ec:
+			e_simp = self._solver_backend.simplify_expr(e)
+			if not e_simp.symbolic and self._results_backend.convert_expr(e_simp):
+				filter_true += 1
+				continue
+			elif not e_simp.symbolic and not self._results_backend.convert_expr(e_simp):
+				filter_false += 1
+				raise UnsatError("expressions contain False")
+
+			fc.append(e_simp)
+
+		#print fc
+		return fc if len(fc) > 0 else None
+
 	def solve(self, extra_constraints=None):
 		global cached_solve
+		try:
+			extra_constraints = self._constraint_filter(extra_constraints)
+		except UnsatError:
+			return Result(False, { })
+
+		if self._result is not None and not self._result.sat:
+			return self._result
 
 		if extra_constraints is None and self._result is not None:
 			cached_solve += 1
@@ -92,6 +120,7 @@ class Solver(object):
 
 	def eval(self, e, n, extra_constraints=None):
 		global cached_evals
+		extra_constraints = self._constraint_filter(extra_constraints)
 
 		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
 
@@ -100,7 +129,7 @@ class Solver(object):
 			#	l.warning("returning non-symbolic expression despite having extra_constraints. Could lead to subtle issues in analyses.")
 			r = [ self._results_backend.convert_expr(e) ]
 
-		if self._result is None and not self.satisfiable(): raise UnsatError('unsat')
+		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
 
 		if extra_constraints is None:
 			if e.uuid in self._result.eval_cache:
@@ -135,6 +164,7 @@ class Solver(object):
 
 	def max(self, e, extra_constraints=None):
 		global cached_max
+		extra_constraints = self._constraint_filter(extra_constraints)
 		self.simplify()
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
@@ -155,6 +185,7 @@ class Solver(object):
 
 	def min(self, e, extra_constraints=None):
 		global cached_min
+		extra_constraints = self._constraint_filter(extra_constraints)
 		self.simplify()
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
@@ -250,5 +281,5 @@ class Solver(object):
 			results.append(s)
 		return results
 
-from ..result import UnsatError
+from ..result import UnsatError, Result
 from ..expression import E
