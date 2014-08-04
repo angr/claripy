@@ -138,7 +138,7 @@ class CompositeSolver(Solver):
 	# Solving
 	#
 
-	def solve(self, extra_constraints=None):
+	def _solve(self, extra_constraints=None):
 		l.debug("%r checking satisfiability...", self)
 
 		if extra_constraints is not None:
@@ -148,7 +148,7 @@ class CompositeSolver(Solver):
 		satness = True
 
 		for s in self._solver_list:
-			if not s.solve():
+			if not s.satisfiable():
 				l.debug("... %r: False", s)
 				satness = False
 				break
@@ -157,8 +157,7 @@ class CompositeSolver(Solver):
 			model.update(s._result.model)
 
 		l.debug("... ok!")
-		self._results = Result(satness, model)
-		return satness
+		return Result(satness, model)
 
 	def _eval(self, e, n, extra_constraints=None):
 		if extra_constraints is not None:

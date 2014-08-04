@@ -3,6 +3,11 @@
 import logging
 l = logging.getLogger("claripy.solvers.solver")
 
+cached_evals = 0
+cached_min = 0
+cached_max = 0
+cached_solve = 0
+
 class Solver(object):
 	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None):
 		self._claripy = claripy
@@ -64,26 +69,30 @@ class Solver(object):
 
 
 	#
-	# Constraints
-	#
-
-	def add(self, *constraints, **kwargs):
-		raise NotImplementedError()
-
-	#
 	# Solving
 	#
 
 	def solve(self, extra_constraints=None):
-		raise NotImplementedError()
+		global cached_solve
+
+		if extra_constraints is None and self._result is not None:
+			cached_solve += 1
+			return self._result
+		else:
+			r = self._solve(extra_constraints=extra_constraints)
+			if r.sat or extra_constraints is None:
+				self._result = r
+			return r
 
 	def satisfiable(self, extra_constraints=None):
-		return self.solve(extra_constraints=extra_constraints)
+		return self.solve(extra_constraints=extra_constraints).sat
 
 	def any(self, expr, extra_constraints=None):
 		return self.eval(expr, 1, extra_constraints)[0]
 
 	def eval(self, e, n, extra_constraints=None):
+		global cached_evals
+
 		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
 
 		if not e.symbolic:
@@ -92,45 +101,96 @@ class Solver(object):
 			r = [ self._results_backend.convert_expr(e) ]
 
 		if self._result is None and not self.satisfiable(): raise UnsatError('unsat')
-		elif not e.symbolic and extra_constraints is not None:
-			if not self._solver_backend.check(extra_constraints=extra_constraints):
-				raise UnsatError('unsat')
-			r = [ self._results_backend.convert_expr(e) ]
+
+		if extra_constraints is None:
+			if e.uuid in self._result.eval_cache:
+				cached_n = self._result.eval_cache[e.uuid][0]
+				cached_eval = self._result.eval_cache[e.uuid][1]
+				if cached_n >= n:
+					r = cached_eval[:n]
+				elif len(cached_eval) < cached_n:
+					r = cached_eval[:n]
+				else:
+					n -= cached_n
+					extra_constraints = [ e != v for v in cached_eval ]
+
+					o = self._solver_backend.convert_expr(e)
+					try:
+						r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
+					except UnsatError:
+						r = [ ]
+					n += cached_n
+					r = cached_eval + r
+				cached_evals += cached_n
+			else:
+				o = self._solver_backend.convert_expr(e)
+				r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
+			self._result.eval_cache[e.uuid] = (n, r)
 		else:
 			o = self._solver_backend.convert_expr(e)
 			r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
+			if e.uuid not in self._result.eval_cache:
+				self._result.eval_cache[e.uuid] = (len(r), r)
 		return [ self._results_backend.wrap(i) for i in r ]
 
 	def max(self, e, extra_constraints=None):
+		global cached_max
 		self.simplify()
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
 		if len(two) == 1: return two[0]
 
-		o = self._solver_backend.convert_expr(e)
-		c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.UGE(e, two[0]) ]
-		r = self._results_backend.convert(self._max(o, extra_constraints=c), model=self._result.model)
+		if extra_constraints is None and e.uuid in self._result.max_cache:
+			cached_max += 1
+			r = self._result.max_cache[e.uuid]
+		else:
+			o = self._solver_backend.convert_expr(e)
+			c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.UGE(e, two[0]), self._claripy.UGE(e, two[1]) ]
+			r = self._results_backend.convert(self._max(o, extra_constraints=c), model=self._result.model)
+
+		if extra_constraints is None:
+			self._result.max_cache[e.uuid] = r
+
 		return self._results_backend.wrap(r)
 
 	def min(self, e, extra_constraints=None):
+		global cached_min
 		self.simplify()
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
 		if len(two) == 1: return two[0]
 
-		o = self._solver_backend.convert_expr(e)
-		c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.ULE(e, two[0]) ]
-		r = self._results_backend.convert(self._min(o, extra_constraints=c), model=self._result.model)
+		if extra_constraints is None and e.uuid in self._result.min_cache:
+			cached_min += 1
+			r = self._result.min_cache[e.uuid]
+		else:
+			o = self._solver_backend.convert_expr(e)
+			c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.ULE(e, two[0]), self._claripy.ULE(e, two[1]) ]
+			r = self._results_backend.convert(self._min(o, extra_constraints=c), model=self._result.model)
+
+		if extra_constraints is None:
+			self._result.min_cache[e.uuid] = r
+
 		return self._results_backend.wrap(r)
 
+	def solution(self, e, v):
+		return self.satisfiable(extra_constraints=[e==v])
+
+
+	#
+	# These should be implemented by the solver subclass
+	#
+
+	def add(self, *constraints, **kwargs):
+		raise NotImplementedError()
+
+	def _solve(self, extra_constraints=None):
+		raise NotImplementedError()
 	def _eval(self, e, n, extra_constraints=None):
 		raise NotImplementedError()
 	def _max(self, e, extra_constraints=None):
 		raise NotImplementedError()
 	def _min(self, e, extra_constraints=None):
-		raise NotImplementedError()
-
-	def solution(self, e, v):
 		raise NotImplementedError()
 
 	def eval_value(self, e, n, extra_constraints=None):
@@ -147,7 +207,7 @@ class Solver(object):
 	#
 
 	def downsize(self): #pylint:disable=R0201
-		return
+		raise NotImplementedError()
 
 	#
 	# Merging and splitting

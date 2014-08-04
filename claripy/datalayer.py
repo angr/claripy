@@ -22,6 +22,10 @@ class DataLayer:
             self._cache = { }
             self._store_type = 'dict'
 
+    def make_uuid(self, e):
+        e._uuid = str(uuid_module.uuid4())
+        return e._uuid
+
     def store_expression(self, e):
         if e._stored:
             l.debug("%s is already stored", e)
@@ -30,11 +34,10 @@ class DataLayer:
                 self._cache[e._uuid] = e
             return
 
-        uuid = str(uuid_module.uuid4())
-        l.debug("storing expression %s with uuid %s", e, uuid)
-        self._store(uuid, e)
+        self.make_uuid(e)
+        l.debug("storing expression %s with uuid %s", e, e.uuid)
+        self._store(e.uuid, e)
         e._stored = True
-        e._uuid = uuid
 
     def load_expression(self, uuid):
         e = self._load(uuid)

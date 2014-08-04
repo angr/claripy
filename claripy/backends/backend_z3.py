@@ -124,6 +124,7 @@ class BackendZ3(Backend):
 			s.push()
 			s.add(*extra_constraints)
 
+		l.debug("Doing a check!")
 		satness = s.check() == z3.sat
 
 		if extra_constraints is not None:
@@ -166,6 +167,7 @@ class BackendZ3(Backend):
 		for i in range(n):
 			if model is None:
 				solve_count += 1
+				l.debug("Doing a check!")
 				if s.check() == z3.sat:
 					model = s.model()
 			else:
@@ -213,6 +215,7 @@ class BackendZ3(Backend):
 			numpop += 1
 
 			solve_count += 1
+			l.debug("Doing a check!")
 			if s.check() == z3.sat:
 				l.debug("... still sat")
 				hi = middle
@@ -231,6 +234,7 @@ class BackendZ3(Backend):
 		else:
 			s.push()
 			s.add(expr == lo)
+			l.debug("Doing a check!")
 			if s.check() == z3.sat:
 				s.pop()
 				return lo
@@ -259,6 +263,7 @@ class BackendZ3(Backend):
 			numpop += 1
 
 			solve_count += 1
+			l.debug("Doing a check!")
 			if s.check() == z3.sat:
 				l.debug("... still sat")
 				lo = middle
@@ -276,6 +281,7 @@ class BackendZ3(Backend):
 		else:
 			s.push()
 			s.add(expr == hi)
+			l.debug("Doing a check!")
 			if s.check() == z3.sat:
 				s.pop()
 				return hi

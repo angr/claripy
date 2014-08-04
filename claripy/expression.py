@@ -4,6 +4,7 @@ import logging
 l = logging.getLogger("claripy.expression")
 
 import operator
+from .storable import Storable
 
 class A(object):
     '''
@@ -40,25 +41,18 @@ class A(object):
         else:
             return "%s%s" % (self._op, self._args)
 
-class E(object):
+class E(Storable):
     '''
     A base class to wrap Z3 objects.
     '''
 
     def __init__(self, claripy, variables=None, symbolic=None, uuid=None, obj=None, ast=None, stored=False):
+        Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
         have_data = not (variables is None or symbolic is None or (obj is None and ast is None))
-        self._claripy = claripy
 
         if have_uuid and not have_data:
-            e = claripy.dl.load_expression(uuid)
-            self.variables = e.variables
-            self.symbolic = e.symbolic
-
-            self._uuid = e._uuid
-            self._obj = e._obj
-            self._ast = e._ast
-            self._stored = e._stored
+            self._load()
         elif have_data:
             self.variables = variables
             self.symbolic = symbolic
@@ -69,6 +63,16 @@ class E(object):
             self._stored = stored
         else:
             raise ValueError("invalid arguments passed to E()")
+
+    def _load(self):
+        e = self._claripy.dl.load_expression(self._uuid)
+        self.variables = e.variables
+        self.symbolic = e.symbolic
+
+        self._uuid = e._uuid
+        self._obj = e._obj
+        self._ast = e._ast
+        self._stored = e._stored
 
     def __nonzero__(self):
         raise Exception('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')

@@ -534,3 +534,8 @@ if __name__ == '__main__':
 	test_ite()
 	test_bool()
 	print "WOO"
+
+	print 'eval', claripy.solvers.solver.cached_evals
+	print 'min', claripy.solvers.solver.cached_min
+	print 'max', claripy.solvers.solver.cached_max
+	print 'solve', claripy.solvers.solver.cached_solve

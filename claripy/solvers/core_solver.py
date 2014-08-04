@@ -26,6 +26,9 @@ class CoreSolver(Solver):
 		self._result = result
 		self.variables = set()
 
+	def downsize(self):
+		self._solver = None
+
 	#
 	# Util stuff
 	#
@@ -40,28 +43,33 @@ class CoreSolver(Solver):
 	#
 
 	def add(self, *constraints):
+		l.debug("%s.add(*%s)", self, constraints)
+
 		if len(constraints) == 0:
 			return None
 
 		if type(constraints[0]) in (list, tuple):
 			raise Exception("don't pass lists to Solver.add()!")
 
-		self._result = None
-
-		self.constraints += constraints
+		to_add = [ ]
 		for e in constraints:
+			if not e.symbolic and self._results_backend.convert_expr(e):
+				continue
+
+			self._result = None
+			self.constraints.append(e)
+			to_add.append(e)
 			self.variables.update(e.variables)
 
-		self._solver_backend.add_exprs(self._solver, constraints)
+		self._solver_backend.add_exprs(self._solver, to_add)
 		self._simplified = False
 
 	#
 	# Solving
 	#
 
-	def solve(self, extra_constraints=None):
-		if extra_constraints is None and self._result is not None:
-			return self._result.sat
+	def _solve(self, extra_constraints=None):
+		l.debug("%s.solve(extra_constraints=%s)", self, extra_constraints)
 
 		# check it!
 		l.debug("Checking SATness of %d constraints", len(self.constraints))
@@ -69,18 +77,17 @@ class CoreSolver(Solver):
 		r = self._solver_backend.results(self._solver, extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None)
 		b = time.time()
 		l.debug("... %s in %s seconds", r.sat, b - a)
-
-		if extra_constraints is None:
-			self._result = r
-
-		return r.sat
+		return r
 
 
 	def _eval(self, e, n, extra_constraints=None):
+		l.debug("%s._eval(%s, %s, extra_constraints=%s)", self, e, n, extra_constraints)
 		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints, model=self._result.backend_model)
 	def _max(self, e, extra_constraints=None):
+		l.debug("%s._max(%s, extra_constraints=%s)", self, e, extra_constraints)
 		return self._solver_backend.max(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
 	def _min(self, e, extra_constraints=None):
+		l.debug("%s._min(%s, extra_constraints=%s)", self, e, extra_constraints)
 		return self._solver_backend.min(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
 	def solution(self, e, v):
