@@ -23,6 +23,8 @@ def normalize_types(f):
     return normalizer
 
 class BVV(object):
+    __slots__ = [ 'bits', '_value', 'mod', 'value' ]
+
     def __init__(self, value, bits):
         self.bits = bits
         self._value = 0

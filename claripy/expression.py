@@ -45,6 +45,7 @@ class E(Storable):
     '''
     A base class to wrap Z3 objects.
     '''
+    __slots__ = [ 'variables', 'symbolic', '_uuid', '_obj', '_ast', '_stored' ]
 
     def __init__(self, claripy, variables=None, symbolic=None, uuid=None, obj=None, ast=None, stored=False):
         Storable.__init__(self, claripy, uuid=uuid)

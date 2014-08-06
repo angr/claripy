@@ -1,4 +1,6 @@
 class Storable(object):
+    __slots__ = [ '_claripy', '_uuid' ]
+
     def __init__(self, claripy, uuid=None):
         self._claripy = claripy
         self._uuid = uuid
