@@ -22,12 +22,18 @@ class CoreSolver(Solver):
 	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None, result=None):
 		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend)
 
-		self._solver = self._create_solver() if solver is None else solver
+		self._solver = solver
 		self._result = result
 		self.variables = set()
 
 	def downsize(self):
 		self._solver = None
+
+	def _get_solver(self):
+		if self._solver is None:
+			self._solver = self._create_solver()
+			self._solver_backend.add_exprs(self._solver, self.constraints)
+		return self._solver
 
 	#
 	# Util stuff
@@ -65,7 +71,8 @@ class CoreSolver(Solver):
 			to_add.append(e_simp)
 			self.variables.update(e_simp.variables)
 
-		self._solver_backend.add_exprs(self._solver, to_add)
+		if self._solver is not None:
+			self._solver_backend.add_exprs(self._solver, to_add)
 		self._simplified = False
 
 	#
@@ -78,7 +85,7 @@ class CoreSolver(Solver):
 		# check it!
 		l.debug("Checking SATness of %d constraints", len(self.constraints))
 		a = time.time()
-		r = self._solver_backend.results(self._solver, extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None)
+		r = self._solver_backend.results(self._get_solver(), extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None)
 		b = time.time()
 		l.debug("... %s in %s seconds", r.sat, b - a)
 		return r
@@ -86,16 +93,16 @@ class CoreSolver(Solver):
 
 	def _eval(self, e, n, extra_constraints=None):
 		l.debug("%s._eval(%s, %s, extra_constraints=%s)", self, e, n, extra_constraints)
-		return self._solver_backend.eval(self._solver, e, n, extra_constraints=extra_constraints, model=self._result.backend_model)
+		return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model)
 	def _max(self, e, extra_constraints=None):
 		l.debug("%s._max(%s, extra_constraints=%s)", self, e, extra_constraints)
-		return self._solver_backend.max(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
+		return self._solver_backend.max(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
 	def _min(self, e, extra_constraints=None):
 		l.debug("%s._min(%s, extra_constraints=%s)", self, e, extra_constraints)
-		return self._solver_backend.min(self._solver, e, extra_constraints=extra_constraints, model=self._result.backend_model)
+		return self._solver_backend.min(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
 	def solution(self, e, v):
-		return self._solver_backend.check(self._solver, extra_constraints=[self._solver_backend.convert_expr(e==v)])
+		return self._solver_backend.check(self._get_solver(), extra_constraints=[self._solver_backend.convert_expr(e==v)])
 
 	#
 	# Merging/splitting
@@ -107,8 +114,7 @@ class CoreSolver(Solver):
 
 		converted = [ self._solver_backend.convert_expr(c) for c in self.constraints ]
 		self.constraints = [ self._solver_backend.simplify_expr(self._solver_backend.call('And', converted)) ]
-		self._solver = self._create_solver()
-		self._solver_backend.add_exprs(self._solver, self.constraints)
+		self._solver = None
 		self._simplified = True
 
 	def branch(self):
