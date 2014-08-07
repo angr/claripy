@@ -29,8 +29,9 @@ class Claripy(object):
 
         raise Exception("no backend can handle operation %s" % name)
 
-    def BitVec(self, name, size):
-        if self.unique_names:
+    def BitVec(self, name, size, explicit_name=None):
+        explicit_name = explicit_name if explicit_name is not None else False
+        if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
         return self._do_op('BitVec', (name, size))
 
