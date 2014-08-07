@@ -153,7 +153,7 @@ class E(Storable):
     def abstract(self, backends=None):
         if self._ast is not None:
             l.debug("abstract() called with an existing ast")
-            return
+            return self._ast
 
         for b in backends if backends is not None else self._claripy.expression_backends:
             l.debug("trying abstraction with %s", b)
@@ -167,7 +167,7 @@ class E(Storable):
                     self._ast = r
 
                 l.debug("... success!")
-                return
+                return self._ast
             except BackendError:
                 l.debug("... BackendError!")
                 continue
