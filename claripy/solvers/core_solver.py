@@ -112,8 +112,16 @@ class CoreSolver(Solver):
 		if self._simplified:
 			return
 
+		if len(self.constraints) == 0:
+			return
+
 		converted = [ self._solver_backend.convert_expr(c) for c in self.constraints ]
-		self.constraints = [ self._solver_backend.simplify_expr(self._solver_backend.call('And', converted)) ]
+
+		if len(converted) == 0:
+			self.constraints = [ ]
+		else:
+			self.constraints = [ self._solver_backend.simplify_expr(self._solver_backend.call('And', converted)) ]
+
 		self._solver = None
 		self._simplified = True
 

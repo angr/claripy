@@ -209,6 +209,9 @@ def test_solver():
 	#clrp.expression_backends = [ bc, bz, ba ]
 
 	s = clrp.solver()
+
+	s.simplify()
+
 	x = clrp.BitVec('x', 32)
 	y = clrp.BitVec('y', 32)
 	z = clrp.BitVec('z', 32)
