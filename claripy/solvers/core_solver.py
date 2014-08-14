@@ -67,13 +67,13 @@ class CoreSolver(Solver):
 				return
 
 			self._result = None
+			self._simplified = False
 			self.constraints.append(e_simp)
 			to_add.append(e_simp)
 			self.variables.update(e_simp.variables)
 
 		if self._solver is not None:
 			self._solver_backend.add_exprs(self._solver, to_add)
-		self._simplified = False
 
 	#
 	# Solving
