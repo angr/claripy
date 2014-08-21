@@ -304,12 +304,13 @@ class BackendZ3(Backend):
 		if isinstance(expr_raw, z3.BoolRef):
 			tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
 			s = tactics(expr_raw).as_expr()
+			n = s.decl().name()
 
-			if s.sexpr() == 'true':
+			if n == 'true':
 				s = True
 				symbolic = False
 				variables = set()
-			elif s.sexpr() == 'false':
+			elif n == 'false':
 				s = False
 				symbolic = False
 				variables = set()
