@@ -6,6 +6,7 @@ import time
 import logging
 
 l = logging.getLogger("claripy.solvers.core_solver")
+l_timing = logging.getLogger("claripy.solvers.core_solver_timing")
 
 # we need to:
 #  receive constraints
@@ -22,6 +23,7 @@ class CoreSolver(Solver):
 	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None, result=None):
 		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend)
 
+		self._to_add = [ ]
 		self._solver = solver
 		self._result = result
 		self.variables = set()
@@ -33,6 +35,10 @@ class CoreSolver(Solver):
 		if self._solver is None:
 			self._solver = self._create_solver()
 			self._solver_backend.add_exprs(self._solver, self.constraints)
+		elif len(self._to_add) > 0:
+			self._solver_backend.add_exprs(self._solver, self._to_add)
+			self._to_add = [ ]
+
 		return self._solver
 
 	#
@@ -59,7 +65,8 @@ class CoreSolver(Solver):
 
 		to_add = [ ]
 		for e in constraints:
-			e_simp = self._solver_backend.simplify_expr(e)
+			#e_simp = self._solver_backend.simplify_expr(e)
+			e_simp = e
 			if not e_simp.symbolic and self._results_backend.convert_expr(e_simp):
 				continue
 			elif not e_simp.symbolic and not self._results_backend.convert_expr(e_simp):
@@ -73,7 +80,8 @@ class CoreSolver(Solver):
 			self.variables.update(e_simp.variables)
 
 		if self._solver is not None:
-			self._solver_backend.add_exprs(self._solver, to_add)
+			self._to_add += to_add
+			#self._solver_backend.add_exprs(self._solver, to_add)
 
 	#
 	# Solving
@@ -83,11 +91,11 @@ class CoreSolver(Solver):
 		l.debug("%s.solve(extra_constraints=%s)", self, extra_constraints)
 
 		# check it!
-		l.debug("Checking SATness of %d constraints", len(self.constraints))
+		l_timing.debug("Checking SATness of %d constraints", len(self.constraints))
 		a = time.time()
 		r = self._solver_backend.results(self._get_solver(), extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None)
 		b = time.time()
-		l.debug("... %s in %s seconds", r.sat, b - a)
+		l_timing.debug("... %s in %s seconds", r.sat, b - a)
 		return r
 
 
