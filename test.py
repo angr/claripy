@@ -202,13 +202,16 @@ def test_model():
 	nose.tools.assert_equal(r_d, 20)
 
 def test_solver():
+	raw_solver(claripy.solvers.BranchingSolver)
+	raw_solver(claripy.solvers.CompositeSolver)
+def raw_solver(solver_type):
 	clrp = claripy.ClaripyStandalone()
 	#bc = claripy.backends.BackendConcrete(clrp)
 	#bz = claripy.backends.BackendZ3(clrp)
 	#ba = claripy.backends.BackendAbstract(clrp)
 	#clrp.expression_backends = [ bc, bz, ba ]
 
-	s = clrp.solver()
+	s = solver_type(clrp)
 
 	s.simplify()
 
@@ -237,7 +240,7 @@ def test_solver():
 	nose.tools.assert_equal(len(shards[0].constraints), 1)
 	nose.tools.assert_equal(len(shards[1].constraints), 2) # adds the != from the solution() check
 
-	s = clrp.solver()
+	s = solver_type(clrp)
 	#clrp.expression_backends = [ bc, ba, bz ]
 	s.add(clrp.UGT(x, 10))
 	s.add(clrp.UGT(x, 20))
@@ -255,18 +258,20 @@ def test_solver():
 
 	ss = s.split()
 	nose.tools.assert_equal(len(ss), 2)
-	nose.tools.assert_equal(len(ss[1].constraints), 3) # constraints from min or max
-	nose.tools.assert_equal(len(ss[0].constraints), 2) # constraints from min or max
+	if type(s) is claripy.solvers.BranchingSolver:
+		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 3 }) # constraints from min or max
+	elif type(s) is claripy.solvers.CompositeSolver:
+		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 2 }) # constraints from min or max
 
 	# test that False makes it unsat
-	s = clrp.solver()
+	s = solver_type(clrp)
 	s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(1,1))
 	nose.tools.assert_true(s.satisfiable())
 	s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(0,1))
 	nose.tools.assert_false(s.satisfiable())
 
 	# test extra constraints
-	s = clrp.solver()
+	s = solver_type(clrp)
 	x = clrp.BitVec('x', 32)
 	nose.tools.assert_equal(s.eval_value(x, 2, extra_constraints=[x==10]), [ 10 ])
 	s.add(x == 10)
@@ -275,7 +280,7 @@ def test_solver():
 
 	# test result caching
 
-	s = clrp.solver()
+	s = solver_type(clrp)
 	nose.tools.assert_true(s.satisfiable())
 	s.add(clrp.BoolVal(False))
 	nose.tools.assert_false(s.satisfiable())
@@ -283,19 +288,24 @@ def test_solver():
 	nose.tools.assert_false(s.satisfiable())
 
 def test_solver_branching():
+	raw_solver_branching(claripy.solvers.BranchingSolver)
+	raw_solver_branching(claripy.solvers.CompositeSolver)
+def raw_solver_branching(solver_type):
 	clrp = claripy.ClaripyStandalone()
-	s = clrp.solver()
+	s = solver_type(clrp)
 	x = clrp.BitVec("x", 32)
 	y = clrp.BitVec("y", 32)
 	s.add(x > y)
 	s.add(x < 10)
 
 	t = s.branch()
-	nose.tools.assert_is(s._solver, t._solver)
-	nose.tools.assert_true(s._finalized)
-	nose.tools.assert_true(t._finalized)
+	if type(s) is claripy.solvers.BranchingSolver:
+		nose.tools.assert_is(s._solver, t._solver)
+		nose.tools.assert_true(s._finalized)
+		nose.tools.assert_true(t._finalized)
 	t.add(x > 5)
-	nose.tools.assert_false(s._solver is t._solver)
+	if type(s) is claripy.solvers.BranchingSolver:
+		nose.tools.assert_false(s._solver is t._solver)
 
 	s.add(x == 3)
 	nose.tools.assert_true(s.satisfiable())
@@ -309,10 +319,13 @@ def test_solver_branching():
 	nose.tools.assert_false(t.satisfiable())
 
 def test_combine():
+	raw_combine(claripy.solvers.BranchingSolver)
+	raw_combine(claripy.solvers.CompositeSolver)
+def raw_combine(solver_type):
 	clrp = claripy.ClaripyStandalone()
-	s10 = clrp.solver()
-	s20 = clrp.solver()
-	s30 = clrp.solver()
+	s10 = solver_type(clrp)
+	s20 = solver_type(clrp)
+	s30 = solver_type(clrp)
 	x = clrp.BitVec("x", 32)
 
 	s10.add(x >= 10)
@@ -333,9 +346,12 @@ def test_bv():
 	claripy.bv.test()
 
 def test_simple_merging():
+	raw_simple_merging(claripy.solvers.BranchingSolver)
+	raw_simple_merging(claripy.solvers.CompositeSolver)
+def raw_simple_merging(solver_type):
 	clrp = claripy.ClaripyStandalone()
-	s1 = clrp.solver()
-	s2 = clrp.solver()
+	s1 = solver_type(clrp)
+	s2 = solver_type(clrp)
 	w = clrp.BitVec("w", 8)
 	x = clrp.BitVec("x", 8)
 	y = clrp.BitVec("y", 8)
@@ -394,7 +410,7 @@ def test_simple_merging():
 	nose.tools.assert_equal(smm_2.eval_value(z, 1), [20])
 	nose.tools.assert_equal(smm_2.eval_value(w, 1), [5])
 
-	so = clrp.solver()
+	so = solver_type(clrp)
 	so.add(w == 0)
 
 	sa = so.branch()
@@ -465,8 +481,11 @@ def test_composite_solver():
 	nose.tools.assert_false(s.satisfiable())
 
 def test_ite():
+	raw_ite(claripy.solvers.BranchingSolver)
+	raw_ite(claripy.solvers.CompositeSolver)
+def raw_ite(solver_type):
 	clrp = claripy.ClaripyStandalone()
-	s = clrp.solver()
+	s = solver_type(clrp)
 	x = clrp.BitVec("x", 32)
 	y = clrp.BitVec("y", 32)
 	z = clrp.BitVec("z", 32)

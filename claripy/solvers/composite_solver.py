@@ -2,8 +2,9 @@ import logging
 l = logging.getLogger("claripy.solvers.composite_solver")
 
 import itertools
+import operator
+
 symbolic_count = itertools.count()
-from copy import copy
 
 from .solver import Solver
 from .branching_solver import BranchingSolver
@@ -29,6 +30,10 @@ class CompositeSolver(Solver):
 	def variables(self):
 		return self._solvers.keys()
 
+	@property
+	def constraints(self):
+		return sum([ s.constraints for s in self._solver_list ], [ ])
+
 	def _solvers_for_variables(self, names):
 		seen_solvers = set()
 		existing_solvers = [ ]
@@ -43,7 +48,9 @@ class CompositeSolver(Solver):
 
 	def _merged_solver_for(self, names):
 		solvers = self._solvers_for_variables(names)
-		if len(solvers) == 1:
+		if len(solvers) == 0:
+			return self._solver_class(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+		elif len(solvers) == 1:
 			return solvers[0]
 		else:
 			return solvers[0].combine(solvers[1:])
@@ -53,9 +60,9 @@ class CompositeSolver(Solver):
 		Returns a sequence of the solvers that self and others share.
 		'''
 
-		solvers_by_id = { s._id: s for s in self._solver_list }
+		solvers_by_id = { s.uuid: s for s in self._solver_list }
 		common_solvers = set(solvers_by_id.keys())
-		other_sets = [ { s._id for s in cs._solver_list } for cs in others ]
+		other_sets = [ { s.uuid for s in cs._solver_list } for cs in others ]
 		for o in other_sets: common_solvers &= o
 
 		return [ solvers_by_id[s] for s in common_solvers ]
@@ -72,66 +79,37 @@ class CompositeSolver(Solver):
 	# Constraints
 	#
 
-	def add(self, *constraints, **kwargs):
+	def _add_dependent_constraints(self, names, constraints):
+		s = self._merged_solver_for(names)
+		s.add(*constraints)
+		for v in s.variables | names:
+			self._solvers[v] = s
+
+	def add(self, *constraints):
 		if len(constraints) == 0:
 			return
 
-		self._result = None
+		try:
+			filtered = self._constraint_filter(constraints)
+		except UnsatError:
+			self._result = Result(False, { })
+			self._add_dependent_constraints({ 'CONCRETE' }, [ self._claripy.BoolVal(False) ])
+			return
 
-		#print "GOT CONSTRAINTS:", constraints
+		split = self._independent_constraints(constraints=filtered)
 
-		# first, flatten the constraints
-		split = self._independent_constraints(constraints=constraints)
-
-		print "AFTER SPLIT:", split
+		#print "AFTER SPLIT:", split
 
 		l.debug("%s, solvers before: %d", self, len(self._solvers))
-		for names, set_constraints in split:
-			l.debug("Checking %d constraints for names %s", len(set_constraints), names)
 
-			#print "=============================="
-			#for i in set_constraints:
-			#	print "-------------------------"
-			#	print i
-			#print "==========================---="
-
-			# this signifies that we are setting some variable to be concrete
-			#if len(names) == 1:
-			#	self._time_to_split = True
-
+		for names,set_constraints in split:
 			# handle concrete-only constraints
 			if len(names) == 0:
 				names = { "CONCRETE" }
 
-			existing_solvers = self._solvers_for_variables(names)
+			l.debug("Adding %d constraints for names %s", len(set_constraints), names)
+			self._add_dependent_constraints(names, set_constraints)
 
-			# totally unrelated to existing constraints
-			if len(existing_solvers) == 0:
-				l.debug("... got a new set of constraints!")
-				new_solver = self._solver_class(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
-
-			# fits within an existing solver
-			elif len(existing_solvers) == 1:
-				# TODO: split
-				l.debug("... constraints fit into an existing solver.")
-				new_solver = existing_solvers[0]
-
-			# have to merge two solvers
-			else:
-				l.debug("... merging %d solvers.", len(existing_solvers))
-				new_solver = existing_solvers[0].combine(existing_solvers[1:])
-
-			# add the constraint tot he new solver
-			new_solver.add(*set_constraints)
-
-			# sanity checking
-			if len(names - new_solver.variables - {"CONCRETE"}) > 0:
-				raise Exception("Something went wrong with solver merging. Nag Yan!")
-
-			# invalidate the solution cache and update solvers, and don't forget the concrete one!
-			for n in new_solver.variables | (names & {"CONCRETE"}):
-				l.debug("... adding solver %r for %r", new_solver, n)
-				self._solvers[n] = new_solver
 		l.debug("... solvers after add of %r: %d", constraints, len(self._solver_list))
 
 	#
@@ -142,13 +120,19 @@ class CompositeSolver(Solver):
 		l.debug("%r checking satisfiability...", self)
 
 		if extra_constraints is not None:
-			raise NotImplementedError("extra_constraints not supported yet")
+			extra_vars = reduce(operator.or_, (a.variables for a in extra_constraints), set())
+			solvers = [ self._merged_solver_for(extra_vars) ]
+			for s in self._solver_list:
+				if len(s.variables | solvers[0].variables) == 0:
+					solvers.append(s)
+		else:
+			solvers = self._solver_list
 
 		model = { }
 		satness = True
 
-		for s in self._solver_list:
-			if not s.satisfiable():
+		for s in solvers:
+			if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else None):
 				l.debug("... %r: False", s)
 				satness = False
 				break
@@ -159,20 +143,26 @@ class CompositeSolver(Solver):
 		l.debug("... ok!")
 		return Result(satness, model)
 
-	def _eval(self, e, n, extra_constraints=None):
+	def eval(self, e, n, extra_constraints=None):
+		all_vars = e.variables
 		if extra_constraints is not None:
-			raise NotImplementedError("extra_constraints not supported yet")
-		return self._merged_solver_for(e.variables).eval(e, n, extra_constraints=extra_constraints)
+			all_vars |= reduce(operator.or_, (a.variables for a in extra_constraints), set())
+		return self._merged_solver_for(all_vars).eval(e, n, extra_constraints=extra_constraints)
 
-	def _max(self, e, extra_constraints=None):
+	def max(self, e, extra_constraints=None):
+		all_vars = e.variables
 		if extra_constraints is not None:
-			raise NotImplementedError("extra_constraints not supported yet")
-		return self._merged_solver_for(e.variables).max(e, extra_constraints=extra_constraints)
+			all_vars |= reduce(operator.or_, (a.variables for a in extra_constraints), set())
+		return self._merged_solver_for(all_vars).max(e, extra_constraints=extra_constraints)
 
-	def _min(self, e, extra_constraints=None):
+	def min(self, e, extra_constraints=None):
+		all_vars = e.variables
 		if extra_constraints is not None:
-			raise NotImplementedError("extra_constraints not supported yet")
-		return self._merged_solver_for(e.variables).min(e, extra_constraints=extra_constraints)
+			all_vars |= reduce(operator.or_, (a.variables for a in extra_constraints), set())
+		return self._merged_solver_for(all_vars).min(e, extra_constraints=extra_constraints)
+
+	def solution(self, e, n):
+		return self._merged_solver_for(e.variables).solution(e, n)
 
 	#
 	# Merging and splitting
@@ -209,16 +199,14 @@ class CompositeSolver(Solver):
 		l.debug("Merging %s with %d other solvers.", self, len(others))
 		merged = CompositeSolver(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
 		common_solvers = self._shared_solvers(others)
-		common_ids = { s._id for s in common_solvers }
+		common_ids = { s.uuid for s in common_solvers }
 		l.debug("... %s common solvers", len(common_solvers))
-
-		merged.variables = copy(self.variables)
 
 		for s in common_solvers:
 			for v in s.variables:
 				merged._solvers[v] = s.branch()
 
-		noncommon_solvers = [ [ s for s in cs._solvers if s._id not in common_ids ] for cs in [self]+others ]
+		noncommon_solvers = [ [ s for s in cs._solver_list if s.uuid not in common_ids ] for cs in [self]+others ]
 
 		l.debug("... merging noncommon solvers")
 		combined_noncommons = [ ]
@@ -239,7 +227,7 @@ class CompositeSolver(Solver):
 
 		return merged
 
-	def combine(self, others):
-		raise NotImplementedError()
+	#def combine(self, others):
+	#	raise NotImplementedError()
 
-from ..result import Result
+from ..result import Result, UnsatError

@@ -24,6 +24,7 @@ class CoreSolver(Solver):
 		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend, result=result)
 
 		self._to_add = [ ]
+		self.constraints = [ ]
 		self._solver = solver
 		self.variables = set()
 

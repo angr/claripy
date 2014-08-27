@@ -10,16 +10,17 @@ cached_solve = 0
 filter_true = 0
 filter_false = 0
 
-class Solver(object):
+from ..storable import Storable
+
+class Solver(Storable):
 	def __init__(self, claripy, solver_backend=None, result=None, results_backend=None, timeout=None):
-		self._claripy = claripy
+		Storable.__init__(self, claripy)
 		self._solver_backend = solver_backend if solver_backend is not None else claripy.solver_backend
 		self._results_backend = results_backend if results_backend is not None else claripy.results_backend
 
 		self._finalized = None
 		self._result = result
 		self._simplified = True
-		self.constraints = [ ]
 		self._timeout = timeout if timeout is not None else 300000
 
 	def _independent_constraints(self, constraints=None):
@@ -28,7 +29,7 @@ class Solver(object):
 		'''
 
 		sets_list = [ ]
-		for i in self.constraints if constraints is None else constraints:
+		for i in self.constraints if constraints is None else constraints: #pylint:disable=E1101
 			sets_list.extend(i.split(['And']))
 
 		l.debug("... sets_list: %r", sets_list)
@@ -173,7 +174,6 @@ class Solver(object):
 	def max(self, e, extra_constraints=None):
 		global cached_max
 		extra_constraints = self._constraint_filter(extra_constraints)
-		self.simplify()
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
 		if len(two) == 1: return two[0]
@@ -182,12 +182,14 @@ class Solver(object):
 			cached_max += 1
 			r = self._result.max_cache[e.uuid]
 		else:
+			self.simplify()
 			o = self._solver_backend.convert_expr(e)
 			c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.UGE(e, two[0]), self._claripy.UGE(e, two[1]) ]
 			r = self._results_backend.convert(self._max(o, extra_constraints=c), model=self._result.model)
 
 		if extra_constraints is None:
 			self._result.max_cache[e.uuid] = r
+			print "ADDING MAX CACHE"
 			self.add(self._claripy.ULE(e, r))
 
 		return self._results_backend.wrap(r)
@@ -195,7 +197,6 @@ class Solver(object):
 	def min(self, e, extra_constraints=None):
 		global cached_min
 		extra_constraints = self._constraint_filter(extra_constraints)
-		self.simplify()
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
 		if len(two) == 1: return two[0]
@@ -204,12 +205,14 @@ class Solver(object):
 			cached_min += 1
 			r = self._result.min_cache[e.uuid]
 		else:
+			self.simplify()
 			o = self._solver_backend.convert_expr(e)
 			c = ([ ] if extra_constraints is None else extra_constraints) + [ self._claripy.ULE(e, two[0]), self._claripy.ULE(e, two[1]) ]
 			r = self._results_backend.convert(self._min(o, extra_constraints=c), model=self._result.model)
 
 		if extra_constraints is None:
 			self._result.min_cache[e.uuid] = r
+			print "ADDING MIN CACHE"
 			self.add(self._claripy.UGE(e, r))
 
 		return self._results_backend.wrap(r)
@@ -224,7 +227,7 @@ class Solver(object):
 	# These should be implemented by the solver subclass
 	#
 
-	def add(self, *constraints, **kwargs):
+	def add(self, *constraints):
 		raise NotImplementedError()
 
 	def _solve(self, extra_constraints=None):
@@ -279,7 +282,7 @@ class Solver(object):
 	def combine(self, others):
 		combined = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
 
-		combined.add(*self.constraints)
+		combined.add(*self.constraints) #pylint:disable=E1101
 		for o in others:
 			combined.add(*o.constraints)
 		return combined
