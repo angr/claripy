@@ -237,8 +237,7 @@ def raw_solver(solver_type):
 	nose.tools.assert_equal(len(shards), 2)
 	nose.tools.assert_equal(len(shards[0].variables), 1)
 	nose.tools.assert_equal(len(shards[1].variables), 1)
-	nose.tools.assert_equal(len(shards[0].constraints), 1)
-	nose.tools.assert_equal(len(shards[1].constraints), 2) # adds the != from the solution() check
+	nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 2 }) # adds the != from the solution() check
 
 	s = solver_type(clrp)
 	#clrp.expression_backends = [ bc, ba, bz ]
@@ -458,22 +457,22 @@ def test_composite_solver():
 	z = clrp.BitVec("z", 32)
 	c = clrp.And(x == 1, y == 2, z == 3)
 	s.add(c)
-	nose.tools.assert_equals(len(s._solver_list), 3)
+	nose.tools.assert_equals(len(s._solver_list), 4) # including the CONSTANT solver
 	nose.tools.assert_true(s.satisfiable())
 
 	s.add(x < y)
-	nose.tools.assert_equal(len(s._solver_list), 2)
+	nose.tools.assert_equal(len(s._solver_list), 3)
 	nose.tools.assert_true(s.satisfiable())
 
 	s.simplify()
-	nose.tools.assert_equal(len(s._solver_list), 3)
+	nose.tools.assert_equal(len(s._solver_list), 4)
 	nose.tools.assert_true(s.satisfiable())
 
 	s1 = s.branch()
 	s1.add(x > y)
-	nose.tools.assert_equal(len(s1._solver_list), 2)
+	nose.tools.assert_equal(len(s1._solver_list), 3)
 	nose.tools.assert_false(s1.satisfiable())
-	nose.tools.assert_equal(len(s._solver_list), 3)
+	nose.tools.assert_equal(len(s._solver_list), 4)
 	nose.tools.assert_true(s.satisfiable())
 
 	s.add(clrp.BitVecVal(1, 32) == clrp.BitVecVal(2, 32))

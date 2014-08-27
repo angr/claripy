@@ -28,46 +28,40 @@ class Solver(Storable):
 		Returns independent constraints, split from this Solver's constraints.
 		'''
 
-		sets_list = [ ]
+		splitted = [ ]
 		for i in self.constraints if constraints is None else constraints: #pylint:disable=E1101
-			sets_list.extend(i.split(['And']))
+			splitted.extend(i.split(['And']))
 
-		l.debug("... sets_list: %r", sets_list)
+		l.debug("... splitted of size %d", len(splitted))
 
-		set_sets = { }
-		for s in sets_list:
-			l.debug("... processing %r with variables %r", s, s.variables)
-			c = [ s ]
-			vv = set(s.variables)
+		variable_connections = { }
+		constraint_connections = { }
+		for n,s in enumerate(splitted):
+			l.debug("... processing constraint with variables %r", s.variables)
+
+			connected_variables = set(s.variables)
+			connected_constraints = { n }
+
+			if len(connected_variables) == 0:
+				connected_variables.add('CONSTANT')
 
 			for v in s.variables:
-				if v in set_sets:
-					for sv in set_sets[v]:
-						vv.update(sv.variables)
-					c.extend(set_sets[v])
+				if v in variable_connections:
+					connected_variables |= variable_connections[v]
+				if v in constraint_connections:
+					connected_constraints |= constraint_connections[v]
 
-			if len(vv) == 0:
-				vv = { "CONSTANT" }
+			for v in connected_variables:
+				variable_connections[v] = connected_variables
+				constraint_connections[v] = connected_constraints
 
-			for v in vv:
-				l.debug("...... setting %s to %r", v, c)
-				set_sets[v] = c
-
-		l.debug("... set_sets: %r", set_sets)
+		unique_constraint_sets = set()
+		for v in variable_connections:
+			unique_constraint_sets.add((frozenset(variable_connections[v]), frozenset(constraint_connections[v])))
 
 		results = [ ]
-		seen_lists = set()
-		for c_list in set_sets.values():
-			if id(c_list) in seen_lists:
-				continue
-
-			seen_lists.add(id(c_list))
-			variables = set()
-			for c in c_list:
-				variables |= c.variables
-			l.debug("... appending variables %r with constraints %r", variables, c_list)
-			results.append((variables, c_list))
-
+		for v,c_indexes in unique_constraint_sets:
+			results.append((set(v), [ splitted[c] for c in c_indexes ]))
 		return results
 
 
