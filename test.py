@@ -235,7 +235,7 @@ def test_solver():
 	nose.tools.assert_equal(len(shards[0].variables), 1)
 	nose.tools.assert_equal(len(shards[1].variables), 1)
 	nose.tools.assert_equal(len(shards[0].constraints), 1)
-	nose.tools.assert_equal(len(shards[1].constraints), 1)
+	nose.tools.assert_equal(len(shards[1].constraints), 2) # adds the != from the solution() check
 
 	s = clrp.solver()
 	#clrp.expression_backends = [ bc, ba, bz ]
@@ -255,8 +255,8 @@ def test_solver():
 
 	ss = s.split()
 	nose.tools.assert_equal(len(ss), 2)
-	nose.tools.assert_equal(len(ss[1].constraints), 2)
-	nose.tools.assert_equal(len(ss[0].constraints), 1)
+	nose.tools.assert_equal(len(ss[1].constraints), 3) # constraints from min or max
+	nose.tools.assert_equal(len(ss[0].constraints), 2) # constraints from min or max
 
 	# test that False makes it unsat
 	s = clrp.solver()

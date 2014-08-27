@@ -11,13 +11,13 @@ filter_true = 0
 filter_false = 0
 
 class Solver(object):
-	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None):
+	def __init__(self, claripy, solver_backend=None, result=None, results_backend=None, timeout=None):
 		self._claripy = claripy
 		self._solver_backend = solver_backend if solver_backend is not None else claripy.solver_backend
 		self._results_backend = results_backend if results_backend is not None else claripy.results_backend
 
 		self._finalized = None
-		self._result = None
+		self._result = result
 		self._simplified = True
 		self.constraints = [ ]
 		self._timeout = timeout if timeout is not None else 300000
@@ -135,6 +135,7 @@ class Solver(object):
 			if e.uuid in self._result.eval_cache:
 				cached_n = self._result.eval_cache[e.uuid][0]
 				cached_eval = self._result.eval_cache[e.uuid][1]
+
 				if cached_n >= n:
 					r = cached_eval[:n]
 				elif len(cached_eval) < cached_n:
@@ -148,13 +149,20 @@ class Solver(object):
 						r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
 					except UnsatError:
 						r = [ ]
+
 					n += cached_n
 					r = cached_eval + r
 				cached_evals += cached_n
 			else:
 				o = self._solver_backend.convert_expr(e)
 				r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
+
 			self._result.eval_cache[e.uuid] = (n, r)
+
+			# if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
+			# add constraints to help the solver out later
+			if len(r) < n:
+				self.add(self._claripy.Or(*[ e == v for v in r ]))
 		else:
 			o = self._solver_backend.convert_expr(e)
 			r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
@@ -180,6 +188,7 @@ class Solver(object):
 
 		if extra_constraints is None:
 			self._result.max_cache[e.uuid] = r
+			self.add(self._claripy.ULE(e, r))
 
 		return self._results_backend.wrap(r)
 
@@ -201,11 +210,14 @@ class Solver(object):
 
 		if extra_constraints is None:
 			self._result.min_cache[e.uuid] = r
+			self.add(self._claripy.UGE(e, r))
 
 		return self._results_backend.wrap(r)
 
 	def solution(self, e, v):
-		return self.satisfiable(extra_constraints=[e==v])
+		b = self._solution(e, v)
+		if not b: self.add(e != v)
+		return b
 
 
 	#
@@ -222,6 +234,8 @@ class Solver(object):
 	def _max(self, e, extra_constraints=None):
 		raise NotImplementedError()
 	def _min(self, e, extra_constraints=None):
+		raise NotImplementedError()
+	def _solution(self, e, v):
 		raise NotImplementedError()
 
 	def eval_value(self, e, n, extra_constraints=None):

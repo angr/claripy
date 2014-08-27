@@ -21,11 +21,10 @@ symbolic_count = itertools.count()
 
 class CoreSolver(Solver):
 	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver=None, result=None):
-		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend)
+		Solver.__init__(self, claripy, timeout=timeout, solver_backend=solver_backend, results_backend=results_backend, result=result)
 
 		self._to_add = [ ]
 		self._solver = solver
-		self._result = result
 		self.variables = set()
 
 	def downsize(self):
@@ -109,7 +108,7 @@ class CoreSolver(Solver):
 		l.debug("%s._min(%s, extra_constraints=%s)", self, e, extra_constraints)
 		return self._solver_backend.min(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
-	def solution(self, e, v):
+	def _solution(self, e, v):
 		return self._solver_backend.check(self._get_solver(), extra_constraints=[self._solver_backend.convert_expr(e==v)])
 
 	#
