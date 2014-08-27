@@ -23,6 +23,9 @@ class Solver(Storable):
 		self._simplified = True
 		self._timeout = timeout if timeout is not None else 300000
 
+	def _load(self):
+		raise Exception('TODO')
+
 	def _independent_constraints(self, constraints=None):
 		'''
 		Returns independent constraints, split from this Solver's constraints.
