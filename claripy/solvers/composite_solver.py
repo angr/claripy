@@ -175,6 +175,9 @@ class CompositeSolver(Solver):
 	def simplify(self):
 		l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))
 		for s in self._solver_list:
+			if s._simplified:
+				continue
+
 			l.debug("... simplifying child solver %r", s)
 			s.simplify()
 			l.debug("... splitting child solver %r", s)
