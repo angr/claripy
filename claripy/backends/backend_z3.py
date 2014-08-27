@@ -6,8 +6,6 @@ cache_count = 0
 
 # import and set up Z3
 import os
-import sys
-import thread
 import cPickle as pickle
 
 import z3
@@ -166,17 +164,20 @@ class BackendZ3(Backend):
 				os.write(p_w, pickle.dumps(r))
 				os.close(p_w)
 				os.close(p_r)
-				os.abort()
-				open("/tmp/wtf1", "a").write("WTF???\n")
-				sys.exit(1)
-				open("/tmp/wtf2", "a").write("WTF???\n")
+				os.kill(os.getpid(), 9)
+				#print "CLOSED. ABORTING"
+				#os.abort()
+				#print "ABORTED"
+				#open("/tmp/wtf1", "a").write("WTF???\n")
+				#sys.exit(1)
+				#open("/tmp/wtf2", "a").write("WTF???\n")
 			else:
 				os.close(p_w)
 				strs = [ os.read(p_r, 1024*1024) ]
 				while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
 				os.close(p_r)
 
-				thread.start_new_thread(os.wait, ())
+				#thread.start_new_thread(os.wait, ())
 				return pickle.loads("".join(strs))
 		else:
 			return f(*args, **kwargs)
