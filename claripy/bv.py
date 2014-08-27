@@ -31,6 +31,14 @@ class BVV(object):
         self.mod = 2**bits
         self.value = value
 
+    def __getstate__(self):
+        return (self.bits, self.value)
+
+    def __setstate__(self, s):
+        self.bits = s[0]
+        self.mod = 2**self.bits
+        self.value = s[1]
+
     @property
     def value(self):
         return self._value
