@@ -273,6 +273,14 @@ def test_solver():
 	nose.tools.assert_false(s.solution(x, 2))
 	nose.tools.assert_true(s.solution(x, 10))
 
+	# test result caching
+
+	s = clrp.solver()
+	nose.tools.assert_true(s.satisfiable())
+	s.add(clrp.BoolVal(False))
+	nose.tools.assert_false(s.satisfiable())
+	s._result = None
+	nose.tools.assert_false(s.satisfiable())
 
 def test_solver_branching():
 	clrp = claripy.ClaripyStandalone()

@@ -70,6 +70,9 @@ class CoreSolver(Solver):
 				continue
 			elif not e_simp.symbolic and not self._results_backend.convert_expr(e_simp):
 				self._result = Result(False, { })
+				f = self._claripy.BoolVal(False)
+				self.constraints.append(f)
+				self._to_add.append(f)
 				return
 
 			self._result = None
