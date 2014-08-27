@@ -25,9 +25,9 @@ class BackendConcrete(Backend):
             l.debug("BackendConcrete doesn't handle abstract stuff")
             raise BackendError("BackendConcrete doesn't handle abstract stuff")
 
-        if not (hasattr(a, '__module__') and a.__module__ == 'z3'):
+        if type(a) in { int, long, float, bool, str, BVV }:
             return a
-        if hasattr(a, 'as_long'):
+        elif hasattr(a, 'as_long'):
             return bv.BVV(a.as_long(), a.size())
         elif isinstance(a, z3.BoolRef) and a.eq(zTrue):
             return True
@@ -36,7 +36,7 @@ class BackendConcrete(Backend):
         elif model is not None and a.num_args() == 0:
             name = a.decl().name()
             if name in model:
-                return bv.BVV(model[name], a.size())
+                return model[name]
             else:
                 l.debug("returning 0 for %s (not in model %r)", name, model)
                 return bv.BVV(0, a.size())
@@ -46,7 +46,7 @@ class BackendConcrete(Backend):
 
     def convert_expr(self, e, model=None):
         if isinstance(e, E):
-            if e.symbolic:
+            if e.symbolic and model is None:
                 l.debug("BackendConcrete.convert_exprs() aborting on symbolic expression")
                 raise BackendError("BackendConcrete.convert_exprs() aborting on symbolic expression")
 
@@ -70,5 +70,15 @@ class BackendConcrete(Backend):
         else:
             raise BackendError("unable to convert type %s to primitive" % o.__class__.__name__)
 
+    def eval(self, s, expr, n, extra_constraints=None, model=None, results_backend=None):
+        return [ self.convert(expr, model=model) ]
+
+    def min(self, s, expr, extra_constraints=None, model=None):
+        return [ self.convert(expr) ] # no model, since we want to abort on symbolic
+
+    def max(self, s, expr, extra_constraints=None, model=None):
+        return [ self.convert(expr) ] # no model, since we want to abort on symbolic
+
 from ..expression import E
+from ..bv import BVV
 #from .backend_z3 import BackendZ3
