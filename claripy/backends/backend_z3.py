@@ -6,6 +6,10 @@ cache_count = 0
 
 # import and set up Z3
 import os
+import sys
+import thread
+import cPickle as pickle
+
 import z3
 if "Z3PATH" in os.environ:
 	z3_path = os.environ["Z3PATH"]
@@ -22,10 +26,11 @@ from .. import bv
 class BackendZ3(Backend):
 	_split_on = { 'And', 'Or' }
 
-	def __init__(self, claripy):
+	def __init__(self, claripy, background_solve=None):
 		Backend.__init__(self, claripy)
 		self._make_raw_ops(ops, op_module=z3)
 		self._op_expr['BitVec'] = self.BitVec
+		self._background_solve = background_solve if background_solve is not None else True
 
 	def BitVec(self, name, size, model=None):
 		if model and name in model:
@@ -117,7 +122,7 @@ class BackendZ3(Backend):
 	def add(self, s, c):
 		s.add(*c)
 
-	def check(self, s, extra_constraints=None): #pylint:disable=R0201
+	def _check(self, s, extra_constraints=None): #pylint:disable=R0201
 		global solve_count
 		solve_count += 1
 		if extra_constraints is not None:
@@ -131,9 +136,9 @@ class BackendZ3(Backend):
 			s.pop()
 		return satness
 
-	def results(self, s, extra_constraints=None, generic_model=True):
-		satness = self.check(s, extra_constraints=extra_constraints)
-		model = None
+	def _results(self, s, extra_constraints=None, generic_model=True, results_backend=None):
+		satness = self._check(s, extra_constraints=extra_constraints)
+		model = { }
 		z3_model = None
 
 		if satness:
@@ -141,17 +146,43 @@ class BackendZ3(Backend):
 			z3_model = s.model()
 			l.debug("model is %r", z3_model)
 			if generic_model:
-				model = { }
 				for m_f in z3_model:
 					n = m_f.name()
 					m = m_f()
-					model[n] = z3_model.eval(m)
+					model[n] = z3_model.eval(m) if results_backend is None else results_backend.convert(z3_model.eval(m))
 		else:
 			l.debug("unsat!")
 
 		return Result(satness, model, backend_model=z3_model)
 
-	def eval(self, s, expr, n, extra_constraints=None, model=None):
+	def _background(self, f, *args, **kwargs):
+		if self._background_solve:
+			p_r, p_w = os.pipe()
+			p = os.fork()
+			if p == 0:
+				self._background_solve = False
+
+				r = f(*args, **kwargs)
+				os.write(p_w, pickle.dumps(r))
+				os.close(p_w)
+				os.close(p_r)
+				os.abort()
+				open("/tmp/wtf1", "a").write("WTF???\n")
+				sys.exit(1)
+				open("/tmp/wtf2", "a").write("WTF???\n")
+			else:
+				os.close(p_w)
+				strs = [ os.read(p_r, 1024*1024) ]
+				while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
+				os.close(p_r)
+
+				thread.start_new_thread(os.wait, ())
+				return pickle.loads("".join(strs))
+		else:
+			return f(*args, **kwargs)
+
+
+	def _eval(self, s, expr, n, extra_constraints=None, model=None, results_backend=None):
 		global solve_count, cache_count
 
 		#if n == 1 and model is None:
@@ -181,7 +212,7 @@ class BackendZ3(Backend):
 			else:
 				v = expr
 
-			results.append(v)
+			results.append(v if results_backend is None else results_backend.convert(v))
 			if i + 1 != n:
 				s.add(expr != v)
 				model = None
@@ -194,7 +225,7 @@ class BackendZ3(Backend):
 
 		return results
 
-	def min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
+	def _min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
@@ -230,19 +261,19 @@ class BackendZ3(Backend):
 
 		l.debug("final hi/lo: %d, %d", hi, lo)
 
-		if hi == lo: return lo
+		if hi == lo: return BVV(lo, expr.size())
 		else:
 			s.push()
 			s.add(expr == lo)
 			l.debug("Doing a check!")
 			if s.check() == z3.sat:
 				s.pop()
-				return lo
+				return BVV(lo, expr.size())
 			else:
 				s.pop()
-		return hi
+		return BVV(hi, expr.size())
 
-	def max(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
+	def _max(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
@@ -277,17 +308,32 @@ class BackendZ3(Backend):
 		for _ in range(numpop):
 			s.pop()
 
-		if hi == lo: return lo
+		if hi == lo: return BVV(lo, expr.size())
 		else:
 			s.push()
 			s.add(expr == hi)
 			l.debug("Doing a check!")
 			if s.check() == z3.sat:
 				s.pop()
-				return hi
+				return BVV(hi, expr.size())
 			else:
 				s.pop()
-		return lo
+		return BVV(lo, expr.size())
+
+	def check(self, s, extra_constraints=None):
+		return self._background(self._check, s, extra_constraints=extra_constraints)
+
+	def results(self, s, extra_constraints=None, results_backend=None):
+		return self._background(self._results, s, extra_constraints=extra_constraints, results_backend=results_backend)
+
+	def eval(self, s, expr, n, extra_constraints=None, model=None, results_backend=None):
+		return self._background(self._eval, s, expr, n, extra_constraints=extra_constraints, model=model, results_backend=results_backend)
+
+	def min(self, s, expr, extra_constraints=None, model=None):
+		return self._background(self._min,  s, expr, extra_constraints=extra_constraints, model=model)
+
+	def max(self, s, expr, extra_constraints=None, model=None):
+		return self._background(self._max,  s, expr, extra_constraints=extra_constraints, model=model)
 
 	def simplify(self, expr): #pylint:disable=W0613,R0201
 		raise Exception("This shouldn't be called. But Yan.")
@@ -371,3 +417,4 @@ function_map['bvlshr'] = 'LShR'
 
 from ..expression import E, A
 from ..result import Result, UnsatError
+from ..bv import BVV
