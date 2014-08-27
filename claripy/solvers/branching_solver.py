@@ -22,6 +22,7 @@ class BranchingSolver(CoreSolver):
         s = BranchingSolver(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout, solver=self._solver, result=self._result)
         s.constraints = self.constraints[:]
         s.variables = set(self.variables)
+        s._simplified = self._simplified
 
         self.finalize()
         s.finalize()

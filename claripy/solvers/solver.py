@@ -267,6 +267,7 @@ class Solver(Storable):
 
 	def merge(self, others, merge_flag, merge_values):
 		merged = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+		merged._simplified = False
 		options = [ ]
 
 		for s, v in zip([self]+others, merge_values):
@@ -276,6 +277,7 @@ class Solver(Storable):
 
 	def combine(self, others):
 		combined = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+		combined._simplified = False
 
 		combined.add(*self.constraints) #pylint:disable=E1101
 		for o in others:
@@ -289,6 +291,7 @@ class Solver(Storable):
 			l.debug("... got %d constraints with variables %r", len(c_list), variables)
 
 			s = self.__class__(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout)
+			s._simplified = False
 			s.add(*c_list)
 			results.append(s)
 		return results
