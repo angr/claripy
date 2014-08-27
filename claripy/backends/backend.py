@@ -102,7 +102,7 @@ class Backend(object):
 	def results(self, s, extra_constraints=None, generic_model=True): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
-	def eval(self, s, expr, n, extra_constraints=None, model=None): #pylint:disable=W0613,R0201
+	def eval(self, s, expr, n, extra_constraints=None, model=None, results_backend=None): #pylint:disable=W0613,R0201
 		raise BackendError("backend doesn't support solving")
 
 	def min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613,R0201
