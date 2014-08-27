@@ -129,44 +129,48 @@ class Solver(Storable):
 
 		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
 
-		if extra_constraints is None:
-			if e.uuid in self._result.eval_cache:
-				cached_n = self._result.eval_cache[e.uuid][0]
-				cached_eval = self._result.eval_cache[e.uuid][1]
+		l.debug("Solver.eval() with n=%d and %d extra_constraints", n, len(extra_constraints) if extra_constraints is not None else 0)
 
-				if cached_n >= n:
-					r = cached_eval[:n]
-				elif len(cached_eval) < cached_n:
-					r = cached_eval[:n]
-				else:
-					n -= cached_n
-					extra_constraints = [ e != v for v in cached_eval ]
+		if extra_constraints is None and e.uuid in self._result.eval_cache:
+			cached_results = self._result.eval_cache[e.uuid][1]
+			cached_n = self._result.eval_cache[e.uuid][0]
 
-					o = self._solver_backend.convert_expr(e)
-					try:
-						r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
-					except UnsatError:
-						r = [ ]
-
-					n += cached_n
-					r = cached_eval + r
-				cached_evals += cached_n
+			if cached_n >= n or len(cached_results) < cached_n:
+				cached_evals += min(len(cached_results), n)
+				return [ self._results_backend.wrap(i) for i in list(cached_results)[:n] ]
 			else:
-				o = self._solver_backend.convert_expr(e)
-				r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
-
-			self._result.eval_cache[e.uuid] = (n, r)
-
-			# if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
-			# add constraints to help the solver out later
-			if len(r) < n:
-				self.add(self._claripy.Or(*[ e == v for v in r ]))
+				solver_extra_constraints = [ e != v for v in cached_results ]
 		else:
+			cached_results = set()
+			cached_n = 0
+			solver_extra_constraints = extra_constraints
+
+		cached_evals += cached_n
+		l.debug("... %d values (of %d) were already cached.", cached_n, n)
+
+		# if we have a cache, cached_n < n and len(cached_results) == cached_n
+		try:
 			o = self._solver_backend.convert_expr(e)
-			r = [ self._results_backend.convert(i, model=self._result.model) for i in self._eval(o, n, extra_constraints=extra_constraints) ]
-			if e.uuid not in self._result.eval_cache:
-				self._result.eval_cache[e.uuid] = (len(r), r)
-		return [ self._results_backend.wrap(i) for i in r ]
+			r = set(self._eval(o, n - cached_n, extra_constraints=solver_extra_constraints))
+		except UnsatError:
+			r = set()
+		all_results = r | cached_results
+
+		l.debug("... got %d more values", len(r))
+
+		if extra_constraints is None:
+			self._result.eval_cache[e.uuid] = (n, all_results)
+		else:
+			# can't assume that we didn't knock out other possible solutions
+			self._result.eval_cache[e.uuid] = (len(all_results), all_results)
+
+		# if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
+		# add constraints to help the solver out later
+		if extra_constraints is None and len(all_results) < n:
+			l.debug("... adding constraints for %d values for future speedup", len(all_results))
+			self.add(self._claripy.Or(*[ e == v for v in all_results ]))
+
+		return [ self._results_backend.wrap(i) for i in all_results ]
 
 	def max(self, e, extra_constraints=None):
 		global cached_max
