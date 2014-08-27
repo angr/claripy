@@ -61,7 +61,7 @@ class CoreSolver(Solver):
 			return None
 
 		if type(constraints[0]) in (list, tuple):
-			raise Exception("don't pass lists to Solver.add()!")
+			raise ValueError("don't pass lists to Solver.add()!")
 
 		to_add = [ ]
 		for e in constraints:
