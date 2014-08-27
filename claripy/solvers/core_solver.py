@@ -96,7 +96,7 @@ class CoreSolver(Solver):
 		# check it!
 		l_timing.debug("Checking SATness of %d constraints", len(self.constraints))
 		a = time.time()
-		r = self._solver_backend.results(self._get_solver(), extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None)
+		r = self._solver_backend.results(self._get_solver(), extra_constraints=self._solver_backend.convert_exprs(extra_constraints) if extra_constraints is not None else None, results_backend=self._results_backend)
 		b = time.time()
 		l_timing.debug("... %s in %s seconds", r.sat, b - a)
 		return r
@@ -104,16 +104,40 @@ class CoreSolver(Solver):
 
 	def _eval(self, e, n, extra_constraints=None):
 		l.debug("%s._eval(%s, %s, extra_constraints=%s)", self, e, n, extra_constraints)
-		return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model)
+
+		if n > 1:
+			return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model, results_backend=self._results_backend)
+
+		try:
+			return self._results_backend.eval(None, e, n, extra_constraints=extra_constraints, model=self._result.model)
+		except BackendError:
+			return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model, results_backend=self._results_backend)
+
 	def _max(self, e, extra_constraints=None):
 		l.debug("%s._max(%s, extra_constraints=%s)", self, e, extra_constraints)
-		return self._solver_backend.max(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
+
+		try:
+			return self._results_backend.max(None, e, extra_constraints=extra_constraints, model=self._result.model)
+		except BackendError:
+			return self._solver_backend.max(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
+
 	def _min(self, e, extra_constraints=None):
 		l.debug("%s._min(%s, extra_constraints=%s)", self, e, extra_constraints)
-		return self._solver_backend.min(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
+
+		try:
+			return self._results_backend.min(None, e, extra_constraints=extra_constraints, model=self._result.model)
+		except BackendError:
+			return self._solver_backend.min(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
 	def _solution(self, e, v):
-		return self._solver_backend.check(self._get_solver(), extra_constraints=[self._solver_backend.convert_expr(e==v)])
+		try:
+			a = self._results_backend.eval(None, self._results_backend.convert_expr(e), 1, model=self._result.model)[0]
+			print a
+			b = self._results_backend.convert(v)
+			print b
+			return a == b
+		except BackendError:
+			return self._solver_backend.check(self._get_solver(), extra_constraints=[self._solver_backend.convert_expr(e==v)])
 
 	#
 	# Merging/splitting
@@ -142,3 +166,4 @@ class CoreSolver(Solver):
 		raise Exception("CoreSolver can't finalize, yo!")
 
 from ..result import Result
+from ..backends.backend import BackendError
