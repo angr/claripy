@@ -189,7 +189,6 @@ class Solver(Storable):
 
 		if extra_constraints is None:
 			self._result.max_cache[e.uuid] = r
-			print "ADDING MAX CACHE"
 			self.add(self._claripy.ULE(e, r))
 
 		return self._results_backend.wrap(r)
@@ -212,7 +211,6 @@ class Solver(Storable):
 
 		if extra_constraints is None:
 			self._result.min_cache[e.uuid] = r
-			print "ADDING MIN CACHE"
 			self.add(self._claripy.UGE(e, r))
 
 		return self._results_backend.wrap(r)
