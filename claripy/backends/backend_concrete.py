@@ -22,7 +22,10 @@ class BackendConcrete(Backend):
             return model[name]
 
     def size(self, e):
-        return e.size()
+        if type(e) in { BVV }:
+            return e.size()
+        else:
+            raise BackendError("can't get size of type %s" % type(e))
 
     def convert(self, a, model=None):
         if type(a) is None:
@@ -31,28 +34,26 @@ class BackendConcrete(Backend):
 
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
-        elif hasattr(a, 'as_long'):
-            return bv.BVV(a.as_long(), a.size())
-        elif isinstance(a, z3.BoolRef):
-            try:
-                #while not z3_lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
-                z3_lock.acquire()
-                if a.eq(zTrue): return True
-                elif a.eq(zFalse): return False
+
+        try:
+            z3_lock.acquire()
+
+            if hasattr(a, 'as_long'):
+                return bv.BVV(a.as_long(), a.size())
+            elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
+            elif isinstance(a, z3.BoolRef) and a.eq(zFalse): return False
+            elif model is not None and a.num_args() == 0:
+                name = a.decl().name()
+                if name in model:
+                    return model[name]
                 else:
-                    raise BackendError("TODO: support a wider range of non-symbolic Bool expressions")
-            finally:
-                z3_lock.release()
-        elif model is not None and a.num_args() == 0:
-            name = a.decl().name()
-            if name in model:
-                return model[name]
+                    l.debug("returning 0 for %s (not in model %r)", name, model)
+                    return bv.BVV(0, a.size())
             else:
-                l.debug("returning 0 for %s (not in model %r)", name, model)
-                return bv.BVV(0, a.size())
-        else:
-            l.warning("TODO: support more complex non-symbolic expressions, maybe?")
-            raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+                l.warning("TODO: support more complex non-symbolic expressions, maybe?")
+                raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+        finally:
+            z3_lock.release()
 
     def convert_expr(self, e, model=None):
         if isinstance(e, E):
