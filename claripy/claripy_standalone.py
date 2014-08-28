@@ -5,12 +5,15 @@ from .backends import BackendZ3, BackendConcrete
 from .datalayer import DataLayer
 
 class ClaripyStandalone(Claripy):
-    def __init__(self, expression_backends=None, solver_backend=None, results_backend=None):
-        expression_backends = [ BackendConcrete(self), BackendZ3(self) ] if expression_backends is None else expression_backends
+    def __init__(self, expression_backends=None, solver_backend=None, results_backend=None, parallel=None):
+        self.parallel = parallel if parallel is not None else False
+        b_concrete = BackendConcrete(self)
+        b_z3 = BackendZ3(self)
 
-        solver_backend = BackendZ3(self) if solver_backend is None else solver_backend
-        results_backend = BackendConcrete(self) if results_backend is None else results_backend
-        Claripy.__init__(self, expression_backends, solver_backend, results_backend)
+        expression_backends = [ b_concrete, b_z3 ] if expression_backends is None else expression_backends
+        solver_backend = b_z3 if solver_backend is None else solver_backend
+        results_backend = b_concrete if results_backend is None else results_backend
+        Claripy.__init__(self, expression_backends, solver_backend, results_backend, parallel=parallel)
         self.dl = DataLayer()
 
     def solver(self):

@@ -2,11 +2,12 @@ import itertools
 bitvec_counter = itertools.count()
 
 class Claripy(object):
-    def __init__(self, expression_backends, solver_backend, results_backend):
+    def __init__(self, expression_backends, solver_backend, results_backend, parallel=None):
         self.expression_backends = expression_backends
         self.solver_backend = solver_backend
         self.results_backend = results_backend
         self.unique_names = True
+        self.parallel = parallel if parallel else False
 
     #
     # Solvers
