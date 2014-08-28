@@ -52,6 +52,7 @@ class Claripy(object):
     def UGT(self, *args): return self._do_op('UGT', args)
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
+    def size(self, *args): return self._do_op('size', args)
 
     def ite_dict(self, i, d, default):
         return self.ite_cases([ (i == c, v) for c,v in d.items() ], default)

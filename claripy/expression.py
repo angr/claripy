@@ -219,7 +219,7 @@ class E(Storable):
     #
 
     def __len__(self):
-        return self.eval().size()
+        return self._claripy.size(self)._obj
     size = __len__
 
     def __iter__(self):

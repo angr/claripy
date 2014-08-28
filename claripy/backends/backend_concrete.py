@@ -11,6 +11,7 @@ class BackendConcrete(Backend):
     def __init__(self, claripy):
         Backend.__init__(self, claripy)
         self._make_raw_ops(set(ops) - { 'BitVec' }, op_module=bv)
+        self._op_raw['size'] = self.size
         self._op_expr['BitVec'] = self.BitVec
 
     def BitVec(self, name, size, model=None): #pylint:disable=W0613,R0201
@@ -19,6 +20,9 @@ class BackendConcrete(Backend):
             raise BackendError("BackendConcrete can only handle BitVec when we are given a model")
         else:
             return model[name]
+
+    def size(self, e):
+        return e.size()
 
     def convert(self, a, model=None):
         if type(a) is None:
@@ -29,10 +33,17 @@ class BackendConcrete(Backend):
             return a
         elif hasattr(a, 'as_long'):
             return bv.BVV(a.as_long(), a.size())
-        elif isinstance(a, z3.BoolRef) and a.eq(zTrue):
-            return True
-        elif isinstance(a, z3.BoolRef) and a.eq(zFalse):
-            return False
+        elif isinstance(a, z3.BoolRef):
+            try:
+                while not z3_lock.acquire(blocking=False):
+                    print "BOOL LOCK ACQUISITION FAILED"
+                    __import__('time').sleep(1)
+                if a.eq(zTrue): return True
+                elif a.eq(zFalse): return False
+                else:
+                    raise BackendError("TODO: support a wider range of non-symbolic Bool expressions")
+            finally:
+                z3_lock.release()
         elif model is not None and a.num_args() == 0:
             name = a.decl().name()
             if name in model:
@@ -81,4 +92,4 @@ class BackendConcrete(Backend):
 
 from ..expression import E
 from ..bv import BVV
-#from .backend_z3 import BackendZ3
+from .backend_z3 import z3_lock
