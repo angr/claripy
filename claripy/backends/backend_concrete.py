@@ -35,9 +35,8 @@ class BackendConcrete(Backend):
             return bv.BVV(a.as_long(), a.size())
         elif isinstance(a, z3.BoolRef):
             try:
-                while not z3_lock.acquire(blocking=False):
-                    print "BOOL LOCK ACQUISITION FAILED"
-                    __import__('time').sleep(1)
+                #while not z3_lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
+                z3_lock.acquire()
                 if a.eq(zTrue): return True
                 elif a.eq(zFalse): return False
                 else:

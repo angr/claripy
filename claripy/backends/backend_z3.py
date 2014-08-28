@@ -26,12 +26,14 @@ from .. import bv
 z3_lock = threading.RLock()
 def synchronized(f):
 	@functools.wraps(f)
-	def synced(*args, **kwargs):
+	def synced(self, *args, **kwargs):
+		if not self._background_solve:
+			return f(self, *args, **kwargs)
+
 		try:
-			while not z3_lock.acquire(blocking=False):
-				print "ACQUIRE FAILED"
-				__import__('time').sleep(1)
-			return f(*args, **kwargs)
+			#while not z3_lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
+			z3_lock.acquire()
+			return f(self, *args, **kwargs)
 		finally:
 			z3_lock.release()
 	return synced
@@ -39,14 +41,13 @@ def synchronized(f):
 class BackendZ3(Backend):
 	_split_on = { 'And', 'Or' }
 
-	@synchronized
 	def __init__(self, claripy, background_solve=None):
 		Backend.__init__(self, claripy)
-		self._background_solve = background_solve if background_solve is not None else True
+		self._background_solve = background_solve if background_solve is not None else self._claripy.parallel
 
 		# and the operations
 		for o in ops:
-			self._op_raw[o] = synchronized(getattr(z3, o))
+			self._op_raw[o] = getattr(z3, o)
 		self._op_raw['size'] = self.size
 		self._op_expr['BitVec'] = self.BitVec
 
@@ -194,28 +195,37 @@ class BackendZ3(Backend):
 				self._background_solve = False
 				z3_lock = threading.RLock()
 
-				r = f(*args, **kwargs)
+				try:
+					r = f(*args, **kwargs)
+				except UnsatError as e:
+					r = e
+
+				#print "WRITING (%d)" % os.getpid()
 				pickled = pickle.dumps(r)
 				written = 0
 				while written < len(pickled):
 					written += os.write(p_w, pickled[written:])
 				os.close(p_w)
 				os.close(p_r)
+				#print "WROTE (%d)" % os.getpid()
 				os.kill(os.getpid(), 9)
-				#print "CLOSED. ABORTING"
 				#os.abort()
-				#print "ABORTED"
-				#open("/tmp/wtf1", "a").write("WTF???\n")
 				#sys.exit(1)
-				#open("/tmp/wtf2", "a").write("WTF???\n")
 			else:
 				os.close(p_w)
-				strs = [ os.read(p_r, 1024*1024) ]
-				while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
+				#print "READING (from %d)" % p
+				try:
+					strs = [ os.read(p_r, 1024*1024) ]
+					while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
+				except EOFError:
+					raise Exception("WTF")
 				os.close(p_r)
+				#print "READ (from %d)" % p
 
 				#thread.start_new_thread(os.wait, ())
-				return pickle.loads("".join(strs))
+				r = pickle.loads("".join(strs))
+				if isinstance(r, Exception): raise r
+				else: return r
 		else:
 			return f(*args, **kwargs)
 
