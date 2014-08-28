@@ -13,7 +13,7 @@ def normalize_types(f):
     @functools.wraps(f)
     def normalizer(self, o):
         if hasattr(o, '__module__') and o.__module__ == 'z3':
-            o = BVV(o.as_long(), o.size())
+            raise ValueError("this should no longer happen")
         if type(o) in (int, long):
             o = BVV(o, self.bits)
         if type(self) in (int, long):
