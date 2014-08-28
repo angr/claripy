@@ -27,7 +27,7 @@ z3_lock = threading.RLock()
 def synchronized(f):
 	@functools.wraps(f)
 	def synced(self, *args, **kwargs):
-		if not self._background_solve:
+		if not (self._background_solve or (self._background_solve is None and self._claripy.parallel)):
 			return f(self, *args, **kwargs)
 
 		try:
@@ -43,7 +43,7 @@ class BackendZ3(Backend):
 
 	def __init__(self, claripy, background_solve=None):
 		Backend.__init__(self, claripy)
-		self._background_solve = background_solve if background_solve is not None else self._claripy.parallel
+		self._background_solve = background_solve
 
 		# and the operations
 		for o in ops:
@@ -186,9 +186,10 @@ class BackendZ3(Backend):
 
 		return Result(satness, model, backend_model=z3_model)
 
+	@synchronized
 	def _background(self, f, *args, **kwargs):
 		global z3_lock
-		if self._background_solve:
+		if self._background_solve or (self._background_solve is None and self._claripy.parallel):
 			p_r, p_w = os.pipe()
 			p = os.fork()
 			if p == 0:
