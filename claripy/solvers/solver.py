@@ -88,7 +88,6 @@ class Solver(Storable):
 
 			fc.append(e_simp)
 
-		#print fc
 		return fc if len(fc) > 0 else None
 
 	def solve(self, extra_constraints=None):
@@ -129,7 +128,7 @@ class Solver(Storable):
 
 		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
 
-		l.debug("Solver.eval() with n=%d and %d extra_constraints", n, len(extra_constraints) if extra_constraints is not None else 0)
+		l.debug("Solver.eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints) if extra_constraints is not None else 0)
 
 		if extra_constraints is None and e.uuid in self._result.eval_cache:
 			cached_results = self._result.eval_cache[e.uuid][1]
@@ -159,9 +158,11 @@ class Solver(Storable):
 		l.debug("... got %d more values", len(r))
 
 		if extra_constraints is None:
+			l.debug("... adding cache of %d values for n=%d", len(all_results), n)
 			self._result.eval_cache[e.uuid] = (n, all_results)
 		else:
 			# can't assume that we didn't knock out other possible solutions
+			l.debug("... adding cache of %d values for n=%d", len(all_results), len(all_results))
 			self._result.eval_cache[e.uuid] = (len(all_results), all_results)
 
 		# if there are less possible solutions than n (i.e., meaning we got all the solutions for e),

@@ -91,7 +91,7 @@ class CoreSolver(Solver):
 	#
 
 	def _solve(self, extra_constraints=None):
-		l.debug("%s.solve(extra_constraints=%s)", self, extra_constraints)
+		l.debug("%s.solve()", self)
 
 		# check it!
 		l_timing.debug("Checking SATness of %d constraints", len(self.constraints))
@@ -103,38 +103,47 @@ class CoreSolver(Solver):
 
 
 	def _eval(self, e, n, extra_constraints=None):
-		l.debug("%s._eval(%s, %s, extra_constraints=%s)", self, e, n, extra_constraints)
+		l.debug("%s._eval()", self)
 
-		if n > 1:
-			return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model, results_backend=self._results_backend)
+		if n == 1 and extra_constraints is None:
+			l.debug("... n == 1: calling the results_backend")
+			try:
+				return self._results_backend.eval(None, e, n, extra_constraints=extra_constraints, model=self._result.model)
+			except BackendError:
+				l.debug("... BackendError")
 
-		try:
-			return self._results_backend.eval(None, e, n, extra_constraints=extra_constraints, model=self._result.model)
-		except BackendError:
-			return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model, results_backend=self._results_backend)
+		l.debug("... calling the solver_backend with %d extra_constraints", len(extra_constraints) if extra_constraints is not None else 0)
+		return self._solver_backend.eval(self._get_solver(), e, n, extra_constraints=extra_constraints, model=self._result.backend_model, results_backend=self._results_backend)
 
 	def _max(self, e, extra_constraints=None):
-		l.debug("%s._max(%s, extra_constraints=%s)", self, e, extra_constraints)
+		l.debug("%s._max()", self)
 
-		try:
-			return self._results_backend.max(None, e, extra_constraints=extra_constraints, model=self._result.model)
-		except BackendError:
-			return self._solver_backend.max(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
+		if extra_constraints is None:
+			l.debug("... calling the results_backend")
+			try:
+				return self._results_backend.max(None, e, extra_constraints=extra_constraints, model=self._result.model)
+			except BackendError:
+				l.debug("... BackendError")
+
+		l.debug("... calling the solver_backend with %d extra_constraints", len(extra_constraints) if extra_constraints is not None else 0)
+		return self._solver_backend.max(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
 	def _min(self, e, extra_constraints=None):
 		l.debug("%s._min(%s, extra_constraints=%s)", self, e, extra_constraints)
 
-		try:
-			return self._results_backend.min(None, e, extra_constraints=extra_constraints, model=self._result.model)
-		except BackendError:
-			return self._solver_backend.min(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
+		if extra_constraints is None:
+			try:
+				return self._results_backend.min(None, e, extra_constraints=extra_constraints, model=self._result.model)
+			except BackendError:
+				l.debug("... BackendError")
+
+		l.debug("... calling the solver_backend with %d extra_constraints", len(extra_constraints) if extra_constraints is not None else 0)
+		return self._solver_backend.min(self._get_solver(), e, extra_constraints=extra_constraints, model=self._result.backend_model)
 
 	def _solution(self, e, v):
 		try:
 			a = self._results_backend.eval(None, self._results_backend.convert_expr(e), 1, model=self._result.model)[0]
-			print a
 			b = self._results_backend.convert(v)
-			print b
 			return a == b
 		except BackendError:
 			return self._solver_backend.check(self._get_solver(), extra_constraints=[self._solver_backend.convert_expr(e==v)])
