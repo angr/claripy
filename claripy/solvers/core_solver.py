@@ -91,6 +91,9 @@ class CoreSolver(Solver):
 	#
 
 	def _solve(self, extra_constraints=None):
+		if len(self.constraints) == 0 and extra_constraints is None:
+			return Result(True, { })
+
 		l.debug("%s.solve()", self)
 
 		# check it!
