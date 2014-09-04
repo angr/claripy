@@ -9,6 +9,9 @@ class Claripy(object):
         self.unique_names = True
         self.parallel = parallel if parallel else False
 
+        self.true = self.BoolVal(True)
+        self.false = self.BoolVal(False)
+
     #
     # Solvers
     #
