@@ -8,7 +8,7 @@ from .storable import Storable
 
 class A(object):
     '''
-    An A(ST) tracks a tree of calls (including operations) on arguments.
+    An A(ST) tracks a tree of operations on arguments.
     '''
 
     def __init__(self, op, args):
@@ -43,7 +43,7 @@ class A(object):
 
 class E(Storable):
     '''
-    A base class to wrap Z3 objects.
+    A class to wrap expressions.
     '''
     __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_ast', '_stored', 'objects' ]
 
@@ -101,10 +101,12 @@ class E(Storable):
 
     def _do_op(self, op_name, args):
         all_args = ( self, ) + tuple(args)
-        a = A(op_name, all_args)
-
-        variables = reduce(operator.or_, ( e.variables if isinstance(e, E) else set() for e in all_args ), set())
-        symbolic = any(( e.symbolic if isinstance(e, E) else False for e in all_args ))
+        try:
+            return self._claripy.model_backend.call(op_name, args)
+        except BackendError:
+            a = A(op_name, all_args)
+            variables = reduce(operator.or_, ( e.variables if isinstance(e, E) else set() for e in all_args ), set())
+            symbolic = any(( e.symbolic if isinstance(e, E) else False for e in all_args ))
 
         if op_name in bitwise_operations or op_name in arithmetic_operations:
             length = (arg.length for arg in all_args if isinstance(arg, E)).next()
@@ -206,17 +208,22 @@ class E(Storable):
 # Wrap stuff
 #
 
-def wrap_operator(cls, op_name):
+def e_operator(cls, op_name):
     def wrapper(self, *args):
         return self._do_op(op_name, args)
     wrapper.__name__ = op_name
-
     setattr(cls, op_name, wrapper)
 
-def make_methods(cls):
+#def a_operator(cls, op_name):
+#   def do_op(self, *args):
+#       return A(op_name, args)
+#   wrapper.__name__ = op_name
+#   setattr(cls, op_name, wrapper)
+
+def make_methods():
     for name in operations:
-        wrap_operator(cls, name)
+        e_operator(E, name)
 
 from .backends.backend import BackendError
-from .operations import operations, bitwise_operations, arithmetic_operations, comparator_operations
-make_methods(E)
+from .operations import expression_operations, bitwise_operations, arithmetic_operations, comparator_operations
+make_methods()
