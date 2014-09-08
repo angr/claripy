@@ -3,10 +3,9 @@ import itertools
 bitvec_counter = itertools.count()
 
 class Claripy(object):
-    def __init__(self, expression_backends, solver_backend, results_backend, parallel=None):
-        self.expression_backends = expression_backends
-        self.solver_backend = solver_backend
-        self.results_backend = results_backend
+    def __init__(self, model_backend, solver_backends, parallel=None):
+        self.solver_backends = solver_backends
+        self.model_backend = model_backend
         self.unique_names = True
         self.parallel = parallel if parallel else False
 
@@ -23,11 +22,14 @@ class Claripy(object):
     # Operations
     #
     def _do_op(self, name, args, variables=None, symbolic=None, length=None):
-        a = A(name, args)
+        try:
+            a = self.model_backend.call(name, args)
+        except BackendError:
+            a = A(name, args)
 
-        symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args) if symbolic is None else symbolic
-        variables = reduce(operator.or_, (arg.variables if isinstance(arg, E) else set() for arg in args), set()) if variables is None else variables
-        length = max([arg.length for arg in args if isinstance(arg, E)]) if length is None else length
+            symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args) if symbolic is None else symbolic
+            variables = reduce(operator.or_, (arg.variables if isinstance(arg, E) else set() for arg in args), set()) if variables is None else variables
+            length = max([arg.length for arg in args if isinstance(arg, E)]) if length is None else length
 
         e = E(self, ast=a, variables=variables, symbolic=symbolic, length=length)
         return e
@@ -67,3 +69,4 @@ class Claripy(object):
         return sofar
 
 from .expression import E, A
+from .backends.backend import BackendError

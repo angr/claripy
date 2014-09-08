@@ -6,10 +6,6 @@ cache_count = 0
 
 # import and set up Z3
 import os
-import threading
-import functools
-import cPickle as pickle
-
 import z3
 if "Z3PATH" in os.environ:
 	z3_path = os.environ["Z3PATH"]
@@ -20,29 +16,31 @@ else:
 	z3_path = "/opt/python/lib/"
 z3.init(z3_path + "libz3.so")
 
-from .backend import Backend, BackendError
+from .solver_backend import SolverBackend
 from .. import bv
 
-z3_lock = threading.RLock()
-def synchronized(f):
-	@functools.wraps(f)
-	def synced(self, *args, **kwargs):
-		if not (self._background_solve or (self._background_solve is None and self._claripy.parallel)):
-			return f(self, *args, **kwargs)
+#import threading
+#import functools
+#z3_lock = threading.RLock()
+#def synchronized(f):
+#	@functools.wraps(f)
+#	def synced(self, *args, **kwargs):
+#		if not (self._background_solve or (self._background_solve is None and self._claripy.parallel)):
+#			return f(self, *args, **kwargs)
+#
+#		try:
+#			#while not z3_lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
+#			z3_lock.acquire()
+#			return f(self, *args, **kwargs)
+#		finally:
+#			z3_lock.release()
+#	return synced
 
-		try:
-			#while not z3_lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
-			z3_lock.acquire()
-			return f(self, *args, **kwargs)
-		finally:
-			z3_lock.release()
-	return synced
-
-class BackendZ3(Backend):
+class BackendZ3(SolverBackend):
 	_split_on = { 'And', 'Or' }
 
 	def __init__(self, claripy, background_solve=None):
-		Backend.__init__(self, claripy)
+		SolverBackend.__init__(self, claripy)
 		self._background_solve = background_solve
 
 		# and the operations
@@ -50,12 +48,11 @@ class BackendZ3(Backend):
 			self._op_raw[o] = getattr(z3, o)
 		self._op_raw['size'] = self.size
 
-	@synchronized
-	def size(self, e):
+	@staticmethod
+	def size(e):
 		return e.size()
 
-	@synchronized
-	def convert(self, obj, model=None):
+	def convert(self, obj, result=None):
 		if type(obj) is bv.BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
 		elif obj is True:
@@ -70,7 +67,6 @@ class BackendZ3(Backend):
 			l.debug("BackendZ3 encountered unexpected type %s", type(obj))
 			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
 
-	@synchronized
 	def abstract(self, z, split_on=None):
 		name = z.decl().name()
 		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
@@ -120,16 +116,13 @@ class BackendZ3(Backend):
 
 		return A(op, args)
 
-	@synchronized
 	def solver(self):
 		return z3.Solver()
 
-	@synchronized
 	def add(self, s, c):
 		s.add(*c)
 
-	@synchronized
-	def _check(self, s, extra_constraints=None): #pylint:disable=R0201
+	def check(self, s, extra_constraints=None): #pylint:disable=R0201
 		global solve_count
 		solve_count += 1
 		if extra_constraints is not None:
@@ -143,9 +136,8 @@ class BackendZ3(Backend):
 			s.pop()
 		return satness
 
-	@synchronized
-	def _results(self, s, extra_constraints=None, generic_model=True, results_backend=None):
-		satness = self._check(s, extra_constraints=extra_constraints)
+	def results(self, s, extra_constraints=None, generic_model=True):
+		satness = self.check(s, extra_constraints=extra_constraints)
 		model = { }
 		z3_model = None
 
@@ -157,59 +149,13 @@ class BackendZ3(Backend):
 				for m_f in z3_model:
 					n = m_f.name()
 					m = m_f()
-					model[n] = z3_model.eval(m) if results_backend is None else results_backend.convert(z3_model.eval(m))
+					model[n] = self._claripy.model_backend.convert(z3_model.eval(m))
 		else:
 			l.debug("unsat!")
 
 		return Result(satness, model, backend_model=z3_model)
 
-	@synchronized
-	def _background(self, f, *args, **kwargs):
-		global z3_lock
-		if self._background_solve or (self._background_solve is None and self._claripy.parallel):
-			p_r, p_w = os.pipe()
-			p = os.fork()
-			if p == 0:
-				self._background_solve = False
-				z3_lock = threading.RLock()
-
-				try:
-					r = f(*args, **kwargs)
-				except UnsatError as e:
-					r = e
-
-				#print "WRITING (%d)" % os.getpid()
-				pickled = pickle.dumps(r)
-				written = 0
-				while written < len(pickled):
-					written += os.write(p_w, pickled[written:])
-				os.close(p_w)
-				os.close(p_r)
-				#print "WROTE (%d)" % os.getpid()
-				os.kill(os.getpid(), 9)
-				#os.abort()
-				#sys.exit(1)
-			else:
-				os.close(p_w)
-				#print "READING (from %d)" % p
-				try:
-					strs = [ os.read(p_r, 1024*1024) ]
-					while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
-				except EOFError:
-					raise Exception("WTF")
-				os.close(p_r)
-				#print "READ (from %d)" % p
-
-				#thread.start_new_thread(os.wait, ())
-				r = pickle.loads("".join(strs))
-				if isinstance(r, Exception): raise r
-				else: return r
-		else:
-			return f(*args, **kwargs)
-
-
-	@synchronized
-	def _eval(self, s, expr, n, extra_constraints=None, model=None, results_backend=None):
+	def eval(self, s, expr, n, extra_constraints=None, result=None):
 		global solve_count, cache_count
 
 		#if n == 1 and model is None:
@@ -239,7 +185,7 @@ class BackendZ3(Backend):
 			else:
 				v = expr
 
-			results.append(v if results_backend is None else results_backend.convert(v))
+			results.append(self._claripy.model_backend.convert(v))
 			if i + 1 != n:
 				s.add(expr != v)
 				model = None
@@ -252,8 +198,7 @@ class BackendZ3(Backend):
 
 		return results
 
-	@synchronized
-	def _min(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
+	def min(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
@@ -301,8 +246,7 @@ class BackendZ3(Backend):
 				s.pop()
 		return BVV(hi, expr.size())
 
-	@synchronized
-	def _max(self, s, expr, extra_constraints=None, model=None): #pylint:disable=W0613
+	def max(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
@@ -349,29 +293,12 @@ class BackendZ3(Backend):
 				s.pop()
 		return BVV(lo, expr.size())
 
-	def check(self, s, extra_constraints=None):
-		return self._background(self._check, s, extra_constraints=extra_constraints)
-
-	def results(self, s, extra_constraints=None, results_backend=None):
-		return self._background(self._results, s, extra_constraints=extra_constraints, results_backend=results_backend)
-
-	def eval(self, s, expr, n, extra_constraints=None, model=None, results_backend=None):
-		return self._background(self._eval, s, expr, n, extra_constraints=extra_constraints, model=model, results_backend=results_backend)
-
-	def min(self, s, expr, extra_constraints=None, model=None):
-		return self._background(self._min,  s, expr, extra_constraints=extra_constraints, model=model)
-
-	def max(self, s, expr, extra_constraints=None, model=None):
-		return self._background(self._max,  s, expr, extra_constraints=extra_constraints, model=model)
-
 	def simplify(self, expr): #pylint:disable=W0613,R0201
 		raise Exception("This shouldn't be called. But Yan.")
 
-	@synchronized
-	def call(self, name, args, model=None):
-		return Backend.call(self, name, args, model=model)
+	def call(self, name, args, result=None):
+		return SolverBackend.call(self, name, args, result=result)
 
-	@synchronized
 	def simplify_expr(self, expr):
 		l.debug("SIMPLIFYING EXPRESSION")
 
@@ -453,3 +380,4 @@ from ..expression import E, A
 from ..operations import backend_operations
 from ..result import Result, UnsatError
 from ..bv import BVV
+from .backend import BackendError
