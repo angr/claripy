@@ -1,18 +1,18 @@
 import logging
 l = logging.getLogger("claripy.backends.backend_concrete")
 
-from .backend import Backend, ops, BackendError
-from .. import bv
 import z3
 zTrue = z3.BoolVal(True)
 zFalse = z3.BoolVal(False)
 
+from .backend import Backend, BackendError
+
 class BackendConcrete(Backend):
     def __init__(self, claripy):
         Backend.__init__(self, claripy)
-        self._make_raw_ops(set(ops) - { 'BitVec' }, op_module=bv)
+        self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._op_raw['size'] = self.size
-        self._op_expr['BitVec'] = self.BitVec
+        self._op_raw['BitVec'] = self.BitVec
 
     def BitVec(self, name, size, model=None): #pylint:disable=W0613,R0201
         if model is None:
@@ -28,18 +28,13 @@ class BackendConcrete(Backend):
             raise BackendError("can't get size of type %s" % type(e))
 
     def convert(self, a, model=None):
-        if type(a) is None:
-            l.debug("BackendConcrete doesn't handle abstract stuff")
-            raise BackendError("BackendConcrete doesn't handle abstract stuff")
-
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
 
         try:
             z3_lock.acquire()
 
-            if hasattr(a, 'as_long'):
-                return bv.BVV(a.as_long(), a.size())
+            if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
             elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
             elif isinstance(a, z3.BoolRef) and a.eq(zFalse): return False
             elif model is not None and a.num_args() == 0:
@@ -54,17 +49,6 @@ class BackendConcrete(Backend):
                 raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
         finally:
             z3_lock.release()
-
-    def convert_expr(self, e, model=None):
-        if isinstance(e, E):
-            if e.symbolic and model is None:
-                l.debug("BackendConcrete.convert_exprs() aborting on symbolic expression")
-                raise BackendError("BackendConcrete.convert_exprs() aborting on symbolic expression")
-
-            a = e.eval()
-        else:
-            a = e
-        return self.convert(a)
 
     def abstract(self, e, split_on=None):
         if type(e._obj) in (bv.BVV, int, long, bool, str, float):
@@ -90,6 +74,7 @@ class BackendConcrete(Backend):
     def max(self, s, expr, extra_constraints=None, model=None):
         return [ self.convert(expr) ] # no model, since we want to abort on symbolic
 
-from ..expression import E
 from ..bv import BVV
 from .backend_z3 import z3_lock
+from ..operations import backend_operations
+from .. import bv

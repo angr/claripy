@@ -8,15 +8,15 @@ class BranchingSolver(CoreSolver):
         CoreSolver.__init__(self, claripy, solver_backend=solver_backend, results_backend=results_backend, timeout=timeout, solver=solver, result=None)
         self._finalized = False
 
-    def add(self, *constraints):
-        if self._finalized:
+    def add(self, constraints, invalidate_cache=True):
+        if self._finalized and invalidate_cache:
             l.debug("%r is finalized...", self)
             self._solver = self._create_solver()
             self._finalized = False
-            self._solver.add(*[e.eval(backends=[self._solver_backend]) for e in self.constraints])
+            self._solver.add([e.eval(backends=[self._solver_backend]) for e in self.constraints], invalidate_cache=invalidate_cache)
             l.debug("... de-finalized with %d constriants", len(self.constraints))
 
-        CoreSolver.add(self, *constraints)
+        CoreSolver.add(self, constraints, invalidate_cache=invalidate_cache)
 
     def branch(self):
         s = BranchingSolver(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout, solver=self._solver, result=self._result)

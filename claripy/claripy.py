@@ -1,3 +1,4 @@
+import operator
 import itertools
 bitvec_counter = itertools.count()
 
@@ -21,39 +22,40 @@ class Claripy(object):
     #
     # Operations
     #
-    def _do_op(self, name, args):
-        for b in self.expression_backends:
-            try:
-                return b.call(name, args)
-            except BackendError:
-                continue
+    def _do_op(self, name, args, variables=None, symbolic=None, length=None):
+        a = A(name, args)
 
-        raise Exception("no backend can handle operation %s" % name)
+        symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args) if symbolic is None else symbolic
+        variables = reduce(operator.or_, (arg.variables if isinstance(arg, E) else set() for arg in args), set()) if variables is None else variables
+        length = max([arg.length for arg in args if isinstance(arg, E)]) if length is None else length
+
+        e = E(self, ast=a, variables=variables, symbolic=symbolic, length=length)
+        return e
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size))
+        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size)
 
-    def And(self, *args): return self._do_op('And', args)
-    def BitVecVal(self, *args): return self._do_op('BitVecVal', args)
-    def ULT(self, *args): return self._do_op('ULT', args)
-    def SignExt(self, *args): return self._do_op('SignExt', args)
-    def LShR(self, *args): return self._do_op('LShR', args)
-    def BoolVal(self, *args): return self._do_op('BoolVal', args)
-    def ZeroExt(self, *args): return self._do_op('ZeroExt', args)
-    def UGE(self, *args): return self._do_op('UGE', args)
+    def And(self, *args): return self._do_op('And', args, length=-1)
+    def BitVecVal(self, *args): return self._do_op('BitVecVal', args, length=args[-1])
+    def ULT(self, *args): return self._do_op('ULT', args, length=-1)
+    def SignExt(self, *args): return self._do_op('SignExt', args, length=args[0]+args[1].length)
+    def LShR(self, *args): return self._do_op('LShR', args, length=-1)
+    def BoolVal(self, *args): return self._do_op('BoolVal', args, length=-1)
+    def ZeroExt(self, *args): return self._do_op('ZeroExt', args, length=args[0]+args[1].length)
+    def UGE(self, *args): return self._do_op('UGE', args, length=-1)
     def If(self, *args): return self._do_op('If', args)
-    def Not(self, *args): return self._do_op('Not', args)
-    def ULE(self, *args): return self._do_op('ULE', args)
-    def Extract(self, *args): return self._do_op('Extract', args)
-    def Or(self, *args): return self._do_op('Or', args)
-    def Concat(self, *args): return self._do_op('Concat', args)
-    def UGT(self, *args): return self._do_op('UGT', args)
+    def Not(self, *args): return self._do_op('Not', args, length=-1)
+    def ULE(self, *args): return self._do_op('ULE', args, length=-1)
+    def Extract(self, *args): return self._do_op('Extract', args, length=args[0]-args[1]+1)
+    def Or(self, *args): return self._do_op('Or', args, length=-1)
+    def Concat(self, *args): return self._do_op('Concat', args, length=sum([ arg.length for arg in args ]))
+    def UGT(self, *args): return self._do_op('UGT', args, length=-1)
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
-    def size(self, *args): return self._do_op('size', args)
+    #def size(self, *args): return self._do_op('size', args)
 
     def ite_dict(self, i, d, default):
         return self.ite_cases([ (i == c, v) for c,v in d.items() ], default)
@@ -64,4 +66,4 @@ class Claripy(object):
             sofar = self.If(c, v, sofar)
         return sofar
 
-from .backends import BackendError
+from .expression import E, A

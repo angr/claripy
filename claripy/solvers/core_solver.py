@@ -54,8 +54,11 @@ class CoreSolver(Solver):
 	# Constraints
 	#
 
-	def add(self, *constraints):
+	def add(self, constraints, invalidate_cache=True):
 		l.debug("%s.add(*%s)", self, constraints)
+
+		if type(constraints) not in (list, tuple):
+			constraints = [ constraints ]
 
 		if len(constraints) == 0:
 			return None
@@ -76,7 +79,8 @@ class CoreSolver(Solver):
 				self._to_add.append(f)
 				return
 
-			self._result = None
+			if invalidate_cache:
+				self._result = None
 			self._simplified = False
 			self.constraints.append(e_simp)
 			to_add.append(e_simp)

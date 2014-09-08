@@ -45,23 +45,27 @@ class E(Storable):
     '''
     A base class to wrap Z3 objects.
     '''
-    __slots__ = [ 'variables', 'symbolic', '_uuid', '_obj', '_ast', '_stored' ]
+    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_ast', '_stored', 'objects' ]
 
-    def __init__(self, claripy, variables=None, symbolic=None, uuid=None, obj=None, ast=None, stored=False):
+    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, ast=None, stored=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
-        have_data = not (variables is None or symbolic is None or (obj is None and ast is None))
+        have_data = not (variables is None or symbolic is None or ast is None or length is None)
+        self.objects = { }
 
         if have_uuid and not have_data:
             self._load()
         elif have_data:
             self.variables = variables
             self.symbolic = symbolic
+            self.length = length
 
             self._uuid = uuid
-            self._obj = obj
             self._ast = ast
             self._stored = stored
+
+            if objects is not None:
+                self.objects.update(objects)
         else:
             raise ValueError("invalid arguments passed to E()")
 
@@ -71,111 +75,45 @@ class E(Storable):
         self.symbolic = e.symbolic
 
         self._uuid = e._uuid
-        self._obj = e._obj
         self._ast = e._ast
         self._stored = e._stored
 
     def __nonzero__(self):
         raise Exception('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
-    @property
-    def is_abstract(self):
-        return self._obj is None
-
-    @property
-    def is_actual(self):
-        return self._obj is not None
-
     def __repr__(self):
         name = "E"
         if self.symbolic:
             name += "S"
+        return name + "(%s)" % self._ast
 
-        if self._obj is not None:
-            return name + "(%s)" % self._obj
-        elif self._ast is not None:
-            return name + "(%s)" % self._ast
-        elif self._uuid is not None:
-            return name + "(uuid=%s)" % self._uuid
+    def eval(self, backends=None, save=None, model=None):
+        save = backends is None if save is None else save
+        backends = self._claripy.expression_backends if backends is None else backends
+
+        for b in backends:
+            try:
+                return b.convert_expr(self, model=model, save=save)
+            except BackendError:
+                pass
+
+        raise Exception("no backend can convert expression")
 
     def _do_op(self, op_name, args):
-        if all([ type(a) in {int, long, float, str, bool} for a in (self._obj,)+args ]) and hasattr(operator, op_name):
-            return getattr(operator, op_name)(*((self._obj,)+args))
+        all_args = ( self, ) + tuple(args)
+        a = A(op_name, all_args)
 
-        for b in self._claripy.expression_backends:
-            try:
-                e = b.call(op_name, (self,)+args)
-                #if self._ast is None:
-                #   e._ast = A(op_name, (self,)+args)
-                return e
-            except BackendError:
-                continue
+        variables = reduce(operator.or_, ( e.variables if isinstance(e, E) else set() for e in all_args ), set())
+        symbolic = any(( e.symbolic if isinstance(e, E) else False for e in all_args ))
 
-        raise Exception("no backend can handle operation %s" % op_name)
+        if op_name in bitwise_operations or op_name in arithmetic_operations:
+            length = (arg.length for arg in all_args if isinstance(arg, E)).next()
+        elif op_name in comparator_operations or op_name:
+            length = -1
 
-    def eval(self, backends=None, save=False, model=None):
-        if type(self._obj) in { int, long, str }:
-            return self._obj
+        return E(self._claripy, length=length, ast=a, symbolic=symbolic, variables=variables)
 
-        if self._obj is not None and backends is None:
-            l.debug("eval() called with an existing obj %r", self._obj)
-            return self._obj
-        elif self._obj is not None and backends is not None:
-            for b in backends:
-                try:
-                    r = b.convert(self._obj, model=model)
-                    if save: self._obj = r
-                    return r
-                except BackendError:
-                    pass
-            raise Exception("no backend can convert obj %r" % self._obj)
-        elif isinstance(self._ast, A):
-            r = self._ast.eval(backends if backends is not None else self._claripy.expression_backends, save=save, model=model)
-            if save or backends is None:
-                if isinstance(r, E):
-                    self._obj = r._obj
-                    self.variables = r.variables
-                    self.symbolic = r.symbolic
-                else:
-                    self._obj = r
-                return r
-            else:
-                return r._obj if isinstance(r, E) else r
-        else:
-            if self._ast is None:
-                raise Exception("AST is None in abstract E!")
-
-            r = self._ast
-            if save or backends is None:
-                self._obj = r
-            return r
-
-    def abstract(self, backends=None):
-        if self._ast is not None:
-            l.debug("abstract() called with an existing ast")
-            return self._ast
-
-        for b in backends if backends is not None else self._claripy.expression_backends:
-            l.debug("trying abstraction with %s", b)
-            try:
-                r = b.abstract(self)
-                if isinstance(r, E):
-                    self._ast = r._ast
-                    self.variables = r.variables
-                    self.symbolic = r.symbolic
-                else:
-                    self._ast = r
-
-                l.debug("... success!")
-                return self._ast
-            except BackendError:
-                l.debug("... BackendError!")
-                continue
-
-        raise Exception("abstraction failed with available backends")
-
-    def split(self, split_on, backends=None):
-        self.abstract(backends=backends)
+    def split(self, split_on):
         if not isinstance(self._ast, A):
             return [ self ]
 
@@ -201,25 +139,24 @@ class E(Storable):
             l.debug("uuid pickle on %s", self)
             return self._uuid
         l.debug("full pickle on %s", self)
-
-        if self._ast is None:
-            self.abstract()
-        return self._uuid, self._ast, self.variables, self.symbolic
+        return self._uuid, self._ast, self.variables, self.symbolic, self.length
 
     def __setstate__(self, s):
         if type(s) is str:
             self.__init__([ ], uuid=s)
             return
 
-        uuid, ast, variables, symbolic = s
-        self.__init__([ ], variables=variables, symbolic=symbolic, ast=ast, uuid=uuid)
+        uuid, ast, variables, symbolic, length = s
+        self.__init__([ ], variables=variables, symbolic=symbolic, ast=ast, uuid=uuid, length=length)
 
     #
     # BV operations
     #
 
     def __len__(self):
-        return self._claripy.size(self)._obj
+        if self.length == -1:
+            raise TypeError('this expression has no length')
+        return self.length
     size = __len__
 
     def __iter__(self):
@@ -268,62 +205,6 @@ class E(Storable):
 #
 # Wrap stuff
 #
-operations = {
-    # arithmetic
-    '__add__', '__radd__',
-    '__div__', '__rdiv__',
-    '__truediv__', '__rtruediv__',
-    '__floordiv__', '__rfloordiv__',
-    '__mul__', '__rmul__',
-    '__sub__', '__rsub__',
-    '__pow__', '__rpow__',
-    '__mod__', '__rmod__',
-    '__divmod__', '__rdivmod__',
-
-    # comparisons
-    '__eq__',
-    '__ne__',
-    '__ge__', '__le__',
-    '__gt__', '__lt__',
-
-    # bitwise
-    '__neg__',
-    '__pos__',
-    '__abs__',
-    '__invert__',
-    '__or__', '__ror__',
-    '__and__', '__rand__',
-    '__xor__', '__rxor__',
-    '__lshift__', '__rlshift__',
-    '__rshift__', '__rrshift__',
-}
-
-opposites = {
-    '__add__': '__radd__', '__radd__': '__add__',
-    '__div__': '__rdiv__', '__rdiv__': '__div__',
-    '__truediv__': '__rtruediv__', '__rtruediv__': '__truediv__',
-    '__floordiv__': '__rfloordiv__', '__rfloordiv__': '__floordiv__',
-    '__mul__': '__rmul__', '__rmul__': '__mul__',
-    '__sub__': '__rsub__', '__rsub__': '__sub__',
-    '__pow__': '__rpow__', '__rpow__': '__pow__',
-    '__mod__': '__rmod__', '__rmod__': '__mod__',
-    '__divmod__': '__rdivmod__', '__rdivmod__': '__divmod__',
-
-    '__eq__': '__eq__',
-    '__ne__': '__ne__',
-    '__ge__': '__le__', '__le__': '__ge__',
-    '__gt__': '__lt__', '__lt__': '__gt__',
-
-    #'__neg__':
-    #'__pos__':
-    #'__abs__':
-    #'__invert__':
-    '__or__': '__ror__', '__ror__': '__or__',
-    '__and__': '__rand__', '__rand__': '__and__',
-    '__xor__': '__rxor__', '__rxor__': '__xor__',
-    '__lshift__': '__rlshift__', '__rlshift__': '__lshift__',
-    '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
-}
 
 def wrap_operator(cls, op_name):
     def wrapper(self, *args):
@@ -335,6 +216,7 @@ def wrap_operator(cls, op_name):
 def make_methods(cls):
     for name in operations:
         wrap_operator(cls, name)
-make_methods(E)
 
 from .backends.backend import BackendError
+from .operations import operations, bitwise_operations, arithmetic_operations, comparator_operations
+make_methods(E)

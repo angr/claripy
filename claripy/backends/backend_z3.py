@@ -20,7 +20,7 @@ else:
 	z3_path = "/opt/python/lib/"
 z3.init(z3_path + "libz3.so")
 
-from .backend import Backend, BackendError, ops
+from .backend import Backend, BackendError
 from .. import bv
 
 z3_lock = threading.RLock()
@@ -46,17 +46,9 @@ class BackendZ3(Backend):
 		self._background_solve = background_solve
 
 		# and the operations
-		for o in ops:
+		for o in backend_operations:
 			self._op_raw[o] = getattr(z3, o)
 		self._op_raw['size'] = self.size
-		self._op_expr['BitVec'] = self.BitVec
-
-	@synchronized
-	def BitVec(self, name, size, model=None):
-		if model and name in model:
-			return self.wrap(model[name], variables=set(), symbolic=False)
-		else:
-			return self.wrap(z3.BitVec(name, size), variables={name}, symbolic=True)
 
 	@synchronized
 	def size(self, e):
@@ -79,36 +71,20 @@ class BackendZ3(Backend):
 			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
 
 	@synchronized
-	def convert_expr(self, a, model=None): #pylint:disable=W0613
-		if isinstance(a, E): obj = a.eval(backends=[self])
-		else: obj = a
-		return self.convert(obj, model=model)
-
-	@synchronized
-	def abstract(self, e, split_on=None):
-		if not hasattr(e._obj, '__module__') or e._obj.__module__ != 'z3':
-			l.debug("unable to abstract non-Z3 object")
-			raise BackendError("unable to abstract non-Z3 object")
-
-		z = e._obj
-		s, v, a = self.abstract_z3(z, self._split_on if split_on is None else split_on)
-		return E(self._claripy, symbolic=s, variables=v, ast=a)
-
-	@synchronized
-	def abstract_z3(self, z, split_on):
+	def abstract(self, z, split_on=None):
 		name = z.decl().name()
 		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
-		children = [ self.abstract_z3(c, new_split_on) for c in z.children() ]
+		children = [ self.abstract(c, new_split_on) for c in z.children() ]
 
-		symbolic = False
-		variables = set()
+		#symbolic = False
+		#variables = set()
 
 		if len(children) == 0:
 			if z.__class__ == z3.BitVecRef:
 				op = "BitVec"
 				args = (name, z.size())
-				symbolic = True
-				variables = { name }
+				#symbolic = True
+				#variables = { name }
 			elif z.__class__ == z3.BitVecNumRef:
 				op = "BitVecVal"
 				args = (z.as_long(), z.size())
@@ -121,14 +97,15 @@ class BackendZ3(Backend):
 			else:
 				raise TypeError("Unable to wrap type %s", z.__class__.__name__)
 		else:
-			raw_args = [ ]
-			for s, v, a in children:
-				if function_map[name] in split_on:
-					raw_args.append(E(self._claripy, ast=a, variables=v, symbolic=s))
-				else:
-					raw_args.append(a)
-				symbolic |= s
-				variables |= v
+			raw_args = list(children)
+			#raw_args = [ ]
+			#for s, v, a in children:
+			#	if function_map[name] in split_on:
+			#		raw_args.append(E(self._claripy, ast=a, variables=v, symbolic=s))
+			#	else:
+			#		raw_args.append(a)
+			#	#symbolic |= s
+			#	#variables |= v
 
 			if name == 'extract':
 				# GAH
@@ -141,7 +118,7 @@ class BackendZ3(Backend):
 				args = raw_args
 			op = function_map[name]
 
-		return symbolic, variables, A(op, args)
+		return A(op, args)
 
 	@synchronized
 	def solver(self):
@@ -430,7 +407,7 @@ class BackendZ3(Backend):
 
 		l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return self.wrap(s, symbolic=symbolic, variables=variables)
+		return E(self._claripy, ast=self.abstract(s), objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length)
 
 #
 # this is for the actual->abstract conversion above
@@ -473,5 +450,6 @@ function_map['iff'] = 'If'
 function_map['bvlshr'] = 'LShR'
 
 from ..expression import E, A
+from ..operations import backend_operations
 from ..result import Result, UnsatError
 from ..bv import BVV

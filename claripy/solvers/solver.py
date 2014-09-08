@@ -136,7 +136,7 @@ class Solver(Storable):
 
 			if cached_n >= n or len(cached_results) < cached_n:
 				cached_evals += min(len(cached_results), n)
-				return [ self._results_backend.wrap(i) for i in list(cached_results)[:n] ]
+				return list(cached_results)[:n]
 			else:
 				solver_extra_constraints = [ e != v for v in cached_results ]
 		else:
@@ -169,9 +169,9 @@ class Solver(Storable):
 		# add constraints to help the solver out later
 		if extra_constraints is None and len(all_results) < n:
 			l.debug("... adding constraints for %d values for future speedup", len(all_results))
-			self.add(self._claripy.Or(*[ e == v for v in all_results ]))
+			self.add([self._claripy.Or(*[ e == v for v in all_results ])], invalidate_cache=False)
 
-		return [ self._results_backend.wrap(i) for i in all_results ]
+		return list(all_results)
 
 	def max(self, e, extra_constraints=None):
 		global cached_max
@@ -191,9 +191,9 @@ class Solver(Storable):
 
 		if extra_constraints is None:
 			self._result.max_cache[e.uuid] = r
-			self.add(self._claripy.ULE(e, r))
+			self.add([self._claripy.ULE(e, r)], invalidate_cache=False)
 
-		return self._results_backend.wrap(r)
+		return r
 
 	def min(self, e, extra_constraints=None):
 		global cached_min
@@ -213,13 +213,13 @@ class Solver(Storable):
 
 		if extra_constraints is None:
 			self._result.min_cache[e.uuid] = r
-			self.add(self._claripy.UGE(e, r))
+			self.add([self._claripy.UGE(e, r)], invalidate_cache=False)
 
-		return self._results_backend.wrap(r)
+		return r
 
 	def solution(self, e, v):
 		b = self._solution(e, v)
-		if not b: self.add(e != v)
+		if not b: self.add([e != v], invalidate_cache=False)
 		return b
 
 
@@ -227,7 +227,7 @@ class Solver(Storable):
 	# These should be implemented by the solver subclass
 	#
 
-	def add(self, *constraints):
+	def add(self, constraints, invalidate_cache=True):
 		raise NotImplementedError()
 
 	def _solve(self, extra_constraints=None):
@@ -277,16 +277,16 @@ class Solver(Storable):
 
 		for s, v in zip([self]+others, merge_values):
 			options.append(self._solver_backend.call('And', [ merge_flag == v ] + s.constraints))
-		merged.add(self._solver_backend.call('Or', options))
+		merged.add([self._solver_backend.call('Or', options)])
 		return merged
 
 	def combine(self, others):
 		combined = self.__class__(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
 		combined._simplified = False
 
-		combined.add(*self.constraints) #pylint:disable=E1101
+		combined.add(self.constraints) #pylint:disable=E1101
 		for o in others:
-			combined.add(*o.constraints)
+			combined.add(o.constraints)
 		return combined
 
 	def split(self):
@@ -297,7 +297,7 @@ class Solver(Storable):
 
 			s = self.__class__(self._claripy, self._solver_backend, self._results_backend, timeout=self._timeout)
 			s._simplified = False
-			s.add(*c_list)
+			s.add(c_list)
 			results.append(s)
 		return results
 

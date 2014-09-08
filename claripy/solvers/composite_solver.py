@@ -87,16 +87,20 @@ class CompositeSolver(Solver):
 	def _add_dependent_constraints(self, names, constraints):
 		l.debug("Adding %d constraints to names %s", len(constraints), names)
 		s = self._merged_solver_for(names)
-		s.add(*constraints)
+		s.add(constraints)
 		for v in s.variables | names:
 			self._solvers[v] = s
 
-	def add(self, *constraints):
+	def add(self, constraints, invalidate_cache=True):
 		try:
 			filtered = self._constraint_filter(constraints)
 		except UnsatError:
 			self._result = Result(False, { })
 			self._add_dependent_constraints({ 'CONCRETE' }, [ self._claripy.BoolVal(False) ])
+			return
+
+		if not invalidate_cache:
+			l.warning("ignoring non-invalidating constraints")
 			return
 
 		if filtered is None or len(filtered) == 0:

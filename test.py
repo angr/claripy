@@ -40,27 +40,26 @@ def test_expression():
 def test_actualization():
 	clrp = claripy.ClaripyStandalone()
 
-	ba = claripy.backends.BackendAbstract(clrp)
 	bc = claripy.backends.BackendConcrete(clrp)
-	clrp.expression_backends = [ ba, bc ]
+	clrp.expression_backends = [ bc ]
 
-	a = claripy.E(clrp, obj=5, variables=set(), symbolic=False)
+	a = claripy.E(clrp, ast=5, variables=set(), symbolic=False, length=-1)
 	b = a+a
-	nose.tools.assert_is(b._obj, None)
+	nose.tools.assert_equals(len(b.objects), 0)
 	nose.tools.assert_is(type(b._ast), claripy.A)
 
 	b.eval(backends=[bc], save=True)
-	nose.tools.assert_equal(b._obj, 10)
+	nose.tools.assert_equal(len(b.objects), 1)
+	nose.tools.assert_equal(b.objects[bc], 10)
 
 def test_fallback_abstraction():
 	clrp = claripy.ClaripyStandalone()
-	ba = claripy.backends.BackendAbstract(clrp)
 	bc = claripy.backends.BackendConcrete(clrp)
 	bz = claripy.backends.BackendZ3(clrp)
-	clrp.expression_backends = [ bc, ba ]
+	clrp.expression_backends = [ bc ]
 
-	a = claripy.E(clrp, obj=5, variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+	a = claripy.E(clrp, ast=5, variables=set(), symbolic=False, length=-1)
+	b = clrp.BitVec('x', 32, explicit_name=True)
 	c = a+b
 	d = 5+b
 	e = b+5
@@ -74,79 +73,75 @@ def test_fallback_abstraction():
 	nose.tools.assert_true(f.symbolic)
 
 	a.eval(backends=[bc, bz], save=True)
-	nose.tools.assert_equal(str(a._obj), '5')
-	nose.tools.assert_is(type(a._obj), int)
+	nose.tools.assert_equal(len(a.objects), 1)
+	nose.tools.assert_in(bc, a.objects)
+	nose.tools.assert_equal(a.objects[bc], 5)
 
 	b.eval(backends=[bc, bz], save=True)
-	nose.tools.assert_equal(str(b._obj), 'x')
-	nose.tools.assert_equal(b._obj.__module__, 'z3')
+	nose.tools.assert_equal(len(b.objects), 1)
+	nose.tools.assert_in(bz, b.objects)
+	nose.tools.assert_equal(str(b.objects[bz]), 'x')
+	nose.tools.assert_equal(b.objects[bz].__module__, 'z3')
 
 	c.eval(backends=[bc, bz], save=True)
 	d.eval(backends=[bc, bz], save=True)
 	e.eval(backends=[bc, bz], save=True)
 	f.eval(backends=[bc, bz], save=True)
 
-	nose.tools.assert_equal(str(c._obj), '5 + x')
-	nose.tools.assert_equal(str(d._obj), '5 + x')
-	nose.tools.assert_equal(str(e._obj), 'x + 5')
-	nose.tools.assert_equal(str(f._obj), 'x + x')
-
-	f._ast = None
-	f.abstract([bc, bz])
-	f._obj = None
-	f.eval(backends=[bc, bz], save=True)
-	nose.tools.assert_equal(str(f._obj), 'x + x')
+	nose.tools.assert_equal(str(c.objects[bz]), '5 + x')
+	nose.tools.assert_equal(str(d.objects[bz]), '5 + x')
+	nose.tools.assert_equal(str(e.objects[bz]), 'x + 5')
+	nose.tools.assert_equal(str(f.objects[bz]), 'x + x')
 
 def test_mixed_z3():
 	clrp = claripy.ClaripyStandalone()
-	ba = claripy.backends.BackendAbstract(clrp)
 	bc = claripy.backends.BackendConcrete(clrp)
 	bz = claripy.backends.BackendZ3(clrp)
 
-	clrp.expression_backends = [ bc, bz, ba ]
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+	clrp.expression_backends = [ bc, bz ]
+	a = clrp.BitVecVal(0, 32)
+	b = clrp.BitVec('x', 32)
 	nose.tools.assert_true(b.symbolic)
 	c = a+b
 	nose.tools.assert_true(b.symbolic)
 	nose.tools.assert_true(c.symbolic)
 
-	a.eval()
-	b.eval()
+	#a.eval()
+	#b.eval()
 
-	nose.tools.assert_is(type(a._obj), claripy.bv.BVV)
-	nose.tools.assert_equal(b._obj.__module__, 'z3')
+	#nose.tools.assert_is(type(a.objects[bc]), claripy.bv.BVV)
+	#nose.tools.assert_equal(b.objects[bz].__module__, 'z3')
 
-	d = a + b
-	nose.tools.assert_equal(d._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(d._obj), '0 + x')
+	#d = a + b
+	#nose.tools.assert_equal(d.objects[bz].__module__, 'z3')
+	#nose.tools.assert_equal(str(d.objects[bz]), '0 + x')
 
-	c.eval()
-	nose.tools.assert_equal(c._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(c._obj), '0 + x')
+	#c.eval()
+	#nose.tools.assert_equal(c.objects[bz].__module__, 'z3')
+	#nose.tools.assert_equal(str(c.objects[bz]), '0 + x')
 
 def test_pickle():
 	clrp = claripy.ClaripyStandalone()
-	ba = claripy.backends.BackendAbstract(clrp)
 	bc = claripy.backends.BackendConcrete(clrp)
 	bz = claripy.backends.BackendZ3(clrp)
-	clrp.expression_backends = [ bc, bz, ba ]
+	clrp.expression_backends = [ bc, bz ]
 
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-	a.eval(); a._ast = None
-	b.eval(); a._ast = None
+	a = clrp.BitVecVal(0, 32)
+	b = clrp.BitVec('x', 32, explicit_name=True)
+	a.eval()
+	b.eval()
 
 	c = a+b
-	nose.tools.assert_equal(c._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(c._obj), '0 + x')
+	c.eval()
+	nose.tools.assert_equal(c.objects[bz].__module__, 'z3')
+	nose.tools.assert_equal(str(c.objects[bz]), '0 + x')
 
 	c_copy = pickle.loads(pickle.dumps(c))
-	nose.tools.assert_is(c_copy._obj, None)
+	nose.tools.assert_equals(len(c_copy.objects), 0)
 	c_copy._claripy = clrp
 	c_copy.eval()
-	nose.tools.assert_equal(c_copy._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(c_copy._obj), '0 + x')
+	nose.tools.assert_equal(c_copy.objects[bz].__module__, 'z3')
+	nose.tools.assert_equal(str(c_copy.objects[bz]), '0 + x')
 
 def test_datalayer():
 	l.info("Running test_datalayer")
@@ -156,7 +151,6 @@ def test_datalayer():
 	clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
 	l.debug("Pickling to %s",pickle_dir)
 
-	ba = claripy.backends.BackendAbstract(claripy.claripy)
 	bc = claripy.backends.BackendConcrete(claripy.claripy)
 	bz = claripy.backends.BackendZ3(claripy.claripy)
 	clrp.expression_backends = [ bc, ba ]
@@ -187,11 +181,10 @@ def test_datalayer():
 def test_model():
 	clrp = claripy.ClaripyStandalone()
 	bc = claripy.backends.BackendConcrete(clrp)
-	ba = claripy.backends.BackendAbstract(clrp)
-	clrp.expression_backends = [ bc, ba ]
+	clrp.expression_backends = [ bc ]
 
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(5, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+	a = clrp.BitVecVal(5, 32)
+	b = clrp.BitVec('x', 32, explicit_name=True)
 
 	c = a + b
 
@@ -208,7 +201,6 @@ def raw_solver(solver_type):
 	clrp = claripy.ClaripyStandalone()
 	#bc = claripy.backends.BackendConcrete(clrp)
 	#bz = claripy.backends.BackendZ3(clrp)
-	#ba = claripy.backends.BackendAbstract(clrp)
 	#clrp.expression_backends = [ bc, bz, ba ]
 
 	s = solver_type(clrp)
@@ -568,7 +560,7 @@ if __name__ == '__main__':
 	test_actualization()
 	test_fallback_abstraction()
 	test_mixed_z3()
-	#test_pickle()
+	test_pickle()
 	#test_datalayer()
 	test_model()
 	test_solver()
