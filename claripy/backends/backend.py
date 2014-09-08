@@ -45,8 +45,8 @@ class Backend(object):
 
 			for o in expr.objects:
 				try:
-					 r = self.convert(o, result=result)
-					 resolved = True
+					r = self.convert(o, result=result)
+					resolved = True
 				except BackendError:
 					pass
 
