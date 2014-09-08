@@ -221,9 +221,10 @@ def e_operator(cls, op_name):
 #   setattr(cls, op_name, wrapper)
 
 def make_methods():
-    for name in operations:
-        e_operator(E, name)
+    for operations in [expression_operations, expression_bitwise_operations, expression_arithmetic_operations, expression_comparator_operations]:
+        for name in operations:
+            e_operator(E, name)
 
 from .backends.backend import BackendError
-from .operations import expression_operations, bitwise_operations, arithmetic_operations, comparator_operations
+from .operations import expression_operations, expression_bitwise_operations, expression_arithmetic_operations, expression_comparator_operations
 make_methods()
