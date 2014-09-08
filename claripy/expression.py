@@ -50,7 +50,7 @@ class E(Storable):
     def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, ast=None, stored=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
-        have_data = not (variables is None or symbolic is None or ast is None or length is None)
+        have_data = not (variables is None and symbolic is None and ast is None and length is None)
         self.objects = { }
 
         if have_uuid and not have_data:
