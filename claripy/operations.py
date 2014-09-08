@@ -1,4 +1,4 @@
-arithmetic_operations = {
+expression_arithmetic_operations = {
     # arithmetic
     '__add__', '__radd__',
     '__div__', '__rdiv__',
@@ -11,7 +11,7 @@ arithmetic_operations = {
     '__divmod__', '__rdivmod__',
 }
 
-comparator_operations = {
+expression_comparator_operations = {
     # comparisons
     '__eq__',
     '__ne__',
@@ -19,7 +19,7 @@ comparator_operations = {
     '__gt__', '__lt__',
 }
 
-bitwise_operations = {
+expression_bitwise_operations = {
     # bitwise
     '__neg__',
     '__pos__',
@@ -32,7 +32,7 @@ bitwise_operations = {
     '__rshift__', '__rrshift__',
 }
 
-operations = arithmetic_operations | comparator_operations | bitwise_operations
+expression_operations = expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations
 
 backend_comparator_operations = {
     'UGE', 'ULE', 'UGT', 'ULT',
