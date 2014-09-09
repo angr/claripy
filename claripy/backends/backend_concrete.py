@@ -7,8 +7,6 @@ zFalse = z3.BoolVal(False)
 
 from .backend import Backend, BackendError
 
-from vsa import ValueSet, StridedInterval
-
 class BackendConcrete(Backend):
     def __init__(self, claripy):
         Backend.__init__(self, claripy)
