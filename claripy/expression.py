@@ -3,7 +3,6 @@
 import logging
 l = logging.getLogger("claripy.expression")
 
-import operator
 from .storable import Storable
 
 class A(object):
@@ -45,12 +44,12 @@ class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_ast', '_stored', 'objects' ]
+    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects' ]
 
-    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, ast=None, stored=False):
+    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
-        have_data = not (variables is None and symbolic is None and ast is None and length is None)
+        have_data = not (variables is None and symbolic is None and model is None and length is None)
         self.objects = { }
 
         if have_uuid and not have_data:
@@ -61,7 +60,7 @@ class E(Storable):
             self.length = length
 
             self._uuid = uuid
-            self._ast = ast
+            self._model = model
             self._stored = stored
 
             if objects is not None:
@@ -75,7 +74,7 @@ class E(Storable):
         self.symbolic = e.symbolic
 
         self._uuid = e._uuid
-        self._ast = e._ast
+        self._model = e._model
         self._stored = e._stored
 
     def __nonzero__(self):
@@ -85,44 +84,19 @@ class E(Storable):
         name = "E"
         if self.symbolic:
             name += "S"
-        return name + "(%s)" % self._ast
-
-    def eval(self, backends=None, save=None, model=None):
-        save = backends is None if save is None else save
-        backends = self._claripy.expression_backends if backends is None else backends
-
-        for b in backends:
-            try:
-                return b.convert_expr(self, model=model, save=save)
-            except BackendError:
-                pass
-
-        raise Exception("no backend can convert expression")
+        return name + "(%s)" % self._model
 
     def _do_op(self, op_name, args):
-        all_args = ( self, ) + tuple(args)
-        try:
-            return self._claripy.model_backend.call(op_name, args)
-        except BackendError:
-            a = A(op_name, all_args)
-            variables = reduce(operator.or_, ( e.variables if isinstance(e, E) else set() for e in all_args ), set())
-            symbolic = any(( e.symbolic if isinstance(e, E) else False for e in all_args ))
-
-        if op_name in bitwise_operations or op_name in arithmetic_operations:
-            length = (arg.length for arg in all_args if isinstance(arg, E)).next()
-        elif op_name in comparator_operations or op_name:
-            length = -1
-
-        return E(self._claripy, length=length, ast=a, symbolic=symbolic, variables=variables)
+        return self._claripy._do_op(op_name, (self,) + tuple(args))
 
     def split(self, split_on):
-        if not isinstance(self._ast, A):
+        if not isinstance(self._model, A):
             return [ self ]
 
-        if self._ast._op in split_on:
-            l.debug("Trying to split: %r", self._ast)
-            if all(isinstance(a, E) for a in self._ast._args):
-                return self._ast._args[:]
+        if self._model._op in split_on:
+            l.debug("Trying to split: %r", self._model)
+            if all(isinstance(a, E) for a in self._model._args):
+                return self._model._args[:]
             else:
                 raise Exception('wtf')
         else:
@@ -141,7 +115,7 @@ class E(Storable):
             l.debug("uuid pickle on %s", self)
             return self._uuid
         l.debug("full pickle on %s", self)
-        return self._uuid, self._ast, self.variables, self.symbolic, self.length
+        return self._uuid, self._model, self.variables, self.symbolic, self.length
 
     def __setstate__(self, s):
         if type(s) is str:
@@ -165,11 +139,14 @@ class E(Storable):
         raise Exception("Please don't iterate over Expressions!")
 
     def simplify(self):
-        for b in self._claripy.expression_backends:
-            try:
-                return b.simplify_expr(self)
-            except BackendError:
-                pass
+        try:
+            return self._claripy.model_backend.simplify_expr(self)
+        except BackendError:
+            for b in self._claripy.solver_backends:
+                try:
+                    return b.simplify_expr(self)
+                except BackendError:
+                    pass
 
         raise Exception("unable to simplify")
 

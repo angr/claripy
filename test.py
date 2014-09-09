@@ -15,42 +15,30 @@ def test_expression():
 	e = clrp.BitVecVal(0x01020304, 32)
 	nose.tools.assert_equal(len(e), 32)
 	r = e.reversed()
-	nose.tools.assert_equal(r.eval(), 0x04030201)
+	nose.tools.assert_equal(r._model, 0x04030201)
 	nose.tools.assert_equal(len(r), 32)
 
-	nose.tools.assert_equal([ i.eval() for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
+	nose.tools.assert_equal([ i._model for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
 
 	e1 = r[31:24]
-	nose.tools.assert_equal(e1.eval(), 0x04)
+	nose.tools.assert_equal(e1._model, 0x04)
 	nose.tools.assert_equal(len(e1), 8)
-	nose.tools.assert_equal(e1[2].eval(), 1)
-	nose.tools.assert_equal(e1[1].eval(), 0)
+	nose.tools.assert_equal(e1[2]._model, 1)
+	nose.tools.assert_equal(e1[1]._model, 0)
 
 	ee1 = e1.zero_extend(8)
-	nose.tools.assert_equal(ee1.eval(), 0x0004)
+	nose.tools.assert_equal(ee1._model, 0x0004)
 	nose.tools.assert_equal(len(ee1), 16)
 
 	ee1 = clrp.BitVecVal(0xfe, 8).sign_extend(8)
-	nose.tools.assert_equal(ee1.eval(), 0xfffe)
+	nose.tools.assert_equal(ee1._model, 0xfffe)
 	nose.tools.assert_equal(len(ee1), 16)
 
-	xe1 = [ i.eval() for i in e1.chop(1) ]
+	xe1 = [ i._model for i in e1.chop(1) ]
 	nose.tools.assert_equal(xe1, [ 0, 0, 0, 0, 0, 1, 0, 0 ])
 
-def test_actualization():
-	clrp = claripy.ClaripyStandalone()
-
-	bc = claripy.backends.BackendConcrete(clrp)
-	clrp.expression_backends = [ bc ]
-
-	a = claripy.E(clrp, ast=5, variables=set(), symbolic=False, length=-1)
-	b = a+a
-	nose.tools.assert_equals(len(b.objects), 0)
-	nose.tools.assert_is(type(b._ast), claripy.A)
-
-	b.eval(backends=[bc], save=True)
-	nose.tools.assert_equal(len(b.objects), 1)
-	nose.tools.assert_equal(b.objects[bc], 10)
+	a = clrp.BitVecVal(1, 1)
+	nose.tools.assert_equal((a+a)._model, 2)
 
 def test_fallback_abstraction():
 	clrp = claripy.ClaripyStandalone()
