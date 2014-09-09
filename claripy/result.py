@@ -22,6 +22,5 @@ class Result(object):
         ( self.sat, self.model, self.eval_cache, self.min_cache, self.max_cache ) = state
         self.backend_model = None
 
-class UnsatError(Exception):
-    pass
+from .errors import UnsatError
 
