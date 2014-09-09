@@ -89,7 +89,7 @@ class E(Storable):
 
     def eval(self, backends=None, save=None, model=None):
         save = backends is None if save is None else save
-        backends = self._claripy.expression_backends if backends is None else backends
+        backends = self._claripy.expression_backends if backends is None and expression_backendsl else backends
 
         for b in backends:
             try:
@@ -98,6 +98,20 @@ class E(Storable):
                 pass
 
         raise Exception("no backend can convert expression")
+
+    @property
+    def value(self):
+        if self._ast is not None:
+            return self._ast.value
+        else:
+            raise Exception('cannot get value of this expression')
+
+    @property
+    def bits(self):
+        if self._ast is not None:
+            return self._ast.bits
+        else:
+            raise Exception('cannot get bits of this expression')
 
     def _do_op(self, op_name, args):
         all_args = ( self, ) + tuple(args)

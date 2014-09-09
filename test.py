@@ -6,8 +6,11 @@ import pickle
 import tempfile
 import claripy
 
-import logging
-l = logging.getLogger("claripy.test")
+# TODO: Remove this import
+try:
+    import claripy_logging
+except:
+    pass
 
 def test_expression():
 	clrp = claripy.ClaripyStandalone()
