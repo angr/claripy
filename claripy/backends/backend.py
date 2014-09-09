@@ -1,10 +1,7 @@
-#import operator
+import operator
 
 import logging
 l = logging.getLogger('claripy.backends.backend')
-
-class BackendError(Exception):
-	pass
 
 class Backend(object):
 	def __init__(self, claripy):
@@ -21,7 +18,7 @@ class Backend(object):
 	# can understand.
 	#
 
-	def convert(self, r, result=None): #pylint:disable=W0613,R0201
+	def convert_raw(self, r, result=None): #pylint:disable=W0613,R0201
 		'''
 		Converts r to something usable by this backend.
 		'''
@@ -30,28 +27,33 @@ class Backend(object):
 	def convert_expr(self, expr, save=None, result=None): #pylint:disable=R0201
 		'''
 		Resolves a claripy.E into something usable by the backend.
+
+		@param expr: the expression
+		@param save: save the result in the expression's object cache
+		@param result: a Result object (for concrete-only symbolic evaluation)
+		@returns a backend object
 		'''
 		save = save if save is not None else result is None
 
 		if not isinstance(expr, E):
-			return self.convert(expr, result=result)
+			return self.convert_raw(expr, result=result)
 
 		if self in expr.objects:
 			r = expr.objects[self]
-		elif type(expr._ast) is not A:
-			r = self.convert(expr._ast, result=result)
+		elif type(expr._model) is not A:
+			r = self.convert_raw(expr._model, result=result)
 		else:
 			resolved = False
 
 			for o in expr.objects:
 				try:
-					r = self.convert(o, result=result)
+					r = self.convert_raw(o, result=result)
 					resolved = True
 				except BackendError:
 					pass
 
 			if not resolved:
-				r = self.call_expr(expr._ast._op, expr._ast._args, result=result)
+				r = self.call_expr(expr._model._op, expr._model._args, result=result)
 
 		if save:
 			expr.objects[self] = r
@@ -76,9 +78,13 @@ class Backend(object):
 		if name in self._op_expr:
 			return self._op_expr[name](*args, result=result)
 		else:
-			return self.call(name, self.convert_exprs(args), result=result)
+			r = self.call_raw(name, self.convert_exprs(args), result=result)
+			all_variables = ((e.variables if isinstance(e, E) else set()) for e in args)
+			variables = reduce(operator.or_, all_variables, set())
+			symbolic = any(( e.symbolic if isinstance(e, E) else False for e in args ))
+			return E(self._claripy, model=r, variables=variables, symbolic=symbolic, length=op_length(name, args))
 
-	def call(self, name, args, result=None): #pylint:disable=unused-argument
+	def call_raw(self, name, args, result=None): #pylint:disable=unused-argument
 		l.debug("args = %r", args)
 
 		if name in self._op_raw:
@@ -118,11 +124,12 @@ class Backend(object):
 	#
 
 	def simplify_expr(self, e):
-		o = self.simplify(self.convert_expr(e))
-		return E(self._claripy, ast=self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
+		o = self.simplify_raw(self.convert_expr(e))
+		return E(self._claripy, model=self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
 
-	def simplify(self, e): # pylint:disable=R0201
+	def simplify_raw(self, e): # pylint:disable=R0201
 		return e
 
 from ..expression import E, A
-from ..operations import opposites
+from ..operations import opposites, op_length
+from ..errors import BackendError

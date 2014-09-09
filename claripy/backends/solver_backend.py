@@ -22,9 +22,9 @@ class SolverBackend(Backend):
 		@param c: sequence of claripy.E objects
 		@param s: backend solver object
 		'''
-		return self.add(s, self.convert_exprs(c))
+		return self.add_raw(s, self.convert_exprs(c))
 
-	def add(self, s, c): #pylint:disable=W0613,R0201
+	def add_raw(self, s, c): #pylint:disable=W0613,R0201
 		'''
 		This function adds constraints to the backend solver.
 
@@ -42,9 +42,9 @@ class SolverBackend(Backend):
 								   to s for this solve
 		@returns True or False, depending on satisfiability
 		'''
-		return self.check(s, extra_constraints=self.convert_exprs(extra_constraints))
+		return self.check_raw(s, extra_constraints=self.convert_exprs(extra_constraints))
 
-	def check(self, s, extra_constraints=None): #pylint:disable=W0613,R0201
+	def check_raw(self, s, extra_constraints=None): #pylint:disable=W0613,R0201
 		'''
 		This function does a constraint check.
 
@@ -64,9 +64,9 @@ class SolverBackend(Backend):
 		@params generic_model: whether to generate a generic model in the Result object
 		@returns a Result object
 		'''
-		return self.results(s, extra_constraints=self.convert_exprs(extra_constraints), generic_model=generic_model)
+		return self.results_raw(s, extra_constraints=self.convert_exprs(extra_constraints), generic_model=generic_model)
 
-	def results(self, s, extra_constraints=None, generic_model=True): #pylint:disable=W0613,R0201
+	def results_raw(self, s, extra_constraints=None, generic_model=True): #pylint:disable=W0613,R0201
 		'''
 		This function does a constraint check.
 
@@ -88,9 +88,9 @@ class SolverBackend(Backend):
 		@params result: a cached Result from the last constraint solve
 		@returns a sequence of up to n results (backend objects)
 		'''
-		return self.eval(s, self.convert_expr(expr), n, extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.eval_raw(s, self.convert_expr(expr), n, extra_constraints=self.convert_exprs(extra_constraints), result=result)
 
-	def eval(self, s, expr, n, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
+	def eval_raw(self, s, expr, n, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
 		'''
 		This function returns up to n possible solutions for expression expr.
 
@@ -113,9 +113,9 @@ class SolverBackend(Backend):
 		@params result: a cached Result from the last constraint solve
 		@returns the minimum possible value of expr (backend object)
 		'''
-		return self.min(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.min_raw(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
 
-	def min(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
+	def min_raw(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
 		'''
 		Return the minimum value of expr.
 
@@ -137,9 +137,9 @@ class SolverBackend(Backend):
 		@params result: a cached Result from the last constraint solve
 		@returns the maximum possible value of expr (backend object)
 		'''
-		return self.max(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.max_raw(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
 
-	def max(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
+	def max_raw(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
 		'''
 		Return the maximum value of expr.
 
