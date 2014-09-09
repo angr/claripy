@@ -82,3 +82,39 @@ opposites = {
     '__lshift__': '__rlshift__', '__rlshift__': '__lshift__',
     '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
 }
+
+length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations
+length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
+length_change_operations = backend_bitmod_operations
+length_new_operations = backend_creation_operations
+
+def op_length(op, args):
+    if op in length_none_operations:
+        return -1
+
+    if op in length_same_operations:
+        lengths = set(a.length for a in args if isinstance(a, E))
+        if len(lengths) > 1:
+            raise ClaripySizeError("multiple sizes being combined together")
+        return lengths.__iter__().next()
+
+    if op in length_change_operations:
+        if op in ( "SignExt", "ZeroExt" ):
+            if not isinstance(args[1], E) or args[1].length == -1:
+                raise ClaripyTypeError("extending an object without a length")
+            return args[1].length + args[0]
+        if op == 'Concat':
+            lengths = [ a.length for a in args ]
+            if len(lengths) != len(args) or -1 in lengths:
+                raise ClaripyTypeError("concatenating an object without a length")
+            return sum(a.length for a in args)
+        if op == 'Extract':
+            return args[0]-args[1]+1
+
+    if op in length_new_operations:
+        return args[1]
+
+    raise ClaripyOperationError("unknown operation %s" % op)
+
+from .expression import E
+from .errors import ClaripySizeError, ClaripyTypeError, ClaripyOperationError

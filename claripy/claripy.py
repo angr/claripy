@@ -23,16 +23,18 @@ class Claripy(object):
     #
     def _do_op(self, name, args, variables=None, symbolic=None, length=None):
         try:
-            a = self.model_backend.call(name, args)
+            return self.model_backend.call_expr(name, args)
         except BackendError:
             a = A(name, args)
 
-            symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args) if symbolic is None else symbolic
-            variables = reduce(operator.or_, (arg.variables if isinstance(arg, E) else set() for arg in args), set()) if variables is None else variables
-            length = max([arg.length for arg in args if isinstance(arg, E)]) if length is None else length
+            if symbolic is None:
+                symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
+            if variables is None:
+                all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
+                variables = reduce(operator.or_, all_variables, set())
+                length = op_length(name, args)
 
-        e = E(self, ast=a, variables=variables, symbolic=symbolic, length=length)
-        return e
+            return E(self, model=a, variables=variables, symbolic=symbolic, length=length)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
@@ -70,3 +72,4 @@ class Claripy(object):
 
 from .expression import E, A
 from .backends.backend import BackendError
+from .operations import op_length
