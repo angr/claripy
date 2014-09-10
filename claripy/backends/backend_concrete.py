@@ -46,7 +46,8 @@ class BackendConcrete(Backend):
                 l.debug("returning 0 for %s (not in model %r)", name, result.model)
                 return bv.BVV(0, a.size())
         else:
-            l.warning("TODO: support more complex non-symbolic expressions, maybe?")
+            #import ipdb; ipdb.set_trace()
+            #l.warning("TODO: support more complex non-symbolic expressions, maybe?")
             raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
 
 from ..bv import BVV
