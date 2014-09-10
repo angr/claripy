@@ -12,15 +12,17 @@ from .result import Result, UnsatError
 from .claripy_standalone import ClaripyStandalone
 from .datalayer import DataLayer
 from .bv import BVV
+from . import operations
 from . import backends
 
 claripy = None
 def set_claripy(c):
     global claripy
     claripy = c
+    return c
 
 def init_standalone():
-    set_claripy(ClaripyStandalone())
+    return set_claripy(ClaripyStandalone())
 
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap

@@ -3,7 +3,7 @@ import logging
 l = logging.getLogger("claripy.test")
 
 import pickle
-import tempfile
+#import tempfile
 import claripy
 
 import logging
@@ -15,56 +15,42 @@ def test_expression():
 	e = clrp.BitVecVal(0x01020304, 32)
 	nose.tools.assert_equal(len(e), 32)
 	r = e.reversed()
-	nose.tools.assert_equal(r.eval(), 0x04030201)
+	nose.tools.assert_equal(r._model, 0x04030201)
 	nose.tools.assert_equal(len(r), 32)
 
-	nose.tools.assert_equal([ i.eval() for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
+	nose.tools.assert_equal([ i._model for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
 
 	e1 = r[31:24]
-	nose.tools.assert_equal(e1.eval(), 0x04)
+	nose.tools.assert_equal(e1._model, 0x04)
 	nose.tools.assert_equal(len(e1), 8)
-	nose.tools.assert_equal(e1[2].eval(), 1)
-	nose.tools.assert_equal(e1[1].eval(), 0)
+	nose.tools.assert_equal(e1[2]._model, 1)
+	nose.tools.assert_equal(e1[1]._model, 0)
 
 	ee1 = e1.zero_extend(8)
-	nose.tools.assert_equal(ee1.eval(), 0x0004)
+	nose.tools.assert_equal(ee1._model, 0x0004)
 	nose.tools.assert_equal(len(ee1), 16)
 
 	ee1 = clrp.BitVecVal(0xfe, 8).sign_extend(8)
-	nose.tools.assert_equal(ee1.eval(), 0xfffe)
+	nose.tools.assert_equal(ee1._model, 0xfffe)
 	nose.tools.assert_equal(len(ee1), 16)
 
-	xe1 = [ i.eval() for i in e1.chop(1) ]
+	xe1 = [ i._model for i in e1.chop(1) ]
 	nose.tools.assert_equal(xe1, [ 0, 0, 0, 0, 0, 1, 0, 0 ])
 
-def test_actualization():
-	clrp = claripy.ClaripyStandalone()
-
-	ba = claripy.backends.BackendAbstract(clrp)
-	bc = claripy.backends.BackendConcrete(clrp)
-	clrp.expression_backends = [ ba, bc ]
-
-	a = claripy.E(clrp, obj=5, variables=set(), symbolic=False)
-	b = a+a
-	nose.tools.assert_is(b._obj, None)
-	nose.tools.assert_is(type(b._ast), claripy.A)
-
-	b.eval(backends=[bc], save=True)
-	nose.tools.assert_equal(b._obj, 10)
+	a = clrp.BitVecVal(1, 1)
+	nose.tools.assert_equal((a+a)._model, 2)
 
 def test_fallback_abstraction():
 	clrp = claripy.ClaripyStandalone()
-	ba = claripy.backends.BackendAbstract(clrp)
-	bc = claripy.backends.BackendConcrete(clrp)
-	bz = claripy.backends.BackendZ3(clrp)
-	clrp.expression_backends = [ bc, ba ]
+	bz = clrp.solver_backends[0]
 
-	a = claripy.E(clrp, obj=5, variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+	a = clrp.BitVecVal(5, 32)
+	b = clrp.BitVec('x', 32, explicit_name=True)
 	c = a+b
 	d = 5+b
 	e = b+5
 	f = b+b
+	g = a+a
 
 	nose.tools.assert_false(a.symbolic)
 	nose.tools.assert_true(b.symbolic)
@@ -73,131 +59,82 @@ def test_fallback_abstraction():
 	nose.tools.assert_true(e.symbolic)
 	nose.tools.assert_true(f.symbolic)
 
-	a.eval(backends=[bc, bz], save=True)
-	nose.tools.assert_equal(str(a._obj), '5')
-	nose.tools.assert_is(type(a._obj), int)
+	nose.tools.assert_is(type(a._model), claripy.BVV)
+	nose.tools.assert_is(type(b._model), claripy.A)
+	nose.tools.assert_is(type(c._model), claripy.A)
+	nose.tools.assert_is(type(d._model), claripy.A)
+	nose.tools.assert_is(type(e._model), claripy.A)
+	nose.tools.assert_is(type(f._model), claripy.A)
+	nose.tools.assert_is(type(g._model), claripy.BVV)
 
-	b.eval(backends=[bc, bz], save=True)
-	nose.tools.assert_equal(str(b._obj), 'x')
-	nose.tools.assert_equal(b._obj.__module__, 'z3')
+	nose.tools.assert_equal(str(bz.convert_expr(b)), 'x')
+	nose.tools.assert_equal(bz.convert_expr(b).__module__, 'z3')
 
-	c.eval(backends=[bc, bz], save=True)
-	d.eval(backends=[bc, bz], save=True)
-	e.eval(backends=[bc, bz], save=True)
-	f.eval(backends=[bc, bz], save=True)
-
-	nose.tools.assert_equal(str(c._obj), '5 + x')
-	nose.tools.assert_equal(str(d._obj), '5 + x')
-	nose.tools.assert_equal(str(e._obj), 'x + 5')
-	nose.tools.assert_equal(str(f._obj), 'x + x')
-
-	f._ast = None
-	f.abstract([bc, bz])
-	f._obj = None
-	f.eval(backends=[bc, bz], save=True)
-	nose.tools.assert_equal(str(f._obj), 'x + x')
-
-def test_mixed_z3():
-	clrp = claripy.ClaripyStandalone()
-	ba = claripy.backends.BackendAbstract(clrp)
-	bc = claripy.backends.BackendConcrete(clrp)
-	bz = claripy.backends.BackendZ3(clrp)
-
-	clrp.expression_backends = [ bc, bz, ba ]
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-	nose.tools.assert_true(b.symbolic)
-	c = a+b
-	nose.tools.assert_true(b.symbolic)
-	nose.tools.assert_true(c.symbolic)
-
-	a.eval()
-	b.eval()
-
-	nose.tools.assert_is(type(a._obj), claripy.bv.BVV)
-	nose.tools.assert_equal(b._obj.__module__, 'z3')
-
-	d = a + b
-	nose.tools.assert_equal(d._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(d._obj), '0 + x')
-
-	c.eval()
-	nose.tools.assert_equal(c._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(c._obj), '0 + x')
+	nose.tools.assert_equal(str(bz.convert_expr(c)), '5 + x')
+	nose.tools.assert_equal(str(bz.convert_expr(d)), '5 + x')
+	nose.tools.assert_equal(str(bz.convert_expr(e)), 'x + 5')
+	nose.tools.assert_equal(str(bz.convert_expr(f)), 'x + x')
 
 def test_pickle():
-	clrp = claripy.ClaripyStandalone()
-	ba = claripy.backends.BackendAbstract(clrp)
-	bc = claripy.backends.BackendConcrete(clrp)
-	bz = claripy.backends.BackendZ3(clrp)
-	clrp.expression_backends = [ bc, bz, ba ]
+	clrp = claripy.init_standalone()
+	bz = clrp.solver_backends[0]
 
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-	a.eval(); a._ast = None
-	b.eval(); a._ast = None
+	a = clrp.BitVecVal(0, 32)
+	b = clrp.BitVec('x', 32, explicit_name=True)
 
 	c = a+b
-	nose.tools.assert_equal(c._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(c._obj), '0 + x')
+	nose.tools.assert_equal(bz.convert_expr(c).__module__, 'z3')
+	nose.tools.assert_equal(str(bz.convert_expr(c)), '0 + x')
 
 	c_copy = pickle.loads(pickle.dumps(c))
-	nose.tools.assert_is(c_copy._obj, None)
-	c_copy._claripy = clrp
-	c_copy.eval()
-	nose.tools.assert_equal(c_copy._obj.__module__, 'z3')
-	nose.tools.assert_equal(str(c_copy._obj), '0 + x')
+	nose.tools.assert_equal(bz.convert_expr(c_copy).__module__, 'z3')
+	nose.tools.assert_equal(str(bz.convert_expr(c_copy)), '0 + x')
 
 def test_datalayer():
 	l.info("Running test_datalayer")
 
-	clrp = claripy.ClaripyStandalone()
-	pickle_dir = tempfile.mkdtemp()
-	clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
-	l.debug("Pickling to %s",pickle_dir)
+	#clrp = claripy.ClaripyStandalone()
+	#pickle_dir = tempfile.mkdtemp()
+	#clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
+	#l.debug("Pickling to %s",pickle_dir)
 
-	ba = claripy.backends.BackendAbstract(claripy.claripy)
-	bc = claripy.backends.BackendConcrete(claripy.claripy)
-	bz = claripy.backends.BackendZ3(claripy.claripy)
-	clrp.expression_backends = [ bc, ba ]
+	#bc = claripy.backends.BackendConcrete(claripy.claripy)
+	#bz = claripy.backends.BackendZ3(claripy.claripy)
 
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+	#a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
+	#b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
 
-	a.eval(); a._ast = None
-	b.store()
-	#b.eval(); b._ast = None
-	c = a + b
-	c.store()
+	#a.eval(); a._ast = None
+	#b.store()
+	##b.eval(); b._ast = None
+	#c = a + b
+	#c.store()
 
-	c.eval(backends=[ bc, bz ], save=True)
-	nose.tools.assert_equal(str(c._obj), '0 + x')
+	#c.eval(backends=[ bc, bz ], save=True)
+	#nose.tools.assert_equal(str(c._obj), '0 + x')
 
-	d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
-	d.store()
+	#d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
+	#d.store()
 
-	l.debug("Loading stage!")
-	clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
-	nose.tools.assert_equal(len(clrp.dl._cache), 0)
+	#l.debug("Loading stage!")
+	#clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
+	#nose.tools.assert_equal(len(clrp.dl._cache), 0)
 
-	e = clrp.dl.load_expression(c._uuid)
-	e.eval([ bc, bz ], save=True)
-	nose.tools.assert_equal(str(e._obj), '0 + x')
+	#e = clrp.dl.load_expression(c._uuid)
+	#e.eval([ bc, bz ], save=True)
+	#nose.tools.assert_equal(str(e._obj), '0 + x')
 
 def test_model():
 	clrp = claripy.ClaripyStandalone()
-	bc = claripy.backends.BackendConcrete(clrp)
-	ba = claripy.backends.BackendAbstract(clrp)
-	clrp.expression_backends = [ bc, ba ]
+	bc = clrp.model_backend
 
-	a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(5, 32)), variables=set(), symbolic=False)
-	b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
-
+	a = clrp.BitVecVal(5, 32)
+	b = clrp.BitVec('x', 32, explicit_name=True)
 	c = a + b
 
-	r_c = c.eval(backends=[bc], save=False, model={'x': 10})
+	r_c = bc.convert_expr(c, result=claripy.Result(True, {'x': 10}))
 	nose.tools.assert_equal(r_c, 15)
-	r_d = c.eval(backends=[bc], model={'x': 15}, save=False)
+	r_d = bc.convert_expr(c, result=claripy.Result(True, {'x': 15}))
 	nose.tools.assert_equal(r_c, 15)
 	nose.tools.assert_equal(r_d, 20)
 
@@ -208,7 +145,6 @@ def raw_solver(solver_type):
 	clrp = claripy.ClaripyStandalone()
 	#bc = claripy.backends.BackendConcrete(clrp)
 	#bz = claripy.backends.BackendZ3(clrp)
-	#ba = claripy.backends.BackendAbstract(clrp)
 	#clrp.expression_backends = [ bc, bz, ba ]
 
 	s = solver_type(clrp)
@@ -226,7 +162,7 @@ def raw_solver(solver_type):
 	l.debug("checking")
 	nose.tools.assert_true(s.satisfiable())
 	nose.tools.assert_false(s.satisfiable(extra_constraints=[x == 5]))
-	nose.tools.assert_equal(s.eval_value(x + 5, 1)[0], 15)
+	nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
 	nose.tools.assert_true(s.solution(x + 5, 15))
 	nose.tools.assert_true(s.solution(x, 10))
 	nose.tools.assert_true(s.solution(y, 15))
@@ -267,10 +203,10 @@ def raw_solver(solver_type):
 	#print "========================================================================================"
 	#print "========================================================================================"
 
-	nose.tools.assert_equal(s.max_value(z), 4)
-	nose.tools.assert_equal(s.min_value(z), 0)
-	nose.tools.assert_equal(s.min_value(y), 22)
-	nose.tools.assert_equal(s.max_value(y), 2**y.size()-1)
+	nose.tools.assert_equal(s.max(z), 4)
+	nose.tools.assert_equal(s.min(z), 0)
+	nose.tools.assert_equal(s.min(y), 22)
+	nose.tools.assert_equal(s.max(y), 2**y.size()-1)
 
 	ss = s.split()
 	nose.tools.assert_equal(len(ss), 2)
@@ -289,7 +225,7 @@ def raw_solver(solver_type):
 	# test extra constraints
 	s = solver_type(clrp)
 	x = clrp.BitVec('x', 32)
-	nose.tools.assert_equal(s.eval_value(x, 2, extra_constraints=[x==10]), [ 10 ])
+	nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
 	s.add(x == 10)
 	nose.tools.assert_false(s.solution(x, 2))
 	nose.tools.assert_true(s.solution(x, 10))
@@ -314,14 +250,16 @@ def raw_solver_branching(solver_type):
 	s.add(x > y)
 	s.add(x < 10)
 
+	nose.tools.assert_equals(s.eval(x, 1)[0], 1)
+
 	t = s.branch()
 	if type(s) is claripy.solvers.BranchingSolver:
-		nose.tools.assert_is(s._solver, t._solver)
+		nose.tools.assert_is(s._solver_states.values()[0], t._solver_states.values()[0])
 		nose.tools.assert_true(s._finalized)
 		nose.tools.assert_true(t._finalized)
 	t.add(x > 5)
 	if type(s) is claripy.solvers.BranchingSolver:
-		nose.tools.assert_false(s._solver is t._solver)
+		nose.tools.assert_equal(len(t._solver_states), 0)
 
 	s.add(x == 3)
 	nose.tools.assert_true(s.satisfiable())
@@ -330,8 +268,8 @@ def raw_solver_branching(solver_type):
 
 	s.add(y == 2)
 	nose.tools.assert_true(s.satisfiable())
-	nose.tools.assert_equals(s.eval_value(x, 1)[0], 3)
-	nose.tools.assert_equals(s.eval_value(y, 1)[0], 2)
+	nose.tools.assert_equals(s.eval(x, 1)[0], 3)
+	nose.tools.assert_equals(s.eval(y, 1)[0], 2)
 	nose.tools.assert_false(t.satisfiable())
 
 def test_combine():
@@ -355,7 +293,7 @@ def raw_combine(solver_type):
 	nose.tools.assert_true(s20.combine([s10]).satisfiable())
 	nose.tools.assert_true(s30.combine([s10]).satisfiable())
 	nose.tools.assert_false(s30.combine([s20]).satisfiable())
-	nose.tools.assert_equal(s30.combine([s10]).eval_value(x, 1), [ 30 ])
+	nose.tools.assert_equal(s30.combine([s10]).eval(x, 1), ( 30, ))
 	nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
 
 def test_bv():
@@ -374,57 +312,57 @@ def raw_simple_merging(solver_type):
 	z = clrp.BitVec("z", 8)
 	m = clrp.BitVec("m", 8)
 
-	s1.add(x == 1, y == 10)
-	s2.add(x == 2, z == 20, w == 5)
+	s1.add([x == 1, y == 10])
+	s2.add([x == 2, z == 20, w == 5])
 	sm = s1.merge([s2], m, [ 0, 1 ])
 
-	nose.tools.assert_equal(s1.eval_value(x, 1), [1])
-	nose.tools.assert_equal(s2.eval_value(x, 1), [2])
+	nose.tools.assert_equal(s1.eval(x, 1), (1,))
+	nose.tools.assert_equal(s2.eval(x, 1), (2,))
 
 	sm1 = sm.branch()
 	sm1.add(x == 1)
-	nose.tools.assert_equal(sm1.eval_value(x, 1), [1])
-	nose.tools.assert_equal(sm1.eval_value(y, 1), [10])
-	nose.tools.assert_equal(sm1.eval_value(z, 1), [0])
-	nose.tools.assert_equal(sm1.eval_value(w, 1), [0])
+	nose.tools.assert_equal(sm1.eval(x, 1), (1,))
+	nose.tools.assert_equal(sm1.eval(y, 1), (10,))
+	nose.tools.assert_equal(sm1.eval(z, 1), (0,))
+	nose.tools.assert_equal(sm1.eval(w, 1), (0,))
 
 	sm2 = sm.branch()
 	sm2.add(x == 2)
-	nose.tools.assert_equal(sm2.eval_value(x, 1), [2])
-	nose.tools.assert_equal(sm2.eval_value(y, 1), [0])
-	nose.tools.assert_equal(sm2.eval_value(z, 1), [20])
-	nose.tools.assert_equal(sm2.eval_value(w, 1), [5])
+	nose.tools.assert_equal(sm2.eval(x, 1), (2,))
+	nose.tools.assert_equal(sm2.eval(y, 1), (0,))
+	nose.tools.assert_equal(sm2.eval(z, 1), (20,))
+	nose.tools.assert_equal(sm2.eval(w, 1), (5,))
 
 	sm1 = sm.branch()
 	sm1.add(m == 0)
-	nose.tools.assert_equal(sm1.eval_value(x, 1), [1])
-	nose.tools.assert_equal(sm1.eval_value(y, 1), [10])
-	nose.tools.assert_equal(sm1.eval_value(z, 1), [0])
-	nose.tools.assert_equal(sm1.eval_value(w, 1), [0])
+	nose.tools.assert_equal(sm1.eval(x, 1), (1,))
+	nose.tools.assert_equal(sm1.eval(y, 1), (10,))
+	nose.tools.assert_equal(sm1.eval(z, 1), (0,))
+	nose.tools.assert_equal(sm1.eval(w, 1), (0,))
 
 	sm2 = sm.branch()
 	sm2.add(m == 1)
-	nose.tools.assert_equal(sm2.eval_value(x, 1), [2])
-	nose.tools.assert_equal(sm2.eval_value(y, 1), [0])
-	nose.tools.assert_equal(sm2.eval_value(z, 1), [20])
-	nose.tools.assert_equal(sm2.eval_value(w, 1), [5])
+	nose.tools.assert_equal(sm2.eval(x, 1), (2,))
+	nose.tools.assert_equal(sm2.eval(y, 1), (0,))
+	nose.tools.assert_equal(sm2.eval(z, 1), (20,))
+	nose.tools.assert_equal(sm2.eval(w, 1), (5,))
 
 	m2 = clrp.BitVec("m2", 32)
 	smm = sm1.merge([sm2], m2, [0, 1])
 
 	smm_1 = smm.branch()
 	smm_1.add(x == 1)
-	nose.tools.assert_equal(smm_1.eval_value(x, 1), [1])
-	nose.tools.assert_equal(smm_1.eval_value(y, 1), [10])
-	nose.tools.assert_equal(smm_1.eval_value(z, 1), [0])
-	nose.tools.assert_equal(smm_1.eval_value(w, 1), [0])
+	nose.tools.assert_equal(smm_1.eval(x, 1), (1,))
+	nose.tools.assert_equal(smm_1.eval(y, 1), (10,))
+	nose.tools.assert_equal(smm_1.eval(z, 1), (0,))
+	nose.tools.assert_equal(smm_1.eval(w, 1), (0,))
 
 	smm_2 = smm.branch()
 	smm_2.add(m == 1)
-	nose.tools.assert_equal(smm_2.eval_value(x, 1), [2])
-	nose.tools.assert_equal(smm_2.eval_value(y, 1), [0])
-	nose.tools.assert_equal(smm_2.eval_value(z, 1), [20])
-	nose.tools.assert_equal(smm_2.eval_value(w, 1), [5])
+	nose.tools.assert_equal(smm_2.eval(x, 1), (2,))
+	nose.tools.assert_equal(smm_2.eval(y, 1), (0,))
+	nose.tools.assert_equal(smm_2.eval(z, 1), (20,))
+	nose.tools.assert_equal(smm_2.eval(w, 1), (5,))
 
 	so = solver_type(clrp)
 	so.add(w == 0)
@@ -507,12 +445,12 @@ def raw_ite(solver_type):
 	z = clrp.BitVec("z", 32)
 
 	ite = clrp.ite_dict(x, {1:11, 2:22, 3:33, 4:44, 5:55, 6:66, 7:77, 8:88, 9:99}, clrp.BitVecVal(0, 32))
-	nose.tools.assert_equal(sorted(s.eval_value(ite, 100)), [ 0, 11, 22, 33, 44, 55, 66, 77, 88, 99 ] )
+	nose.tools.assert_equal(sorted(s.eval(ite, 100)), [ 0, 11, 22, 33, 44, 55, 66, 77, 88, 99 ] )
 
 	ss = s.branch()
 	ss.add(ite == 88)
-	nose.tools.assert_equal(sorted(ss.eval_value(ite, 100)), [ 88 ] )
-	nose.tools.assert_equal(sorted(ss.eval_value(x, 100)), [ 8 ] )
+	nose.tools.assert_equal(sorted(ss.eval(ite, 100)), [ 88 ] )
+	nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 8 ] )
 
 	ity = clrp.ite_dict(x, {1:11, 2:22, 3:y, 4:44, 5:55, 6:66, 7:77, 8:88, 9:99}, clrp.BitVecVal(0, 32))
 	ss = s.branch()
@@ -526,33 +464,35 @@ def raw_ite(solver_type):
 	ss.add(ity != 88)
 	ss.add(ity != 0)
 	ss.add(y == 123)
-	nose.tools.assert_equal(sorted(ss.eval_value(ity, 100)), [ 99, 123 ] )
-	nose.tools.assert_equal(sorted(ss.eval_value(x, 100)), [ 3, 9 ] )
-	nose.tools.assert_equal(sorted(ss.eval_value(y, 100)), [ 123 ] )
+	nose.tools.assert_equal(sorted(ss.eval(ity, 100)), [ 99, 123 ] )
+	nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 3, 9 ] )
+	nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 123 ] )
 
 	itz = clrp.ite_cases([ (clrp.And(x == 10, y == 20), 33), (clrp.And(x==1, y==2), 3), (clrp.And(x==100, y==200), 333) ], clrp.BitVecVal(0, 32))
 	ss = s.branch()
 	ss.add(z == itz)
 	ss.add(itz != 0)
-	nose.tools.assert_equal(ss.eval_value(y/x, 100), [ 2 ])
-	nose.tools.assert_equal(sorted(ss.eval_value(x, 100)), [ 1, 10, 100 ])
-	nose.tools.assert_equal(sorted(ss.eval_value(y, 100)), [ 2, 20, 200 ])
+	nose.tools.assert_equal(ss.eval(y/x, 100), ( 2, ))
+	nose.tools.assert_items_equal(sorted([ b.value for b in ss.eval(x, 100) ]), ( 1, 10, 100 ))
+	nose.tools.assert_items_equal(sorted([ b.value for b in ss.eval(y, 100) ]), ( 2, 20, 200 ))
 
 def test_bool():
 	clrp = claripy.ClaripyStandalone()
+	bc = clrp.model_backend
 
 	a = clrp.And(*[False, False, True])
-	nose.tools.assert_equal(a.eval(), False)
+	nose.tools.assert_equal(bc.convert_expr(a), False)
 	a = clrp.And(*[True, True, True])
-	nose.tools.assert_equal(a.eval(), True)
+	nose.tools.assert_equal(bc.convert_expr(a), True)
 
 	o = clrp.Or(*[False, False, True])
-	nose.tools.assert_equal(o.eval(), True)
+	nose.tools.assert_equal(bc.convert_expr(o), True)
 	o = clrp.Or(*[False, False, False])
-	nose.tools.assert_equal(o.eval(), False)
+	nose.tools.assert_equal(bc.convert_expr(o), False)
 
 if __name__ == '__main__':
 	logging.getLogger('claripy.test').setLevel(logging.DEBUG)
+	logging.getLogger('claripy.claripy').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.expression').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.backends.backend').setLevel(logging.DEBUG)
 	logging.getLogger('claripy.backends.backend_concrete').setLevel(logging.DEBUG)
@@ -565,10 +505,8 @@ if __name__ == '__main__':
 	logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
 
 	test_expression()
-	test_actualization()
 	test_fallback_abstraction()
-	test_mixed_z3()
-	#test_pickle()
+	test_pickle()
 	#test_datalayer()
 	test_model()
 	test_solver()

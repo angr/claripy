@@ -10,8 +10,8 @@ from .solver import Solver
 from .branching_solver import BranchingSolver
 
 class CompositeSolver(Solver):
-	def __init__(self, claripy, solver_backend=None, results_backend=None, timeout=None, solver_class=BranchingSolver):
-		Solver.__init__(self, claripy, solver_backend=solver_backend, results_backend=results_backend, timeout=timeout)
+	def __init__(self, claripy, timeout=None, solver_class=BranchingSolver):
+		Solver.__init__(self, claripy, timeout=timeout)
 		self._results = None
 		self._solvers = { }
 		self._solver_class = solver_class
@@ -52,7 +52,7 @@ class CompositeSolver(Solver):
 		solvers = self._solvers_for_variables(names)
 		if len(solvers) == 0:
 			l.debug("Creating new solver for: %s", names)
-			return self._solver_class(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+			return self._solver_class(self._claripy, timeout=self._timeout)
 		elif len(solvers) == 1:
 			l.debug("Got one solver for: %s", names)
 			return solvers[0]
@@ -87,16 +87,20 @@ class CompositeSolver(Solver):
 	def _add_dependent_constraints(self, names, constraints):
 		l.debug("Adding %d constraints to names %s", len(constraints), names)
 		s = self._merged_solver_for(names)
-		s.add(*constraints)
+		s.add(constraints)
 		for v in s.variables | names:
 			self._solvers[v] = s
 
-	def add(self, *constraints):
+	def add(self, constraints, invalidate_cache=True):
 		try:
 			filtered = self._constraint_filter(constraints)
 		except UnsatError:
 			self._result = Result(False, { })
 			self._add_dependent_constraints({ 'CONCRETE' }, [ self._claripy.BoolVal(False) ])
+			return
+
+		if not invalidate_cache:
+			l.warning("ignoring non-invalidating constraints")
 			return
 
 		if filtered is None or len(filtered) == 0:
@@ -117,10 +121,10 @@ class CompositeSolver(Solver):
 	# Solving
 	#
 
-	def _solve(self, extra_constraints=None):
+	def _solve(self, extra_constraints=()):
 		l.debug("%r checking satisfiability...", self)
 
-		if extra_constraints is not None:
+		if len(extra_constraints) != 0:
 			extra_vars = reduce(operator.or_, (a.variables for a in extra_constraints), set())
 			solvers = [ self._merged_solver_for(extra_vars) ]
 			for s in self._solver_list:
@@ -133,7 +137,7 @@ class CompositeSolver(Solver):
 		satness = True
 
 		for s in solvers:
-			if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else None):
+			if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else ()):
 				l.debug("... %r: False", s)
 				satness = False
 				break
@@ -144,22 +148,22 @@ class CompositeSolver(Solver):
 		l.debug("... ok!")
 		return Result(satness, model)
 
-	def _all_variables(self, e, extra_constraints=None):
+	def _all_variables(self, e, extra_constraints=()): #pylint:disable=no-self-use
 		all_vars = e.variables
-		if extra_constraints is not None:
+		if len(extra_constraints) != 0:
 			all_vars |= reduce(operator.or_, (a.variables for a in extra_constraints), set())
 		if len(all_vars) == 0:
 			all_vars = { 'CONCRETE' }
 		return all_vars
 
 
-	def eval(self, e, n, extra_constraints=None):
+	def eval(self, e, n, extra_constraints=()):
 		return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints)
 
-	def max(self, e, extra_constraints=None):
+	def max(self, e, extra_constraints=()):
 		return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints)
 
-	def min(self, e, extra_constraints=None):
+	def min(self, e, extra_constraints=()):
 		return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints)
 
 	def solution(self, e, n):
@@ -192,7 +196,7 @@ class CompositeSolver(Solver):
 		l.debug("... after-split, %r has %d solvers", self, len(self._solver_list))
 
 	def branch(self):
-		c = CompositeSolver(self._claripy, solver_backend=self._solver_backend, results_backend=self._results_backend, timeout=self._timeout)
+		c = CompositeSolver(self._claripy, timeout=self._timeout)
 		for s in self._solver_list:
 			c_s = s.branch()
 			for v in c_s.variables:
@@ -205,7 +209,7 @@ class CompositeSolver(Solver):
 
 	def merge(self, others, merge_flag, merge_values):
 		l.debug("Merging %s with %d other solvers.", self, len(others))
-		merged = CompositeSolver(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+		merged = CompositeSolver(self._claripy, timeout=self._timeout)
 		common_solvers = self._shared_solvers(others)
 		common_ids = { s.uuid for s in common_solvers }
 		l.debug("... %s common solvers", len(common_solvers))
@@ -221,7 +225,7 @@ class CompositeSolver(Solver):
 		for ns in noncommon_solvers:
 			l.debug("... %d", len(ns))
 			if len(ns) == 0:
-				s = self._solver_class(self._claripy, results_backend=self._results_backend, solver_backend=self._solver_backend, timeout=self._timeout)
+				s = self._solver_class(self._claripy, timeout=self._timeout)
 				s.add(True)
 				combined_noncommons.append(s)
 			elif len(ns) == 1:
