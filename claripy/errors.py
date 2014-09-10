@@ -13,5 +13,11 @@ class ClaripySizeError(ClaripyError):
 class ClaripyOperationError(ClaripyError):
     pass
 
+class ClaripySolverError(ClaripyError):
+    pass
+
+class ClaripyExpressionError(ClaripyError):
+    pass
+
 class BackendError(ClaripyError):
     pass
