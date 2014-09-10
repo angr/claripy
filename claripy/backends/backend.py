@@ -2,130 +2,133 @@ import logging
 l = logging.getLogger('claripy.backends.backend')
 
 class Backend(object):
-	def __init__(self, claripy):
-		self._claripy = claripy
-		self._op_raw = { }
-		self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
-		self._op_expr = { }
+    def __init__(self):
+        self._claripy = None
+        self._op_raw = { }
+        self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
+        self._op_expr = { }
 
-	def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
-		for o in op_list:
-			self._op_raw[o] = op_dict[o] if op_dict is not None else getattr(op_module, o)
+    def set_claripy_object(self, claripy):
+        self._claripy = claripy
 
-	#
-	# These functions handle converting expressions to formats that the backend
-	# can understand.
-	#
+    def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
+        for o in op_list:
+            self._op_raw[o] = op_dict[o] if op_dict is not None else getattr(op_module, o)
 
-	def convert(self, r, result=None): #pylint:disable=W0613,R0201
-		'''
-		Converts r to something usable by this backend.
-		'''
-		return r
+    #
+    # These functions handle converting expressions to formats that the backend
+    # can understand.
+    #
 
-	def convert_expr(self, expr, save=None, result=None): #pylint:disable=R0201
-		'''
-		Resolves a claripy.E into something usable by the backend.
+    def convert(self, r, result=None): #pylint:disable=W0613,R0201
+        '''
+        Converts r to something usable by this backend.
+        '''
+        return r
 
-		@param expr: the expression
-		@param save: save the result in the expression's object cache
-		@param result: a Result object (for concrete-only symbolic evaluation)
-		@returns a backend object
-		'''
-		save = save if save is not None else result is None
+    def convert_expr(self, expr, save=None, result=None): #pylint:disable=R0201
+        '''
+        Resolves a claripy.E into something usable by the backend.
 
-		if isinstance(expr, A):
-			raise ClaripyTypeError("wtf")
+        @param expr: the expression
+        @param save: save the result in the expression's object cache
+        @param result: a Result object (for concrete-only symbolic evaluation)
+        @returns a backend object
+        '''
+        save = save if save is not None else result is None
 
-		if not isinstance(expr, E):
-			return self.convert(expr, result=result)
+        if isinstance(expr, A):
+            raise ClaripyTypeError("wtf")
 
-		if self in expr.objects:
-			r = expr.objects[self]
-		elif type(expr._model) is not A:
-			r = self.convert(expr._model, result=result)
-		else:
-			resolved = False
+        if not isinstance(expr, E):
+            return self.convert(expr, result=result)
 
-			for o in expr.objects.itervalues():
-				try:
-					r = self.convert(o, result=result)
-					resolved = True
-				except BackendError:
-					pass
+        if self in expr.objects:
+            r = expr.objects[self]
+        elif type(expr._model) is not A:
+            r = self.convert(expr._model, result=result)
+        else:
+            resolved = False
 
-			if not resolved:
-				r = expr._model.resolve(self, save=save, result=result)
+            for o in expr.objects.itervalues():
+                try:
+                    r = self.convert(o, result=result)
+                    resolved = True
+                except BackendError:
+                    pass
 
-		if save:
-			expr.objects[self] = r
-		return r
+            if not resolved:
+                r = expr._model.resolve(self, save=save, result=result)
 
-	def convert_exprs(self, args, result=None):
-		return [ self.convert_expr(a, result=result) for a in args ]
+        if save:
+            expr.objects[self] = r
+        return r
 
-	#
-	# These functions provide support for applying operations to expressions.
-	#
+    def convert_exprs(self, args, result=None):
+        return [ self.convert_expr(a, result=result) for a in args ]
 
-	def call_expr(self, name, args, result=None):
-		'''
-		Calls operation 'name' on expressions 'args'.
+    #
+    # These functions provide support for applying operations to expressions.
+    #
 
-		@returns an Expression with the result.
-		'''
-		if name in self._op_expr:
-			return self._op_expr[name](*args, result=result)
-		else:
-			return self.call(name, self.convert_exprs(args, result=result), result=result)
+    def call_expr(self, name, args, result=None):
+        '''
+        Calls operation 'name' on expressions 'args'.
 
-	def call(self, name, args, result=None): #pylint:disable=unused-argument
-		l.debug("args = %r", args)
+        @returns an Expression with the result.
+        '''
+        if name in self._op_expr:
+            return self._op_expr[name](*args, result=result)
+        else:
+            return self.call(name, self.convert_exprs(args, result=result), result=result)
 
-		if name in self._op_raw_result:
-			obj = self._op_raw_result[name](*args, result=result)
-		elif name in self._op_raw:
-			# the raw ops don't get the model, cause, for example, Z3 stuff can't take it
-			obj = self._op_raw[name](*args)
-		elif not name.startswith("__"):
-			l.debug("backend has no operation %s", name)
-			raise BackendError("backend has no operation %s" % name)
-		else:
-			obj = NotImplemented
+    def call(self, name, args, result=None): #pylint:disable=unused-argument
+        l.debug("args = %r", args)
 
-			# first, try the operation with the first guy
-			if hasattr(args[0], name):
-				op = getattr(args[0], name)
-				obj = op(*args[1:])
-			# now try the reverse operation with the second guy
-			if obj is NotImplemented and len(args) == 2 and hasattr(args[1], opposites[name]):
-				op = getattr(args[1], opposites[name])
-				obj = op(args[0])
+        if name in self._op_raw_result:
+            obj = self._op_raw_result[name](*args, result=result)
+        elif name in self._op_raw:
+            # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
+            obj = self._op_raw[name](*args)
+        elif not name.startswith("__"):
+            l.debug("backend has no operation %s", name)
+            raise BackendError("backend has no operation %s" % name)
+        else:
+            obj = NotImplemented
 
-			if obj is NotImplemented:
-				l.debug("%s neither %s nor %s apply on %s", self, name, opposites[name], args)
-				raise BackendError("unable to apply operation on provided args")
+            # first, try the operation with the first guy
+            if hasattr(args[0], name):
+                op = getattr(args[0], name)
+                obj = op(*args[1:])
+            # now try the reverse operation with the second guy
+            if obj is NotImplemented and len(args) == 2 and hasattr(args[1], opposites[name]):
+                op = getattr(args[1], opposites[name])
+                obj = op(args[0])
 
-		l.debug("Returning object %s", obj)
-		return obj
+            if obj is NotImplemented:
+                l.debug("%s neither %s nor %s apply on %s", self, name, opposites[name], args)
+                raise BackendError("unable to apply operation on provided args")
 
-	#
-	# Abstraction and resolution.
-	#
+        l.debug("Returning object %s", obj)
+        return obj
 
-	def abstract(self, e, split_on=None): #pylint:disable=W0613,R0201
-		raise BackendError("backend %s doesn't implement abstract()" % self.__class__.__name__)
+    #
+    # Abstraction and resolution.
+    #
 
-	#
-	# These functions simplify expressions.
-	#
+    def abstract(self, e, split_on=None): #pylint:disable=W0613,R0201
+        raise BackendError("backend %s doesn't implement abstract()" % self.__class__.__name__)
 
-	def simplify_expr(self, e):
-		o = self.simplify(self.convert_expr(e))
-		return E(self._claripy, model=self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
+    #
+    # These functions simplify expressions.
+    #
 
-	def simplify(self, e): # pylint:disable=R0201,unused-argument
-		raise BackendError("backend %s can't simplify" % self.__class__.__name__)
+    def simplify_expr(self, e):
+        o = self.simplify(self.convert_expr(e))
+        return E(self._claripy, model=self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
+
+    def simplify(self, e): # pylint:disable=R0201,unused-argument
+        raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
 from ..expression import E, A
 from ..operations import opposites
