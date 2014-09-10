@@ -39,8 +39,8 @@ from .. import bv
 class BackendZ3(SolverBackend):
 	_split_on = { 'And', 'Or' }
 
-	def __init__(self, claripy, background_solve=None):
-		SolverBackend.__init__(self, claripy)
+	def __init__(self, background_solve=None):
+		SolverBackend.__init__(self)
 		self._background_solve = background_solve
 
 		# and the operations

@@ -8,8 +8,8 @@ zFalse = z3.BoolVal(False)
 from .backend import Backend, BackendError
 
 class BackendConcrete(Backend):
-    def __init__(self, claripy):
-        Backend.__init__(self, claripy)
+    def __init__(self):
+        Backend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._op_raw['size'] = self.size
         self._op_raw_result['BitVec'] = self.BitVec

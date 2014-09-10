@@ -1,8 +1,8 @@
 from .backend import Backend
 
 class SolverBackend(Backend):
-	def __init__(self, claripy):
-		Backend.__init__(self, claripy)
+	def __init__(self):
+		Backend.__init__(self)
 
 	#
 	# These functions provide solving and evaluation support.
