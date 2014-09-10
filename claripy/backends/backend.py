@@ -80,8 +80,6 @@ class Backend(object):
 			return self.call(name, self.convert_exprs(args, result=result), result=result)
 
 	def call(self, name, args, result=None): #pylint:disable=unused-argument
-		l.debug("args = %r", args)
-
 		if name in self._op_raw_result:
 			obj = self._op_raw_result[name](*args, result=result)
 		elif name in self._op_raw:
@@ -103,10 +101,9 @@ class Backend(object):
 				obj = op(args[0])
 
 			if obj is NotImplemented:
-				l.debug("%s neither %s nor %s apply on %s", self, name, opposites[name], args)
+				l.debug("%s neither %s nor %s apply in backend.call()", self, name, opposites[name])
 				raise BackendError("unable to apply operation on provided args")
 
-		l.debug("Returning object %s", obj)
 		return obj
 
 	#

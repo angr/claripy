@@ -151,7 +151,6 @@ class BackendZ3(SolverBackend):
 		if satness:
 			l.debug("sat!")
 			z3_model = s.model()
-			l.debug("model is %r", z3_model)
 			if generic_backend is not None:
 				for m_f in z3_model:
 					n = m_f.name()
@@ -219,7 +218,7 @@ class BackendZ3(SolverBackend):
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
-			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
+			#l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
 			s.push()
 			s.add(z3.UGE(expr, lo), z3.ULE(expr, middle))
@@ -239,7 +238,7 @@ class BackendZ3(SolverBackend):
 		for _ in range(numpop):
 			s.pop()
 
-		l.debug("final hi/lo: %d, %d", hi, lo)
+		#l.debug("final hi/lo: %d, %d", hi, lo)
 
 		if hi == lo: return BVV(lo, expr.size())
 		else:
@@ -267,7 +266,7 @@ class BackendZ3(SolverBackend):
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
-			l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
+			#l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
 			s.push()
 			s.add(z3.UGT(expr, middle), z3.ULE(expr, hi))
@@ -283,7 +282,7 @@ class BackendZ3(SolverBackend):
 				hi = middle
 				s.pop()
 				numpop -= 1
-			l.debug("    now: %d %d %d %d", hi, middle, lo, hi-lo)
+			#l.debug("    now: %d %d %d %d", hi, middle, lo, hi-lo)
 
 		for _ in range(numpop):
 			s.pop()
@@ -313,7 +312,7 @@ class BackendZ3(SolverBackend):
 		symbolic = expr.symbolic
 		variables = expr.variables
 
-		l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
+		#l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
 
 		if isinstance(expr_raw, z3.BoolRef):
 			tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
@@ -344,7 +343,7 @@ class BackendZ3(SolverBackend):
 		except BackendError:
 			o = self.abstract(s)
 
-		l.debug("... after: %s (%s)", s, s.__class__.__name__)
+		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
 		return E(self._claripy, model=o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length)
 

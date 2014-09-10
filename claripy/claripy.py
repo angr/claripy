@@ -35,7 +35,6 @@ class Claripy(object):
             return o
 
     def _do_op(self, name, args, variables=None, symbolic=None, length=None):
-        l.debug("_do_op with %s, %s", name, args)
         try:
             r = self.model_backend.call_expr(name, args)
         except BackendError:

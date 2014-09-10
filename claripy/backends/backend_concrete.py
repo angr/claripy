@@ -43,7 +43,7 @@ class BackendConcrete(Backend):
             if name in result.model:
                 return result.model[name]
             else:
-                l.debug("returning 0 for %s (not in model %r)", name, result.model)
+                l.debug("returning 0 for %s (not in model)", name)
                 return bv.BVV(0, a.size())
         else:
             #import ipdb; ipdb.set_trace()

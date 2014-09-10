@@ -49,15 +49,16 @@ class CompositeSolver(Solver):
 		return existing_solvers
 
 	def _merged_solver_for(self, names):
+		l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
 		solvers = self._solvers_for_variables(names)
 		if len(solvers) == 0:
-			l.debug("Creating new solver for: %s", names)
+			l.debug("... creating new solver")
 			return self._solver_class(self._claripy, timeout=self._timeout)
 		elif len(solvers) == 1:
-			l.debug("Got one solver for: %s", names)
+			l.debug("... got one solver")
 			return solvers[0]
 		else:
-			l.debug("Combining solvers for: %s", names)
+			l.debug(".... combining %d solvers", len(solvers))
 			return solvers[0].combine(solvers[1:])
 
 	def _shared_solvers(self, others):
@@ -85,7 +86,7 @@ class CompositeSolver(Solver):
 	#
 
 	def _add_dependent_constraints(self, names, constraints):
-		l.debug("Adding %d constraints to names %s", len(constraints), names)
+		l.debug("Adding %d constraints to %d names", len(constraints), len(names))
 		s = self._merged_solver_for(names)
 		s.add(constraints)
 		for v in s.variables | names:
