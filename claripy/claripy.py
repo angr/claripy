@@ -27,6 +27,13 @@ class Claripy(object):
     #
     # Operations
     #
+
+    def wrap(self, o):
+        if type(o) == BVV:
+            return E(self, model=o, variables=set(), symbolic=False, length=o.bits)
+        else:
+            return o
+
     def _do_op(self, name, args, variables=None, symbolic=None, length=None):
         l.debug("_do_op with %s, %s", name, args)
         try:
@@ -93,3 +100,4 @@ class Claripy(object):
 from .expression import E, A
 from .backends.backend import BackendError
 from .operations import op_length
+from .bv import BVV
