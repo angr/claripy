@@ -34,9 +34,12 @@ class Claripy(object):
         else:
             return o
 
-    def _do_op(self, name, args, variables=None, symbolic=None, length=None):
+    def _do_op(self, name, args, variables=None, symbolic=None, length=None, raw=False):
         try:
-            r = self.model_backend.call_expr(name, args)
+            if raw:
+                r = self.model_backend.call(name, args)
+            else:
+                r = self.model_backend.call_expr(name, args)
         except BackendError:
             r = A(name, args)
 
@@ -45,6 +48,7 @@ class Claripy(object):
         if variables is None:
             all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
             variables = reduce(operator.or_, all_variables, set())
+        if length is None:
             length = op_length(name, args)
 
         return E(self, model=r, variables=variables, symbolic=symbolic, length=length)
@@ -53,14 +57,20 @@ class Claripy(object):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size)
+        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size, raw=True)
+
+    def BitVecVal(self, *args):
+        return E(self, model=BVV(*args), variables=set(), symbolic=False, length=args[-1])
+        #return self._do_op('BitVecVal', args, length=args[-1], variables=set(), symbolic=False, raw=True)
+
+    def BoolVal(self, *args):
+        return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1])
+        #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
 
     def And(self, *args): return self._do_op('And', args, length=-1)
-    def BitVecVal(self, *args): return self._do_op('BitVecVal', args, length=args[-1])
     def ULT(self, *args): return self._do_op('ULT', args, length=-1)
     def SignExt(self, *args): return self._do_op('SignExt', args, length=args[0]+args[1].length)
     def LShR(self, *args): return self._do_op('LShR', args, length=-1)
-    def BoolVal(self, *args): return self._do_op('BoolVal', args, length=-1)
     def ZeroExt(self, *args): return self._do_op('ZeroExt', args, length=args[0]+args[1].length)
     def UGE(self, *args): return self._do_op('UGE', args, length=-1)
     def If(self, *args): return self._do_op('If', args)
