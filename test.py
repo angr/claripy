@@ -40,6 +40,17 @@ def test_expression():
 	a = clrp.BitVecVal(1, 1)
 	nose.tools.assert_equal((a+a)._model, 2)
 
+def test_concrete():
+	clrp = claripy.ClaripyStandalone()
+
+	a = clrp.BitVecVal(10, 32)
+	b = clrp.BoolVal(True)
+	c = clrp.BitVec('x', 32)
+
+	nose.tools.assert_is(type(a._model), claripy.BVV)
+	nose.tools.assert_is(type(b._model), bool)
+	nose.tools.assert_is(type(c._model), claripy.A)
+
 def test_fallback_abstraction():
 	clrp = claripy.ClaripyStandalone()
 	bz = clrp.solver_backends[0]
@@ -505,6 +516,7 @@ if __name__ == '__main__':
 	logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
 
 	test_expression()
+	test_concrete()
 	test_fallback_abstraction()
 	test_pickle()
 	#test_datalayer()
