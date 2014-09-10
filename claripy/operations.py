@@ -43,18 +43,20 @@ backend_bitwise_operations = {
 }
 
 backend_boolean_operations = {
-    'And', 'Or', 'Not', 'If',
+    'And', 'Or', 'Not'
 }
 
 backend_bitmod_operations = {
-    'Concat', 'Extract', 'SignExt', 'ZeroExt',
+    'Concat', 'Extract', 'SignExt', 'ZeroExt'
 }
 
 backend_creation_operations = {
     'BoolVal', 'BitVec', 'BitVecVal',
 }
 
-backend_operations = backend_comparator_operations | backend_bitwise_operations | backend_boolean_operations | backend_bitmod_operations | backend_creation_operations
+backend_other_operations = { 'If' }
+
+backend_operations = backend_comparator_operations | backend_bitwise_operations | backend_boolean_operations | backend_bitmod_operations | backend_creation_operations | backend_other_operations
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',
@@ -83,7 +85,7 @@ opposites = {
     '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
 }
 
-length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations
+length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
@@ -93,7 +95,11 @@ def op_length(op, args):
         return -1
 
     if op in length_same_operations:
-        lengths = set(a.length for a in args if isinstance(a, E))
+        if op == 'If':
+            lengths = set([a.length for a in args if isinstance(a, E)][1:])
+        else:
+            lengths = set(a.length for a in args if isinstance(a, E))
+
         if len(lengths) > 1:
             raise ClaripySizeError("multiple sizes being combined together")
         return lengths.__iter__().next()
