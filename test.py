@@ -340,7 +340,7 @@ def raw_simple_merging(solver_type):
 
     sm1 = sm.branch()
     sm1.add(m == 0)
-    nose.tools.assert_equal(sm0.eval(x, 1), (1,))
+    nose.tools.assert_equal(sm1.eval(x, 1), (1,))
     nose.tools.assert_equal(sm1.eval(y, 1), (10,))
     nose.tools.assert_equal(sm1.eval(z, 1), (0,))
     nose.tools.assert_equal(sm1.eval(w, 1), (0,))
