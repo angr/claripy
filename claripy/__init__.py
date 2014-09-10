@@ -18,9 +18,10 @@ claripy = None
 def set_claripy(c):
     global claripy
     claripy = c
+    return c
 
 def init_standalone():
-    set_claripy(ClaripyStandalone())
+    return set_claripy(ClaripyStandalone())
 
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap
