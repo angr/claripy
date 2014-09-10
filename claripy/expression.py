@@ -14,25 +14,18 @@ class A(object):
         self._op = op
         self._args = args
 
-    def eval(self, backends, save, model=None):
+    def resolve(self, b, save, result=None):
         args = [ ]
         for a in self._args:
             if isinstance(a, E):
-                args.append(a.eval(backends=backends, save=save, model=model))
+                args.append(b.convert_expr(a, result=result))
             elif isinstance(a, A):
-                args.append(a.eval(backends, save, model=model))
+                args.append(a.resolve(b, save, result))
             else:
-                args.append(a)
+                args.append(b.convert(a, result=result))
 
-        for b in backends:
-            l.debug("trying evaluation with %s", b)
-            try:
-                return b.call(self._op, args, model=model)
-            except BackendError:
-                l.debug("... failed")
-                continue
-
-        raise Exception("eval failed with available backends")
+        l.debug("trying evaluation with %s", b)
+        return b.call(self._op, args, result=result)
 
     def __repr__(self):
         if '__' in self._op:
@@ -78,16 +71,13 @@ class E(Storable):
         self._stored = e._stored
 
     def __nonzero__(self):
-        raise Exception('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
+        raise ClaripyExpressionError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
     def __repr__(self):
         name = "E"
         if self.symbolic:
             name += "S"
         return name + "(%s)" % self._model
-
-    def _do_op(self, op_name, args):
-        return self._claripy._do_op(op_name, (self,) + tuple(args))
 
     def split(self, split_on):
         if not isinstance(self._model, A):
@@ -98,7 +88,7 @@ class E(Storable):
             if all(isinstance(a, E) for a in self._model._args):
                 return self._model._args[:]
             else:
-                raise Exception('wtf')
+                raise ClaripyExpressionError('the abstraction of this expression was not done with "%s" in split_on' % self._model._op)
         else:
             l.debug("no split for you")
             return [ self ]
@@ -119,11 +109,11 @@ class E(Storable):
 
     def __setstate__(self, s):
         if type(s) is str:
-            self.__init__([ ], uuid=s)
+            self.__init__(global_claripy, uuid=s)
             return
 
-        uuid, ast, variables, symbolic, length = s
-        self.__init__([ ], variables=variables, symbolic=symbolic, ast=ast, uuid=uuid, length=length)
+        uuid, model, variables, symbolic, length = s
+        self.__init__(global_claripy, variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length)
 
     #
     # BV operations
@@ -131,12 +121,12 @@ class E(Storable):
 
     def __len__(self):
         if self.length == -1:
-            raise TypeError('this expression has no length')
+            raise ClaripyExpressionError('this expression has no length')
         return self.length
     size = __len__
 
     def __iter__(self):
-        raise Exception("Please don't iterate over Expressions!")
+        raise ClaripyExpressionError("Please don't iterate over Expressions!")
 
     def simplify(self):
         try:
@@ -148,7 +138,7 @@ class E(Storable):
                 except BackendError:
                     pass
 
-        raise Exception("unable to simplify")
+        raise ClaripyExpressionError("unable to simplify")
 
     def chop(self, bits=1):
         s = len(self)
@@ -187,7 +177,7 @@ class E(Storable):
 
 def e_operator(cls, op_name):
     def wrapper(self, *args):
-        return self._do_op(op_name, args)
+        return self._claripy._do_op(op_name, (self,) + tuple(args))
     wrapper.__name__ = op_name
     setattr(cls, op_name, wrapper)
 
@@ -198,10 +188,10 @@ def e_operator(cls, op_name):
 #   setattr(cls, op_name, wrapper)
 
 def make_methods():
-    for operations in [expression_operations, expression_bitwise_operations, expression_arithmetic_operations, expression_comparator_operations]:
-        for name in operations:
-            e_operator(E, name)
+    for name in expression_operations:
+        e_operator(E, name)
 
-from .backends.backend import BackendError
-from .operations import expression_operations, expression_bitwise_operations, expression_arithmetic_operations, expression_comparator_operations
+from .errors import BackendError, ClaripyExpressionError
+from .operations import expression_operations
 make_methods()
+from . import claripy as global_claripy

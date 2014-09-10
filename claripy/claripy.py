@@ -2,6 +2,9 @@ import operator
 import itertools
 bitvec_counter = itertools.count()
 
+import logging
+l = logging.getLogger('claripy.claripy')
+
 class Claripy(object):
     def __init__(self, model_backend, solver_backends, parallel=None):
         self.solver_backends = solver_backends
@@ -22,19 +25,20 @@ class Claripy(object):
     # Operations
     #
     def _do_op(self, name, args, variables=None, symbolic=None, length=None):
+        l.debug("_do_op with %s, %s", name, args)
         try:
-            return self.model_backend.call_expr(name, args)
+            r = self.model_backend.call_expr(name, args)
         except BackendError:
-            a = A(name, args)
+            r = A(name, args)
 
-            if symbolic is None:
-                symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
-            if variables is None:
-                all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
-                variables = reduce(operator.or_, all_variables, set())
-                length = op_length(name, args)
+        if symbolic is None:
+            symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
+        if variables is None:
+            all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
+            variables = reduce(operator.or_, all_variables, set())
+            length = op_length(name, args)
 
-            return E(self, model=a, variables=variables, symbolic=symbolic, length=length)
+        return E(self, model=r, variables=variables, symbolic=symbolic, length=length)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
@@ -69,6 +73,19 @@ class Claripy(object):
         for c,v in reversed(cases):
             sofar = self.If(c, v, sofar)
         return sofar
+
+    def simplify(self, e):
+        try:
+            return self.model_backend.simplify_expr(e)
+        except BackendError:
+            try:
+                for b in self.solver_backends:
+                    return b.simplify_expr(e)
+            except BackendError:
+                pass
+
+        l.warning("Unable to simplify expression")
+        return e
 
 from .expression import E, A
 from .backends.backend import BackendError
