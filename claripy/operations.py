@@ -111,6 +111,9 @@ def op_length(op, args):
         if op == 'Extract':
             return args[0]-args[1]+1
 
+    if op == 'BoolVal':
+        return -1
+
     if op in length_new_operations:
         return args[1]
 
