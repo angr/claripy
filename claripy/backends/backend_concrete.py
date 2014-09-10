@@ -12,14 +12,17 @@ class BackendConcrete(Backend):
         Backend.__init__(self, claripy)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._op_raw['size'] = self.size
-        self._op_raw['BitVec'] = self.BitVec
+        self._op_raw_result['BitVec'] = self.BitVec
 
-    def BitVec(self, name, size, model=None): #pylint:disable=W0613,R0201
-        if model is None:
+    def BitVec(self, name, size, result=None): #pylint:disable=W0613,R0201
+        if result is None:
             l.debug("BackendConcrete can only handle BitVec when we are given a model")
             raise BackendError("BackendConcrete can only handle BitVec when we are given a model")
+        if name not in result.model:
+            l.debug("BackendConcrete needs variable %s in the model", name)
+            raise BackendError("BackendConcrete needs variable %s in the model" % name)
         else:
-            return model[name]
+            return result.model[name]
 
     @staticmethod
     def size(e):
@@ -28,7 +31,7 @@ class BackendConcrete(Backend):
         else:
             raise BackendError("can't get size of type %s" % type(e))
 
-    def convert_raw(self, a, result=None):
+    def convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
 

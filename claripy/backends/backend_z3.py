@@ -68,19 +68,23 @@ class BackendZ3(SolverBackend):
 			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
 
 	def abstract(self, z, split_on=None):
-		name = z.decl().name()
-		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
-		children = [ self.abstract(c, new_split_on) for c in z.children() ]
+		return self._abstract(z, split_on=split_on)[0]
 
-		#symbolic = False
-		#variables = set()
+	def _abstract(self, z, split_on=None):
+		name = z.decl().name()
+		split_on = self._split_on if split_on is None else split_on
+		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
+		children = [ self._abstract(c, new_split_on) for c in z.children() ]
+
+		symbolic = False
+		variables = set()
 
 		if len(children) == 0:
 			if z.__class__ == z3.BitVecRef:
 				op = "BitVec"
 				args = (name, z.size())
-				#symbolic = True
-				#variables = { name }
+				symbolic = True
+				variables = { name }
 			elif z.__class__ == z3.BitVecNumRef:
 				op = "BitVecVal"
 				args = (z.as_long(), z.size())
@@ -94,14 +98,14 @@ class BackendZ3(SolverBackend):
 				raise TypeError("Unable to wrap type %s", z.__class__.__name__)
 		else:
 			raw_args = list(children)
-			#raw_args = [ ]
-			#for s, v, a in children:
-			#	if function_map[name] in split_on:
-			#		raw_args.append(E(self._claripy, ast=a, variables=v, symbolic=s))
-			#	else:
-			#		raw_args.append(a)
-			#	#symbolic |= s
-			#	#variables |= v
+			raw_args = [ ]
+			for a,v,s in children:
+				if function_map[name] in split_on:
+					raw_args.append(E(self._claripy, model=a, variables=v, symbolic=s))
+				else:
+					raw_args.append(a)
+				symbolic |= s
+				variables |= v
 
 			if name == 'extract':
 				# GAH
@@ -114,10 +118,13 @@ class BackendZ3(SolverBackend):
 				args = raw_args
 			op = function_map[name]
 
-		return A(op, args)
+		return A(op, args), variables, symbolic
 
-	def solver(self):
-		return z3.Solver()
+	def solver(self, timeout=None):
+		s = z3.Solver()
+		if timeout is not None:
+			s.set('timeout', timeout)
+		return s
 
 	def add(self, s, c):
 		s.add(*c)
@@ -136,7 +143,7 @@ class BackendZ3(SolverBackend):
 			s.pop()
 		return satness
 
-	def results(self, s, extra_constraints=None, generic_model=True):
+	def results(self, s, extra_constraints=None, generic_backend=None):
 		satness = self.check(s, extra_constraints=extra_constraints)
 		model = { }
 		z3_model = None
@@ -145,11 +152,11 @@ class BackendZ3(SolverBackend):
 			l.debug("sat!")
 			z3_model = s.model()
 			l.debug("model is %r", z3_model)
-			if generic_model:
+			if generic_backend is not None:
 				for m_f in z3_model:
 					n = m_f.name()
 					m = m_f()
-					model[n] = self._claripy.model_backend.convert(z3_model.eval(m))
+					model[n] = generic_backend.convert(z3_model.eval(m))
 		else:
 			l.debug("unsat!")
 
@@ -332,9 +339,14 @@ class BackendZ3(SolverBackend):
 		else:
 			s = expr_raw
 
+		try:
+			o = self._claripy.model_backend.convert(s)
+		except BackendError:
+			o = self.abstract(s)
+
 		l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return E(self._claripy, ast=self.abstract(s), objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length)
+		return E(self._claripy, model=o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length)
 
 #
 # this is for the actual->abstract conversion above

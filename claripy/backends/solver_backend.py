@@ -8,7 +8,7 @@ class SolverBackend(Backend):
 	# These functions provide solving and evaluation support.
 	#
 
-	def solver(self): #pylint:disable=W0613,R0201
+	def solver(self, timeout=None):
 		'''
 		This function should return an instance of whatever object handles
 		solving for this backend. For example, in Z3, this would be z3.Solver()
@@ -22,9 +22,9 @@ class SolverBackend(Backend):
 		@param c: sequence of claripy.E objects
 		@param s: backend solver object
 		'''
-		return self.add_raw(s, self.convert_exprs(c))
+		return self.add(s, self.convert_exprs(c))
 
-	def add_raw(self, s, c): #pylint:disable=W0613,R0201
+	def add(self, s, c):
 		'''
 		This function adds constraints to the backend solver.
 
@@ -33,121 +33,150 @@ class SolverBackend(Backend):
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
-	def check_exprs(self, s, extra_constraints=None):
+	def check_exprs(self, s, extra_constraints=()):
 		'''
 		This function does a constraint check.
 
-		@params s: backend solver object
-		@params extra_constraints: extra constraints (claripy.E objects) to add
+		@param s: backend solver object
+		@param extra_constraints: extra constraints (claripy.E objects) to add
 								   to s for this solve
 		@returns True or False, depending on satisfiability
 		'''
-		return self.check_raw(s, extra_constraints=self.convert_exprs(extra_constraints))
+		return self.check(s, extra_constraints=self.convert_exprs(extra_constraints))
 
-	def check_raw(self, s, extra_constraints=None): #pylint:disable=W0613,R0201
+	def check(self, s, extra_constraints=()):
 		'''
 		This function does a constraint check.
 
-		@params s: backend solver object
-		@params extra_constraints: extra constraints (backend objects) to add
+		@param s: backend solver object
+		@param extra_constraints: extra constraints (backend objects) to add
 								   to s for this solve
 		@returns True or False, depending on satisfiability
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
-	def results_exprs(self, s, extra_constraints=None, generic_model=None):
+	def results_exprs(self, s, extra_constraints=(), generic_backend=None):
 		'''
 		This function does a constraint check.
 
-		@params s: backend solver object
-		@params extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
-		@params generic_model: whether to generate a generic model in the Result object
+		@param s: backend solver object
+		@param extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
+		@param generic_backend: the backend to use to create the generic model (not created if None)
 		@returns a Result object
 		'''
-		return self.results_raw(s, extra_constraints=self.convert_exprs(extra_constraints), generic_model=generic_model)
+		return self.results(s, extra_constraints=self.convert_exprs(extra_constraints), generic_backend=generic_backend)
 
-	def results_raw(self, s, extra_constraints=None, generic_model=True): #pylint:disable=W0613,R0201
+	def results(self, s, extra_constraints=(), generic_backend=None):
 		'''
 		This function does a constraint check.
 
-		@params s: backend solver object
-		@params extra_constraints: extra constraints (backend objects) to add to s for this solve
-		@params generic_model: whether to generate a generic model in the Result object
+		@param s: backend solver object
+		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
+		@param generic_backend: the backend to use to create the generic model (not created if None)
 		@returns a Result object
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
-	def eval_expr(self, s, expr, n, extra_constraints=None, result=None):
+	def eval_expr(self, s, expr, n, extra_constraints=(), result=None):
 		'''
 		This function returns up to n possible solutions for expression expr.
 
-		@params s: backend solver object
-		@params expr: expression (claripy.E object) to evaluate
-		@params n: number of results to return
-		@params extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
-		@params result: a cached Result from the last constraint solve
+		@param s: backend solver object
+		@param expr: expression (claripy.E object) to evaluate
+		@param n: number of results to return
+		@param extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
 		@returns a sequence of up to n results (backend objects)
 		'''
-		return self.eval_raw(s, self.convert_expr(expr), n, extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.eval(s, self.convert_expr(expr), n, extra_constraints=self.convert_exprs(extra_constraints), result=result)
 
-	def eval_raw(self, s, expr, n, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
+	def eval(self, s, expr, n, extra_constraints=(), result=None):
 		'''
 		This function returns up to n possible solutions for expression expr.
 
-		@params s: backend solver object
-		@params expr: expression (backend object) to evaluate
-		@params n: number of results to return
-		@params extra_constraints: extra constraints (backend objects) to add to s for this solve
-		@params result: a cached Result from the last constraint solve
+		@param s: backend solver object
+		@param expr: expression (backend object) to evaluate
+		@param n: number of results to return
+		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
 		@returns a sequence of up to n results (backend objects)
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
-	def min_expr(self, s, expr, extra_constraints=None, result=None):
+	def min_expr(self, s, expr, extra_constraints=(), result=None):
 		'''
 		Return the minimum value of expr.
 
-		@params s: backend solver object
-		@params expr: expression (claripy.E object) to evaluate
-		@params extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
-		@params result: a cached Result from the last constraint solve
+		@param s: backend solver object
+		@param expr: expression (claripy.E object) to evaluate
+		@param extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
 		@returns the minimum possible value of expr (backend object)
 		'''
-		return self.min_raw(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.min(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
 
-	def min_raw(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
+	def min(self, s, expr, extra_constraints=(), result=None):
 		'''
 		Return the minimum value of expr.
 
-		@params s: backend solver object
-		@params expr: expression (backend object) to evaluate
-		@params extra_constraints: extra constraints (backend objects) to add to s for this solve
-		@params result: a cached Result from the last constraint solve
+		@param s: backend solver object
+		@param expr: expression (backend object) to evaluate
+		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
 		@returns the minimum possible value of expr (backend object)
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
-	def max_expr(self, s, expr, extra_constraints=None, result=None):
+	def max_expr(self, s, expr, extra_constraints=(), result=None):
 		'''
 		Return the maximum value of expr.
 
-		@params s: backend solver object
-		@params expr: expression (claripy.E object) to evaluate
-		@params extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
-		@params result: a cached Result from the last constraint solve
+		@param s: backend solver object
+		@param expr: expression (claripy.E object) to evaluate
+		@param extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
 		@returns the maximum possible value of expr (backend object)
 		'''
-		return self.max_raw(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.max(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
 
-	def max_raw(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613,R0201
+	def max(self, s, expr, extra_constraints=(), result=None):
 		'''
 		Return the maximum value of expr.
 
-		@params s: backend solver object
-		@params expr: expression (backend object) to evaluate
-		@params extra_constraints: extra constraints (backend objects) to add to s for this solve
-		@params result: a cached Result from the last constraint solve
+		@param s: backend solver object
+		@param expr: expression (backend object) to evaluate
+		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
 		@returns the maximum possible value of expr (backend object)
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
+	def solution_expr(self, s, expr, v, extra_constraints=(), result=None): #pylint:disable=unused-argument
+		'''
+		Return True if v is a solution of expr with the extra constraints, False otherwise.
+
+		@param s: backend solver object
+		@param expr: expression (claripy.E) to evaluate
+		@param v: the proposed solution (claripy.E)
+		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
+		@returns the maximum possible value of expr (backend object)
+		@returns True if v is a solution of expr, False otherwise
+		'''
+
+		return self.check_exprs(s, extra_constraints=(expr==v,) + extra_constraints)
+
+	def solution(self, s, expr, v, extra_constraints=(), result=None): #pylint:disable=unused-argument
+		'''
+		Return True if v is a solution of expr with the extra constraints, False otherwise.
+
+		@param s: backend solver object
+		@param expr: expression (backend object) to evaluate
+		@param v: the proposed solution (backend object)
+		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
+		@param result: a cached Result from the last constraint solve
+		@returns the maximum possible value of expr (backend object)
+		@returns True if v is a solution of expr, False otherwise
+		'''
+
+		return self.check_exprs(s, extra_constraints=(expr==v,) + extra_constraints)
