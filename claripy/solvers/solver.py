@@ -70,7 +70,7 @@ class Solver(Storable):
 		variable_connections = { }
 		constraint_connections = { }
 		for n,s in enumerate(splitted):
-			l.debug("... processing constraint with variables %r", s.variables)
+			l.debug("... processing constraint with %d variables", len(s.variables))
 
 			connected_variables = set(s.variables)
 			connected_constraints = { n }
@@ -115,8 +115,6 @@ class Solver(Storable):
 		return tuple(fc)
 
 	def add(self, constraints, invalidate_cache=True):
-		l.debug("%s.add(*%s)", self, constraints)
-
 		if type(constraints) not in (list, tuple):
 			constraints = [ constraints ]
 
@@ -398,7 +396,7 @@ class Solver(Storable):
 		results = [ ]
 		l.debug("Splitting!")
 		for variables,c_list in self._independent_constraints():
-			l.debug("... got %d constraints with variables %r", len(c_list), variables)
+			l.debug("... got %d constraints with %d variables", len(c_list), len(variables))
 
 			s = self.__class__(self._claripy, timeout=self._timeout)
 			s._simplified = False
