@@ -40,6 +40,11 @@ def test_expression():
 	a = clrp.BitVecVal(1, 1)
 	nose.tools.assert_equal((a+a)._model, 2)
 
+	x = clrp.BitVecVal(1, 32)
+	nose.tools.assert_equal(x.length, 32)
+	y = clrp.LShR(x, 10)
+	nose.tools.assert_equal(y.length, 32)
+
 def test_concrete():
 	clrp = claripy.ClaripyStandalone()
 
