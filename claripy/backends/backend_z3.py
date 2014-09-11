@@ -71,9 +71,12 @@ class BackendZ3(SolverBackend):
 		return self._abstract(z, split_on=split_on)[0]
 
 	def _abstract(self, z, split_on=None):
-		name = z.decl().name()
+		z3_decl = z.decl()
+		decl = str(z3_decl)
+		name = z3_decl.name()
+
 		split_on = self._split_on if split_on is None else split_on
-		new_split_on = split_on if name in function_map and function_map[name] in split_on else set()
+		new_split_on = split_on if name in name_map and name_map[name] in split_on else set()
 		children = [ self._abstract(c, new_split_on) for c in z.children() ]
 
 		symbolic = False
@@ -97,28 +100,52 @@ class BackendZ3(SolverBackend):
 			else:
 				raise TypeError("Unable to wrap type %s", z.__class__.__name__)
 		else:
+			#
+			# The following determines the right operation to use.
+			#
+
+			if decl not in decl_map:
+				l.error("%s is not in decl_map. Report this to Yan.", decl)
+				decl_func = None
+			else:
+				decl_func = decl_map[decl]
+				if type(decl_func) in (list, tuple):
+					if len(children) == 1:
+						decl_func = decl[0]
+					else:
+						decl_func = decl[1]
+
+			if name not in name_map:
+				l.error("%s is not in name_map. Report this to Yan.", name)
+				name_func = None
+			else:
+				name_func = name_map[name]
+
+			if name_func != decl_func:
+				l.warning("Z3 bug: got a different function via name() vs decl() (%s vs %s). Using %s", name_func, decl_func, decl_func)
+			op = decl_func
+
+			# now we have the operation
+
 			raw_args = list(children)
 			raw_args = [ ]
-			for a,v,s in children:
-				if function_map[name] in split_on:
-					raw_args.append(E(self._claripy, model=a, variables=v, symbolic=s))
+			for a,v,s,b in children:
+				if op in split_on:
+					raw_args.append(E(self._claripy, model=a, variables=v, symbolic=s, length=b))
 				else:
 					raw_args.append(a)
 				symbolic |= s
 				variables |= v
 
-			if name == 'extract':
+			if op == 'Extract':
 				# GAH
 				args = [ int(non_decimal.sub('', i)) for i in str(z).split(',')[:2] ] + raw_args
-			elif name in ('sign_extend', 'zero_extend'):
-				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
-			elif name == 'zero_extend':
+			elif op in ('SignExt', 'ZeroExt'):
 				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
 			else:
 				args = raw_args
-			op = function_map[name]
 
-		return A(op, args), variables, symbolic
+		return A(op, args), variables, symbolic, z.size() if hasattr(z, 'size') else -1
 
 	def solver(self, timeout=None):
 		s = z3.Solver()
@@ -300,7 +327,7 @@ class BackendZ3(SolverBackend):
 		return BVV(lo, expr.size())
 
 	def simplify(self, expr): #pylint:disable=W0613,R0201
-		raise Exception("This shouldn't be called. But Yan.")
+		raise Exception("This shouldn't be called. Bug Yan.")
 
 	def call(self, name, args, result=None):
 		return SolverBackend.call(self, name, args, result=result)
@@ -354,38 +381,100 @@ class BackendZ3(SolverBackend):
 import re
 non_decimal = re.compile(r'[^\d.]+')
 
-function_map = { }
-function_map['bvadd'] = '__add__'
-function_map['bvxor'] = '__and__'
-function_map['bvsdiv'] = '__div__'
-function_map['bvsdiv_i'] = '__div__' # TODO: make sure this is correct
-function_map['bvnot'] = '__invert__'
-function_map['bvshl'] = '__lshift__'
-function_map['bvsmod'] = '__mod__'
-function_map['bvmul'] = '__mul__'
-function_map['distinct'] = '__ne__'
-function_map['bvneg'] = '__neg__'
-function_map['bvor'] = '__or__'
-function_map['bvashr'] = '__rshift__'
-function_map['bvsub'] = '__sub__'
-function_map['bvxor'] = '__xor__'
-function_map['='] = '__eq__'
-function_map['bvsgt'] = '__gt__'
-function_map['bvsge'] = '__ge__'
-function_map['bvslt'] = '__lt__'
-function_map['bvsle'] = '__le__'
-function_map['bvuge'] = 'UGE'
-function_map['bvugt'] = 'UGT'
-function_map['bvule'] = 'ULE'
-function_map['bvult'] = 'ULT'
-function_map['concat'] = 'Concat'
-function_map['extract'] = 'Extract'
-function_map['or'] = 'Or'
-function_map['and'] = 'And'
-function_map['not'] = 'Not'
-function_map['if'] = 'If'
-function_map['iff'] = 'If'
-function_map['bvlshr'] = 'LShR'
+# TODO: URem, SRem
+
+decl_map = {
+	'+': '__add__',
+	'-': [ '__neg__', '__sub__' ],
+	'*': '__mul__',
+	'/': '__div__',
+	'%': '__mod__',
+	#'URem': 'URem',
+	#'SRem': 'SRem',
+
+	'^': '__xor__',
+	'&': '__and__',
+	'|': '__or__',
+	'~': '__invert__',
+
+	'<<': '__lshift__',
+	'>>': '__rshift__',
+	'LShR': 'LShR',
+	'RotateLeft': 'RotateLeft',
+	'RotateRight': 'RotateRight',
+	'SignExt': 'SignExt',
+	'ZeroExt': 'ZeroExt',
+
+	'Distinct': '__ne__',
+	'==': '__eq__',
+	'<': '__lt__',
+	'<=': '__le__',
+	'>': '__gt__',
+	'>=': '__ge__',
+	'UGE': 'UGE',
+	'ULE': 'ULE',
+	'UGT': 'UGT',
+	'ULT': 'ULT',
+
+	'And': 'And',
+	'Or': 'Or',
+	'Not': 'Not',
+
+	'Concat': 'Concat',
+	'Extract': 'Extract',
+
+	'If': 'If',
+}
+
+
+name_map = {
+	'bvadd': '__add__',
+	'bvsub': '__sub__',
+	'bvneg': '__neg__',
+	'bvmul': '__mul__',
+	'bvsdiv': '__div__',
+	'bvsmod': '__mod__',
+	#'bvsrem': 'SRem',
+	#'bvurem': 'URem',
+
+	'bvxor': '__xor__',
+	'bvand': '__and__',
+	'bvor': '__or__',
+	'bvnot': '__invert__',
+
+	'bvshl': '__lshift__',
+	'bvashr': '__rshift__',
+	'bvlshr': 'LShR',
+	'ext_rotate_left': 'RotateLeft',
+	'ext_rotate_right': 'RotateRight',
+	'sign_extend': 'SignExt',
+	'zero_extend': 'ZeroExt',
+
+	'distinct': '__ne__',
+	'=': '__eq__',
+	'bvsgt': '__gt__',
+	'bvsge': '__ge__',
+	'bvslt': '__lt__',
+	'bvsle': '__le__',
+	'bvuge': 'UGE',
+	'bvugt': 'UGT',
+	'bvule': 'ULE',
+	'bvult': 'ULT',
+
+	'or': 'Or',
+	'and': 'And',
+	'not': 'Not',
+
+	'concat': 'Concat',
+	'extract': 'Extract',
+
+	'if': 'If',
+	'iff': 'If',
+
+	# TODO: make sure these are correct
+	'bvsdiv_i': '__div__',
+	'bvsmod_i': '__mod__'
+}
 
 from ..expression import E, A
 from ..operations import backend_operations
