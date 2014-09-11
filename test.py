@@ -1,8 +1,10 @@
+import sys
+import pickle
+
 import nose
 import logging
 l = logging.getLogger("claripy.test")
 
-import pickle
 #import tempfile
 import claripy
 
@@ -507,7 +509,10 @@ def test_bool():
     nose.tools.assert_equal(bc.convert_expr(o), False)
 
 def test_vsa():
-    pass
+    clrp = claripy.ClaripyStandalone()
+    solver_type = claripy.solvers.BranchingSolver
+    s = solver_type(clrp)
+    print clrp.StridedInterval('a', 10)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
@@ -524,19 +529,21 @@ if __name__ == '__main__':
     logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
 
     test_vsa()
-    test_expression()
-    test_fallback_abstraction()
-    test_pickle()
-    #test_datalayer()
-    test_model()
-    test_solver()
-    test_solver_branching()
-    test_combine()
-    test_bv()
-    test_simple_merging()
-    test_composite_solver()
-    test_ite()
-    test_bool()
+    if len(sys.argv) > 1 and sys.argv[1] != 'vsa':
+        # test other stuff as well
+        test_expression()
+        test_fallback_abstraction()
+        test_pickle()
+        #test_datalayer()
+        test_model()
+        test_solver()
+        test_solver_branching()
+        test_combine()
+        test_bv()
+        test_simple_merging()
+        test_composite_solver()
+        test_ite()
+        test_bool()
     print "WOO"
 
     print 'eval', claripy.solvers.solver.cached_evals

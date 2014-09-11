@@ -67,6 +67,9 @@ class Claripy(object):
         return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1])
         #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
 
+    def StridedInterval(self, *args):
+        return E(self, model=StridedInterval(*args), variables=set(), symbolic=False, length=args[-1])
+
     def And(self, *args): return self._do_op('And', args, length=-1)
     def ULT(self, *args): return self._do_op('ULT', args, length=-1)
     def SignExt(self, *args): return self._do_op('SignExt', args, length=args[0]+args[1].length)
@@ -110,3 +113,4 @@ from .expression import E, A
 from .backends.backend import BackendError
 from .operations import op_length
 from .bv import BVV
+from .vsa import StridedInterval

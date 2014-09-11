@@ -9,7 +9,8 @@ class StridedInterval(object):
     NEG_INF = 'NEG_INF'
     INF = 'INF'
 
-    def __init__(self, bits=0, stride=None, lower_bound=NEG_INF, upper_bound=INF):
+    def __init__(self, name, bits=0, stride=None, lower_bound=NEG_INF, upper_bound=INF):
+        self._name = name
         self._bits = bits
         self._stride = stride
         self._lower_bound = lower_bound
@@ -17,9 +18,9 @@ class StridedInterval(object):
 
     def __repr__(self):
         if self.empty:
-            return '[Empty]'
+            return '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
-            return '<%d>%d[%s, %s]' % (self._bits, self._stride, \
+            return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride, \
                                        self._lower_bound if type(self._lower_bound) == str else str(self._lower_bound), \
                                        self._upper_bound if type(self._upper_bound) == str else str(self._upper_bound))
 
