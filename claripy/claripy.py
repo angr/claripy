@@ -63,25 +63,37 @@ class Claripy(object):
         return E(self, model=BVV(*args), variables=set(), symbolic=False, length=args[-1])
         #return self._do_op('BitVecVal', args, length=args[-1], variables=set(), symbolic=False, raw=True)
 
+    # Bitwise ops
+    def LShR(self, *args): return self._do_op('LShR', args)
+    def SignExt(self, *args): return self._do_op('SignExt', args, length=args[0]+args[1].length)
+    def ZeroExt(self, *args): return self._do_op('ZeroExt', args, length=args[0]+args[1].length)
+    def Extract(self, *args): return self._do_op('Extract', args, length=args[0]-args[1]+1)
+    def Concat(self, *args): return self._do_op('Concat', args, length=sum([ arg.length for arg in args ]))
+    def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
+    def RotateRight(self, *args): return self._do_op('RotateRight', args)
+
+    #
+    # Boolean ops
+    #
     def BoolVal(self, *args):
         return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1])
         #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
 
     def And(self, *args): return self._do_op('And', args, length=-1)
-    def ULT(self, *args): return self._do_op('ULT', args, length=-1)
-    def SignExt(self, *args): return self._do_op('SignExt', args, length=args[0]+args[1].length)
-    def LShR(self, *args): return self._do_op('LShR', args, length=-1)
-    def ZeroExt(self, *args): return self._do_op('ZeroExt', args, length=args[0]+args[1].length)
-    def UGE(self, *args): return self._do_op('UGE', args, length=-1)
-    def If(self, *args): return self._do_op('If', args)
     def Not(self, *args): return self._do_op('Not', args, length=-1)
-    def ULE(self, *args): return self._do_op('ULE', args, length=-1)
-    def Extract(self, *args): return self._do_op('Extract', args, length=args[0]-args[1]+1)
     def Or(self, *args): return self._do_op('Or', args, length=-1)
-    def Concat(self, *args): return self._do_op('Concat', args, length=sum([ arg.length for arg in args ]))
+    def ULT(self, *args): return self._do_op('ULT', args, length=-1)
+    def ULE(self, *args): return self._do_op('ULE', args, length=-1)
+    def UGE(self, *args): return self._do_op('UGE', args, length=-1)
     def UGT(self, *args): return self._do_op('UGT', args, length=-1)
-    def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
-    def RotateRight(self, *args): return self._do_op('RotateRight', args)
+
+    #
+    # Other ops
+    #
+    def If(self, *args):
+        if len(args) != 3: raise ClaripyOperationError("invalid number of args passed to If")
+        return self._do_op('If', args)
+
     #def size(self, *args): return self._do_op('size', args)
 
     def ite_dict(self, i, d, default):
@@ -110,3 +122,4 @@ from .expression import E, A
 from .backends.backend import BackendError
 from .operations import op_length
 from .bv import BVV
+from .errors import ClaripyOperationError
