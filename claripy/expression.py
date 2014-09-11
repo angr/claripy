@@ -14,16 +14,15 @@ class A(object):
         self._op = op
         self._args = args
 
-    def resolve(self, b, save, result=None):
+    def resolve(self, b, save=None, result=None):
         args = [ ]
         for a in self._args:
             if isinstance(a, E):
                 args.append(b.convert_expr(a, result=result))
             elif isinstance(a, A):
-                args.append(a.resolve(b, save, result))
+                args.append(a.resolve(b, save=save, result=result))
             else:
                 args.append(b.convert(a, result=result))
-
         l.debug("trying evaluation with %s", b)
         return b.call(self._op, args, result=result)
 
@@ -42,7 +41,7 @@ class E(Storable):
     def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
-        have_data = not (variables is None and symbolic is None and model is None and length is None)
+        have_data = not (variables is None or symbolic is None or model is None or length is None)
         self.objects = { }
 
         if have_uuid and not have_data:
@@ -180,12 +179,6 @@ def e_operator(cls, op_name):
         return self._claripy._do_op(op_name, (self,) + tuple(args))
     wrapper.__name__ = op_name
     setattr(cls, op_name, wrapper)
-
-#def a_operator(cls, op_name):
-#   def do_op(self, *args):
-#       return A(op_name, args)
-#   wrapper.__name__ = op_name
-#   setattr(cls, op_name, wrapper)
 
 def make_methods():
     for name in expression_operations:
