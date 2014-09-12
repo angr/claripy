@@ -149,6 +149,14 @@ class BackendZ3(SolverBackend):
 			elif op in ('SignExt', 'ZeroExt'):
 				num = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 0)
 				args = [ num ] + raw_args
+			elif op in ( '__add__', ) and len(raw_args) > 2:
+				last = raw_args[-1]
+				rest = raw_args[:-1]
+
+				a = A(op, rest[:2])
+				for b in rest[2:]:
+					a = A(op, [a,b])
+				args = [ a, last ]
 			else:
 				args = raw_args
 
