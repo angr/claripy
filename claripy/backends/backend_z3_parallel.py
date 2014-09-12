@@ -117,11 +117,7 @@ class BackendZ3Parallel(BackendZ3):
 	def call(self, *args, **kwargs):
 		return self._synchronize('call', *args, **kwargs)
 	def simplify_expr(self, *args, **kwargs):
-		print "SIMPLIFYING"
-		try:
-			return self._synchronize('simplify_expr', *args, **kwargs)
-		finally:
-			print "SIMPLIFIED"
+		return self._synchronize('simplify_expr', *args, **kwargs)
 
 from ..result import UnsatError
 from ..errors import ClaripyError
