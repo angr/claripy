@@ -143,10 +143,12 @@ class BackendZ3(SolverBackend):
 				variables |= v
 
 			if op == 'Extract':
-				# GAH
-				args = [ int(non_decimal.sub('', i)) for i in str(z).split(',')[:2] ] + raw_args
+				hi = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 0)
+				lo = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 1)
+				args = [ hi, lo ] + raw_args
 			elif op in ('SignExt', 'ZeroExt'):
-				args = int(str(z).split('(')[1].split(', ')[0]) + raw_args
+				num = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 0)
+				args = [ num ] + raw_args
 			else:
 				args = raw_args
 
@@ -333,9 +335,6 @@ class BackendZ3(SolverBackend):
 
 	def simplify(self, expr): #pylint:disable=W0613,R0201
 		raise Exception("This shouldn't be called. Bug Yan.")
-
-	def call(self, name, args, result=None):
-		return SolverBackend.call(self, name, args, result=result)
 
 	def simplify_expr(self, expr):
 		l.debug("SIMPLIFYING EXPRESSION")
