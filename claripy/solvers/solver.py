@@ -102,7 +102,8 @@ class Solver(Storable):
 
 		fc = [ ]
 		for e in ec if type(ec) in (list, tuple, set) else (ec,):
-			e_simp = self._claripy.simplify(e)
+			#e_simp = self._claripy.simplify(e)
+			e_simp = e
 			if not e_simp.symbolic and self._claripy.model_backend.convert_expr(e_simp):
 				filter_true += 1
 				continue
