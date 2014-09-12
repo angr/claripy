@@ -108,11 +108,11 @@ class E(Storable):
 
     def __setstate__(self, s):
         if type(s) is str:
-            self.__init__(global_claripy, uuid=s)
+            self.__init__(get_claripy(), uuid=s)
             return
 
         uuid, model, variables, symbolic, length = s
-        self.__init__(global_claripy, variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length)
+        self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length)
 
     #
     # BV operations
@@ -126,18 +126,6 @@ class E(Storable):
 
     def __iter__(self):
         raise ClaripyExpressionError("Please don't iterate over Expressions!")
-
-    def simplify(self):
-        try:
-            return self._claripy.model_backend.simplify_expr(self)
-        except BackendError:
-            for b in self._claripy.solver_backends:
-                try:
-                    return b.simplify_expr(self)
-                except BackendError:
-                    pass
-
-        raise ClaripyExpressionError("unable to simplify")
 
     def chop(self, bits=1):
         s = len(self)
@@ -187,4 +175,4 @@ def make_methods():
 from .errors import BackendError, ClaripyExpressionError
 from .operations import expression_operations
 make_methods()
-from . import claripy as global_claripy
+from . import get_claripy

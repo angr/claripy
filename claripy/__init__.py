@@ -5,6 +5,15 @@
 import logging
 l = logging.getLogger("claripy")
 
+claripy = None
+def set_claripy(c):
+    global claripy
+    claripy = c
+    return c
+
+def get_claripy():
+    return claripy
+
 from .expression import E, A
 from . import bv
 from . import datalayer
@@ -14,12 +23,6 @@ from .datalayer import DataLayer
 from .bv import BVV
 from . import operations
 from . import backends
-
-claripy = None
-def set_claripy(c):
-    global claripy
-    claripy = c
-    return c
 
 def init_standalone():
     return set_claripy(ClaripyStandalone())
