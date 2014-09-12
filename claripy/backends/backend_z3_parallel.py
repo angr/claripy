@@ -2,6 +2,11 @@ import os
 import pickle
 import threading
 
+num_children = 0
+
+import logging
+l = logging.getLogger("claripy.backends.backend_z3_parallel")
+
 from .backend_z3 import BackendZ3
 
 class BackendZ3Parallel(BackendZ3):
@@ -9,15 +14,21 @@ class BackendZ3Parallel(BackendZ3):
 		BackendZ3.__init__(self, clrp)
 		self._child = False
 		self._lock = threading.RLock()
+		self._cache_objects = False
 
-	def _background(self, f, *args, **kwargs):
-		f = getattr(BackendZ3, f)
+	def _background(self, f_name, *args, **kwargs):
+		global num_children
+
+		f = getattr(BackendZ3, f_name)
 		if self._child:
 			return f(self, *args, **kwargs)
 
 		p_r, p_w = os.pipe()
 		p = os.fork()
+
 		if p == 0:
+			self._child = True
+			self._lock = threading.RLock()
 			try:
 				r = f(self, *args, **kwargs)
 			except UnsatError as e:
@@ -31,31 +42,51 @@ class BackendZ3Parallel(BackendZ3):
 			os.close(p_w)
 			os.close(p_r)
 			#print "WROTE (%d)" % os.getpid()
+
 			os.kill(os.getpid(), 9)
 			#os.abort()
 			#sys.exit(1)
 		else:
 			os.close(p_w)
+
+			num_children += 1
+			l.debug("in _background with function %s and child %d (among %d)", f, p, num_children)
+
 			#print "READING (from %d)" % p
 			try:
 				strs = [ os.read(p_r, 1024*1024) ]
 				while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
 			except EOFError:
-				raise Exception("WTF")
+				raise ClaripyError("read error while receiving data from child")
 			os.close(p_r)
 			#print "READ (from %d)" % p
 
 			#thread.start_new_thread(os.wait, ())
 			r = pickle.loads("".join(strs))
+
+			os.waitpid(p, 0)
+			num_children -= 1
+			l.debug("... child %d is done. %d left", p, num_children)
+
 			if isinstance(r, Exception): raise r
 			else: return r
 
 	def _synchronize(self, f, *args, **kwargs):
+		if self._child:
+			return getattr(BackendZ3, f)(self, *args, **kwargs)
+
 		self._lock.acquire()
+		#while not self._lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
 		try:
 			return getattr(BackendZ3, f)(self, *args, **kwargs)
 		finally:
 			self._lock.release()
+
+	@staticmethod
+	def _translate(*args):
+		for a in args:
+			if hasattr(a, 'translate'):
+				a.translate()
 
 	# backgrounded
 	def results(self, *args, **kwargs):
@@ -69,6 +100,8 @@ class BackendZ3Parallel(BackendZ3):
 
 	def convert(self, *args, **kwargs):
 		return self._synchronize('convert', *args, **kwargs)
+	def convert_expr(self, *args, **kwargs):
+		return self._synchronize('convert_expr', *args, **kwargs)
 	def abstract(self, *args, **kwargs):
 		return self._synchronize('abstract', *args, **kwargs)
 	def size(self, *args, **kwargs):
@@ -84,6 +117,11 @@ class BackendZ3Parallel(BackendZ3):
 	def call(self, *args, **kwargs):
 		return self._synchronize('call', *args, **kwargs)
 	def simplify_expr(self, *args, **kwargs):
-		return self._synchronize('simplify_expr', *args, **kwargs)
+		print "SIMPLIFYING"
+		try:
+			return self._synchronize('simplify_expr', *args, **kwargs)
+		finally:
+			print "SIMPLIFIED"
 
 from ..result import UnsatError
+from ..errors import ClaripyError

@@ -35,20 +35,33 @@ class BackendConcrete(Backend):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
 
-        if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
-        elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
-        elif isinstance(a, z3.BoolRef) and a.eq(zFalse): return False
-        elif result is not None and a.num_args() == 0:
-            name = a.decl().name()
-            if name in result.model:
-                return result.model[name]
+        if not hasattr(a, '__module__') or a.__module__ != 'z3':
+            raise BackendError("BackendConcrete got an unsupported type %s", a.__class__)
+
+        if not hasattr(self._claripy, 'z3_backend') or self._claripy.z3_backend is None:
+            raise BackendError("can't convert z3 expressions when z3 is not in use")
+
+        try:
+            if hasattr(self._claripy.z3_backend, '_lock'):
+                self._claripy.z3_backend._lock.acquire()
+
+            if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
+            elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
+            elif isinstance(a, z3.BoolRef) and a.eq(zFalse): return False
+            elif result is not None and a.num_args() == 0:
+                name = a.decl().name()
+                if name in result.model:
+                    return result.model[name]
+                else:
+                    l.debug("returning 0 for %s (not in model)", name)
+                    return bv.BVV(0, a.size())
             else:
-                l.debug("returning 0 for %s (not in model)", name)
-                return bv.BVV(0, a.size())
-        else:
-            #import ipdb; ipdb.set_trace()
-            #l.warning("TODO: support more complex non-symbolic expressions, maybe?")
-            raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+                #import ipdb; ipdb.set_trace()
+                #l.warning("TODO: support more complex non-symbolic expressions, maybe?")
+                raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
+        finally:
+            if hasattr(self._claripy.z3_backend, '_lock'):
+                self._claripy.z3_backend._lock.release()
 
 from ..bv import BVV
 from ..operations import backend_operations

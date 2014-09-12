@@ -13,6 +13,7 @@ class ClaripyStandalone(Claripy):
             b_z3 = BackendZ3Parallel(self)
         else:
             b_z3 = BackendZ3(self)
+        self.z3_backend = b_z3
 
         solver_backends = [ b_z3 ] if solver_backends is None else solver_backends
         model_backend = b_concrete if model_backend is None else model_backend

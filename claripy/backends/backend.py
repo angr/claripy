@@ -7,6 +7,7 @@ class Backend(object):
 		self._op_raw = { }
 		self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
 		self._op_expr = { }
+		self._cache_objects = True
 
 	def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
 		for o in op_list:
@@ -57,7 +58,7 @@ class Backend(object):
 			if not resolved:
 				r = expr._model.resolve(self, save=save, result=result)
 
-		if save:
+		if save and self._cache_objects:
 			expr.objects[self] = r
 		return r
 
