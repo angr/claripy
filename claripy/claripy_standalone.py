@@ -5,7 +5,7 @@ from .backends import BackendZ3, BackendConcrete, BackendZ3Parallel
 from .datalayer import DataLayer
 
 class ClaripyStandalone(Claripy):
-    def __init__(self, model_backend=None, solver_backends=None, parallel=True):
+    def __init__(self, model_backend=None, solver_backends=None, parallel=False):
         self.parallel = parallel if parallel is not None else False
         b_concrete = BackendConcrete(self)
 
