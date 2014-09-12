@@ -106,6 +106,7 @@ class BackendZ3(SolverBackend):
 
 			if decl not in decl_map:
 				l.error("%s is not in decl_map. Report this to Yan.", decl)
+				#import ipdb; ipdb.set_trace()
 				decl_func = None
 			else:
 				decl_func = decl_map[decl]
@@ -118,12 +119,17 @@ class BackendZ3(SolverBackend):
 			if name not in name_map:
 				l.error("%s is not in name_map. Report this to Yan.", name)
 				name_func = None
+				#import ipdb; ipdb.set_trace()
 			else:
 				name_func = name_map[name]
 
+			if decl_func is None and name_func is None:
+				l.error("Z3 abstraction unable to identify base function of expression %s", z)
+				raise BackendError("unable to identify function in expression")
+
+			op = decl_func if decl_func is not None else name_func
 			if name_func != decl_func:
-				l.warning("Z3 bug: got a different function via name() vs decl() (%s vs %s). Using %s", name_func, decl_func, decl_func)
-			op = decl_func
+				l.warning("Z3 bug: got a different function via name() vs decl() (%s vs %s). Using %s", name_func, decl_func, op)
 
 			# now we have the operation
 
@@ -424,6 +430,10 @@ decl_map = {
 	'Extract': 'Extract',
 
 	'If': 'If',
+
+	# TODO: make sure these are correct
+	'bvsdiv_i': '__div__',
+	'bvsmod_i': '__mod__'
 }
 
 
