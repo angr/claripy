@@ -183,7 +183,10 @@ class Solver(Storable):
 		return self.solve(extra_constraints=extra_constraints).sat
 
 	def any(self, expr, extra_constraints=()):
-		return self.eval(expr, 1, extra_constraints)[0]
+		v = self.eval(expr, 1, extra_constraints)
+		if len(v) == 0:
+			raise UnsatError("couldn't concretize any values")
+		return v[0]
 
 	def eval(self, e, n, extra_constraints=()):
 		global cached_evals
