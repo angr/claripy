@@ -36,13 +36,14 @@ class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects' ]
+    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified' ]
 
-    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False):
+    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
         have_data = not (variables is None or symbolic is None or model is None or length is None)
         self.objects = { }
+        self._simplified = simplified
 
         if have_uuid and not have_data:
             self._load()
@@ -104,15 +105,15 @@ class E(Storable):
             l.debug("uuid pickle on %s", self)
             return self._uuid
         l.debug("full pickle on %s", self)
-        return self._uuid, self._model, self.variables, self.symbolic, self.length
+        return self._uuid, self._model, self.variables, self.symbolic, self.length, self._simplified
 
     def __setstate__(self, s):
         if type(s) is str:
             self.__init__(get_claripy(), uuid=s)
             return
 
-        uuid, model, variables, symbolic, length = s
-        self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length)
+        uuid, model, variables, symbolic, length, simplified = s
+        self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length, simplified=simplified)
 
     #
     # BV operations
@@ -172,7 +173,7 @@ def make_methods():
     for name in expression_operations:
         e_operator(E, name)
 
-from .errors import BackendError, ClaripyExpressionError
+from .errors import ClaripyExpressionError
 from .operations import expression_operations
 make_methods()
 from . import get_claripy

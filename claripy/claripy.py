@@ -34,7 +34,7 @@ class Claripy(object):
         else:
             return o
 
-    def _do_op(self, name, args, variables=None, symbolic=None, length=None, raw=False):
+    def _do_op(self, name, args, variables=None, symbolic=None, length=None, raw=False, simplified=False):
         try:
             if raw:
                 r = self.model_backend.call(name, args)
@@ -51,16 +51,16 @@ class Claripy(object):
         if length is None:
             length = op_length(name, args)
 
-        return E(self, model=r, variables=variables, symbolic=symbolic, length=length)
+        return E(self, model=r, variables=variables, symbolic=symbolic, length=length, simplified=simplified)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size, raw=True)
+        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size, raw=True, simplified=True)
 
     def BitVecVal(self, *args):
-        return E(self, model=BVV(*args), variables=set(), symbolic=False, length=args[-1])
+        return E(self, model=BVV(*args), variables=set(), symbolic=False, length=args[-1], simplified=True)
         #return self._do_op('BitVecVal', args, length=args[-1], variables=set(), symbolic=False, raw=True)
 
     # Bitwise ops
@@ -76,7 +76,7 @@ class Claripy(object):
     # Boolean ops
     #
     def BoolVal(self, *args):
-        return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1])
+        return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1], simplified=True)
         #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
 
     def And(self, *args): return self._do_op('And', args, length=-1)

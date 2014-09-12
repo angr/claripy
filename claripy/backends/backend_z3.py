@@ -136,7 +136,7 @@ class BackendZ3(SolverBackend):
 			raw_args = [ ]
 			for a,v,s,b in children:
 				if op in split_on:
-					raw_args.append(E(self._claripy, model=a, variables=v, symbolic=s, length=b))
+					raw_args.append(E(self._claripy, model=a, variables=v, symbolic=s, length=b, simplified=True))
 				else:
 					raw_args.append(a)
 				symbolic |= s
@@ -345,6 +345,9 @@ class BackendZ3(SolverBackend):
 		raise Exception("This shouldn't be called. Bug Yan.")
 
 	def simplify_expr(self, expr):
+		if expr._simplified:
+			return expr
+
 		l.debug("SIMPLIFYING EXPRESSION")
 
 		expr_raw = self.convert_expr(expr)
@@ -384,7 +387,7 @@ class BackendZ3(SolverBackend):
 
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return E(self._claripy, model=o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length)
+		return E(self._claripy, model=o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length, simplified=True)
 
 #
 # this is for the actual->abstract conversion above
