@@ -42,6 +42,13 @@ class StridedInterval(object):
             return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride,
                                        self._lower_bound if type(self._lower_bound) == str else str(self._lower_bound),
                                        self._upper_bound if type(self._upper_bound) == str else str(self._upper_bound))
+    @staticmethod
+    def top():
+        '''
+        Get a TOP StridedInterval
+        :return:
+        '''
+        raise NotImplementedError()
 
     @normalize_types
     def __eq__(self, o):
@@ -54,6 +61,10 @@ class StridedInterval(object):
     @normalize_types
     def __add__(self, o):
         return self.add(o, allow_overflow=True)
+
+    @normalize_types
+    def __sub__(self, o):
+        return self.add(o.neg(), allow_overflow=True)
 
     @property
     def empty(self):
@@ -114,18 +125,20 @@ class StridedInterval(object):
 
     def _min_bits(self):
         v = self._upper_bound
-        assert v > 0
+        assert v >= 0
         return StridedInterval.min_bits(v)
 
     @staticmethod
     def min_bits(val):
-        assert val > 0
+        assert val >= 0
+        if val == 0:
+            return 1
         return int(math.log(val, 2) + 1)
 
-    def maxi(self, k):
+    def max_int(self, k):
         return self.highbit(k) - 1
 
-    def mini(self, k):
+    def min_int(self, k):
         return -self.highbit(k)
 
     def upper(self, bits, i, stride):
@@ -135,7 +148,7 @@ class StridedInterval(object):
         '''
         if stride >= 1:
             offset = i % stride
-            max = self.maxi(bits)
+            max = self.max_int(bits)
             max_offset = max % stride
 
             if max_offset >= offset:
@@ -144,7 +157,7 @@ class StridedInterval(object):
                 o = max - ((max_offset + stride) - offset)
             return o
         else:
-            return self.maxi(bits)
+            return self.max_int(bits)
 
     def lower(self, bits, i, stride):
         '''
@@ -153,7 +166,7 @@ class StridedInterval(object):
         '''
         if stride >= 1:
             offset = i % stride
-            min = self.mini(bits)
+            min = self.min_int(bits)
             min_offset = min % offset
 
             if offset >= min_offset:
@@ -162,15 +175,14 @@ class StridedInterval(object):
                 o = min + ((offset + stride) - min_offset)
             return o
         else:
-            return self.mini(bits)
+            return self.min_int(bits)
 
-    @property
-    def top(self):
+    def is_top(self):
         '''
         If this is a TOP value
         :return: True if this is a TOP
         '''
-        raise Exception('Not implemented')
+        # TODO: Finish it
         return False
 
     def add(self, b, allow_overflow=True):
@@ -183,8 +195,8 @@ class StridedInterval(object):
 
         lb_ = self.lower_bound + b.lower_bound
         ub_ = self.upper_bound + b.upper_bound
-        lb_underflow_ = (lb_ < self.mini(self.bits))
-        ub_overflow_ = (ub_ > self.maxi(self.bits))
+        lb_underflow_ = (lb_ < self.min_int(self.bits))
+        ub_overflow_ = (ub_ > self.max_int(self.bits))
         overflow = lb_underflow_ or ub_overflow_
         stride = fractions.gcd(self.stride, b.stride)
 
@@ -201,4 +213,10 @@ class StridedInterval(object):
         Operation neg
         :return: ~self
         '''
-        raise Exception('Not implemented')
+        # TODO: Finish it
+        if not self.is_top():
+            new_lb = -self.lower_bound if self.lower_bound != self.NEG_INF else self.INF
+            new_ub = -self.upper_bound if self.upper_bound != self.INF else self.NEG_INF
+            return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_lb, upper_bound=new_ub)
+        else:
+            return StridedInterval.top()

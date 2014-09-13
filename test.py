@@ -529,8 +529,10 @@ def test_vsa():
     nose.tools.assert_equal(si1._model, 10)
     nose.tools.assert_equal(si2._model, 10)
     nose.tools.assert_equal(si1._model, si2._model)
-    si_expr = backend_vsa.convert_expr((si1 + si2))
-    nose.tools.assert_equal(si_expr, 20)
+    si_add = backend_vsa.convert_expr((si1 + si2))
+    nose.tools.assert_equal(si_add, 20)
+    si_minus = backend_vsa.convert_expr((si1 - si2))
+    nose.tools.assert_equal(si_minus, 0)
     
 
 if __name__ == '__main__':
