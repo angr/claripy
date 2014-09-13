@@ -79,8 +79,8 @@ class Claripy(object):
         return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1], simplified=True)
         #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
 
-    def StridedInterval(self, *args):
-        return E(self, model=StridedInterval(*args), variables=set(), symbolic=False, length=args[-1])
+    def StridedInterval(self, **kwargs):
+        return E(self, model=StridedInterval(**kwargs), variables=set(), symbolic=False, length=-1)
 
     def And(self, *args): return self._do_op('And', args, length=-1)
     def Not(self, *args): return self._do_op('Not', args, length=-1)

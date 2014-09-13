@@ -13,7 +13,36 @@ class Backend(object):
 
     def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
         for o in op_list:
-            self._op_raw[o] = op_dict[o] if op_dict is not None else getattr(op_module, o)
+            if op_dict is not None:
+                if o in op_dict:
+                    self._op_raw[o] = op_dict[o]
+                else:
+                    l.warning("Operation %s not in op_dict.", o)
+            else:
+                if hasattr(op_module, o):
+                    self._op_raw[o] = getattr(op_module, o)
+                else:
+                    l.warning("Operation %s not in op_module %s.", o, op_module)
+
+    def _make_expr_ops(self, op_list, op_dict=None, op_class=None):
+        '''
+        Fill up self._op_expr dict
+        :param op_list: A list of operation names
+        :param op_dict: A dictionary of operation methods
+        :param op_class: Where the operation method comes from
+        :return:
+        '''
+        for o in op_list:
+            if op_dict is not None:
+                if o in op_dict:
+                    self._op_expr[o] = op_dict[o]
+                else:
+                    l.warning("Operation %s not in op_dict.", o)
+            else:
+                if hasattr(op_class, o):
+                    self._op_expr[o] = getattr(op_class, o)
+                else:
+                    l.warning("Operation %s not in op_class %s.", o, op_class)
 
     #
     # These functions handle converting expressions to formats that the backend

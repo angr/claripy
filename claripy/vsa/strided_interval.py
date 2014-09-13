@@ -1,4 +1,20 @@
 import fractions
+import functools
+import math
+
+def normalize_types(f):
+    @functools.wraps(f)
+    def normalizer(self, o):
+        '''
+        Convert any object to an object that we can process.
+        '''
+        if type(o) in (int, long):
+            o = StridedInterval(bits=StridedInterval.min_bits(o), stride=0, lower_bound=o, upper_bound=o)
+        if type(self) in (int, long):
+            self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
+        return f(self, o)
+
+    return normalizer
 
 class StridedInterval(object):
     '''
@@ -6,23 +22,38 @@ class StridedInterval(object):
         stride[lower_bound, upper_bound]
     For more details, please refer to relevant papers like TIE and WYSINWYE.
     '''
-    NEG_INF = 'NEG_INF'
-    INF = 'INF'
+    NEG_INF = -1
+    INF = -2
 
-    def __init__(self, name, bits=0, stride=None, lower_bound=NEG_INF, upper_bound=INF):
+    def __init__(self, name=None, bits=0, stride=None, lower_bound=NEG_INF, upper_bound=INF):
         self._name = name
         self._bits = bits
         self._stride = stride
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
 
+        if self._upper_bound != self.INF and bits == 0:
+            self._bits = self._min_bits()
+
     def __repr__(self):
         if self.empty:
             return '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
-            return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride, \
-                                       self._lower_bound if type(self._lower_bound) == str else str(self._lower_bound), \
+            return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride,
+                                       self._lower_bound if type(self._lower_bound) == str else str(self._lower_bound),
                                        self._upper_bound if type(self._upper_bound) == str else str(self._upper_bound))
+
+    @normalize_types
+    def __eq__(self, o):
+        # TODO: Currently we are not comparing the bits
+        return ( # self._bits == o._bits and
+            self._stride == o._stride
+            and self._lower_bound == o._lower_bound
+            and self._upper_bound == o._upper_bound)
+
+    @normalize_types
+    def __add__(self, o):
+        return self.add(o, allow_overflow=True)
 
     @property
     def empty(self):
@@ -81,11 +112,21 @@ class StridedInterval(object):
     def min(self):
         raise Exception('Not implemented')
 
+    def _min_bits(self):
+        v = self._upper_bound
+        assert v > 0
+        return StridedInterval.min_bits(v)
+
+    @staticmethod
+    def min_bits(val):
+        assert val > 0
+        return int(math.log(val, 2) + 1)
+
     def maxi(self, k):
-        return self.highbit(k - 1)
+        return self.highbit(k) - 1
 
     def mini(self, k):
-        return self.extend(k, self.highbit(k))
+        return -self.highbit(k)
 
     def upper(self, bits, i, stride):
         '''
@@ -150,8 +191,6 @@ class StridedInterval(object):
         if overflow:
             return self.top(self.bits)
         else:
-            lb_ = self.extend(lb_, self.bits)
-            ub_ = self.extend(ub_, self.bits)
             new_lb = self.lower(self.bits, lb_, stride) if lb_underflow_ else lb_
             new_ub = self.upper(self.bits, ub_, stride) if ub_overflow_ else ub_
 

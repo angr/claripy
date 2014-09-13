@@ -47,21 +47,21 @@ def test_expression():
     a = clrp.BitVecVal(1, 1)
     nose.tools.assert_equal((a+a)._model, 2)
 
-	x = clrp.BitVecVal(1, 32)
-	nose.tools.assert_equal(x.length, 32)
-	y = clrp.LShR(x, 10)
-	nose.tools.assert_equal(y.length, 32)
+    x = clrp.BitVecVal(1, 32)
+    nose.tools.assert_equal(x.length, 32)
+    y = clrp.LShR(x, 10)
+    nose.tools.assert_equal(y.length, 32)
 
 def test_concrete():
-	clrp = claripy.ClaripyStandalone()
+    clrp = claripy.ClaripyStandalone()
 
-	a = clrp.BitVecVal(10, 32)
-	b = clrp.BoolVal(True)
-	c = clrp.BitVec('x', 32)
+    a = clrp.BitVecVal(10, 32)
+    b = clrp.BoolVal(True)
+    c = clrp.BitVec('x', 32)
 
-	nose.tools.assert_is(type(a._model), claripy.BVV)
-	nose.tools.assert_is(type(b._model), bool)
-	nose.tools.assert_is(type(c._model), claripy.A)
+    nose.tools.assert_is(type(a._model), claripy.BVV)
+    nose.tools.assert_is(type(b._model), bool)
+    nose.tools.assert_is(type(c._model), claripy.A)
 
 def test_fallback_abstraction():
     clrp = claripy.ClaripyStandalone()
@@ -514,10 +514,24 @@ def test_bool():
     nose.tools.assert_equal(bc.convert_expr(o), False)
 
 def test_vsa():
+    from claripy.backends import BackendVSA
     clrp = claripy.ClaripyStandalone()
+    # Set backend
+    backend_vsa = BackendVSA()
+    backend_vsa.set_claripy_object(clrp)
+    clrp.solver_backends = [ backend_vsa ]
+
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)
-    print clrp.StridedInterval('a', 10)
+
+    si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    nose.tools.assert_equal(si1._model, 10)
+    nose.tools.assert_equal(si2._model, 10)
+    nose.tools.assert_equal(si1._model, si2._model)
+    si_expr = backend_vsa.convert_expr((si1 + si2))
+    nose.tools.assert_equal(si_expr, 20)
+    
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
