@@ -39,7 +39,7 @@ backend_comparator_operations = {
 }
 
 backend_bitwise_operations = {
-    'RotateLeft', 'RotateLeft', 'LShR',
+    'RotateLeft', 'RotateRight', 'LShR',
 }
 
 backend_boolean_operations = {
@@ -100,12 +100,12 @@ def op_length(op, args):
 
     if op in length_same_operations:
         if op == 'If':
-            lengths = set([a.length for a in args if isinstance(a, E)][1:])
+            lengths = set([a.length for a in args if isinstance(a, E) and a.length != -1])
         else:
             lengths = set(a.length for a in args if isinstance(a, E))
 
-        if len(lengths) > 1:
-            raise ClaripySizeError("multiple sizes being combined together")
+        if len(lengths) != 1:
+            raise ClaripySizeError("invalid length combination for operation %s", op)
         return lengths.__iter__().next()
 
     if op in length_change_operations:

@@ -14,16 +14,15 @@ class A(object):
         self._op = op
         self._args = args
 
-    def resolve(self, b, save, result=None):
+    def resolve(self, b, save=None, result=None):
         args = [ ]
         for a in self._args:
             if isinstance(a, E):
                 args.append(b.convert_expr(a, result=result))
             elif isinstance(a, A):
-                args.append(a.resolve(b, save, result))
+                args.append(a.resolve(b, save=save, result=result))
             else:
                 args.append(b.convert(a, result=result))
-
         l.debug("trying evaluation with %s", b)
         return b.call(self._op, args, result=result)
 
@@ -37,13 +36,14 @@ class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects' ]
+    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified' ]
 
-    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False):
+    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
-        have_data = not (variables is None and symbolic is None and model is None and length is None)
+        have_data = not (variables is None or symbolic is None or model is None or length is None)
         self.objects = { }
+        self._simplified = simplified
 
         if have_uuid and not have_data:
             self._load()
@@ -105,15 +105,15 @@ class E(Storable):
             l.debug("uuid pickle on %s", self)
             return self._uuid
         l.debug("full pickle on %s", self)
-        return self._uuid, self._model, self.variables, self.symbolic, self.length
+        return self._uuid, self._model, self.variables, self.symbolic, self.length, self._simplified
 
     def __setstate__(self, s):
         if type(s) is str:
-            self.__init__(global_claripy, uuid=s)
+            self.__init__(get_claripy(), uuid=s)
             return
 
-        uuid, model, variables, symbolic, length = s
-        self.__init__(global_claripy, variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length)
+        uuid, model, variables, symbolic, length, simplified = s
+        self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length, simplified=simplified)
 
     #
     # BV operations
@@ -127,18 +127,6 @@ class E(Storable):
 
     def __iter__(self):
         raise ClaripyExpressionError("Please don't iterate over Expressions!")
-
-    def simplify(self):
-        try:
-            return self._claripy.model_backend.simplify_expr(self)
-        except BackendError:
-            for b in self._claripy.solver_backends:
-                try:
-                    return b.simplify_expr(self)
-                except BackendError:
-                    pass
-
-        raise ClaripyExpressionError("unable to simplify")
 
     def chop(self, bits=1):
         s = len(self)
@@ -181,17 +169,11 @@ def e_operator(cls, op_name):
     wrapper.__name__ = op_name
     setattr(cls, op_name, wrapper)
 
-#def a_operator(cls, op_name):
-#   def do_op(self, *args):
-#       return A(op_name, args)
-#   wrapper.__name__ = op_name
-#   setattr(cls, op_name, wrapper)
-
 def make_methods():
     for name in expression_operations:
         e_operator(E, name)
 
-from .errors import BackendError, ClaripyExpressionError
+from .errors import ClaripyExpressionError
 from .operations import expression_operations
 make_methods()
-from . import claripy as global_claripy
+from . import get_claripy

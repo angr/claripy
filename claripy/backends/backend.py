@@ -3,10 +3,10 @@ l = logging.getLogger('claripy.backends.backend')
 
 class Backend(object):
     def __init__(self):
-        self._claripy = None
         self._op_raw = { }
         self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
         self._op_expr = { }
+        self._cache_objects = True
 
     def set_claripy_object(self, claripy):
         self._claripy = claripy
@@ -60,7 +60,7 @@ class Backend(object):
             if not resolved:
                 r = expr._model.resolve(self, save=save, result=result)
 
-        if save:
+        if save and self._cache_objects:
             expr.objects[self] = r
         return r
 
@@ -126,6 +126,7 @@ class Backend(object):
 
     def simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
+>>>>>>> 13a0ce4374b28895c19621de1f8d22d95769202f
 
 from ..expression import E, A
 from ..operations import opposites

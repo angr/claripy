@@ -102,7 +102,8 @@ class Solver(Storable):
 
 		fc = [ ]
 		for e in ec if type(ec) in (list, tuple, set) else (ec,):
-			e_simp = self._claripy.simplify(e)
+			#e_simp = self._claripy.simplify(e)
+			e_simp = e
 			if not e_simp.symbolic and self._claripy.model_backend.convert_expr(e_simp):
 				filter_true += 1
 				continue
@@ -183,7 +184,10 @@ class Solver(Storable):
 		return self.solve(extra_constraints=extra_constraints).sat
 
 	def any(self, expr, extra_constraints=()):
-		return self.eval(expr, 1, extra_constraints)[0]
+		v = self.eval(expr, 1, extra_constraints)
+		if len(v) == 0:
+			raise UnsatError("couldn't concretize any values")
+		return v[0]
 
 	def eval(self, e, n, extra_constraints=()):
 		global cached_evals
