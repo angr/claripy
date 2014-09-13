@@ -39,7 +39,7 @@ from .. import bv
 class BackendZ3(SolverBackend):
 	_split_on = { 'And', 'Or' }
 
-	def __init__(self, claripy):
+	def __init__(self):
 		SolverBackend.__init__(self)
 
 		# and the operations
