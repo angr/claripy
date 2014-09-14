@@ -229,7 +229,7 @@ def raw_solver(solver_type):
 	if type(s) is claripy.solvers.BranchingSolver:
 		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 3 }) # constraints from min or max
 	elif type(s) is claripy.solvers.CompositeSolver:
-		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 2 }) # constraints from min or max
+		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 3 }) # constraints from min or max
 
 	# test that False makes it unsat
 	s = solver_type(clrp)
