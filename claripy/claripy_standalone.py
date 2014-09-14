@@ -17,8 +17,8 @@ class ClaripyStandalone(Claripy):
 
         solver_backends = [ b_z3 ] if solver_backends is None else solver_backends
         model_backend = b_concrete if model_backend is None else model_backend
-        Claripy.__init__(self, model_backend, solver_backends, parallel=parallel)
-        self.dl = DataLayer()
+        datalayer = DataLayer(self)
+        Claripy.__init__(self, model_backend, solver_backends, datalayer, parallel=parallel)
 
     def solver(self):
         return BranchingSolver(self)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import collections
 import logging
 l = logging.getLogger("claripy.expression")
 
@@ -13,6 +14,7 @@ class A(object):
     def __init__(self, op, args):
         self._op = op
         self._args = args
+        self._hash = None
 
     def resolve(self, b, save=None, result=None):
         args = [ ]
@@ -32,11 +34,16 @@ class A(object):
         else:
             return "%s%s" % (self._op, self._args)
 
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash((self._op,) + tuple(self._args))
+        return self._hash
+
 class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified' ]
+    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified', '__weakref__' ]
 
     def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
         Storable.__init__(self, claripy, uuid=uuid)
@@ -61,8 +68,35 @@ class E(Storable):
         else:
             raise ValueError("invalid arguments passed to E()")
 
+    #
+    # Some debug stuff:
+    #
+
+    @staticmethod
+    def _part_count(a):
+        return sum([ E._part_count(aa) for aa in a._args ]) if isinstance(a, A) else E._part_count(a._model) if isinstance(a, E) else 1
+
+    @staticmethod
+    def _depth(a):
+        return max([ E._depth(aa)+1 for aa in a._args ]) if isinstance(a, A) else E._depth(a._model) if isinstance(a, E) else 1
+
+    @staticmethod
+    def _hash_counts(a, d=None):
+        if d is None: d = collections.defaultdict(int)
+        d[(a.__class__, hash(a))] += 1
+
+        if isinstance(a, A):
+            for aa in a._args:
+                E._hash_counts(aa, d=d)
+        elif isinstance(a, E):
+            E._hash_counts(a._model, d=d)
+        return d
+
+    def __hash__(self):
+        return hash(self._model)
+
     def _load(self):
-        e = self._claripy.dl.load_expression(self._uuid)
+        e = self._claripy.datalayer.load_expression(self._uuid)
         self.variables = e.variables
         self.symbolic = e.symbolic
 
@@ -98,7 +132,7 @@ class E(Storable):
     #
 
     def store(self):
-        self._claripy.dl.store_expression(self)
+        self._claripy.datalayer.store_expression(self)
 
     def __getstate__(self):
         if self._uuid is not None:

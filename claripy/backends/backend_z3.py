@@ -112,7 +112,7 @@ class BackendZ3(SolverBackend):
 
 		for a,v,s,b in children:
 			if op_name in split_on:
-				args.append(E(self._claripy, model=a, variables=v, symbolic=s, length=b, simplified=True))
+				args.append(self._claripy.datalayer.make_expression(a, variables=v, symbolic=s, length=b, simplified=True))
 			else:
 				args.append(a)
 			symbolic |= s
@@ -120,7 +120,7 @@ class BackendZ3(SolverBackend):
 
 		# fix up many-arg __add__
 		if op_name == '__add__' and len(args) > 2:
-			many_args = args
+			many_args = args #pylint:disable=unused-variable
 			last = args[-1]
 			rest = args[:-1]
 
@@ -148,7 +148,9 @@ class BackendZ3(SolverBackend):
 			s.add(*extra_constraints)
 
 		l.debug("Doing a check!")
+		#print "CHECKING"
 		satness = s.check() == z3.sat
+		#print "CHECKED"
 
 		if extra_constraints is not None:
 			s.pop()
@@ -319,6 +321,8 @@ class BackendZ3(SolverBackend):
 
 		l.debug("SIMPLIFYING EXPRESSION")
 
+		#print "SIMPLIFYING"
+
 		expr_raw = self.convert_expr(expr)
 		symbolic = expr.symbolic
 		variables = expr.variables
@@ -354,9 +358,10 @@ class BackendZ3(SolverBackend):
 		except BackendError:
 			o = self.abstract(s)
 
+		#print "SIMPLIFIED"
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return E(self._claripy, model=o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length, simplified=True)
+		return self._claripy.datalayer.make_expression(o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length, simplified=True)
 
 #
 # this is for the actual->abstract conversion above
@@ -546,7 +551,7 @@ op_map = {
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..expression import E, A
+from ..expression import A
 from ..operations import backend_operations
 from ..result import Result, UnsatError
 from ..bv import BVV

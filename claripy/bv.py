@@ -31,6 +31,9 @@ class BVV(object):
         self.mod = 2**bits
         self.value = value
 
+    def __hash__(self):
+        return hash((self.value, self.bits))
+
     def __getstate__(self):
         return (self.bits, self.value)
 
