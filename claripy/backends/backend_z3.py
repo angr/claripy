@@ -118,6 +118,17 @@ class BackendZ3(SolverBackend):
 			symbolic |= s
 			variables |= v
 
+		# fix up many-arg __add__
+		if op_name == '__add__' and len(args) > 2:
+			many_args = args
+			last = args[-1]
+			rest = args[:-1]
+
+			a = A(op_name, rest[:2])
+			for b in rest[2:]:
+				a = A(op_name, [a,b])
+			args = [ a, last ]
+
 		return A(op_name, args), variables, symbolic, z3.Z3_get_bv_sort_size(ctx, z3_sort) if z3.Z3_get_sort_kind(ctx, z3_sort) == z3.Z3_BV_SORT else -1
 
 	def solver(self, timeout=None):
