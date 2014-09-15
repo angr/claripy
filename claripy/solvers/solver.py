@@ -413,6 +413,6 @@ class Solver(Storable):
 			results.append(s)
 		return results
 
-from ..result import UnsatError, Result
+from ..result import Result
 from ..expression import E
-from ..errors import BackendError, ClaripySolverError
+from ..errors import UnsatError, BackendError, ClaripySolverError

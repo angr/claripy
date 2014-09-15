@@ -243,4 +243,5 @@ class CompositeSolver(Solver):
 	#def combine(self, others):
 	#	raise NotImplementedError()
 
-from ..result import Result, UnsatError
+from ..result import Result
+from ..errors import UnsatError

@@ -571,6 +571,6 @@ op_map = {
 
 from ..expression import A
 from ..operations import backend_operations
-from ..result import Result, UnsatError
+from ..result import Result
 from ..bv import BVV
-from ..errors import ClaripyError, BackendError
+from ..errors import ClaripyError, BackendError, UnsatError
