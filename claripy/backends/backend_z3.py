@@ -4,6 +4,8 @@ l = logging.getLogger("claripy.backends.backend_z3")
 solve_count = 0
 cache_count = 0
 
+import weakref
+
 # import and set up Z3
 import os
 import z3
@@ -41,6 +43,10 @@ class BackendZ3(SolverBackend):
 
 	def __init__(self, claripy):
 		SolverBackend.__init__(self, claripy)
+		self._ast_cache = weakref.WeakValueDictionary()
+		self._var_cache = weakref.WeakKeyDictionary()
+		self._sym_cache = weakref.WeakKeyDictionary()
+		self._len_cache = weakref.WeakKeyDictionary()
 
 		# and the operations
 		for o in backend_operations:
@@ -71,6 +77,12 @@ class BackendZ3(SolverBackend):
 		return self._abstract(z.ctx.ctx, z.ast, split_on=split_on)[0]
 
 	def _abstract(self, ctx, ast, split_on=None):
+		h = z3.Z3_get_ast_hash(ctx, ast)
+		if h in self._ast_cache:
+			print "ABSTRACTION CACHED"
+			a = self._ast_cache[h]
+			return a, self._var_cache[a], self._sym_cache[a], self._len_cache[a]
+
 		decl = z3.Z3_get_app_decl(ctx, ast)
 		decl_num = z3.Z3_get_decl_kind(ctx, decl)
 		z3_sort = z3.Z3_get_sort(ctx, ast)
@@ -129,7 +141,13 @@ class BackendZ3(SolverBackend):
 				a = A(op_name, [a,b])
 			args = [ a, last ]
 
-		return A(op_name, args), variables, symbolic, z3.Z3_get_bv_sort_size(ctx, z3_sort) if z3.Z3_get_sort_kind(ctx, z3_sort) == z3.Z3_BV_SORT else -1
+		a = A(op_name, args)
+		length = z3.Z3_get_bv_sort_size(ctx, z3_sort) if z3.Z3_get_sort_kind(ctx, z3_sort) == z3.Z3_BV_SORT else -1
+		self._ast_cache[h] = a
+		self._var_cache[a] = variables
+		self._sym_cache[a] = symbolic
+		self._len_cache[a] = length
+		return a, variables, symbolic, length
 
 	def solver(self, timeout=None):
 		s = z3.Solver()
