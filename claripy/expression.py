@@ -19,6 +19,9 @@ class A(object):
         self._hash = None
 
     def resolve(self, b, save=None, result=None):
+        if result is not None and self in result.resolve_cache[b]:
+            return result.resolve_cache[b][self]
+
         args = [ ]
         for a in self._args:
             if isinstance(a, E):
@@ -27,8 +30,12 @@ class A(object):
                 args.append(a.resolve(b, save=save, result=result))
             else:
                 args.append(b.convert(a, result=result))
+
         l.debug("trying evaluation with %s", b)
-        return b.call(self._op, args, result=result)
+        r = b.call(self._op, args, result=result)
+        if result is not None:
+            result.resolve_cache[b][self] = r
+        return r
 
     def __repr__(self):
         if '__' in self._op:
