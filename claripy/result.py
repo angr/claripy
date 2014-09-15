@@ -23,4 +23,5 @@ class Result(object):
 
     def __setstate__(self, state):
         ( self.sat, self.model, self.eval_cache, self.min_cache, self.max_cache ) = state
+        self.resolve_cache = collections.defaultdict(weakref.WeakKeyDictionary)
         self.backend_model = None
