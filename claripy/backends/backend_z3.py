@@ -79,7 +79,7 @@ class BackendZ3(SolverBackend):
 	def _abstract(self, ctx, ast, split_on=None):
 		h = z3.Z3_get_ast_hash(ctx, ast)
 		if h in self._ast_cache:
-			print "ABSTRACTION CACHED"
+			#print "ABSTRACTION CACHED"
 			a = self._ast_cache[h]
 			return a, self._var_cache[a], self._sym_cache[a], self._len_cache[a]
 
