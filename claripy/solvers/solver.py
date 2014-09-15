@@ -202,9 +202,9 @@ class Solver(Storable):
 		except BackendError:
 			#print "FAILED"
 			pass
-		finally:
-			#print "DONE"
-			pass
+		#finally:
+		#	print "DONE"
+		#	pass
 
 		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
 
