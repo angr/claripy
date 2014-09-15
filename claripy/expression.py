@@ -11,6 +11,8 @@ class A(object):
     An A(ST) tracks a tree of operations on arguments.
     '''
 
+    __slots__ = [ '_op', '_args', '_hash', '__weakref__' ]
+
     def __init__(self, op, args):
         self._op = op
         self._args = args
@@ -38,6 +40,12 @@ class A(object):
         if self._hash is None:
             self._hash = hash((self._op,) + tuple(self._args))
         return self._hash
+
+    def __getstate__(self):
+        return self._op, self._args
+    def __setstate__(self, state):
+        self._hash = None
+        self._op, self._args = state
 
 class E(Storable):
     '''
