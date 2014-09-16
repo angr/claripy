@@ -9,9 +9,9 @@ def normalize_types(f):
         Convert any object to an object that we can process.
         '''
         if type(o) in (int, long):
-            o = StridedInterval(bits=StridedInterval.min_bits(o), stride=0, lower_bound=o, upper_bound=o)
+            o = StridedInterval(bits=StridedInterval.min_bits(o), stride=1, lower_bound=o, upper_bound=o)
         if type(self) in (int, long):
-            self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
+            self = StridedInterval(bits=StridedInterval.min_bits(self), stride=1, lower_bound=self, upper_bound=self)
         return f(self, o)
 
     return normalizer
@@ -66,6 +66,24 @@ class StridedInterval(object):
     def __sub__(self, o):
         return self.add(o.neg(), allow_overflow=True)
 
+    def __neg__(self):
+        return self.bitwise_not()
+
+    def __invert__(self):
+        return self.bitwise_not()
+
+    @normalize_types
+    def __or__(self, other):
+        return self.bitwise_or(other)
+
+    @normalize_types
+    def __and__(self, other):
+        return self.bitwise_and(other)
+
+    @normalize_types
+    def __xor__(self, other):
+        return self.bitwise_xor(other)
+
     @property
     def empty(self):
         return (self._stride == None and self._lower_bound == self.NEG_INF and self._upper_bound == self.INF)
@@ -77,7 +95,8 @@ class StridedInterval(object):
         else:
             return ((self._upper_bound - self._lower_bound) / self._stride)
 
-    def highbit(self, k):
+    @staticmethod
+    def highbit(k):
         return (1 << (k - 1))
 
     def extend(self, i, k):
@@ -130,16 +149,18 @@ class StridedInterval(object):
 
     @staticmethod
     def min_bits(val):
-        assert val >= 0
         if val == 0:
             return 1
-        return int(math.log(val, 2) + 1)
+        elif val < 0:
+            return int(math.log(-val, 2) + 1) + 1
+        else:
+            return int(math.log(val, 2) + 1)
 
     def max_int(self, k):
-        return self.highbit(k) - 1
+        return StridedInterval.highbit(k) - 1
 
     def min_int(self, k):
-        return -self.highbit(k)
+        return -StridedInterval.highbit(k)
 
     def upper(self, bits, i, stride):
         '''
@@ -185,6 +206,13 @@ class StridedInterval(object):
         # TODO: Finish it
         return False
 
+    def is_integer(self):
+        '''
+        If this is an integer, i.e. self.lower_bound == self.upper_bound
+        :return: True if this is an integer, False otherwise
+        '''
+        return (self.lower_bound == self.upper_bound)
+
     def add(self, b, allow_overflow=True):
         '''
         Operation add
@@ -198,7 +226,15 @@ class StridedInterval(object):
         lb_underflow_ = (lb_ < self.min_int(self.bits))
         ub_overflow_ = (ub_ > self.max_int(self.bits))
         overflow = lb_underflow_ or ub_overflow_
-        stride = fractions.gcd(self.stride, b.stride)
+
+        # Special cases for integers
+        if self.is_integer():
+            stride = b.stride
+        elif b.is_integer():
+            stride = self.stride
+        else:
+            # Take the GCD of two operands' strides
+            stride = fractions.gcd(self.stride, b.stride)
 
         if overflow:
             return self.top(self.bits)
@@ -211,12 +247,141 @@ class StridedInterval(object):
     def neg(self):
         '''
         Operation neg
-        :return: ~self
+        :return: -self
         '''
         # TODO: Finish it
         if not self.is_top():
             new_lb = -self.lower_bound if self.lower_bound != self.NEG_INF else self.INF
             new_ub = -self.upper_bound if self.upper_bound != self.INF else self.NEG_INF
-            return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_lb, upper_bound=new_ub)
+            return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_ub, upper_bound=new_lb)
         else:
             return StridedInterval.top()
+
+    def bitwise_not(self):
+        '''
+        Operation not
+        :return: ~self
+        '''
+        if not self.is_top():
+            new_lb = ~self.lower_bound if self.lower_bound != self.NEG_INF else self.INF
+            new_ub = ~self.upper_bound if self.upper_bound != self.INF else self.NEG_INF
+            return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_ub, upper_bound=new_lb)
+        else:
+            return StridedInterval.top()
+
+    @staticmethod
+    def min_or(k, a, b, c, d):
+        m = StridedInterval.highbit(k)
+        while True:
+            if m == 0:
+                return a | c
+            elif (~a & c & m) != 0:
+                tmp = (a | m) & ~m
+                if tmp <= b:
+                    return tmp | c
+            elif (a & ~c & m) != 0:
+                tmp = (c + m) & ~m
+                if tmp <= d:
+                    return tmp | a
+            m = m >> 1
+
+    @staticmethod
+    def max_or(k, a, b, c, d):
+        m = StridedInterval.highbit(k)
+        while True:
+            if m == 0:
+                return b | d
+            elif (b & d & m) != 0:
+                tmp1 = (b - m) | (m - 1)
+                tmp2 = (d - m) | (m - 1)
+                if tmp1 >= a:
+                    return (tmp1 | d)
+                elif tmp2 >= c:
+                    return (tmp2 | b)
+            m = m >> 1
+
+    def bitwise_or(self, b):
+        '''
+        Operation or
+        :param b: The other operand
+        :return: self | b
+        '''
+        def ntz(x):
+            '''
+            I have no idea what this function is doing.
+            :param x:
+            :return:
+            '''
+            y = (-x) & (x - 1)
+
+            def bits(n, y):
+                if y == 0:
+                    return n
+                else:
+                    return bits(n + 1, y >> 1)
+
+            return bits(0, y)
+
+        assert self.bits == b.bits
+
+        t = min(ntz(self.stride), ntz(b.stride))
+        stride_ = 1 << t
+        lowbits = (self.lower_bound | b.lower_bound) & (stride_ - 1)
+
+        # TODO: Make this function looks better
+        r_1 = self.lower_bound < 0
+        r_2 = self.upper_bound < 0
+        r_3 = b.lower_bound < 0
+        r_4 = b.upper_bound < 0
+
+        lb_ = 0
+        ub_ = 0
+        if (r_1, r_2, r_3, r_4) == (True, True, True, True):
+            lb_ = StridedInterval.min_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+            ub_ = StridedInterval.max_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+        elif (r_1, r_2, r_3, r_4) == (True, True, False, False):
+            lb_ = StridedInterval.min_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+            ub_ = StridedInterval.max_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+        elif (r_1, r_2, r_3, r_4) == (False, False, True, True):
+            lb_ = StridedInterval.min_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+            ub_ = StridedInterval.max_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+        elif (r_1, r_2, r_3, r_4) == (False, False, False, False):
+            lb_ = StridedInterval.min_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+            ub_ = StridedInterval.max_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+        elif (r_1, r_2, r_3, r_4) == (True, True, True, False):
+            lb_ = self.lower_bound
+            ub_ = 1
+        elif (r_1, r_2, r_3, r_4) == (True, False, True, True):
+            lb_ = b.lower_bound
+            ub_ = 1
+        elif (r_1, r_2, r_3, r_4) == (True, False, True, False):
+            lb_ = min(self.lower_bound, b.lower_bound)
+            ub_ = StridedInterval.max_or(self.bits, 0, self.upper_bound, 0, b.upper_bound)
+        elif (r_1, r_2, r_3, r_4) == (True, False, False, False):
+            lb_ = StridedInterval.min_or(self.bits, self.lower_bound, 1, b.lower_bound, b.upper_bound)
+            ub_ = StridedInterval.max_or(self.bits, 0, self.upper_bound, b.lower_bound, b.upper_bound)
+        elif (r_1, r_2, r_3, r_4) == (False, False, True, False):
+            lb_ = StridedInterval.min_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, 1)
+            ub_ = StridedInterval.max_or(self.bits, self.lower_bound, self.upper_bound, b.lower_bound, b.upper_bound)
+        else:
+            raise ArithmeticError("Impossible")
+
+        highmask = ~(stride_ - 1)
+        return StridedInterval(bits=self.bits, stride=stride_, lower_bound=(lb_ & highmask) | lowbits,
+                               upper_bound=(ub_ & highmask) | lowbits)
+
+    def bitwise_and(self, b):
+        '''
+        Operation and
+        :param b: The other operand
+        :return:
+        '''
+        return self.bitwise_not().bitwise_or(b.bitwise_not()).bitwise_not()
+
+    def bitwise_xor(self, b):
+        '''
+        Operation xor
+        :param b: The other operand
+        :return:
+        '''
+        return self.bitwise_not().bitwise_or(b).bitwise_not().bitwise_or(b.bitwise_not().bitwise_or(self).bitwise_not())
