@@ -6,9 +6,10 @@ import logging
 l = logging.getLogger('claripy.claripy')
 
 class Claripy(object):
-    def __init__(self, model_backend, solver_backends, parallel=None):
+    def __init__(self, model_backend, solver_backends, datalayer, parallel=None):
         self.solver_backends = solver_backends
         self.model_backend = model_backend
+        self.datalayer = datalayer
         self.unique_names = True
         self.parallel = parallel if parallel else False
 
@@ -30,7 +31,7 @@ class Claripy(object):
 
     def wrap(self, o):
         if type(o) == BVV:
-            return E(self, model=o, variables=set(), symbolic=False, length=o.bits)
+            return self.datalayer.make_expression(o, length=o.bits)
         else:
             return o
 
@@ -51,7 +52,7 @@ class Claripy(object):
         if length is None:
             length = op_length(name, args)
 
-        return E(self, model=r, variables=variables, symbolic=symbolic, length=length, simplified=simplified)
+        return self.datalayer.make_expression(r, variables=variables, symbolic=symbolic, length=length, simplified=simplified)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
@@ -60,7 +61,7 @@ class Claripy(object):
         return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size, raw=True, simplified=True)
 
     def BitVecVal(self, *args):
-        return E(self, model=BVV(*args), variables=set(), symbolic=False, length=args[-1], simplified=True)
+        return self.datalayer.make_expression(BVV(*args), variables=set(), symbolic=False, length=args[-1], simplified=True)
         #return self._do_op('BitVecVal', args, length=args[-1], variables=set(), symbolic=False, raw=True)
 
     # Bitwise ops
@@ -76,7 +77,7 @@ class Claripy(object):
     # Boolean ops
     #
     def BoolVal(self, *args):
-        return E(self, model=args[0], variables=set(), symbolic=False, length=args[-1], simplified=True)
+        return self.datalayer.make_expression(args[0], variables=set(), symbolic=False, length=-1, simplified=True)
         #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
 
     def StridedInterval(self, **kwargs):

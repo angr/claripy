@@ -4,6 +4,8 @@ l = logging.getLogger("claripy.backends.backend_z3")
 solve_count = 0
 cache_count = 0
 
+import weakref
+
 # import and set up Z3
 import os
 import z3
@@ -41,6 +43,10 @@ class BackendZ3(SolverBackend):
 
 	def __init__(self):
 		SolverBackend.__init__(self)
+		self._ast_cache = weakref.WeakValueDictionary()
+		self._var_cache = weakref.WeakKeyDictionary()
+		self._sym_cache = weakref.WeakKeyDictionary()
+		self._len_cache = weakref.WeakKeyDictionary()
 
 		# and the operations
 		for o in backend_operations:
@@ -67,100 +73,81 @@ class BackendZ3(SolverBackend):
 			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
 
 	def abstract(self, z, split_on=None):
-		return self._abstract(z, split_on=split_on)[0]
+		#return self._abstract(z, split_on=split_on)[0]
+		return self._abstract(z.ctx.ctx, z.ast, split_on=split_on)[0]
 
-	def _abstract(self, z, split_on=None):
-		z3_decl = z.decl()
-		decl = str(z3_decl)
-		name = z3_decl.name()
+	def _abstract(self, ctx, ast, split_on=None):
+		h = z3.Z3_get_ast_hash(ctx, ast)
+		if h in self._ast_cache:
+			#print "ABSTRACTION CACHED"
+			a = self._ast_cache[h]
+			return a, self._var_cache[a], self._sym_cache[a], self._len_cache[a]
+
+		decl = z3.Z3_get_app_decl(ctx, ast)
+		decl_num = z3.Z3_get_decl_kind(ctx, decl)
+		z3_sort = z3.Z3_get_sort(ctx, ast)
+
+		if decl_num not in z3_op_nums:
+			raise ClaripyError("unknown decl kind %d" % decl_num)
+		if z3_op_nums[decl_num] not in op_map:
+			raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+		op_name = op_map[z3_op_nums[decl_num]]
 
 		split_on = self._split_on if split_on is None else split_on
-		new_split_on = split_on if name in name_map and name_map[name] in split_on else set()
-		children = [ self._abstract(c, new_split_on) for c in z.children() ]
+		new_split_on = split_on if op_name in split_on else set()
+		children = [ self._abstract(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(z3.Z3_get_app_num_args(ctx, ast)) ]
 
 		symbolic = False
 		variables = set()
 
-		if len(children) == 0:
-			if z.__class__ == z3.BitVecRef:
-				op = "BitVec"
-				args = (name, z.size())
-				symbolic = True
-				variables = { name }
-			elif z.__class__ == z3.BitVecNumRef:
-				op = "BitVecVal"
-				args = (z.as_long(), z.size())
-			elif name == 'true':
-				op = "BoolVal"
-				args = (True,)
-			elif name == 'false':
-				op = "BoolVal"
-				args = (False,)
-			else:
-				raise TypeError("Unable to wrap type %s", z.__class__.__name__)
+		if op_name == 'True':
+			return True, variables, symbolic, -1
+		elif op_name == 'False':
+			return False, variables, symbolic, -1
+		elif op_name == 'BitVecVal':
+			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+			return BVV(bv_num, bv_size), variables, symbolic, bv_size
+		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
+			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
+			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+			return A("BitVec", [bv_name, bv_size]), { bv_name }, True, bv_size
+		elif op_name == 'Extract':
+			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
+			lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
+			args = [ hi, lo ]
+		elif op_name in ('SignExt', 'ZeroExt'):
+			num = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
+			args = [ num ]
 		else:
-			#
-			# The following determines the right operation to use.
-			#
+			args = [ ]
 
-			if decl not in decl_map:
-				l.error("%s is not in decl_map. Report this to Yan.", decl)
-				#import ipdb; ipdb.set_trace()
-				decl_func = None
+		for a,v,s,b in children:
+			if op_name in split_on:
+				args.append(self._claripy.datalayer.make_expression(a, variables=v, symbolic=s, length=b, simplified=True))
 			else:
-				decl_func = decl_map[decl]
-				if type(decl_func) in (list, tuple):
-					if len(children) == 1:
-						decl_func = decl[0]
-					else:
-						decl_func = decl[1]
+				args.append(a)
+			symbolic |= s
+			variables |= v
 
-			if name not in name_map:
-				l.error("%s is not in name_map. Report this to Yan.", name)
-				name_func = None
-				#import ipdb; ipdb.set_trace()
-			else:
-				name_func = name_map[name]
+		# fix up many-arg __add__
+		if op_name == '__add__' and len(args) > 2:
+			many_args = args #pylint:disable=unused-variable
+			last = args[-1]
+			rest = args[:-1]
 
-			if decl_func is None and name_func is None:
-				l.error("Z3 abstraction unable to identify base function of expression %s", z)
-				raise BackendError("unable to identify function in expression")
+			a = A(op_name, rest[:2])
+			for b in rest[2:]:
+				a = A(op_name, [a,b])
+			args = [ a, last ]
 
-			op = decl_func if decl_func is not None else name_func
-			if name_func != decl_func:
-				l.warning("Z3 bug: got a different function via name() vs decl() (%s vs %s). Using %s", name_func, decl_func, op)
-
-			# now we have the operation
-
-			raw_args = list(children)
-			raw_args = [ ]
-			for a,v,s,b in children:
-				if op in split_on:
-					raw_args.append(E(self._claripy, model=a, variables=v, symbolic=s, length=b, simplified=True))
-				else:
-					raw_args.append(a)
-				symbolic |= s
-				variables |= v
-
-			if op == 'Extract':
-				hi = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 0)
-				lo = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 1)
-				args = [ hi, lo ] + raw_args
-			elif op in ('SignExt', 'ZeroExt'):
-				num = z3.Z3_get_decl_int_parameter(z.ctx.ref(), z3_decl.ast, 0)
-				args = [ num ] + raw_args
-			elif op in ( '__add__', ) and len(raw_args) > 2:
-				last = raw_args[-1]
-				rest = raw_args[:-1]
-
-				a = A(op, rest[:2])
-				for b in rest[2:]:
-					a = A(op, [a,b])
-				args = [ a, last ]
-			else:
-				args = raw_args
-
-		return A(op, args), variables, symbolic, z.size() if hasattr(z, 'size') else -1
+		a = A(op_name, args)
+		length = z3.Z3_get_bv_sort_size(ctx, z3_sort) if z3.Z3_get_sort_kind(ctx, z3_sort) == z3.Z3_BV_SORT else -1
+		self._ast_cache[h] = a
+		self._var_cache[a] = variables
+		self._sym_cache[a] = symbolic
+		self._len_cache[a] = length
+		return a, variables, symbolic, length
 
 	def solver(self, timeout=None):
 		s = z3.Solver()
@@ -179,7 +166,9 @@ class BackendZ3(SolverBackend):
 			s.add(*extra_constraints)
 
 		l.debug("Doing a check!")
+		#print "CHECKING"
 		satness = s.check() == z3.sat
+		#print "CHECKED"
 
 		if extra_constraints is not None:
 			s.pop()
@@ -324,7 +313,7 @@ class BackendZ3(SolverBackend):
 				hi = middle
 				s.pop()
 				numpop -= 1
-			#l.debug("    now: %d %d %d %d", hi, middle, lo, hi-lo)
+			#l.debug("	now: %d %d %d %d", hi, middle, lo, hi-lo)
 
 		for _ in range(numpop):
 			s.pop()
@@ -349,6 +338,8 @@ class BackendZ3(SolverBackend):
 			return expr
 
 		l.debug("SIMPLIFYING EXPRESSION")
+
+		#print "SIMPLIFYING"
 
 		expr_raw = self.convert_expr(expr)
 		symbolic = expr.symbolic
@@ -385,118 +376,201 @@ class BackendZ3(SolverBackend):
 		except BackendError:
 			o = self.abstract(s)
 
+		#print "SIMPLIFIED"
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return E(self._claripy, model=o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length, simplified=True)
+		return self._claripy.datalayer.make_expression(o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length, simplified=True)
 
 #
 # this is for the actual->abstract conversion above
 #
 
-import re
-non_decimal = re.compile(r'[^\d.]+')
+# these are Z3 operation names for abstraction
+z3_op_names = [ _ for _ in dir(z3) if _.startswith('Z3_OP') ]
+z3_op_nums = { getattr(z3, _): _ for _ in z3_op_names }
+op_map = {
+	# Boolean
+	'Z3_OP_TRUE': 'True',
+	'Z3_OP_FALSE': 'False',
+	'Z3_OP_EQ': '__eq__',
+	'Z3_OP_DISTINCT': '__ne__',
+	'Z3_OP_ITE': 'If',
+	'Z3_OP_AND': 'And',
+	'Z3_OP_OR': 'Or',
+	'Z3_OP_IFF': '__eq__',
+	'Z3_OP_XOR': 'Xor',
+	'Z3_OP_NOT': 'Not',
+	'Z3_OP_IMPLIES': 'Implies',
+	#'Z3_OP_OEQ': None,
 
-# TODO: URem, SRem
+	# Arithmetic
+	#'Z3_OP_ANUM': None,
+	#'Z3_OP_AGNUM': None,
+	'Z3_OP_LE': '__le__',
+	'Z3_OP_GE': '__ge__',
+	'Z3_OP_LT': '__lt__',
+	'Z3_OP_GT': '__gt__',
+	'Z3_OP_ADD': '__add__',
+	'Z3_OP_SUB': '__sub__',
+	'Z3_OP_UMINUS': '__neg__',
+	'Z3_OP_MUL': '__mul__',
+	'Z3_OP_DIV': '__div__',
+	'Z3_OP_IDIV': '__div__',
+	'Z3_OP_REM': '__mod__', # TODO: is this correct?
+	'Z3_OP_MOD': '__mod__',
+	#'Z3_OP_TO_REAL': None,
+	#'Z3_OP_TO_INT': None,
+	#'Z3_OP_IS_INT': None,
+	'Z3_OP_POWER': '__pow__',
 
-decl_map = {
-	'+': '__add__',
-	'-': [ '__neg__', '__sub__' ],
-	'*': '__mul__',
-	'/': '__div__',
-	'%': '__mod__',
-	#'URem': 'URem',
-	#'SRem': 'SRem',
+	# Arrays & Sets
+	#'Z3_OP_STORE': None,
+	#'Z3_OP_SELECT': None,
+	#'Z3_OP_CONST_ARRAY': None,
+	#'Z3_OP_ARRAY_MAP': None,
+	#'Z3_OP_ARRAY_DEFAULT': None,
+	#'Z3_OP_SET_UNION': None,
+	#'Z3_OP_SET_INTERSECT': None,
+	#'Z3_OP_SET_DIFFERENCE': None,
+	#'Z3_OP_SET_COMPLEMENT': None,
+	#'Z3_OP_SET_SUBSET': None,
+	#'Z3_OP_AS_ARRAY': None,
 
-	'^': '__xor__',
-	'&': '__and__',
-	'|': '__or__',
-	'~': '__invert__',
+	# Bit-vectors
+	'Z3_OP_BNUM': 'BitVecVal',
+	#'Z3_OP_BIT1': None, # MAYBE TODO
+	#'Z3_OP_BIT0': None, # MAYBE TODO
+	'Z3_OP_BNEG': '__neg__',
+	'Z3_OP_BADD': '__add__',
+	'Z3_OP_BSUB': '__sub__',
+	'Z3_OP_BMUL': '__mul__',
 
-	'<<': '__lshift__',
-	'>>': '__rshift__',
-	'LShR': 'LShR',
-	'RotateLeft': 'RotateLeft',
-	'RotateRight': 'RotateRight',
-	'SignExt': 'SignExt',
-	'ZeroExt': 'ZeroExt',
+	'Z3_OP_BSDIV': '__div__',
+	'Z3_OP_BUDIV': '__div__', # TODO: is this correct?
+	'Z3_OP_BSREM': '__mod__', # TODO: is this correct?
+	'Z3_OP_BUREM': '__mod__', # TODO: is this correct?
+	'Z3_OP_BSMOD': '__mod__', # TODO: is this correct?
 
-	'Distinct': '__ne__',
-	'==': '__eq__',
-	'<': '__lt__',
-	'<=': '__le__',
-	'>': '__gt__',
-	'>=': '__ge__',
-	'UGE': 'UGE',
-	'ULE': 'ULE',
-	'UGT': 'UGT',
-	'ULT': 'ULT',
+	# special functions to record the division by 0 cases
+	# these are internal functions
+	#'Z3_OP_BSDIV0': None,
+	#'Z3_OP_BUDIV0': None,
+	#'Z3_OP_BSREM0': None,
+	#'Z3_OP_BUREM0': None,
+	#'Z3_OP_BSMOD0': None,
 
-	'And': 'And',
-	'Or': 'Or',
-	'Not': 'Not',
+	'Z3_OP_ULEQ': 'ULE',
+	'Z3_OP_SLEQ': '__le__',
+	'Z3_OP_UGEQ': 'UGE',
+	'Z3_OP_SGEQ': '__ge__',
+	'Z3_OP_ULT': 'ULT',
+	'Z3_OP_SLT': '__lt__',
+	'Z3_OP_UGT': 'UGT',
+	'Z3_OP_SGT': '__gt__',
 
-	'Concat': 'Concat',
-	'Extract': 'Extract',
+	'Z3_OP_BAND': '__and__',
+	'Z3_OP_BOR': '__or__',
+	'Z3_OP_BNOT': '__invert__',
+	'Z3_OP_BXOR': '__xor__',
+	#'Z3_OP_BNAND': None,
+	#'Z3_OP_BNOR': None,
+	#'Z3_OP_BXNOR': None,
 
-	'If': 'If',
+	'Z3_OP_CONCAT': 'Concat',
+	'Z3_OP_SIGN_EXT': 'SignExt',
+	'Z3_OP_ZERO_EXT': 'ZeroExt',
+	'Z3_OP_EXTRACT': 'Extract',
+	'Z3_OP_REPEAT': 'RepeatBitVec',
 
-	# TODO: make sure these are correct
-	'bvsdiv_i': '__div__',
-	'bvsmod_i': '__mod__'
+	#'Z3_OP_BREDOR': None,
+	#'Z3_OP_BREDAND': None,
+	#'Z3_OP_BCOMP': None,
+
+	'Z3_OP_BSHL': '__lshift__',
+	'Z3_OP_BLSHR': 'LShR',
+	'Z3_OP_BASHR': '__rshift__',
+	#'Z3_OP_ROTATE_LEFT': None,
+	#'Z3_OP_ROTATE_RIGHT': None,
+	'Z3_OP_EXT_ROTATE_LEFT': 'RotateLeft',
+	'Z3_OP_EXT_ROTATE_RIGHT': 'RotateRight',
+
+	#'Z3_OP_INT2BV': None,
+	#'Z3_OP_BV2INT': None,
+	#'Z3_OP_CARRY': None,
+	#'Z3_OP_XOR3': None,
+
+	# Proofs
+	#'Z3_OP_PR_UNDEF': None,
+	#'Z3_OP_PR_TRUE': None,
+	#'Z3_OP_PR_ASSERTED': None,
+	#'Z3_OP_PR_GOAL': None,
+	#'Z3_OP_PR_MODUS_PONENS': None,
+	#'Z3_OP_PR_REFLEXIVITY': None,
+	#'Z3_OP_PR_SYMMETRY': None,
+	#'Z3_OP_PR_TRANSITIVITY': None,
+	#'Z3_OP_PR_TRANSITIVITY_STAR': None,
+	#'Z3_OP_PR_MONOTONICITY': None,
+	#'Z3_OP_PR_QUANT_INTRO': None,
+	#'Z3_OP_PR_DISTRIBUTIVITY': None,
+	#'Z3_OP_PR_AND_ELIM': None,
+	#'Z3_OP_PR_NOT_OR_ELIM': None,
+	#'Z3_OP_PR_REWRITE': None,
+	#'Z3_OP_PR_REWRITE_STAR': None,
+	#'Z3_OP_PR_PULL_QUANT': None,
+	#'Z3_OP_PR_PULL_QUANT_STAR': None,
+	#'Z3_OP_PR_PUSH_QUANT': None,
+	#'Z3_OP_PR_ELIM_UNUSED_VARS': None,
+	#'Z3_OP_PR_DER': None,
+	#'Z3_OP_PR_QUANT_INST': None,
+	#'Z3_OP_PR_HYPOTHESIS': None,
+	#'Z3_OP_PR_LEMMA': None,
+	#'Z3_OP_PR_UNIT_RESOLUTION': None,
+	#'Z3_OP_PR_IFF_TRUE': None,
+	#'Z3_OP_PR_IFF_FALSE': None,
+	#'Z3_OP_PR_COMMUTATIVITY': None,
+	#'Z3_OP_PR_DEF_AXIOM': None,
+	#'Z3_OP_PR_DEF_INTRO': None,
+	#'Z3_OP_PR_APPLY_DEF': None,
+	#'Z3_OP_PR_IFF_OEQ': None,
+	#'Z3_OP_PR_NNF_POS': None,
+	#'Z3_OP_PR_NNF_NEG': None,
+	#'Z3_OP_PR_NNF_STAR': None,
+	#'Z3_OP_PR_CNF_STAR': None,
+	#'Z3_OP_PR_SKOLEMIZE': None,
+	#'Z3_OP_PR_MODUS_PONENS_OEQ': None,
+	#'Z3_OP_PR_TH_LEMMA': None,
+	#'Z3_OP_PR_HYPER_RESOLVE': None,
+
+	# Sequences
+	#'Z3_OP_RA_STORE': None,
+	#'Z3_OP_RA_EMPTY': None,
+	#'Z3_OP_RA_IS_EMPTY': None,
+	#'Z3_OP_RA_JOIN': None,
+	#'Z3_OP_RA_UNION': None,
+	#'Z3_OP_RA_WIDEN': None,
+	#'Z3_OP_RA_PROJECT': None,
+	#'Z3_OP_RA_FILTER': None,
+	#'Z3_OP_RA_NEGATION_FILTER': None,
+	#'Z3_OP_RA_RENAME': None,
+	#'Z3_OP_RA_COMPLEMENT': None,
+	#'Z3_OP_RA_SELECT': None,
+	#'Z3_OP_RA_CLONE': None,
+	#'Z3_OP_FD_LT': None,
+
+	# Auxiliary
+	#'Z3_OP_LABEL': None,
+	#'Z3_OP_LABEL_LIT': None,
+
+	# Datatypes
+	#'Z3_OP_DT_CONSTRUCTOR': None,
+	#'Z3_OP_DT_RECOGNISER': None,
+	#'Z3_OP_DT_ACCESSOR': None,
+
+	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-
-name_map = {
-	'bvadd': '__add__',
-	'bvsub': '__sub__',
-	'bvneg': '__neg__',
-	'bvmul': '__mul__',
-	'bvsdiv': '__div__',
-	'bvsmod': '__mod__',
-	#'bvsrem': 'SRem',
-	#'bvurem': 'URem',
-
-	'bvxor': '__xor__',
-	'bvand': '__and__',
-	'bvor': '__or__',
-	'bvnot': '__invert__',
-
-	'bvshl': '__lshift__',
-	'bvashr': '__rshift__',
-	'bvlshr': 'LShR',
-	'ext_rotate_left': 'RotateLeft',
-	'ext_rotate_right': 'RotateRight',
-	'sign_extend': 'SignExt',
-	'zero_extend': 'ZeroExt',
-
-	'distinct': '__ne__',
-	'=': '__eq__',
-	'bvsgt': '__gt__',
-	'bvsge': '__ge__',
-	'bvslt': '__lt__',
-	'bvsle': '__le__',
-	'bvuge': 'UGE',
-	'bvugt': 'UGT',
-	'bvule': 'ULE',
-	'bvult': 'ULT',
-
-	'or': 'Or',
-	'and': 'And',
-	'not': 'Not',
-
-	'concat': 'Concat',
-	'extract': 'Extract',
-
-	'if': 'If',
-	'iff': 'If',
-
-	# TODO: make sure these are correct
-	'bvsdiv_i': '__div__',
-	'bvsmod_i': '__mod__'
-}
-
-from ..expression import E, A
+from ..expression import A
 from ..operations import backend_operations
-from ..result import Result, UnsatError
+from ..result import Result
 from ..bv import BVV
-from .backend import BackendError
+from ..errors import ClaripyError, BackendError, UnsatError

@@ -119,5 +119,4 @@ class BackendZ3Parallel(BackendZ3):
 	def simplify_expr(self, *args, **kwargs):
 		return self._synchronize('simplify_expr', *args, **kwargs)
 
-from ..result import UnsatError
-from ..errors import ClaripyError
+from ..errors import ClaripyError, UnsatError

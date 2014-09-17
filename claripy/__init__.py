@@ -17,7 +17,8 @@ def get_claripy():
 from .expression import E, A
 from . import bv
 from . import datalayer
-from .result import Result, UnsatError
+from .result import Result
+from .errors import *
 from .claripy_standalone import ClaripyStandalone
 from .datalayer import DataLayer
 from .bv import BVV

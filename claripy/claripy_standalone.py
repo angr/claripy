@@ -18,8 +18,8 @@ class ClaripyStandalone(Claripy):
             b_concrete.set_claripy_object(self)
             model_backend = b_concrete
 
-        Claripy.__init__(self, model_backend, solver_backends, parallel=parallel)
-        self.dl = DataLayer()
+        datalayer = DataLayer(self)
+        Claripy.__init__(self, model_backend, solver_backends, datalayer, parallel=parallel)
 
     def solver(self):
         return BranchingSolver(self)

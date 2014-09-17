@@ -197,9 +197,14 @@ class Solver(Storable):
 
 		try:
 			r = self._result if n == 1 else None
+			#print "TRYING MODEL EVAL"
 			return ( self._claripy.model_backend.convert_expr(e, result=r), )
 		except BackendError:
+			#print "FAILED"
 			pass
+		#finally:
+		#	print "DONE"
+		#	pass
 
 		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
 
@@ -408,6 +413,6 @@ class Solver(Storable):
 			results.append(s)
 		return results
 
-from ..result import UnsatError, Result
+from ..result import Result
 from ..expression import E
-from ..errors import BackendError, ClaripySolverError
+from ..errors import UnsatError, BackendError, ClaripySolverError
