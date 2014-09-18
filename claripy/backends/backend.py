@@ -132,9 +132,10 @@ class Backend(object):
                 op = getattr(args[1], opposites[name])
                 obj = op(args[0])
 
+            import ipdb; ipdb.set_trace()
             if obj is NotImplemented:
                 l.debug("%s neither %s nor %s apply in backend.call()", self, name, opposites[name])
-                raise BackendError("unable to apply operation on provided args")
+                raise BackendError("unable to apply operation %s on provided args" % name)
 
         return obj
 

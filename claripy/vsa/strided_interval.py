@@ -50,6 +50,13 @@ class StridedInterval(object):
         '''
         raise NotImplementedError()
 
+    def __len__(self):
+        '''
+        Get the length in bits of this variable. It should be a multiple of 8.
+        :return:
+        '''
+        return (self._bits + 7) / 8 * 8
+
     @normalize_types
     def __eq__(self, o):
         # TODO: Currently we are not comparing the bits

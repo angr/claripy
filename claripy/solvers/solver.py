@@ -127,17 +127,20 @@ class Solver(Storable):
 
 		to_add = [ ]
 		for e in constraints:
-			#e_simp = self._claripy.simplify(e)
-			e_simp = e
-			if not e_simp.symbolic and self._claripy.model_backend.convert_expr(e_simp):
-				continue
-			elif not e_simp.symbolic and not self._claripy.model_backend.convert_expr(e_simp):
-				self._result = Result(False, { })
-				f = self._claripy.BoolVal(False)
-				self.constraints.append(f)
-				for b in self._solver_states:
-					self._to_add[b].append(f)
-				return
+			try:
+				#e_simp = self._claripy.simplify(e)
+				e_simp = e
+				if not e_simp.symbolic and self._claripy.model_backend.convert_expr(e_simp):
+					continue
+				elif not e_simp.symbolic and not self._claripy.model_backend.convert_expr(e_simp):
+					self._result = Result(False, { })
+					f = self._claripy.BoolVal(False)
+					self.constraints.append(f)
+					for b in self._solver_states:
+						self._to_add[b].append(f)
+					return
+			except BackendError:
+				pass
 
 			if invalidate_cache:
 				self._result = None
@@ -331,6 +334,7 @@ class Solver(Storable):
 		for b in self._claripy.solver_backends:
 			try:
 				l.debug("... trying backend %s", b.__class__.__name__)
+				import ipdb; ipdb.set_trace()
 				results = b.eval_expr(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
 				return [ self._claripy.model_backend.convert(r) for r in results ]
 			except BackendError as be:
