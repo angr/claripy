@@ -509,12 +509,12 @@ def test_bool():
     nose.tools.assert_equal(bc.convert_expr(o), False)
 
 def test_vsa():
-    from claripy.backends import BackendVSA
+    from claripy.backends import BackendVSA, BackendConcrete
     clrp = claripy.ClaripyStandalone()
     # Set backend
     backend_vsa = BackendVSA()
     backend_vsa.set_claripy_object(clrp)
-    clrp.solver_backends = [ backend_vsa ]
+    clrp.model_backend = backend_vsa
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)
@@ -570,8 +570,9 @@ if __name__ == '__main__':
     logging.getLogger('claripy.solvers.branching_solver').setLevel(logging.DEBUG)
     logging.getLogger('claripy.solvers.composite_solver').setLevel(logging.DEBUG)
 
-    test_vsa()
-    if len(sys.argv) > 1 and sys.argv[1] != 'vsa':
+    if len(sys.argv) > 1:
+        globals()['test_' + sys.argv[1]]()
+    else:
         # test other stuff as well
         test_expression()
         test_fallback_abstraction()
@@ -586,6 +587,7 @@ if __name__ == '__main__':
         test_composite_solver()
         test_ite()
         test_bool()
+        test_vsa()
     print "WOO"
 
     print 'eval', claripy.solvers.solver.cached_evals
