@@ -7,6 +7,7 @@ class Backend(object):
         self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
         self._op_expr = { }
         self._cache_objects = True
+        self._claripy = None
 
     def set_claripy_object(self, claripy):
         self._claripy = claripy
@@ -132,10 +133,9 @@ class Backend(object):
                 op = getattr(args[1], opposites[name])
                 obj = op(args[0])
 
-            import ipdb; ipdb.set_trace()
             if obj is NotImplemented:
                 l.debug("%s neither %s nor %s apply in backend.call()", self, name, opposites[name])
-                raise BackendError("unable to apply operation %s on provided args" % name)
+                raise BackendError("unable to apply operation on provided args")
 
         return obj
 
@@ -152,7 +152,7 @@ class Backend(object):
 
     def simplify_expr(self, e):
         o = self.simplify(self.convert_expr(e))
-        return E(self._claripy, model=self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
+        return self._claripy.datalayer.make_expression(self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
 
     def simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
