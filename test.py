@@ -528,6 +528,7 @@ def test_vsa():
     si_a = clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20)
     si_b = clrp.StridedInterval(bits=32, stride=2, lower_bound=-100, upper_bound=200)
     si_c = clrp.StridedInterval(bits=32, stride=3, lower_bound=-100, upper_bound=200)
+    si_d = clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=60)
     nose.tools.assert_equal(si1._model, 10)
     nose.tools.assert_equal(si2._model, 10)
     nose.tools.assert_equal(si1._model, si2._model)
@@ -553,8 +554,14 @@ def test_vsa():
     si_neg_2 = backend_vsa.convert_expr((~si_b))
     nose.tools.assert_equal(si_neg_2, clrp.StridedInterval(bits=32, stride=2, lower_bound=-201, upper_bound=99)._model)
     # __or__
-    si_or = backend_vsa.convert_expr(si1 | si3)
-    nose.tools.assert_equal(si_or, 30)
+    si_or_1 = backend_vsa.convert_expr(si1 | si3)
+    nose.tools.assert_equal(si_or_1, 30)
+    si_or_2 = backend_vsa.convert_expr(si1 | si2)
+    nose.tools.assert_equal(si_or_2, 10)
+    si_or_3 = backend_vsa.convert_expr(si1 | si_a) # An integer | a strided interval
+    nose.tools.assert_equal(si_or_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30)._model)
+    si_or_4 = backend_vsa.convert_expr(si_a | si_d) # A strided interval | another strided interval
+    nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

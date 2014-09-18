@@ -285,18 +285,24 @@ class StridedInterval(object):
     @staticmethod
     def min_or(k, a, b, c, d):
         m = StridedInterval.highbit(k)
+        ret = 0
         while True:
             if m == 0:
-                return a | c
+                ret = a | c
+                break
             elif (~a & c & m) != 0:
-                tmp = (a | m) & ~m
+                tmp = (a | m) & -m
                 if tmp <= b:
-                    return tmp | c
-            elif (a & ~c & m) != 0:
-                tmp = (c + m) & ~m
+                    ret = tmp | c
+                    break
+            elif (a & ~c & ~m) != 0:
+                tmp = (c + m) & -m
                 if tmp <= d:
-                    return tmp | a
+                    ret = tmp | a
+                    break
             m = m >> 1
+
+        return ret
 
     @staticmethod
     def max_or(k, a, b, c, d):
@@ -321,11 +327,11 @@ class StridedInterval(object):
         '''
         def ntz(x):
             '''
-            I have no idea what this function is doing.
+            Get the position of first non-zero bit
             :param x:
             :return:
             '''
-            y = (-x) & (x - 1)
+            y = (~x) & (x - 1) # There is actually a bug in BAP until 0.8
 
             def bits(n, y):
                 if y == 0:
@@ -337,7 +343,15 @@ class StridedInterval(object):
 
         assert self.bits == b.bits
 
-        t = min(ntz(self.stride), ntz(b.stride))
+        # Special handling for integers
+        if self.stride == 1 and self.lower_bound == self.upper_bound:
+            # self is an integer
+            t = ntz(b.stride)
+        elif b.stride == 1 and b.lower_bound == b.upper_bound:
+            # b is an integer
+            t = ntz(self.stride)
+        else:
+            t = min(ntz(self.stride), ntz(b.stride))
         stride_ = 1 << t
         lowbits = (self.lower_bound | b.lower_bound) & (stride_ - 1)
 
