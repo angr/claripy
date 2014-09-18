@@ -1,13 +1,12 @@
 import logging
 l = logging.getLogger("claripy.backends.backend_vsa")
 
-from .solver_backend import SolverBackend
-from .backend import BackendError
+from .backend import Backend, BackendError
 
-class BackendVSA(SolverBackend):
+class BackendVSA(Backend):
     def __init__(self):
-        SolverBackend.__init__(self)
-        self._make_expr_ops(set(expression_operations), op_class=StridedInterval)
+        Backend.__init__(self)
+        self._make_raw_ops(set(expression_operations), op_module=StridedInterval)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
     def solver(self, timeout=None):

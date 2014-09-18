@@ -2,12 +2,18 @@ import fractions
 import functools
 import math
 
+from ..expression import E
+
 def normalize_types(f):
     @functools.wraps(f)
     def normalizer(self, o):
         '''
         Convert any object to an object that we can process.
         '''
+        if type(o) is E:
+            o = o._model
+        if type(self) is E:
+            e = e._model
         if type(o) in (int, long):
             o = StridedInterval(bits=StridedInterval.min_bits(o), stride=1, lower_bound=o, upper_bound=o)
         if type(self) in (int, long):
