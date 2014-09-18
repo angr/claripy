@@ -104,14 +104,22 @@ class Solver(Storable):
 		for e in ec if type(ec) in (list, tuple, set) else (ec,):
 			#e_simp = self._claripy.simplify(e)
 			e_simp = e
-			if not e_simp.symbolic and self._claripy.model_backend.convert_expr(e_simp):
-				filter_true += 1
-				continue
-			elif not e_simp.symbolic and not self._claripy.model_backend.convert_expr(e_simp):
-				filter_false += 1
-				raise UnsatError("expressions contain False")
-
-			fc.append(e_simp)
+			for b in self._claripy.model_backends:
+				try:
+					o = b.convert_expr(e_simp)
+					if o == False:
+						filter_false += 1
+						raise UnsatError("expressions contain False")
+					elif o == True:
+						filter_true +=1
+						break
+					else:
+						l.warning("Solver._constraint_filter got non-boolean from model_backend")
+						raise ClaripySolverError()
+				except BackendError:
+					pass
+			else:
+				fc.append(e_simp)
 
 		return tuple(fc)
 
@@ -125,29 +133,23 @@ class Solver(Storable):
 		if type(constraints[0]) in (list, tuple):
 			raise ValueError("don't pass lists to Solver.add()!")
 
-		to_add = [ ]
-		for e in constraints:
-			#e_simp = self._claripy.simplify(e)
-			e_simp = e
-			if not e_simp.symbolic and self._claripy.model_backend.convert_expr(e_simp):
-				continue
-			elif not e_simp.symbolic and not self._claripy.model_backend.convert_expr(e_simp):
-				self._result = Result(False, { })
-				f = self._claripy.BoolVal(False)
-				self.constraints.append(f)
-				for b in self._solver_states:
-					self._to_add[b].append(f)
-				return
-
-			if invalidate_cache:
+		try:
+			to_add = self._constraint_filter(constraints)
+			if len(to_add) > 0 and invalidate_cache:
 				self._result = None
-			self._simplified = False
-			self.constraints.append(e_simp)
-			to_add.append(e_simp)
-			self.variables.update(e_simp.variables)
+		except UnsatError:
+			to_add = [ self._claripy.false ]
+			self._result = Result(False, { })
 
-		for b in self._solver_states:
-			self._to_add[b] += to_add
+		if len(to_add) > 0:
+			self._simplified = False
+			self.constraints += to_add
+
+			for e in to_add:
+				self.variables.update(e.variables)
+
+			for b in self._solver_states:
+				self._to_add[b] += to_add
 
 	def simplify(self):
 		if self._simplified or len(self.constraints) == 0: return
@@ -195,16 +197,10 @@ class Solver(Storable):
 
 		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
 
-		try:
-			r = self._result if n == 1 else None
-			#print "TRYING MODEL EVAL"
-			return ( self._claripy.model_backend.convert_expr(e, result=r), )
-		except BackendError:
-			#print "FAILED"
-			pass
-		#finally:
-		#	print "DONE"
-		#	pass
+		if len(extra_constraints) == 0:
+			for b in self._claripy.model_backends:
+				try: return b.eval_expr(e, n, result=self._result)
+				except BackendError: pass
 
 		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
 
@@ -252,6 +248,11 @@ class Solver(Storable):
 		global cached_max
 		extra_constraints = self._constraint_filter(extra_constraints)
 
+		if len(extra_constraints) == 0:
+			for b in self._claripy.model_backends:
+				try: return b.max_expr(e, result=self._result)
+				except BackendError: pass
+
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
 		if len(two) == 0: raise UnsatError("unsat during max()")
 		elif len(two) == 1: return two[0]
@@ -263,7 +264,7 @@ class Solver(Storable):
 			self.simplify()
 
 			c = extra_constraints + (self._claripy.UGE(e, two[0]), self._claripy.UGE(e, two[1]))
-			r = self._claripy.model_backend.convert(self._max(e, extra_constraints=c), result=self._result)
+			r = self._claripy.model_object(self._max(e, extra_constraints=c), result=self._result)
 
 		if len(extra_constraints) == 0:
 			self._result.max_cache[e.uuid] = r
@@ -274,6 +275,11 @@ class Solver(Storable):
 	def min(self, e, extra_constraints=()):
 		global cached_min
 		extra_constraints = self._constraint_filter(extra_constraints)
+
+		if len(extra_constraints) == 0:
+			for b in self._claripy.model_backends:
+				try: return b.min_expr(e, result=self._result)
+				except BackendError: pass
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
 		if len(two) == 0: raise UnsatError("unsat during min()")
@@ -286,7 +292,7 @@ class Solver(Storable):
 			self.simplify()
 
 			c = extra_constraints + (self._claripy.ULE(e, two[0]), self._claripy.ULE(e, two[1]))
-			r = self._claripy.model_backend.convert(self._min(e, extra_constraints=c), result=self._result)
+			r = self._claripy.model_object(self._min(e, extra_constraints=c), result=self._result)
 
 		if len(extra_constraints) == 0:
 			self._result.min_cache[e.uuid] = r
@@ -294,13 +300,21 @@ class Solver(Storable):
 
 		return r
 
-	def solution(self, e, v):
+	def solution(self, e, v, extra_constraints=()):
 		try:
-			return self._claripy.model_backend.convert(e) == v
-		except BackendError:
-			b = self._solution(e, v)
-			if not b: self.add([e != v], invalidate_cache=False)
-			return b
+			extra_constraints = self._constraint_filter(extra_constraints)
+		except UnsatError:
+			return False
+
+		if len(extra_constraints) == 0:
+			for b in self._claripy.model_backends:
+				try: return b.min_expr(e, result=self._result)
+				except BackendError: pass
+
+		b = self._solution(e, v, extra_constraints=extra_constraints)
+		if b == False and len(extra_constraints) > 0:
+			self.add([e != v], invalidate_cache=False)
+		return b
 
 	#
 	# These are the functions that actually talk to the backends
@@ -315,7 +329,7 @@ class Solver(Storable):
 				l.debug("... trying %s", b)
 
 				a = time.time()
-				r = b.results_exprs(s, extra_constraints, generic_backend=self._claripy.model_backend)
+				r = b.results_exprs(s, extra_constraints, generic_model=True)
 				b = time.time()
 
 				l_timing.debug("... %s in %s seconds", r.sat, b - a)
@@ -332,7 +346,7 @@ class Solver(Storable):
 			try:
 				l.debug("... trying backend %s", b.__class__.__name__)
 				results = b.eval_expr(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
-				return [ self._claripy.model_backend.convert(r) for r in results ]
+				return [ self._claripy.model_object(r) for r in results ]
 			except BackendError as be:
 				l.debug("... BackendError: %s", be)
 

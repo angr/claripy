@@ -25,8 +25,8 @@ from .bv import BVV
 from . import operations
 from . import backends
 
-def init_standalone():
-    return set_claripy(ClaripyStandalone())
+def init_standalone(model_backends=None, solver_backends=None):
+    return set_claripy(ClaripyStandalone(model_backends=model_backends, solver_backends=solver_backends))
 
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap
