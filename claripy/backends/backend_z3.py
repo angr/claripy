@@ -199,10 +199,11 @@ class BackendZ3(SolverBackend):
 		#	import ipdb; ipdb.set_trace()
 
 		results = [ ]
+		model = result.backend_model
 		if extra_constraints is not None or n != 1:
 			s.push()
 		if extra_constraints is not None:
-			s.add(*[self.convert_expr(e) for e in extra_constraints])
+			s.add(*extra_constraints)
 			model = None
 
 		for i in range(n):

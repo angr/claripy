@@ -225,8 +225,13 @@ class Solver(Storable):
 
 		# if we have a cache, cached_n < n and len(cached_results) == cached_n
 		all_results = cached_results
-		all_results |= set(self._eval(e, n-len(all_results), extra_constraints=solver_extra_constraints))
-		l.debug("... got %d more values", len(all_results) - len(cached_results))
+		try:
+			all_results |= set(self._eval(e, n-len(all_results), extra_constraints=solver_extra_constraints))
+			l.debug("... got %d more values", len(all_results) - len(cached_results))
+		except UnsatError:
+			l.debug("... UNSAT")
+			if len(all_results) == 0:
+				raise
 
 		if len(extra_constraints) == 0:
 			l.debug("... adding cache of %d values for n=%d", len(all_results), n)
