@@ -514,7 +514,7 @@ def test_vsa():
     # Set backend
     backend_vsa = BackendVSA()
     backend_vsa.set_claripy_object(clrp)
-    clrp.model_backend = backend_vsa
+    clrp.model_backends.append(backend_vsa)
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)
