@@ -8,13 +8,8 @@ l = logging.getLogger("claripy.test")
 #import tempfile
 import claripy
 
-import logging
-l = logging.getLogger("claripy.test")
-
-try:
-    import claripy_logging
-except:
-    pass
+try: import claripy_logging #pylint:disable=import-error,unused-import
+except ImportError: pass
 
 def test_expression():
     clrp = claripy.ClaripyStandalone()
@@ -65,7 +60,7 @@ def test_concrete():
 
 def test_fallback_abstraction():
     clrp = claripy.ClaripyStandalone()
-    bz = clrp.solver_backends[0]
+    bz = clrp.backend_of_type(claripy.backends.BackendZ3)
 
     a = clrp.BitVecVal(5, 32)
     b = clrp.BitVec('x', 32, explicit_name=True)
@@ -100,7 +95,7 @@ def test_fallback_abstraction():
 
 def test_pickle():
     clrp = claripy.init_standalone()
-    bz = clrp.solver_backends[0]
+    bz = clrp.backend_of_type(claripy.backends.BackendZ3)
 
     a = clrp.BitVecVal(0, 32)
     b = clrp.BitVec('x', 32, explicit_name=True)
@@ -149,7 +144,7 @@ def test_datalayer():
 
 def test_model():
     clrp = claripy.ClaripyStandalone()
-    bc = clrp.model_backend
+    bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     a = clrp.BitVecVal(5, 32)
     b = clrp.BitVec('x', 32, explicit_name=True)
@@ -196,7 +191,7 @@ def raw_solver(solver_type):
 	nose.tools.assert_equal(len(shards), 2)
 	nose.tools.assert_equal(len(shards[0].variables), 1)
 	nose.tools.assert_equal(len(shards[1].variables), 1)
-	nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 2 }) # adds the != from the solution() check
+	nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # adds the != from the solution() check
 
 	s = solver_type(clrp)
 	#clrp.expression_backends = [ bc, ba, bz ]
@@ -501,7 +496,7 @@ def raw_ite(solver_type):
 
 def test_bool():
     clrp = claripy.ClaripyStandalone()
-    bc = clrp.model_backend
+    bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     a = clrp.And(*[False, False, True])
     nose.tools.assert_equal(bc.convert_expr(a), False)
@@ -523,6 +518,7 @@ def test_vsa():
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)
+    print s
 
     # Integers
     si1 = clrp.StridedInterval(bits=32, stride=1, lower_bound=10, upper_bound=10)
@@ -559,7 +555,6 @@ def test_vsa():
     # __or__
     si_or = backend_vsa.convert_expr(si1 | si3)
     nose.tools.assert_equal(si_or, 30)
-    
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

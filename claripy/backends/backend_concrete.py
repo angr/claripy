@@ -5,11 +5,12 @@ import z3
 zTrue = z3.BoolVal(True)
 zFalse = z3.BoolVal(False)
 
-from .backend import Backend, BackendError
+from .backend import BackendError
+from .model_backend import ModelBackend
 
-class BackendConcrete(Backend):
+class BackendConcrete(ModelBackend):
     def __init__(self):
-        Backend.__init__(self)
+        ModelBackend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._op_raw['size'] = self.size
         self._op_raw_result['BitVec'] = self.BitVec
@@ -63,6 +64,19 @@ class BackendConcrete(Backend):
         finally:
             if hasattr(z3_backend, '_lock'):
                 z3_backend._lock.release()
+
+    #
+    # Evaluation functions
+    #
+
+    def eval(self, expr, n, result=None):
+        return [ self.convert_expr(expr, result=result if n == 1 else None) ]
+    def max(self, expr, result=None):
+        return self.convert_expr(expr, result=result)
+    def min(self, expr, result=None):
+        return self.convert_expr(expr, result=result)
+    def solution(self, expr, v, result=None):
+        return self.convert_expr(expr, result=result) == v
 
 from ..bv import BVV
 from ..operations import backend_operations

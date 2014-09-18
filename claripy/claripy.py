@@ -6,9 +6,9 @@ import logging
 l = logging.getLogger('claripy.claripy')
 
 class Claripy(object):
-    def __init__(self, model_backend, solver_backends, datalayer, parallel=None):
+    def __init__(self, model_backends, solver_backends, datalayer, parallel=None):
         self.solver_backends = solver_backends
-        self.model_backend = model_backend
+        self.model_backends = model_backends
         self.datalayer = datalayer
         self.unique_names = True
         self.parallel = parallel if parallel else False
@@ -20,7 +20,7 @@ class Claripy(object):
     # Backend management
     #
     def backend_of_type(self, b_type):
-        for b in self.solver_backends:
+        for b in self.model_backends + self.solver_backends:
             if type(b) is b_type:
                 return b
         return None
@@ -45,12 +45,14 @@ class Claripy(object):
             return o
 
     def _do_op(self, name, args, variables=None, symbolic=None, length=None, raw=False, simplified=False):
-        try:
-            if raw:
-                r = self.model_backend.call(name, args)
-            else:
-                r = self.model_backend.call_expr(name, args)
-        except BackendError:
+        for b in self.model_backends:
+            try:
+                if raw: r = b.call(name, args)
+                else:   r = b.call_expr(name, args)
+                break
+            except BackendError:
+                continue
+        else:
             r = A(name, args)
 
         if symbolic is None:
@@ -123,17 +125,24 @@ class Claripy(object):
         return sofar
 
     def simplify(self, e):
-        try:
-            return self.model_backend.simplify_expr(e)
-        except BackendError:
-            try:
-                for b in self.solver_backends:
-                    return b.simplify_expr(e)
-            except BackendError:
-                pass
+        for b in self.model_backends:
+            try: return b.simplify_expr(e)
+            except BackendError: pass
+
+        l.debug("Simplifying via solver backend")
+
+        for b in self.solver_backends:
+            try: return b.simplify_expr(e)
+            except BackendError: pass
 
         l.warning("Unable to simplify expression")
         return e
+
+    def model_object(self, e, result=None):
+        for b in self.model_backends:
+            try: return b.convert_expr(e, result=result)
+            except BackendError: pass
+        raise BackendError('no model backend can convert expression')
 
 from .expression import E, A
 from .backends.backend import BackendError

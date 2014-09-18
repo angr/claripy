@@ -55,24 +55,24 @@ class SolverBackend(Backend):
 		'''
 		raise NotImplementedError("backend doesn't support solving")
 
-	def results_exprs(self, s, extra_constraints=(), generic_backend=None):
+	def results_exprs(self, s, extra_constraints=(), generic_model=None):
 		'''
 		This function does a constraint check.
 
 		@param s: backend solver object
 		@param extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
-		@param generic_backend: the backend to use to create the generic model (not created if None)
+		@param generic_model: whether or not to create a generic model
 		@returns a Result object
 		'''
-		return self.results(s, extra_constraints=self.convert_exprs(extra_constraints), generic_backend=generic_backend)
+		return self.results(s, extra_constraints=self.convert_exprs(extra_constraints), generic_model=generic_model)
 
-	def results(self, s, extra_constraints=(), generic_backend=None):
+	def results(self, s, extra_constraints=(), generic_model=None):
 		'''
 		This function does a constraint check.
 
 		@param s: backend solver object
 		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
-		@param generic_backend: the backend to use to create the generic model (not created if None)
+		@param generic_model: whether or not to create a generic model
 		@returns a Result object
 		'''
 		raise NotImplementedError("backend doesn't support solving")
@@ -160,7 +160,6 @@ class SolverBackend(Backend):
 		@param v: the proposed solution (claripy.E)
 		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
 		@param result: a cached Result from the last constraint solve
-		@returns the maximum possible value of expr (backend object)
 		@returns True if v is a solution of expr, False otherwise
 		'''
 
@@ -175,7 +174,6 @@ class SolverBackend(Backend):
 		@param v: the proposed solution (backend object)
 		@param extra_constraints: extra constraints (backend objects) to add to s for this solve
 		@param result: a cached Result from the last constraint solve
-		@returns the maximum possible value of expr (backend object)
 		@returns True if v is a solution of expr, False otherwise
 		'''
 

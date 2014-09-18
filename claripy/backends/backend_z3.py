@@ -174,7 +174,7 @@ class BackendZ3(SolverBackend):
 			s.pop()
 		return satness
 
-	def results(self, s, extra_constraints=None, generic_backend=None):
+	def results(self, s, extra_constraints=None, generic_model=True):
 		satness = self.check(s, extra_constraints=extra_constraints)
 		model = { }
 		z3_model = None
@@ -182,11 +182,11 @@ class BackendZ3(SolverBackend):
 		if satness:
 			l.debug("sat!")
 			z3_model = s.model()
-			if generic_backend is not None:
+			if generic_model:
 				for m_f in z3_model:
 					n = m_f.name()
 					m = m_f()
-					model[n] = generic_backend.convert(z3_model.eval(m))
+					model[n] = self._claripy.model_object(z3_model.eval(m))
 		else:
 			l.debug("unsat!")
 
@@ -222,7 +222,7 @@ class BackendZ3(SolverBackend):
 			else:
 				v = expr
 
-			results.append(self._claripy.model_backend.convert(v))
+			results.append(v)
 			if i + 1 != n:
 				s.add(expr != v)
 				model = None
@@ -371,9 +371,13 @@ class BackendZ3(SolverBackend):
 		else:
 			s = expr_raw
 
-		try:
-			o = self._claripy.model_backend.convert(s)
-		except BackendError:
+		for b in self._claripy.model_backends:
+			try:
+				o = b.convert(s)
+				break
+			except BackendError:
+				continue
+		else:
 			o = self.abstract(s)
 
 		#print "SIMPLIFIED"
