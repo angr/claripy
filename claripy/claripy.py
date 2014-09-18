@@ -17,6 +17,15 @@ class Claripy(object):
         self.false = self.BoolVal(False)
 
     #
+    # Backend management
+    #
+    def backend_of_type(self, b_type):
+        for b in self.solver_backends:
+            if type(b) is b_type:
+                return b
+        return None
+
+    #
     # Solvers
     #
     def solver(self):

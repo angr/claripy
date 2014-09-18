@@ -334,7 +334,6 @@ class Solver(Storable):
 		for b in self._claripy.solver_backends:
 			try:
 				l.debug("... trying backend %s", b.__class__.__name__)
-				import ipdb; ipdb.set_trace()
 				results = b.eval_expr(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
 				return [ self._claripy.model_backend.convert(r) for r in results ]
 			except BackendError as be:

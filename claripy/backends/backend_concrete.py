@@ -38,12 +38,13 @@ class BackendConcrete(Backend):
         if not hasattr(a, '__module__') or a.__module__ != 'z3':
             raise BackendError("BackendConcrete got an unsupported type %s", a.__class__)
 
-        if not hasattr(self._claripy, 'z3_backend') or self._claripy.z3_backend is None:
+        z3_backend = self._claripy.backend_of_type(BackendZ3)
+        if z3_backend is None:
             raise BackendError("can't convert z3 expressions when z3 is not in use")
 
         try:
-            if hasattr(self._claripy.z3_backend, '_lock'):
-                self._claripy.z3_backend._lock.acquire()
+            if hasattr(z3_backend, '_lock'):
+                z3_backend._lock.acquire()
 
             if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
             elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
@@ -60,9 +61,10 @@ class BackendConcrete(Backend):
                 #l.warning("TODO: support more complex non-symbolic expressions, maybe?")
                 raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
         finally:
-            if hasattr(self._claripy.z3_backend, '_lock'):
-                self._claripy.z3_backend._lock.release()
+            if hasattr(z3_backend, '_lock'):
+                z3_backend._lock.release()
 
 from ..bv import BVV
 from ..operations import backend_operations
 from .. import bv
+from .backend_z3 import BackendZ3
