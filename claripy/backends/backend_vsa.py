@@ -58,16 +58,25 @@ class BackendVSA(ModelBackend):
 
         return expr.upper_bound
 
+
     #
     # Operations
     #
-    @staticmethod
-    def ULE(expr_1, expr_2):
-        pass
 
     @staticmethod
-    def UGE(expr_1, expr_2):
-        pass
+    def Concat(*args):
+        import ipdb; ipdb.set_trace()
+
+    @staticmethod
+    def Extract(*args):
+        low_bit = args[1]
+        high_bit = args[0]
+        expr = args[2]
+
+        assert type(expr) is StridedInterval
+
+
+
 
 class SolverVSA():
     def __init__(self):

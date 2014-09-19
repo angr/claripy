@@ -296,7 +296,7 @@ class StridedInterval(object):
                     ret = tmp | c
                     break
             elif (a & ~c & ~m) != 0:
-                tmp = (c + m) & -m
+                tmp = (c | m) & -m
                 if tmp <= d:
                     ret = tmp | a
                     break
@@ -412,3 +412,94 @@ class StridedInterval(object):
         :return:
         '''
         return self.bitwise_not().bitwise_or(b).bitwise_not().bitwise_or(b.bitwise_not().bitwise_or(self).bitwise_not())
+
+    def _pre_shift(self, shift_amount):
+        def get_range(expr):
+            '''
+            Get the range of bits for shifting
+            :param expr:
+            :return: A tuple of maximum and minimum bits to shift
+            '''
+            def round(max, x):
+                if x < 0 or x > max:
+                    return max
+                else:
+                    return x
+
+            if type(expr) in [int, long]:
+                return (expr, expr)
+
+            assert type(expr) is StridedInterval
+
+            if expr.stride == 1 and expr.lower_bound == expr.upper_bound:
+                return (round(self.bits, expr.lower_bound),
+                        round(self.bits, expr.lower_bound))
+            else:
+                if expr.lower_bound < 0:
+                    if expr.upper_bound >= 0:
+                        return (0, self.bits)
+                    else:
+                        return (self.bits, self.bits)
+                else:
+                    return (round(self.bits, self.lower_bound), round(self.bits, self.upper_bound))
+
+        lower, upper = get_range(shift_amount)
+        # TODO: Is trancating necessary?
+
+        return lower, upper
+
+    def rshift(self, shift_amount):
+        lower, upper = self._pre_shift(shift_amount)
+
+        # Shift the lower_bound and upper_bound by all possible amounts, and
+        # get min/max values from all the resulting values
+
+        new_lower_bound = None
+        new_upper_bound = None
+        for shift_amount in xrange(lower, upper + 1):
+            l = self.lower_bound >> shift_amount
+            if new_lower_bound is None or l < new_lower_bound:
+                new_lower_bound = l
+            u = self.upper_bound >> shift_amount
+            if new_upper_bound is None or u > new_upper_bound:
+                new_upper_bound = u
+
+        # NOTE: If this is an arithmetic operation, we should take care
+        # of sign-changes.
+
+        return StridedInterval(bits=self.bits,
+                               stride=max(self.stride >> upper, 1),
+                               lower_bound=new_lower_bound,
+                               upper_bound=new_upper_bound)
+
+    def lshift(self, shift_amount):
+        lower, upper = self._pre_shift(shift_amount)
+
+        # Shift the lower_bound and upper_bound by all possible amounts, and
+        # get min/max values from all the resulting values
+
+        new_lower_bound = None
+        new_upper_bound = None
+        for shift_amount in xrange(lower, upper + 1):
+            l = self.lower_bound << shift_amount
+            if new_lower_bound is None or l < new_lower_bound:
+                new_lower_bound = l
+            u = self.upper_bound << shift_amount
+            if new_upper_bound is None or u > new_upper_bound:
+                new_upper_bound = u
+
+        # NOTE: If this is an arithmetic operation, we should take care
+        # of sign-changes.
+
+        return StridedInterval(bits=self.bits,
+                               stride=max(self.stride << lower, 1),
+                               lower_bound=new_lower_bound,
+                               upper_bound=new_upper_bound)
+
+    def extract(self, high_bit, low_bit):
+        assert low_bit >= 0
+
+        bits = high_bit - low_bit + 1
+
+        if bits != self.bits:
+            ret = self.cast_low()

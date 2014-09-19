@@ -560,7 +560,11 @@ def test_vsa():
     nose.tools.assert_equal(si_or_2, 10)
     si_or_3 = backend_vsa.convert_expr(si1 | si_a) # An integer | a strided interval
     nose.tools.assert_equal(si_or_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30)._model)
+    si_or_3 = backend_vsa.convert_expr(si_a | si1) # Exchange the operands
+    nose.tools.assert_equal(si_or_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30)._model)
     si_or_4 = backend_vsa.convert_expr(si_a | si_d) # A strided interval | another strided interval
+    nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
+    si_or_4 = backend_vsa.convert_expr(si_d | si_a) # Exchange the operands
     nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
 
 if __name__ == '__main__':
