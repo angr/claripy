@@ -1,11 +1,11 @@
 import logging
 l = logging.getLogger("claripy.backends.backend_vsa")
 
-from .backend import Backend, BackendError
+from .model_backend import ModelBackend, BackendError
 
-class BackendVSA(Backend):
+class BackendVSA(ModelBackend):
     def __init__(self):
-        Backend.__init__(self)
+        ModelBackend.__init__(self)
         self._make_raw_ops(set(expression_operations), op_module=StridedInterval)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
@@ -28,7 +28,7 @@ class BackendVSA(Backend):
         import ipdb; ipdb.set_trace()
         raise NotImplementedError()
 
-    def eval(self, s, expr, n, extra_constraints=(), result=None):
+    def eval(self, expr, n, result=None):
         assert type(expr) == StridedInterval
 
         results = []
@@ -40,7 +40,7 @@ class BackendVSA(Backend):
 
         return results
 
-    def min(self, s, expr, extra_constraints=(), result=None):
+    def min(self, expr, result=None):
         assert type(expr) == StridedInterval
 
         if expr.is_top():
@@ -49,7 +49,7 @@ class BackendVSA(Backend):
 
         return expr.lower_bound
 
-    def max(self, s, expr, extra_constraints=(), result=None):
+    def max(self, expr, result=None):
         assert type(expr) == StridedInterval
 
         if expr.is_top():
