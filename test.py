@@ -518,7 +518,6 @@ def test_vsa():
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)
-    print s
 
     # Integers
     si1 = clrp.StridedInterval(bits=32, stride=1, lower_bound=10, upper_bound=10)
@@ -529,6 +528,9 @@ def test_vsa():
     si_b = clrp.StridedInterval(bits=32, stride=2, lower_bound=-100, upper_bound=200)
     si_c = clrp.StridedInterval(bits=32, stride=3, lower_bound=-100, upper_bound=200)
     si_d = clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=60)
+    si_e = clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
+    si_f = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=255)
+    si_g = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=0xff)
     nose.tools.assert_equal(si1._model, 10)
     nose.tools.assert_equal(si2._model, 10)
     nose.tools.assert_equal(si1._model, si2._model)
@@ -566,6 +568,10 @@ def test_vsa():
     nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
     si_or_4 = backend_vsa.convert_expr(si_d | si_a) # Exchange the operands
     nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
+    si_or_5 = backend_vsa.convert_expr(si_e | si_f) #
+    nose.tools.assert_equal(si_or_5, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
+    si_or_6 = backend_vsa.convert_expr(si_e | si_g) #
+    nose.tools.assert_equal(si_or_6, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

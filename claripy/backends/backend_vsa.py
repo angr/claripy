@@ -34,7 +34,7 @@ class BackendVSA(ModelBackend):
         results = []
         lb = expr.lower_bound
 
-        while len(results) < n and lb < expr.upper_bound:
+        while len(results) < n and lb <= expr.upper_bound:
             results.append(lb)
             lb += expr.stride
 
@@ -65,7 +65,13 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     def Concat(*args):
-        import ipdb; ipdb.set_trace()
+        ret = None
+        for expr in args:
+            assert type(expr) is StridedInterval
+
+            ret = ret.concat(expr) if ret is not None else expr
+
+        return ret
 
     @staticmethod
     def Extract(*args):
@@ -75,7 +81,9 @@ class BackendVSA(ModelBackend):
 
         assert type(expr) is StridedInterval
 
+        ret = expr.extract(high_bit, low_bit)
 
+        return ret
 
 
 class SolverVSA():
