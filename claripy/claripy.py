@@ -91,6 +91,11 @@ class Claripy(object):
         si = StridedInterval(**kwargs)
         return E(self, model=si, variables=set(), symbolic=False, length=len(si))
 
+    # Value Set
+    def ValueSet(self, **kwargs):
+        vs = ValueSet(**kwargs)
+        return E(self, model=vs, variables=set(), symbolic=False, length=len(vs))
+
     #
     # Boolean ops
     #
@@ -148,5 +153,5 @@ from .expression import E, A
 from .backends.backend import BackendError
 from .operations import op_length
 from .bv import BVV
-from .vsa import StridedInterval
+from .vsa import StridedInterval, ValueSet
 from .errors import ClaripyOperationError

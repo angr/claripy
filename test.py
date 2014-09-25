@@ -520,9 +520,9 @@ def test_vsa():
     s = solver_type(clrp)
 
     # Integers
-    si1 = clrp.StridedInterval(bits=32, stride=1, lower_bound=10, upper_bound=10)
-    si2 = clrp.StridedInterval(bits=32, stride=1, lower_bound=10, upper_bound=10)
-    si3 = clrp.StridedInterval(bits=32, stride=1, lower_bound=28, upper_bound=28)
+    si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si3 = clrp.StridedInterval(bits=32, stride=0, lower_bound=28, upper_bound=28)
     # Strided intervals
     si_a = clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20)
     si_b = clrp.StridedInterval(bits=32, stride=2, lower_bound=-100, upper_bound=200)
@@ -572,6 +572,10 @@ def test_vsa():
     nose.tools.assert_equal(si_or_5, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
     si_or_6 = backend_vsa.convert_expr(si_e | si_g) #
     nose.tools.assert_equal(si_or_6, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
+
+    # VSA
+    vs_1 = clrp.ValueSet()
+    nose.tools.assert_true(vs_1._model.is_empty(), True)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

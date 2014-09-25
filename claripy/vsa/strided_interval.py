@@ -15,9 +15,9 @@ def normalize_types(f):
         if type(self) is E:
             e = e._model
         if type(o) in (int, long):
-            o = StridedInterval(bits=StridedInterval.min_bits(o), stride=1, lower_bound=o, upper_bound=o)
+            o = StridedInterval(bits=StridedInterval.min_bits(o), stride=0, lower_bound=o, upper_bound=o)
         if type(self) in (int, long):
-            self = StridedInterval(bits=StridedInterval.min_bits(self), stride=1, lower_bound=self, upper_bound=self)
+            self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
         return f(self, o)
 
     return normalizer
@@ -55,8 +55,8 @@ class StridedInterval(object):
 
     def normalize(self):
         if self.lower_bound == self.upper_bound:
-            self._stride = 1
-        if self._stride <= 0 or self.lower_bound > self.upper_bound:
+            self._stride = 0
+        if self._stride < 0:
             raise Exception("Why does this happen?")
 
     @staticmethod
@@ -119,13 +119,9 @@ class StridedInterval(object):
         return self.bitwise_xor(other)
 
     @property
-    def empty(self):
-        return (self._stride == 0)
-
-    @property
     def size(self):
         if self._stride == 0:
-            return 1
+            return 0
         else:
             return ((self._upper_bound - self._lower_bound) / self._stride)
 
@@ -222,6 +218,9 @@ class StridedInterval(object):
         else:
             return StridedInterval.min_int(bits)
 
+    def is_empty(self):
+        return (self._stride == 0 and self._lower_bound > self._upper_bound)
+
     def is_top(self):
         '''
         If this is a TOP value
@@ -260,14 +259,8 @@ class StridedInterval(object):
         ub_overflow_ = (ub_ > StridedInterval.max_int(self.bits))
         overflow = lb_underflow_ or ub_overflow_
 
-        # Special cases for integers
-        if self.is_integer():
-            stride = b.stride
-        elif b.is_integer():
-            stride = self.stride
-        else:
-            # Take the GCD of two operands' strides
-            stride = fractions.gcd(self.stride, b.stride)
+        # Take the GCD of two operands' strides
+        stride = fractions.gcd(self.stride, b.stride)
 
         if overflow:
             return self.top(self.bits)
@@ -351,6 +344,8 @@ class StridedInterval(object):
             :param x:
             :return:
             '''
+            if x == 0:
+                return 0
             y = (~x) & (x - 1) # There is actually a bug in BAP until 0.8
 
             def bits(n, y):
@@ -364,10 +359,11 @@ class StridedInterval(object):
         assert self.bits == b.bits
 
         # Special handling for integers
-        if self.stride == 1 and self.lower_bound == self.upper_bound:
+        # TODO: Is this special handling still necessary?
+        if self.stride == 0 and self.lower_bound == self.upper_bound:
             # self is an integer
             t = ntz(b.stride)
-        elif b.stride == 1 and b.lower_bound == b.upper_bound:
+        elif b.stride == 0 and b.lower_bound == b.upper_bound:
             # b is an integer
             t = ntz(self.stride)
         else:
@@ -557,3 +553,32 @@ class StridedInterval(object):
             ret = ret.cast_low(bits)
 
         return ret
+
+    def union(self, b):
+        '''
+        The union operation
+        :param b:
+        :return:
+        '''
+        if self.is_empty():
+            return b
+        if b.is_empty():
+            return self
+
+        if self.is_integer() and b.is_integer():
+            u = max(self.upper_bound, b.upper_bound)
+            l = min(self.lower_bound, b.lower_bound)
+            return StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
+
+        new_stride = fractions.gcd(self.stride, b.stride)
+        assert new_stride > 0
+
+        remainder_1 = self.lower_bound % new_stride
+        remainder_2 = b.lower_bound % new_stride
+        u = max(self.upper_bound, b.upper_bound)
+        l = min(self.lower_bound, b.lower_bound)
+        if remainder_1 == remainder_2:
+            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+        else:
+            new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
+            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
