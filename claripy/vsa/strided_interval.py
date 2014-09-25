@@ -554,6 +554,7 @@ class StridedInterval(object):
 
         return ret
 
+    @normalize_types
     def union(self, b):
         '''
         The union operation

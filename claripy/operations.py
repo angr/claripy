@@ -32,7 +32,13 @@ expression_bitwise_operations = {
     '__rshift__', '__rrshift__',
 }
 
-expression_operations = expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations
+expression_set_operations = {
+    # Set operations
+    'union',
+    'intersection',
+}
+
+expression_operations = expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations | expression_set_operations
 
 backend_comparator_operations = {
     'UGE', 'ULE', 'UGT', 'ULT',
@@ -91,7 +97,7 @@ opposites = {
     '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
 }
 
-length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations
+length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
