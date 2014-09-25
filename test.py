@@ -576,6 +576,12 @@ def test_vsa():
     # VSA
     vs_1 = clrp.ValueSet()
     nose.tools.assert_true(vs_1._model.is_empty(), True)
+    # Test merging two addresses
+    vs_1._model.merge_si('global', si1)
+    vs_1._model.merge_si('global', si3)
+    nose.tools.assert_equal(vs_1._model.get_si('global'), clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28)._model)
+    # Length of this ValueSet
+    nose.tools.assert_equal(len(vs_1._model), 32)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)

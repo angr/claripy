@@ -46,7 +46,7 @@ class StridedInterval(object):
             self._lower_bound = StridedInterval.min_int(self.bits)
 
     def __repr__(self):
-        if self.empty:
+        if self.is_empty():
             return '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
             return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride,
