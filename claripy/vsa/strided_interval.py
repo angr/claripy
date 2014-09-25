@@ -52,6 +52,13 @@ class StridedInterval(object):
             return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride,
                                        self._lower_bound if type(self._lower_bound) == str else str(self._lower_bound),
                                        self._upper_bound if type(self._upper_bound) == str else str(self._upper_bound))
+
+    def normalize(self):
+        if self.lower_bound == self.upper_bound:
+            self._stride = 1
+        if self._stride <= 0 or self.lower_bound > self.upper_bound:
+            raise Exception("Why does this happen?")
+
     @staticmethod
     def top(bits, signed=False):
         '''
@@ -407,8 +414,11 @@ class StridedInterval(object):
             raise ArithmeticError("Impossible")
 
         highmask = ~(stride_ - 1)
-        return StridedInterval(bits=self.bits, stride=stride_, lower_bound=(lb_ & highmask) | lowbits,
+        ret = StridedInterval(bits=self.bits, stride=stride_, lower_bound=(lb_ & highmask) | lowbits,
                                upper_bound=(ub_ & highmask) | lowbits)
+        ret.normalize()
+
+        return ret
 
     def bitwise_and(self, b):
         '''
