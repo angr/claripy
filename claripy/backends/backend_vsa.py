@@ -22,7 +22,7 @@ class BackendVSA(ModelBackend):
     def convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
-        if type(a) in { StridedInterval }:
+        if type(a) in { StridedInterval, ValueSet }:
             return a
 
         import ipdb; ipdb.set_trace()
@@ -67,7 +67,7 @@ class BackendVSA(ModelBackend):
     def Concat(*args):
         ret = None
         for expr in args:
-            assert type(expr) is StridedInterval
+            assert type(expr) in { StridedInterval, ValueSet }
 
             ret = ret.concat(expr) if ret is not None else expr
 
@@ -79,7 +79,7 @@ class BackendVSA(ModelBackend):
         high_bit = args[0]
         expr = args[2]
 
-        assert type(expr) is StridedInterval
+        assert type(expr) in { StridedInterval, ValueSet }
 
         ret = expr.extract(high_bit, low_bit)
 
@@ -92,5 +92,5 @@ class SolverVSA():
 
 from ..bv import BVV
 from ..operations import backend_operations_vsa_compliant, expression_operations
-from ..vsa import StridedInterval
+from ..vsa import StridedInterval, ValueSet
 from ..result import Result

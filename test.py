@@ -573,6 +573,17 @@ def test_vsa():
     si_or_6 = backend_vsa.convert_expr(si_e | si_g) #
     nose.tools.assert_equal(si_or_6, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
 
+    # Extracting an integer
+    si = clrp.StridedInterval(bits=64, stride=0, lower_bound=0x7fffffffffff0000, upper_bound=0x7fffffffffff0000)
+    part1 = backend_vsa.convert_expr(si[63 : 32])
+    part2 = backend_vsa.convert_expr(si[31 : 0])
+    nose.tools.assert_equal(part1, clrp.StridedInterval(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff)._model)
+    nose.tools.assert_equal(part2, clrp.StridedInterval(bits=32, stride=0, lower_bound=0xffff0000, upper_bound=0xffff0000)._model)
+
+    # Concatenating two integers
+    si_concat = backend_vsa.convert_expr(part1.concat(part2))
+    nose.tools.assert_equal(si_concat, si._model)
+
     # VSA
     vs_1 = clrp.ValueSet()
     nose.tools.assert_true(vs_1._model.is_empty(), True)

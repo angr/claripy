@@ -61,7 +61,7 @@ backend_creation_operations = {
 }
 
 backend_vsa_creation_operations = {
-    'StridedInterval'
+    'StridedInterval', 'ValueSet'
 }
 
 backend_other_operations = { 'If' }

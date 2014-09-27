@@ -16,8 +16,11 @@ def normalize_types(f):
     return normalizer
 
 class ValueSet(object):
-    def __init__(self):
+    def __init__(self, region=None, bits=None, val=None):
         self._si_dict = {}
+
+        if region is not None and bits is not None and val is not None:
+            self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
 
     @normalize_types
     def set_si(self, region, si):
@@ -52,6 +55,21 @@ class ValueSet(object):
 
     def is_empty(self):
         return (len(self._si_dict) == 0)
+
+    def extract(self, high_bit, low_bit):
+        new_vs = ValueSet()
+        for region, si in self._si_dict.items():
+            new_vs.set_si(region, si.extract(high_bit, low_bit))
+
+        return new_vs
+
+    def concat(self, b):
+        new_vs = ValueSet()
+        # TODO: This logic is obviously flawed. Correct it later :-(
+        for region, si in self._si_dict.items():
+            new_vs.set_si(region, si.concat(b.get_si(region)))
+
+        return new_vs
 
 from .strided_interval import StridedInterval
 from ..expression import E

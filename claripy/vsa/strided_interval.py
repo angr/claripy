@@ -487,7 +487,7 @@ class StridedInterval(object):
         # of sign-changes.
 
         return StridedInterval(bits=self.bits,
-                               stride=max(self.stride >> upper, 1),
+                               stride=max(self.stride >> upper, 0),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
 
@@ -511,7 +511,7 @@ class StridedInterval(object):
         # of sign-changes.
 
         return StridedInterval(bits=self.bits + shift_amount,
-                               stride=max(self.stride << lower, 1),
+                               stride=max(self.stride << lower, 0),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
 
@@ -528,6 +528,10 @@ class StridedInterval(object):
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
+            elif (self.upper_bound - self.lower_bound <= mask):
+                return StridedInterval(bits=tok, stride=self.stride,
+                                       lower_bound=(self.lower_bound & mask),
+                                       upper_bound=(self.upper_bound & mask))
             else:
                 # TODO: How can we do better here? For example, keep the stride information?
                 return self.top(tok)
