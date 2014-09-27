@@ -32,6 +32,9 @@ class ValueSet(object):
         # TODO: Should we return a None, or an empty SI instead?
         return None
 
+    def items(self):
+        return self._si_dict.items()
+
     @normalize_types
     def merge_si(self, region, si):
         if region not in self._si_dict:
@@ -52,6 +55,37 @@ class ValueSet(object):
         if self.is_empty():
             return 0
         return len(self._si_dict.items()[0][1])
+
+    def __add__(self, other):
+        if type(other) is ValueSet:
+            raise NotImplementedError()
+        else:
+            new_vs = ValueSet()
+            for region, si in self._si_dict.items():
+                new_vs._si_dict[region] = si + other
+
+            return new_vs
+
+    def __sub__(self, other):
+        if type(other) is ValueSet:
+            raise NotImplementedError()
+        else:
+            new_vs = ValueSet()
+            for region, si in self._si_dict.items():
+                new_vs._si_dict[region] = si - other
+
+            return new_vs
+
+    def __and__(self, other):
+        if type(other) is ValueSet:
+            # An address bitwise-and another address? WTF?
+            assert False
+
+        new_vs = ValueSet()
+        for region, si in self._si_dict.items():
+            new_vs._si_dict[region] = si.__and__(other)
+
+        return new_vs
 
     def is_empty(self):
         return (len(self._si_dict) == 0)

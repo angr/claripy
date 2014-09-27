@@ -6,7 +6,7 @@ from .model_backend import ModelBackend, BackendError
 class BackendVSA(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
-        self._make_raw_ops(set(expression_operations), op_module=StridedInterval)
+        self._make_raw_ops(set(expression_operations), op_module=BackendVSA)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
     def solver(self, timeout=None):
@@ -62,6 +62,17 @@ class BackendVSA(ModelBackend):
     #
     # Operations
     #
+
+    @staticmethod
+    def __add__(a, b): return a.__add__(b)
+
+    @staticmethod
+    def __sub__(a, b): return a.__sub__(b)
+
+    @staticmethod
+    def __and__(a, b): return a.__and__(b)
+
+    # TODO: Implement other operations!
 
     @staticmethod
     def Concat(*args):

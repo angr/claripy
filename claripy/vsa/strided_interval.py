@@ -3,6 +3,7 @@ import functools
 import math
 
 from ..expression import E
+from ..bv import BVV
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -14,6 +15,10 @@ def normalize_types(f):
             o = o._model
         if type(self) is E:
             e = e._model
+        if type(self) is BVV:
+            self = self.value
+        if type(o) is BVV:
+            o = o.value
         if type(o) in (int, long):
             o = StridedInterval(bits=StridedInterval.min_bits(o), stride=0, lower_bound=o, upper_bound=o)
         if type(self) in (int, long):
@@ -154,11 +159,19 @@ class StridedInterval(object):
 
     @property
     def max(self):
-        raise Exception('Not implemented')
+        if not self.is_empty():
+            return self.upper_bound
+        else:
+            # It is empty!
+            return None
 
     @property
     def min(self):
-        raise Exception('Not implemented')
+        if not self.is_empty():
+            return self.lower_bound
+        else:
+            # It is empty
+            return None
 
     def _min_bits(self):
         v = self._upper_bound
@@ -172,6 +185,10 @@ class StridedInterval(object):
         elif val < 0:
             return int(math.log(-val, 2) + 1) + 1
         else:
+            # Here we assume the maximum val is 64 bits
+            # Special case to deal with the floating-point imprecision
+            if val > 0xfffffffffffe0000 and val <= 0x10000000000000000:
+                return 64
             return int(math.log(val, 2) + 1)
 
     @staticmethod
@@ -251,7 +268,7 @@ class StridedInterval(object):
         :param b:
         :return: self + b
         '''
-        assert self.bits == b.bits
+        new_bits = max(self.bits, b.bits)
 
         lb_ = self.lower_bound + b.lower_bound
         ub_ = self.upper_bound + b.upper_bound
@@ -263,12 +280,12 @@ class StridedInterval(object):
         stride = fractions.gcd(self.stride, b.stride)
 
         if overflow:
-            return self.top(self.bits)
+            return self.top(new_bits)
         else:
-            new_lb = self.lower(self.bits, lb_, stride) if lb_underflow_ else lb_
-            new_ub = self.upper(self.bits, ub_, stride) if ub_overflow_ else ub_
+            new_lb = self.lower(new_bits, lb_, stride) if lb_underflow_ else lb_
+            new_ub = self.upper(new_bits, ub_, stride) if ub_overflow_ else ub_
 
-            return StridedInterval(bits=self.bits, stride=stride, lower_bound=new_lb, upper_bound=new_ub)
+            return StridedInterval(bits=new_bits, stride=stride, lower_bound=new_lb, upper_bound=new_ub)
 
     def neg(self):
         '''
