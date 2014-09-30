@@ -531,6 +531,7 @@ def test_vsa():
     si_e = clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
     si_f = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=255)
     si_g = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=0xff)
+    si_h = clrp.StridedInterval(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
     nose.tools.assert_equal(si1._model, 10)
     nose.tools.assert_equal(si2._model, 10)
     nose.tools.assert_equal(si1._model, si2._model)
@@ -543,6 +544,9 @@ def test_vsa():
     nose.tools.assert_equal(si_add_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=-90, upper_bound=220)._model)
     si_add_4 = backend_vsa.convert_expr((si_b + si_c))
     nose.tools.assert_equal(si_add_4, clrp.StridedInterval(bits=32, stride=1, lower_bound=-200, upper_bound=400)._model)
+    # __add__ with overflow
+    si_add_5 = backend_vsa.convert_expr(si_h + 0xffffffff)
+    nose.tools.assert_equal(si_add_5, clrp.StridedInterval(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff)._model)
     # __sub__
     si_minus_1 = backend_vsa.convert_expr((si1 - si2))
     nose.tools.assert_equal(si_minus_1, 0)

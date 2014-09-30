@@ -272,9 +272,15 @@ class StridedInterval(object):
 
         lb_ = self.lower_bound + b.lower_bound
         ub_ = self.upper_bound + b.upper_bound
-        lb_underflow_ = (lb_ < StridedInterval.min_int(self.bits))
-        ub_overflow_ = (ub_ > StridedInterval.max_int(self.bits))
-        overflow = lb_underflow_ or ub_overflow_
+
+        # This implementation (as in BAP 0.8) will yield imprecise result when dealing with overflows!
+        # lb_underflow_ = (lb_ < StridedInterval.min_int(self.bits))
+        # ub_overflow_ = (ub_ > StridedInterval.max_int(self.bits))
+        # overflow = lb_underflow_ or ub_overflow_
+        overflow = False
+        if (lb_ < StridedInterval.min_int(self.bits) and ub_ > StridedInterval.min_int(self.bits) and ub_ < StridedInterval.max_int(self.bits)) or \
+                (lb_ >= StridedInterval.min_int(self.bits) and lb_ <= StridedInterval.max_int(self.bits) and ub_ > StridedInterval.max_int(self.bits)):
+            overflow = True
 
         # Take the GCD of two operands' strides
         stride = fractions.gcd(self.stride, b.stride)
@@ -282,8 +288,15 @@ class StridedInterval(object):
         if overflow:
             return self.top(new_bits)
         else:
-            new_lb = self.lower(new_bits, lb_, stride) if lb_underflow_ else lb_
-            new_ub = self.upper(new_bits, ub_, stride) if ub_overflow_ else ub_
+            # new_lb = self.lower(new_bits, lb_, stride) if lb_underflow_ else lb_
+            # new_ub = self.upper(new_bits, ub_, stride) if ub_overflow_ else ub_
+            mask = StridedInterval.max_int(self.bits)
+            new_lb = lb_
+            if new_lb > mask:
+                new_lb = new_lb & mask
+            new_ub = ub_
+            if new_ub > mask:
+                new_ub = new_ub & mask
 
             return StridedInterval(bits=new_bits, stride=stride, lower_bound=new_lb, upper_bound=new_ub)
 
