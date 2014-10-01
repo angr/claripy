@@ -96,6 +96,11 @@ class Claripy(object):
         vs = ValueSet(**kwargs)
         return E(self, model=vs, variables=set(), symbolic=False, length=len(vs))
 
+    # a-loc
+    def AbstractLocation(self, *args, **kwargs):
+        aloc = AbstractLocation(*args, **kwargs)
+        return aloc
+
     #
     # Boolean ops
     #
@@ -153,5 +158,5 @@ from .expression import E, A
 from .backends.backend import BackendError
 from .operations import op_length
 from .bv import BVV
-from .vsa import StridedInterval, ValueSet
+from .vsa import StridedInterval, ValueSet, AbstractLocation
 from .errors import ClaripyOperationError

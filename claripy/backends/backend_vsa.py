@@ -9,9 +9,9 @@ class BackendVSA(ModelBackend):
         self._make_raw_ops(set(expression_operations), op_module=BackendVSA)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
-    def solver(self, timeout=None):
-        s = SolverVSA()
-        return s
+        self._op_raw['StridedInterval'] = StridedInterval.__init__
+        self._op_raw['ValueSet'] = ValueSet.__init__
+        self._op_raw['AbstractLocation'] = AbstractLocation.__init__
 
     def add_exprs(self, solver, constraints):
         pass
@@ -96,12 +96,7 @@ class BackendVSA(ModelBackend):
 
         return ret
 
-
-class SolverVSA():
-    def __init__(self):
-        pass
-
 from ..bv import BVV
-from ..operations import backend_operations_vsa_compliant, expression_operations
-from ..vsa import StridedInterval, ValueSet
+from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
+from ..vsa import StridedInterval, ValueSet, AbstractLocation
 from ..result import Result
