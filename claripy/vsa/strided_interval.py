@@ -589,6 +589,12 @@ class StridedInterval(object):
 
         return ret
 
+    def zero_extend(self, new_length):
+        si = self.copy()
+        si._bits = new_length
+
+        return si
+
     @normalize_types
     def union(self, b):
         '''

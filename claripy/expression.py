@@ -41,6 +41,7 @@ class A(object):
         if '__' in self._op:
             return "%s.%s%s" % (self._args[0], self._op, self._args[1:])
         else:
+            print self._op
             return "%s%s" % (self._op, self._args)
 
     def __hash__(self):

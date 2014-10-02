@@ -97,6 +97,14 @@ class BackendVSA(ModelBackend):
         return ret
 
     @staticmethod
+    def ZeroExt(*args):
+        new_bits = args[0]
+        expr = args[1]
+
+        assert type(expr) is StridedInterval
+        return expr.zero_extend(new_bits)
+
+    @staticmethod
     def union(*args):
         assert len(args) == 2
 
