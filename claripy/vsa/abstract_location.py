@@ -25,3 +25,6 @@ class AbstractLocation(object):
     @property
     def size(self):
         return self._size
+
+    def update(self, addr, size):
+        pass

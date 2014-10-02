@@ -88,7 +88,7 @@ class Claripy(object):
     # Strided interval
     #
     def StridedInterval(self, **kwargs):
-        si = StridedInterval(**kwargs)
+        si = BackendVSA.CreateStridedInterval(**kwargs)
         return E(self, model=si, variables=set(), symbolic=False, length=len(si))
 
     # Value Set
@@ -158,5 +158,6 @@ from .expression import E, A
 from .backends.backend import BackendError
 from .operations import op_length
 from .bv import BVV
-from .vsa import StridedInterval, ValueSet, AbstractLocation
+from .vsa import ValueSet, AbstractLocation
+from .backends import BackendVSA
 from .errors import ClaripyOperationError

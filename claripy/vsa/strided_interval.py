@@ -36,6 +36,7 @@ class StridedInterval(object):
 
     def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None):
         self._name = name
+
         self._bits = bits
         self._stride = stride
         self._lower_bound = lower_bound
@@ -617,3 +618,5 @@ class StridedInterval(object):
         else:
             new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+
+from ..errors import BackendError

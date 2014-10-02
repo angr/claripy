@@ -9,7 +9,7 @@ class BackendVSA(ModelBackend):
         self._make_raw_ops(set(expression_operations), op_module=BackendVSA)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
-        self._op_raw['StridedInterval'] = StridedInterval.__init__
+        self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
         self._op_raw['ValueSet'] = ValueSet.__init__
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
 
@@ -96,7 +96,58 @@ class BackendVSA(ModelBackend):
 
         return ret
 
+    @staticmethod
+    def union(*args):
+        assert len(args) == 2
+
+        return args[0].union(args[1])
+
+    @staticmethod
+    def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
+        '''
+
+        :param name:
+        :param bits:
+        :param stride:
+        :param lower_bound:
+        :param upper_bound:
+        :param to_conv:
+        :return:
+        '''
+        if to_conv is not None:
+            if type(to_conv) is E:
+                to_conv = to_conv._model
+            if type(to_conv) is StridedInterval:
+                # No conversion will be done
+                return to_conv
+
+            if type(to_conv) not in {int, long, BVV}:
+                raise BackendError('Unsupported to_conv type %s' % type(to_conv))
+
+            if stride is not None or lower_bound is not None or \
+                            upper_bound is not None:
+                raise BackendError('You cannot specify both to_conv and other parameters at the same time.')
+
+            if type(to_conv) is BVV:
+                bits = to_conv.bits
+                to_conv_value = to_conv.value
+            else:
+                bits = bits
+                to_conv_value = to_conv
+
+            stride = 0
+            lower_bound = to_conv_value
+            upper_bound = to_conv_value
+
+        bi = StridedInterval(name=name,
+                             bits=bits,
+                             stride=stride,
+                             lower_bound=lower_bound,
+                             upper_bound=upper_bound)
+        return bi
+
 from ..bv import BVV
+from ..expression import E
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation
 from ..result import Result
