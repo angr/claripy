@@ -186,15 +186,12 @@ class E(Storable):
         else:
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
 
-    def reversed(self, chunk_bits=8):
+    def reversed(self):
         '''
         Reverses the expression.
         '''
-        s = self.chop(bits=chunk_bits)
-        if len(s) == 1:
-            return s[0]
-        else:
-            return self._claripy.Concat(*reversed(s))
+        return self._claripy.Reverse(self)
+    reverse = reversed
 
     def __getitem__(self, rng):
         if type(rng) is slice:

@@ -45,7 +45,7 @@ backend_comparator_operations = {
 }
 
 backend_bitwise_operations = {
-    'RotateLeft', 'RotateRight', 'LShR',
+    'RotateLeft', 'RotateRight', 'LShR', 'Reverse',
 }
 
 backend_boolean_operations = {
