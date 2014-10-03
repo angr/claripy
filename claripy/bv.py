@@ -252,6 +252,10 @@ def RotateRight(self, bits):
 def RotateLeft(self, bits):
     raise NotImplementedError()
 
+def Reverse(a):
+    return Concat(*[Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+
+
 @normalize_types
 @compare_bits
 def ULT(self, o):

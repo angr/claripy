@@ -49,13 +49,18 @@ class BackendZ3(SolverBackend):
 		self._len_cache = weakref.WeakKeyDictionary()
 
 		# and the operations
-		for o in backend_operations:
+		for o in backend_operations - { 'Reverse' }:
 			self._op_raw[o] = getattr(z3, o)
 		self._op_raw['size'] = self.size
+		self._op_raw['Reverse'] = self.reverse
 
 	@staticmethod
 	def size(e):
 		return e.size()
+
+	@staticmethod
+	def reverse(a):
+		return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
 	def convert(self, obj, result=None):
 		if type(obj) is bv.BVV:

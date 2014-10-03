@@ -47,6 +47,12 @@ def test_expression():
     y = clrp.LShR(x, 10)
     nose.tools.assert_equal(y.length, 32)
 
+    r = clrp.BitVecVal(0x01020304, 32)
+    rr = r.reverse()
+    rrr = rr.reverse()
+    nose.tools.assert_is(r, rrr)
+    nose.tools.assert_equal(rr._model, 0x04030201)
+
 def test_concrete():
     clrp = claripy.ClaripyStandalone()
 
@@ -160,102 +166,102 @@ def test_solver():
     raw_solver(claripy.solvers.BranchingSolver)
     raw_solver(claripy.solvers.CompositeSolver)
 def raw_solver(solver_type):
-	clrp = claripy.ClaripyStandalone()
-	#bc = claripy.backends.BackendConcrete(clrp)
-	#bz = claripy.backends.BackendZ3(clrp)
-	#clrp.expression_backends = [ bc, bz, ba ]
+    clrp = claripy.ClaripyStandalone()
+    #bc = claripy.backends.BackendConcrete(clrp)
+    #bz = claripy.backends.BackendZ3(clrp)
+    #clrp.expression_backends = [ bc, bz, ba ]
 
-	s = solver_type(clrp)
+    s = solver_type(clrp)
 
-	s.simplify()
+    s.simplify()
 
-	x = clrp.BitVec('x', 32)
-	y = clrp.BitVec('y', 32)
-	z = clrp.BitVec('z', 32)
+    x = clrp.BitVec('x', 32)
+    y = clrp.BitVec('y', 32)
+    z = clrp.BitVec('z', 32)
 
-	l.debug("adding constraints")
+    l.debug("adding constraints")
 
-	s.add(x == 10)
-	s.add(y == 15)
-	l.debug("checking")
-	nose.tools.assert_true(s.satisfiable())
-	nose.tools.assert_false(s.satisfiable(extra_constraints=[x == 5]))
-	nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
-	nose.tools.assert_true(s.solution(x + 5, 15))
-	nose.tools.assert_true(s.solution(x, 10))
-	nose.tools.assert_true(s.solution(y, 15))
-	nose.tools.assert_false(s.solution(y, 13))
+    s.add(x == 10)
+    s.add(y == 15)
+    l.debug("checking")
+    nose.tools.assert_true(s.satisfiable())
+    nose.tools.assert_false(s.satisfiable(extra_constraints=[x == 5]))
+    nose.tools.assert_equal(s.eval(x + 5, 1)[0], 15)
+    nose.tools.assert_true(s.solution(x + 5, 15))
+    nose.tools.assert_true(s.solution(x, 10))
+    nose.tools.assert_true(s.solution(y, 15))
+    nose.tools.assert_false(s.solution(y, 13))
 
 
-	shards = s.split()
-	nose.tools.assert_equal(len(shards), 2)
-	nose.tools.assert_equal(len(shards[0].variables), 1)
-	nose.tools.assert_equal(len(shards[1].variables), 1)
-	nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # adds the != from the solution() check
+    shards = s.split()
+    nose.tools.assert_equal(len(shards), 2)
+    nose.tools.assert_equal(len(shards[0].variables), 1)
+    nose.tools.assert_equal(len(shards[1].variables), 1)
+    nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # adds the != from the solution() check
 
-	s = solver_type(clrp)
-	#clrp.expression_backends = [ bc, ba, bz ]
-	s.add(clrp.UGT(x, 10))
-	s.add(clrp.UGT(x, 20))
-	s.simplify()
-	nose.tools.assert_equal(len(s.constraints), 1)
-	#nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(ULE(x <= 20))")
+    s = solver_type(clrp)
+    #clrp.expression_backends = [ bc, ba, bz ]
+    s.add(clrp.UGT(x, 10))
+    s.add(clrp.UGT(x, 20))
+    s.simplify()
+    nose.tools.assert_equal(len(s.constraints), 1)
+    #nose.tools.assert_equal(str(s.constraints[0]._obj), "Not(ULE(x <= 20))")
 
-	s.add(clrp.UGT(y, x))
-	s.add(clrp.ULT(z, 5))
+    s.add(clrp.UGT(y, x))
+    s.add(clrp.ULT(z, 5))
 
-	#print "========================================================================================"
-	#print "========================================================================================"
-	#print "========================================================================================"
-	#print "========================================================================================"
-	#a = s.eval(z, 100)
-	#print "ANY:", a
-	#print "========================================================================================"
-	#mx = s.max(z)
-	#print "MAX",mx
-	#print "========================================================================================"
-	#mn = s.min(z)
-	#print "MIN",mn
-	#print "========================================================================================"
-	#print "========================================================================================"
-	#print "========================================================================================"
-	#print "========================================================================================"
+    #print "========================================================================================"
+    #print "========================================================================================"
+    #print "========================================================================================"
+    #print "========================================================================================"
+    #a = s.eval(z, 100)
+    #print "ANY:", a
+    #print "========================================================================================"
+    #mx = s.max(z)
+    #print "MAX",mx
+    #print "========================================================================================"
+    #mn = s.min(z)
+    #print "MIN",mn
+    #print "========================================================================================"
+    #print "========================================================================================"
+    #print "========================================================================================"
+    #print "========================================================================================"
 
-	nose.tools.assert_equal(s.max(z), 4)
-	nose.tools.assert_equal(s.min(z), 0)
-	nose.tools.assert_equal(s.min(y), 22)
-	nose.tools.assert_equal(s.max(y), 2**y.size()-1)
+    nose.tools.assert_equal(s.max(z), 4)
+    nose.tools.assert_equal(s.min(z), 0)
+    nose.tools.assert_equal(s.min(y), 22)
+    nose.tools.assert_equal(s.max(y), 2**y.size()-1)
 
-	ss = s.split()
-	nose.tools.assert_equal(len(ss), 2)
-	if type(s) is claripy.solvers.BranchingSolver:
-		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 3 }) # constraints from min or max
-	elif type(s) is claripy.solvers.CompositeSolver:
-		nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 3 }) # constraints from min or max
+    ss = s.split()
+    nose.tools.assert_equal(len(ss), 2)
+    if type(s) is claripy.solvers.BranchingSolver:
+        nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 3 }) # constraints from min or max
+    elif type(s) is claripy.solvers.CompositeSolver:
+        nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 3 }) # constraints from min or max
 
-	# test that False makes it unsat
-	s = solver_type(clrp)
-	s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(1,1))
-	nose.tools.assert_true(s.satisfiable())
-	s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(0,1))
-	nose.tools.assert_false(s.satisfiable())
+    # test that False makes it unsat
+    s = solver_type(clrp)
+    s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(1,1))
+    nose.tools.assert_true(s.satisfiable())
+    s.add(clrp.BitVecVal(1,1) == clrp.BitVecVal(0,1))
+    nose.tools.assert_false(s.satisfiable())
 
-	# test extra constraints
-	s = solver_type(clrp)
-	x = clrp.BitVec('x', 32)
-	nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
-	s.add(x == 10)
-	nose.tools.assert_false(s.solution(x, 2))
-	nose.tools.assert_true(s.solution(x, 10))
+    # test extra constraints
+    s = solver_type(clrp)
+    x = clrp.BitVec('x', 32)
+    nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
+    s.add(x == 10)
+    nose.tools.assert_false(s.solution(x, 2))
+    nose.tools.assert_true(s.solution(x, 10))
 
-	# test result caching
+    # test result caching
 
-	s = solver_type(clrp)
-	nose.tools.assert_true(s.satisfiable())
-	s.add(clrp.BoolVal(False))
-	nose.tools.assert_false(s.satisfiable())
-	s._result = None
-	nose.tools.assert_false(s.satisfiable())
+    s = solver_type(clrp)
+    nose.tools.assert_true(s.satisfiable())
+    s.add(clrp.BoolVal(False))
+    nose.tools.assert_false(s.satisfiable())
+    s._result = None
+    nose.tools.assert_false(s.satisfiable())
 
 def test_solver_branching():
     raw_solver_branching(claripy.solvers.BranchingSolver)
@@ -509,7 +515,7 @@ def test_bool():
     nose.tools.assert_equal(bc.convert_expr(o), False)
 
 def test_vsa():
-    from claripy.backends import BackendVSA, BackendConcrete
+    from claripy.backends import BackendVSA
     clrp = claripy.ClaripyStandalone()
     # Set backend
     backend_vsa = BackendVSA()
