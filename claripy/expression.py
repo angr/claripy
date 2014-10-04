@@ -8,22 +8,89 @@ from .storable import Storable
 
 class A(object):
     '''
-    An A(ST) tracks a tree of operations on arguments.
+    An A(ST) tracks a tree of operations on arguments. It has the following methods:
+
+        op: the operation that is being done on the arguments
+        args: the arguments that are being used
+        why: the reason that Claripy fell back to an AST instead of keeping things
+             as a model. BACKEND_ERROR means that no backend could handle the
+             opertaion, while DELAYED_OP means that the AST represents a delayed
+             operation on a possible model-handleable object.
+
+    It also has the following useful members:
+
+        size(): the size of the result
     '''
 
-    __slots__ = [ '_op', '_args', '_hash', '__weakref__' ]
+    __slots__ = [ 'op', 'args', 'why', '_length', '_hash', '__weakref__' ]
+    BACKEND_ERROR = "BACKEND_ERROR"
+    DELAYED_OP = "DELAYED_OP"
 
-    def __init__(self, op, args):
-        self._op = op
-        self._args = args
+    def __init__(self, op, args, why=BACKEND_ERROR):
+        self.op = op
+        self.args = args
+        self.why = why
         self._hash = None
+        self._length = None
+
+    @staticmethod
+    def arg_size(backends, o):
+        if isinstance(o, E):
+            return o.size()
+        elif isinstance(o, A):
+            return o.size(backends=backends)
+        else:
+            for b in backends:
+                try: return b.call('size', (o,))
+                except BackendError: pass
+            return -1
+
+    def calculate_length(self, backends):
+        if self.op in length_none_operations:
+            return -1
+
+        if self.op in length_same_operations:
+            if self.op == 'If':
+                lengths = set(self.arg_size(backends, a) for a in self.args[1:])
+            else:
+                lengths = set(self.arg_size(backends, a) for a in self.args)
+
+            if len(lengths) != 1:
+                raise ClaripySizeError("invalid length combination for operation %s", self.op)
+            return lengths.__iter__().next()
+
+        if self.op in length_change_operations:
+            if self.op in ( "SignExt", "ZeroExt" ):
+                length = self.arg_size(backends, self.args[1])
+                if length == -1: raise ClaripyTypeError("extending an object without a length")
+                return length + self.args[0]
+            if self.op == 'Concat':
+                lengths = [ self.arg_size(backends, a) for a in self.args ]
+                if len(lengths) != len(self.args) or -1 in lengths:
+                    raise ClaripyTypeError("concatenating an object without a length")
+                return sum(lengths)
+            if self.op == 'Extract':
+                return self.args[0]-self.args[1]+1
+
+        if self.op == 'BoolVal':
+            return -1
+
+        if self.op in length_new_operations:
+            return self.args[1]
+
+        raise ClaripyOperationError("unknown operation %s" % self.op)
+
+    def size(self, backends=()):
+        if self._length is None:
+            self._length = self.calculate_length(backends)
+        return self._length
 
     def resolve(self, b, save=None, result=None):
         if result is not None and self in result.resolve_cache[b]:
             return result.resolve_cache[b][self]
 
         args = [ ]
-        for a in self._args:
+        for a in self.args:
             if isinstance(a, E):
                 args.append(b.convert_expr(a, result=result))
             elif isinstance(a, A):
@@ -32,38 +99,38 @@ class A(object):
                 args.append(b.convert(a, result=result))
 
         l.debug("trying evaluation with %s", b)
-        r = b.call(self._op, args, result=result)
+        r = b.call(self.op, args, result=result)
         if result is not None:
             result.resolve_cache[b][self] = r
         return r
 
     def __repr__(self):
-        if '__' in self._op:
-            return "%s.%s%s" % (self._args[0], self._op, self._args[1:])
+        if '__' in self.op:
+            return "%s.%s%s" % (self.args[0], self.op, self.args[1:])
         else:
-            return "%s%s" % (self._op, self._args)
+            return "%s%s" % (self.op, self.args)
 
     def __hash__(self):
         if self._hash is None:
-            self._hash = hash((self._op,) + tuple(self._args))
+            self._hash = hash((self.op,) + tuple(self.args))
         return self._hash
 
     def __getstate__(self):
-        return self._op, self._args
+        return self.op, self.args
     def __setstate__(self, state):
         self._hash = None
-        self._op, self._args = state
+        self.op, self.args = state
 
 class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified', '__weakref__' ]
+    __slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified', '__weakref__', '_pending_operations' ]
 
-    def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
+    def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
         Storable.__init__(self, claripy, uuid=uuid)
         have_uuid = uuid is not None
-        have_data = not (variables is None or symbolic is None or model is None or length is None)
+        have_data = not (variables is None or symbolic is None or model is None)
         self.objects = { }
         self._simplified = simplified
 
@@ -72,7 +139,6 @@ class E(Storable):
         elif have_data:
             self.variables = variables
             self.symbolic = symbolic
-            self.length = length
 
             self._uuid = uuid
             self._model = model
@@ -89,11 +155,11 @@ class E(Storable):
 
     @staticmethod
     def _part_count(a):
-        return sum([ E._part_count(aa) for aa in a._args ]) if isinstance(a, A) else E._part_count(a._model) if isinstance(a, E) else 1
+        return sum([ E._part_count(aa) for aa in a.args ]) if isinstance(a, A) else E._part_count(a._model) if isinstance(a, E) else 1
 
     @staticmethod
     def _depth(a):
-        return max([ E._depth(aa)+1 for aa in a._args ]) if isinstance(a, A) else E._depth(a._model) if isinstance(a, E) else 1
+        return max([ E._depth(aa)+1 for aa in a.args ]) if isinstance(a, A) else E._depth(a._model) if isinstance(a, E) else 1
 
     @staticmethod
     def _hash_counts(a, d=None):
@@ -101,7 +167,7 @@ class E(Storable):
         d[(a.__class__, hash(a))] += 1
 
         if isinstance(a, A):
-            for aa in a._args:
+            for aa in a.args:
                 E._hash_counts(aa, d=d)
         elif isinstance(a, E):
             E._hash_counts(a._model, d=d)
@@ -123,21 +189,25 @@ class E(Storable):
         raise ClaripyExpressionError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
     def __repr__(self):
-        name = "E"
+        start = "E"
         if self.symbolic:
-            name += "S"
-        return name + "(%s)" % self._model
+            start += "S"
+
+        start += "("
+        end = ")"
+
+        return start + str(self._model) + end
 
     def split(self, split_on):
         if not isinstance(self._model, A):
             return [ self ]
 
-        if self._model._op in split_on:
+        if self._model.op in split_on:
             l.debug("Trying to split: %r", self._model)
-            if all(isinstance(a, E) for a in self._model._args):
-                return self._model._args[:]
+            if all(isinstance(a, E) for a in self._model.args):
+                return self._model.args[:]
             else:
-                raise ClaripyExpressionError('the abstraction of this expression was not done with "%s" in split_on' % self._model._op)
+                raise ClaripyExpressionError('the abstraction of this expression was not done with "%s" in split_on' % self._model.op)
         else:
             l.debug("no split for you")
             return [ self ]
@@ -154,25 +224,37 @@ class E(Storable):
             l.debug("uuid pickle on %s", self)
             return self._uuid
         l.debug("full pickle on %s", self)
-        return self._uuid, self._model, self.variables, self.symbolic, self.length, self._simplified
+        return self._uuid, self._model, self.variables, self.symbolic, self._simplified
 
     def __setstate__(self, s):
         if type(s) is str:
             self.__init__(get_claripy(), uuid=s)
             return
 
-        uuid, model, variables, symbolic, length, simplified = s
-        self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length, simplified=simplified)
+        uuid, model, variables, symbolic, simplified = s
+        self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, simplified=simplified)
+
+    def copy(self):
+        c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self.objects, model=self._model, stored=self._stored, simplified=self._simplified)
+        return c
 
     #
     # BV operations
     #
 
     def __len__(self):
-        if self.length == -1:
-            raise ClaripyExpressionError('this expression has no length')
-        return self.length
+        if type(self._model) is A:
+            return self._model.size(backends=self._claripy.model_backends)
+        else:
+            for b in self._claripy.model_backends:
+                try: return b.call_expr('size', (self,))
+                except BackendError: pass
+            raise ClaripyExpressionError("unable to determine size of expression")
     size = __len__
+
+    @property
+    def length(self):
+        return self.size()
 
     def __iter__(self):
         raise ClaripyExpressionError("Please don't iterate over Expressions!")
@@ -186,11 +268,11 @@ class E(Storable):
         else:
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
 
-    def reversed(self):
+    def reversed(self, lazy=True):
         '''
         Reverses the expression.
         '''
-        return self._claripy.Reverse(self)
+        return self._claripy.Reverse(self, lazy=lazy)
     reverse = reversed
 
     def __getitem__(self, rng):
@@ -219,7 +301,7 @@ def make_methods():
     for name in expression_operations:
         e_operator(E, name)
 
-from .errors import ClaripyExpressionError
-from .operations import expression_operations
+from .errors import ClaripyExpressionError, BackendError, ClaripySizeError, ClaripyOperationError, ClaripyTypeError
+from .operations import expression_operations, length_none_operations, length_change_operations, length_same_operations, length_new_operations
 make_methods()
 from . import get_claripy
