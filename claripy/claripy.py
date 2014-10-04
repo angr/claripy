@@ -40,11 +40,11 @@ class Claripy(object):
 
     def wrap(self, o):
         if type(o) == BVV:
-            return self.datalayer.make_expression(o, length=o.bits)
+            return self.datalayer.make_expression(o)
         else:
             return o
 
-    def _do_op(self, name, args, variables=None, symbolic=None, length=None, raw=False, simplified=False):
+    def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
         for b in self.model_backends:
             try:
                 if raw: r = b.call(name, args)
@@ -61,7 +61,7 @@ class Claripy(object):
                         isinstance(arg._actual_model, A) and \
                         arg._model.op == 'Reverse':
                     # Unpack it :-)
-                    r = arg._model._args[0]
+                    r = arg._model.args[0]
 
             if r is None:
                 r = A(name, args)
@@ -71,39 +71,36 @@ class Claripy(object):
         if variables is None:
             all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
             variables = reduce(operator.or_, all_variables, set())
-        if length is None:
-            length = op_length(name, args)
 
-        return self.datalayer.make_expression(r, variables=variables, symbolic=symbolic, length=length, simplified=simplified)
+        return self.datalayer.make_expression(r, variables=variables, symbolic=symbolic, simplified=simplified)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, length=size, raw=True, simplified=True)
+        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, raw=True, simplified=True)
 
     def BitVecVal(self, *args):
-        return self.datalayer.make_expression(BVV(*args), variables=set(), symbolic=False, length=args[-1], simplified=True)
-        #return self._do_op('BitVecVal', args, length=args[-1], variables=set(), symbolic=False, raw=True)
+        return self.datalayer.make_expression(BVV(*args), variables=set(), symbolic=False, simplified=True)
+        #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
 
     # Bitwise ops
     def LShR(self, *args): return self._do_op('LShR', args)
-    def SignExt(self, *args): return self._do_op('SignExt', args, length=args[0]+args[1].length)
-    def ZeroExt(self, *args): return self._do_op('ZeroExt', args, length=args[0]+args[1].length)
-    def Extract(self, *args): return self._do_op('Extract', args, length=args[0]-args[1]+1)
-    def Concat(self, *args): return self._do_op('Concat', args, length=sum([ arg.length for arg in args ]))
+    def SignExt(self, *args): return self._do_op('SignExt', args)
+    def ZeroExt(self, *args): return self._do_op('ZeroExt', args)
+    def Extract(self, *args): return self._do_op('Extract', args)
+    def Concat(self, *args): return self._do_op('Concat', args)
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
     def Reverse(self, o, lazy=True):
         if type(o) is not E or not lazy:
-            print "IMMEDIATE REVERSE"
             return self._do_op('Reverse', (o,))
 
         if len(o._pending_operations) == 0 or o._pending_operations[-1] != "Reverse":
             if isinstance(o._model, A) and o._model.op == 'Reverse':
                 # There is a Reverse operation inside. We wanna undo that
                 a = o._model
-                e = a._args[0]
+                e = a.args[0]
             else:
                 e = o.copy()
                 e.objects.clear()
@@ -120,22 +117,22 @@ class Claripy(object):
     #
     def StridedInterval(self, **kwargs):
         si = StridedInterval(**kwargs)
-        return E(self, model=si, variables=set(), symbolic=False, length=len(si))
+        return E(self, model=si, variables=set(), symbolic=False)
 
     #
     # Boolean ops
     #
     def BoolVal(self, *args):
-        return self.datalayer.make_expression(args[0], variables=set(), symbolic=False, length=-1, simplified=True)
-        #return self._do_op('BoolVal', args, length=-1, variables=set(), symbolic=False, raw=True)
+        return self.datalayer.make_expression(args[0], variables=set(), symbolic=False, simplified=True)
+        #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
-    def And(self, *args): return self._do_op('And', args, length=-1)
-    def Not(self, *args): return self._do_op('Not', args, length=-1)
-    def Or(self, *args): return self._do_op('Or', args, length=-1)
-    def ULT(self, *args): return self._do_op('ULT', args, length=-1)
-    def ULE(self, *args): return self._do_op('ULE', args, length=-1)
-    def UGE(self, *args): return self._do_op('UGE', args, length=-1)
-    def UGT(self, *args): return self._do_op('UGT', args, length=-1)
+    def And(self, *args): return self._do_op('And', args)
+    def Not(self, *args): return self._do_op('Not', args)
+    def Or(self, *args): return self._do_op('Or', args)
+    def ULT(self, *args): return self._do_op('ULT', args)
+    def ULE(self, *args): return self._do_op('ULE', args)
+    def UGE(self, *args): return self._do_op('UGE', args)
+    def UGT(self, *args): return self._do_op('UGT', args)
 
     #
     # Other ops
@@ -177,7 +174,6 @@ class Claripy(object):
 
 from .expression import E, A
 from .backends.backend import BackendError
-from .operations import op_length
 from .bv import BVV
 from .vsa import StridedInterval
 from .errors import ClaripyOperationError
