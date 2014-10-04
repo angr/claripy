@@ -106,6 +106,7 @@ class E(Storable):
             self.symbolic = e.symbolic
             self.length = e.length
             self._actual_model = e._actual_model
+            self.objects = e.objects
 
         return self._actual_model
 

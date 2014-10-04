@@ -73,10 +73,9 @@ class Backend(object):
         if not isinstance(expr, E):
             return self.convert(expr, result=result)
 
-        #if self in expr.objects:
-            #r = expr.objects[self]
-        #elif type(expr._model) is not A:
-        if type(expr._model) is not A:
+        if self in expr.objects:
+            r = expr.objects[self]
+        elif type(expr._model) is not A:
             r = self.convert(expr._model, result=result)
         else:
             resolved = False
