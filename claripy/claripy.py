@@ -106,8 +106,6 @@ class Claripy(object):
             elif isinstance(o._model, A) and o._model.op == 'Reverse':
                 e = o._model._args[0]
             else:
-                if type(e._model) is BVV and e._model.value == 0xd60840095abaff14:
-                    import ipdb; ipdb.set_trace()
                 e._pending_operations.append("Reverse")
             return e
 
