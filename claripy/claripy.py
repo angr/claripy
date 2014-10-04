@@ -99,9 +99,14 @@ class Claripy(object):
             return self._do_op('Reverse', (o,))
 
         if len(o._pending_operations) == 0 or o._pending_operations[-1] != "Reverse":
-            e = o.copy()
-            e.objects.clear()
-            e._pending_operations.append("Reverse")
+            if isinstance(o._model, A) and o._model.op == 'Reverse':
+                # There is a Reverse operation inside. We wanna undo that
+                a = o._model
+                e = a._args[0]
+            else:
+                e = o.copy()
+                e.objects.clear()
+                e._pending_operations.append("Reverse")
             return e
         elif o._pending_operations[-1] == "Reverse":
             e = o.copy()
