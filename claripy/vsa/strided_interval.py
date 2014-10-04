@@ -595,6 +595,12 @@ class StridedInterval(object):
 
         return si
 
+    def reverse(self):
+        # import ipdb; ipdb.set_trace()
+        # TODO: Finish this!
+        print "valueset.reverse is not implemented"
+        return self.copy()
+
     @normalize_types
     def union(self, b):
         '''

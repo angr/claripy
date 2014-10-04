@@ -19,6 +19,8 @@ class ValueSet(object):
     def __init__(self, region=None, bits=None, val=None):
         self._si_dict = {}
 
+        self._reversed = False
+
         if region is not None and bits is not None and val is not None:
             self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
 
@@ -47,6 +49,7 @@ class ValueSet(object):
         raise NotImplementedError()
 
     def __repr__(self):
+        s = ""
         for region, si in self._si_dict.items():
             s = "%s: %s" % (region, si)
         return "(" + s + ")"
@@ -104,6 +107,11 @@ class ValueSet(object):
             new_vs.set_si(region, si.concat(b.get_si(region)))
 
         return new_vs
+
+    def reverse(self):
+        #import ipdb; ipdb.set_trace()
+        print "valueset.reverse is not implemented"
+        return self
 
 from .strided_interval import StridedInterval
 from ..expression import E

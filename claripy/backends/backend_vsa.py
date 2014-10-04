@@ -45,7 +45,7 @@ class BackendVSA(ModelBackend):
 
         if expr.is_top():
             # TODO: Return
-            return StridedInterval.NEG_INF
+            return StridedInterval.min_int(expr.bits)
 
         return expr.lower_bound
 
@@ -54,7 +54,7 @@ class BackendVSA(ModelBackend):
 
         if expr.is_top():
             # TODO:
-            return StridedInterval.INF
+            return StridedInterval.max_int(expr.bits)
 
         return expr.upper_bound
 
@@ -103,6 +103,12 @@ class BackendVSA(ModelBackend):
 
         assert type(expr) is StridedInterval
         return expr.zero_extend(new_bits)
+
+    @staticmethod
+    def Reverse(arg):
+        assert type(arg) in { StridedInterval, ValueSet }
+
+        return arg.reverse()
 
     @staticmethod
     def union(*args):
