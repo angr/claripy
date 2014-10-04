@@ -95,18 +95,19 @@ class Claripy(object):
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
     def Reverse(self, o, lazy=True):
-        if type(o) is A and o._op == "Reverse":
-            return o._args[0]
-        elif type(o) is not E or lazy is False:
+        if type(o) is not E or not lazy:
+            print "IMMEDIATE REVERSE"
             return self._do_op('Reverse', (o,))
-        else: # not lazy, and E
+
+        if len(o._pending_operations) == 0 or o._pending_operations[-1] != "Reverse":
             e = o.copy()
-            if len(o._pending_operations) != 0 and o._pending_operations[-1] == "Reverse":
-                e._pending_operations.pop()
-            elif isinstance(o._model, A) and o._model.op == 'Reverse':
-                e = o._model._args[0]
-            else:
-                e._pending_operations.append("Reverse")
+            e.objects.clear()
+            e._pending_operations.append("Reverse")
+            return e
+        elif o._pending_operations[-1] == "Reverse":
+            e = o.copy()
+            e.objects.clear()
+            e._pending_operations.pop()
             return e
 
     #
