@@ -52,7 +52,11 @@ def test_expression():
     rr = r.reverse()
     rrr = rr.reverse()
     nose.tools.assert_is(r._model, rrr._model)
+    nose.tools.assert_is(type(rr._model), claripy.A)
     nose.tools.assert_equal(bc.convert_expr(rr), 0x04030201)
+
+    rsum = r+rr
+    nose.tools.assert_equal(rsum._model, 0x05050505)
 
 def test_concrete():
     clrp = claripy.ClaripyStandalone()
