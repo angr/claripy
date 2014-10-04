@@ -8,14 +8,28 @@ from .storable import Storable
 
 class A(object):
     '''
-    An A(ST) tracks a tree of operations on arguments.
+    An A(ST) tracks a tree of operations on arguments. It has the following methods:
+
+        op: the operation that is being done on the arguments
+        args: the arguments that are being used
+        why: the reason that Claripy fell back to an AST instead of keeping things
+             as a model. BACKEND_ERROR means that no backend could handle the
+             opertaion, while DELAYED_OP means that the AST represents a delayed
+             operation on a possible model-handleable object.
+
+    It also has the following useful members:
+
+        size(): the size of the result
     '''
 
-    __slots__ = [ 'op', 'args', '_length', '_hash', '__weakref__' ]
+    __slots__ = [ 'op', 'args', 'why', '_length', '_hash', '__weakref__' ]
+    BACKEND_ERROR = "BACKEND_ERROR"
+    DELAYED_OP = "DELAYED_OP"
 
-    def __init__(self, op, args):
+    def __init__(self, op, args, why=BACKEND_ERROR):
         self.op = op
         self.args = args
+        self.why = why
         self._hash = None
         self._length = None
 
@@ -90,10 +104,6 @@ class A(object):
             result.resolve_cache[b][self] = r
         return r
 
-    def deepercopy(self):
-        args = [a.deepercopy() if isinstance(a, E) else a for a in self.args]
-        return A(self.op, args)
-
     def __repr__(self):
         if '__' in self.op:
             return "%s.%s%s" % (self.args[0], self.op, self.args[1:])
@@ -115,7 +125,7 @@ class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'variables', 'symbolic', '_uuid', '_actual_model', '_stored', 'objects', '_simplified', '__weakref__', '_pending_operations' ]
+    __slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified', '__weakref__', '_pending_operations' ]
 
     def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
         Storable.__init__(self, claripy, uuid=uuid)
@@ -123,7 +133,6 @@ class E(Storable):
         have_data = not (variables is None or symbolic is None or model is None)
         self.objects = { }
         self._simplified = simplified
-        self._pending_operations = [ ]
 
         if have_uuid and not have_data:
             self._load()
@@ -132,30 +141,13 @@ class E(Storable):
             self.symbolic = symbolic
 
             self._uuid = uuid
-            self._actual_model = model
+            self._model = model
             self._stored = stored
 
             if objects is not None:
                 self.objects.update(objects)
         else:
             raise ValueError("invalid arguments passed to E()")
-
-    @property
-    def _model(self):
-        if len(self._pending_operations) != 0:
-            e = self
-            p = self._pending_operations
-            self._pending_operations = [ ]
-
-            for o in p:
-                e = self._claripy._do_op(o, (e.deepercopy(),))
-
-            self.variables = e.variables
-            self.symbolic = e.symbolic
-            self._actual_model = e._actual_model
-            self.objects = e.objects
-
-        return self._actual_model
 
     #
     # Some debug stuff:
@@ -190,7 +182,7 @@ class E(Storable):
         self.symbolic = e.symbolic
 
         self._uuid = e._uuid
-        self._actual_model = e._actual_model
+        self._model = e._model
         self._stored = e._stored
 
     def __nonzero__(self):
@@ -204,11 +196,7 @@ class E(Storable):
         start += "("
         end = ")"
 
-        for o in self._pending_operations:
-            start += o + "("
-            end += ")"
-
-        return start + str(self._actual_model) + end
+        return start + str(self._model) + end
 
     def split(self, split_on):
         if not isinstance(self._model, A):
@@ -247,19 +235,7 @@ class E(Storable):
         self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, simplified=simplified)
 
     def copy(self):
-        c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self.objects, model=self._actual_model, stored=self._stored, simplified=self._simplified)
-        c._pending_operations.extend(self._pending_operations)
-        return c
-
-    def deepercopy(self):
-        if isinstance(self._actual_model, A):
-            model = self._actual_model.deepercopy()
-        else:
-            model = self._actual_model
-        c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic,
-              uuid=self._uuid, objects=self.objects, model=model, stored=self._stored,
-              simplified=self._simplified)
-        c._pending_operations.extend(self._pending_operations)
+        c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self.objects, model=self._model, stored=self._stored, simplified=self._simplified)
         return c
 
     #

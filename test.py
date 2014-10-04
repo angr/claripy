@@ -51,8 +51,8 @@ def test_expression():
     r = clrp.BitVecVal(0x01020304, 32)
     rr = r.reverse()
     rrr = rr.reverse()
-    nose.tools.assert_equal(r._model, rrr._model)
-    nose.tools.assert_equal(rr._model, 0x04030201)
+    nose.tools.assert_is(r._model, rrr._model)
+    nose.tools.assert_equal(bc.convert_expr(rr), 0x04030201)
 
 def test_concrete():
     clrp = claripy.ClaripyStandalone()

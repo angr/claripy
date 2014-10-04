@@ -38,11 +38,11 @@ class Claripy(object):
     # Operations
     #
 
-    def wrap(self, o):
-        if type(o) == BVV:
-            return self.datalayer.make_expression(o)
-        else:
+    def wrap(self, o, symbolic=False, variables=None):
+        if type(o) is E:
             return o
+        else:
+            return self.datalayer.make_expression(o, symbolic=symbolic, variables=variables)
 
     def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
         for b in self.model_backends:
@@ -96,21 +96,10 @@ class Claripy(object):
         if type(o) is not E or not lazy:
             return self._do_op('Reverse', (o,))
 
-        if len(o._pending_operations) == 0 or o._pending_operations[-1] != "Reverse":
-            if isinstance(o._model, A) and o._model.op == 'Reverse':
-                # There is a Reverse operation inside. We wanna undo that
-                a = o._model
-                e = a.args[0]
-            else:
-                e = o.copy()
-                e.objects.clear()
-                e._pending_operations.append("Reverse")
-            return e
-        elif o._pending_operations[-1] == "Reverse":
-            e = o.copy()
-            e.objects.clear()
-            e._pending_operations.pop()
-            return e
+        if isinstance(o._model, A) and o._model.op == 'Reverse':
+            return self.wrap(o._model.args[0])
+        else:
+            return self.wrap(A("Reverse", (o,), why=A.DELAYED_OP), symbolic=o.symbolic, variables=o.variables)
 
     #
     # Strided interval
