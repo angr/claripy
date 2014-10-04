@@ -37,6 +37,14 @@ class A(object):
             result.resolve_cache[b][self] = r
         return r
 
+    def deepercopy(self):
+        args = [a.deepercopy() if isinstance(a, E) else a for a in self._args]
+        return A(self._op, args)
+
+    @property
+    def op(self):
+        return self._op
+
     def __repr__(self):
         if '__' in self._op:
             return "%s.%s%s" % (self._args[0], self._op, self._args[1:])
@@ -58,7 +66,7 @@ class E(Storable):
     '''
     A class to wrap expressions.
     '''
-    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified', '__weakref__' ]
+    __slots__ = [ 'length', 'variables', 'symbolic', '_uuid', '_actual_model', '_stored', 'objects', '_simplified', '__weakref__', '_pending_operations' ]
 
     def __init__(self, claripy, length=None, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
         Storable.__init__(self, claripy, uuid=uuid)
@@ -66,6 +74,7 @@ class E(Storable):
         have_data = not (variables is None or symbolic is None or model is None or length is None)
         self.objects = { }
         self._simplified = simplified
+        self._pending_operations = [ ]
 
         if have_uuid and not have_data:
             self._load()
@@ -75,13 +84,31 @@ class E(Storable):
             self.length = length
 
             self._uuid = uuid
-            self._model = model
+            self._actual_model = model
             self._stored = stored
 
             if objects is not None:
                 self.objects.update(objects)
         else:
             raise ValueError("invalid arguments passed to E()")
+
+    @property
+    def _model(self):
+        if len(self._pending_operations) != 0:
+            e = self
+            p = self._pending_operations
+            self._pending_operations = [ ]
+
+            for o in p:
+                e = self._claripy._do_op(o, (e.deepercopy(),))
+
+            self.variables = e.variables
+            self.symbolic = e.symbolic
+            self.length = e.length
+            self._actual_model = e._actual_model
+            self.objects = e.objects
+
+        return self._actual_model
 
     #
     # Some debug stuff:
@@ -116,17 +143,25 @@ class E(Storable):
         self.symbolic = e.symbolic
 
         self._uuid = e._uuid
-        self._model = e._model
+        self._actual_model = e._actual_model
         self._stored = e._stored
 
     def __nonzero__(self):
         raise ClaripyExpressionError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
     def __repr__(self):
-        name = "E"
+        start = "E"
         if self.symbolic:
-            name += "S"
-        return name + "(%s)" % self._model
+            start += "S"
+
+        start += "("
+        end = ")"
+
+        for o in self._pending_operations:
+            start += o + "("
+            end += ")"
+
+        return start + str(self._actual_model) + end
 
     def split(self, split_on):
         if not isinstance(self._model, A):
@@ -164,6 +199,22 @@ class E(Storable):
         uuid, model, variables, symbolic, length, simplified = s
         self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, length=length, simplified=simplified)
 
+    def copy(self):
+        c = E(claripy=self._claripy, length=self.length, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self.objects, model=self._actual_model, stored=self._stored, simplified=self._simplified)
+        c._pending_operations.extend(self._pending_operations)
+        return c
+
+    def deepercopy(self):
+        if isinstance(self._actual_model, A):
+            model = self._actual_model.deepercopy()
+        else:
+            model = self._actual_model
+        c = E(claripy=self._claripy, length=self.length, variables=self.variables, symbolic=self.symbolic,
+              uuid=self._uuid, objects=self.objects, model=model, stored=self._stored,
+              simplified=self._simplified)
+        c._pending_operations.extend(self._pending_operations)
+        return c
+
     #
     # BV operations
     #
@@ -186,11 +237,11 @@ class E(Storable):
         else:
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
 
-    def reversed(self):
+    def reversed(self, lazy=True):
         '''
         Reverses the expression.
         '''
-        return self._claripy.Reverse(self)
+        return self._claripy.Reverse(self, lazy=lazy)
     reverse = reversed
 
     def __getitem__(self, rng):

@@ -53,7 +53,18 @@ class Claripy(object):
             except BackendError:
                 continue
         else:
-            r = A(name, args)
+            # Special case for Reverse
+            r = None
+            if name == 'Reverse':
+                arg = args[0]
+                if isinstance(arg, E) and \
+                        isinstance(arg._actual_model, A) and \
+                        arg._model.op == 'Reverse':
+                    # Unpack it :-)
+                    r = arg._model._args[0]
+
+            if r is None:
+                r = A(name, args)
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -83,14 +94,26 @@ class Claripy(object):
     def Concat(self, *args): return self._do_op('Concat', args, length=sum([ arg.length for arg in args ]))
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
-    def Reverse(self, *args):
-        if len(args) != 1:
-            raise ClaripyOperationError("Reverse needs a single argument")
+    def Reverse(self, o, lazy=True):
+        if type(o) is not E or not lazy:
+            print "IMMEDIATE REVERSE"
+            return self._do_op('Reverse', (o,))
 
-        if type(args[0]) is A and args[0]._op == "Reverse":
-            return args[0]._args[0]
-        else:
-            return self._do_op('Reverse', args)
+        if len(o._pending_operations) == 0 or o._pending_operations[-1] != "Reverse":
+            if isinstance(o._model, A) and o._model.op == 'Reverse':
+                # There is a Reverse operation inside. We wanna undo that
+                a = o._model
+                e = a._args[0]
+            else:
+                e = o.copy()
+                e.objects.clear()
+                e._pending_operations.append("Reverse")
+            return e
+        elif o._pending_operations[-1] == "Reverse":
+            e = o.copy()
+            e.objects.clear()
+            e._pending_operations.pop()
+            return e
 
     #
     # Strided interval
