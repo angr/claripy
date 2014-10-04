@@ -94,7 +94,6 @@ class Claripy(object):
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
     def Reverse(self, o, lazy=True):
         if type(o) is not E or not lazy:
-            print "IMMEDIATE REVERSE"
             return self._do_op('Reverse', (o,))
 
         if len(o._pending_operations) == 0 or o._pending_operations[-1] != "Reverse":
