@@ -53,7 +53,18 @@ class Claripy(object):
             except BackendError:
                 continue
         else:
-            r = A(name, args)
+            # Special case for Reverse
+            r = None
+            if name == 'Reverse':
+                arg = args[0]
+                if isinstance(arg, E) and \
+                        isinstance(arg._actual_model, A) and \
+                        arg._model.op == 'Reverse':
+                    # Unpack it :-)
+                    r = arg._model._args[0]
+
+            if r is None:
+                r = A(name, args)
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -92,7 +103,11 @@ class Claripy(object):
             e = o.copy()
             if len(o._pending_operations) != 0 and o._pending_operations[-1] == "Reverse":
                 e._pending_operations.pop()
+            elif isinstance(o._model, A) and o._model.op == 'Reverse':
+                e = o._model._args[0]
             else:
+                if type(e._model) is BVV and e._model.value == 0xd60840095abaff14:
+                    import ipdb; ipdb.set_trace()
                 e._pending_operations.append("Reverse")
             return e
 

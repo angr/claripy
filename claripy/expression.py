@@ -41,6 +41,10 @@ class A(object):
         args = [a.deepercopy() if isinstance(a, E) else a for a in self._args]
         return A(self._op, args)
 
+    @property
+    def op(self):
+        return self._op
+
     def __repr__(self):
         if '__' in self._op:
             return "%s.%s%s" % (self._args[0], self._op, self._args[1:])
