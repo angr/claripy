@@ -37,6 +37,10 @@ class A(object):
             result.resolve_cache[b][self] = r
         return r
 
+    def deepercopy(self):
+        args = [a.deepercopy() if isinstance(a, E) else a for a in self._args]
+        return A(self._op, args)
+
     def __repr__(self):
         if '__' in self._op:
             return "%s.%s%s" % (self._args[0], self._op, self._args[1:])
@@ -92,7 +96,7 @@ class E(Storable):
             self._pending_operations = [ ]
 
             for o in p:
-                e = self._claripy._do_op(o, (e,))
+                e = self._claripy._do_op(o, (e.deepercopy(),))
 
             self.variables = e.variables
             self.symbolic = e.symbolic
@@ -195,6 +199,16 @@ class E(Storable):
         c._pending_operations.extend(self._pending_operations)
         return c
 
+    def deepercopy(self):
+        if isinstance(self._actual_model, A):
+            model = self._actual_model.deepercopy()
+        else:
+            model = self._actual_model
+        c = E(claripy=self._claripy, length=self.length, variables=self.variables, symbolic=self.symbolic,
+              uuid=self._uuid, objects=self.objects, model=model, stored=self._stored,
+              simplified=self._simplified)
+        c._pending_operations.extend(self._pending_operations)
+        return c
 
     #
     # BV operations
