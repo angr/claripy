@@ -49,12 +49,12 @@ class DataLayer:
         e._stored = True
         return e
 
-    def make_expression(self, model, variables=None, symbolic=False, objects=None, length=-1, simplified=False):
+    def make_expression(self, model, variables=None, symbolic=False, objects=None, simplified=False):
         h = hash(model)
         if h in self._hash_cache:
             return self._hash_cache[h]
 
-        e = E(self._claripy, model=model, variables=set() if variables is None else variables, objects=objects, symbolic=symbolic, length=length, simplified=simplified)
+        e = E(self._claripy, model=model, variables=set() if variables is None else variables, objects=objects, symbolic=symbolic, simplified=simplified)
         self._hash_cache[h] = e
         return e
 
