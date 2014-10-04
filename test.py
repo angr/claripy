@@ -13,11 +13,12 @@ except ImportError: pass
 
 def test_expression():
     clrp = claripy.ClaripyStandalone()
+    bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     e = clrp.BitVecVal(0x01020304, 32)
     nose.tools.assert_equal(len(e), 32)
     r = e.reversed()
-    nose.tools.assert_equal(r._model, 0x04030201)
+    nose.tools.assert_equal(bc.convert_expr(r), 0x04030201)
     nose.tools.assert_equal(len(r), 32)
 
     nose.tools.assert_equal([ i._model for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
@@ -50,7 +51,7 @@ def test_expression():
     r = clrp.BitVecVal(0x01020304, 32)
     rr = r.reverse()
     rrr = rr.reverse()
-    nose.tools.assert_is(r, rrr)
+    nose.tools.assert_equal(r._model, rrr._model)
     nose.tools.assert_equal(rr._model, 0x04030201)
 
 def test_concrete():

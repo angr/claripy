@@ -83,14 +83,18 @@ class Claripy(object):
     def Concat(self, *args): return self._do_op('Concat', args, length=sum([ arg.length for arg in args ]))
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
-    def Reverse(self, *args):
-        if len(args) != 1:
-            raise ClaripyOperationError("Reverse needs a single argument")
-
-        if type(args[0]) is A and args[0]._op == "Reverse":
-            return args[0]._args[0]
-        else:
-            return self._do_op('Reverse', args)
+    def Reverse(self, o, lazy=True):
+        if type(o) is A and o._op == "Reverse":
+            return o._args[0]
+        elif type(o) is not E or lazy is False:
+            return self._do_op('Reverse', (o,))
+        else: # not lazy, and E
+            e = o.copy()
+            if len(o._pending_operations) != 0 and o._pending_operations[-1] == "Reverse":
+                e._pending_operations.pop()
+            else:
+                e._pending_operations.append("Reverse")
+            return e
 
     #
     # Strided interval
