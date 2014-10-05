@@ -108,7 +108,7 @@ class Backend(object):
         @returns an Expression with the result.
         '''
         if name in self._op_expr:
-            return self._op_expr[name](*args, result=runesult)
+            return self._op_expr[name](*args, result=result)
         else:
             return self.call(name, self.convert_exprs(args, result=result), result=result)
 
