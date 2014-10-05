@@ -105,7 +105,7 @@ class Claripy(object):
     # Strided interval
     #
     def StridedInterval(self, **kwargs):
-        si = StridedInterval(**kwargs)
+        si = BackendVSA.CreateStridedInterval(**kwargs)
         return E(self, model=si, variables=set(), symbolic=False)
 
     # Value Set
