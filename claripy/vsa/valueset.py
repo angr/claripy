@@ -19,6 +19,8 @@ class ValueSet(object):
     def __init__(self, region=None, bits=None, val=None):
         self._si_dict = {}
 
+        self._reversed = False
+
         if region is not None and bits is not None and val is not None:
             self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
 
@@ -34,6 +36,9 @@ class ValueSet(object):
 
     def items(self):
         return self._si_dict.items()
+
+    def size(self):
+        return len(self)
 
     @normalize_types
     def merge_si(self, region, si):
@@ -86,6 +91,20 @@ class ValueSet(object):
             new_vs._si_dict[region] = si.__and__(other)
 
         return new_vs
+
+    def copy(self):
+        vs = ValueSet()
+        vs._si_dict = self._si_dict.copy()
+        vs._reversed = self._reversed
+
+        return vs
+
+    def reverse(self):
+        vs = self.copy()
+
+        vs._reversed = not vs._reversed
+
+        return vs
 
     def is_empty(self):
         return (len(self._si_dict) == 0)
