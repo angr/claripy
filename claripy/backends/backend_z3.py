@@ -62,7 +62,12 @@ class BackendZ3(SolverBackend):
 
 	@staticmethod
 	def reverse(a):
-		return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+		if a.size() == 8:
+			return a
+		elif a.size() % 8 != 0:
+			raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
+		else:
+			return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
 	def convert(self, obj, result=None):
 		if type(obj) is bv.BVV:
@@ -583,4 +588,4 @@ from ..expression import A
 from ..operations import backend_operations
 from ..result import Result
 from ..bv import BVV
-from ..errors import ClaripyError, BackendError, UnsatError
+from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError

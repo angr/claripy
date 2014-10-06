@@ -1,4 +1,5 @@
 import functools
+from .errors import ClaripyOperationError
 
 def compare_bits(f):
     @functools.wraps(f)
@@ -253,7 +254,12 @@ def RotateLeft(self, bits):
     raise NotImplementedError()
 
 def Reverse(a):
-    return Concat(*[Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+    if a.size() == 8:
+        return a
+    elif a.size() % 8 != 0:
+        raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
+    else:
+        return Concat(*[Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
 
 @normalize_types
