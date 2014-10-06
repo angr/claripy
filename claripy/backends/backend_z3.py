@@ -46,7 +46,6 @@ class BackendZ3(SolverBackend):
 		self._ast_cache = weakref.WeakValueDictionary()
 		self._var_cache = weakref.WeakKeyDictionary()
 		self._sym_cache = weakref.WeakKeyDictionary()
-		self._len_cache = weakref.WeakKeyDictionary()
 
 		# and the operations
 		for o in backend_operations - { 'Reverse' }:
@@ -56,6 +55,9 @@ class BackendZ3(SolverBackend):
 
 	@staticmethod
 	def size(e):
+		if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
+			l.debug("Unable to determine length of value of type %s", e.__class__)
+			raise BackendError("Unable to determine length of value of type %s")
 		return e.size()
 
 	@staticmethod
@@ -86,7 +88,7 @@ class BackendZ3(SolverBackend):
 		if h in self._ast_cache:
 			#print "ABSTRACTION CACHED"
 			a = self._ast_cache[h]
-			return a, self._var_cache[a], self._sym_cache[a], self._len_cache[a]
+			return a, self._var_cache[a], self._sym_cache[a]
 
 		decl = z3.Z3_get_app_decl(ctx, ast)
 		decl_num = z3.Z3_get_decl_kind(ctx, decl)
@@ -106,17 +108,17 @@ class BackendZ3(SolverBackend):
 		variables = set()
 
 		if op_name == 'True':
-			return True, variables, symbolic, -1
+			return True, variables, symbolic
 		elif op_name == 'False':
-			return False, variables, symbolic, -1
+			return False, variables, symbolic
 		elif op_name == 'BitVecVal':
 			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return BVV(bv_num, bv_size), variables, symbolic, bv_size
+			return BVV(bv_num, bv_size), variables, symbolic
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return A("BitVec", [bv_name, bv_size]), { bv_name }, True, bv_size
+			return A("BitVec", [bv_name, bv_size]), { bv_name }, True
 		elif op_name == 'Extract':
 			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
 			lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -127,9 +129,9 @@ class BackendZ3(SolverBackend):
 		else:
 			args = [ ]
 
-		for a,v,s,b in children:
+		for a,v,s in children:
 			if op_name in split_on:
-				args.append(self._claripy.datalayer.make_expression(a, variables=v, symbolic=s, length=b, simplified=True))
+				args.append(self._claripy.datalayer.make_expression(a, variables=v, symbolic=s, simplified=True))
 			else:
 				args.append(a)
 			symbolic |= s
@@ -147,12 +149,10 @@ class BackendZ3(SolverBackend):
 			args = [ a, last ]
 
 		a = A(op_name, args)
-		length = z3.Z3_get_bv_sort_size(ctx, z3_sort) if z3.Z3_get_sort_kind(ctx, z3_sort) == z3.Z3_BV_SORT else -1
 		self._ast_cache[h] = a
 		self._var_cache[a] = variables
 		self._sym_cache[a] = symbolic
-		self._len_cache[a] = length
-		return a, variables, symbolic, length
+		return a, variables, symbolic
 
 	def solver(self, timeout=None):
 		s = z3.Solver()
@@ -389,7 +389,7 @@ class BackendZ3(SolverBackend):
 		#print "SIMPLIFIED"
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return self._claripy.datalayer.make_expression(o, objects={self: s}, symbolic=symbolic, variables=variables, length=expr.length, simplified=True)
+		return self._claripy.datalayer.make_expression(o, objects={self: s}, symbolic=symbolic, variables=variables, simplified=True)
 
 #
 # this is for the actual->abstract conversion above

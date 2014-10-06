@@ -37,6 +37,9 @@ class ValueSet(object):
     def items(self):
         return self._si_dict.items()
 
+    def size(self):
+        return len(self)
+
     @normalize_types
     def merge_si(self, region, si):
         if region not in self._si_dict:
@@ -89,6 +92,20 @@ class ValueSet(object):
             new_vs._si_dict[region] = si.__and__(other)
 
         return new_vs
+
+    def copy(self):
+        vs = ValueSet()
+        vs._si_dict = self._si_dict.copy()
+        vs._reversed = self._reversed
+
+        return vs
+
+    def reverse(self):
+        vs = self.copy()
+
+        vs._reversed = not vs._reversed
+
+        return vs
 
     def is_empty(self):
         return (len(self._si_dict) == 0)

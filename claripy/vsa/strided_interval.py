@@ -42,6 +42,8 @@ class StridedInterval(object):
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
 
+        self._reversed = False
+
         if self._upper_bound != None and bits == 0:
             self._bits = self._min_bits()
 
@@ -55,9 +57,10 @@ class StridedInterval(object):
         if self.is_empty():
             return '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
-            return '%s<%d>%d[%s, %s]' % (self._name, self._bits, self._stride,
-                                       self._lower_bound if type(self._lower_bound) == str else str(self._lower_bound),
-                                       self._upper_bound if type(self._upper_bound) == str else str(self._upper_bound))
+            return '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
+                                        self._lower_bound if type(self._lower_bound) == str else hex(self._lower_bound),
+                                        self._upper_bound if type(self._upper_bound) == str else hex(self._upper_bound),
+                                        'R' if self._reversed else '')
 
     def normalize(self):
         if self.lower_bound == self.upper_bound:
@@ -136,11 +139,13 @@ class StridedInterval(object):
         return (1 << (k - 1))
 
     def copy(self):
-        return StridedInterval(name=self._name,
+        si = StridedInterval(name=self._name,
                                bits=self.bits,
                                stride=self.stride,
                                lower_bound=self.lower_bound,
                                upper_bound=self.upper_bound)
+        si._reversed = self._reversed
+        return si
 
     @property
     def lower_bound(self):
@@ -619,10 +624,10 @@ class StridedInterval(object):
             return StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
 
         new_stride = fractions.gcd(self.stride, b.stride)
-        assert new_stride > 0
+        assert new_stride >= 0
 
-        remainder_1 = self.lower_bound % new_stride
-        remainder_2 = b.lower_bound % new_stride
+        remainder_1 = self.lower_bound % new_stride if new_stride > 0 else 0
+        remainder_2 = b.lower_bound % new_stride if new_stride > 0 else 0
         u = max(self.upper_bound, b.upper_bound)
         l = min(self.lower_bound, b.lower_bound)
         if remainder_1 == remainder_2:
@@ -630,5 +635,11 @@ class StridedInterval(object):
         else:
             new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+
+    def reverse(self):
+        si = self.copy()
+        si._reversed = not si._reversed
+
+        return si
 
 from ..errors import BackendError

@@ -108,7 +108,7 @@ class Backend(object):
         @returns an Expression with the result.
         '''
         if name in self._op_expr:
-            return self._op_expr[name](*args, result=runesult)
+            return self._op_expr[name](*args, result=result)
         else:
             return self.call(name, self.convert_exprs(args, result=result), result=result)
 
@@ -152,7 +152,7 @@ class Backend(object):
 
     def simplify_expr(self, e):
         o = self.simplify(self.convert_expr(e))
-        return self._claripy.datalayer.make_expression(self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic, length=e.length) # TODO: keep UUID
+        return self._claripy.datalayer.make_expression(self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic) # TODO: keep UUID
 
     def simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)

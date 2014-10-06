@@ -12,6 +12,8 @@ class BackendVSA(ModelBackend):
         self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
         self._op_raw['ValueSet'] = ValueSet.__init__
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
+        self._op_raw['size'] = BackendVSA.size
+        self._op_raw['Reverse'] = BackendVSA.Reverse
 
     def add_exprs(self, solver, constraints):
         pass
@@ -75,14 +77,25 @@ class BackendVSA(ModelBackend):
     # TODO: Implement other operations!
 
     @staticmethod
+    def Reverse(arg):
+        print 'Reversing %s' % arg
+        return arg.reverse()
+
+    @staticmethod
     def Concat(*args):
         ret = None
         for expr in args:
-            assert type(expr) in { StridedInterval, ValueSet }
+            assert type(expr) in { StridedInterval, ValueSet, BVV }
+            if type(expr) is BVV:
+                expr = BackendVSA.CreateStridedInterval(bits=expr.bits, to_conv=expr)
 
             ret = ret.concat(expr) if ret is not None else expr
 
         return ret
+
+    @staticmethod
+    def size(arg):
+        return len(arg)
 
     @staticmethod
     def Extract(*args):
@@ -102,7 +115,7 @@ class BackendVSA(ModelBackend):
         expr = args[1]
 
         assert type(expr) is StridedInterval
-        return expr.zero_extend(new_bits)
+        return expr.zero_extend(new_bits + expr.bits)
 
     @staticmethod
     def Reverse(arg):
