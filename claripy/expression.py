@@ -56,7 +56,7 @@ class A(object):
                 lengths = set(self.arg_size(backends, a) for a in self.args)
 
             if len(lengths) != 1:
-                raise ClaripySizeError("invalid length combination for operation %s", self.op)
+                raise ClaripySizeError("invalid length combination for operation %s" % self.op)
             return lengths.__iter__().next()
 
         if self.op in length_change_operations:

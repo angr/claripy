@@ -57,7 +57,7 @@ class BackendZ3(SolverBackend):
 	def size(e):
 		if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
 			l.debug("Unable to determine length of value of type %s", e.__class__)
-			raise BackendError("Unable to determine length of value of type %s")
+			raise BackendError("Unable to determine length of value of type %s" % e.__class__)
 		return e.size()
 
 	@staticmethod
@@ -77,7 +77,7 @@ class BackendZ3(SolverBackend):
 			return obj
 		else:
 			l.debug("BackendZ3 encountered unexpected type %s", type(obj))
-			raise BackendError("unexpected type %s encountered in BackendZ3", type(obj))
+			raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
 	def abstract(self, z, split_on=None):
 		#return self._abstract(z, split_on=split_on)[0]
