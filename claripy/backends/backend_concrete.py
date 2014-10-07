@@ -27,6 +27,8 @@ class BackendConcrete(ModelBackend):
 
     @staticmethod
     def size(e):
+        if type(e) is bool:
+            return None
         if type(e) in { BVV }:
             return e.size()
         else:
