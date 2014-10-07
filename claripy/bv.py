@@ -248,10 +248,10 @@ def Concat(*args):
     return BVV(total_value, total_bits)
 
 def RotateRight(self, bits):
-    raise NotImplementedError()
+    return LShR(self, bits) | (self << (self.size()-bits))
 
 def RotateLeft(self, bits):
-    raise NotImplementedError()
+    return (self << bits) | (LShR(self, (self.size()-bits)))
 
 def Reverse(a):
     if a.size() == 8:
