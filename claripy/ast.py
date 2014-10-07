@@ -123,7 +123,7 @@ class A(object):
 			if isinstance(a, E):
 				args.append(b.convert_expr(a, result=result))
 			elif isinstance(a, A):
-				args.append(a.resolve(b, save=save, result=result))
+				args.append(a.resolve(b, save=save, result=result)) #pylint:disable=maybe-no-member
 			else:
 				args.append(b.convert(a, result=result))
 
