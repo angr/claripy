@@ -105,8 +105,18 @@ class Claripy(object):
     # Strided interval
     #
     def StridedInterval(self, **kwargs):
-        si = StridedInterval(**kwargs)
+        si = BackendVSA.CreateStridedInterval(**kwargs)
         return E(self, model=si, variables=set(), symbolic=False)
+
+    # Value Set
+    def ValueSet(self, **kwargs):
+        vs = ValueSet(**kwargs)
+        return E(self, model=vs, variables=set(), symbolic=False)
+
+    # a-loc
+    def AbstractLocation(self, *args, **kwargs):
+        aloc = AbstractLocation(*args, **kwargs)
+        return aloc
 
     #
     # Boolean ops
@@ -164,5 +174,6 @@ class Claripy(object):
 from .expression import E, A
 from .backends.backend import BackendError
 from .bv import BVV
-from .vsa import StridedInterval
+from .vsa import StridedInterval, ValueSet, AbstractLocation
+from .backends import BackendVSA
 from .errors import ClaripyOperationError

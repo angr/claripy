@@ -529,17 +529,20 @@ def test_vsa():
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)
-    print s
 
     # Integers
-    si1 = clrp.StridedInterval(bits=32, stride=1, lower_bound=10, upper_bound=10)
-    si2 = clrp.StridedInterval(bits=32, stride=1, lower_bound=10, upper_bound=10)
-    si3 = clrp.StridedInterval(bits=32, stride=1, lower_bound=28, upper_bound=28)
+    si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si3 = clrp.StridedInterval(bits=32, stride=0, lower_bound=28, upper_bound=28)
     # Strided intervals
     si_a = clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20)
     si_b = clrp.StridedInterval(bits=32, stride=2, lower_bound=-100, upper_bound=200)
     si_c = clrp.StridedInterval(bits=32, stride=3, lower_bound=-100, upper_bound=200)
     si_d = clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=60)
+    si_e = clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
+    si_f = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=255)
+    si_g = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=0xff)
+    si_h = clrp.StridedInterval(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
     nose.tools.assert_equal(si1._model, 10)
     nose.tools.assert_equal(si2._model, 10)
     nose.tools.assert_equal(si1._model, si2._model)
@@ -552,6 +555,9 @@ def test_vsa():
     nose.tools.assert_equal(si_add_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=-90, upper_bound=220)._model)
     si_add_4 = backend_vsa.convert_expr((si_b + si_c))
     nose.tools.assert_equal(si_add_4, clrp.StridedInterval(bits=32, stride=1, lower_bound=-200, upper_bound=400)._model)
+    # __add__ with overflow
+    si_add_5 = backend_vsa.convert_expr(si_h + 0xffffffff)
+    nose.tools.assert_equal(si_add_5, clrp.StridedInterval(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff)._model)
     # __sub__
     si_minus_1 = backend_vsa.convert_expr((si1 - si2))
     nose.tools.assert_equal(si_minus_1, 0)
@@ -571,8 +577,37 @@ def test_vsa():
     nose.tools.assert_equal(si_or_2, 10)
     si_or_3 = backend_vsa.convert_expr(si1 | si_a) # An integer | a strided interval
     nose.tools.assert_equal(si_or_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30)._model)
+    si_or_3 = backend_vsa.convert_expr(si_a | si1) # Exchange the operands
+    nose.tools.assert_equal(si_or_3, clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30)._model)
     si_or_4 = backend_vsa.convert_expr(si_a | si_d) # A strided interval | another strided interval
     nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
+    si_or_4 = backend_vsa.convert_expr(si_d | si_a) # Exchange the operands
+    nose.tools.assert_equal(si_or_4, clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62)._model)
+    si_or_5 = backend_vsa.convert_expr(si_e | si_f) #
+    nose.tools.assert_equal(si_or_5, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
+    si_or_6 = backend_vsa.convert_expr(si_e | si_g) #
+    nose.tools.assert_equal(si_or_6, clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff)._model)
+
+    # Extracting an integer
+    si = clrp.StridedInterval(bits=64, stride=0, lower_bound=0x7fffffffffff0000, upper_bound=0x7fffffffffff0000)
+    part1 = backend_vsa.convert_expr(si[63 : 32])
+    part2 = backend_vsa.convert_expr(si[31 : 0])
+    nose.tools.assert_equal(part1, clrp.StridedInterval(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff)._model)
+    nose.tools.assert_equal(part2, clrp.StridedInterval(bits=32, stride=0, lower_bound=0xffff0000, upper_bound=0xffff0000)._model)
+
+    # Concatenating two integers
+    si_concat = backend_vsa.convert_expr(part1.concat(part2))
+    nose.tools.assert_equal(si_concat, si._model)
+
+    # VSA
+    vs_1 = clrp.ValueSet()
+    nose.tools.assert_true(vs_1._model.is_empty(), True)
+    # Test merging two addresses
+    vs_1._model.merge_si('global', si1)
+    vs_1._model.merge_si('global', si3)
+    nose.tools.assert_equal(vs_1._model.get_si('global'), clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28)._model)
+    # Length of this ValueSet
+    nose.tools.assert_equal(len(vs_1._model), 32)
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
