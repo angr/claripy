@@ -27,6 +27,9 @@ class BVV(object):
     __slots__ = [ 'bits', '_value', 'mod', 'value' ]
 
     def __init__(self, value, bits):
+        if bits == 0 or type(bits) not in (int, long) or type(value) not in (int, long):
+            raise ClaripyOperationError("BVV needs a non-zero length and an int/long value")
+
         self.bits = bits
         self._value = 0
         self.mod = 2**bits
