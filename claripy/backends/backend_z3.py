@@ -584,7 +584,7 @@ op_map = {
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..expression import A
+from ..ast import A
 from ..operations import backend_operations
 from ..result import Result
 from ..bv import BVV

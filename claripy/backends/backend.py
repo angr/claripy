@@ -157,6 +157,7 @@ class Backend(object):
     def simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
-from ..expression import E, A
+from ..expression import E
+from ..ast import A
 from ..operations import opposites
 from ..errors import BackendError, ClaripyTypeError

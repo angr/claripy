@@ -14,7 +14,8 @@ def set_claripy(c):
 def get_claripy():
     return claripy
 
-from .expression import E, A
+from .expression import E
+from .ast import A
 from . import bv
 from . import datalayer
 from .result import Result

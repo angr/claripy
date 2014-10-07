@@ -171,7 +171,8 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .expression import E, A
+from .expression import E
+from .ast import A
 from .backends.backend import BackendError
 from .bv import BVV
 from .vsa import StridedInterval, ValueSet, AbstractLocation
