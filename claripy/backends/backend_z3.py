@@ -123,7 +123,7 @@ class BackendZ3(SolverBackend):
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return A("BitVec", [bv_name, bv_size]), { bv_name }, True
+			return A(self._claripy, "BitVec", [bv_name, bv_size]), { bv_name }, True
 		elif op_name == 'Extract':
 			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
 			lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -148,12 +148,12 @@ class BackendZ3(SolverBackend):
 			last = args[-1]
 			rest = args[:-1]
 
-			a = A(op_name, rest[:2])
+			a = A(self._claripy, op_name, rest[:2])
 			for b in rest[2:]:
-				a = A(op_name, [a,b])
+				a = A(self._claripy, op_name, [a,b])
 			args = [ a, last ]
 
-		a = A(op_name, args)
+		a = A(self._claripy, op_name, args)
 		self._ast_cache[h] = a
 		self._var_cache[a] = variables
 		self._sym_cache[a] = symbolic
@@ -403,6 +403,8 @@ class BackendZ3(SolverBackend):
 # these are Z3 operation names for abstraction
 z3_op_names = [ _ for _ in dir(z3) if _.startswith('Z3_OP') ]
 z3_op_nums = { getattr(z3, _): _ for _ in z3_op_names }
+
+#pylint:disable=bad-continuation
 op_map = {
 	# Boolean
 	'Z3_OP_TRUE': 'True',

@@ -129,7 +129,7 @@ class E(Storable):
 
 	def __len__(self):
 		if type(self._model) is A:
-			return self._model.size(backends=self._claripy.model_backends)
+			return self._model.size()
 		else:
 			for b in self._claripy.model_backends:
 				try: return b.call_expr('size', (self,))

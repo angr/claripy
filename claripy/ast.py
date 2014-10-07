@@ -7,78 +7,112 @@ class A(object):
 
 		op: the operation that is being done on the arguments
 		args: the arguments that are being used
-		why: the reason that Claripy fell back to an AST instead of keeping things
-			 as a model. BACKEND_ERROR means that no backend could handle the
-			 opertaion, while DELAYED_OP means that the AST represents a delayed
-			 operation on a possible model-handleable object.
+		length: the length (in bits)
 
 	It also has the following useful members:
 
 		size(): the size of the result
 	'''
 
-	__slots__ = [ 'op', 'args', 'why', '_length', '_hash', '__weakref__' ]
-	BACKEND_ERROR = "BACKEND_ERROR"
-	DELAYED_OP = "DELAYED_OP"
+	__slots__ = [ 'op', 'args', 'why', 'length', '_claripy', '_hash', '__weakref__' ]
 
-	def __init__(self, op, args, why=BACKEND_ERROR):
+	def __init__(self, claripy, op, args):
 		self.op = op
 		self.args = args
-		self.why = why
+		self.length = None
 		self._hash = None
-		self._length = None
+		self._claripy = claripy
 
-	@staticmethod
-	def arg_size(backends, o):
+		if hasattr(self, 'finalize_'+self.op): getattr(self, 'finalize_'+self.op)()
+		elif self.op in length_same_operations: self.finalize_same_length()
+		elif self.op in length_none_operations: pass
+		else: raise ClaripyOperationError("no A.finalize_* function found for %s" % self.op)
+
+	#
+	# Finalizer functions for different expressions
+	#
+
+	def finalize_BoolVal(self):
+		if len(self.args) != 1 or self.args[0] not in (True, False):
+			raise ClaripyOperationError("BoolVal() requires True or False as argument.")
+
+	def finalize_BitVec(self):
+		if len(self.args) != 2 or type(self.args[0]) is not str or type(self.args[1]) not in (int, long) or self.args[1] <= 0:
+			raise ClaripyOperationError("Invalid arguments to BitVec")
+		self.length = int(self.args[1])
+
+	def finalize_BitVecVal(self):
+		if len(self.args) != 2 or type(self.args[0]) not in (int, long) or type(self.args[1]) not in (int, long) or self.args[1] <= 0:
+			raise ClaripyOperationError("Invalid arguments to BitVecVal")
+		self.length = int(self.args[1])
+		self.args = (self.args[0], int(self.args[1]))
+
+	def finalize_If(self):
+		'''
+		An If requires a boolean condition, and at least one case with a length. If both
+		cases have lengths, they must be equal.
+		'''
+
+		if len(self.args) != 3:
+			raise ClaripyOperationError("If requires a condition and two cases.")
+		lengths = set(self.arg_size(a) for a in self.args[1:]) - { None }
+		if len(lengths) != 1 and self.arg_size(self.args[0]) is not None:
+			raise ClaripyOperationError("If needs must have equal-sized cases and a boolean condition")
+		self.length = lengths.pop()
+
+	def finalize_Concat(self):
+		lengths = [ self.arg_size(a) for a in self.args ]
+		if None in lengths or len(self.args) <= 1:
+			raise ClaripyOperationError("Concat must have at >= two args, and all must have lengths.")
+		self.length = sum(lengths)
+
+	def finalize_Extract(self):
+		if len(self.args) != 3 or type(self.args[0]) not in (int, long) or type(self.args[1]) not in (int, long):
+			raise ClaripyOperationError("Invalid arguments passed to extract!")
+
+		self.args = (int(self.args[0]), int(self.args[1]), self.args[2])
+		self.length = self.args[0]-self.args[1]+1
+
+	def finalize_ZeroExt(self):
+		if len(self.args) != 2 or type(self.args[0]) not in (int, long):
+			raise ClaripyOperationError("%s requires two arguments: (int, bitvector)" % self.op)
+
+		length = self.arg_size(self.args[1])
+		if length is None:
+			raise ClaripyOperationError("extending an object without a length")
+
+		self.args = (int(self.args[0]), self.args[1])
+		self.length = length + self.args[0]
+	finalize_SignExt = finalize_ZeroExt
+
+	# And generic ones
+
+	def finalize_same_length(self):
+		'''
+		This is a generic finalizer. It requires at least one argument to have a length,
+		and all arguments that *do* have a length to have the same length.
+		'''
+
+		lengths = set(self.arg_size(a) for a in self.args) - { None }
+		if len(lengths) != 1:
+			raise ClaripyOperationError("Arguments to %s must have equal (and existing) sizes", self.op)
+		self.length = lengths.pop()
+
+
+
+	def arg_size(self, o):
 		if isinstance(o, E):
 			return o.size()
 		elif isinstance(o, A):
-			return o.size(backends=backends)
+			return o.length
 		else:
-			for b in backends:
+			for b in self._claripy.model_backends:
 				try: return b.call('size', (o,))
 				except BackendError: pass
-			return -1
+			return None
 
-	def calculate_length(self, backends):
-		if self.op in length_none_operations:
-			return -1
-
-		if self.op in length_same_operations:
-			if self.op == 'If':
-				lengths = set(self.arg_size(backends, a) for a in self.args[1:])
-			else:
-				lengths = set(self.arg_size(backends, a) for a in self.args)
-
-			if len(lengths) != 1:
-				raise ClaripySizeError("invalid length combination for operation %s" % self.op)
-			return lengths.__iter__().next()
-
-		if self.op in length_change_operations:
-			if self.op in ( "SignExt", "ZeroExt" ):
-				length = self.arg_size(backends, self.args[1])
-				if length == -1: raise ClaripyTypeError("extending an object without a length")
-				return length + self.args[0]
-			if self.op == 'Concat':
-				lengths = [ self.arg_size(backends, a) for a in self.args ]
-				if len(lengths) != len(self.args) or -1 in lengths:
-					raise ClaripyTypeError("concatenating an object without a length")
-				return sum(lengths)
-			if self.op == 'Extract':
-				return self.args[0]-self.args[1]+1
-
-		if self.op == 'BoolVal':
-			return -1
-
-		if self.op in length_new_operations:
-			return self.args[1]
-
-		raise ClaripyOperationError("unknown operation %s" % self.op)
-
-	def size(self, backends=()):
-		if self._length is None:
-			self._length = self.calculate_length(backends)
-		return self._length
+	def size(self):
+		return self.length
 
 	def resolve(self, b, save=None, result=None):
 		if result is not None and self in result.resolve_cache[b]:
@@ -111,11 +145,11 @@ class A(object):
 		return self._hash
 
 	def __getstate__(self):
-		return self.op, self.args
+		return self.op, self.args, self.length
 	def __setstate__(self, state):
 		self._hash = None
-		self.op, self.args = state
+		self.op, self.args, self.length = state
 
-from .errors import BackendError, ClaripySizeError, ClaripyOperationError, ClaripyTypeError
-from .operations import length_none_operations, length_change_operations, length_same_operations, length_new_operations
+from .errors import BackendError, ClaripyOperationError
+from .operations import length_none_operations, length_same_operations
 from .expression import E

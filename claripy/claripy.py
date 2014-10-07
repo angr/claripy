@@ -64,7 +64,7 @@ class Claripy(object):
                     r = arg._model.args[0]
 
             if r is None:
-                r = A(name, args)
+                r = A(self, name, args)
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -99,7 +99,7 @@ class Claripy(object):
         if isinstance(o._model, A) and o._model.op == 'Reverse':
             return self.wrap(o._model.args[0])
         else:
-            return self.wrap(A("Reverse", (o,), why=A.DELAYED_OP), symbolic=o.symbolic, variables=o.variables)
+            return self.wrap(A(self, "Reverse", (o,)), symbolic=o.symbolic, variables=o.variables)
 
     #
     # Strided interval
