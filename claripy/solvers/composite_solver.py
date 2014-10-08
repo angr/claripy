@@ -2,7 +2,6 @@ import logging
 l = logging.getLogger("claripy.solvers.composite_solver")
 
 import itertools
-import operator
 
 symbolic_count = itertools.count()
 
@@ -126,7 +125,7 @@ class CompositeSolver(Solver):
 		l.debug("%r checking satisfiability...", self)
 
 		if len(extra_constraints) != 0:
-			extra_vars = reduce(operator.or_, (a.variables for a in extra_constraints), set())
+			extra_vars = set.union(*(a.variables for a in extra_constraints))
 			solvers = [ self._merged_solver_for(extra_vars) ]
 			for s in self._solver_list:
 				if len(s.variables | solvers[0].variables) == 0:
@@ -152,7 +151,7 @@ class CompositeSolver(Solver):
 	def _all_variables(self, e, extra_constraints=()): #pylint:disable=no-self-use
 		all_vars = e.variables
 		if len(extra_constraints) != 0:
-			all_vars |= reduce(operator.or_, (a.variables for a in extra_constraints), set())
+			all_vars |= set.union(*(a.variables for a in extra_constraints))
 		if len(all_vars) == 0:
 			all_vars = { 'CONCRETE' }
 		return all_vars

@@ -1,4 +1,3 @@
-import operator
 import itertools
 bitvec_counter = itertools.count()
 
@@ -70,7 +69,7 @@ class Claripy(object):
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
         if variables is None:
             all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
-            variables = reduce(operator.or_, all_variables, set())
+            variables = set.union(*all_variables)
 
         return self.datalayer.make_expression(r, variables=variables, symbolic=symbolic, simplified=simplified)
 
