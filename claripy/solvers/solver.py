@@ -328,6 +328,11 @@ class Solver(Storable):
 	def _solve(self, extra_constraints=()):
 		# check it!
 		l.debug("Solver.solve() checking SATness of %d constraints", len(self.constraints))
+
+		if not self._claripy.solver_backends:
+			# There is no solver backend. Just return True
+			return Result(True, [True])
+
 		for b in self._claripy.solver_backends:
 			try:
 				s = self._get_solver(b)
