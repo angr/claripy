@@ -160,6 +160,9 @@ class StridedInterval(object):
     def __xor__(self, other):
         return self.bitwise_xor(other)
 
+    def __lshift__(self, other):
+        return self.lshift(other)
+
     @property
     def size(self):
         if self._stride == 0:
@@ -579,7 +582,7 @@ class StridedInterval(object):
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
 
-        return StridedInterval(bits=self.bits + shift_amount,
+        return StridedInterval(bits=self.bits,
                                stride=max(self.stride << lower, 0),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
