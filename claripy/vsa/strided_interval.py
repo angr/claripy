@@ -1,6 +1,7 @@
 import fractions
 import functools
 import math
+import inspect
 
 from ..expression import E
 from ..bv import BVV
@@ -33,6 +34,13 @@ def normalize_types(f):
         return f(self, o)
 
     return normalizer
+
+def get_funcname():
+    '''
+    Get the name of the current function. This is a GIANT HACK!!!!
+    :return: a string representing the name of the current function
+    '''
+    return inspect.stack()[1][3]
 
 class StridedInterval(object):
     '''
@@ -243,6 +251,10 @@ class StridedInterval(object):
     @staticmethod
     def min_int(k):
         return -StridedInterval.highbit(k)
+
+    @staticmethod
+    def _to_negative(a, bits):
+        return -((1 << bits) - a)
 
     def upper(self, bits, i, stride):
         '''
@@ -604,9 +616,16 @@ class StridedInterval(object):
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
             elif (self.upper_bound - self.lower_bound <= mask):
+                l = self.lower_bound & mask
+                u = self.upper_bound & mask
+                # Keep the signs!
+                if self.lower_bound < 0:
+                    l = StridedInterval._to_negative(l, tok)
+                if self.upper_bound < 0:
+                    u = StridedInterval._to_negative(u, tok)
                 return StridedInterval(bits=tok, stride=self.stride,
-                                       lower_bound=(self.lower_bound & mask),
-                                       upper_bound=(self.upper_bound & mask))
+                                       lower_bound=l,
+                                       upper_bound=u)
             else:
                 # TODO: How can we do better here? For example, keep the stride information?
                 return self.top(tok)
@@ -640,7 +659,6 @@ class StridedInterval(object):
         return si
 
     def reverse(self):
-        # import ipdb; ipdb.set_trace()
         # TODO: Finish this!
         print "valueset.reverse is not implemented"
         return self.copy()

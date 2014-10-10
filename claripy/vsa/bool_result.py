@@ -1,6 +1,8 @@
 
 class BoolResult(object):
-    pass
+    def __init__(self, trueexpr=None, falseexpr=None):
+        self._true = trueexpr
+        self._false = falseexpr
 
     def value(self):
         raise NotImplementedError()

@@ -48,6 +48,97 @@ def normalize_boolean_arg_types(f):
 
     return normalizer
 
+def convert_bvv_args(f):
+    def convert_bvv(a):
+        if isinstance(a, BVV):
+            return BackendVSA.CreateStridedInterval(to_conv=a)
+        return a
+
+    def converter(*args):
+        new_args = [convert_bvv(a) for a in args]
+
+        return f(*new_args)
+
+    return converter
+
+def expand_ifproxy(f):
+    @functools.wraps(f)
+    def expander(*args):
+        '''
+        For each IfProxy proxified argument, we expand it so that it is
+        converted into two operands (true expr and false expr, respectively).
+        After the operation, we rewrap the two sides together in a new
+        IfProxy with the old cond.
+
+        :param args: All arguments
+        :return:
+        '''
+
+        # FIXME: Now we have a very bad assumption - if we see two IfProxy
+        # instances as the two operands, we assume they must both be true or
+        # false.
+        if isinstance(args[0], IfProxy):
+            ifproxy = args[0]
+            cond = ifproxy.condition
+            if len(args) > 1 and isinstance(args[1], IfProxy):
+                true_args = (ifproxy.trueexpr, ) + (args[1].trueexpr, ) + args[2:]
+                false_args = (ifproxy.falseexpr, ) + (args[1].falseexpr, ) +  args[2:]
+            else:
+                true_args = (ifproxy.trueexpr, ) + args[1 : ]
+                false_args = (ifproxy.falseexpr, ) + args[1 : ]
+            trueexpr = f(*true_args)
+            falseexpr = f(*false_args)
+
+            return IfProxy(cond, trueexpr, falseexpr)
+
+        if len(args) > 1 and isinstance(args[1], IfProxy):
+            ifproxy = args[1]
+            cond = ifproxy.condition
+            true_args = args[ : 1] + (ifproxy.trueexpr, ) + args[2:]
+            false_args = args[ : 1] + (ifproxy.falseexpr, ) + args[2:]
+            trueexpr = f(*true_args)
+            falseexpr = f(*false_args)
+
+            return IfProxy(cond, trueexpr, falseexpr)
+
+        if len(args) > 2 and isinstance(args[2], IfProxy):
+            ifproxy = args[2]
+            cond = ifproxy.condition
+            true_args = args[: 2] + (ifproxy.trueexpr, ) + args[3:]
+            false_args = args[: 2] + (ifproxy.falseexpr, ) + args[3:]
+            trueexpr = f(*true_args)
+            falseexpr = f(*false_args)
+
+            return IfProxy(cond, trueexpr, falseexpr)
+
+        return f(*args)
+
+    return expander
+
+class IfProxy(object):
+    def __init__(self, cond, true_expr, false_expr):
+        self._cond = cond
+        self._true = true_expr
+        self._false = false_expr
+
+    @property
+    def condition(self):
+        return self._cond
+
+    @property
+    def trueexpr(self):
+        return self._true
+
+    @property
+    def falseexpr(self):
+        return self._false
+
+    def __len__(self):
+        return len(self._true)
+
+    def __repr__(self):
+        return 'IfProxy(%s, %s, %s)' % (self._cond, self._true, self._false)
+
 class BackendVSA(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
@@ -74,6 +165,8 @@ class BackendVSA(ModelBackend):
             return a
         if isinstance(a, BoolResult):
             return a
+        if isinstance(a, IfProxy):
+            return a
 
         import ipdb; ipdb.set_trace()
         raise NotImplementedError()
@@ -90,6 +183,11 @@ class BackendVSA(ModelBackend):
             return results
         elif isinstance(expr, BoolResult):
             return expr.value
+        elif isinstance(expr, IfProxy):
+            results = set(self.eval(expr.trueexpr, n, result=result))
+            if len(results) < n:
+                results |= set(self.eval(expr.falseexpr, n - len(results), result=result))
+            return list(results)
         else:
             raise BackendError('Unsupported type %s' % type(expr))
 
@@ -112,16 +210,24 @@ class BackendVSA(ModelBackend):
         return expr.upper_bound
 
     def has_true(self, o):
-        return o == True or (isinstance(o, BoolResult) and True in o.value)
+        return o == True or \
+               (isinstance(o, BoolResult) and True in o.value) or \
+               (isinstance(o, IfProxy) and (True in o.trueexpr.value or True in o.falseexpr.value))
 
     def has_false(self, o):
-        return o == False or (isinstance(o, BoolResult) and False in o.value)
+        return o == False or \
+               (isinstance(o, BoolResult) and False in o.value) or \
+               (isinstance(o, IfProxy) and (False in o.trueexpr.value or False in o.falseexpr.value))
 
     def is_true(self, o):
-        return o == True or (isinstance(o, TrueResult))
+        return o == True or \
+               (isinstance(o, TrueResult)) or \
+               (isinstance(o, IfProxy) and (type(o.trueexpr) is TrueResult and type(o.falseexpr) is TrueResult))
 
     def is_false(self, o):
-        return o == False or (isinstance(o, FalseResult))
+        return o == False or \
+               (isinstance(o, FalseResult)) or \
+               (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
     #
     # Operations
     #
@@ -139,6 +245,7 @@ class BackendVSA(ModelBackend):
     def __and__(a, b): return a.__and__(b)
 
     @staticmethod
+    @expand_ifproxy
     @normalize_arg_order
     def __rand__(a, b): return a.__and__(b)
 
@@ -147,30 +254,37 @@ class BackendVSA(ModelBackend):
     def __eq__(a, b): return a.__eq__(b)
 
     @staticmethod
+    @expand_ifproxy
     @normalize_arg_order
     def __ne__(a, b): return a.__ne__(b)
 
     @staticmethod
+    @expand_ifproxy
     @normalize_arg_order
     def __or__(a, b): return a.__or__(b)
 
     @staticmethod
+    @expand_ifproxy
     @normalize_arg_order
     def __xor__(a, b): return a.__xor__(b)
 
     @staticmethod
+    @expand_ifproxy
     @normalize_arg_order
     def __rxor__(a, b): return a.__xor__(b)
 
     @staticmethod
+    @expand_ifproxy
     def __lshift__(a, b): return a.__lshift__(b)
 
     @staticmethod
+    @expand_ifproxy
     @normalize_boolean_arg_types
     def And(a, b):
         return a & b
 
     @staticmethod
+    @expand_ifproxy
     @normalize_boolean_arg_types
     def Not(a):
         return ~a
@@ -192,13 +306,14 @@ class BackendVSA(ModelBackend):
             expr = exprs[0]
         else:
             # TODO: How to handle it?
-            expr = Or(exprs[0], exprs[1])
+            expr = IfProxy(cond, exprs[0], exprs[1])
 
         return expr
 
     # TODO: Implement other operations!
 
     @staticmethod
+    @expand_ifproxy
     def LShR(expr, shift_amount):
         return expr >> shift_amount
 
@@ -222,12 +337,13 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @arg_filter
     def size(arg):
-        if type(arg) in { StridedInterval, ValueSet }:
+        if type(arg) in { StridedInterval, ValueSet, IfProxy }:
             return len(arg)
         else:
             return arg.size()
 
     @staticmethod
+    @expand_ifproxy
     def Extract(*args):
         low_bit = args[1]
         high_bit = args[0]
@@ -240,6 +356,8 @@ class BackendVSA(ModelBackend):
         return ret
 
     @staticmethod
+    @expand_ifproxy
+    @convert_bvv_args
     def ZeroExt(*args):
         new_bits = args[0]
         expr = args[1]
