@@ -8,6 +8,15 @@ class BoolResult(object):
     def __len__(self):
         return BackendError()
 
+    def __eq__(self, other):
+        raise NotImplementedError()
+
+    def __and__(self, other):
+        raise NotImplementedError()
+
+    def __invert__(self):
+        raise NotImplementedError
+
     def size(self):
         return None
 

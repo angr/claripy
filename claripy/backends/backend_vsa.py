@@ -29,6 +29,25 @@ def normalize_arg_order(f):
 
     return normalizer
 
+def normalize_boolean_arg_types(f):
+    def convert_bool(a):
+        if isinstance(a, BoolResult):
+            return a
+        if a == True:
+            return TrueResult()
+        elif a == False:
+            return FalseResult()
+        else:
+            raise BackendError('Unsupported type %s' % type(a))
+
+    @functools.wraps(f)
+    def normalizer(*args):
+        new_args = [convert_bool(a) for a in args]
+
+        return f(*new_args)
+
+    return normalizer
+
 class BackendVSA(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
@@ -60,16 +79,19 @@ class BackendVSA(ModelBackend):
         raise NotImplementedError()
 
     def eval(self, expr, n, result=None):
-        assert type(expr) == StridedInterval
+        if isinstance(expr, StridedInterval):
+            results = []
+            lb = expr.lower_bound
 
-        results = []
-        lb = expr.lower_bound
+            while len(results) < n and lb <= expr.upper_bound:
+                results.append(lb)
+                lb += expr.stride
 
-        while len(results) < n and lb <= expr.upper_bound:
-            results.append(lb)
-            lb += expr.stride
-
-        return results
+            return results
+        elif isinstance(expr, BoolResult):
+            return expr.value
+        else:
+            raise BackendError('Unsupported type %s' % type(expr))
 
     def min(self, expr, result=None):
         assert type(expr) == StridedInterval
@@ -89,7 +111,17 @@ class BackendVSA(ModelBackend):
 
         return expr.upper_bound
 
+    def has_true(self, o):
+        return o == True or (isinstance(o, BoolResult) and True in o.value)
 
+    def has_false(self, o):
+        return o == False or (isinstance(o, BoolResult) and False in o.value)
+
+    def is_true(self, o):
+        return o == True or (isinstance(o, TrueResult))
+
+    def is_false(self, o):
+        return o == False or (isinstance(o, FalseResult))
     #
     # Operations
     #
@@ -132,6 +164,16 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     def __lshift__(a, b): return a.__lshift__(b)
+
+    @staticmethod
+    @normalize_boolean_arg_types
+    def And(a, b):
+        return a & b
+
+    @staticmethod
+    @normalize_boolean_arg_types
+    def Not(a):
+        return ~a
 
     @staticmethod
     @normalize_arg_order
@@ -264,5 +306,5 @@ class BackendVSA(ModelBackend):
 from ..bv import BVV
 from ..expression import E
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
-from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult
+from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..result import Result

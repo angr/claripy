@@ -107,10 +107,10 @@ class Solver(Storable):
 			for b in self._claripy.model_backends:
 				try:
 					o = b.convert_expr(e_simp)
-					if o == False:
+					if b.is_false(o):
 						filter_false += 1
 						raise UnsatError("expressions contain False")
-					elif o == True:
+					elif b.has_true(o):
 						filter_true +=1
 						break
 					else:
