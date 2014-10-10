@@ -19,6 +19,9 @@ def normalize_types(f):
             o = BVV(o, self.bits)
         if type(self) in (int, long):
             self = BVV(self, self.bits)
+
+        if not isinstance(self, BVV) or not isinstance(o, BVV):
+            return NotImplemented
         return f(self, o)
 
     return normalizer
