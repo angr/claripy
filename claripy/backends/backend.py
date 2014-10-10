@@ -136,9 +136,6 @@ class Backend(object):
             if obj is NotImplemented:
                 l.debug("%s neither %s nor %s apply in backend.call()", self, name, opposites[name])
                 raise BackendError("unable to apply operation on provided args")
-        print obj
-        if "%s" % obj == '66':
-            import ipdb; ipdb.set_trace()
         return obj
 
     #
