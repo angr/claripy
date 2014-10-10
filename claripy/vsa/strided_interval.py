@@ -163,6 +163,9 @@ class StridedInterval(object):
     def __lshift__(self, other):
         return self.lshift(other)
 
+    def __rshift__(self, other):
+        return self.rshift(other)
+
     @property
     def size(self):
         if self._stride == 0:

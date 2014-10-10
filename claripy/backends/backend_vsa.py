@@ -108,6 +108,10 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     @normalize_arg_order
+    def __rand__(a, b): return a.__and__(b)
+
+    @staticmethod
+    @normalize_arg_order
     def __eq__(a, b): return a.__eq__(b)
 
     @staticmethod
@@ -116,7 +120,18 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     @normalize_arg_order
+    def __or__(a, b): return a.__or__(b)
+
+    @staticmethod
+    @normalize_arg_order
     def __xor__(a, b): return a.__xor__(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def __rxor__(a, b): return a.__xor__(b)
+
+    @staticmethod
+    def __lshift__(a, b): return a.__lshift__(b)
 
     @staticmethod
     @normalize_arg_order
@@ -140,6 +155,10 @@ class BackendVSA(ModelBackend):
         return expr
 
     # TODO: Implement other operations!
+
+    @staticmethod
+    def LShR(expr, shift_amount):
+        return expr >> shift_amount
 
     @staticmethod
     def Reverse(arg):
