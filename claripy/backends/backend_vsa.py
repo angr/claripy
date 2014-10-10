@@ -1,7 +1,33 @@
 import logging
+import functools
+
 l = logging.getLogger("claripy.backends.backend_vsa")
 
 from .model_backend import ModelBackend, BackendError
+
+def arg_filter(f):
+    @functools.wraps(f)
+    def filter(*args):
+        if type(args[0]) in {int, long}:
+            raise BackendError('Unsupported argument type %s' % type(args[0]))
+        return f(*args)
+
+    return filter
+
+def normalize_arg_order(f):
+    @functools.wraps(f)
+    def normalizer(*args):
+        if len(args) != 2:
+            raise BackendError('Unsupported arguments number %d' % len(args))
+
+        if type(args[0]) not in { StridedInterval, ValueSet }:
+            if type(args[1]) not in { StridedInterval, ValueSet }:
+                raise BackendError('Unsupported arguments')
+            args = [args[1], args[0]]
+
+        return f(*args)
+
+    return normalizer
 
 class BackendVSA(ModelBackend):
     def __init__(self):
@@ -14,6 +40,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
+        self._op_raw['If'] = BackendVSA.If
 
     def add_exprs(self, solver, constraints):
         pass
@@ -25,6 +52,8 @@ class BackendVSA(ModelBackend):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
         if type(a) in { StridedInterval, ValueSet }:
+            return a
+        if isinstance(a, BoolResult):
             return a
 
         import ipdb; ipdb.set_trace()
@@ -66,13 +95,49 @@ class BackendVSA(ModelBackend):
     #
 
     @staticmethod
+    @normalize_arg_order
     def __add__(a, b): return a.__add__(b)
 
     @staticmethod
+    @normalize_arg_order
     def __sub__(a, b): return a.__sub__(b)
 
     @staticmethod
+    @normalize_arg_order
     def __and__(a, b): return a.__and__(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def __eq__(a, b): return a.__eq__(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def __ne__(a, b): return a.__ne__(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def __xor__(a, b): return a.__xor__(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def ULT(a, b):
+        return a < b
+
+    @staticmethod
+    def If(cond, true_expr, false_expr):
+        exprs = []
+        if True in cond.value:
+            exprs.append(true_expr)
+        if False in cond.value:
+            exprs.append(false_expr)
+
+        if len(exprs) == 1:
+            expr = exprs[0]
+        else:
+            # TODO: How to handle it?
+            expr = Or(exprs[0], exprs[1])
+
+        return expr
 
     # TODO: Implement other operations!
 
@@ -94,8 +159,12 @@ class BackendVSA(ModelBackend):
         return ret
 
     @staticmethod
+    @arg_filter
     def size(arg):
-        return len(arg)
+        if type(arg) in { StridedInterval, ValueSet }:
+            return len(arg)
+        else:
+            return arg.size()
 
     @staticmethod
     def Extract(*args):
@@ -176,5 +245,5 @@ class BackendVSA(ModelBackend):
 from ..bv import BVV
 from ..expression import E
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
-from ..vsa import StridedInterval, ValueSet, AbstractLocation
+from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult
 from ..result import Result

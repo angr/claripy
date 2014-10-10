@@ -67,7 +67,7 @@ backend_vsa_creation_operations = {
 backend_other_operations = { 'If' }
 
 backend_operations = backend_comparator_operations | backend_bitwise_operations | backend_boolean_operations | backend_bitmod_operations | backend_creation_operations | backend_other_operations
-backend_operations_vsa_compliant = backend_bitwise_operations | backend_bitmod_operations
+backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparator_operations | backend_bitmod_operations
 backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
 
 opposites = {
