@@ -55,7 +55,7 @@ class A(object):
 
 		if len(self.args) != 3:
 			raise ClaripyOperationError("If requires a condition and two cases.")
-		lengths = set(self.arg_size(a) for a in self.args[1:])
+		lengths = set(self.arg_size(a) for a in self.args[1:]) - { None }
 		if len(lengths) != 1 or self.arg_size(self.args[0]) is not None:
 			raise ClaripyOperationError("If needs must have equal-sized cases and a boolean condition")
 		self.length = lengths.pop()
