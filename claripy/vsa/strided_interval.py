@@ -23,6 +23,13 @@ def normalize_types(f):
             o = StridedInterval(bits=StridedInterval.min_bits(o), stride=0, lower_bound=o, upper_bound=o)
         if type(self) in (int, long):
             self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
+
+        # Make sure they have the same length
+        common_bits = max(o.bits, self.bits)
+        if o.bits < common_bits:
+            o = o.zero_extend(common_bits)
+        if self.bits < common_bits:
+            self = self.zero_extend(common_bits)
         return f(self, o)
 
     return normalizer
@@ -33,7 +40,6 @@ class StridedInterval(object):
         stride[lower_bound, upper_bound]
     For more details, please refer to relevant papers like TIE and WYSINWYE.
     '''
-
     def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None):
         self._name = name
 
@@ -88,18 +94,45 @@ class StridedInterval(object):
 
     def __len__(self):
         '''
-        Get the length in bits of this variable. It should be a multiple of 8.
+        Get the length in bits of this variable.
         :return:
         '''
-        return (self._bits + 7) / 8 * 8
+        return self._bits
 
     @normalize_types
     def __eq__(self, o):
         # TODO: Currently we are not comparing the bits
-        return ( # self._bits == o._bits and
-            self._stride == o._stride
-            and self._lower_bound == o._lower_bound
-            and self._upper_bound == o._upper_bound)
+        if (self.stride == o.stride and
+                    self.lower_bound == o.lower_bound and
+                    self.upper_bound == o.upper_bound):
+            # They are definitely equal
+            return TrueResult()
+        elif self.upper_bound < o.lower_bound or o.upper_bound < self.lower_bound:
+            return FalseResult()
+        else:
+            stride = fractions.gcd(self.stride, o.stride)
+            remainder_1 = self.upper_bound % stride
+            remainder_2 = o.upper_bound % stride
+            if remainder_1 == remainder_2:
+                return MaybeResult()
+            else:
+                return FalseResult()
+
+    @normalize_types
+    def __ne__(self, o):
+        return ~(self == o)
+
+    @normalize_types
+    def __gt__(self, other):
+        if self.lower_bound > other.upper_bound:
+            return TrueResult()
+        elif self.upper_bound < other.lower_bound:
+            return FalseResult()
+        return MaybeResult()
+
+    @normalize_types
+    def __lt__(self, other):
+        return ~(self > other) & ~(self == other)
 
     @normalize_types
     def __add__(self, o):
@@ -329,7 +362,7 @@ class StridedInterval(object):
             new_ub = ~self.upper_bound
             return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_ub, upper_bound=new_lb)
         else:
-            return StridedInterval.top()
+            return StridedInterval.top(bits=self.bits)
 
     @staticmethod
     def min_or(k, a, b, c, d):
@@ -643,3 +676,4 @@ class StridedInterval(object):
         return si
 
 from ..errors import BackendError
+from .bool_result import TrueResult, FalseResult, MaybeResult
