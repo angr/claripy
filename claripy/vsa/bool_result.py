@@ -28,6 +28,9 @@ class TrueResult(BoolResult):
     def value(self):
         return (True, )
 
+    def __eq__(self, other):
+        return isinstance(other, TrueResult)
+
     def __invert__(self):
         return FalseResult()
 
@@ -40,12 +43,15 @@ class TrueResult(BoolResult):
             return TrueResult()
 
     def __repr__(self):
-        return 'False'
+        return 'True'
 
 class FalseResult(BoolResult):
     @property
     def value(self):
         return (False, )
+
+    def __eq__(self, other):
+        return isinstance(other, FalseResult)
 
     def __invert__(self):
         return TrueResult()
@@ -54,12 +60,15 @@ class FalseResult(BoolResult):
         return FalseResult()
 
     def __repr__(self):
-        return 'True'
+        return 'False'
 
 class MaybeResult(BoolResult):
     @property
     def value(self):
         return (True, False)
+
+    def __eq__(self, other):
+        return isinstance(other, MaybeResult)
 
     def __invert__(self):
         return MaybeResult()
