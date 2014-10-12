@@ -73,14 +73,14 @@ class Backend(object):
         if not isinstance(expr, E):
             return self.convert(expr, result=result)
 
-        if self in expr.objects:
-            r = expr.objects[self]
+        if self in expr._objects:
+            r = expr._objects[self]
         elif type(expr._model) is not A:
             r = self.convert(expr._model, result=result)
         else:
             resolved = False
 
-            for o in expr.objects.itervalues():
+            for o in expr._objects.itervalues():
                 try:
                     r = self.convert(o, result=result)
                     resolved = True
@@ -91,7 +91,7 @@ class Backend(object):
                 r = expr._model.resolve(self, save=save, result=result)
 
         if save and self._cache_objects:
-            expr.objects[self] = r
+            expr._objects[self] = r
         return r
 
     def convert_exprs(self, args, result=None):

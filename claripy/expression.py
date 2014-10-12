@@ -10,13 +10,13 @@ class E(Storable):
 	'''
 	A class to wrap expressions.
 	'''
-	__slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', 'objects', '_simplified', '__weakref__', '_pending_operations' ]
+	__slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', '_objects', '_simplified', '__weakref__', '_pending_operations' ]
 
 	def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
 		Storable.__init__(self, claripy, uuid=uuid)
 		have_uuid = uuid is not None
 		have_data = not (variables is None or symbolic is None or model is None)
-		self.objects = { }
+		self._objects = { }
 		self._simplified = simplified
 
 		if have_uuid and not have_data:
@@ -30,7 +30,7 @@ class E(Storable):
 			self._stored = stored
 
 			if objects is not None:
-				self.objects.update(objects)
+				self._objects.update(objects)
 		else:
 			raise ValueError("invalid arguments passed to E()")
 
@@ -120,7 +120,7 @@ class E(Storable):
 		self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, simplified=simplified)
 
 	def copy(self):
-		c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self.objects, model=self._model, stored=self._stored, simplified=self._simplified)
+		c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self._objects, model=self._model, stored=self._stored, simplified=self._simplified)
 		return c
 
 	#
