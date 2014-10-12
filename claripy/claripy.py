@@ -11,6 +11,7 @@ class Claripy(object):
         self.datalayer = datalayer
         self.unique_names = True
         self.parallel = parallel if parallel else False
+        self.save_ast = True
 
         self.true = self.BoolVal(True)
         self.false = self.BoolVal(False)
@@ -44,23 +45,28 @@ class Claripy(object):
             return self.datalayer.make_expression(o, symbolic=symbolic, variables=variables)
 
     def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
-        for b in self.model_backends:
-            try:
-                if raw: r = b.call(name, args)
-                else:   r = b.call_expr(name, args)
-                break
-            except BackendError:
-                continue
-        else:
+        resolved = False
+
+        if not self.save_ast:
+            for b in self.model_backends:
+                try:
+                    if raw: r = b.call(name, args)
+                    else:   r = b.call_expr(name, args)
+                    resolved = True
+                    break
+                except BackendError:
+                    continue
+
+        if not resolved:
             # Special case for Reverse
             r = None
             if name == 'Reverse':
                 arg = args[0]
                 if isinstance(arg, E) and \
                         isinstance(arg._actual_model, A) and \
-                        arg._model.op == 'Reverse':
+                        arg.ast.op == 'Reverse':
                     # Unpack it :-)
-                    r = arg._model.args[0]
+                    r = arg.ast.args[0]
 
             if r is None:
                 r = A(self, name, args)
@@ -77,7 +83,7 @@ class Claripy(object):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, raw=True, simplified=True)
+        return self._do_op('BitVec', (name, size), variables={ name }, raw=True, symbolic=True, simplified=True)
 
     def BitVecVal(self, *args):
         return self.datalayer.make_expression(BVV(*args), variables=set(), symbolic=False, simplified=True)
@@ -95,8 +101,8 @@ class Claripy(object):
         if type(o) is not E or not lazy:
             return self._do_op('Reverse', (o,))
 
-        if isinstance(o._model, A) and o._model.op == 'Reverse':
-            return self.wrap(o._model.args[0])
+        if isinstance(o.ast, A) and o.ast.op == 'Reverse':
+            return self.wrap(o.ast.args[0])
         else:
             return self.wrap(A(self, "Reverse", (o,)), symbolic=o.symbolic, variables=o.variables)
 
@@ -113,7 +119,7 @@ class Claripy(object):
         return E(self, model=vs, variables=set(), symbolic=False)
 
     # a-loc
-    def AbstractLocation(self, *args, **kwargs):
+    def AbstractLocation(self, *args, **kwargs): #pylint:disable=no-self-use
         aloc = AbstractLocation(*args, **kwargs)
         return aloc
 
@@ -174,6 +180,6 @@ from .expression import E
 from .ast import A
 from .backends.backend import BackendError
 from .bv import BVV
-from .vsa import StridedInterval, ValueSet, AbstractLocation
+from .vsa import ValueSet, AbstractLocation
 from .backends import BackendVSA
 from .errors import ClaripyOperationError

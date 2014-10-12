@@ -120,7 +120,7 @@ class E(Storable):
 		start += "("
 		end = ")"
 
-		return start + str(self._model) + end
+		return start + str(self.model) + end
 
 	def split(self, split_on):
 		if not isinstance(self._model, A):

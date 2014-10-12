@@ -391,7 +391,7 @@ class BackendVSA(ModelBackend):
         '''
         if to_conv is not None:
             if type(to_conv) is E:
-                to_conv = to_conv._model
+                to_conv = to_conv.model
             if type(to_conv) is StridedInterval:
                 # No conversion will be done
                 return to_conv
