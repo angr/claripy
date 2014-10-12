@@ -18,7 +18,7 @@ def test_expression():
     e = clrp.BitVecVal(0x01020304, 32)
     nose.tools.assert_equal(len(e), 32)
     r = e.reversed()
-    nose.tools.assert_equal(bc.convert_expr(r), 0x04030201)
+    nose.tools.assert_equal(r.model_for(bc), 0x04030201)
     nose.tools.assert_equal(len(r), 32)
 
     nose.tools.assert_equal([ i.model for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
@@ -53,7 +53,7 @@ def test_expression():
     rrr = rr.reverse()
     nose.tools.assert_is(r.model, rrr.model)
     #nose.tools.assert_is(type(rr.model), claripy.A)
-    nose.tools.assert_equal(bc.convert_expr(rr), 0x04030201)
+    nose.tools.assert_equal(rr.model_for(bc), 0x04030201)
 
     rsum = r+rr
     nose.tools.assert_equal(rsum.model, 0x05050505)
@@ -96,13 +96,13 @@ def test_fallback_abstraction():
     nose.tools.assert_is(type(f.model), claripy.A)
     nose.tools.assert_is(type(g.model), claripy.BVV)
 
-    nose.tools.assert_equal(str(bz.convert_expr(b)), 'x')
-    nose.tools.assert_equal(bz.convert_expr(b).__module__, 'z3')
+    nose.tools.assert_equal(str(b.model_for(bz)), 'x')
+    nose.tools.assert_equal(b.model_for(bz).__module__, 'z3')
 
-    nose.tools.assert_equal(str(bz.convert_expr(c)), '5 + x')
-    nose.tools.assert_equal(str(bz.convert_expr(d)), '5 + x')
-    nose.tools.assert_equal(str(bz.convert_expr(e)), 'x + 5')
-    nose.tools.assert_equal(str(bz.convert_expr(f)), 'x + x')
+    nose.tools.assert_equal(str(c.model_for(bz)), '5 + x')
+    nose.tools.assert_equal(str(d.model_for(bz)), '5 + x')
+    nose.tools.assert_equal(str(e.model_for(bz)), 'x + 5')
+    nose.tools.assert_equal(str(f.model_for(bz)), 'x + x')
 
 def test_pickle():
     clrp = claripy.init_standalone()
@@ -112,12 +112,12 @@ def test_pickle():
     b = clrp.BitVec('x', 32, explicit_name=True)
 
     c = a+b
-    nose.tools.assert_equal(bz.convert_expr(c).__module__, 'z3')
-    nose.tools.assert_equal(str(bz.convert_expr(c)), '0 + x')
+    nose.tools.assert_equal(c.model_for(bz).__module__, 'z3')
+    nose.tools.assert_equal(str(c.model_for(bz)), '0 + x')
 
     c_copy = pickle.loads(pickle.dumps(c))
-    nose.tools.assert_equal(bz.convert_expr(c_copy).__module__, 'z3')
-    nose.tools.assert_equal(str(bz.convert_expr(c_copy)), '0 + x')
+    nose.tools.assert_equal(c_copy.model_for(bz).__module__, 'z3')
+    nose.tools.assert_equal(str(c_copy.model_for(bz)), '0 + x')
 
 def test_datalayer():
     l.info("Running test_datalayer")
@@ -161,9 +161,9 @@ def test_model():
     b = clrp.BitVec('x', 32, explicit_name=True)
     c = a + b
 
-    r_c = bc.convert_expr(c, result=claripy.Result(True, {'x': 10}))
+    r_c = c.model_for(bc, result=claripy.Result(True, {'x': 10}))
     nose.tools.assert_equal(r_c, 15)
-    r_d = bc.convert_expr(c, result=claripy.Result(True, {'x': 15}))
+    r_d = c.model_for(bc, result=claripy.Result(True, {'x': 15}))
     nose.tools.assert_equal(r_c, 15)
     nose.tools.assert_equal(r_d, 20)
 
@@ -510,14 +510,14 @@ def test_bool():
     bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     a = clrp.And(*[False, False, True])
-    nose.tools.assert_equal(bc.convert_expr(a), False)
+    nose.tools.assert_equal(a.model_for(bc), False)
     a = clrp.And(*[True, True, True])
-    nose.tools.assert_equal(bc.convert_expr(a), True)
+    nose.tools.assert_equal(a.model_for(bc), True)
 
     o = clrp.Or(*[False, False, True])
-    nose.tools.assert_equal(bc.convert_expr(o), True)
+    nose.tools.assert_equal(o.model_for(bc), True)
     o = clrp.Or(*[False, False, False])
-    nose.tools.assert_equal(bc.convert_expr(o), False)
+    nose.tools.assert_equal(o.model_for(bc), False)
 
 def test_vsa():
     from claripy.backends import BackendVSA
