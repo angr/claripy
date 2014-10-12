@@ -65,34 +65,12 @@ class Backend(object):
         @param result: a Result object (for concrete-only symbolic evaluation)
         @returns a backend object
         '''
-        save = save if save is not None else result is None
-
         if isinstance(expr, A):
             raise ClaripyTypeError("wtf")
-
-        if not isinstance(expr, E):
+        elif not isinstance(expr, E):
             return self.convert(expr, result=result)
-
-        if self in expr._objects:
-            r = expr._objects[self]
-        elif type(expr._model) is not A:
-            r = self.convert(expr._model, result=result)
         else:
-            resolved = False
-
-            for o in expr._objects.itervalues():
-                try:
-                    r = self.convert(o, result=result)
-                    resolved = True
-                except BackendError:
-                    pass
-
-            if not resolved:
-                r = expr._model.resolve(self, save=save, result=result)
-
-        if save and self._cache_objects:
-            expr._objects[self] = r
-        return r
+            return expr.model_for(self, result=result, save=save)
 
     def convert_exprs(self, args, result=None):
         return [ self.convert_expr(a, result=result) for a in args ]

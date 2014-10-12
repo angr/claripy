@@ -35,6 +35,45 @@ class E(Storable):
 			raise ValueError("invalid arguments passed to E()")
 
 	#
+	# Model and AST
+	#
+
+	@property
+	def model(self):
+		for b in self._claripy.model_backends:
+			try: return self.model_for(b)
+			except BackendError: pass
+		return self._model
+
+	@property
+	def ast(self):
+		return self._model
+
+	def model_for(self, b, result=None, save=None):
+		if b in self._objects:
+			return self._objects[b]
+		elif not isinstance(self._model, A):
+			return b.convert(self._model, result=result)
+
+		save = save if save is not None else result is None
+
+		resolved=False
+		for o in self._objects.itervalues():
+			try:
+				r = b.convert(o, result=result)
+				resolved = True
+			except BackendError:
+				pass
+
+		if not resolved:
+			r = self._model.resolve(b, save=save, result=result)
+
+		if save:
+			self._objects[self] = r
+
+		return r
+
+	#
 	# Some debug stuff:
 	#
 
