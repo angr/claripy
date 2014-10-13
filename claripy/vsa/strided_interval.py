@@ -631,6 +631,9 @@ class StridedInterval(object):
                 return self.top(tok)
 
     def concat(self, b):
+        # Zero-extend
+        self._bits += b.bits
+
         new_si = self.lshift(b.bits)
         new_b = b.copy()
         # Extend b
