@@ -109,8 +109,18 @@ class Claripy(object):
     #
     # Strided interval
     #
-    def StridedInterval(self, **kwargs):
-        si = BackendVSA.CreateStridedInterval(**kwargs)
+    def StridedInterval(self, name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None):
+        si = BackendVSA.CreateStridedInterval(name=name,
+                                            bits=bits,
+                                            lower_bound=lower_bound,
+                                            upper_bound=upper_bound,
+                                            stride=stride,
+                                            to_conv=to_conv)
+        return E(self, model=si, variables=set(), symbolic=False)
+
+    def TopStridedInterval(self, bits, signed=False):
+        si = BackendVSA.CreateTopStridedInterval(bits=bits, signed=signed)
+
         return E(self, model=si, variables=set(), symbolic=False)
 
     # Value Set

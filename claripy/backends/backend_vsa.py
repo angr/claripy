@@ -433,6 +433,10 @@ class BackendVSA(ModelBackend):
                              upper_bound=upper_bound)
         return bi
 
+    @staticmethod
+    def CreateTopStridedInterval(bits, signed=False):
+        return StridedInterval.top(bits, signed=signed)
+
 from ..bv import BVV
 from ..expression import E
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
