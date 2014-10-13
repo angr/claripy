@@ -313,7 +313,7 @@ class Solver(Storable):
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
-				try: return b.min_expr(e, result=self._result)
+				try: return b.solution_expr(e, v, result=self._result)
 				except BackendError: pass
 
 		b = self._solution(e, v, extra_constraints=extra_constraints)

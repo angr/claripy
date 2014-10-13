@@ -63,7 +63,7 @@ def convert_bvv_args(f):
 
 def expand_ifproxy(f):
     @functools.wraps(f)
-    def expander(*args):
+    def expander(*args, **kwargs):
         '''
         For each IfProxy proxified argument, we expand it so that it is
         converted into two operands (true expr and false expr, respectively).
@@ -86,8 +86,8 @@ def expand_ifproxy(f):
             else:
                 true_args = (ifproxy.trueexpr, ) + args[1 : ]
                 false_args = (ifproxy.falseexpr, ) + args[1 : ]
-            trueexpr = f(*true_args)
-            falseexpr = f(*false_args)
+            trueexpr = f(*true_args, **kwargs)
+            falseexpr = f(*false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
@@ -97,7 +97,7 @@ def expand_ifproxy(f):
             true_args = args[ : 1] + (ifproxy.trueexpr, ) + args[2:]
             false_args = args[ : 1] + (ifproxy.falseexpr, ) + args[2:]
             trueexpr = f(*true_args)
-            falseexpr = f(*false_args)
+            falseexpr = f(*false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
@@ -106,12 +106,12 @@ def expand_ifproxy(f):
             cond = ifproxy.condition
             true_args = args[: 2] + (ifproxy.trueexpr, ) + args[3:]
             false_args = args[: 2] + (ifproxy.falseexpr, ) + args[3:]
-            trueexpr = f(*true_args)
-            falseexpr = f(*false_args)
+            trueexpr = f(*true_args, **kwargs)
+            falseexpr = f(*false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        return f(*args)
+        return f(*args, **kwargs)
 
     return expander
 
@@ -192,13 +192,14 @@ class BackendVSA(ModelBackend):
             raise BackendError('Unsupported type %s' % type(expr))
 
     def min(self, expr, result=None):
-        assert type(expr) == StridedInterval
+        if isinstance(expr, StridedInterval):
+            if expr.is_top():
+                # TODO: Return
+                return StridedInterval.min_int(expr.bits)
 
-        if expr.is_top():
-            # TODO: Return
-            return StridedInterval.min_int(expr.bits)
-
-        return expr.lower_bound
+            return expr.lower_bound
+        else:
+            raise BackendError('Unsupported expr type %s' % type(expr))
 
     def max(self, expr, result=None):
         assert type(expr) == StridedInterval
@@ -208,6 +209,17 @@ class BackendVSA(ModelBackend):
             return StridedInterval.max_int(expr.bits)
 
         return expr.upper_bound
+
+    def solution(self, obj, v, result=None):
+        if isinstance(obj, IfProxy):
+            ret = self.solution(obj.trueexpr, v, result=result) or \
+                self.solution(obj.falseexpr, v, result=result)
+            return ret
+
+        if isinstance(obj, BoolResult):
+            return v in obj.value
+        else:
+            raise NotImplementedError()
 
     def has_true(self, o):
         return o == True or \
