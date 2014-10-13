@@ -73,6 +73,11 @@ class A(object):
 		self.args = (int(self.args[0]), int(self.args[1]), self.args[2])
 		self.length = self.args[0]-self.args[1]+1
 
+		if self.length > self.arg_size(self.args[2]) or \
+						self.args[0] >= self.arg_size(self.args[2]) or \
+						self.args[1] >= self.arg_size(self.args[2]):
+			raise ClaripyOperationError("Invalid arguments passed to extract!")
+
 	def finalize_ZeroExt(self):
 		if len(self.args) != 2 or type(self.args[0]) not in (int, long):
 			raise ClaripyOperationError("%s requires two arguments: (int, bitvector)" % self.op)
