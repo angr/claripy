@@ -93,6 +93,15 @@ class ValueSet(object):
 
         return new_vs
 
+    def eval(self, n):
+        results = []
+
+        for region, si in self._si_dict.items():
+            if len(results) < n:
+                results.extend(si.eval(n))
+
+        return results
+
     def copy(self):
         vs = ValueSet()
         vs._si_dict = self._si_dict.copy()

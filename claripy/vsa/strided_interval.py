@@ -82,6 +82,17 @@ class StridedInterval(object):
         if self._stride < 0:
             raise Exception("Why does this happen?")
 
+    def eval(self, n):
+        results = []
+
+        lb = self.lower_bound
+
+        while len(results) < n and lb <= self.upper_bound:
+            results.append(lb)
+            lb += self.stride
+
+        return results
+
     @staticmethod
     def top(bits, signed=False):
         '''

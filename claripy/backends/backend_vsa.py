@@ -173,12 +173,12 @@ class BackendVSA(ModelBackend):
 
     def eval(self, expr, n, result=None):
         if isinstance(expr, StridedInterval):
+            return expr.eval(n)
+        elif isinstance(expr, ValueSet):
             results = []
-            lb = expr.lower_bound
 
-            while len(results) < n and lb <= expr.upper_bound:
-                results.append(lb)
-                lb += expr.stride
+            while len(results) < n:
+                results.extend(expr.eval(n - len(results)))
 
             return results
         elif isinstance(expr, BoolResult):
