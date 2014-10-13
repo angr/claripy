@@ -69,7 +69,7 @@ class E(Storable):
 			r = self._model.resolve(b, save=save, result=result)
 
 		if save:
-			self._objects[self] = r
+			self._objects[b] = r
 
 		return r
 
