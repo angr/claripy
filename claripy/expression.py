@@ -10,14 +10,15 @@ class E(Storable):
 	'''
 	A class to wrap expressions.
 	'''
-	__slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', '_objects', '_simplified', '__weakref__', '_pending_operations' ]
+	__slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', '_objects', '_simplified', '__weakref__', '_errored_backends' ]
 
-	def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False):
+	def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False, errored_backends=None):
 		Storable.__init__(self, claripy, uuid=uuid)
 		have_uuid = uuid is not None
 		have_data = not (variables is None or symbolic is None or model is None)
 		self._objects = { }
 		self._simplified = simplified
+		self._errored_backends = set() if errored_backends is None else errored_backends
 
 		if have_uuid and not have_data:
 			self._load()
@@ -42,7 +43,7 @@ class E(Storable):
 	def model(self):
 		for b in self._claripy.model_backends:
 			try: return self.model_for(b)
-			except BackendError: pass
+			except BackendError: self._errored_backends.add(b)
 		return self._model
 
 	@property
@@ -50,6 +51,9 @@ class E(Storable):
 		return self._model
 
 	def model_for(self, b, result=None, save=None):
+		if b in self._errored_backends:
+			raise BackendError("backend %s has already errored out" % b)
+
 		if b in self._objects:
 			return self._objects[b]
 		elif not isinstance(self._model, A):
@@ -159,7 +163,7 @@ class E(Storable):
 		self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, simplified=simplified)
 
 	def copy(self):
-		c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self._objects, model=self._model, stored=self._stored, simplified=self._simplified)
+		c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self._objects, model=self._model, stored=self._stored, simplified=self._simplified, errored_backends=set(self._errored_backends))
 		return c
 
 	#

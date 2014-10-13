@@ -119,13 +119,21 @@ class A(object):
 			return result.resolve_cache[b][self]
 
 		args = [ ]
+		#pylint:disable=maybe-no-member
 		for a in self.args:
 			if isinstance(a, E):
-				args.append(b.convert_expr(a, result=result))
+				m = a.model
+				if not isinstance(m, A):
+					cm = b.convert(m, result=result)
+					a._objects[b] = cm
+					args.append(cm)
+				else:
+					args.append(a.model_for(b, result=result))
 			elif isinstance(a, A):
-				args.append(a.resolve(b, save=save, result=result)) #pylint:disable=maybe-no-member
+				args.append(a.resolve(b, save=save, result=result))
 			else:
 				args.append(b.convert(a, result=result))
+		#pylint:enable=maybe-no-member
 
 		l.debug("trying evaluation with %s", b)
 		r = b.call(self.op, args, result=result)
