@@ -10,30 +10,25 @@ class E(Storable):
 	'''
 	A class to wrap expressions.
 	'''
-	__slots__ = [ 'variables', 'symbolic', '_uuid', '_model', '_stored', '_objects', '_simplified', '__weakref__', '_errored_backends' ]
+	__slots__ = [ 'variables', 'symbolic', '_model', '_objects', '_simplified', '__weakref__', '_errored_backends' ]
 
 	def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False, errored_backends=None):
-		Storable.__init__(self, claripy, uuid=uuid)
-		have_uuid = uuid is not None
-		have_data = not (variables is None or symbolic is None or model is None)
+		if variables is None or symbolic is None or model is None:
+			raise ValueError("invalid arguments passed to E()")
+
+		Storable.__init__(self, claripy, uuid=uuid, stored=stored)
 		self._objects = { }
 		self._simplified = simplified
 		self._errored_backends = set() if errored_backends is None else errored_backends
 
-		if have_uuid and not have_data:
-			self._load()
-		elif have_data:
-			self.variables = variables
-			self.symbolic = symbolic
+		self.variables = variables
+		self.symbolic = symbolic
 
-			self._uuid = uuid
-			self._model = model
-			self._stored = stored
+		self._uuid = uuid
+		self._model = model
 
-			if objects is not None:
-				self._objects.update(objects)
-		else:
-			raise ValueError("invalid arguments passed to E()")
+		if objects is not None:
+			self._objects.update(objects)
 
 	#
 	# Model and AST
@@ -104,15 +99,6 @@ class E(Storable):
 	def __hash__(self):
 		return hash(self._model)
 
-	def _load(self):
-		e = self._claripy.datalayer.load_expression(self._uuid)
-		self.variables = e.variables
-		self.symbolic = e.symbolic
-
-		self._uuid = e._uuid
-		self._model = e._model
-		self._stored = e._stored
-
 	def __nonzero__(self):
 		raise ClaripyExpressionError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
@@ -144,26 +130,15 @@ class E(Storable):
 	# Storing and loading of expressions
 	#
 
-	def store(self):
-		self._claripy.datalayer.store_expression(self)
+	def _claripy_getstate(self):
+		return self._model, self.variables, self.symbolic, self._simplified
 
-	def __getstate__(self):
-		if self._uuid is not None:
-			l.debug("uuid pickle on %s", self)
-			return self._uuid
-		l.debug("full pickle on %s", self)
-		return self._uuid, self._model, self.variables, self.symbolic, self._simplified
-
-	def __setstate__(self, s):
-		if type(s) is str:
-			self.__init__(get_claripy(), uuid=s)
-			return
-
-		uuid, model, variables, symbolic, simplified = s
-		self.__init__(get_claripy(), variables=variables, symbolic=symbolic, model=model, uuid=uuid, simplified=simplified)
+	def _claripy_setstate(self, s):
+		model, variables, symbolic, simplified = s
+		self.__init__(self._claripy, variables=variables, symbolic=symbolic, model=model, uuid=self._uuid, simplified=simplified, stored=self._stored)
 
 	def copy(self):
-		c = E(claripy=self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self._objects, model=self._model, stored=self._stored, simplified=self._simplified, errored_backends=set(self._errored_backends))
+		c = E(self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self._objects, model=self._model, stored=self._stored, simplified=self._simplified, errored_backends=set(self._errored_backends))
 		return c
 
 	#
@@ -232,5 +207,4 @@ def make_methods():
 from .errors import ClaripyExpressionError, BackendError
 from .operations import expression_operations
 make_methods()
-from . import get_claripy
 from .ast import A

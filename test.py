@@ -1,5 +1,6 @@
 import sys
 import pickle
+import tempfile
 
 import nose
 import logging
@@ -122,36 +123,29 @@ def test_pickle():
 def test_datalayer():
     l.info("Running test_datalayer")
 
-    #clrp = claripy.ClaripyStandalone()
-    #pickle_dir = tempfile.mkdtemp()
-    #clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
-    #l.debug("Pickling to %s",pickle_dir)
+    clrp = claripy.init_standalone()
+    pickle_dir = tempfile.mkdtemp()
+    clrp.datalayer = claripy.DataLayer(clrp, pickle_dir=pickle_dir)
+    l.debug("Pickling to %s",pickle_dir)
 
-    #bc = claripy.backends.BackendConcrete(claripy.claripy)
-    #bz = claripy.backends.BackendZ3(claripy.claripy)
+    a = clrp.BitVecVal(0, 32)
+    b = clrp.BitVec("x", 32)
+    c = a + b
+    d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
 
-    #a = claripy.E(clrp, ast=claripy.A(op='BitVecVal', args=(0, 32)), variables=set(), symbolic=False)
-    #b = claripy.E(clrp, ast=claripy.A(op='BitVec', args=('x', 32)), variables={'x'}, symbolic=True)
+    l.debug("Storing!")
+    a.store()
+    c.store()
+    d.store()
 
-    #a.eval(); a._ast = None
-    #b.store()
-    ##b.eval(); b._ast = None
-    #c = a + b
-    #c.store()
-
-    #c.eval(backends=[ bc, bz ], save=True)
-    #nose.tools.assert_equal(str(c._obj), '0 + x')
-
-    #d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
-    #d.store()
-
-    #l.debug("Loading stage!")
-    #clrp.dl = claripy.DataLayer(pickle_dir=pickle_dir)
+    l.debug("Loading!")
+    clrp.dl = claripy.DataLayer(clrp, pickle_dir=pickle_dir)
     #nose.tools.assert_equal(len(clrp.dl._cache), 0)
 
-    #e = clrp.dl.load_expression(c._uuid)
-    #e.eval([ bc, bz ], save=True)
-    #nose.tools.assert_equal(str(e._obj), '0 + x')
+    cc = claripy.E.load(c.uuid)
+    nose.tools.assert_equal(str(cc), str(c))
+    cd = claripy.E.load(d.uuid)
+    nose.tools.assert_equal(str(cd), str(d))
 
 def test_model():
     clrp = claripy.ClaripyStandalone()
@@ -636,7 +630,7 @@ if __name__ == '__main__':
         test_expression()
         test_fallback_abstraction()
         test_pickle()
-        #test_datalayer()
+        test_datalayer()
         test_model()
         test_solver()
         test_solver_branching()
