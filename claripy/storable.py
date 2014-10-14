@@ -6,6 +6,12 @@ class Storable(object):
         self._uuid = uuid
         self._stored = False if stored is None else stored
 
+    def _storable_kwargs(self):
+        return {
+            'uuid': self._uuid,
+            'stored': self._stored
+        }
+
     @property
     def uuid(self):
         if self._uuid is not None:

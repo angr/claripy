@@ -9,13 +9,23 @@ from .solver import Solver
 from .branching_solver import BranchingSolver
 
 class CompositeSolver(Solver):
-	def __init__(self, claripy, timeout=None, solver_class=BranchingSolver):
-		Solver.__init__(self, claripy, timeout=timeout)
+	def __init__(self, claripy, timeout=None, solver_class=BranchingSolver, **kwargs):
+		Solver.__init__(self, claripy, timeout=timeout, **kwargs)
 		self._results = None
 		self._solvers = { }
 		self._solver_class = solver_class
 
 		self._solvers['CONCRETE'] = self._merged_solver_for({'CONCRETE'})
+
+	#
+	# Serialization stuff
+	#
+
+	def _claripy_getstate(self):
+		return self._solvers, self._solver_class, self._results
+
+	def _claripy_setstate(self, s):
+		self._solvers, self._solver_class, self._results = s
 
 	@property
 	def _solver_list(self):
@@ -166,15 +176,17 @@ class CompositeSolver(Solver):
 	def min(self, e, extra_constraints=()):
 		return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints)
 
-	def solution(self, e, n):
-		return self._merged_solver_for(e.variables).solution(e, n)
+	def solution(self, e, n, extra_constraints=()):
+		return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints)
 
 	#
 	# Merging and splitting
 	#
 
 	def finalize(self):
-		raise NotImplementedError()
+		l.error("CompositeSolver.finalize is incomplete. This represents a big issue.")
+		for s in self._solver_list:
+			s.finalize()
 
 	def simplify(self):
 		l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))

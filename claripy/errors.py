@@ -19,5 +19,8 @@ class ClaripySolverError(ClaripyError):
 class ClaripyExpressionError(ClaripyError):
     pass
 
+class ClaripySerializationError(ClaripyError):
+    pass
+
 class BackendError(ClaripyError):
     pass

@@ -12,19 +12,17 @@ class E(Storable):
 	'''
 	__slots__ = [ 'variables', 'symbolic', '_model', '_objects', '_simplified', '__weakref__', '_errored_backends' ]
 
-	def __init__(self, claripy, variables=None, symbolic=None, uuid=None, objects=None, model=None, stored=False, simplified=False, errored_backends=None):
+	def __init__(self, claripy, variables=None, symbolic=None, objects=None, model=None, simplified=False, errored_backends=None, **storable_kwargs):
 		if variables is None or symbolic is None or model is None:
 			raise ValueError("invalid arguments passed to E()")
 
-		Storable.__init__(self, claripy, uuid=uuid, stored=stored)
+		Storable.__init__(self, claripy, **storable_kwargs)
 		self._objects = { }
 		self._simplified = simplified
 		self._errored_backends = set() if errored_backends is None else errored_backends
 
 		self.variables = variables
 		self.symbolic = symbolic
-
-		self._uuid = uuid
 		self._model = model
 
 		if objects is not None:
@@ -135,10 +133,10 @@ class E(Storable):
 
 	def _claripy_setstate(self, s):
 		model, variables, symbolic, simplified = s
-		self.__init__(self._claripy, variables=variables, symbolic=symbolic, model=model, uuid=self._uuid, simplified=simplified, stored=self._stored)
+		self.__init__(self._claripy, variables=variables, symbolic=symbolic, model=model, simplified=simplified, **self._storable_kwargs())
 
 	def copy(self):
-		c = E(self._claripy, variables=self.variables, symbolic=self.symbolic, uuid=self._uuid, objects=self._objects, model=self._model, stored=self._stored, simplified=self._simplified, errored_backends=set(self._errored_backends))
+		c = E(self._claripy, variables=self.variables, symbolic=self.symbolic, objects=self._objects, model=self._model, simplified=self._simplified, errored_backends=set(self._errored_backends), **self._storable_kwargs())
 		return c
 
 	#

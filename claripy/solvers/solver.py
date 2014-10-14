@@ -16,8 +16,8 @@ filter_false = 0
 from ..storable import Storable
 
 class Solver(Storable):
-	def __init__(self, claripy, result=None, timeout=None, solvers=None, to_add=None):
-		Storable.__init__(self, claripy)
+	def __init__(self, claripy, result=None, timeout=None, solvers=None, to_add=None, **kwargs):
+		Storable.__init__(self, claripy, **kwargs)
 		self._finalized = None
 		self._result = result
 		self._simplified = True
@@ -32,8 +32,20 @@ class Solver(Storable):
 		except AttributeError:
 			pass
 
-	def _load(self):
-		raise Exception('TODO')
+	#
+	# Storable support
+	#
+	def _claripy_getstate(self):
+		if not self._simplified:
+			self.simplify()
+		return self._result, self._timeout, self._to_add, self.constraints, self.variables
+
+	def _claripy_setstate(self, s):
+		self._simplified = True
+		r, to, ta, c, v = s
+		self.__init__(self._claripy, result=r, timeout=to, to_add=ta, **self._storable_kwargs())
+		self.constraints = c
+		self.variables = v
 
 	#
 	# Solver Creation
@@ -400,11 +412,11 @@ class Solver(Storable):
 	# Merging and splitting
 	#
 
-	def finalize(self):
-		raise NotImplementedError()
+	def finalize(self): #pylint:disable=no-self-use
+		l.error("finalize() called on a non-branching solver! This is probably a serious bug.")
 
-	def branch(self):
-		raise NotImplementedError()
+	def branch(self): #pylint:disable=no-self-use
+		l.error("branch() called on a non-branching solver! This is probably a serious bug.")
 
 	def merge(self, others, merge_flag, merge_values):
 		merged = self.__class__(self._claripy, timeout=self._timeout)

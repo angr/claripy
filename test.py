@@ -147,6 +147,26 @@ def test_datalayer():
     cd = claripy.E.load(d.uuid)
     nose.tools.assert_equal(str(cd), str(d))
 
+    l.debug("Time to test some solvers!")
+    s = clrp.solver()
+    x = clrp.BitVec("x", 32)
+    s.add(x == 3)
+    s.finalize()
+    ss = claripy.solvers.Solver.load(s.store())
+    nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
+    nose.tools.assert_equal(str(s.variables), str(ss.variables))
+
+    s = clrp.composite_solver()
+    x = clrp.BitVec("x", 32)
+    s.add(x == 3)
+    s.finalize()
+    ss = claripy.solvers.CompositeSolver.load(s.store())
+    old_constraint_sets = [[hash(j) for j in k.constraints] for k in s._solver_list]
+    new_constraint_sets = [[hash(j) for j in k.constraints] for k in ss._solver_list]
+    nose.tools.assert_items_equal(old_constraint_sets, new_constraint_sets)
+    nose.tools.assert_equal(str(s.variables), str(ss.variables))
+
+
 def test_model():
     clrp = claripy.ClaripyStandalone()
     bc = clrp.backend_of_type(claripy.backends.BackendConcrete)

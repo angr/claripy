@@ -41,15 +41,18 @@ class DataLayer:
         return e
 
     def store_state(self, uuid, s):
+        p = pickle.dumps(s, protocol=-1)
         if self._store_type == 'pickle':
-            pickle.dump(s, open(os.path.join(self._dir, str(uuid)+'.p'), 'w'), -1)
+            open(os.path.join(self._dir, str(uuid)+'.p'), 'w').write(p)
         elif self._store_type == 'dict':
-            self._state_store[uuid] = s
+            self._state_store[uuid] = p
 
     def load_state(self, uuid):
         if self._store_type == 'pickle':
-            return pickle.load(open(os.path.join(self._dir, str(uuid)+'.p')))
+            p = open(os.path.join(self._dir, str(uuid)+'.p')).read()
         elif self._store_type == 'dict':
-            return self._state_store[uuid]
+            p = self._state_store[uuid]
+
+        return pickle.loads(p)
 
 from .expression import E
