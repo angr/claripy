@@ -5,7 +5,8 @@ import logging
 l = logging.getLogger('claripy.claripy')
 
 class Claripy(object):
-    def __init__(self, model_backends, solver_backends, datalayer, parallel=None):
+    def __init__(self, name, model_backends, solver_backends, datalayer, parallel=None):
+        self.name = name
         self.solver_backends = solver_backends
         self.model_backends = model_backends
         self.datalayer = datalayer

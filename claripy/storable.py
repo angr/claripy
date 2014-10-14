@@ -24,16 +24,19 @@ class Storable(object):
             if not self._stored:
                 self._claripy.datalayer.store_state(self._uuid, self._claripy_getstate())
                 self._stored = True
-            return self._uuid
+            return self._claripy.name, self._uuid
         else:
-            return self._claripy_getstate()
+            return self._claripy.name, self._claripy_getstate()
 
     def __setstate__(self, s):
+        clrp_name, s = s
+        clrp = Claripies[clrp_name]
+
         if type(s) is str:
-            Storable.__init__(self, get_claripy(), uuid=s, stored=True)
+            Storable.__init__(self, clrp, uuid=s, stored=True)
             s = self._claripy.datalayer.load_state(self._uuid)
         else:
-            Storable.__init__(self, get_claripy(), uuid=None, stored=False)
+            Storable.__init__(self, clrp, uuid=None, stored=False)
 
         self._claripy_setstate(s)
 
@@ -47,16 +50,13 @@ class Storable(object):
         '''
         Assigns a UUID to the storable and stores the actual data.
         '''
-        u = self.uuid
-        if not self._stored:
-            self._claripy.datalayer.store_state(self._uuid, self._claripy_getstate())
-            self._stored = True
-        return u
+        u = self.uuid #pylint:disable=unused-variable
+        return self.__getstate__()
 
     @classmethod
-    def load(cls, uuid):
+    def load(cls, s):
         self = cls.__new__(cls)
-        self.__setstate__(uuid)
+        self.__setstate__(s)
         return self
 
-from . import get_claripy
+from . import Claripies

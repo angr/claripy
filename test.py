@@ -13,7 +13,7 @@ try: import claripy_logging #pylint:disable=import-error,unused-import
 except ImportError: pass
 
 def test_expression():
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     e = clrp.BitVecVal(0x01020304, 32)
@@ -60,7 +60,7 @@ def test_expression():
     nose.tools.assert_equal(rsum.model, 0x05050505)
 
 def test_concrete():
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
 
     a = clrp.BitVecVal(10, 32)
     b = clrp.BoolVal(True)
@@ -71,7 +71,7 @@ def test_concrete():
     nose.tools.assert_is(type(c.model), claripy.A)
 
 def test_fallback_abstraction():
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     bz = clrp.backend_of_type(claripy.backends.BackendZ3)
 
     a = clrp.BitVecVal(5, 32)
@@ -106,7 +106,7 @@ def test_fallback_abstraction():
     nose.tools.assert_equal(str(f.model_for(bz)), 'x + x')
 
 def test_pickle():
-    clrp = claripy.init_standalone()
+    clrp = claripy.Claripies['SerialZ3']
     bz = clrp.backend_of_type(claripy.backends.BackendZ3)
 
     a = clrp.BitVecVal(0, 32)
@@ -123,7 +123,7 @@ def test_pickle():
 def test_datalayer():
     l.info("Running test_datalayer")
 
-    clrp = claripy.init_standalone()
+    clrp = claripy.Claripies['SerialZ3']
     pickle_dir = tempfile.mkdtemp()
     clrp.datalayer = claripy.DataLayer(clrp, pickle_dir=pickle_dir)
     l.debug("Pickling to %s",pickle_dir)
@@ -135,16 +135,16 @@ def test_datalayer():
 
     l.debug("Storing!")
     a.store()
-    c.store()
-    d.store()
+    c_info = c.store()
+    d_info = d.store()
 
     l.debug("Loading!")
     clrp.dl = claripy.DataLayer(clrp, pickle_dir=pickle_dir)
     #nose.tools.assert_equal(len(clrp.dl._cache), 0)
 
-    cc = claripy.E.load(c.uuid)
+    cc = claripy.E.load(c_info)
     nose.tools.assert_equal(str(cc), str(c))
-    cd = claripy.E.load(d.uuid)
+    cd = claripy.E.load(d_info)
     nose.tools.assert_equal(str(cd), str(d))
 
     l.debug("Time to test some solvers!")
@@ -168,7 +168,7 @@ def test_datalayer():
 
 
 def test_model():
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     a = clrp.BitVecVal(5, 32)
@@ -185,7 +185,7 @@ def test_solver():
     raw_solver(claripy.solvers.BranchingSolver)
     raw_solver(claripy.solvers.CompositeSolver)
 def raw_solver(solver_type):
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
     #clrp.expression_backends = [ bc, bz, ba ]
@@ -286,7 +286,7 @@ def test_solver_branching():
     raw_solver_branching(claripy.solvers.BranchingSolver)
     raw_solver_branching(claripy.solvers.CompositeSolver)
 def raw_solver_branching(solver_type):
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     s = solver_type(clrp)
     x = clrp.BitVec("x", 32)
     y = clrp.BitVec("y", 32)
@@ -319,7 +319,7 @@ def test_combine():
     raw_combine(claripy.solvers.BranchingSolver)
     raw_combine(claripy.solvers.CompositeSolver)
 def raw_combine(solver_type):
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     s10 = solver_type(clrp)
     s20 = solver_type(clrp)
     s30 = solver_type(clrp)
@@ -346,7 +346,7 @@ def test_simple_merging():
     raw_simple_merging(claripy.solvers.BranchingSolver)
     raw_simple_merging(claripy.solvers.CompositeSolver)
 def raw_simple_merging(solver_type):
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     s1 = solver_type(clrp)
     s2 = solver_type(clrp)
     w = clrp.BitVec("w", 8)
@@ -448,7 +448,7 @@ def raw_simple_merging(solver_type):
     nose.tools.assert_false(smm_1.satisfiable())
 
 def test_composite_solver():
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     s = clrp.composite_solver()
     x = clrp.BitVec("x", 32)
     y = clrp.BitVec("y", 32)
@@ -481,7 +481,7 @@ def test_ite():
     raw_ite(claripy.solvers.BranchingSolver)
     raw_ite(claripy.solvers.CompositeSolver)
 def raw_ite(solver_type):
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     s = solver_type(clrp)
     x = clrp.BitVec("x", 32)
     y = clrp.BitVec("y", 32)
@@ -520,7 +520,7 @@ def raw_ite(solver_type):
     nose.tools.assert_items_equal(sorted([ b.value for b in ss.eval(y, 100) ]), ( 2, 20, 200 ))
 
 def test_bool():
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
 
     a = clrp.And(*[False, False, True])
@@ -537,7 +537,7 @@ def test_vsa():
     from claripy.backends import BackendVSA
     from claripy.vsa import TrueResult, FalseResult, MaybeResult #pylint:disable=unused-variable
 
-    clrp = claripy.ClaripyStandalone()
+    clrp = claripy.Claripies["SerialZ3"]
     # Set backend
     backend_vsa = BackendVSA()
     backend_vsa.set_claripy_object(clrp)

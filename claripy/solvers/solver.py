@@ -154,6 +154,10 @@ class Solver(Storable):
 			self._result = Result(False, { })
 
 		if len(to_add) > 0:
+			# generate UUIDs for every constraint
+			for c in to_add:
+				c.uuid #pylint:disable=pointless-statement
+
 			self._simplified = False
 			self.constraints += to_add
 
@@ -166,6 +170,10 @@ class Solver(Storable):
 	def simplify(self):
 		if self._simplified or len(self.constraints) == 0: return
 		self.constraints = [ self._claripy.simplify(self._claripy.And(*self.constraints)) ]
+
+		# generate UUIDs for every constraint
+		for c in self.constraints:
+			c.uuid #pylint:disable=pointless-statement
 
 		self._solver_states = { }
 		self._to_add = { }

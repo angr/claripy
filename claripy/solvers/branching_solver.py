@@ -31,7 +31,7 @@ class BranchingSolver(Solver):
 
 	def _claripy_getstate(self):
 		if not self._finalized:
-			raise ClaripySerializationError("cannot serialize non-finalized solver!")
+			self.finalize()
 		return Solver._claripy_getstate(self)
 
 	def _claripy_setstate(self, s):

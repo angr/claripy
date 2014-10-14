@@ -5,14 +5,7 @@
 import logging
 l = logging.getLogger("claripy")
 
-claripy = None
-def set_claripy(c):
-    global claripy
-    claripy = c
-    return c
-
-def get_claripy():
-    return claripy
+Claripies = { }
 
 from .expression import E
 from .ast import A
@@ -26,8 +19,19 @@ from .bv import BVV
 from . import operations
 from . import backends
 
-def init_standalone(model_backends=None, solver_backends=None):
-    return set_claripy(ClaripyStandalone(model_backends=model_backends, solver_backends=solver_backends))
+def init_claripies():
+    backend_vsa = backends.BackendVSA()
+    backend_concrete = backends.BackendConcrete()
+    Claripies['VSA'] = ClaripyStandalone('VSA', model_backends=[backend_concrete, backend_vsa], solver_backends=[])
+
+    Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
+    Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
+
+def set_datalayer(*args, **kwargs):
+    for c in Claripies.itervalues():
+        c.datalayer = DataLayer(c, *args, **kwargs)
+
+init_claripies()
 
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap
