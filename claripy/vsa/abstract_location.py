@@ -28,3 +28,6 @@ class AbstractLocation(object):
 
     def update(self, addr, size):
         pass
+
+    def __repr__(self):
+        return '[0x%x - %d] %x' % (self.basicblock_key, self.statement_id, self.offset)
