@@ -46,7 +46,7 @@ class E(Storable):
 		return self._model
 
 	def model_for(self, b, result=None, save=None):
-		if b in self._errored_backends:
+		if b in self._errored_backends and result is None:
 			raise BackendError("backend %s has already errored out" % b)
 
 		if b in self._objects:
