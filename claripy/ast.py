@@ -119,29 +119,21 @@ class A(object):
 	def size(self):
 		return self.length
 
-	def resolve(self, b, save=None, result=None):
+	def resolve(self, b, result=None):
 		if result is not None and self in result.resolve_cache[b]:
 			return result.resolve_cache[b][self]
 
 		args = [ ]
 		#pylint:disable=maybe-no-member
 		for a in self.args:
-			if isinstance(a, E):
-				m = a.model
-				if not isinstance(m, A):
-					cm = b.convert(m, result=result)
-					a._objects[b] = cm
-					args.append(cm)
-				else:
-					args.append(a.model_for(b, result=result))
-			elif isinstance(a, A):
-				args.append(a.resolve(b, save=save, result=result))
+			if isinstance(a, A):
+				args.append(a.resolve(b, result=result))
 			else:
-				args.append(b.convert(a, result=result))
+				args.append(a)
 		#pylint:enable=maybe-no-member
 
 		l.debug("trying evaluation with %s", b)
-		r = b.call(self.op, args, result=result)
+		r = b.call_expr(self.op, args, result=result)
 		if result is not None:
 			result.resolve_cache[b][self] = r
 		return r

@@ -56,7 +56,7 @@ class Backend(object):
         '''
         return r
 
-    def convert_expr(self, expr, save=None, result=None): #pylint:disable=R0201
+    def convert_expr(self, expr, result=None): #pylint:disable=R0201
         '''
         Resolves a claripy.E into something usable by the backend.
 
@@ -70,7 +70,7 @@ class Backend(object):
         elif not isinstance(expr, E):
             return self.convert(expr, result=result)
         else:
-            return expr.model_for(self, result=result, save=save)
+            return expr.model_for(self, result=result)
 
     def convert_exprs(self, args, result=None):
         return [ self.convert_expr(a, result=result) for a in args ]

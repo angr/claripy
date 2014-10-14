@@ -43,7 +43,7 @@ class E(Storable):
 	def ast(self):
 		return self._model
 
-	def model_for(self, b, result=None, save=None):
+	def model_for(self, b, result=None):
 		if b in self._errored_backends and result is None:
 			raise BackendError("backend %s has already errored out" % b)
 
@@ -51,8 +51,6 @@ class E(Storable):
 			return self._objects[b]
 		elif not isinstance(self._model, A):
 			return b.convert(self._model, result=result)
-
-		save = save if save is not None else result is None
 
 		resolved=False
 		for o in self._objects.itervalues():
@@ -63,9 +61,9 @@ class E(Storable):
 				pass
 
 		if not resolved:
-			r = self._model.resolve(b, save=save, result=result)
+			r = self._model.resolve(b, result=result)
 
-		if save:
+		if result is None:
 			self._objects[b] = r
 
 		return r
