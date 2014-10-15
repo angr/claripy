@@ -133,7 +133,8 @@ class Backend(object):
 
     def simplify_expr(self, e):
         o = self.simplify(self.convert_expr(e))
-        return self._claripy.datalayer.make_expression(self.abstract(o), objects={self: o}, variables=e.variables, symbolic=e.symbolic) # TODO: keep UUID
+        # TODO: keep UUID
+        return E(self._claripy, self.abstract(o), e.variables, e.symbolic, objects={self: o})
 
     def simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)

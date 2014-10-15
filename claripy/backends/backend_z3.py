@@ -136,7 +136,7 @@ class BackendZ3(SolverBackend):
 
 		for a,v,s in children:
 			if op_name in split_on:
-				args.append(self._claripy.datalayer.make_expression(a, variables=v, symbolic=s, simplified=True))
+				args.append(E(self._claripy, a, v, s, simplified=True))
 			else:
 				args.append(a)
 			symbolic |= s
@@ -394,7 +394,7 @@ class BackendZ3(SolverBackend):
 		#print "SIMPLIFIED"
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return self._claripy.datalayer.make_expression(o, objects={self: s}, symbolic=symbolic, variables=variables, simplified=True)
+		return E(self._claripy, o, variables, symbolic, objects={self: s}, simplified=True)
 
 #
 # this is for the actual->abstract conversion above
@@ -591,3 +591,4 @@ from ..operations import backend_operations
 from ..result import Result
 from ..bv import BVV
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
+from ..expression import E

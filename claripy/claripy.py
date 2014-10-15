@@ -5,11 +5,10 @@ import logging
 l = logging.getLogger('claripy.claripy')
 
 class Claripy(object):
-    def __init__(self, name, model_backends, solver_backends, datalayer, parallel=None):
+    def __init__(self, name, model_backends, solver_backends, parallel=None):
         self.name = name
         self.solver_backends = solver_backends
         self.model_backends = model_backends
-        self.datalayer = datalayer
         self.unique_names = True
         self.parallel = parallel if parallel else False
         self.save_ast = True
@@ -43,7 +42,7 @@ class Claripy(object):
         if type(o) is E:
             return o
         else:
-            return self.datalayer.make_expression(o, symbolic=symbolic, variables=variables)
+            return E(self, o, variables, symbolic)
 
     def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
         resolved = False
@@ -78,7 +77,7 @@ class Claripy(object):
             all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
             variables = set.union(*all_variables)
 
-        return self.datalayer.make_expression(r, variables=variables, symbolic=symbolic, simplified=simplified)
+        return E(self, r, variables, symbolic, simplified=simplified)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
@@ -87,7 +86,7 @@ class Claripy(object):
         return self._do_op('BitVec', (name, size), variables={ name }, raw=True, symbolic=True, simplified=True)
 
     def BitVecVal(self, *args):
-        return self.datalayer.make_expression(BVV(*args), variables=set(), symbolic=False, simplified=True)
+        return E(self, BVV(*args), set(), False, simplified=True)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
 
     # Bitwise ops
@@ -117,17 +116,17 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return E(self, model=si, variables=set(), symbolic=False)
+        return E(self, si, set(), False)
 
     def TopStridedInterval(self, bits, signed=False):
         si = BackendVSA.CreateTopStridedInterval(bits=bits, signed=signed)
 
-        return E(self, model=si, variables=set(), symbolic=False)
+        return E(self, si, set(), symbolic=False)
 
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
-        return E(self, model=vs, variables=set(), symbolic=False)
+        return E(self, vs, set(), symbolic=False)
 
     # a-loc
     def AbstractLocation(self, *args, **kwargs): #pylint:disable=no-self-use
@@ -138,7 +137,7 @@ class Claripy(object):
     # Boolean ops
     #
     def BoolVal(self, *args):
-        return self.datalayer.make_expression(args[0], variables=set(), symbolic=False, simplified=True)
+        return E(self, args[0], set(), False, simplified=True)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
     def And(self, *args): return self._do_op('And', args)

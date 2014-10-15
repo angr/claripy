@@ -35,7 +35,7 @@ class BackendZ3Parallel(BackendZ3):
 				r = e
 
 			#print "WRITING (%d)" % os.getpid()
-			pickled = pickle.dumps(r)
+			pickled = pickle.dumps(r, -1)
 			written = 0
 			while written < len(pickled):
 				written += os.write(p_w, pickled[written:])

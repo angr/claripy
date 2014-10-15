@@ -10,11 +10,9 @@ Claripies = { }
 from .expression import E
 from .ast import A
 from . import bv
-from . import datalayer
 from .result import Result
 from .errors import *
 from .claripy_standalone import ClaripyStandalone
-from .datalayer import DataLayer
 from .bv import BVV
 from . import operations
 from . import backends
@@ -26,10 +24,6 @@ def init_claripies():
 
     Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
     Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
-
-def set_datalayer(*args, **kwargs):
-    for c in Claripies.itervalues():
-        c.datalayer = DataLayer(c, *args, **kwargs)
 
 init_claripies()
 

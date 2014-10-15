@@ -1,8 +1,7 @@
 from .claripy import Claripy
 from .solvers import BranchingSolver
 from .solvers import CompositeSolver
-from .backends import BackendZ3, BackendVSA, BackendConcrete, BackendZ3Parallel
-from .datalayer import DataLayer
+from .backends import BackendZ3, BackendConcrete
 
 class ClaripyStandalone(Claripy):
     def __init__(self, name, model_backends=None, solver_backends=None, parallel=False):
@@ -18,8 +17,7 @@ class ClaripyStandalone(Claripy):
             b_concrete.set_claripy_object(self)
             model_backends = [ b_concrete ]
 
-        datalayer = DataLayer(self)
-        Claripy.__init__(self, name, model_backends, solver_backends, datalayer, parallel=parallel)
+        Claripy.__init__(self, name, model_backends, solver_backends, parallel=parallel)
 
     def solver(self):
         return BranchingSolver(self)

@@ -1,22 +1,34 @@
 #!/usr/bin/env python
 
 import collections
+import weakref
 import logging
 l = logging.getLogger("claripy.expression")
 
-from .storable import Storable
+import ana
 
-class E(Storable):
+class E(ana.Storable):
 	'''
 	A class to wrap expressions.
 	'''
-	__slots__ = [ 'variables', 'symbolic', '_model', '_objects', '_simplified', '__weakref__', '_errored_backends' ]
+	__slots__ = [ '_claripy', 'variables', 'symbolic', '_model', '_objects', '_simplified', '_errored_backends' ]
+	_hash_cache = weakref.WeakValueDictionary()
 
-	def __init__(self, claripy, variables=None, symbolic=None, objects=None, model=None, simplified=False, errored_backends=None, **storable_kwargs):
-		if variables is None or symbolic is None or model is None:
-			raise ValueError("invalid arguments passed to E()")
+	def __new__(cls, claripy, model, variables, symbolic, **kwargs):
+		h = hash(model)
+		if h in cls._hash_cache:
+			return cls._hash_cache[h]
+		else:
+			self = super(E, cls).__new__(cls, claripy, model, variables, symbolic, **kwargs)
+			cls._hash_cache[h] = self
+			return self
 
-		Storable.__init__(self, claripy, **storable_kwargs)
+	def __init__(self, claripy, model, variables, symbolic, objects=None, simplified=False, errored_backends=None):
+		if hasattr(self, '_model'):
+			# already been initialized, and the stupid __new__ call is calling it again...
+			return
+
+		self._claripy = claripy
 		self._objects = { }
 		self._simplified = simplified
 		self._errored_backends = set() if errored_backends is None else errored_backends
@@ -27,6 +39,10 @@ class E(Storable):
 
 		if objects is not None:
 			self._objects.update(objects)
+
+	@property
+	def uuid(self):
+		return self.ana_uuid
 
 	#
 	# Model and AST
@@ -126,16 +142,12 @@ class E(Storable):
 	# Storing and loading of expressions
 	#
 
-	def _claripy_getstate(self):
-		return self._model, self.variables, self.symbolic, self._simplified
+	def _ana_getstate(self):
+		return self._claripy.name, self._model, self.variables, self.symbolic, self._simplified
 
-	def _claripy_setstate(self, s):
-		model, variables, symbolic, simplified = s
-		self.__init__(self._claripy, variables=variables, symbolic=symbolic, model=model, simplified=simplified, **self._storable_kwargs())
-
-	def copy(self):
-		c = E(self._claripy, variables=self.variables, symbolic=self.symbolic, objects=self._objects, model=self._model, simplified=self._simplified, errored_backends=set(self._errored_backends), **self._storable_kwargs())
-		return c
+	def _ana_setstate(self, s):
+		cn, model, variables, symbolic, simplified = s
+		self.__init__(Claripies[cn], model, variables, symbolic, simplified=simplified)
 
 	#
 	# BV operations
@@ -204,3 +216,4 @@ from .errors import ClaripyExpressionError, BackendError
 from .operations import expression_operations
 make_methods()
 from .ast import A
+from . import Claripies

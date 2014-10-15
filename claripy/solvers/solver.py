@@ -13,11 +13,11 @@ cached_solve = 0
 filter_true = 0
 filter_false = 0
 
-from ..storable import Storable
+import ana
 
-class Solver(Storable):
-	def __init__(self, claripy, result=None, timeout=None, solvers=None, to_add=None, **kwargs):
-		Storable.__init__(self, claripy, **kwargs)
+class Solver(ana.Storable):
+	def __init__(self, claripy, result=None, timeout=None, solvers=None, to_add=None):
+		self._claripy = claripy
 		self._finalized = None
 		self._result = result
 		self._simplified = True
@@ -35,15 +35,18 @@ class Solver(Storable):
 	#
 	# Storable support
 	#
-	def _claripy_getstate(self):
-		if not self._simplified:
-			self.simplify()
-		return self._result, self._timeout, self._to_add, self.constraints, self.variables
 
-	def _claripy_setstate(self, s):
+	@property
+	def uuid(self): return self.ana_uuid
+
+	def _ana_getstate(self):
+		if not self._simplified: self.simplify()
+		return self._claripy.name, self._result, self._timeout, self._to_add, self.constraints, self.variables
+
+	def _ana_setstate(self, s):
 		self._simplified = True
-		r, to, ta, c, v = s
-		self.__init__(self._claripy, result=r, timeout=to, to_add=ta, **self._storable_kwargs())
+		cn, r, to, ta, c, v = s
+		self.__init__(Claripies[cn], result=r, timeout=to, to_add=ta)
 		self.constraints = c
 		self.variables = v
 
@@ -460,3 +463,4 @@ class Solver(Storable):
 from ..result import Result
 from ..expression import E
 from ..errors import UnsatError, BackendError, ClaripySolverError
+from .. import Claripies

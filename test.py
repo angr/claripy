@@ -8,6 +8,7 @@ l = logging.getLogger("claripy.test")
 
 #import tempfile
 import claripy
+import ana
 
 try: import claripy_logging #pylint:disable=import-error,unused-import
 except ImportError: pass
@@ -58,6 +59,9 @@ def test_expression():
 
     rsum = r+rr
     nose.tools.assert_equal(rsum.model, 0x05050505)
+
+    # test hash cache
+    nose.tools.assert_is(a+a, a+a)
 
 def test_concrete():
     clrp = claripy.Claripies["SerialZ3"]
@@ -116,7 +120,7 @@ def test_pickle():
     nose.tools.assert_equal(c.model_for(bz).__module__, 'z3')
     nose.tools.assert_equal(str(c.model_for(bz)), '0 + x')
 
-    c_copy = pickle.loads(pickle.dumps(c))
+    c_copy = pickle.loads(pickle.dumps(c, -1))
     nose.tools.assert_equal(c_copy.model_for(bz).__module__, 'z3')
     nose.tools.assert_equal(str(c_copy.model_for(bz)), '0 + x')
 
@@ -125,7 +129,7 @@ def test_datalayer():
 
     clrp = claripy.Claripies['SerialZ3']
     pickle_dir = tempfile.mkdtemp()
-    clrp.datalayer = claripy.DataLayer(clrp, pickle_dir=pickle_dir)
+    ana.set_dl(pickle_dir=pickle_dir)
     l.debug("Pickling to %s",pickle_dir)
 
     a = clrp.BitVecVal(0, 32)
@@ -134,17 +138,17 @@ def test_datalayer():
     d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
 
     l.debug("Storing!")
-    a.store()
-    c_info = c.store()
-    d_info = d.store()
+    a.ana_store()
+    c_info = c.ana_store()
+    d_info = d.ana_store()
 
     l.debug("Loading!")
-    clrp.dl = claripy.DataLayer(clrp, pickle_dir=pickle_dir)
+    ana.set_dl(pickle_dir=pickle_dir)
     #nose.tools.assert_equal(len(clrp.dl._cache), 0)
 
-    cc = claripy.E.load(c_info)
+    cc = claripy.E.ana_load(c_info)
     nose.tools.assert_equal(str(cc), str(c))
-    cd = claripy.E.load(d_info)
+    cd = claripy.E.ana_load(d_info)
     nose.tools.assert_equal(str(cd), str(d))
 
     l.debug("Time to test some solvers!")
@@ -152,7 +156,7 @@ def test_datalayer():
     x = clrp.BitVec("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.solvers.Solver.load(s.store())
+    ss = claripy.solvers.Solver.ana_load(s.ana_store())
     nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
@@ -160,7 +164,7 @@ def test_datalayer():
     x = clrp.BitVec("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.solvers.CompositeSolver.load(s.store())
+    ss = claripy.solvers.CompositeSolver.ana_load(s.ana_store())
     old_constraint_sets = [[hash(j) for j in k.constraints] for k in s._solver_list]
     new_constraint_sets = [[hash(j) for j in k.constraints] for k in ss._solver_list]
     nose.tools.assert_items_equal(old_constraint_sets, new_constraint_sets)
