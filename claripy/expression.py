@@ -28,6 +28,9 @@ class E(ana.Storable):
 			# already been initialized, and the stupid __new__ call is calling it again...
 			return
 
+		if variables is None or symbolic is None or model is None:
+			raise ClaripyExpressionError("invalid arguments passed to E()")
+
 		self._claripy = claripy
 		self._objects = { }
 		self._simplified = simplified

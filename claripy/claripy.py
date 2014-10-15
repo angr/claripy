@@ -42,7 +42,7 @@ class Claripy(object):
         if type(o) is E:
             return o
         else:
-            return E(self, o, variables, symbolic)
+            return E(self, o, set() if variables is None else variables, symbolic)
 
     def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
         resolved = False
