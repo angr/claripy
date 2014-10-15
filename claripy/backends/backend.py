@@ -74,7 +74,7 @@ class Backend(object):
             if isinstance(m, A):
                 return expr.model_for(self, result=result)
             else:
-                return self.convert(expr.model, result=result)
+                return self.convert(m, result=result)
 
     def convert_exprs(self, args, result=None):
         return [ self.convert_expr(a, result=result) for a in args ]
