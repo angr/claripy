@@ -372,6 +372,17 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @expand_ifproxy
     @convert_bvv_args
+    def SignExt(*args):
+        new_bits = args[0]
+        expr = args[1]
+
+        assert type(expr) is StridedInterval
+        # TODO: Use sign_extend instead
+        return expr.zero_extend(new_bits + expr.bits)
+
+    @staticmethod
+    @expand_ifproxy
+    @convert_bvv_args
     def ZeroExt(*args):
         new_bits = args[0]
         expr = args[1]
