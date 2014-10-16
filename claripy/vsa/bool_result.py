@@ -1,8 +1,8 @@
 
 class BoolResult(object):
-    def __init__(self, trueexpr=None, falseexpr=None):
-        self._true = trueexpr
-        self._false = falseexpr
+    def __init__(self, op=None, args=None):
+        self._op = op
+        self._args = args
 
     def value(self):
         raise NotImplementedError()
@@ -91,6 +91,9 @@ class MaybeResult(BoolResult):
             return MaybeResult()
 
     def __repr__(self):
-        return 'Maybe'
+        if self._op is None:
+            return 'Maybe'
+        else:
+            return 'Maybe(%s, %s)' % (self._op, self._args)
 
 from ..errors import BackendError
