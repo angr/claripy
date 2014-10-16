@@ -84,10 +84,12 @@ class Claripy(object):
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
         return self._do_op('BitVec', (name, size), variables={ name }, raw=True, symbolic=True, simplified=True)
+    BV = BitVec
 
     def BitVecVal(self, *args):
         return E(self, BVV(*args), set(), False, simplified=True)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
+    BVV = BitVecVal
 
     # Bitwise ops
     def LShR(self, *args): return self._do_op('LShR', args)
@@ -117,16 +119,18 @@ class Claripy(object):
                                             stride=stride,
                                             to_conv=to_conv)
         return E(self, si, set(), False)
+    SI = StridedInterval
 
     def TopStridedInterval(self, bits, signed=False):
         si = BackendVSA.CreateTopStridedInterval(bits=bits, signed=signed)
-
         return E(self, si, set(), symbolic=False)
+    TSI = TopStridedInterval
 
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
         return E(self, vs, set(), symbolic=False)
+    VS = ValueSet
 
     # a-loc
     def AbstractLocation(self, *args, **kwargs): #pylint:disable=no-self-use
