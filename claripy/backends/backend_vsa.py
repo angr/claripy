@@ -150,7 +150,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
-        self._op_raw['If'] = BackendVSA.If
+        self._op_expr['If'] = self.If
 
     def add_exprs(self, solver, constraints):
         pass
@@ -159,8 +159,10 @@ class BackendVSA(ModelBackend):
         return Result(True, self)
 
     def convert(self, a, result=None):
-        if type(a) in { int, long, float, bool, str, BVV }:
+        if type(a) in { int, long, float, bool, str }:
             return a
+        if type(a) is BVV:
+            return BackendVSA.CreateStridedInterval(bits=a.bits, to_conv=a)
         if type(a) in { StridedInterval, ValueSet }:
             return a
         if isinstance(a, BoolResult):
@@ -306,19 +308,19 @@ class BackendVSA(ModelBackend):
     def ULT(a, b):
         return a < b
 
-    @staticmethod
-    def If(cond, true_expr, false_expr):
+    def If(self, cond, true_expr, false_expr, result=None):
         exprs = []
-        if True in cond.value:
+        cond_model = self.convert_expr(cond)
+        if True in cond_model.value:
             exprs.append(true_expr)
-        if False in cond.value:
+        if False in cond_model.value:
             exprs.append(false_expr)
 
         if len(exprs) == 1:
-            expr = exprs[0]
+            expr = self.convert_expr(exprs[0])
         else:
             # TODO: How to handle it?
-            expr = IfProxy(cond, exprs[0], exprs[1])
+            expr = IfProxy(cond, self.convert_expr(exprs[0]), self.convert_expr(exprs[1]))
 
         return expr
 
@@ -366,6 +368,17 @@ class BackendVSA(ModelBackend):
         ret = expr.extract(high_bit, low_bit)
 
         return ret
+
+    @staticmethod
+    @expand_ifproxy
+    @convert_bvv_args
+    def SignExt(*args):
+        new_bits = args[0]
+        expr = args[1]
+
+        assert type(expr) is StridedInterval
+        # TODO: Use sign_extend instead
+        return expr.zero_extend(new_bits + expr.bits)
 
     @staticmethod
     @expand_ifproxy

@@ -118,6 +118,7 @@ class Backend(object):
             if obj is NotImplemented:
                 l.debug("%s neither %s nor %s apply in backend.call()", self, name, opposites[name])
                 raise BackendError("unable to apply operation on provided args")
+
         return obj
 
     #
@@ -143,3 +144,4 @@ from ..expression import E
 from ..ast import A
 from ..operations import opposites
 from ..errors import BackendError, ClaripyTypeError
+from ..vsa import MaybeResult
