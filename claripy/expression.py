@@ -201,6 +201,31 @@ class E(ana.Storable):
 	def sign_extend(self, n):
 		return self._claripy.SignExt(n, self)
 
+	def _replace(self, old, new):
+		# this means that we can't possible contain the desired expression
+		if not self.variables >= old.variables:
+			return self, False
+
+		if hash(self) == hash(old):
+			return new, True
+		elif not isinstance(self.ast, A):
+			return self, False
+		else:
+			new_ast, replaced = self.ast._replace(old, new)
+			if replaced:
+				return E(self._claripy, new_ast, new_ast.variables, new_ast.symbolic), True
+			else:
+				return self, False
+
+	def replace(self, old, new):
+		if not isinstance(old, E) or not isinstance(new, E):
+			raise ClaripyExpressionError('replacements must be expressions')
+
+		if old.size() != new.size():
+			raise ClaripyExpressionError('replacements must have matching sizes')
+
+		return self._replace(old, new)[0]
+
 #
 # Wrap stuff
 #

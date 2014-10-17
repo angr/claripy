@@ -155,6 +155,41 @@ class A(object):
 		self._hash = None
 		self.op, self.args, self.length = state
 
+	@property
+	def variables(self):
+		v = set()
+		for a in self.args:
+			if isinstance(a, E):
+				v |= a.variables #pylint:disable=maybe-no-member
+		return v
+
+	@property
+	def symbolic(self):
+		return any([ a.symbolic for a in self.args if isinstance(a, E) ]) #pylint:disable=maybe-no-member
+
+	def _replace(self, old, new):
+		if hash(self) == hash(new.ast):
+			return new.ast, True
+
+		new_args = [ ]
+		replaced = False
+
+		for a in self.args:
+			if isinstance(a, A):
+				new_a, a_replaced = a._replace(old, new) #pylint:disable=maybe-no-member
+			elif isinstance(a, E):
+				new_a, a_replaced = a._replace(old, new) #pylint:disable=maybe-no-member
+			else:
+				new_a, a_replaced = a, False
+
+			new_args.append(new_a)
+			replaced |= a_replaced
+
+		if replaced:
+			return A(self._claripy, self.op, tuple(new_args)), True
+		else:
+			return self, False
+
 from .errors import BackendError, ClaripyOperationError
 from .operations import length_none_operations, length_same_operations
 from .expression import E
