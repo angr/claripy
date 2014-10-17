@@ -63,6 +63,30 @@ def test_expression():
     # test hash cache
     nose.tools.assert_is(a+a, a+a)
 
+    # test replacement
+    old = clrp.BitVec('old', 32, explicit_name=True)
+    new = clrp.BitVec('new', 32, explicit_name=True)
+    ooo = clrp.BitVecVal(0, 32)
+
+    old_formula = clrp.If((old + 1)%256 == 0, old+10, old+20)
+    new_formula = old_formula.replace(old, new)
+    ooo_formula = new_formula.replace(new, ooo)
+
+    nose.tools.assert_not_equal(hash(old_formula), hash(new_formula))
+    nose.tools.assert_not_equal(hash(old_formula), hash(ooo_formula))
+    nose.tools.assert_not_equal(hash(new_formula), hash(ooo_formula))
+
+    nose.tools.assert_equal(old_formula.variables, { 'old' })
+    nose.tools.assert_equal(new_formula.variables, { 'new' })
+    nose.tools.assert_equal(ooo_formula.variables, set())
+
+    nose.tools.assert_true(old_formula.symbolic)
+    nose.tools.assert_true(new_formula.symbolic)
+    nose.tools.assert_true(new_formula.symbolic)
+
+    nose.tools.assert_equal(str(old_formula).replace('old', 'new'), str(new_formula))
+    nose.tools.assert_equal(ooo_formula.model, 20)
+
 def test_concrete():
     clrp = claripy.Claripies["SerialZ3"]
 
