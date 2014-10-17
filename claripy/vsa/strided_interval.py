@@ -1,7 +1,7 @@
 import fractions
 import functools
 import math
-import inspect
+import itertools
 
 from ..expression import E
 from ..bv import BVV
@@ -35,12 +35,7 @@ def normalize_types(f):
 
     return normalizer
 
-def get_funcname():
-    '''
-    Get the name of the current function. This is a GIANT HACK!!!!
-    :return: a string representing the name of the current function
-    '''
-    return inspect.stack()[1][3]
+si_id_ctr = itertools.count()
 
 class StridedInterval(object):
     '''
@@ -50,6 +45,9 @@ class StridedInterval(object):
     '''
     def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None):
         self._name = name
+
+        if self._name is None:
+            self._name = "%d" % si_id_ctr.next()
 
         self._bits = bits
         self._stride = stride
@@ -75,6 +73,10 @@ class StridedInterval(object):
                                         self._lower_bound if type(self._lower_bound) == str else hex(self._lower_bound),
                                         self._upper_bound if type(self._upper_bound) == str else hex(self._upper_bound),
                                         'R' if self._reversed else '')
+
+    @property
+    def name(self):
+        return self._name
 
     def normalize(self):
         if self.lower_bound == self.upper_bound:

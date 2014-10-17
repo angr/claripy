@@ -118,12 +118,12 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return E(self, si, set(), False)
+        return E(self, si, variables={ si.name }, symbolic=False)
     SI = StridedInterval
 
     def TopStridedInterval(self, bits, signed=False):
         si = BackendVSA.CreateTopStridedInterval(bits=bits, signed=signed)
-        return E(self, si, set(), symbolic=False)
+        return E(self, si, variables={ si.name }, symbolic=False)
     TSI = TopStridedInterval
 
     # Value Set
@@ -183,6 +183,24 @@ class Claripy(object):
 
         l.warning("Unable to simplify expression")
         return e
+
+    def is_true(self, e):
+        for b in self.model_backends:
+            try: return b.is_true(b.convert_expr(e))
+            except BackendError: pass
+
+        l.warning("Unable to tell the truth-value of this expression")
+        return False
+
+    def is_false(self, e):
+        for b in self.model_backends:
+            try:
+                return b.is_false(b.convert_expr(e))
+            except BackendError:
+                pass
+
+        l.warning("Unable to tell the truth-value of this expression")
+        return False
 
     def model_object(self, e, result=None):
         for b in self.model_backends:
