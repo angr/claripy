@@ -249,7 +249,7 @@ class CompositeSolver(Solver):
 		for v in merged_noncommon.variables:
 			merged._solvers[v] = merged_noncommon
 
-		return merged
+		return True, merged
 
 	#def combine(self, others):
 	#	raise NotImplementedError()

@@ -437,7 +437,8 @@ class Solver(ana.Storable):
 		for s, v in zip([self]+others, merge_values):
 			options.append(self._claripy.And(*([ merge_flag == v ] + s.constraints)))
 		merged.add([self._claripy.Or(*options)])
-		return merged
+
+		return (len(self._claripy.solver_backends) > 0), merged
 
 	def combine(self, others):
 		combined = self.__class__(self._claripy, timeout=self._timeout)

@@ -26,8 +26,12 @@ class AbstractLocation(object):
     def size(self):
         return self._size
 
-    def update(self, addr, size):
-        pass
+    def update(self, region_offset, size):
+        return False
+
+    def copy(self):
+        return AbstractLocation(self._bbl_key, self._stmt_id, self._region_id,
+                                self._region_offset, self._size)
 
     def __repr__(self):
         return '[0x%x - %d] %x' % (self.basicblock_key, self.statement_id, self.offset)
