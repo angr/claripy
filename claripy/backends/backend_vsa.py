@@ -429,6 +429,18 @@ class BackendVSA(ModelBackend):
         return args[0].union(args[1])
 
     @staticmethod
+    def intersection(*args):
+        ret = None
+
+        for arg in args:
+            if ret is None:
+                ret = arg
+            else:
+                ret = ret.intersection(arg)
+
+        return ret
+
+    @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
         '''
 

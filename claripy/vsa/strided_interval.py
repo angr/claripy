@@ -37,6 +37,9 @@ def normalize_types(f):
 
 si_id_ctr = itertools.count()
 
+def lcm(a, b):
+    return a * b // fractions.gcd(a, b)
+
 class StridedInterval(object):
     '''
     A Strided Interval is represented in the following form:
@@ -112,6 +115,13 @@ class StridedInterval(object):
                                stride=1,
                                lower_bound=0,
                                upper_bound=StridedInterval.max_int(bits))
+
+    @staticmethod
+    def empty(bits):
+        return StridedInterval(bits=bits,
+                               stride=0,
+                               lower_bound=-1,
+                               upper_bound=-2)
 
     def __len__(self):
         '''
@@ -708,6 +718,70 @@ class StridedInterval(object):
         else:
             new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+
+    @normalize_types
+    def intersection(self, b):
+        if self.is_empty() or b.is_empty():
+            return StridedInterval.empty(self.bits)
+
+        assert self.bits == b.bits
+
+        ret = None
+
+        l = max(self.lower_bound, b.lower_bound)
+        u = min(self.upper_bound, b.upper_bound)
+
+        if self.stride == 0 and b.stride == 0:
+            if self.lower_bound == b.lower_bound:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=self.stride,
+                                      lower_bound=self.lower_bound,
+                                      upper_bound=self.upper_bound)
+            else:
+                ret = StridedInterval.empty(self.bits)
+        elif self.stride == 0:
+            if (b.lower_bound - self.lower_bound) % b.stride == 0 and \
+                self.lower_bound >= b.lower_bound and \
+                self.lower_bound <= b.upper_bound:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=self.stride,
+                                      lower_bound=self.lower_bound,
+                                      upper_bound=self.upper_bound)
+            else:
+                ret = StridedInterval.empty(self.bits)
+        elif b.stride == 0:
+            if (b.lower_bound - self.lower_bound) % self.stride == 0 and \
+                b.lower_bound >= self.lower_bound and \
+                b.lower_bound <= self.upper_bound:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=b.stride,
+                                      lower_bound=b.lower_bound,
+                                      upper_bound=b.upper_bound)
+            else:
+                ret = StridedInterval.empty(self.bits)
+        else:
+            new_stride = lcm(self.stride, b.stride)
+            if (
+                self.lower_bound % new_stride == 0 and
+                b.lower_bound % new_stride  == 0
+               ) or \
+                    self.lower_bound == b.lower_bound: # More precise than the implementation in BAP 0.8
+                u = u - ((u - l) % new_stride)
+                if u >= l:
+                    ret = StridedInterval(bits=self.bits,
+                                          stride=new_stride,
+                                          lower_bound=l,
+                                          upper_bound=u)
+                else:
+                    ret = StridedInterval.empty(self.bits)
+            else:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=1,
+                                      lower_bound=l,
+                                      upper_bound=u)
+
+        ret.normalize()
+        return ret
 
     def reverse(self):
         si = self.copy()
