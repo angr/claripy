@@ -202,6 +202,23 @@ class Claripy(object):
         l.warning("Unable to tell the truth-value of this expression")
         return False
 
+    def constraint_to_si(self, expr, bits):
+        '''
+        Convert a constraint to SI if possible
+        :param expr:
+        :return:
+        '''
+        si = None
+
+        for b in self.model_backends:
+            if b is BackendVSA:
+                si = b.constraint_to_si(expr)
+
+        if si is None:
+            return self.TopStridedInterval(bits)
+        else:
+            return si
+
     def model_object(self, e, result=None):
         for b in self.model_backends:
             try: return b.convert_expr(e, result=result)

@@ -242,6 +242,32 @@ class BackendVSA(ModelBackend):
         return o == False or \
                (isinstance(o, FalseResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
+
+    def constraint_to_si(self, expr):
+        if not isinstance(expr.model, IfProxy):
+            return None
+
+        ifproxy = expr.model
+        condition = ifproxy.condition
+        condition_ast = condition.ast
+        op = condition_ast.op
+
+        if op == 'ULT':
+            # left = condition_ast.args[0].model
+            right = condition_ast.args[1].model
+            # Convert them to SI
+            # si_left = BackendVSA.CreateStridedInterval(bits=left.bits, to_conv=left)
+            si_right = BackendVSA.CreateStridedInterval(bits=right.bits, to_conv=right)
+            # Modify the lower bound
+            si_right.lower_bound = StridedInterval.min_int(si_right.lower_bound)
+
+            return si_right
+        else:
+            import ipdb; ipdb.set_trace()
+
+            return None
+
+
     #
     # Operations
     #
