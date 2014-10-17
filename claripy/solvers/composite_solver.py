@@ -245,7 +245,7 @@ class CompositeSolver(Solver):
 			else:
 				combined_noncommons.append(ns[0].combine(ns[1:]))
 
-		merged_noncommon = combined_noncommons[0].merge(combined_noncommons[1:], merge_flag, merge_values)
+		_, merged_noncommon = combined_noncommons[0].merge(combined_noncommons[1:], merge_flag, merge_values)
 		for v in merged_noncommon.variables:
 			merged._solvers[v] = merged_noncommon
 
