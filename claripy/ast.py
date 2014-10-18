@@ -98,7 +98,8 @@ class A(object):
 			else: return r
 
 		if self.op in reverse_distributable and all((isinstance(a, A) for a in raw_args)) and set((a.op for a in raw_args)) == { 'Reverse' }:
-			inner_args = (A(self._claripy, self.op, tuple(a.args[0] for a in raw_args)).simplified(),)
+			inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in raw_args)).simplified()
+			inner_args = (self._claripy.wrap(inner_a, variables=inner_a.variables, symbolic=inner_a.symbolic),)
 			return A(self._claripy, 'Reverse', inner_args, collapsible=True).simplified()
 		return self
 

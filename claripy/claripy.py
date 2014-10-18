@@ -40,21 +40,18 @@ class Claripy(object):
     def wrap(self, o, symbolic=False, variables=None):
         if type(o) is E:
             return o
+        elif type(o) is A:
+            return E(self, o, o.variables, o.symbolic)
         else:
             return E(self, o, set() if variables is None else variables, symbolic)
 
     def _do_op(self, op, args, variables=None, symbolic=None, simplified=False, collapsible=None):
-        r = A(self, op, args, collapsible=collapsible).reduced()
-        if isinstance(r, E):
-            return r
+        r = A(self, op, args, collapsible=collapsible)
+        if symbolic is None: symbolic = r.symbolic
+        if variables is None: variables = r.variables
 
-        if symbolic is None:
-            symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
-        if variables is None:
-            all_variables = ((arg.variables if isinstance(arg, E) else set()) for arg in args)
-            variables = set.union(*all_variables)
-
-        return E(self, r, variables, symbolic, simplified=simplified)
+        rr = r.reduced()
+        return E(self, rr, variables, symbolic, simplified=simplified)
 
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False

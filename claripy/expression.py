@@ -15,9 +15,6 @@ class E(ana.Storable):
 	_hash_cache = weakref.WeakValueDictionary()
 
 	def __new__(cls, claripy, model, variables, symbolic, **kwargs):
-		if isinstance(model, int) and not isinstance(model, bool):
-			__import__('ipdb').set_trace()
-
 		h = cls._hash(model, claripy, variables, symbolic)
 		if h in cls._hash_cache:
 			return cls._hash_cache[h]

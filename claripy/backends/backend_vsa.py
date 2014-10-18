@@ -288,12 +288,13 @@ class BackendVSA(ModelBackend):
     def constraint_to_si(self, expr):
         def _find_target_expr(m):
             expr = None
-            if m.ast.op in ['Extract', 'ZeroExt']:
-                expr = _find_target_expr(m.ast.args[-1])
-                if expr is None:
-                    return m.ast.args[-1]
-                else:
-                    return expr
+            if isinstance(m.ast, A):
+                if m.ast.op in ['Extract', 'ZeroExt']:
+                    expr = _find_target_expr(m.ast.args[-1])
+                    if expr is None:
+                        return m.ast.args[-1]
+                    else:
+                        return expr
 
             return None
 
