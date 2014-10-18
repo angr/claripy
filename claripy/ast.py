@@ -32,6 +32,9 @@ class A(object):
 	# Finalizer functions for different expressions
 	#
 
+	def finalize_Identical(self):
+		self.length = 0
+
 	def finalize_BoolVal(self):
 		if len(self.args) != 1 or self.args[0] not in (True, False):
 			raise ClaripyOperationError("BoolVal() requires True or False as argument.")

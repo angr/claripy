@@ -202,7 +202,7 @@ class E(ana.Storable):
 		return self._claripy.SignExt(n, self)
 
 	def identical(self, o):
-		return self._claripy.Identical(self, o)
+		return self._claripy.is_identical(self, o)
 
 	def _replace(self, old, new):
 		# this means that we can't possible contain the desired expression

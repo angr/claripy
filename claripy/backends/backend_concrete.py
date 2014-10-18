@@ -34,6 +34,13 @@ class BackendConcrete(ModelBackend):
         else:
             raise BackendError("can't get size of type %s" % type(e))
 
+    @staticmethod
+    def identical(a, b):
+        if type(a) is BVV and type(b) is BVV and a.size() != b.size():
+            return False
+        else:
+            return a == b
+
     def convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a

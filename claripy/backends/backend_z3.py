@@ -52,6 +52,7 @@ class BackendZ3(SolverBackend):
 			self._op_raw[o] = getattr(z3, o)
 		self._op_raw['size'] = self.size
 		self._op_raw['Reverse'] = self.reverse
+		self._op_raw['Identical'] = self.identical
 
 	@staticmethod
 	def size(e):
@@ -68,6 +69,10 @@ class BackendZ3(SolverBackend):
 			raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
 		else:
 			return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+
+	@staticmethod
+	def identical(a, b):
+		return a.eq(b)
 
 	def convert(self, obj, result=None):
 		if type(obj) is bv.BVV:

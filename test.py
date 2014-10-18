@@ -60,6 +60,21 @@ def test_expression():
     rsum = r+rr
     nose.tools.assert_equal(rsum.model, 0x05050505)
 
+    # test identity
+    nose.tools.assert_true(r.identical(rrr))
+    nose.tools.assert_false(r.identical(rr))
+    ii = clrp.BitVec('ii', 32)
+    ij = clrp.BitVec('ij', 32)
+    nose.tools.assert_true(ii.identical(ii))
+    nose.tools.assert_false(ii.identical(ij))
+
+    si = clrp.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    sj = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    sk = clrp.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    nose.tools.assert_true(si.identical(si))
+    nose.tools.assert_false(si.identical(sj))
+    nose.tools.assert_true(si.identical(sk))
+
     # test hash cache
     nose.tools.assert_is(a+a, a+a)
 
