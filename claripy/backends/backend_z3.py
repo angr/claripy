@@ -140,7 +140,7 @@ class BackendZ3(SolverBackend):
 			args.append(a)
 
 		# fix up many-arg __add__
-		if op_name == '__add__' and len(args) > 2:
+		if op_name in bin_ops and len(args) > 2:
 			many_args = args #pylint:disable=unused-variable
 			last = args[-1]
 			rest = args[:-1]
@@ -570,7 +570,7 @@ op_map = {
 }
 
 from ..ast import A, I
-from ..operations import backend_operations
+from ..operations import backend_operations, bin_ops
 from ..result import Result
 from ..bv import BVV
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError

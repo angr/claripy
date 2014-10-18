@@ -14,6 +14,14 @@ expression_arithmetic_operations = {
     '__abs__',
 }
 
+bin_ops = {
+    '__add__', '__radd__',
+    '__mul__', '__rmul__',
+    '__or__', '__ror__',
+    '__and__', '__rand__',
+    '__xor__', '__rxor__',
+}
+
 expression_comparator_operations = {
     # comparisons
     '__eq__',

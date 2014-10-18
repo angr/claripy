@@ -41,6 +41,9 @@ class A(ana.Storable):
 		except AttributeError:
 			pass
 
+		#if op == '__xor__' and len(args) != 2:
+		#	import ipdb; ipdb.set_trace()
+
 		self.op = op
 		self.args = args
 		self.length = length
