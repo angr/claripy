@@ -126,7 +126,7 @@ class A(ana.Storable):
 	def collapsed(self):
 		if self._should_collapse() and self._collapsible:
 			#l.debug("Collapsing!")
-			r = self.resolved()
+			r = self.resolved
 			if not isinstance(r, A):
 				return I(self._claripy, r, length=self.length, finalize=False)
 			else:
@@ -140,16 +140,16 @@ class A(ana.Storable):
 			return self.args[0].args[0]
 
 		if self.op in reverse_distributable and all((isinstance(a, A) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-			inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified()
+			inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
 			inner_args = (self._claripy.wrap(inner_a, variables=inner_a.variables, symbolic=inner_a.symbolic),)
-			return A(self._claripy, 'Reverse', inner_args, collapsible=True).simplified()
+			return A(self._claripy, 'Reverse', inner_args, collapsible=True).simplified
 		return self
 
 	@property
 	def reduced(self):
-		a = self.simplified()
+		a = self.simplified
 		if isinstance(a, A):
-			return a.collapsed()
+			return a.collapsed
 		else:
 			return a
 
@@ -258,7 +258,7 @@ class A(ana.Storable):
 	#
 
 	def arg_models(self):
-		return [ (a.resolved() if isinstance(a, A) else a) for a in self.args ]
+		return [ (a.resolved if isinstance(a, A) else a) for a in self.args ]
 
 	@property
 	def resolved(self, result=None):
@@ -307,7 +307,7 @@ class A(ana.Storable):
 	#
 
 	def _do_op(self, op, *args, **kwargs):
-		return A(self._claripy, op, (self,)+args, **kwargs).reduced()
+		return A(self._claripy, op, (self,)+args, **kwargs).reduced
 
 	def _replace(self, old, new):
 		if hash(self) == hash(old):
@@ -326,7 +326,7 @@ class A(ana.Storable):
 			replaced |= a_replaced
 
 		if replaced:
-			return A(self._claripy, self.op, tuple(new_args)).reduced(), True
+			return A(self._claripy, self.op, tuple(new_args)).reduced, True
 		else:
 			return self, False
 
@@ -481,8 +481,10 @@ class I(A):
 	def __init__(self, claripy, model, **kwargs):
 		A.__init__(self, claripy, 'I', (model,), **kwargs)
 
+	@property
 	def resolved(self, result=None): return self.args[0]
 	def resolved_with(self, b, result=None): return b.convert(self.args[0])
+	@property
 	def depth(self): return 0
 	def split(self, split_on): return self
 	def _finalize_I(self):

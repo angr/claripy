@@ -522,7 +522,7 @@ class BackendVSA(ModelBackend):
         '''
         if to_conv is not None:
             if isinstance(to_conv, A):
-                to_conv = to_conv.resolved()
+                to_conv = to_conv.resolved
             if type(to_conv) is StridedInterval:
                 # No conversion will be done
                 return to_conv

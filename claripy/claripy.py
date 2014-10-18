@@ -50,14 +50,14 @@ class Claripy(object):
     BVV = BitVecVal
 
     # Bitwise ops
-    def LShR(self, *args): return A(self, 'LShR', args).reduced()
-    def SignExt(self, *args): return A(self, 'SignExt', args).reduced()
-    def ZeroExt(self, *args): return A(self, 'ZeroExt', args).reduced()
-    def Extract(self, *args): return A(self, 'Extract', args).reduced()
-    def Concat(self, *args): return A(self, 'Concat', args).reduced()
-    def RotateLeft(self, *args): return A(self, 'RotateLeft', args).reduced()
-    def RotateRight(self, *args): return A(self, 'RotateRight', args).reduced()
-    def Reverse(self, o): return A(self, 'Reverse', (o,), collapsible=False).reduced()
+    def LShR(self, *args): return A(self, 'LShR', args).reduced
+    def SignExt(self, *args): return A(self, 'SignExt', args).reduced
+    def ZeroExt(self, *args): return A(self, 'ZeroExt', args).reduced
+    def Extract(self, *args): return A(self, 'Extract', args).reduced
+    def Concat(self, *args): return A(self, 'Concat', args).reduced
+    def RotateLeft(self, *args): return A(self, 'RotateLeft', args).reduced
+    def RotateRight(self, *args): return A(self, 'RotateRight', args).reduced
+    def Reverse(self, o): return A(self, 'Reverse', (o,), collapsible=False).reduced
 
     #
     # Strided interval
@@ -95,20 +95,20 @@ class Claripy(object):
         return I(self, args[0], variables=set(), symbolic=False)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
-    def And(self, *args): return A(self, 'And', args).reduced()
-    def Not(self, *args): return A(self, 'Not', args).reduced()
-    def Or(self, *args): return A(self, 'Or', args).reduced()
-    def ULT(self, *args): return A(self, 'ULT', args).reduced()
-    def ULE(self, *args): return A(self, 'ULE', args).reduced()
-    def UGE(self, *args): return A(self, 'UGE', args).reduced()
-    def UGT(self, *args): return A(self, 'UGT', args).reduced()
+    def And(self, *args): return A(self, 'And', args).reduced
+    def Not(self, *args): return A(self, 'Not', args).reduced
+    def Or(self, *args): return A(self, 'Or', args).reduced
+    def ULT(self, *args): return A(self, 'ULT', args).reduced
+    def ULE(self, *args): return A(self, 'ULE', args).reduced
+    def UGE(self, *args): return A(self, 'UGE', args).reduced
+    def UGT(self, *args): return A(self, 'UGT', args).reduced
 
     #
     # Other ops
     #
     def If(self, *args):
         if len(args) != 3: raise ClaripyOperationError("invalid number of args passed to If")
-        return A(self, 'If', args).reduced()
+        return A(self, 'If', args).reduced
 
     #def size(self, *args): return self._do_op('size', args)
 
@@ -168,7 +168,7 @@ class Claripy(object):
         first = args[0]
         identical = True
         for o in args:
-            i = A(self, 'Identical', (first, o)).resolved()
+            i = A(self, 'Identical', (first, o)).resolved
             identical &= i is True
         return identical
 
