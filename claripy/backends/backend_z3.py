@@ -89,16 +89,16 @@ class BackendZ3(SolverBackend):
 			l.debug("BackendZ3 encountered unexpected type %s", type(obj))
 			raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-	def abstract(self, z, split_on=None):
+	def abstract(self, z):
 		#return self._abstract(z, split_on=split_on)[0]
-		return self._abstract(z.ctx.ctx, z.ast, split_on=split_on)[0]
+		return self._abstract(z.ctx.ctx, z.ast)
 
 	def _abstract(self, ctx, ast, split_on=None):
 		h = z3.Z3_get_ast_hash(ctx, ast)
 		if h in self._ast_cache:
 			#print "ABSTRACTION CACHED"
 			a = self._ast_cache[h]
-			return a, self._var_cache[a], self._sym_cache[a]
+			return a
 
 		decl = z3.Z3_get_app_decl(ctx, ast)
 		decl_num = z3.Z3_get_decl_kind(ctx, decl)
@@ -114,21 +114,18 @@ class BackendZ3(SolverBackend):
 		new_split_on = split_on if op_name in split_on else set()
 		children = [ self._abstract(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(z3.Z3_get_app_num_args(ctx, ast)) ]
 
-		symbolic = False
-		variables = set()
-
 		if op_name == 'True':
-			return True, variables, symbolic
+			return True
 		elif op_name == 'False':
-			return False, variables, symbolic
+			return False
 		elif op_name == 'BitVecVal':
 			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return BVV(bv_num, bv_size), variables, symbolic
+			return BVV(bv_num, bv_size)
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return A(self._claripy, "BitVec", [bv_name, bv_size]), { bv_name }, True
+			return A(self._claripy, "BitVec", (bv_name, bv_size), variables={ bv_name }, symbolic=True)
 		elif op_name == 'Extract':
 			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
 			lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -139,13 +136,8 @@ class BackendZ3(SolverBackend):
 		else:
 			args = [ ]
 
-		for a,v,s in children:
-			if op_name in split_on:
-				args.append(E(self._claripy, a, v, s, simplified=True))
-			else:
-				args.append(a)
-			symbolic |= s
-			variables |= v
+		for a in children:
+			args.append(a)
 
 		# fix up many-arg __add__
 		if op_name == '__add__' and len(args) > 2:
@@ -158,11 +150,9 @@ class BackendZ3(SolverBackend):
 				a = A(self._claripy, op_name, [a,b])
 			args = [ a, last ]
 
-		a = A(self._claripy, op_name, args)
+		a = A(self._claripy, op_name, tuple(args))
 		self._ast_cache[h] = a
-		self._var_cache[a] = variables
-		self._sym_cache[a] = symbolic
-		return a, variables, symbolic
+		return a
 
 	def solver(self, timeout=None):
 		s = z3.Solver()
@@ -358,8 +348,6 @@ class BackendZ3(SolverBackend):
 		#print "SIMPLIFYING"
 
 		expr_raw = self.convert(expr)
-		symbolic = expr.symbolic
-		variables = expr.variables
 
 		#l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
 
@@ -370,20 +358,10 @@ class BackendZ3(SolverBackend):
 
 			if n == 'true':
 				s = True
-				symbolic = False
-				variables = set()
 			elif n == 'false':
 				s = False
-				symbolic = False
-				variables = set()
 		elif isinstance(expr_raw, z3.BitVecRef):
 			s = z3.simplify(expr_raw)
-			symbolic = not isinstance(s, z3.BitVecNumRef)
-			if not symbolic:
-				l.debug("... not symbolic!")
-				variables = set()
-
-			#import ipdb; ipdb.set_trace()
 		else:
 			s = expr_raw
 
@@ -399,7 +377,7 @@ class BackendZ3(SolverBackend):
 		#print "SIMPLIFIED"
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-		return E(self._claripy, o, variables, symbolic, objects={self: s}, simplified=True)
+		return o
 
 #
 # this is for the actual->abstract conversion above
@@ -596,4 +574,3 @@ from ..operations import backend_operations
 from ..result import Result
 from ..bv import BVV
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
-from ..expression import E

@@ -3,7 +3,7 @@ import functools
 import math
 import itertools
 
-from ..expression import E
+from ..ast import A
 from ..bv import BVV
 
 def normalize_types(f):
@@ -12,10 +12,10 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if type(o) is E:
-            o = o.model
-        if type(self) is E:
-            e = e.model
+        if isinstance(o, A):
+            o = o.resolved()
+        if isinstance(self, A):
+            self = o.resolved()
         if type(self) is BVV:
             self = self.value
         if type(o) is BVV:
@@ -206,11 +206,11 @@ class StridedInterval(object):
         if self._stride == 0:
             return 0
         else:
-            return ((self._upper_bound - self._lower_bound) / self._stride)
+            return (self._upper_bound - self._lower_bound) / self._stride
 
     @staticmethod
     def highbit(k):
-        return (1 << (k - 1))
+        return 1 << (k - 1)
 
     def copy(self):
         si = StridedInterval(name=self._name,
@@ -299,7 +299,7 @@ class StridedInterval(object):
         '''
         if stride >= 1:
             offset = i % stride
-            max = StridedInterval.max_int(bits)
+            max = StridedInterval.max_int(bits) #pylint:disable=redefined-builtin
             max_offset = max % stride
 
             if max_offset >= offset:
@@ -318,7 +318,7 @@ class StridedInterval(object):
         '''
         if stride >= 1:
             offset = i % stride
-            min = StridedInterval.min_int(bits)
+            min = StridedInterval.min_int(bits) #pylint:disable=redefined-builtin
             min_offset = min % stride
 
             if offset >= min_offset:
@@ -330,7 +330,7 @@ class StridedInterval(object):
             return StridedInterval.min_int(bits)
 
     def is_empty(self):
-        return (self._stride == 0 and self._lower_bound > self._upper_bound)
+        return self._stride == 0 and self._lower_bound > self._upper_bound
 
     def is_top(self):
         '''
@@ -354,9 +354,9 @@ class StridedInterval(object):
         If this is an integer, i.e. self.lower_bound == self.upper_bound
         :return: True if this is an integer, False otherwise
         '''
-        return (self.lower_bound == self.upper_bound)
+        return self.lower_bound == self.upper_bound
 
-    def add(self, b, allow_overflow=True):
+    def add(self, b, allow_overflow=True): #pylint:disable=unused-argument
         '''
         Operation add
         :param b:
@@ -405,7 +405,7 @@ class StridedInterval(object):
             new_ub = -self.upper_bound
             return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_ub, upper_bound=new_lb)
         else:
-            return StridedInterval.top()
+            return StridedInterval.top(self.bits)
 
     def bitwise_not(self):
         '''
@@ -451,9 +451,9 @@ class StridedInterval(object):
                 tmp1 = (b - m) | (m - 1)
                 tmp2 = (d - m) | (m - 1)
                 if tmp1 >= a:
-                    return (tmp1 | d)
+                    return tmp1 | d
                 elif tmp2 >= c:
-                    return (tmp2 | b)
+                    return tmp2 | b
             m = m >> 1
 
     def bitwise_or(self, b):
@@ -563,7 +563,7 @@ class StridedInterval(object):
             :param expr:
             :return: A tuple of maximum and minimum bits to shift
             '''
-            def round(max, x):
+            def round(max, x): #pylint:disable=redefined-builtin
                 if x < 0 or x > max:
                     return max
                 else:
@@ -652,7 +652,7 @@ class StridedInterval(object):
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
-            elif (self.upper_bound - self.lower_bound <= mask):
+            elif self.upper_bound - self.lower_bound <= mask:
                 l = self.lower_bound & mask
                 u = self.upper_bound & mask
                 # Keep the signs!
@@ -828,5 +828,5 @@ class StridedInterval(object):
 
         return si
 
-from ..errors import BackendError, ClaripyOperationError
+from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult

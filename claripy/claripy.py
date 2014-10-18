@@ -37,43 +37,27 @@ class Claripy(object):
     # Operations
     #
 
-    def wrap(self, o, symbolic=False, variables=None):
-        if type(o) is E:
-            return o
-        elif type(o) is A:
-            return E(self, o, o.variables, o.symbolic)
-        else:
-            return E(self, o, set() if variables is None else variables, symbolic)
-
-    def _do_op(self, op, args, variables=None, symbolic=None, simplified=False, collapsible=None):
-        r = A(self, op, args, collapsible=collapsible)
-        if symbolic is None: symbolic = r.symbolic
-        if variables is None: variables = r.variables
-
-        rr = r.reduced()
-        return E(self, rr, variables, symbolic, simplified=simplified)
-
     def BitVec(self, name, size, explicit_name=None):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, simplified=True)
+        return A(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=A.FULL_SIMPLIFY)
     BV = BitVec
 
     def BitVecVal(self, *args):
-        return E(self, BVV(*args), set(), False, simplified=True)
+        return I(self, BVV(*args), variables=set(), symbolic=False, simplified=A.FULL_SIMPLIFY)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
     BVV = BitVecVal
 
     # Bitwise ops
-    def LShR(self, *args): return self._do_op('LShR', args)
-    def SignExt(self, *args): return self._do_op('SignExt', args)
-    def ZeroExt(self, *args): return self._do_op('ZeroExt', args)
-    def Extract(self, *args): return self._do_op('Extract', args)
-    def Concat(self, *args): return self._do_op('Concat', args)
-    def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
-    def RotateRight(self, *args): return self._do_op('RotateRight', args)
-    def Reverse(self, o): return self._do_op('Reverse', (o,), collapsible=False)
+    def LShR(self, *args): return A(self, 'LShR', args).reduced()
+    def SignExt(self, *args): return A(self, 'SignExt', args).reduced()
+    def ZeroExt(self, *args): return A(self, 'ZeroExt', args).reduced()
+    def Extract(self, *args): return A(self, 'Extract', args).reduced()
+    def Concat(self, *args): return A(self, 'Concat', args).reduced()
+    def RotateLeft(self, *args): return A(self, 'RotateLeft', args).reduced()
+    def RotateRight(self, *args): return A(self, 'RotateRight', args).reduced()
+    def Reverse(self, o): return A(self, 'Reverse', (o,), collapsible=False).reduced()
 
     #
     # Strided interval
@@ -85,18 +69,18 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return E(self, si, variables={ si.name }, symbolic=False)
+        return I(self, si, variables={ si.name }, symbolic=False)
     SI = StridedInterval
 
     def TopStridedInterval(self, bits, signed=False):
         si = BackendVSA.CreateTopStridedInterval(bits=bits, signed=signed)
-        return E(self, si, variables={ si.name }, symbolic=False)
+        return I(self, si, variables={ si.name }, symbolic=False)
     TSI = TopStridedInterval
 
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
-        return E(self, vs, set(), symbolic=False)
+        return I(self, vs, variables=set(), symbolic=False)
     VS = ValueSet
 
     # a-loc
@@ -108,23 +92,23 @@ class Claripy(object):
     # Boolean ops
     #
     def BoolVal(self, *args):
-        return E(self, args[0], set(), False, simplified=True)
+        return I(self, args[0], variables=set(), symbolic=False)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
-    def And(self, *args): return self._do_op('And', args)
-    def Not(self, *args): return self._do_op('Not', args)
-    def Or(self, *args): return self._do_op('Or', args)
-    def ULT(self, *args): return self._do_op('ULT', args)
-    def ULE(self, *args): return self._do_op('ULE', args)
-    def UGE(self, *args): return self._do_op('UGE', args)
-    def UGT(self, *args): return self._do_op('UGT', args)
+    def And(self, *args): return A(self, 'And', args).reduced()
+    def Not(self, *args): return A(self, 'Not', args).reduced()
+    def Or(self, *args): return A(self, 'Or', args).reduced()
+    def ULT(self, *args): return A(self, 'ULT', args).reduced()
+    def ULE(self, *args): return A(self, 'ULE', args).reduced()
+    def UGE(self, *args): return A(self, 'UGE', args).reduced()
+    def UGT(self, *args): return A(self, 'UGT', args).reduced()
 
     #
     # Other ops
     #
     def If(self, *args):
         if len(args) != 3: raise ClaripyOperationError("invalid number of args passed to If")
-        return self._do_op('If', args)
+        return A(self, 'If', args).reduced()
 
     #def size(self, *args): return self._do_op('size', args)
 
@@ -175,7 +159,7 @@ class Claripy(object):
         This process is somewhat conservative: False does not necessarily mean that
         it's not identical; just that it can't (easily) be determined to be identical.
         '''
-        if not all([isinstance(a, E) for a in args]):
+        if not all([isinstance(a, A) for a in args]):
             return False
 
         if len(set(hash(a) for a in args)) == 1:
@@ -184,7 +168,7 @@ class Claripy(object):
         first = args[0]
         identical = True
         for o in args:
-            i = A(self, 'Identical', (first, o)).resolve()
+            i = A(self, 'Identical', (first, o)).resolved()
             identical &= i is True
         return identical
 
@@ -212,8 +196,7 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .expression import E
-from .ast import A
+from .ast import A, I
 from .backends.backend import BackendError
 from .bv import BVV
 from .vsa import ValueSet, AbstractLocation

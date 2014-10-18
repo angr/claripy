@@ -68,16 +68,15 @@ def normalize_reversed_arguments(f):
         arg_reversed = []
         raw_args = []
         for i in xrange(len(args)):
-            if type(args[i]) is E:
-                if type(args[i].ast) is A and args[i].ast.op == 'Reverse':
-                    # A delayed reverse
-                    arg_reversed.append(True)
-                    raw_args.append(args[i].ast.args[0])
-                    continue
-                elif type(args[i].ast) in { StridedInterval } and args[i].ast.reversed:
-                    arg_reversed.append(True)
-                    raw_args.append(args[i].ast.reverse())
-                    continue
+            if isinstance(args[i], A) and args[i].op == 'Reverse':
+                # A delayed reverse
+                arg_reversed.append(True)
+                raw_args.append(args[i].ast.args[0])
+                continue
+            elif isinstance(args[i], A) and type(args[i].args[0]) in { StridedInterval } and args[i].args[0].reversed:
+                arg_reversed.append(True)
+                raw_args.append(args[i].ast.reverse())
+                continue
 
             # It's not reversed
             arg_reversed.append(False)
@@ -90,8 +89,7 @@ def normalize_reversed_arguments(f):
         ret = f(self, *raw_args, **kwargs)
 
         if any_reversed_arg:
-            ret_expr = E(args[0]._claripy, model=ret, variables=set(), symbolic=False)
-            ret = A(args[0]._claripy, 'Reverse', (ret_expr,), collapsible=True)
+            ret = A(args[0]._claripy, 'Reverse', (ret,), collapsible=True)
 
         return ret
 
@@ -523,8 +521,8 @@ class BackendVSA(ModelBackend):
         :return:
         '''
         if to_conv is not None:
-            if type(to_conv) is E:
-                to_conv = to_conv.model
+            if isinstance(to_conv, A):
+                to_conv = to_conv.resolved()
             if type(to_conv) is StridedInterval:
                 # No conversion will be done
                 return to_conv
@@ -559,7 +557,6 @@ class BackendVSA(ModelBackend):
         return StridedInterval.top(bits, signed=signed)
 
 from ..bv import BVV
-from ..expression import E
 from ..ast import A
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult

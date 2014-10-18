@@ -1,7 +1,10 @@
+import weakref
 import logging
 l = logging.getLogger("claripy.ast")
 
-class A(object):
+import ana
+
+class A(ana.Storable):
 	'''
 	An A(ST) tracks a tree of operations on arguments. It has the following methods:
 
@@ -14,34 +17,73 @@ class A(object):
 		size(): the size of the result
 	'''
 
-	__slots__ = [ 'op', 'args', 'why', 'length', 'collapsible', '_claripy', '_hash', '__weakref__' ]
+	__slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_objects', '_errored' ]
+	_hash_cache = weakref.WeakValueDictionary()
 
-	def __init__(self, claripy, op, args, collapsible=None, finalize=True):
+	FULL_SIMPLIFY=1
+	LITE_SIMPLIFY=2
+	UNSIMPLIFIED=0
+
+	def __new__(cls, claripy, op, args, **kwargs):
+		h = cls._calc_hash(claripy, op, args)
+		if h in cls._hash_cache:
+			return cls._hash_cache[h]
+		else:
+			self = super(A, cls).__new__(cls, claripy, op, args, **kwargs)
+			cls._hash_cache[h] = self
+			return self
+
+	def __init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, finalize=True, simplified=0, errored=None):
+		try:
+			# already been initialized, and the stupid __new__ call is calling it again...
+			op = self.op
+			return
+		except AttributeError:
+			pass
+
 		self.op = op
 		self.args = args
-		self.length = None
-		self.collapsible = True if collapsible is None else collapsible
+		self.length = length
+		self._collapsible = True if collapsible is None else collapsible
 		self._hash = None
 		self._claripy = claripy
 
+		self._objects = { }
+		self._simplified = simplified
+		self._errored = set() if errored is None else errored
+
+		if len(args) == 0:
+			raise ClaripyOperationError("AST with no arguments!")
+
+		self.variables = set.union(set(), *(a.variables for a in args if isinstance(a, A))) if variables is None else variables
+		self.symbolic = any((a.symbolic for a in args if isinstance(a, A))) if symbolic is None else symbolic
+
 		if finalize:
-			if hasattr(self, 'finalize_'+self.op): getattr(self, 'finalize_'+self.op)()
-			elif self.op in length_same_operations: self.finalize_same_length()
+
+			if hasattr(self, '_finalize_'+self.op): getattr(self, '_finalize_'+self.op)()
+			elif self.op in length_same_operations: self._finalize_same_length()
 			elif self.op in length_none_operations: pass
-			else: raise ClaripyOperationError("no A.finalize_* function found for %s" % self.op)
+			else: raise ClaripyOperationError("no A._finalize_* function found for %s" % self.op)
 
 			if self.length is not None and self.length < 0:
 				raise ClaripyOperationError("length is negative!")
 
+	@property
+	def uuid(self):
+		return self.ana_uuid
+
+	@staticmethod
+	def _calc_hash(clrp, op, args):
+		return hash((op, tuple(args), clrp.name))
+
+	def __hash__(self):
+		if self._hash is None:
+			self._hash = self._calc_hash(self._claripy, self.op, self.args)
+		return self._hash
+
 	#
 	# Collapsing and simplification
 	#
-
-	def raw_asts(self):
-		return [ (a.ast if isinstance(a, E) else a) for a in self.args ] #pylint:disable=maybe-no-member
-
-	def raw_models(self):
-		return [ (a.model if isinstance(a, E) else a) for a in self.args ] #pylint:disable=maybe-no-member
 
 	#def _models_for(self, backend):
 	#	for a in self.args:
@@ -50,12 +92,12 @@ class A(object):
 	#			yield backend.convert(a)
 
 	def _should_collapse(self):
-		raw_args = self.raw_models()
+		raw_args = self.arg_models()
 		types = [ type(a) for a in raw_args ]
 
 		#l.debug("In should_collapse()")
 
-		if types.count(A) != 0 and not all((a.collapsible for a in raw_args if isinstance(a, A))):
+		if types.count(A) != 0 and not all((a._collapsible for a in raw_args if isinstance(a, A))):
 				#l.debug("... not collapsing for op %s because ASTs are present.", self.op)
 				return False
 
@@ -80,29 +122,30 @@ class A(object):
 		#l.debug("not collapsing the AST for operation %s!", self.op)
 		return False
 
+	@property
 	def collapsed(self):
-		if self._should_collapse() and self.collapsible:
+		if self._should_collapse() and self._collapsible:
 			#l.debug("Collapsing!")
-			r = self.resolve()
-			if isinstance(r, E): return r.ast
-			else: return r
+			r = self.resolved()
+			if not isinstance(r, A):
+				return I(self._claripy, r, length=self.length, finalize=False)
+			else:
+				return r
 		else:
 			return self
 
+	@property
 	def simplified(self):
-		raw_args = self.raw_asts()
+		if self.op == 'Reverse' and isinstance(self.args[0], A) and self.args[0].op == 'Reverse':
+			return self.args[0].args[0]
 
-		if self.op == 'Reverse' and isinstance(raw_args[0], A) and raw_args[0].op == 'Reverse':
-			r = raw_args[0].args[0]
-			if isinstance(r, E): return r.ast
-			else: return r
-
-		if self.op in reverse_distributable and all((isinstance(a, A) for a in raw_args)) and set((a.op for a in raw_args)) == { 'Reverse' }:
-			inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in raw_args)).simplified()
+		if self.op in reverse_distributable and all((isinstance(a, A) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
+			inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified()
 			inner_args = (self._claripy.wrap(inner_a, variables=inner_a.variables, symbolic=inner_a.symbolic),)
 			return A(self._claripy, 'Reverse', inner_args, collapsible=True).simplified()
 		return self
 
+	@property
 	def reduced(self):
 		a = self.simplified()
 		if isinstance(a, A):
@@ -114,25 +157,40 @@ class A(object):
 	# Finalizer functions for different expressions
 	#
 
-	def finalize_Identical(self):
+	@staticmethod
+	def _typefixer(a, t):
+		if t in ('I', 'L', 'N'):
+			if not type(a) in (int, long):
+				raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
+			return int(a) if t == 'I' else long(a) if t == 'L' else a
+		else:
+			if not isinstance(a, t):
+				raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
+			return a
+
+	def _typechecker(self, *types):
+		if len(self.args) != len(types):
+			raise ClaripyOperationError("too few arguments (%d instead of %d) passed to %s" % (len(self.args), len(types), self.op))
+
+		self.args = tuple(self._typefixer(a,t) for a,t in zip(self.args, types))
+
+	def _finalize_Identical(self):
 		self.length = 0
 
-	def finalize_BoolVal(self):
-		if len(self.args) != 1 or self.args[0] not in (True, False):
-			raise ClaripyOperationError("BoolVal() requires True or False as argument.")
+	def _finalize_BoolVal(self):
+		self._typechecker(bool)
 
-	def finalize_BitVec(self):
-		if len(self.args) != 2 or type(self.args[0]) is not str or type(self.args[1]) not in (int, long) or self.args[1] <= 0:
-			raise ClaripyOperationError("Invalid arguments to BitVec")
-		self.length = int(self.args[1])
+	def _finalize_BitVec(self):
+		self._typechecker(str, 'I')
+		self.length = self.args[1]
 
-	def finalize_BitVecVal(self):
-		if len(self.args) != 2 or type(self.args[0]) not in (int, long) or type(self.args[1]) not in (int, long) or self.args[1] <= 0:
+	def _finalize_BitVecVal(self):
+		self._typechecker('N', 'I')
+		if self.args[1] <= 0:
 			raise ClaripyOperationError("Invalid arguments to BitVecVal")
-		self.length = int(self.args[1])
-		self.args = (self.args[0], int(self.args[1]))
+		self.length = self.args[1]
 
-	def finalize_If(self):
+	def _finalize_If(self):
 		'''
 		An If requires a boolean condition, and at least one case with a length. If both
 		cases have lengths, they must be equal.
@@ -145,40 +203,31 @@ class A(object):
 			raise ClaripyOperationError("If needs must have equal-sized cases and a boolean condition")
 		self.length = lengths.pop()
 
-	def finalize_Concat(self):
+	def _finalize_Concat(self):
 		lengths = [ self.arg_size(a) for a in self.args ]
 		if None in lengths or len(self.args) <= 1:
 			raise ClaripyOperationError("Concat must have at >= two args, and all must have lengths.")
 		self.length = sum(lengths)
 
-	def finalize_Extract(self):
+	def _finalize_Extract(self):
+		self._typechecker('I', 'I', A)
 		if len(self.args) != 3 or type(self.args[0]) not in (int, long) or type(self.args[1]) not in (int, long):
 			raise ClaripyOperationError("Invalid arguments passed to extract!")
 
-		self.args = (int(self.args[0]), int(self.args[1]), self.args[2])
 		self.length = self.args[0]-self.args[1]+1
+		old_length = self.arg_size(self.args[2])
+		if self.length > old_length or self.args[0] >= old_length or self.args[1] >= old_length or self.length <= 0:
+			raise ClaripyOperationError("Invalid sizes passed to extract!")
 
-		if self.length > self.arg_size(self.args[2]) or \
-						self.args[0] >= self.arg_size(self.args[2]) or \
-						self.args[1] >= self.arg_size(self.args[2]) or \
-						self.length <= 0:
-			raise ClaripyOperationError("Invalid arguments passed to extract!")
-
-	def finalize_ZeroExt(self):
-		if len(self.args) != 2 or type(self.args[0]) not in (int, long) or self.args[0] < 0:
-			raise ClaripyOperationError("%s requires two arguments: (int, bitvector)" % self.op)
-
+	def _finalize_ZeroExt(self):
+		self._typechecker('I', A)
 		length = self.arg_size(self.args[1])
 		if length is None:
 			raise ClaripyOperationError("extending an object without a length")
-
-		self.args = (int(self.args[0]), self.args[1])
 		self.length = length + self.args[0]
-	finalize_SignExt = finalize_ZeroExt
+	_finalize_SignExt = _finalize_ZeroExt
 
-	# And generic ones
-
-	def finalize_same_length(self):
+	def _finalize_same_length(self):
 		'''
 		This is a generic finalizer. It requires at least one argument to have a length,
 		and all arguments that *do* have a length to have the same length.
@@ -189,30 +238,37 @@ class A(object):
 			raise ClaripyOperationError("Arguments to %s must have equal (and existing) sizes", self.op)
 		self.length = lengths.pop()
 
+	#
+	# Size functions
+	#
 
-
-	def arg_size(self, o):
-		if isinstance(o, E):
-			return o.size()
-		elif isinstance(o, A):
+	@staticmethod
+	def arg_size(o):
+		if isinstance(o, A):
 			return o.length
 		else:
-			for b in self._claripy.model_backends:
-				try: return b.call(A(self._claripy, 'size', (o,), finalize=False))
-				except BackendError: pass
 			return None
 
 	def size(self):
 		return self.length
+	__len__ = size
 
-	def resolve(self, result=None):
+	#
+	# Functionality for resolving to model objects
+	#
+
+	def arg_models(self):
+		return [ (a.resolved() if isinstance(a, A) else a) for a in self.args ]
+
+	@property
+	def resolved(self, result=None):
 		for b in self._claripy.model_backends:
-			try: return self.resolve_backend(b, result=result)
+			try: return self.resolved_with(b, result=result)
 			except BackendError: pass
 		l.debug("all model backends failed for op %s", self.op)
 		return self
 
-	def resolve_backend(self, b, result=None):
+	def resolved_with(self, b, result=None):
 		if result is not None and self in result.resolve_cache[b]:
 			return result.resolve_cache[b][self]
 
@@ -222,46 +278,46 @@ class A(object):
 			result.resolve_cache[b][self] = r
 		return r
 
+	#
+	# Viewing and debugging
+	#
+
 	def __repr__(self):
 		if '__' in self.op:
 			return "<A %s.%s%s>" % (self.args[0], self.op, self.args[1:])
 		else:
 			return "<A %s%s>" % (self.op, self.args)
 
-	def __hash__(self):
-		if self._hash is None:
-			self._hash = hash((self.op, tuple(self.args), self._claripy.name))
-		return self._hash
+	@property
+	def depth(self):
+		return 1 + max((a.depth() for a in self.args if isinstance(a, A)))
 
-	def __getstate__(self):
+	#
+	# Serialization support
+	#
+
+	def _ana_getstate(self):
 		return self.op, self.args, self.length
-	def __setstate__(self, state):
+	def _ana_setstate(self, state):
 		self._hash = None
 		self.op, self.args, self.length = state
 
-	@property
-	def variables(self):
-		v = set()
-		for a in self.args:
-			if isinstance(a, E):
-				v |= a.variables #pylint:disable=maybe-no-member
-		return v
+	#
+	# Various AST modifications (replacements, pivoting)
+	#
 
-	@property
-	def symbolic(self):
-		return any([ a.symbolic for a in self.args if isinstance(a, E) ]) #pylint:disable=maybe-no-member
+	def _do_op(self, op, *args, **kwargs):
+		return A(self._claripy, op, (self,)+args, **kwargs).reduced()
 
 	def _replace(self, old, new):
-		if hash(self) == hash(old.ast):
-			return new.ast, True
+		if hash(self) == hash(old):
+			return new, True
 
 		new_args = [ ]
 		replaced = False
 
 		for a in self.args:
 			if isinstance(a, A):
-				new_a, a_replaced = a._replace(old, new) #pylint:disable=maybe-no-member
-			elif isinstance(a, E):
 				new_a, a_replaced = a._replace(old, new) #pylint:disable=maybe-no-member
 			else:
 				new_a, a_replaced = a, False
@@ -270,7 +326,7 @@ class A(object):
 			replaced |= a_replaced
 
 		if replaced:
-			return A(self._claripy, self.op, tuple(new_args)), True
+			return A(self._claripy, self.op, tuple(new_args)).reduced(), True
 		else:
 			return self, False
 
@@ -314,8 +370,8 @@ class A(object):
 
 		tuple_list = None
 		for index, a in enumerate(self.args):
-			if type(a) is E and type(a.ast) is A:
-				tuple_list = a.ast.find_arg(arg)
+			if isinstance(a, A):
+				tuple_list = a.find_arg(arg)
 				if tuple_list is not None:
 					tuple_list = [index] + tuple_list
 					break
@@ -362,8 +418,101 @@ class A(object):
 		new_ast = A(self._claripy, op, (arg_left, arg_right))
 		return new_ast
 
+	#
+	# Other helper functions
+	#
+
+	def split(self, split_on):
+		if self.op in split_on: return list(self.args)
+		else: return [ self ]
+
+	# we don't support iterating over A objects
+	def __iter__(self):
+		raise ClaripyOperationError("Please don't iterate over, or split, AST nodes!")
+
+	def __nonzero__(self):
+		raise ClaripyOperationError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
+
+	def chop(self, bits=1):
+		s = len(self)
+		if s % bits != 0:
+			raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
+		elif s == bits:
+			return [ self ]
+		else:
+			return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
+
+	@property
+	def reversed(self):
+		'''
+		Reverses the expression.
+		'''
+		return self._do_op('Reverse', collapsible=False)
+
+	def __getitem__(self, rng):
+		if type(rng) is slice:
+			return self._claripy.Extract(int(rng.start), int(rng.stop), self)
+		else:
+			return self._claripy.Extract(int(rng), int(rng), self)
+
+	def zero_extend(self, n):
+		return self._claripy.ZeroExt(n, self)
+
+	def sign_extend(self, n):
+		return self._claripy.SignExt(n, self)
+
+	def identical(self, o):
+		return self._claripy.is_identical(self, o)
+
+	def replace(self, old, new):
+		if not isinstance(old, A) or not isinstance(new, A):
+			raise ClaripyOperationError('replacements must be AST nodes')
+		if old.size() != new.size():
+			raise ClaripyOperationError('replacements must have matching sizes')
+		return self._replace(old, new)[0]
+
+class I(A):
+	'''
+	This is an 'identity' AST -- it acts as a wrapper around model objects.
+	'''
+
+	def __new__(cls, claripy, model, **kwargs):
+		return A.__new__(cls, claripy, 'I', (model,), **kwargs)
+	def __init__(self, claripy, model, **kwargs):
+		A.__init__(self, claripy, 'I', (model,), **kwargs)
+
+	def resolved(self, result=None): return self.args[0]
+	def resolved_with(self, b, result=None): return b.convert(self.args[0])
+	def depth(self): return 0
+	def split(self, split_on): return self
+	def _finalize_I(self):
+		for b in self._claripy.model_backends:
+			try:
+				self.length = b.size(self.args[0])
+				break
+			except BackendError: pass
+		else:
+			self.length = None
+
 from .errors import BackendError, ClaripyOperationError
 from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
-from .expression import E
 from .bv import BVV
 from .vsa import StridedInterval
+
+
+#
+# Overload the operators
+#
+
+def e_operator(cls, op_name):
+	def wrapper(self, *args):
+		return self._do_op(op_name, *args)
+	wrapper.__name__ = op_name
+	setattr(cls, op_name, wrapper)
+
+def make_methods():
+	for name in expression_operations:
+		e_operator(A, name)
+
+from .operations import expression_operations
+make_methods()

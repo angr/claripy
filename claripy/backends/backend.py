@@ -67,13 +67,10 @@ class Backend(object):
         '''
         if isinstance(expr, A):
             #l.debug('converting A')
-            return expr.resolve_backend(self, result=result)
-        elif not isinstance(expr, E):
+            return expr.resolved_with(self, result=result)
+        else:
             #l.debug('converting non-expr')
             return self._convert(expr, result=result)
-        else:
-            #l.debug('converting expr')
-            return expr.model_for(self, result=result)
 
     def convert_list(self, args, result=None):
         return [ self.convert(a, result=result) for a in args ]
@@ -123,7 +120,7 @@ class Backend(object):
     # Abstraction and resolution.
     #
 
-    def abstract(self, e, split_on=None): #pylint:disable=W0613,R0201
+    def abstract(self, e): #pylint:disable=W0613,R0201
         raise BackendError("backend %s doesn't implement abstract()" % self.__class__.__name__)
 
     #
@@ -131,14 +128,11 @@ class Backend(object):
     #
 
     def simplify_expr(self, e):
-        o = self.simplify(self.convert(e))
-        # TODO: keep UUID
-        return E(self._claripy, self.abstract(o), e.variables, e.symbolic, objects={self: o})
+        return self.simplify(self.convert(e))
 
     def simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
-from ..expression import E
 from ..ast import A
 from ..operations import opposites
 from ..errors import BackendError

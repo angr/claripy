@@ -218,7 +218,7 @@ class Solver(ana.Storable):
 		global cached_evals
 		extra_constraints = self._constraint_filter(extra_constraints)
 
-		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
+		if not isinstance(e, A): raise ValueError("Solver got a non-E for e.")
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
@@ -462,6 +462,6 @@ class Solver(ana.Storable):
 		return results
 
 from ..result import Result
-from ..expression import E
+from ..ast import A
 from ..errors import UnsatError, BackendError, ClaripySolverError
 from .. import Claripies

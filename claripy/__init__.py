@@ -7,7 +7,6 @@ l = logging.getLogger("claripy")
 
 Claripies = { }
 
-from .expression import E
 from .ast import A
 from . import bv
 from .result import Result
