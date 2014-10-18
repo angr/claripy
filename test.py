@@ -68,9 +68,10 @@ def test_expression():
     nose.tools.assert_true(ii.identical(ii))
     nose.tools.assert_false(ii.identical(ij))
 
-    si = clrp.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
-    sj = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
-    sk = clrp.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    clrp_vsa = claripy.Claripies['VSA']
+    si = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    sj = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    sk = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
     nose.tools.assert_true(si.identical(si))
     nose.tools.assert_false(si.identical(sj))
     nose.tools.assert_true(si.identical(sk))
@@ -101,6 +102,23 @@ def test_expression():
 
     nose.tools.assert_equal(str(old_formula).replace('old', 'new'), str(new_formula))
     nose.tools.assert_equal(ooo_formula.model, 20)
+
+    # test AST collapse
+    s = clrp_vsa.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    b = clrp_vsa.BVV(20, 32)
+
+    sb = s+b
+    nose.tools.assert_true(isinstance(sb.ast, claripy.A))
+
+    bb = b+b
+    nose.tools.assert_false(isinstance(bb.ast, claripy.A))
+
+    ss = s+s
+    nose.tools.assert_false(isinstance(ss.ast, claripy.A))
+
+    smb = s^b
+    nose.tools.assert_false(isinstance(smb.ast, claripy.A))
+
 
 def test_concrete():
     clrp = claripy.Claripies["SerialZ3"]

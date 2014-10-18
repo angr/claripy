@@ -150,7 +150,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
-        self._op_raw['IsIdentical'] = BackendVSA.IsIdentical
+        self._op_raw['Identical'] = BackendVSA.Identical
         self._op_expr['If'] = self.If
 
     def add_exprs(self, solver, constraints):
@@ -224,22 +224,26 @@ class BackendVSA(ModelBackend):
         else:
             raise NotImplementedError()
 
-    def has_true(self, o):
+    @staticmethod
+    def has_true(o):
         return o == True or \
                (isinstance(o, BoolResult) and True in o.value) or \
                (isinstance(o, IfProxy) and (True in o.trueexpr.value or True in o.falseexpr.value))
 
-    def has_false(self, o):
+    @staticmethod
+    def has_false(o):
         return o == False or \
                (isinstance(o, BoolResult) and False in o.value) or \
                (isinstance(o, IfProxy) and (False in o.trueexpr.value or False in o.falseexpr.value))
 
-    def is_true(self, o):
+    @staticmethod
+    def is_true(o):
         return o == True or \
                (isinstance(o, TrueResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is TrueResult and type(o.falseexpr) is TrueResult))
 
-    def is_false(self, o):
+    @staticmethod
+    def is_false(o):
         return o == False or \
                (isinstance(o, FalseResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
@@ -339,8 +343,8 @@ class BackendVSA(ModelBackend):
     def __lshift__(a, b): return a.__lshift__(b)
 
     @staticmethod
-    def IsIdentical(a, b):
-        return a == b
+    def Identical(a, b):
+        return BackendVSA.is_true(a == b)
 
     @staticmethod
     @expand_ifproxy

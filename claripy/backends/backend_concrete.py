@@ -46,7 +46,7 @@ class BackendConcrete(ModelBackend):
             return a
 
         if not hasattr(a, '__module__') or a.__module__ != 'z3':
-            raise BackendError("BackendConcrete got an unsupported type %s", a.__class__)
+            raise BackendError("BackendConcrete got an unsupported type %s" % a.__class__)
 
         z3_backend = self._claripy.backend_of_type(BackendZ3)
         if z3_backend is None:

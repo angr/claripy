@@ -11,7 +11,6 @@ class Claripy(object):
         self.model_backends = model_backends
         self.unique_names = True
         self.parallel = parallel if parallel else False
-        self.save_ast = True
 
         self.true = self.BoolVal(True)
         self.false = self.BoolVal(False)
@@ -44,38 +43,57 @@ class Claripy(object):
         else:
             return E(self, o, set() if variables is None else variables, symbolic)
 
-    def _do_op_raw(self, name, args, raw=False):
-        resolved = False
+    @staticmethod
+    def _collapse_ast(op, args): #pylint:disable=unused-argument
+        raw_args = [ (a.ast if isinstance(a, E) else a) for a in args ]
+        types = [ type(a) for a in raw_args ]
 
-        if not self.save_ast:
+        if types.count(A) != 0:
+            l.debug("Not collapsing because ASTs are present.")
+            return False
+
+        if op not in inverses:
+            l.debug("collapsing the AST for operation %s because it's not invertible", op)
+            return True
+
+        constants = sum((types.count(t) for t in (int, long, bool, str, BVV)))
+        if constants == len(args):
+            l.debug("collapsing the AST for operation %s because it's full of constants", op)
+            return True
+
+        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer()]) > 1:
+            l.debug("collapsing the AST for operation %s because there are more than two SIs")
+            return True
+
+        #
+        # More complex checks probably go here.
+        #
+
+        # Reversible; don't collapse!
+        l.debug("not collapsing the AST for operation %s!", op)
+        return False
+
+    def _do_op_raw(self, op, args, raw=False, collapse_ast=None):
+        collapse_ast = self._collapse_ast(op, args) if collapse_ast is None else collapse_ast
+
+        if collapse_ast:
             for b in self.model_backends:
                 try:
-                    if raw: r = b.call(name, args)
-                    else:   r = b.call_expr(name, args)
-                    resolved = True
-                    break
+                    if raw: r = b.call(op, args)
+                    else:   r = b.call_expr(op, args)
+
+                    #l.warning("YAY %s", b)
+                    return r
                 except BackendError:
+                    #l.warning("WTF %s", b, exc_info=True)
                     continue
 
-        if not resolved:
-            # Special case for Reverse
-            r = None
-            if name == 'Reverse':
-                arg = args[0]
-                if isinstance(arg, E) and \
-                        isinstance(arg._actual_model, A) and \
-                        arg.ast.op == 'Reverse':
-                    # Unpack it :-)
-                    r = arg.ast.args[0]
+        # all backends failed, or we aren't collapsing
+        l.debug("all model backends failed or we were told to preserve the AST for op %s", op)
+        return A(self, op, args)
 
-            if r is None:
-                r = A(self, name, args)
-
-        return r
-
-
-    def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
-        r = self._do_op_raw(name, args, raw=raw)
+    def _do_op(self, op, args, variables=None, symbolic=None, raw=False, simplified=False):
+        r = self._do_op_raw(op, args, raw=raw)
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -216,7 +234,6 @@ class Claripy(object):
         This process is somewhat conservative: False does not necessarily mean that
         it's not identical; just that it can't (easily) be determined to be identical.
         '''
-        from .vsa import StridedInterval
         if type(args[0].model) is StridedInterval and type(args[1].model) is StridedInterval and args[
             0].model.upper_bound == 9 and args[1].model.upper_bound == 9:
             import ipdb
@@ -235,7 +252,7 @@ class Claripy(object):
             identical &= i is True
         return identical
 
-    def constraint_to_si(self, expr, bits):
+    def constraint_to_si(self, expr, bits): #pylint:disable=unused-argument
         '''
         Convert a constraint to SI if possible
         :param expr:
@@ -263,6 +280,7 @@ from .expression import E
 from .ast import A
 from .backends.backend import BackendError
 from .bv import BVV
-from .vsa import ValueSet, AbstractLocation
+from .vsa import ValueSet, AbstractLocation, StridedInterval
 from .backends import BackendVSA
 from .errors import ClaripyOperationError
+from .operations import inverses

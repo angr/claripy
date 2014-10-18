@@ -101,3 +101,11 @@ length_same_operations = expression_arithmetic_operations | backend_bitwise_oper
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
+
+#
+# Reversibility
+#
+inverses = {
+    '__add__': '__sub__',
+    '__sub__': '__add__',
+}

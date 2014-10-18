@@ -99,16 +99,20 @@ class ModelBackend(Backend):
 
 		raise BackendError("backend doesn't support solution()")
 
-	def has_false(self, o):
+	@staticmethod
+	def has_false(o):
 		return o == False
 
-	def has_true(self, o):
+	@staticmethod
+	def has_true(o):
 		return o == True
 
-	def is_false(self, o):
+	@staticmethod
+	def is_false(o):
 		return o == False
 
-	def is_true(self, o):
+	@staticmethod
+	def is_true(o):
 		return o == True
 
 from ..errors import BackendError
