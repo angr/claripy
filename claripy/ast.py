@@ -168,7 +168,7 @@ class A(object):
 		return any([ a.symbolic for a in self.args if isinstance(a, E) ]) #pylint:disable=maybe-no-member
 
 	def _replace(self, old, new):
-		if hash(self) == hash(new.ast):
+		if hash(self) == hash(old.ast):
 			return new.ast, True
 
 		new_args = [ ]
