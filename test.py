@@ -116,8 +116,9 @@ def test_expression():
     ss = s+s
     nose.tools.assert_false(isinstance(ss.ast, claripy.A))
 
-    smb = s^b
-    nose.tools.assert_false(isinstance(smb.ast, claripy.A))
+    sob = s|b
+    # for now, this is collapsed. Presumably, Fish will make it not collapse at some point
+    nose.tools.assert_true(isinstance(sob.ast, claripy.A))
 
     # make sure the AST collapses for delayed ops like reversing
     rb = b.reverse()
