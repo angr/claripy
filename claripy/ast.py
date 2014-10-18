@@ -14,12 +14,13 @@ class A(object):
 		size(): the size of the result
 	'''
 
-	__slots__ = [ 'op', 'args', 'why', 'length', '_claripy', '_hash', '__weakref__' ]
+	__slots__ = [ 'op', 'args', 'why', 'length', 'collapsible', '_claripy', '_hash', '__weakref__' ]
 
-	def __init__(self, claripy, op, args):
+	def __init__(self, claripy, op, args, collapsible=False):
 		self.op = op
 		self.args = args
 		self.length = None
+		self.collapsible = True
 		self._hash = None
 		self._claripy = claripy
 

@@ -119,6 +119,15 @@ def test_expression():
     smb = s^b
     nose.tools.assert_false(isinstance(smb.ast, claripy.A))
 
+    # make sure the AST collapses for delayed ops like reversing
+    rb = b.reverse()
+    nose.tools.assert_true(isinstance(rb.ast, claripy.A))
+
+    rbi = rb.identical(bb)
+    nose.tools.assert_is(rbi, False)
+
+    rbi = rb.identical(rb)
+    nose.tools.assert_is(rbi, True)
 
 def test_concrete():
     clrp = claripy.Claripies["SerialZ3"]

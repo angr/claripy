@@ -48,9 +48,9 @@ class Claripy(object):
         raw_args = [ (a.ast if isinstance(a, E) else a) for a in args ]
         types = [ type(a) for a in raw_args ]
 
-        if types.count(A) != 0:
-            l.debug("Not collapsing because ASTs are present.")
-            return False
+        if types.count(A) != 0 and not all((a.collapsible for a in raw_args if isinstance(a, A))):
+                l.debug("Not collapsing because ASTs are present.")
+                return False
 
         if op not in inverses:
             l.debug("collapsing the AST for operation %s because it's not invertible", op)
@@ -130,7 +130,7 @@ class Claripy(object):
         if isinstance(o.ast, A) and o.ast.op == 'Reverse':
             return self.wrap(o.ast.args[0])
         else:
-            return self.wrap(A(self, "Reverse", (o,)), symbolic=o.symbolic, variables=o.variables)
+            return self.wrap(A(self, "Reverse", (o,), collapsible=True), symbolic=o.symbolic, variables=o.variables)
 
     #
     # Strided interval
