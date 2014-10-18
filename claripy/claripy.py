@@ -44,7 +44,7 @@ class Claripy(object):
         else:
             return E(self, o, set() if variables is None else variables, symbolic)
 
-    def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
+    def _do_op_raw(self, name, args):
         resolved = False
 
         if not self.save_ast:
@@ -70,6 +70,12 @@ class Claripy(object):
 
             if r is None:
                 r = A(self, name, args)
+
+        return r
+
+
+    def _do_op(self, name, args, variables=None, symbolic=None, raw=False, simplified=False):
+        r = self._do_op_raw(name, args)
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -158,6 +164,27 @@ class Claripy(object):
     def If(self, *args):
         if len(args) != 3: raise ClaripyOperationError("invalid number of args passed to If")
         return self._do_op('If', args)
+
+    def Identical(self, *args):
+        '''
+        Attempts to check if the underlying models of the expression are identical,
+        even if the hashes match.
+
+        This process is somewhat conservative: False does not necessarily mean that
+        it's not identical; just that it can't (easily) be determined to be identical.
+        '''
+        if not all([isinstance(a, E) for a in args]):
+            return False
+
+        if len(set(hash(a) for a in args)) == 1:
+            return True
+
+        first = args[0]
+        identical = True
+        for o in args:
+            i = self._do_op_raw('Identical', (first, o))
+            identical &= i is True
+        return identical
 
     #def size(self, *args): return self._do_op('size', args)
 
