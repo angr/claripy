@@ -137,16 +137,12 @@ class A(object):
 		if result is not None and self in result.resolve_cache[b]:
 			return result.resolve_cache[b][self]
 
-		if self.op == 'Reverse':
-			a = self.args[0]
-			if isinstance(a, E): a = a.ast
-			if isinstance(a, A) and a.op == 'Reverse':
-				return a.args[0].resolve(b, result=None)
-
 		args = [ ]
 		#pylint:disable=maybe-no-member
 		for a in self.args:
 			if isinstance(a, A):
+				if self.op == 'Reverse' and a.op == 'Reverse':
+					return a.args[0]
 				args.append(a.resolve(b, result=result))
 			else:
 				args.append(a)

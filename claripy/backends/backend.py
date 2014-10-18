@@ -92,6 +92,12 @@ class Backend(object):
         if name in self._op_expr:
             return self._op_expr[name](*args, result=result)
         else:
+            raw_args = self.convert_exprs(args, result=result)
+            if isinstance(raw_args[0], A) and raw_args[0].op == 'Reverse':
+                if name == 'Reverse':
+                    return self.convert_expr(raw_args[0].args[0])
+                else:
+                    raw_args = self.convert_exprs(raw_args)
             return self.call(name, self.convert_exprs(args, result=result), result=result)
 
     def call(self, name, args, result=None): #pylint:disable=unused-argument
@@ -144,4 +150,3 @@ from ..expression import E
 from ..ast import A
 from ..operations import opposites
 from ..errors import BackendError, ClaripyTypeError
-from ..vsa import MaybeResult

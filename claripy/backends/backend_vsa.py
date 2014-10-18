@@ -424,11 +424,6 @@ class BackendVSA(ModelBackend):
         return expr >> shift_amount
 
     @staticmethod
-    def Reverse(arg):
-        print 'Reversing %s' % arg
-        return arg.reverse()
-
-    @staticmethod
     def Concat(*args):
         ret = None
         for expr in args:
