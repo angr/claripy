@@ -201,6 +201,9 @@ class E(ana.Storable):
 	def sign_extend(self, n):
 		return self._claripy.SignExt(n, self)
 
+	def identical(self, o):
+		return self._claripy.Identical(self, o)
+
 	def _replace(self, old, new):
 		# this means that we can't possible contain the desired expression
 		if not self.variables >= old.variables:
