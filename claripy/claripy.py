@@ -92,8 +92,8 @@ class Claripy(object):
         l.debug("all model backends failed or we were told to preserve the AST for op %s", op)
         return A(self, op, args)
 
-    def _do_op(self, op, args, variables=None, symbolic=None, raw=False, simplified=False):
-        r = self._do_op_raw(op, args, raw=raw)
+    def _do_op(self, op, args, variables=None, symbolic=None, raw=False, simplified=False, collapse_ast=None):
+        r = self._do_op_raw(op, args, raw=raw, collapse_ast=collapse_ast)
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -248,7 +248,7 @@ class Claripy(object):
         first = args[0]
         identical = True
         for o in args:
-            i = self._do_op_raw('Identical', (first, o))
+            i = self._do_op_raw('Identical', (first, o), collapse_ast=True)
             identical &= i is True
         return identical
 
