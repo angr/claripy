@@ -89,7 +89,7 @@ def normalize_reversed_arguments(f):
         ret = f(self, *raw_args, **kwargs)
 
         if any_reversed_arg:
-            ret = A(args[0]._claripy, 'Reverse', (ret,), collapsible=True)
+            ret = A(args[0]._claripy, 'Reverse', (I(args[0]._claripy, ret),), collapsible=True)
 
         return ret
 
@@ -557,7 +557,7 @@ class BackendVSA(ModelBackend):
         return StridedInterval.top(bits, signed=signed)
 
 from ..bv import BVV
-from ..ast import A
+from ..ast import A, I
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..result import Result
