@@ -193,6 +193,94 @@ class A(object):
 		else:
 			return self, False
 
+	@staticmethod
+	def _reverse_op(op):
+		if op == 'ULE':
+			return 'UGE'
+
+		raise Exception()
+
+	@staticmethod
+	def reverse_operation(target, op, args, index):
+		'''
+
+		:param target:
+		:param op:
+		:param args:
+		:return: a reversed ast
+		'''
+		if op == 'Extract':
+			# FIXME:
+			left = args[0]
+			right = args[1]
+			if right != 0:
+				return None
+			original_size = args[index].size()
+			return target.zero_extend(original_size - (left - right + 1))
+		elif op == 'ZeroExt':
+			# FIXME:
+			extra_bits = args[0]
+			return target[target.size() - extra_bits  - 1: 0]
+
+		import ipdb; ipdb.set_trace()
+		return None
+
+
+	def find_arg(self, arg):
+		for index, a in enumerate(self.args):
+			if a is arg:
+				return [index]
+
+		tuple_list = None
+		for index, a in enumerate(self.args):
+			if type(a) is E and type(a.ast) is A:
+				tuple_list = a.ast.find_arg(arg)
+				if tuple_list is not None:
+					tuple_list = [index] + tuple_list
+					break
+
+		return tuple_list
+
+	def pivot(self, left=None, right=None):
+		'''
+
+		:param left:
+		:param right:
+		:return:
+		'''
+		if left is None and right is None:
+			return
+
+		if left is not None and right is not None:
+			raise ClaripyOperationError('You cannot specify two endpoints on both sides')
+
+		if len(self.args) != 2:
+			raise ClaripyOperationError('We cannot pivot an operation that has over two arguments')
+
+		op = self.op
+		arg_left = self.args[0]
+		arg_right = self.args[1]
+
+		if left is None:
+			# Swap it
+			left, right = right, left
+			arg_left, arg_right = arg_right, arg_left
+			op = A._reverse_op(op)
+
+		arg_index_list = arg_left.ast.find_arg(left)
+		if arg_index_list is None:
+			raise ClaripyOperationError('Cannot find argument %s' % left)
+
+		for index in arg_index_list:
+			left_ast_args = arg_left.ast.args
+			arg_right = A.reverse_operation(arg_right, arg_left.ast.op, left_ast_args, index)
+			if arg_right is None:
+				raise ClaripyOperationError('Pivoting failed.')
+			arg_left = arg_left.ast.args[index]
+
+		new_ast = A(self._claripy, op, (arg_left, arg_right))
+		return new_ast
+
 from .errors import BackendError, ClaripyOperationError
 from .operations import length_none_operations, length_same_operations
 from .expression import E

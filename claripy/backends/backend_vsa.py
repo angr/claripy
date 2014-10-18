@@ -150,6 +150,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
+        self._op_raw['IsIdentical'] = BackendVSA.IsIdentical
         self._op_expr['If'] = self.If
 
     def add_exprs(self, solver, constraints):
@@ -244,6 +245,17 @@ class BackendVSA(ModelBackend):
                (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
 
     def constraint_to_si(self, expr):
+        def _find_target_expr(m):
+            expr = None
+            if m.ast.op in ['Extract', 'ZeroExt']:
+                expr = _find_target_expr(m.ast.args[-1])
+                if expr is None:
+                    return m.ast.args[-1]
+                else:
+                    return expr
+
+            return None
+
         if not isinstance(expr.model, IfProxy):
             return None
 
@@ -253,15 +265,24 @@ class BackendVSA(ModelBackend):
         op = condition_ast.op
 
         if op == 'ULT':
-            # left = condition_ast.args[0].model
-            right = condition_ast.args[1].model
+            left_expr = condition_ast.args[0]
+            right_expr = condition_ast.args[1]
+            if type(right_expr.model) in {BVV}:
+                # import ipdb; ipdb.set_trace()
+                target_expr = _find_target_expr(left_expr)
+                if target_expr is None:
+                    return None
+                pivoted = condition_ast.pivot(left=target_expr)
+                right_expr = pivoted.args[1]
+                left_expr = pivoted.args[0]
             # Convert them to SI
             # si_left = BackendVSA.CreateStridedInterval(bits=left.bits, to_conv=left)
-            si_right = BackendVSA.CreateStridedInterval(bits=right.bits, to_conv=right)
+            si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
             # Modify the lower bound
-            si_right.lower_bound = StridedInterval.min_int(si_right.lower_bound)
+            si_right.lower_bound = StridedInterval.min_int(si_right.bits)
+            si_right.stride = left_expr.model.stride
 
-            return si_right
+            return left_expr, si_right
         else:
             import ipdb; ipdb.set_trace()
 
@@ -316,6 +337,10 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @expand_ifproxy
     def __lshift__(a, b): return a.__lshift__(b)
+
+    @staticmethod
+    def IsIdentical(a, b):
+        return a == b
 
     @staticmethod
     @expand_ifproxy

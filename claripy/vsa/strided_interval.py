@@ -221,6 +221,10 @@ class StridedInterval(object):
     def lower_bound(self):
         return self._lower_bound
 
+    @lower_bound.setter
+    def lower_bound(self, value):
+        self._lower_bound = value
+
     @property
     def upper_bound(self):
         return self._upper_bound
@@ -232,6 +236,10 @@ class StridedInterval(object):
     @property
     def stride(self):
         return self._stride
+
+    @stride.setter
+    def stride(self, value):
+        self._stride = value
 
     @property
     def max(self):

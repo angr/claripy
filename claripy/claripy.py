@@ -216,6 +216,12 @@ class Claripy(object):
         This process is somewhat conservative: False does not necessarily mean that
         it's not identical; just that it can't (easily) be determined to be identical.
         '''
+        from .vsa import StridedInterval
+        if type(args[0].model) is StridedInterval and type(args[1].model) is StridedInterval and args[
+            0].model.upper_bound == 9 and args[1].model.upper_bound == 9:
+            import ipdb
+            ipdb.set_trace()
+
         if not all([isinstance(a, E) for a in args]):
             return False
 
@@ -236,15 +242,16 @@ class Claripy(object):
         :return:
         '''
         si = None
+        old_expr = None
 
         for b in self.model_backends:
-            if b is BackendVSA:
-                si = b.constraint_to_si(expr)
+            if type(b) is BackendVSA:
+                old_expr, si = b.constraint_to_si(expr)
 
         if si is None:
-            return self.TopStridedInterval(bits)
+            return None, None
         else:
-            return si
+            return old_expr, si
 
     def model_object(self, e, result=None):
         for b in self.model_backends:
