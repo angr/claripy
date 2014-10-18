@@ -168,7 +168,7 @@ class Claripy(object):
         first = args[0]
         identical = True
         for o in args:
-            i = A(self, 'Identical', (first, o)).resolved
+            i = A(self, 'Identical', (first, o)).model
             identical &= i is True
         return identical
 

@@ -7,7 +7,7 @@ def normalize_types(f):
         Convert any object to an object that we can process.
         '''
         if isinstance(o, A):
-            o = o.resolved
+            o = o.model
 
         assert type(o) is StridedInterval
 

@@ -13,9 +13,9 @@ def normalize_types(f):
         Convert any object to an object that we can process.
         '''
         if isinstance(o, A):
-            o = o.resolved
+            o = o.model
         if isinstance(self, A):
-            self = o.resolved
+            self = o.model
         if type(self) is BVV:
             self = self.value
         if type(o) is BVV:

@@ -7,7 +7,7 @@ l = logging.getLogger("claripy")
 
 Claripies = { }
 
-from .ast import A
+from .ast import A, I
 from . import bv
 from .result import Result
 from .errors import *
@@ -15,6 +15,7 @@ from .claripy_standalone import ClaripyStandalone
 from .bv import BVV
 from . import operations
 from . import backends
+from .vsa import *
 
 def init_claripies():
     backend_vsa = backends.BackendVSA()

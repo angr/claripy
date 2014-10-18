@@ -71,11 +71,11 @@ def normalize_reversed_arguments(f):
             if isinstance(args[i], A) and args[i].op == 'Reverse':
                 # A delayed reverse
                 arg_reversed.append(True)
-                raw_args.append(args[i].ast.args[0])
+                raw_args.append(args[i].args[0])
                 continue
             elif isinstance(args[i], A) and type(args[i].args[0]) in { StridedInterval } and args[i].args[0].reversed:
                 arg_reversed.append(True)
-                raw_args.append(args[i].ast.reverse())
+                raw_args.append(args[i].reverse())
                 continue
 
             # It's not reversed
@@ -286,11 +286,11 @@ class BackendVSA(ModelBackend):
     def constraint_to_si(self, expr):
         def _find_target_expr(m):
             expr = None
-            if isinstance(m.ast, A):
-                if m.ast.op in ['Extract', 'ZeroExt']:
-                    expr = _find_target_expr(m.ast.args[-1])
+            if isinstance(m, A):
+                if m.op in ['Extract', 'ZeroExt']:
+                    expr = _find_target_expr(m.args[-1])
                     if expr is None:
-                        return m.ast.args[-1]
+                        return m.args[-1]
                     else:
                         return expr
 
@@ -301,7 +301,7 @@ class BackendVSA(ModelBackend):
 
         ifproxy = expr.model
         condition = ifproxy.condition
-        condition_ast = condition.ast
+        condition_ast = condition
         op = condition_ast.op
 
         if op == 'ULT':
@@ -522,7 +522,7 @@ class BackendVSA(ModelBackend):
         '''
         if to_conv is not None:
             if isinstance(to_conv, A):
-                to_conv = to_conv.resolved
+                to_conv = to_conv.model
             if type(to_conv) is StridedInterval:
                 # No conversion will be done
                 return to_conv

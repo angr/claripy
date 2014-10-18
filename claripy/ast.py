@@ -36,7 +36,7 @@ class A(ana.Storable):
 	def __init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, finalize=True, simplified=0, errored=None):
 		try:
 			# already been initialized, and the stupid __new__ call is calling it again...
-			op = self.op
+			op = self.op # pylint:disable=access-member-before-definition
 			return
 		except AttributeError:
 			pass
@@ -126,9 +126,9 @@ class A(ana.Storable):
 	def collapsed(self):
 		if self._should_collapse() and self._collapsible:
 			#l.debug("Collapsing!")
-			r = self.resolved
+			r = self.model
 			if not isinstance(r, A):
-				return I(self._claripy, r, length=self.length, finalize=False)
+				return I(self._claripy, r, length=self.length, finalize=False, variables=self.variables, symbolic=self.symbolic)
 			else:
 				return r
 		else:
@@ -141,8 +141,10 @@ class A(ana.Storable):
 
 		if self.op in reverse_distributable and all((isinstance(a, A) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
 			inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
-			inner_args = (self._claripy.wrap(inner_a, variables=inner_a.variables, symbolic=inner_a.symbolic),)
-			return A(self._claripy, 'Reverse', inner_args, collapsible=True).simplified
+			o = A(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
+			o._simplified = A.LITE_SIMPLIFY
+			return o
+
 		return self
 
 	@property
@@ -258,7 +260,7 @@ class A(ana.Storable):
 	#
 
 	def arg_models(self):
-		return [ (a.resolved if isinstance(a, A) else a) for a in self.args ]
+		return [ (a.model if isinstance(a, A) else a) for a in self.args ]
 
 	def resolved(self, result=None):
 		for b in self._claripy.model_backends:
@@ -308,10 +310,10 @@ class A(ana.Storable):
 	#
 
 	def _ana_getstate(self):
-		return self.op, self.args, self.length
+		return self.op, self.args, self.length, self.variables, self.symbolic, self._claripy.name
 	def _ana_setstate(self, state):
-		self._hash = None
-		self.op, self.args, self.length = state
+		op, args, length, variables, symbolic, clrp = state
+		A.__init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
 
 	#
 	# Various AST modifications (replacements, pivoting)
@@ -415,16 +417,16 @@ class A(ana.Storable):
 			arg_left, arg_right = arg_right, arg_left
 			op = A._reverse_op(op)
 
-		arg_index_list = arg_left.ast.find_arg(left)
+		arg_index_list = arg_left.find_arg(left)
 		if arg_index_list is None:
 			raise ClaripyOperationError('Cannot find argument %s' % left)
 
 		for index in arg_index_list:
-			left_ast_args = arg_left.ast.args
-			arg_right = A.reverse_operation(arg_right, arg_left.ast.op, left_ast_args, index)
+			left_ast_args = arg_left.args
+			arg_right = A.reverse_operation(arg_right, arg_left.op, left_ast_args, index)
 			if arg_right is None:
 				raise ClaripyOperationError('Pivoting failed.')
-			arg_left = arg_left.ast.args[index]
+			arg_left = arg_left.args[index]
 
 		new_ast = A(self._claripy, op, (arg_left, arg_right))
 		return new_ast
@@ -492,7 +494,6 @@ class I(A):
 	def __init__(self, claripy, model, **kwargs):
 		A.__init__(self, claripy, 'I', (model,), **kwargs)
 
-	@property
 	def resolved(self, result=None): return self.args[0]
 	def resolved_with(self, b, result=None): return b.convert(self.args[0])
 	@property
@@ -511,6 +512,7 @@ from .errors import BackendError, ClaripyOperationError
 from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from .bv import BVV
 from .vsa import StridedInterval
+from . import Claripies
 
 
 #
