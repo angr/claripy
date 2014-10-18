@@ -54,12 +54,48 @@ def convert_bvv_args(f):
             return BackendVSA.CreateStridedInterval(to_conv=a)
         return a
 
+    @functools.wraps(f)
     def converter(*args):
         new_args = [convert_bvv(a) for a in args]
 
         return f(*new_args)
 
     return converter
+
+def normalize_reversed_arguments(f):
+    @functools.wraps(f)
+    def normalizer(self, *args, **kwargs):
+        arg_reversed = []
+        raw_args = []
+        for i in xrange(len(args)):
+            if type(args[i]) is E:
+                if type(args[i].ast) is A and args[i].ast.op == 'Reverse':
+                    # A delayed reverse
+                    arg_reversed.append(True)
+                    raw_args.append(args[i].ast.args[0])
+                    continue
+                elif type(args[i].ast) in { StridedInterval } and args[i].ast.reversed:
+                    arg_reversed.append(True)
+                    raw_args.append(args[i].ast.reverse())
+                    continue
+
+            # It's not reversed
+            arg_reversed.append(False)
+            raw_args.append(args[i])
+
+        any_reversed_arg = any(arg_reversed)
+        for i in xrange(len(raw_args)):
+            raw_args[i] = self.convert_expr(raw_args[i])
+
+        ret = f(self, *raw_args, **kwargs)
+
+        if any_reversed_arg:
+            ret_expr = E(args[0]._claripy, model=ret, variables=set(), symbolic=False)
+            ret = A(args[0]._claripy, 'Reverse', (ret_expr,), collapsible=True)
+
+        return ret
+
+    return normalizer
 
 def expand_ifproxy(f):
     @functools.wraps(f)
@@ -142,7 +178,8 @@ class IfProxy(object):
 class BackendVSA(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
-        self._make_raw_ops(set(expression_operations), op_module=BackendVSA)
+        self._make_raw_ops(set(expression_operations) - set(expression_set_operations), op_module=BackendVSA)
+        self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
         self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
@@ -451,14 +488,16 @@ class BackendVSA(ModelBackend):
 
         return arg.reverse()
 
-    @staticmethod
-    def union(*args):
+    @normalize_reversed_arguments
+    def union(self, *args, **kwargs):
         assert len(args) == 2
 
-        return args[0].union(args[1])
+        ret = args[0].union(args[1])
 
-    @staticmethod
-    def intersection(*args):
+        return ret
+
+    @normalize_reversed_arguments
+    def intersection(self, *args, **kwargs):
         ret = None
 
         for arg in args:
@@ -468,6 +507,12 @@ class BackendVSA(ModelBackend):
                 ret = ret.intersection(arg)
 
         return ret
+
+    @normalize_reversed_arguments
+    def widen(self, *args, **kwargs):
+        assert len(args) == 2
+
+        return args[0].widen(args[1])
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
@@ -519,6 +564,7 @@ class BackendVSA(ModelBackend):
 
 from ..bv import BVV
 from ..expression import E
-from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
+from ..ast import A
+from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..result import Result

@@ -81,6 +81,10 @@ class StridedInterval(object):
     def name(self):
         return self._name
 
+    @property
+    def reversed(self):
+        return self._reversed
+
     def normalize(self):
         if self.lower_bound == self.upper_bound:
             self._stride = 0
@@ -287,7 +291,8 @@ class StridedInterval(object):
     def _to_negative(a, bits):
         return -((1 << bits) - a)
 
-    def upper(self, bits, i, stride):
+    @staticmethod
+    def upper(bits, i, stride):
         '''
 
         :return:
@@ -305,7 +310,8 @@ class StridedInterval(object):
         else:
             return StridedInterval.max_int(bits)
 
-    def lower(self, bits, i, stride):
+    @staticmethod
+    def lower(bits, i, stride):
         '''
 
         :return:
@@ -313,7 +319,7 @@ class StridedInterval(object):
         if stride >= 1:
             offset = i % stride
             min = StridedInterval.min_int(bits)
-            min_offset = min % offset
+            min_offset = min % stride
 
             if offset >= min_offset:
                 o = min + (offset - min_offset)
@@ -692,11 +698,6 @@ class StridedInterval(object):
 
         return si
 
-    def reverse(self):
-        # TODO: Finish this!
-        print "valueset.reverse is not implemented"
-        return self.copy()
-
     @normalize_types
     def union(self, b):
         '''
@@ -704,6 +705,8 @@ class StridedInterval(object):
         :param b:
         :return:
         '''
+        if self._reversed != b._reversed:
+            __import__("ipdb").set_trace()
         if self.is_empty():
             return b
         if b.is_empty():
@@ -791,11 +794,39 @@ class StridedInterval(object):
         ret.normalize()
         return ret
 
+    @normalize_types
+    def widen(self, b):
+        ret = None
+
+        if self.is_empty() and not b.is_empty():
+            ret = StridedInterval.top(bits=self.bits)
+
+        elif self.is_empty():
+            ret = b
+
+        elif b.is_empty():
+            ret = self
+
+        else:
+            new_stride = fractions.gcd(self.stride, b.stride)
+            l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) if b.lower_bound < self.lower_bound else self.lower_bound
+            u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) if b.upper_bound > self.upper_bound else self.upper_bound
+            if new_stride == 0:
+                if self.is_integer() and b.is_integer():
+                    ret = StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
+                else:
+                    raise ClaripyOperationError('SI: operands are not reduced.')
+            else:
+                ret = StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+
+        ret.normalize()
+        return ret
+
     def reverse(self):
         si = self.copy()
         si._reversed = not si._reversed
 
         return si
 
-from ..errors import BackendError
+from ..errors import BackendError, ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult

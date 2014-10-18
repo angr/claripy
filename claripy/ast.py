@@ -32,6 +32,12 @@ class A(object):
 		if self.length is not None and self.length < 0:
 			raise ClaripyOperationError("length is negative!")
 
+		#if self.op == 'Reverse':
+		#	a = self.args[0]
+		#	if isinstance(a, E): a = a.ast
+		#	if isinstance(a, A) and a.op == 'Reverse':
+		#		raise ClaripyOperationError("wtf, reverse")
+
 	#
 	# Finalizer functions for different expressions
 	#
@@ -130,6 +136,12 @@ class A(object):
 	def resolve(self, b, result=None):
 		if result is not None and self in result.resolve_cache[b]:
 			return result.resolve_cache[b][self]
+
+		if self.op == 'Reverse':
+			a = self.args[0]
+			if isinstance(a, E): a = a.ast
+			if isinstance(a, A) and a.op == 'Reverse':
+				return a.args[0].resolve(b, result=None)
 
 		args = [ ]
 		#pylint:disable=maybe-no-member

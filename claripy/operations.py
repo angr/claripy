@@ -36,6 +36,7 @@ expression_set_operations = {
     # Set operations
     'union',
     'intersection',
+    'widen'
 }
 
 expression_operations = expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations | expression_set_operations
@@ -105,4 +106,5 @@ length_new_operations = backend_creation_operations
 #
 # Reversibility
 #
-not_invertible = {'Identical'}
+
+not_invertible = {'Identical', 'union'}

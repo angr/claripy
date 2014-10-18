@@ -45,7 +45,7 @@ class Claripy(object):
 
     @staticmethod
     def _collapse_ast(op, args): #pylint:disable=unused-argument
-        raw_args = [ (a.ast if isinstance(a, E) else a) for a in args ]
+        raw_args = [ (a.model if isinstance(a, E) else a) for a in args ]
         types = [ type(a) for a in raw_args ]
 
         if types.count(A) != 0 and not all((a.collapsible for a in raw_args if isinstance(a, A))):

@@ -15,7 +15,7 @@ class E(ana.Storable):
 	_hash_cache = weakref.WeakValueDictionary()
 
 	def __new__(cls, claripy, model, variables, symbolic, **kwargs):
-		h = hash(model)
+		h = cls._hash(model, claripy, variables, symbolic)
 		if h in cls._hash_cache:
 			return cls._hash_cache[h]
 		else:
@@ -111,8 +111,15 @@ class E(ana.Storable):
 			E._hash_counts(a._model, d=d)
 		return d
 
+	@staticmethod
+	def _hash(model, claripy_instance, variables, symbolic):
+		'''
+		This is an internal function used for generating hash
+		'''
+		return hash((model, claripy_instance.name, frozenset(variables), symbolic))
+
 	def __hash__(self):
-		return hash(self._model)
+		return self._hash(self._model, self._claripy, self.variables, self.symbolic)
 
 	def __nonzero__(self):
 		raise ClaripyExpressionError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
