@@ -20,7 +20,7 @@ class A(object):
 		self.op = op
 		self.args = args
 		self.length = None
-		self.collapsible = True
+		self.collapsible = collapsible
 		self._hash = None
 		self._claripy = claripy
 
@@ -28,6 +28,9 @@ class A(object):
 		elif self.op in length_same_operations: self.finalize_same_length()
 		elif self.op in length_none_operations: pass
 		else: raise ClaripyOperationError("no A.finalize_* function found for %s" % self.op)
+
+		if self.length is not None and self.length < 0:
+			raise ClaripyOperationError("length is negative!")
 
 	#
 	# Finalizer functions for different expressions
@@ -79,11 +82,12 @@ class A(object):
 
 		if self.length > self.arg_size(self.args[2]) or \
 						self.args[0] >= self.arg_size(self.args[2]) or \
-						self.args[1] >= self.arg_size(self.args[2]):
+						self.args[1] >= self.arg_size(self.args[2]) or \
+						self.length <= 0:
 			raise ClaripyOperationError("Invalid arguments passed to extract!")
 
 	def finalize_ZeroExt(self):
-		if len(self.args) != 2 or type(self.args[0]) not in (int, long):
+		if len(self.args) != 2 or type(self.args[0]) not in (int, long) or self.args[0] < 0:
 			raise ClaripyOperationError("%s requires two arguments: (int, bitvector)" % self.op)
 
 		length = self.arg_size(self.args[1])
