@@ -49,7 +49,7 @@ class Claripy(object):
         types = [ type(a) for a in raw_args ]
 
         if types.count(A) != 0 and not all((a.collapsible for a in raw_args if isinstance(a, A))):
-                l.debug("Not collapsing because ASTs are present.")
+                l.debug("Not collapsing for op %s because ASTs are present.", op)
                 return False
 
         if op in not_invertible:
@@ -62,7 +62,7 @@ class Claripy(object):
             return True
 
         if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer()]) > 1:
-            l.debug("collapsing the AST for operation %s because there are more than two SIs")
+            l.debug("collapsing the AST for operation %s because there are more than two SIs", op)
             return True
 
         #
