@@ -176,7 +176,7 @@ class Solver(ana.Storable):
 
 		# generate UUIDs for every constraint
 		for c in self.constraints:
-			c.uuid #pylint:disable=pointless-statement
+			if isinstance(c, A): c.make_uuid()
 
 		self._solver_states = { }
 		self._to_add = { }

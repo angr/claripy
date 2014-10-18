@@ -115,13 +115,13 @@ class BackendZ3(SolverBackend):
 		children = [ self._abstract(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(z3.Z3_get_app_num_args(ctx, ast)) ]
 
 		if op_name == 'True':
-			return True
+			return I(self._claripy, True)
 		elif op_name == 'False':
-			return False
+			return I(self._claripy, False)
 		elif op_name == 'BitVecVal':
 			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return BVV(bv_num, bv_size)
+			return I(self._claripy, BVV(bv_num, bv_size))
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -367,7 +367,7 @@ class BackendZ3(SolverBackend):
 
 		for b in self._claripy.model_backends:
 			try:
-				o = b.convert(s)
+				o = I(self._claripy, b.convert(s))
 				break
 			except BackendError:
 				continue
@@ -569,7 +569,7 @@ op_map = {
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast import A
+from ..ast import A, I
 from ..operations import backend_operations
 from ..result import Result
 from ..bv import BVV
