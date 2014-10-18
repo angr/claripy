@@ -12,7 +12,7 @@ def compare_bits(f):
 
 def normalize_types(f):
     @functools.wraps(f)
-    def normalizer(self, o):
+    def normalize_helper(self, o):
         if hasattr(o, '__module__') and o.__module__ == 'z3':
             raise ValueError("this should no longer happen")
         if type(o) in (int, long):
@@ -24,7 +24,7 @@ def normalize_types(f):
             return NotImplemented
         return f(self, o)
 
-    return normalizer
+    return normalize_helper
 
 class BVV(object):
     __slots__ = [ 'bits', '_value', 'mod', 'value' ]
@@ -304,11 +304,14 @@ def Or(*args):
 def Not(b):
     return not b
 
+@normalize_types
+def normalizer(*args):
+    return args
+
 def If(c, t, f):
-    if c:
-        return t
-    else:
-        return f
+    t,f = normalizer(t,f) #pylint:disable=unbalanced-tuple-unpacking
+    if c: return t
+    else: return f
 
 @normalize_types
 @compare_bits

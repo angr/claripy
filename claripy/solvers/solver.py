@@ -121,7 +121,7 @@ class Solver(ana.Storable):
 			e_simp = e
 			for b in self._claripy.model_backends:
 				try:
-					o = b.convert_expr(e_simp)
+					o = b.convert(e_simp)
 					if b.is_false(o):
 						filter_false += 1
 						raise UnsatError("expressions contain False")

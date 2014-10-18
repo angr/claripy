@@ -16,27 +16,98 @@ class A(object):
 
 	__slots__ = [ 'op', 'args', 'why', 'length', 'collapsible', '_claripy', '_hash', '__weakref__' ]
 
-	def __init__(self, claripy, op, args, collapsible=False):
+	def __init__(self, claripy, op, args, collapsible=None, finalize=True):
 		self.op = op
 		self.args = args
 		self.length = None
-		self.collapsible = collapsible
+		self.collapsible = True if collapsible is None else collapsible
 		self._hash = None
 		self._claripy = claripy
 
-		if hasattr(self, 'finalize_'+self.op): getattr(self, 'finalize_'+self.op)()
-		elif self.op in length_same_operations: self.finalize_same_length()
-		elif self.op in length_none_operations: pass
-		else: raise ClaripyOperationError("no A.finalize_* function found for %s" % self.op)
+		if finalize:
+			if hasattr(self, 'finalize_'+self.op): getattr(self, 'finalize_'+self.op)()
+			elif self.op in length_same_operations: self.finalize_same_length()
+			elif self.op in length_none_operations: pass
+			else: raise ClaripyOperationError("no A.finalize_* function found for %s" % self.op)
 
-		if self.length is not None and self.length < 0:
-			raise ClaripyOperationError("length is negative!")
+			if self.length is not None and self.length < 0:
+				raise ClaripyOperationError("length is negative!")
 
-		#if self.op == 'Reverse':
-		#	a = self.args[0]
-		#	if isinstance(a, E): a = a.ast
-		#	if isinstance(a, A) and a.op == 'Reverse':
-		#		raise ClaripyOperationError("wtf, reverse")
+	#
+	# Collapsing and simplification
+	#
+
+	def raw_asts(self):
+		return [ (a.ast if isinstance(a, E) else a) for a in self.args ] #pylint:disable=maybe-no-member
+
+	def raw_models(self):
+		return [ (a.model if isinstance(a, E) else a) for a in self.args ] #pylint:disable=maybe-no-member
+
+	#def _models_for(self, backend):
+	#	for a in self.args:
+	#		backend.convert_expr(a)
+	#		else:
+	#			yield backend.convert(a)
+
+	def _should_collapse(self):
+		raw_args = self.raw_models()
+		types = [ type(a) for a in raw_args ]
+
+		#l.debug("In should_collapse()")
+
+		if types.count(A) != 0 and not all((a.collapsible for a in raw_args if isinstance(a, A))):
+				#l.debug("... not collapsing for op %s because ASTs are present.", self.op)
+				return False
+
+		if self.op in not_invertible:
+			#l.debug("... collapsing the AST for operation %s because it's not invertible", self.op)
+			return True
+
+		constants = sum((types.count(t) for t in (int, long, bool, str, BVV)))
+		if constants == len(raw_args):
+			#l.debug("... collapsing the AST for operation %s because it's full of constants", self.op)
+			return True
+
+		if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer()]) > 1:
+			#l.debug("... collapsing the AST for operation %s because there are more than two SIs", self.op)
+			return True
+
+		#
+		# More complex checks probably go here.
+		#
+
+		# Reversible; don't collapse!
+		#l.debug("not collapsing the AST for operation %s!", self.op)
+		return False
+
+	def collapsed(self):
+		if self._should_collapse() and self.collapsible:
+			#l.debug("Collapsing!")
+			r = self.resolve()
+			if isinstance(r, E): return r.ast
+			else: return r
+		else:
+			return self
+
+	def simplified(self):
+		raw_args = self.raw_asts()
+
+		if self.op == 'Reverse' and isinstance(raw_args[0], A) and raw_args[0].op == 'Reverse':
+			r = raw_args[0].args[0]
+			if isinstance(r, E): return r.ast
+			else: return r
+
+		if self.op in reverse_distributable and all((isinstance(a, A) for a in raw_args)) and set((a.op for a in raw_args)) == { 'Reverse' }:
+			inner_args = (A(self._claripy, self.op, tuple(a.args[0] for a in raw_args)).simplified(),)
+			return A(self._claripy, 'Reverse', inner_args, collapsible=True).simplified()
+		return self
+
+	def reduced(self):
+		a = self.simplified()
+		if isinstance(a, A):
+			return a.collapsed()
+		else:
+			return a
 
 	#
 	# Finalizer functions for different expressions
@@ -126,39 +197,35 @@ class A(object):
 			return o.length
 		else:
 			for b in self._claripy.model_backends:
-				try: return b.call('size', (o,))
+				try: return b.call(A(self._claripy, 'size', (o,), finalize=False))
 				except BackendError: pass
 			return None
 
 	def size(self):
 		return self.length
 
-	def resolve(self, b, result=None):
+	def resolve(self, result=None):
+		for b in self._claripy.model_backends:
+			try: return self.resolve_backend(b, result=result)
+			except BackendError: pass
+		l.debug("all model backends failed for op %s", self.op)
+		return self
+
+	def resolve_backend(self, b, result=None):
 		if result is not None and self in result.resolve_cache[b]:
 			return result.resolve_cache[b][self]
 
-		args = [ ]
-		#pylint:disable=maybe-no-member
-		for a in self.args:
-			if isinstance(a, A):
-				if self.op == 'Reverse' and a.op == 'Reverse':
-					return a.args[0]
-				args.append(a.resolve(b, result=result))
-			else:
-				args.append(a)
-		#pylint:enable=maybe-no-member
-
-		l.debug("trying evaluation with %s", b)
-		r = b.call_expr(self.op, args, result=result)
+		#l.debug("trying evaluation with %s", b)
+		r = b.call(self, result=result)
 		if result is not None:
 			result.resolve_cache[b][self] = r
 		return r
 
 	def __repr__(self):
 		if '__' in self.op:
-			return "%s.%s%s" % (self.args[0], self.op, self.args[1:])
+			return "<A %s.%s%s>" % (self.args[0], self.op, self.args[1:])
 		else:
-			return "%s%s" % (self.op, self.args)
+			return "<A %s%s>" % (self.op, self.args)
 
 	def __hash__(self):
 		if self._hash is None:
@@ -295,5 +362,7 @@ class A(object):
 		return new_ast
 
 from .errors import BackendError, ClaripyOperationError
-from .operations import length_none_operations, length_same_operations
+from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from .expression import E
+from .bv import BVV
+from .vsa import StridedInterval

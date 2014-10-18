@@ -15,6 +15,9 @@ class E(ana.Storable):
 	_hash_cache = weakref.WeakValueDictionary()
 
 	def __new__(cls, claripy, model, variables, symbolic, **kwargs):
+		if isinstance(model, int) and not isinstance(model, bool):
+			__import__('ipdb').set_trace()
+
 		h = cls._hash(model, claripy, variables, symbolic)
 		if h in cls._hash_cache:
 			return cls._hash_cache[h]
@@ -80,7 +83,7 @@ class E(ana.Storable):
 				pass
 
 		if not resolved:
-			r = self._model.resolve(b, result=result)
+			r = self._model.resolve_backend(b, result=result)
 
 		if result is None:
 			self._objects[b] = r
@@ -127,7 +130,9 @@ class E(ana.Storable):
 	def __repr__(self):
 		start = "E"
 		if self.symbolic:
-			start += "S"
+			start += "s"
+		if isinstance(self.ast, A):
+			start += 'a'
 
 		start += "("
 		end = ")"
@@ -168,7 +173,7 @@ class E(ana.Storable):
 			return self._model.size()
 		else:
 			for b in self._claripy.model_backends:
-				try: return b.call_expr('size', (self,))
+				try: return b.call(A(self._claripy, 'size', (self,), finalize=False))
 				except BackendError: pass
 			raise ClaripyExpressionError("unable to determine size of expression")
 	size = __len__
@@ -189,11 +194,11 @@ class E(ana.Storable):
 		else:
 			return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
 
-	def reversed(self, lazy=True):
+	def reversed(self):
 		'''
 		Reverses the expression.
 		'''
-		return self._claripy.Reverse(self, lazy=lazy)
+		return self._claripy.Reverse(self)
 	reverse = reversed
 
 	def __getitem__(self, rng):

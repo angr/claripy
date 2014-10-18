@@ -41,7 +41,7 @@ class BackendConcrete(ModelBackend):
         else:
             return a == b
 
-    def convert(self, a, result=None):
+    def _convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
 
@@ -79,13 +79,13 @@ class BackendConcrete(ModelBackend):
     #
 
     def eval(self, expr, n, result=None):
-        return [ self.convert_expr(expr, result=result if n == 1 else None) ]
+        return [ self.convert(expr, result=result if n == 1 else None) ]
     def max(self, expr, result=None):
-        return self.convert_expr(expr, result=result)
+        return self.convert(expr, result=result)
     def min(self, expr, result=None):
-        return self.convert_expr(expr, result=result)
+        return self.convert(expr, result=result)
     def solution(self, expr, v, result=None):
-        return self.convert_expr(expr, result=result) == v
+        return self.convert(expr, result=result) == v
 
 from ..bv import BVV
 from ..operations import backend_operations

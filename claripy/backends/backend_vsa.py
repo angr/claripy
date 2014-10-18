@@ -85,7 +85,7 @@ def normalize_reversed_arguments(f):
 
         any_reversed_arg = any(arg_reversed)
         for i in xrange(len(raw_args)):
-            raw_args[i] = self.convert_expr(raw_args[i])
+            raw_args[i] = self.convert(raw_args[i])
 
         ret = f(self, *raw_args, **kwargs)
 
@@ -196,7 +196,7 @@ class BackendVSA(ModelBackend):
     def results_exprs(self, solver, extra_constraints, generic_backend):
         return Result(True, self)
 
-    def convert(self, a, result=None):
+    def _convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str }:
             return a
         if type(a) is BVV:
@@ -402,17 +402,17 @@ class BackendVSA(ModelBackend):
 
     def If(self, cond, true_expr, false_expr, result=None):
         exprs = []
-        cond_model = self.convert_expr(cond)
+        cond_model = self.convert(cond)
         if True in cond_model.value:
             exprs.append(true_expr)
         if False in cond_model.value:
             exprs.append(false_expr)
 
         if len(exprs) == 1:
-            expr = self.convert_expr(exprs[0])
+            expr = self.convert(exprs[0])
         else:
             # TODO: How to handle it?
-            expr = IfProxy(cond, self.convert_expr(exprs[0]), self.convert_expr(exprs[1]))
+            expr = IfProxy(cond, self.convert(exprs[0]), self.convert(exprs[1]))
 
         return expr
 

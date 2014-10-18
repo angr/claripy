@@ -43,57 +43,10 @@ class Claripy(object):
         else:
             return E(self, o, set() if variables is None else variables, symbolic)
 
-    @staticmethod
-    def _collapse_ast(op, args): #pylint:disable=unused-argument
-        raw_args = [ (a.model if isinstance(a, E) else a) for a in args ]
-        types = [ type(a) for a in raw_args ]
-
-        if types.count(A) != 0 and not all((a.collapsible for a in raw_args if isinstance(a, A))):
-                l.debug("Not collapsing for op %s because ASTs are present.", op)
-                return False
-
-        if op in not_invertible:
-            l.debug("collapsing the AST for operation %s because it's not invertible", op)
-            return True
-
-        constants = sum((types.count(t) for t in (int, long, bool, str, BVV)))
-        if constants == len(args):
-            l.debug("collapsing the AST for operation %s because it's full of constants", op)
-            return True
-
-        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer()]) > 1:
-            l.debug("collapsing the AST for operation %s because there are more than two SIs", op)
-            return True
-
-        #
-        # More complex checks probably go here.
-        #
-
-        # Reversible; don't collapse!
-        l.debug("not collapsing the AST for operation %s!", op)
-        return False
-
-    def _do_op_raw(self, op, args, raw=False, collapse_ast=None):
-        collapse_ast = self._collapse_ast(op, args) if collapse_ast is None else collapse_ast
-
-        if collapse_ast:
-            for b in self.model_backends:
-                try:
-                    if raw: r = b.call(op, args)
-                    else:   r = b.call_expr(op, args)
-
-                    #l.warning("YAY %s", b)
-                    return r
-                except BackendError:
-                    #l.warning("WTF %s", b, exc_info=True)
-                    continue
-
-        # all backends failed, or we aren't collapsing
-        l.debug("all model backends failed or we were told to preserve the AST for op %s", op)
-        return A(self, op, args)
-
-    def _do_op(self, op, args, variables=None, symbolic=None, raw=False, simplified=False, collapse_ast=None):
-        r = self._do_op_raw(op, args, raw=raw, collapse_ast=collapse_ast)
+    def _do_op(self, op, args, variables=None, symbolic=None, simplified=False, collapsible=None):
+        r = A(self, op, args, collapsible=collapsible).reduced()
+        if isinstance(r, E):
+            return r
 
         if symbolic is None:
             symbolic = any(arg.symbolic if isinstance(arg, E) else False for arg in args)
@@ -107,7 +60,7 @@ class Claripy(object):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return self._do_op('BitVec', (name, size), variables={ name }, raw=True, symbolic=True, simplified=True)
+        return self._do_op('BitVec', (name, size), variables={ name }, symbolic=True, simplified=True)
     BV = BitVec
 
     def BitVecVal(self, *args):
@@ -123,14 +76,7 @@ class Claripy(object):
     def Concat(self, *args): return self._do_op('Concat', args)
     def RotateLeft(self, *args): return self._do_op('RotateLeft', args)
     def RotateRight(self, *args): return self._do_op('RotateRight', args)
-    def Reverse(self, o, lazy=True):
-        if type(o) is not E or not lazy:
-            return self._do_op('Reverse', (o,))
-
-        if isinstance(o.ast, A) and o.ast.op == 'Reverse':
-            return self.wrap(o.ast.args[0])
-        else:
-            return self.wrap(A(self, "Reverse", (o,), collapsible=True), symbolic=o.symbolic, variables=o.variables)
+    def Reverse(self, o): return self._do_op('Reverse', (o,), collapsible=False)
 
     #
     # Strided interval
@@ -210,7 +156,7 @@ class Claripy(object):
 
     def is_true(self, e):
         for b in self.model_backends:
-            try: return b.is_true(b.convert_expr(e))
+            try: return b.is_true(b.convert(e))
             except BackendError: pass
 
         l.warning("Unable to tell the truth-value of this expression")
@@ -218,10 +164,8 @@ class Claripy(object):
 
     def is_false(self, e):
         for b in self.model_backends:
-            try:
-                return b.is_false(b.convert_expr(e))
-            except BackendError:
-                pass
+            try: return b.is_false(b.convert(e))
+            except BackendError: pass
 
         l.warning("Unable to tell the truth-value of this expression")
         return False
@@ -243,7 +187,7 @@ class Claripy(object):
         first = args[0]
         identical = True
         for o in args:
-            i = self._do_op_raw('Identical', (first, o), collapse_ast=True)
+            i = A(self, 'Identical', (first, o)).resolve()
             identical &= i is True
         return identical
 
@@ -267,7 +211,7 @@ class Claripy(object):
 
     def model_object(self, e, result=None):
         for b in self.model_backends:
-            try: return b.convert_expr(e, result=result)
+            try: return b.convert(e, result=result)
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
@@ -275,7 +219,6 @@ from .expression import E
 from .ast import A
 from .backends.backend import BackendError
 from .bv import BVV
-from .vsa import ValueSet, AbstractLocation, StridedInterval
+from .vsa import ValueSet, AbstractLocation
 from .backends import BackendVSA
 from .errors import ClaripyOperationError
-from .operations import not_invertible

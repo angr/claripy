@@ -50,13 +50,13 @@ class Backend(object):
     # can understand.
     #
 
-    def convert(self, r, result=None): #pylint:disable=W0613,R0201
+    def _convert(self, r, result=None): #pylint:disable=W0613,R0201
         '''
         Converts r to something usable by this backend.
         '''
         return r
 
-    def convert_expr(self, expr, result=None): #pylint:disable=R0201
+    def convert(self, expr, result=None): #pylint:disable=R0201
         '''
         Resolves a claripy.E into something usable by the backend.
 
@@ -66,66 +66,58 @@ class Backend(object):
         @returns a backend object
         '''
         if isinstance(expr, A):
-            raise ClaripyTypeError("wtf")
+            #l.debug('converting A')
+            return expr.resolve_backend(self, result=result)
         elif not isinstance(expr, E):
-            return self.convert(expr, result=result)
+            #l.debug('converting non-expr')
+            return self._convert(expr, result=result)
         else:
-            m = expr.model
-            if isinstance(m, A):
-                return expr.model_for(self, result=result)
-            else:
-                return self.convert(m, result=result)
+            #l.debug('converting expr')
+            return expr.model_for(self, result=result)
 
-    def convert_exprs(self, args, result=None):
-        return [ self.convert_expr(a, result=result) for a in args ]
+    def convert_list(self, args, result=None):
+        return [ self.convert(a, result=result) for a in args ]
 
     #
     # These functions provide support for applying operations to expressions.
     #
 
-    def call_expr(self, name, args, result=None):
+    def call(self, ast, result=None):
         '''
-        Calls operation 'name' on expressions 'args'.
+        Calls the operation specified in the AST on the nodes of the AST.
 
         @returns an Expression with the result.
         '''
-        if name in self._op_expr:
-            return self._op_expr[name](*args, result=result)
+        if ast.op in self._op_expr:
+            return self._op_expr[ast.op](*ast.args, result=result)
         else:
-            raw_args = self.convert_exprs(args, result=result)
-            if isinstance(raw_args[0], A) and raw_args[0].op == 'Reverse':
-                if name == 'Reverse':
-                    return self.convert_expr(raw_args[0].args[0])
-                else:
-                    raw_args = self.convert_exprs(raw_args)
-            return self.call(name, self.convert_exprs(args, result=result), result=result)
+            converted = self.convert_list(ast.args, result=result)
 
-    def call(self, name, args, result=None): #pylint:disable=unused-argument
-        if name in self._op_raw_result:
-            obj = self._op_raw_result[name](*args, result=result)
-        elif name in self._op_raw:
-            # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
-            obj = self._op_raw[name](*args)
-        elif not name.startswith("__"):
-            l.debug("backend has no operation %s", name)
-            raise BackendError("backend has no operation %s" % name)
-        else:
-            obj = NotImplemented
+            if ast.op in self._op_raw_result:
+                obj = self._op_raw_result[ast.op](*converted, result=result)
+            elif ast.op in self._op_raw:
+                # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
+                obj = self._op_raw[ast.op](*converted)
+            elif not ast.op.startswith("__"):
+                l.debug("backend has no operation %s", ast.op)
+                raise BackendError("backend has no operation %s" % ast.op)
+            else:
+                obj = NotImplemented
 
-            # first, try the operation with the first guy
-            if hasattr(args[0], name):
-                op = getattr(args[0], name)
-                obj = op(*args[1:])
-            # now try the reverse operation with the second guy
-            if obj is NotImplemented and len(args) == 2 and hasattr(args[1], opposites[name]):
-                op = getattr(args[1], opposites[name])
-                obj = op(args[0])
+                # first, try the operation with the first guy
+                if hasattr(converted[0], ast.op):
+                    op = getattr(converted[0], ast.op)
+                    obj = op(*converted[1:])
+                # now try the reverse operation with the second guy
+                if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[ast.op]):
+                    op = getattr(converted[1], opposites[ast.op])
+                    obj = op(converted[0])
 
-            if obj is NotImplemented:
-                l.debug("%s neither %s nor %s apply in backend.call()", self, name, opposites[name])
-                raise BackendError("unable to apply operation on provided args")
+                if obj is NotImplemented:
+                    l.debug("%s neither %s nor %s apply in backend.call()", self, ast.op, opposites[ast.op])
+                    raise BackendError("unable to apply operation on provided converted")
 
-        return obj
+            return obj
 
     #
     # Abstraction and resolution.
@@ -139,7 +131,7 @@ class Backend(object):
     #
 
     def simplify_expr(self, e):
-        o = self.simplify(self.convert_expr(e))
+        o = self.simplify(self.convert(e))
         # TODO: keep UUID
         return E(self._claripy, self.abstract(o), e.variables, e.symbolic, objects={self: o})
 
@@ -149,4 +141,4 @@ class Backend(object):
 from ..expression import E
 from ..ast import A
 from ..operations import opposites
-from ..errors import BackendError, ClaripyTypeError
+from ..errors import BackendError

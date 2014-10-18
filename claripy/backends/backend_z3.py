@@ -74,7 +74,7 @@ class BackendZ3(SolverBackend):
 	def identical(a, b):
 		return a.eq(b)
 
-	def convert(self, obj, result=None):
+	def _convert(self, obj, result=None):
 		if type(obj) is bv.BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
 		elif obj is True:
@@ -261,7 +261,7 @@ class BackendZ3(SolverBackend):
 		if extra_constraints is not None:
 			s.push()
 			numpop += 1
-			s.add(*[self.convert_expr(e) for e in extra_constraints])
+			s.add(*[self.convert(e) for e in extra_constraints])
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
@@ -309,7 +309,7 @@ class BackendZ3(SolverBackend):
 		if extra_constraints is not None:
 			s.push()
 			numpop += 1
-			s.add(*[self.convert_expr(e) for e in extra_constraints])
+			s.add(*[self.convert(e) for e in extra_constraints])
 
 		while hi-lo > 1:
 			middle = (lo + hi)/2
@@ -357,7 +357,7 @@ class BackendZ3(SolverBackend):
 
 		#print "SIMPLIFYING"
 
-		expr_raw = self.convert_expr(expr)
+		expr_raw = self.convert(expr)
 		symbolic = expr.symbolic
 		variables = expr.variables
 

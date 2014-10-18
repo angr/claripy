@@ -98,10 +98,8 @@ class BackendZ3Parallel(BackendZ3):
 	def max(self, *args, **kwargs):
 		return self._background('max', *args, **kwargs)
 
-	def convert(self, *args, **kwargs):
+	def _convert(self, *args, **kwargs):
 		return self._synchronize('convert', *args, **kwargs)
-	def convert_expr(self, *args, **kwargs):
-		return self._synchronize('convert_expr', *args, **kwargs)
 	def abstract(self, *args, **kwargs):
 		return self._synchronize('abstract', *args, **kwargs)
 	def size(self, *args, **kwargs):
