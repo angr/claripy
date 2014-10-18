@@ -278,4 +278,4 @@ from .bv import BVV
 from .vsa import ValueSet, AbstractLocation, StridedInterval
 from .backends import BackendVSA
 from .errors import ClaripyOperationError
-from .operations import inverses, not_invertible
+from .operations import not_invertible

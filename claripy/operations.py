@@ -105,9 +105,4 @@ length_new_operations = backend_creation_operations
 #
 # Reversibility
 #
-inverses = {
-    '__add__': '__sub__',
-    '__sub__': '__add__',
-}
-
 not_invertible = {'Identical'}
