@@ -50,12 +50,12 @@ class A(ana.Storable):
 
 		self._objects = { }
 		self._simplified = simplified
-		self._errored = set() if errored is None else errored
 
 		if len(args) == 0:
 			raise ClaripyOperationError("AST with no arguments!")
 
 		self.variables = set.union(set(), *(a.variables for a in args if isinstance(a, A))) if variables is None else variables
+		self._errored = set.union(set(), *(a._errored for a in args if isinstance(a, A))) if errored is None else errored
 		self.symbolic = any((a.symbolic for a in args if isinstance(a, A))) if symbolic is None else symbolic
 
 		if finalize:
@@ -260,15 +260,24 @@ class A(ana.Storable):
 	def arg_models(self):
 		return [ (a.resolved if isinstance(a, A) else a) for a in self.args ]
 
-	@property
 	def resolved(self, result=None):
 		for b in self._claripy.model_backends:
 			try: return self.resolved_with(b, result=result)
-			except BackendError: pass
+			except BackendError: self._errored.add(b)
 		l.debug("all model backends failed for op %s", self.op)
 		return self
 
+	@property
+	def model(self):
+		return self.resolved()
+
 	def resolved_with(self, b, result=None):
+		if b in self._objects:
+			return self._objects[b]
+
+		if b in self._errored and result is None:
+			raise BackendError("%s already failed" % b)
+
 		if result is not None and self in result.resolve_cache[b]:
 			return result.resolve_cache[b][self]
 
@@ -276,6 +285,8 @@ class A(ana.Storable):
 		r = b.call(self, result=result)
 		if result is not None:
 			result.resolve_cache[b][self] = r
+		else:
+			self._objects[b] = r
 		return r
 
 	#
