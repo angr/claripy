@@ -154,7 +154,7 @@ class A(object):
 
 	def __hash__(self):
 		if self._hash is None:
-			self._hash = hash((self.op,) + tuple(self.args))
+			self._hash = hash((self.op, tuple(self.args), self._claripy.name))
 		return self._hash
 
 	def __getstate__(self):
