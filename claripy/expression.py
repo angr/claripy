@@ -216,8 +216,8 @@ class E(ana.Storable):
 		else:
 			new_ast, replaced = self.ast._replace(old, new)
 			if replaced:
-				vars = new_ast.variables | new.variables
-				return E(self._claripy, new_ast, vars, new_ast.symbolic), True
+				new_vars = new_ast.variables | new.variables
+				return E(self._claripy, new_ast, new_vars, new_ast.symbolic), True
 			else:
 				return self, False
 
