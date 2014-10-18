@@ -52,7 +52,7 @@ class Claripy(object):
                 l.debug("Not collapsing because ASTs are present.")
                 return False
 
-        if op not in inverses:
+        if op in not_invertible:
             l.debug("collapsing the AST for operation %s because it's not invertible", op)
             return True
 
@@ -234,11 +234,6 @@ class Claripy(object):
         This process is somewhat conservative: False does not necessarily mean that
         it's not identical; just that it can't (easily) be determined to be identical.
         '''
-        if type(args[0].model) is StridedInterval and type(args[1].model) is StridedInterval and args[
-            0].model.upper_bound == 9 and args[1].model.upper_bound == 9:
-            import ipdb
-            ipdb.set_trace()
-
         if not all([isinstance(a, E) for a in args]):
             return False
 
@@ -283,4 +278,4 @@ from .bv import BVV
 from .vsa import ValueSet, AbstractLocation, StridedInterval
 from .backends import BackendVSA
 from .errors import ClaripyOperationError
-from .operations import inverses
+from .operations import inverses, not_invertible

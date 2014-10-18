@@ -109,3 +109,5 @@ inverses = {
     '__add__': '__sub__',
     '__sub__': '__add__',
 }
+
+not_invertible = {'Identical'}
