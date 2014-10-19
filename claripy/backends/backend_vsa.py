@@ -295,19 +295,19 @@ class BackendVSA(ModelBackend):
 
     def constraint_to_si(self, expr):
         def _find_target_expr(m):
-            expr = None
+            expr_ = None
             if isinstance(m, A):
                 if m.op in ['Extract', 'ZeroExt']:
-                    expr = _find_target_expr(m.args[-1])
-                    if expr is None:
+                    expr_ = _find_target_expr(m.args[-1])
+                    if expr_ is None:
                         return m.args[-1]
                     else:
-                        return expr
+                        return expr_
 
             return None
 
         if not isinstance(expr.model, IfProxy):
-            return None
+            return None, None
 
         ifproxy = expr.model
         condition = ifproxy.condition
@@ -334,9 +334,10 @@ class BackendVSA(ModelBackend):
 
             return left_expr, si_right
         else:
-            import ipdb; ipdb.set_trace()
+            # FIXME: Finish it!
+            # import ipdb; ipdb.set_trace()
 
-            return None
+            return None, None
 
 
     #
