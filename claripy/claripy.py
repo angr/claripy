@@ -80,7 +80,7 @@ class Claripy(object):
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
-        return I(self, vs, variables=set(), symbolic=False)
+        return I(self, vs, variables={ vs.name }, symbolic=False)
     VS = ValueSet
 
     # a-loc
@@ -172,7 +172,7 @@ class Claripy(object):
             identical &= i is True
         return identical
 
-    def constraint_to_si(self, expr, bits): #pylint:disable=unused-argument
+    def constraint_to_si(self, expr): #pylint:disable=unused-argument
         '''
         Convert a constraint to SI if possible
         :param expr:
