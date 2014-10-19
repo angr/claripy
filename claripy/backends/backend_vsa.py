@@ -88,8 +88,17 @@ def normalize_reversed_arguments(f):
 
         ret = f(self, *raw_args, **kwargs)
 
+        variables = set()
+        for a in raw_args:
+            if type(a) is A:
+                variables |= a.variables
+            else:
+                variables.add(a.name)
+
+        # inner_i = I(args[0]._claripy, ret, variables=variables)
         if any_reversed_arg:
-            ret = A(args[0]._claripy, 'Reverse', (I(args[0]._claripy, ret),), collapsible=True)
+            return ret.reverse()
+            #ret = A(args[0]._claripy, 'Reverse', (inner_i,), variables=variables, collapsible=False)
 
         return ret
 
@@ -186,6 +195,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_raw['Identical'] = BackendVSA.Identical
+        self._op_raw['Name'] = BackendVSA.Name
         self._op_expr['If'] = self.If
 
     def add_exprs(self, solver, constraints):
@@ -507,6 +517,10 @@ class BackendVSA(ModelBackend):
         assert len(args) == 2
 
         return args[0].widen(args[1])
+
+    @staticmethod
+    def Name(arg):
+        return arg.name
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
