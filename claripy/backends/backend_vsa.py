@@ -73,7 +73,7 @@ def normalize_reversed_arguments(f):
                 arg_reversed.append(True)
                 raw_args.append(args[i].args[0])
                 continue
-            elif isinstance(args[i], A) and type(args[i].args[0]) in { StridedInterval } and args[i].args[0].reversed:
+            elif isinstance(args[i], A) and type(args[i].model) in { StridedInterval } and args[i].model.reversed:
                 arg_reversed.append(True)
                 raw_args.append(args[i].reversed)
                 continue
