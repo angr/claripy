@@ -601,8 +601,6 @@ class StridedInterval(object):
         return lower, upper
 
     def rshift(self, shift_amount):
-        if shift_amount == 6:
-            import ipdb; ipdb.set_trace()
         lower, upper = self._pre_shift(shift_amount)
 
         # Shift the lower_bound and upper_bound by all possible amounts, and
