@@ -6,7 +6,7 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if type(o) is E:
+        if isinstance(o, A):
             o = o.model
 
         assert type(o) is StridedInterval
@@ -96,7 +96,7 @@ class ValueSet(object):
     def eval(self, n):
         results = []
 
-        for region, si in self._si_dict.items():
+        for _, si in self._si_dict.items():
             if len(results) < n:
                 results.extend(si.eval(n))
 
@@ -117,7 +117,7 @@ class ValueSet(object):
         return vs
 
     def is_empty(self):
-        return (len(self._si_dict) == 0)
+        return len(self._si_dict) == 0
 
     def extract(self, high_bit, low_bit):
         new_vs = ValueSet()
@@ -139,5 +139,5 @@ class ValueSet(object):
         print "valueset.reverse is not implemented"
         return self
 
+from ..ast import A
 from .strided_interval import StridedInterval
-from ..expression import E

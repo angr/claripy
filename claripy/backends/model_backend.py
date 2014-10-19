@@ -22,7 +22,7 @@ class ModelBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns a sequence of up to n results (backend objects)
 		'''
-		return self.eval(self.convert_expr(expr), n, result=result)
+		return self.eval(self.convert(expr), n, result=result)
 
 	def eval(self, expr, n, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
@@ -43,7 +43,7 @@ class ModelBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns the minimum possible value of expr (backend object)
 		'''
-		return self.min(self.convert_expr(expr), result=result)
+		return self.min(self.convert(expr), result=result)
 
 	def min(self, expr, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
@@ -63,7 +63,7 @@ class ModelBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns the maximum possible value of expr (backend object)
 		'''
-		return self.max(self.convert_expr(expr), result=result)
+		return self.max(self.convert(expr), result=result)
 
 	def max(self, expr, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
@@ -85,7 +85,7 @@ class ModelBackend(Backend):
 		@returns True if v is a solution of expr, False otherwise
 		'''
 
-		return self.solution(self.convert_expr(expr), self.convert_expr(v), result=result)
+		return self.solution(self.convert(expr), self.convert(v), result=result)
 
 	def solution(self, expr, v, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
@@ -99,16 +99,20 @@ class ModelBackend(Backend):
 
 		raise BackendError("backend doesn't support solution()")
 
-	def has_false(self, o):
+	@staticmethod
+	def has_false(o):
 		return o == False
 
-	def has_true(self, o):
+	@staticmethod
+	def has_true(o):
 		return o == True
 
-	def is_false(self, o):
+	@staticmethod
+	def is_false(o):
 		return o == False
 
-	def is_true(self, o):
+	@staticmethod
+	def is_true(o):
 		return o == True
 
 from ..errors import BackendError

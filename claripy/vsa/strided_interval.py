@@ -1,9 +1,9 @@
 import fractions
 import functools
 import math
-import inspect
+import itertools
 
-from ..expression import E
+from ..ast import A
 from ..bv import BVV
 
 def normalize_types(f):
@@ -12,10 +12,10 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if type(o) is E:
+        if isinstance(o, A):
             o = o.model
-        if type(self) is E:
-            e = e.model
+        if isinstance(self, A):
+            self = o.model
         if type(self) is BVV:
             self = self.value
         if type(o) is BVV:
@@ -35,12 +35,10 @@ def normalize_types(f):
 
     return normalizer
 
-def get_funcname():
-    '''
-    Get the name of the current function. This is a GIANT HACK!!!!
-    :return: a string representing the name of the current function
-    '''
-    return inspect.stack()[1][3]
+si_id_ctr = itertools.count()
+
+def lcm(a, b):
+    return a * b // fractions.gcd(a, b)
 
 class StridedInterval(object):
     '''
@@ -50,6 +48,9 @@ class StridedInterval(object):
     '''
     def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None):
         self._name = name
+
+        if self._name is None:
+            self._name = "%d" % si_id_ctr.next()
 
         self._bits = bits
         self._stride = stride
@@ -75,6 +76,14 @@ class StridedInterval(object):
                                         self._lower_bound if type(self._lower_bound) == str else hex(self._lower_bound),
                                         self._upper_bound if type(self._upper_bound) == str else hex(self._upper_bound),
                                         'R' if self._reversed else '')
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def reversed(self):
+        return self._reversed
 
     def normalize(self):
         if self.lower_bound == self.upper_bound:
@@ -110,6 +119,13 @@ class StridedInterval(object):
                                stride=1,
                                lower_bound=0,
                                upper_bound=StridedInterval.max_int(bits))
+
+    @staticmethod
+    def empty(bits):
+        return StridedInterval(bits=bits,
+                               stride=0,
+                               lower_bound=-1,
+                               upper_bound=-2)
 
     def __len__(self):
         '''
@@ -190,11 +206,11 @@ class StridedInterval(object):
         if self._stride == 0:
             return 0
         else:
-            return ((self._upper_bound - self._lower_bound) / self._stride)
+            return (self._upper_bound - self._lower_bound) / self._stride
 
     @staticmethod
     def highbit(k):
-        return (1 << (k - 1))
+        return 1 << (k - 1)
 
     def copy(self):
         si = StridedInterval(name=self._name,
@@ -209,6 +225,10 @@ class StridedInterval(object):
     def lower_bound(self):
         return self._lower_bound
 
+    @lower_bound.setter
+    def lower_bound(self, value):
+        self._lower_bound = value
+
     @property
     def upper_bound(self):
         return self._upper_bound
@@ -220,6 +240,10 @@ class StridedInterval(object):
     @property
     def stride(self):
         return self._stride
+
+    @stride.setter
+    def stride(self, value):
+        self._stride = value
 
     @property
     def max(self):
@@ -267,14 +291,15 @@ class StridedInterval(object):
     def _to_negative(a, bits):
         return -((1 << bits) - a)
 
-    def upper(self, bits, i, stride):
+    @staticmethod
+    def upper(bits, i, stride):
         '''
 
         :return:
         '''
         if stride >= 1:
             offset = i % stride
-            max = StridedInterval.max_int(bits)
+            max = StridedInterval.max_int(bits) #pylint:disable=redefined-builtin
             max_offset = max % stride
 
             if max_offset >= offset:
@@ -285,15 +310,16 @@ class StridedInterval(object):
         else:
             return StridedInterval.max_int(bits)
 
-    def lower(self, bits, i, stride):
+    @staticmethod
+    def lower(bits, i, stride):
         '''
 
         :return:
         '''
         if stride >= 1:
             offset = i % stride
-            min = StridedInterval.min_int(bits)
-            min_offset = min % offset
+            min = StridedInterval.min_int(bits) #pylint:disable=redefined-builtin
+            min_offset = min % stride
 
             if offset >= min_offset:
                 o = min + (offset - min_offset)
@@ -304,7 +330,7 @@ class StridedInterval(object):
             return StridedInterval.min_int(bits)
 
     def is_empty(self):
-        return (self._stride == 0 and self._lower_bound > self._upper_bound)
+        return self._stride == 0 and self._lower_bound > self._upper_bound
 
     def is_top(self):
         '''
@@ -328,9 +354,9 @@ class StridedInterval(object):
         If this is an integer, i.e. self.lower_bound == self.upper_bound
         :return: True if this is an integer, False otherwise
         '''
-        return (self.lower_bound == self.upper_bound)
+        return self.lower_bound == self.upper_bound
 
-    def add(self, b, allow_overflow=True):
+    def add(self, b, allow_overflow=True): #pylint:disable=unused-argument
         '''
         Operation add
         :param b:
@@ -379,7 +405,7 @@ class StridedInterval(object):
             new_ub = -self.upper_bound
             return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_ub, upper_bound=new_lb)
         else:
-            return StridedInterval.top()
+            return StridedInterval.top(self.bits)
 
     def bitwise_not(self):
         '''
@@ -425,9 +451,9 @@ class StridedInterval(object):
                 tmp1 = (b - m) | (m - 1)
                 tmp2 = (d - m) | (m - 1)
                 if tmp1 >= a:
-                    return (tmp1 | d)
+                    return tmp1 | d
                 elif tmp2 >= c:
-                    return (tmp2 | b)
+                    return tmp2 | b
             m = m >> 1
 
     def bitwise_or(self, b):
@@ -537,7 +563,7 @@ class StridedInterval(object):
             :param expr:
             :return: A tuple of maximum and minimum bits to shift
             '''
-            def round(max, x):
+            def round(max, x): #pylint:disable=redefined-builtin
                 if x < 0 or x > max:
                     return max
                 else:
@@ -626,7 +652,7 @@ class StridedInterval(object):
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
-            elif (self.upper_bound - self.lower_bound <= mask):
+            elif self.upper_bound - self.lower_bound <= mask:
                 l = self.lower_bound & mask
                 u = self.upper_bound & mask
                 # Keep the signs!
@@ -672,11 +698,6 @@ class StridedInterval(object):
 
         return si
 
-    def reverse(self):
-        # TODO: Finish this!
-        print "valueset.reverse is not implemented"
-        return self.copy()
-
     @normalize_types
     def union(self, b):
         '''
@@ -684,6 +705,8 @@ class StridedInterval(object):
         :param b:
         :return:
         '''
+        if self._reversed != b._reversed:
+            __import__("ipdb").set_trace()
         if self.is_empty():
             return b
         if b.is_empty():
@@ -707,11 +730,103 @@ class StridedInterval(object):
             new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
 
+    @normalize_types
+    def intersection(self, b):
+        if self.is_empty() or b.is_empty():
+            return StridedInterval.empty(self.bits)
+
+        assert self.bits == b.bits
+
+        ret = None
+
+        l = max(self.lower_bound, b.lower_bound)
+        u = min(self.upper_bound, b.upper_bound)
+
+        if self.stride == 0 and b.stride == 0:
+            if self.lower_bound == b.lower_bound:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=self.stride,
+                                      lower_bound=self.lower_bound,
+                                      upper_bound=self.upper_bound)
+            else:
+                ret = StridedInterval.empty(self.bits)
+        elif self.stride == 0:
+            if (b.lower_bound - self.lower_bound) % b.stride == 0 and \
+                self.lower_bound >= b.lower_bound and \
+                self.lower_bound <= b.upper_bound:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=self.stride,
+                                      lower_bound=self.lower_bound,
+                                      upper_bound=self.upper_bound)
+            else:
+                ret = StridedInterval.empty(self.bits)
+        elif b.stride == 0:
+            if (b.lower_bound - self.lower_bound) % self.stride == 0 and \
+                b.lower_bound >= self.lower_bound and \
+                b.lower_bound <= self.upper_bound:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=b.stride,
+                                      lower_bound=b.lower_bound,
+                                      upper_bound=b.upper_bound)
+            else:
+                ret = StridedInterval.empty(self.bits)
+        else:
+            new_stride = lcm(self.stride, b.stride)
+            if (
+                self.lower_bound % new_stride == 0 and
+                b.lower_bound % new_stride  == 0
+               ) or \
+                    self.lower_bound == b.lower_bound: # More precise than the implementation in BAP 0.8
+                u = u - ((u - l) % new_stride)
+                if u >= l:
+                    ret = StridedInterval(bits=self.bits,
+                                          stride=new_stride,
+                                          lower_bound=l,
+                                          upper_bound=u)
+                else:
+                    ret = StridedInterval.empty(self.bits)
+            else:
+                ret = StridedInterval(bits=self.bits,
+                                      stride=1,
+                                      lower_bound=l,
+                                      upper_bound=u)
+
+        ret.normalize()
+        return ret
+
+    @normalize_types
+    def widen(self, b):
+        ret = None
+
+        if self.is_empty() and not b.is_empty():
+            ret = StridedInterval.top(bits=self.bits)
+
+        elif self.is_empty():
+            ret = b
+
+        elif b.is_empty():
+            ret = self
+
+        else:
+            new_stride = fractions.gcd(self.stride, b.stride)
+            l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) if b.lower_bound < self.lower_bound else self.lower_bound
+            u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) if b.upper_bound > self.upper_bound else self.upper_bound
+            if new_stride == 0:
+                if self.is_integer() and b.is_integer():
+                    ret = StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
+                else:
+                    raise ClaripyOperationError('SI: operands are not reduced.')
+            else:
+                ret = StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
+
+        ret.normalize()
+        return ret
+
     def reverse(self):
         si = self.copy()
         si._reversed = not si._reversed
 
         return si
 
-from ..errors import BackendError
+from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult

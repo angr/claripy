@@ -54,12 +54,46 @@ def convert_bvv_args(f):
             return BackendVSA.CreateStridedInterval(to_conv=a)
         return a
 
+    @functools.wraps(f)
     def converter(*args):
         new_args = [convert_bvv(a) for a in args]
 
         return f(*new_args)
 
     return converter
+
+def normalize_reversed_arguments(f):
+    @functools.wraps(f)
+    def normalizer(self, *args, **kwargs):
+        arg_reversed = []
+        raw_args = []
+        for i in xrange(len(args)):
+            if isinstance(args[i], A) and args[i].op == 'Reverse':
+                # A delayed reverse
+                arg_reversed.append(True)
+                raw_args.append(args[i].args[0])
+                continue
+            elif isinstance(args[i], A) and type(args[i].args[0]) in { StridedInterval } and args[i].args[0].reversed:
+                arg_reversed.append(True)
+                raw_args.append(args[i].reverse())
+                continue
+
+            # It's not reversed
+            arg_reversed.append(False)
+            raw_args.append(args[i])
+
+        any_reversed_arg = any(arg_reversed)
+        for i in xrange(len(raw_args)):
+            raw_args[i] = self.convert(raw_args[i])
+
+        ret = f(self, *raw_args, **kwargs)
+
+        if any_reversed_arg:
+            ret = A(args[0]._claripy, 'Reverse', (I(args[0]._claripy, ret),), collapsible=True)
+
+        return ret
+
+    return normalizer
 
 def expand_ifproxy(f):
     @functools.wraps(f)
@@ -142,7 +176,8 @@ class IfProxy(object):
 class BackendVSA(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
-        self._make_raw_ops(set(expression_operations), op_module=BackendVSA)
+        self._make_raw_ops(set(expression_operations) - set(expression_set_operations), op_module=BackendVSA)
+        self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
         self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
@@ -150,6 +185,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
+        self._op_raw['Identical'] = BackendVSA.Identical
         self._op_expr['If'] = self.If
 
     def add_exprs(self, solver, constraints):
@@ -158,7 +194,7 @@ class BackendVSA(ModelBackend):
     def results_exprs(self, solver, extra_constraints, generic_backend):
         return Result(True, self)
 
-    def convert(self, a, result=None):
+    def _convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str }:
             return a
         if type(a) is BVV:
@@ -223,25 +259,76 @@ class BackendVSA(ModelBackend):
         else:
             raise NotImplementedError()
 
-    def has_true(self, o):
+    @staticmethod
+    def has_true(o):
         return o == True or \
                (isinstance(o, BoolResult) and True in o.value) or \
                (isinstance(o, IfProxy) and (True in o.trueexpr.value or True in o.falseexpr.value))
 
-    def has_false(self, o):
+    @staticmethod
+    def has_false(o):
         return o == False or \
                (isinstance(o, BoolResult) and False in o.value) or \
                (isinstance(o, IfProxy) and (False in o.trueexpr.value or False in o.falseexpr.value))
 
-    def is_true(self, o):
+    @staticmethod
+    def is_true(o):
         return o == True or \
                (isinstance(o, TrueResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is TrueResult and type(o.falseexpr) is TrueResult))
 
-    def is_false(self, o):
+    @staticmethod
+    def is_false(o):
         return o == False or \
                (isinstance(o, FalseResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
+
+    def constraint_to_si(self, expr):
+        def _find_target_expr(m):
+            expr = None
+            if isinstance(m, A):
+                if m.op in ['Extract', 'ZeroExt']:
+                    expr = _find_target_expr(m.args[-1])
+                    if expr is None:
+                        return m.args[-1]
+                    else:
+                        return expr
+
+            return None
+
+        if not isinstance(expr.model, IfProxy):
+            return None
+
+        ifproxy = expr.model
+        condition = ifproxy.condition
+        condition_ast = condition
+        op = condition_ast.op
+
+        if op == 'ULT':
+            left_expr = condition_ast.args[0]
+            right_expr = condition_ast.args[1]
+            if type(right_expr.model) in {BVV}:
+                # import ipdb; ipdb.set_trace()
+                target_expr = _find_target_expr(left_expr)
+                if target_expr is None:
+                    return None
+                pivoted = condition_ast.pivot(left=target_expr)
+                right_expr = pivoted.args[1]
+                left_expr = pivoted.args[0]
+            # Convert them to SI
+            # si_left = BackendVSA.CreateStridedInterval(bits=left.bits, to_conv=left)
+            si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
+            # Modify the lower bound
+            si_right.lower_bound = StridedInterval.min_int(si_right.bits)
+            si_right.stride = left_expr.model.stride
+
+            return left_expr, si_right
+        else:
+            import ipdb; ipdb.set_trace()
+
+            return None
+
+
     #
     # Operations
     #
@@ -292,6 +379,10 @@ class BackendVSA(ModelBackend):
     def __lshift__(a, b): return a.__lshift__(b)
 
     @staticmethod
+    def Identical(a, b):
+        return BackendVSA.is_true(a == b)
+
+    @staticmethod
     @expand_ifproxy
     @normalize_boolean_arg_types
     def And(a, b):
@@ -310,17 +401,17 @@ class BackendVSA(ModelBackend):
 
     def If(self, cond, true_expr, false_expr, result=None):
         exprs = []
-        cond_model = self.convert_expr(cond)
+        cond_model = self.convert(cond)
         if True in cond_model.value:
             exprs.append(true_expr)
         if False in cond_model.value:
             exprs.append(false_expr)
 
         if len(exprs) == 1:
-            expr = self.convert_expr(exprs[0])
+            expr = self.convert(exprs[0])
         else:
             # TODO: How to handle it?
-            expr = IfProxy(cond, self.convert_expr(exprs[0]), self.convert_expr(exprs[1]))
+            expr = IfProxy(cond, self.convert(exprs[0]), self.convert(exprs[1]))
 
         return expr
 
@@ -330,11 +421,6 @@ class BackendVSA(ModelBackend):
     @expand_ifproxy
     def LShR(expr, shift_amount):
         return expr >> shift_amount
-
-    @staticmethod
-    def Reverse(arg):
-        print 'Reversing %s' % arg
-        return arg.reverse()
 
     @staticmethod
     def Concat(*args):
@@ -396,11 +482,31 @@ class BackendVSA(ModelBackend):
 
         return arg.reverse()
 
-    @staticmethod
-    def union(*args):
+    @normalize_reversed_arguments
+    def union(self, *args, **kwargs):
         assert len(args) == 2
 
-        return args[0].union(args[1])
+        ret = args[0].union(args[1])
+
+        return ret
+
+    @normalize_reversed_arguments
+    def intersection(self, *args, **kwargs):
+        ret = None
+
+        for arg in args:
+            if ret is None:
+                ret = arg
+            else:
+                ret = ret.intersection(arg)
+
+        return ret
+
+    @normalize_reversed_arguments
+    def widen(self, *args, **kwargs):
+        assert len(args) == 2
+
+        return args[0].widen(args[1])
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
@@ -415,7 +521,7 @@ class BackendVSA(ModelBackend):
         :return:
         '''
         if to_conv is not None:
-            if type(to_conv) is E:
+            if isinstance(to_conv, A):
                 to_conv = to_conv.model
             if type(to_conv) is StridedInterval:
                 # No conversion will be done
@@ -451,7 +557,7 @@ class BackendVSA(ModelBackend):
         return StridedInterval.top(bits, signed=signed)
 
 from ..bv import BVV
-from ..expression import E
-from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations
+from ..ast import A, I
+from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..result import Result

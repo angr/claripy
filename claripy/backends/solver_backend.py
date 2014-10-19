@@ -22,7 +22,7 @@ class SolverBackend(Backend):
 		@param c: sequence of claripy.E objects
 		@param s: backend solver object
 		'''
-		return self.add(s, self.convert_exprs(c))
+		return self.add(s, self.convert_list(c))
 
 	def add(self, s, c):
 		'''
@@ -42,7 +42,7 @@ class SolverBackend(Backend):
 								   to s for this solve
 		@returns True or False, depending on satisfiability
 		'''
-		return self.check(s, extra_constraints=self.convert_exprs(extra_constraints))
+		return self.check(s, extra_constraints=self.convert_list(extra_constraints))
 
 	def check(self, s, extra_constraints=()):
 		'''
@@ -64,7 +64,7 @@ class SolverBackend(Backend):
 		@param generic_model: whether or not to create a generic model
 		@returns a Result object
 		'''
-		return self.results(s, extra_constraints=self.convert_exprs(extra_constraints), generic_model=generic_model)
+		return self.results(s, extra_constraints=self.convert_list(extra_constraints), generic_model=generic_model)
 
 	def results(self, s, extra_constraints=(), generic_model=None):
 		'''
@@ -88,7 +88,7 @@ class SolverBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns a sequence of up to n results (backend objects)
 		'''
-		return self.eval(s, self.convert_expr(expr), n, extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.eval(s, self.convert(expr), n, extra_constraints=self.convert_list(extra_constraints), result=result)
 
 	def eval(self, s, expr, n, extra_constraints=(), result=None):
 		'''
@@ -113,7 +113,7 @@ class SolverBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns the minimum possible value of expr (backend object)
 		'''
-		return self.min(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.min(s, self.convert(expr), extra_constraints=self.convert_list(extra_constraints), result=result)
 
 	def min(self, s, expr, extra_constraints=(), result=None):
 		'''
@@ -137,7 +137,7 @@ class SolverBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns the maximum possible value of expr (backend object)
 		'''
-		return self.max(s, self.convert_expr(expr), extra_constraints=self.convert_exprs(extra_constraints), result=result)
+		return self.max(s, self.convert(expr), extra_constraints=self.convert_list(extra_constraints), result=result)
 
 	def max(self, s, expr, extra_constraints=(), result=None):
 		'''

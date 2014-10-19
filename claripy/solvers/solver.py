@@ -121,7 +121,7 @@ class Solver(ana.Storable):
 			e_simp = e
 			for b in self._claripy.model_backends:
 				try:
-					o = b.convert_expr(e_simp)
+					o = b.convert(e_simp)
 					if b.is_false(o):
 						filter_false += 1
 						raise UnsatError("expressions contain False")
@@ -176,7 +176,7 @@ class Solver(ana.Storable):
 
 		# generate UUIDs for every constraint
 		for c in self.constraints:
-			c.uuid #pylint:disable=pointless-statement
+			if isinstance(c, A): c.make_uuid()
 
 		self._solver_states = { }
 		self._to_add = { }
@@ -218,7 +218,7 @@ class Solver(ana.Storable):
 		global cached_evals
 		extra_constraints = self._constraint_filter(extra_constraints)
 
-		if type(e) is not E: raise ValueError("Solver got a non-E for e.")
+		if not isinstance(e, A): raise ValueError("Solver got a non-E for e.")
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
@@ -437,7 +437,8 @@ class Solver(ana.Storable):
 		for s, v in zip([self]+others, merge_values):
 			options.append(self._claripy.And(*([ merge_flag == v ] + s.constraints)))
 		merged.add([self._claripy.Or(*options)])
-		return merged
+
+		return (len(self._claripy.solver_backends) > 0), merged
 
 	def combine(self, others):
 		combined = self.__class__(self._claripy, timeout=self._timeout)
@@ -461,6 +462,6 @@ class Solver(ana.Storable):
 		return results
 
 from ..result import Result
-from ..expression import E
+from ..ast import A
 from ..errors import UnsatError, BackendError, ClaripySolverError
 from .. import Claripies

@@ -9,6 +9,17 @@ expression_arithmetic_operations = {
     '__pow__', '__rpow__',
     '__mod__', '__rmod__',
     '__divmod__', '__rdivmod__',
+    '__neg__',
+    '__pos__',
+    '__abs__',
+}
+
+bin_ops = {
+    '__add__', '__radd__',
+    '__mul__', '__rmul__',
+    '__or__', '__ror__',
+    '__and__', '__rand__',
+    '__xor__', '__rxor__',
 }
 
 expression_comparator_operations = {
@@ -21,9 +32,6 @@ expression_comparator_operations = {
 
 expression_bitwise_operations = {
     # bitwise
-    '__neg__',
-    '__pos__',
-    '__abs__',
     '__invert__',
     '__or__', '__ror__',
     '__and__', '__rand__',
@@ -36,6 +44,7 @@ expression_set_operations = {
     # Set operations
     'union',
     'intersection',
+    'widen'
 }
 
 expression_operations = expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations | expression_set_operations
@@ -101,3 +110,12 @@ length_same_operations = expression_arithmetic_operations | backend_bitwise_oper
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
+
+#
+# Reversibility
+#
+
+not_invertible = {'Identical', 'union'}
+reverse_distributable = { 'widen', 'union', 'intersection',
+    '__invert__', '__or__', '__ror__', '__and__', '__rand__', '__xor__', '__rxor__',
+}

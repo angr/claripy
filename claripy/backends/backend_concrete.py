@@ -34,12 +34,19 @@ class BackendConcrete(ModelBackend):
         else:
             raise BackendError("can't get size of type %s" % type(e))
 
-    def convert(self, a, result=None):
+    @staticmethod
+    def identical(a, b):
+        if type(a) is BVV and type(b) is BVV and a.size() != b.size():
+            return False
+        else:
+            return a == b
+
+    def _convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str, BVV }:
             return a
 
         if not hasattr(a, '__module__') or a.__module__ != 'z3':
-            raise BackendError("BackendConcrete got an unsupported type %s", a.__class__)
+            raise BackendError("BackendConcrete got an unsupported type %s" % a.__class__)
 
         z3_backend = self._claripy.backend_of_type(BackendZ3)
         if z3_backend is None:
@@ -72,13 +79,13 @@ class BackendConcrete(ModelBackend):
     #
 
     def eval(self, expr, n, result=None):
-        return [ self.convert_expr(expr, result=result if n == 1 else None) ]
+        return [ self.convert(expr, result=result if n == 1 else None) ]
     def max(self, expr, result=None):
-        return self.convert_expr(expr, result=result)
+        return self.convert(expr, result=result)
     def min(self, expr, result=None):
-        return self.convert_expr(expr, result=result)
+        return self.convert(expr, result=result)
     def solution(self, expr, v, result=None):
-        return self.convert_expr(expr, result=result) == v
+        return self.convert(expr, result=result) == v
 
 from ..bv import BVV
 from ..operations import backend_operations
