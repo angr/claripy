@@ -50,7 +50,7 @@ class StridedInterval(object):
         self._name = name
 
         if self._name is None:
-            self._name = "%d" % si_id_ctr.next()
+            self._name = "SI_%d" % si_id_ctr.next()
 
         self._bits = bits
         self._stride = stride
