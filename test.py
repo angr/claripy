@@ -690,6 +690,25 @@ def test_vsa():
     si_concat = b.convert(part1.concat(part2))
     nose.tools.assert_equal(si_concat == si.model, TrueResult())
 
+    # Extracting a SI
+    si = clrp.SI(bits=64, stride=0x9, lower_bound=0x1, upper_bound=0xa)
+    part1 = b.convert(si[63 : 32])
+    part2 = b.convert(si[31 : 0])
+    nose.tools.assert_equal(part1 == clrp.SI(bits=32, stride=0, lower_bound=0x0, upper_bound=0x0).model, TrueResult())
+    nose.tools.assert_equal(part2 == clrp.SI(bits=32, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
+
+    # Concatenating two SIs
+    si_concat = b.convert(part1.concat(part2))
+    nose.tools.assert_equal(si_concat == si.model, TrueResult())
+
+    # Zero-Extend the low part
+    si_zeroextended = b.convert(part2.zero_extend(32))
+    nose.tools.assert_equal(si_zeroextended == clrp.SI(bits=64, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
+
+    # Extract from the result above
+    si_extracted = b.convert(si_zeroextended.extract(31, 0))
+    nose.tools.assert_equal(si_extracted == clrp.SI(bits=32, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
+
     # Union
     si_union_1 = b.convert(si1.union(si2))
     nose.tools.assert_equal(si_union_1 == clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())

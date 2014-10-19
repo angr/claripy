@@ -221,6 +221,15 @@ class StridedInterval(object):
         si._reversed = self._reversed
         return si
 
+    def nameless_copy(self):
+        si = StridedInterval(name=None,
+                             bits=self.bits,
+                             stride=self.stride,
+                             lower_bound=self.lower_bound,
+                             upper_bound=self.upper_bound)
+        si._reversed = self._reversed
+        return si
+
     @property
     def lower_bound(self):
         return self._lower_bound
@@ -574,7 +583,7 @@ class StridedInterval(object):
 
             assert type(expr) is StridedInterval
 
-            if expr.stride == 1 and expr.lower_bound == expr.upper_bound:
+            if expr.is_integer():
                 return (round(self.bits, expr.lower_bound),
                         round(self.bits, expr.lower_bound))
             else:
@@ -592,6 +601,8 @@ class StridedInterval(object):
         return lower, upper
 
     def rshift(self, shift_amount):
+        if shift_amount == 6:
+            import ipdb; ipdb.set_trace()
         lower, upper = self._pre_shift(shift_amount)
 
         # Shift the lower_bound and upper_bound by all possible amounts, and
@@ -611,7 +622,7 @@ class StridedInterval(object):
         # of sign-changes.
 
         return StridedInterval(bits=self.bits,
-                               stride=max(self.stride >> upper, 0),
+                               stride=max(self.stride >> upper, 1),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
 
@@ -635,7 +646,7 @@ class StridedInterval(object):
         # of sign-changes.
 
         return StridedInterval(bits=self.bits,
-                               stride=max(self.stride << lower, 0),
+                               stride=max(self.stride << lower, 1),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
 
@@ -669,14 +680,23 @@ class StridedInterval(object):
 
     def concat(self, b):
         # Zero-extend
-        self._bits += b.bits
+        a = self.nameless_copy()
+        a._bits += b.bits
 
-        new_si = self.lshift(b.bits)
+        new_si = a.lshift(b.bits)
         new_b = b.copy()
         # Extend b
         new_b._bits = new_si.bits
 
-        return new_si.bitwise_or(new_b)
+        if new_si.is_integer():
+            # We can be more precise!
+            new_si._bits += new_b.bits
+            new_si._stride = new_b.stride
+            new_si._lower_bound = new_si.lower_bound + b.lower_bound
+            new_si._upper_bound = new_si.upper_bound + b.upper_bound
+            return new_si
+        else:
+            return new_si.bitwise_or(new_b)
 
     def extract(self, high_bit, low_bit):
         assert low_bit >= 0
