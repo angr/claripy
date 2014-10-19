@@ -75,7 +75,7 @@ def normalize_reversed_arguments(f):
                 continue
             elif isinstance(args[i], A) and type(args[i].args[0]) in { StridedInterval } and args[i].args[0].reversed:
                 arg_reversed.append(True)
-                raw_args.append(args[i].reverse())
+                raw_args.append(args[i].reversed)
                 continue
 
             # It's not reversed
@@ -195,7 +195,7 @@ class BackendVSA(ModelBackend):
         self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_raw['Identical'] = BackendVSA.Identical
-        self._op_raw['Name'] = BackendVSA.Name
+        self._op_raw['name'] = BackendVSA.name
         self._op_expr['If'] = self.If
 
     def add_exprs(self, solver, constraints):
@@ -518,8 +518,9 @@ class BackendVSA(ModelBackend):
 
         return args[0].widen(args[1])
 
-    @staticmethod
-    def Name(arg):
+    def name(self, arg, result=None):
+        if not isinstance(arg, StridedInterval) and not isinstance(arg, ValueSet):
+            raise BackendError("can't tell name of %s" % type(arg))
         return arg.name
 
     @staticmethod

@@ -178,3 +178,35 @@ class SolverBackend(Backend):
 		'''
 
 		return self.check_exprs(s, extra_constraints=(expr==v,) + extra_constraints)
+
+	def size_expr(self, a, result=None):
+		'''
+		This should return the size of an expression.
+
+		@param a: the claripy A object
+		'''
+		return self.size(self.convert(a, result=result))
+
+	def size(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+		'''
+		This should return the size of an object.
+
+		@param o: the (backend-native) object
+		'''
+		raise NotImplementedError("backend doesn't support size")
+
+	def name_expr(self, a, result=None):
+		'''
+		This should return the name of an expression.
+
+		@param a: the claripy A object
+		'''
+		return self.name(self.convert(a, result=result))
+
+	def name(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+		'''
+		This should return the name of an object.
+
+		@param o: the (backend-native) object
+		'''
+		raise NotImplementedError("backend doesn't support name")

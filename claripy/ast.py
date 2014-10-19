@@ -26,10 +26,18 @@ class A(ana.Storable):
 
     def __new__(cls, claripy, op, args, **kwargs):
         h = cls._calc_hash(claripy, op, args)
+        #print "got hash",h
+        #print "... claripy:", hash(claripy.name)
+        #print "... op (%r):" % op, hash(op)
+        #print "... args (%r):" % (args,), hash(args)
+
         if h in cls._hash_cache:
+            #print "... present!"
             return cls._hash_cache[h]
         else:
+            print "... not present"
             self = super(A, cls).__new__(cls, claripy, op, args, **kwargs)
+            self._hash = h
             cls._hash_cache[h] = self
             return self
 
@@ -42,7 +50,7 @@ class A(ana.Storable):
             pass
 
         #if op == '__xor__' and len(args) != 2:
-        #	import ipdb; ipdb.set_trace()
+        #   import ipdb; ipdb.set_trace()
 
         self.op = op
         self.args = args
@@ -56,6 +64,12 @@ class A(ana.Storable):
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
+
+        if self.op != 'I':
+            for a in args:
+                if not isinstance(a, A) and type(a) not in (int, long, bool, str, unicode):
+                    #import ipdb; ipdb.set_trace()
+                    l.warning(ClaripyOperationError("Un-wrapped native object of type %s!", type(a)))
 
         self.variables = set.union(set(), *(a.variables for a in args if isinstance(a, A))) if variables is None else variables
         self._errored = set.union(set(), *(a._errored for a in args if isinstance(a, A))) if errored is None else errored
@@ -85,14 +99,24 @@ class A(ana.Storable):
         return self._hash
 
     #
+    # Serialization support
+    #
+
+    def _ana_getstate(self):
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._claripy.name
+    def _ana_setstate(self, state):
+        op, args, length, variables, symbolic, clrp = state
+        A.__init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
+
+    #
     # Collapsing and simplification
     #
 
     #def _models_for(self, backend):
-    #	for a in self.args:
-    #		backend.convert_expr(a)
-    #		else:
-    #			yield backend.convert(a)
+    #   for a in self.args:
+    #       backend.convert_expr(a)
+    #       else:
+    #           yield backend.convert(a)
 
     def _should_collapse(self):
         raw_args = self.arg_models()
@@ -309,16 +333,6 @@ class A(ana.Storable):
         return 1 + max((a.depth() for a in self.args if isinstance(a, A)))
 
     #
-    # Serialization support
-    #
-
-    def _ana_getstate(self):
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._claripy.name
-    def _ana_setstate(self, state):
-        op, args, length, variables, symbolic, clrp = state
-        A.__init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
-
-    #
     # Various AST modifications (replacements, pivoting)
     #
 
@@ -493,9 +507,26 @@ class I(A):
     '''
 
     def __new__(cls, claripy, model, **kwargs):
+        name = cls._name(claripy, model)
+        variables = kwargs.get('variables', set())
+        if name is not None:
+            variables.add(name)
+        kwargs['variables'] = variables
+
         return A.__new__(cls, claripy, 'I', (model,), **kwargs)
+
     def __init__(self, claripy, model, **kwargs):
         A.__init__(self, claripy, 'I', (model,), **kwargs)
+
+    @staticmethod
+    def _name(clrp, a):
+        for b in clrp.model_backends:
+            try:
+                name = b.name_expr(a)
+                return name
+            except BackendError:
+                pass
+
 
     def resolved(self, result=None): return self.args[0]
     def resolved_with(self, b, result=None): return b.convert(self.args[0])
@@ -505,7 +536,7 @@ class I(A):
     def _finalize_I(self):
         for b in self._claripy.model_backends:
             try:
-                self.length = b.size(self.args[0])
+                self.length = b.size_expr(self.args[0])
                 break
             except BackendError: pass
         else:

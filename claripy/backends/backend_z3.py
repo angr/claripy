@@ -54,12 +54,15 @@ class BackendZ3(SolverBackend):
 		self._op_raw['Reverse'] = self.reverse
 		self._op_raw['Identical'] = self.identical
 
-	@staticmethod
-	def size(e):
+	def size(self, e, result=None):
 		if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
 			l.debug("Unable to determine length of value of type %s", e.__class__)
 			raise BackendError("Unable to determine length of value of type %s" % e.__class__)
 		return e.size()
+
+	def name(self, e, result=None): #pylint:disable=unused-argument
+		l.warning("BackendZ3.name() called. This is weird.")
+		raise BackendError("name is not implemented yet")
 
 	@staticmethod
 	def reverse(a):

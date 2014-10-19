@@ -13,6 +13,7 @@ class BackendConcrete(ModelBackend):
         ModelBackend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._op_raw['size'] = self.size
+        self._op_raw['name'] = self.name
         self._op_raw_result['BitVec'] = self.BitVec
 
     def BitVec(self, name, size, result=None): #pylint:disable=W0613,R0201
@@ -25,14 +26,16 @@ class BackendConcrete(ModelBackend):
         else:
             return result.model[name]
 
-    @staticmethod
-    def size(e):
+    def size(self, e, result=None):
         if type(e) is bool:
             return None
         if type(e) in { BVV }:
             return e.size()
         else:
             raise BackendError("can't get size of type %s" % type(e))
+
+    def name(self, e, result=None): #pylint:disable=unused-argument,no-self-use
+        return None
 
     @staticmethod
     def identical(a, b):

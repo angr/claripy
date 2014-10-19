@@ -115,4 +115,36 @@ class ModelBackend(Backend):
 	def is_true(o):
 		return o == True
 
+	def size_expr(self, a, result=None):
+		'''
+		This should return the size of an expression.
+
+		@param a: the claripy A object
+		'''
+		return self.size(self.convert(a, result=result))
+
+	def size(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+		'''
+		This should return the size of an object.
+
+		@param o: the (backend-native) object
+		'''
+		raise BackendError("backend doesn't support solution()")
+
+	def name_expr(self, a, result=None):
+		'''
+		This should return the name of an expression.
+
+		@param a: the claripy A object
+		'''
+		return self.name(self.convert(a, result=result))
+
+	def name(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+		'''
+		This should return the name of an object.
+
+		@param o: the (backend-native) object
+		'''
+		raise BackendError("backend doesn't support solution()")
+
 from ..errors import BackendError
