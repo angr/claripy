@@ -166,11 +166,18 @@ class Claripy(object):
             return True
 
         first = args[0]
-        identical = True
+        identical = None
         for o in args:
-            i = A(self, 'Identical', (first, o)).model
-            identical &= i is True
-        return identical
+            for b in self.model_backends:
+                try:
+                    i = b.identical_expr(first, o)
+                    if identical is None:
+                        identical = True
+                    identical &= i is True
+                except BackendError:
+                    pass
+
+        return identical is True
 
     def constraint_to_si(self, expr): #pylint:disable=unused-argument
         '''
