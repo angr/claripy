@@ -23,7 +23,7 @@ class Backend(object):
                 if hasattr(op_module, o):
                     self._op_raw[o] = getattr(op_module, o)
                 else:
-                    l.warning("Operation %s not in op_module %s.", o, op_module)
+                    l.debug("Operation %s not in op_module %s.", o, op_module)
 
     def _make_expr_ops(self, op_list, op_dict=None, op_class=None):
         '''
