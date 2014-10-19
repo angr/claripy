@@ -392,6 +392,7 @@ class BackendVSA(ModelBackend):
     @staticmethod
     def Identical(a, b):
         return BackendVSA.is_true(a == b)
+    identical = Identical
 
     @staticmethod
     @expand_ifproxy

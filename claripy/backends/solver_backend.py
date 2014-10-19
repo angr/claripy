@@ -210,3 +210,25 @@ class SolverBackend(Backend):
 		@param o: the (backend-native) object
 		'''
 		raise NotImplementedError("backend doesn't support name")
+
+	def identical_expr(self, a, b, result=None):
+		'''
+		This should return whether a is identical to b. Of course, this isn't always
+		clear. A True should mean that it is definitely identical. False
+		means that, conservitivly, it might not be.
+
+		@param a: a claripy A object
+		@param b: a claripy A object
+		'''
+		return self.identical(self.convert(a, result=result), self.convert(b, result=result))
+
+	def identical(self, a, b, result=None): #pylint:disable=no-self-use,unused-argument
+		'''
+		This should return whether a is identical to b. Of course, this isn't always
+		clear. A True should mean that it is definitely identical. False
+		means that, conservitivly, it might not be.
+
+		@param a: the (backend-native) object
+		@param b: the (backend-native) object
+		'''
+		raise NotImplementedError("backend doesn't support name")

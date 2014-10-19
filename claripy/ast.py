@@ -4,6 +4,173 @@ l = logging.getLogger("claripy.ast")
 
 import ana
 
+#
+#
+# Finalizer functions for different expressions
+#
+#
+
+def _arg_size(o):
+    if isinstance(o, A): return o.length
+    else: return None
+
+def _typefixer(a, t):
+    if t in ('I', 'L', 'N'):
+        if not type(a) in (int, long):
+            raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
+        return int(a) if t == 'I' else long(a) if t == 'L' else a
+    else:
+        if not isinstance(a, t):
+            raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
+        return a
+
+def _typechecker(op, args, types):
+    if len(args) != len(types):
+        raise ClaripyOperationError("%d args passed to %s (need %d)" % (len(args), op, len(types)))
+    return tuple(_typefixer(a,t) for a,t in zip(args, types))
+
+#pylint:disable=unused-argument
+
+def _finalize_Identical(claripy, op, args, kwargs):
+    kwargs['length'] = None
+    return op, args, kwargs
+
+def _finalize_BoolVal(claripy, op, args, kwargs):
+    args = _typechecker(op, args, (bool,))
+    return op, args, kwargs
+
+def _finalize_BitVec(claripy, op, args, kwargs):
+    args = _typechecker(op, args, (str, 'I'))
+    kwargs['length'] = args[1]
+    return op, args, kwargs
+
+def _finalize_BitVecVal(claripy, op, args, kwargs):
+    args = _typechecker(op, args, ('N', 'I'))
+    if args[1] <= 0:
+        raise ClaripyOperationError("Invalid arguments to BitVecVal")
+    kwargs['length'] = args[1]
+    return op, args, kwargs
+
+def _finalize_If(claripy, op, args, kwargs):
+    '''
+    An If requires a boolean condition, and at least one case with a length. If both
+    cases have lengths, they must be equal.
+    '''
+
+    if len(args) != 3:
+        raise ClaripyOperationError("If requires a condition and two cases.")
+
+    lengths = set(_arg_size(a) for a in args[1:]) - { None }
+    if len(lengths) != 1 or _arg_size(args[0]) is not None:
+        raise ClaripyOperationError("If must have equal-sized cases and a boolean condition")
+
+    kwargs['length'] = lengths.pop()
+    return op, args, kwargs
+
+def _finalize_Concat(claripy, op, args, kwargs):
+    lengths = [ _arg_size(a) for a in args ]
+    if None in lengths or len(args) <= 1:
+        raise ClaripyOperationError("Concat must have at >= two args, and all must have lengths.")
+
+    kwargs['length'] = sum(lengths)
+    return op, args, kwargs
+
+def _finalize_Extract(claripy, op, args, kwargs):
+    args = _typechecker(op, args, ('I', 'I', A))
+    if len(args) != 3 or type(args[0]) not in (int, long) or type(args[1]) not in (int, long):
+        raise ClaripyOperationError("Invalid arguments passed to extract!")
+
+    length = args[0]-args[1]+1
+    old_length = _arg_size(args[2])
+    if length > old_length or args[0] >= old_length or args[1] >= old_length or length <= 0:
+        raise ClaripyOperationError("Invalid sizes passed to extract!")
+
+    kwargs['length'] = length
+    return op, args, kwargs
+
+def _finalize_ZeroExt(claripy, op, args, kwargs):
+    args = _typechecker(op, args, ('I', A))
+    length = _arg_size(args[1])
+    if length is None:
+        raise ClaripyOperationError("extending an object without a length")
+
+    kwargs['length'] = length + args[0]
+    return op, args, kwargs
+
+_finalize_SignExt = _finalize_ZeroExt
+
+def _finalize_same_length(claripy, op, args, kwargs):
+    '''
+    This is a generic finalizer. It requires at least one argument to have a length,
+    and all arguments that *do* have a length to have the same length.
+    '''
+
+    lengths = set(_arg_size(a) for a in args) - { None }
+    if len(lengths) != 1:
+        raise ClaripyOperationError("Arguments to %s must have equal (and existing) sizes", op)
+
+    kwargs['length'] = lengths.pop()
+    return op, args, kwargs
+
+def _finalize_I(claripy, op, args, kwargs):
+    for b in claripy.model_backends:
+        try:
+            kwargs['length'] = b.size_expr(args[0])
+            break
+        except BackendError: pass
+    else:
+        kwargs['length'] = None
+
+    for b in claripy.model_backends:
+        try:
+            name = b.name_expr(args[0])
+            if name is not None:
+                variables = kwargs.get('variables', set())
+                variables.add(name)
+                kwargs['variables'] = variables
+            break
+        except BackendError: pass
+
+    return op, args, kwargs
+
+def _finalize(claripy, op, args, kwargs):
+    variables = kwargs.get('variables', None)
+    if variables is None:
+        variables = set.union(set(), *(a.variables for a in args if isinstance(a, A)))
+    kwargs['variables'] = variables
+
+    symbolic = kwargs.get('symbolic', None)
+    if symbolic is None:
+        symbolic = any((a.symbolic for a in args if isinstance(a, A)))
+    kwargs['symbolic'] = symbolic
+
+    errored = kwargs.get('errored', None)
+    if errored is None:
+        errored = set.union(set(), *(a._errored for a in args if isinstance(a, A)))
+    kwargs['errored'] = errored
+
+    nolength = op == 'I'
+    if '_finalize_' + op in globals():
+        o,a,k = globals()['_finalize_' + op](claripy, op, args, kwargs)
+    elif op in length_same_operations:
+        o,a,k = _finalize_same_length(claripy, op, args, kwargs)
+    elif op in length_none_operations:
+        o,a,k = op, args, kwargs
+        nolength = True
+    else:
+        raise ClaripyOperationError("no A._finalize_* function found for %s" % op)
+
+    length = k.get('length', None)
+    if not nolength and (length is None or length < 0):
+        raise ClaripyOperationError("invalid length!")
+
+    k['length'] = length
+    k['variables'] = kwargs['variables']
+    return o,tuple(a),k
+
+#pylint:enable=unused-argument
+
+
 class A(ana.Storable):
     '''
     An A(ST) tracks a tree of operations on arguments. It has the following methods:
@@ -25,39 +192,46 @@ class A(ana.Storable):
     UNSIMPLIFIED=0
 
     def __new__(cls, claripy, op, args, **kwargs):
-        h = cls._calc_hash(claripy, op, args)
+        f_op, f_args, f_kwargs = _finalize(claripy, op, args, kwargs)
+        h = A._calc_hash(claripy, f_op, f_args, f_kwargs)
+
+        #if f_kwargs['length'] is None:
+        #   __import__('ipdb').set_trace()
+
+
         #print "got hash",h
         #print "... claripy:", hash(claripy.name)
         #print "... op (%r):" % op, hash(op)
         #print "... args (%r):" % (args,), hash(args)
 
         if h in cls._hash_cache:
-            #print "... present!"
             return cls._hash_cache[h]
         else:
-            print "... not present"
-            self = super(A, cls).__new__(cls, claripy, op, args, **kwargs)
+            self = super(A, cls).__new__(cls, claripy, f_op, f_args, **f_kwargs)
+            self.__a_init__(claripy, f_op, f_args, **f_kwargs)
             self._hash = h
             cls._hash_cache[h] = self
             return self
 
-    def __init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, finalize=True, simplified=0, errored=None):
-        try:
-            # already been initialized, and the stupid __new__ call is calling it again...
-            op = self.op # pylint:disable=access-member-before-definition
-            return
-        except AttributeError:
-            pass
+    def __init__(self, *args, **kwargs):
+        pass
 
-        #if op == '__xor__' and len(args) != 2:
-        #   import ipdb; ipdb.set_trace()
+    @staticmethod
+    def _calc_hash(claripy, op, args, k):
+        return hash((claripy.name, op, args, k['symbolic'], frozenset(k['variables']), k['length']))
 
+    #pylint:disable=attribute-defined-outside-init
+    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None):
         self.op = op
         self.args = args
         self.length = length
+        self.variables = variables
+        self.symbolic = symbolic
+        self.length = length
+
         self._collapsible = True if collapsible is None else collapsible
-        self._hash = None
         self._claripy = claripy
+        self._errored = errored if errored is not None else set()
 
         self._objects = { }
         self._simplified = simplified
@@ -65,37 +239,19 @@ class A(ana.Storable):
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
 
-        if self.op != 'I':
-            for a in args:
-                if not isinstance(a, A) and type(a) not in (int, long, bool, str, unicode):
-                    #import ipdb; ipdb.set_trace()
-                    l.warning(ClaripyOperationError("Un-wrapped native object of type %s!", type(a)))
+        #if self.op != 'I':
+        #   for a in args:
+        #       if not isinstance(a, A) and type(a) not in (int, long, bool, str, unicode):
+        #           import ipdb; ipdb.set_trace()
+        #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
+    #pylint:enable=attribute-defined-outside-init
 
-        self.variables = set.union(set(), *(a.variables for a in args if isinstance(a, A))) if variables is None else variables
-        self._errored = set.union(set(), *(a._errored for a in args if isinstance(a, A))) if errored is None else errored
-        self.symbolic = any((a.symbolic for a in args if isinstance(a, A))) if symbolic is None else symbolic
-
-        if finalize:
-
-            if hasattr(self, '_finalize_'+self.op): getattr(self, '_finalize_'+self.op)()
-            elif self.op in length_same_operations: self._finalize_same_length()
-            elif self.op in length_none_operations: pass
-            else: raise ClaripyOperationError("no A._finalize_* function found for %s" % self.op)
-
-            if self.length is not None and self.length < 0:
-                raise ClaripyOperationError("length is negative!")
 
     @property
     def uuid(self):
         return self.ana_uuid
 
-    @staticmethod
-    def _calc_hash(clrp, op, args):
-        return hash((op, tuple(args), clrp.name))
-
     def __hash__(self):
-        if self._hash is None:
-            self._hash = self._calc_hash(self._claripy, self.op, self.args)
         return self._hash
 
     #
@@ -103,10 +259,12 @@ class A(ana.Storable):
     #
 
     def _ana_getstate(self):
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._claripy.name
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._claripy.name, self._hash
     def _ana_setstate(self, state):
-        op, args, length, variables, symbolic, clrp = state
-        A.__init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
+        op, args, length, variables, symbolic, clrp, h = state
+        A.__a_init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
+        self._hash = h
+        A._hash_cache[h] = self
 
     #
     # Collapsing and simplification
@@ -155,7 +313,7 @@ class A(ana.Storable):
             #l.debug("Collapsing!")
             r = self.model
             if not isinstance(r, A):
-                return I(self._claripy, r, length=self.length, finalize=False, variables=self.variables, symbolic=self.symbolic)
+                return I(self._claripy, r, length=self.length, variables=self.variables, symbolic=self.symbolic)
             else:
                 return r
         else:
@@ -183,100 +341,8 @@ class A(ana.Storable):
             return a
 
     #
-    # Finalizer functions for different expressions
-    #
-
-    @staticmethod
-    def _typefixer(a, t):
-        if t in ('I', 'L', 'N'):
-            if not type(a) in (int, long):
-                raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
-            return int(a) if t == 'I' else long(a) if t == 'L' else a
-        else:
-            if not isinstance(a, t):
-                raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
-            return a
-
-    def _typechecker(self, *types):
-        if len(self.args) != len(types):
-            raise ClaripyOperationError("too few arguments (%d instead of %d) passed to %s" % (len(self.args), len(types), self.op))
-
-        self.args = tuple(self._typefixer(a,t) for a,t in zip(self.args, types))
-
-    def _finalize_Identical(self):
-        self.length = 0
-
-    def _finalize_BoolVal(self):
-        self._typechecker(bool)
-
-    def _finalize_BitVec(self):
-        self._typechecker(str, 'I')
-        self.length = self.args[1]
-
-    def _finalize_BitVecVal(self):
-        self._typechecker('N', 'I')
-        if self.args[1] <= 0:
-            raise ClaripyOperationError("Invalid arguments to BitVecVal")
-        self.length = self.args[1]
-
-    def _finalize_If(self):
-        '''
-        An If requires a boolean condition, and at least one case with a length. If both
-        cases have lengths, they must be equal.
-        '''
-
-        if len(self.args) != 3:
-            raise ClaripyOperationError("If requires a condition and two cases.")
-        lengths = set(self.arg_size(a) for a in self.args[1:]) - { None }
-        if len(lengths) != 1 or self.arg_size(self.args[0]) is not None:
-            raise ClaripyOperationError("If needs must have equal-sized cases and a boolean condition")
-        self.length = lengths.pop()
-
-    def _finalize_Concat(self):
-        lengths = [ self.arg_size(a) for a in self.args ]
-        if None in lengths or len(self.args) <= 1:
-            raise ClaripyOperationError("Concat must have at >= two args, and all must have lengths.")
-        self.length = sum(lengths)
-
-    def _finalize_Extract(self):
-        self._typechecker('I', 'I', A)
-        if len(self.args) != 3 or type(self.args[0]) not in (int, long) or type(self.args[1]) not in (int, long):
-            raise ClaripyOperationError("Invalid arguments passed to extract!")
-
-        self.length = self.args[0]-self.args[1]+1
-        old_length = self.arg_size(self.args[2])
-        if self.length > old_length or self.args[0] >= old_length or self.args[1] >= old_length or self.length <= 0:
-            raise ClaripyOperationError("Invalid sizes passed to extract!")
-
-    def _finalize_ZeroExt(self):
-        self._typechecker('I', A)
-        length = self.arg_size(self.args[1])
-        if length is None:
-            raise ClaripyOperationError("extending an object without a length")
-        self.length = length + self.args[0]
-    _finalize_SignExt = _finalize_ZeroExt
-
-    def _finalize_same_length(self):
-        '''
-        This is a generic finalizer. It requires at least one argument to have a length,
-        and all arguments that *do* have a length to have the same length.
-        '''
-
-        lengths = set(self.arg_size(a) for a in self.args) - { None }
-        if len(lengths) != 1:
-            raise ClaripyOperationError("Arguments to %s must have equal (and existing) sizes", self.op)
-        self.length = lengths.pop()
-
-    #
     # Size functions
     #
-
-    @staticmethod
-    def arg_size(o):
-        if isinstance(o, A):
-            return o.length
-        else:
-            return None
 
     def size(self):
         return self.length
@@ -323,10 +389,10 @@ class A(ana.Storable):
     #
 
     def __repr__(self):
-        if '__' in self.op:
-            return "<A %s.%s%s>" % (self.args[0], self.op, self.args[1:])
-        else:
-            return "<A %s%s>" % (self.op, self.args)
+        #if isinstance(self.model, A):
+        #   return "<A %s>" % self.model
+        #else:
+        return "<A %s %r>" % (self.op, self.args)
 
     @property
     def depth(self):
@@ -507,40 +573,16 @@ class I(A):
     '''
 
     def __new__(cls, claripy, model, **kwargs):
-        name = cls._name(claripy, model)
-        variables = kwargs.get('variables', set())
-        if name is not None:
-            variables.add(name)
-        kwargs['variables'] = variables
-
         return A.__new__(cls, claripy, 'I', (model,), **kwargs)
 
-    def __init__(self, claripy, model, **kwargs):
-        A.__init__(self, claripy, 'I', (model,), **kwargs)
-
-    @staticmethod
-    def _name(clrp, a):
-        for b in clrp.model_backends:
-            try:
-                name = b.name_expr(a)
-                return name
-            except BackendError:
-                pass
-
+    #def __init__(self, claripy, model, **kwargs):
+    #   A.__init__(self, claripy, 'I', (model,), **kwargs)
 
     def resolved(self, result=None): return self.args[0]
     def resolved_with(self, b, result=None): return b.convert(self.args[0])
     @property
     def depth(self): return 0
     def split(self, split_on): return self
-    def _finalize_I(self):
-        for b in self._claripy.model_backends:
-            try:
-                self.length = b.size_expr(self.args[0])
-                break
-            except BackendError: pass
-        else:
-            self.length = None
 
 from .errors import BackendError, ClaripyOperationError
 from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
