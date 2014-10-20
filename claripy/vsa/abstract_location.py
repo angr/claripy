@@ -27,7 +27,20 @@ class AbstractLocation(object):
         return self._size
 
     def update(self, region_offset, size):
-        return False
+        # TODO: We can improve this method
+        updated = False
+
+        if region_offset >= self.offset:
+            new_size = (region_offset + size) - self.offset
+            if self._size <  new_size:
+                updated = True
+                self._size = new_size
+        elif region_offset <= self.offset:
+            updated = True
+            self._size = max(self._size - region_offset, size - region_offset)
+            self._region_offset = region_offset
+
+        return updated
 
     def copy(self):
         return AbstractLocation(self._bbl_key, self._stmt_id, self._region_id,
