@@ -23,16 +23,32 @@ class BoolResult(object):
         return None
 
     @staticmethod
+    def is_maybe(o):
+        return isinstance(o, MaybeResult)
+
+    @staticmethod
+    def has_true(o):
+        return o is True or \
+               (isinstance(o, BoolResult) and True in o.value) or \
+               (isinstance(o, IfProxy) and (True in o.trueexpr.value or True in o.falseexpr.value))
+
+    @staticmethod
+    def has_false(o):
+        return o is False or \
+               (isinstance(o, BoolResult) and False in o.value) or \
+               (isinstance(o, IfProxy) and (False in o.trueexpr.value or False in o.falseexpr.value))
+
+    @staticmethod
     def is_true(o):
-        return isinstance(o, TrueResult)
+        return o is True or \
+               (isinstance(o, TrueResult)) or \
+               (isinstance(o, IfProxy) and (type(o.trueexpr) is TrueResult and type(o.falseexpr) is TrueResult))
 
     @staticmethod
     def is_false(o):
-        return isinstance(o, FalseResult)
-
-    @staticmethod
-    def is_maybe(o):
-        return isinstance(o, MaybeResult)
+        return o is False or \
+               (isinstance(o, FalseResult)) or \
+               (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
 
 class TrueResult(BoolResult):
     @property
@@ -96,4 +112,7 @@ class MaybeResult(BoolResult):
         else:
             return 'Maybe(%s, %s)' % (self._op, self._args)
 
+
+
 from ..errors import BackendError
+from .ifproxy import IfProxy

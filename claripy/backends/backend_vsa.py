@@ -194,27 +194,19 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     def has_true(o):
-        return o is True or \
-               (isinstance(o, BoolResult) and True in o.value) or \
-               (isinstance(o, IfProxy) and (True in o.trueexpr.value or True in o.falseexpr.value))
+        return BoolResult.has_true(o)
 
     @staticmethod
     def has_false(o):
-        return o is False or \
-               (isinstance(o, BoolResult) and False in o.value) or \
-               (isinstance(o, IfProxy) and (False in o.trueexpr.value or False in o.falseexpr.value))
+        return BoolResult.has_false(o)
 
     @staticmethod
     def is_true(o):
-        return o is True or \
-               (isinstance(o, TrueResult)) or \
-               (isinstance(o, IfProxy) and (type(o.trueexpr) is TrueResult and type(o.falseexpr) is TrueResult))
+        return BoolResult.is_true(o)
 
     @staticmethod
     def is_false(o):
-        return o is False or \
-               (isinstance(o, FalseResult)) or \
-               (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
+        return BoolResult.is_false(o)
 
     def constraint_to_si(self, expr):
         def _find_target_expr(m):
