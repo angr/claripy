@@ -4,6 +4,7 @@ import functools
 l = logging.getLogger("claripy.backends.backend_vsa")
 
 from .model_backend import ModelBackend, BackendError
+from ..vsa import expand_ifproxy
 
 def arg_filter(f):
     @functools.wraps(f)
@@ -104,88 +105,10 @@ def normalize_reversed_arguments(f):
 
     return normalizer
 
-def expand_ifproxy(f):
-    @functools.wraps(f)
-    def expander(*args, **kwargs):
-        '''
-        For each IfProxy proxified argument, we expand it so that it is
-        converted into two operands (true expr and false expr, respectively).
-        After the operation, we rewrap the two sides together in a new
-        IfProxy with the old cond.
-
-        :param args: All arguments
-        :return:
-        '''
-
-        # FIXME: Now we have a very bad assumption - if we see two IfProxy
-        # instances as the two operands, we assume they must both be true or
-        # false.
-        if isinstance(args[0], IfProxy):
-            ifproxy = args[0]
-            cond = ifproxy.condition
-            if len(args) > 1 and isinstance(args[1], IfProxy):
-                true_args = (ifproxy.trueexpr, ) + (args[1].trueexpr, ) + args[2:]
-                false_args = (ifproxy.falseexpr, ) + (args[1].falseexpr, ) +  args[2:]
-            else:
-                true_args = (ifproxy.trueexpr, ) + args[1 : ]
-                false_args = (ifproxy.falseexpr, ) + args[1 : ]
-            trueexpr = f(*true_args, **kwargs)
-            falseexpr = f(*false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        if len(args) > 1 and isinstance(args[1], IfProxy):
-            ifproxy = args[1]
-            cond = ifproxy.condition
-            true_args = args[ : 1] + (ifproxy.trueexpr, ) + args[2:]
-            false_args = args[ : 1] + (ifproxy.falseexpr, ) + args[2:]
-            trueexpr = f(*true_args)
-            falseexpr = f(*false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        if len(args) > 2 and isinstance(args[2], IfProxy):
-            ifproxy = args[2]
-            cond = ifproxy.condition
-            true_args = args[: 2] + (ifproxy.trueexpr, ) + args[3:]
-            false_args = args[: 2] + (ifproxy.falseexpr, ) + args[3:]
-            trueexpr = f(*true_args, **kwargs)
-            falseexpr = f(*false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        return f(*args, **kwargs)
-
-    return expander
-
-class IfProxy(object):
-    def __init__(self, cond, true_expr, false_expr):
-        self._cond = cond
-        self._true = true_expr
-        self._false = false_expr
-
-    @property
-    def condition(self):
-        return self._cond
-
-    @property
-    def trueexpr(self):
-        return self._true
-
-    @property
-    def falseexpr(self):
-        return self._false
-
-    def __len__(self):
-        return len(self._true)
-
-    def __repr__(self):
-        return 'IfProxy(%s, %s, %s)' % (self._cond, self._true, self._false)
-
 class BackendVSA(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
-        self._make_raw_ops(set(expression_operations) - set(expression_set_operations), op_module=BackendVSA)
+        # self._make_raw_ops(set(expression_operations) - set(expression_set_operations), op_module=BackendVSA)
         self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
@@ -271,25 +194,25 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     def has_true(o):
-        return o == True or \
+        return o is True or \
                (isinstance(o, BoolResult) and True in o.value) or \
                (isinstance(o, IfProxy) and (True in o.trueexpr.value or True in o.falseexpr.value))
 
     @staticmethod
     def has_false(o):
-        return o == False or \
+        return o is False or \
                (isinstance(o, BoolResult) and False in o.value) or \
                (isinstance(o, IfProxy) and (False in o.trueexpr.value or False in o.falseexpr.value))
 
     @staticmethod
     def is_true(o):
-        return o == True or \
+        return o is True or \
                (isinstance(o, TrueResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is TrueResult and type(o.falseexpr) is TrueResult))
 
     @staticmethod
     def is_false(o):
-        return o == False or \
+        return o is False or \
                (isinstance(o, FalseResult)) or \
                (isinstance(o, IfProxy) and (type(o.trueexpr) is FalseResult and type(o.falseexpr) is FalseResult))
 
@@ -339,55 +262,9 @@ class BackendVSA(ModelBackend):
 
             return None, None
 
-
     #
-    # Operations
+    # Backend Operations
     #
-
-    @staticmethod
-    @normalize_arg_order
-    def __add__(a, b): return a.__add__(b)
-
-    @staticmethod
-    @normalize_arg_order
-    def __sub__(a, b): return a.__sub__(b)
-
-    @staticmethod
-    @normalize_arg_order
-    def __and__(a, b): return a.__and__(b)
-
-    @staticmethod
-    @expand_ifproxy
-    @normalize_arg_order
-    def __rand__(a, b): return a.__and__(b)
-
-    @staticmethod
-    @normalize_arg_order
-    def __eq__(a, b): return a.__eq__(b)
-
-    @staticmethod
-    @expand_ifproxy
-    @normalize_arg_order
-    def __ne__(a, b): return a.__ne__(b)
-
-    @staticmethod
-    @expand_ifproxy
-    @normalize_arg_order
-    def __or__(a, b): return a.__or__(b)
-
-    @staticmethod
-    @expand_ifproxy
-    @normalize_arg_order
-    def __xor__(a, b): return a.__xor__(b)
-
-    @staticmethod
-    @expand_ifproxy
-    @normalize_arg_order
-    def __rxor__(a, b): return a.__xor__(b)
-
-    @staticmethod
-    @expand_ifproxy
-    def __lshift__(a, b): return a.__lshift__(b)
 
     @staticmethod
     def Identical(a, b):
@@ -414,9 +291,9 @@ class BackendVSA(ModelBackend):
     def If(self, cond, true_expr, false_expr, result=None):
         exprs = []
         cond_model = self.convert(cond)
-        if True in cond_model.value:
+        if self.has_true(cond_model):
             exprs.append(true_expr)
-        if False in cond_model.value:
+        if self.has_false(cond_model):
             exprs.append(false_expr)
 
         if len(exprs) == 1:
@@ -545,6 +422,7 @@ class BackendVSA(ModelBackend):
                 return to_conv
 
             if type(to_conv) not in {int, long, BVV}:
+                import ipdb; ipdb.set_trace()
                 raise BackendError('Unsupported to_conv type %s' % type(to_conv))
 
             if stride is not None or lower_bound is not None or \
@@ -578,3 +456,4 @@ from ..ast import A, I
 from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..result import Result
+from ..vsa import IfProxy

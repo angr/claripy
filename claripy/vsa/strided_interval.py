@@ -3,8 +3,7 @@ import functools
 import math
 import itertools
 
-from ..ast import A
-from ..bv import BVV
+from .decorators import expand_ifproxy
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -12,6 +11,10 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
+        if isinstance(o, ValueSet):
+            # It should be put to o.__radd__(self) when o is a ValueSet
+            return NotImplemented
+
         if isinstance(o, A):
             o = o.model
         if isinstance(self, A):
@@ -183,6 +186,7 @@ class StridedInterval(object):
     def __invert__(self):
         return self.bitwise_not()
 
+    @expand_ifproxy
     @normalize_types
     def __or__(self, other):
         return self.bitwise_or(other)
@@ -191,9 +195,17 @@ class StridedInterval(object):
     def __and__(self, other):
         return self.bitwise_and(other)
 
+    def __rand__(self, other):
+        return self.__and__(other)
+
+    @expand_ifproxy
     @normalize_types
     def __xor__(self, other):
         return self.bitwise_xor(other)
+
+    @expand_ifproxy
+    def __rxor__(self, other):
+        return self.__xor__(other)
 
     def __lshift__(self, other):
         return self.lshift(other)
@@ -683,12 +695,12 @@ class StridedInterval(object):
 
         new_si = a.lshift(b.bits)
         new_b = b.copy()
-        # Extend b
+        # Zero-extend b
         new_b._bits = new_si.bits
 
         if new_si.is_integer():
             # We can be more precise!
-            new_si._bits += new_b.bits
+            new_si._bits = new_b.bits
             new_si._stride = new_b.stride
             new_si._lower_bound = new_si.lower_bound + b.lower_bound
             new_si._upper_bound = new_si.upper_bound + b.upper_bound
@@ -848,3 +860,6 @@ class StridedInterval(object):
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
+from .valueset import ValueSet
+from ..ast import A
+from ..bv import BVV

@@ -87,6 +87,9 @@ class ValueSet(object):
 
             return new_vs
 
+    def __radd__(self, other):
+        return self.__add__(other)
+
     def __sub__(self, other):
         if type(other) is ValueSet:
             raise NotImplementedError()
@@ -151,11 +154,25 @@ class ValueSet(object):
 
     def union(self, b):
         merged_vs = self.copy()
+        if type(b) is ValueSet:
+            for region, si in b.regions.items():
+                if region not in merged_vs._regions:
+                    merged_vs._regions[region] = si
+                else:
+                    merged_vs._regions[region] = merged_vs._regions[region].union(si)
+        else:
+            for region, si in self._regions.items():
+                merged_vs._regions[region] = merged_vs._regions[region].union(b)
+
+        return merged_vs
+
+    def widen(self, b):
+        merged_vs = self.copy()
         for region, si in b.regions.items():
-            if region not in merged_vs._regions:
-                merged_vs._regions[region] = si
+            if region not in merged_vs.regions:
+                merged_vs.regions[region] = si
             else:
-                merged_vs._regions[region] = merged_vs._regions[region].union(si)
+                merged_vs.regions[region] = merged_vs.regions[region].widen(si)
 
         return merged_vs
 
