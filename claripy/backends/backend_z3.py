@@ -38,6 +38,17 @@ from .. import bv
 #			z3_lock.release()
 #	return synced
 
+def condom(f):
+	def z3_condom(*args, **kwargs):
+		'''
+		The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
+		'''
+		try:
+			return f(*args, **kwargs)
+		except z3.Z3Exception as ze:
+			raise ClaripyZ3Error("Z3Exception: %s" % ze)
+	return z3_condom
+
 class BackendZ3(SolverBackend):
 	_split_on = { 'And', 'Or' }
 
@@ -54,6 +65,7 @@ class BackendZ3(SolverBackend):
 		self._op_raw['Reverse'] = self.reverse
 		self._op_raw['Identical'] = self.identical
 
+	@condom
 	def size(self, e, result=None):
 		if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
 			l.debug("Unable to determine length of value of type %s", e.__class__)
@@ -65,6 +77,7 @@ class BackendZ3(SolverBackend):
 		raise BackendError("name is not implemented yet")
 
 	@staticmethod
+	@condom
 	def reverse(a):
 		if a.size() == 8:
 			return a
@@ -73,10 +86,10 @@ class BackendZ3(SolverBackend):
 		else:
 			return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
-	@staticmethod
-	def identical(a, b):
+	def identical(self, a, b, result=None):
 		return a.eq(b)
 
+	@condom
 	def _convert(self, obj, result=None):
 		if type(obj) is bv.BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
@@ -96,6 +109,11 @@ class BackendZ3(SolverBackend):
 		#return self._abstract(z, split_on=split_on)[0]
 		return self._abstract(z.ctx.ctx, z.ast)
 
+	@condom
+	def call(self, *args, **kwargs):
+		return SolverBackend.call(self, *args, **kwargs)
+
+	@condom
 	def _abstract(self, ctx, ast, split_on=None):
 		h = z3.Z3_get_ast_hash(ctx, ast)
 		if h in self._ast_cache:
@@ -166,6 +184,7 @@ class BackendZ3(SolverBackend):
 	def add(self, s, c):
 		s.add(*c)
 
+	@condom
 	def check(self, s, extra_constraints=None): #pylint:disable=R0201
 		global solve_count
 		solve_count += 1
@@ -182,6 +201,7 @@ class BackendZ3(SolverBackend):
 			s.pop()
 		return satness
 
+	@condom
 	def results(self, s, extra_constraints=None, generic_model=True):
 		satness = self.check(s, extra_constraints=extra_constraints)
 		model = { }
@@ -200,6 +220,7 @@ class BackendZ3(SolverBackend):
 
 		return Result(satness, model, backend_model=z3_model)
 
+	@condom
 	def eval(self, s, expr, n, extra_constraints=None, result=None):
 		global solve_count, cache_count
 
@@ -244,6 +265,7 @@ class BackendZ3(SolverBackend):
 
 		return results
 
+	@condom
 	def min(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
 		global solve_count
 
@@ -292,6 +314,7 @@ class BackendZ3(SolverBackend):
 				s.pop()
 		return BVV(hi, expr.size())
 
+	@condom
 	def max(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
 		global solve_count
 
@@ -342,6 +365,7 @@ class BackendZ3(SolverBackend):
 	def simplify(self, expr): #pylint:disable=W0613,R0201
 		raise Exception("This shouldn't be called. Bug Yan.")
 
+	@condom
 	def simplify_expr(self, expr):
 		if expr._simplified:
 			return expr
@@ -576,4 +600,4 @@ from ..ast import A, I
 from ..operations import backend_operations, bin_ops
 from ..result import Result
 from ..bv import BVV
-from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
+from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError, ClaripyZ3Error
