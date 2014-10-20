@@ -111,6 +111,28 @@ class ValueSet(object):
 
         return new_vs
 
+    def __eq__(self, other):
+        same = False
+        different = False
+        for region, si in other.regions.items():
+            if region in self.regions:
+                comp_ret = self.regions[region] == si
+                if BoolResult.has_true(comp_ret):
+                    same = True
+                if BoolResult.has_false(comp_ret):
+                    different = True
+            else:
+                different = True
+
+        if same and not different:
+            return TrueResult()
+        if same and different:
+            return MaybeResult()
+        return FalseResult()
+
+    def __ne__(self, other):
+        return ~ (self == other)
+
     def eval(self, n):
         results = []
 
@@ -178,3 +200,4 @@ class ValueSet(object):
 
 from ..ast import A
 from .strided_interval import StridedInterval
+from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
