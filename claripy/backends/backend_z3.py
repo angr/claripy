@@ -105,15 +105,15 @@ class BackendZ3(SolverBackend):
 			l.debug("BackendZ3 encountered unexpected type %s", type(obj))
 			raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-	def abstract(self, z):
-		#return self._abstract(z, split_on=split_on)[0]
-		return self._abstract(z.ctx.ctx, z.ast)
-
 	@condom
 	def call(self, *args, **kwargs):
 		return SolverBackend.call(self, *args, **kwargs)
 
 	@condom
+	def abstract(self, z):
+		#return self._abstract(z, split_on=split_on)[0]
+		return self._abstract(z.ctx.ctx, z.ast)
+
 	def _abstract(self, ctx, ast, split_on=None):
 		h = z3.Z3_get_ast_hash(ctx, ast)
 		if h in self._ast_cache:
@@ -146,6 +146,9 @@ class BackendZ3(SolverBackend):
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+
+			#if bv_name.count('_') < 2:
+			#	import ipdb; ipdb.set_trace()
 			return A(self._claripy, "BitVec", (bv_name, bv_size), variables={ bv_name }, symbolic=True)
 		elif op_name == 'Extract':
 			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
