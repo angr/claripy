@@ -60,6 +60,24 @@ def _finalize_If(claripy, op, args, kwargs):
     if len(args) != 3:
         raise ClaripyOperationError("If requires a condition and two cases.")
 
+    if _arg_size(args[0]) is not None:
+        raise ClaripyOperationError("non-boolean condition passed to If")
+
+    case_lengths = ( _arg_size(args[1]), _arg_size(args[2]) )
+    if len(set(case_lengths)) != 1:
+        if None not in case_lengths:
+            raise ClaripyOperationError("If needs two identically-sized sized")
+        else:
+            # we need to convert one of the cases to an integer
+            if case_lengths[0] is None:
+                if type(args[1]) not in (int, long):
+                    raise ClaripyOperationError("If received a non-int and an int case.")
+                args = (args[0], claripy.BVV(args[1], case_lengths[1]), args[2])
+            else:
+                if type(args[2]) not in (int, long):
+                    raise ClaripyOperationError("If received a non-int and an int case.")
+                args = (args[0], args[1], claripy.BVV(args[2], case_lengths[0]))
+
     lengths = set(_arg_size(a) for a in args[1:]) - { None }
     if len(lengths) != 1 or _arg_size(args[0]) is not None:
         raise ClaripyOperationError("If must have equal-sized cases and a boolean condition")
@@ -389,14 +407,15 @@ class A(ana.Storable):
     #
 
     def __repr__(self):
-        #if isinstance(self.model, A):
-        #   return "<A %s>" % self.model
-        #else:
-        return "<A %s %r>" % (self.op, self.args)
+        if not isinstance(self.model, A):
+            return "<A %s>" % self.model
+        else:
+            return "<A %s %r>" % (self.op, self.args)
 
     @property
     def depth(self):
-        return 1 + max((a.depth() for a in self.args if isinstance(a, A)))
+        ast_args = [ a for a in self.args if isinstance(a, A) ]
+        return 1 + (max(ast_args) if len(ast_args) > 0 else 1)
 
     #
     # Various AST modifications (replacements, pivoting)
