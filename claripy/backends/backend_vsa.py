@@ -231,8 +231,6 @@ class BackendVSA(ModelBackend):
 
             return m
 
-        # import ipdb; ipdb.set_trace()
-
         if not isinstance(expr.model, IfProxy):
             return None, None
 
@@ -257,28 +255,35 @@ class BackendVSA(ModelBackend):
                 # import ipdb; ipdb.set_trace()
                 target_expr = _find_target_expr(left_expr)
                 if target_expr is None:
-                    return None
-                pivoted = condition_ast.pivot(left=target_expr)
-                right_expr = pivoted.args[1]
-                left_expr = pivoted.args[0]
-            # Convert them to SI
-            # si_left = BackendVSA.CreateStridedInterval(bits=left.bits, to_conv=left)
-            si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
+                    return None, None
 
-            if side:
-                # Modify the lower bound
-                si_right.lower_bound = StridedInterval.min_int(si_right.bits)
-            else:
-                # Modify the upper bound
-                si_right.upper_bound = StridedInterval.max_int(si_right.bits)
-            si_right.stride = left_expr.model.stride
+                if side:
+                    left_side = self._claripy.BVV(0, len(left_expr)) # *Unsigned* LT
+                    pivoted, additional_expr = \
+                        condition_ast.pivot(expr_in_left_branch=target_expr, additional_expr=left_side)
+                    right_expr = pivoted.args[1]
+                    left_expr = pivoted.args[0]
+                    # Convert them to SI
+                    si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
+                    si_right.upper_bound = si_right.upper_bound - 1 # Less than
+                    si_right.lower_bound = additional_expr.lower_bound if type(additional_expr.model) is StridedInterval else additional_expr.model.value
+                else:
+                    pivoted, _ = \
+                        condition_ast.pivot(expr_in_left_branch=target_expr)
+                    right_expr = pivoted.args[1]
+                    left_expr = pivoted.args[0]
+                    si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
+                    si_right.upper_bound = StridedInterval.max_int(si_right.bits)
 
-            return left_expr, si_right
+                si_right.stride = left_expr.model.stride
+
+                return left_expr, si_right
         else:
             # FIXME: Finish it!
             # import ipdb; ipdb.set_trace()
+            pass
 
-            return None, None
+        return None, None
 
     #
     # Backend Operations

@@ -70,42 +70,43 @@ def expr_op_expand_ifproxy(f):
         # FIXME: Now we have a very bad assumption - if we see two IfProxy
         # instances as the two operands, we assume they must both be true or
         # false.
-        if isinstance(args[0], IfProxy):
-            ifproxy = args[0]
+        if isinstance(args[0], A) and isinstance(args[0].model, IfProxy):
+            ifproxy = args[0].model
             cond = ifproxy.condition
-            if len(args) > 1 and isinstance(args[1], IfProxy):
-                true_args = (ifproxy.trueexpr, ) + (args[1].trueexpr, ) + args[2:]
-                false_args = (ifproxy.falseexpr, ) + (args[1].falseexpr, ) +  args[2:]
+            if len(args) > 1 and isinstance(args[1].model, IfProxy):
+                true_args = (ifproxy.trueexpr, ) + (args[1].model.trueexpr, ) + args[2:]
+                false_args = (ifproxy.falseexpr, ) + (args[1].model.falseexpr, ) +  args[2:]
             else:
                 true_args = (ifproxy.trueexpr, ) + args[1 : ]
                 false_args = (ifproxy.falseexpr, ) + args[1 : ]
-            trueexpr = f(*true_args, **kwargs)
-            falseexpr = f(*false_args, **kwargs)
+            trueexpr = f(self, *true_args, **kwargs)
+            falseexpr = f(self, *false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        if len(args) > 1 and isinstance(args[1], IfProxy):
-            ifproxy = args[1]
+        if len(args) > 1 and isinstance(args[1], A) and isinstance(args[1].model, IfProxy):
+            ifproxy = args[1].model
             cond = ifproxy.condition
             true_args = args[ : 1] + (ifproxy.trueexpr, ) + args[2:]
             false_args = args[ : 1] + (ifproxy.falseexpr, ) + args[2:]
-            trueexpr = f(*true_args)
-            falseexpr = f(*false_args, **kwargs)
+            trueexpr = f(self, *true_args)
+            falseexpr = f(self, *false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        if len(args) > 2 and isinstance(args[2], IfProxy):
-            ifproxy = args[2]
+        if len(args) > 2 and isinstance(args[2], A) and isinstance(args[2].model, IfProxy):
+            ifproxy = args[2].model
             cond = ifproxy.condition
             true_args = args[: 2] + (ifproxy.trueexpr, ) + args[3:]
             false_args = args[: 2] + (ifproxy.falseexpr, ) + args[3:]
-            trueexpr = f(*true_args, **kwargs)
-            falseexpr = f(*false_args, **kwargs)
+            trueexpr = f(self, *true_args, **kwargs)
+            falseexpr = f(self, *false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        return f(*args, **kwargs)
+        return f(self, *args, **kwargs)
 
     return expander
 
 from .ifproxy import IfProxy
+from ..ast import A

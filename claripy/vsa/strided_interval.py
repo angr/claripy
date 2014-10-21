@@ -411,7 +411,12 @@ class StridedInterval(object):
         stride = fractions.gcd(self.stride, b.stride)
 
         if overflow:
-            return self.top(new_bits)
+            if b.is_integer() and b.lower_bound >> (new_bits - 1) == 1:
+                # Treat it as a minus then
+                operand = - ((0 - b.lower_bound) & ((1 << new_bits) - 1))
+                return self.__add__(operand)
+            else:
+                return self.top(new_bits)
         else:
             # new_lb = self.lower(new_bits, lb_, stride) if lb_underflow_ else lb_
             # new_ub = self.upper(new_bits, ub_, stride) if ub_overflow_ else ub_

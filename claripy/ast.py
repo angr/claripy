@@ -469,7 +469,7 @@ class A(ana.Storable):
         raise Exception()
 
     @staticmethod
-    def reverse_operation(target, op, args, index):
+    def reverse_operation(target, op, args, index, additional_expr):
         '''
 
         :param target:
@@ -484,19 +484,30 @@ class A(ana.Storable):
             if right != 0:
                 return None
             original_size = args[index].size()
-            return target.zero_extend(original_size - (left - right + 1))
+            a = target.zero_extend(original_size - (left - right + 1))
+            b = additional_expr.zero_extend(original_size - (left - right + 1)) if additional_expr is not None else None
+            return a, b
         elif op == 'ZeroExt':
             # FIXME:
             extra_bits = args[0]
-            return target[target.size() - extra_bits  - 1: 0]
+            a = target[target.size() - extra_bits  - 1: 0]
+            b = additional_expr[additional_expr.size() - extra_bits - 1: 0] if additional_expr is not None else None
+            return a, b
         elif op in ['__add__', '__radd__']:
             other_operand = args[0 if index == 1 else 1]
-            return target - other_operand
+            a = target - other_operand
+            b = additional_expr - other_operand if additional_expr is not None else None
+            return a, b
         elif op in ['__sub__', '__rsub__']:
             if index == 0:
-                return target + args[1]
+                a = target + args[1]
+                b = additional_expr + args[1] if additional_expr is not None else None
+                return a, b
             else:
-                return args[0] - target
+                # TODO: Handle this case later - we'll have to reverse the direction of the qeuation
+                return None, None
+                # a = args[0] - target
+
         else:
             import ipdb; ipdb.set_trace()
             return None
@@ -516,17 +527,17 @@ class A(ana.Storable):
 
         return tuple_list
 
-    def pivot(self, left=None, right=None):
+    def pivot(self, expr_in_left_branch=None, expr_in_right_branch=None, additional_expr=None):
         '''
 
-        :param left:
-        :param right:
+        :param expr_in_left_branch:
+        :param expr_in_right_branch:
         :return:
         '''
-        if left is None and right is None:
+        if expr_in_left_branch is None and expr_in_right_branch is None:
             return
 
-        if left is not None and right is not None:
+        if expr_in_left_branch is not None and expr_in_right_branch is not None:
             raise ClaripyOperationError('You cannot specify two endpoints on both sides')
 
         if len(self.args) != 2:
@@ -536,25 +547,25 @@ class A(ana.Storable):
         arg_left = self.args[0]
         arg_right = self.args[1]
 
-        if left is None:
+        if expr_in_left_branch is None:
             # Swap it
-            left, right = right, left
+            expr_in_left_branch, expr_in_right_branch = expr_in_right_branch, expr_in_left_branch
             arg_left, arg_right = arg_right, arg_left
             op = A._reverse_op(op)
 
-        arg_index_list = arg_left.find_arg(left)
+        arg_index_list = arg_left.find_arg(expr_in_left_branch)
         if arg_index_list is None:
-            raise ClaripyOperationError('Cannot find argument %s' % left)
+            raise ClaripyOperationError('Cannot find argument %s' % expr_in_left_branch)
 
         for index in arg_index_list:
             left_ast_args = arg_left.args
-            arg_right = A.reverse_operation(arg_right, arg_left.op, left_ast_args, index)
+            arg_right, additional_expr = A.reverse_operation(arg_right, arg_left.op, left_ast_args, index, additional_expr)
             if arg_right is None:
                 raise ClaripyOperationError('Pivoting failed.')
             arg_left = arg_left.args[index]
 
         new_ast = A(self._claripy, op, (arg_left, arg_right))
-        return new_ast
+        return new_ast, additional_expr
 
     #
     # Other helper functions
