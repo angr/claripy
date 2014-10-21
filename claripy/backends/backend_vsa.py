@@ -4,7 +4,7 @@ import functools
 l = logging.getLogger("claripy.backends.backend_vsa")
 
 from .model_backend import ModelBackend, BackendError
-from ..vsa import expand_ifproxy
+from ..vsa import expand_ifproxy, expr_op_expand_ifproxy
 
 def arg_filter(f):
     @functools.wraps(f)
@@ -397,7 +397,7 @@ class BackendVSA(ModelBackend):
 
         return arg.reverse()
 
-    @expand_ifproxy
+    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def union(self, *args, **kwargs):
         assert len(args) == 2
@@ -406,7 +406,7 @@ class BackendVSA(ModelBackend):
 
         return ret
 
-    @expand_ifproxy
+    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def intersection(self, *args, **kwargs):
         ret = None
@@ -419,7 +419,7 @@ class BackendVSA(ModelBackend):
 
         return ret
 
-    @expand_ifproxy
+    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def widen(self, *args, **kwargs):
         assert len(args) == 2
