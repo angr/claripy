@@ -179,7 +179,7 @@ class Claripy(object):
 
         return identical is True
 
-    def constraint_to_si(self, expr): #pylint:disable=unused-argument
+    def constraint_to_si(self, expr, side): #pylint:disable=unused-argument
         '''
         Convert a constraint to SI if possible
         :param expr:
@@ -190,7 +190,7 @@ class Claripy(object):
 
         for b in self.model_backends:
             if type(b) is BackendVSA:
-                old_expr, si = b.constraint_to_si(expr)
+                old_expr, si = b.constraint_to_si(expr, side)
 
         if si is None:
             return None, None
