@@ -41,12 +41,12 @@ class Solver(ana.Storable):
 
 	def _ana_getstate(self):
 		if not self._simplified: self.simplify()
-		return self._claripy.name, self._result, self._timeout, self._to_add, self.constraints, self.variables
+		return self._claripy.name, self._result, self._timeout, self.constraints, self.variables
 
 	def _ana_setstate(self, s):
 		self._simplified = True
-		cn, r, to, ta, c, v = s
-		self.__init__(Claripies[cn], result=r, timeout=to, to_add=ta)
+		cn, r, to, c, v = s
+		self.__init__(Claripies[cn], result=r, timeout=to)
 		self.constraints = c
 		self.variables = v
 
