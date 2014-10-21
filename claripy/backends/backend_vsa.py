@@ -358,6 +358,7 @@ class BackendVSA(ModelBackend):
         return expr.zero_extend(new_bits + expr.bits)
 
     @staticmethod
+    @expand_ifproxy
     def Reverse(arg):
         assert type(arg) in { StridedInterval, ValueSet }
 

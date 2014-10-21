@@ -173,6 +173,10 @@ class StridedInterval(object):
         return ~(self > other) & ~(self == other)
 
     @normalize_types
+    def __le__(self, other):
+        return (self < other) | (self == other)
+
+    @normalize_types
     def __add__(self, o):
         return self.add(o, allow_overflow=True)
 
