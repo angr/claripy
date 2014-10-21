@@ -4,7 +4,7 @@ import functools
 l = logging.getLogger("claripy.backends.backend_vsa")
 
 from .model_backend import ModelBackend, BackendError
-from ..vsa import expand_ifproxy
+from ..vsa import expand_ifproxy, expr_op_expand_ifproxy
 
 def arg_filter(f):
     @functools.wraps(f)
@@ -209,7 +209,7 @@ class BackendVSA(ModelBackend):
     def is_false(o):
         return BoolResult.is_false(o)
 
-    def constraint_to_si(self, expr):
+    def constraint_to_si(self, expr, side=True):
         def _find_target_expr(m):
             expr_ = None
             if isinstance(m, A):
@@ -219,14 +219,34 @@ class BackendVSA(ModelBackend):
                         return m.args[-1]
                     else:
                         return expr_
+                elif m.op in ['__add__', '__sub__']:
+                    if type(m.args[0].model) is BVV:
+                        expr_ = _find_target_expr(m.args[1])
+                        if expr_ is not None:
+                            return expr_
+                    elif type(m.args[1].model) is BVV:
+                        expr_ = _find_target_expr(m.args[0])
+                        if expr_ is not None:
+                            return expr_
 
-            return None
+            return m
+
+        # import ipdb; ipdb.set_trace()
 
         if not isinstance(expr.model, IfProxy):
             return None, None
 
         ifproxy = expr.model
         condition = ifproxy.condition
+        if isinstance(condition, A) and isinstance(condition.model, IfProxy):
+            sub_ifproxy = condition.model
+
+            new_side = side
+            if BackendVSA.is_false(sub_ifproxy.trueexpr):
+                new_side = not side
+
+            return self.constraint_to_si(condition, new_side)
+
         condition_ast = condition
         op = condition_ast.op
 
@@ -244,8 +264,13 @@ class BackendVSA(ModelBackend):
             # Convert them to SI
             # si_left = BackendVSA.CreateStridedInterval(bits=left.bits, to_conv=left)
             si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
-            # Modify the lower bound
-            si_right.lower_bound = StridedInterval.min_int(si_right.bits)
+
+            if side:
+                # Modify the lower bound
+                si_right.lower_bound = StridedInterval.min_int(si_right.bits)
+            else:
+                # Modify the upper bound
+                si_right.upper_bound = StridedInterval.max_int(si_right.bits)
             si_right.stride = left_expr.model.stride
 
             return left_expr, si_right
@@ -372,6 +397,7 @@ class BackendVSA(ModelBackend):
 
         return arg.reverse()
 
+    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def union(self, *args, **kwargs):
         assert len(args) == 2
@@ -380,6 +406,7 @@ class BackendVSA(ModelBackend):
 
         return ret
 
+    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def intersection(self, *args, **kwargs):
         ret = None
@@ -392,6 +419,7 @@ class BackendVSA(ModelBackend):
 
         return ret
 
+    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def widen(self, *args, **kwargs):
         assert len(args) == 2
@@ -444,8 +472,8 @@ class BackendVSA(ModelBackend):
         return bi
 
     @staticmethod
-    def CreateTopStridedInterval(bits, signed=False):
-        return StridedInterval.top(bits, signed=signed)
+    def CreateTopStridedInterval(bits, name=None, signed=False):
+        return StridedInterval.top(bits, name=None, signed=signed)
 
 from ..bv import BVV
 from ..ast import A, I

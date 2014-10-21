@@ -106,22 +106,24 @@ class StridedInterval(object):
         return results
 
     @staticmethod
-    def top(bits, signed=False):
+    def top(bits, name=None, signed=False):
         '''
         Get a TOP StridedInterval
 
         :return:
         '''
         if signed:
-            return StridedInterval(bits=bits,
-                               stride=1,
-                               lower_bound=StridedInterval.min_int(bits),
-                               upper_bound=StridedInterval.max_int(bits - 1))
+            return StridedInterval(name=name,
+                                   bits=bits,
+                                   stride=1,
+                                   lower_bound=StridedInterval.min_int(bits),
+                                   upper_bound=StridedInterval.max_int(bits - 1))
         else:
-            return StridedInterval(bits=bits,
-                               stride=1,
-                               lower_bound=0,
-                               upper_bound=StridedInterval.max_int(bits))
+            return StridedInterval(name=name,
+                                   bits=bits,
+                                   stride=1,
+                                   lower_bound=0,
+                                   upper_bound=StridedInterval.max_int(bits))
 
     @staticmethod
     def empty(bits):
@@ -257,6 +259,10 @@ class StridedInterval(object):
     @property
     def upper_bound(self):
         return self._upper_bound
+
+    @upper_bound.setter
+    def upper_bound(self, value):
+        self._upper_bound = value
 
     @property
     def bits(self):
