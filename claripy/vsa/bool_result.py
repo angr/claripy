@@ -17,7 +17,10 @@ class BoolResult(object):
         raise NotImplementedError()
 
     def __invert__(self):
-        raise NotImplementedError
+        raise NotImplementedError()
+
+    def __or__(self, other):
+        raise NotImplementedError()
 
     def size(self):
         return None
@@ -61,6 +64,9 @@ class TrueResult(BoolResult):
     def __invert__(self):
         return FalseResult()
 
+    def __or__(self, other):
+        return TrueResult()
+
     def __and__(self, other):
         if BoolResult.is_maybe(other):
             return MaybeResult()
@@ -86,6 +92,9 @@ class FalseResult(BoolResult):
     def __and__(self, other):
         return FalseResult()
 
+    def __or__(self, other):
+        return other
+
     def __repr__(self):
         return 'False'
 
@@ -105,6 +114,12 @@ class MaybeResult(BoolResult):
             return FalseResult()
         else:
             return MaybeResult()
+
+    def __or__(self, other):
+        if BoolResult.is_true(other):
+            return TrueResult()
+        else:
+            return self
 
     def __repr__(self):
         if self._op is None:
