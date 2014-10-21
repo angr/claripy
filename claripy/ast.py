@@ -489,10 +489,17 @@ class A(ana.Storable):
             # FIXME:
             extra_bits = args[0]
             return target[target.size() - extra_bits  - 1: 0]
-
-        import ipdb; ipdb.set_trace()
-        return None
-
+        elif op in ['__add__', '__radd__']:
+            other_operand = args[0 if index == 1 else 1]
+            return target - other_operand
+        elif op in ['__sub__', '__rsub__']:
+            if index == 0:
+                return target + args[1]
+            else:
+                return args[0] - target
+        else:
+            import ipdb; ipdb.set_trace()
+            return None
 
     def find_arg(self, arg):
         for index, a in enumerate(self.args):

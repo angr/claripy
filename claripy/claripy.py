@@ -72,8 +72,8 @@ class Claripy(object):
         return I(self, si, variables={ si.name }, symbolic=False)
     SI = StridedInterval
 
-    def TopStridedInterval(self, bits, signed=False):
-        si = BackendVSA.CreateTopStridedInterval(bits=bits, signed=signed)
+    def TopStridedInterval(self, bits, name=None, signed=False):
+        si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, signed=signed)
         return I(self, si, variables={ si.name }, symbolic=False)
     TSI = TopStridedInterval
 
