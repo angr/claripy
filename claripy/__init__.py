@@ -21,6 +21,8 @@ def init_claripies():
     backend_vsa = backends.BackendVSA()
     backend_concrete = backends.BackendConcrete()
     Claripies['VSA'] = ClaripyStandalone('VSA', model_backends=[backend_concrete, backend_vsa], solver_backends=[])
+    backend_vsa.set_claripy_object(Claripies['VSA'])
+    backend_concrete.set_claripy_object(Claripies['VSA'])
 
     Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
     Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
