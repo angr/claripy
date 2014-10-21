@@ -118,6 +118,17 @@ def _finalize_ZeroExt(claripy, op, args, kwargs):
 
 _finalize_SignExt = _finalize_ZeroExt
 
+def _finalize_Reverse(claripy, op, args, kwargs):
+    if len(args) != 1:
+        raise ClaripyOperationError("Reverse takes exactly one argument")
+
+    length = _arg_size(args[0])
+    if length is None or length%8 != 0:
+        raise ClaripyOperationError("Argument to reverse must be a multiple of 8 bits long")
+
+    kwargs['length'] = length
+    return op, args, kwargs
+
 def _finalize_same_length(claripy, op, args, kwargs):
     '''
     This is a generic finalizer. It requires at least one argument to have a length,
