@@ -29,13 +29,11 @@ class BranchingSolver(Solver):
 	def finalize(self):
 		self._finalized = True
 
-	def _claripy_getstate(self):
+	def _ana_getstate(self):
 		if not self._finalized:
 			self.finalize()
-		return Solver._claripy_getstate(self)
+		return Solver._ana_getstate(self)
 
-	def _claripy_setstate(self, s):
+	def _ana_setstate(self, s):
 		self._finalized = True
-		Solver._claripy_setstate(self, s)
-
-from ..errors import ClaripySerializationError
+		Solver._ana_setstate(self, s)
