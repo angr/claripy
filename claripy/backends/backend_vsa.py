@@ -231,7 +231,7 @@ class BackendVSA(ModelBackend):
 
             return m
 
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
 
         if not isinstance(expr.model, IfProxy):
             return None, None
