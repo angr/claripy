@@ -104,7 +104,7 @@ def expr_op_expand_ifproxy(f):
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        return f(*args, **kwargs)
+        return f(self, *args, **kwargs)
 
     return expander
 
