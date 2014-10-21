@@ -11,7 +11,7 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if isinstance(o, ValueSet):
+        if isinstance(o, ValueSet) or isinstance(o, IfProxy):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
@@ -865,5 +865,6 @@ class StridedInterval(object):
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
 from .valueset import ValueSet
+from .ifproxy import IfProxy
 from ..ast import A
 from ..bv import BVV

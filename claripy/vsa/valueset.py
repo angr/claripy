@@ -39,6 +39,10 @@ class ValueSet(object):
     def regions(self):
         return self._regions
 
+    @property
+    def reversed(self):
+        return self._reversed
+
     @normalize_types
     def set_si(self, region, si):
         self._regions[region] = si

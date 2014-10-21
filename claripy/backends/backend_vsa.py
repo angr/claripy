@@ -69,14 +69,15 @@ def normalize_reversed_arguments(f):
         arg_reversed = []
         raw_args = []
         for i in xrange(len(args)):
-            if isinstance(args[i], A) and args[i].op == 'Reverse':
+            if isinstance(args[i], A) and type(args[i].model) in {StridedInterval, ValueSet}:
+                if args[i].model.reversed:
+                    arg_reversed.append(True)
+                    raw_args.append(args[i].reversed)
+                    continue
+            elif isinstance(args[i], A) and args[i].op == 'Reverse':
                 # A delayed reverse
                 arg_reversed.append(True)
                 raw_args.append(args[i].args[0])
-                continue
-            elif isinstance(args[i], A) and type(args[i].model) in { StridedInterval } and args[i].model.reversed:
-                arg_reversed.append(True)
-                raw_args.append(args[i].reversed)
                 continue
 
             # It's not reversed
@@ -364,6 +365,13 @@ class BackendVSA(ModelBackend):
 
         return arg.reverse()
 
+    @staticmethod
+    @expand_ifproxy
+    def Reverse(arg):
+        assert type(arg) in {StridedInterval, ValueSet}
+
+        return arg.reverse()
+
     @normalize_reversed_arguments
     def union(self, *args, **kwargs):
         assert len(args) == 2
@@ -389,11 +397,6 @@ class BackendVSA(ModelBackend):
         assert len(args) == 2
 
         return args[0].widen(args[1])
-
-    def name(self, arg, result=None):
-        if not isinstance(arg, StridedInterval) and not isinstance(arg, ValueSet):
-            raise BackendError("can't tell name of %s" % type(arg))
-        return arg.name
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
