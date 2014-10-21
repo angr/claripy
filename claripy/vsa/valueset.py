@@ -87,6 +87,9 @@ class ValueSet(object):
 
             return new_vs
 
+    def __radd__(self, other):
+        return self.__add__(other)
+
     def __sub__(self, other):
         if type(other) is ValueSet:
             raise NotImplementedError()
@@ -107,6 +110,28 @@ class ValueSet(object):
             new_vs._regions[region] = si.__and__(other)
 
         return new_vs
+
+    def __eq__(self, other):
+        same = False
+        different = False
+        for region, si in other.regions.items():
+            if region in self.regions:
+                comp_ret = self.regions[region] == si
+                if BoolResult.has_true(comp_ret):
+                    same = True
+                if BoolResult.has_false(comp_ret):
+                    different = True
+            else:
+                different = True
+
+        if same and not different:
+            return TrueResult()
+        if same and different:
+            return MaybeResult()
+        return FalseResult()
+
+    def __ne__(self, other):
+        return ~ (self == other)
 
     def eval(self, n):
         results = []
@@ -151,13 +176,28 @@ class ValueSet(object):
 
     def union(self, b):
         merged_vs = self.copy()
+        if type(b) is ValueSet:
+            for region, si in b.regions.items():
+                if region not in merged_vs._regions:
+                    merged_vs._regions[region] = si
+                else:
+                    merged_vs._regions[region] = merged_vs._regions[region].union(si)
+        else:
+            for region, si in self._regions.items():
+                merged_vs._regions[region] = merged_vs._regions[region].union(b)
+
+        return merged_vs
+
+    def widen(self, b):
+        merged_vs = self.copy()
         for region, si in b.regions.items():
-            if region not in merged_vs._regions:
-                merged_vs._regions[region] = si
+            if region not in merged_vs.regions:
+                merged_vs.regions[region] = si
             else:
-                merged_vs._regions[region] = merged_vs._regions[region].union(si)
+                merged_vs.regions[region] = merged_vs.regions[region].widen(si)
 
         return merged_vs
 
 from ..ast import A
 from .strided_interval import StridedInterval
+from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
