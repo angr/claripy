@@ -1,3 +1,4 @@
+import sys
 import weakref
 import logging
 l = logging.getLogger("claripy.ast")
@@ -410,7 +411,11 @@ class A(ana.Storable):
         if not isinstance(self.model, A):
             return "<A %s>" % self.model
         else:
-            return "<A %s %r>" % (self.op, self.args)
+            try:
+                return "<A %s %r>" % (self.op, self.args)
+            except RuntimeError:
+                e_type, value, traceback = sys.exc_info()
+                raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
     @property
     def depth(self):
@@ -603,7 +608,7 @@ class I(A):
     def depth(self): return 0
     def split(self, split_on): return self
 
-from .errors import BackendError, ClaripyOperationError
+from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError
 from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from .bv import BVV
 from .vsa import StridedInterval

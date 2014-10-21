@@ -1,3 +1,6 @@
+import sys
+import ctypes
+
 import logging
 l = logging.getLogger('claripy.backends.backend')
 
@@ -85,36 +88,40 @@ class Backend(object):
 
         @returns an Expression with the result.
         '''
-        if ast.op in self._op_expr:
-            return self._op_expr[ast.op](*ast.args, result=result)
-        else:
-            converted = self.convert_list(ast.args, result=result)
-
-            if ast.op in self._op_raw_result:
-                obj = self._op_raw_result[ast.op](*converted, result=result)
-            elif ast.op in self._op_raw:
-                # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
-                obj = self._op_raw[ast.op](*converted)
-            elif not ast.op.startswith("__"):
-                l.debug("backend has no operation %s", ast.op)
-                raise BackendError("backend has no operation %s" % ast.op)
+        try:
+            if ast.op in self._op_expr:
+                return self._op_expr[ast.op](*ast.args, result=result)
             else:
-                obj = NotImplemented
+                converted = self.convert_list(ast.args, result=result)
 
-                # first, try the operation with the first guy
-                if hasattr(converted[0], ast.op):
-                    op = getattr(converted[0], ast.op)
-                    obj = op(*converted[1:])
-                # now try the reverse operation with the second guy
-                if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[ast.op]):
-                    op = getattr(converted[1], opposites[ast.op])
-                    obj = op(converted[0])
+                if ast.op in self._op_raw_result:
+                    obj = self._op_raw_result[ast.op](*converted, result=result)
+                elif ast.op in self._op_raw:
+                    # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
+                    obj = self._op_raw[ast.op](*converted)
+                elif not ast.op.startswith("__"):
+                    l.debug("backend has no operation %s", ast.op)
+                    raise BackendError("backend has no operation %s" % ast.op)
+                else:
+                    obj = NotImplemented
 
-                if obj is NotImplemented:
-                    l.debug("%s neither %s nor %s apply in backend.call()", self, ast.op, opposites[ast.op])
-                    raise BackendError("unable to apply operation on provided converted")
+                    # first, try the operation with the first guy
+                    if hasattr(converted[0], ast.op):
+                        op = getattr(converted[0], ast.op)
+                        obj = op(*converted[1:])
+                    # now try the reverse operation with the second guy
+                    if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[ast.op]):
+                        op = getattr(converted[1], opposites[ast.op])
+                        obj = op(converted[0])
 
-            return obj
+                    if obj is NotImplemented:
+                        l.debug("%s neither %s nor %s apply in backend.call()", self, ast.op, opposites[ast.op])
+                        raise BackendError("unable to apply operation on provided converted")
+
+                return obj
+        except (RuntimeError, ctypes.ArgumentError):
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
 
     #
     # Abstraction and resolution.
@@ -135,4 +142,4 @@ class Backend(object):
 
 from ..ast import A
 from ..operations import opposites
-from ..errors import BackendError
+from ..errors import BackendError, ClaripyRecursionError

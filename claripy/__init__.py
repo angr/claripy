@@ -27,6 +27,11 @@ def init_claripies():
 
 init_claripies()
 
+import sys
+recurse = 25000
+l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", recurse)
+sys.setrecursionlimit(recurse)
+
 #from .operations import *
 #from .wrapper import Wrapper, wrap, unwrap
 #from .solver import Solver, sat, unsat
