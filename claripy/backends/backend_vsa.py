@@ -406,15 +406,22 @@ class BackendVSA(ModelBackend):
     @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def union(self, *args, **kwargs):
-        assert len(args) == 2
+        if len(args) != 2:
+            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(args))
 
         ret = args[0].union(args[1])
+
+        if ret is NotImplemented:
+            ret = args[1].union(args[0])
 
         return ret
 
     @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def intersection(self, *args, **kwargs):
+        if len(args) != 2:
+            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(args))
+
         ret = None
 
         for arg in args:
@@ -428,7 +435,8 @@ class BackendVSA(ModelBackend):
     @expr_op_expand_ifproxy
     @normalize_reversed_arguments
     def widen(self, *args, **kwargs):
-        assert len(args) == 2
+        if len(args) != 2:
+            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(args))
 
         return args[0].widen(args[1])
 

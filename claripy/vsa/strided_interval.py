@@ -2,6 +2,9 @@ import fractions
 import functools
 import math
 import itertools
+import logging
+
+logger = logging.getLogger('claripy.vsa.strided_interval')
 
 from .decorators import expand_ifproxy
 
@@ -89,10 +92,15 @@ class StridedInterval(object):
         return self._reversed
 
     def normalize(self):
+        if self.size == 8 and self.reversed:
+            self._reversed = False
+
         if self.lower_bound == self.upper_bound:
             self._stride = 0
         if self._stride < 0:
             raise Exception("Why does this happen?")
+
+        return self
 
     def eval(self, n):
         results = []
@@ -751,7 +759,8 @@ class StridedInterval(object):
         :return:
         '''
         if self._reversed != b._reversed:
-            __import__("ipdb").set_trace()
+            logger.warning('Incoherent reversed flag between operands %s and %s', self, b)
+
         if self.is_empty():
             return b
         if b.is_empty():
@@ -868,6 +877,10 @@ class StridedInterval(object):
         return ret
 
     def reverse(self):
+        if self.size == 8:
+            # We cannot reverse a one-byte value
+            return self.copy()
+
         si = self.copy()
         si._reversed = not si._reversed
 

@@ -24,8 +24,8 @@ def expand_ifproxy(f):
             # build true_args and false_args
             for a in args:
                 cond = a.condition if isinstance(a, IfProxy) and cond is None else cond
-                this_true_arg = IfProxy.unwrap(a, True) if isinstance(a, IfProxy) else a
-                this_false_arg = IfProxy.unwrap(a, False) if isinstance(a, IfProxy) else a
+                this_true_arg = IfProxy.unwrap(a, True)[1] if isinstance(a, IfProxy) else a
+                this_false_arg = IfProxy.unwrap(a, False)[1] if isinstance(a, IfProxy) else a
                 true_args = (this_true_arg, ) if true_args is None else true_args + (this_true_arg, )
                 false_args = (this_false_arg, ) if false_args is None else false_args + (this_false_arg, )
 
@@ -63,9 +63,9 @@ def expr_op_expand_ifproxy(f):
             # build true_args and false_args
             for a in args:
                 ifproxy = a.model if isinstance(a, A) and isinstance(a.model, IfProxy) else None
-                cond = ifproxy.condition if cond is None else cond
-                this_true_arg = IfProxy.unwrap(ifproxy, True) if ifproxy is not None else a.model
-                this_false_arg = IfProxy.unwrap(ifproxy, False) if ifproxy is not None else a.model
+                cond = ifproxy.condition if ifproxy is not None and cond is None else cond
+                this_true_arg = IfProxy.unwrap(ifproxy, True)[1] if ifproxy is not None else a.model
+                this_false_arg = IfProxy.unwrap(ifproxy, False)[1] if ifproxy is not None else a.model
                 true_args = (this_true_arg, ) if true_args is None else true_args + (this_true_arg, )
                 false_args = (this_false_arg, ) if false_args is None else false_args + (this_false_arg, )
 

@@ -7,31 +7,47 @@ l = logging.getLogger('claripy.vsa.ifproxy')
 
 def proxified(f):
     @functools.wraps(f)
-    def expander(self, o):
+    def expander(self, *args):
         '''
         :param args: All arguments
         :return:
         '''
         op_name = f.__name__
-        args = [self.trueexpr, self.falseexpr]
+        if_exprs = [self.trueexpr, self.falseexpr]
         ret = []
-        for arg in args:
-            obj = NotImplemented
+        for i, arg in enumerate(if_exprs):
+            if len(args) == 0:
+                obj = NotImplemented
 
-            # first, try the operation with the first guy
-            if hasattr(arg, op_name):
-                op = getattr(arg, op_name)
-                obj = op(o)
-            # now try the reverse operation with the second guy
-            if obj is NotImplemented and hasattr(o, op_name):
-                op = getattr(o, opposites[op_name])
-                obj = op(arg)
+                if hasattr(arg, op_name):
+                    op = getattr(arg, op_name)
+                    obj = op()
 
-            if obj is NotImplemented:
-                l.error("%s neither %s nor %s apply in IfProxy.expander()", self, op_name, opposites[op_name])
-                raise BackendError("unable to apply operation on provided converted")
+                if obj is NotImplemented:
+                    l.error('%s %s doesn\'t apply in IfProxy.expander()', self, op_name)
+                    raise BackendError('Unable to apply operation on provided arguments.')
 
-            ret.append(obj)
+            else:
+                obj = NotImplemented
+                o = args[0]
+                if isinstance(o, IfProxy):
+                    # FIXME: We are still assuming the conditions are the same with self.condition...
+                    o = o.trueexpr if i == 0 else o.falseexpr
+
+                # first, try the operation with the first guy
+                if hasattr(arg, op_name):
+                    op = getattr(arg, op_name)
+                    obj = op(o)
+                # now try the reverse operation with the second guy
+                if obj is NotImplemented and hasattr(o, op_name):
+                    op = getattr(o, opposites[op_name])
+                    obj = op(arg)
+
+                if obj is NotImplemented:
+                    l.error("%s neither %s nor %s apply in IfProxy.expander()", self, op_name, opposites[op_name])
+                    raise BackendError("unable to apply operation on provided arguments.")
+
+                ret.append(obj)
 
         return IfProxy(self.condition, ret[0], ret[1])
 
@@ -59,7 +75,7 @@ class IfProxy(object):
             else:
                 return ifproxy.condition, IfProxy.unwrap(ifproxy.falseexpr, side)[1]
         else:
-            return ifproxy
+            return None, ifproxy
 
     @property
     def condition(self):
@@ -86,7 +102,28 @@ class IfProxy(object):
     def __ne__(self, other): pass
 
     @proxified
+    def __neg__(self): pass
+
+    @proxified
+    def __add__(self, other): pass
+
+    @proxified
+    def __radd__(self, other): pass
+
+    @proxified
+    def __sub__(self, other): pass
+
+    @proxified
+    def __rsub__(self, other): pass
+
+    @proxified
+    def __invert__(self): pass
+
+    @proxified
     def __or__(self, other): pass
+
+    @proxified
+    def __ror__(self, other): pass
 
     @proxified
     def __xor__(self, other): pass
