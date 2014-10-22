@@ -132,7 +132,7 @@ class Claripy(object):
             try: return b.simplify_expr(e)
             except BackendError: pass
 
-        l.warning("Unable to simplify expression")
+        l.debug("Unable to simplify expression")
         return e
 
     def is_true(self, e):
