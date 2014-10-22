@@ -43,6 +43,24 @@ class IfProxy(object):
         self._true = true_expr
         self._false = false_expr
 
+    @staticmethod
+    def unwrap(ifproxy, side=True):
+        '''
+
+        :param ifproxy:
+        :param side: Decides which expr you want
+        :return: A tuple of condition and expr
+        '''
+
+        # FIXME: find a better way to deal with cross-or'ed conditions!
+        if isinstance(ifproxy, IfProxy):
+            if side:
+                return ifproxy.condition, IfProxy.unwrap(ifproxy.trueexpr, side)[1]
+            else:
+                return ifproxy.condition, IfProxy.unwrap(ifproxy.falseexpr, side)[1]
+        else:
+            return ifproxy
+
     @property
     def condition(self):
         return self._cond

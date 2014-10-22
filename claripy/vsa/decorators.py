@@ -13,44 +13,29 @@ def expand_ifproxy(f):
         :return:
         '''
 
-        # FIXME: Now we have a very bad assumption - if we see two IfProxy
+        # FIXME: Now we have a very bad assumption - if we see more than one IfProxy
         # instances as the two operands, we assume they must both be true or
         # false.
-        if isinstance(args[0], IfProxy):
-            ifproxy = args[0]
-            cond = ifproxy.condition
-            if len(args) > 1 and isinstance(args[1], IfProxy):
-                true_args = (ifproxy.trueexpr, ) + (args[1].trueexpr, ) + args[2:]
-                false_args = (ifproxy.falseexpr, ) + (args[1].falseexpr, ) +  args[2:]
-            else:
-                true_args = (ifproxy.trueexpr, ) + args[1 : ]
-                false_args = (ifproxy.falseexpr, ) + args[1 : ]
+        any_ifproxy = any([isinstance(a, IfProxy) for a in args])
+        if any_ifproxy:
+            true_args = None
+            false_args = None
+            cond = None
+            # build true_args and false_args
+            for a in args:
+                cond = a.condition if isinstance(a, IfProxy) and cond is None else cond
+                this_true_arg = IfProxy.unwrap(a, True) if isinstance(a, IfProxy) else a
+                this_false_arg = IfProxy.unwrap(a, False) if isinstance(a, IfProxy) else a
+                true_args = (this_true_arg, ) if true_args is None else true_args + (this_true_arg, )
+                false_args = (this_false_arg, ) if false_args is None else false_args + (this_false_arg, )
+
             trueexpr = f(*true_args, **kwargs)
             falseexpr = f(*false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        if len(args) > 1 and isinstance(args[1], IfProxy):
-            ifproxy = args[1]
-            cond = ifproxy.condition
-            true_args = args[ : 1] + (ifproxy.trueexpr, ) + args[2:]
-            false_args = args[ : 1] + (ifproxy.falseexpr, ) + args[2:]
-            trueexpr = f(*true_args)
-            falseexpr = f(*false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        if len(args) > 2 and isinstance(args[2], IfProxy):
-            ifproxy = args[2]
-            cond = ifproxy.condition
-            true_args = args[: 2] + (ifproxy.trueexpr, ) + args[3:]
-            false_args = args[: 2] + (ifproxy.falseexpr, ) + args[3:]
-            trueexpr = f(*true_args, **kwargs)
-            falseexpr = f(*false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        return f(*args, **kwargs)
+        else:
+            return f(*args, **kwargs)
 
     return expander
 
@@ -70,41 +55,27 @@ def expr_op_expand_ifproxy(f):
         # FIXME: Now we have a very bad assumption - if we see two IfProxy
         # instances as the two operands, we assume they must both be true or
         # false.
-        if isinstance(args[0], A) and isinstance(args[0].model, IfProxy):
-            ifproxy = args[0].model
-            cond = ifproxy.condition
-            if len(args) > 1 and isinstance(args[1].model, IfProxy):
-                true_args = (ifproxy.trueexpr, ) + (args[1].model.trueexpr, ) + args[2:]
-                false_args = (ifproxy.falseexpr, ) + (args[1].model.falseexpr, ) +  args[2:]
-            else:
-                true_args = (ifproxy.trueexpr, ) + args[1 : ]
-                false_args = (ifproxy.falseexpr, ) + args[1 : ]
+        any_ifproxy = any([isinstance(a, A) and isinstance(a.model, IfProxy) for a in args])
+        if any_ifproxy:
+            true_args = None
+            false_args = None
+            cond = None
+            # build true_args and false_args
+            for a in args:
+                ifproxy = a.model if isinstance(a, A) and isinstance(a.model, IfProxy) else None
+                cond = ifproxy.condition if cond is None else cond
+                this_true_arg = IfProxy.unwrap(ifproxy, True) if ifproxy is not None else a.model
+                this_false_arg = IfProxy.unwrap(ifproxy, False) if ifproxy is not None else a.model
+                true_args = (this_true_arg, ) if true_args is None else true_args + (this_true_arg, )
+                false_args = (this_false_arg, ) if false_args is None else false_args + (this_false_arg, )
+
             trueexpr = f(self, *true_args, **kwargs)
             falseexpr = f(self, *false_args, **kwargs)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
-        if len(args) > 1 and isinstance(args[1], A) and isinstance(args[1].model, IfProxy):
-            ifproxy = args[1].model
-            cond = ifproxy.condition
-            true_args = args[ : 1] + (ifproxy.trueexpr, ) + args[2:]
-            false_args = args[ : 1] + (ifproxy.falseexpr, ) + args[2:]
-            trueexpr = f(self, *true_args)
-            falseexpr = f(self, *false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        if len(args) > 2 and isinstance(args[2], A) and isinstance(args[2].model, IfProxy):
-            ifproxy = args[2].model
-            cond = ifproxy.condition
-            true_args = args[: 2] + (ifproxy.trueexpr, ) + args[3:]
-            false_args = args[: 2] + (ifproxy.falseexpr, ) + args[3:]
-            trueexpr = f(self, *true_args, **kwargs)
-            falseexpr = f(self, *false_args, **kwargs)
-
-            return IfProxy(cond, trueexpr, falseexpr)
-
-        return f(self, *args, **kwargs)
+        else:
+            return f(self, *args, **kwargs)
 
     return expander
 

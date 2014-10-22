@@ -335,6 +335,7 @@ class BackendVSA(ModelBackend):
         return expr >> shift_amount
 
     @staticmethod
+    @expand_ifproxy
     def Concat(*args):
         ret = None
         for expr in args:
