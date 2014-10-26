@@ -145,7 +145,7 @@ def _finalize_same_length(claripy, op, args, kwargs):
 def _finalize_I(claripy, op, args, kwargs):
     for b in claripy.model_backends:
         try:
-            kwargs['length'] = b.size_expr(args[0])
+            kwargs['length'] = b.size(args[0])
             break
         except BackendError: pass
     else:
@@ -153,7 +153,7 @@ def _finalize_I(claripy, op, args, kwargs):
 
     for b in claripy.model_backends:
         try:
-            name = b.name_expr(args[0])
+            name = b.name(args[0])
             if name is not None:
                 variables = kwargs.get('variables', set())
                 variables.add(name)
@@ -199,7 +199,6 @@ def _finalize(claripy, op, args, kwargs):
     return o,tuple(a),k
 
 #pylint:enable=unused-argument
-
 
 class A(ana.Storable):
     '''

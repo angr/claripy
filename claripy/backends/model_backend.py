@@ -13,7 +13,7 @@ class ModelBackend(Backend):
 	# These functions provide solving and evaluation support.
 	#
 
-	def eval_expr(self, expr, n, result=None):
+	def eval(self, expr, n, result=None):
 		'''
 		This function returns up to n possible solutions for expression expr.
 
@@ -22,9 +22,9 @@ class ModelBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns a sequence of up to n results (backend objects)
 		'''
-		return self.eval(self.convert(expr), n, result=result)
+		return self._eval(self.convert(expr), n, result=result)
 
-	def eval(self, expr, n, result=None): #pylint:disable=unused-argument,no-self-use
+	def _eval(self, expr, n, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
 		This function returns up to n possible solutions for expression expr.
 
@@ -35,7 +35,7 @@ class ModelBackend(Backend):
 		'''
 		raise BackendError("backend doesn't support eval()")
 
-	def min_expr(self, expr, result=None):
+	def min(self, expr, result=None):
 		'''
 		Return the minimum value of expr.
 
@@ -43,9 +43,9 @@ class ModelBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns the minimum possible value of expr (backend object)
 		'''
-		return self.min(self.convert(expr), result=result)
+		return self._min(self.convert(expr), result=result)
 
-	def min(self, expr, result=None): #pylint:disable=unused-argument,no-self-use
+	def _min(self, expr, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
 		Return the minimum value of expr.
 
@@ -55,7 +55,7 @@ class ModelBackend(Backend):
 		'''
 		raise BackendError("backend doesn't support min()")
 
-	def max_expr(self, expr, result=None):
+	def max(self, expr, result=None):
 		'''
 		Return the maximum value of expr.
 
@@ -63,9 +63,9 @@ class ModelBackend(Backend):
 		@param result: a cached Result from the last constraint solve
 		@returns the maximum possible value of expr (backend object)
 		'''
-		return self.max(self.convert(expr), result=result)
+		return self._max(self.convert(expr), result=result)
 
-	def max(self, expr, result=None): #pylint:disable=unused-argument,no-self-use
+	def _max(self, expr, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
 		Return the maximum value of expr.
 
@@ -75,7 +75,7 @@ class ModelBackend(Backend):
 		'''
 		raise BackendError("backend doesn't support max()")
 
-	def solution_expr(self, expr, v, result=None):
+	def solution(self, expr, v, result=None):
 		'''
 		Return True if v is a solution of expr with the extra constraints, False otherwise.
 
@@ -85,9 +85,9 @@ class ModelBackend(Backend):
 		@returns True if v is a solution of expr, False otherwise
 		'''
 
-		return self.solution(self.convert(expr), self.convert(v), result=result)
+		return self._solution(self.convert(expr), self.convert(v), result=result)
 
-	def solution(self, expr, v, result=None): #pylint:disable=unused-argument,no-self-use
+	def _solution(self, expr, v, result=None): #pylint:disable=unused-argument,no-self-use
 		'''
 		Return True if v is a solution of expr with the extra constraints, False otherwise.
 
@@ -115,15 +115,15 @@ class ModelBackend(Backend):
 	def is_true(o):
 		return o == True
 
-	def size_expr(self, a, result=None):
+	def size(self, a, result=None):
 		'''
 		This should return the size of an expression.
 
 		@param a: the claripy A object
 		'''
-		return self.size(self.convert(a, result=result))
+		return self._size(self.convert(a, result=result))
 
-	def size(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+	def _size(self, o, result=None): #pylint:disable=no-self-use,unused-argument
 		'''
 		This should return the size of an object.
 
@@ -131,15 +131,15 @@ class ModelBackend(Backend):
 		'''
 		raise BackendError("backend doesn't support solution()")
 
-	def name_expr(self, a, result=None):
+	def name(self, a, result=None):
 		'''
 		This should return the name of an expression.
 
 		@param a: the claripy A object
 		'''
-		return self.name(self.convert(a, result=result))
+		return self._name(self.convert(a, result=result))
 
-	def name(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+	def _name(self, o, result=None): #pylint:disable=no-self-use,unused-argument
 		'''
 		This should return the name of an object.
 
@@ -147,7 +147,7 @@ class ModelBackend(Backend):
 		'''
 		raise BackendError("backend doesn't support solution()")
 
-	def identical_expr(self, a, b, result=None):
+	def identical(self, a, b, result=None):
 		'''
 		This should return whether a is identical to b. Of course, this isn't always
 		clear. A True should mean that it is definitely identical. False
@@ -156,9 +156,9 @@ class ModelBackend(Backend):
 		@param a: a claripy A object
 		@param b: a claripy A object
 		'''
-		return self.identical(self.convert(a, result=result), self.convert(b, result=result))
+		return self._identical(self.convert(a, result=result), self.convert(b, result=result))
 
-	def identical(self, a, b, result=None): #pylint:disable=no-self-use,unused-argument
+	def _identical(self, a, b, result=None): #pylint:disable=no-self-use,unused-argument
 		'''
 		This should return whether a is identical to b. Of course, this isn't always
 		clear. A True should mean that it is definitely identical. False

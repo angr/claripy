@@ -8,7 +8,7 @@ from ..vsa import expand_ifproxy, expr_op_expand_ifproxy
 
 def arg_filter(f):
     @functools.wraps(f)
-    def filter(*args):
+    def filter(*args): #pylint:disable=redefined-builtin
         if type(args[0]) in {int, long}:
             raise BackendError('Unsupported argument type %s' % type(args[0]))
         return f(*args)
@@ -95,7 +95,7 @@ def normalize_reversed_arguments(f):
             if type(a) is A:
                 variables |= a.variables
             else:
-                variables.add(a.name)
+                variables._add(a.name)
 
         # inner_i = I(args[0]._claripy, ret, variables=variables)
         if any_reversed_arg:
@@ -116,17 +116,8 @@ class BackendVSA(ModelBackend):
         self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
         self._op_raw['ValueSet'] = ValueSet.__init__
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
-        self._op_raw['size'] = BackendVSA.size
         self._op_raw['Reverse'] = BackendVSA.Reverse
-        self._op_raw['Identical'] = BackendVSA.Identical
-        self._op_raw['name'] = BackendVSA.name
         self._op_expr['If'] = self.If
-
-    def add_exprs(self, solver, constraints):
-        pass
-
-    def results_exprs(self, solver, extra_constraints, generic_backend):
-        return Result(True, self)
 
     def _convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str }:
@@ -140,30 +131,29 @@ class BackendVSA(ModelBackend):
         if isinstance(a, IfProxy):
             return a
 
-        import ipdb; ipdb.set_trace()
         raise NotImplementedError()
 
-    def eval(self, expr, n, result=None):
+    def _eval(self, expr, n, result=None):
         if isinstance(expr, StridedInterval):
-            return expr.eval(n)
+            return expr._eval(n)
         elif isinstance(expr, ValueSet):
             results = []
 
             while len(results) < n:
-                results.extend(expr.eval(n - len(results)))
+                results.extend(expr._eval(n - len(results)))
 
             return results
         elif isinstance(expr, BoolResult):
             return expr.value
         elif isinstance(expr, IfProxy):
-            results = set(self.eval(expr.trueexpr, n, result=result))
+            results = set(self._eval(expr.trueexpr, n, result=result))
             if len(results) < n:
-                results |= set(self.eval(expr.falseexpr, n - len(results), result=result))
+                results |= set(self._eval(expr.falseexpr, n - len(results), result=result))
             return list(results)
         else:
             raise BackendError('Unsupported type %s' % type(expr))
 
-    def min(self, expr, result=None):
+    def _min(self, expr, result=None):
         if isinstance(expr, StridedInterval):
             if expr.is_top():
                 # TODO: Return
@@ -173,7 +163,7 @@ class BackendVSA(ModelBackend):
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def max(self, expr, result=None):
+    def _max(self, expr, result=None):
         assert type(expr) == StridedInterval
 
         if expr.is_top():
@@ -182,10 +172,10 @@ class BackendVSA(ModelBackend):
 
         return expr.upper_bound
 
-    def solution(self, obj, v, result=None):
+    def _solution(self, obj, v, result=None):
         if isinstance(obj, IfProxy):
-            ret = self.solution(obj.trueexpr, v, result=result) or \
-                self.solution(obj.falseexpr, v, result=result)
+            ret = self._solution(obj.trueexpr, v, result=result) or \
+                self._solution(obj.falseexpr, v, result=result)
             return ret
 
         if isinstance(obj, BoolResult):
@@ -289,10 +279,8 @@ class BackendVSA(ModelBackend):
     # Backend Operations
     #
 
-    @staticmethod
-    def Identical(a, b):
+    def _identical(self, a, b, result=None):
         return BackendVSA.is_true(a == b)
-    identical = Identical
 
     @staticmethod
     @expand_ifproxy
@@ -311,7 +299,7 @@ class BackendVSA(ModelBackend):
     def ULT(a, b):
         return a < b
 
-    def If(self, cond, true_expr, false_expr, result=None):
+    def If(self, cond, true_expr, false_expr, result=None): #pylint:disable=unused-argument
         exprs = []
         cond_model = self.convert(cond)
         if self.has_true(cond_model):
@@ -347,9 +335,8 @@ class BackendVSA(ModelBackend):
 
         return ret
 
-    @staticmethod
     @arg_filter
-    def size(arg):
+    def _size(self, arg, result=None):
         if type(arg) in { StridedInterval, ValueSet, IfProxy }:
             return len(arg)
         else:
@@ -392,20 +379,13 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @expand_ifproxy
     def Reverse(arg):
-        assert type(arg) in { StridedInterval, ValueSet }
-
-        return arg.reverse()
-
-    @staticmethod
-    @expand_ifproxy
-    def Reverse(arg):
         assert type(arg) in {StridedInterval, ValueSet}
 
         return arg.reverse()
 
     @expr_op_expand_ifproxy
     @normalize_reversed_arguments
-    def union(self, *args, **kwargs):
+    def union(self, *args, **kwargs): #pylint:disable=unused-argument,no-self-use
         if len(args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(args))
 
@@ -418,7 +398,7 @@ class BackendVSA(ModelBackend):
 
     @expr_op_expand_ifproxy
     @normalize_reversed_arguments
-    def intersection(self, *args, **kwargs):
+    def intersection(self, *args, **kwargs): #pylint:disable=unused-argument,no-self-use
         if len(args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(args))
 
@@ -434,7 +414,7 @@ class BackendVSA(ModelBackend):
 
     @expr_op_expand_ifproxy
     @normalize_reversed_arguments
-    def widen(self, *args, **kwargs):
+    def widen(self, *args, **kwargs): #pylint:disable=unused-argument,no-self-use
         if len(args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(args))
 
@@ -460,7 +440,6 @@ class BackendVSA(ModelBackend):
                 return to_conv
 
             if type(to_conv) not in {int, long, BVV}:
-                import ipdb; ipdb.set_trace()
                 raise BackendError('Unsupported to_conv type %s' % type(to_conv))
 
             if stride is not None or lower_bound is not None or \
@@ -486,12 +465,11 @@ class BackendVSA(ModelBackend):
         return bi
 
     @staticmethod
-    def CreateTopStridedInterval(bits, name=None, signed=False):
+    def CreateTopStridedInterval(bits, name=None, signed=False): #pylint:disable=unused-argument,no-self-use
         return StridedInterval.top(bits, name=None, signed=signed)
 
 from ..bv import BVV
-from ..ast import A, I
-from ..operations import backend_operations_vsa_compliant, backend_vsa_creation_operations, expression_operations, expression_set_operations
+from ..ast import A
+from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
-from ..result import Result
 from ..vsa import IfProxy

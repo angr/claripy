@@ -12,8 +12,6 @@ class BackendConcrete(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
-        self._op_raw['size'] = self.size
-        self._op_raw['name'] = self.name
         self._op_raw_result['BitVec'] = self.BitVec
 
     def BitVec(self, name, size, result=None): #pylint:disable=W0613,R0201
@@ -26,7 +24,7 @@ class BackendConcrete(ModelBackend):
         else:
             return result.model[name]
 
-    def size(self, e, result=None):
+    def _size(self, e, result=None):
         if type(e) is bool:
             return None
         if type(e) in { BVV }:
@@ -34,11 +32,10 @@ class BackendConcrete(ModelBackend):
         else:
             raise BackendError("can't get size of type %s" % type(e))
 
-    def name(self, e, result=None): #pylint:disable=unused-argument,no-self-use
+    def _name(self, e, result=None): #pylint:disable=unused-argument,no-self-use
         return None
 
-    @staticmethod
-    def identical(a, b):
+    def _identical(self, a, b, result=None):
         if type(a) is BVV and type(b) is BVV and a.size() != b.size():
             return False
         else:
@@ -81,13 +78,13 @@ class BackendConcrete(ModelBackend):
     # Evaluation functions
     #
 
-    def eval(self, expr, n, result=None):
+    def _eval(self, expr, n, result=None):
         return [ self.convert(expr, result=result if n == 1 else None) ]
-    def max(self, expr, result=None):
+    def _max(self, expr, result=None):
         return self.convert(expr, result=result)
-    def min(self, expr, result=None):
+    def _min(self, expr, result=None):
         return self.convert(expr, result=result)
-    def solution(self, expr, v, result=None):
+    def _solution(self, expr, v, result=None):
         return self.convert(expr, result=result) == v
 
 from ..bv import BVV

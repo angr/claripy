@@ -57,11 +57,11 @@ class Solver(ana.Storable):
 	def _get_solver(self, backend):
 		if backend in self._solver_states:
 			s = self._solver_states[backend]
-			backend.add_exprs(s, self._to_add[backend])
+			backend.add(s, self._to_add[backend])
 			self._to_add[backend] = [ ]
 		else:
 			s = backend.solver(timeout=self._timeout)
-			backend.add_exprs(s, self.constraints)
+			backend.add(s, self.constraints)
 			self._solver_states[backend] = s
 			self._to_add[backend] = [ ]
 
@@ -222,7 +222,7 @@ class Solver(ana.Storable):
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
-				try: return b.eval_expr(e, n, result=self._result)
+				try: return b.eval(e, n, result=self._result)
 				except BackendError: pass
 
 		if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
@@ -278,7 +278,7 @@ class Solver(ana.Storable):
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
-				try: return b.max_expr(e, result=self._result)
+				try: return b.max(e, result=self._result)
 				except BackendError: pass
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
@@ -306,7 +306,7 @@ class Solver(ana.Storable):
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
-				try: return b.min_expr(e, result=self._result)
+				try: return b.min(e, result=self._result)
 				except BackendError: pass
 
 		two = self.eval(e, 2, extra_constraints=extra_constraints)
@@ -336,7 +336,7 @@ class Solver(ana.Storable):
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
-				try: return b.solution_expr(e, v, result=self._result)
+				try: return b.solution(e, v, result=self._result)
 				except BackendError: pass
 
 		b = self._solution(e, v, extra_constraints=extra_constraints)
@@ -362,7 +362,7 @@ class Solver(ana.Storable):
 				l.debug("... trying %s", b)
 
 				a = time.time()
-				r = b.results_exprs(s, extra_constraints, generic_model=True)
+				r = b.results(s, extra_constraints, generic_model=True)
 				b = time.time()
 
 				l_timing.debug("... %s in %s seconds", r.sat, b - a)
@@ -378,7 +378,7 @@ class Solver(ana.Storable):
 		for b in self._claripy.solver_backends:
 			try:
 				l.debug("... trying backend %s", b.__class__.__name__)
-				results = b.eval_expr(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
+				results = b.eval(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
 				return [ self._claripy.model_object(r) for r in results ]
 			except BackendError as be:
 				l.debug("... BackendError: %s", be)
@@ -389,7 +389,7 @@ class Solver(ana.Storable):
 		l.debug("Solver.max() with %d extra_constraints", len(extra_constraints))
 		for b in self._claripy.solver_backends:
 			try:
-				return b.max_expr(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
+				return b.max(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
 			except BackendError as be:
 				l.debug("... BackendError: %s", be)
 		raise ClaripySolverError("all solver backends failed for Solver._max")
@@ -398,7 +398,7 @@ class Solver(ana.Storable):
 		l.debug("Solver.min() with %d extra_constraints", len(extra_constraints))
 		for b in self._claripy.solver_backends:
 			try:
-				return b.min_expr(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
+				return b.min(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
 			except BackendError as be:
 				l.debug("... BackendError: %s", be)
 		raise ClaripySolverError("all solver backends failed for Solver._min")
@@ -406,7 +406,7 @@ class Solver(ana.Storable):
 	def _solution(self, e, v, extra_constraints=()):
 		for b in self._claripy.solver_backends:
 			try:
-				return b.solution_expr(self._get_solver(b), e, v, extra_constraints=extra_constraints)
+				return b.solution(self._get_solver(b), e, v, extra_constraints=extra_constraints)
 			except BackendError as be:
 				l.debug("... BackendError: %s", be)
 		raise ClaripySolverError("all solver backends failed for Solver._solution")

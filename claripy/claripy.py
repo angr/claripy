@@ -123,13 +123,13 @@ class Claripy(object):
 
     def simplify(self, e):
         for b in self.model_backends:
-            try: return b.simplify_expr(e)
+            try: return b.simplify(e)
             except BackendError: pass
 
         l.debug("Simplifying via solver backend")
 
         for b in self.solver_backends:
-            try: return b.simplify_expr(e)
+            try: return b.simplify(e)
             except BackendError: pass
 
         l.debug("Unable to simplify expression")
@@ -170,7 +170,7 @@ class Claripy(object):
         for o in args:
             for b in self.model_backends:
                 try:
-                    i = b.identical_expr(first, o)
+                    i = b.identical(first, o)
                     if identical is None:
                         identical = True
                     identical &= i is True

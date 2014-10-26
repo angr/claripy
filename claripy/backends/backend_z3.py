@@ -61,18 +61,17 @@ class BackendZ3(SolverBackend):
 		# and the operations
 		for o in backend_operations - { 'Reverse' }:
 			self._op_raw[o] = getattr(z3, o)
-		self._op_raw['size'] = self.size
 		self._op_raw['Reverse'] = self.reverse
 		self._op_raw['Identical'] = self.identical
 
 	@condom
-	def size(self, e, result=None):
+	def _size(self, e, result=None):
 		if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
 			l.debug("Unable to determine length of value of type %s", e.__class__)
 			raise BackendError("Unable to determine length of value of type %s" % e.__class__)
 		return e.size()
 
-	def name(self, e, result=None): #pylint:disable=unused-argument
+	def _name(self, e, result=None): #pylint:disable=unused-argument
 		l.warning("BackendZ3.name() called. This is weird.")
 		raise BackendError("name is not implemented yet")
 
@@ -86,7 +85,7 @@ class BackendZ3(SolverBackend):
 		else:
 			return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
-	def identical(self, a, b, result=None):
+	def _identical(self, a, b, result=None):
 		return a.eq(b)
 
 	@condom
@@ -184,11 +183,11 @@ class BackendZ3(SolverBackend):
 			s.set('timeout', timeout)
 		return s
 
-	def add(self, s, c):
+	def _add(self, s, c):
 		s.add(*c)
 
 	@condom
-	def check(self, s, extra_constraints=None): #pylint:disable=R0201
+	def _check(self, s, extra_constraints=None): #pylint:disable=R0201
 		global solve_count
 		solve_count += 1
 		if extra_constraints is not None:
@@ -205,8 +204,8 @@ class BackendZ3(SolverBackend):
 		return satness
 
 	@condom
-	def results(self, s, extra_constraints=None, generic_model=True):
-		satness = self.check(s, extra_constraints=extra_constraints)
+	def _results(self, s, extra_constraints=None, generic_model=True):
+		satness = self._check(s, extra_constraints=extra_constraints)
 		model = { }
 		z3_model = None
 
@@ -224,7 +223,7 @@ class BackendZ3(SolverBackend):
 		return Result(satness, model, backend_model=z3_model)
 
 	@condom
-	def eval(self, s, expr, n, extra_constraints=None, result=None):
+	def _eval(self, s, expr, n, extra_constraints=None, result=None):
 		global solve_count, cache_count
 
 		#if n == 1 and model is None:
@@ -269,7 +268,7 @@ class BackendZ3(SolverBackend):
 		return results
 
 	@condom
-	def min(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
+	def _min(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
@@ -318,7 +317,7 @@ class BackendZ3(SolverBackend):
 		return BVV(hi, expr.size())
 
 	@condom
-	def max(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
+	def _max(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
@@ -365,11 +364,11 @@ class BackendZ3(SolverBackend):
 				s.pop()
 		return BVV(lo, expr.size())
 
-	def simplify(self, expr): #pylint:disable=W0613,R0201
+	def _simplify(self, expr): #pylint:disable=W0613,R0201
 		raise Exception("This shouldn't be called. Bug Yan.")
 
 	@condom
-	def simplify_expr(self, expr):
+	def simplify(self, expr):
 		if expr._simplified:
 			return expr
 

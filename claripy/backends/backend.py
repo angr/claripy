@@ -61,7 +61,7 @@ class Backend(object):
 
     def convert(self, expr, result=None): #pylint:disable=R0201
         '''
-        Resolves a claripy.E into something usable by the backend.
+        Resolves a claripy.A into something usable by the backend.
 
         @param expr: the expression
         @param save: save the result in the expression's object cache
@@ -134,10 +134,10 @@ class Backend(object):
     # These functions simplify expressions.
     #
 
-    def simplify_expr(self, e):
-        return self.simplify(self.convert(e))
+    def simplify(self, e):
+        return self._simplify(self.convert(e))
 
-    def simplify(self, e): # pylint:disable=R0201,unused-argument
+    def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
 from ..ast import A

@@ -89,32 +89,32 @@ class BackendZ3Parallel(BackendZ3):
 				a.translate()
 
 	# backgrounded
-	def results(self, *args, **kwargs):
-		return self._background('results', *args, **kwargs)
-	def eval(self, *args, **kwargs):
-		return self._background('eval', *args, **kwargs)
-	def min(self, *args, **kwargs):
-		return self._background('min', *args, **kwargs)
-	def max(self, *args, **kwargs):
-		return self._background('max', *args, **kwargs)
+	def _results(self, *args, **kwargs):
+		return self._background('_results', *args, **kwargs)
+	def _eval(self, *args, **kwargs):
+		return self._background('_eval', *args, **kwargs)
+	def _min(self, *args, **kwargs):
+		return self._background('_min', *args, **kwargs)
+	def _max(self, *args, **kwargs):
+		return self._background('_max', *args, **kwargs)
 
 	def _convert(self, *args, **kwargs):
-		return self._synchronize('convert', *args, **kwargs)
+		return self._synchronize('_convert', *args, **kwargs)
 	def abstract(self, *args, **kwargs):
 		return self._synchronize('abstract', *args, **kwargs)
-	def size(self, *args, **kwargs):
-		return self._synchronize('size', *args, **kwargs)
+	def _size(self, *args, **kwargs):
+		return self._synchronize('_size', *args, **kwargs)
 	def solver(self, *args, **kwargs):
 		return self._synchronize('solver', *args, **kwargs)
-	def add(self, *args, **kwargs):
-		return self._synchronize('add', *args, **kwargs)
-	def check(self, *args, **kwargs):
-		return self._synchronize('check', *args, **kwargs)
-	def simplify(self, *args, **kwargs):
-		return self._synchronize('simplify', *args, **kwargs)
+	def _add(self, *args, **kwargs):
+		return self._synchronize('_add', *args, **kwargs)
+	def _check(self, *args, **kwargs):
+		return self._synchronize('_check', *args, **kwargs)
+	def _simplify(self, *args, **kwargs):
+		return self._synchronize('_simplify', *args, **kwargs)
 	def call(self, *args, **kwargs):
 		return self._synchronize('call', *args, **kwargs)
-	def simplify_expr(self, *args, **kwargs):
-		return self._synchronize('simplify_expr', *args, **kwargs)
+	def simplify(self, *args, **kwargs):
+		return self._synchronize('simplify', *args, **kwargs)
 
 from ..errors import ClaripyError, UnsatError
