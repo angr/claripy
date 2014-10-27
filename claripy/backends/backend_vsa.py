@@ -95,7 +95,7 @@ def normalize_reversed_arguments(f):
             if type(a) is A:
                 variables |= a.variables
             else:
-                variables._add(a.name)
+                variables.add(a.name)
 
         # inner_i = I(args[0]._claripy, ret, variables=variables)
         if any_reversed_arg:
@@ -135,12 +135,12 @@ class BackendVSA(ModelBackend):
 
     def _eval(self, expr, n, result=None):
         if isinstance(expr, StridedInterval):
-            return expr._eval(n)
+            return expr.eval(n)
         elif isinstance(expr, ValueSet):
             results = []
 
             while len(results) < n:
-                results.extend(expr._eval(n - len(results)))
+                results.extend(expr.eval(n - len(results)))
 
             return results
         elif isinstance(expr, BoolResult):
