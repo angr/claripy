@@ -282,6 +282,16 @@ class BackendVSA(ModelBackend):
     def _identical(self, a, b, result=None):
         return BackendVSA.is_true(a == b)
 
+    def _unique(self, obj, result=None):
+        if isinstance(obj, StridedInterval):
+            return obj.unique
+        elif isinstance(obj, ValueSet):
+            return obj.unique
+        elif isinstance(obj, IfProxy):
+            return False
+        else:
+            raise BackendError('Not supported type of operand %s' % type(obj))
+
     @staticmethod
     @expand_ifproxy
     @normalize_boolean_arg_types

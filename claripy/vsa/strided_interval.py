@@ -300,6 +300,10 @@ class StridedInterval(object):
             # It is empty
             return None
 
+    @property
+    def unique(self):
+        return self.min is not None and self.min == self.max
+
     def _min_bits(self):
         v = self._upper_bound
         assert v >= 0
