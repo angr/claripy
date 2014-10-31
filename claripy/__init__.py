@@ -27,6 +27,10 @@ def init_claripies():
     Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
     Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
 
+    backend_concrete = backends.BackendConcrete()
+    Claripies['Concrete'] = ClaripyStandalone('Concrete', model_backends=[backend_concrete], solver_backends=[], parallel=False)
+    backend_concrete.set_claripy_object(Claripies['Concrete'])
+
 init_claripies()
 
 import sys
