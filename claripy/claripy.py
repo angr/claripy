@@ -54,7 +54,11 @@ class Claripy(object):
     def SignExt(self, *args): return A(self, 'SignExt', args).reduced
     def ZeroExt(self, *args): return A(self, 'ZeroExt', args).reduced
     def Extract(self, *args): return A(self, 'Extract', args).reduced
-    def Concat(self, *args): return A(self, 'Concat', args).reduced
+    def Concat(self, *args):
+        if len(args) == 1:
+            return args[0]
+        else:
+            return A(self, 'Concat', args).reduced
     def RotateLeft(self, *args): return A(self, 'RotateLeft', args).reduced
     def RotateRight(self, *args): return A(self, 'RotateRight', args).reduced
     def Reverse(self, o): return A(self, 'Reverse', (o,), collapsible=False).reduced
