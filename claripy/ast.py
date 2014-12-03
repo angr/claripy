@@ -80,10 +80,7 @@ def _finalize_If(claripy, op, args, kwargs):
                 args = (args[0], args[1], claripy.BVV(args[2], case_lengths[0]))
 
     lengths = set(_arg_size(a) for a in args[1:]) - { None }
-    if len(lengths) != 1 or _arg_size(args[0]) is not None:
-        raise ClaripyOperationError("If must have equal-sized cases and a boolean condition")
-
-    kwargs['length'] = lengths.pop()
+    kwargs['length'] = lengths.pop() if len(lengths) > 0 else None
     return op, args, kwargs
 
 def _finalize_Concat(claripy, op, args, kwargs):
@@ -179,7 +176,7 @@ def _finalize(claripy, op, args, kwargs):
         errored = set.union(set(), *(a._errored for a in args if isinstance(a, A)))
     kwargs['errored'] = errored
 
-    nolength = op == 'I'
+    nolength = op == 'I' or op == 'If'
     if '_finalize_' + op in globals():
         o,a,k = globals()['_finalize_' + op](claripy, op, args, kwargs)
     elif op in length_same_operations:
