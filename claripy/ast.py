@@ -256,7 +256,6 @@ class A(ana.Storable):
         self.length = length
         self.variables = variables
         self.symbolic = symbolic
-        self.length = length
 
         self._collapsible = True if collapsible is None else collapsible
         self._claripy = claripy
