@@ -160,6 +160,14 @@ def _finalize_I(claripy, op, args, kwargs):
 
     return op, args, kwargs
 
+def _finalize_get_errored(args):
+    #all_errored = [ ]
+    #for a in args:
+    #   if isinstance(a, A):
+    #       all_errored.append(a._errored)
+    #return set.union(set(), *all_errored)
+    return set.union(set(), *tuple(a._errored for a in args if isinstance(a, A)))
+
 def _finalize(claripy, op, args, kwargs):
     variables = kwargs.get('variables', None)
     if variables is None:
@@ -173,8 +181,7 @@ def _finalize(claripy, op, args, kwargs):
 
     errored = kwargs.get('errored', None)
     if errored is None:
-        errored = set.union(set(), *(a._errored for a in args if isinstance(a, A)))
-    kwargs['errored'] = errored
+        kwargs['errored'] = _finalize_get_errored(args)
 
     nolength = op == 'I' or op == 'If'
     if '_finalize_' + op in globals():
@@ -522,45 +529,45 @@ class A(ana.Storable):
 
         return tuple_list
 
-    def pivot(self, expr_in_left_branch=None, expr_in_right_branch=None, additional_expr=None):
-        '''
+    #def pivot(self, expr_in_left_branch=None, expr_in_right_branch=None, additional_expr=None):
+    #   '''
 
-        :param expr_in_left_branch:
-        :param expr_in_right_branch:
-        :return:
-        '''
-        if expr_in_left_branch is None and expr_in_right_branch is None:
-            return
+    #   :param expr_in_left_branch:
+    #   :param expr_in_right_branch:
+    #   :return:
+    #   '''
+    #   if expr_in_left_branch is None and expr_in_right_branch is None:
+    #       return
 
-        if expr_in_left_branch is not None and expr_in_right_branch is not None:
-            raise ClaripyOperationError('You cannot specify two endpoints on both sides')
+    #   if expr_in_left_branch is not None and expr_in_right_branch is not None:
+    #       raise ClaripyOperationError('You cannot specify two endpoints on both sides')
 
-        if len(self.args) != 2:
-            raise ClaripyOperationError('We cannot pivot an operation that has over two arguments')
+    #   if len(self.args) != 2:
+    #       raise ClaripyOperationError('We cannot pivot an operation that has over two arguments')
 
-        op = self.op
-        arg_left = self.args[0]
-        arg_right = self.args[1]
+    #   op = self.op
+    #   arg_left = self.args[0]
+    #   arg_right = self.args[1]
 
-        if expr_in_left_branch is None:
-            # Swap it
-            expr_in_left_branch, expr_in_right_branch = expr_in_right_branch, expr_in_left_branch
-            arg_left, arg_right = arg_right, arg_left
-            op = A._reverse_op(op)
+    #   if expr_in_left_branch is None:
+    #       # Swap it
+    #       expr_in_left_branch, expr_in_right_branch = expr_in_right_branch, expr_in_left_branch
+    #       arg_left, arg_right = arg_right, arg_left
+    #       op = A._reverse_op(op)
 
-        arg_index_list = arg_left.find_arg(expr_in_left_branch)
-        if arg_index_list is None:
-            raise ClaripyOperationError('Cannot find argument %s' % expr_in_left_branch)
+    #   arg_index_list = arg_left.find_arg(expr_in_left_branch)
+    #   if arg_index_list is None:
+    #       raise ClaripyOperationError('Cannot find argument %s' % expr_in_left_branch)
 
-        for index in arg_index_list:
-            left_ast_args = arg_left.args
-            arg_right, additional_expr = A.reverse_operation(arg_right, arg_left.op, left_ast_args, index, additional_expr)
-            if arg_right is None:
-                raise ClaripyOperationError('Pivoting failed.')
-            arg_left = arg_left.args[index]
+    #   for index in arg_index_list:
+    #       left_ast_args = arg_left.args
+    #       arg_right, additional_expr = A.reverse_operation(arg_right, arg_left.op, left_ast_args, index, additional_expr)
+    #       if arg_right is None:
+    #           raise ClaripyOperationError('Pivoting failed.')
+    #       arg_left = arg_left.args[index]
 
-        new_ast = A(self._claripy, op, (arg_left, arg_right))
-        return new_ast, additional_expr
+    #   new_ast = A(self._claripy, op, (arg_left, arg_right))
+    #   return new_ast, additional_expr
 
     #
     # Other helper functions

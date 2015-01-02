@@ -160,6 +160,8 @@ class Solver(ana.Storable):
 			# generate UUIDs for every constraint
 			for c in to_add:
 				c.uuid #pylint:disable=pointless-statement
+				if c.length is not None:
+					raise ClaripyTypeError('constraint is not a boolean expression!')
 
 			self._simplified = False
 			self.constraints += to_add
@@ -463,5 +465,5 @@ class Solver(ana.Storable):
 
 from ..result import Result
 from ..ast import A
-from ..errors import UnsatError, BackendError, ClaripySolverError
+from ..errors import UnsatError, BackendError, ClaripySolverError, ClaripyTypeError
 from .. import Claripies
