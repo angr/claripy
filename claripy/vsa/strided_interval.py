@@ -107,9 +107,12 @@ class StridedInterval(object):
 
         lb = self.lower_bound
 
-        while len(results) < n and lb <= self.upper_bound:
-            results.append(lb)
-            lb += self.stride
+        if self.stride == 0 and n > 0:
+            results.append(self.lower_bound)
+        else:
+            while len(results) < n and lb <= self.upper_bound:
+                results.append(lb)
+                lb += self.stride
 
         return results
 
