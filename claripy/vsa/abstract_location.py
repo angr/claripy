@@ -47,4 +47,4 @@ class AbstractLocation(object):
                                 self._region_offset, self._size)
 
     def __repr__(self):
-        return '[%xh, %d] %xh' % (self.basicblock_key, self.statement_id, self.offset)
+        return '[%xh, %d] %xh, %d bytes' % (self.basicblock_key, self.statement_id, self.offset, self.size)
