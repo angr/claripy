@@ -47,6 +47,10 @@ class ValueSet(object):
     def unique(self):
         return len(self.regions) == 1 and self.regions.values()[0].unique
 
+    @property
+    def bits(self):
+        return self.size()
+
     @normalize_types
     def set_si(self, region, si):
         self._regions[region] = si
