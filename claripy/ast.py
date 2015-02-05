@@ -278,6 +278,8 @@ class A(ana.Storable):
         #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
+    def make_uuid(self):
+        return str(self._hash)
 
     @property
     def uuid(self):
