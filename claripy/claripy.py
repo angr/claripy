@@ -144,7 +144,7 @@ class Claripy(object):
             try: return b.is_true(b.convert(e))
             except BackendError: pass
 
-        l.warning("Unable to tell the truth-value of this expression")
+        l.debug("Unable to tell the truth-value of this expression")
         return False
 
     def is_false(self, e):
@@ -152,7 +152,7 @@ class Claripy(object):
             try: return b.is_false(b.convert(e))
             except BackendError: pass
 
-        l.warning("Unable to tell the truth-value of this expression")
+        l.debug("Unable to tell the truth-value of this expression")
         return False
 
     def is_identical(self, *args):
