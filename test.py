@@ -219,7 +219,6 @@ def test_datalayer():
     nose.tools.assert_equal(str(cd), str(d))
 
     l.debug("Time to test some solvers!")
-    fdsafasdfasf
     s = clrp.solver()
     x = clrp.BitVec("x", 32)
     s.add(x == 3)
