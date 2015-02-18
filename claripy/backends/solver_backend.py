@@ -1,4 +1,4 @@
-from .backend import Backend
+from ..backend import Backend
 
 class SolverBackend(Backend):
 	def __init__(self):

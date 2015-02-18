@@ -1,4 +1,6 @@
-class AbstractLocation(object):
+from ..backend import BackendObject
+
+class AbstractLocation(BackendObject):
     def __init__(self, bbl_key, stmt_id, region_id, region_offset, size):
         self._bbl_key = bbl_key
         self._stmt_id = stmt_id

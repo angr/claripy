@@ -2,6 +2,7 @@ import logging
 import functools
 
 from .decorators import expand_ifproxy
+from ..backend import BackendObject
 
 l = logging.getLogger('claripy.vsa.ifproxy')
 
@@ -53,7 +54,7 @@ def proxified(f):
 
     return expander
 
-class IfProxy(object):
+class IfProxy(BackendObject):
     def __init__(self, cond, true_expr, false_expr):
         self._cond = cond
         self._true = true_expr

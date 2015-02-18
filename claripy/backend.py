@@ -4,6 +4,9 @@ import ctypes
 import logging
 l = logging.getLogger('claripy.backends.backend')
 
+class BackendObject(object):
+    pass
+
 class Backend(object):
     '''
     Backends are Claripy's workhorses. Claripy exposes ASTs (claripy.A objects)
@@ -181,6 +184,6 @@ class Backend(object):
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
-from ..ast import A
-from ..operations import opposites
-from ..errors import BackendError, ClaripyRecursionError
+from .ast import A
+from .operations import opposites
+from .errors import BackendError, ClaripyRecursionError

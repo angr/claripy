@@ -19,7 +19,6 @@ else:
 z3.init(z3_path + "libz3.so")
 
 from .solver_backend import SolverBackend
-from .. import bv
 
 #import threading
 #import functools
@@ -90,7 +89,7 @@ class BackendZ3(SolverBackend):
 
 	@condom
 	def _convert(self, obj, result=None):
-		if type(obj) is bv.BVV:
+		if type(obj) is BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
 		elif obj is True:
 			return z3.BoolVal(True)

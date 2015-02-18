@@ -5,7 +5,7 @@ import z3
 zTrue = z3.BoolVal(True)
 zFalse = z3.BoolVal(False)
 
-from .backend import BackendError
+from ..backend import BackendError
 from .model_backend import ModelBackend
 
 class BackendConcrete(ModelBackend):

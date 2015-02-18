@@ -1,5 +1,6 @@
+from ..backend import BackendObject
 
-class BoolResult(object):
+class BoolResult(BackendObject):
     def __init__(self, op=None, args=None):
         self._op = op
         self._args = args

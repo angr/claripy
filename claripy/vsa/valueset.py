@@ -1,5 +1,6 @@
 import functools
 import itertools
+from ..backend import BackendObject
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -18,7 +19,7 @@ def normalize_types(f):
 
 vs_id_ctr = itertools.count()
 
-class ValueSet(object):
+class ValueSet(BackendObject):
     def __init__(self, name=None, region=None, bits=None, val=None):
         self._name = name
         if self._name is None:

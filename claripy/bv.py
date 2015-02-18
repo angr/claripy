@@ -1,5 +1,6 @@
 import functools
 from .errors import ClaripyOperationError
+from .backend import BackendObject
 
 def compare_bits(f):
     @functools.wraps(f)
@@ -26,7 +27,7 @@ def normalize_types(f):
 
     return normalize_helper
 
-class BVV(object):
+class BVV(BackendObject):
     __slots__ = [ 'bits', '_value', 'mod', 'value' ]
 
     def __init__(self, value, bits):

@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
 from .decorators import expand_ifproxy
+from ..backend import BackendObject
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -46,7 +47,7 @@ si_id_ctr = itertools.count()
 def lcm(a, b):
     return a * b // fractions.gcd(a, b)
 
-class StridedInterval(object):
+class StridedInterval(BackendObject):
     '''
     A Strided Interval is represented in the following form:
         stride[lower_bound, upper_bound]

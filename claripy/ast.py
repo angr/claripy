@@ -255,6 +255,9 @@ class A(ana.Storable):
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None):
+        if any(not isinstance(a, (str, int, long, bool, A, BackendObject)) for a in args):
+            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.A" % args)
+
         self.op = op
         self.args = args
         self.length = length
@@ -645,11 +648,12 @@ class I(A):
     def depth(self): return 0
     def split(self, split_on): return self
 
-from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError
+from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from .bv import BVV
 from .vsa import StridedInterval
 from . import Claripies
+from .backend import BackendObject
 
 
 #
