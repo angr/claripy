@@ -225,7 +225,13 @@ class A(ana.Storable):
     UNSIMPLIFIED=0
 
     def __new__(cls, claripy, op, args, **kwargs):
-        f_op, f_args, f_kwargs = _finalize(claripy, op, args, kwargs)
+        if any(not isinstance(a, (str, int, long, bool, A, BackendObject)) for a in args):
+            #import ipdb; ipdb.set_trace()
+            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.A" % args)
+
+        a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
+
+        f_op, f_args, f_kwargs = _finalize(claripy, op, a_args, kwargs)
         h = A._calc_hash(claripy, f_op, f_args, f_kwargs)
 
         #if f_kwargs['length'] is None:
@@ -255,9 +261,6 @@ class A(ana.Storable):
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None):
-        if any(not isinstance(a, (str, int, long, bool, A, BackendObject)) for a in args):
-            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.A" % args)
-
         self.op = op
         self.args = args
         self.length = length

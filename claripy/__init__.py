@@ -16,6 +16,7 @@ from .bv import BVV
 from . import operations
 from . import backends
 from .vsa import *
+from .backend import Backend, BackendObject
 
 def init_claripies():
     backend_vsa = backends.BackendVSA()
