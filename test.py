@@ -56,6 +56,7 @@ def test_expression():
     nose.tools.assert_is(r.model, rrr.model)
     #nose.tools.assert_is(type(rr.model), claripy.A)
     nose.tools.assert_equal(rr.resolved_with(bc), 0x04030201)
+    nose.tools.assert_is(r.concat(rr), clrp.Concat(r, rr))
 
     rsum = r+rr
     nose.tools.assert_equal(rsum.model, 0x05050505)

@@ -908,6 +908,12 @@ class A(ana.Storable):
         '''
         return self._claripy.SignExt(n, self)
 
+    def concat(self, *args):
+        '''
+        Concatenates this AST with the ASTs provided.
+        '''
+        return self._claripy.Concat(self, *args)
+
     def identical(self, o):
         '''
         Returns True if 'o' can be easily determined to be identical to this AST.
