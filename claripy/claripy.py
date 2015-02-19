@@ -208,7 +208,7 @@ class Claripy(object):
         raise BackendError('no model backend can convert expression')
 
 from .ast import A, I
-from .backends.backend import BackendError
+from .backend import BackendError
 from .bv import BVV
 from .vsa import ValueSet, AbstractLocation
 from .backends import BackendVSA

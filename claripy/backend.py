@@ -2,7 +2,7 @@ import sys
 import ctypes
 
 import logging
-l = logging.getLogger('claripy.backends.backend')
+l = logging.getLogger('claripy.backend')
 
 class BackendObject(object):
     '''
