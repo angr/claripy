@@ -366,14 +366,14 @@ class A(ana.Storable):
         #print "... op (%r):" % op, hash(op)
         #print "... args (%r):" % (args,), hash(args)
 
-        if h in cls._hash_cache:
-            return cls._hash_cache[h]
-        else:
+        self = cls._hash_cache.get(h, None)
+        if self is None:
             self = super(A, cls).__new__(cls, claripy, f_op, f_args, **f_kwargs)
             self.__a_init__(claripy, f_op, f_args, **f_kwargs)
             self._hash = h
             cls._hash_cache[h] = self
-            return self
+
+        return self
 
     def __init__(self, *args, **kwargs):
         pass
