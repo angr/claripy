@@ -323,7 +323,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -771,7 +771,7 @@ class Base(ana.Storable):
         return self._replace(old, new)
 
 # itsa mixin!
-class I(object):
+class _I(object):
     '''
     This is an 'identity' AST -- it acts as a wrapper around model objects.
 
@@ -791,12 +791,12 @@ class I(object):
     def depth(self): return 0
     def split(self, split_on): return self
 
-from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
-from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
-from .bv import BVV
-from .vsa import StridedInterval
-from . import Claripies
-from .backend import BackendObject
+from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
+from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
+from ..bv import BVV
+from ..vsa import StridedInterval
+from .. import Claripies
+from ..backend import BackendObject
 
 
 #

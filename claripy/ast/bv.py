@@ -1,4 +1,4 @@
-from ..operations import expression_operations
+from ..operations import expression_arithmetic_operations, expression_comparator_operations, expression_bitwise_operations
 
 from .base import make_methods
 from .bits import Bits
@@ -79,4 +79,4 @@ class BV(Bits):
         '''
         return self._claripy.Concat(self, *args)
 
-make_methods(BV, expression_operations)
+make_methods(BV, expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations)

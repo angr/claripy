@@ -11,7 +11,7 @@ def normalize_types(f):
         if isinstance(o, IfProxy):
             return NotImplemented
 
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         if not isinstance(o, StridedInterval):
@@ -287,7 +287,7 @@ class ValueSet(BackendObject):
 
         return merged_vs
 
-from ..ast import A
+from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult

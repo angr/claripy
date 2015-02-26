@@ -134,9 +134,9 @@ class BackendZ3(SolverBackend):
 		children = [ self._abstract_internal(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(z3.Z3_get_app_num_args(ctx, ast)) ]
 
 		if op_name == 'True':
-			return I(self._claripy, True)
+			return Bool(self._claripy, True)
 		elif op_name == 'False':
-			return I(self._claripy, False)
+			return Bool(self._claripy, False)
 		elif op_name == 'BitVecVal':
 			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -147,7 +147,7 @@ class BackendZ3(SolverBackend):
 
 			#if bv_name.count('_') < 2:
 			#	import ipdb; ipdb.set_trace()
-			return A(self._claripy, "BitVec", (bv_name, bv_size), variables={ bv_name }, symbolic=True)
+			return BV(self._claripy, "BitVec", (bv_name, bv_size), variables={ bv_name }, symbolic=True)
 		elif op_name == 'Extract':
 			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
 			lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -167,12 +167,12 @@ class BackendZ3(SolverBackend):
 			last = args[-1]
 			rest = args[:-1]
 
-			a = A(self._claripy, op_name, rest[:2])
+			a = type(args[0])(self._claripy, op_name, rest[:2])
 			for b in rest[2:]:
-				a = A(self._claripy, op_name, [a,b])
+				a = type(args[0])(self._claripy, op_name, [a,b])
 			args = [ a, last ]
 
-		a = A(self._claripy, op_name, tuple(args))
+		a = type(args[0])(self._claripy, op_name, tuple(args))
 		self._ast_cache[h] = a
 		return a
 
@@ -601,7 +601,7 @@ op_map = {
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast import A, I
+from ..ast import Base, BV
 from ..operations import backend_operations, bin_ops
 from ..result import Result
 from ..bv import BVV

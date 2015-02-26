@@ -41,27 +41,35 @@ class Claripy(object):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return A(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=A.FULL_SIMPLIFY)
+        return BV(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=Base.FULL_SIMPLIFY)
     BV = BitVec
 
     def BitVecVal(self, *args):
-        return I(self, BVV(*args), variables=set(), symbolic=False, simplified=A.FULL_SIMPLIFY)
+        return BV(self, 'I', (BVV(*args),), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
     BVV = BitVecVal
 
+    def FP(self, name, sort, explicit_name=None):
+        if self.unique_names and not explicit_name:
+            name = "FP_%s_%d_%d" % (name, fp_counter.next(), size)
+        return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY)
+
+    def FPV(self, *args):
+        return I(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY)
+
     # Bitwise ops
-    def LShR(self, *args): return A(self, 'LShR', args).reduced
-    def SignExt(self, *args): return A(self, 'SignExt', args).reduced
-    def ZeroExt(self, *args): return A(self, 'ZeroExt', args).reduced
-    def Extract(self, *args): return A(self, 'Extract', args).reduced
+    def LShR(self, *args): return type(args[0])(self, 'LShR', args).reduced
+    def SignExt(self, *args): return type(args[0])(self, 'SignExt', args).reduced
+    def ZeroExt(self, *args): return type(args[0])(self, 'ZeroExt', args).reduced
+    def Extract(self, *args): return type(args[0])(self, 'Extract', args).reduced
     def Concat(self, *args):
         if len(args) == 1:
             return args[0]
         else:
-            return A(self, 'Concat', args).reduced
-    def RotateLeft(self, *args): return A(self, 'RotateLeft', args).reduced
-    def RotateRight(self, *args): return A(self, 'RotateRight', args).reduced
-    def Reverse(self, o): return A(self, 'Reverse', (o,), collapsible=False).reduced
+            return type(args[0])(self, 'Concat', args).reduced
+    def RotateLeft(self, *args): return type(args[0])(self, 'RotateLeft', args).reduced
+    def RotateRight(self, *args): return type(args[0])(self, 'RotateRight', args).reduced
+    def Reverse(self, o): return type(args[0])(self, 'Reverse', (o,), collapsible=False).reduced
 
     #
     # Strided interval
@@ -96,23 +104,24 @@ class Claripy(object):
     # Boolean ops
     #
     def BoolVal(self, *args):
-        return I(self, args[0], variables=set(), symbolic=False)
+        return Bool(self, 'I', (args[0],), variables=set(), symbolic=False)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
-    def And(self, *args): return A(self, 'And', args).reduced
-    def Not(self, *args): return A(self, 'Not', args).reduced
-    def Or(self, *args): return A(self, 'Or', args).reduced
-    def ULT(self, *args): return A(self, 'ULT', args).reduced
-    def ULE(self, *args): return A(self, 'ULE', args).reduced
-    def UGE(self, *args): return A(self, 'UGE', args).reduced
-    def UGT(self, *args): return A(self, 'UGT', args).reduced
+    def And(self, *args): return type(args[0])(self, 'And', args).reduced
+    def Not(self, *args): return type(args[0])(self, 'Not', args).reduced
+    def Or(self, *args): return type(args[0])(self, 'Or', args).reduced
+    def ULT(self, *args): return type(args[0])(self, 'ULT', args).reduced
+    def ULE(self, *args): return type(args[0])(self, 'ULE', args).reduced
+    def UGE(self, *args): return type(args[0])(self, 'UGE', args).reduced
+    def UGT(self, *args): return type(args[0])(self, 'UGT', args).reduced
 
     #
     # Other ops
     #
     def If(self, *args):
         if len(args) != 3: raise ClaripyOperationError("invalid number of args passed to If")
-        return A(self, 'If', args).reduced
+        if type(args[1]) != type(args[2]): raise ClaripyOperationError("differently-typed args passed to If")
+        return type(args[1])(self, 'If', args).reduced
 
     #def size(self, *args): return self._do_op('size', args)
 
@@ -203,9 +212,10 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .ast import A, I
+from .ast import Base, BV, FP, Bool
 from .backend import BackendError
 from .bv import BVV
+from .fp import FPV
 from .vsa import ValueSet, AbstractLocation
 from .backends import BackendVSA
 from .errors import ClaripyOperationError

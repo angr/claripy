@@ -55,14 +55,14 @@ def expr_op_expand_ifproxy(f):
         # FIXME: Now we have a very bad assumption - if we see two IfProxy
         # instances as the two operands, we assume they must both be true or
         # false.
-        any_ifproxy = any([isinstance(a, A) and isinstance(a.model, IfProxy) for a in args])
+        any_ifproxy = any([isinstance(a, Base) and isinstance(a.model, IfProxy) for a in args])
         if any_ifproxy:
             true_args = None
             false_args = None
             cond = None
             # build true_args and false_args
             for a in args:
-                ifproxy = a.model if isinstance(a, A) and isinstance(a.model, IfProxy) else None
+                ifproxy = a.model if isinstance(a, Base) and isinstance(a.model, IfProxy) else None
                 cond = ifproxy.condition if ifproxy is not None and cond is None else cond
                 this_true_arg = IfProxy.unwrap(ifproxy, True)[1] if ifproxy is not None else a.model
                 this_false_arg = IfProxy.unwrap(ifproxy, False)[1] if ifproxy is not None else a.model
@@ -80,4 +80,4 @@ def expr_op_expand_ifproxy(f):
     return expander
 
 from .ifproxy import IfProxy
-from ..ast import A
+from ..ast.base import Base

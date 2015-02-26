@@ -23,9 +23,9 @@ def normalize_types(f):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
-        if isinstance(self, A):
+        if isinstance(self, Base):
             self = o.model
         if type(self) is BVV:
             self = self.value
@@ -1124,5 +1124,5 @@ from . import discrete_strided_interval_set
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
 from .ifproxy import IfProxy
-from ..ast import A
+from ..ast.base import Base
 from ..bv import BVV

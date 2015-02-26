@@ -1,4 +1,4 @@
 from .base import Base
 
 class Bits(Base):
-    pass
+    __slots__ = ['length']
