@@ -358,6 +358,7 @@ class Solver(ana.Storable):
 			# There is no solver backend. Just return True
 			return Result(True, [True])
 
+                print self._claripy.solver_backends
 		for b in self._claripy.solver_backends:
 			try:
 				s = self._get_solver(b)
@@ -370,6 +371,7 @@ class Solver(ana.Storable):
 				l_timing.debug("... %s in %s seconds", r.sat, b - a)
 				return r
 			except BackendError as be:
+                                print be
 				l.debug("... BackendError: %s", be)
 
 		raise ClaripySolverError("all solver backends failed for Solver._solve")

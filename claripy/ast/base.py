@@ -298,7 +298,7 @@ def _finalize_get_errored(args):
     #   if isinstance(a, Base):
     #       all_errored.append(a._errored)
     #return set.union(set(), *all_errored)
-    return set.union(set(), *tuple(a._errored for a in args if isinstance(a, Base)))
+    return set.union(set(), *(a._errored for a in args if isinstance(a, Base)))
 
 #pylint:enable=unused-argument
 
@@ -552,16 +552,7 @@ class Base(ana.Storable):
         else:
             return a
 
-    #
-    # Size functions
-    #
-
-    def size(self):
-        '''
-        Returns the length of the AST.
-        '''
-        return self.length
-    __len__ = size
+    # No more size in Base
 
     #
     # Functionality for resolving to model objects
@@ -681,6 +672,7 @@ class Base(ana.Storable):
             d = a._do_op('__add__', [b])
             assert c is d
         '''
+        raise Exception("_do_op is dead! (or at least should be...)")
         return type(self)(self._claripy, op, (self,)+args, **kwargs).reduced
 
     def _replace(self, old, new, replacements=None):
@@ -771,19 +763,28 @@ class Base(ana.Storable):
         return self._replace(old, new)
 
 # itsa mixin!
-class _I(object):
+class I(object):
     '''
-    This is an 'identity' AST -- it acts as a wrapper around model objects.
+    This is an 'identity' AST mixin -- it acts as a wrapper around model objects.
 
     All methods have the same functionality as their corresponding methods on the Base class.
     '''
 
     def __new__(cls, claripy, model, **kwargs):
-        # hopefully no one will need to override __new__...
-        return Base.__new__(cls, claripy, 'I', (model,), **kwargs)
+        # this is pretty hacky
+        if cls == I:
+            raise ClaripyTypeError("cannot instantiate base I")
+
+        cls._check_model_type(model)
+
+        return cls.__bases__[1].__new__(cls, claripy, 'I', (model,), **kwargs)
 
     #def __init__(self, claripy, model, **kwargs):
     #   Base.__init__(self, claripy, 'I', (model,), **kwargs)
+
+    @staticmethod
+    def _check_model_type(model):
+        raise ClaripyTypeError("`I` subclasses must override _check_model_type")
 
     def resolved(self, result=None): return self.args[0]
     def resolved_with(self, b, result=None): return b.convert(self.args[0])

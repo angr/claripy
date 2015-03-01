@@ -33,7 +33,7 @@ class Backend(object):
     support different types of computation. For example, BackendConcrete
     provides computation support for concrete bitvectors and booleans,
     BackendVSA introduces VSA constructs such as StridedIntervals (and details
-    what happens when operations are performed on them, and BackendZ3 provides
+    what happens when operations are performed on them), and BackendZ3 provides
     support for symbolic variables and constraint solving.
 
     There are a set of functions that a backend is expected to implement. For

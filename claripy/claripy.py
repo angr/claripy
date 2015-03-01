@@ -41,12 +41,11 @@ class Claripy(object):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return BV(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=Base.FULL_SIMPLIFY)
+        return BV(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=size)
     BV = BitVec
 
-    def BitVecVal(self, *args):
-        return BV(self, 'I', (BVV(*args),), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY)
-        #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
+    def BitVecVal(self, value, size):
+        return BVI(self, BVV(value, size), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size)
     BVV = BitVecVal
 
     def FP(self, name, sort, explicit_name=None):
@@ -55,9 +54,10 @@ class Claripy(object):
         return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY)
 
     def FPV(self, *args):
-        return I(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY)
+        return FPI(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY)
 
     # Bitwise ops
+    # TODO: some of these types don't make sense (maybe)
     def LShR(self, *args): return type(args[0])(self, 'LShR', args).reduced
     def SignExt(self, *args): return type(args[0])(self, 'SignExt', args).reduced
     def ZeroExt(self, *args): return type(args[0])(self, 'ZeroExt', args).reduced
@@ -212,7 +212,7 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .ast import Base, BV, FP, Bool
+from .ast import Base, BV, BVI, FP, FPI, Bool
 from .backend import BackendError
 from .bv import BVV
 from .fp import FPV
