@@ -1,10 +1,13 @@
 from .base import Base, I
+from ..operations import op
 
 class Bool(Base):
-    pass
-
-class BoolI(Bool, I):
     @staticmethod
-    def _check_model_type(model):
-        if not isinstance(model, bool):
-            raise ClaripyTypeError("BoolI model must be a bool")
+    def _from_bool(like, val):
+        return BoolI(like._claripy, val)
+
+Bool.__eq__ = op('__eq__', (Bool, Bool), Bool)
+Bool.__ne__ = op('__ne__', (Bool, Bool), Bool)
+
+class BoolI(I, Bool):
+    pass

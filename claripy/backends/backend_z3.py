@@ -62,6 +62,7 @@ class BackendZ3(SolverBackend):
 			self._op_raw[o] = getattr(z3, o)
 		self._op_raw['Reverse'] = self.reverse
 		self._op_raw['Identical'] = self.identical
+                self._op_raw['I'] = lambda thing: thing
 
 	@condom
 	def _size(self, e, result=None):
@@ -140,14 +141,14 @@ class BackendZ3(SolverBackend):
 		elif op_name == 'BitVecVal':
 			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-			return I(self._claripy, BVV(bv_num, bv_size))
+			return BVI(self._claripy, BVV(bv_num, bv_size), length=bv_size)
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 
 			#if bv_name.count('_') < 2:
 			#	import ipdb; ipdb.set_trace()
-			return BV(self._claripy, "BitVec", (bv_name, bv_size), variables={ bv_name }, symbolic=True)
+			return BV(self._claripy, "BitVec", (bv_name, bv_size), length=bv_size, variables={ bv_name }, symbolic=True)
 		elif op_name == 'Extract':
 			hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
 			lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -172,7 +173,27 @@ class BackendZ3(SolverBackend):
 				a = type(args[0])(self._claripy, op_name, [a,b])
 			args = [ a, last ]
 
-		a = type(args[0])(self._claripy, op_name, tuple(args))
+                ty = op_type_map[z3_op_nums[decl_num]]
+
+                if op_name == 'If':
+                        # If is polymorphic and thus must be handled specially
+                        ty = type(args[1])
+
+                        if issubclass(ty, I):
+                                ty = ty.__bases__[1]
+
+                        a = ty(self._claripy, 'If', tuple(args), length=args[1].length)
+                else:
+                        if hasattr(ty, op_name):
+                                op = getattr(ty, op_name)
+                                if op.calc_length is not None:
+                                        length = op.calc_length(*args)
+                                        a = ty(self._claripy, op_name, tuple(args), length=length)
+                                else:
+                                        a = ty(self._claripy, op_name, tuple(args))
+                        else:
+                                a = ty(self._claripy, op_name, tuple(args))
+
 		self._ast_cache[h] = a
 		return a
 
@@ -399,7 +420,7 @@ class BackendZ3(SolverBackend):
 
 		for b in self._claripy.model_backends:
 			try:
-				o = I(self._claripy, b.convert(s))
+				o = self.wrap(b.convert(s))
 				break
 			except BackendError:
 				continue
@@ -410,6 +431,15 @@ class BackendZ3(SolverBackend):
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
 		return o
+
+        def wrap(self, e):
+                if isinstance(e, (z3.BitVecRef, BVV)):
+                        return BVI(self._claripy, e, length=e.size())
+                elif isinstance(e, (z3.BoolRef, bool)):
+                        return BoolI(self._claripy, e)
+                else:
+                        raise Exception("whoops")
+
 
 #
 # this is for the actual->abstract conversion above
@@ -424,12 +454,12 @@ op_map = {
 	# Boolean
 	'Z3_OP_TRUE': 'True',
 	'Z3_OP_FALSE': 'False',
-	'Z3_OP_EQ': 'Eq',
+	'Z3_OP_EQ': '__eq__',
 	'Z3_OP_DISTINCT': '__ne__',
 	'Z3_OP_ITE': 'If',
 	'Z3_OP_AND': 'And',
 	'Z3_OP_OR': 'Or',
-	'Z3_OP_IFF': 'Eq',
+	'Z3_OP_IFF': '__eq__',
 	'Z3_OP_XOR': 'Xor',
 	'Z3_OP_NOT': 'Not',
 	'Z3_OP_IMPLIES': 'Implies',
@@ -601,8 +631,189 @@ op_map = {
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast import Base, BV
+from ..ast import Base, BV, BVI, BoolI, Bool, I
 from ..operations import backend_operations, bin_ops
 from ..result import Result
 from ..bv import BVV
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError, ClaripyZ3Error
+
+op_type_map = {
+	# Boolean
+	'Z3_OP_TRUE': Bool,
+	'Z3_OP_FALSE': Bool,
+	'Z3_OP_EQ': Bool,
+	'Z3_OP_DISTINCT': Bool,
+	'Z3_OP_ITE': Bool,
+	'Z3_OP_AND': Bool,
+	'Z3_OP_OR': Bool,
+	'Z3_OP_IFF': Bool,
+	'Z3_OP_XOR': Bool,
+	'Z3_OP_NOT': Bool,
+	'Z3_OP_IMPLIES': Bool,
+	#'Z3_OP_OEQ': None,
+
+	# Arithmetic
+	#'Z3_OP_ANUM': None,
+	#'Z3_OP_AGNUM': None,
+	'Z3_OP_LE': None,
+	'Z3_OP_GE': None,
+	'Z3_OP_LT': None,
+	'Z3_OP_GT': None,
+	'Z3_OP_ADD': None,
+	'Z3_OP_SUB': None,
+	'Z3_OP_UMINUS': None,
+	'Z3_OP_MUL': None,
+	'Z3_OP_DIV': None,
+	'Z3_OP_IDIV': None,
+	'Z3_OP_REM': None, # TODO: is this correct?
+	'Z3_OP_MOD': None,
+	#'Z3_OP_TO_REAL': None,
+	#'Z3_OP_TO_INT': None,
+	#'Z3_OP_IS_INT': None,
+	'Z3_OP_POWER': None,
+
+	# Arrays & Sets
+	#'Z3_OP_STORE': None,
+	#'Z3_OP_SELECT': None,
+	#'Z3_OP_CONST_ARRAY': None,
+	#'Z3_OP_ARRAY_MAP': None,
+	#'Z3_OP_ARRAY_DEFAULT': None,
+	#'Z3_OP_SET_UNION': None,
+	#'Z3_OP_SET_INTERSECT': None,
+	#'Z3_OP_SET_DIFFERENCE': None,
+	#'Z3_OP_SET_COMPLEMENT': None,
+	#'Z3_OP_SET_SUBSET': None,
+	#'Z3_OP_AS_ARRAY': None,
+
+	# Bit-vectors
+	'Z3_OP_BNUM': 'BitVecVal',
+	#'Z3_OP_BIT1': None, # MAYBE TODO
+	#'Z3_OP_BIT0': None, # MAYBE TODO
+	'Z3_OP_BNEG': BV,
+	'Z3_OP_BADD': BV,
+	'Z3_OP_BSUB': BV,
+	'Z3_OP_BMUL': BV,
+
+	'Z3_OP_BSDIV': BV,
+	'Z3_OP_BUDIV': BV,
+	'Z3_OP_BSREM': BV,
+	'Z3_OP_BUREM': BV,
+	'Z3_OP_BSMOD': BV,
+
+	# special functions to record the division by 0 cases
+	# these are internal functions
+	#'Z3_OP_BSDIV0': None,
+	#'Z3_OP_BUDIV0': None,
+	#'Z3_OP_BSREM0': None,
+	#'Z3_OP_BUREM0': None,
+	#'Z3_OP_BSMOD0': None,
+
+	'Z3_OP_ULEQ': Bool,
+	'Z3_OP_SLEQ': Bool,
+	'Z3_OP_UGEQ': Bool,
+	'Z3_OP_SGEQ': Bool,
+	'Z3_OP_ULT': Bool,
+	'Z3_OP_SLT': Bool,
+	'Z3_OP_UGT': Bool,
+	'Z3_OP_SGT': Bool,
+
+	'Z3_OP_BAND': BV,
+	'Z3_OP_BOR': BV,
+	'Z3_OP_BNOT': BV,
+	'Z3_OP_BXOR': BV,
+	#'Z3_OP_BNAND': None,
+	#'Z3_OP_BNOR': None,
+	#'Z3_OP_BXNOR': None,
+
+	'Z3_OP_CONCAT': BV,
+	'Z3_OP_SIGN_EXT': BV,
+	'Z3_OP_ZERO_EXT': BV,
+	'Z3_OP_EXTRACT': BV,
+	'Z3_OP_REPEAT': BV,
+
+	#'Z3_OP_BREDOR': None,
+	#'Z3_OP_BREDAND': None,
+	#'Z3_OP_BCOMP': None,
+
+	'Z3_OP_BSHL': BV,
+	'Z3_OP_BLSHR': BV,
+	'Z3_OP_BASHR': BV,
+	#'Z3_OP_ROTATE_LEFT': None,
+	#'Z3_OP_ROTATE_RIGHT': None,
+	'Z3_OP_EXT_ROTATE_LEFT': BV,
+	'Z3_OP_EXT_ROTATE_RIGHT': BV,
+
+	#'Z3_OP_INT2BV': None,
+	#'Z3_OP_BV2INT': None,
+	#'Z3_OP_CARRY': None,
+	#'Z3_OP_XOR3': None,
+
+	# Proofs
+	#'Z3_OP_PR_UNDEF': None,
+	#'Z3_OP_PR_TRUE': None,
+	#'Z3_OP_PR_ASSERTED': None,
+	#'Z3_OP_PR_GOAL': None,
+	#'Z3_OP_PR_MODUS_PONENS': None,
+	#'Z3_OP_PR_REFLEXIVITY': None,
+	#'Z3_OP_PR_SYMMETRY': None,
+	#'Z3_OP_PR_TRANSITIVITY': None,
+	#'Z3_OP_PR_TRANSITIVITY_STAR': None,
+	#'Z3_OP_PR_MONOTONICITY': None,
+	#'Z3_OP_PR_QUANT_INTRO': None,
+	#'Z3_OP_PR_DISTRIBUTIVITY': None,
+	#'Z3_OP_PR_AND_ELIM': None,
+	#'Z3_OP_PR_NOT_OR_ELIM': None,
+	#'Z3_OP_PR_REWRITE': None,
+	#'Z3_OP_PR_REWRITE_STAR': None,
+	#'Z3_OP_PR_PULL_QUANT': None,
+	#'Z3_OP_PR_PULL_QUANT_STAR': None,
+	#'Z3_OP_PR_PUSH_QUANT': None,
+	#'Z3_OP_PR_ELIM_UNUSED_VARS': None,
+	#'Z3_OP_PR_DER': None,
+	#'Z3_OP_PR_QUANT_INST': None,
+	#'Z3_OP_PR_HYPOTHESIS': None,
+	#'Z3_OP_PR_LEMMA': None,
+	#'Z3_OP_PR_UNIT_RESOLUTION': None,
+	#'Z3_OP_PR_IFF_TRUE': None,
+	#'Z3_OP_PR_IFF_FALSE': None,
+	#'Z3_OP_PR_COMMUTATIVITY': None,
+	#'Z3_OP_PR_DEF_AXIOM': None,
+	#'Z3_OP_PR_DEF_INTRO': None,
+	#'Z3_OP_PR_APPLY_DEF': None,
+	#'Z3_OP_PR_IFF_OEQ': None,
+	#'Z3_OP_PR_NNF_POS': None,
+	#'Z3_OP_PR_NNF_NEG': None,
+	#'Z3_OP_PR_NNF_STAR': None,
+	#'Z3_OP_PR_CNF_STAR': None,
+	#'Z3_OP_PR_SKOLEMIZE': None,
+	#'Z3_OP_PR_MODUS_PONENS_OEQ': None,
+	#'Z3_OP_PR_TH_LEMMA': None,
+	#'Z3_OP_PR_HYPER_RESOLVE': None,
+
+	# Sequences
+	#'Z3_OP_RA_STORE': None,
+	#'Z3_OP_RA_EMPTY': None,
+	#'Z3_OP_RA_IS_EMPTY': None,
+	#'Z3_OP_RA_JOIN': None,
+	#'Z3_OP_RA_UNION': None,
+	#'Z3_OP_RA_WIDEN': None,
+	#'Z3_OP_RA_PROJECT': None,
+	#'Z3_OP_RA_FILTER': None,
+	#'Z3_OP_RA_NEGATION_FILTER': None,
+	#'Z3_OP_RA_RENAME': None,
+	#'Z3_OP_RA_COMPLEMENT': None,
+	#'Z3_OP_RA_SELECT': None,
+	#'Z3_OP_RA_CLONE': None,
+	#'Z3_OP_FD_LT': None,
+
+	# Auxiliary
+	#'Z3_OP_LABEL': None,
+	#'Z3_OP_LABEL_LIT': None,
+
+	# Datatypes
+	#'Z3_OP_DT_CONSTRUCTOR': None,
+	#'Z3_OP_DT_RECOGNISER': None,
+	#'Z3_OP_DT_ACCESSOR': None,
+
+	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
+}

@@ -235,7 +235,7 @@ def _finalize_ZeroExt(claripy, op, args, kwargs):
 
 _finalize_SignExt = _finalize_ZeroExt
 
-def _finalize_Reverse(claripy, op, args, kwargs):
+def _finalize_reversed(claripy, op, args, kwargs):
     '''
     This finalizes the Reverse operation.
     '''
@@ -471,6 +471,9 @@ class Base(ana.Storable):
     #       else:
     #           yield backend.convert(a)
 
+    def make_like(self, *args, **kwargs):
+        return type(self)(*args, **kwargs)
+
     def _should_collapse(self):
         '''
         This is a helper function that checks if the AST is "collapsible". It returns
@@ -517,11 +520,19 @@ class Base(ana.Storable):
             #l.debug("Collapsing!")
             r = self.model
             if not isinstance(r, Base):
-                return I(self._claripy, r, length=self.length, variables=self.variables, symbolic=self.symbolic)
+                return self._wrap(r)
             else:
                 return r
         else:
             return self
+
+    def _wrap(self, r):
+        if isinstance(r, BVV):
+            return BVI(self._claripy, r, length=r.size(), variables=self.variables, symbolic=self.symbolic)
+        elif isinstance(r, bool):
+            return BoolI(self._claripy, r, variables=self.variables, symbolic=self.symbolic)
+        else:
+            raise Exception()
 
     @property
     def simplified(self):
@@ -534,8 +545,8 @@ class Base(ana.Storable):
             return self.args[0].args[0]
 
         if self.op in reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-            inner_a = type(self)(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
-            o = type(self)(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
+            inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
+            o = self.make_like(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
             o._simplified = Base.LITE_SIMPLIFY
             return o
 
@@ -775,16 +786,16 @@ class I(object):
         if cls == I:
             raise ClaripyTypeError("cannot instantiate base I")
 
-        cls._check_model_type(model)
+        # cls._check_model_type(model)
 
         return cls.__bases__[1].__new__(cls, claripy, 'I', (model,), **kwargs)
 
     #def __init__(self, claripy, model, **kwargs):
     #   Base.__init__(self, claripy, 'I', (model,), **kwargs)
 
-    @staticmethod
-    def _check_model_type(model):
-        raise ClaripyTypeError("`I` subclasses must override _check_model_type")
+    # @staticmethod
+    # def _check_model_type(model):
+    #     raise ClaripyTypeError("`I` subclasses must override _check_model_type")
 
     def resolved(self, result=None): return self.args[0]
     def resolved_with(self, b, result=None): return b.convert(self.args[0])
@@ -798,24 +809,5 @@ from ..bv import BVV
 from ..vsa import StridedInterval
 from .. import Claripies
 from ..backend import BackendObject
-
-
-#
-# Overload the operators
-#
-
-def e_operator(cls, op_name):
-    '''
-    Overloads operator op_name on class cls. Used to overload all the operators on the various AST classes.
-    '''
-    def wrapper(self, *args):
-        return self._do_op(op_name, *args)
-    wrapper.__name__ = op_name
-    setattr(cls, op_name, wrapper)
-
-def make_methods(cls, ops):
-    '''
-    Overloads all operators on the various AST classes.
-    '''
-    for name in ops:
-        e_operator(cls, name)
+from .bv import BVI
+from .bool import BoolI

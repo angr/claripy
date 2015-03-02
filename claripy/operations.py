@@ -1,23 +1,49 @@
-def op(name, arg_types, return_type, extra_check=None, calc_length=None, coerce=True):
+def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is_clrp=False, coerce=True):
     def _op(self, *args):
-        args = (self,) + args
+        if self_is_clrp:
+            clrp = self
+        else:
+            clrp = self._claripy
+            args = (self,) + args
+
         if isinstance(arg_types, tuple):
             if len(args) != len(arg_types):
                 raise ClaripyTypeError("Operation {} takes exactly "
                                        "{} arguments ({} given)".format(name, len(arg_types), len(args)))
+
+            # heuristically, this works!
+            thing = None
+            for arg, argty in zip(args, arg_types):
+                if isinstance(arg, argty):
+                    thing = arg
+
             for i, (arg, argty) in enumerate(zip(args, arg_types)):
                 if not isinstance(arg, argty):
                     if coerce and hasattr(argty, '_from_' + type(arg).__name__):
                         convert = getattr(argty, '_from_' + type(arg).__name__)
-                        args = tuple(convert(self, arg) if j == i else a for (j, a) in enumerate(args))
+                        args = tuple(convert(thing, arg) if j == i else a for (j, a) in enumerate(args))
                     else:
-                        raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
-                                               .format(name, argty.__name__, i, type(arg).__name__))
+                        return NotImplemented
+                        # raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
+                        #                        .format(name, argty.__name__, i, type(arg).__name__))
         elif isinstance(arg_types, type):
+            argty = arg_types
+
+            # heuristically, this works!
+            thing = None
+            for arg in args:
+                if isinstance(arg, argty):
+                    thing = arg
+
             for i, arg in enumerate(args):
-                if not isinstance(arg, arg_types):
-                    raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
-                                           .format(name, arg_types.__name__, i, type(arg).__name__))
+                if not isinstance(arg, argty):
+                    if coerce and hasattr(argty, '_from_' + type(arg).__name__):
+                        convert = getattr(argty, '_from_' + type(arg).__name__)
+                        args = tuple(convert(thing, arg) if j == i else a for (j, a) in enumerate(args))
+                    else:
+                        return NotImplemented
+                    # raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
+                    #                        .format(name, arg_types.__name__, i, type(arg).__name__))
         else:
             raise ClaripyOperationError("op {} got weird arg_types".format(name))
 
@@ -30,8 +56,9 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, coerce=
         if calc_length is not None:
             kwargs['length'] = calc_length(*args)
 
-        return return_type(self._claripy, name, args, **kwargs)
+        return return_type(clrp, name, args, **kwargs)
 
+    _op.calc_length = calc_length
     return _op
 
 def length_same_check(*args):
@@ -40,36 +67,55 @@ def length_same_check(*args):
 def basic_length_calc(*args):
     return args[0].length
 
-# expression_arithmetic_operations = {
-#     # arithmetic
-#     '__add__', '__radd__',
-#     '__div__', '__rdiv__',
-#     '__truediv__', '__rtruediv__',
-#     '__floordiv__', '__rfloordiv__',
-#     '__mul__', '__rmul__',
-#     '__sub__', '__rsub__',
-#     '__pow__', '__rpow__',
-#     '__mod__', '__rmod__',
-#     '__divmod__', '__rdivmod__',
-#     '__neg__',
-#     '__pos__',
-#     '__abs__',
-# }
+def extract_check(high, low, bv):
+    if high < 0 or low < 0:
+        return False, "Extract high and low must be nonnegative"
+    elif low > high:
+        return False, "Extract low must be <= high"
+    elif high >= bv.size():
+        return False, "Extract bound must be less than BV size"
+
+    return True, ""
+
+def extract_length_calc(high, low, bv):
+    return high - low + 1
+
+def ext_length_calc(ext, orig):
+    return orig.length + ext
+
+def concat_length_calc(*args):
+    return sum(arg.size() for arg in args)
 
 expression_arithmetic_operations = {
-    'Add', 'RAdd',
-    'Div', 'RDiv',
-    'TrueDiv', 'RTrueDiv',
-    'FloorDiv', 'RFloorDiv',
-    'Mul', 'RMul',
-    'Sub', 'RSub',
-    'Pow', 'RPow',
-    'Mod', 'RMod',
-    'DivMod', 'RDivMod',
-    'Neg',
-    'Pos',
-    'Abs',
+    # arithmetic
+    '__add__', '__radd__',
+    '__div__', '__rdiv__',
+    '__truediv__', '__rtruediv__',
+    '__floordiv__', '__rfloordiv__',
+    '__mul__', '__rmul__',
+    '__sub__', '__rsub__',
+    '__pow__', '__rpow__',
+    '__mod__', '__rmod__',
+    '__divmod__', '__rdivmod__',
+    '__neg__',
+    '__pos__',
+    '__abs__',
 }
+
+# expression_arithmetic_operations = {
+#     'Add', 'RAdd',
+#     'Div', 'RDiv',
+#     'TrueDiv', 'RTrueDiv',
+#     'FloorDiv', 'RFloorDiv',
+#     'Mul', 'RMul',
+#     'Sub', 'RSub',
+#     'Pow', 'RPow',
+#     'Mod', 'RMod',
+#     'DivMod', 'RDivMod',
+#     'Neg',
+#     'Pos',
+#     'Abs',
+# }
 
 bin_ops = {
     '__add__', '__radd__',
@@ -79,20 +125,20 @@ bin_ops = {
     '__xor__', '__rxor__',
 }
 
-# expression_comparator_operations = {
-#     # comparisons
-#     '__eq__',
-#     '__ne__',
-#     '__ge__', '__le__',
-#     '__gt__', '__lt__',
-# }
-
 expression_comparator_operations = {
-    'Eq',
-    'Ne',
-    'Ge', 'Le',
-    'Gt', 'Lt',
+    # comparisons
+    '__eq__',
+    '__ne__',
+    '__ge__', '__le__',
+    '__gt__', '__lt__',
 }
+
+# expression_comparator_operations = {
+#     'Eq',
+#     'Ne',
+#     'Ge', 'Le',
+#     'Gt', 'Lt',
+# }
 
 expression_bitwise_operations = {
     # bitwise

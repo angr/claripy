@@ -1,7 +1,7 @@
-from ..operations import op, length_same_check, basic_length_calc
+from ..operations import op, length_same_check, basic_length_calc, extract_check, extract_length_calc, ext_length_calc, concat_length_calc
 from ..bv import BVV
 
-from .base import make_methods, I
+from .base import I
 from .bits import Bits
 from .bool import Bool
 
@@ -82,38 +82,58 @@ class BV(Bits):
     def _from_long(like, value):
         return BVI(like._claripy, BVV(value, like.length), length=like.length)
 
-BV.__add__ = op('Add', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__radd__ = op('RAdd', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__div__ = op('Div', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rdiv__ = op('RDiv', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__truediv__ = op('TrueDiv', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rtruediv__ = op('RTrueDiv', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__floordiv__ = op('FloorDiv', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rfloordiv__ = op('RFloorDiv', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__mul__ = op('Mul', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rmul__ = op('RMul', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__sub__ = op('Sub', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rsub__ = op('RSub', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__pow__ = op('Pow', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rpow__ = op('RPow', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__mod__ = op('Mod', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rmod__ = op('RMod', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__divmod__ = op('DivMod', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rdivmod__ = op('RDivMod', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+    @staticmethod
+    def _from_BVV(like, value):
+        return BVI(like._claripy, value, length=value.size())
 
-BV.__neg__ = op('Neg', (BV,), BV, calc_length=basic_length_calc)
-BV.__pos__ = op('Pos', (BV,), BV, calc_length=basic_length_calc)
-BV.__abs__ = op('Abs', (BV,), BV, calc_length=basic_length_calc)
+BV.__add__ = op('__add__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__radd__ = op('__radd__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__div__ = op('__div__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rdiv__ = op('__rdiv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__truediv__ = op('__truediv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rtruediv__ = op('__rtruediv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__floordiv__ = op('__floordiv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rfloordiv__ = op('__rfloordiv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__mul__ = op('__mul__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rmul__ = op('__rmul__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__sub__ = op('__sub__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rsub__ = op('__rsub__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__pow__ = op('__pow__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rpow__ = op('__rpow__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__mod__ = op('__mod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rmod__ = op('__rmod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__divmod__ = op('__divmod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rdivmod__ = op('__rdivmod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 
-BV.__eq__ = op('Eq', (BV, BV), Bool, extra_check=length_same_check)
-BV.__ne__ = op('Ne', (BV, BV), Bool, extra_check=length_same_check)
-BV.__ge__ = op('Ge', (BV, BV), Bool, extra_check=length_same_check)
-BV.__le__ = op('Le', (BV, BV), Bool, extra_check=length_same_check)
-BV.__gt__ = op('Gt', (BV, BV), Bool, extra_check=length_same_check)
-BV.__lt__ = op('Lt', (BV, BV), Bool, extra_check=length_same_check)
+BV.__neg__ = op('__neg__', (BV,), BV, calc_length=basic_length_calc)
+BV.__pos__ = op('__pos__', (BV,), BV, calc_length=basic_length_calc)
+BV.__abs__ = op('__abs__', (BV,), BV, calc_length=basic_length_calc)
 
+BV.__eq__ = op('__eq__', (BV, BV), Bool, extra_check=length_same_check)
+BV.__ne__ = op('__ne__', (BV, BV), Bool, extra_check=length_same_check)
+BV.__ge__ = op('__ge__', (BV, BV), Bool, extra_check=length_same_check)
+BV.__le__ = op('__le__', (BV, BV), Bool, extra_check=length_same_check)
+BV.__gt__ = op('__gt__', (BV, BV), Bool, extra_check=length_same_check)
+BV.__lt__ = op('__lt__', (BV, BV), Bool, extra_check=length_same_check)
 
-BV.reversed = property(op('Reversed', (BV,), BV, calc_length=basic_length_calc))
+BV.__invert__ = op('__invert__', (BV,), BV, calc_length=basic_length_calc)
+BV.__or__ = op('__or__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__ror__ = op('__ror__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__and__ = op('__and__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rand__ = op('__rand__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__xor__ = op('__xor__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rxor__ = op('__rxor__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__lshift__ = op('__lshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rlshift__ = op('__rlshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rshift__ = op('__rshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.__rrshift__ = op('__rrshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+
+BV.Extract = staticmethod(op('Extract', ((int, long), (int, long), BV), BV,
+                             extra_check=extract_check, calc_length=extract_length_calc,
+                         self_is_clrp=True))
+BV.Concat = staticmethod(op('Concat', BV, BV, calc_length=concat_length_calc, self_is_clrp=True))
+
+BV.reversed = property(op('Reverse', (BV,), BV, calc_length=basic_length_calc))
 #def foo(self):
 #    raise Exception("foo called");
 #BV.reversed = property(foo)
@@ -121,9 +141,6 @@ BV.reversed = property(op('Reversed', (BV,), BV, calc_length=basic_length_calc))
 #make_methods(BV, expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations)
 
 class BVI(I, BV):
-    @staticmethod
-    def _check_model_type(model):
-        if not isinstance(model, BVV):
-            raise ClaripyTypeError("BVI model must be a BVV")
+    pass
 
 from ..bv import BVV
