@@ -75,16 +75,16 @@ class BV(Bits):
         return self._claripy.Concat(self, *args)
 
     @staticmethod
-    def _from_int(like, value):
-        return BVI(like._claripy, BVV(value, like.length), length=like.length)
+    def _from_int(clrp, like, value):
+        return BVI(clrp, BVV(value, like.length), length=like.length)
 
     @staticmethod
-    def _from_long(like, value):
-        return BVI(like._claripy, BVV(value, like.length), length=like.length)
+    def _from_long(clrp, like, value):
+        return BVI(clrp, BVV(value, like.length), length=like.length)
 
     @staticmethod
-    def _from_BVV(like, value):
-        return BVI(like._claripy, value, length=value.size())
+    def _from_BVV(clrp, like, value):
+        return BVI(clrp, value, length=value.size())
 
 BV.__add__ = op('__add__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.__radd__ = op('__radd__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)

@@ -21,7 +21,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
                 if not isinstance(arg, argty):
                     if coerce and hasattr(argty, '_from_' + type(arg).__name__):
                         convert = getattr(argty, '_from_' + type(arg).__name__)
-                        args = tuple(convert(thing, arg) if j == i else a for (j, a) in enumerate(args))
+                        args = tuple(convert(clrp, thing, arg) if j == i else a for (j, a) in enumerate(args))
                     else:
                         return NotImplemented
                         # raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
@@ -39,7 +39,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
                 if not isinstance(arg, argty):
                     if coerce and hasattr(argty, '_from_' + type(arg).__name__):
                         convert = getattr(argty, '_from_' + type(arg).__name__)
-                        args = tuple(convert(thing, arg) if j == i else a for (j, a) in enumerate(args))
+                        args = tuple(convert(clrp, thing, arg) if j == i else a for (j, a) in enumerate(args))
                     else:
                         return NotImplemented
                     # raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"

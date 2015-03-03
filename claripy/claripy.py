@@ -80,12 +80,12 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return I(self, si, variables={ si.name }, symbolic=False)
+        return BVI(self, si, variables={ si.name }, symbolic=False, length=bits)
     SI = StridedInterval
 
     def TopStridedInterval(self, bits, name=None, signed=False, uninitialized=False):
         si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, signed=signed, uninitialized=uninitialized)
-        return I(self, si, variables={ si.name }, symbolic=False)
+        return BVI(self, si, variables={ si.name }, symbolic=False, length=bits)
     TSI = TopStridedInterval
 
     # Value Set
@@ -139,13 +139,13 @@ class Claripy(object):
         if not isinstance(args[1], ty):
             if hasattr(ty, '_from_' + type(args[1]).__name__):
                 convert = getattr(ty, '_from_' + type(args[1]).__name__)
-                args[1] = convert(args[2], args[1])
+                args[1] = convert(self, args[2], args[1])
             else:
                 raise ClaripyTypeError("can't convert {} to {}".format(type(args[1]), ty))
         if not isinstance(args[2], ty):
             if hasattr(ty, '_from_' + type(args[2]).__name__):
                 convert = getattr(ty, '_from_' + type(args[2]).__name__)
-                args[2] = convert(args[1], args[2])
+                args[2] = convert(self, args[1], args[2])
             else:
                 raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
 
@@ -203,7 +203,7 @@ class Claripy(object):
         This process is somewhat conservative: False does not necessarily mean that
         it's not identical; just that it can't (easily) be determined to be identical.
         '''
-        if not all([isinstance(a, A) for a in args]):
+        if not all([isinstance(a, Base) for a in args]):
             return False
 
         if len(set(hash(a) for a in args)) == 1:
