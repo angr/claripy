@@ -254,7 +254,7 @@ from .operations import op, length_same_check, basic_length_calc, extract_check,
     ext_length_calc, concat_length_calc
 
 Claripy.LShR = op('LShR', (BV, BV), BV, extra_check=length_same_check,
-                  calc_length=length_same_check, self_is_clrp=True)
+                  calc_length=basic_length_calc, self_is_clrp=True)
 Claripy.SignExt = op('SignExt', ((int, long), BV), BV, calc_length=ext_length_calc, self_is_clrp=True)
 Claripy.ZeroExt = op('ZeroExt', ((int, long), BV), BV, calc_length=ext_length_calc, self_is_clrp=True)
 Claripy.Extract = op('Extract', ((int, long), (int, long), BV), BV,

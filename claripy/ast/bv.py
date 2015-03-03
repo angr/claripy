@@ -127,6 +127,7 @@ BV.__lshift__ = op('__lshift__', (BV, BV), BV, extra_check=length_same_check, ca
 BV.__rlshift__ = op('__rlshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.__rshift__ = op('__rshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.__rrshift__ = op('__rrshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.LShR = op('LShR', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 
 BV.Extract = staticmethod(op('Extract', ((int, long), (int, long), BV), BV,
                              extra_check=extract_check, calc_length=extract_length_calc,

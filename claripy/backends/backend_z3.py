@@ -168,12 +168,14 @@ class BackendZ3(SolverBackend):
 			last = args[-1]
 			rest = args[:-1]
 
-			a = type(args[0])(self._claripy, op_name, rest[:2])
+			a = args[0].make_like(self._claripy, op_name, rest[:2])
 			for b in rest[2:]:
-				a = type(args[0])(self._claripy, op_name, [a,b])
+				a = args[0].make_like(self._claripy, op_name, [a,b])
 			args = [ a, last ]
 
-                ty = op_type_map[z3_op_nums[decl_num]]
+                # hmm.... honestly not sure what to do here
+                result_ty = op_type_map[z3_op_nums[decl_num]]
+                ty = type(args[-1])
 
                 if op_name == 'If':
                         # If is polymorphic and thus must be handled specially
@@ -188,11 +190,11 @@ class BackendZ3(SolverBackend):
                                 op = getattr(ty, op_name)
                                 if op.calc_length is not None:
                                         length = op.calc_length(*args)
-                                        a = ty(self._claripy, op_name, tuple(args), length=length)
+                                        a = result_ty(self._claripy, op_name, tuple(args), length=length)
                                 else:
-                                        a = ty(self._claripy, op_name, tuple(args))
+                                        a = result_ty(self._claripy, op_name, tuple(args))
                         else:
-                                a = ty(self._claripy, op_name, tuple(args))
+                                a = result_ty(self._claripy, op_name, tuple(args))
 
 		self._ast_cache[h] = a
 		return a
