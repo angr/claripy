@@ -605,7 +605,7 @@ def test_bool():
     o = clrp.Or(*[False, False, False])
     nose.tools.assert_equal(o.resolved_with(bc), False)
 
-def broken_vsa():
+def test_vsa():
     from claripy.backends import BackendVSA
     from claripy.vsa import TrueResult, FalseResult, MaybeResult #pylint:disable=unused-variable
 
@@ -776,7 +776,7 @@ if __name__ == '__main__':
         test_composite_solver()
         test_ite()
         test_bool()
-        #test_vsa()
+        test_vsa()
     print "WOO"
 
     print 'eval', claripy.solvers.solver.cached_evals

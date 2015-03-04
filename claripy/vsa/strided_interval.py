@@ -662,10 +662,13 @@ class StridedInterval(BackendObject):
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
 
-        return StridedInterval(bits=self.bits,
+        ret = StridedInterval(bits=self.bits,
                                stride=max(self.stride >> upper, 1),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
+        ret.normalize()
+
+        return ret
 
     def lshift(self, shift_amount):
         lower, upper = self._pre_shift(shift_amount)
@@ -686,10 +689,13 @@ class StridedInterval(BackendObject):
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
 
-        return StridedInterval(bits=self.bits,
+        ret = StridedInterval(bits=self.bits,
                                stride=max(self.stride << lower, 1),
                                lower_bound=new_lower_bound,
                                upper_bound=new_upper_bound)
+        ret.normalize()
+
+        return ret
 
     def cast_low(self, tok):
         assert tok <= self.bits

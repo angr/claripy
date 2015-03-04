@@ -767,7 +767,7 @@ class A(ana.Storable):
         l.debug('A.pivot() will be examined and implemented later.')
 
         # FIXME: The following line doesn't make sense at all.
-        return expr_in_left_branch, expr_in_right_branch
+        return self, expr_in_right_branch
     #   '''
 
     #   :param expr_in_left_branch:
