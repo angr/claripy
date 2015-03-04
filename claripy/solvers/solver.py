@@ -370,7 +370,6 @@ class Solver(ana.Storable):
 				l_timing.debug("... %s in %s seconds", r.sat, b - a)
 				return r
 			except BackendError as be:
-                                raise
 				l.debug("... BackendError: %s", be)
 
 		raise ClaripySolverError("all solver backends failed for Solver._solve")
@@ -403,7 +402,6 @@ class Solver(ana.Storable):
 			try:
 				return b.min(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
 			except BackendError as be:
-                                raise
 				l.debug("... BackendError: %s", be)
 		raise ClaripySolverError("all solver backends failed for Solver._min")
 
