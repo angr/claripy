@@ -1,5 +1,6 @@
 import sys
 import weakref
+import hashlib
 import logging
 l = logging.getLogger("claripy.ast")
 
@@ -394,7 +395,11 @@ class Base(ana.Storable):
 
         @returns a hash
         '''
-        return hash((claripy.name, op, args, k['symbolic'], frozenset(k['variables']), k['length']))
+        to_hash = claripy.name + ' ' + op + ' ' + ','.join(str(hash(a)) for a in args) + ' ' + \
+                  str(k['symbolic']) + ' ' + str(hash(frozenset(k['variables']))) + ' ' + str(k['length'])
+        hd = hashlib.md5(to_hash).hexdigest()
+
+        return int(hd[:16], 16) # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None):
@@ -435,9 +440,6 @@ class Base(ana.Storable):
 
     @property
     def uuid(self):
-        '''
-        I honestly don't know why this is here. (TODO)
-        '''
         return self.ana_uuid
 
     def __hash__(self):
