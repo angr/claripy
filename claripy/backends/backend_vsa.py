@@ -199,81 +199,293 @@ class BackendVSA(ModelBackend):
     def is_false(o):
         return BoolResult.is_false(o)
 
-    def constraint_to_si(self, expr, side=True):
-        def _find_target_expr(m):
-            expr_ = None
-            if isinstance(m, A):
-                if m.op in ['Extract', 'ZeroExt']:
-                    expr_ = _find_target_expr(m.args[-1])
-                    if expr_ is None:
-                        return m.args[-1]
-                    else:
-                        return expr_
-                elif m.op in ['__add__', '__sub__']:
-                    if type(m.args[0].model) is BVV:
-                        expr_ = _find_target_expr(m.args[1])
-                        if expr_ is not None:
-                            return expr_
-                    elif type(m.args[1].model) is BVV:
-                        expr_ = _find_target_expr(m.args[0])
-                        if expr_ is not None:
-                            return expr_
+    #
+    # Dealing with constraints
+    #
 
-            return m
+    reversed_operations = { }
+    reversed_operations['ULT'] = 'UGE'
+    reversed_operations['ULE'] = 'UGT'
+    reversed_operations['__ne__'] = '__eq__'
 
-        if not isinstance(expr.model, IfProxy):
-            return None, None
+    def cts_simplifier_Extract(self, args, expr):
+        '''
+        Convert Extract(a, b, If(...)) to If(..., Extract(a, b, ...), Extract(a, b, ...))
 
-        ifproxy = expr.model
-        condition = ifproxy.condition
-        if isinstance(condition, A) and isinstance(condition.model, IfProxy):
-            sub_ifproxy = condition.model
+        :param args:
+        :return:
+        '''
 
-            new_side = side
-            if BackendVSA.is_false(sub_ifproxy.trueexpr):
-                new_side = not side
+        high, low, to_extract = args
+        ifproxy = self.cts_simplify(to_extract.op, to_extract.args, to_extract)
 
-            return self.constraint_to_si(condition, new_side)
+        # Create the new ifproxy
+        if ifproxy is None:
+            # We cannot handle it
+            return None
 
-        condition_ast = condition
-        op = condition_ast.op
+        elif ifproxy.op == 'If':
+            new_ifproxy = A(expr._claripy,
+                            'If',
+                            (
+                                ifproxy.args[0],
+                                ifproxy._claripy.Extract(high, low, ifproxy.args[1]),
+                                ifproxy._claripy.Extract(high, low, ifproxy.args[2])
+                            )
+            )
 
-        if op == 'ULT':
-            left_expr = condition_ast.args[0]
-            right_expr = condition_ast.args[1]
-            if type(right_expr.model) in {BVV}:
-                # import ipdb; ipdb.set_trace()
-                target_expr = _find_target_expr(left_expr)
-                if target_expr is None:
-                    return None, None
-
-                if side:
-                    left_side = self._claripy.BVV(0, len(left_expr)) # *Unsigned* LT
-                    pivoted, additional_expr = \
-                        condition_ast.pivot(expr_in_left_branch=target_expr, additional_expr=left_side)
-                    right_expr = pivoted.args[1]
-                    left_expr = pivoted.args[0]
-                    # Convert them to SI
-                    si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
-                    si_right.upper_bound = si_right.upper_bound - 1 # Less than
-                    si_right.lower_bound = additional_expr.lower_bound if type(additional_expr.model) is StridedInterval else additional_expr.model.value
-                else:
-                    pivoted, _ = \
-                        condition_ast.pivot(expr_in_left_branch=target_expr)
-                    right_expr = pivoted.args[1]
-                    left_expr = pivoted.args[0]
-                    si_right = BackendVSA.CreateStridedInterval(bits=right_expr.model.bits, to_conv=right_expr.model)
-                    si_right.upper_bound = StridedInterval.max_int(si_right.bits)
-
-                si_right.stride = left_expr.model.stride
-
-                return left_expr, si_right
         else:
-            # FIXME: Finish it!
-            # import ipdb; ipdb.set_trace()
-            pass
+            return expr
 
-        return None, None
+        return new_ifproxy
+
+    def cts_simplifier_Concat(self, args, expr):
+        '''
+        Convert Concat(a, If(...)) to If(..., Concat(a, ...), Concat(a, ...))
+
+        :param args:
+        :return:
+        '''
+
+        args = [ self.cts_simplify(ex.op, ex.args, ex) for ex in args ]
+
+        ifproxy_conds = set([ a.args[0] for a in args if a.op == 'If' ])
+
+        if len(ifproxy_conds) == 0:
+            # No need to simplify!
+            return expr
+
+        elif len(ifproxy_conds) > 1:
+            # We have more than one condition. Cannot handle it for now!
+            return None
+
+        else:
+            concat_trueexpr = [ ]
+            concat_falseexpr = [ ]
+
+            for a in args:
+                if a.op == "If":
+                    concat_trueexpr.append(a.args[1])
+                    concat_falseexpr.append(a.args[2])
+                else:
+                    concat_trueexpr.append(a)
+                    concat_falseexpr.append(a)
+
+            new_ifproxy = A(expr._claripy,
+                            'If',
+                            (
+                                list(ifproxy_conds)[0],
+                                expr._claripy.Concat(*concat_trueexpr),
+                                expr._claripy.Concat(*concat_falseexpr)
+                            )
+            )
+
+            return new_ifproxy
+
+    def cts_simplifier_I(self, args, expr):
+        return expr
+
+    def cts_simplifier_If(self, args, expr):
+        return expr
+
+    def cts_handler_ULE(self, args):
+        """
+
+        :param args:
+        :return:
+        """
+
+        # TODO: Now we are assuming the lhs is always to target variable. Fix it.
+
+        lhs, rhs = args
+
+        if isinstance(rhs.model, BVV):
+            # Convert it into an SI
+            rhs = lhs._claripy.SI(to_conv=rhs.model)
+
+        if isinstance(rhs.model, StridedInterval):
+            constrained_si = rhs.model.copy()
+            constrained_si.lower_bound = constrained_si.min_int(constrained_si.bits) + 1
+
+            return True, [ ( lhs, constrained_si ) ]
+        else:
+            import ipdb; ipdb.set_trace()
+
+    def cts_handler_UGT(self, args):
+        """
+
+        :param args:
+        :return:
+        """
+
+        lhs, rhs = args
+
+        if isinstance(rhs.model, BVV):
+            # Convert it into an SI
+            rhs = lhs._claripy.SI(to_conv=rhs.model)
+
+        if isinstance(rhs.model, StridedInterval):
+            constrained_si = rhs.model.copy()
+            constrained_si.lower_bound = constrained_si.lower_bound + 1
+            constrained_si.upper_bound = constrained_si.max_int(constrained_si.bits)
+
+            return True, [( lhs, constrained_si )]
+        else:
+            import ipdb; ipdb.set_trace()
+
+    def cts_handler_I(self, args):
+        a = args[0]
+
+        if a in (False, 0):
+            return False, [ ]
+        elif isinstance(a, BVV) and a.value == 0:
+            return False, [ ]
+
+        return True, [ ]
+
+    def cts_handler_Not(self, args):
+        """
+        The argument should be False
+
+        :param args:
+        :return:
+        """
+
+        a = args[0]
+        expr_op = a.op
+        expr_args = a.args
+
+        # Reverse the op
+        expr_op = self.reversed_operations[expr_op]
+
+        return self.cts_handle(expr_op, expr_args)
+
+    def cts_handler_And(self, args):
+        """
+
+        :param args:
+        :return:
+        """
+
+        sat = True
+        lst = [ ]
+
+        # Both sides must be true
+        for arg in args:
+            s, l = self.cts_handle(arg.op, arg.args)
+
+            sat &= s
+            lst.extend(l)
+
+        if not sat:
+            lst = [ ]
+
+        return sat, lst
+
+    def cts_handler___ne__(self, args):
+        return self.cts_handler_eq_ne(args, False)
+
+    def cts_handler___eq__(self, args):
+        return self.cts_handler_eq_ne(args, True)
+
+    def cts_handler_eq_ne(self, args, is_eq):
+        """
+
+        :param args:
+        :return: True or False, and a list of (original_si, constrained_si) tuples
+        """
+
+        lhs, rhs = args
+
+        if not isinstance(lhs, A):
+            raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
+
+        size = lhs.size()
+
+        if type(rhs) in (int, long):
+            # Convert it into a BVV
+            rhs = I(lhs._claripy, BVV(rhs, size))
+
+        if not isinstance(rhs, A):
+            raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an A object.')
+
+        sat = True
+
+        # TODO: Make sure the rhs doesn't contain any IfProxy
+
+        lhs = self.cts_simplify(lhs.op, lhs.args, lhs)
+
+        if lhs.op == 'If':
+            condition, trueexpr, falseexpr = lhs.args
+
+            if is_eq:
+                # __eq__
+                take_true = lhs._claripy.is_true(rhs == trueexpr)
+                take_false = lhs._claripy.is_true(rhs == falseexpr)
+            else:
+                # __ne__
+                take_true = lhs._claripy.is_true(rhs == falseexpr)
+                take_false = lhs._claripy.is_true(rhs == trueexpr)
+
+            if take_true and take_false:
+                # It's always satisfiable
+                return True, [ ]
+
+            elif take_true:
+                # We take the true side
+                return self.cts_handle(condition.op, condition.args)
+
+            elif take_false:
+                # We take the false side
+
+                # Reverse the operation first
+                rev_op = self.reversed_operations[condition.op]
+
+                return self.cts_handle(rev_op, condition.args)
+
+            else:
+                # Not satisfiable
+                return False, [ ]
+        else:
+            import ipdb; ipdb.set_trace()
+
+    def cts_simplify(self, op, args, expr):
+        return getattr(self, "cts_simplifier_%s" % op)(args, expr)
+
+    def cts_handle(self, op, args):
+        return getattr(self, "cts_handler_%s" % op)(args)
+
+    def constraint_to_si(self, expr):
+        """
+        We take in constraints, and convert them into constrained strided-intervals.
+
+        For example, expr =
+        <A __ne__ (
+                    <A Extract (0,
+                                0,
+                                <A Concat (<A BVV(0x0, 63)>,
+                                            <A If (
+                                                    <A ULE (<A SI_1208<64>0x1[0x0, 0x100]>, <A BVV(0x27, 64)>)>,
+                                                    <A BVV(0x1, 1)>,
+                                                    <A BVV(0x0, 1)>
+                                            )>
+                                )>
+                    )>,
+                    0
+        )>
+        The result would be
+        [ ( SI_1208<64>0x1[0x0, 0x100], SI_XXXX<64>0x1[0x0, 0x27] ) ]
+
+        As we can only deal with bits, we will convert all integers into BVV during the solving and conversion process.
+
+        :param expr: The constraint
+        :return: whether the expr is satisfiable (boolean), and a list of tuples in form of
+                (original_si, constrained_si).
+        """
+
+        sat, lst = self.cts_handle(expr.op, expr.args)
+
+        return sat, lst
 
     #
     # Backend Operations
@@ -479,7 +691,8 @@ class BackendVSA(ModelBackend):
         return StridedInterval.top(bits, name=None, signed=signed)
 
 from ..bv import BVV
-from ..ast import A
+from ..ast import A, I
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy
+from ..errors import ClaripyBackendVSAError

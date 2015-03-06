@@ -28,5 +28,8 @@ class BackendError(ClaripyError):
 class ClaripyZ3Error(ClaripyError):
     pass
 
+class ClaripyBackendVSAError(BackendError):
+    pass
+
 class ClaripyRecursionError(ClaripyOperationError):
     pass
