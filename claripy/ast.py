@@ -614,6 +614,10 @@ class A(ana.Storable):
             result.resolve_cache[b][self] = r
         else:
             self._objects[b] = r
+
+        if hasattr(r, 'name'):
+            self.variables.add(r.name)
+
         return r
 
     #
@@ -640,7 +644,7 @@ class A(ana.Storable):
         return 1 + (max(ast_args) if len(ast_args) > 0 else 1)
 
     #
-    # Various AST modifications (replacements, pivoting)
+    # Various AST modifications (replacements)
     #
 
     def _do_op(self, op, *args, **kwargs):
@@ -680,132 +684,6 @@ class A(ana.Storable):
             return A(self._claripy, self.op, tuple(new_args)).reduced, True
         else:
             return self, False
-
-    @staticmethod
-    def _reverse_op(op):
-        '''
-        TODO: remove or upgrade
-
-        Returns the reverse of operation 'op'. This is used by VSA, in the _pivot function.
-        '''
-        if op == 'ULE':
-            return 'UGE'
-
-        raise Exception()
-
-    @staticmethod
-    def reverse_operation(target, op, args, index, additional_expr):
-        '''
-        TODO: remove or upgrade
-
-        :param target:
-        :param op:
-        :param args:
-        :return: a reversed ast
-        '''
-        if op == 'Extract':
-            # FIXME:
-            left = args[0]
-            right = args[1]
-            if right != 0:
-                return None
-            original_size = args[index].size()
-            a = target.zero_extend(original_size - (left - right + 1))
-            b = additional_expr.zero_extend(original_size - (left - right + 1)) if additional_expr is not None else None
-            return a, b
-        elif op == 'ZeroExt':
-            # FIXME:
-            extra_bits = args[0]
-            a = target[target.size() - extra_bits  - 1: 0]
-            b = additional_expr[additional_expr.size() - extra_bits - 1: 0] if additional_expr is not None else None
-            return a, b
-        elif op in ['__add__', '__radd__']:
-            other_operand = args[0 if index == 1 else 1]
-            a = target - other_operand
-            b = additional_expr - other_operand if additional_expr is not None else None
-            return a, b
-        elif op in ['__sub__', '__rsub__']:
-            if index == 0:
-                a = target + args[1]
-                b = additional_expr + args[1] if additional_expr is not None else None
-                return a, b
-            else:
-                # TODO: Handle this case later - we'll have to reverse the direction of the qeuation
-                return None, None
-                # a = args[0] - target
-
-        else:
-            import ipdb; ipdb.set_trace()
-            return None
-
-    def find_arg(self, arg):
-        '''
-        TODO: remove or upgrade
-
-        Currently, a stub for VSA.
-        '''
-        for index, a in enumerate(self.args):
-            if a is arg:
-                return [index]
-
-        tuple_list = None
-        for index, a in enumerate(self.args):
-            if isinstance(a, A):
-                tuple_list = a.find_arg(arg)
-                if tuple_list is not None:
-                    tuple_list = [index] + tuple_list
-                    break
-
-        return tuple_list
-
-    def pivot(self, expr_in_left_branch=None, expr_in_right_branch=None, additional_expr=None):
-        '''
-        TODO: remove or upgrade
-
-        Currently, a stub for VSA.
-        '''
-        l.debug('A.pivot() will be examined and implemented later.')
-
-        # FIXME: The following line doesn't make sense at all.
-        return self, expr_in_right_branch
-    #   '''
-
-    #   :param expr_in_left_branch:
-    #   :param expr_in_right_branch:
-    #   :return:
-    #   '''
-    #   if expr_in_left_branch is None and expr_in_right_branch is None:
-    #       return
-
-    #   if expr_in_left_branch is not None and expr_in_right_branch is not None:
-    #       raise ClaripyOperationError('You cannot specify two endpoints on both sides')
-
-    #   if len(self.args) != 2:
-    #       raise ClaripyOperationError('We cannot pivot an operation that has over two arguments')
-
-    #   op = self.op
-    #   arg_left = self.args[0]
-    #   arg_right = self.args[1]
-
-    #   if expr_in_left_branch is None:
-    #       # Swap it
-    #       expr_in_left_branch, expr_in_right_branch = expr_in_right_branch, expr_in_left_branch
-    #       arg_left, arg_right = arg_right, arg_left
-    #       op = A._reverse_op(op)
-
-    #   arg_index_list = arg_left.find_arg(expr_in_left_branch)
-    #   if arg_index_list is None:
-    #       raise ClaripyOperationError('Cannot find argument %s' % expr_in_left_branch)
-
-    #   for index in arg_index_list:
-    #       left_ast_args = arg_left.args
-    #       arg_right, additional_expr = A.reverse_operation(arg_right, arg_left.op, left_ast_args, index, additional_expr)
-    #       if arg_right is None:
-    #           raise ClaripyOperationError('Pivoting failed.')
-    #       arg_left = arg_left.args[index]
-
-    #   new_ast = A(self._claripy, op, (arg_left, arg_right))
-    #   return new_ast, additional_expr
 
     #
     # Other helper functions
