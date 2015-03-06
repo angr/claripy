@@ -680,6 +680,21 @@ def test_vsa():
     nose.tools.assert_equal(si_shl_1.bits, 32)
     nose.tools.assert_equal(si_shl_1 == clrp.StridedInterval(bits=32, stride=0, lower_bound=80, upper_bound=80).model, TrueResult())
 
+    #
+    # Extracting the sign bit
+    #
+
+    # a negative integer
+    si = clrp.StridedInterval(bits=64, stride=0, lower_bound=-1, upper_bound=-1)
+    sb = b.convert(si[63: 63])
+    nose.tools.assert_equal(sb == 1, TrueResult())
+
+    # non-positive integers
+    si = clrp.StridedInterval(bits=64, stride=1, lower_bound=-1, upper_bound=0)
+    sb = b.convert(si[63: 63])
+    nose.tools.assert_equal(sb == clrp.StridedInterval(bits=1, stride=1, lower_bound=0, upper_bound=1).model,
+                            TrueResult())
+
     # Extracting an integer
     si = clrp.StridedInterval(bits=64, stride=0, lower_bound=0x7fffffffffff0000, upper_bound=0x7fffffffffff0000)
     part1 = b.convert(si[63 : 32])

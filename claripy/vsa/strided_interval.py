@@ -98,6 +98,12 @@ class StridedInterval(BackendObject):
 
         if self.lower_bound == self.upper_bound:
             self._stride = 0
+
+        if self.bits == 1 and self.lower_bound < 0:
+            lb = abs(self.upper_bound)
+            self.upper_bound = abs(self.lower_bound)
+            self.lower_bound = lb
+
         if self._stride < 0:
             raise Exception("Why does this happen?")
 
@@ -757,7 +763,7 @@ class StridedInterval(BackendObject):
         if bits != self.bits:
             ret = ret.cast_low(bits)
 
-        return ret
+        return ret.normalize()
 
     def zero_extend(self, new_length):
         si = self.copy()
