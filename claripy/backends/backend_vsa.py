@@ -207,6 +207,7 @@ class BackendVSA(ModelBackend):
     reversed_operations['ULT'] = 'UGE'
     reversed_operations['ULE'] = 'UGT'
     reversed_operations['__ne__'] = '__eq__'
+    reversed_operations['__eq__'] = '__ne__'
 
     def cts_simplifier_Extract(self, args, expr):
         '''
@@ -286,6 +287,11 @@ class BackendVSA(ModelBackend):
         return expr
 
     def cts_simplifier_If(self, args, expr):
+        return expr
+
+    def cts_simplifier_Reverse(self, args, expr):
+        # TODO: How should we deal with Reverse in a smart way?
+
         return expr
 
     def cts_handler_ULE(self, args):
@@ -446,6 +452,26 @@ class BackendVSA(ModelBackend):
             else:
                 # Not satisfiable
                 return False, [ ]
+        elif isinstance(lhs.model, StridedInterval):
+            rhs = lhs._claripy.SI(to_conv=rhs)
+            if is_eq:
+                return True, [ (lhs, rhs)]
+            else:
+                if lhs.model.upper_bound <= rhs.model.upper_bound:
+                    r = lhs._claripy.SI(bits=rhs.size(),
+                                        lower_bound=lhs.model.lower_bound,
+                                        upper_bound=rhs.model.lower_bound - 1)
+
+                    return True, [ (lhs, r) ]
+                elif lhs.model.lower_bound >= rhs.model.lower_bound:
+                    r = lhs._claripy.SI(bits=rhs.size(),
+                                        lower_bound=rhs.model.lower_bound + 1,
+                                        upper_bound=lhs.model.upper_bound)
+
+                    return True, [ (lhs, r) ]
+                else:
+                    # We cannot handle it precisely
+                    return True, [ ]
         else:
             import ipdb; ipdb.set_trace()
 
