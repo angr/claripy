@@ -209,7 +209,33 @@ class BackendVSA(ModelBackend):
     reversed_operations['__ne__'] = '__eq__'
     reversed_operations['__eq__'] = '__ne__'
 
-    def cts_simplifier_Extract(self, args, expr):
+    def cts_simplifier_ZeroExt(self, args, expr, condition):
+        """
+        :param args:
+        :param expr:
+        :return: (new ast, new condition)
+        """
+        claripy = expr._claripy
+
+        cond_op, cond_arg = condition
+        # Normalize cond_arg
+        if type(cond_arg) in (int, long):
+            cond_arg = claripy.BVV(cond_arg, expr.size())
+
+        extended_bits, arg = args
+
+        if cond_arg.size() <= arg.size() or \
+                claripy.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
+            # We can safely eliminate this layer of ZeroExt
+            return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
+
+        else:
+            # TODO: We may also handle the '__eq__' and '__ne__' case
+            __import__('ipdb').set_trace()
+            # We cannot handle this...
+            return expr, condition
+
+    def cts_simplifier_Extract(self, args, expr, condition):
         '''
         Convert Extract(a, b, If(...)) to If(..., Extract(a, b, ...), Extract(a, b, ...))
 
@@ -218,29 +244,30 @@ class BackendVSA(ModelBackend):
         '''
 
         high, low, to_extract = args
-        ifproxy = self.cts_simplify(to_extract.op, to_extract.args, to_extract)
+        ast, new_cond = self.cts_simplify(to_extract.op, to_extract.args, to_extract, condition)
 
         # Create the new ifproxy
-        if ifproxy is None:
+        if ast is None:
             # We cannot handle it
-            return None
+            return None, condition
 
-        elif ifproxy.op == 'If':
+        elif ast.op == 'If':
             new_ifproxy = A(expr._claripy,
                             'If',
                             (
-                                ifproxy.args[0],
-                                ifproxy._claripy.Extract(high, low, ifproxy.args[1]),
-                                ifproxy._claripy.Extract(high, low, ifproxy.args[2])
+                                ast.args[0],
+                                ast._claripy.Extract(high, low, ast.args[1]),
+                                ast._claripy.Extract(high, low, ast.args[2])
                             )
             )
 
         else:
-            return expr
+            __import__('ipdb').set_trace()
+            return expr, condition
 
-        return new_ifproxy
+        return new_ifproxy, condition
 
-    def cts_simplifier_Concat(self, args, expr):
+    def cts_simplifier_Concat(self, args, expr, condition):
         '''
         Convert Concat(a, If(...)) to If(..., Concat(a, ...), Concat(a, ...))
 
@@ -248,23 +275,29 @@ class BackendVSA(ModelBackend):
         :return:
         '''
 
-        args = [ self.cts_simplify(ex.op, ex.args, ex) for ex in args ]
+        args = [ self.cts_simplify(ex.op, ex.args, ex, condition) for ex in args ]
 
-        ifproxy_conds = set([ a.args[0] for a in args if a.op == 'If' ])
+        ifproxy_conds = set([ a.args[0] for a, new_cond in args if a.op == 'If' ])
 
         if len(ifproxy_conds) == 0:
             # No need to simplify!
-            return expr
+            return expr, condition
 
         elif len(ifproxy_conds) > 1:
             # We have more than one condition. Cannot handle it for now!
-            return None
+            return None, condition
 
         else:
             concat_trueexpr = [ ]
             concat_falseexpr = [ ]
 
-            for a in args:
+            all_new_conds = set([ new_cond for a, new_cond in args ])
+
+            if len(all_new_conds) > 1:
+                # New conditions are not consistent. Can't handle it.
+                return expr, condition
+
+            for a, new_cond in args:
                 if a.op == "If":
                     concat_trueexpr.append(a.args[1])
                     concat_falseexpr.append(a.args[2])
@@ -281,18 +314,30 @@ class BackendVSA(ModelBackend):
                             )
             )
 
-            return new_ifproxy
+            return new_ifproxy, condition
 
-    def cts_simplifier_I(self, args, expr):
-        return expr
+    def cts_simplifier_I(self, args, expr, condition):
+        return expr, condition
 
-    def cts_simplifier_If(self, args, expr):
-        return expr
+    def cts_simplifier_If(self, args, expr, condition):
+        return expr, condition
 
-    def cts_simplifier_Reverse(self, args, expr):
+    def cts_simplifier_Reverse(self, args, expr, condition):
         # TODO: How should we deal with Reverse in a smart way?
 
-        return expr
+        return expr, condition
+
+    def cts_simplifier___and__(self, args, expr, condition):
+
+        argl, argr = args
+        if argl is argr:
+            # Operands are the same one!
+            # We can safely remove this layer of __and__
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+
+        else:
+            # We cannot handle it
+            return expr, condition
 
     def cts_handler_ULE(self, args):
         """
@@ -419,8 +464,6 @@ class BackendVSA(ModelBackend):
 
         # TODO: Make sure the rhs doesn't contain any IfProxy
 
-        lhs = self.cts_simplify(lhs.op, lhs.args, lhs)
-
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
 
@@ -459,12 +502,14 @@ class BackendVSA(ModelBackend):
             else:
                 if lhs.model.upper_bound <= rhs.model.upper_bound:
                     r = lhs._claripy.SI(bits=rhs.size(),
+                                        stride=lhs.model.stride,
                                         lower_bound=lhs.model.lower_bound,
                                         upper_bound=rhs.model.lower_bound - 1)
 
                     return True, [ (lhs, r) ]
                 elif lhs.model.lower_bound >= rhs.model.lower_bound:
                     r = lhs._claripy.SI(bits=rhs.size(),
+                                        stride=lhs.model.stride,
                                         lower_bound=rhs.model.lower_bound + 1,
                                         upper_bound=lhs.model.upper_bound)
 
@@ -475,10 +520,21 @@ class BackendVSA(ModelBackend):
         else:
             import ipdb; ipdb.set_trace()
 
-    def cts_simplify(self, op, args, expr):
-        return getattr(self, "cts_simplifier_%s" % op)(args, expr)
+    def cts_simplify(self, op, args, expr, condition):
+        return getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
 
     def cts_handle(self, op, args):
+
+        if len(args) == 2:
+            lhs, rhs = args
+
+            # Simplify left side
+            lhs, new_cond = self.cts_simplify(lhs.op, lhs.args, lhs, (op, rhs))
+
+            # Update args
+            op, rhs = new_cond
+            args = (lhs, rhs)
+
         return getattr(self, "cts_handler_%s" % op)(args)
 
     def constraint_to_si(self, expr):
