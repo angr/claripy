@@ -847,6 +847,32 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(
         clrp.is_true(falseside_replacement[0][1] == SI(bits=32, stride=1, lower_bound=1, upper_bound=2)))
 
+    #
+    # Extract(0, 0, ZeroExt(32, If(Extract(32, 0, (SI & SI)) < 0, BVV(1, 1), BVV(0, 1))))
+    #
+
+    s4 = SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)
+    ast_true = (
+        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)) < 0, BVV(1, 32), BVV(0, 32)))) == 1)
+    ast_false = (
+        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)) < 0, BVV(1, 32), BVV(0, 32)))) != 1)
+
+    trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
+    nose.tools.assert_equal(trueside_sat, True)
+    nose.tools.assert_equal(len(trueside_replacement), 1)
+    nose.tools.assert_true(trueside_replacement[0][0] is s4)
+    # True side: SI<32>0[0, 0]
+    nose.tools.assert_true(
+        clrp.is_true(trueside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=-0x7fffffffffffffff, upper_bound=-1)))
+
+    falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
+    nose.tools.assert_equal(falseside_sat, True)
+    nose.tools.assert_equal(len(falseside_replacement), 1)
+    nose.tools.assert_true(falseside_replacement[0][0] is s4)
+    # False side; SI<32>1[1, 2]
+    nose.tools.assert_true(
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)))
+
     # TODO: Add some more insane test cases
 
 if __name__ == '__main__':

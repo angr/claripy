@@ -204,10 +204,24 @@ class BackendVSA(ModelBackend):
     #
 
     reversed_operations = { }
-    reversed_operations['ULT'] = 'UGE'
-    reversed_operations['ULE'] = 'UGT'
     reversed_operations['__ne__'] = '__eq__'
     reversed_operations['__eq__'] = '__ne__'
+    reversed_operations['ULT'] = 'UGE'
+    reversed_operations['ULE'] = 'UGT'
+    reversed_operations['__le__'] = '__gt__'
+    reversed_operations['__ge__'] = '__lt__'
+    reversed_operations['__lt__'] = '__ge__'
+
+    comparison_info = { }
+    # Tuples look like (is_lt, is_eq, is_unsigned)
+    comparison_info['__lt__'] = (True, False, False)
+    comparison_info['__le__'] = (True, True, False)
+    comparison_info['__gt__'] = (False, False, False)
+    comparison_info['__ge__'] = (False, True, False)
+    comparison_info['ULT'] = (True, False, True)
+    comparison_info['ULE'] = (True, True, True)
+    comparison_info['UGT'] = (False, False, True)
+    comparison_info['UGE'] = (False, True, True)
 
     def cts_simplifier_ZeroExt(self, args, expr, condition):
         """
@@ -244,6 +258,8 @@ class BackendVSA(ModelBackend):
         '''
 
         high, low, to_extract = args
+        claripy = expr._claripy
+
         ast, new_cond = self.cts_simplify(to_extract.op, to_extract.args, to_extract, condition)
 
         # Create the new ifproxy
@@ -252,18 +268,26 @@ class BackendVSA(ModelBackend):
             return None, condition
 
         elif ast.op == 'If':
-            new_ifproxy = A(expr._claripy,
-                            'If',
-                            (
+            new_ifproxy = claripy.If(
                                 ast.args[0],
                                 ast._claripy.Extract(high, low, ast.args[1]),
                                 ast._claripy.Extract(high, low, ast.args[2])
                             )
-            )
 
         else:
-            __import__('ipdb').set_trace()
-            return expr, condition
+            cond_op, cond_arg = condition
+            if type(cond_arg) in (int, long):
+                cond_arg = claripy.BVV(cond_arg, to_extract.size())
+            elif type(cond_arg.model) in (StridedInterval, BVV):
+                cond_arg = claripy.ZeroExt(to_extract.size() - high - 1, cond_arg)
+
+            if claripy.is_true(cond_arg[to_extract.size() - 1 : high] == 0):
+                # The upper part doesn't matter
+                # We can handle it
+                return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
+            else:
+                import ipdb; ipdb.set_trace()
+                return expr, condition
 
         return new_ifproxy, condition
 
@@ -275,6 +299,7 @@ class BackendVSA(ModelBackend):
         :return:
         '''
 
+        claripy = expr._claripy
         args = [ self.cts_simplify(ex.op, ex.args, ex, condition) for ex in args ]
 
         ifproxy_conds = set([ a.args[0] for a, new_cond in args if a.op == 'If' ])
@@ -305,14 +330,11 @@ class BackendVSA(ModelBackend):
                     concat_trueexpr.append(a)
                     concat_falseexpr.append(a)
 
-            new_ifproxy = A(expr._claripy,
-                            'If',
-                            (
+            new_ifproxy = claripy.If(
                                 list(ifproxy_conds)[0],
                                 expr._claripy.Concat(*concat_trueexpr),
                                 expr._claripy.Concat(*concat_falseexpr)
                             )
-            )
 
             return new_ifproxy, condition
 
@@ -339,6 +361,100 @@ class BackendVSA(ModelBackend):
             # We cannot handle it
             return expr, condition
 
+    def cts_handler_comparison(self, args, comp=None):
+        """
+        Handles all comparisons.
+        :param args:
+        :param comp:
+        :return:
+        """
+
+        is_lt, is_equal, is_unsigned = False, False, False # Stop PyCharm from complaining!
+        if comp in self.comparison_info:
+            is_lt, is_equal, is_unsigned = self.comparison_info[comp]
+        else:
+            import ipdb; ipdb.set_trace()
+
+        lhs, rhs = args
+
+        # TODO: Now we are assuming the lhs is always the target variable. Fix it.
+
+        if not isinstance(lhs, A):
+            raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
+
+        claripy = lhs._claripy
+        size = lhs.size()
+
+        if type(rhs.model) in (int, long, BVV):
+            # Convert it into an SI
+            rhs = claripy.SI(to_conv=rhs)
+
+        if not isinstance(rhs, A):
+            raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an A object.')
+
+        if lhs.op == 'If':
+            import ipdb; ipdb.set_trace()
+
+        elif isinstance(rhs.model, StridedInterval):
+            new_si = rhs.model.copy()
+            new_si.stride = lhs.model.stride
+
+            if is_lt:
+                # < or <=
+                new_si.lower_bound = new_si.min_int(new_si.bits)
+
+                if not is_equal:
+                    # <
+                    new_si.upper_bound = new_si.upper_bound - 1
+
+            else:
+                # > or >=
+                new_si.upper_bound = new_si.max_int(new_si.bits)
+
+                if not is_equal:
+                    # >
+                    new_si.lower_bound = new_si.lower_bound + 1
+
+            return True, [(lhs, new_si)]
+        else:
+            import ipdb; ipdb.set_trace()
+
+    def cts_handler___lt__(self, args):
+        """
+
+        :param args:
+        :return: True or False, and a list of (original_si, constrained_si) tuples
+        """
+
+        return self.cts_handler_comparison(args, comp='__lt__')
+
+    def cts_handler___le__(self, args):
+        """
+
+        :param args:
+        :return: True or False, and a list of (original_si, constrained_si) tuples
+        """
+
+        return self.cts_handler_comparison(args, comp='__le__')
+
+    def cts_handler___gt__(self, args):
+        """
+
+        :param args:
+        :return: True or False, and a list of (original_si, constrained_si) tuples
+        """
+
+        return self.cts_handler_comparison(args, comp='__gt__')
+
+    def cts_handler___ge__(self, args):
+        """
+
+        :param args:
+        :return: True or False, and a list of (original_si, constrained_si) tuples
+        """
+
+        return self.cts_handler_comparison(args, comp='__ge__')
+
     def cts_handler_ULE(self, args):
         """
 
@@ -346,21 +462,7 @@ class BackendVSA(ModelBackend):
         :return:
         """
 
-        # TODO: Now we are assuming the lhs is always to target variable. Fix it.
-
-        lhs, rhs = args
-
-        if isinstance(rhs.model, BVV):
-            # Convert it into an SI
-            rhs = lhs._claripy.SI(to_conv=rhs.model)
-
-        if isinstance(rhs.model, StridedInterval):
-            constrained_si = rhs.model.copy()
-            constrained_si.lower_bound = constrained_si.min_int(constrained_si.bits) + 1
-
-            return True, [ ( lhs, constrained_si ) ]
-        else:
-            import ipdb; ipdb.set_trace()
+        return self.cts_handler_comparison(args, comp='ULE')
 
     def cts_handler_UGT(self, args):
         """
@@ -369,20 +471,7 @@ class BackendVSA(ModelBackend):
         :return:
         """
 
-        lhs, rhs = args
-
-        if isinstance(rhs.model, BVV):
-            # Convert it into an SI
-            rhs = lhs._claripy.SI(to_conv=rhs.model)
-
-        if isinstance(rhs.model, StridedInterval):
-            constrained_si = rhs.model.copy()
-            constrained_si.lower_bound = constrained_si.lower_bound + 1
-            constrained_si.upper_bound = constrained_si.max_int(constrained_si.bits)
-
-            return True, [( lhs, constrained_si )]
-        else:
-            import ipdb; ipdb.set_trace()
+        return self.cts_handler_comparison(args, comp='UGT')
 
     def cts_handler_I(self, args):
         a = args[0]
@@ -452,6 +541,7 @@ class BackendVSA(ModelBackend):
             raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
 
         size = lhs.size()
+        claripy = lhs._claripy
 
         if type(rhs) in (int, long):
             # Convert it into a BVV
@@ -469,12 +559,12 @@ class BackendVSA(ModelBackend):
 
             if is_eq:
                 # __eq__
-                take_true = lhs._claripy.is_true(rhs == trueexpr)
-                take_false = lhs._claripy.is_true(rhs == falseexpr)
+                take_true = claripy.is_true(rhs == trueexpr)
+                take_false = claripy.is_true(rhs == falseexpr)
             else:
                 # __ne__
-                take_true = lhs._claripy.is_true(rhs == falseexpr)
-                take_false = lhs._claripy.is_true(rhs == trueexpr)
+                take_true = claripy.is_true(rhs == falseexpr)
+                take_false = claripy.is_true(rhs == trueexpr)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -495,23 +585,25 @@ class BackendVSA(ModelBackend):
             else:
                 # Not satisfiable
                 return False, [ ]
-        elif isinstance(lhs.model, StridedInterval):
-            rhs = lhs._claripy.SI(to_conv=rhs)
+        elif isinstance(lhs.model, StridedInterval) or isinstance(lhs.model, BVV):
+            if not isinstance(lhs.model, StridedInterval):
+                lhs = claripy.SI(to_conv=lhs)
+            rhs = claripy.SI(to_conv=rhs)
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
                 if lhs.model.upper_bound <= rhs.model.upper_bound:
-                    r = lhs._claripy.SI(bits=rhs.size(),
-                                        stride=lhs.model.stride,
-                                        lower_bound=lhs.model.lower_bound,
-                                        upper_bound=rhs.model.lower_bound - 1)
+                    r = claripy.SI(bits=rhs.size(),
+                                    stride=lhs.model.stride,
+                                    lower_bound=lhs.model.lower_bound,
+                                    upper_bound=rhs.model.lower_bound - 1)
 
                     return True, [ (lhs, r) ]
                 elif lhs.model.lower_bound >= rhs.model.lower_bound:
-                    r = lhs._claripy.SI(bits=rhs.size(),
-                                        stride=lhs.model.stride,
-                                        lower_bound=rhs.model.lower_bound + 1,
-                                        upper_bound=lhs.model.upper_bound)
+                    r = claripy.SI(bits=rhs.size(),
+                                    stride=lhs.model.stride,
+                                    lower_bound=rhs.model.lower_bound + 1,
+                                    upper_bound=lhs.model.upper_bound)
 
                     return True, [ (lhs, r) ]
                 else:
