@@ -618,6 +618,9 @@ def test_vsa():
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp) #pylint:disable=unused-variable
 
+    SI = clrp.StridedInterval
+    BVV = clrp.BVV
+
     # Integers
     si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
     si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
@@ -749,7 +752,10 @@ def test_vsa():
     si_intersection_5 = b.convert(si_b.intersection(si_c))
     nose.tools.assert_equal(si_intersection_5 == clrp.StridedInterval(bits=32, stride=6, lower_bound=-100, upper_bound=200).model, TrueResult())
 
+    #
     # ValueSet
+    #
+
     vs_1 = clrp.ValueSet()
     nose.tools.assert_true(vs_1.model.is_empty(), True)
     # Test merging two addresses
