@@ -208,6 +208,7 @@ class BackendVSA(ModelBackend):
     reversed_operations['__eq__'] = '__ne__'
     reversed_operations['ULT'] = 'UGE'
     reversed_operations['ULE'] = 'UGT'
+    reversed_operations['UGE'] = 'ULT'
     reversed_operations['__le__'] = '__gt__'
     reversed_operations['__ge__'] = '__lt__'
     reversed_operations['__lt__'] = '__ge__'
@@ -300,13 +301,22 @@ class BackendVSA(ModelBackend):
         '''
 
         claripy = expr._claripy
-        args = [ self.cts_simplify(ex.op, ex.args, ex, condition) for ex in args ]
+        new_args = [ self.cts_simplify(ex.op, ex.args, ex, condition) for ex in args ]
 
-        ifproxy_conds = set([ a.args[0] for a, new_cond in args if a.op == 'If' ])
+        ifproxy_conds = set([ a.args[0] for a, new_cond in new_args if a.op == 'If' ])
 
         if len(ifproxy_conds) == 0:
-            # No need to simplify!
-            return expr, condition
+            # Let's check if we can remove this layer of Concat
+            cond = condition[1]
+            if len(args) == 2 and \
+                    claripy.is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
+                # Yes! We can remove it!
+                # TODO: This is hackish...
+                new_cond = (condition[0], cond[ cond.size() - args[0].size() - 1 : 0])
+                return self.cts_simplify(args[1].op, args[1].args, args[1], new_cond)
+
+            else:
+                return expr, condition
 
         elif len(ifproxy_conds) > 1:
             # We have more than one condition. Cannot handle it for now!
@@ -316,13 +326,13 @@ class BackendVSA(ModelBackend):
             concat_trueexpr = [ ]
             concat_falseexpr = [ ]
 
-            all_new_conds = set([ new_cond for a, new_cond in args ])
+            all_new_conds = set([ new_cond for a, new_cond in new_args ])
 
             if len(all_new_conds) > 1:
                 # New conditions are not consistent. Can't handle it.
                 return expr, condition
 
-            for a, new_cond in args:
+            for a, new_cond in new_args:
                 if a.op == "If":
                     concat_trueexpr.append(a.args[1])
                     concat_falseexpr.append(a.args[2])
@@ -347,6 +357,16 @@ class BackendVSA(ModelBackend):
     def cts_simplifier_Reverse(self, args, expr, condition):
         # TODO: How should we deal with Reverse in a smart way?
 
+        arg = args[0]
+
+        return self.cts_simplify(arg.op, arg.args, arg, condition)
+
+    def cts_simplifier_widen(self, args, expr, condition):
+
+        return expr, condition
+
+    def cts_simplifier_intersection(self, args, expr, condition):
+
         return expr, condition
 
     def cts_simplifier___and__(self, args, expr, condition):
@@ -359,6 +379,36 @@ class BackendVSA(ModelBackend):
 
         else:
             # We cannot handle it
+            return expr, condition
+
+    def cts_simplifier___xor__(self, args, expr, condition):
+
+        claripy = expr._claripy
+        argl, argr = args
+
+        if claripy.is_true(argl == 0):
+            # :-)
+            return self.cts_simplify(argr.op, argr.args, argr, condition)
+        elif claripy.is_true(argr == 0):
+            # :-)
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+        else:
+            # :-(
+            return expr, condition
+
+    def cts_simplifier___add__(self, args, expr, condition):
+
+        argl, argr = args
+        claripy = expr._claripy
+
+        if claripy.is_true(expr == argl):
+            # This layer of __add__ can be removed
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+        elif claripy.is_true(expr == argr):
+            # This layer of __add__ can be removed
+            return self.cts_simplify(argr.op, argr.args, argr, condition)
+        else:
+            __import__('ipdb').set_trace()
             return expr, condition
 
     def cts_handler_comparison(self, args, comp=None):
@@ -455,6 +505,15 @@ class BackendVSA(ModelBackend):
 
         return self.cts_handler_comparison(args, comp='__ge__')
 
+    def cts_handler_ULT(self, args):
+        """
+
+        :param args:
+        :return:
+        """
+
+        return self.cts_handler_comparison(args, comp='ULT')
+
     def cts_handler_ULE(self, args):
         """
 
@@ -472,6 +531,15 @@ class BackendVSA(ModelBackend):
         """
 
         return self.cts_handler_comparison(args, comp='UGT')
+
+    def cts_handler_UGE(self, args):
+        """
+
+        :param args:
+        :return:
+        """
+
+        return self.cts_handler_comparison(args, comp='UGE')
 
     def cts_handler_I(self, args):
         a = args[0]
