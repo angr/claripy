@@ -411,6 +411,10 @@ class BackendVSA(ModelBackend):
             __import__('ipdb').set_trace()
             return expr, condition
 
+    def cts_simplifier_union(self, args, expr, condition):
+
+        return expr, condition
+
     def cts_handler_comparison(self, args, comp=None):
         """
         Handles all comparisons.
