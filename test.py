@@ -95,7 +95,7 @@ def test_expression():
 
     nose.tools.assert_equal(old_formula.variables, { 'old' })
     nose.tools.assert_equal(new_formula.variables, { 'new' })
-    nose.tools.assert_equal(ooo_formula.variables, set())
+    nose.tools.assert_equal(ooo_formula.variables, ooo.variables)
 
     nose.tools.assert_true(old_formula.symbolic)
     nose.tools.assert_true(new_formula.symbolic)
@@ -618,6 +618,9 @@ def test_vsa():
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp) #pylint:disable=unused-variable
 
+    SI = clrp.StridedInterval
+    BVV = clrp.BVV
+
     # Integers
     si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
     si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
@@ -749,7 +752,10 @@ def test_vsa():
     si_intersection_5 = b.convert(si_b.intersection(si_c))
     nose.tools.assert_equal(si_intersection_5 == clrp.StridedInterval(bits=32, stride=6, lower_bound=-100, upper_bound=200).model, TrueResult())
 
+    #
     # ValueSet
+    #
+
     vs_1 = clrp.ValueSet()
     nose.tools.assert_true(vs_1.model.is_empty(), True)
     # Test merging two addresses
@@ -758,6 +764,122 @@ def test_vsa():
     nose.tools.assert_equal(vs_1.model.get_si('global') == clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
     # Length of this ValueSet
     nose.tools.assert_equal(len(vs_1.model), 32)
+
+def test_vsa_constraint_to_si():
+    from claripy.backends import BackendVSA
+    from claripy.vsa import TrueResult, FalseResult, MaybeResult  # pylint:disable=unused-variable
+
+    clrp = claripy.Claripies["SerialZ3"]
+    # Set backend
+    b = BackendVSA()
+    b.set_claripy_object(clrp)
+    clrp.model_backends.append(b)
+
+    solver_type = claripy.solvers.BranchingSolver
+    s = solver_type(clrp)  #pylint:disable=unused-variable
+
+    SI = clrp.SI
+    BVV = clrp.BVV
+
+    #
+    # If(SI == 0, 1, 0) == 1
+    #
+
+    s1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=2)
+    ast_true = (clrp.If(s1 == 0, BVV(1, 1), BVV(0, 1)) == 1)
+    ast_false = (clrp.If(s1 == 0, BVV(1, 1), BVV(0, 1)) != 1)
+
+    trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
+    nose.tools.assert_equal(trueside_sat, True)
+    nose.tools.assert_equal(len(trueside_replacement), 1)
+    nose.tools.assert_true(trueside_replacement[0][0] is s1)
+    # True side: SI<32>0[0, 0]
+    nose.tools.assert_true(
+        clrp.is_true(trueside_replacement[0][1] == SI(bits=32, stride=0, lower_bound=0, upper_bound=0)))
+
+    falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
+    nose.tools.assert_equal(falseside_sat, True)
+    nose.tools.assert_equal(len(falseside_replacement), 1)
+    nose.tools.assert_true(falseside_replacement[0][0] is s1)
+    # False side; SI<32>1[1, 2]
+    nose.tools.assert_true(
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=32, stride=1, lower_bound=1, upper_bound=2)))
+
+    #
+    # Extract(0, 0, Concat(BVV(0, 63), If(SI == 0, 1, 0))) == 1
+    #
+
+    s2 = SI(bits=32, stride=1, lower_bound=0, upper_bound=2)
+    ast_true = (clrp.Extract(0, 0, clrp.Concat(BVV(0, 63), clrp.If(s2 == 0, BVV(1, 1), BVV(0, 1)))) == 1)
+    ast_false = (clrp.Extract(0, 0, clrp.Concat(BVV(0, 63), clrp.If(s2 == 0, BVV(1, 1), BVV(0, 1)))) != 1)
+
+    trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
+    nose.tools.assert_equal(trueside_sat, True)
+    nose.tools.assert_equal(len(trueside_replacement), 1)
+    nose.tools.assert_true(trueside_replacement[0][0] is s2)
+    # True side: SI<32>0[0, 0]
+    nose.tools.assert_true(
+        clrp.is_true(trueside_replacement[0][1] == SI(bits=32, stride=0, lower_bound=0, upper_bound=0)))
+
+    falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
+    nose.tools.assert_equal(falseside_sat, True)
+    nose.tools.assert_equal(len(falseside_replacement), 1)
+    nose.tools.assert_true(falseside_replacement[0][0] is s2)
+    # False side; SI<32>1[1, 2]
+    nose.tools.assert_true(
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=32, stride=1, lower_bound=1, upper_bound=2)))
+
+    #
+    # Extract(0, 0, ZeroExt(32, If(SI == 0, BVV(1, 32), BVV(0, 32)))) == 1
+    #
+
+    s3 = SI(bits=32, stride=1, lower_bound=0, upper_bound=2)
+    ast_true = (clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(s3 == 0, BVV(1, 32), BVV(0, 32)))) == 1)
+    ast_false = (clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(s3 == 0, BVV(1, 32), BVV(0, 32)))) != 1)
+
+    trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
+    nose.tools.assert_equal(trueside_sat, True)
+    nose.tools.assert_equal(len(trueside_replacement), 1)
+    nose.tools.assert_true(trueside_replacement[0][0] is s3)
+    # True side: SI<32>0[0, 0]
+    nose.tools.assert_true(
+        clrp.is_true(trueside_replacement[0][1] == SI(bits=32, stride=0, lower_bound=0, upper_bound=0)))
+
+    falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
+    nose.tools.assert_equal(falseside_sat, True)
+    nose.tools.assert_equal(len(falseside_replacement), 1)
+    nose.tools.assert_true(falseside_replacement[0][0] is s3)
+    # False side; SI<32>1[1, 2]
+    nose.tools.assert_true(
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=32, stride=1, lower_bound=1, upper_bound=2)))
+
+    #
+    # Extract(0, 0, ZeroExt(32, If(Extract(32, 0, (SI & SI)) < 0, BVV(1, 1), BVV(0, 1))))
+    #
+
+    s4 = SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)
+    ast_true = (
+        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)) < 0, BVV(1, 32), BVV(0, 32)))) == 1)
+    ast_false = (
+        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)) < 0, BVV(1, 32), BVV(0, 32)))) != 1)
+
+    trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
+    nose.tools.assert_equal(trueside_sat, True)
+    nose.tools.assert_equal(len(trueside_replacement), 1)
+    nose.tools.assert_true(trueside_replacement[0][0] is s4)
+    # True side: SI<32>0[0, 0]
+    nose.tools.assert_true(
+        clrp.is_true(trueside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=-0x7fffffffffffffff, upper_bound=-1)))
+
+    falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
+    nose.tools.assert_equal(falseside_sat, True)
+    nose.tools.assert_equal(len(falseside_replacement), 1)
+    nose.tools.assert_true(falseside_replacement[0][0] is s4)
+    # False side; SI<32>1[1, 2]
+    nose.tools.assert_true(
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)))
+
+    # TODO: Add some more insane test cases
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
@@ -792,6 +914,7 @@ if __name__ == '__main__':
         test_ite()
         test_bool()
         test_vsa()
+        test_vsa_constraint_to_si()
     print "WOO"
 
     print 'eval', claripy.solvers.solver.cached_evals

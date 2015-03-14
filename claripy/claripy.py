@@ -45,7 +45,8 @@ class Claripy(object):
     BV = BitVec
 
     def BitVecVal(self, *args):
-        return I(self, BVV(*args), variables=set(), symbolic=False, simplified=A.FULL_SIMPLIFY)
+        name = "BVV_%d" % (bitvec_counter.next())
+        return I(self, BVV(*args), variables={ name }, symbolic=False, simplified=A.FULL_SIMPLIFY)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
     BVV = BitVecVal
 
@@ -183,23 +184,19 @@ class Claripy(object):
 
         return identical is True
 
-    def constraint_to_si(self, expr, side): #pylint:disable=unused-argument
+    def constraint_to_si(self, expr): #pylint:disable=unused-argument
         '''
         Convert a constraint to SI if possible
         :param expr:
         :return:
         '''
-        si = None
-        old_expr = None
+        ret = True, [ ]
 
         for b in self.model_backends:
             if type(b) is BackendVSA:
-                old_expr, si = b.constraint_to_si(expr, side)
+                ret = b.constraint_to_si(expr)
 
-        if si is None:
-            return None, None
-        else:
-            return old_expr, si
+        return ret
 
     def model_object(self, e, result=None):
         for b in self.model_backends:
