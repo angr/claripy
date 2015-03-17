@@ -778,6 +778,20 @@ class StridedInterval(BackendObject):
 
         return ret.normalize()
 
+    def sign_extend(self, new_length):
+        # FIXME: This implementation is buggy and needs rewritten
+
+        if self.extract(self.bits - 1, self.bits - 1).eval(2) == [ 0 ]:
+            return self.zero_extend(new_length)
+
+        si = self.copy()
+        mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
+        si._lower_bound = si._lower_bound | mask
+        si._upper_bound = si._upper_bound | mask
+        si._bits = new_length
+
+        return si
+
     def zero_extend(self, new_length):
         si = self.copy()
         si._bits = new_length

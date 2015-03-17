@@ -831,8 +831,7 @@ class BackendVSA(ModelBackend):
         expr = args[1]
 
         assert type(expr) is StridedInterval
-        # TODO: Use sign_extend instead
-        return expr.zero_extend(new_bits + expr.bits)
+        return expr.sign_extend(new_bits + expr.bits)
 
     @staticmethod
     @expand_ifproxy

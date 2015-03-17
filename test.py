@@ -725,6 +725,10 @@ def test_vsa():
     si_zeroextended = b.convert(part2.zero_extend(32))
     nose.tools.assert_equal(si_zeroextended == clrp.SI(bits=64, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
 
+    # Sign-extension
+    si_signextended = b.convert(part2.sign_extend(32))
+    nose.tools.assert_equal(si_signextended == clrp.SI(bits=64, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
+
     # Extract from the result above
     si_extracted = b.convert(si_zeroextended.extract(31, 0))
     nose.tools.assert_equal(si_extracted == clrp.SI(bits=32, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
@@ -752,6 +756,11 @@ def test_vsa():
     nose.tools.assert_equal(si_intersection_4 == clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20).model, TrueResult())
     si_intersection_5 = b.convert(si_b.intersection(si_c))
     nose.tools.assert_equal(si_intersection_5 == clrp.StridedInterval(bits=32, stride=6, lower_bound=-100, upper_bound=200).model, TrueResult())
+
+    # Sign-extension
+    si = SI(bits=1, stride=0, lower_bound=1, upper_bound=1)
+    si_signextended = si.sign_extend(31)
+    nose.tools.assert_equal(si_signextended.model == SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff).model, TrueResult())
 
     #
     # ValueSet
