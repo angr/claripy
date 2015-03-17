@@ -112,6 +112,9 @@ class ValueSet(BackendObject):
     @normalize_types_one_arg
     def __add__(self, other):
         if type(other) is ValueSet:
+            # Normally, addition between two addresses doesn't make any sense.
+            # So we only handle those corner cases
+
             raise NotImplementedError()
         else:
             new_vs = ValueSet()
@@ -140,6 +143,10 @@ class ValueSet(BackendObject):
         if type(other) is ValueSet:
             # An address bitwise-and another address? WTF?
             assert False
+
+        if BoolResult.is_true(other == 0):
+            # Corner case: a & 0 = 0
+            return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
 
         new_vs = ValueSet()
         for region, si in self._regions.items():
