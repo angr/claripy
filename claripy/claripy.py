@@ -45,8 +45,7 @@ class Claripy(object):
     BV = BitVec
 
     def BitVecVal(self, *args):
-        name = "BVV_%d" % (bitvec_counter.next())
-        return I(self, BVV(*args), variables={ name }, symbolic=False, simplified=A.FULL_SIMPLIFY)
+        return I(self, BVV(*args), variables=set(), symbolic=False, simplified=A.FULL_SIMPLIFY)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
     BVV = BitVecVal
 
