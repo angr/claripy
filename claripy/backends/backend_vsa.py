@@ -246,7 +246,7 @@ class BackendVSA(ModelBackend):
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
-            __import__('ipdb').set_trace()
+            #__import__('ipdb').set_trace()
             # We cannot handle this...
             return expr, condition
 
@@ -659,8 +659,12 @@ class BackendVSA(ModelBackend):
                 return False, [ ]
         elif isinstance(lhs.model, StridedInterval) or isinstance(lhs.model, BVV):
             if not isinstance(lhs.model, StridedInterval):
-                lhs = claripy.SI(to_conv=lhs)
-            rhs = claripy.SI(to_conv=rhs)
+                try: lhs = claripy.SI(to_conv=lhs)
+                except BackendError: return True, [ ] # We cannot convert it to a StridedInterval
+
+            try: rhs = claripy.SI(to_conv=rhs)
+            except BackendError: return True, [ ]
+
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
@@ -682,7 +686,10 @@ class BackendVSA(ModelBackend):
                     # We cannot handle it precisely
                     return True, [ ]
         else:
-            import ipdb; ipdb.set_trace()
+            # TODO: handle this
+            #import ipdb; ipdb.set_trace()
+
+            return True, [ ]
 
     def cts_simplify(self, op, args, expr, condition):
         return getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
