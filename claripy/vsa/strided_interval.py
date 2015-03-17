@@ -53,7 +53,7 @@ class StridedInterval(BackendObject):
         stride[lower_bound, upper_bound]
     For more details, please refer to relevant papers like TIE and WYSINWYE.
     '''
-    def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None):
+    def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False):
         self._name = name
 
         if self._name is None:
@@ -66,6 +66,8 @@ class StridedInterval(BackendObject):
 
         self._reversed = False
 
+        self.uninitialized = uninitialized
+
         if self._upper_bound != None and bits == 0:
             self._bits = self._min_bits()
 
@@ -76,13 +78,19 @@ class StridedInterval(BackendObject):
             self._lower_bound = StridedInterval.min_int(self.bits)
 
     def __repr__(self):
+        s = ""
         if self.is_empty():
-            return '%s<%d>[EmptySI]' % (self._name, self._bits)
+            s = '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
-            return '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
+            s = '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
                                         self._lower_bound if type(self._lower_bound) == str else hex(self._lower_bound),
                                         self._upper_bound if type(self._upper_bound) == str else hex(self._upper_bound),
                                         'R' if self._reversed else '')
+
+        if self.uninitialized:
+            s += "(uninit)"
+
+        return s
 
     @property
     def name(self):
@@ -124,7 +132,7 @@ class StridedInterval(BackendObject):
         return results
 
     @staticmethod
-    def top(bits, name=None, signed=False):
+    def top(bits, name=None, signed=False, uninitialized=False):
         '''
         Get a TOP StridedInterval
 
@@ -135,13 +143,15 @@ class StridedInterval(BackendObject):
                                    bits=bits,
                                    stride=1,
                                    lower_bound=StridedInterval.min_int(bits),
-                                   upper_bound=StridedInterval.max_int(bits - 1))
+                                   upper_bound=StridedInterval.max_int(bits - 1),
+                                   uninitialized=uninitialized)
         else:
             return StridedInterval(name=name,
                                    bits=bits,
                                    stride=1,
                                    lower_bound=0,
-                                   upper_bound=StridedInterval.max_int(bits))
+                                   upper_bound=StridedInterval.max_int(bits),
+                                   uninitialized=uninitialized)
 
     @staticmethod
     def empty(bits):
@@ -253,7 +263,8 @@ class StridedInterval(BackendObject):
                                bits=self.bits,
                                stride=self.stride,
                                lower_bound=self.lower_bound,
-                               upper_bound=self.upper_bound)
+                               upper_bound=self.upper_bound,
+                               uninitialized=self.uninitialized)
         si._reversed = self._reversed
         return si
 
@@ -419,6 +430,7 @@ class StridedInterval(BackendObject):
 
         lb_ = self.lower_bound + b.lower_bound
         ub_ = self.upper_bound + b.upper_bound
+        uninitialized = self.uninitialized or b.uninitialized
 
         # This implementation (as in BAP 0.8) will yield imprecise result when dealing with overflows!
         # lb_underflow_ = (lb_ < StridedInterval.min_int(self.bits))
@@ -450,7 +462,8 @@ class StridedInterval(BackendObject):
             if new_ub > mask:
                 new_ub = new_ub & mask
 
-            return StridedInterval(bits=new_bits, stride=stride, lower_bound=new_lb, upper_bound=new_ub)
+            return StridedInterval(bits=new_bits, stride=stride, lower_bound=new_lb, upper_bound=new_ub,
+                                   uninitialized=uninitialized)
 
     def neg(self):
         '''
