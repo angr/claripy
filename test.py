@@ -777,6 +777,18 @@ def test_vsa():
     nose.tools.assert_equal(if_1.model.trueexpr == clrp.ValueSet(region='global', bits=32, val=0).model, TrueResult())
     nose.tools.assert_equal(if_1.model.falseexpr == vs_2.model, TrueResult())
 
+    # if_2 = And(VS_3, IfProxy(si != 0, 0, 1)
+    vs_3 = clrp.ValueSet(region='global', bits=32, val=0xDEADCA7)
+    si = clrp.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
+    if_2 = (vs_3 & clrp.If(si != 0, SI(bits=32, stride=0, lower_bound=0, upper_bound=0), SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
+    nose.tools.assert_equal(if_2.model.trueexpr == clrp.ValueSet(region='global', bits=32, val=0).model, TrueResult())
+    nose.tools.assert_equal(if_2.model.falseexpr == vs_3.model, TrueResult())
+
+    # Something crazy is gonna happen...
+    if_3 = if_1 + if_2
+    nose.tools.assert_equal(if_3.model.trueexpr == vs_3.model, TrueResult())
+    nose.tools.assert_equal(if_3.model.falseexpr == vs_2.model, TrueResult())
+
 def test_vsa_constraint_to_si():
     from claripy.backends import BackendVSA
     from claripy.vsa import TrueResult, FalseResult, MaybeResult  # pylint:disable=unused-variable

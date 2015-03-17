@@ -14,8 +14,24 @@ def proxified(f):
         :return:
         '''
         op_name = f.__name__
-        if_exprs = [self.trueexpr, self.falseexpr]
+        if_exprs = [ self.trueexpr, self.falseexpr ]
         ret = [ ]
+
+        if isinstance(args[0], IfProxy):
+            # Are the conditions opposite?
+            other = args[0]
+            cond1 = self.condition
+            cond2 = other.condition
+
+            if inverse_operations[cond1.op] == cond2.op and \
+                    all([ BoolResult.is_true(a1 == a2) for a1, a2 in zip(cond1.args, cond2.args)]):
+                other_args = [ other.falseexpr, other.trueexpr ]
+            else:
+                # FIXME: We are assuming the conditions are the same with self.condition...
+                other_args = [ other.trueexpr, other.falseexpr ]
+        else:
+            other_args = [ args[0], args[0]  ]
+
         for i, arg in enumerate(if_exprs):
             if len(args) == 0:
                 obj = NotImplemented
@@ -30,10 +46,7 @@ def proxified(f):
 
             else:
                 obj = NotImplemented
-                o = args[0]
-                if isinstance(o, IfProxy):
-                    # FIXME: We are still assuming the conditions are the same with self.condition...
-                    o = o.trueexpr if i == 0 else o.falseexpr
+                o = other_args[i]
 
                 # first, try the operation with the first guy
                 if hasattr(arg, op_name):
@@ -139,4 +152,5 @@ class IfProxy(BackendObject):
     def __rand__(self, other): pass
 
 from ..errors import BackendError
-from ..operations import opposites
+from ..operations import opposites, inverse_operations
+from .bool_result import BoolResult
