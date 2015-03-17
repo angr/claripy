@@ -619,6 +619,7 @@ def test_vsa():
     s = solver_type(clrp) #pylint:disable=unused-variable
 
     SI = clrp.StridedInterval
+    VS = clrp.ValueSet
     BVV = clrp.BVV
 
     # Integers
@@ -764,6 +765,17 @@ def test_vsa():
     nose.tools.assert_equal(vs_1.model.get_si('global') == clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
     # Length of this ValueSet
     nose.tools.assert_equal(len(vs_1.model), 32)
+
+    #
+    # IfProxy
+    #
+
+    # if_1 = And(VS_2, IfProxy(si == 0, 0, 1))
+    vs_2 = clrp.ValueSet(region='global', bits=32, val=0xFA7B00B)
+    si = clrp.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
+    if_1 = (vs_2 & clrp.If(si == 0, SI(bits=32, stride=0, lower_bound=0, upper_bound=0), SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
+    nose.tools.assert_equal(if_1.model.trueexpr == clrp.ValueSet(region='global', bits=32, val=0).model, TrueResult())
+    nose.tools.assert_equal(if_1.model.falseexpr == vs_2.model, TrueResult())
 
 def test_vsa_constraint_to_si():
     from claripy.backends import BackendVSA
