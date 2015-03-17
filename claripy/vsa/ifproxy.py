@@ -15,7 +15,7 @@ def proxified(f):
         '''
         op_name = f.__name__
         if_exprs = [self.trueexpr, self.falseexpr]
-        ret = []
+        ret = [ ]
         for i, arg in enumerate(if_exprs):
             if len(args) == 0:
                 obj = NotImplemented
@@ -40,7 +40,7 @@ def proxified(f):
                     op = getattr(arg, op_name)
                     obj = op(o)
                 # now try the reverse operation with the second guy
-                if obj is NotImplemented and hasattr(o, op_name):
+                if obj is NotImplemented and hasattr(o, opposites[op_name]):
                     op = getattr(o, opposites[op_name])
                     obj = op(arg)
 
