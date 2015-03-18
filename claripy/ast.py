@@ -321,7 +321,7 @@ class A(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_objects', '_errored' ]
+    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_objects', '_errored', '_rec_id' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -372,6 +372,9 @@ class A(ana.Storable):
             self.__a_init__(claripy, f_op, f_args, **f_kwargs)
             self._hash = h
             cls._hash_cache[h] = self
+        #else:
+        #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
+        #        raise Exception("CRAP -- hash collision")
 
         return self
 
@@ -419,7 +422,7 @@ class A(ana.Storable):
         #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
-    def make_uuid(self):
+    def make_uuid(self): #pylint:disable=arguments-differ
         '''
         This overrides the default ANA uuid with the hash of the AST. UUID is slow,
         and we'll soon replace it from ANA itself, and this will go away.
@@ -641,7 +644,29 @@ class A(ana.Storable):
         a depth of 2.
         '''
         ast_args = [ a for a in self.args if isinstance(a, A) ]
-        return 1 + (max(ast_args) if len(ast_args) > 0 else 1)
+        return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
+
+    @property
+    def recursive_children_asts(self):
+        for a in self.args:
+            if isinstance(a, A):
+                yield a
+                for b in a.recursive_children_asts:
+                    yield b
+
+    def dbg_is_looped(self):
+        r = False
+
+        self._rec_id = True #pylint:disable=attribute-defined-outside-init
+        for a in self.recursive_children_asts:
+            if hasattr(a, '_rec_id') and a._rec_id:
+                return True
+            else:
+                r |= any(a.dbg_is_looped() for a in self.args if isinstance(a, A))
+                if r: return True
+
+        delattr(self, '_rec_id')
+        return r
 
     #
     # Various AST modifications (replacements)
@@ -673,7 +698,7 @@ class A(ana.Storable):
 
         for a in self.args:
             if isinstance(a, A):
-                new_a, a_replaced = a._replace(old, new) #pylint:disable=maybe-no-member
+                new_a, a_replaced = a._replace(old, new)
             else:
                 new_a, a_replaced = a, False
 
