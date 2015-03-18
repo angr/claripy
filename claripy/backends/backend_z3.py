@@ -108,11 +108,11 @@ class BackendZ3(SolverBackend):
 		return SolverBackend.call(self, *args, **kwargs)
 
 	@condom
-	def abstract(self, z):
+	def _abstract(self, z):
 		#return self._abstract(z, split_on=split_on)[0]
-		return self._abstract(z.ctx.ctx, z.ast)
+		return self._abstract_internal(z.ctx.ctx, z.ast)
 
-	def _abstract(self, ctx, ast, split_on=None):
+	def _abstract_internal(self, ctx, ast, split_on=None):
 		h = z3.Z3_get_ast_hash(ctx, ast)
 		if h in self._ast_cache:
 			#print "ABSTRACTION CACHED"
@@ -131,7 +131,7 @@ class BackendZ3(SolverBackend):
 
 		split_on = self._split_on if split_on is None else split_on
 		new_split_on = split_on if op_name in split_on else set()
-		children = [ self._abstract(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(z3.Z3_get_app_num_args(ctx, ast)) ]
+		children = [ self._abstract_internal(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(z3.Z3_get_app_num_args(ctx, ast)) ]
 
 		if op_name == 'True':
 			return I(self._claripy, True)
@@ -404,7 +404,7 @@ class BackendZ3(SolverBackend):
 			except BackendError:
 				continue
 		else:
-			o = self.abstract(s)
+			o = self._abstract(s)
 
 		#print "SIMPLIFIED"
 		#l.debug("... after: %s (%s)", s, s.__class__.__name__)
