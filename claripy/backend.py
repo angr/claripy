@@ -188,6 +188,12 @@ class Backend(object):
     #
 
     def abstract(self, e): #pylint:disable=W0613,R0201
+        '''
+        Abstracts the BackendObject e to an AST.
+
+        @param e: the backend object
+        @returns an AST
+        '''
         raise BackendError("backend %s doesn't implement abstract()" % self.__class__.__name__)
 
     #
@@ -195,7 +201,7 @@ class Backend(object):
     #
 
     def simplify(self, e):
-        return self._simplify(self.convert(e))
+        return self.abstract(self._simplify(self.convert(e)))
 
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
