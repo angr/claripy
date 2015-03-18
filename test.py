@@ -762,6 +762,25 @@ def test_vsa():
     si_signextended = si.sign_extend(31)
     nose.tools.assert_equal(si_signextended.model == SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff).model, TrueResult())
 
+    # Comparison between SI and BVV
+    si = SI(bits=32, stride=1, lower_bound=-0x7f, upper_bound=0x7f)
+    si.uninitialized = True
+    bvv = BVV(0x30, 32)
+    comp = (si < bvv)
+    nose.tools.assert_equal(comp.model, MaybeResult())
+
+    # Better extraction
+    # si = <32>0x1000000[0xcffffff, 0xdffffff]R
+    si = SI(bits=32, stride=0x1000000, lower_bound=0xcffffff, upper_bound=0xdffffff)
+    si_byte0 = b.convert(si[7: 0])
+    si_byte1 = b.convert(si[15: 8])
+    si_byte2 = b.convert(si[23: 16])
+    si_byte3 = b.convert(si[31: 24])
+    nose.tools.assert_equal(si_byte0 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
+    nose.tools.assert_equal(si_byte1 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
+    nose.tools.assert_equal(si_byte2 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
+    nose.tools.assert_equal(si_byte3 == SI(bits=8, stride=1, lower_bound=0xc, upper_bound=0xd).model, TrueResult())
+
     #
     # ValueSet
     #

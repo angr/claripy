@@ -372,9 +372,9 @@ class A(ana.Storable):
             self.__a_init__(claripy, f_op, f_args, **f_kwargs)
             self._hash = h
             cls._hash_cache[h] = self
-        #else:
-        #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
-        #        raise Exception("CRAP -- hash collision")
+        else:
+            if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
+                raise Exception("CRAP -- hash collision")
 
         return self
 

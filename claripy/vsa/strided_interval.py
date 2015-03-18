@@ -38,6 +38,14 @@ def normalize_types(f):
             o = o.zero_extend(common_bits)
         if self.bits < common_bits:
             self = self.zero_extend(common_bits)
+
+        if self._reversed != o._reversed:
+            # We are working on two instances that have different endianness!
+            if o.is_integer(): o = o._reverse()
+            elif self.is_integer(): self = self._reverse()
+            elif self._reversed: self = self._reverse()
+            else: o = o._reverse()
+
         return f(self, o)
 
     return normalizer
@@ -101,7 +109,7 @@ class StridedInterval(BackendObject):
         return self._reversed
 
     def normalize(self):
-        if self.size == 8 and self.reversed:
+        if self.bits == 8 and self.reversed:
             self._reversed = False
 
         if self.lower_bound == self.upper_bound:
@@ -729,6 +737,7 @@ class StridedInterval(BackendObject):
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
+
             elif self.upper_bound - self.lower_bound <= mask:
                 l = self.lower_bound & mask
                 u = self.upper_bound & mask
@@ -740,6 +749,18 @@ class StridedInterval(BackendObject):
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=l,
                                        upper_bound=u)
+
+            elif (self.upper_bound & mask == self.lower_bound & mask) and \
+                ((self.upper_bound - self.lower_bound) & mask == 0):
+                # This operation doesn't affect the stride. Stride should be 0 then.
+
+                bound = self.lower_bound & mask
+
+                return StridedInterval(bits=tok,
+                                       stride=0,
+                                       lower_bound=bound,
+                                       upper_bound=bound)
+
             else:
                 # TODO: How can we do better here? For example, keep the stride information?
                 return self.top(tok)
@@ -924,7 +945,7 @@ class StridedInterval(BackendObject):
         return ret
 
     def reverse(self):
-        if self.size == 8:
+        if self.bits == 8:
             # We cannot reverse a one-byte value
             return self.copy()
 
@@ -932,6 +953,42 @@ class StridedInterval(BackendObject):
         si._reversed = not si._reversed
 
         return si
+
+    def _reverse(self):
+        """
+        This function does the reversing for real.
+        :return:
+        """
+
+        if self.bits == 8:
+            # No need for reversing
+            return self.copy()
+
+        if self.is_top():
+            # A TOP is still a TOP after reversing
+            si = self.copy()
+            si._reversed = False
+            return si
+
+        else:
+            if not self.is_integer():
+                # We really don't want to do that. Something is wrong.
+                logger.warning('Reversing a real strided-interval %s is bad', self)
+                #__import__('ipdb').set_trace()
+
+            # Reversing an integer is easy
+            rounded_bits = ((self.bits + 7) / 8) * 8
+            bytes = [ ]
+            si = None
+
+            for i in xrange(0, rounded_bits, 8):
+                b = self.extract(min(i + 7, self.bits - 1), i)
+                bytes.append(b)
+
+            for b in bytes:
+                si = b if si is None else si.concat(b)
+
+            return si
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
