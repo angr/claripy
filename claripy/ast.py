@@ -33,7 +33,7 @@ def _finalize(claripy, op, args, kwargs):
     '''
     variables = kwargs.get('variables', None)
     if variables is None:
-        variables = set.union(set(), *(a.variables for a in args if isinstance(a, A)))
+        variables = frozenset.union(frozenset(), *(a.variables for a in args if isinstance(a, A)))
     kwargs['variables'] = variables
 
     symbolic = kwargs.get('symbolic', None)
@@ -280,7 +280,7 @@ def _finalize_I(claripy, op, args, kwargs):
         try:
             name = b.name(args[0])
             if name is not None:
-                variables = kwargs.get('variables', set())
+                variables = kwargs.get('variables', frozenset())
                 variables.add(name)
                 kwargs['variables'] = variables
             break
@@ -402,7 +402,7 @@ class A(ana.Storable):
         self.op = op
         self.args = args
         self.length = length
-        self.variables = variables
+        self.variables = frozenset(variables)
         self.symbolic = symbolic
 
         self._collapsible = True if collapsible is None else collapsible
@@ -617,9 +617,6 @@ class A(ana.Storable):
             result.resolve_cache[b][self] = r
         else:
             self._objects[b] = r
-
-        if hasattr(r, 'name'):
-            self.variables.add(r.name)
 
         return r
 
