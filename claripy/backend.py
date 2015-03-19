@@ -131,7 +131,31 @@ class Backend(object):
         @returns a backend object
         '''
         if isinstance(expr, A):
+            # if we have a result, and it's cached there, use it
+            if result is not None:
+                try: return result.resolve_cache[self][expr]
+                except KeyError: pass
+
+            # otherwise, if it's cached in the backend, use it
+            try: return self._object_cache[expr._cache_key]
+            except KeyError: pass
+
             #l.debug('converting A')
+
+            # otherwise, try to convert something
+            for b in self._claripy.model_backends + self._claripy.solver_backends:
+                try:
+                    return self._convert(b._object_cache[expr._cache_key])
+                except (KeyError, BackendError):
+                    pass
+            if result is not None:
+                for rc in result.resolve_cache.values():
+                    try:
+                        return self._convert(rc[expr._cache_key])
+                    except (KeyError, BackendError):
+                        pass
+
+            # otherwise, resolve it!
             return expr.resolved_with(self, result=result)
         else:
             #l.debug('converting non-expr')
