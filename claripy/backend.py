@@ -1,5 +1,6 @@
 import sys
 import ctypes
+import weakref
 
 import logging
 l = logging.getLogger('claripy.backend')
@@ -70,6 +71,7 @@ class Backend(object):
         self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
         self._op_expr = { }
         self._cache_objects = True
+        self._object_cache = weakref.WeakKeyDictionary()
         self._claripy = None
 
     def set_claripy_object(self, claripy):
@@ -148,9 +150,17 @@ class Backend(object):
 
         @returns an Expression with the result.
         '''
+
+        if result is None:
+            try: return self._object_cache[ast._cache_key]
+            except KeyError: pass
+        else:
+            try: return result.resolve_cache[self][ast]
+            except KeyError: pass
+
         try:
             if ast.op in self._op_expr:
-                return self._op_expr[ast.op](*ast.args, result=result)
+                r = self._op_expr[ast.op](*ast.args, result=result)
             else:
                 converted = self.convert_list(ast.args, result=result)
 
@@ -178,10 +188,14 @@ class Backend(object):
                         l.debug("%s neither %s nor %s apply in backend.call()", self, ast.op, opposites[ast.op])
                         raise BackendError("unable to apply operation on provided converted")
 
-                return obj
+                r = obj
         except (RuntimeError, ctypes.ArgumentError):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
+
+        if result is None: self._object_cache[ast._cache_key] = r
+        else: result.resolve_cache[self][ast] = r
+        return r
 
     #
     # Abstraction and resolution.

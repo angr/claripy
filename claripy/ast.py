@@ -302,6 +302,8 @@ def _finalize_get_errored(args):
 
 #pylint:enable=unused-argument
 
+class ASTCacheKey(object): pass
+
 class A(ana.Storable):
     '''
     An A(ST) tracks a tree of operations on arguments. It has the following methods:
@@ -321,7 +323,7 @@ class A(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_objects', '_errored', '_rec_id' ]
+    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', '_rec_id' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -409,8 +411,8 @@ class A(ana.Storable):
         self._claripy = claripy
         self._errored = errored if errored is not None else set()
 
-        self._objects = { }
         self._simplified = simplified
+        self._cache_key = ASTCacheKey()
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -602,23 +604,11 @@ class A(ana.Storable):
         @arg result: a Result object, for resolving symbolic variables using the
                      concrete backend
         '''
-        if b in self._objects:
-            return self._objects[b]
-
         if b in self._errored and result is None:
             raise BackendError("%s already failed" % b)
 
-        if result is not None and self in result.resolve_cache[b]:
-            return result.resolve_cache[b][self]
-
         #l.debug("trying evaluation with %s", b)
-        r = b.call(self, result=result)
-        if result is not None:
-            result.resolve_cache[b][self] = r
-        else:
-            self._objects[b] = r
-
-        return r
+        return b.call(self, result=result)
 
     #
     # Viewing and debugging
