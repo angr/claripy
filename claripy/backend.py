@@ -131,32 +131,39 @@ class Backend(object):
         @returns a backend object
         '''
         if isinstance(expr, A):
+            r = None
             # if we have a result, and it's cached there, use it
             if result is not None:
-                try: return result.resolve_cache[self][expr]
+                try: return result.resolve_cache[self][expr._cache_key]
                 except KeyError: pass
 
             # otherwise, if it's cached in the backend, use it
-            try: return self._object_cache[expr._cache_key]
-            except KeyError: pass
+            if r is None:
+                try: return self._object_cache[expr._cache_key]
+                except KeyError: pass
 
             #l.debug('converting A')
 
             # otherwise, try to convert something
-            for b in self._claripy.model_backends + self._claripy.solver_backends:
-                try:
-                    return self._convert(b._object_cache[expr._cache_key])
-                except (KeyError, BackendError):
-                    pass
-            if result is not None:
+            if r is None and result is not None:
                 for rc in result.resolve_cache.values():
                     try:
-                        return self._convert(rc[expr._cache_key])
+                        r = self._convert(rc[expr._cache_key], result=result)
+                    except (KeyError, BackendError):
+                        pass
+            if r is None:
+                for b in self._claripy.model_backends + self._claripy.solver_backends:
+                    try:
+                        r = self._convert(b._object_cache[expr._cache_key])
                     except (KeyError, BackendError):
                         pass
 
             # otherwise, resolve it!
-            return expr.resolved_with(self, result=result)
+            r = expr.resolved_with(self, result=result)
+
+            if result is None: self._object_cache[expr._cache_key] = r
+            else: result.resolve_cache[self][expr._cache_key] = r
+            return r
         else:
             #l.debug('converting non-expr')
             return self._convert(expr, result=result)
@@ -179,7 +186,7 @@ class Backend(object):
             try: return self._object_cache[ast._cache_key]
             except KeyError: pass
         else:
-            try: return result.resolve_cache[self][ast]
+            try: return result.resolve_cache[self][ast._cache_key]
             except KeyError: pass
 
         try:
@@ -218,7 +225,7 @@ class Backend(object):
             raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
 
         if result is None: self._object_cache[ast._cache_key] = r
-        else: result.resolve_cache[self][ast] = r
+        else: result.resolve_cache[self][ast._cache_key] = r
         return r
 
     #
