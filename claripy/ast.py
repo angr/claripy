@@ -33,7 +33,7 @@ def _finalize(claripy, op, args, kwargs):
     '''
     variables = kwargs.get('variables', None)
     if variables is None:
-        variables = set.union(set(), *(a.variables for a in args if isinstance(a, A)))
+        variables = frozenset.union(frozenset(), *(a.variables for a in args if isinstance(a, A)))
     kwargs['variables'] = variables
 
     symbolic = kwargs.get('symbolic', None)
@@ -280,7 +280,7 @@ def _finalize_I(claripy, op, args, kwargs):
         try:
             name = b.name(args[0])
             if name is not None:
-                variables = kwargs.get('variables', set())
+                variables = kwargs.get('variables', frozenset())
                 variables.add(name)
                 kwargs['variables'] = variables
             break
@@ -302,6 +302,8 @@ def _finalize_get_errored(args):
 
 #pylint:enable=unused-argument
 
+class ASTCacheKey(object): pass
+
 class A(ana.Storable):
     '''
     An A(ST) tracks a tree of operations on arguments. It has the following methods:
@@ -321,7 +323,7 @@ class A(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_objects', '_errored' ]
+    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', '_rec_id' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -372,6 +374,9 @@ class A(ana.Storable):
             self.__a_init__(claripy, f_op, f_args, **f_kwargs)
             self._hash = h
             cls._hash_cache[h] = self
+        # else:
+        #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
+        #        raise Exception("CRAP -- hash collision")
 
         return self
 
@@ -399,15 +404,15 @@ class A(ana.Storable):
         self.op = op
         self.args = args
         self.length = length
-        self.variables = variables
+        self.variables = frozenset(variables)
         self.symbolic = symbolic
 
         self._collapsible = True if collapsible is None else collapsible
         self._claripy = claripy
         self._errored = errored if errored is not None else set()
 
-        self._objects = { }
         self._simplified = simplified
+        self._cache_key = ASTCacheKey()
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -419,7 +424,7 @@ class A(ana.Storable):
         #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
-    def make_uuid(self):
+    def make_uuid(self): #pylint:disable=arguments-differ
         '''
         This overrides the default ANA uuid with the hash of the AST. UUID is slow,
         and we'll soon replace it from ANA itself, and this will go away.
@@ -599,26 +604,11 @@ class A(ana.Storable):
         @arg result: a Result object, for resolving symbolic variables using the
                      concrete backend
         '''
-        if b in self._objects:
-            return self._objects[b]
-
         if b in self._errored and result is None:
             raise BackendError("%s already failed" % b)
 
-        if result is not None and self in result.resolve_cache[b]:
-            return result.resolve_cache[b][self]
-
         #l.debug("trying evaluation with %s", b)
-        r = b.call(self, result=result)
-        if result is not None:
-            result.resolve_cache[b][self] = r
-        else:
-            self._objects[b] = r
-
-        if hasattr(r, 'name'):
-            self.variables.add(r.name)
-
-        return r
+        return b.call(self, result=result)
 
     #
     # Viewing and debugging
@@ -641,7 +631,29 @@ class A(ana.Storable):
         a depth of 2.
         '''
         ast_args = [ a for a in self.args if isinstance(a, A) ]
-        return 1 + (max(ast_args) if len(ast_args) > 0 else 1)
+        return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
+
+    @property
+    def recursive_children_asts(self):
+        for a in self.args:
+            if isinstance(a, A):
+                yield a
+                for b in a.recursive_children_asts:
+                    yield b
+
+    def dbg_is_looped(self):
+        r = False
+
+        self._rec_id = True #pylint:disable=attribute-defined-outside-init
+        for a in self.recursive_children_asts:
+            if hasattr(a, '_rec_id') and a._rec_id:
+                return True
+            else:
+                r |= any(a.dbg_is_looped() for a in self.args if isinstance(a, A))
+                if r: return True
+
+        delattr(self, '_rec_id')
+        return r
 
     #
     # Various AST modifications (replacements)
@@ -673,7 +685,7 @@ class A(ana.Storable):
 
         for a in self.args:
             if isinstance(a, A):
-                new_a, a_replaced = a._replace(old, new) #pylint:disable=maybe-no-member
+                new_a, a_replaced = a._replace(old, new)
             else:
                 new_a, a_replaced = a, False
 

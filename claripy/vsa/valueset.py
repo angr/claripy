@@ -8,12 +8,31 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
+        if isinstance(o, IfProxy):
+            return NotImplemented
+
         if isinstance(o, A):
             o = o.model
 
         assert type(o) is StridedInterval
 
         return f(self, region, o)
+
+    return normalizer
+
+def normalize_types_one_arg(f):
+    @functools.wraps(f)
+    def normalizer(self, o):
+        '''
+        Convert any object to an object that we can process.
+        '''
+        if isinstance(o, IfProxy):
+            return NotImplemented
+
+        if isinstance(o, A):
+            o = o.model
+
+        return f(self, o)
 
     return normalizer
 
@@ -90,8 +109,12 @@ class ValueSet(BackendObject):
             return 0
         return len(self._regions.items()[0][1])
 
+    @normalize_types_one_arg
     def __add__(self, other):
         if type(other) is ValueSet:
+            # Normally, addition between two addresses doesn't make any sense.
+            # So we only handle those corner cases
+
             raise NotImplementedError()
         else:
             new_vs = ValueSet()
@@ -100,9 +123,11 @@ class ValueSet(BackendObject):
 
             return new_vs
 
+    @normalize_types_one_arg
     def __radd__(self, other):
         return self.__add__(other)
 
+    @normalize_types_one_arg
     def __sub__(self, other):
         if type(other) is ValueSet:
             raise NotImplementedError()
@@ -113,14 +138,21 @@ class ValueSet(BackendObject):
 
             return new_vs
 
+    @normalize_types_one_arg
     def __and__(self, other):
         if type(other) is ValueSet:
             # An address bitwise-and another address? WTF?
             assert False
 
+        if BoolResult.is_true(other == 0):
+            # Corner case: a & 0 = 0
+            return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
+
         new_vs = ValueSet()
         for region, si in self._regions.items():
-            new_vs._regions[region] = si.__and__(other)
+            r = si.__and__(other)
+
+            new_vs._regions[region] = r
 
         return new_vs
 
@@ -195,6 +227,7 @@ class ValueSet(BackendObject):
 
         return new_vs
 
+    @normalize_types_one_arg
     def union(self, b):
         merged_vs = self.copy()
         if type(b) is ValueSet:
@@ -209,6 +242,7 @@ class ValueSet(BackendObject):
 
         return merged_vs
 
+    @normalize_types_one_arg
     def widen(self, b):
         merged_vs = self.copy()
         for region, si in b.regions.items():
@@ -221,4 +255,5 @@ class ValueSet(BackendObject):
 
 from ..ast import A
 from .strided_interval import StridedInterval
+from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult

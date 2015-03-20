@@ -246,7 +246,7 @@ class BackendVSA(ModelBackend):
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
-            __import__('ipdb').set_trace()
+            #__import__('ipdb').set_trace()
             # We cannot handle this...
             return expr, condition
 
@@ -659,8 +659,12 @@ class BackendVSA(ModelBackend):
                 return False, [ ]
         elif isinstance(lhs.model, StridedInterval) or isinstance(lhs.model, BVV):
             if not isinstance(lhs.model, StridedInterval):
-                lhs = claripy.SI(to_conv=lhs)
-            rhs = claripy.SI(to_conv=rhs)
+                try: lhs = claripy.SI(to_conv=lhs)
+                except BackendError: return True, [ ] # We cannot convert it to a StridedInterval
+
+            try: rhs = claripy.SI(to_conv=rhs)
+            except BackendError: return True, [ ]
+
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
@@ -682,7 +686,10 @@ class BackendVSA(ModelBackend):
                     # We cannot handle it precisely
                     return True, [ ]
         else:
-            import ipdb; ipdb.set_trace()
+            # TODO: handle this
+            #import ipdb; ipdb.set_trace()
+
+            return True, [ ]
 
     def cts_simplify(self, op, args, expr, condition):
         return getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
@@ -831,8 +838,7 @@ class BackendVSA(ModelBackend):
         expr = args[1]
 
         assert type(expr) is StridedInterval
-        # TODO: Use sign_extend instead
-        return expr.zero_extend(new_bits + expr.bits)
+        return expr.sign_extend(new_bits + expr.bits)
 
     @staticmethod
     @expand_ifproxy
@@ -933,8 +939,8 @@ class BackendVSA(ModelBackend):
         return bi
 
     @staticmethod
-    def CreateTopStridedInterval(bits, name=None, signed=False): #pylint:disable=unused-argument,no-self-use
-        return StridedInterval.top(bits, name=None, signed=signed)
+    def CreateTopStridedInterval(bits, name=None, signed=False, uninitialized=False): #pylint:disable=unused-argument,no-self-use
+        return StridedInterval.top(bits, name=None, signed=signed, uninitialized=uninitialized)
 
 from ..bv import BVV
 from ..ast import A, I

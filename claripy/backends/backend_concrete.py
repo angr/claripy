@@ -74,6 +74,13 @@ class BackendConcrete(ModelBackend):
             if hasattr(z3_backend, '_lock'):
                 z3_backend._lock.release()
 
+    def _simplify(self, e):
+        return e
+
+    def abstract(self, e):
+        if isinstance(e, (int, long, float, bool, str, BVV)):
+            return I(self._claripy, e)
+
     #
     # Evaluation functions
     #
@@ -91,3 +98,4 @@ from ..bv import BVV
 from ..operations import backend_operations
 from .. import bv
 from .backend_z3 import BackendZ3
+from ..ast import I

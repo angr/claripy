@@ -619,6 +619,7 @@ def test_vsa():
     s = solver_type(clrp) #pylint:disable=unused-variable
 
     SI = clrp.StridedInterval
+    VS = clrp.ValueSet
     BVV = clrp.BVV
 
     # Integers
@@ -724,6 +725,10 @@ def test_vsa():
     si_zeroextended = b.convert(part2.zero_extend(32))
     nose.tools.assert_equal(si_zeroextended == clrp.SI(bits=64, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
 
+    # Sign-extension
+    si_signextended = b.convert(part2.sign_extend(32))
+    nose.tools.assert_equal(si_signextended == clrp.SI(bits=64, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
+
     # Extract from the result above
     si_extracted = b.convert(si_zeroextended.extract(31, 0))
     nose.tools.assert_equal(si_extracted == clrp.SI(bits=32, stride=9, lower_bound=1, upper_bound=10).model, TrueResult())
@@ -752,6 +757,30 @@ def test_vsa():
     si_intersection_5 = b.convert(si_b.intersection(si_c))
     nose.tools.assert_equal(si_intersection_5 == clrp.StridedInterval(bits=32, stride=6, lower_bound=-100, upper_bound=200).model, TrueResult())
 
+    # Sign-extension
+    si = SI(bits=1, stride=0, lower_bound=1, upper_bound=1)
+    si_signextended = si.sign_extend(31)
+    nose.tools.assert_equal(si_signextended.model == SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff).model, TrueResult())
+
+    # Comparison between SI and BVV
+    si = SI(bits=32, stride=1, lower_bound=-0x7f, upper_bound=0x7f)
+    si.uninitialized = True
+    bvv = BVV(0x30, 32)
+    comp = (si < bvv)
+    nose.tools.assert_equal(comp.model, MaybeResult())
+
+    # Better extraction
+    # si = <32>0x1000000[0xcffffff, 0xdffffff]R
+    si = SI(bits=32, stride=0x1000000, lower_bound=0xcffffff, upper_bound=0xdffffff)
+    si_byte0 = b.convert(si[7: 0])
+    si_byte1 = b.convert(si[15: 8])
+    si_byte2 = b.convert(si[23: 16])
+    si_byte3 = b.convert(si[31: 24])
+    nose.tools.assert_equal(si_byte0 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
+    nose.tools.assert_equal(si_byte1 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
+    nose.tools.assert_equal(si_byte2 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
+    nose.tools.assert_equal(si_byte3 == SI(bits=8, stride=1, lower_bound=0xc, upper_bound=0xd).model, TrueResult())
+
     #
     # ValueSet
     #
@@ -764,6 +793,29 @@ def test_vsa():
     nose.tools.assert_equal(vs_1.model.get_si('global') == clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
     # Length of this ValueSet
     nose.tools.assert_equal(len(vs_1.model), 32)
+
+    #
+    # IfProxy
+    #
+
+    # if_1 = And(VS_2, IfProxy(si == 0, 0, 1))
+    vs_2 = clrp.ValueSet(region='global', bits=32, val=0xFA7B00B)
+    si = clrp.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
+    if_1 = (vs_2 & clrp.If(si == 0, SI(bits=32, stride=0, lower_bound=0, upper_bound=0), SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
+    nose.tools.assert_equal(if_1.model.trueexpr == clrp.ValueSet(region='global', bits=32, val=0).model, TrueResult())
+    nose.tools.assert_equal(if_1.model.falseexpr == vs_2.model, TrueResult())
+
+    # if_2 = And(VS_3, IfProxy(si != 0, 0, 1)
+    vs_3 = clrp.ValueSet(region='global', bits=32, val=0xDEADCA7)
+    si = clrp.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
+    if_2 = (vs_3 & clrp.If(si != 0, SI(bits=32, stride=0, lower_bound=0, upper_bound=0), SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
+    nose.tools.assert_equal(if_2.model.trueexpr == clrp.ValueSet(region='global', bits=32, val=0).model, TrueResult())
+    nose.tools.assert_equal(if_2.model.falseexpr == vs_3.model, TrueResult())
+
+    # Something crazy is gonna happen...
+    if_3 = if_1 + if_2
+    nose.tools.assert_equal(if_3.model.trueexpr == vs_3.model, TrueResult())
+    nose.tools.assert_equal(if_3.model.falseexpr == vs_2.model, TrueResult())
 
 def test_vsa_constraint_to_si():
     from claripy.backends import BackendVSA

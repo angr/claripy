@@ -45,8 +45,7 @@ class Claripy(object):
     BV = BitVec
 
     def BitVecVal(self, *args):
-        name = "BVV_%d" % (bitvec_counter.next())
-        return I(self, BVV(*args), variables={ name }, symbolic=False, simplified=A.FULL_SIMPLIFY)
+        return I(self, BVV(*args), variables=set(), symbolic=False, simplified=A.FULL_SIMPLIFY)
         #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
     BVV = BitVecVal
 
@@ -77,8 +76,8 @@ class Claripy(object):
         return I(self, si, variables={ si.name }, symbolic=False)
     SI = StridedInterval
 
-    def TopStridedInterval(self, bits, name=None, signed=False):
-        si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, signed=signed)
+    def TopStridedInterval(self, bits, name=None, signed=False, uninitialized=False):
+        si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, signed=signed, uninitialized=uninitialized)
         return I(self, si, variables={ si.name }, symbolic=False)
     TSI = TopStridedInterval
 

@@ -106,6 +106,11 @@ opposites = {
     '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
 }
 
+inverse_operations = {
+    '__eq__': '__ne__',
+    '__ne__': '__eq__'
+}
+
 length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
 length_change_operations = backend_bitmod_operations
