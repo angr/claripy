@@ -149,12 +149,25 @@ class ValueSet(BackendObject):
             return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
 
         new_vs = ValueSet()
-        for region, si in self._regions.items():
-            r = si.__and__(other)
+        if BoolResult.is_true(other < 0x100):
+            # Special case - sometimes (addr & mask) is used for testing whether the address is aligned or not
+            # We return an SI instead
+            ret = None
 
-            new_vs._regions[region] = r
+            for region, si in self._regions.items():
+                r = si.__and__(other)
 
-        return new_vs
+                ret = r if ret is None else ret.union(r)
+
+            return ret
+
+        else:
+            for region, si in self._regions.items():
+                r = si.__and__(other)
+
+                new_vs._regions[region] = r
+
+            return new_vs
 
     def __eq__(self, other):
         if isinstance(other, ValueSet):
