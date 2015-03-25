@@ -258,11 +258,16 @@ class ValueSet(BackendObject):
     @normalize_types_one_arg
     def widen(self, b):
         merged_vs = self.copy()
-        for region, si in b.regions.items():
-            if region not in merged_vs.regions:
-                merged_vs.regions[region] = si
-            else:
-                merged_vs.regions[region] = merged_vs.regions[region].widen(si)
+        if isinstance(b, ValueSet):
+            for region, si in b.regions.items():
+                if region not in merged_vs.regions:
+                    merged_vs.regions[region] = si
+                else:
+                    merged_vs.regions[region] = merged_vs.regions[region].widen(si)
+
+        else:
+            for region, si in self._regions.iteritems():
+                merged_vs._regions[region] = merged_vs._regions[region].widen(b)
 
         return merged_vs
 
