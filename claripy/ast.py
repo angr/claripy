@@ -683,29 +683,39 @@ class A(ana.Storable):
         '''
         return A(self._claripy, op, (self,)+args, **kwargs).reduced
 
-    def _replace(self, old, new):
+    def _replace(self, old, new, replacements=None):
         '''
         A helper for replace().
         '''
-        if hash(self) == hash(old):
-            return new, True
+        if replacements is None:
+            replacements = { hash(old): new }
 
-        new_args = [ ]
-        replaced = False
+        hash_key = hash(self)
 
-        for a in self.args:
-            if isinstance(a, A):
-                new_a, a_replaced = a._replace(old, new)
-            else:
-                new_a, a_replaced = a, False
-
-            new_args.append(new_a)
-            replaced |= a_replaced
-
-        if replaced:
-            return A(self._claripy, self.op, tuple(new_args)).reduced, True
+        if hash_key in replacements:
+            r = replacements[hash_key]
+        elif not self.variables.issuperset(old.variables):
+            r = self
         else:
-            return self, False
+            new_args = [ ]
+            replaced = False
+
+            for a in self.args:
+                if isinstance(a, A):
+                    new_a = a._replace(old, new, replacements=replacements)
+                    replaced |= hash(new_a) != hash(a)
+                else:
+                    new_a = a
+
+                new_args.append(new_a)
+
+            if replaced:
+                r = A(self._claripy, self.op, tuple(new_args)).reduced
+            else:
+                r = self
+
+        replacements[hash_key] = r
+        return r
 
     #
     # Other helper functions
@@ -830,7 +840,7 @@ class A(ana.Storable):
             raise ClaripyOperationError('replacements must be AST nodes')
         if old.size() != new.size():
             raise ClaripyOperationError('replacements must have matching sizes')
-        return self._replace(old, new)[0]
+        return self._replace(old, new)
 
 class I(A):
     '''
