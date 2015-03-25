@@ -323,7 +323,7 @@ class A(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', '_rec_id' ]
+    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -637,23 +637,33 @@ class A(ana.Storable):
     def recursive_children_asts(self):
         for a in self.args:
             if isinstance(a, A):
+                l.debug("Yielding AST %s with hash %s with %d children", a, hash(a), len(a.args))
                 yield a
                 for b in a.recursive_children_asts:
                     yield b
 
-    def dbg_is_looped(self):
-        r = False
+    def dbg_is_looped(self, seen=None, checked=None):
+        seen = set() if seen is None else seen
+        checked = set() if checked is None else checked
 
-        self._rec_id = True #pylint:disable=attribute-defined-outside-init
+        seen.add(hash(self))
         for a in self.recursive_children_asts:
-            if hasattr(a, '_rec_id') and a._rec_id:
-                return True
+            l.debug("Checking AST with hash %s for looping", hash(a))
+            if hash(a) in seen:
+                return a
+            elif hash(a) in checked:
+                return False
             else:
-                r |= any(a.dbg_is_looped() for a in self.args if isinstance(a, A))
-                if r: return True
+                for a in self.args:
+                    if not isinstance(a, A):
+                        continue
 
-        delattr(self, '_rec_id')
-        return r
+                    r = a.dbg_is_looped(seen=seen, checked=checked)
+                    if r is not False: return r
+                    else: checked.add(hash(a))
+
+        seen.discard(hash(self))
+        return False
 
     #
     # Various AST modifications (replacements)
