@@ -4,19 +4,7 @@ class ClaripyError(Exception):
 class UnsatError(ClaripyError):
     pass
 
-class ClaripyTypeError(ClaripyError):
-    pass
-
-class ClaripySizeError(ClaripyError):
-    pass
-
-class ClaripyOperationError(ClaripyError):
-    pass
-
 class ClaripySolverError(ClaripyError):
-    pass
-
-class ClaripyExpressionError(ClaripyError):
     pass
 
 class ClaripySerializationError(ClaripyError):
@@ -29,6 +17,22 @@ class ClaripyZ3Error(ClaripyError):
     pass
 
 class ClaripyBackendVSAError(BackendError):
+    pass
+
+#
+# AST errors
+#
+
+class ClaripyASTError(ClaripyError):
+    pass
+
+class ClaripyTypeError(ClaripyASTError):
+    pass
+
+class ClaripySizeError(ClaripyASTError):
+    pass
+
+class ClaripyOperationError(ClaripyASTError):
     pass
 
 class ClaripyRecursionError(ClaripyOperationError):
