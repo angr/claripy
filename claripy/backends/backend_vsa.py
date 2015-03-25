@@ -401,12 +401,56 @@ class BackendVSA(ModelBackend):
         argl, argr = args
         claripy = expr._claripy
 
-        if claripy.is_true(expr == argl):
+        if claripy.is_true(argr == 0):
             # This layer of __add__ can be removed
             return self.cts_simplify(argl.op, argl.args, argl, condition)
-        elif claripy.is_true(expr == argr):
+        elif claripy.is_true(argl == 0):
             # This layer of __add__ can be removed
             return self.cts_simplify(argr.op, argr.args, argr, condition)
+        else:
+            __import__('ipdb').set_trace()
+            return expr, condition
+
+    def cts_simplifier___sub__(self, args, expr, condition):
+        """
+
+        :param args:
+        :param expr:
+        :param condition:
+        :return:
+        """
+
+        argl, argr = args
+        claripy = expr._claripy
+
+        if claripy.is_true(argr == 0):
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+        elif claripy.is_true(argl == 0):
+            return self.cts_simplify(argr.op, argr.args, argr, condition)
+        else:
+            __import__('ipdb').set_trace()
+            return expr, condition
+
+    def cts_simplifier___rshift__(self, args, expr, condition):
+
+        arg, offset = args
+        claripy = expr._claripy
+
+        if claripy.is_true(offset == 0):
+            return self.cts_simplify(arg.op, arg.args, arg, condition)
+        else:
+            return expr, condition
+
+    def cts_simplifier___invert__(self, args, expr, condition):
+
+        arg = args[0]
+        claripy = expr._claripy
+
+        if arg.op == 'If':
+            new_arg = claripy.If(args[0], args[1].__invert__(), args[2].__invert__())
+
+            return self.cts_simplify(new_arg.op, new_arg.args, expr, condition)
+
         else:
             __import__('ipdb').set_trace()
             return expr, condition
@@ -431,10 +475,14 @@ class BackendVSA(ModelBackend):
 
         lhs, rhs = args
 
-        # TODO: Now we are assuming the lhs is always the target variable. Fix it.
-
         if not isinstance(lhs, A):
             raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
+
+        # Maybe the target variable is the rhs
+        if isinstance(lhs.model, BVV):
+            new_op = self.reversed_operations[comp]
+            new_lhs, new_rhs = rhs, lhs
+            return self.cts_handle(new_op, (new_lhs, new_rhs))
 
         claripy = lhs._claripy
         size = lhs.size()
@@ -451,6 +499,10 @@ class BackendVSA(ModelBackend):
 
         elif isinstance(rhs.model, StridedInterval):
             new_si = rhs.model.copy()
+            if isinstance(lhs.model, A):
+                # It cannot be computed by our backend...
+                # We just give up for now
+                return True, [ ]
             new_si.stride = lhs.model.stride
 
             if is_lt:
