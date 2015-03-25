@@ -274,13 +274,13 @@ def _finalize_I(claripy, op, args, kwargs):
             break
         except BackendError: pass
     else:
-        kwargs['length'] = None
+        raise ClaripyASTError("no backend can determine size of %s object", type(args[0]))
 
     for b in claripy.model_backends:
         try:
             name = b.name(args[0])
             if name is not None:
-                variables = kwargs.get('variables', frozenset())
+                variables = kwargs.get('variables', set())
                 variables.add(name)
                 kwargs['variables'] = variables
             break
@@ -841,7 +841,7 @@ class I(A):
     def depth(self): return 0
     def split(self, split_on): return self
 
-from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
+from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
 from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from .bv import BVV
 from .vsa import StridedInterval

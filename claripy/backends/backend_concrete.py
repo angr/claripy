@@ -25,7 +25,7 @@ class BackendConcrete(ModelBackend):
             return result.model[name]
 
     def _size(self, e, result=None):
-        if type(e) is bool:
+        if type(e) in { bool, long, int }:
             return None
         if type(e) in { BVV }:
             return e.size()
