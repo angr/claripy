@@ -474,7 +474,7 @@ class StridedInterval(BackendObject):
                 operand = - ((0 - b.lower_bound) & ((1 << new_bits) - 1))
                 return self.__add__(operand)
             else:
-                return self.top(new_bits)
+                return self.top(new_bits, uninitialized=uninitialized)
         else:
             # new_lb = self.lower(new_bits, lb_, stride) if lb_underflow_ else lb_
             # new_ub = self.upper(new_bits, ub_, stride) if ub_overflow_ else ub_
