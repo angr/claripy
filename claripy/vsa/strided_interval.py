@@ -39,14 +39,30 @@ def normalize_types(f):
         if self.bits < common_bits:
             self = self.zero_extend(common_bits)
 
+        self_reversed = False
+
         if self._reversed != o._reversed:
             # We are working on two instances that have different endianness!
-            if o.is_integer(): o = o._reverse()
-            elif self.is_integer(): self = self._reverse()
-            elif self._reversed: self = self._reverse()
-            else: o = o._reverse()
+            # Make sure the `reversed` property of self is kept the same after operation
+            if self._reversed:
+                self_reversed = True
+                self = self.copy()
+                self._reversed = False
 
-        return f(self, o)
+            else:
+                o = o._reverse()
+
+            #__import__('ipdb').set_trace()
+            ## We are working on two instances that have different endianness!
+            #if o.is_integer(): o = o._reverse()
+            #elif self.is_integer(): self = self._reverse()
+            #elif self._reversed: self = self._reverse()
+            #else: o = o._reverse()
+
+        ret = f(self, o)
+        if self_reversed and isinstance(ret, StridedInterval):
+            ret = ret.reverse()
+        return ret
 
     return normalizer
 
