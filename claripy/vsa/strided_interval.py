@@ -623,6 +623,56 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return:
         '''
+
+        def number_of_ones(n):
+            ctr = 0
+            while n > 0:
+                ctr += 1
+                n &= n - 1
+
+            return ctr
+
+        # If only one bit is set in b, we can make it more precise
+        if b.is_integer():
+            if b.lower_bound == (1 << (b.bits - 1)):
+                # It's testing the sign bit
+                stride = 1 << (b.bits - 1)
+                if self.lower_bound < 0:
+                    if self.upper_bound >= 0:
+                        return StridedInterval(bits=b.bits, stride=stride, lower_bound=0, upper_bound=stride)
+                    else:
+                        return StridedInterval(bits=b.bits, stride=0, lower_bound=stride, upper_bound=stride)
+                else:
+                    if self.lower_bound >= stride and self.upper_bound >= stride:
+                        return StridedInterval(bits=b.bits, stride=0, lower_bound=stride, upper_bound=stride)
+                    elif self.lower_bound < stride and self.upper_bound >= stride:
+                        return StridedInterval(bits=b.bits, stride=stride, lower_bound=0, upper_bound=stride)
+                    else:
+                        return StridedInterval(bits=b.bits, stride=0, lower_bound=0, upper_bound=0)
+
+            elif number_of_ones(b.lower_bound) == 1:
+                if self.lower_bound < 0 and self.upper_bound > 0:
+                    mask = (2 ** self.bits) - 1
+                    s = self.copy()
+                    s.lower_bound = self.lower_bound & mask
+                    if s.lower_bound > s.upper_bound:
+                        t = s.upper_bound
+                        s.upper_bound = s.lower_bound
+                        s.lower_bound = t
+
+                else:
+                    s = self
+
+                first_one_pos = self._ntz(b.lower_bound)
+
+                stride = 2 ** first_one_pos
+                if s.lower_bound <= stride and s.upper_bound >= stride:
+                    return StridedInterval(bits=s.bits, stride=stride, lower_bound=0, upper_bound=stride)
+                elif s.upper_bound < stride:
+                    return StridedInterval(bits=s.bits, stride=0, lower_bound=0, upper_bound=0)
+                else:
+                    return StridedInterval(bits=s.bits, stride=0, lower_bound=stride, upper_bound=stride)
+
         return self.bitwise_not().bitwise_or(b.bitwise_not()).bitwise_not()
 
     def bitwise_xor(self, b):
