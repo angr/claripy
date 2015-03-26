@@ -541,36 +541,18 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return: self | b
         '''
-        def ntz(x):
-            '''
-            Get the position of first non-zero bit
-            :param x:
-            :return:
-            '''
-            if x == 0:
-                return 0
-            y = (~x) & (x - 1) # There is actually a bug in BAP until 0.8
-
-            def bits(n, y):
-                if y == 0:
-                    return n
-                else:
-                    return bits(n + 1, y >> 1)
-
-            return bits(0, y)
-
         assert self.bits == b.bits
 
         # Special handling for integers
         # TODO: Is this special handling still necessary?
         if self.stride == 0 and self.lower_bound == self.upper_bound:
             # self is an integer
-            t = ntz(b.stride)
+            t = self._ntz(b.stride)
         elif b.stride == 0 and b.lower_bound == b.upper_bound:
             # b is an integer
-            t = ntz(self.stride)
+            t = self._ntz(self.stride)
         else:
-            t = min(ntz(self.stride), ntz(b.stride))
+            t = min(self._ntz(self.stride), self._ntz(b.stride))
         stride_ = 1 << t
         lowbits = (self.lower_bound | b.lower_bound) & (stride_ - 1)
 
@@ -989,6 +971,25 @@ class StridedInterval(BackendObject):
                 si = b if si is None else si.concat(b)
 
             return si
+
+    def _ntz(self, x):
+        '''
+        Get the position of first non-zero bit
+        :param x:
+        :return:
+        '''
+        if x == 0:
+            return 0
+        y = (~x) & (x - 1)  # There is actually a bug in BAP until 0.8
+
+        def bits(y):
+            n = 0
+            while y != 0:
+                n += 1
+                y >>= 1
+            return n
+
+        return bits(y)
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
