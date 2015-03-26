@@ -415,8 +415,18 @@ class BackendVSA(ModelBackend):
             # This layer of __add__ can be removed
             return self.cts_simplify(argr.op, argr.args, argr, condition)
         else:
-            __import__('ipdb').set_trace()
-            return expr, condition
+
+            if isinstance(argl.model, BVV):
+                new_cond = (condition[0], condition[1] - argl)
+                return self.cts_simplify(argr.op, argr.args, argr, new_cond)
+
+            elif isinstance(argr.model, BVV):
+                new_cond = (condition[0], condition[1] - argr)
+                return self.cts_simplify(argl.op, argl.args, argl, new_cond)
+
+            else:
+                __import__('ipdb').set_trace()
+                return expr, condition
 
     def cts_simplifier___sub__(self, args, expr, condition):
         """
@@ -439,6 +449,16 @@ class BackendVSA(ModelBackend):
             return expr, condition
 
     def cts_simplifier___rshift__(self, args, expr, condition):
+
+        arg, offset = args
+        claripy = expr._claripy
+
+        if claripy.is_true(offset == 0):
+            return self.cts_simplify(arg.op, arg.args, arg, condition)
+        else:
+            return expr, condition
+
+    def cts_simplifier___lshift__(self, args, expr, condition):
 
         arg, offset = args
         claripy = expr._claripy
@@ -494,7 +514,7 @@ class BackendVSA(ModelBackend):
         claripy = lhs._claripy
         size = lhs.size()
 
-        if type(rhs.model) in (int, long, BVV):
+        if type(rhs) in (int, long) or type(rhs.model) is BVV:
             # Convert it into an SI
             rhs = claripy.SI(to_conv=rhs)
 
