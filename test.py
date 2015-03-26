@@ -781,6 +781,18 @@ def test_vsa():
     nose.tools.assert_equal(si_byte2 == SI(bits=8, stride=0, lower_bound=0xff, upper_bound=0xff).model, TrueResult())
     nose.tools.assert_equal(si_byte3 == SI(bits=8, stride=1, lower_bound=0xc, upper_bound=0xd).model, TrueResult())
 
+    # Optimization on bitwise-and
+    si_1 = SI(bits=32, stride=1, lower_bound=0x0, upper_bound=0xffffffff)
+    si_2 = SI(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
+    si = b.convert(si_1 & si_2)
+    nose.tools.assert_equal(si == SI(bits=32, stride=0x80000000, lower_bound=0, upper_bound=0x80000000).model,
+                            TrueResult())
+
+    si_1 = SI(bits=32, stride=1, lower_bound=0x0, upper_bound=0x7fffffff)
+    si_2 = SI(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
+    si = b.convert(si_1 & si_2)
+    nose.tools.assert_equal(si == SI(bits=32, stride=0, lower_bound=0, upper_bound=0).model, TrueResult())
+
     #
     # ValueSet
     #
