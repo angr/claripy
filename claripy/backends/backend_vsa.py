@@ -164,13 +164,20 @@ class BackendVSA(ModelBackend):
             raise BackendError('Unsupported expr type %s' % type(expr))
 
     def _max(self, expr, result=None):
-        assert type(expr) == StridedInterval
+        if isinstance(expr, IfProxy):
+            v1 = self.max(expr.trueexpr)
+            v2 = self.max(expr.falseexpr)
 
-        if expr.is_top():
-            # TODO:
-            return StridedInterval.max_int(expr.bits)
+            return max(v1, v2)
 
-        return expr.upper_bound
+        else:
+            assert type(expr) == StridedInterval
+
+            if expr.is_top():
+                # TODO:
+                return StridedInterval.max_int(expr.bits)
+
+            return expr.upper_bound
 
     def _solution(self, obj, v, result=None):
         if isinstance(obj, IfProxy):
