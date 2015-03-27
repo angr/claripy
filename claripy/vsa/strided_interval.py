@@ -191,9 +191,30 @@ class StridedInterval(BackendObject):
         '''
         return self._bits
 
+    def _get_signed_val(self, v):
+        v = v.copy()
+
+        if v._bits > 1:
+            if v.upper_bound > v.max_int(v._bits - 1):
+                # This is a negative number
+                mask = (1 << v._bits) - 1
+                v.upper_bound = -(((-v.upper_bound) & mask) - 1)
+            if v.lower_bound > v.max_int(v._bits - 1):
+                # This is a negative number
+                mask = (1 << v._bits) - 1
+                v.lower_bound = -(((-v.lower_bound) & mask) - 1)
+            if v.lower_bound >= v.upper_bound:
+                t = v.upper_bound
+                v.upper_bound = v.lower_bound
+                v.lower_bound = t
+
+        return v
+
     @normalize_types
     def __eq__(self, o):
-        # TODO: Currently we are not comparing the bits
+        if self.upper_bound < self.max_int(self.bits - 1) and not o.is_empty():
+            o = self._get_signed_val(o)
+
         if (self.stride == o.stride and
                     self.lower_bound == o.lower_bound and
                     self.upper_bound == o.upper_bound):
@@ -369,6 +390,7 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def max_int(k):
+        # return StridedInterval.highbit(k + 1) - 1
         return StridedInterval.highbit(k + 1) - 1
 
     @staticmethod
