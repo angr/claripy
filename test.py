@@ -614,6 +614,7 @@ def test_vsa():
     b = BackendVSA()
     b.set_claripy_object(clrp)
     clrp.model_backends.append(b)
+    clrp.solver_backends = []
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp) #pylint:disable=unused-variable
@@ -810,6 +811,14 @@ def test_vsa():
     # IfProxy
     #
 
+    # max and min on IfProxy
+    si = SI(bits=32, stride=1, lower_bound=0, upper_bound=0xffffffff)
+    if_0 = clrp.If(si == 0, si, si - 1)
+    max_val = b.max(if_0)
+    min_val = b.min(if_0)
+    nose.tools.assert_equal(max_val, 0xffffffff)
+    nose.tools.assert_equal(min_val, -0x7fffffff)
+
     # if_1 = And(VS_2, IfProxy(si == 0, 0, 1))
     vs_2 = clrp.ValueSet(region='global', bits=32, val=0xFA7B00B)
     si = clrp.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
@@ -838,6 +847,7 @@ def test_vsa_constraint_to_si():
     b = BackendVSA()
     b.set_claripy_object(clrp)
     clrp.model_backends.append(b)
+    clrp.solver_backends = [ ]
 
     solver_type = claripy.solvers.BranchingSolver
     s = solver_type(clrp)  #pylint:disable=unused-variable
