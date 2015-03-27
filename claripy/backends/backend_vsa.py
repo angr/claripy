@@ -154,7 +154,13 @@ class BackendVSA(ModelBackend):
             raise BackendError('Unsupported type %s' % type(expr))
 
     def _min(self, expr, result=None):
-        if isinstance(expr, StridedInterval):
+        if isinstance(expr, IfProxy):
+            v1 = self.min(expr.trueexpr)
+            v2 = self.min(expr.falseexpr)
+
+            return min(v1, v2)
+
+        elif isinstance(expr, StridedInterval):
             if expr.is_top():
                 # TODO: Return
                 return StridedInterval.min_int(expr.bits)
@@ -425,7 +431,6 @@ class BackendVSA(ModelBackend):
                 return self.cts_simplify(argl.op, argl.args, argl, new_cond)
 
             else:
-                __import__('ipdb').set_trace()
                 return expr, condition
 
     def cts_simplifier___sub__(self, args, expr, condition):
@@ -673,6 +678,22 @@ class BackendVSA(ModelBackend):
 
         return sat, lst
 
+    def cts_handler_Or(self, args):
+
+        if len(args) == 1:
+            return self.cts_handle(args[0].op, args[0].args)
+
+        else:
+            if len(args) > 0:
+                args = [ self.cts_handle(a) for a in args ]
+                claripy = args[0]._claripy
+                if any([not claripy.is_false(a) for a in args]):
+                    return True, [ ]
+
+                else:
+                    return False, [ ]
+            return True, [ ]
+
     def cts_handler___ne__(self, args):
         return self.cts_handler_eq_ne(args, False)
 
@@ -785,7 +806,11 @@ class BackendVSA(ModelBackend):
             op, rhs = new_cond
             args = (lhs, rhs)
 
-        return getattr(self, "cts_handler_%s" % op)(args)
+            return getattr(self, "cts_handler_%s" % op)(args)
+
+        else:
+            return getattr(self, "cts_handler_%s" % op)(args)
+
 
     def constraint_to_si(self, expr):
         """
@@ -971,7 +996,11 @@ class BackendVSA(ModelBackend):
         if len(args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(args))
 
-        return args[0].widen(args[1])
+        ret = args[0].widen(args[1])
+        if ret is NotImplemented:
+            ret = args[1].widen(args[0])
+
+        return ret
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
