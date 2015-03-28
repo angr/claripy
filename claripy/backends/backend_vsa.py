@@ -220,6 +220,7 @@ class BackendVSA(ModelBackend):
     reversed_operations['__ne__'] = '__eq__'
     reversed_operations['__eq__'] = '__ne__'
     reversed_operations['ULT'] = 'UGE'
+    reversed_operations['UGT'] = 'ULE'
     reversed_operations['ULE'] = 'UGT'
     reversed_operations['UGE'] = 'ULT'
     reversed_operations['__le__'] = '__gt__'
