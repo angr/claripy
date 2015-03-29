@@ -395,7 +395,7 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def min_int(k):
-        return -StridedInterval.highbit(k) + 1
+        return -StridedInterval.highbit(k)
 
     @staticmethod
     def _to_negative(a, bits):
