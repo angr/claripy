@@ -817,7 +817,7 @@ def test_vsa():
     max_val = b.max(if_0)
     min_val = b.min(if_0)
     nose.tools.assert_equal(max_val, 0xffffffff)
-    nose.tools.assert_equal(min_val, -0x7fffffff)
+    nose.tools.assert_equal(min_val, -0x80000000)
 
     # if_1 = And(VS_2, IfProxy(si == 0, 0, 1))
     vs_2 = clrp.ValueSet(region='global', bits=32, val=0xFA7B00B)
@@ -943,7 +943,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s4)
     # True side: SI<32>0[0, 0]
     nose.tools.assert_true(
-        clrp.is_true(trueside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=-0x7fffffffffffffff, upper_bound=-1)))
+        clrp.is_true(trueside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=-0x8000000000000000, upper_bound=-1)))
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
