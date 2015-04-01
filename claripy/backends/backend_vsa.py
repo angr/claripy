@@ -451,7 +451,7 @@ class BackendVSA(ModelBackend):
         elif claripy.is_true(argl == 0):
             return self.cts_simplify(argr.op, argr.args, argr, condition)
         else:
-            __import__('ipdb').set_trace()
+            #__import__('ipdb').set_trace()
             return expr, condition
 
     def cts_simplifier___rshift__(self, args, expr, condition):
