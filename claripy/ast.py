@@ -352,7 +352,7 @@ class A(ana.Storable):
         '''
         if any(not isinstance(a, (str, int, long, bool, A, BackendObject)) for a in args):
             #import ipdb; ipdb.set_trace()
-            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.A" % args)
+            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.A" % (args,))
 
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
 
