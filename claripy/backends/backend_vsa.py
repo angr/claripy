@@ -154,7 +154,13 @@ class BackendVSA(ModelBackend):
             raise BackendError('Unsupported type %s' % type(expr))
 
     def _min(self, expr, result=None):
-        if isinstance(expr, StridedInterval):
+        if isinstance(expr, IfProxy):
+            v1 = self.min(expr.trueexpr)
+            v2 = self.min(expr.falseexpr)
+
+            return min(v1, v2)
+
+        elif isinstance(expr, StridedInterval):
             if expr.is_top():
                 # TODO: Return
                 return StridedInterval.min_int(expr.bits)
@@ -164,13 +170,20 @@ class BackendVSA(ModelBackend):
             raise BackendError('Unsupported expr type %s' % type(expr))
 
     def _max(self, expr, result=None):
-        assert type(expr) == StridedInterval
+        if isinstance(expr, IfProxy):
+            v1 = self.max(expr.trueexpr)
+            v2 = self.max(expr.falseexpr)
 
-        if expr.is_top():
-            # TODO:
-            return StridedInterval.max_int(expr.bits)
+            return max(v1, v2)
 
-        return expr.upper_bound
+        else:
+            assert type(expr) == StridedInterval
+
+            if expr.is_top():
+                # TODO:
+                return StridedInterval.max_int(expr.bits)
+
+            return expr.upper_bound
 
     def _solution(self, obj, v, result=None):
         if isinstance(obj, IfProxy):
@@ -207,6 +220,7 @@ class BackendVSA(ModelBackend):
     reversed_operations['__ne__'] = '__eq__'
     reversed_operations['__eq__'] = '__ne__'
     reversed_operations['ULT'] = 'UGE'
+    reversed_operations['UGT'] = 'ULE'
     reversed_operations['ULE'] = 'UGT'
     reversed_operations['UGE'] = 'ULT'
     reversed_operations['__le__'] = '__gt__'
@@ -401,12 +415,75 @@ class BackendVSA(ModelBackend):
         argl, argr = args
         claripy = expr._claripy
 
-        if claripy.is_true(expr == argl):
+        if claripy.is_true(argr == 0):
             # This layer of __add__ can be removed
             return self.cts_simplify(argl.op, argl.args, argl, condition)
-        elif claripy.is_true(expr == argr):
+        elif claripy.is_true(argl == 0):
             # This layer of __add__ can be removed
             return self.cts_simplify(argr.op, argr.args, argr, condition)
+        else:
+
+            if isinstance(argl.model, BVV):
+                new_cond = (condition[0], condition[1] - argl)
+                return self.cts_simplify(argr.op, argr.args, argr, new_cond)
+
+            elif isinstance(argr.model, BVV):
+                new_cond = (condition[0], condition[1] - argr)
+                return self.cts_simplify(argl.op, argl.args, argl, new_cond)
+
+            else:
+                return expr, condition
+
+    def cts_simplifier___sub__(self, args, expr, condition):
+        """
+
+        :param args:
+        :param expr:
+        :param condition:
+        :return:
+        """
+
+        argl, argr = args
+        claripy = expr._claripy
+
+        if claripy.is_true(argr == 0):
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+        elif claripy.is_true(argl == 0):
+            return self.cts_simplify(argr.op, argr.args, argr, condition)
+        else:
+            #__import__('ipdb').set_trace()
+            return expr, condition
+
+    def cts_simplifier___rshift__(self, args, expr, condition):
+
+        arg, offset = args
+        claripy = expr._claripy
+
+        if claripy.is_true(offset == 0):
+            return self.cts_simplify(arg.op, arg.args, arg, condition)
+        else:
+            return expr, condition
+
+    def cts_simplifier___lshift__(self, args, expr, condition):
+
+        arg, offset = args
+        claripy = expr._claripy
+
+        if claripy.is_true(offset == 0):
+            return self.cts_simplify(arg.op, arg.args, arg, condition)
+        else:
+            return expr, condition
+
+    def cts_simplifier___invert__(self, args, expr, condition):
+
+        arg = args[0]
+        claripy = expr._claripy
+
+        if arg.op == 'If':
+            new_arg = claripy.If(args[0], args[1].__invert__(), args[2].__invert__())
+
+            return self.cts_simplify(new_arg.op, new_arg.args, expr, condition)
+
         else:
             __import__('ipdb').set_trace()
             return expr, condition
@@ -431,15 +508,19 @@ class BackendVSA(ModelBackend):
 
         lhs, rhs = args
 
-        # TODO: Now we are assuming the lhs is always the target variable. Fix it.
-
         if not isinstance(lhs, A):
             raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
+
+        # Maybe the target variable is the rhs
+        if isinstance(lhs.model, BVV):
+            new_op = self.reversed_operations[comp]
+            new_lhs, new_rhs = rhs, lhs
+            return self.cts_handle(new_op, (new_lhs, new_rhs))
 
         claripy = lhs._claripy
         size = lhs.size()
 
-        if type(rhs.model) in (int, long, BVV):
+        if type(rhs) in (int, long) or type(rhs.model) is BVV:
             # Convert it into an SI
             rhs = claripy.SI(to_conv=rhs)
 
@@ -451,6 +532,10 @@ class BackendVSA(ModelBackend):
 
         elif isinstance(rhs.model, StridedInterval):
             new_si = rhs.model.copy()
+            if isinstance(lhs.model, A):
+                # It cannot be computed by our backend...
+                # We just give up for now
+                return True, [ ]
             new_si.stride = lhs.model.stride
 
             if is_lt:
@@ -594,6 +679,22 @@ class BackendVSA(ModelBackend):
 
         return sat, lst
 
+    def cts_handler_Or(self, args):
+
+        if len(args) == 1:
+            return self.cts_handle(args[0].op, args[0].args)
+
+        else:
+            if len(args) > 0:
+                args = [ self.cts_handle(a) for a in args ]
+                claripy = args[0]._claripy
+                if any([not claripy.is_false(a) for a in args]):
+                    return True, [ ]
+
+                else:
+                    return False, [ ]
+            return True, [ ]
+
     def cts_handler___ne__(self, args):
         return self.cts_handler_eq_ne(args, False)
 
@@ -706,7 +807,11 @@ class BackendVSA(ModelBackend):
             op, rhs = new_cond
             args = (lhs, rhs)
 
-        return getattr(self, "cts_handler_%s" % op)(args)
+            return getattr(self, "cts_handler_%s" % op)(args)
+
+        else:
+            return getattr(self, "cts_handler_%s" % op)(args)
+
 
     def constraint_to_si(self, expr):
         """
@@ -892,7 +997,11 @@ class BackendVSA(ModelBackend):
         if len(args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(args))
 
-        return args[0].widen(args[1])
+        ret = args[0].widen(args[1])
+        if ret is NotImplemented:
+            ret = args[1].widen(args[0])
+
+        return ret
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):

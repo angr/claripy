@@ -130,7 +130,19 @@ class ValueSet(BackendObject):
     @normalize_types_one_arg
     def __sub__(self, other):
         if type(other) is ValueSet:
-            raise NotImplementedError()
+            # It might happen due to imprecision of our analysis (mostly due the absence of contexts)
+
+            if self.regions.keys() == other.regions.keys():
+                # Handle it here
+                new_vs = ValueSet()
+                for region, si in self._regions.iteritems():
+                    new_vs._regions[region] = si - other._regions[region]
+
+                return new_vs
+
+            else:
+                __import__('ipdb').set_trace()
+                raise NotImplementedError()
         else:
             new_vs = ValueSet()
             for region, si in self._regions.items():
@@ -149,12 +161,25 @@ class ValueSet(BackendObject):
             return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
 
         new_vs = ValueSet()
-        for region, si in self._regions.items():
-            r = si.__and__(other)
+        if BoolResult.is_true(other < 0x100):
+            # Special case - sometimes (addr & mask) is used for testing whether the address is aligned or not
+            # We return an SI instead
+            ret = None
 
-            new_vs._regions[region] = r
+            for region, si in self._regions.items():
+                r = si.__and__(other)
 
-        return new_vs
+                ret = r if ret is None else ret.union(r)
+
+            return ret
+
+        else:
+            for region, si in self._regions.items():
+                r = si.__and__(other)
+
+                new_vs._regions[region] = r
+
+            return new_vs
 
     def __eq__(self, other):
         if isinstance(other, ValueSet):
@@ -245,11 +270,16 @@ class ValueSet(BackendObject):
     @normalize_types_one_arg
     def widen(self, b):
         merged_vs = self.copy()
-        for region, si in b.regions.items():
-            if region not in merged_vs.regions:
-                merged_vs.regions[region] = si
-            else:
-                merged_vs.regions[region] = merged_vs.regions[region].widen(si)
+        if isinstance(b, ValueSet):
+            for region, si in b.regions.items():
+                if region not in merged_vs.regions:
+                    merged_vs.regions[region] = si
+                else:
+                    merged_vs.regions[region] = merged_vs.regions[region].widen(si)
+
+        else:
+            for region, si in self._regions.iteritems():
+                merged_vs._regions[region] = merged_vs._regions[region].widen(b)
 
         return merged_vs
 

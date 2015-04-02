@@ -39,14 +39,30 @@ def normalize_types(f):
         if self.bits < common_bits:
             self = self.zero_extend(common_bits)
 
+        self_reversed = False
+
         if self._reversed != o._reversed:
             # We are working on two instances that have different endianness!
-            if o.is_integer(): o = o._reverse()
-            elif self.is_integer(): self = self._reverse()
-            elif self._reversed: self = self._reverse()
-            else: o = o._reverse()
+            # Make sure the `reversed` property of self is kept the same after operation
+            if self._reversed:
+                self_reversed = True
+                self = self.copy()
+                self._reversed = False
 
-        return f(self, o)
+            else:
+                o = o._reverse()
+
+            #__import__('ipdb').set_trace()
+            ## We are working on two instances that have different endianness!
+            #if o.is_integer(): o = o._reverse()
+            #elif self.is_integer(): self = self._reverse()
+            #elif self._reversed: self = self._reverse()
+            #else: o = o._reverse()
+
+        ret = f(self, o)
+        if self_reversed and isinstance(ret, StridedInterval):
+            ret = ret.reverse()
+        return ret
 
     return normalizer
 
@@ -175,9 +191,30 @@ class StridedInterval(BackendObject):
         '''
         return self._bits
 
+    def _get_signed_val(self, v):
+        v = v.copy()
+
+        if v._bits > 1:
+            if v.upper_bound > v.max_int(v._bits - 1):
+                # This is a negative number
+                mask = (1 << v._bits) - 1
+                v.upper_bound = -(((-v.upper_bound) & mask) - 1)
+            if v.lower_bound > v.max_int(v._bits - 1):
+                # This is a negative number
+                mask = (1 << v._bits) - 1
+                v.lower_bound = -(((-v.lower_bound) & mask) - 1)
+            if v.lower_bound >= v.upper_bound:
+                t = v.upper_bound
+                v.upper_bound = v.lower_bound
+                v.lower_bound = t
+
+        return v
+
     @normalize_types
     def __eq__(self, o):
-        # TODO: Currently we are not comparing the bits
+        if self.upper_bound < self.max_int(self.bits - 1) and not o.is_empty():
+            o = self._get_signed_val(o)
+
         if (self.stride == o.stride and
                     self.lower_bound == o.lower_bound and
                     self.upper_bound == o.upper_bound):
@@ -353,11 +390,12 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def max_int(k):
+        # return StridedInterval.highbit(k + 1) - 1
         return StridedInterval.highbit(k + 1) - 1
 
     @staticmethod
     def min_int(k):
-        return -StridedInterval.highbit(k) + 1
+        return -StridedInterval.highbit(k)
 
     @staticmethod
     def _to_negative(a, bits):
@@ -458,7 +496,7 @@ class StridedInterval(BackendObject):
                 operand = - ((0 - b.lower_bound) & ((1 << new_bits) - 1))
                 return self.__add__(operand)
             else:
-                return self.top(new_bits)
+                return self.top(new_bits, uninitialized=uninitialized)
         else:
             # new_lb = self.lower(new_bits, lb_, stride) if lb_underflow_ else lb_
             # new_ub = self.upper(new_bits, ub_, stride) if ub_overflow_ else ub_
@@ -541,36 +579,18 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return: self | b
         '''
-        def ntz(x):
-            '''
-            Get the position of first non-zero bit
-            :param x:
-            :return:
-            '''
-            if x == 0:
-                return 0
-            y = (~x) & (x - 1) # There is actually a bug in BAP until 0.8
-
-            def bits(n, y):
-                if y == 0:
-                    return n
-                else:
-                    return bits(n + 1, y >> 1)
-
-            return bits(0, y)
-
         assert self.bits == b.bits
 
         # Special handling for integers
         # TODO: Is this special handling still necessary?
         if self.stride == 0 and self.lower_bound == self.upper_bound:
             # self is an integer
-            t = ntz(b.stride)
+            t = self._ntz(b.stride)
         elif b.stride == 0 and b.lower_bound == b.upper_bound:
             # b is an integer
-            t = ntz(self.stride)
+            t = self._ntz(self.stride)
         else:
-            t = min(ntz(self.stride), ntz(b.stride))
+            t = min(self._ntz(self.stride), self._ntz(b.stride))
         stride_ = 1 << t
         lowbits = (self.lower_bound | b.lower_bound) & (stride_ - 1)
 
@@ -625,6 +645,56 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return:
         '''
+
+        def number_of_ones(n):
+            ctr = 0
+            while n > 0:
+                ctr += 1
+                n &= n - 1
+
+            return ctr
+
+        # If only one bit is set in b, we can make it more precise
+        if b.is_integer():
+            if b.lower_bound == (1 << (b.bits - 1)):
+                # It's testing the sign bit
+                stride = 1 << (b.bits - 1)
+                if self.lower_bound < 0:
+                    if self.upper_bound >= 0:
+                        return StridedInterval(bits=b.bits, stride=stride, lower_bound=0, upper_bound=stride)
+                    else:
+                        return StridedInterval(bits=b.bits, stride=0, lower_bound=stride, upper_bound=stride)
+                else:
+                    if self.lower_bound >= stride and self.upper_bound >= stride:
+                        return StridedInterval(bits=b.bits, stride=0, lower_bound=stride, upper_bound=stride)
+                    elif self.lower_bound < stride and self.upper_bound >= stride:
+                        return StridedInterval(bits=b.bits, stride=stride, lower_bound=0, upper_bound=stride)
+                    else:
+                        return StridedInterval(bits=b.bits, stride=0, lower_bound=0, upper_bound=0)
+
+            elif number_of_ones(b.lower_bound) == 1:
+                if self.lower_bound < 0 and self.upper_bound > 0:
+                    mask = (2 ** self.bits) - 1
+                    s = self.copy()
+                    s.lower_bound = self.lower_bound & mask
+                    if s.lower_bound > s.upper_bound:
+                        t = s.upper_bound
+                        s.upper_bound = s.lower_bound
+                        s.lower_bound = t
+
+                else:
+                    s = self
+
+                first_one_pos = self._ntz(b.lower_bound)
+
+                stride = 2 ** first_one_pos
+                if s.lower_bound <= stride and s.upper_bound >= stride:
+                    return StridedInterval(bits=s.bits, stride=stride, lower_bound=0, upper_bound=stride)
+                elif s.upper_bound < stride:
+                    return StridedInterval(bits=s.bits, stride=0, lower_bound=0, upper_bound=0)
+                else:
+                    return StridedInterval(bits=s.bits, stride=0, lower_bound=stride, upper_bound=stride)
+
         return self.bitwise_not().bitwise_or(b.bitwise_not()).bitwise_not()
 
     def bitwise_xor(self, b):
@@ -931,8 +1001,8 @@ class StridedInterval(BackendObject):
 
         else:
             new_stride = fractions.gcd(self.stride, b.stride)
-            l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) if b.lower_bound < self.lower_bound else self.lower_bound
-            u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) if b.upper_bound > self.upper_bound else self.upper_bound
+            l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) + 2 if b.lower_bound < self.lower_bound else self.lower_bound
+            u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) - 2 if b.upper_bound > self.upper_bound else self.upper_bound
             if new_stride == 0:
                 if self.is_integer() and b.is_integer():
                     ret = StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
@@ -989,6 +1059,25 @@ class StridedInterval(BackendObject):
                 si = b if si is None else si.concat(b)
 
             return si
+
+    def _ntz(self, x):
+        '''
+        Get the position of first non-zero bit
+        :param x:
+        :return:
+        '''
+        if x == 0:
+            return 0
+        y = (~x) & (x - 1)  # There is actually a bug in BAP until 0.8
+
+        def bits(y):
+            n = 0
+            while y != 0:
+                n += 1
+                y >>= 1
+            return n
+
+        return bits(y)
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult

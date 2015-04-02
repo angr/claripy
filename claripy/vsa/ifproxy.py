@@ -131,8 +131,8 @@ class IfProxy(BackendObject):
     @proxified
     def __rsub__(self, other): pass
 
-    @proxified
-    def __invert__(self): pass
+    def __invert__(self):
+        return IfProxy(self.condition, self.trueexpr.__invert__(), self.falseexpr.__invert__())
 
     @proxified
     def __or__(self, other): pass
