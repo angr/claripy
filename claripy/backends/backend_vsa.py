@@ -540,7 +540,8 @@ class BackendVSA(ModelBackend):
 
             if is_lt:
                 # < or <=
-                new_si.lower_bound = new_si.min_int(new_si.bits)
+                if is_unsigned: new_si.lower_bound = 0
+                else: new_si.lower_bound = new_si.min_int(new_si.bits)
 
                 if not is_equal:
                     # <
@@ -548,7 +549,8 @@ class BackendVSA(ModelBackend):
 
             else:
                 # > or >=
-                new_si.upper_bound = new_si.max_int(new_si.bits)
+                if is_unsigned: new_si.upper_bound = new_si.max_int(new_si.bits)
+                else: new_si.upper_bound = new_si.max_int(new_si.bits - 1)
 
                 if not is_equal:
                     # >
