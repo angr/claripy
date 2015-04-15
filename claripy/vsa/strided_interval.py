@@ -239,7 +239,7 @@ class StridedInterval(BackendObject):
     def __gt__(self, other):
         if self.lower_bound > other.upper_bound:
             return TrueResult()
-        elif self.upper_bound < other.lower_bound:
+        elif self.upper_bound <= other.lower_bound:
             return FalseResult()
         return MaybeResult()
 
@@ -249,7 +249,7 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def __le__(self, other):
-        return (self < other) | (self == other)
+        return ~(self > other)
 
     @normalize_types
     def __add__(self, o):
