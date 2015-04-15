@@ -951,7 +951,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s4)
     # False side; SI<32>1[1, 2]
     nose.tools.assert_true(
-        clrp.is_true(falseside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)))
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=0, upper_bound=0x7fffffffffffffff)))
 
     # TODO: Add some more insane test cases
 
