@@ -294,8 +294,16 @@ class StridedInterval(BackendObject):
 
     @property
     def size(self):
+        logger.warning("StridedInterval.size will be deprecated soon. Please use StridedInterval.cardinality instead.")
+        return self.cardinality
+
+    @property
+    def cardinality(self):
         if self._stride == 0:
-            return 0
+            if self.is_empty():
+                return 0
+            else:
+                return 1
         else:
             return (self._upper_bound - self._lower_bound) / self._stride
 
