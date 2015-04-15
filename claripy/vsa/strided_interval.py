@@ -15,7 +15,7 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if isinstance(o, ValueSet) or isinstance(o, IfProxy):
+        if isinstance(o, ValueSet) or isinstance(o, IfProxy) or isinstance(o, DiscreteStridedIntervalSet):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
@@ -67,6 +67,10 @@ def normalize_types(f):
     return normalizer
 
 si_id_ctr = itertools.count()
+
+# Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually set it to False to allow easy
+# implementation of test cases.
+allow_dsis = True
 
 def lcm(a, b):
     return a * b // fractions.gcd(a, b)
@@ -899,11 +903,32 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def union(self, b):
-        '''
-        The union operation
-        :param b:
-        :return:
-        '''
+        """
+        The union operation. It might return a DiscreteStridedIntervalSet to allow for better precision in analysis.
+
+        :param b: Operand
+        :return: A new DiscreteStridedIntervalSet, or a new StridedInterval.
+        """
+        if not allow_dsis:
+            return self._union(b)
+
+        else:
+            if self.cardinality > discrete_strided_interval_set.MAX_NUMBER_OF_SI or \
+                    b.cardinality > discrete_strided_interval_set:
+                return self._union(b)
+
+            else:
+                dsis = DiscreteStridedIntervalSet(bits=self._bits, si_set={ self })
+                return dsis.union(b)
+
+    @normalize_types
+    def _union(self, b):
+        """
+        The union operation. It guarantees to return a _single_ StridedInterval.
+
+        :param b: Operand.
+        :return: A new StridedInterval
+        """
         if self._reversed != b._reversed:
             logger.warning('Incoherent reversed flag between operands %s and %s', self, b)
 
@@ -1089,6 +1114,8 @@ class StridedInterval(BackendObject):
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
+from . import discrete_strided_interval_set
+from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
 from .ifproxy import IfProxy
 from ..ast import A

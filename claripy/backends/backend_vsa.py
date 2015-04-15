@@ -21,8 +21,8 @@ def normalize_arg_order(f):
         if len(args) != 2:
             raise BackendError('Unsupported arguments number %d' % len(args))
 
-        if type(args[0]) not in { StridedInterval, ValueSet }:
-            if type(args[1]) not in { StridedInterval, ValueSet }:
+        if type(args[0]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
+            if type(args[1]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
                 raise BackendError('Unsupported arguments')
             args = [args[1], args[0]]
 
@@ -69,7 +69,10 @@ def normalize_reversed_arguments(f):
         arg_reversed = []
         raw_args = []
         for i in xrange(len(args)):
-            if isinstance(args[i], A) and type(args[i].model) in {StridedInterval, ValueSet}:
+            if isinstance(args[i], A) and type(args[i].model) in { StridedInterval,
+                                                                   DiscreteStridedIntervalSet,
+                                                                   ValueSet
+            }:
                 if args[i].model.reversed:
                     arg_reversed.append(True)
                     raw_args.append(args[i].reversed)
@@ -124,7 +127,7 @@ class BackendVSA(ModelBackend):
             return a
         if type(a) is BVV:
             return BackendVSA.CreateStridedInterval(bits=a.bits, to_conv=a)
-        if type(a) in { StridedInterval, ValueSet }:
+        if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
             return a
         if isinstance(a, BoolResult):
             return a
@@ -177,13 +180,15 @@ class BackendVSA(ModelBackend):
             return max(v1, v2)
 
         else:
-            assert type(expr) == StridedInterval
+            if isinstance(expr, StridedInterval):
+                if expr.is_top():
+                    # TODO:
+                    return StridedInterval.max_int(expr.bits)
 
-            if expr.is_top():
-                # TODO:
-                return StridedInterval.max_int(expr.bits)
+                return expr.upper_bound
 
-            return expr.upper_bound
+            else:
+                raise BackendError('Unsupported expr type %s' % type(expr))
 
     def _solution(self, obj, v, result=None):
         if isinstance(obj, IfProxy):
@@ -293,7 +298,7 @@ class BackendVSA(ModelBackend):
             cond_op, cond_arg = condition
             if type(cond_arg) in (int, long):
                 cond_arg = claripy.BVV(cond_arg, to_extract.size())
-            elif type(cond_arg.model) in (StridedInterval, BVV):
+            elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV):
                 cond_arg = claripy.ZeroExt(to_extract.size() - high - 1, cond_arg)
 
             if claripy.is_true(cond_arg[to_extract.size() - 1 : high] == 0):
@@ -909,7 +914,9 @@ class BackendVSA(ModelBackend):
     def Concat(*args):
         ret = None
         for expr in args:
-            assert type(expr) in { StridedInterval, ValueSet, BVV }
+            if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, BVV }:
+                raise BackendError('Unsupported expr type %s' % type(expr))
+
             if type(expr) is BVV:
                 expr = BackendVSA.CreateStridedInterval(bits=expr.bits, to_conv=expr)
 
@@ -919,7 +926,7 @@ class BackendVSA(ModelBackend):
 
     @arg_filter
     def _size(self, arg, result=None):
-        if type(arg) in { StridedInterval, ValueSet, IfProxy }:
+        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, IfProxy }:
             return len(arg)
         else:
             return arg.size()
@@ -931,7 +938,8 @@ class BackendVSA(ModelBackend):
         high_bit = args[0]
         expr = args[2]
 
-        assert type(expr) in { StridedInterval, ValueSet }
+        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
+            raise BackendError('Unsupported expr type %s' % type(expr))
 
         ret = expr.extract(high_bit, low_bit)
 
@@ -944,7 +952,9 @@ class BackendVSA(ModelBackend):
         new_bits = args[0]
         expr = args[1]
 
-        assert type(expr) is StridedInterval
+        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }:
+            raise BackendError('Unsupported expr type %s' % type(expr))
+
         return expr.sign_extend(new_bits + expr.bits)
 
     @staticmethod
@@ -954,13 +964,16 @@ class BackendVSA(ModelBackend):
         new_bits = args[0]
         expr = args[1]
 
-        assert type(expr) is StridedInterval
+        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }:
+            raise BackendError('Unsupported expr type %s' % type(expr))
+
         return expr.zero_extend(new_bits + expr.bits)
 
     @staticmethod
     @expand_ifproxy
     def Reverse(arg):
-        assert type(arg) in {StridedInterval, ValueSet}
+        if type(arg) not in {StridedInterval, DiscreteStridedIntervalSet, ValueSet}:
+            raise BackendError('Unsupported expr type %s' % type(expr))
 
         return arg.reverse()
 
@@ -1020,7 +1033,7 @@ class BackendVSA(ModelBackend):
         if to_conv is not None:
             if isinstance(to_conv, A):
                 to_conv = to_conv.model
-            if type(to_conv) is StridedInterval:
+            if isinstance(to_conv, StridedInterval):
                 # No conversion will be done
                 return to_conv
 
@@ -1056,6 +1069,6 @@ class BackendVSA(ModelBackend):
 from ..bv import BVV
 from ..ast import A, I
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
-from ..vsa import StridedInterval, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
+from ..vsa import StridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy
 from ..errors import ClaripyBackendVSAError
