@@ -280,8 +280,8 @@ def _finalize_I(claripy, op, args, kwargs):
         try:
             name = b.name(args[0])
             if name is not None:
-                variables = kwargs.get('variables', set())
-                variables.add(name)
+                variables = kwargs.get('variables', frozenset())
+                variables = variables.union(frozenset([name]))
                 kwargs['variables'] = variables
             break
         except BackendError: pass
