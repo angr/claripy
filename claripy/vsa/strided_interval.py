@@ -15,6 +15,10 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
+        # Special handler for union
+        if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
+            return o.union(self)
+
         if isinstance(o, ValueSet) or isinstance(o, IfProxy) or isinstance(o, DiscreteStridedIntervalSet):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
@@ -223,6 +227,8 @@ class StridedInterval(BackendObject):
                     self.lower_bound == o.lower_bound and
                     self.upper_bound == o.upper_bound):
             # They are definitely equal
+            # FIXME: This is incorrect... should be MaybeResult()
+            # FIXME: Only when self.is_integer() == True can it returns TrueResult()
             return TrueResult()
         elif self.upper_bound < o.lower_bound or o.upper_bound < self.lower_bound:
             return FalseResult()
@@ -913,7 +919,7 @@ class StridedInterval(BackendObject):
             return self._union(b)
 
         else:
-            if self.cardinality > discrete_strided_interval_set.MAX_NUMBER_OF_SI or \
+            if self.cardinality > discrete_strided_interval_set.MAX_CARDINALITY_WITHOUT_COLLAPSING or \
                     b.cardinality > discrete_strided_interval_set:
                 return self._union(b)
 
