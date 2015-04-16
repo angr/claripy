@@ -269,6 +269,35 @@ class BackendVSA(ModelBackend):
             # We cannot handle this...
             return expr, condition
 
+    def cts_simplifier_SignExt(self, args, expr, condition):
+        """
+
+        :param args:
+        :param expr:
+        :param condition:
+        :return:
+        """
+        # TODO: Review the logic of this method
+        claripy = expr._claripy
+
+        cond_op, cond_arg = condition
+        # Normalize them
+        if type(cond_arg) in (int, long):
+            cond_arg = claripy.BVV(cond_arg, expr.size())
+
+        extended_bits, arg = args
+
+        if cond_arg.size() <= arg.size() or \
+                claripy.is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
+            # We can safely eliminate this layer of SignExt
+            return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[arg.size() - 1: 0]))
+
+        else:
+            # TODO: We may also handle the '__eq__' and '__ne__' case
+            # __import__('ipdb').set_trace()
+            # We cannot handle this...
+            return expr, condition
+
     def cts_simplifier_Extract(self, args, expr, condition):
         '''
         Convert Extract(a, b, If(...)) to If(..., Extract(a, b, ...), Extract(a, b, ...))
@@ -497,6 +526,14 @@ class BackendVSA(ModelBackend):
 
         return expr, condition
 
+    def cts_simplifier___mod__(self, args, expr, condition):
+
+        return expr, condition
+
+    def cts_simplifier___div__(self, args, expr, condition):
+
+        return expr, condition
+
     def cts_handler_comparison(self, args, comp=None):
         """
         Handles all comparisons.
@@ -541,6 +578,9 @@ class BackendVSA(ModelBackend):
                 # It cannot be computed by our backend...
                 # We just give up for now
                 return True, [ ]
+
+            if isinstance(new_si, DiscreteStridedIntervalSet):
+                new_si = new_si.collapse()
             new_si.stride = lhs.model.stride
 
             if is_lt:
@@ -563,7 +603,9 @@ class BackendVSA(ModelBackend):
 
             return True, [(lhs, new_si)]
         else:
-            import ipdb; ipdb.set_trace()
+            #import ipdb; ipdb.set_trace()
+
+            return True, [ ]
 
     def cts_handler___lt__(self, args):
         """
@@ -868,6 +910,13 @@ class BackendVSA(ModelBackend):
             return False
         else:
             raise BackendError('Not supported type of operand %s' % type(obj))
+
+    def name(self, a, result=None):
+        if isinstance(a, StridedInterval):
+            return a.name
+
+        else:
+            return None
 
     @staticmethod
     @expand_ifproxy
