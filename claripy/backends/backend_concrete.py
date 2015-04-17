@@ -78,8 +78,10 @@ class BackendConcrete(ModelBackend):
         return e
 
     def abstract(self, e):
-        if isinstance(e, (int, long, float, bool, str, BVV)):
-            return I(self._claripy, e)
+        if isinstance(e, BVV):
+            return BVI(self._claripy, e, length=e.size())
+        elif isinstance(e, bool):
+            return BoolI(self._claripy, e)
 
     #
     # Evaluation functions
@@ -98,4 +100,4 @@ from ..bv import BVV
 from ..operations import backend_operations
 from .. import bv
 from .backend_z3 import BackendZ3
-from ..ast import I
+from ..ast import BVI, BoolI
