@@ -15,7 +15,11 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if isinstance(o, ValueSet) or isinstance(o, IfProxy):
+        # Special handler for union
+        if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
+            return o.union(self)
+
+        if isinstance(o, ValueSet) or isinstance(o, IfProxy) or isinstance(o, DiscreteStridedIntervalSet):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
@@ -67,6 +71,10 @@ def normalize_types(f):
     return normalizer
 
 si_id_ctr = itertools.count()
+
+# Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually set it to False to allow easy
+# implementation of test cases.
+allow_dsis = True
 
 def lcm(a, b):
     return a * b // fractions.gcd(a, b)
@@ -219,6 +227,8 @@ class StridedInterval(BackendObject):
                     self.lower_bound == o.lower_bound and
                     self.upper_bound == o.upper_bound):
             # They are definitely equal
+            # FIXME: This is incorrect... should be MaybeResult()
+            # FIXME: Only when self.is_integer() == True can it returns TrueResult()
             return TrueResult()
         elif self.upper_bound < o.lower_bound or o.upper_bound < self.lower_bound:
             return FalseResult()
@@ -239,7 +249,7 @@ class StridedInterval(BackendObject):
     def __gt__(self, other):
         if self.lower_bound > other.upper_bound:
             return TrueResult()
-        elif self.upper_bound < other.lower_bound:
+        elif self.upper_bound <= other.lower_bound:
             return FalseResult()
         return MaybeResult()
 
@@ -249,7 +259,7 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def __le__(self, other):
-        return (self < other) | (self == other)
+        return ~(self > other)
 
     @normalize_types
     def __add__(self, o):
@@ -294,8 +304,16 @@ class StridedInterval(BackendObject):
 
     @property
     def size(self):
+        logger.warning("StridedInterval.size will be deprecated soon. Please use StridedInterval.cardinality instead.")
+        return self.cardinality
+
+    @property
+    def cardinality(self):
         if self._stride == 0:
-            return 0
+            if self.is_empty():
+                return 0
+            else:
+                return 1
         else:
             return (self._upper_bound - self._lower_bound) / self._stride
 
@@ -891,11 +909,32 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def union(self, b):
-        '''
-        The union operation
-        :param b:
-        :return:
-        '''
+        """
+        The union operation. It might return a DiscreteStridedIntervalSet to allow for better precision in analysis.
+
+        :param b: Operand
+        :return: A new DiscreteStridedIntervalSet, or a new StridedInterval.
+        """
+        if not allow_dsis:
+            return self._union(b)
+
+        else:
+            if self.cardinality > discrete_strided_interval_set.MAX_CARDINALITY_WITHOUT_COLLAPSING or \
+                    b.cardinality > discrete_strided_interval_set:
+                return self._union(b)
+
+            else:
+                dsis = DiscreteStridedIntervalSet(bits=self._bits, si_set={ self })
+                return dsis.union(b)
+
+    @normalize_types
+    def _union(self, b):
+        """
+        The union operation. It guarantees to return a _single_ StridedInterval.
+
+        :param b: Operand.
+        :return: A new StridedInterval
+        """
         if self._reversed != b._reversed:
             logger.warning('Incoherent reversed flag between operands %s and %s', self, b)
 
@@ -1081,6 +1120,8 @@ class StridedInterval(BackendObject):
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
+from . import discrete_strided_interval_set
+from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
 from .ifproxy import IfProxy
 from ..ast import A

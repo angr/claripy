@@ -14,7 +14,8 @@ def normalize_types(f):
         if isinstance(o, A):
             o = o.model
 
-        assert type(o) is StridedInterval
+        if not isinstance(o, StridedInterval):
+            raise ClaripyVSAOperationError('Unsupported operand type %s' % type(o))
 
         return f(self, region, o)
 
@@ -73,6 +74,9 @@ class ValueSet(BackendObject):
 
     @normalize_types
     def set_si(self, region, si):
+        if not isinstance(si, StridedInterval):
+            raise ClaripyVSAOperationError('Unsupported type %s for si' % type(si))
+
         self._regions[region] = si
 
     def get_si(self, region):
@@ -287,3 +291,4 @@ from ..ast import A
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
+from .errors import ClaripyVSAOperationError
