@@ -70,9 +70,9 @@ def test_expression():
     nose.tools.assert_false(ii.identical(ij))
 
     clrp_vsa = claripy.Claripies['VSA']
-    si = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
-    sj = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
-    sk = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    si = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=100)
+    sj = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=10)
+    sk = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=100)
     nose.tools.assert_true(si.identical(si))
     nose.tools.assert_false(si.identical(sj))
     nose.tools.assert_true(si.identical(sk))
