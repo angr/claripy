@@ -10,8 +10,8 @@ class Segment(object):
 
 class AbstractLocation(BackendObject):
     def __init__(self, bbl_key, stmt_id, region_id, segment_list=None, region_offset=None, size=None):
-        self._bbl_key = bbl_key
-        self._stmt_id = stmt_id
+        self._bbl_key = -1 if bbl_key is None else bbl_key
+        self._stmt_id = -1 if stmt_id is None else stmt_id
         self._region_id = region_id
         self._segment_list = [ ] if not segment_list else segment_list[ :: ]
 
@@ -110,5 +110,8 @@ class AbstractLocation(BackendObject):
         return False
 
     def __repr__(self):
-        return '(%xh, %d) %s' % (self.basicblock_key, self.statement_id,
-                                 self._segment_list)
+        return '(%xh, %d) %s' % (
+            (self.basicblock_key if self.basicblock_key is not None else -1),
+            (self.statement_id if self.statement_id is not None else -1),
+            self._segment_list
+        )

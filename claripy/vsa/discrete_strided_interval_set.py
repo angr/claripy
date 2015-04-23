@@ -345,6 +345,32 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __rsub__(self, o):
         return self.__sub__(o)
 
+    @convert_operand_to_si
+    @apply_on_each_si
+    def __div__(self, o):
+        """
+        Operation /
+        :param o: The other operand
+        :return:
+        """
+        pass
+
+    def __rdiv__(self, o):
+        return self.__div__(o)
+
+    @convert_operand_to_si
+    @apply_on_each_si
+    def __mod__(self, o):
+        """
+        Operation %
+        :param o: The other operand
+        :return:
+        """
+        pass
+
+    def __rmod__(self, o):
+        return self.__mod__(o)
+
     # Evaluation
 
     def eval(self, n):
@@ -364,7 +390,10 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return self._union_with_dsis(b)
 
         elif isinstance(b, StridedInterval):
-            return self._union_with_si(b)
+            if not b.is_empty():
+                return self._union_with_si(b)
+            else:
+                return self.copy()
 
         elif isinstance(b, ValueSet):
             return b.union(self)
