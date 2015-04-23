@@ -572,7 +572,7 @@ class BackendVSA(ModelBackend):
         if lhs.op == 'If':
             import ipdb; ipdb.set_trace()
 
-        elif isinstance(rhs.model, StridedInterval):
+        elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
             new_si = rhs.model.copy()
             if isinstance(lhs.model, A):
                 # It cannot be computed by our backend...
