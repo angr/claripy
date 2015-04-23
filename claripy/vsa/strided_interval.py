@@ -488,7 +488,7 @@ class StridedInterval(BackendObject):
             return StridedInterval.min_int(bits)
 
     def is_empty(self):
-        return self._stride == 0 and self._lower_bound > self._upper_bound
+        return self._lower_bound > self._upper_bound
 
     def is_top(self):
         '''
@@ -628,6 +628,10 @@ class StridedInterval(BackendObject):
         :return: self | b
         '''
         assert self.bits == b.bits
+
+        if self.is_empty() or b.is_empty:
+            logger.error('Bitwise_or on empty strided-intervals.')
+            return self.copy()
 
         # Special handling for integers
         # TODO: Is this special handling still necessary?
