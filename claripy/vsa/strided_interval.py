@@ -216,7 +216,7 @@ class StridedInterval(BackendObject):
                 v.upper_bound = v.lower_bound
                 v.lower_bound = t
             # Make sure the stride makes sense
-            if v.stride == 0: v.stride = 1
+            if v.stride == 0 and v.lower_bound < v.upper_bound: v.stride = 1
 
         return v
 
@@ -629,7 +629,7 @@ class StridedInterval(BackendObject):
         '''
         assert self.bits == b.bits
 
-        if self.is_empty() or b.is_empty:
+        if self.is_empty() or b.is_empty():
             logger.error('Bitwise_or on empty strided-intervals.')
             return self.copy()
 
