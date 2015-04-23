@@ -215,6 +215,8 @@ class StridedInterval(BackendObject):
                 t = v.upper_bound
                 v.upper_bound = v.lower_bound
                 v.lower_bound = t
+            # Make sure the stride makes sense
+            if v.stride == 0: v.stride = 1
 
         return v
 
