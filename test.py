@@ -804,7 +804,7 @@ def test_vsa():
     # ValueSet
     #
 
-    vs_1 = clrp.ValueSet()
+    vs_1 = clrp.ValueSet(bits=32)
     nose.tools.assert_true(vs_1.model.is_empty(), True)
     # Test merging two addresses
     vs_1.model.merge_si('global', si1)
@@ -868,8 +868,8 @@ def test_vsa_constraint_to_si():
     #
 
     s1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=2)
-    ast_true = (clrp.If(s1 == 0, BVV(1, 1), BVV(0, 1)) == 1)
-    ast_false = (clrp.If(s1 == 0, BVV(1, 1), BVV(0, 1)) != 1)
+    ast_true = (clrp.If(s1 == BVV(0, 32), BVV(1, 1), BVV(0, 1)) == BVV(1, 1))
+    ast_false = (clrp.If(s1 == BVV(0, 32), BVV(1, 1), BVV(0, 1)) != BVV(1, 1))
 
     trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
     nose.tools.assert_equal(trueside_sat, True)

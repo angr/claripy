@@ -91,7 +91,7 @@ class Claripy(object):
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
-        return I(self, vs, variables={ vs.name }, symbolic=False)
+        return BVI(self, vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'])
     VS = ValueSet
 
     # a-loc
@@ -102,8 +102,8 @@ class Claripy(object):
     #
     # Boolean ops
     #
-    def BoolVal(self, *args):
-        return Bool(self, 'I', (args[0],), variables=set(), symbolic=False)
+    def BoolVal(self, val):
+        return BoolI(self, val, variables=set(), symbolic=False)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
     # def And(self, *args): return type(args[0])(self, 'And', args).reduced
@@ -243,7 +243,7 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .ast import Base, I, BV, BVI, FP, FPI, Bool, Bits
+from .ast import Base, I, BV, BVI, FP, FPI, Bool, BoolI, Bits
 from .backend import BackendError
 from .bv import BVV
 from .fp import FPV

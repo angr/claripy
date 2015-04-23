@@ -30,7 +30,7 @@ def normalize_types_one_arg(f):
         if isinstance(o, IfProxy):
             return NotImplemented
 
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         return f(self, o)

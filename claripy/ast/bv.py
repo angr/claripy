@@ -135,11 +135,10 @@ BV.Extract = staticmethod(op('Extract', ((int, long), (int, long), BV), BV,
 BV.Concat = staticmethod(op('Concat', BV, BV, calc_length=concat_length_calc, self_is_clrp=True))
 
 BV.reversed = property(op('Reverse', (BV,), BV, calc_length=basic_length_calc))
-#def foo(self):
-#    raise Exception("foo called");
-#BV.reversed = property(foo)
 
-#make_methods(BV, expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations)
+BV.union = op('union', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.widen = op('widen', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
+BV.intersection = op('intersection', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 
 class BVI(I, BV):
     pass
