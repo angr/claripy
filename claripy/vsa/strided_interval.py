@@ -271,6 +271,34 @@ class StridedInterval(BackendObject):
     def __sub__(self, o):
         return self.add(o.neg(), allow_overflow=True)
 
+    @normalize_types
+    def __mod__(self, o):
+        # TODO: Make a better approximation
+        if self.is_integer() and o.is_integer():
+            r = self.lower_bound % o.lower_bound
+            si = StridedInterval(bits=self.bits, stride=0, lower_bound=r, upper_bound=r)
+            return si
+
+        else:
+            si = StridedInterval(bits=self.bits, stride=1, lower_bound=0, upper_bound=o.upper_bound - 1)
+            return si
+
+    @normalize_types
+    def __div__(self, o):
+        # TODO: Make a better approximation
+        if self.is_integer() and o.is_integer():
+            r = self.lower_bound / o.lower_bound
+            si = StridedInterval(bits=self.bits, stride=0, lower_bound=r, upper_bound=r)
+            return si
+
+        else:
+            r = [ self.upper_bound / o.lower_bound,
+                  self.upper_bound / o.upper_bound,
+                  self.lower_bound / o.lower_bound,
+                  self.lower_bound / o.upper_bound ]
+            si = StridedInterval(bits=self.bits, stride=1, lower_bound=min(r), upper_bound=max(r))
+            return si
+
     def __neg__(self):
         return self.bitwise_not()
 
