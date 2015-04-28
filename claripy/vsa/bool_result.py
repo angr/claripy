@@ -92,7 +92,7 @@ class TrueResult(BoolResult):
             return TrueResult()
 
     def __repr__(self):
-        return 'True'
+        return '<True>'
 
 class FalseResult(BoolResult):
     @property
@@ -112,7 +112,7 @@ class FalseResult(BoolResult):
         return other
 
     def __repr__(self):
-        return 'False'
+        return '<False>'
 
 class MaybeResult(BoolResult):
     @property
@@ -139,9 +139,9 @@ class MaybeResult(BoolResult):
 
     def __repr__(self):
         if self._op is None:
-            return 'Maybe'
+            return '<Maybe>'
         else:
-            return 'Maybe(%s, %s)' % (self._op, self._args)
+            return '<Maybe(%s, %s)>' % (self._op, self._args)
 
 
 

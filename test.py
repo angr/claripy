@@ -70,9 +70,9 @@ def test_expression():
     nose.tools.assert_false(ii.identical(ij))
 
     clrp_vsa = claripy.Claripies['VSA']
-    si = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
-    sj = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
-    sk = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    si = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=100)
+    sj = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=10)
+    sk = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=100)
     nose.tools.assert_true(si.identical(si))
     nose.tools.assert_false(si.identical(sj))
     nose.tools.assert_true(si.identical(sk))
@@ -623,6 +623,9 @@ def test_vsa():
     VS = clrp.ValueSet
     BVV = clrp.BVV
 
+    # Disable the use of DiscreteStridedIntervalSet
+    claripy.vsa.strided_interval.allow_dsis = False
+
     # Integers
     si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
     si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
@@ -855,6 +858,8 @@ def test_vsa_constraint_to_si():
     SI = clrp.SI
     BVV = clrp.BVV
 
+    claripy.vsa.strided_interval.allow_dsis = False
+
     #
     # If(SI == 0, 1, 0) == 1
     #
@@ -951,9 +956,111 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s4)
     # False side; SI<32>1[1, 2]
     nose.tools.assert_true(
-        clrp.is_true(falseside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)))
+        clrp.is_true(falseside_replacement[0][1] == SI(bits=64, stride=1, lower_bound=0, upper_bound=0x7fffffffffffffff)))
 
     # TODO: Add some more insane test cases
+
+def test_vsa_discrete_value_set():
+    """
+    Test cases for DiscreteStridedIntervalSet.
+    """
+    from claripy.backends import BackendVSA
+    from claripy.vsa import BoolResult, StridedInterval, DiscreteStridedIntervalSet #pylint:disable=unused-variable
+
+    clrp = claripy.Claripies["SerialZ3"]
+    # Set backend
+    b = BackendVSA()
+    b.set_claripy_object(clrp)
+    clrp.model_backends.append(b)
+    clrp.solver_backends = []
+
+    solver_type = claripy.solvers.BranchingSolver
+    s = solver_type(clrp) #pylint:disable=unused-variable
+
+    SI = clrp.StridedInterval
+    VS = clrp.ValueSet
+    BVV = clrp.BVV
+
+    # Allow the use of DiscreteStridedIntervalSet (cuz we wanna test it!)
+    claripy.vsa.strided_interval.allow_dsis = True
+
+    #
+    # Union
+    #
+    val_1 = BVV(0, 32)
+    val_2 = BVV(1, 32)
+    r = val_1.union(val_2)
+    nose.tools.assert_true(isinstance(r.model, DiscreteStridedIntervalSet))
+    nose.tools.assert_true(r.model.collapse(), SI(bits=32, stride=1, lower_bound=0, upper_bound=1))
+
+    r = r.union(BVV(3, 32))
+    ints = b.eval(r, 4)
+    nose.tools.assert_equal(len(ints), 3)
+    nose.tools.assert_equal(ints, [0, 1, 3])
+
+    #
+    # Intersection
+    #
+
+    val_1 = BVV(0, 32)
+    val_2 = BVV(1, 32)
+    r = val_1.intersection(val_2)
+    nose.tools.assert_true(isinstance(r.model, StridedInterval))
+    nose.tools.assert_true(r.model.is_empty())
+
+    val_1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
+    val_2 = SI(bits=32, stride=1, lower_bound=10, upper_bound=20)
+    val_3 = SI(bits=32, stride=1, lower_bound=15, upper_bound=50)
+    r = val_1.union(val_2)
+    nose.tools.assert_true(isinstance(r.model, DiscreteStridedIntervalSet))
+    r = r.intersection(val_3)
+    nose.tools.assert_equal(sorted(b.eval(r, 100)), [ 15, 16, 17, 18, 19, 20 ])
+
+    #
+    # Some logical operations
+    #
+
+    val_1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
+    val_2 = SI(bits=32, stride=1, lower_bound=5, upper_bound=20)
+    r_1 = val_1.union(val_2)
+    val_3 = SI(bits=32, stride=1, lower_bound=20, upper_bound=30)
+    val_4 = SI(bits=32, stride=1, lower_bound=25, upper_bound=35)
+    r_2 = val_3.union(val_4)
+    nose.tools.assert_true(isinstance(r_1.model, DiscreteStridedIntervalSet))
+    nose.tools.assert_true(isinstance(r_2.model, DiscreteStridedIntervalSet))
+    # r_1 < r_2
+    nose.tools.assert_true(BoolResult.is_maybe(r_1 < r_2))
+    # r_1 <= r_2
+    nose.tools.assert_true(BoolResult.is_true(r_1 <= r_2))
+    # r_1 >= r_2
+    nose.tools.assert_true(BoolResult.is_maybe(r_1 >= r_2))
+    # r_1 > r_2
+    nose.tools.assert_true(BoolResult.is_false(r_1 > r_2))
+    # r_1 == r_2
+    nose.tools.assert_true(BoolResult.is_maybe(r_1 == r_2))
+    # r_1 != r_2
+    nose.tools.assert_true(BoolResult.is_maybe(r_1 != r_2))
+
+    #
+    # Some arithmetic operations
+    #
+
+    val_1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
+    val_2 = SI(bits=32, stride=1, lower_bound=5, upper_bound=20)
+    r_1 = val_1.union(val_2)
+    val_3 = SI(bits=32, stride=1, lower_bound=20, upper_bound=30)
+    val_4 = SI(bits=32, stride=1, lower_bound=25, upper_bound=35)
+    r_2 = val_3.union(val_4)
+    nose.tools.assert_true(isinstance(r_1.model, DiscreteStridedIntervalSet))
+    nose.tools.assert_true(isinstance(r_2.model, DiscreteStridedIntervalSet))
+    # r_1 + r_2
+    r = r_1 + r_2
+    nose.tools.assert_true(isinstance(r.model, DiscreteStridedIntervalSet))
+    nose.tools.assert_true(BoolResult.is_true(r == SI(bits=32, stride=1, lower_bound=20, upper_bound=55)))
+    # r_2 - r_1
+    r = r_2 - r_1
+    nose.tools.assert_true(isinstance(r.model, DiscreteStridedIntervalSet))
+    nose.tools.assert_true(BoolResult.is_true(r == SI(bits=32, stride=1, lower_bound=0, upper_bound=35)))
 
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
@@ -989,6 +1096,7 @@ if __name__ == '__main__':
         test_bool()
         test_vsa()
         test_vsa_constraint_to_si()
+        test_vsa_discrete_value_set()
     print "WOO"
 
     print 'eval', claripy.solvers.solver.cached_evals

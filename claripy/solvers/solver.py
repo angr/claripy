@@ -184,6 +184,8 @@ class Solver(ana.Storable):
 		self._to_add = { }
 		self._simplified = True
 
+		return self.constraints
+
 	#
 	# Solving
 	#
@@ -237,7 +239,8 @@ class Solver(ana.Storable):
 
 			if cached_n >= n or len(cached_results) < cached_n:
 				cached_evals += min(len(cached_results), n)
-				return list(cached_results)[:n]
+				# sort so the order of results is consistent when using pypy
+				return tuple(sorted(cached_results))[:n]
 			else:
 				solver_extra_constraints = [ e != v for v in cached_results ]
 		else:
@@ -272,7 +275,8 @@ class Solver(ana.Storable):
 			l.debug("... adding constraints for %d values for future speedup", len(all_results))
 			self.add([self._claripy.Or(*[ e == v for v in all_results ])], invalidate_cache=False)
 
-		return tuple(all_results)
+		# sort so the order of results is consistent when using pypy
+		return tuple(sorted(all_results))
 
 	def max(self, e, extra_constraints=()):
 		global cached_max

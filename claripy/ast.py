@@ -280,8 +280,8 @@ def _finalize_I(claripy, op, args, kwargs):
         try:
             name = b.name(args[0])
             if name is not None:
-                variables = kwargs.get('variables', set())
-                variables.add(name)
+                variables = kwargs.get('variables', frozenset())
+                variables = variables.union(frozenset([name]))
                 kwargs['variables'] = variables
             break
         except BackendError: pass
@@ -831,6 +831,14 @@ class A(ana.Storable):
         if it were simplified via Z3), but it's hard to quickly tell that.
         '''
         return self._claripy.is_identical(self, o)
+
+    def is_true(self):
+        '''
+        Returns True if 'self' can be easily determined to be True.
+        Otherwise, return False. Note that the AST *might* still be True (i.e.,
+        if it were simplified via Z3), but it's hard to quickly tell that.
+        '''
+        return self._claripy.is_true(self)
 
     def replace(self, old, new):
         '''
