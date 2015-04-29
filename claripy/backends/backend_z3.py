@@ -179,7 +179,7 @@ class BackendZ3(SolverBackend):
 	def solver(self, timeout=None):
 		s = z3.Solver()
 		if timeout is not None:
-			if z3.get_version_string() == '4.4.0':
+			if 'soft_timeout' in str(s.param_descrs()):
 				s.set('soft_timeout', timeout)
 				s.set('solver2_timeout', timeout)
 			else:
