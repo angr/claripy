@@ -272,6 +272,50 @@ class StridedInterval(BackendObject):
         return self.add(o.neg(), allow_overflow=True)
 
     @normalize_types
+    def __mul__(self, o):
+        if self.is_integer() and o.is_integer():
+            # Two integers!
+            a, b = self.lower_bound, o.lower_bound
+            ret = StridedInterval(bits=self.bits,
+                                  stride=0,
+                                  lower_bound=a * b,
+                                  upper_bound=a * b
+                                  )
+
+            return ret.normalize()
+
+        elif (self.is_integer() or o.is_integer()):
+            # Make sure b is the integer
+            a, b = (o, self.lower_bound) if self.is_integer() else (self, o.lower_bound)
+
+            all_bounds = [ a.lower_bound * b, a.upper_bound * b]
+
+            ret = StridedInterval(bits=a.bits,
+                                  stride=abs(a.stride * b),
+                                  lower_bound=min(all_bounds),
+                                  upper_bound=max(all_bounds)
+                                  )
+
+            return ret.normalize()
+
+        else:
+            all_bounds = [self.lower_bound * o.lower_bound,
+                          self.upper_bound * o.lower_bound,
+                          self.lower_bound * o.upper_bound,
+                          self.upper_bound * o.upper_bound
+                          ]
+            stride = fractions.gcd(self.stride, o.stride)
+
+            # Both are StridedIntervals
+            ret = StridedInterval(bits=self.bits,
+                                  stride=stride,
+                                  lower_bound=min(all_bounds),
+                                  upper_bound=max(all_bounds)
+                                  )
+
+            return ret.normalize()
+
+    @normalize_types
     def __mod__(self, o):
         # TODO: Make a better approximation
         if self.is_integer() and o.is_integer():
