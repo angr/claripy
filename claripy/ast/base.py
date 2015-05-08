@@ -765,6 +765,14 @@ class Base(ana.Storable):
         '''
         return self._claripy.is_identical(self, o)
 
+    def is_true(self):
+        '''
+        Returns True if 'self' can be easily determined to be True.
+        Otherwise, return False. Note that the AST *might* still be True (i.e.,
+        if it were simplified via Z3), but it's hard to quickly tell that.
+        '''
+        return self._claripy.is_true(self)
+
     def replace(self, old, new):
         '''
         Returns an AST with all instances of the AST 'old' replaced with AST 'new'

@@ -184,6 +184,8 @@ class Solver(ana.Storable):
 		self._to_add = { }
 		self._simplified = True
 
+		return self.constraints
+
 	#
 	# Solving
 	#
