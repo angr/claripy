@@ -2,7 +2,7 @@ import sys
 import pickle
 import tempfile
 
-import nose
+import nose.tools
 import logging
 l = logging.getLogger("claripy.test")
 
@@ -70,9 +70,9 @@ def test_expression():
     nose.tools.assert_false(ii.identical(ij))
 
     clrp_vsa = claripy.Claripies['VSA']
-    si = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
-    sj = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
-    sk = clrp_vsa.StridedInterval(bits=32, stride=0, lower_bound=20, upper_bound=100)
+    si = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=100)
+    sj = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=10)
+    sk = clrp_vsa.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=100)
     nose.tools.assert_true(si.identical(si))
     nose.tools.assert_false(si.identical(sj))
     nose.tools.assert_true(si.identical(sk))
@@ -630,18 +630,18 @@ def test_vsa():
     claripy.vsa.strided_interval.allow_dsis = False
 
     # Integers
-    si1 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
-    si2 = clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10)
-    si3 = clrp.StridedInterval(bits=32, stride=0, lower_bound=28, upper_bound=28)
+    si1 = SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si2 = SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
+    si3 = SI(bits=32, stride=0, lower_bound=28, upper_bound=28)
     # Strided intervals
-    si_a = clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20)
-    si_b = clrp.StridedInterval(bits=32, stride=2, lower_bound=-100, upper_bound=200)
-    si_c = clrp.StridedInterval(bits=32, stride=3, lower_bound=-100, upper_bound=200)
-    si_d = clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=60)
-    si_e = clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
-    si_f = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=255)
-    si_g = clrp.StridedInterval(bits=16, stride=1, lower_bound=0, upper_bound=0xff)
-    si_h = clrp.StridedInterval(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
+    si_a = SI(bits=32, stride=2, lower_bound=10, upper_bound=20)
+    si_b = SI(bits=32, stride=2, lower_bound=-100, upper_bound=200)
+    si_c = SI(bits=32, stride=3, lower_bound=-100, upper_bound=200)
+    si_d = SI(bits=32, stride=2, lower_bound=50, upper_bound=60)
+    si_e = SI(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x3000)
+    si_f = SI(bits=16, stride=1, lower_bound=0, upper_bound=255)
+    si_g = SI(bits=16, stride=1, lower_bound=0, upper_bound=0xff)
+    si_h = SI(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
     nose.tools.assert_equal(si1.model == 10, TrueResult())
     nose.tools.assert_equal(si2.model == 10, TrueResult())
     nose.tools.assert_equal(si1.model == si2.model, TrueResult())
@@ -649,69 +649,93 @@ def test_vsa():
     si_add_1 = b.convert((si1 + si2))
     nose.tools.assert_equal(si_add_1 == 20, TrueResult())
     si_add_2 = b.convert((si1 + si_a))
-    nose.tools.assert_equal(si_add_2 == clrp.StridedInterval(bits=32, stride=2, lower_bound=20, upper_bound=30).model, TrueResult())
+    nose.tools.assert_equal(si_add_2 == SI(bits=32, stride=2, lower_bound=20, upper_bound=30).model, TrueResult())
     si_add_3 = b.convert((si_a + si_b))
-    nose.tools.assert_equal(si_add_3 == clrp.StridedInterval(bits=32, stride=2, lower_bound=-90, upper_bound=220).model, TrueResult())
+    nose.tools.assert_equal(si_add_3 == SI(bits=32, stride=2, lower_bound=-90, upper_bound=220).model, TrueResult())
     si_add_4 = b.convert((si_b + si_c))
-    nose.tools.assert_equal(si_add_4 == clrp.StridedInterval(bits=32, stride=1, lower_bound=-200, upper_bound=400).model, TrueResult())
+    nose.tools.assert_equal(si_add_4 == SI(bits=32, stride=1, lower_bound=-200, upper_bound=400).model, TrueResult())
     # __add__ with overflow
     si_add_5 = b.convert(si_h + 0xffffffff)
-    nose.tools.assert_equal(si_add_5 == clrp.StridedInterval(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff).model, TrueResult())
+    nose.tools.assert_equal(si_add_5 == SI(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff).model, TrueResult())
     # __sub__
     si_minus_1 = b.convert((si1 - si2))
     nose.tools.assert_equal(si_minus_1 == 0, TrueResult())
     si_minus_2 = b.convert((si_a - si_b))
-    nose.tools.assert_equal(si_minus_2 == clrp.StridedInterval(bits=32, stride=2, lower_bound=-190, upper_bound=120).model, TrueResult())
+    nose.tools.assert_equal(si_minus_2 == SI(bits=32, stride=2, lower_bound=-190, upper_bound=120).model, TrueResult())
     si_minus_3 = b.convert((si_b - si_c))
-    nose.tools.assert_equal(si_minus_3 == clrp.StridedInterval(bits=32, stride=1, lower_bound=-300, upper_bound=300).model, TrueResult())
+    nose.tools.assert_equal(si_minus_3 == SI(bits=32, stride=1, lower_bound=-300, upper_bound=300).model, TrueResult())
     # __neg__ / __invert__
     si_neg_1 = b.convert((~si1))
     nose.tools.assert_equal(si_neg_1 == -11, TrueResult())
     si_neg_2 = b.convert((~si_b))
-    nose.tools.assert_equal(si_neg_2 == clrp.StridedInterval(bits=32, stride=2, lower_bound=-201, upper_bound=99).model, TrueResult())
+    nose.tools.assert_equal(si_neg_2 == SI(bits=32, stride=2, lower_bound=-201, upper_bound=99).model, TrueResult())
     # __or__
     si_or_1 = b.convert(si1 | si3)
     nose.tools.assert_equal(si_or_1 == 30, TrueResult())
     si_or_2 = b.convert(si1 | si2)
     nose.tools.assert_equal(si_or_2 == 10, TrueResult())
     si_or_3 = b.convert(si1 | si_a) # An integer | a strided interval
-    nose.tools.assert_equal(si_or_3 == clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30).model, TrueResult())
+    nose.tools.assert_equal(si_or_3 == SI(bits=32, stride=2, lower_bound=10, upper_bound=30).model, TrueResult())
     si_or_3 = b.convert(si_a | si1) # Exchange the operands
-    nose.tools.assert_equal(si_or_3 == clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=30).model, TrueResult())
+    nose.tools.assert_equal(si_or_3 == SI(bits=32, stride=2, lower_bound=10, upper_bound=30).model, TrueResult())
     si_or_4 = b.convert(si_a | si_d) # A strided interval | another strided interval
-    nose.tools.assert_equal(si_or_4 == clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62).model, TrueResult())
+    nose.tools.assert_equal(si_or_4 == SI(bits=32, stride=2, lower_bound=50, upper_bound=62).model, TrueResult())
     si_or_4 = b.convert(si_d | si_a) # Exchange the operands
-    nose.tools.assert_equal(si_or_4 == clrp.StridedInterval(bits=32, stride=2, lower_bound=50, upper_bound=62).model, TrueResult())
+    nose.tools.assert_equal(si_or_4 == SI(bits=32, stride=2, lower_bound=50, upper_bound=62).model, TrueResult())
     si_or_5 = b.convert(si_e | si_f) #
-    nose.tools.assert_equal(si_or_5 == clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff).model, TrueResult())
+    nose.tools.assert_equal(si_or_5 == SI(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff).model, TrueResult())
     si_or_6 = b.convert(si_e | si_g) #
-    nose.tools.assert_equal(si_or_6 == clrp.StridedInterval(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff).model, TrueResult())
+    nose.tools.assert_equal(si_or_6 == SI(bits=16, stride=1, lower_bound=0x2000, upper_bound=0x30ff).model, TrueResult())
     # Shifting
     si_shl_1 = b.convert(si1 << 3)
     nose.tools.assert_equal(si_shl_1.bits, 32)
-    nose.tools.assert_equal(si_shl_1 == clrp.StridedInterval(bits=32, stride=0, lower_bound=80, upper_bound=80).model, TrueResult())
+    nose.tools.assert_equal(si_shl_1 == SI(bits=32, stride=0, lower_bound=80, upper_bound=80).model, TrueResult())
+    # Multiplication
+    si_mul_1 = b.convert(si1 * 3)
+    nose.tools.assert_equal(si_mul_1.bits, 32)
+    nose.tools.assert_equal(si_mul_1 == SI(bits=32, stride=0, lower_bound=30, upper_bound=30).model, TrueResult())
+    si_mul_2 = b.convert(si_a * 3)
+    nose.tools.assert_equal(si_mul_2.bits, 32)
+    nose.tools.assert_equal(si_mul_2 == SI(bits=32, stride=6, lower_bound=30, upper_bound=60).model, TrueResult())
+    si_mul_3 = b.convert(si_a * si_b)
+    nose.tools.assert_equal(si_mul_3.bits, 32)
+    nose.tools.assert_equal(si_mul_3 == SI(bits=32, stride=2, lower_bound=-2000, upper_bound=4000).model, TrueResult())
+    # Division
+    si_div_1 = b.convert(si1 / 3)
+    nose.tools.assert_equal(si_div_1.bits, 32)
+    nose.tools.assert_equal(si_div_1 == SI(bits=32, stride=0, lower_bound=3, upper_bound=3).model, TrueResult())
+    si_div_2 = b.convert(si_a / 3)
+    nose.tools.assert_equal(si_div_2.bits, 32)
+    nose.tools.assert_equal(si_div_2 == SI(bits=32, stride=1, lower_bound=3, upper_bound=6).model, TrueResult())
+    # Modulo
+    si_mo_1 = b.convert(si1 % 3)
+    nose.tools.assert_equal(si_mo_1.bits, 32)
+    nose.tools.assert_equal(si_mo_1 == SI(bits=32, stride=0, lower_bound=1, upper_bound=1).model, TrueResult())
+    si_mo_2 = b.convert(si_a % 3)
+    nose.tools.assert_equal(si_mo_2.bits, 32)
+    nose.tools.assert_equal(si_mo_2 == SI(bits=32, stride=1, lower_bound=0, upper_bound=2).model, TrueResult())
 
     #
     # Extracting the sign bit
     #
 
     # a negative integer
-    si = clrp.StridedInterval(bits=64, stride=0, lower_bound=-1, upper_bound=-1)
+    si = SI(bits=64, stride=0, lower_bound=-1, upper_bound=-1)
     sb = b.convert(si[63: 63])
     nose.tools.assert_equal(sb == 1, TrueResult())
 
     # non-positive integers
-    si = clrp.StridedInterval(bits=64, stride=1, lower_bound=-1, upper_bound=0)
+    si = SI(bits=64, stride=1, lower_bound=-1, upper_bound=0)
     sb = b.convert(si[63: 63])
-    nose.tools.assert_equal(sb == clrp.StridedInterval(bits=1, stride=1, lower_bound=0, upper_bound=1).model,
+    nose.tools.assert_equal(sb == SI(bits=1, stride=1, lower_bound=0, upper_bound=1).model,
                             TrueResult())
 
     # Extracting an integer
-    si = clrp.StridedInterval(bits=64, stride=0, lower_bound=0x7fffffffffff0000, upper_bound=0x7fffffffffff0000)
+    si = SI(bits=64, stride=0, lower_bound=0x7fffffffffff0000, upper_bound=0x7fffffffffff0000)
     part1 = b.convert(si[63 : 32])
     part2 = b.convert(si[31 : 0])
-    nose.tools.assert_equal(part1 == clrp.StridedInterval(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff).model, TrueResult())
-    nose.tools.assert_equal(part2 == clrp.StridedInterval(bits=32, stride=0, lower_bound=0xffff0000, upper_bound=0xffff0000).model, TrueResult())
+    nose.tools.assert_equal(part1 == SI(bits=32, stride=0, lower_bound=0x7fffffff, upper_bound=0x7fffffff).model, TrueResult())
+    nose.tools.assert_equal(part2 == SI(bits=32, stride=0, lower_bound=0xffff0000, upper_bound=0xffff0000).model, TrueResult())
 
     # Concatenating two integers
     si_concat = b.convert(part1.concat(part2))
@@ -742,27 +766,27 @@ def test_vsa():
 
     # Union
     si_union_1 = b.convert(si1.union(si2))
-    nose.tools.assert_equal(si_union_1 == clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())
+    nose.tools.assert_equal(si_union_1 == SI(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())
     si_union_2 = b.convert(si1.union(si3))
-    nose.tools.assert_equal(si_union_2 == clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
+    nose.tools.assert_equal(si_union_2 == SI(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
     si_union_3 = b.convert(si1.union(si_a))
-    nose.tools.assert_equal(si_union_3 == clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20).model, TrueResult())
+    nose.tools.assert_equal(si_union_3 == SI(bits=32, stride=2, lower_bound=10, upper_bound=20).model, TrueResult())
     si_union_4 = b.convert(si_a.union(si_b))
-    nose.tools.assert_equal(si_union_4 == clrp.StridedInterval(bits=32, stride=2, lower_bound=-100, upper_bound=200).model, TrueResult())
+    nose.tools.assert_equal(si_union_4 == SI(bits=32, stride=2, lower_bound=-100, upper_bound=200).model, TrueResult())
     si_union_5 = b.convert(si_b.union(si_c))
-    nose.tools.assert_equal(si_union_5 == clrp.StridedInterval(bits=32, stride=1, lower_bound=-100, upper_bound=200).model, TrueResult())
+    nose.tools.assert_equal(si_union_5 == SI(bits=32, stride=1, lower_bound=-100, upper_bound=200).model, TrueResult())
 
     # Intersection
     si_intersection_1 = b.convert(si1.intersection(si1))
     nose.tools.assert_equal(si_intersection_1 == si2, TrueResult())
     si_intersection_2 = b.convert(si1.intersection(si2))
-    nose.tools.assert_equal(si_intersection_2 == clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())
+    nose.tools.assert_equal(si_intersection_2 == SI(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())
     si_intersection_3 = b.convert(si1.intersection(si_a))
-    nose.tools.assert_equal(si_intersection_3 == clrp.StridedInterval(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())
+    nose.tools.assert_equal(si_intersection_3 == SI(bits=32, stride=0, lower_bound=10, upper_bound=10).model, TrueResult())
     si_intersection_4 = b.convert(si_a.intersection(si_b))
-    nose.tools.assert_equal(si_intersection_4 == clrp.StridedInterval(bits=32, stride=2, lower_bound=10, upper_bound=20).model, TrueResult())
+    nose.tools.assert_equal(si_intersection_4 == SI(bits=32, stride=2, lower_bound=10, upper_bound=20).model, TrueResult())
     si_intersection_5 = b.convert(si_b.intersection(si_c))
-    nose.tools.assert_equal(si_intersection_5 == clrp.StridedInterval(bits=32, stride=6, lower_bound=-100, upper_bound=200).model, TrueResult())
+    nose.tools.assert_equal(si_intersection_5 == SI(bits=32, stride=6, lower_bound=-100, upper_bound=200).model, TrueResult())
 
     # Sign-extension
     si = SI(bits=1, stride=0, lower_bound=1, upper_bound=1)
@@ -809,7 +833,7 @@ def test_vsa():
     # Test merging two addresses
     vs_1.model.merge_si('global', si1)
     vs_1.model.merge_si('global', si3)
-    nose.tools.assert_equal(vs_1.model.get_si('global') == clrp.StridedInterval(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
+    nose.tools.assert_equal(vs_1.model.get_si('global') == SI(bits=32, stride=18, lower_bound=10, upper_bound=28).model, TrueResult())
     # Length of this ValueSet
     nose.tools.assert_equal(len(vs_1.model), 32)
 

@@ -215,6 +215,8 @@ class StridedInterval(BackendObject):
                 t = v.upper_bound
                 v.upper_bound = v.lower_bound
                 v.lower_bound = t
+            # Make sure the stride makes sense
+            if v.stride == 0 and v.lower_bound < v.upper_bound: v.stride = 1
 
         return v
 
@@ -268,6 +270,78 @@ class StridedInterval(BackendObject):
     @normalize_types
     def __sub__(self, o):
         return self.add(o.neg(), allow_overflow=True)
+
+    @normalize_types
+    def __mul__(self, o):
+        if self.is_integer() and o.is_integer():
+            # Two integers!
+            a, b = self.lower_bound, o.lower_bound
+            ret = StridedInterval(bits=self.bits,
+                                  stride=0,
+                                  lower_bound=a * b,
+                                  upper_bound=a * b
+                                  )
+
+            return ret.normalize()
+
+        elif (self.is_integer() or o.is_integer()):
+            # Make sure b is the integer
+            a, b = (o, self.lower_bound) if self.is_integer() else (self, o.lower_bound)
+
+            all_bounds = [ a.lower_bound * b, a.upper_bound * b]
+
+            ret = StridedInterval(bits=a.bits,
+                                  stride=abs(a.stride * b),
+                                  lower_bound=min(all_bounds),
+                                  upper_bound=max(all_bounds)
+                                  )
+
+            return ret.normalize()
+
+        else:
+            all_bounds = [self.lower_bound * o.lower_bound,
+                          self.upper_bound * o.lower_bound,
+                          self.lower_bound * o.upper_bound,
+                          self.upper_bound * o.upper_bound
+                          ]
+            stride = fractions.gcd(self.stride, o.stride)
+
+            # Both are StridedIntervals
+            ret = StridedInterval(bits=self.bits,
+                                  stride=stride,
+                                  lower_bound=min(all_bounds),
+                                  upper_bound=max(all_bounds)
+                                  )
+
+            return ret.normalize()
+
+    @normalize_types
+    def __mod__(self, o):
+        # TODO: Make a better approximation
+        if self.is_integer() and o.is_integer():
+            r = self.lower_bound % o.lower_bound
+            si = StridedInterval(bits=self.bits, stride=0, lower_bound=r, upper_bound=r)
+            return si
+
+        else:
+            si = StridedInterval(bits=self.bits, stride=1, lower_bound=0, upper_bound=o.upper_bound - 1)
+            return si
+
+    @normalize_types
+    def __div__(self, o):
+        # TODO: Make a better approximation
+        if self.is_integer() and o.is_integer():
+            r = self.lower_bound / o.lower_bound
+            si = StridedInterval(bits=self.bits, stride=0, lower_bound=r, upper_bound=r)
+            return si
+
+        else:
+            r = [ self.upper_bound / o.lower_bound,
+                  self.upper_bound / o.upper_bound,
+                  self.lower_bound / o.lower_bound,
+                  self.lower_bound / o.upper_bound ]
+            si = StridedInterval(bits=self.bits, stride=1, lower_bound=min(r), upper_bound=max(r))
+            return si
 
     def __neg__(self):
         return self.bitwise_not()
@@ -458,7 +532,7 @@ class StridedInterval(BackendObject):
             return StridedInterval.min_int(bits)
 
     def is_empty(self):
-        return self._stride == 0 and self._lower_bound > self._upper_bound
+        return self._lower_bound > self._upper_bound
 
     def is_top(self):
         '''
@@ -598,6 +672,10 @@ class StridedInterval(BackendObject):
         :return: self | b
         '''
         assert self.bits == b.bits
+
+        if self.is_empty() or b.is_empty():
+            logger.error('Bitwise_or on empty strided-intervals.')
+            return self.copy()
 
         # Special handling for integers
         # TODO: Is this special handling still necessary?

@@ -618,6 +618,13 @@ class Base(ana.Storable):
     # Viewing and debugging
     #
 
+    def dbg_repr(self):
+        try:
+            return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
+        except RuntimeError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
+
     def __repr__(self):
         if not isinstance(self.model, Base):
             return "<%s %s>" % (type(self).__name__, self.model)
@@ -634,6 +641,8 @@ class Base(ana.Storable):
         The depth of this AST. For example, an AST representing (a+(b+c)) would have
         a depth of 2.
         '''
+        if self.op == 'BitVec':
+          return 0
         ast_args = [ a for a in self.args if isinstance(a, Base) ]
         return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
 
