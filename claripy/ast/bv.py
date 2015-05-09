@@ -1,7 +1,6 @@
 from ..operations import op, length_same_check, basic_length_calc, extract_check, extract_length_calc, ext_length_calc, concat_length_calc
 from ..bv import BVV
 
-from .base import I
 from .bits import Bits
 from .bool import Bool
 
@@ -140,7 +139,7 @@ BV.union = op('union', (BV, BV), BV, extra_check=length_same_check, calc_length=
 BV.widen = op('widen', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.intersection = op('intersection', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 
-class BVI(I, BV):
-    pass
+def BVI(claripy, model, **kwargs):
+    return BV(claripy, 'I', (model,), **kwargs)
 
 from ..bv import BVV

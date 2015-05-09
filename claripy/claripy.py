@@ -45,7 +45,7 @@ class Claripy(object):
     BV = BitVec
 
     def BitVecVal(self, value, size):
-        return BVI(self, BVV(value, size), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size)
+        return BVI(self, BVV(value, size), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
     BVV = BitVecVal
 
     def FP(self, name, sort, explicit_name=None):
@@ -54,7 +54,7 @@ class Claripy(object):
         return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY)
 
     def FPV(self, *args):
-        return FPI(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY)
+        return FPI(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, eager=True)
 
     # Bitwise ops
     # def LShR(self, *args): return BV(self, 'LShR', args).reduced
@@ -103,7 +103,7 @@ class Claripy(object):
     # Boolean ops
     #
     def BoolVal(self, val):
-        return BoolI(self, val, variables=set(), symbolic=False)
+        return BoolI(self, val, variables=set(), symbolic=False, eager=True)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
     # def And(self, *args): return type(args[0])(self, 'And', args).reduced
@@ -131,10 +131,6 @@ class Claripy(object):
             ty = type(args[2])
         else:
             raise ClaripyTypeError("true/false clause of If must have bearable types")
-
-        if issubclass(ty, I):
-            # don't want the I version
-            ty = ty.__bases__[1]
 
         if not isinstance(args[1], ty):
             if hasattr(ty, '_from_' + type(args[1]).__name__):
@@ -243,7 +239,7 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .ast import Base, I, BV, BVI, FP, FPI, Bool, BoolI, Bits
+from .ast import Base, BV, BVI, FP, FPI, Bool, BoolI, Bits
 from .backend import BackendError
 from .bv import BVV
 from .fp import FPV

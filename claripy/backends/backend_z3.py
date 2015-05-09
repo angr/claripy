@@ -181,9 +181,6 @@ class BackendZ3(SolverBackend):
                         # If is polymorphic and thus must be handled specially
                         ty = type(args[1])
 
-                        if issubclass(ty, I):
-                                ty = ty.__bases__[1]
-
                         a = ty(self._claripy, 'If', tuple(args), length=args[1].length)
                 else:
                         if hasattr(ty, op_name):
@@ -633,7 +630,7 @@ op_map = {
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast import Base, BV, BVI, BoolI, Bool, I
+from ..ast import Base, BV, BVI, BoolI, Bool
 from ..operations import backend_operations, bin_ops
 from ..result import Result
 from ..bv import BVV

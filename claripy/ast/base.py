@@ -303,6 +303,14 @@ def _finalize_get_errored(args):
 
 #pylint:enable=unused-argument
 
+def _is_eager(a):
+    if isinstance(a, (int, long, bool)):
+        return True
+    elif isinstance(a, Base):
+        return a.eager
+    else:
+        return False
+
 class ASTCacheKey(object): pass
 
 class Base(ana.Storable):
@@ -324,7 +332,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', 'eager' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -350,6 +358,7 @@ class Base(ana.Storable):
                            fast-simplified (basically, just undoing the Reverse op), and 2 means
                            simplified through z3.
         @param errored: a set of backends that are known to be unable to handle this AST.
+        @param eager: whether or not to evaluate future parent ASTs eagerly.
         '''
         if any(not isinstance(a, (str, int, long, bool, Base, BackendObject)) for a in args):
             #import ipdb; ipdb.set_trace()
@@ -358,6 +367,8 @@ class Base(ana.Storable):
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
 
         f_op, f_args, f_kwargs = _finalize(claripy, op, a_args, kwargs)
+#        if 
+
         h = Base._calc_hash(claripy, f_op, f_args, f_kwargs)
 
         #if f_kwargs['length'] is None:
@@ -402,7 +413,7 @@ class Base(ana.Storable):
         return int(hd[:16], 16) # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None):
+    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False):
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''
@@ -411,6 +422,7 @@ class Base(ana.Storable):
         self.length = length
         self.variables = frozenset(variables)
         self.symbolic = symbolic
+        self.eager = eager
 
         self._collapsible = True if collapsible is None else collapsible
         self._claripy = claripy
@@ -418,6 +430,13 @@ class Base(ana.Storable):
 
         self._simplified = simplified
         self._cache_key = ASTCacheKey()
+
+        if self.op != 'I' and all(_is_eager(a) for a in self.args):
+            model = self.model
+            if model is not self:
+                self.op = 'I'
+                self.args = (model,)
+                self.eager = True
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -791,36 +810,6 @@ class Base(ana.Storable):
         if old.size() != new.size():
             raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
-
-# itsa mixin!
-class I(object):
-    '''
-    This is an 'identity' AST mixin -- it acts as a wrapper around model objects.
-
-    All methods have the same functionality as their corresponding methods on the Base class.
-    '''
-
-    def __new__(cls, claripy, model, **kwargs):
-        # this is pretty hacky
-        if cls == I:
-            raise ClaripyTypeError("cannot instantiate base I")
-
-        # cls._check_model_type(model)
-
-        return cls.__bases__[1].__new__(cls, claripy, 'I', (model,), **kwargs)
-
-    #def __init__(self, claripy, model, **kwargs):
-    #   Base.__init__(self, claripy, 'I', (model,), **kwargs)
-
-    # @staticmethod
-    # def _check_model_type(model):
-    #     raise ClaripyTypeError("`I` subclasses must override _check_model_type")
-
-    def resolved(self, result=None): return self.args[0]
-    def resolved_with(self, b, result=None): return b.convert(self.args[0])
-    @property
-    def depth(self): return 0
-    def split(self, split_on): return self
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
 from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
