@@ -80,7 +80,7 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return BVI(self, si, variables={ si.name }, symbolic=False, length=bits)
+        return BVI(self, si, variables={ si.name }, symbolic=False, length=si._bits)
     SI = StridedInterval
 
     def TopStridedInterval(self, bits, name=None, signed=False, uninitialized=False):

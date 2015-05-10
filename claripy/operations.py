@@ -1,4 +1,4 @@
-def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is_clrp=False, coerce=True):
+def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is_clrp=False, do_coerce=True):
     def _op(self, *args):
         if self_is_clrp:
             clrp = self
@@ -19,7 +19,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
 
             for i, (arg, argty) in enumerate(zip(args, arg_types)):
                 if not isinstance(arg, argty):
-                    if coerce and hasattr(argty, '_from_' + type(arg).__name__):
+                    if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
                         convert = getattr(argty, '_from_' + type(arg).__name__)
                         args = tuple(convert(clrp, thing, arg) if j == i else a for (j, a) in enumerate(args))
                     else:
@@ -37,7 +37,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
 
             for i, arg in enumerate(args):
                 if not isinstance(arg, argty):
-                    if coerce and hasattr(argty, '_from_' + type(arg).__name__):
+                    if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
                         convert = getattr(argty, '_from_' + type(arg).__name__)
                         args = tuple(convert(clrp, thing, arg) if j == i else a for (j, a) in enumerate(args))
                     else:
@@ -77,7 +77,7 @@ def extract_check(high, low, bv):
 
     return True, ""
 
-def extract_length_calc(high, low, bv):
+def extract_length_calc(high, low, _):
     return high - low + 1
 
 def ext_length_calc(ext, orig):

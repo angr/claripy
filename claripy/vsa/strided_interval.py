@@ -199,7 +199,8 @@ class StridedInterval(BackendObject):
         '''
         return self._bits
 
-    def _get_signed_val(self, v):
+    @staticmethod
+    def _get_signed_val(v):
         v = v.copy()
 
         if v._bits > 1:
@@ -284,7 +285,7 @@ class StridedInterval(BackendObject):
 
             return ret.normalize()
 
-        elif (self.is_integer() or o.is_integer()):
+        elif self.is_integer() or o.is_integer():
             # Make sure b is the integer
             a, b = (o, self.lower_bound) if self.is_integer() else (self, o.lower_bound)
 
@@ -1165,19 +1166,20 @@ class StridedInterval(BackendObject):
 
             # Reversing an integer is easy
             rounded_bits = ((self.bits + 7) / 8) * 8
-            bytes = [ ]
+            list_bytes = [ ]
             si = None
 
             for i in xrange(0, rounded_bits, 8):
                 b = self.extract(min(i + 7, self.bits - 1), i)
-                bytes.append(b)
+                list_bytes.append(b)
 
-            for b in bytes:
+            for b in list_bytes:
                 si = b if si is None else si.concat(b)
 
             return si
 
-    def _ntz(self, x):
+    @staticmethod
+    def _ntz(x):
         '''
         Get the position of first non-zero bit
         :param x:
