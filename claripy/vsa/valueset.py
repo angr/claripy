@@ -251,8 +251,16 @@ class ValueSet(BackendObject):
     def concat(self, b):
         new_vs = ValueSet()
         # TODO: This logic is obviously flawed. Correct it later :-(
-        for region, si in self._regions.items():
-            new_vs.set_si(region, si.concat(b.get_si(region)))
+        if isinstance(b, StridedInterval):
+            for region, si in self._regions.items():
+                new_vs.set_si(region, si.concat(b))
+
+        elif isinstance(b, ValueSet):
+            for region, si in self._regions.items():
+                new_vs.set_si(region, si.concat(b.get_si(region)))
+
+        else:
+            raise ClaripyVSAOperationError('ValueSet.concat() got an unsupported operand %s (type %s)' % (b, type(b)))
 
         return new_vs
 
