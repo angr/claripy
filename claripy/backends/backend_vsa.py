@@ -261,7 +261,12 @@ class BackendVSA(ModelBackend):
         if cond_arg.size() <= arg.size() or \
                 claripy.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
             # We can safely eliminate this layer of ZeroExt
-            return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
+            if cond_arg.size() < arg.size():
+                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
+                if not isinstance(larger_cond_arg, Base):
+                    return self.cts_simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
+            else:
+                return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
@@ -290,7 +295,12 @@ class BackendVSA(ModelBackend):
         if cond_arg.size() <= arg.size() or \
                 claripy.is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
             # We can safely eliminate this layer of SignExt
-            return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[arg.size() - 1: 0]))
+            if cond_arg.size() < arg.size():
+                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
+                if not isinstance(larger_cond_arg, Base):
+                    return self.cts_simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
+            else:
+                return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[arg.size() - 1: 0]))
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
