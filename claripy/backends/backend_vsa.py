@@ -69,7 +69,7 @@ def normalize_reversed_arguments(f):
         arg_reversed = []
         raw_args = []
         for i in xrange(len(args)):
-            if isinstance(args[i], A) and type(args[i].model) in { StridedInterval,
+            if isinstance(args[i], Base) and type(args[i].model) in { StridedInterval,
                                                                    DiscreteStridedIntervalSet,
                                                                    ValueSet
             }:
@@ -77,7 +77,7 @@ def normalize_reversed_arguments(f):
                     arg_reversed.append(True)
                     raw_args.append(args[i].reversed)
                     continue
-            elif isinstance(args[i], A) and args[i].op == 'Reverse':
+            elif isinstance(args[i], Base) and args[i].op == 'Reverse':
                 # A delayed reverse
                 arg_reversed.append(True)
                 raw_args.append(args[i].args[0])
@@ -95,7 +95,7 @@ def normalize_reversed_arguments(f):
 
         variables = set()
         for a in raw_args:
-            if type(a) is A:
+            if isinstance(a, Base):
                 variables |= a.variables
             else:
                 variables.add(a.name)
@@ -261,7 +261,12 @@ class BackendVSA(ModelBackend):
         if cond_arg.size() <= arg.size() or \
                 claripy.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
             # We can safely eliminate this layer of ZeroExt
-            return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
+            if cond_arg.size() < arg.size():
+                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
+                if not isinstance(larger_cond_arg, Base):
+                    return self.cts_simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
+            else:
+                return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
@@ -290,7 +295,12 @@ class BackendVSA(ModelBackend):
         if cond_arg.size() <= arg.size() or \
                 claripy.is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
             # We can safely eliminate this layer of SignExt
-            return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[arg.size() - 1: 0]))
+            if cond_arg.size() < arg.size():
+                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
+                if not isinstance(larger_cond_arg, Base):
+                    return self.cts_simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
+            else:
+                return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[arg.size() - 1: 0]))
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
@@ -550,8 +560,8 @@ class BackendVSA(ModelBackend):
 
         lhs, rhs = args
 
-        if not isinstance(lhs, A):
-            raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
+        if not isinstance(lhs, Base):
+            raise ClaripyBackendVSAError('Left-hand-side expression is not an AST object.')
 
         # Maybe the target variable is the rhs
         if isinstance(lhs.model, BVV):
@@ -566,15 +576,15 @@ class BackendVSA(ModelBackend):
             # Convert it into an SI
             rhs = claripy.SI(to_conv=rhs)
 
-        if not isinstance(rhs, A):
-            raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an A object.')
+        if not isinstance(rhs, Base):
+            raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
 
         if lhs.op == 'If':
             import ipdb; ipdb.set_trace()
 
         elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
             new_si = rhs.model.copy()
-            if isinstance(lhs.model, A):
+            if isinstance(lhs.model, Base):
                 # It cannot be computed by our backend...
                 # We just give up for now
                 return True, [ ]
@@ -759,8 +769,8 @@ class BackendVSA(ModelBackend):
 
         lhs, rhs = args
 
-        if not isinstance(lhs, A):
-            raise ClaripyBackendVSAError('Left-hand-side expression is not an A object.')
+        if not isinstance(lhs, Base):
+            raise ClaripyBackendVSAError('Left-hand-side expression is not an AST object.')
 
         size = lhs.size()
         claripy = lhs._claripy
@@ -769,8 +779,8 @@ class BackendVSA(ModelBackend):
             # Convert it into a BVV
             rhs = I(lhs._claripy, BVV(rhs, size))
 
-        if not isinstance(rhs, A):
-            raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an A object.')
+        if not isinstance(rhs, Base):
+            raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
 
         sat = True
 
@@ -1080,7 +1090,7 @@ class BackendVSA(ModelBackend):
         :return:
         '''
         if to_conv is not None:
-            if isinstance(to_conv, A):
+            if isinstance(to_conv, Base):
                 to_conv = to_conv.model
             if isinstance(to_conv, StridedInterval):
                 # No conversion will be done
@@ -1116,7 +1126,7 @@ class BackendVSA(ModelBackend):
         return StridedInterval.top(bits, name=None, signed=signed, uninitialized=uninitialized)
 
 from ..bv import BVV
-from ..ast import A, I
+from ..ast import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy

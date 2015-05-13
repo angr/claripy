@@ -13,7 +13,7 @@ class BackendObject(object):
     directly used in operations.
 
     Backend objects that *don't* derive from this class need to be wrapped in
-    a type-I claripy.A.
+    a type-I claripy.ast.Base.
     '''
 
     def to_claripy(self):
@@ -26,19 +26,19 @@ class BackendObject(object):
 
 class Backend(object):
     '''
-    Backends are Claripy's workhorses. Claripy exposes ASTs (claripy.A objects)
+    Backends are Claripy's workhorses. Claripy exposes ASTs (claripy.ast.Base objects)
     to the world, but when actual computation has to be done, it pushes those
     ASTs into objects that can be handled by the backends themselves. This
     provides a unified interface to the outside world while allowing Claripy to
     support different types of computation. For example, BackendConcrete
     provides computation support for concrete bitvectors and booleans,
     BackendVSA introduces VSA constructs such as StridedIntervals (and details
-    what happens when operations are performed on them, and BackendZ3 provides
+    what happens when operations are performed on them), and BackendZ3 provides
     support for symbolic variables and constraint solving.
 
     There are a set of functions that a backend is expected to implement. For
     all of these functions, the "public" version is expected to be able to deal
-    with claripy.A objects, while the "private" version should only deal with
+    with claripy.ast.Base objects, while the "private" version should only deal with
     objects specific to the backend itself. This is distinguished with Python
     idioms: a public function will be named func() while a private function
     will be _func(). All functions should return objects that are usable by the
@@ -89,6 +89,7 @@ class Backend(object):
                     self._op_raw[o] = getattr(op_module, o)
                 else:
                     l.debug("Operation %s not in op_module %s.", o, op_module)
+        self._op_raw['I'] = lambda thing: thing
 
     def _make_expr_ops(self, op_list, op_dict=None, op_class=None):
         '''
@@ -123,14 +124,14 @@ class Backend(object):
 
     def convert(self, expr, result=None): #pylint:disable=R0201
         '''
-        Resolves a claripy.A into something usable by the backend.
+        Resolves a claripy.Base into something usable by the backend.
 
         @param expr: the expression
         @param save: save the result in the expression's object cache
         @param result: a Result object (for concrete-only symbolic evaluation)
         @returns a backend object
         '''
-        if isinstance(expr, A):
+        if isinstance(expr, Base):
             r = None
             # if we have a result, and it's cached there, use it
             if result is not None:
@@ -251,6 +252,6 @@ class Backend(object):
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
-from .ast import A
+from .ast.base import Base
 from .operations import opposites
 from .errors import BackendError, ClaripyRecursionError

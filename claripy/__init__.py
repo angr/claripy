@@ -7,7 +7,7 @@ l = logging.getLogger("claripy")
 
 Claripies = { }
 
-from .ast import A, I
+from .ast import Base, Bits, BV, FP
 from . import bv
 from .result import Result
 from .errors import *

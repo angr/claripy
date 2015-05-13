@@ -1,5 +1,6 @@
 import sys
 import weakref
+import hashlib
 import logging
 l = logging.getLogger("claripy.ast")
 
@@ -33,12 +34,12 @@ def _finalize(claripy, op, args, kwargs):
     '''
     variables = kwargs.get('variables', None)
     if variables is None:
-        variables = frozenset.union(frozenset(), *(a.variables for a in args if isinstance(a, A)))
+        variables = frozenset.union(frozenset(), *(a.variables for a in args if isinstance(a, Base)))
     kwargs['variables'] = variables
 
     symbolic = kwargs.get('symbolic', None)
     if symbolic is None:
-        symbolic = any((a.symbolic for a in args if isinstance(a, A)))
+        symbolic = any((a.symbolic for a in args if isinstance(a, Base)))
     kwargs['symbolic'] = symbolic
 
     errored = kwargs.get('errored', None)
@@ -54,7 +55,7 @@ def _finalize(claripy, op, args, kwargs):
         o,a,k = op, args, kwargs
         nolength = True
     else:
-        raise ClaripyOperationError("no A._finalize_* function found for %s" % op)
+        raise ClaripyOperationError("no Base._finalize_* function found for %s" % op)
 
     length = k.get('length', None)
     if not nolength and (length is None or length < 0):
@@ -72,7 +73,7 @@ def _arg_size(o):
     @param o: the object in question
     @returns the length, or None
     '''
-    if isinstance(o, A): return o.length
+    if isinstance(o, Base): return o.length
     else: return None
 
 def _typefixer(a, t):
@@ -208,7 +209,7 @@ def _finalize_Extract(claripy, op, args, kwargs):
     '''
     Finalizes an Extract operation. Must have two integer arguments (from, to) and an AST.
     '''
-    args = _typechecker(op, args, ('I', 'I', A))
+    args = _typechecker(op, args, ('I', 'I', Base))
     if len(args) != 3 or type(args[0]) not in (int, long) or type(args[1]) not in (int, long):
         raise ClaripyOperationError("Invalid arguments passed to extract!")
 
@@ -223,9 +224,9 @@ def _finalize_Extract(claripy, op, args, kwargs):
 def _finalize_ZeroExt(claripy, op, args, kwargs):
     '''
     This is the finalizer for ZeroExtend and SignExtend. Args must be an int and
-    an A objects.
+    an Base objects.
     '''
-    args = _typechecker(op, args, ('I', A))
+    args = _typechecker(op, args, ('I', Base))
     length = _arg_size(args[1])
     if length is None:
         raise ClaripyOperationError("extending an object without a length")
@@ -235,7 +236,7 @@ def _finalize_ZeroExt(claripy, op, args, kwargs):
 
 _finalize_SignExt = _finalize_ZeroExt
 
-def _finalize_Reverse(claripy, op, args, kwargs):
+def _finalize_reversed(claripy, op, args, kwargs):
     '''
     This finalizes the Reverse operation.
     '''
@@ -295,18 +296,26 @@ def _finalize_get_errored(args):
     '''
     #all_errored = [ ]
     #for a in args:
-    #   if isinstance(a, A):
+    #   if isinstance(a, Base):
     #       all_errored.append(a._errored)
     #return set.union(set(), *all_errored)
-    return set.union(set(), *tuple(a._errored for a in args if isinstance(a, A)))
+    return set.union(set(), *(a._errored for a in args if isinstance(a, Base)))
 
 #pylint:enable=unused-argument
 
+def _is_eager(a):
+    if isinstance(a, (int, long, bool)):
+        return True
+    elif isinstance(a, Base):
+        return a.eager
+    else:
+        return False
+
 class ASTCacheKey(object): pass
 
-class A(ana.Storable):
+class Base(ana.Storable):
     '''
-    An A(ST) tracks a tree of operations on arguments. It has the following methods:
+    An AST tracks a tree of operations on arguments. It has the following methods:
 
         op: the operation that is being done on the arguments
         args: the arguments that are being used
@@ -323,7 +332,7 @@ class A(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'length', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', 'eager' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -332,7 +341,7 @@ class A(ana.Storable):
 
     def __new__(cls, claripy, op, args, **kwargs):
         '''
-        This is called when you create a new A object, whether directly or through an operation.
+        This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
         a hash. If an AST of this hash already exists, it returns that AST. Otherwise,
         it creates, initializes, and returns the AST.
@@ -349,15 +358,18 @@ class A(ana.Storable):
                            fast-simplified (basically, just undoing the Reverse op), and 2 means
                            simplified through z3.
         @param errored: a set of backends that are known to be unable to handle this AST.
+        @param eager: whether or not to evaluate future parent ASTs eagerly.
         '''
-        if any(not isinstance(a, (str, int, long, bool, A, BackendObject)) for a in args):
+        if any(not isinstance(a, (str, int, long, bool, Base, BackendObject)) for a in args):
             #import ipdb; ipdb.set_trace()
-            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.A" % (args,))
+            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.Base" % (args,))
 
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
 
         f_op, f_args, f_kwargs = _finalize(claripy, op, a_args, kwargs)
-        h = A._calc_hash(claripy, f_op, f_args, f_kwargs)
+#        if 
+
+        h = Base._calc_hash(claripy, f_op, f_args, f_kwargs)
 
         #if f_kwargs['length'] is None:
         #   __import__('ipdb').set_trace()
@@ -370,7 +382,7 @@ class A(ana.Storable):
 
         self = cls._hash_cache.get(h, None)
         if self is None:
-            self = super(A, cls).__new__(cls, claripy, f_op, f_args, **f_kwargs)
+            self = super(Base, cls).__new__(cls, claripy, f_op, f_args, **f_kwargs)
             self.__a_init__(claripy, f_op, f_args, **f_kwargs)
             self._hash = h
             cls._hash_cache[h] = self
@@ -394,18 +406,23 @@ class A(ana.Storable):
 
         @returns a hash
         '''
-        return hash((claripy.name, op, args, k['symbolic'], frozenset(k['variables']), k['length']))
+        to_hash = claripy.name + ' ' + op + ' ' + ','.join(str(hash(a)) for a in args) + ' ' + \
+                  str(k['symbolic']) + ' ' + str(hash(frozenset(k['variables']))) + ' ' + str(k['length'])
+        hd = hashlib.md5(to_hash).hexdigest()
+
+        return int(hd[:16], 16) # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None):
+    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False):
         '''
-        Initializes an AST. Takes the same arguments as A.__new__()
+        Initializes an AST. Takes the same arguments as Base.__new__()
         '''
         self.op = op
         self.args = args
         self.length = length
         self.variables = frozenset(variables)
         self.symbolic = symbolic
+        self.eager = eager
 
         self._collapsible = True if collapsible is None else collapsible
         self._claripy = claripy
@@ -414,12 +431,19 @@ class A(ana.Storable):
         self._simplified = simplified
         self._cache_key = ASTCacheKey()
 
+        if self.op != 'I' and all(_is_eager(a) for a in self.args):
+            model = self.model
+            if model is not self:
+                self.op = 'I'
+                self.args = (model,)
+                self.eager = True
+
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
 
         #if self.op != 'I':
         #   for a in args:
-        #       if not isinstance(a, A) and type(a) not in (int, long, bool, str, unicode):
+        #       if not isinstance(a, Base) and type(a) not in (int, long, bool, str, unicode):
         #           import ipdb; ipdb.set_trace()
         #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
@@ -435,9 +459,6 @@ class A(ana.Storable):
 
     @property
     def uuid(self):
-        '''
-        I honestly don't know why this is here. (TODO)
-        '''
         return self.ana_uuid
 
     def __hash__(self):
@@ -457,9 +478,9 @@ class A(ana.Storable):
         Support for ANA deserialization.
         '''
         op, args, length, variables, symbolic, clrp, h = state
-        A.__a_init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
+        Base.__a_init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
         self._hash = h
-        A._hash_cache[h] = self
+        Base._hash_cache[h] = self
 
     #
     # Collapsing and simplification
@@ -470,6 +491,9 @@ class A(ana.Storable):
     #       backend.convert_expr(a)
     #       else:
     #           yield backend.convert(a)
+
+    def make_like(self, *args, **kwargs):
+        return type(self)(*args, **kwargs)
 
     def _should_collapse(self):
         '''
@@ -483,7 +507,7 @@ class A(ana.Storable):
 
         #l.debug("In should_collapse()")
 
-        if types.count(A) != 0 and not all((a._collapsible for a in raw_args if isinstance(a, A))):
+        if types.count(Base) != 0 and not all((a._collapsible for a in raw_args if isinstance(a, Base))):
                 #l.debug("... not collapsing for op %s because ASTs are present.", self.op)
                 return False
 
@@ -516,12 +540,20 @@ class A(ana.Storable):
         if self._should_collapse() and self._collapsible:
             #l.debug("Collapsing!")
             r = self.model
-            if not isinstance(r, A):
-                return I(self._claripy, r, length=self.length, variables=self.variables, symbolic=self.symbolic)
+            if not isinstance(r, Base):
+                return self._wrap(r)
             else:
                 return r
         else:
             return self
+
+    def _wrap(self, r):
+        if isinstance(r, BVV):
+            return BVI(self._claripy, r, length=r.size(), variables=self.variables, symbolic=self.symbolic)
+        elif isinstance(r, bool):
+            return BoolI(self._claripy, r, variables=self.variables, symbolic=self.symbolic)
+        else:
+            raise Exception()
 
     @property
     def simplified(self):
@@ -530,13 +562,13 @@ class A(ana.Storable):
         just cancels out two Reverse operations, if they are present. Later on, it will hopefully
         do more.
         '''
-        if self.op == 'Reverse' and isinstance(self.args[0], A) and self.args[0].op == 'Reverse':
+        if self.op == 'Reverse' and isinstance(self.args[0], Base) and self.args[0].op == 'Reverse':
             return self.args[0].args[0]
 
-        if self.op in reverse_distributable and all((isinstance(a, A) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-            inner_a = A(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
-            o = A(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
-            o._simplified = A.LITE_SIMPLIFY
+        if self.op in reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
+            inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
+            o = self.make_like(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
+            o._simplified = Base.LITE_SIMPLIFY
             return o
 
         return self
@@ -547,21 +579,12 @@ class A(ana.Storable):
         A simplified, collapsed version of the AST.
         '''
         a = self.simplified
-        if isinstance(a, A):
+        if isinstance(a, Base):
             return a.collapsed
         else:
             return a
 
-    #
-    # Size functions
-    #
-
-    def size(self):
-        '''
-        Returns the length of the AST.
-        '''
-        return self.length
-    __len__ = size
+    # No more size in Base
 
     #
     # Functionality for resolving to model objects
@@ -571,7 +594,7 @@ class A(ana.Storable):
         '''
         Helper function to return the model (i.e., non-AST) objects of the arguments.
         '''
-        return [ (a.model if isinstance(a, A) else a) for a in self.args ]
+        return [ (a.model if isinstance(a, Base) else a) for a in self.args ]
 
     def resolved(self, result=None):
         '''
@@ -614,12 +637,19 @@ class A(ana.Storable):
     # Viewing and debugging
     #
 
+    def dbg_repr(self):
+        try:
+            return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
+        except RuntimeError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
+
     def __repr__(self):
-        if not isinstance(self.model, A):
-            return "<A %s>" % self.model
+        if not isinstance(self.model, Base):
+            return "<%s %s>" % (type(self).__name__, self.model)
         else:
             try:
-                return "<A %s %r>" % (self.op, self.args)
+                return "<%s %s %r>" % (type(self).__name__, self.op, self.args)
             except RuntimeError:
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
@@ -632,13 +662,13 @@ class A(ana.Storable):
         '''
         if self.op == 'BitVec':
           return 0
-        ast_args = [ a for a in self.args if isinstance(a, A) ]
+        ast_args = [ a for a in self.args if isinstance(a, Base) ]
         return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
 
     @property
     def recursive_children_asts(self):
         for a in self.args:
-            if isinstance(a, A):
+            if isinstance(a, Base):
                 l.debug("Yielding AST %s with hash %s with %d children", a, hash(a), len(a.args))
                 yield a
                 for b in a.recursive_children_asts:
@@ -657,7 +687,7 @@ class A(ana.Storable):
                 return False
             else:
                 for a in self.args:
-                    if not isinstance(a, A):
+                    if not isinstance(a, Base):
                         continue
 
                     r = a.dbg_is_looped(seen=seen, checked=checked)
@@ -683,7 +713,8 @@ class A(ana.Storable):
             d = a._do_op('__add__', [b])
             assert c is d
         '''
-        return A(self._claripy, op, (self,)+args, **kwargs).reduced
+        raise Exception("_do_op is dead! (or at least should be...)")
+        return type(self)(self._claripy, op, (self,)+args, **kwargs).reduced
 
     def _replace(self, old, new, replacements=None):
         '''
@@ -703,7 +734,7 @@ class A(ana.Storable):
             replaced = False
 
             for a in self.args:
-                if isinstance(a, A):
+                if isinstance(a, Base):
                     new_a = a._replace(old, new, replacements=replacements)
                     replaced |= hash(new_a) != hash(a)
                 else:
@@ -712,12 +743,13 @@ class A(ana.Storable):
                 new_args.append(new_a)
 
             if replaced:
-                r = A(self._claripy, self.op, tuple(new_args)).reduced
+                r = self.make_like(self._claripy, self.op, tuple(new_args)).reduced
             else:
                 r = self
 
         replacements[hash_key] = r
         return r
+
 
     #
     # Other helper functions
@@ -731,7 +763,7 @@ class A(ana.Storable):
         if self.op in split_on: return list(self.args)
         else: return [ self ]
 
-    # we don't support iterating over A objects
+    # we don't support iterating over Base objects
     def __iter__(self):
         '''
         This prevents people from iterating over ASTs.
@@ -753,79 +785,6 @@ class A(ana.Storable):
         '''
         raise ClaripyOperationError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
-    def chop(self, bits=1):
-        '''
-        Chops an AST into ASTs of size 'bits'. Obviously, the length of the AST must be
-        a multiple of bits.
-        '''
-        s = len(self)
-        if s % bits != 0:
-            raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
-        elif s == bits:
-            return [ self ]
-        else:
-            return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
-
-    @property
-    def reversed(self):
-        '''
-        The reversed AST.
-        '''
-        return self._do_op('Reverse', collapsible=False)
-
-    def __getitem__(self, rng):
-        '''
-        Extracts bits from the AST. ASTs are indexed weirdly. For a 32-bit AST:
-
-            a[31] is the *LEFT* most bit, so it'd be the 0 in
-
-                01111111111111111111111111111111
-
-            a[0] is the *RIGHT* most bit, so it'd be the 0 in
-
-                11111111111111111111111111111110
-
-            a[31:30] are the two leftmost bits, so they'd be the 0s in:
-
-                00111111111111111111111111111111
-
-            a[1:0] are the two rightmost bits, so they'd be the 0s in:
-
-                11111111111111111111111111111100
-
-        @returns the new AST.
-        '''
-        if type(rng) is slice:
-            return self._claripy.Extract(int(rng.start), int(rng.stop), self)
-        else:
-            return self._claripy.Extract(int(rng), int(rng), self)
-
-    def zero_extend(self, n):
-        '''
-        Zero-extends the AST by n bits. So:
-
-            a = BVV(0b1111, 4)
-            b = a.zero_extend(4)
-            b is BVV(0b00001111)
-        '''
-        return self._claripy.ZeroExt(n, self)
-
-    def sign_extend(self, n):
-        '''
-        Sign-extends the AST by n bits. So:
-
-            a = BVV(0b1111, 4)
-            b = a.sign_extend(4)
-            b is BVV(0b11111111)
-        '''
-        return self._claripy.SignExt(n, self)
-
-    def concat(self, *args):
-        '''
-        Concatenates this AST with the ASTs provided.
-        '''
-        return self._claripy.Concat(self, *args)
-
     def identical(self, o):
         '''
         Returns True if 'o' can be easily determined to be identical to this AST.
@@ -846,58 +805,17 @@ class A(ana.Storable):
         '''
         Returns an AST with all instances of the AST 'old' replaced with AST 'new'
         '''
-        if not isinstance(old, A) or not isinstance(new, A):
+        if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyOperationError('replacements must be AST nodes')
         if old.size() != new.size():
             raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
 
-class I(A):
-    '''
-    This is an 'identity' AST -- it acts as a wrapper around model objects.
-
-    All methods have the same functionality as their corresponding methods on the A class.
-    '''
-
-    def __new__(cls, claripy, model, **kwargs):
-        return A.__new__(cls, claripy, 'I', (model,), **kwargs)
-
-    #def __init__(self, claripy, model, **kwargs):
-    #   A.__init__(self, claripy, 'I', (model,), **kwargs)
-
-    def resolved(self, result=None): return self.args[0]
-    def resolved_with(self, b, result=None): return b.convert(self.args[0])
-    @property
-    def depth(self): return 0
-    def split(self, split_on): return self
-
-from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
-from .operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
-from .bv import BVV
-from .vsa import StridedInterval
-from . import Claripies
-from .backend import BackendObject
-
-
-#
-# Overload the operators
-#
-
-def e_operator(cls, op_name):
-    '''
-    Overloads operator op_name on class cls. Used to overload all the operators on the A class.
-    '''
-    def wrapper(self, *args):
-        return self._do_op(op_name, *args)
-    wrapper.__name__ = op_name
-    setattr(cls, op_name, wrapper)
-
-def make_methods():
-    '''
-    Overloads all operators on the A class.
-    '''
-    for name in expression_operations:
-        e_operator(A, name)
-
-from .operations import expression_operations
-make_methods()
+from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
+from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
+from ..bv import BVV
+from ..vsa import StridedInterval
+from .. import Claripies
+from ..backend import BackendObject
+from .bv import BVI
+from .bool import BoolI

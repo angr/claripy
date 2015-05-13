@@ -41,27 +41,34 @@ class Claripy(object):
         explicit_name = explicit_name if explicit_name is not None else False
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
-        return A(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=A.FULL_SIMPLIFY)
+        return BV(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=size)
     BV = BitVec
 
-    def BitVecVal(self, *args):
-        return I(self, BVV(*args), variables=set(), symbolic=False, simplified=A.FULL_SIMPLIFY)
-        #return self._do_op('BitVecVal', args, variables=set(), symbolic=False, raw=True)
+    def BitVecVal(self, value, size):
+        return BVI(self, BVV(value, size), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
     BVV = BitVecVal
 
+    def FP(self, name, sort, explicit_name=None):
+        if self.unique_names and not explicit_name:
+            name = "FP_%s_%d_%d" % (name, fp_counter.next(), size)
+        return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY)
+
+    def FPV(self, *args):
+        return FPI(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, eager=True)
+
     # Bitwise ops
-    def LShR(self, *args): return A(self, 'LShR', args).reduced
-    def SignExt(self, *args): return A(self, 'SignExt', args).reduced
-    def ZeroExt(self, *args): return A(self, 'ZeroExt', args).reduced
-    def Extract(self, *args): return A(self, 'Extract', args).reduced
-    def Concat(self, *args):
-        if len(args) == 1:
-            return args[0]
-        else:
-            return A(self, 'Concat', args).reduced
-    def RotateLeft(self, *args): return A(self, 'RotateLeft', args).reduced
-    def RotateRight(self, *args): return A(self, 'RotateRight', args).reduced
-    def Reverse(self, o): return A(self, 'Reverse', (o,), collapsible=False).reduced
+    # def LShR(self, *args): return BV(self, 'LShR', args).reduced
+    # def SignExt(self, *args): return BV(self, 'SignExt', args).reduced
+    # def ZeroExt(self, *args): return BV(self, 'ZeroExt', args).reduced
+    # def Extract(self, *args): return BV(self, 'Extract', args).reduced
+    # def Concat(self, *args):
+    #     if len(args) == 1:
+    #         return args[0]
+    #     else:
+    #         return type(args[0])(self, 'Concat', args).reduced
+    # def RotateLeft(self, *args): return BV(self, 'RotateLeft', args).reduced
+    # def RotateRight(self, *args): return BV(self, 'RotateRight', args).reduced
+    # def Reverse(self, o): return BV(self, 'Reverse', (o,), collapsible=False).reduced
 
     #
     # Strided interval
@@ -73,18 +80,18 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return I(self, si, variables={ si.name }, symbolic=False)
+        return BVI(self, si, variables={ si.name }, symbolic=False, length=si._bits)
     SI = StridedInterval
 
     def TopStridedInterval(self, bits, name=None, signed=False, uninitialized=False):
         si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, signed=signed, uninitialized=uninitialized)
-        return I(self, si, variables={ si.name }, symbolic=False)
+        return BVI(self, si, variables={ si.name }, symbolic=False, length=bits)
     TSI = TopStridedInterval
 
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
-        return I(self, vs, variables={ vs.name }, symbolic=False)
+        return BVI(self, vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'])
     VS = ValueSet
 
     # a-loc
@@ -95,24 +102,53 @@ class Claripy(object):
     #
     # Boolean ops
     #
-    def BoolVal(self, *args):
-        return I(self, args[0], variables=set(), symbolic=False)
+    def BoolVal(self, val):
+        return BoolI(self, val, variables=set(), symbolic=False, eager=True)
         #return self._do_op('BoolVal', args, variables=set(), symbolic=False, raw=True)
 
-    def And(self, *args): return A(self, 'And', args).reduced
-    def Not(self, *args): return A(self, 'Not', args).reduced
-    def Or(self, *args): return A(self, 'Or', args).reduced
-    def ULT(self, *args): return A(self, 'ULT', args).reduced
-    def ULE(self, *args): return A(self, 'ULE', args).reduced
-    def UGE(self, *args): return A(self, 'UGE', args).reduced
-    def UGT(self, *args): return A(self, 'UGT', args).reduced
+    # def And(self, *args): return type(args[0])(self, 'And', args).reduced
+    # def Not(self, *args): return type(args[0])(self, 'Not', args).reduced
+    # def Or(self, *args): return type(args[0])(self, 'Or', args).reduced
+    # def ULT(self, *args): return type(args[0])(self, 'ULT', args).reduced
+    # def ULE(self, *args): return type(args[0])(self, 'ULE', args).reduced
+    # def UGE(self, *args): return type(args[0])(self, 'UGE', args).reduced
+    # def UGT(self, *args): return type(args[0])(self, 'UGT', args).reduced
 
     #
     # Other ops
     #
     def If(self, *args):
-        if len(args) != 3: raise ClaripyOperationError("invalid number of args passed to If")
-        return A(self, 'If', args).reduced
+        # the coercion here is strange enough that we'll just implement it manually
+        if len(args) != 3:
+            raise ClaripyOperationError("invalid number of args passed to If")
+
+        args = list(args)
+
+        ty = None
+        if isinstance(args[1], Base):
+            ty = type(args[1])
+        elif isinstance(args[2], Base):
+            ty = type(args[2])
+        else:
+            raise ClaripyTypeError("true/false clause of If must have bearable types")
+
+        if not isinstance(args[1], ty):
+            if hasattr(ty, '_from_' + type(args[1]).__name__):
+                convert = getattr(ty, '_from_' + type(args[1]).__name__)
+                args[1] = convert(self, args[2], args[1])
+            else:
+                raise ClaripyTypeError("can't convert {} to {}".format(type(args[1]), ty))
+        if not isinstance(args[2], ty):
+            if hasattr(ty, '_from_' + type(args[2]).__name__):
+                convert = getattr(ty, '_from_' + type(args[2]).__name__)
+                args[2] = convert(self, args[1], args[2])
+            else:
+                raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
+
+        if issubclass(ty, Bits):
+            return ty(self, 'If', tuple(args), length=args[1].length)
+        else:
+            return ty(self, 'If', tuple(args)).reduced
 
     #def size(self, *args): return self._do_op('size', args)
 
@@ -163,7 +199,7 @@ class Claripy(object):
         This process is somewhat conservative: False does not necessarily mean that
         it's not identical; just that it can't (easily) be determined to be identical.
         '''
-        if not all([isinstance(a, A) for a in args]):
+        if not all([isinstance(a, Base) for a in args]):
             return False
 
         if len(set(hash(a) for a in args)) == 1:
@@ -203,9 +239,33 @@ class Claripy(object):
             except BackendError: pass
         raise BackendError('no model backend can convert expression')
 
-from .ast import A, I
+from .ast import Base, BV, BVI, FP, FPI, Bool, BoolI, Bits
 from .backend import BackendError
 from .bv import BVV
+from .fp import FPV
 from .vsa import ValueSet, AbstractLocation
 from .backends import BackendVSA
-from .errors import ClaripyOperationError
+from .errors import ClaripyOperationError, ClaripyTypeError
+from .operations import op, length_same_check, basic_length_calc, extract_check, extract_length_calc, \
+    ext_length_calc, concat_length_calc
+
+Claripy.LShR = op('LShR', (BV, BV), BV, extra_check=length_same_check,
+                  calc_length=basic_length_calc, self_is_clrp=True)
+Claripy.SignExt = op('SignExt', ((int, long), BV), BV, calc_length=ext_length_calc, self_is_clrp=True)
+Claripy.ZeroExt = op('ZeroExt', ((int, long), BV), BV, calc_length=ext_length_calc, self_is_clrp=True)
+Claripy.Extract = op('Extract', ((int, long), (int, long), BV), BV,
+                     extra_check=extract_check, calc_length=extract_length_calc, self_is_clrp=True)
+Claripy.Concat = op('Concat', BV, BV, calc_length=concat_length_calc, self_is_clrp=True)
+Claripy.RotateLeft = op('RotateLeft', (BV, BV), BV, extra_check=length_same_check,
+                        calc_length=basic_length_calc, self_is_clrp=True)
+Claripy.RotateRight = op('RotateLeft', (BV, BV), BV, extra_check=length_same_check,
+                        calc_length=basic_length_calc, self_is_clrp=True)
+Claripy.Reverse = op('Reverse', (BV,), BV, calc_length=basic_length_calc, self_is_clrp=True)
+
+Claripy.And = op('And', Bool, Bool, self_is_clrp=True)
+Claripy.Or = op('Or', Bool, Bool, self_is_clrp=True)
+Claripy.Not = op('Not', (Bool,), Bool, self_is_clrp=True)
+Claripy.ULT = op('ULT', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.ULE = op('ULE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.UGT = op('UGT', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.UGE = op('UGE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)

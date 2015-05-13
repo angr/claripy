@@ -178,7 +178,7 @@ class Solver(ana.Storable):
 
 		# generate UUIDs for every constraint
 		for c in self.constraints:
-			if isinstance(c, A): c.make_uuid()
+			if isinstance(c, Base): c.make_uuid()
 
 		self._solver_states = { }
 		self._to_add = { }
@@ -222,7 +222,7 @@ class Solver(ana.Storable):
 		global cached_evals
 		extra_constraints = self._constraint_filter(extra_constraints)
 
-		if not isinstance(e, A): raise ValueError("Solver got a non-E for e.")
+		if not isinstance(e, Base): raise ValueError("Solver got a non-E for e.")
 
 		if len(extra_constraints) == 0:
 			for b in self._claripy.model_backends:
@@ -387,7 +387,7 @@ class Solver(ana.Storable):
 				results = b.eval(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
 				return [ self._claripy.model_object(r) for r in results ]
 			except BackendError as be:
-				l.debug("... BackendError: %s", be)
+				print "... BackendError: %s" % be
 
 		raise ClaripySolverError("all solver backends failed for Solver._eval")
 
@@ -468,6 +468,6 @@ class Solver(ana.Storable):
 		return results
 
 from ..result import Result
-from ..ast import A
+from ..ast import Base
 from ..errors import UnsatError, BackendError, ClaripySolverError, ClaripyTypeError
 from .. import Claripies

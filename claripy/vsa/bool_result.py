@@ -28,14 +28,14 @@ class BoolResult(BackendObject):
 
     @staticmethod
     def is_maybe(o):
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         return isinstance(o, MaybeResult)
 
     @staticmethod
     def has_true(o):
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         return o is True or \
@@ -44,7 +44,7 @@ class BoolResult(BackendObject):
 
     @staticmethod
     def has_false(o):
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         return o is False or \
@@ -53,7 +53,7 @@ class BoolResult(BackendObject):
 
     @staticmethod
     def is_true(o):
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         return o is True or \
@@ -62,7 +62,7 @@ class BoolResult(BackendObject):
 
     @staticmethod
     def is_false(o):
-        if isinstance(o, A):
+        if isinstance(o, Base):
             o = o.model
 
         return o is False or \
@@ -147,4 +147,4 @@ class MaybeResult(BoolResult):
 
 from ..errors import BackendError
 from .ifproxy import IfProxy
-from ..ast import A
+from ..ast.base import Base
