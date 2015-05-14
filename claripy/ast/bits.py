@@ -17,6 +17,9 @@ class Bits(Base):
     def size(self):
         return self.length
 
+    def _type_name(self):
+        return self.__class__.__name__ + str(self.length)
+
     __len__ = size
 
 

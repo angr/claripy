@@ -311,6 +311,12 @@ def _is_eager(a):
     else:
         return False
 
+def _inner_repr(a):
+    if isinstance(a, Base):
+        return a.__repr__(inner=True)
+    else:
+        return repr(a)
+
 class ASTCacheKey(object): pass
 
 class Base(ana.Storable):
@@ -644,12 +650,48 @@ class Base(ana.Storable):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
-    def __repr__(self):
+    def _type_name(self):
+        return self.__class__.__name__
+
+    def __repr__(self, inner=False):
         if not isinstance(self.model, Base):
-            return "<%s %s>" % (type(self).__name__, self.model)
+            if inner:
+                if isinstance(self.model, BVV):
+                    if self.model.value < 10:
+                        return format(self.model.value, '')
+                    else:
+                        return format(self.model.value, '#x')
+                else:
+                    return repr(self.model)
+            else:
+                return '<{} {}>'.format(self._type_name(), self.model)
         else:
             try:
-                return "<%s %s %r>" % (type(self).__name__, self.op, self.args)
+                if self.op in operations.reversed_ops:
+                    op = operations.reversed_ops[self.op]
+                    args = self.args[::-1]
+                else:
+                    op = self.op
+                    args = self.args
+
+                if op == 'BitVec' and inner:
+                    value = args[0]
+                elif op == 'Extract':
+                    value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
+                elif len(args) == 2 and op in operations.infix:
+                    value = '{} {} {}'.format(_inner_repr(args[0]),
+                                                  operations.infix[op],
+                                                  _inner_repr(args[1]))
+                    if inner:
+                        value = '({})'.format(value)
+                else:
+                    value = "{}({})".format(op,
+                                            ', '.join(_inner_repr(a) for a in args))
+
+                if not inner:
+                    value = '<{} {}>'.format(self._type_name(), value)
+
+                return value
             except RuntimeError:
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
@@ -812,6 +854,7 @@ class Base(ana.Storable):
         return self._replace(old, new)
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
+from .. import operations
 from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from ..bv import BVV
 from ..vsa import StridedInterval
