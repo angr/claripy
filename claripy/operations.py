@@ -275,6 +275,11 @@ infix = {
     '__xor__': '^',
     '__lshift__': '<<',
     '__rshift__': '>>',
+
+    'And': '&&',
+    'Or': '||',
+
+    'Concat': '..',
 }
 
 from .errors import ClaripyTypeError, ClaripyOperationError

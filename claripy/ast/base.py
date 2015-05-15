@@ -311,9 +311,9 @@ def _is_eager(a):
     else:
         return False
 
-def _inner_repr(a):
+def _inner_repr(a, **kwargs):
     if isinstance(a, Base):
-        return a.__repr__(inner=True)
+        return a.__repr__(inner=True, **kwargs)
     else:
         return repr(a)
 
@@ -561,6 +561,48 @@ class Base(ana.Storable):
         else:
             raise Exception()
 
+    def _simplify_Reverse(self):
+        if isinstance(self.args[0], Base) and self.args[0].op == 'Reverse':
+            return self.args[0].args[0]
+
+        return self
+
+    def _simplify_Extract(self):
+        high, low = self.args[:2]
+
+        val = self.args[2]
+        if val.op == 'ZeroExt':
+            val = self._claripy.Concat(self._claripy.BVV(0, val.args[0]), val.args[1])
+
+        if val.op == 'Concat':
+            pos = val.length
+            high_loc, low_loc = None, None
+            for i, v in enumerate(val.args):
+                if high in xrange(pos - v.length, pos):
+                    high_loc = i, pos - high
+                if low in xrange(pos - v.length, pos):
+                    low_loc = i, low - (pos - v.length)
+                pos -= v.length
+            if high_loc is None or low_loc is None:
+                raise Exception("wat")
+
+            used = val.args[high_loc[0]:low_loc[0]+1]
+            if len(used) == 1:
+                self = used[0]
+            else:
+                self = self._claripy.Concat(*used)
+            self = self[high_loc[1] - 1 : low_loc[1]]
+
+        high, low = self.args[:2]
+
+        if self.args[2].op == 'Extract':
+            inner_high, inner_low = self.args[2].args[:2]
+            new_low = inner_low + low
+            new_high = new_low + (high - low)
+            self = (self.args[2].args[2])[new_high:new_low]
+
+        return self
+
     @property
     def simplified(self):
         '''
@@ -568,8 +610,9 @@ class Base(ana.Storable):
         just cancels out two Reverse operations, if they are present. Later on, it will hopefully
         do more.
         '''
-        if self.op == 'Reverse' and isinstance(self.args[0], Base) and self.args[0].op == 'Reverse':
-            return self.args[0].args[0]
+        # note: should cover __radd__ etc. somehow
+        if hasattr(self, '_simplify_' + self.op):
+            self = getattr(self, '_simplify_' + self.op)()
 
         if self.op in reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
             inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
@@ -653,14 +696,17 @@ class Base(ana.Storable):
     def _type_name(self):
         return self.__class__.__name__
 
-    def __repr__(self, inner=False):
+    def __repr__(self, inner=False, explicit_length=False):
+        self = self.reduced
+
         if not isinstance(self.model, Base):
             if inner:
                 if isinstance(self.model, BVV):
                     if self.model.value < 10:
-                        return format(self.model.value, '')
+                        val = format(self.model.value, '')
                     else:
-                        return format(self.model.value, '#x')
+                        val = format(self.model.value, '#x')
+                    return val + ('#' + str(self.model.bits) if explicit_length else '')
                 else:
                     return repr(self.model)
             else:
@@ -678,10 +724,16 @@ class Base(ana.Storable):
                     value = args[0]
                 elif op == 'Extract':
                     value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
+                elif op == 'ZeroExt':
+                    value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
+                    if inner:
+                        value = '({})'.format(value)
+                elif op == 'Concat':
+                    value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
                 elif len(args) == 2 and op in operations.infix:
                     value = '{} {} {}'.format(_inner_repr(args[0]),
-                                                  operations.infix[op],
-                                                  _inner_repr(args[1]))
+                                              operations.infix[op],
+                                              _inner_repr(args[1]))
                     if inner:
                         value = '({})'.format(value)
                 else:
@@ -834,14 +886,6 @@ class Base(ana.Storable):
         if it were simplified via Z3), but it's hard to quickly tell that.
         '''
         return self._claripy.is_identical(self, o)
-
-    def is_true(self):
-        '''
-        Returns True if 'self' can be easily determined to be True.
-        Otherwise, return False. Note that the AST *might* still be True (i.e.,
-        if it were simplified via Z3), but it's hard to quickly tell that.
-        '''
-        return self._claripy.is_true(self)
 
     def replace(self, old, new):
         '''
