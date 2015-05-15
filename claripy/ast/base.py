@@ -6,8 +6,6 @@ l = logging.getLogger("claripy.ast")
 
 import ana
 
-foo = False
-
 #
 #
 # Finalizer functions for different expressions
@@ -591,9 +589,6 @@ class Base(ana.Storable):
         if val.op == 'ZeroExt':
             val = self._claripy.Concat(self._claripy.BVV(0, val.args[0]), val.args[1])
 
-        if foo:
-            __import__('ipdb').set_trace()
-
         if val.op == 'Concat':
             pos = val.length
             high_i, low_i, low_loc = None, None, None
@@ -612,7 +607,12 @@ class Base(ana.Storable):
                 self = used[0]
             else:
                 self = self._claripy.Concat(*used)
-            self = self[(low_loc + high - low):low_loc]
+
+            new_high = low_loc + high - low
+            if new_high == self.length - 1 and low_loc == 0:
+                return self
+            else:
+                self = self[new_high:low_loc]
 
         high, low = self.args[:2]
 
