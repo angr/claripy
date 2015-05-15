@@ -216,6 +216,23 @@ opposites = {
     '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
 }
 
+reversed_ops = {
+    '__radd__': '__add__',
+    '__rand__': '__and__',
+    '__rdiv__': '__div__',
+    '__rdivmod__': '__divmod__',
+    '__rfloordiv__': '__floordiv__',
+    '__rlshift__': '__lshift__',
+    '__rmod__': '__mod__',
+    '__rmul__': '__mul__',
+    '__ror__': '__or__',
+    '__rpow__': '__pow__',
+    '__rrshift__': '__rshift__',
+    '__rsub__': '__sub__',
+    '__rtruediv__': '__truediv__',
+    '__rxor__': '__xor__'
+}
+
 inverse_operations = {
     '__eq__': '__ne__',
     '__ne__': '__eq__'
@@ -233,6 +250,36 @@ length_new_operations = backend_creation_operations
 not_invertible = {'Identical', 'union'}
 reverse_distributable = { 'widen', 'union', 'intersection',
     '__invert__', '__or__', '__ror__', '__and__', '__rand__', '__xor__', '__rxor__',
+}
+
+infix = {
+    '__add__': '+',
+    '__sub__': '-',
+    '__mul__': '*',
+    '__div__': '/',
+    '__floordiv__': '/',
+#    '__truediv__': 'does this come up?',
+    '__pow__': '**',
+    '__mod__': '%',
+#    '__divmod__': "don't think this is used either",
+
+    '__eq__': '==',
+    '__ne__': '!=',
+    '__ge__': '>=',
+    '__le__': '<=',
+    '__gt__': '>',
+    '__lt__': '<',
+
+    '__or__': '|',
+    '__and__': '&',
+    '__xor__': '^',
+    '__lshift__': '<<',
+    '__rshift__': '>>',
+
+    'And': '&&',
+    'Or': '||',
+
+    'Concat': '..',
 }
 
 from .errors import ClaripyTypeError, ClaripyOperationError

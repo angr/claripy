@@ -311,6 +311,12 @@ def _is_eager(a):
     else:
         return False
 
+def _inner_repr(a, **kwargs):
+    if isinstance(a, Base):
+        return a.__repr__(inner=True, **kwargs)
+    else:
+        return repr(a)
+
 class ASTCacheKey(object): pass
 
 class Base(ana.Storable):
@@ -555,6 +561,77 @@ class Base(ana.Storable):
         else:
             raise Exception()
 
+    def _simplify_Reverse(self):
+        if self.args[0].op == 'Reverse':
+            return self.args[0].args[0]
+
+        if self.args[0].op == 'Concat':
+            if all(a.op == 'Extract' for a in self.args[0].args):
+                first_ast = self.args[0].args[0].args[2]
+                for i, ast in enumerate(self.args[0].args):
+                    if not (first_ast.identical(ast.args[2])
+                            and ast.args[0] == ((i + 1) * 8 - 1)
+                            and ast.args[1] == i * 8):
+                        break
+                else:
+                    upper_bound = self.args[0].args[-1].args[0]
+                    if first_ast.length == upper_bound + 1:
+                        return first_ast
+                    else:
+                        return first_ast[upper_bound:0]
+
+        return self
+
+    def _simplify_Extract(self):
+        high, low = self.args[:2]
+
+        val = self.args[2]
+        if val.op == 'ZeroExt':
+            val = self._claripy.Concat(self._claripy.BVV(0, val.args[0]), val.args[1])
+
+        if val.op == 'Concat':
+            pos = val.length
+            high_i, low_i, low_loc = None, None, None
+            for i, v in enumerate(val.args):
+                if high in xrange(pos - v.length, pos):
+                    high_i = i
+                if low in xrange(pos - v.length, pos):
+                    low_i = i
+                    low_loc = low - (pos - v.length)
+                pos -= v.length
+            if high_i is None or low_i is None:
+                raise Exception("wat")
+
+            used = val.args[high_i:low_i+1]
+            if len(used) == 1:
+                self = used[0]
+            else:
+                self = self._claripy.Concat(*used)
+
+            new_high = low_loc + high - low
+            if new_high == self.length - 1 and low_loc == 0:
+                return self
+            else:
+                self = self[new_high:low_loc]
+
+        high, low = self.args[:2]
+
+        if self.args[2].op == 'Extract':
+            inner_high, inner_low = self.args[2].args[:2]
+            new_low = inner_low + low
+            new_high = new_low + (high - low)
+            self = (self.args[2].args[2])[new_high:new_low]
+
+        return self
+
+    def _simplify_Not(self):
+        if self.args[0].op == '__eq__':
+            return self.args[0].args[0] != self.args[0].args[1]
+        elif self.args[0].op == '__ne__':
+            return self.args[0].args[0] == self.args[0].args[1]
+        else:
+            return self
+
     @property
     def simplified(self):
         '''
@@ -562,8 +639,9 @@ class Base(ana.Storable):
         just cancels out two Reverse operations, if they are present. Later on, it will hopefully
         do more.
         '''
-        if self.op == 'Reverse' and isinstance(self.args[0], Base) and self.args[0].op == 'Reverse':
-            return self.args[0].args[0]
+        # note: should cover __radd__ etc. somehow
+        if hasattr(self, '_simplify_' + self.op):
+            self = getattr(self, '_simplify_' + self.op)()
 
         if self.op in reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
             inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
@@ -644,12 +722,65 @@ class Base(ana.Storable):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
-    def __repr__(self):
+    def _type_name(self):
+        return self.__class__.__name__
+
+    def __repr__(self, inner=False, explicit_length=False):
+        self = self.reduced
+
         if not isinstance(self.model, Base):
-            return "<%s %s>" % (type(self).__name__, self.model)
+            if inner:
+                if isinstance(self.model, BVV):
+                    if self.model.value < 10:
+                        val = format(self.model.value, '')
+                    else:
+                        val = format(self.model.value, '#x')
+                    return val + ('#' + str(self.model.bits) if explicit_length else '')
+                else:
+                    return repr(self.model)
+            else:
+                return '<{} {}>'.format(self._type_name(), self.model)
         else:
             try:
-                return "<%s %s %r>" % (type(self).__name__, self.op, self.args)
+                if self.op in operations.reversed_ops:
+                    op = operations.reversed_ops[self.op]
+                    args = self.args[::-1]
+                else:
+                    op = self.op
+                    args = self.args
+
+                if op == 'BitVec' and inner:
+                    value = args[0]
+                elif op == 'If':
+                    value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
+                                                           _inner_repr(args[1]),
+                                                           _inner_repr(args[2]))
+                    if inner:
+                        value = '({})'.format(value)
+                elif op == 'Not':
+                    value = '!{}'.format(_inner_repr(args[0]))
+                elif op == 'Extract':
+                    value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
+                elif op == 'ZeroExt':
+                    value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
+                    if inner:
+                        value = '({})'.format(value)
+                elif op == 'Concat':
+                    value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
+                elif len(args) == 2 and op in operations.infix:
+                    value = '{} {} {}'.format(_inner_repr(args[0]),
+                                              operations.infix[op],
+                                              _inner_repr(args[1]))
+                    if inner:
+                        value = '({})'.format(value)
+                else:
+                    value = "{}({})".format(op,
+                                            ', '.join(_inner_repr(a) for a in args))
+
+                if not inner:
+                    value = '<{} {}>'.format(self._type_name(), value)
+
+                return value
             except RuntimeError:
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
@@ -793,14 +924,6 @@ class Base(ana.Storable):
         '''
         return self._claripy.is_identical(self, o)
 
-    def is_true(self):
-        '''
-        Returns True if 'self' can be easily determined to be True.
-        Otherwise, return False. Note that the AST *might* still be True (i.e.,
-        if it were simplified via Z3), but it's hard to quickly tell that.
-        '''
-        return self._claripy.is_true(self)
-
     def replace(self, old, new):
         '''
         Returns an AST with all instances of the AST 'old' replaced with AST 'new'
@@ -812,6 +935,7 @@ class Base(ana.Storable):
         return self._replace(old, new)
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
+from .. import operations
 from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from ..bv import BVV
 from ..vsa import StridedInterval

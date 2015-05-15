@@ -1090,6 +1090,33 @@ def test_vsa_discrete_value_set():
     nose.tools.assert_true(isinstance(r.model, DiscreteStridedIntervalSet))
     nose.tools.assert_true(BoolResult.is_true(r == SI(bits=32, stride=1, lower_bound=0, upper_bound=35)))
 
+def test_simplification():
+    clrp = claripy.Claripies['SerialZ3']
+
+    def assert_identical(a, b):
+        nose.tools.assert_true(a.identical(b))
+
+    x, y, z = (clrp.BV(name, 32) for name in ('x', 'y', 'z'))
+
+    # test extraction of concatted values
+    concatted = clrp.Concat(x, y, z)
+
+    assert_identical(concatted[95:64].reduced, x)
+    assert_identical(concatted[63:32].reduced, y)
+    assert_identical(concatted[31:0].reduced, z)
+
+    assert_identical(concatted[95:32].reduced, clrp.Concat(x, y))
+    assert_identical(concatted[63:0].reduced, clrp.Concat(y, z))
+
+    assert_identical(concatted[95:0].reduced, concatted)
+
+    assert_identical(concatted[47:0].reduced, clrp.Concat(y, z)[47:0])
+    assert_identical(concatted[70:0].reduced, concatted[70:0])
+    assert_identical(concatted[70:15].reduced, concatted[70:15])
+    assert_identical(concatted[70:35].reduced, clrp.Concat(x, y)[38:3])
+
+    # TODO: add more tests
+
 if __name__ == '__main__':
     logging.getLogger('claripy.test').setLevel(logging.DEBUG)
     logging.getLogger('claripy.claripy').setLevel(logging.DEBUG)
@@ -1125,6 +1152,7 @@ if __name__ == '__main__':
         test_vsa()
         test_vsa_constraint_to_si()
         test_vsa_discrete_value_set()
+        test_simplification()
     print "WOO"
 
     print 'eval', claripy.solvers.solver.cached_evals
