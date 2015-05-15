@@ -140,6 +140,8 @@ BV.widen = op('widen', (BV, BV), BV, extra_check=length_same_check, calc_length=
 BV.intersection = op('intersection', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 
 def BVI(claripy, model, **kwargs):
+    eager = isinstance(model, BVV)
+    kwargs['eager'] = eager
     return BV(claripy, 'I', (model,), **kwargs)
 
 from ..bv import BVV
