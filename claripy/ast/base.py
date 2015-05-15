@@ -554,12 +554,12 @@ class Base(ana.Storable):
             return self
 
     def _wrap(self, r):
-        if isinstance(r, BVV):
-            return BVI(self._claripy, r, length=r.size(), variables=self.variables, symbolic=self.symbolic)
+        if isinstance(r, (BVV, StridedInterval)):
+            return BVI(self._claripy, r, length=r.bits, variables=self.variables, symbolic=self.symbolic)
         elif isinstance(r, bool):
             return BoolI(self._claripy, r, variables=self.variables, symbolic=self.symbolic)
         else:
-            raise Exception()
+            raise ClaripyTypeError("unrecognized type to wrap {}".format(type(r)))
 
     def _simplify_Reverse(self):
         if self.args[0].op == 'Reverse':
