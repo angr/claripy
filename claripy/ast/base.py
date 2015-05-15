@@ -6,6 +6,8 @@ l = logging.getLogger("claripy.ast")
 
 import ana
 
+foo = False
+
 #
 #
 # Finalizer functions for different expressions
@@ -562,8 +564,23 @@ class Base(ana.Storable):
             raise Exception()
 
     def _simplify_Reverse(self):
-        if isinstance(self.args[0], Base) and self.args[0].op == 'Reverse':
+        if self.args[0].op == 'Reverse':
             return self.args[0].args[0]
+
+        if self.args[0].op == 'Concat':
+            if all(a.op == 'Extract' for a in self.args[0].args):
+                first_ast = self.args[0].args[0].args[2]
+                for i, ast in enumerate(self.args[0].args):
+                    if not (first_ast.identical(ast.args[2])
+                            and ast.args[0] == ((i + 1) * 8 - 1)
+                            and ast.args[1] == i * 8):
+                        break
+                else:
+                    upper_bound = self.args[0].args[-1].args[0]
+                    if first_ast.length == upper_bound + 1:
+                        return first_ast
+                    else:
+                        return first_ast[upper_bound:0]
 
         return self
 
@@ -574,24 +591,28 @@ class Base(ana.Storable):
         if val.op == 'ZeroExt':
             val = self._claripy.Concat(self._claripy.BVV(0, val.args[0]), val.args[1])
 
+        if foo:
+            __import__('ipdb').set_trace()
+
         if val.op == 'Concat':
             pos = val.length
-            high_loc, low_loc = None, None
+            high_i, low_i, low_loc = None, None, None
             for i, v in enumerate(val.args):
                 if high in xrange(pos - v.length, pos):
-                    high_loc = i, pos - high
+                    high_i = i
                 if low in xrange(pos - v.length, pos):
-                    low_loc = i, low - (pos - v.length)
+                    low_i = i
+                    low_loc = low - (pos - v.length)
                 pos -= v.length
-            if high_loc is None or low_loc is None:
+            if high_i is None or low_i is None:
                 raise Exception("wat")
 
-            used = val.args[high_loc[0]:low_loc[0]+1]
+            used = val.args[high_i:low_i+1]
             if len(used) == 1:
                 self = used[0]
             else:
                 self = self._claripy.Concat(*used)
-            self = self[high_loc[1] - 1 : low_loc[1]]
+            self = self[(low_loc + high - low):low_loc]
 
         high, low = self.args[:2]
 
@@ -602,6 +623,14 @@ class Base(ana.Storable):
             self = (self.args[2].args[2])[new_high:new_low]
 
         return self
+
+    def _simplify_Not(self):
+        if self.args[0].op == '__eq__':
+            return self.args[0].args[0] != self.args[0].args[1]
+        elif self.args[0].op == '__ne__':
+            return self.args[0].args[0] == self.args[0].args[1]
+        else:
+            return self
 
     @property
     def simplified(self):
@@ -722,6 +751,14 @@ class Base(ana.Storable):
 
                 if op == 'BitVec' and inner:
                     value = args[0]
+                elif op == 'If':
+                    value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
+                                                           _inner_repr(args[1]),
+                                                           _inner_repr(args[2]))
+                    if inner:
+                        value = '({})'.format(value)
+                elif op == 'Not':
+                    value = '!{}'.format(_inner_repr(args[0]))
                 elif op == 'Extract':
                     value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
                 elif op == 'ZeroExt':
