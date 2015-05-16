@@ -544,6 +544,12 @@ class BackendVSA(ModelBackend):
 
         return expr, condition
 
+    def cts_simplifier___eq__(self, args, expr, condition):
+
+        l.error('cts_simplifier___eq__() should not exist. This is just a workaround for VSA. Fish will fix the issue later.')
+
+        return expr, condition
+
     def cts_handler_comparison(self, args, comp=None):
         """
         Handles all comparisons.
