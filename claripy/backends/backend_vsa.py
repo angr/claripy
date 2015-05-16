@@ -751,7 +751,7 @@ class BackendVSA(ModelBackend):
 
         else:
             if len(args) > 0:
-                args = [ self.cts_handle(a) for a in args ]
+                args = [ self.cts_handle(a.op, a.args) for a in args ]
                 claripy = args[0]._claripy
                 if any([not claripy.is_false(a) for a in args]):
                     return True, [ ]
