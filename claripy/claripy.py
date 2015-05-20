@@ -255,7 +255,13 @@ Claripy.SignExt = op('SignExt', ((int, long), BV), BV, calc_length=ext_length_ca
 Claripy.ZeroExt = op('ZeroExt', ((int, long), BV), BV, calc_length=ext_length_calc, self_is_clrp=True)
 Claripy.Extract = op('Extract', ((int, long), (int, long), BV), BV,
                      extra_check=extract_check, calc_length=extract_length_calc, self_is_clrp=True)
-Claripy.Concat = op('Concat', BV, BV, calc_length=concat_length_calc, self_is_clrp=True)
+_concat_op = op('Concat', BV, BV, calc_length=concat_length_calc, self_is_clrp=True)
+def _concat(self, *args):
+    if len(args) == 1:
+        return args[0]
+    else:
+        return _concat_op(self, *args)
+Claripy.Concat = _concat
 Claripy.RotateLeft = op('RotateLeft', (BV, BV), BV, extra_check=length_same_check,
                         calc_length=basic_length_calc, self_is_clrp=True)
 Claripy.RotateRight = op('RotateLeft', (BV, BV), BV, extra_check=length_same_check,
