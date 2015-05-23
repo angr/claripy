@@ -373,18 +373,8 @@ class Base(ana.Storable):
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
 
         f_op, f_args, f_kwargs = _finalize(claripy, op, a_args, kwargs)
-#        if 
 
         h = Base._calc_hash(claripy, f_op, f_args, f_kwargs)
-
-        #if f_kwargs['length'] is None:
-        #   __import__('ipdb').set_trace()
-
-
-        #print "got hash",h
-        #print "... claripy:", hash(claripy.name)
-        #print "... op (%r):" % op, hash(op)
-        #print "... args (%r):" % (args,), hash(args)
 
         self = cls._hash_cache.get(h, None)
         if self is None:
@@ -413,7 +403,7 @@ class Base(ana.Storable):
         @returns a hash
         '''
         to_hash = claripy.name + ' ' + op + ' ' + ','.join(str(hash(a)) for a in args) + ' ' + \
-                  str(k['symbolic']) + ' ' + str(hash(frozenset(k['variables']))) + ' ' + str(k['length'])
+                  str(k['symbolic']) + ' ' + str(hash(frozenset(k['variables']))) + ' ' + str(k.get('length', None))
         hd = hashlib.md5(to_hash).hexdigest()
 
         return int(hd[:16], 16) # 64 bits

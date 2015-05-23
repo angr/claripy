@@ -145,6 +145,11 @@ class Claripy(object):
             else:
                 raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
 
+        if self.is_true(args[0]):
+            return args[1]
+        elif self.is_false(args[0]):
+            return args[2]
+
         if issubclass(ty, Bits):
             return ty(self, 'If', tuple(args), length=args[1].length)
         else:
