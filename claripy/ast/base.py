@@ -649,7 +649,7 @@ class Base(ana.Storable):
             o._simplified = Base.LITE_SIMPLIFY
             return o
 
-        self = self.make_like(self._claripy, self.op, tuple(a.reduced if isinstance(a, Base) else a for a in self.args))
+        # self = self.make_like(self._claripy, self.op, tuple(a.reduced if isinstance(a, Base) else a for a in self.args))
 
         return self
 
