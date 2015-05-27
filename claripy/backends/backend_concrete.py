@@ -12,6 +12,7 @@ class BackendConcrete(ModelBackend):
     def __init__(self):
         ModelBackend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
+        self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw_result['BitVec'] = self.BitVec
 
     def BitVec(self, name, size, result=None): #pylint:disable=W0613,R0201
@@ -27,8 +28,10 @@ class BackendConcrete(ModelBackend):
     def _size(self, e, result=None):
         if type(e) in { bool, long, int }:
             return None
-        if type(e) in { BVV }:
+        elif type(e) in { BVV }:
             return e.size()
+        elif isinstance(e, FPV):
+            return e.sort.length
         else:
             raise BackendError("can't get size of type %s" % type(e))
 
@@ -42,7 +45,7 @@ class BackendConcrete(ModelBackend):
             return a == b
 
     def _convert(self, a, result=None):
-        if type(a) in { int, long, float, bool, str, BVV }:
+        if type(a) in { int, long, float, bool, str, BVV, FPV, RM, FSort }:
             return a
 
         if not hasattr(a, '__module__') or a.__module__ != 'z3':
@@ -82,6 +85,10 @@ class BackendConcrete(ModelBackend):
             return BVI(self._claripy, e, length=e.size())
         elif isinstance(e, bool):
             return BoolI(self._claripy, e)
+        elif isinstance(e, FPV):
+            return FPI(self._claripy, e)
+        else:
+            raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
     #
     # Evaluation functions
@@ -97,7 +104,8 @@ class BackendConcrete(ModelBackend):
         return self.convert(expr, result=result) == v
 
 from ..bv import BVV
-from ..operations import backend_operations
-from .. import bv
+from ..fp import FPV, RM, FSort
+from ..operations import backend_operations, backend_fp_operations
+from .. import bv, fp
 from .backend_z3 import BackendZ3
-from ..ast import BVI, BoolI
+from ..ast import BVI, FPI, BoolI

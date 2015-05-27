@@ -85,6 +85,26 @@ class BV(Bits):
     def _from_BVV(clrp, like, value):
         return BVI(clrp, value, length=value.size())
 
+    def signed_to_fp(self, rm, sort):
+        if rm is None:
+            rm = RM.default()
+
+        return self._claripy.fpToFP(rm, self, sort)
+
+    def usigned_to_fp(self, rm, sort):
+        if rm is None:
+            rm = RM.default()
+
+        return self._claripy.fpToFPUnsigned(rm, self, sort)
+
+    def raw_to_fp(self):
+        sort = FSort.from_size(self.length)
+
+        return self._claripy.fpToFP(self, sort)
+
+    def to_bv(self):
+        return self
+
 BV.__add__ = op('__add__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.__radd__ = op('__radd__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.__div__ = op('__div__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
@@ -145,3 +165,4 @@ def BVI(claripy, model, **kwargs):
     return BV(claripy, 'I', (model,), **kwargs)
 
 from ..bv import BVV
+from ..fp import RM_RTZ, FSort

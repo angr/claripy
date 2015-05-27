@@ -1,4 +1,5 @@
 import functools
+import struct
 
 from .errors import ClaripyOperationError
 from .backend import BackendObject
@@ -25,12 +26,71 @@ def normalize_types(f):
 
     return normalize_helper
 
+class RM(str):
+    @staticmethod
+    def default():
+        return RM_RNE
+
+    @staticmethod
+    def from_name(name):
+        return {
+            'RM_RNE': RM_RNE,
+            'RM_RNA': RM_RNA,
+            'RM_RTP': RM_RTP,
+            'RM_RTN': RM_RTN,
+            'RM_RTZ': RM_RTZ,
+        }[name]
+
+RM_RNE = RM('RNE')
+RM_RNA = RM('RNA')
+RM_RTP = RM('RTP')
+RM_RTN = RM('RTN')
+RM_RTZ = RM('RTZ')
+
+class FSort(object):
+    def __init__(self, name, exp, mantissa):
+        self.name = name
+        self.exp = exp
+        self.mantissa = mantissa
+
+    def __eq__(self, other):
+        return self.exp == other.exp and self.mantissa == other.mantissa
+
+    def __repr__(self):
+        return self.name
+
+    @property
+    def length(self):
+        return self.exp + self.mantissa
+
+    @staticmethod
+    def from_size(n):
+        if n == 32:
+            return FSORT_FLOAT
+        elif n == 64:
+            return FSORT_DOUBLE
+        else:
+            raise ClaripyOperationError('{} is not a valid FSort size'.format(n))
+
+    @staticmethod
+    def from_params(exp, mantissa):
+        if exp == 8 and mantissa == 24:
+            return FSORT_FLOAT
+        elif exp == 11 and mantissa == 53:
+            return FSORT_DOUBLE
+        else:
+            raise ClaripyOperationError("unrecognized FSort params")
+
+FSORT_FLOAT = FSort('FLOAT', 8, 24)
+FSORT_DOUBLE = FSort('DOUBLE', 11, 53)
+
+
 class FPV(BackendObject):
     __slots__ = ['sort', 'value']
 
     def __init__(self, value, sort):
-        if not isinstance(value, float) or not isinstance(sort, tuple) or len(sort) != 2 or not isinstance(sort[0], int) or not isinstance(sort[1], int):
-            raise ClaripyOperationError("FPV needs a sort (mantissa size, exponent size) and a float value")
+        if not isinstance(value, float) or sort not in {FSORT_FLOAT, FSORT_DOUBLE}:
+            raise ClaripyOperationError("FPV needs a sort (FSORT_FLOAT or FSORT_DOUBLE) and a float value")
 
         self.value = value
         self.sort = sort
@@ -44,6 +104,9 @@ class FPV(BackendObject):
     def __setstate__(self, (value, sort)):
         self.value = value
         self.sort = sort
+
+    def __neg__(self):
+        return FPV(-self.value, self.sort)
 
     @normalize_types
     @compare_sorts
@@ -136,5 +199,84 @@ class FPV(BackendObject):
     def __repr__(self):
         return 'FPV({:f}, {})'.format(self.value, self.sort)
 
-SINGLE = (8, 24)
-DOUBLE = (11, 53)
+def fpToFP(a1, a2, a3=None):
+    if isinstance(a1, BVV) and isinstance(a2, FSort):
+        sort = a2
+        if sort == FSORT_FLOAT:
+            pack, unpack = 'I', 'f'
+        elif sort == FSORT_DOUBLE:
+            pack, unpack = 'Q', 'd'
+        else:
+            raise ClaripyOperationError("unrecognized float sort")
+
+        packed = struct.pack('<' + pack, a1.value)
+        unpacked, = struct.unpack('<' + unpack, packed)
+
+        return FPV(unpacked, sort)
+    elif isinstance(a1, RM) and isinstance(a2, FPV) and isinstance(a3, FSort):
+        return FPV(a2.value, a3)
+    elif isinstance(a1, RM) and isinstance(a2, BVV) and isinstance(a3, FSort):
+        return FPV(float(a2.signed), a3)
+    else:
+        raise ClaripyOperationError("unknown types passed to fpToFP")
+
+def fpToFPUnsigned(_rm, thing, sort):
+    # thing is a BVV
+    return FPV(float(thing.value), sort)
+
+def fpToIEEEBV(fpv):
+    if fpv.sort == FSORT_FLOAT:
+        pack, unpack = 'f', 'I'
+    elif fpv.sort == FSORT_DOUBLE:
+        pack, unpack = 'd', 'Q'
+    else:
+        raise ClaripyOperationError("unrecognized float sort")
+
+    packed = struct.pack('<' + pack, fpv.value)
+    unpacked, = struct.unpack('<' + unpack, packed)
+
+    return BVV(unpacked, fpv.sort.length)
+
+def fpFP(sgn, exp, mantissa):
+    concatted = Concat(sgn, exp, mantissa)
+    sort = FSort.from_size(concatted.size())
+
+    if sort == FSORT_FLOAT:
+        pack, unpack = 'I', 'f'
+    elif sort == FSORT_DOUBLE:
+        pack, unpack = 'Q', 'd'
+    else:
+        raise ClaripyOperationError("unrecognized float sort")
+
+    packed = struct.pack('<' + pack, concatted.value)
+    unpacked, = struct.unpack('<' + unpack, packed)
+
+    return FPV(unpacked, sort)
+
+def fpToSBV(rm, fp, size):
+    if rm != RM_RTZ:
+        raise ClaripyOperationError("todo")
+
+    return BVV(int(fp.value), size)
+
+def fpToUBV(rm, fp, size):
+    # todo: actually make unsigned
+
+    if rm != RM_RTZ:
+        raise ClaripyOperationError("todo")
+
+    return BVV(int(fp.value), size)
+
+def fpNeg(x):
+    return -x
+
+def fpSub(_rm, a, b):
+    return a - b
+
+def fpAdd(_rm, a, b):
+    return a + b
+
+def fpMul(_rm, a, b):
+    return a * b
+
+from .bv import BVV, Concat

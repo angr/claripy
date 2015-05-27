@@ -247,7 +247,7 @@ class Claripy(object):
 from .ast import Base, BV, BVI, FP, FPI, Bool, BoolI, Bits
 from .backend import BackendError
 from .bv import BVV
-from .fp import FPV
+from .fp import FPV, RM, FSort
 from .vsa import ValueSet, AbstractLocation
 from .backends import BackendVSA
 from .errors import ClaripyOperationError, ClaripyTypeError
@@ -280,3 +280,28 @@ Claripy.ULT = op('ULT', (BV, BV), Bool, extra_check=length_same_check, self_is_c
 Claripy.ULE = op('ULE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
 Claripy.UGT = op('UGT', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
 Claripy.UGE = op('UGE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+
+def _fp_length_calc(a1, a2, a3=None):
+    if isinstance(a1, RM) and a3 is None:
+        raise Exception()
+    if a3 is None:
+        return a2.length
+    else:
+        return a3.length
+# TODO: organize these better somehow...
+Claripy.fpToFP = op('fpToFP', object, FP, self_is_clrp=True, calc_length=_fp_length_calc)
+Claripy.fpToFPUnsigned = op('fpToFPUnsigned', (RM, BV, FSort), FP, self_is_clrp=True, calc_length=_fp_length_calc)
+Claripy.fpFP = op('fpFP', (BV, BV, BV), FP, self_is_clrp=True,
+                  calc_length=lambda a, b, c: a.length + b.length + c.length)
+Claripy.fpToIEEEBV = op('fpToIEEEBV', (FP,), BV, self_is_clrp=True, calc_length=lambda fp: fp.length)
+Claripy.fpToSBV = op('fpToSBV', (RM, FP, (int, long)), BV, self_is_clrp=True, calc_length=lambda _rm, _fp, len: len)
+Claripy.fpToUBV = op('fpToUBV', (RM, FP, (int, long)), BV, self_is_clrp=True, calc_length=lambda _rm, _fp, len: len)
+
+def _fp_binop_check(rm, a, b):
+    return a.length == b.length, "Lengths must be equal"
+def _fp_binop_length(rm, a, b):
+    return a.length
+Claripy.fpNeg = op('fpNeg', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x)
+Claripy.fpSub = op('fpSub', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+Claripy.fpAdd = op('fpAdd', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+Claripy.fpMul = op('fpMul', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
