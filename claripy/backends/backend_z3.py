@@ -617,12 +617,20 @@ op_map = {
         'Z3_OP_FPA_TO_UBV': 'fpToUBV',
         'Z3_OP_FPA_TO_IEEE_BV': 'fpToIEEEBV',
         'Z3_OP_FPA_TO_FP': 'fpToFP',
-
-        'Z3_OP_FPA_NEG': 'fpNeg',
         'Z3_OP_FPA_NUM': 'FPVal',
+
+        'Z3_OP_FPA_EQ': 'fpEQ',
+        'Z3_OP_FPA_GT': 'fpGT',
+        'Z3_OP_FPA_GE': 'fpGE',
+        'Z3_OP_FPA_LT': 'fpLT',
+        'Z3_OP_FPA_LE': 'fpLE',
+
+        'Z3_OP_FPA_ABS': 'fpAbs',
+        'Z3_OP_FPA_NEG': 'fpNeg',
         'Z3_OP_FPA_ADD': 'fpAdd',
         'Z3_OP_FPA_SUB': 'fpSub',
         'Z3_OP_FPA_MUL': 'fpMul',
+        'Z3_OP_FPA_DIV': 'fpDiv',
 
         'Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN': 'RM_RNE',
         'Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY': 'RM_RNA',
@@ -750,12 +758,20 @@ op_type_map = {
         'Z3_OP_FPA_TO_UBV': BV,
         'Z3_OP_FPA_TO_IEEE_BV': BV,
         'Z3_OP_FPA_TO_FP': FP,
-
-        'Z3_OP_FPA_NEG': FP,
         'Z3_OP_FPA_NUM': FP,
+
+        'Z3_OP_FPA_EQ': Bool,
+        'Z3_OP_FPA_GT': Bool,
+        'Z3_OP_FPA_GE': Bool,
+        'Z3_OP_FPA_LT': Bool,
+        'Z3_OP_FPA_LE': Bool,
+
+        'Z3_OP_FPA_ABS': FP,
+        'Z3_OP_FPA_NEG': FP,
         'Z3_OP_FPA_ADD': FP,
         'Z3_OP_FPA_SUB': FP,
         'Z3_OP_FPA_MUL': FP,
+        'Z3_OP_FPA_DIV': FP,
 
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }

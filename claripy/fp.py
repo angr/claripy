@@ -105,6 +105,9 @@ class FPV(BackendObject):
         self.value = value
         self.sort = sort
 
+    def __abs__(self):
+        return FPV(abs(self.value), self.sort)
+
     def __neg__(self):
         return FPV(-self.value, self.sort)
 
@@ -267,6 +270,24 @@ def fpToUBV(rm, fp, size):
 
     return BVV(int(fp.value), size)
 
+def fpEQ(a, b):
+    return a == b
+
+def fpGT(a, b):
+    return a > b
+
+def fpGE(a, b):
+    return a >= b
+
+def fpLT(a, b):
+    return a < b
+
+def fpLE(a, b):
+    return a <= b
+
+def fpAbs(x):
+    return abs(x)
+
 def fpNeg(x):
     return -x
 
@@ -278,5 +299,8 @@ def fpAdd(_rm, a, b):
 
 def fpMul(_rm, a, b):
     return a * b
+
+def fpDiv(_rm, a, b):
+    return a / b
 
 from .bv import BVV, Concat

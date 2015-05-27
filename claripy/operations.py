@@ -190,7 +190,8 @@ backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparat
 backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
 
 backend_fp_operations = {
-    'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV', 'fpNeg', 'fpSub', 'fpAdd', 'fpMul',
+    'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
+    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv',
 }
 
 opposites = {

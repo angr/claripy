@@ -297,11 +297,21 @@ Claripy.fpToIEEEBV = op('fpToIEEEBV', (FP,), BV, self_is_clrp=True, calc_length=
 Claripy.fpToSBV = op('fpToSBV', (RM, FP, (int, long)), BV, self_is_clrp=True, calc_length=lambda _rm, _fp, len: len)
 Claripy.fpToUBV = op('fpToUBV', (RM, FP, (int, long)), BV, self_is_clrp=True, calc_length=lambda _rm, _fp, len: len)
 
+def _fp_cmp_check(a, b):
+    return a.length == b.length
+Claripy.fpEQ = op('fpEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+Claripy.fpGT = op('fpGT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+Claripy.fpGE = op('fpGE', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+Claripy.fpLT = op('fpLT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+Claripy.fpLE = op('fpLE', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+
 def _fp_binop_check(rm, a, b):
     return a.length == b.length, "Lengths must be equal"
 def _fp_binop_length(rm, a, b):
     return a.length
+Claripy.fpAbs = op('fpAbs', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x)
 Claripy.fpNeg = op('fpNeg', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x)
 Claripy.fpSub = op('fpSub', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 Claripy.fpAdd = op('fpAdd', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 Claripy.fpMul = op('fpMul', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+Claripy.fpDiv = op('fpDiv', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
