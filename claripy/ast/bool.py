@@ -23,24 +23,24 @@ class Bool(Base):
         return self._claripy.is_false(self)
 
     def _simplify_And(self):
-        if self.args[0].is_false() or self.args[1].is_false():
+        if any(a.is_false() for a in self.args):
             return BoolI(self._claripy, False)
-        elif self.args[0].is_true():
-            return self.args[1].simplified
-        elif self.args[1].is_true():
-            return self.args[0].simplified
         else:
-            return self
+            new_args = [ a.simplified for a in self.args if not a.is_true() ]
+            if len(new_args) == 0:
+                return BoolI(self._claripy, True)
+            else:
+                return Bool(self._claripy, self.op, new_args)
 
     def _simplify_Or(self):
-        if self.args[0].is_true() or self.args[1].is_true():
+        if any(a.is_true() for a in self.args):
             return BoolI(self._claripy, True)
-        elif self.args[0].is_false():
-            return self.args[1].simplified
-        elif self.args[1].is_false():
-            return self.args[0].simplified
         else:
-            return self
+            new_args = [ a.simplified for a in self.args if not a.is_false() ]
+            if len(new_args) == 0:
+                return BoolI(self._claripy, False)
+            else:
+                return Bool(self._claripy, self.op, new_args)
 
 
 Bool.__eq__ = op('__eq__', (Bool, Bool), Bool)
