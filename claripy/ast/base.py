@@ -614,10 +614,9 @@ class Base(ana.Storable):
             else:
                 self = self[new_high:low_loc]
 
-        high, low = self.args[:2]
-
-        if self.args[2].op == 'Extract':
-            inner_high, inner_low = self.args[2].args[:2]
+        if self.op == 'Extract' and self.args[2].op == 'Extract':
+            high, low = self.args[:2]
+            _, inner_low = self.args[2].args[:2]
             new_low = inner_low + low
             new_high = new_low + (high - low)
             self = (self.args[2].args[2])[new_high:new_low]
