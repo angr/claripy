@@ -189,6 +189,11 @@ backend_operations = backend_comparator_operations | backend_bitwise_operations 
 backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparator_operations | backend_boolean_operations | backend_bitmod_operations
 backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
 
+backend_fp_operations = {
+    'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
+    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv',
+}
+
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',
     '__div__': '__rdiv__', '__rdiv__': '__div__',
