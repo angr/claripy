@@ -55,7 +55,8 @@ def _finalize(claripy, op, args, kwargs):
         o,a,k = op, args, kwargs
         nolength = True
     else:
-        raise ClaripyOperationError("no Base._finalize_* function found for %s" % op)
+        o,a,k = op, args, kwargs
+#        raise ClaripyOperationError("no Base._finalize_* function found for %s" % op)
 
     length = k.get('length', None)
     if not nolength and (length is None or length < 0):
@@ -304,7 +305,7 @@ def _finalize_get_errored(args):
 #pylint:enable=unused-argument
 
 def _is_eager(a):
-    if isinstance(a, (int, long, bool)):
+    if isinstance(a, (int, long, bool, RM, FSort)):
         return True
     elif isinstance(a, Base):
         return a.eager
@@ -366,7 +367,7 @@ class Base(ana.Storable):
         @param errored: a set of backends that are known to be unable to handle this AST.
         @param eager: whether or not to evaluate future parent ASTs eagerly.
         '''
-        if any(not isinstance(a, (str, int, long, bool, Base, BackendObject)) for a in args):
+        if any(not isinstance(a, (str, int, long, bool, Base, BackendObject, FSort)) for a in args):
             #import ipdb; ipdb.set_trace()
             raise ClaripyTypeError("arguments %s contain an unknown type to claripy.Base" % (args,))
 
@@ -551,6 +552,15 @@ class Base(ana.Storable):
         else:
             raise ClaripyTypeError("unrecognized type to wrap {}".format(type(r)))
 
+    def _simplify_If(self):
+        if self.args[0].reduced.is_true():
+            return self.args[1].reduced
+
+        if self.args[0].reduced.is_false():
+            return self.args[2].reduced
+
+        return self
+
     def _simplify_Reverse(self):
         if self.args[0].op == 'Reverse':
             return self.args[0].args[0]
@@ -637,6 +647,8 @@ class Base(ana.Storable):
             o = self.make_like(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
             o._simplified = Base.LITE_SIMPLIFY
             return o
+
+        # self = self.make_like(self._claripy, self.op, tuple(a.reduced if isinstance(a, Base) else a for a in self.args))
 
         return self
 
@@ -927,6 +939,7 @@ from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError,
 from .. import operations
 from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
 from ..bv import BVV
+from ..fp import RM, FSort
 from ..vsa import StridedInterval
 from .. import Claripies
 from ..backend import BackendObject
