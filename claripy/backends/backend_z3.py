@@ -271,7 +271,7 @@ class BackendZ3(SolverBackend):
     def _check(self, s, extra_constraints=()): #pylint:disable=R0201
         global solve_count
         solve_count += 1
-        if extra_constraints != ():
+        if len(extra_constraints) > 0:
             s.push()
             s.add(*extra_constraints)
 
@@ -280,7 +280,7 @@ class BackendZ3(SolverBackend):
         satness = s.check() == z3.sat
         #print "CHECKED"
 
-        if extra_constraints != ():
+        if len(extra_constraints) > 0:
             s.pop()
         return satness
 
@@ -312,11 +312,12 @@ class BackendZ3(SolverBackend):
 
         results = [ ]
         model = result.backend_model
-        if extra_constraints != () or n != 1:
+        if len(extra_constraints) > 0 or n != 1:
             s.push()
-        if extra_constraints != ():
+        if len(extra_constraints) > 0:
             s.add(*extra_constraints)
             model = None
+            l.debug("Disregarding cache")
 
         for i in range(n):
             if model is None:
@@ -340,7 +341,7 @@ class BackendZ3(SolverBackend):
                 s.add(expr != v)
                 model = None
 
-        if extra_constraints != () or n != 1:
+        if len(extra_constraints) > 0 or n != 1:
             s.pop()
 
         if len(results) == 0:
@@ -356,7 +357,7 @@ class BackendZ3(SolverBackend):
         hi = 2**expr.size()-1
 
         numpop = 0
-        if extra_constraints != ():
+        if len(extra_constraints) > 0:
             s.push()
             numpop += 1
             s.add(*[self.convert(e) for e in extra_constraints])
@@ -405,7 +406,7 @@ class BackendZ3(SolverBackend):
         hi = 2**expr.size()-1
 
         numpop = 0
-        if extra_constraints != ():
+        if len(extra_constraints) > 0:
             s.push()
             numpop += 1
             s.add(*[self.convert(e) for e in extra_constraints])

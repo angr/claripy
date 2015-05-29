@@ -366,10 +366,10 @@ def raw_solver_branching(solver_type):
     s = solver_type(clrp)
     x = clrp.BitVec("x", 32)
     y = clrp.BitVec("y", 32)
-    s.add(x > y)
-    s.add(x < 10)
+    s.add(clrp.UGT(x, y))
+    s.add(clrp.ULT(x, 10))
 
-    nose.tools.assert_equals(s.eval(x, 1)[0], 1)
+    nose.tools.assert_greater(s.eval(x, 1)[0], 0)
 
     t = s.branch()
     if type(s) is claripy.solvers.BranchingSolver:
