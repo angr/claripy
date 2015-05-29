@@ -64,9 +64,9 @@ class BackendZ3(SolverBackend):
 
 		self._op_raw['Reverse'] = self.reverse
 		self._op_raw['Identical'] = self.identical
-                self._op_raw['I'] = lambda thing: thing
-                self._op_raw['fpToSBV'] = self.fpToSBV
-                self._op_raw['fpToUBV'] = self.fpToUBV
+		self._op_raw['I'] = lambda thing: thing
+		self._op_raw['fpToSBV'] = self.fpToSBV
+		self._op_raw['fpToUBV'] = self.fpToUBV
 
 	@condom
 	def _size(self, e, result=None):
@@ -89,15 +89,15 @@ class BackendZ3(SolverBackend):
 		else:
 			return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
-        @staticmethod
-        @condom
-        def fpToSBV(rm, fp, bv_len):
-                return z3.fpToSBV(rm, fp, z3.BitVecSort(bv_len))
+	@staticmethod
+	@condom
+	def fpToSBV(rm, fp, bv_len):
+		return z3.fpToSBV(rm, fp, z3.BitVecSort(bv_len))
 
-        @staticmethod
-        @condom
-        def fpToUBV(rm, fp, bv_len):
-                return z3.fpToUBV(rm, fp, z3.BitVecSort(bv_len))
+	@staticmethod
+	@condom
+	def fpToUBV(rm, fp, bv_len):
+		return z3.fpToUBV(rm, fp, z3.BitVecSort(bv_len))
 
 	def _identical(self, a, b, result=None):
 		return a.eq(b)
@@ -106,23 +106,23 @@ class BackendZ3(SolverBackend):
 	def _convert(self, obj, result=None):
 		if type(obj) is BVV:
 			return z3.BitVecVal(obj.value, obj.bits)
-                elif isinstance(obj, FSort):
-                        return z3.FPSort(obj.exp, obj.mantissa)
-                elif isinstance(obj, RM):
-                        if obj == RM_RNE:
-                                return z3.RNE()
-                        elif obj == RM_RNA:
-                                return z3.RNA()
-                        elif obj == RM_RTP:
-                                return z3.RTP()
-                        elif obj == RM_RTN:
-                                return z3.RTN()
-                        elif obj == RM_RTZ:
-                                return z3.RTZ()
-                        else:
-                                raise BackendError("unrecognized rounding mode")
-                elif isinstance(obj, FPV):
-                        return z3.FPVal(obj.value, self._convert(obj.sort))
+		elif isinstance(obj, FSort):
+			return z3.FPSort(obj.exp, obj.mantissa)
+		elif isinstance(obj, RM):
+			if obj == RM_RNE:
+				return z3.RNE()
+			elif obj == RM_RNA:
+				return z3.RNA()
+			elif obj == RM_RTP:
+				return z3.RTP()
+			elif obj == RM_RTN:
+				return z3.RTN()
+			elif obj == RM_RTZ:
+				return z3.RTZ()
+			else:
+				raise BackendError("unrecognized rounding mode")
+		elif isinstance(obj, FPV):
+			return z3.FPVal(obj.value, self._convert(obj.sort))
 		elif obj is True:
 			return z3.BoolVal(True)
 		elif obj is False:
@@ -161,34 +161,34 @@ class BackendZ3(SolverBackend):
 			raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
 		op_name = op_map[z3_op_nums[decl_num]]
 
-                num_args = z3.Z3_get_app_num_args(ctx, ast)
+		num_args = z3.Z3_get_app_num_args(ctx, ast)
 		split_on = self._split_on if split_on is None else split_on
 		new_split_on = split_on if op_name in split_on else set()
 		children = [ self._abstract_internal(ctx, z3.Z3_get_app_arg(ctx, ast, i), new_split_on) for i in range(num_args) ]
 
-                append_children = True
+		append_children = True
 
 		if op_name == 'True':
 			return Bool(self._claripy, True)
 		elif op_name == 'False':
 			return Bool(self._claripy, False)
-                elif op_name.startswith('RM_'):
-                        return RM.from_name(op_name)
+		elif op_name.startswith('RM_'):
+			return RM.from_name(op_name)
 		elif op_name == 'BitVecVal':
 			bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 			return BVI(self._claripy, BVV(bv_num, bv_size), length=bv_size)
-                elif op_name == 'FPVal':
-                        # this is really imprecise
-                        fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-                        fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
-                        value = fp_mantissa * (2 ** fp_exp)
+		elif op_name == 'FPVal':
+			# this is really imprecise
+			fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
+			fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
+			value = fp_mantissa * (2 ** fp_exp)
 
-                        ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
-                        sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
-                        sort = FSort.from_params(ebits, sbits)
+			ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
+			sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
+			sort = FSort.from_params(ebits, sbits)
 
-                        return FPI(self._claripy, FPV(value, sort))
+			return FPI(self._claripy, FPV(value, sort))
 		elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
 			bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -203,22 +203,22 @@ class BackendZ3(SolverBackend):
 		elif op_name in ('SignExt', 'ZeroExt'):
 			num = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
 			args = [ num ]
-                elif op_name in ('fpToFP', 'fpToFPSigned'):
-                        exp = z3.Z3_fpa_get_ebits(ctx, z3_sort)
-                        mantissa = z3.Z3_fpa_get_sbits(ctx, z3_sort)
-                        sort = FSort.from_params(exp, mantissa)
-                        args = children + [sort]
-                        append_children = False
-                elif op_name in ('fpToSBV', 'fpToUBV'):
-                        # uuuuuugggggghhhhhh
+		elif op_name in ('fpToFP', 'fpToFPSigned'):
+			exp = z3.Z3_fpa_get_ebits(ctx, z3_sort)
+			mantissa = z3.Z3_fpa_get_sbits(ctx, z3_sort)
+			sort = FSort.from_params(exp, mantissa)
+			args = children + [sort]
+			append_children = False
+		elif op_name in ('fpToSBV', 'fpToUBV'):
+			# uuuuuugggggghhhhhh
 			bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-                        args = children + [bv_size]
-                        append_children = False
+			args = children + [bv_size]
+			append_children = False
 		else:
 			args = [ ]
 
-                if append_children:
-                        args.extend(children)
+		if append_children:
+			args.extend(children)
 
 		# fix up many-arg __add__
 		if op_name in bin_ops and len(args) > 2:
@@ -231,25 +231,25 @@ class BackendZ3(SolverBackend):
 				a = args[0].make_like(self._claripy, op_name, [a,b])
 			args = [ a, last ]
 
-                # hmm.... honestly not sure what to do here
-                result_ty = op_type_map[z3_op_nums[decl_num]]
-                ty = type(args[-1])
+		# hmm.... honestly not sure what to do here
+		result_ty = op_type_map[z3_op_nums[decl_num]]
+		ty = type(args[-1])
 
-                if op_name == 'If':
-                        # If is polymorphic and thus must be handled specially
-                        ty = type(args[1])
+		if op_name == 'If':
+			# If is polymorphic and thus must be handled specially
+			ty = type(args[1])
 
-                        a = ty(self._claripy, 'If', tuple(args), length=args[1].length)
-                else:
-                        if hasattr(ty, op_name) or hasattr(self._claripy, op_name):
-                                op = getattr(ty if hasattr(ty, op_name) else self._claripy, op_name)
-                                if op.calc_length is not None:
-                                        length = op.calc_length(*args)
-                                        a = result_ty(self._claripy, op_name, tuple(args), length=length)
-                                else:
-                                        a = result_ty(self._claripy, op_name, tuple(args))
-                        else:
-                                a = result_ty(self._claripy, op_name, tuple(args))
+			a = ty(self._claripy, 'If', tuple(args), length=args[1].length)
+		else:
+			if hasattr(ty, op_name) or hasattr(self._claripy, op_name):
+				op = getattr(ty if hasattr(ty, op_name) else self._claripy, op_name)
+				if op.calc_length is not None:
+					length = op.calc_length(*args)
+					a = result_ty(self._claripy, op_name, tuple(args), length=length)
+				else:
+					a = result_ty(self._claripy, op_name, tuple(args))
+			else:
+				a = result_ty(self._claripy, op_name, tuple(args))
 
 		self._ast_cache[h] = a
 		return a
@@ -489,13 +489,13 @@ class BackendZ3(SolverBackend):
 
 		return o
 
-        def wrap(self, e):
-                if isinstance(e, (z3.BitVecRef, BVV)):
-                        return BVI(self._claripy, e, length=e.size())
-                elif isinstance(e, (z3.BoolRef, bool)):
-                        return BoolI(self._claripy, e)
-                else:
-                        raise Exception("whoops")
+	def wrap(self, e):
+		if isinstance(e, (z3.BitVecRef, BVV)):
+			return BVI(self._claripy, e, length=e.size())
+		elif isinstance(e, (z3.BoolRef, bool)):
+			return BoolI(self._claripy, e)
+		else:
+			raise Exception("whoops")
 
 
 #
@@ -613,30 +613,30 @@ op_map = {
 	'Z3_OP_EXT_ROTATE_LEFT': 'RotateLeft',
 	'Z3_OP_EXT_ROTATE_RIGHT': 'RotateRight',
 
-        'Z3_OP_FPA_TO_SBV': 'fpToSBV',
-        'Z3_OP_FPA_TO_UBV': 'fpToUBV',
-        'Z3_OP_FPA_TO_IEEE_BV': 'fpToIEEEBV',
-        'Z3_OP_FPA_TO_FP': 'fpToFP',
-        'Z3_OP_FPA_NUM': 'FPVal',
+	'Z3_OP_FPA_TO_SBV': 'fpToSBV',
+	'Z3_OP_FPA_TO_UBV': 'fpToUBV',
+	'Z3_OP_FPA_TO_IEEE_BV': 'fpToIEEEBV',
+	'Z3_OP_FPA_TO_FP': 'fpToFP',
+	'Z3_OP_FPA_NUM': 'FPVal',
 
-        'Z3_OP_FPA_EQ': 'fpEQ',
-        'Z3_OP_FPA_GT': 'fpGT',
-        'Z3_OP_FPA_GE': 'fpGE',
-        'Z3_OP_FPA_LT': 'fpLT',
-        'Z3_OP_FPA_LE': 'fpLE',
+	'Z3_OP_FPA_EQ': 'fpEQ',
+	'Z3_OP_FPA_GT': 'fpGT',
+	'Z3_OP_FPA_GE': 'fpGE',
+	'Z3_OP_FPA_LT': 'fpLT',
+	'Z3_OP_FPA_LE': 'fpLE',
 
-        'Z3_OP_FPA_ABS': 'fpAbs',
-        'Z3_OP_FPA_NEG': 'fpNeg',
-        'Z3_OP_FPA_ADD': 'fpAdd',
-        'Z3_OP_FPA_SUB': 'fpSub',
-        'Z3_OP_FPA_MUL': 'fpMul',
-        'Z3_OP_FPA_DIV': 'fpDiv',
+	'Z3_OP_FPA_ABS': 'fpAbs',
+	'Z3_OP_FPA_NEG': 'fpNeg',
+	'Z3_OP_FPA_ADD': 'fpAdd',
+	'Z3_OP_FPA_SUB': 'fpSub',
+	'Z3_OP_FPA_MUL': 'fpMul',
+	'Z3_OP_FPA_DIV': 'fpDiv',
 
-        'Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN': 'RM_RNE',
-        'Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY': 'RM_RNA',
-        'Z3_OP_FPA_RM_TOWARD_ZERO': 'RM_RTZ',
-        'Z3_OP_FPA_RM_TOWARD_POSITIVE': 'RM_RTP',
-        'Z3_OP_FPA_RM_TOWARD_NEGATIVE': 'RM_RTN',
+	'Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN': 'RM_RNE',
+	'Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY': 'RM_RNA',
+	'Z3_OP_FPA_RM_TOWARD_ZERO': 'RM_RTZ',
+	'Z3_OP_FPA_RM_TOWARD_POSITIVE': 'RM_RTP',
+	'Z3_OP_FPA_RM_TOWARD_NEGATIVE': 'RM_RTN',
 
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
@@ -754,24 +754,24 @@ op_type_map = {
 	'Z3_OP_EXT_ROTATE_LEFT': BV,
 	'Z3_OP_EXT_ROTATE_RIGHT': BV,
 
-        'Z3_OP_FPA_TO_SBV': BV,
-        'Z3_OP_FPA_TO_UBV': BV,
-        'Z3_OP_FPA_TO_IEEE_BV': BV,
-        'Z3_OP_FPA_TO_FP': FP,
-        'Z3_OP_FPA_NUM': FP,
+	'Z3_OP_FPA_TO_SBV': BV,
+	'Z3_OP_FPA_TO_UBV': BV,
+	'Z3_OP_FPA_TO_IEEE_BV': BV,
+	'Z3_OP_FPA_TO_FP': FP,
+	'Z3_OP_FPA_NUM': FP,
 
-        'Z3_OP_FPA_EQ': Bool,
-        'Z3_OP_FPA_GT': Bool,
-        'Z3_OP_FPA_GE': Bool,
-        'Z3_OP_FPA_LT': Bool,
-        'Z3_OP_FPA_LE': Bool,
+	'Z3_OP_FPA_EQ': Bool,
+	'Z3_OP_FPA_GT': Bool,
+	'Z3_OP_FPA_GE': Bool,
+	'Z3_OP_FPA_LT': Bool,
+	'Z3_OP_FPA_LE': Bool,
 
-        'Z3_OP_FPA_ABS': FP,
-        'Z3_OP_FPA_NEG': FP,
-        'Z3_OP_FPA_ADD': FP,
-        'Z3_OP_FPA_SUB': FP,
-        'Z3_OP_FPA_MUL': FP,
-        'Z3_OP_FPA_DIV': FP,
+	'Z3_OP_FPA_ABS': FP,
+	'Z3_OP_FPA_NEG': FP,
+	'Z3_OP_FPA_ADD': FP,
+	'Z3_OP_FPA_SUB': FP,
+	'Z3_OP_FPA_MUL': FP,
+	'Z3_OP_FPA_DIV': FP,
 
 	'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
