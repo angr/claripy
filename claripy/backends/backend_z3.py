@@ -189,6 +189,19 @@ class BackendZ3(SolverBackend):
             sort = FSort.from_params(ebits, sbits)
 
             return FPI(self._claripy, FPV(value, sort))
+        elif op_name in ('MinusZero', 'MinusInf', 'PlusZero', 'PlusInf'):
+            ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
+            sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
+            sort = FSort.from_params(ebits, sbits)
+
+            if op_name == 'MinusZero':
+                return FPI(self._claripy, FPV(-0.0, sort))
+            elif op_name == 'MinusInf':
+                return FPI(self._claripy, FPV(float('-inf'), sort))
+            elif op_name == 'PlusZero':
+                return FPI(self._claripy, FPV(0.0, sort))
+            elif op_name == 'PlusInf':
+                return FPI(self._claripy, FPV(float('inf'), sort))
         elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
             bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -620,6 +633,11 @@ op_map = {
     'Z3_OP_FPA_TO_FP': 'fpToFP',
     'Z3_OP_FPA_NUM': 'FPVal',
 
+    'Z3_OP_FPA_MINUS_ZERO': 'MinusZero',
+    'Z3_OP_FPA_MINUS_INF': 'MinusInf',
+    'Z3_OP_FPA_PLUS_ZERO': 'PlusZero',
+    'Z3_OP_FPA_PLUS_INF': 'PlusInf',
+
     'Z3_OP_FPA_EQ': 'fpEQ',
     'Z3_OP_FPA_GT': 'fpGT',
     'Z3_OP_FPA_GE': 'fpGE',
@@ -760,6 +778,11 @@ op_type_map = {
     'Z3_OP_FPA_TO_IEEE_BV': BV,
     'Z3_OP_FPA_TO_FP': FP,
     'Z3_OP_FPA_NUM': FP,
+
+    'Z3_OP_FPA_MINUS_ZERO': FP,
+    'Z3_OP_FPA_MINUS_INF': FP,
+    'Z3_OP_FPA_PLUS_ZERO': FP,
+    'Z3_OP_FPA_PLUS_INF': FP,
 
     'Z3_OP_FPA_EQ': Bool,
     'Z3_OP_FPA_GT': Bool,
