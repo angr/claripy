@@ -268,10 +268,10 @@ class BackendZ3(SolverBackend):
 		s.add(*c)
 
 	@condom
-	def _check(self, s, extra_constraints=None): #pylint:disable=R0201
+	def _check(self, s, extra_constraints=()): #pylint:disable=R0201
 		global solve_count
 		solve_count += 1
-		if extra_constraints is not None:
+		if extra_constraints != ():
 			s.push()
 			s.add(*extra_constraints)
 
@@ -280,12 +280,12 @@ class BackendZ3(SolverBackend):
 		satness = s.check() == z3.sat
 		#print "CHECKED"
 
-		if extra_constraints is not None:
+		if extra_constraints != ():
 			s.pop()
 		return satness
 
 	@condom
-	def _results(self, s, extra_constraints=None, generic_model=True):
+	def _results(self, s, extra_constraints=(), generic_model=True):
 		satness = self._check(s, extra_constraints=extra_constraints)
 		model = { }
 		z3_model = None
@@ -304,7 +304,7 @@ class BackendZ3(SolverBackend):
 		return Result(satness, model, backend_model=z3_model)
 
 	@condom
-	def _eval(self, s, expr, n, extra_constraints=None, result=None):
+	def _eval(self, s, expr, n, extra_constraints=(), result=None):
 		global solve_count, cache_count
 
 		#if n == 1 and model is None:
@@ -312,9 +312,9 @@ class BackendZ3(SolverBackend):
 
 		results = [ ]
 		model = result.backend_model
-		if extra_constraints is not None or n != 1:
+		if extra_constraints != () or n != 1:
 			s.push()
-		if extra_constraints is not None:
+		if extra_constraints != ():
 			s.add(*extra_constraints)
 			model = None
 
@@ -340,7 +340,7 @@ class BackendZ3(SolverBackend):
 				s.add(expr != v)
 				model = None
 
-		if extra_constraints is not None or n != 1:
+		if extra_constraints != () or n != 1:
 			s.pop()
 
 		if len(results) == 0:
@@ -349,14 +349,14 @@ class BackendZ3(SolverBackend):
 		return results
 
 	@condom
-	def _min(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
+	def _min(self, s, expr, extra_constraints=(), result=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
 		hi = 2**expr.size()-1
 
 		numpop = 0
-		if extra_constraints is not None:
+		if extra_constraints != ():
 			s.push()
 			numpop += 1
 			s.add(*[self.convert(e) for e in extra_constraints])
@@ -398,14 +398,14 @@ class BackendZ3(SolverBackend):
 		return BVV(hi, expr.size())
 
 	@condom
-	def _max(self, s, expr, extra_constraints=None, result=None): #pylint:disable=W0613
+	def _max(self, s, expr, extra_constraints=(), result=None): #pylint:disable=W0613
 		global solve_count
 
 		lo = 0
 		hi = 2**expr.size()-1
 
 		numpop = 0
-		if extra_constraints is not None:
+		if extra_constraints != ():
 			s.push()
 			numpop += 1
 			s.add(*[self.convert(e) for e in extra_constraints])
