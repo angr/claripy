@@ -20,6 +20,8 @@ z3.init(z3_path + "libz3.so")
 
 from .solver_backend import SolverBackend
 
+#pylint:disable=unidiomatic-typecheck
+
 #import threading
 #import functools
 #z3_lock = threading.RLock()
@@ -42,7 +44,6 @@ def condom(f):
         '''
         The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
         '''
-        return f(*args, **kwargs)
         try:
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
@@ -169,9 +170,9 @@ class BackendZ3(SolverBackend):
         append_children = True
 
         if op_name == 'True':
-            return Bool(self._claripy, True)
+            return BoolI(self._claripy, True)
         elif op_name == 'False':
-            return Bool(self._claripy, False)
+            return BoolI(self._claripy, False)
         elif op_name.startswith('RM_'):
             return RM.from_name(op_name)
         elif op_name == 'BitVecVal':
@@ -660,7 +661,7 @@ op_map = {
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast import Base, BV, BVI, BoolI, Bool, FP, FPI
+from ..ast import BV, BVI, BoolI, Bool, FP, FPI
 from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
 from ..bv import BVV
