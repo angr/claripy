@@ -4,6 +4,7 @@ l = logging.getLogger("claripy.backends.backend_z3")
 solve_count = 0
 cache_count = 0
 
+from decimal import Decimal
 import weakref
 
 # import and set up Z3
@@ -44,6 +45,7 @@ def condom(f):
         '''
         The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
         '''
+        return f(*args, **kwargs)
         try:
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
@@ -126,7 +128,21 @@ class BackendZ3(SolverBackend):
             else:
                 raise BackendError("unrecognized rounding mode")
         elif isinstance(obj, FPV):
-            return z3.FPVal(obj.value, self._convert(obj.sort))
+            val = str(obj.value)
+            sort = self._convert(obj.sort)
+            if val == 'inf':
+                return z3.fpPlusInfinity(sort)
+            elif val == '-inf':
+                return z3.fpMinusInfinity(sort)
+            elif val == '0.0':
+                return z3.fpPlusZero(sort)
+            elif val == '-0.0':
+                return z3.fpMinusZero(sort)
+            elif val == 'nan':
+                return z3.fpNaN(sort)
+            else:
+                better_val = str(Decimal(obj.value))
+                return z3.FPVal(better_val, sort)
         elif obj is True:
             return z3.BoolVal(True)
         elif obj is False:
@@ -193,7 +209,7 @@ class BackendZ3(SolverBackend):
             sort = FSort.from_params(ebits, sbits)
 
             return FPI(self._claripy, FPV(value, sort))
-        elif op_name in ('MinusZero', 'MinusInf', 'PlusZero', 'PlusInf'):
+        elif op_name in ('MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
@@ -206,6 +222,8 @@ class BackendZ3(SolverBackend):
                 return FPI(self._claripy, FPV(0.0, sort))
             elif op_name == 'PlusInf':
                 return FPI(self._claripy, FPV(float('inf'), sort))
+            elif op_name == 'NaN':
+                return FPI(self._claripy, FPV(float('nan'), sort))
         elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
             bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -662,6 +680,7 @@ op_map = {
     'Z3_OP_FPA_MINUS_INF': 'MinusInf',
     'Z3_OP_FPA_PLUS_ZERO': 'PlusZero',
     'Z3_OP_FPA_PLUS_INF': 'PlusInf',
+    'Z3_OP_FPA_NAN': 'NaN',
 
     'Z3_OP_FPA_EQ': 'fpEQ',
     'Z3_OP_FPA_GT': 'fpGT',
@@ -808,6 +827,7 @@ op_type_map = {
     'Z3_OP_FPA_MINUS_INF': FP,
     'Z3_OP_FPA_PLUS_ZERO': FP,
     'Z3_OP_FPA_PLUS_INF': FP,
+    'Z3_OP_FPA_NAN': FP,
 
     'Z3_OP_FPA_EQ': Bool,
     'Z3_OP_FPA_GT': Bool,
