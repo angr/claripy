@@ -58,6 +58,7 @@ class BackendZ3(SolverBackend):
         self._ast_cache = weakref.WeakValueDictionary()
         self._var_cache = weakref.WeakKeyDictionary()
         self._sym_cache = weakref.WeakKeyDictionary()
+        self._simplification_cache = weakref.WeakKeyDictionary()
 
         # and the operations
         for o in (backend_fp_operations | backend_operations) - {'Reverse', 'fpToSBV', 'fpToUBV'}:
@@ -468,6 +469,11 @@ class BackendZ3(SolverBackend):
         if expr._simplified:
             return expr
 
+        try:
+            return self._simplification_cache[expr._cache_key]
+        except KeyError:
+            pass
+
         l.debug("SIMPLIFYING EXPRESSION")
 
         #print "SIMPLIFYING"
@@ -502,6 +508,7 @@ class BackendZ3(SolverBackend):
         #print "SIMPLIFIED"
         #l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
+        self._simplification_cache[expr._cache_key] = o
         return o
 
     def wrap(self, e):
