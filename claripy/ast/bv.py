@@ -91,7 +91,7 @@ class BV(Bits):
 
         return self._claripy.fpToFP(rm, self, sort)
 
-    def usigned_to_fp(self, rm, sort):
+    def unsigned_to_fp(self, rm, sort):
         if rm is None:
             rm = RM.default()
 
