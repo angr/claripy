@@ -58,7 +58,8 @@ class BackendZ3(SolverBackend):
         self._ast_cache = weakref.WeakValueDictionary()
         self._var_cache = weakref.WeakKeyDictionary()
         self._sym_cache = weakref.WeakKeyDictionary()
-        self._simplification_cache = weakref.WeakKeyDictionary()
+        self._simplification_cache_key = weakref.WeakKeyDictionary()
+        self._simplification_cache_val = weakref.WeakValueDictionary()
 
         # and the operations
         for o in (backend_fp_operations | backend_operations) - {'Reverse', 'fpToSBV', 'fpToUBV'}:
@@ -470,9 +471,19 @@ class BackendZ3(SolverBackend):
             return expr
 
         try:
-            return self._simplification_cache[expr._cache_key]
+            k = self._simplification_cache_key[expr._cache_key]
+            print "HIT WEAK KEY CACHE"
+            return k
         except KeyError:
             pass
+        try:
+            k = self._simplification_cache_val[expr._cache_key]
+            print "HIT WEAK VALUE CACHE"
+            return k
+        except KeyError:
+            pass
+
+        print "MISS CACHE"
 
         l.debug("SIMPLIFYING EXPRESSION")
 
@@ -483,16 +494,20 @@ class BackendZ3(SolverBackend):
         #l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
 
         if isinstance(expr_raw, z3.BoolRef):
+            print "START BOOL"
             tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
             s = tactics(expr_raw).as_expr()
             n = s.decl().name()
+            print "END"
 
             if n == 'true':
                 s = True
             elif n == 'false':
                 s = False
         elif isinstance(expr_raw, z3.BitVecRef):
+            print "START"
             s = z3.simplify(expr_raw)
+            print "END"
         else:
             s = expr_raw
 
@@ -508,7 +523,8 @@ class BackendZ3(SolverBackend):
         #print "SIMPLIFIED"
         #l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
-        self._simplification_cache[expr._cache_key] = o
+        self._simplification_cache_val[expr._cache_key] = o
+        self._simplification_cache_key[expr._cache_key] = o
         return o
 
     def wrap(self, e):
