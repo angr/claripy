@@ -51,7 +51,7 @@ class Claripy(object):
     def FP(self, name, sort, explicit_name=None):
         if self.unique_names and not explicit_name:
             name = "FP_%s_%d_%d" % (name, fp_counter.next(), size)
-        return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY)
+        return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=sort.length)
 
     def FPV(self, *args):
         return FPI(self, FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, eager=True)
