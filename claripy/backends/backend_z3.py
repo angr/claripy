@@ -519,6 +519,7 @@ class BackendZ3(SolverBackend):
         #print "SIMPLIFIED"
         #l.debug("... after: %s (%s)", s, s.__class__.__name__)
 
+        o._simplified = Base.FULL_SIMPLIFY
         self._simplification_cache_val[expr._cache_key] = o
         self._simplification_cache_key[expr._cache_key] = o
         return o
@@ -680,7 +681,7 @@ op_map = {
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast import BV, BVI, BoolI, Bool, FP, FPI
+from ..ast import Base, BV, BVI, BoolI, Bool, FP, FPI
 from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
 from ..bv import BVV

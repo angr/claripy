@@ -247,7 +247,9 @@ class Backend(object):
     #
 
     def simplify(self, e):
-        return self.abstract(self._simplify(self.convert(e)))
+        o = self.abstract(self._simplify(self.convert(e)))
+        o._simplified = Base.FULL_SIMPLIFY
+        return o
 
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)

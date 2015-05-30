@@ -638,6 +638,10 @@ class Base(ana.Storable):
         just cancels out two Reverse operations, if they are present. Later on, it will hopefully
         do more.
         '''
+
+        if self._simplified:
+            return self
+
         # note: should cover __radd__ etc. somehow
         if hasattr(self, '_simplify_' + self.op):
             self = getattr(self, '_simplify_' + self.op)()
