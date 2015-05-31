@@ -301,9 +301,9 @@ def _fp_cmp_check(a, b):
     return a.length == b.length, "FP lengths must be the same"
 Claripy.fpEQ = op('fpEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 Claripy.fpGT = op('fpGT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
-Claripy.fpGE = op('fpGE', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+Claripy.fpGEQ = op('fpGEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 Claripy.fpLT = op('fpLT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
-Claripy.fpLE = op('fpLE', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+Claripy.fpLEQ = op('fpLEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 
 def _fp_binop_check(rm, a, b):
     return a.length == b.length, "Lengths must be equal"

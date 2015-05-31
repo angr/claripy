@@ -684,9 +684,9 @@ op_map = {
 
     'Z3_OP_FPA_EQ': 'fpEQ',
     'Z3_OP_FPA_GT': 'fpGT',
-    'Z3_OP_FPA_GE': 'fpGE',
+    'Z3_OP_FPA_GE': 'fpGEQ',
     'Z3_OP_FPA_LT': 'fpLT',
-    'Z3_OP_FPA_LE': 'fpLE',
+    'Z3_OP_FPA_LE': 'fpLEQ',
 
     'Z3_OP_FPA_ABS': 'fpAbs',
     'Z3_OP_FPA_NEG': 'fpNeg',

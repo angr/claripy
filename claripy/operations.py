@@ -189,10 +189,14 @@ backend_operations = backend_comparator_operations | backend_bitwise_operations 
 backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparator_operations | backend_boolean_operations | backend_bitmod_operations
 backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
 
+backend_fp_cmp_operations = {
+    'fpLT', 'fpLEQ', 'fpGT', 'fpGEQ', 'fpEQ',
+}
+
 backend_fp_operations = {
     'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
     'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv',
-}
+} | backend_fp_cmp_operations
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',
@@ -244,7 +248,7 @@ inverse_operations = {
 }
 
 length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
-length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations
+length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
 

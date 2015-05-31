@@ -276,13 +276,13 @@ def fpEQ(a, b):
 def fpGT(a, b):
     return a > b
 
-def fpGE(a, b):
+def fpGEQ(a, b):
     return a >= b
 
 def fpLT(a, b):
     return a < b
 
-def fpLE(a, b):
+def fpLEQ(a, b):
     return a <= b
 
 def fpAbs(x):
