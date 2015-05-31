@@ -61,6 +61,11 @@ def test_expression():
     rsum = r+rr
     nose.tools.assert_equal(rsum.model, 0x05050505)
 
+    r = clrp.BitVec('x', 32)
+    rr = r.reversed
+    rrr = rr.reversed
+    nose.tools.assert_is(r, rrr)
+
     # test identity
     nose.tools.assert_true(r.identical(rrr))
     nose.tools.assert_false(r.identical(rr))

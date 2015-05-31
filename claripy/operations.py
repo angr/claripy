@@ -52,6 +52,11 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
             if not success:
                 raise ClaripyOperationError(msg)
 
+        if name in simplifiers:
+            simp = simplifiers[name](*args)
+            if simp is not None:
+                return simp
+
         kwargs = {}
         if calc_length is not None:
             kwargs['length'] = calc_length(*args)
@@ -60,6 +65,22 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
 
     _op.calc_length = calc_length
     return _op
+
+#
+# Simplifiers
+#
+
+def reverse_simplifier(*args):
+    if args[0].op == 'Reverse':
+        return args[0].args[0]
+
+simplifiers = {
+    'Reverse': reverse_simplifier
+}
+
+#
+# Length checkers
+#
 
 def length_same_check(*args):
     return all(a.length == args[0].length for a in args), "args' length must all be equal"
@@ -85,6 +106,10 @@ def ext_length_calc(ext, orig):
 
 def concat_length_calc(*args):
     return sum(arg.size() for arg in args)
+
+#
+# Operation lists
+#
 
 expression_arithmetic_operations = {
     # arithmetic
