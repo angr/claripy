@@ -309,8 +309,8 @@ def _fp_binop_check(rm, a, b):
     return a.length == b.length, "Lengths must be equal"
 def _fp_binop_length(rm, a, b):
     return a.length
-Claripy.fpAbs = op('fpAbs', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x)
-Claripy.fpNeg = op('fpNeg', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x)
+Claripy.fpAbs = op('fpAbs', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x.length)
+Claripy.fpNeg = op('fpNeg', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x.length)
 Claripy.fpSub = op('fpSub', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 Claripy.fpAdd = op('fpAdd', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
 Claripy.fpMul = op('fpMul', (RM, FP, FP), FP, self_is_clrp=True, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
