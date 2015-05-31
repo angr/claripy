@@ -45,7 +45,6 @@ def condom(f):
         '''
         The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
         '''
-        return f(*args, **kwargs)
         try:
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
