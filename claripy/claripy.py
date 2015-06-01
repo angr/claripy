@@ -172,6 +172,9 @@ class Claripy(object):
         return sofar
 
     def simplify(self, e):
+        if isinstance(e, Base) and e.op == 'I':
+            return e
+
         for b in self.model_backends:
             try: return b.simplify(e)
             except BackendError: pass
