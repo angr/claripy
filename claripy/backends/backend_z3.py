@@ -73,6 +73,15 @@ class BackendZ3(SolverBackend):
         self._op_raw['fpToSBV'] = self.fpToSBV
         self._op_raw['fpToUBV'] = self.fpToUBV
 
+    def downsize(self):
+        SolverBackend.downsize(self)
+
+        self._ast_cache.clear()
+        self._var_cache.clear()
+        self._sym_cache.clear()
+        self._simplification_cache_key.clear()
+        self._simplification_cache_val.clear()
+
     @condom
     def _size(self, e, result=None):
         if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):

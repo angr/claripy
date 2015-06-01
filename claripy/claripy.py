@@ -1,5 +1,6 @@
 import itertools
 bitvec_counter = itertools.count()
+fp_counter = itertools.count()
 
 import logging
 l = logging.getLogger('claripy.claripy')
@@ -18,12 +19,16 @@ class Claripy(object):
     #
     # Backend management
     #
+
     def backend_of_type(self, b_type):
         for b in self.model_backends + self.solver_backends:
-            if type(b) is b_type:
+            if type(b) is b_type: #pylint:disable=unidiomatic-typecheck
                 return b
         return None
 
+    def downsize(self):
+        for b in self.model_backends + self.solver_backends:
+            b.downsize()
     #
     # Solvers
     #
@@ -50,7 +55,7 @@ class Claripy(object):
 
     def FP(self, name, sort, explicit_name=None):
         if self.unique_names and not explicit_name:
-            name = "FP_%s_%d_%d" % (name, fp_counter.next(), size)
+            name = "FP_%s_%d_%s" % (name, fp_counter.next(), sort)
         return FP(self, 'FP', (name, sort), variables={name}, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=sort.length)
 
     def FPV(self, *args):
@@ -233,7 +238,7 @@ class Claripy(object):
         ret = True, [ ]
 
         for b in self.model_backends:
-            if type(b) is BackendVSA:
+            if type(b) is BackendVSA: #pylint:disable=unidiomatic-typecheck
                 ret = b.constraint_to_si(expr)
 
         return ret
@@ -305,9 +310,9 @@ Claripy.fpGEQ = op('fpGEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_c
 Claripy.fpLT = op('fpLT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 Claripy.fpLEQ = op('fpLEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 
-def _fp_binop_check(rm, a, b):
+def _fp_binop_check(rm, a, b): #pylint:disable=unused-argument
     return a.length == b.length, "Lengths must be equal"
-def _fp_binop_length(rm, a, b):
+def _fp_binop_length(rm, a, b): #pylint:disable=unused-argument
     return a.length
 Claripy.fpAbs = op('fpAbs', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x.length)
 Claripy.fpNeg = op('fpNeg', (FP,), FP, self_is_clrp=True, calc_length=lambda x: x.length)

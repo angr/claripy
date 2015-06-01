@@ -15,6 +15,8 @@ filter_false = 0
 
 import ana
 
+#pylint:disable=unidiomatic-typecheck
+
 class Solver(ana.Storable):
     def __init__(self, claripy, result=None, timeout=None, solvers=None, to_add=None):
         self._claripy = claripy
@@ -424,6 +426,8 @@ class Solver(ana.Storable):
     def downsize(self): #pylint:disable=R0201
         self._solver_states = { }
         self._to_add = { }
+        if self._result is not None:
+            self._result.downsize()
 
     #
     # Merging and splitting

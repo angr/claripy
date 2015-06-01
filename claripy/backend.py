@@ -122,6 +122,12 @@ class Backend(object):
         '''
         return r
 
+    def downsize(self):
+        '''
+        Clears all caches associated with this backend.
+        '''
+        self._object_cache.clear()
+
     def convert(self, expr, result=None): #pylint:disable=R0201
         '''
         Resolves a claripy.Base into something usable by the backend.
