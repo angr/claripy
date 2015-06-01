@@ -316,7 +316,7 @@ class BackendZ3(SolverBackend):
         l.debug("Doing a check!")
         #print "CHECKING"
         satness = s.check() == z3.sat
-        if satness == z3.sat:
+        if satness:
             model = s.model()
         else:
             model = None
