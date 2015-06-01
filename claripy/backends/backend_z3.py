@@ -302,7 +302,11 @@ class BackendZ3(SolverBackend):
         s.add(*c)
 
     @condom
-    def _check(self, s, extra_constraints=()): #pylint:disable=R0201
+    def _check(self, s, extra_constraints=()):
+        return self._check_and_model(s, extra_constraints=extra_constraints)[0]
+
+    @condom
+    def _check_and_model(self, s, extra_constraints=()): #pylint:disable=no-self-use
         global solve_count
         solve_count += 1
         if len(extra_constraints) > 0:
@@ -312,21 +316,23 @@ class BackendZ3(SolverBackend):
         l.debug("Doing a check!")
         #print "CHECKING"
         satness = s.check() == z3.sat
+        if satness == z3.sat:
+            model = s.model()
+        else:
+            model = None
         #print "CHECKED"
 
         if len(extra_constraints) > 0:
             s.pop()
-        return satness
+        return satness, model
 
     @condom
     def _results(self, s, extra_constraints=(), generic_model=True):
-        satness = self._check(s, extra_constraints=extra_constraints)
+        satness, z3_model = self._check_and_model(s, extra_constraints=extra_constraints)
         model = { }
-        z3_model = None
 
         if satness:
             l.debug("sat!")
-            z3_model = s.model()
             if generic_model:
                 for m_f in z3_model:
                     n = m_f.name()
