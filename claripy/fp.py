@@ -134,7 +134,13 @@ class FPV(BackendObject):
     @normalize_types
     @compare_sorts
     def __div__(self, o):
-        return FPV(self.value / o.value, self.sort)
+        try:
+            return FPV(self.value / o.value, self.sort)
+        except ZeroDivisionError:
+            if str(self.value * o.value)[0] == '-':
+                return FPV(float('-inf'), self.sort)
+            else:
+                return FPV(float('inf'), self.sort)
 
     #
     # Reverse arithmetic stuff
