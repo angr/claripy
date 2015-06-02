@@ -360,7 +360,7 @@ class BackendZ3(SolverBackend):
         #    import ipdb; ipdb.set_trace()
 
         results = [ ]
-        model = result.backend_model
+        model = result.backend_model if result else None
         if len(extra_constraints) > 0 or n != 1:
             s.push()
         if len(extra_constraints) > 0:
