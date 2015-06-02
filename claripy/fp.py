@@ -169,7 +169,13 @@ class FPV(BackendObject):
     @normalize_types
     @compare_sorts
     def __rdiv__(self, o):
-        return FPV(o.value / self.value, self.sort)
+        try:
+            return FPV(o.value / self.value, self.sort)
+        except ZeroDivisionError:
+            if str(o.value * self.value)[0] == '-':
+                return FPV(float('-inf'), self.sort)
+            else:
+                return FPV(float('inf'), self.sort)
 
     #
     # Boolean stuff
