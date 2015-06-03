@@ -269,18 +269,21 @@ def fpFP(sgn, exp, mantissa):
     return FPV(unpacked, sort)
 
 def fpToSBV(rm, fp, size):
-    if rm != RM_RTZ:
+    if rm == RM_RTZ:
+        return BVV(int(fp.value), size)
+    elif rm == RM_RTN:
+        return BVV(int(round(fp.value)), size)
+    else:
         raise ClaripyOperationError("todo")
-
-    return BVV(int(fp.value), size)
 
 def fpToUBV(rm, fp, size):
     # todo: actually make unsigned
-
-    if rm != RM_RTZ:
+    if rm == RM_RTZ:
+        return BVV(int(fp.value), size)
+    elif rm == RM_RTN:
+        return BVV(int(round(fp.value)), size)
+    else:
         raise ClaripyOperationError("todo")
-
-    return BVV(int(fp.value), size)
 
 def fpEQ(a, b):
     return a == b
