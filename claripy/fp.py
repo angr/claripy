@@ -272,7 +272,7 @@ def fpToSBV(rm, fp, size):
     try:
         if rm == RM_RTZ:
             return BVV(int(fp.value), size)
-        elif rm == RM_RTN:
+        elif rm == RM_RNE:
             return BVV(int(round(fp.value)), size)
         else:
             raise ClaripyOperationError("todo")
@@ -284,7 +284,7 @@ def fpToUBV(rm, fp, size):
     try:
         if rm == RM_RTZ:
             return BVV(int(fp.value), size)
-        elif rm == RM_RTN:
+        elif rm == RM_RNE:
             return BVV(int(round(fp.value)), size)
         else:
             raise ClaripyOperationError("todo")
