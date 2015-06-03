@@ -13,7 +13,7 @@ from .result import Result
 from .errors import *
 from .claripy_standalone import ClaripyStandalone
 from .bv import BVV
-from .fp import FPV, FSORT_FLOAT, FSORT_DOUBLE, FSort, RM
+from .fp import FPV, FSORT_FLOAT, FSORT_DOUBLE, FSort, RM, RM_RTN, RM_RTP, RM_RNE, RM_RTZ
 from . import operations
 from . import backends
 from .vsa import *
