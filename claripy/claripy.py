@@ -308,6 +308,7 @@ Claripy.fpToUBV = op('fpToUBV', (RM, FP, (int, long)), BV, self_is_clrp=True, ca
 def _fp_cmp_check(a, b):
     return a.length == b.length, "FP lengths must be the same"
 Claripy.fpEQ = op('fpEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
+FP.__eq__ = Claripy.fpEQ
 Claripy.fpGT = op('fpGT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 Claripy.fpGEQ = op('fpGEQ', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
 Claripy.fpLT = op('fpLT', (FP, FP), Bool, self_is_clrp=True, extra_check=_fp_cmp_check)
