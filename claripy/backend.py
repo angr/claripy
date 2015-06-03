@@ -156,12 +156,14 @@ class Backend(object):
                 for rc in result.resolve_cache.values():
                     try:
                         r = self._convert(rc[expr._cache_key], result=result)
+                        break
                     except (KeyError, BackendError):
                         pass
             if r is None:
                 for b in self._claripy.model_backends + self._claripy.solver_backends:
                     try:
                         r = self._convert(b._object_cache[expr._cache_key])
+                        break
                     except (KeyError, BackendError):
                         pass
 
