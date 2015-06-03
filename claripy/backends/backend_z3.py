@@ -172,12 +172,21 @@ class BackendZ3(SolverBackend):
         #return self._abstract(z, split_on=split_on)[0]
         return self._abstract_internal(z.ctx.ctx, z.ast)
 
+    def check_downsize(self):
+        '''
+        Z3 hashes collide. Here, we clear this cache so that we don't get screwed.
+        '''
+        if len(self._ast_cache) > 40000:
+            self.downsize()
+
     def _abstract_internal(self, ctx, ast, split_on=None):
+        self.check_downsize()
+
         h = z3.Z3_get_ast_hash(ctx, ast)
-        if h in self._ast_cache:
-            #print "ABSTRACTION CACHED"
-            a = self._ast_cache[h]
-            return a
+        try:
+            return self._ast_cache[h]
+        except KeyError:
+            pass
 
         decl = z3.Z3_get_app_decl(ctx, ast)
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
