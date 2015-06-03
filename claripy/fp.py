@@ -269,21 +269,27 @@ def fpFP(sgn, exp, mantissa):
     return FPV(unpacked, sort)
 
 def fpToSBV(rm, fp, size):
-    if rm == RM_RTZ:
-        return BVV(int(fp.value), size)
-    elif rm == RM_RTN:
-        return BVV(int(round(fp.value)), size)
-    else:
-        raise ClaripyOperationError("todo")
+    try:
+        if rm == RM_RTZ:
+            return BVV(int(fp.value), size)
+        elif rm == RM_RTN:
+            return BVV(int(round(fp.value)), size)
+        else:
+            raise ClaripyOperationError("todo")
+    except (ValueError, OverflowError):
+        return BVV(0, size)
 
 def fpToUBV(rm, fp, size):
     # todo: actually make unsigned
-    if rm == RM_RTZ:
-        return BVV(int(fp.value), size)
-    elif rm == RM_RTN:
-        return BVV(int(round(fp.value)), size)
-    else:
-        raise ClaripyOperationError("todo")
+    try:
+        if rm == RM_RTZ:
+            return BVV(int(fp.value), size)
+        elif rm == RM_RTN:
+            return BVV(int(round(fp.value)), size)
+        else:
+            raise ClaripyOperationError("todo")
+    except (ValueError, OverflowError):
+        return BVV(0, size)
 
 def fpEQ(a, b):
     return a == b
