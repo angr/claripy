@@ -166,7 +166,8 @@ class Backend(object):
                         pass
 
             # otherwise, resolve it!
-            r = expr.resolved_with(self, result=result)
+            if r is None:
+                r = expr.resolved_with(self, result=result)
 
             if result is None: self._object_cache[expr._cache_key] = r
             else: result.resolve_cache[self][expr._cache_key] = r
