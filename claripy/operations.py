@@ -74,8 +74,18 @@ def reverse_simplifier(*args):
     if args[0].op == 'Reverse':
         return args[0].args[0]
 
+def and_simplifier(*args):
+    if len(args) == 1:
+        return args[0]
+
+def or_simplifier(*args):
+    if len(args) == 1:
+        return args[0]
+
 simplifiers = {
-    'Reverse': reverse_simplifier
+    'Reverse': reverse_simplifier,
+    'And': and_simplifier,
+    'Or': or_simplifier
 }
 
 #
