@@ -176,7 +176,7 @@ class BackendZ3(SolverBackend):
         '''
         Z3 hashes collide. Here, we clear this cache so that we don't get screwed.
         '''
-        if len(self._ast_cache) > 40000:
+        if len(self._ast_cache) > 10000:
             self.downsize()
 
     def _abstract_internal(self, ctx, ast, split_on=None):
