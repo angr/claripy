@@ -17,7 +17,7 @@ elif "VIRTUAL_ENV" in os.environ:
     z3_path = virtual_env + "/lib/"
 else:
     z3_path = "/opt/python/lib/"
-if not '.' in z3_path:
+if not '.so' in z3_path and not '.dll' in z3_path:
     z3_path += 'libz3.so'
 z3.init(z3_path)
 supports_fp = hasattr(z3, 'fpEQ')
