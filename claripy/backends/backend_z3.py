@@ -17,7 +17,10 @@ elif "VIRTUAL_ENV" in os.environ:
     z3_path = virtual_env + "/lib/"
 else:
     z3_path = "/opt/python/lib/"
-z3.init(z3_path + "libz3.so")
+if not '.' in z3_path:
+    z3_path += 'libz3.so'
+z3.init(z3_path)
+supports_fp = hasattr(z3, 'fpEQ')
 
 from .solver_backend import SolverBackend
 
@@ -64,7 +67,8 @@ class BackendZ3(SolverBackend):
         self._enable_simplification_cache = False
 
         # and the operations
-        for o in (backend_fp_operations | backend_operations) - {'Reverse', 'fpToSBV', 'fpToUBV'}:
+	all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
+        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV'}:
             self._op_raw[o] = getattr(z3, o)
 
         self._op_raw['Reverse'] = self.reverse
