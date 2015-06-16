@@ -1,3 +1,4 @@
+import sys
 import logging
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -49,6 +50,7 @@ def condom(f):
         The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
         '''
         try:
+            args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
             return f(*args, **kwargs)
         except z3.Z3Exception as ze:
             raise ClaripyZ3Error("Z3Exception: %s" % ze)
