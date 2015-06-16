@@ -67,7 +67,7 @@ class BackendZ3(SolverBackend):
         self._enable_simplification_cache = False
 
         # and the operations
-	all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
+        all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
         for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV'}:
             self._op_raw[o] = getattr(z3, o)
 
