@@ -1,7 +1,9 @@
 import sys
+import struct
 import weakref
 import hashlib
 import logging
+import cPickle as pickle
 l = logging.getLogger("claripy.ast")
 
 import ana
@@ -83,6 +85,8 @@ class Base(ana.Storable):
             kwargs['variables'] = frozenset.union(
                 frozenset(), *(a.variables for a in a_args if isinstance(a, Base))
             )
+        elif type(kwargs['variables']) is not frozenset: #pylint:disable=unidiomatic-typecheck
+            kwargs['variables'] = frozenset(kwargs['variables'])
         if 'errored' not in kwargs:
             kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
 
@@ -114,11 +118,9 @@ class Base(ana.Storable):
 
         @returns a hash
         '''
-        to_hash = claripy.name + ' ' + op + ' ' + ','.join(str(hash(a)) for a in args) + ' ' + \
-                  str(k['symbolic']) + ' ' + str(hash(frozenset(k['variables']))) + ' ' + str(k.get('length', None))
-        hd = hashlib.md5(to_hash).hexdigest()
-
-        return int(hd[:16], 16) # 64 bits
+        to_hash = (claripy.name, op, tuple(hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+        hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
+        return struct.unpack('2Q', hd)[0] # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False):
