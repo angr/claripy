@@ -1,4 +1,37 @@
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is_clrp=False, do_coerce=True):
+    if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
+        expected_num_args = len(arg_types)
+    elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
+        expected_num_args = None
+    else:
+        raise ClaripyOperationError("op {} got weird arg_types".format(name))
+
+    def _type_fixer(clrp, args):
+        num_args = len(args)
+        if expected_num_args is not None and num_args != expected_num_args:
+            raise ClaripyTypeError("Operation {} takes exactly "
+                                   "{} arguments ({} given)".format(name, len(arg_types), len(args)))
+
+        if type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
+            actual_arg_types = (arg_types,) * num_args
+        else:
+            actual_arg_types = arg_types
+        matches = [ isinstance(arg, argty) for arg,argty in zip(args, actual_arg_types) ]
+
+        # heuristically, this works!
+        thing = args[matches.index(True)] if True in matches else None
+
+        for arg, argty, matches in zip(args, actual_arg_types, matches):
+            if not matches:
+                if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
+                    convert = getattr(argty, '_from_' + type(arg).__name__)
+                    yield convert(clrp, thing, arg)
+                else:
+                    yield NotImplemented
+                    return
+            else:
+                yield arg
+
     def _op(self, *args):
         if self_is_clrp:
             clrp = self
@@ -6,46 +39,9 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
             clrp = self._claripy
             args = (self,) + args
 
-        if isinstance(arg_types, tuple):
-            if len(args) != len(arg_types):
-                raise ClaripyTypeError("Operation {} takes exactly "
-                                       "{} arguments ({} given)".format(name, len(arg_types), len(args)))
-
-            # heuristically, this works!
-            thing = None
-            for arg, argty in zip(args, arg_types):
-                if isinstance(arg, argty):
-                    thing = arg
-
-            for i, (arg, argty) in enumerate(zip(args, arg_types)):
-                if not isinstance(arg, argty):
-                    if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
-                        convert = getattr(argty, '_from_' + type(arg).__name__)
-                        args = tuple(convert(clrp, thing, arg) if j == i else a for (j, a) in enumerate(args))
-                    else:
-                        return NotImplemented
-                        # raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
-                        #                        .format(name, argty.__name__, i, type(arg).__name__))
-        elif isinstance(arg_types, type):
-            argty = arg_types
-
-            # heuristically, this works!
-            thing = None
-            for arg in args:
-                if isinstance(arg, argty):
-                    thing = arg
-
-            for i, arg in enumerate(args):
-                if not isinstance(arg, argty):
-                    if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
-                        convert = getattr(argty, '_from_' + type(arg).__name__)
-                        args = tuple(convert(clrp, thing, arg) if j == i else a for (j, a) in enumerate(args))
-                    else:
-                        return NotImplemented
-                    # raise ClaripyTypeError("Operation {} requires type {} for arg #{}, got {}"
-                    #                        .format(name, arg_types.__name__, i, type(arg).__name__))
-        else:
-            raise ClaripyOperationError("op {} got weird arg_types".format(name))
+        args = tuple(_type_fixer(clrp, args))
+        if args is NotImplemented:
+            return NotImplemented
 
         if extra_check is not None:
             success, msg = extra_check(*args)
