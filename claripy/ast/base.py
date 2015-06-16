@@ -6,302 +6,6 @@ l = logging.getLogger("claripy.ast")
 
 import ana
 
-#
-#
-# Finalizer functions for different expressions
-#
-#
-def _finalize(claripy, op, args, kwargs):
-    '''
-    Each AST is "finalized" by this finalizer function.
-
-    @param op: a string representing the operation of the AST ('__add__', 'ULT', etc)
-    @param args: the arguments to the operation
-    @kwargs: keyword arguments, such as variables, the length, etc
-
-    The finalizer is responsible for determining the following flags of the new AST:
-
-        variables - the union of the set of variables of the argument ASTS
-        symbolic - an OR of the symbolic flag of the arguments
-        errored - a set of the backends which *can't* handle this AST
-        length - the length (if the AST is a bitvector)
-
-    It calls out to the _finalize_X functions, where X is the operation to convert
-    the arguments and keyword arguments to the right types.
-
-    @returns the operation, and updated args and kwargs (as provided by the
-             _finalize_X helpers)
-    '''
-    variables = kwargs.get('variables', None)
-    if variables is None:
-        variables = frozenset.union(frozenset(), *(a.variables for a in args if isinstance(a, Base)))
-    kwargs['variables'] = variables
-
-    symbolic = kwargs.get('symbolic', None)
-    if symbolic is None:
-        symbolic = any((a.symbolic for a in args if isinstance(a, Base)))
-    kwargs['symbolic'] = symbolic
-
-    errored = kwargs.get('errored', None)
-    if errored is None:
-        kwargs['errored'] = _finalize_get_errored(args)
-
-    nolength = op == 'I' or op == 'If'
-    if '_finalize_' + op in globals():
-        o,a,k = globals()['_finalize_' + op](claripy, op, args, kwargs)
-    elif op in length_same_operations:
-        o,a,k = _finalize_same_length(claripy, op, args, kwargs)
-    elif op in length_none_operations:
-        o,a,k = op, args, kwargs
-        nolength = True
-    else:
-        o,a,k = op, args, kwargs
-#        raise ClaripyOperationError("no Base._finalize_* function found for %s" % op)
-
-    length = k.get('length', None)
-    if not nolength and (length is None or length < 0):
-        raise ClaripyOperationError("invalid length!")
-
-    k['length'] = length
-    k['variables'] = kwargs['variables']
-    return o,tuple(a),k
-
-
-def _arg_size(o):
-    '''
-    Returns the size of the AST object, or None if 'o' is not an AST object.
-
-    @param o: the object in question
-    @returns the length, or None
-    '''
-    if isinstance(o, Base): return o.length
-    else: return None
-
-def _typefixer(a, t):
-    '''
-    This is an implementation of a modiyer for Claripy's half-assed type system.
-    It's a helper function for _typechecker, below.
-
-    @param a: the object whose type to "fix". This should be a native object, like an int or a long.
-    @param t: a string describing the type, or the type ('I' for int, 'L' for long, 'N' for any number)
-    @returns the object, converted to the requested type.
-    @raises a ClaripyOperationError if arg can't be converted
-
-    This function was written in some misguided attempt to have a simpler-than-actual type system.
-    Don't count on it being around for long.
-    '''
-    if t in ('I', 'L', 'N'):
-        if not type(a) in (int, long):
-            raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
-        return int(a) if t == 'I' else long(a) if t == 'L' else a
-    else:
-        if not isinstance(a, t):
-            raise ClaripyOperationError("argument is not the right type (%s instead of int/long)" % type(a))
-        return a
-
-def _typechecker(op, args, types):
-    '''
-    This is a helper function for type checking in Claripy. In addition to type
-    checking, it also *converts* the arguments (this is used, for example, to make
-    sure that all integer arguments are actually ints, and not longs, as having that
-    occur will later break Z3).
-
-    @param op: the operation that the arguments that are being checked *for*. This is
-               just used for logging
-    @param args: a tuple of arguments
-    @param types: a tuple of types. These can be actual type objects, or 'I' (for
-                  int), 'L' (for long), or 'N' (for any numerical value). I honestly
-                  have no idea why this happened like this; it was during a deadline
-                  and I'm sure I had a reason, but it seems as awful to me now as it
-                  does to you.
-
-    @returns a new tuple of args, with each arg converted to the specified type
-    @raises a ClaripyOperationError if an arg can't be converted
-    '''
-    if len(args) != len(types):
-        raise ClaripyOperationError("%d args passed to %s (need %d)" % (len(args), op, len(types)))
-    return tuple(_typefixer(a,t) for a,t in zip(args, types))
-
-#pylint:disable=unused-argument
-
-def _finalize_Identical(claripy, op, args, kwargs):
-    '''
-    Finalizes an AST representing an Identical operation. This sets its length to None.
-    '''
-    kwargs['length'] = None
-    return op, args, kwargs
-
-def _finalize_BoolVal(claripy, op, args, kwargs):
-    '''
-    Finalizes an AST representing an BoolVal operation. Type enforced:
-
-        BoolVal(bool)
-    '''
-    args = _typechecker(op, args, (bool,))
-    return op, args, kwargs
-
-def _finalize_BitVec(claripy, op, args, kwargs):
-    '''
-    Finalizes an AST representing a BitVec operation. Type enforced:
-
-        BitVec(str, int)
-    '''
-    args = _typechecker(op, args, (str, 'I'))
-    kwargs['length'] = args[1]
-    return op, args, kwargs
-
-def _finalize_BitVecVal(claripy, op, args, kwargs):
-    '''
-    Finalizes an AST representing a BitVec operation. Type enforced:
-
-        BitVec(str, int)
-    '''
-    args = _typechecker(op, args, ('N', 'I'))
-    if args[1] <= 0:
-        raise ClaripyOperationError("Invalid arguments to BitVecVal")
-    kwargs['length'] = args[1]
-    return op, args, kwargs
-
-def _finalize_If(claripy, op, args, kwargs):
-    '''
-    Finalizes an AST representing an If.
-
-    An If requires a boolean condition, and at least one case with a length. If both
-    cases have lengths, they must be equal.
-    '''
-
-    if len(args) != 3:
-        raise ClaripyOperationError("If requires a condition and two cases.")
-
-    if _arg_size(args[0]) is not None:
-        raise ClaripyOperationError("non-boolean condition passed to If")
-
-    case_lengths = ( _arg_size(args[1]), _arg_size(args[2]) )
-    if len(set(case_lengths)) != 1:
-        if None not in case_lengths:
-            raise ClaripyOperationError("If needs two identically-sized sized")
-        else:
-            # we need to convert one of the cases to an integer
-            if case_lengths[0] is None:
-                if type(args[1]) not in (int, long):
-                    raise ClaripyOperationError("If received a non-int and an int case.")
-                args = (args[0], claripy.BVV(args[1], case_lengths[1]), args[2])
-            else:
-                if type(args[2]) not in (int, long):
-                    raise ClaripyOperationError("If received a non-int and an int case.")
-                args = (args[0], args[1], claripy.BVV(args[2], case_lengths[0]))
-
-    lengths = set(_arg_size(a) for a in args[1:]) - { None }
-    kwargs['length'] = lengths.pop() if len(lengths) > 0 else None
-    return op, args, kwargs
-
-def _finalize_Concat(claripy, op, args, kwargs):
-    '''
-    Finalizes a Concat AST. All args to the AST must have a length (i.e., be bitvectors).
-    '''
-    lengths = [ _arg_size(a) for a in args ]
-    if None in lengths or len(args) <= 1:
-        raise ClaripyOperationError("Concat must have at >= two args, and all must have lengths.")
-
-    kwargs['length'] = sum(lengths)
-    return op, args, kwargs
-
-def _finalize_Extract(claripy, op, args, kwargs):
-    '''
-    Finalizes an Extract operation. Must have two integer arguments (from, to) and an AST.
-    '''
-    args = _typechecker(op, args, ('I', 'I', Base))
-    if len(args) != 3 or type(args[0]) not in (int, long) or type(args[1]) not in (int, long):
-        raise ClaripyOperationError("Invalid arguments passed to extract!")
-
-    length = args[0]-args[1]+1
-    old_length = _arg_size(args[2])
-    if length > old_length or args[0] >= old_length or args[1] >= old_length or length <= 0:
-        raise ClaripyOperationError("Invalid sizes passed to extract!")
-
-    kwargs['length'] = length
-    return op, args, kwargs
-
-def _finalize_ZeroExt(claripy, op, args, kwargs):
-    '''
-    This is the finalizer for ZeroExtend and SignExtend. Args must be an int and
-    an Base objects.
-    '''
-    args = _typechecker(op, args, ('I', Base))
-    length = _arg_size(args[1])
-    if length is None:
-        raise ClaripyOperationError("extending an object without a length")
-
-    kwargs['length'] = length + args[0]
-    return op, args, kwargs
-
-_finalize_SignExt = _finalize_ZeroExt
-
-def _finalize_reversed(claripy, op, args, kwargs):
-    '''
-    This finalizes the Reverse operation.
-    '''
-    if len(args) != 1:
-        raise ClaripyOperationError("Reverse takes exactly one argument")
-
-    length = _arg_size(args[0])
-    if length is None or length%8 != 0:
-        raise ClaripyOperationError("Argument to reverse must be a multiple of 8 bits long")
-
-    kwargs['length'] = length
-    return op, args, kwargs
-
-def _finalize_same_length(claripy, op, args, kwargs):
-    '''
-    This is a generic finalizer. It requires at least one argument to have a length,
-    and all arguments that *do* have a length to have the same length.
-    '''
-
-    lengths = set(_arg_size(a) for a in args) - { None }
-    if len(lengths) != 1:
-        raise ClaripyOperationError("Arguments to %s must have equal (and existing) sizes", op)
-
-    kwargs['length'] = lengths.pop()
-    return op, args, kwargs
-
-def _finalize_I(claripy, op, args, kwargs):
-    '''
-    An I object wraps native objects in a Claripy AST. It's used to get the length and name
-    of an object (i.e, a StridedInterval or a BV can have a name, and both of those or a BVV
-    will have a length.
-    '''
-    for b in claripy.model_backends:
-        try:
-            kwargs['length'] = b.size(args[0])
-            break
-        except BackendError: pass
-    else:
-        raise ClaripyASTError("no backend can determine size of %s object", type(args[0]))
-
-    for b in claripy.model_backends:
-        try:
-            name = b.name(args[0])
-            if name is not None:
-                variables = kwargs.get('variables', frozenset())
-                variables = variables.union(frozenset([name]))
-                kwargs['variables'] = variables
-            break
-        except BackendError: pass
-
-    return op, args, kwargs
-
-def _finalize_get_errored(args):
-    '''
-    This is a helper function. Given a tuple of arguments to an AST operation.
-    it returns the union of the backends that errored on any of the arguments.
-    '''
-    #all_errored = [ ]
-    #for a in args:
-    #   if isinstance(a, Base):
-    #       all_errored.append(a._errored)
-    #return set.union(set(), *all_errored)
-    return set.union(set(), *(a._errored for a in args if isinstance(a, Base)))
-
 #pylint:enable=unused-argument
 
 def _is_eager(a):
@@ -339,7 +43,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', 'eager' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -371,16 +75,23 @@ class Base(ana.Storable):
             #import ipdb; ipdb.set_trace()
             raise ClaripyTypeError("arguments %s contain an unknown type to claripy.Base" % (args,))
 
+        # fix up args and kwargs
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
+        if 'symbolic' not in kwargs:
+            kwargs['symbolic'] = any(a.symbolic for a in a_args if isinstance(a, Base))
+        if 'variables' not in kwargs:
+            kwargs['variables'] = frozenset.union(
+                frozenset(), *(a.variables for a in a_args if isinstance(a, Base))
+            )
+        if 'errored' not in kwargs:
+            kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
 
-        f_op, f_args, f_kwargs = _finalize(claripy, op, a_args, kwargs)
-
-        h = Base._calc_hash(claripy, f_op, f_args, f_kwargs)
+        h = Base._calc_hash(claripy, op, a_args, kwargs)
 
         self = cls._hash_cache.get(h, None)
         if self is None:
-            self = super(Base, cls).__new__(cls, claripy, f_op, f_args, **f_kwargs)
-            self.__a_init__(claripy, f_op, f_args, **f_kwargs)
+            self = super(Base, cls).__new__(cls, claripy, op, a_args, **kwargs)
+            self.__a_init__(claripy, op, a_args, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -837,21 +548,6 @@ class Base(ana.Storable):
     # Various AST modifications (replacements)
     #
 
-    def _do_op(self, op, *args, **kwargs):
-        '''
-        Returns an AST representing the operation op, with arguments args and kwargs.
-
-        This is a helper function called by the various operation handlers on a
-        Claripy object as well as the overloaded operators. For example, the following
-        two lines are equivalent:
-
-            c = a + b
-            d = a._do_op('__add__', [b])
-            assert c is d
-        '''
-        raise Exception("_do_op is dead! (or at least should be...)")
-        return type(self)(self._claripy, op, (self,)+args, **kwargs).reduced
-
     def _replace(self, old, new, replacements=None):
         '''
         A helper for replace().
@@ -939,9 +635,9 @@ class Base(ana.Storable):
             raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError, ClaripyASTError
+from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from .. import operations
-from ..operations import length_none_operations, length_same_operations, reverse_distributable, not_invertible
+from ..operations import reverse_distributable, not_invertible
 from ..bv import BVV
 from ..fp import RM, FSort
 from ..vsa import StridedInterval
