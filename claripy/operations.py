@@ -39,25 +39,26 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
             clrp = self._claripy
             args = (self,) + args
 
-        args = tuple(_type_fixer(clrp, args))
-        if args is NotImplemented:
-            return NotImplemented
+        fixed_args = tuple(_type_fixer(clrp, args))
+        for i in fixed_args:
+            if i is NotImplemented:
+                return NotImplemented
 
         if extra_check is not None:
-            success, msg = extra_check(*args)
+            success, msg = extra_check(*fixed_args)
             if not success:
                 raise ClaripyOperationError(msg)
 
         if name in simplifiers:
-            simp = simplifiers[name](*args)
+            simp = simplifiers[name](*fixed_args)
             if simp is not None:
                 return simp
 
         kwargs = {}
         if calc_length is not None:
-            kwargs['length'] = calc_length(*args)
+            kwargs['length'] = calc_length(*fixed_args)
 
-        return return_type(clrp, name, args, **kwargs)
+        return return_type(clrp, name, fixed_args, **kwargs)
 
     _op.calc_length = calc_length
     return _op
