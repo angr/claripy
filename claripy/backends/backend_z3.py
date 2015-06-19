@@ -191,7 +191,7 @@ class BackendZ3(SolverBackend):
 
         :param ctx: z3 Context
         :param ast: z3 Ast object
-        :return:
+        :return: An integer - the hash
         """
 
         z3_hash = z3.Z3_get_ast_hash(ctx, ast)
