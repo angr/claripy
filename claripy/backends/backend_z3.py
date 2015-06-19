@@ -185,16 +185,27 @@ class BackendZ3(SolverBackend):
         if len(self._ast_cache) > 1000:
             self.downsize()
 
+    def _z3_ast_hash(self, ctx, ast):
+        """
+        This is a better hashing function for z3 Ast objects. Z3_get_ast_hash() creates too many hash collisions.
+
+        :param ctx: z3 Context
+        :param ast: z3 Ast object
+        :return:
+        """
+
+        z3_hash = z3.Z3_get_ast_hash(ctx, ast)
+        z3_sort = z3.Z3_get_sort(ctx, ast).value
+        return hash("%d_%d" % (z3_hash, z3_sort))
+
     def _abstract_internal(self, ctx, ast, split_on=None):
         self.check_downsize()
 
-        # AST cache is disabled for now, since z3's AST hashing has too many collisions.
-        #h = z3.Z3_get_ast_hash(ctx, ast)
-        #try:
-        #    return self._ast_cache[h]
-        #except KeyError:
-        #    cached = None
-        #    pass
+        h = self._z3_ast_hash(ctx, ast)
+        try:
+            return self._ast_cache[h]
+        except KeyError:
+            pass
 
         decl = z3.Z3_get_app_decl(ctx, ast)
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
@@ -311,7 +322,7 @@ class BackendZ3(SolverBackend):
             else:
                 a = result_ty(self._claripy, op_name, tuple(args))
 
-        #self._ast_cache[h] = a
+        self._ast_cache[h] = a
         return a
 
     def solver(self, timeout=None):
