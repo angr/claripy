@@ -178,17 +178,23 @@ class BackendZ3(SolverBackend):
         #return self._abstract(z, split_on=split_on)[0]
         return self._abstract_internal(z.ctx.ctx, z.ast)
 
-    def check_downsize(self):
-        '''
-        Z3 hashes collide. Here, we clear this cache so that we don't get screwed.
-        '''
-        if len(self._ast_cache) > 1000:
-            self.downsize()
+    @staticmethod
+    def _z3_ast_hash(ctx, ast):
+        """
+        This is a better hashing function for z3 Ast objects. Z3_get_ast_hash() creates too many hash collisions.
+
+        :param ctx: z3 Context
+        :param ast: z3 Ast object
+        :return: An integer - the hash
+        """
+
+        z3_hash = z3.Z3_get_ast_hash(ctx, ast)
+        z3_ast_ref = ast.value # this seems to be the memory address
+        z3_sort = z3.Z3_get_sort(ctx, ast).value
+        return hash("%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref))
 
     def _abstract_internal(self, ctx, ast, split_on=None):
-        self.check_downsize()
-
-        h = z3.Z3_get_ast_hash(ctx, ast)
+        h = self._z3_ast_hash(ctx, ast)
         try:
             return self._ast_cache[h]
         except KeyError:
