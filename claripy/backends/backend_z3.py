@@ -188,11 +188,13 @@ class BackendZ3(SolverBackend):
     def _abstract_internal(self, ctx, ast, split_on=None):
         self.check_downsize()
 
-        h = z3.Z3_get_ast_hash(ctx, ast)
-        try:
-            return self._ast_cache[h]
-        except KeyError:
-            pass
+        # AST cache is disabled for now, since z3's AST hashing has too many collisions.
+        #h = z3.Z3_get_ast_hash(ctx, ast)
+        #try:
+        #    return self._ast_cache[h]
+        #except KeyError:
+        #    cached = None
+        #    pass
 
         decl = z3.Z3_get_app_decl(ctx, ast)
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
@@ -309,7 +311,7 @@ class BackendZ3(SolverBackend):
             else:
                 a = result_ty(self._claripy, op_name, tuple(args))
 
-        self._ast_cache[h] = a
+        #self._ast_cache[h] = a
         return a
 
     def solver(self, timeout=None):
