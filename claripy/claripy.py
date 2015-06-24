@@ -5,6 +5,8 @@ fp_counter = itertools.count()
 import logging
 l = logging.getLogger('claripy.claripy')
 
+_EMPTYSET = frozenset()
+
 class Claripy(object):
     def __init__(self, name, model_backends, solver_backends, parallel=None):
         self.name = name
@@ -42,15 +44,18 @@ class Claripy(object):
     # Operations
     #
 
-    def BitVec(self, name, size, explicit_name=None):
-        explicit_name = explicit_name if explicit_name is not None else False
+    def BitVec(self, name, size, explicit_name=False):
         if self.unique_names and not explicit_name:
             name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
         return BV(self, 'BitVec', (name, size), variables={ name }, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=size)
     BV = BitVec
 
-    def BitVecVal(self, value, size):
-        return BVI(self, BVV(value, size), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
+    def BitVecVal(self, value, size, name=None, explicit_name=False, variables=frozenset()):
+        if name is not None:
+            if self.unique_names and not explicit_name:
+                name = "%s_%d_%d" % (name, bitvec_counter.next(), size)
+            variables |= { name }
+        return BVI(self, BVV(value, size), variables=variables, symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
     BVV = BitVecVal
 
     def FP(self, name, sort, explicit_name=None):
@@ -151,9 +156,13 @@ class Claripy(object):
                 raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
 
         if self.is_true(args[0]):
-            return args[1]
+            return args[1].make_like(self, args[1].op, args[1].args,
+                                     variables=(args[1].variables | args[0].variables),
+                                     symbolic=args[1].symbolic)
         elif self.is_false(args[0]):
-            return args[2]
+            return args[2].make_like(self, args[2].op, args[2].args,
+                                     variables=(args[2].variables | args[0].variables),
+                                     symbolic=args[2].symbolic)
 
         if issubclass(ty, Bits):
             return ty(self, 'If', tuple(args), length=args[1].length)
