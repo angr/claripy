@@ -134,6 +134,9 @@ class Claripy(object):
 
         args = list(args)
 
+        if isinstance(args[0], bool):
+            args[0] = BoolI(self, args[0], variables=frozenset(), symbolic=False, eager=True)
+
         ty = None
         if isinstance(args[1], Base):
             ty = type(args[1])
