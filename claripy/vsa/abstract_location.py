@@ -6,7 +6,7 @@ class Segment(object):
         self.size = size
 
     def __repr__(self):
-        return "0x%x [%d]" % (self.offset, self.size)
+        return "Seg (%s [ %d ])" % (hex(self.offset), self.size)
 
 class AbstractLocation(BackendObject):
     def __init__(self, bbl_key, stmt_id, region_id, segment_list=None, region_offset=None, size=None):
@@ -81,6 +81,9 @@ class AbstractLocation(BackendObject):
     def region(self):
         return self._region_id
 
+    @property
+    def segments(self):
+        return self._segment_list
 
     def update(self, region_offset, size):
         updated = self._add_segment(region_offset, size)
