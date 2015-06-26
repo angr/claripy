@@ -146,7 +146,14 @@ class Base(ana.Storable):
             if model is not self:
                 self.op = 'I'
                 self.args = (model,)
-                self.eager = True
+
+                # self.variables should be updated accordingly for VSA to work
+                if hasattr(model, 'name'):
+                    self.variables = frozenset([ model.name ])
+                else:
+                    self.variables = frozenset()
+
+                self.eager = _is_eager(model)
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -412,7 +419,10 @@ class Base(ana.Storable):
         '''
         The model object (the result of the operation represented by this AST).
         '''
-        return self.resolved()
+        r = self.resolved()
+        if hasattr(r, 'name'):
+            self.variables = frozenset.union(frozenset([r.name]), self.variables)
+        return r
 
     def resolved_with(self, b, result=None):
         '''
