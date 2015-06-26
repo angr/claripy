@@ -77,11 +77,6 @@ def normalize_reversed_arguments(f):
                     arg_reversed.append(True)
                     raw_args.append(args[i].reversed)
                     continue
-            elif isinstance(args[i], Base) and args[i].op == 'Reverse':
-                # A delayed reverse
-                arg_reversed.append(True)
-                raw_args.append(args[i].args[0])
-                continue
 
             # It's not reversed
             arg_reversed.append(False)
