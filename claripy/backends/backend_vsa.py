@@ -1033,7 +1033,7 @@ class BackendVSA(ModelBackend):
     @expand_ifproxy
     def Reverse(arg):
         if type(arg) not in {StridedInterval, DiscreteStridedIntervalSet, ValueSet}:
-            raise BackendError('Unsupported expr type %s' % type(expr))
+            raise BackendError('Unsupported expr type %s' % type(arg))
 
         return arg.reverse()
 
