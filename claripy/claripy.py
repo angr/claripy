@@ -250,13 +250,22 @@ class Claripy(object):
         :param expr:
         :return:
         '''
-        ret = True, [ ]
+
+        satisfiable = True
+        replace_list = [ ]
 
         for b in self.model_backends:
             if type(b) is BackendVSA: #pylint:disable=unidiomatic-typecheck
-                ret = b.constraint_to_si(expr)
+                satisfiable, replace_list = b.constraint_to_si(expr)
 
-        return ret
+        # Make sure the replace_list are all ast.bvs
+        for i in xrange(len(replace_list)):
+            ori, new = replace_list[i]
+            if not isinstance(new, Base):
+                new = BVI(self, new, variables={ new.name }, symbolic=False, length=new._bits, eager=False)
+                replace_list[i] = (ori, new)
+
+        return satisfiable, replace_list
 
     def model_object(self, e, result=None):
         for b in self.model_backends:
