@@ -90,7 +90,7 @@ class Claripy(object):
                                             upper_bound=upper_bound,
                                             stride=stride,
                                             to_conv=to_conv)
-        return BVI(self, si, variables={ si.name }, symbolic=False, length=si._bits)
+        return BVI(self, si, variables={ si.name }, symbolic=False, length=si._bits, eager=False)
     SI = StridedInterval
 
     def TopStridedInterval(self, bits, name=None, signed=False, uninitialized=False):
@@ -101,7 +101,7 @@ class Claripy(object):
     # Value Set
     def ValueSet(self, **kwargs):
         vs = ValueSet(**kwargs)
-        return BVI(self, vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'])
+        return BVI(self, vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager=False)
     VS = ValueSet
 
     # a-loc
