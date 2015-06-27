@@ -90,6 +90,9 @@ class Base(ana.Storable):
         if 'errored' not in kwargs:
             kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
 
+        if 'add_variables' in kwargs:
+            kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
+
         h = Base._calc_hash(claripy, op, a_args, kwargs)
 
         self = cls._hash_cache.get(h, None)
@@ -123,7 +126,7 @@ class Base(ana.Storable):
         return struct.unpack('2Q', hd)[0] # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False):
+    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False, add_variables=None): #pylint:disable=unused-argument
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''

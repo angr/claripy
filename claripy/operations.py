@@ -58,10 +58,35 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
         if calc_length is not None:
             kwargs['length'] = calc_length(*fixed_args)
 
+        if name in preprocessors:
+            args, kwargs = preprocessors[name](*args, **kwargs)
+
+        if any(any(v.startswith('SI') for v in a.variables) for a in args if hasattr(a, 'variables')):
+            kwargs['add_variables'] = frozenset(('SI_%d' % next(name_counter),))
+
         return return_type(clrp, name, fixed_args, **kwargs)
 
     _op.calc_length = calc_length
     return _op
+
+#
+# Extra processors
+#
+
+def preprocess_intersect(*args, **kwargs):
+    new_name = 'SI_%d' % next(name_counter)
+    kwargs['add_variables'] = frozenset((new_name,))
+    return args, kwargs
+
+def preprocess_union(*args, **kwargs):
+    new_name = 'SI_%d' % next(name_counter)
+    kwargs['add_variables'] = frozenset((new_name,))
+    return args, kwargs
+
+preprocessors = {
+    'union': preprocess_union,
+    'intersection': preprocess_intersect
+}
 
 #
 # Simplifiers
@@ -324,3 +349,4 @@ infix = {
 }
 
 from .errors import ClaripyTypeError, ClaripyOperationError
+from .vsa.strided_interval import si_id_ctr as name_counter
