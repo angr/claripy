@@ -150,12 +150,10 @@ class Base(ana.Storable):
                 self.op = 'I'
                 self.args = (model,)
 
-                # self.variables should be updated accordingly for VSA to work
-                if hasattr(model, 'name'):
-                    self.variables = frozenset([ model.name ])
-                else:
-                    self.variables = frozenset()
-
+                # Usually `eagerness` should be passed on. However, type of the model might be different than its
+                # arguments. In VSA, for instance, a union of two BVVs can lead to a StridedInterval instance, where
+                # BVVs should be evaluated eagerly while StridedIntervals should not be, Hence we are rechecking if the
+                # model itself should be eagerly evaluated and property set the eager property here.
                 self.eager = _is_eager(model)
 
         if len(args) == 0:
@@ -423,8 +421,6 @@ class Base(ana.Storable):
         The model object (the result of the operation represented by this AST).
         '''
         r = self.resolved()
-        if hasattr(r, 'name'):
-            self.variables = frozenset.union(frozenset([r.name]), self.variables)
         return r
 
     def resolved_with(self, b, result=None):
