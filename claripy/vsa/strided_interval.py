@@ -54,14 +54,12 @@ def normalize_types(f):
                 self._reversed = False
 
             else:
-                o = o._reverse()
-
-            #__import__('ipdb').set_trace()
-            ## We are working on two instances that have different endianness!
-            #if o.is_integer(): o = o._reverse()
-            #elif self.is_integer(): self = self._reverse()
-            #elif self._reversed: self = self._reverse()
-            #else: o = o._reverse()
+                # If self is an integer, we wanna reverse self as well
+                if self.is_integer():
+                    self = self._reverse()
+                    self_reversed = True
+                else:
+                    o = o._reverse()
 
         ret = f(self, o)
         if self_reversed and isinstance(ret, StridedInterval):
@@ -74,7 +72,7 @@ si_id_ctr = itertools.count()
 
 # Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually set it to False to allow easy
 # implementation of test cases.
-allow_dsis = True
+allow_dsis = False
 
 def lcm(a, b):
     return a * b // fractions.gcd(a, b)
@@ -1162,7 +1160,6 @@ class StridedInterval(BackendObject):
             if not self.is_integer():
                 # We really don't want to do that. Something is wrong.
                 logger.warning('Reversing a real strided-interval %s is bad', self)
-                #__import__('ipdb').set_trace()
 
             # Reversing an integer is easy
             rounded_bits = ((self.bits + 7) / 8) * 8

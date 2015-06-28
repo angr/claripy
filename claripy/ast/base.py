@@ -149,7 +149,12 @@ class Base(ana.Storable):
             if model is not self:
                 self.op = 'I'
                 self.args = (model,)
-                self.eager = True
+
+                # Usually `eagerness` should be passed on. However, type of the model might be different than its
+                # arguments. In VSA, for instance, a union of two BVVs can lead to a StridedInterval instance, where
+                # BVVs should be evaluated eagerly while StridedIntervals should not be, Hence we are rechecking if the
+                # model itself should be eagerly evaluated and property set the eager property here.
+                self.eager = _is_eager(model)
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -415,7 +420,8 @@ class Base(ana.Storable):
         '''
         The model object (the result of the operation represented by this AST).
         '''
-        return self.resolved()
+        r = self.resolved()
+        return r
 
     def resolved_with(self, b, result=None):
         '''
