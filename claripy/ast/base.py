@@ -238,7 +238,7 @@ class Base(ana.Storable):
             #l.debug("... collapsing the AST for operation %s because it's full of constants", self.op)
             return True
 
-        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer()]) > 1:
+        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer]) > 1:
             #l.debug("... collapsing the AST for operation %s because there are more than two SIs", self.op)
             return True
 

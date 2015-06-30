@@ -111,6 +111,7 @@ class BackendVSA(ModelBackend):
         self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
+        self._op_raw['ExactEQ'] = BackendVSA.ExactEQ
         self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
         self._op_raw['ValueSet'] = ValueSet.__init__
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
@@ -1077,6 +1078,10 @@ class BackendVSA(ModelBackend):
             ret = args[1].widen(args[0])
 
         return ret
+
+    @staticmethod
+    def ExactEQ(a, b):
+        return a.exact_eq(b)
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
