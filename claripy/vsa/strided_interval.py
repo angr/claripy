@@ -139,6 +139,12 @@ class StridedInterval(BackendObject):
         if self.lower_bound < 0:
             self.lower_bound = self.lower_bound & (2 ** self.bits - 1)
 
+        if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits):
+            # This is a TOP!
+            # Normalize it
+            self.lower_bound = 0
+            self.upper_bound = self.max_int(self.bits)
+
         if self._stride < 0:
             raise Exception("Why does this happen?")
 
