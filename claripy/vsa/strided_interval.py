@@ -720,15 +720,15 @@ class StridedInterval(BackendObject):
             # Special case: if `a` or `b` is a zero
             card_self = 0
         else:
-            card_self = a.cardinality
+            card_self = StridedInterval._wrapped_cardinality(a.lower_bound, a.upper_bound)
 
         if b.is_integer and b.lower_bound == 0:
             # Special case: if `a` or `b` is a zero
             card_b = 0
         else:
-            card_b = b.cardinality
+            card_b = StridedInterval._wrapped_cardinality(b.lower_bound, b.upper_bound)
 
-        return (card_self + card_b) > a.max_int(a.bits)
+        return (card_self + card_b) > StridedInterval.max_int(a.bits)
 
     @staticmethod
     def _wrappedoverflow_sub(a, b):
@@ -944,6 +944,10 @@ class StridedInterval(BackendObject):
         :return: self + b
         """
         new_bits = max(self.bits, b.bits)
+
+        # TODO: Some improvements can be made here regarding the following case
+        # TODO: SI<16>0xff[0x0, 0xff] + 3
+        # TODO: In current implementation, it overflows, but it doesn't have to
 
         overflow = False
         if self._wrappedoverflow_add(self, b):
