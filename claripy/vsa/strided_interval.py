@@ -669,6 +669,21 @@ class StridedInterval(BackendObject):
                                upper_bound=-2)
 
     @staticmethod
+    def _wrapped_cardinality(x, y, bits):
+        """
+        Return the cardinality for a set of number (| x, y |) on the wrapped-interval domain
+        :param x: The first operand (an integer)
+        :param y: The second operand (an integer)
+        :return: The cardinality
+        """
+
+        if x == y + 1:
+            return 2 ** bits
+
+        else:
+            return ((y - x) + 1) & (2 ** bits - 1)
+
+    @staticmethod
     def _is_msb_zero(v, bits):
         """
         Checks if the most significant bit is zero (i.e. is the integer positive under signed arithmetic)
@@ -826,6 +841,75 @@ class StridedInterval(BackendObject):
 
         else:
             raise Exception('We shouldn\'t see this case: %s * %s' % (a, b))
+
+    #
+    # Membership testing and poset ordering
+    #
+
+    @staticmethod
+    def _lex_lte(x, y, bits):
+        """
+        Lexicographical LTE comparison
+
+        :param x: The first operand (integer)
+        :param y: The second operand (integer)
+        :param bits: bit-width of the operands
+        :return: True or False
+        """
+
+        return (x & (2 ** bits - 1)) <= (y & (2 ** bits - 1))
+
+    @staticmethod
+    def _lex_lt(x, y, bits):
+        """
+        Lexicographical LT comparison
+
+        :param x: The first operand (integer)
+        :param y: The second operand (integer)
+        :param bits: bit-width of the operands
+        :return: True or False
+        """
+
+        return (x & (2 ** bits - 1)) < (y & (2 ** bits - 1))
+
+    def _wrapped_member(self, v):
+        """
+        Test if integer v belongs to StridedInterval a
+
+        :param self: A StridedInterval instance
+        :param v: An integer
+        :return: True or False
+        """
+
+        a = self
+        return self._lex_lte(v - a.lower_bound, a.upper_bound - a.lower_bound, a.bits)
+
+    def _wrapped_lte(self, b):
+        """
+        Perform a wrapped LTE comparison based on the poset ordering
+
+        :param a: The first operand
+        :param b: The second operand
+        :return: True if a <= b, False otherwise
+        """
+
+        a = self
+        if a.is_empty():
+            return True
+
+        if a.is_top and b.is_top:
+            return True
+
+        elif a.is_top:
+            return False
+
+        elif b.is_top:
+            return True
+
+        if b._wrapped_member(a.lower_bound) and b._wrapped_member(a.upper_bound):
+            if b.exact_eq(a) or not a._wrapped_member(b.lower_bound) or not a._wrapped_member(b.upper_bound):
+                return True
+        return False
 
     #
     # Arithmetic operations
@@ -1347,13 +1431,18 @@ class StridedInterval(BackendObject):
     @normalize_types
     def _union(self, b):
         """
-        The union operation. It guarantees to return a _single_ StridedInterval.
+        Binary operation: union
+        It's also the join operation.
 
-        :param b: Operand.
+        :param b: The other operand.
         :return: A new StridedInterval
         """
         if self._reversed != b._reversed:
             logger.warning('Incoherent reversed flag between operands %s and %s', self, b)
+
+        #
+        # Trivial cases
+        #
 
         if self.is_empty():
             return b
@@ -1364,6 +1453,72 @@ class StridedInterval(BackendObject):
             u = max(self.upper_bound, b.upper_bound)
             l = min(self.lower_bound, b.lower_bound)
             return StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
+
+        #
+        # Other cases
+        #
+
+        if self._wrapped_lte(b):
+            # Containment
+
+            new_stride = fractions.gcd(self.stride, b.stride)
+            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
+                                   upper_bound=b.upper_bound)
+
+        elif b._wrapped_lte(self):
+            # Containment
+
+            new_stride = fractions.gcd(self.stride, b.stride)
+            # TODO: This case is missing in the original implementation. Is that a bug?
+            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=self.lower_bound,
+                                   upper_bound=self.upper_bound)
+
+        elif (self._wrapped_member(b.lower_bound) and self._wrapped_member(b.upper_bound) and
+            b._wrapped_member(self.lower_bound) and b._wrapped_member(self.upper_bound)):
+            # The union of them covers the entire sphere
+
+            return StridedInterval.top(self.bits)
+
+        elif self._wrapped_member(b.lower_bound):
+            # Overlapping
+
+            new_stride = fractions.gcd(self.stride, b.stride)
+            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=self.lower_bound,
+                                   upper_bound=b.upper_bound)
+
+        elif b._wrapped_member(self.lower_bound):
+            # Overlapping
+
+            new_stride = fractions.gcd(self.stride, b.stride)
+            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
+                                   upper_bound=self.upper_bound)
+
+        else:
+            card_1 = self._wrapped_cardinality(self.upper_bound, b.lower_bound, self.bits)
+            card_2 = self._wrapped_cardinality(b.upper_bound, self.lower_bound, self.bits)
+
+            new_stride = fractions.gcd(self.stride, b.stride)
+            if card_1 == card_2:
+                # Left/right leaning cases
+                if self._lex_lt(self.lower_bound, b.lower_bound, self.bits):
+                    return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=self.lower_bound,
+                                           upper_bound=b.upper_bound)
+
+                else:
+                    return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
+                                           upper_bound=self.upper_bound)
+
+            elif card_1 < card_2:
+                # non-overlapping case (left)
+                return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=self.lower_bound,
+                                       upper_bound=b.upper_bound)
+
+            else:
+                # non-overlapping case (right)
+                return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
+                                       upper_bound=self.upper_bound)
+
+        # TODO:
 
         new_stride = fractions.gcd(self.stride, b.stride)
         assert new_stride >= 0
