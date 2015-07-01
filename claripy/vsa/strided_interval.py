@@ -720,13 +720,13 @@ class StridedInterval(BackendObject):
             # Special case: if `a` or `b` is a zero
             card_self = 0
         else:
-            card_self = StridedInterval._wrapped_cardinality(a.lower_bound, a.upper_bound)
+            card_self = StridedInterval._wrapped_cardinality(a.lower_bound, a.upper_bound, a.bits)
 
         if b.is_integer and b.lower_bound == 0:
             # Special case: if `a` or `b` is a zero
             card_b = 0
         else:
-            card_b = StridedInterval._wrapped_cardinality(b.lower_bound, b.upper_bound)
+            card_b = StridedInterval._wrapped_cardinality(b.lower_bound, b.upper_bound, b.bits)
 
         return (card_self + card_b) > StridedInterval.max_int(a.bits)
 
