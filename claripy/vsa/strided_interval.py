@@ -163,19 +163,69 @@ class StridedInterval(BackendObject):
     #
 
     def _ssplit(self):
+        """
+        Split `self` at the south pole, which is the same as in unsigned arithmetic
 
-        # TODO
-        raise NotImplementedError()
+        :return: A list of split StridedIntervals
+        """
+
+        south_pole_right = self.max_int(self.bits) # 111...1
+        # south_pole_left = 0
+
+        # Is `self` straddling the south pole?
+        if self.upper_bound < self.lower_bound:
+            # It straddles the south pole!
+
+            a_upper_bound = south_pole_right - ((south_pole_right - self.lower_bound) % self.stride)
+            a = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=self.lower_bound, upper_bound=a_upper_bound)
+
+            b_lower_bound = self._modular_add(a_upper_bound, self.stride, self.bits)
+            b = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=b_lower_bound, upper_bound=self.upper_bound)
+
+            return [ a, b ]
+
+        else:
+            return [ self.copy() ]
 
     def _nsplit(self):
+        """
+        Split `self` at the north pole, which is the same as in signed arithmetic
 
-        # TODO
-        raise NotImplementedError()
+        :return: A list of split StridedIntervals
+        """
+
+        north_pole_left = self.max_int(self.bits - 1) # 01111...1
+        north_pole_right = 2 ** self.bits # 1000...0
+
+        # Is `self` straddling the north pole?
+        if self.lower_bound <= north_pole_left and self.upper_bound >= north_pole_right:
+            # Yes it does!
+
+            a_upper_bound = north_pole_left - ((north_pole_left - self.lower_bound) % self.stride)
+            a = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=self.lower_bound, upper_bound=a_upper_bound)
+
+            b_lower_bound = a_upper_bound + self.stride
+            b = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=b_lower_bound, upper_bound=self.upper_bound)
+
+            return [ a, b ]
+
+        else:
+            return [ self.copy() ]
 
     def _psplit(self):
+        """
+        Split `self` at both north and south poles
 
-        # TODO
-        raise NotImplementedError()
+        :return: A list of split StridedIntervals
+        """
+
+        nsplit_list = self._nsplit()
+        psplit_list = [ ]
+
+        for si in nsplit_list:
+            psplit_list.extend(si._ssplit())
+
+        return psplit_list
 
     #
     # Comparison operations
@@ -619,26 +669,27 @@ class StridedInterval(BackendObject):
                                upper_bound=-2)
 
     @staticmethod
-    def _get_signed_val(v):
-        v = v.copy()
+    def _is_msb_zero(v, bits):
+        """
+        Checks if the most significant bit is zero (i.e. is the integer positive under signed arithmetic)
+        :param v: The integer to check with
+        :param bits: Bits of the integer
+        :return: True or False
+        """
+        return (v & (2 ** bits - 1)) & (2 ** (bits - 1)) == 0
 
-        if v._bits > 1:
-            if v.upper_bound > v.max_int(v._bits - 1):
-                # This is a negative number
-                mask = (1 << v._bits) - 1
-                v.upper_bound = -(((-v.upper_bound) & mask) - 1)
-            if v.lower_bound > v.max_int(v._bits - 1):
-                # This is a negative number
-                mask = (1 << v._bits) - 1
-                v.lower_bound = -(((-v.lower_bound) & mask) - 1)
-            if v.lower_bound >= v.upper_bound:
-                t = v.upper_bound
-                v.upper_bound = v.lower_bound
-                v.lower_bound = t
-            # Make sure the stride makes sense
-            if v.stride == 0 and v.lower_bound < v.upper_bound: v.stride = 1
-
-        return v
+    @staticmethod
+    def _unsigned_to_signed(v, bits):
+        """
+        Convert an unsigned integer to a signed integer
+        :param v: The unsigned integer
+        :param bits: How many bits this integer should be
+        :return: The converted signed integer
+        """
+        if StridedInterval._is_msb_zero(v, bits):
+            return v
+        else:
+            return -(2 ** bits - v)
 
     @staticmethod
     def _wrappedoverflow_add(a, b):
@@ -675,6 +726,106 @@ class StridedInterval(BackendObject):
         """
 
         return StridedInterval._wrappedoverflow_add(a, b)
+
+    @staticmethod
+    def _wrapped_unsigned_mul(a, b):
+        """
+        Perform wrapped unsigned multiplication on two StridedIntervals
+        :param a: The first operand (StridedInterval)
+        :param b: The second operand (StridedInterval)
+        :return: The multiplication result
+        """
+
+        bits = max(a.bits, b.bits)
+
+        lb = a.lower_bound * b.lower_bound
+        ub = a.upper_bound * b.upper_bound
+
+        max_ = StridedInterval.max_int(bits)
+        if lb > max_ or ub > max_:
+            # Overflow occurred
+            return StridedInterval.top(bits, uninitialized=False)
+
+        else:
+            stride = fractions.gcd(a.stride, b.stride)
+            return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+
+    @staticmethod
+    def _wrapped_signed_mul(a, b):
+        """
+        Perform wrapped signed multiplication on two StridedIntervals
+        :param a: The first operand (StridedInterval)
+        :param b: The second operand (StridedInterval)
+        :return: The multiplication result
+        """
+
+        bits = max(a.bits, b.bits)
+
+        a_lb_positive = StridedInterval._is_msb_zero(a.lower_bound, bits)
+        a_ub_positive = StridedInterval._is_msb_zero(a.upper_bound, bits)
+        b_lb_positive = StridedInterval._is_msb_zero(b.lower_bound, bits)
+        b_ub_positive = StridedInterval._is_msb_zero(b.upper_bound, bits)
+
+        stride = fractions.gcd(a.stride, b.stride)
+
+        max_ = StridedInterval.max_int(bits)
+
+        if (a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive):
+            # [2, 5] * [10, 20] = [20, 100]
+            lb = a.lower_bound * b.lower_bound
+            ub = a.upper_bound * b.upper_bound
+
+            if lb > max_ or ub > max_:
+                # overflow
+                return StridedInterval.top(bits)
+
+            else:
+                return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+
+        elif (not a_lb_positive and not a_ub_positive and not b_lb_positive and not b_ub_positive):
+            # [-5, -2] * [-20, -10] = [20, 100]
+            lb = (
+                StridedInterval._unsigned_to_signed(a.upper_bound, bits) *
+                StridedInterval._unsigned_to_signed(b.upper_bound, bits)
+            )
+            ub = (
+                StridedInterval._unsigned_to_signed(a.lower_bound, bits) *
+                StridedInterval._unsigned_to_signed(b.lower_bound, bits)
+            )
+
+            if lb > max_ or ub > max_:
+                # overflow
+                return StridedInterval.top(bits)
+
+            else:
+                return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+
+        elif (not a_lb_positive and not a_ub_positive and b_lb_positive and b_ub_positive):
+            # [-10, -2] * [2, 5] = [-50, -4]
+            lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) * b.upper_bound
+            ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) * b.lower_bound
+
+            if lb & (2 ** bits - 1) > max_ or ub & (2 ** bits - 1) > max_:
+                # overflow
+                return StridedInterval.top(bits)
+
+            else:
+                return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+
+        elif (a_lb_positive and a_ub_positive and not b_lb_positive and not b_ub_positive):
+            # [2, 10] * [-5, -2] = [-50, -4]
+            lb = a.upper_bound * StridedInterval._unsigned_to_signed(b.lower_bound, bits)
+            ub = a.lower_bound * StridedInterval._unsigned_to_signed(b.upper_bound, bits)
+
+            if lb & (2 ** bits - 1) > max_ or ub & (2 ** bits - 1) > max_:
+                # overflow
+                return StridedInterval.top(bits)
+
+            else:
+                return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+
+        else:
+            raise Exception('We shouldn\'t see this case: %s * %s' % (a, b))
 
     #
     # Arithmetic operations
@@ -797,20 +948,22 @@ class StridedInterval(BackendObject):
             return ret.normalize()
 
         else:
-            # TODO:
-            all_bounds = [self.lower_bound * o.lower_bound,
-                          self.upper_bound * o.lower_bound,
-                          self.lower_bound * o.upper_bound,
-                          self.upper_bound * o.upper_bound
-                          ]
-            stride = fractions.gcd(self.stride, o.stride)
+            # Cut from both north pole and south pole
+            si1_psplit = self._psplit()
+            si2_psplit = o._psplit()
 
-            # Both are StridedIntervals
-            ret = StridedInterval(bits=self.bits,
-                                  stride=stride,
-                                  lower_bound=min(all_bounds),
-                                  upper_bound=max(all_bounds)
-                                  )
+            ret = None
+            for si1 in si1_psplit:
+                for si2 in si2_psplit:
+                    tmp_unsigned_mul = self._wrapped_unsigned_mul(si1, si2)
+                    tmp_signed_mul = self._wrapped_signed_mul(si1, si2)
+
+                    tmp_meet = tmp_unsigned_mul.intersection(tmp_signed_mul)
+
+                    if ret is None:
+                        ret = tmp_meet
+                    else:
+                        ret = ret.union(tmp_meet)
 
             return ret.normalize()
 
@@ -1231,8 +1384,6 @@ class StridedInterval(BackendObject):
             return StridedInterval.empty(self.bits)
 
         assert self.bits == b.bits
-
-        ret = None
 
         l = max(self.lower_bound, b.lower_bound)
         u = min(self.upper_bound, b.upper_bound)
