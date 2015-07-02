@@ -25,7 +25,7 @@ def proxified(f):
 
             if cond1.op in inverse_operations and \
                     inverse_operations[cond1.op] == cond2.op and \
-                    all([ BoolResult.is_true(a1 == a2) for a1, a2 in zip(cond1.args, cond2.args)]):
+                    all([ BoolResult.is_true(a1.identical(a2)) for a1, a2 in zip(cond1.args, cond2.args)]):
                 other_args = [ other.falseexpr, other.trueexpr ]
             else:
                 # FIXME: We are assuming the conditions are the same with self.condition...

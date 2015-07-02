@@ -83,7 +83,7 @@ class StridedInterval(BackendObject):
         stride[lower_bound, upper_bound]
     For more details, please refer to relevant papers like TIE and WYSINWYE.
     '''
-    def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False):
+    def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, bottom=False):
         self._name = name
 
         if self._name is None:
@@ -91,13 +91,12 @@ class StridedInterval(BackendObject):
 
         self._bits = bits
         self._stride = stride
-        # For lower bound and upper bound, we always store the unsigned version
-        self._lower_bound = lower_bound & (2 ** bits - 1)
-        self._upper_bound = upper_bound & (2 ** bits - 1)
+        self._lower_bound = lower_bound
+        self._upper_bound = upper_bound
 
         self._reversed = False
 
-        self._is_bottom = False
+        self._is_bottom = bottom
 
         self.uninitialized = uninitialized
 
@@ -109,6 +108,10 @@ class StridedInterval(BackendObject):
 
         if self._lower_bound is None:
             self._lower_bound = StridedInterval.min_int(self.bits)
+
+        # For lower bound and upper bound, we always store the unsigned version
+        self._lower_bound = self._lower_bound & (2 ** bits - 1)
+        self._upper_bound = self._upper_bound & (2 ** bits - 1)
 
     def copy(self):
         si = StridedInterval(name=self._name,
@@ -132,6 +135,9 @@ class StridedInterval(BackendObject):
     def normalize(self):
         if self.bits == 8 and self.reversed:
             self._reversed = False
+
+        if self.is_empty():
+            return self
 
         if self.lower_bound == self.upper_bound:
             self._stride = 0
@@ -275,7 +281,7 @@ class StridedInterval(BackendObject):
     # Comparison operations
     #
 
-    def exact_eq(self, o):
+    def identical(self, o):
         """
         Used to make exact comparisons between two StridedIntervals. Usually it is only used in test cases.
 
@@ -283,7 +289,8 @@ class StridedInterval(BackendObject):
         :return: True if they are exactly same, False otherwise
         """
 
-        if (self.stride == o.stride and
+        if (self.bits == o.bits and
+                self.stride == o.stride and
                 self.lower_bound == o.lower_bound and
                 self.upper_bound == o.upper_bound):
             return True
@@ -727,10 +734,7 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def empty(bits):
-        return StridedInterval(bits=bits,
-                               stride=0,
-                               lower_bound=-1,
-                               upper_bound=-2)
+        return StridedInterval(bits=bits, bottom=True)
 
     @staticmethod
     def _wrapped_cardinality(x, y, bits):

@@ -159,8 +159,6 @@ BV.union = op('union', (BV, BV), BV, extra_check=length_same_check, calc_length=
 BV.widen = op('widen', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 BV.intersection = op('intersection', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
 
-BV.ExactEQ = op('ExactEQ', (BV, BV), Bool)
-
 def BVI(claripy, model, **kwargs):
     eager = isinstance(model, BVV)
     kwargs['eager'] = eager

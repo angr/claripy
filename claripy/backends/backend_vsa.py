@@ -111,7 +111,6 @@ class BackendVSA(ModelBackend):
         self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
-        self._op_raw['ExactEQ'] = BackendVSA.ExactEQ
         self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
         self._op_raw['ValueSet'] = ValueSet.__init__
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
@@ -585,35 +584,35 @@ class BackendVSA(ModelBackend):
             import ipdb; ipdb.set_trace()
 
         elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
-            new_si = rhs.model.copy()
             if isinstance(lhs.model, Base):
                 # It cannot be computed by our backend...
                 # We just give up for now
                 return True, [ ]
 
-            if isinstance(new_si, DiscreteStridedIntervalSet):
-                new_si = new_si.collapse()
-            new_si.stride = lhs.model.stride
+            stride = lhs.model.stride
 
             if is_lt:
                 # < or <=
-                if is_unsigned: new_si.lower_bound = 0
-                else: new_si.lower_bound = new_si.min_int(new_si.bits)
+                if is_unsigned: lb = 0
+                else: lb = StridedInterval.min_int(rhs.length)
 
+                ub = rhs.model.upper_bound
                 if not is_equal:
                     # <
-                    new_si.upper_bound = new_si.upper_bound - 1
+                    ub = ub - 1
 
             else:
                 # > or >=
-                if is_unsigned: new_si.upper_bound = new_si.max_int(new_si.bits)
-                else: new_si.upper_bound = new_si.max_int(new_si.bits - 1)
+                if is_unsigned: ub = StridedInterval.max_int(rhs.length)
+                else: ub = StridedInterval.max_int(rhs.model.bits - 1)
 
+                lb = rhs.model.lower_bound
                 if not is_equal:
                     # >
-                    new_si.lower_bound = new_si.lower_bound + 1
+                    lb = lb + 1
 
-            return True, [(lhs, new_si)]
+            si_replacement = claripy.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
+            return True, [(lhs, si_replacement)]
         else:
             #import ipdb; ipdb.set_trace()
 
@@ -868,11 +867,17 @@ class BackendVSA(ModelBackend):
             op, rhs = new_cond
             args = (lhs, rhs)
 
-            return getattr(self, "cts_handler_%s" % op)(args)
+            sat, lst = getattr(self, "cts_handler_%s" % op)(args)
 
         else:
-            return getattr(self, "cts_handler_%s" % op)(args)
+            sat, lst = getattr(self, "cts_handler_%s" % op)(args)
 
+        from ..ast import BV
+
+        if not isinstance(lst[-1][1], BV):
+            __import__('ipdb').set_trace()
+
+        return sat, lst
 
     def constraint_to_si(self, expr):
         """
@@ -911,7 +916,7 @@ class BackendVSA(ModelBackend):
     #
 
     def _identical(self, a, b, result=None):
-        return BackendVSA.is_true(a == b)
+        return a.identical(b)
 
     def _unique(self, obj, result=None):
         if isinstance(obj, StridedInterval):
@@ -1078,10 +1083,6 @@ class BackendVSA(ModelBackend):
             ret = args[1].widen(args[0])
 
         return ret
-
-    @staticmethod
-    def ExactEQ(a, b):
-        return a.exact_eq(b)
 
     @staticmethod
     def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
