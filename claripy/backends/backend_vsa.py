@@ -871,11 +871,6 @@ class BackendVSA(ModelBackend):
         else:
             sat, lst = getattr(self, "cts_handler_%s" % op)(args)
 
-        from ..ast import BV
-
-        if not isinstance(lst[-1][1], BV):
-            __import__('ipdb').set_trace()
-
         return sat, lst
 
     def constraint_to_si(self, expr):
