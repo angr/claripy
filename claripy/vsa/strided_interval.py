@@ -113,7 +113,7 @@ class StridedInterval(BackendObject):
         self._lower_bound = self._lower_bound & (2 ** bits - 1)
         self._upper_bound = self._upper_bound & (2 ** bits - 1)
 
-        self.normalize()
+        self._normalize_top()
 
     def copy(self):
         si = StridedInterval(name=self._name,
@@ -147,11 +147,7 @@ class StridedInterval(BackendObject):
         if self.lower_bound < 0:
             self.lower_bound = self.lower_bound & (2 ** self.bits - 1)
 
-        if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits):
-            # This is a TOP!
-            # Normalize it
-            self.lower_bound = 0
-            self.upper_bound = self.max_int(self.bits)
+        self._normalize_top()
 
         if self._stride < 0:
             raise Exception("Why does this happen?")
@@ -175,6 +171,13 @@ class StridedInterval(BackendObject):
     #
     # Private methods
     #
+
+    def _normalize_top(self):
+        if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits) and self.stride == 1:
+            # This is a TOP!
+            # Normalize it
+            self.lower_bound = 0
+            self.upper_bound = self.max_int(self.bits)
 
     def _ssplit(self):
         """
