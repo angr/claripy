@@ -113,6 +113,8 @@ class StridedInterval(BackendObject):
         self._lower_bound = self._lower_bound & (2 ** bits - 1)
         self._upper_bound = self._upper_bound & (2 ** bits - 1)
 
+        self.normalize()
+
     def copy(self):
         si = StridedInterval(name=self._name,
                              bits=self.bits,
