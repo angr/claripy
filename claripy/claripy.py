@@ -93,8 +93,8 @@ class Claripy(object):
         return BVI(self, si, variables={ si.name }, symbolic=False, length=si._bits, eager=False)
     SI = StridedInterval
 
-    def TopStridedInterval(self, bits, name=None, signed=False, uninitialized=False):
-        si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, signed=signed, uninitialized=uninitialized)
+    def TopStridedInterval(self, bits, name=None, uninitialized=False):
+        si = BackendVSA.CreateTopStridedInterval(bits=bits, name=name, uninitialized=uninitialized)
         return BVI(self, si, variables={ si.name }, symbolic=False, length=bits)
     TSI = TopStridedInterval
 
