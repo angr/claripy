@@ -332,7 +332,6 @@ def test():
 
     c = BVV(128, 8)
     assert c.signed == -128
-    print "YAY"
 
     d = BVV(255, 8)
     assert Extract(1, 0, d) == 3
@@ -344,8 +343,6 @@ def test():
     f = BVV(0b11, 2)
     assert Concat(e, e, e, e) == 0b1010101010101010
     assert Concat(e,f,f) == 0b10101111
-
-    print "OK"
 
 if __name__ == '__main__':
     test()
