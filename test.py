@@ -793,7 +793,7 @@ def test_vsa():
 
     # Concatenating two integers
     si_concat = part1.concat(part2)
-    nose.tools.assert_true(is_equal(si_concat, si.model))
+    nose.tools.assert_true(is_equal(si_concat, si))
 
     # Extracting a SI
     si = clrp.SI(bits=64, stride=0x9, lower_bound=0x1, upper_bound=0xa)
@@ -815,20 +815,20 @@ def test_vsa():
     nose.tools.assert_true(is_equal(si_signextended, SI(bits=64, stride=9, lower_bound=1, upper_bound=10)))
 
     # Extract from the result above
-    si_extracted = si_zeroextended.extract(31, 0)
+    si_extracted = si_zeroextended[31:0]
     nose.tools.assert_true(is_equal(si_extracted, SI(bits=32, stride=9, lower_bound=1, upper_bound=10)))
 
     # Union
     si_union_1 = si1.union(si2)
-    nose.tools.assert_true(is_equal(si_union_1. SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
+    nose.tools.assert_true(is_equal(si_union_1, SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
     si_union_2 = si1.union(si3)
-    nose.tools.assert_true(is_equal(si_union_2. SI(bits=32, stride=18, lower_bound=10, upper_bound=28)))
+    nose.tools.assert_true(is_equal(si_union_2, SI(bits=32, stride=18, lower_bound=10, upper_bound=28)))
     si_union_3 = si1.union(si_a)
-    nose.tools.assert_true(is_equal(si_union_3. SI(bits=32, stride=2, lower_bound=10, upper_bound=20)))
+    nose.tools.assert_true(is_equal(si_union_3, SI(bits=32, stride=2, lower_bound=10, upper_bound=20)))
     si_union_4 = si_a.union(si_b)
-    nose.tools.assert_true(is_equal(si_union_4. SI(bits=32, stride=2, lower_bound=-100, upper_bound=200)))
+    nose.tools.assert_true(is_equal(si_union_4, SI(bits=32, stride=2, lower_bound=-100, upper_bound=200)))
     si_union_5 = si_b.union(si_c)
-    nose.tools.assert_true(is_equal(si_union_5. SI(bits=32, stride=1, lower_bound=-100, upper_bound=200)))
+    nose.tools.assert_true(is_equal(si_union_5, SI(bits=32, stride=1, lower_bound=-100, upper_bound=200)))
 
     # Intersection
     si_intersection_1 = si1.intersection(si1)
@@ -845,7 +845,7 @@ def test_vsa():
     # Sign-extension
     si = SI(bits=1, stride=0, lower_bound=1, upper_bound=1)
     si_signextended = si.sign_extend(31)
-    nose.tools.assert_true(is_equal(si_signextended.model. SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
+    nose.tools.assert_true(is_equal(si_signextended, SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
 
     # Comparison between SI and BVV
     si = SI(bits=32, stride=1, lower_bound=-0x7f, upper_bound=0x7f)
@@ -886,7 +886,7 @@ def test_vsa():
     # Test merging two addresses
     vs_1.model.merge_si('global', si1)
     vs_1.model.merge_si('global', si3)
-    nose.tools.assert_true(is_equal(vs_1.model.get_si('global'), SI(bits=32, stride=18, lower_bound=10, upper_bound=28)))
+    nose.tools.assert_true(vs_1.model.get_si('global').exact_eq(SI(bits=32, stride=18, lower_bound=10, upper_bound=28).model))
     # Length of this ValueSet
     nose.tools.assert_equal(len(vs_1.model), 32)
 
@@ -906,20 +906,20 @@ def test_vsa():
     vs_2 = VS(region='global', bits=32, val=0xFA7B00B)
     si = SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
     if_1 = (vs_2 & clrp.If(si == 0, SI(bits=32, stride=0, lower_bound=0, upper_bound=0), SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
-    nose.tools.assert_true(is_equal(if_1.model.trueexpr, VS(region='global', bits=32, val=0)))
-    nose.tools.assert_true(is_equal(if_1.model.falseexpr, vs_2))
+    nose.tools.assert_true(clrp.is_true(if_1.model.trueexpr == VS(region='global', bits=32, val=0).model))
+    nose.tools.assert_true(clrp.is_true(if_1.model.falseexpr == vs_2.model))
 
     # if_2 = And(VS_3, IfProxy(si != 0, 0, 1)
     vs_3 = clrp.ValueSet(region='global', bits=32, val=0xDEADCA7)
     si = clrp.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
     if_2 = (vs_3 & clrp.If(si != 0, SI(bits=32, stride=0, lower_bound=0, upper_bound=0), SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
-    nose.tools.assert_true(is_equal(if_2.model.trueexpr, VS(region='global', bits=32, val=0)))
-    nose.tools.assert_true(is_equal(if_2.model.falseexpr, vs_3))
+    nose.tools.assert_true(clrp.is_true(if_2.model.trueexpr == VS(region='global', bits=32, val=0).model))
+    nose.tools.assert_true(clrp.is_true(if_2.model.falseexpr == vs_3.model))
 
     # Something crazy is gonna happen...
     if_3 = if_1 + if_2
-    nose.tools.assert_true(is_equal(if_3.model.trueexpr, vs_3))
-    nose.tools.assert_true(is_equal(if_3.model.falseexpr, vs_2))
+    nose.tools.assert_true(clrp.is_true(if_3.model.trueexpr == vs_3.model))
+    nose.tools.assert_true(clrp.is_true(if_3.model.falseexpr == vs_2.model))
 
 def test_vsa_constraint_to_si():
     from claripy.backends import BackendVSA

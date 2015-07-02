@@ -233,6 +233,44 @@ class StridedInterval(BackendObject):
 
         return psplit_list
 
+    def _signed_bounds(self):
+        """
+        Get lower bound and upper bound for `self` in signed arithmetic
+        :return: a tuple of (lower_bound, upper_bound)
+        """
+
+        nsplit = self._nsplit()
+        if len(nsplit) == 1:
+            lb = nsplit[0].lower_bound
+            ub = nsplit[0].upper_bound
+        elif len(nsplit) == 2:
+            lb = nsplit[0].lower_bound
+            ub = nsplit[1].upper_bound
+        else:
+            raise Exception('WTF')
+
+        lb = self._unsigned_to_signed(lb, self.bits)
+        ub = self._unsigned_to_signed(ub, self.bits)
+        return lb, ub
+
+    def _unsigned_bounds(self):
+        """
+        Get lower bound and upper bound for `self` in unsigned arithmetic
+        :return: a tuple of (lower_bound, upper_bound)
+        """
+
+        nsplit = self._ssplit()
+        if len(nsplit) == 1:
+            lb = nsplit[0].lower_bound
+            ub = nsplit[0].upper_bound
+        elif len(nsplit) == 2:
+            lb = nsplit[0].lower_bound
+            ub = nsplit[1].upper_bound
+        else:
+            raise Exception('WTF')
+
+        return lb, ub
+
     #
     # Comparison operations
     #
@@ -261,7 +299,17 @@ class StridedInterval(BackendObject):
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
 
-        pass
+        lb_1, ub_1 = self._signed_bounds()
+        lb_2, ub_2 = o._signed_bounds()
+
+        if ub_1 <= lb_2:
+            return TrueResult()
+
+        elif lb_1 > ub_2:
+            return FalseResult()
+
+        else:
+            return MaybeResult()
 
     def sgt(self, o):
         """
@@ -270,7 +318,17 @@ class StridedInterval(BackendObject):
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
 
-        pass
+        lb_1, ub_1 = self._signed_bounds()
+        lb_2, ub_2 = o._signed_bounds()
+
+        if lb_1 > ub_2:
+            return TrueResult()
+
+        elif ub_1 <= lb_2:
+            return FalseResult()
+
+        else:
+            return MaybeResult()
 
     def eq(self, o):
         """
@@ -913,7 +971,8 @@ class StridedInterval(BackendObject):
             return True
 
         if b._wrapped_member(a.lower_bound) and b._wrapped_member(a.upper_bound):
-            if b.exact_eq(a) or not a._wrapped_member(b.lower_bound) or not a._wrapped_member(b.upper_bound):
+            if ((b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
+                    or not a._wrapped_member(b.lower_bound) or not a._wrapped_member(b.upper_bound)):
                 return True
         return False
 
@@ -1543,6 +1602,54 @@ class StridedInterval(BackendObject):
             new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
 
+    def _minimum_intersection_integer(self, other, lb_from_self):
+        """
+        Solves for the minimum integer that exists in both StridedIntervals
+
+        :param other: The other operand
+        :param lb_from_self: True/False. If True, then we have `other` contains `self` or `other` contains
+                            `self`.lower_bound, and vice versa
+        :return: The minimum integer if there is one, or None if it doesn't exist.
+        """
+
+        # It's equivalent to find a integral solution for equation `ax + b = cy + d` that makes `ax + b` minimal
+        # Some assumptions:
+        # a, b, c, d are all positive integers
+        # x >= 0, y >= 0
+
+        a, b, c, d = self.stride, self.lower_bound, other.stride, other.lower_bound
+
+        if (d - b) % lcm(a, c) != 0:
+            # They don't overlap
+            return None
+
+        if c % a:
+            p = c / a
+
+            if not lb_from_self:
+                k1 = (d - b) / a # It must be an integer
+                k = int(k1 + 0.5)
+            else:
+                k2 = (b - d) * (c * 1.0 / a - p) / c + (d - b) / a
+                k = int(k2 + 0.5)
+
+            y = (k - (d - b) / a) / (c * 1.0 / a - p)
+            first_integer = int(c * y + d)
+
+        else:
+            if lb_from_self:
+                first_integer = b
+            else:
+                first_integer = d
+
+        if self._wrapped_member(first_integer) and \
+                self._modular_sub(first_integer, self.lower_bound, self.bits) % self.stride == 0 and \
+                other._wrapped_member(first_integer) and \
+                other._modular_sub(first_integer, other.lower_bound, other.bits) % other.stride == 0:
+            return first_integer
+        else:
+            return None
+
     @normalize_types
     def intersection(self, b):
         if self.is_empty() or b.is_empty():
@@ -1550,57 +1657,167 @@ class StridedInterval(BackendObject):
 
         assert self.bits == b.bits
 
-        l = max(self.lower_bound, b.lower_bound)
-        u = min(self.upper_bound, b.upper_bound)
-
-        if self.stride == 0 and b.stride == 0:
+        if self.is_integer and b.is_integer:
             if self.lower_bound == b.lower_bound:
+                # They are the same number!
                 ret = StridedInterval(bits=self.bits,
-                                      stride=self.stride,
+                                      stride=0,
                                       lower_bound=self.lower_bound,
-                                      upper_bound=self.upper_bound)
+                                      upper_bound=self.lower_bound)
             else:
                 ret = StridedInterval.empty(self.bits)
-        elif self.stride == 0:
-            if (b.lower_bound - self.lower_bound) % b.stride == 0 and \
-                self.lower_bound >= b.lower_bound and \
-                self.lower_bound <= b.upper_bound:
+
+        elif self.is_integer:
+            integer = self.lower_bound
+            if (b.lower_bound - integer) % b.stride == 0 and \
+                    b._wrapped_member(integer):
                 ret = StridedInterval(bits=self.bits,
-                                      stride=self.stride,
-                                      lower_bound=self.lower_bound,
-                                      upper_bound=self.upper_bound)
+                                      stride=0,
+                                      lower_bound=integer,
+                                      upper_bound=integer)
             else:
                 ret = StridedInterval.empty(self.bits)
-        elif b.stride == 0:
-            if (b.lower_bound - self.lower_bound) % self.stride == 0 and \
-                b.lower_bound >= self.lower_bound and \
-                b.lower_bound <= self.upper_bound:
+
+        elif b.is_integer:
+            integer = b.lower_bound
+            if (integer - self.lower_bound) % self.stride == 0 and \
+                    self._wrapped_member(integer):
                 ret = StridedInterval(bits=self.bits,
-                                      stride=b.stride,
-                                      lower_bound=b.lower_bound,
-                                      upper_bound=b.upper_bound)
+                                      stride=0,
+                                      lower_bound=integer,
+                                      upper_bound=integer)
             else:
                 ret = StridedInterval.empty(self.bits)
+
         else:
+            # None of the operands is an integer
+
             new_stride = lcm(self.stride, b.stride)
-            if (
-                self.lower_bound % new_stride == 0 and
-                b.lower_bound % new_stride  == 0
-               ) or \
-                    self.lower_bound == b.lower_bound: # More precise than the implementation in BAP 0.8
-                u = u - ((u - l) % new_stride)
-                if u >= l:
-                    ret = StridedInterval(bits=self.bits,
-                                          stride=new_stride,
-                                          lower_bound=l,
-                                          upper_bound=u)
-                else:
+            if self._wrapped_lte(b):
+                # `b` may fully contain `self`
+
+                lb = self._minimum_intersection_integer(b, True)
+                if lb is None:
                     ret = StridedInterval.empty(self.bits)
+
+                else:
+                    ub = self._modular_add(
+                        self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        lb,
+                        self.bits
+                    )
+                    ret = StridedInterval(bits=self.bits,
+                                           stride=new_stride,
+                                           lower_bound=lb,
+                                           upper_bound=ub
+                                           )
+
+            elif b._wrapped_lte(self):
+                # `self` contains `b`
+
+                lb = b._minimum_intersection_integer(self, True)
+
+                if lb is None:
+                    ret = StridedInterval.empty(self.bits)
+
+                else:
+                    ub = self._modular_add(
+                        self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        lb,
+                        self.bits
+                    )
+                    ret = StridedInterval(bits=self.bits,
+                                           stride=new_stride,
+                                           lower_bound=lb,
+                                           upper_bound=ub
+                                           )
+
+            elif self._wrapped_member(b.lower_bound) and \
+                    self._wrapped_member(b.upper_bound) and \
+                    b._wrapped_member(self.lower_bound) and \
+                    b._wrapped_member(self.upper_bound):
+                # One cover the other
+
+                card_1 = self._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits)
+                card_2 = self._wrapped_cardinality(b.lower_bound, b.upper_bound, b.bits)
+                if self._lex_lt(card_1, card_2, self.bits) or \
+                        (card_1 == card_2 and self._lex_lte(self.lower_bound, b.lower_bound, self.bits)):
+                    lb = self._minimum_intersection_integer(b, True)
+
+                    if lb is None:
+                        ret = StridedInterval.empty(self.bits)
+
+                    else:
+                        ub = self._modular_add(
+                            self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
+                            lb,
+                            self.bits
+                        )
+                        ret = StridedInterval(bits=self.bits,
+                                               stride=new_stride,
+                                               lower_bound=lb,
+                                               upper_bound=ub
+                                               )
+                else:
+                    lb = self._minimum_intersection_integer(b, False)
+
+                    if lb is None:
+                        ret = StridedInterval.empty(self.bits)
+
+                    else:
+                        ub = self._modular_add(
+                            self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
+                            lb,
+                            self.bits
+                        )
+                        ret = StridedInterval(bits=self.bits,
+                                               stride=new_stride,
+                                               lower_bound=lb,
+                                               upper_bound=ub
+                                               )
+            elif self._wrapped_member(b.lower_bound):
+                # Overlapping
+
+                lb = b._minimum_intersection_integer(self, True)
+
+                if lb is None:
+                    ret = StridedInterval.empty(self.bits)
+
+                else:
+                    ub = self._modular_add(
+                        self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        lb,
+                        self.bits
+                    )
+                    ret = StridedInterval(bits=self.bits,
+                                           stride=new_stride,
+                                           lower_bound=lb,
+                                           upper_bound=ub
+                                           )
+
+            elif b._wrapped_member(self.lower_bound):
+                # Overlapping
+
+                lb = self._minimum_intersection_integer(b, True)
+
+                if lb is None:
+                    ret = StridedInterval.empty(self.bits)
+
+                else:
+                    ub = self._modular_add(
+                        self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        lb,
+                        self.bits
+                    )
+                    ret = StridedInterval(bits=self.bits,
+                                           stride=new_stride,
+                                           lower_bound=lb,
+                                           upper_bound=ub
+                                           )
+
             else:
-                ret = StridedInterval(bits=self.bits,
-                                      stride=1,
-                                      lower_bound=l,
-                                      upper_bound=u)
+                # Disjoint
+                ret = StridedInterval.empty(self.bits)
 
         ret.normalize()
         return ret

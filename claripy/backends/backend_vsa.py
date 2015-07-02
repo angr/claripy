@@ -160,7 +160,7 @@ class BackendVSA(ModelBackend):
             return min(v1, v2)
 
         elif isinstance(expr, StridedInterval):
-            if expr.is_top():
+            if expr.is_top:
                 # TODO: Return
                 return StridedInterval.min_int(expr.bits)
 
@@ -177,7 +177,7 @@ class BackendVSA(ModelBackend):
 
         else:
             if isinstance(expr, StridedInterval):
-                if expr.is_top():
+                if expr.is_top:
                     # TODO:
                     return StridedInterval.max_int(expr.bits)
 
