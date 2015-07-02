@@ -109,7 +109,7 @@ class ValueSet(BackendObject):
         return "(" + s + ")"
 
     def __len__(self):
-        if self.is_empty():
+        if self.is_empty:
             return 0
         return len(self._regions.items()[0][1])
 
@@ -238,6 +238,7 @@ class ValueSet(BackendObject):
 
         return vs
 
+    @property
     def is_empty(self):
         return len(self._regions) == 0
 

@@ -136,7 +136,7 @@ class StridedInterval(BackendObject):
         if self.bits == 8 and self.reversed:
             self._reversed = False
 
-        if self.is_empty():
+        if self.is_empty:
             return self
 
         if self.lower_bound == self.upper_bound:
@@ -485,7 +485,7 @@ class StridedInterval(BackendObject):
 
     def __repr__(self):
         s = ""
-        if self.is_empty():
+        if self.is_empty:
             s = '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
             s = '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
@@ -520,7 +520,7 @@ class StridedInterval(BackendObject):
     @property
     def cardinality(self):
         if self.is_integer:
-            if self.is_empty():
+            if self.is_empty:
                 return 0
             else:
                 return 1
@@ -561,7 +561,7 @@ class StridedInterval(BackendObject):
 
     @property
     def max(self):
-        if not self.is_empty():
+        if not self.is_empty:
             return self.upper_bound
         else:
             # It is empty!
@@ -569,7 +569,7 @@ class StridedInterval(BackendObject):
 
     @property
     def min(self):
-        if not self.is_empty():
+        if not self.is_empty:
             return self.lower_bound
         else:
             # It is empty
@@ -584,8 +584,12 @@ class StridedInterval(BackendObject):
         assert v >= 0
         return StridedInterval.min_bits(v)
 
+    @property
     def is_empty(self):
-        print "is_empty() is deprecated"
+        """
+        The same as is_bottom
+        :return: True/False
+        """
         return self.is_bottom
 
     @property
@@ -600,6 +604,10 @@ class StridedInterval(BackendObject):
 
     @property
     def is_bottom(self):
+        """
+        Whether this StridedInterval is a BOTTOM, in other words, describes an empty set of integers
+        :return: True/False
+        """
         return self._is_bottom
 
     @property
@@ -962,7 +970,7 @@ class StridedInterval(BackendObject):
         """
 
         a = self
-        if a.is_empty():
+        if a.is_empty:
             return True
 
         if a.is_top and b.is_top:
@@ -1169,7 +1177,7 @@ class StridedInterval(BackendObject):
         '''
         assert self.bits == b.bits
 
-        if self.is_empty() or b.is_empty():
+        if self.is_empty or b.is_empty:
             logger.error('Bitwise_or on empty strided-intervals.')
             return self.copy()
 
@@ -1517,9 +1525,9 @@ class StridedInterval(BackendObject):
         # Trivial cases
         #
 
-        if self.is_empty():
+        if self.is_empty:
             return b
-        if b.is_empty():
+        if b.is_empty:
             return self
 
         if self.is_integer and b.is_integer:
@@ -1656,7 +1664,7 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def intersection(self, b):
-        if self.is_empty() or b.is_empty():
+        if self.is_empty or b.is_empty:
             return StridedInterval.empty(self.bits)
 
         assert self.bits == b.bits
@@ -1830,13 +1838,13 @@ class StridedInterval(BackendObject):
     def widen(self, b):
         ret = None
 
-        if self.is_empty() and not b.is_empty():
+        if self.is_empty and not b.is_empty:
             ret = StridedInterval.top(bits=self.bits)
 
-        elif self.is_empty():
+        elif self.is_empty:
             ret = b
 
-        elif b.is_empty():
+        elif b.is_empty:
             ret = self
 
         else:

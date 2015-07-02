@@ -390,7 +390,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return self._union_with_dsis(b)
 
         elif isinstance(b, StridedInterval):
-            if not b.is_empty():
+            if not b.is_empty:
                 return self._union_with_si(b)
             else:
                 return self.copy()
@@ -488,7 +488,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         new_si_set = set()
         for si_ in self._si_set:
             r = si_.intersection(si)
-            if not r.is_empty():
+            if not r.is_empty:
                 new_si_set.add(r)
 
         if len(new_si_set):
@@ -513,7 +513,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
             r = self._intersection_with_si(si)
 
             if isinstance(r, StridedInterval):
-                if not r.is_empty():
+                if not r.is_empty:
                     new_si_set.add(r)
 
             else: # r is a DiscreteStridedIntervalSet

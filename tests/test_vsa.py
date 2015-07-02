@@ -269,7 +269,7 @@ def test_vsa():
     #
 
     vs_1 = clrp.ValueSet(bits=32)
-    nose.tools.assert_true(vs_1.model.is_empty(), True)
+    nose.tools.assert_true(vs_1.model.is_empty, True)
     # Test merging two addresses
     vs_1.model.merge_si('global', si1)
     vs_1.model.merge_si('global', si3)
@@ -473,7 +473,7 @@ def test_vsa_discrete_value_set():
     val_2 = BVV(1, 32)
     r = val_1.intersection(val_2)
     nose.tools.assert_true(isinstance(r.model, StridedInterval))
-    nose.tools.assert_true(r.model.is_empty())
+    nose.tools.assert_true(r.model.is_empty)
 
     val_1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
     val_2 = SI(bits=32, stride=1, lower_bound=10, upper_bound=20)
