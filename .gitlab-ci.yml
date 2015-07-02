@@ -1,0 +1,23 @@
+before_script:
+    - angr-test sync
+
+local:
+    script: "angr-test claripy"
+    tags:
+        - "angr"
+    except:
+        - "master"
+
+reverse_deps:
+    script: "angr-test simuvex angr fidget"
+    tags:
+        - "angr"
+    except:
+        - "master"
+
+lint:
+    script: "angr-test lint"
+    tags:
+        - "angr"
+    except:
+        - "master"
