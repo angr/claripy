@@ -1766,23 +1766,37 @@ class StridedInterval(BackendObject):
         if self.is_integer and b.is_integer:
             u = max(self.upper_bound, b.upper_bound)
             l = min(self.lower_bound, b.lower_bound)
-            return StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
+            stride = abs(u - l)
+            return StridedInterval(bits=self.bits, stride=stride, lower_bound=l, upper_bound=u)
 
         #
         # Other cases
         #
 
+        # Determine the new stride
+        if self.is_integer:
+            new_stride = fractions.gcd(self._modular_sub(self.lower_bound, b.lower_bound, self.bits), b.stride)
+        elif b.is_integer:
+            new_stride = fractions.gcd(self.stride, self._modular_sub(b.lower_bound, self.lower_bound, self.bits))
+        else:
+            new_stride = fractions.gcd(self.stride, b.stride)
+
+        remainder_1 = self.lower_bound % new_stride if new_stride > 0 else 0
+        remainder_2 = b.lower_bound % new_stride if new_stride > 0 else 0
+        if remainder_1 != remainder_2:
+            new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
+
+        # Then we have different cases
+
         if self._wrapped_lte(b):
             # Containment
 
-            new_stride = fractions.gcd(self.stride, b.stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
                                    upper_bound=b.upper_bound)
 
         elif b._wrapped_lte(self):
             # Containment
 
-            new_stride = fractions.gcd(self.stride, b.stride)
             # TODO: This case is missing in the original implementation. Is that a bug?
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=self.lower_bound,
                                    upper_bound=self.upper_bound)
@@ -1796,14 +1810,12 @@ class StridedInterval(BackendObject):
         elif self._wrapped_member(b.lower_bound):
             # Overlapping
 
-            new_stride = fractions.gcd(self.stride, b.stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=self.lower_bound,
                                    upper_bound=b.upper_bound)
 
         elif b._wrapped_member(self.lower_bound):
             # Overlapping
 
-            new_stride = fractions.gcd(self.stride, b.stride)
             return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
                                    upper_bound=self.upper_bound)
 
@@ -1811,7 +1823,6 @@ class StridedInterval(BackendObject):
             card_1 = self._wrapped_cardinality(self.upper_bound, b.lower_bound, self.bits)
             card_2 = self._wrapped_cardinality(b.upper_bound, self.lower_bound, self.bits)
 
-            new_stride = fractions.gcd(self.stride, b.stride)
             if card_1 == card_2:
                 # Left/right leaning cases
                 if self._lex_lt(self.lower_bound, b.lower_bound, self.bits):
@@ -1831,21 +1842,6 @@ class StridedInterval(BackendObject):
                 # non-overlapping case (right)
                 return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
                                        upper_bound=self.upper_bound)
-
-        # TODO:
-
-        new_stride = fractions.gcd(self.stride, b.stride)
-        assert new_stride >= 0
-
-        remainder_1 = self.lower_bound % new_stride if new_stride > 0 else 0
-        remainder_2 = b.lower_bound % new_stride if new_stride > 0 else 0
-        u = max(self.upper_bound, b.upper_bound)
-        l = min(self.lower_bound, b.lower_bound)
-        if remainder_1 == remainder_2:
-            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
-        else:
-            new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
-            return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=l, upper_bound=u)
 
     def _minimum_intersection_integer(self, other, lb_from_self):
         """

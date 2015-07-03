@@ -12,14 +12,9 @@ def test_wrapped_intervals():
     b = BackendVSA()
     b.set_claripy_object(clrp)
     clrp.model_backends.append(b)
-    clrp.solver_backends = []
-
-    solver_type = claripy.solvers.BranchingSolver
-    s = solver_type(clrp)  # pylint:disable=unused-variable
+    clrp.solver_backends = [ ]
 
     SI = clrp.StridedInterval
-    VS = clrp.ValueSet
-    BVV = clrp.BVV
 
     # Disable the use of DiscreteStridedIntervalSet
     claripy.vsa.strided_interval.allow_dsis = False
@@ -83,6 +78,11 @@ def test_wrapped_intervals():
     si2 = SI(bits=8, stride=1, lower_bound=0xff, upper_bound=0xff)
     nose.tools.assert_true(clrp.is_true(si1 == si2))
 
+    # -2 != 0xff
+    si1 = SI(bits=8, stride=1, lower_bound=-2, upper_bound=-2)
+    si2 = SI(bits=8, stride=1, lower_bound=0xff, upper_bound=0xff)
+    nose.tools.assert_true(clrp.is_true(si1 != si2))
+
     # [-2, -1] < [1, 2] (signed arithmetic)
     si1 = SI(bits=8, stride=1, lower_bound=1, upper_bound=2)
     si2 = SI(bits=8, stride=1, lower_bound=-2, upper_bound=-1)
@@ -97,6 +97,35 @@ def test_wrapped_intervals():
     # [0xfe, 0xff] >= [1, 2] (unsigned arithmetic)
     nose.tools.assert_true(clrp.is_true(si2.UGE(si1)))
 
+def test_join():
+    clrp = claripy.Claripies["SerialZ3"]
+    # Set backend
+    b = BackendVSA()
+    b.set_claripy_object(clrp)
+    clrp.model_backends.append(b)
+    clrp.solver_backends = [ ]
+
+    SI = clrp.StridedInterval
+
+    a = SI(bits=8, to_conv=2)
+    b = SI(bits=8, to_conv=10)
+    c = SI(bits=8, to_conv=120)
+    d = SI(bits=8, to_conv=130)
+    e = SI(bits=8, to_conv=132)
+    f = SI(bits=8, to_conv=135)
+
+    # union a, b, c, d, e => [2, 132] with a stride of 2
+    tmp1 = a.union(b)
+    nose.tools.assert_true(tmp1.identical(SI(bits=8, stride=8, lower_bound=2, upper_bound=10)))
+    tmp2 = tmp1.union(c)
+    nose.tools.assert_true(tmp2.identical(SI(bits=8, stride=2, lower_bound=2, upper_bound=120)))
+    tmp3 = tmp2.union(d).union(e)
+    nose.tools.assert_true(tmp3.identical(SI(bits=8, stride=2, lower_bound=2, upper_bound=132)))
+
+    # union a, b, c, d, e, f => [2, 135] with a stride of 1
+    tmp = a.union(b).union(c).union(d).union(e).union(f)
+    nose.tools.assert_true(tmp.identical(SI(bits=8, stride=1, lower_bound=2, upper_bound=135)))
+
 def test_vsa():
     clrp = claripy.Claripies["SerialZ3"]
     # Set backend
@@ -104,9 +133,6 @@ def test_vsa():
     b.set_claripy_object(clrp)
     clrp.model_backends.append(b)
     clrp.solver_backends = []
-
-    solver_type = claripy.solvers.BranchingSolver
-    s = solver_type(clrp) #pylint:disable=unused-variable
 
     SI = clrp.StridedInterval
     VS = clrp.ValueSet
@@ -578,6 +604,7 @@ def test_vsa_discrete_value_set():
 
 if __name__ == '__main__':
     test_wrapped_intervals()
+    test_join()
     test_vsa()
     test_vsa_constraint_to_si()
     test_vsa_discrete_value_set()
