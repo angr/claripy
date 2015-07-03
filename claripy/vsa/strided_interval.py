@@ -74,15 +74,17 @@ si_id_ctr = itertools.count()
 # implementation of test cases.
 allow_dsis = False
 
-def lcm(a, b):
-    return a * b // fractions.gcd(a, b)
-
 class StridedInterval(BackendObject):
-    '''
+    """
     A Strided Interval is represented in the following form:
-        stride[lower_bound, upper_bound]
+        bits,stride[lower_bound, upper_bound]
     For more details, please refer to relevant papers like TIE and WYSINWYE.
-    '''
+
+    This implementation is signedness-agostic, please refer to _Signedness-Agnostic Program Analysis: Precise Integer
+    Bounds for Low-Level Code_ by Jorge A. Navas, etc. for more details.
+
+    Thanks all corresponding authors for their outstanding works.
+    """
     def __init__(self, name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, bottom=False):
         self._name = name
 
@@ -624,14 +626,6 @@ class StridedInterval(BackendObject):
         """
         return self.UGT(other)
 
-        # TODO
-
-        if self.lower_bound > other.upper_bound:
-            return TrueResult()
-        elif self.upper_bound <= other.lower_bound:
-            return FalseResult()
-        return MaybeResult()
-
     def __ge__(self, other):
         """
         Unsigned greater than or equal to
@@ -884,6 +878,16 @@ class StridedInterval(BackendObject):
     #
     # Helper methods
     #
+
+    @staticmethod
+    def lcm(a, b):
+        """
+        Get the least common multiple
+        :param a: The first operand (integer)
+        :param b: The second operand (integer)
+        :return: Their LCM
+        """
+        return a * b // fractions.gcd(a, b)
 
     @staticmethod
     def highbit(k):
@@ -1874,7 +1878,7 @@ class StridedInterval(BackendObject):
 
         a, b, c, d = self.stride, self.lower_bound, other.stride, other.lower_bound
 
-        if (d - b) % lcm(a, c) != 0:
+        if (d - b) % self.lcm(a, c) != 0:
             # They don't overlap
             return None
 
@@ -1947,7 +1951,7 @@ class StridedInterval(BackendObject):
         else:
             # None of the operands is an integer
 
-            new_stride = lcm(self.stride, b.stride)
+            new_stride = self.lcm(self.stride, b.stride)
             if self._wrapped_lte(b):
                 # `b` may fully contain `self`
 
