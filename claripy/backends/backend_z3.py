@@ -73,6 +73,10 @@ class BackendZ3(SolverBackend):
         for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE'}:
             self._op_raw[o] = getattr(z3, o)
 
+        self._op_raw['SLT'] = self.SLT
+        self._op_raw['SLE'] = self.SLE
+        self._op_raw['SGT'] = self.SGT
+        self._op_raw['SGE'] = self.SGE
         self._op_raw['Reverse'] = self.reverse
         self._op_raw['Identical'] = self.identical
         self._op_raw['I'] = lambda thing: thing
@@ -108,6 +112,26 @@ class BackendZ3(SolverBackend):
             raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
         else:
             return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+
+    @staticmethod
+    @condom
+    def SLT(a, b):
+        return a < b
+
+    @staticmethod
+    @condom
+    def SLE(a, b):
+        return a <= b
+
+    @staticmethod
+    @condom
+    def SGT(a, b):
+        return a > b
+
+    @staticmethod
+    @condom
+    def SGE(a, b):
+        return a >= b
 
     @staticmethod
     @condom
