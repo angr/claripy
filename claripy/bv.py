@@ -289,6 +289,27 @@ def ULE(self, o):
 def UGE(self, o):
     return self.value >= o.value
 
+@normalize_types
+@compare_bits
+def SLT(self, o):
+    return self.signed < o.signed
+
+@normalize_types
+@compare_bits
+def SGT(self, o):
+    return self.signed > o.signed
+
+@normalize_types
+@compare_bits
+def SLE(self, o):
+    return self.signed <= o.signed
+
+@normalize_types
+@compare_bits
+def SGE(self, o):
+    return self.signed >= o.signed
+
+
 #
 # Pure boolean stuff
 #

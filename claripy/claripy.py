@@ -309,6 +309,10 @@ Claripy.ULT = op('ULT', (BV, BV), Bool, extra_check=length_same_check, self_is_c
 Claripy.ULE = op('ULE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
 Claripy.UGT = op('UGT', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
 Claripy.UGE = op('UGE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.SLT = op('SLT', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.SLE = op('SLE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.SGT = op('SGT', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
+Claripy.SGE = op('SGE', (BV, BV), Bool, extra_check=length_same_check, self_is_clrp=True)
 
 def _fp_length_calc(a1, a2, a3=None):
     if isinstance(a1, RM) and a3 is None:
