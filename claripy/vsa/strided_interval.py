@@ -154,17 +154,31 @@ class StridedInterval(BackendObject):
 
         return self
 
-    def eval(self, n):
-        results = [ ]
+    def eval(self, n, signed=False):
+        """
+        Evaluate this StridedInterval to obtain a list of concrete integers
+        :param n: Upper bound for the number of concrete integers
+        :param signed: Treat this StridedInterval as signed or unsigned
+        :return: A list of at most `n` concrete integers
+        """
 
-        lb = self.lower_bound
+        results = [ ]
 
         if self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
-            while len(results) < n and lb <= self.upper_bound:
-                results.append(lb)
-                lb += self.stride
+            if signed:
+                # View it as a signed integer
+                bounds = self._signed_bounds()
+
+            else:
+                # View it as an unsigned integer
+                bounds = self._unsigned_bounds()
+
+            for lb, ub in bounds:
+                while len(results) < n and lb <= ub:
+                    results.append(lb)
+                    lb += self.stride # It will not overflow
 
         return results
 

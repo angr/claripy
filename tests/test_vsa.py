@@ -126,6 +126,24 @@ def test_join():
     tmp = a.union(b).union(c).union(d).union(e).union(f)
     nose.tools.assert_true(tmp.identical(SI(bits=8, stride=1, lower_bound=2, upper_bound=135)))
 
+    a = SI(bits=8, to_conv=1)
+    b = SI(bits=8, to_conv=10)
+    c = SI(bits=8, to_conv=120)
+    d = SI(bits=8, to_conv=130)
+    e = SI(bits=8, to_conv=132)
+    f = SI(bits=8, to_conv=135)
+    g = SI(bits=8, to_conv=220)
+    h = SI(bits=8, to_conv=50)
+
+    # union a, b, c, d, e, f, g, h => [220, 135] with a stride of 1
+    tmp = a.union(b).union(c).union(d).union(e).union(f).union(g).union(h)
+    nose.tools.assert_true(tmp.identical(SI(bits=8, stride=1, lower_bound=220, upper_bound=135)))
+    nose.tools.assert_true(220 in tmp.model.eval(255))
+    nose.tools.assert_true(225 in tmp.model.eval(255))
+    nose.tools.assert_true(0 in tmp.model.eval(255))
+    nose.tools.assert_true(135 in tmp.model.eval(255))
+    nose.tools.assert_false(138 in tmp.model.eval(255))
+
 def test_vsa():
     clrp = claripy.Claripies["SerialZ3"]
     # Set backend
