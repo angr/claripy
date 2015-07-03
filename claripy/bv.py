@@ -202,22 +202,22 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __lt__(self, o):
-        return self.signed < o.signed
+        return self.value < o.value
 
     @normalize_types
     @compare_bits
     def __gt__(self, o):
-        return self.signed > o.signed
+        return self.value > o.value
 
     @normalize_types
     @compare_bits
     def __le__(self, o):
-        return self.signed <= o.signed
+        return self.value <= o.value
 
     @normalize_types
     @compare_bits
     def __ge__(self, o):
-        return self.signed >= o.signed
+        return self.value >= o.value
 
     #
     # Conversions
