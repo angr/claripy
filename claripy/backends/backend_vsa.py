@@ -225,20 +225,29 @@ class BackendVSA(ModelBackend):
     reversed_operations['UGT'] = 'ULE'
     reversed_operations['ULE'] = 'UGT'
     reversed_operations['UGE'] = 'ULT'
+    reversed_operations['SLT'] = 'SGE'
+    reversed_operations['SLE'] = 'SGT'
+    reversed_operations['SGT'] = 'SLE'
+    reversed_operations['SGE'] = 'SLT'
     reversed_operations['__le__'] = '__gt__'
-    reversed_operations['__ge__'] = '__lt__'
     reversed_operations['__lt__'] = '__ge__'
+    reversed_operations['__ge__'] = '__lt__'
+    reversed_operations['__gt__'] = '__le__'
 
     comparison_info = { }
     # Tuples look like (is_lt, is_eq, is_unsigned)
-    comparison_info['__lt__'] = (True, False, False)
-    comparison_info['__le__'] = (True, True, False)
-    comparison_info['__gt__'] = (False, False, False)
-    comparison_info['__ge__'] = (False, True, False)
+    comparison_info['SLT'] = (True, False, False)
+    comparison_info['SLE'] = (True, True, False)
+    comparison_info['SGT'] = (False, False, False)
+    comparison_info['SGE'] = (False, True, False)
     comparison_info['ULT'] = (True, False, True)
     comparison_info['ULE'] = (True, True, True)
     comparison_info['UGT'] = (False, False, True)
     comparison_info['UGE'] = (False, True, True)
+    comparison_info['__lt__'] = comparison_info['ULT']
+    comparison_info['__le__'] = comparison_info['ULE']
+    comparison_info['__gt__'] = comparison_info['UGT']
+    comparison_info['__ge__'] = comparison_info['UGE']
 
     def cts_simplifier_ZeroExt(self, args, expr, condition):
         """
@@ -259,8 +268,8 @@ class BackendVSA(ModelBackend):
                 claripy.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
-                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
-                if not isinstance(larger_cond_arg, Base):
+                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
+                if not isinstance(larger_cond_arg.model, Base):
                     return self.cts_simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
             else:
                 return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
@@ -332,12 +341,12 @@ class BackendVSA(ModelBackend):
 
         else:
             cond_op, cond_arg = cond
-            if type(cond_arg) in (int, long): #pylint:disable=unidiomatic-typecheck
+            if type(cond_arg.model) in (int, long): #pylint:disable=unidiomatic-typecheck
                 cond_arg = claripy.BVV(cond_arg, to_extract.size())
             elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
-                cond_arg = claripy.ZeroExt(to_extract.size() - high - 1, cond_arg)
+                cond_arg = claripy.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
 
-            if claripy.is_true(cond_arg[to_extract.size() - 1 : high] == 0):
+            if claripy.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
@@ -619,77 +628,18 @@ class BackendVSA(ModelBackend):
 
             return True, [ ]
 
-    def cts_handler___lt__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__lt__')
-
-    def cts_handler___le__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__le__')
-
-    def cts_handler___gt__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__gt__')
-
-    def cts_handler___ge__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__ge__')
-
-    def cts_handler_ULT(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='ULT')
-
-    def cts_handler_ULE(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='ULE')
-
-    def cts_handler_UGT(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='UGT')
-
-    def cts_handler_UGE(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='UGE')
+    def cts_handler___lt__(self, args): return self.cts_handler_comparison(args, comp='__lt__')
+    def cts_handler___le__(self, args): return self.cts_handler_comparison(args, comp='__le__')
+    def cts_handler___gt__(self, args): return self.cts_handler_comparison(args, comp='__gt__')
+    def cts_handler___ge__(self, args): return self.cts_handler_comparison(args, comp='__ge__')
+    def cts_handler_ULT(self, args): return self.cts_handler_comparison(args, comp='ULT')
+    def cts_handler_ULE(self, args): return self.cts_handler_comparison(args, comp='ULE')
+    def cts_handler_UGT(self, args): return self.cts_handler_comparison(args, comp='UGT')
+    def cts_handler_UGE(self, args): return self.cts_handler_comparison(args, comp='UGE')
+    def cts_handler_SLT(self, args): return self.cts_handler_comparison(args, comp='SLT')
+    def cts_handler_SLE(self, args): return self.cts_handler_comparison(args, comp='SLE')
+    def cts_handler_SGT(self, args): return self.cts_handler_comparison(args, comp='SGT')
+    def cts_handler_SGE(self, args): return self.cts_handler_comparison(args, comp='SGE')
 
     def cts_handler_I(self, args): #pylint:disable=no-self-use
         a = args[0]
@@ -852,7 +802,9 @@ class BackendVSA(ModelBackend):
             return True, [ ]
 
     def cts_simplify(self, op, args, expr, condition):
-        return getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
+        new_expr, new_cond = getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
+
+        return new_expr, new_cond
 
     def cts_handle(self, op, args):
 
@@ -944,7 +896,42 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @normalize_arg_order
     def ULT(a, b):
-        return a < b
+        return a.ULT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def ULE(a, b):
+        return a.ULE(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def UGT(a, b):
+        return a.UGT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def UGE(a, b):
+        return a.UGE(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SLT(a, b):
+        return a.SLT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SLE(a, b):
+        return a.SLE(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SGT(a, b):
+        return a.SGT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SGE(a, b):
+        return a.SGE(b)
 
     def If(self, cond, true_expr, false_expr, result=None): #pylint:disable=unused-argument
         exprs = []

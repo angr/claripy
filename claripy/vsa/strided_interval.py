@@ -212,7 +212,7 @@ class StridedInterval(BackendObject):
         """
 
         north_pole_left = self.max_int(self.bits - 1) # 01111...1
-        north_pole_right = 2 ** self.bits # 1000...0
+        north_pole_right = 2 ** (self.bits - 1) # 1000...0
 
         # Is `self` straddling the north pole?
         if self.lower_bound <= north_pole_left and self.upper_bound >= north_pole_right:
@@ -247,40 +247,61 @@ class StridedInterval(BackendObject):
     def _signed_bounds(self):
         """
         Get lower bound and upper bound for `self` in signed arithmetic
-        :return: a tuple of (lower_bound, upper_bound)
+        :return: a list  of (lower_bound, upper_bound) tuples
         """
 
         nsplit = self._nsplit()
         if len(nsplit) == 1:
             lb = nsplit[0].lower_bound
             ub = nsplit[0].upper_bound
+
+            lb = self._unsigned_to_signed(lb, self.bits)
+            ub = self._unsigned_to_signed(ub, self.bits)
+
+            return [ (lb, ub) ]
+
         elif len(nsplit) == 2:
-            lb = nsplit[0].lower_bound
-            ub = nsplit[1].upper_bound
+            # nsplit[0] is on the left hemisphere, and nsplit[1] is on the right hemisphere
+
+            # The left one
+            lb_1 = nsplit[0].lower_bound
+            ub_1 = nsplit[0].upper_bound
+
+            # The right one
+            lb_2 = nsplit[1].lower_bound
+            ub_2 = nsplit[1].upper_bound
+            # Then convert them to negative numbers
+            lb_2 = self._unsigned_to_signed(lb_2, self.bits)
+            ub_2 = self._unsigned_to_signed(ub_2, self.bits)
+
+            return [ (lb_1, ub_1), (lb_2, ub_2) ]
         else:
             raise Exception('WTF')
-
-        lb = self._unsigned_to_signed(lb, self.bits)
-        ub = self._unsigned_to_signed(ub, self.bits)
-        return lb, ub
 
     def _unsigned_bounds(self):
         """
         Get lower bound and upper bound for `self` in unsigned arithmetic
-        :return: a tuple of (lower_bound, upper_bound)
+        :return: a list of (lower_bound, upper_bound) tuples
         """
 
-        nsplit = self._ssplit()
-        if len(nsplit) == 1:
-            lb = nsplit[0].lower_bound
-            ub = nsplit[0].upper_bound
-        elif len(nsplit) == 2:
-            lb = nsplit[0].lower_bound
-            ub = nsplit[1].upper_bound
+        ssplit = self._ssplit()
+        if len(ssplit) == 1:
+            lb = ssplit[0].lower_bound
+            ub = ssplit[0].upper_bound
+
+            return [ (lb, ub) ]
+        elif len(ssplit) == 2:
+            # ssplit[0] is on the left hemisphere, and ssplit[1] is on the right hemisphere
+
+            lb_1 = ssplit[0].lower_bound
+            ub_1 = ssplit[0].upper_bound
+
+            lb_2 = ssplit[1].lower_bound
+            ub_2 = ssplit[1].upper_bound
+
+            return [ (lb_1, ub_1), (lb_2, ub_2) ]
         else:
             raise Exception('WTF')
-
-        return lb, ub
 
     #
     # Comparison operations
@@ -303,7 +324,37 @@ class StridedInterval(BackendObject):
         else:
             return False
 
-    def sle(self, o):
+    @normalize_types
+    def SLT(self, o):
+        """
+        Signed less than
+
+        :param o: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+
+        signed_bounds_1 = self._signed_bounds()
+        signed_bounds_2 = o._signed_bounds()
+
+        ret = [ ]
+        for lb_1, ub_1 in signed_bounds_1:
+            for lb_2, ub_2 in signed_bounds_2:
+                if ub_1 < lb_2:
+                    ret.append(TrueResult())
+                elif lb_1 >= ub_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
+            return TrueResult()
+        elif all([r == FalseResult() for r in ret]):
+            return FalseResult()
+        else:
+            return MaybeResult()
+
+    @normalize_types
+    def SLE(self, o):
         """
         Signed less than or equal to
 
@@ -311,34 +362,193 @@ class StridedInterval(BackendObject):
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
 
-        lb_1, ub_1 = self._signed_bounds()
-        lb_2, ub_2 = o._signed_bounds()
+        signed_bounds_1 = self._signed_bounds()
+        signed_bounds_2 = o._signed_bounds()
 
-        if ub_1 <= lb_2:
+        ret = []
+        for lb_1, ub_1 in signed_bounds_1:
+            for lb_2, ub_2 in signed_bounds_2:
+                if ub_1 <= lb_2:
+                    ret.append(TrueResult())
+                elif lb_1 > ub_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
             return TrueResult()
-
-        elif lb_1 > ub_2:
+        elif all([r == FalseResult() for r in ret]):
             return FalseResult()
-
         else:
             return MaybeResult()
 
-    def sgt(self, o):
+    @normalize_types
+    def SGT(self, o):
         """
         Signed greater than
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
 
-        lb_1, ub_1 = self._signed_bounds()
-        lb_2, ub_2 = o._signed_bounds()
+        signed_bounds_1 = self._signed_bounds()
+        signed_bounds_2 = o._signed_bounds()
 
-        if lb_1 > ub_2:
+        ret = []
+        for lb_1, ub_1 in signed_bounds_1:
+            for lb_2, ub_2 in signed_bounds_2:
+                if lb_1 > ub_2:
+                    ret.append(TrueResult())
+                elif ub_1 <= lb_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
             return TrueResult()
-
-        elif ub_1 <= lb_2:
+        elif all([r == FalseResult() for r in ret]):
             return FalseResult()
+        else:
+            return MaybeResult()
 
+    @normalize_types
+    def SGE(self, o):
+        """
+        Signed greater than or equal to
+        :param o: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+
+        signed_bounds_1 = self._signed_bounds()
+        signed_bounds_2 = o._signed_bounds()
+
+        ret = []
+        for lb_1, ub_1 in signed_bounds_1:
+            for lb_2, ub_2 in signed_bounds_2:
+                if lb_1 >= ub_2:
+                    ret.append(TrueResult())
+                elif ub_1 < lb_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
+            return TrueResult()
+        elif all([r == FalseResult() for r in ret]):
+            return FalseResult()
+        else:
+            return MaybeResult()
+
+    @normalize_types
+    def ULT(self, o):
+        """
+        Unsigned less than
+
+        :param o: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+
+        unsigned_bounds_1 = self._unsigned_bounds()
+        unsigned_bounds_2 = o._unsigned_bounds()
+
+        ret = []
+        for lb_1, ub_1 in unsigned_bounds_1:
+            for lb_2, ub_2 in unsigned_bounds_2:
+                if ub_1 < lb_2:
+                    ret.append(TrueResult())
+                elif lb_1 >= ub_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
+            return TrueResult()
+        elif all([r == FalseResult() for r in ret]):
+            return FalseResult()
+        else:
+            return MaybeResult()
+
+    @normalize_types
+    def ULE(self, o):
+        """
+        Unsigned less than or equal to
+
+        :param o: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+
+        unsigned_bounds_1 = self._unsigned_bounds()
+        unsigned_bounds_2 = o._unsigned_bounds()
+
+        ret = []
+        for lb_1, ub_1 in unsigned_bounds_1:
+            for lb_2, ub_2 in unsigned_bounds_2:
+                if ub_1 <= lb_2:
+                    ret.append(TrueResult())
+                elif lb_1 > ub_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
+            return TrueResult()
+        elif all([r == FalseResult() for r in ret]):
+            return FalseResult()
+        else:
+            return MaybeResult()
+
+    @normalize_types
+    def UGT(self, o):
+        """
+        Signed greater than
+        :param o: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+
+        unsigned_bounds_1 = self._unsigned_bounds()
+        unsigned_bounds_2 = o._unsigned_bounds()
+
+        ret = []
+        for lb_1, ub_1 in unsigned_bounds_1:
+            for lb_2, ub_2 in unsigned_bounds_2:
+                if lb_1 > ub_2:
+                    ret.append(TrueResult())
+                elif ub_1 <= lb_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
+            return TrueResult()
+        elif all([r == FalseResult() for r in ret]):
+            return FalseResult()
+        else:
+            return MaybeResult()
+
+    @normalize_types
+    def UGE(self, o):
+        """
+        Unsigned greater than or equal to
+        :param o: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+
+        unsigned_bounds_1 = self._unsigned_bounds()
+        unsigned_bounds_2 = o._unsigned_bounds()
+
+        ret = []
+        for lb_1, ub_1 in unsigned_bounds_1:
+            for lb_2, ub_2 in unsigned_bounds_2:
+                if lb_1 >= ub_2:
+                    ret.append(TrueResult())
+                elif ub_1 < lb_2:
+                    ret.append(FalseResult())
+                else:
+                    ret.append(MaybeResult())
+
+        if all([r == TrueResult() for r in ret]):
+            return TrueResult()
+        elif all([r == FalseResult() for r in ret]):
+            return FalseResult()
         else:
             return MaybeResult()
 
@@ -392,12 +602,13 @@ class StridedInterval(BackendObject):
     def __ne__(self, o):
         return ~(self.eq(o))
 
-    @normalize_types
     def __gt__(self, other):
         """
-        Signed greater than
+        Unsigned greater than
+        :param other: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
         """
-        return self.sgt(other)
+        return self.UGT(other)
 
         # TODO
 
@@ -407,13 +618,30 @@ class StridedInterval(BackendObject):
             return FalseResult()
         return MaybeResult()
 
-    @normalize_types
-    def __lt__(self, other):
-        return ~(self > other) & ~(self == other)
+    def __ge__(self, other):
+        """
+        Unsigned greater than or equal to
+        :param other: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
 
-    @normalize_types
+        return self.UGE(other)
+
+    def __lt__(self, other):
+        """
+        Unsigned less than
+        :param other: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+        return self.ULT(other)
+
     def __le__(self, other):
-        return ~(self > other)
+        """
+        Unsigned less than or equal to
+        :param other: The other operand
+        :return: TrueResult(), FalseResult(), or MaybeResult()
+        """
+        return self.ULE(other)
 
     @normalize_types
     def __add__(self, o):

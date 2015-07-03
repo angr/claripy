@@ -217,7 +217,7 @@ expression_set_operations = {
 expression_operations = expression_arithmetic_operations | expression_comparator_operations | expression_bitwise_operations | expression_set_operations
 
 backend_comparator_operations = {
-    'UGE', 'ULE', 'UGT', 'ULT',
+    'SGE', 'SLE', 'SGT', 'SLT', 'UGE', 'ULE', 'UGT', 'ULT',
 }
 
 backend_bitwise_operations = {

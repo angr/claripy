@@ -24,6 +24,18 @@ def test_wrapped_intervals():
     # Disable the use of DiscreteStridedIntervalSet
     claripy.vsa.strided_interval.allow_dsis = False
 
+    #
+    # Signedness/unsignedness conversion
+    #
+
+    si1 = SI(bits=32, stride=1, lower_bound=0, upper_bound=0xffffffff)
+    nose.tools.assert_equal(si1.model._signed_bounds(), [ (0x0, 0x7fffffff), (-0x80000000, -0x1) ])
+    nose.tools.assert_equal(si1.model._unsigned_bounds(), [ (0x0, 0xffffffff) ])
+
+    #
+    # Addition
+    #
+
     # Plain addition
     si1 = SI(bits=32, stride=1, lower_bound=-1, upper_bound=1)
     si2 = SI(bits=32, stride=1, lower_bound=-1, upper_bound=1)
@@ -44,11 +56,46 @@ def test_wrapped_intervals():
     si2 = SI(bits=8, stride=1, lower_bound=0, upper_bound=0)
     nose.tools.assert_false((si1 + si2).model.is_top)
 
+    #
     # Subtraction
+    #
+
     si1 = SI(bits=8, stride=1, lower_bound=10, upper_bound=15)
     si2 = SI(bits=8, stride=1, lower_bound=11, upper_bound=12)
     si3 = SI(bits=8, stride=1, lower_bound=-2, upper_bound=4)
     nose.tools.assert_true((si1 - si2).identical(si3))
+
+    #
+    # Multiplication
+    #
+
+    si1 = SI(bits=32, stride=1, lower_bound=10, upper_bound=15)
+    si2 = SI(bits=32, stride=1, lower_bound=20, upper_bound=30)
+    si3 = SI(bits=32, stride=1, lower_bound=200, upper_bound=450)
+    nose.tools.assert_true((si1 * si2).identical(si3))
+
+    #
+    # Comparisons
+    #
+
+    # -1 == 0xff
+    si1 = SI(bits=8, stride=1, lower_bound=-1, upper_bound=-1)
+    si2 = SI(bits=8, stride=1, lower_bound=0xff, upper_bound=0xff)
+    nose.tools.assert_true(clrp.is_true(si1 == si2))
+
+    # [-2, -1] < [1, 2] (signed arithmetic)
+    si1 = SI(bits=8, stride=1, lower_bound=1, upper_bound=2)
+    si2 = SI(bits=8, stride=1, lower_bound=-2, upper_bound=-1)
+    nose.tools.assert_true(clrp.is_true(si2.SLT(si1)))
+
+    # [-2, -1] <= [1, 2] (signed arithmetic)
+    nose.tools.assert_true(clrp.is_true(si2.SLE(si1)))
+
+    # [0xfe, 0xff] > [1, 2] (unsigned arithmetic)
+    nose.tools.assert_true(clrp.is_true(si2.UGT(si1)))
+
+    # [0xfe, 0xff] >= [1, 2] (unsigned arithmetic)
+    nose.tools.assert_true(clrp.is_true(si2.UGE(si1)))
 
 def test_vsa():
     clrp = claripy.Claripies["SerialZ3"]
@@ -405,9 +452,9 @@ def test_vsa_constraint_to_si():
 
     s4 = SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)
     ast_true = (
-        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)) < 0, BVV(1, 32), BVV(0, 32)))) == 1)
+        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)).SLT(0), BVV(1, 32), BVV(0, 32)))) == 1)
     ast_false = (
-        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)) < 0, BVV(1, 32), BVV(0, 32)))) != 1)
+        clrp.Extract(0, 0, clrp.ZeroExt(32, clrp.If(clrp.Extract(31, 0, (s4 & s4)).SLT(0), BVV(1, 32), BVV(0, 32)))) != 1)
 
     trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
     nose.tools.assert_equal(trueside_sat, True)
@@ -530,7 +577,7 @@ def test_vsa_discrete_value_set():
     nose.tools.assert_true(r.model.collapse().identical(SI(bits=32, stride=1, lower_bound=0, upper_bound=35).model))
 
 if __name__ == '__main__':
+    test_wrapped_intervals()
     test_vsa()
     test_vsa_constraint_to_si()
     test_vsa_discrete_value_set()
-    test_wrapped_intervals()

@@ -70,7 +70,7 @@ class BackendZ3(SolverBackend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV'}:
+        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE'}:
             self._op_raw[o] = getattr(z3, o)
 
         self._op_raw['Reverse'] = self.reverse
