@@ -5,8 +5,6 @@ from claripy.backends import BackendVSA
 from claripy.vsa import TrueResult, MaybeResult, BoolResult, StridedInterval, DiscreteStridedIntervalSet
 
 def test_wrapped_intervals():
-    from claripy.backends import BackendVSA
-
     clrp = claripy.Claripies["SerialZ3"]
     # Set backend
     b = BackendVSA()
@@ -64,10 +62,36 @@ def test_wrapped_intervals():
     # Multiplication
     #
 
+    # integer multiplication
+    si1 = SI(bits=32, to_conv=0xffff)
+    si2 = SI(bits=32, to_conv=0x10000)
+    si3 = SI(bits=32, to_conv=0xffff0000)
+    nose.tools.assert_true((si1 * si2).identical(si3))
+
+    # intervals multiplication
     si1 = SI(bits=32, stride=1, lower_bound=10, upper_bound=15)
     si2 = SI(bits=32, stride=1, lower_bound=20, upper_bound=30)
     si3 = SI(bits=32, stride=1, lower_bound=200, upper_bound=450)
     nose.tools.assert_true((si1 * si2).identical(si3))
+
+    #
+    # Division
+    #
+
+    # integer division
+    si1 = SI(bits=32, to_conv=10)
+    si2 = SI(bits=32, to_conv=5)
+    si3 = SI(bits=32, to_conv=2)
+    nose.tools.assert_true((si1 / si2).identical(si3))
+
+    si3 = SI(bits=32, to_conv=0)
+    nose.tools.assert_true((si2 / si1).identical(si3))
+
+    # intervals division
+    si1 = SI(bits=32, stride=1, lower_bound=10, upper_bound=100)
+    si2 = SI(bits=32, stride=1, lower_bound=10, upper_bound=20)
+    si3 = SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
+    nose.tools.assert_true((si1 / si2).identical(si3))
 
     #
     # Comparisons

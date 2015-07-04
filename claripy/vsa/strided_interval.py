@@ -677,19 +677,13 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def __div__(self, o):
-        # TODO: Make a better approximation
-        if self.is_integer and o.is_integer:
-            r = self.lower_bound / o.lower_bound
-            si = StridedInterval(bits=self.bits, stride=0, lower_bound=r, upper_bound=r)
-            return si
+        """
+        Unsigned division
+        :param o: The divisor
+        :return: The quotient (self / o)
+        """
 
-        else:
-            r = [ self.upper_bound / o.lower_bound,
-                  self.upper_bound / o.upper_bound,
-                  self.lower_bound / o.lower_bound,
-                  self.lower_bound / o.upper_bound ]
-            si = StridedInterval(bits=self.bits, stride=1, lower_bound=min(r), upper_bound=max(r))
-            return si
+        return self.udiv(o)
 
     def __neg__(self):
         return self.bitwise_not()
@@ -1098,7 +1092,7 @@ class StridedInterval(BackendObject):
         Perform wrapped signed multiplication on two StridedIntervals
         :param a: The first operand (StridedInterval)
         :param b: The second operand (StridedInterval)
-        :return: The multiplication result
+        :return: The product
         """
 
         bits = max(a.bits, b.bits)
@@ -1168,6 +1162,88 @@ class StridedInterval(BackendObject):
 
         else:
             raise Exception('We shouldn\'t see this case: %s * %s' % (a, b))
+
+    @staticmethod
+    def _wrapped_unsigned_div(a, b):
+        """
+        Perform wrapped unsigned division on two StridedIntervals.
+
+        :param a: The dividend (StridedInterval)
+        :param b: The divisor (StridedInterval)
+        :return: The quotient
+        """
+
+        bits = max(a.bits, b.bits)
+
+        divisor_lb, divisor_ub = b.lower_bound, b.upper_bound
+
+        # Make sure divisor_lb and divisor_ub is not 0
+        if divisor_lb == 0:
+            # Can we increment it?
+            if divisor_ub == 0:
+                # We can't :-(
+                return StridedInterval.empty(bits)
+            else:
+                divisor_lb += 1
+
+        lb = a.lower_bound / divisor_ub
+        ub = a.upper_bound / divisor_lb
+
+        # TODO: Can we make a more precise estimate of the stride?
+        stride = 1
+
+        return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+
+    @staticmethod
+    def _wrapped_signed_div(a, b):
+        """
+        Perform wrapped unsigned division on two StridedIntervals.
+
+        :param a: The dividend (StridedInterval)
+        :param b: The divisor (StridedInterval)
+        :return: The quotient
+        """
+
+        bits = max(a.bits, b.bits)
+
+        # Make sure the divisor is not 0
+        divisor_lb = b.lower_bound
+        divisor_ub = b.upper_bound
+        if divisor_lb == 0:
+            # Try to increment it
+            if divisor_ub == 0:
+                return StridedInterval.empty(bits)
+            else:
+                divisor_lb = 1
+
+        dividend_positive = StridedInterval._is_msb_zero(a.lower_bound, bits)
+        divisor_positive = StridedInterval._is_msb_zero(b.lower_bound, bits)
+
+        # TODO: Can we make a more precise estimate of the stride?
+        stride = 1
+        if dividend_positive and divisor_positive:
+            # They are all positive numbers!
+            lb = a.lower_bound / divisor_ub
+            ub = a.upper_bound / divisor_lb
+
+        elif dividend_positive and not divisor_positive:
+            # + / -
+            lb = a.upper_bound / StridedInterval._unsigned_to_signed(divisor_ub, bits)
+            ub = a.lower_bound / StridedInterval._unsigned_to_signed(divisor_lb, bits)
+
+        elif not dividend_positive and divisor_positive:
+            # - / +
+            lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) / divisor_lb
+            ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) / divisor_ub
+
+        else:
+            # - / -
+            lb = StridedInterval._unsigned_to_signed(a.upper_bound, bits) / \
+                 StridedInterval._unsigned_to_signed(b.lower_bound, bits)
+            ub = StridedInterval._unsigned_to_signed(a.lower_bound, bits) / \
+                 StridedInterval._unsigned_to_signed(b.upper_bound, bits)
+
+        return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
     #
     # Membership testing and poset ordering
@@ -1331,7 +1407,7 @@ class StridedInterval(BackendObject):
 
     def mul(self, o):
         """
-        Binary operation: mul
+        Binary operation: multiplication
 
         :param o: The other operand
         :return: self * o
@@ -1382,6 +1458,44 @@ class StridedInterval(BackendObject):
                         ret = ret.union(tmp_meet)
 
             return ret.normalize()
+
+    def sdiv(self, o):
+        """
+        Binary operation: signed division
+
+        :param o: The divisor
+        :return: (self / o) in signed arithmetic
+        """
+
+        splitted_dividends = self._nsplit()
+        splitted_divisors = o._nsplit()
+
+        ret = self.empty(self.bits)
+        for dividend in splitted_dividends:
+            for divisor in splitted_divisors:
+                tmp = self._wrapped_signed_div(dividend, divisor)
+                ret = ret.union(tmp)
+
+        return ret.normalize()
+
+    def udiv(self, o):
+        """
+        Binary operation: unsigned division
+
+        :param o: The divisor
+        :return: (self / o) in unsigned arithmetic
+        """
+
+        splitted_dividends = self._ssplit()
+        splitted_divisors = o._ssplit()
+
+        ret = self.empty(self.bits)
+        for dividend in splitted_dividends:
+            for divisor in splitted_divisors:
+                tmp = self._wrapped_unsigned_div(dividend, divisor)
+                ret = ret.union(tmp)
+
+        return ret.normalize()
 
     @staticmethod
     def min_or(k, a, b, c, d):
