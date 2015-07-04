@@ -1443,18 +1443,6 @@ class StridedInterval(BackendObject):
 
         return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0).sub(self)
 
-    def bitwise_not(self):
-        """
-        Unary operation: bitwise not
-        :return: ~self
-        """
-        if not self.is_top:
-            new_lb = ~self.lower_bound
-            new_ub = ~self.upper_bound
-            return StridedInterval(bits=self.bits, stride=self.stride, lower_bound=new_ub, upper_bound=new_lb)
-        else:
-            return StridedInterval.top(bits=self.bits)
-
     def add(self, b):
         """
         Binary operation: add
@@ -1611,6 +1599,26 @@ class StridedInterval(BackendObject):
                 ret = ret.union(tmp)
 
         return ret.normalize()
+
+    def bitwise_not(self):
+        """
+        Unary operation: bitwise not
+
+        :return: ~self
+        """
+        splitted_si = self._ssplit()
+
+        ret = StridedInterval.empty(self.bits)
+
+        for si in splitted_si:
+            lb = ~self.upper_bound
+            ub = ~self.lower_bound
+            stride = self.stride
+
+            tmp = StridedInterval(bits=self.bits, stride=stride, lower_bound=lb, upper_bound=ub)
+            ret = ret.union(tmp)
+
+        return ret
 
     @staticmethod
     def min_or(k, a, b, c, d):

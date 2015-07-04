@@ -221,7 +221,7 @@ def test_vsa():
     nose.tools.assert_true(is_equal(si_minus_2, SI(bits=32, stride=2, lower_bound=-190, upper_bound=120)))
     si_minus_3 = si_b - si_c
     nose.tools.assert_true(is_equal(si_minus_3, SI(bits=32, stride=1, lower_bound=-300, upper_bound=300)))
-    # __neg__ / __invert__
+    # __neg__ / __invert__ / bitwise not
     si_neg_1 = ~si1
     nose.tools.assert_true(is_equal(si_neg_1, SI(bits=32, to_conv=-11)))
     si_neg_2 = ~si_b
