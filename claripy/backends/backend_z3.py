@@ -70,9 +70,13 @@ class BackendZ3(SolverBackend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV'}:
+        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE'}:
             self._op_raw[o] = getattr(z3, o)
 
+        self._op_raw['SLT'] = self.SLT
+        self._op_raw['SLE'] = self.SLE
+        self._op_raw['SGT'] = self.SGT
+        self._op_raw['SGE'] = self.SGE
         self._op_raw['Reverse'] = self.reverse
         self._op_raw['Identical'] = self.identical
         self._op_raw['I'] = lambda thing: thing
@@ -108,6 +112,26 @@ class BackendZ3(SolverBackend):
             raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
         else:
             return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+
+    @staticmethod
+    @condom
+    def SLT(a, b):
+        return a < b
+
+    @staticmethod
+    @condom
+    def SLE(a, b):
+        return a <= b
+
+    @staticmethod
+    @condom
+    def SGT(a, b):
+        return a > b
+
+    @staticmethod
+    @condom
+    def SGE(a, b):
+        return a >= b
 
     @staticmethod
     @condom
@@ -617,10 +641,10 @@ op_map = {
     # Arithmetic
     #'Z3_OP_ANUM': None,
     #'Z3_OP_AGNUM': None,
-    'Z3_OP_LE': '__le__',
-    'Z3_OP_GE': '__ge__',
-    'Z3_OP_LT': '__lt__',
-    'Z3_OP_GT': '__gt__',
+    'Z3_OP_LE': 'SLE',
+    'Z3_OP_GE': 'SGE',
+    'Z3_OP_LT': 'SLT',
+    'Z3_OP_GT': 'SGT',
     'Z3_OP_ADD': '__add__',
     'Z3_OP_SUB': '__sub__',
     'Z3_OP_UMINUS': '__neg__',
@@ -671,13 +695,13 @@ op_map = {
     #'Z3_OP_BSMOD0': None,
 
     'Z3_OP_ULEQ': 'ULE',
-    'Z3_OP_SLEQ': '__le__',
+    'Z3_OP_SLEQ': 'SLE',
     'Z3_OP_UGEQ': 'UGE',
-    'Z3_OP_SGEQ': '__ge__',
+    'Z3_OP_SGEQ': 'SGE',
     'Z3_OP_ULT': 'ULT',
-    'Z3_OP_SLT': '__lt__',
+    'Z3_OP_SLT': 'SLT',
     'Z3_OP_UGT': 'UGT',
-    'Z3_OP_SGT': '__gt__',
+    'Z3_OP_SGT': 'SGT',
 
     'Z3_OP_BAND': '__and__',
     'Z3_OP_BOR': '__or__',

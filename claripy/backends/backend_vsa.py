@@ -9,7 +9,7 @@ from ..vsa import expand_ifproxy, expr_op_expand_ifproxy
 def arg_filter(f):
     @functools.wraps(f)
     def filter(*args): #pylint:disable=redefined-builtin
-        if type(args[0]) in {int, long}:
+        if type(args[0]) in {int, long}: #pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported argument type %s' % type(args[0]))
         return f(*args)
 
@@ -21,8 +21,8 @@ def normalize_arg_order(f):
         if len(args) != 2:
             raise BackendError('Unsupported arguments number %d' % len(args))
 
-        if type(args[0]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
-            if type(args[1]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
+        if type(args[0]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
+            if type(args[1]) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
                 raise BackendError('Unsupported arguments')
             args = [args[1], args[0]]
 
@@ -69,9 +69,11 @@ def normalize_reversed_arguments(f):
         arg_reversed = []
         raw_args = []
         for i in xrange(len(args)):
-            if isinstance(args[i], Base) and type(args[i].model) in { StridedInterval,
-                                                                   DiscreteStridedIntervalSet,
-                                                                   ValueSet
+            if isinstance(args[i], Base) and \
+                            type(args[i].model) in { #pylint:disable=unidiomatic-typecheck
+                                                    StridedInterval,
+                                                    DiscreteStridedIntervalSet,
+                                                    ValueSet
             }:
                 if args[i].model.reversed:
                     arg_reversed.append(True)
@@ -118,11 +120,11 @@ class BackendVSA(ModelBackend):
         self._op_expr['If'] = self.If
 
     def _convert(self, a, result=None):
-        if type(a) in { int, long, float, bool, str }:
+        if type(a) in { int, long, float, bool, str }: #pylint:disable=unidiomatic-typecheck
             return a
-        if type(a) is BVV:
+        if type(a) is BVV: #pylint:disable=unidiomatic-typecheck
             return BackendVSA.CreateStridedInterval(bits=a.bits, to_conv=a)
-        if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
+        if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
             return a
         if isinstance(a, BoolResult):
             return a
@@ -159,7 +161,7 @@ class BackendVSA(ModelBackend):
             return min(v1, v2)
 
         elif isinstance(expr, StridedInterval):
-            if expr.is_top():
+            if expr.is_top:
                 # TODO: Return
                 return StridedInterval.min_int(expr.bits)
 
@@ -176,7 +178,7 @@ class BackendVSA(ModelBackend):
 
         else:
             if isinstance(expr, StridedInterval):
-                if expr.is_top():
+                if expr.is_top:
                     # TODO:
                     return StridedInterval.max_int(expr.bits)
 
@@ -223,20 +225,29 @@ class BackendVSA(ModelBackend):
     reversed_operations['UGT'] = 'ULE'
     reversed_operations['ULE'] = 'UGT'
     reversed_operations['UGE'] = 'ULT'
+    reversed_operations['SLT'] = 'SGE'
+    reversed_operations['SLE'] = 'SGT'
+    reversed_operations['SGT'] = 'SLE'
+    reversed_operations['SGE'] = 'SLT'
     reversed_operations['__le__'] = '__gt__'
-    reversed_operations['__ge__'] = '__lt__'
     reversed_operations['__lt__'] = '__ge__'
+    reversed_operations['__ge__'] = '__lt__'
+    reversed_operations['__gt__'] = '__le__'
 
     comparison_info = { }
     # Tuples look like (is_lt, is_eq, is_unsigned)
-    comparison_info['__lt__'] = (True, False, False)
-    comparison_info['__le__'] = (True, True, False)
-    comparison_info['__gt__'] = (False, False, False)
-    comparison_info['__ge__'] = (False, True, False)
+    comparison_info['SLT'] = (True, False, False)
+    comparison_info['SLE'] = (True, True, False)
+    comparison_info['SGT'] = (False, False, False)
+    comparison_info['SGE'] = (False, True, False)
     comparison_info['ULT'] = (True, False, True)
     comparison_info['ULE'] = (True, True, True)
     comparison_info['UGT'] = (False, False, True)
     comparison_info['UGE'] = (False, True, True)
+    comparison_info['__lt__'] = comparison_info['ULT']
+    comparison_info['__le__'] = comparison_info['ULE']
+    comparison_info['__gt__'] = comparison_info['UGT']
+    comparison_info['__ge__'] = comparison_info['UGE']
 
     def cts_simplifier_ZeroExt(self, args, expr, condition):
         """
@@ -248,7 +259,7 @@ class BackendVSA(ModelBackend):
 
         cond_op, cond_arg = condition
         # Normalize cond_arg
-        if type(cond_arg) in (int, long):
+        if type(cond_arg) in (int, long): #pylint:disable=unidiomatic-typecheck
             cond_arg = claripy.BVV(cond_arg, expr.size())
 
         extended_bits, arg = args
@@ -257,8 +268,8 @@ class BackendVSA(ModelBackend):
                 claripy.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
-                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
-                if not isinstance(larger_cond_arg, Base):
+                larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
+                if not isinstance(larger_cond_arg.model, Base):
                     return self.cts_simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
             else:
                 return self.cts_simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
@@ -282,7 +293,7 @@ class BackendVSA(ModelBackend):
 
         cond_op, cond_arg = condition
         # Normalize them
-        if type(cond_arg) in (int, long):
+        if type(cond_arg) in (int, long): #pylint:disable=unidiomatic-typecheck
             cond_arg = claripy.BVV(cond_arg, expr.size())
 
         extended_bits, arg = args
@@ -314,7 +325,7 @@ class BackendVSA(ModelBackend):
         high, low, to_extract = args
         claripy = expr._claripy
 
-        ast, new_cond = self.cts_simplify(to_extract.op, to_extract.args, to_extract, condition)
+        ast, cond = self.cts_simplify(to_extract.op, to_extract.args, to_extract, condition)
 
         # Create the new ifproxy
         if ast is None:
@@ -329,13 +340,13 @@ class BackendVSA(ModelBackend):
                             )
 
         else:
-            cond_op, cond_arg = condition
-            if type(cond_arg) in (int, long):
+            cond_op, cond_arg = cond
+            if type(cond_arg.model) in (int, long): #pylint:disable=unidiomatic-typecheck
                 cond_arg = claripy.BVV(cond_arg, to_extract.size())
-            elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV):
-                cond_arg = claripy.ZeroExt(to_extract.size() - high - 1, cond_arg)
+            elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
+                cond_arg = claripy.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
 
-            if claripy.is_true(cond_arg[to_extract.size() - 1 : high] == 0):
+            if claripy.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
@@ -401,24 +412,24 @@ class BackendVSA(ModelBackend):
 
             return new_ifproxy, condition
 
-    def cts_simplifier_I(self, args, expr, condition):
+    def cts_simplifier_I(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
         return expr, condition
 
-    def cts_simplifier_If(self, args, expr, condition):
+    def cts_simplifier_If(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
         return expr, condition
 
-    def cts_simplifier_Reverse(self, args, expr, condition):
+    def cts_simplifier_Reverse(self, args, expr, condition): #pylint:disable=unused-argument
         # TODO: How should we deal with Reverse in a smart way?
 
         arg = args[0]
 
         return self.cts_simplify(arg.op, arg.args, arg, condition)
 
-    def cts_simplifier_widen(self, args, expr, condition):
+    def cts_simplifier_widen(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
 
         return expr, condition
 
-    def cts_simplifier_intersection(self, args, expr, condition):
+    def cts_simplifier_intersection(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
 
         return expr, condition
 
@@ -527,19 +538,19 @@ class BackendVSA(ModelBackend):
             __import__('ipdb').set_trace()
             return expr, condition
 
-    def cts_simplifier_union(self, args, expr, condition):
+    def cts_simplifier_union(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
 
         return expr, condition
 
-    def cts_simplifier___mod__(self, args, expr, condition):
+    def cts_simplifier___mod__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
 
         return expr, condition
 
-    def cts_simplifier___div__(self, args, expr, condition):
+    def cts_simplifier___div__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
 
         return expr, condition
 
-    def cts_simplifier___eq__(self, args, expr, condition):
+    def cts_simplifier___eq__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
 
         l.error('cts_simplifier___eq__() should not exist. This is just a workaround for VSA. Fish will fix the issue later.')
 
@@ -571,9 +582,8 @@ class BackendVSA(ModelBackend):
             return self.cts_handle(new_op, (new_lhs, new_rhs))
 
         claripy = lhs._claripy
-        size = lhs.size()
 
-        if type(rhs) in (int, long) or type(rhs.model) is BVV:
+        if type(rhs) in (int, long) or type(rhs.model) is BVV: #pylint:disable=unidiomatic-typecheck
             # Convert it into an SI
             rhs = claripy.SI(to_conv=rhs)
 
@@ -584,113 +594,54 @@ class BackendVSA(ModelBackend):
             import ipdb; ipdb.set_trace()
 
         elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
-            new_si = rhs.model.copy()
             if isinstance(lhs.model, Base):
                 # It cannot be computed by our backend...
                 # We just give up for now
                 return True, [ ]
 
-            if isinstance(new_si, DiscreteStridedIntervalSet):
-                new_si = new_si.collapse()
-            new_si.stride = lhs.model.stride
+            stride = lhs.model.stride
 
             if is_lt:
                 # < or <=
-                if is_unsigned: new_si.lower_bound = 0
-                else: new_si.lower_bound = new_si.min_int(new_si.bits)
+                if is_unsigned: lb = 0
+                else: lb = StridedInterval.min_int(rhs.length)
 
+                ub = rhs.model.upper_bound
                 if not is_equal:
                     # <
-                    new_si.upper_bound = new_si.upper_bound - 1
+                    ub = ub - 1
 
             else:
                 # > or >=
-                if is_unsigned: new_si.upper_bound = new_si.max_int(new_si.bits)
-                else: new_si.upper_bound = new_si.max_int(new_si.bits - 1)
+                if is_unsigned: ub = StridedInterval.max_int(rhs.length)
+                else: ub = StridedInterval.max_int(rhs.model.bits - 1)
 
+                lb = rhs.model.lower_bound
                 if not is_equal:
                     # >
-                    new_si.lower_bound = new_si.lower_bound + 1
+                    lb = lb + 1
 
-            return True, [(lhs, new_si)]
+            si_replacement = claripy.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
+            return True, [(lhs, si_replacement)]
         else:
             #import ipdb; ipdb.set_trace()
 
             return True, [ ]
 
-    def cts_handler___lt__(self, args):
-        """
+    def cts_handler___lt__(self, args): return self.cts_handler_comparison(args, comp='__lt__')
+    def cts_handler___le__(self, args): return self.cts_handler_comparison(args, comp='__le__')
+    def cts_handler___gt__(self, args): return self.cts_handler_comparison(args, comp='__gt__')
+    def cts_handler___ge__(self, args): return self.cts_handler_comparison(args, comp='__ge__')
+    def cts_handler_ULT(self, args): return self.cts_handler_comparison(args, comp='ULT')
+    def cts_handler_ULE(self, args): return self.cts_handler_comparison(args, comp='ULE')
+    def cts_handler_UGT(self, args): return self.cts_handler_comparison(args, comp='UGT')
+    def cts_handler_UGE(self, args): return self.cts_handler_comparison(args, comp='UGE')
+    def cts_handler_SLT(self, args): return self.cts_handler_comparison(args, comp='SLT')
+    def cts_handler_SLE(self, args): return self.cts_handler_comparison(args, comp='SLE')
+    def cts_handler_SGT(self, args): return self.cts_handler_comparison(args, comp='SGT')
+    def cts_handler_SGE(self, args): return self.cts_handler_comparison(args, comp='SGE')
 
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__lt__')
-
-    def cts_handler___le__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__le__')
-
-    def cts_handler___gt__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__gt__')
-
-    def cts_handler___ge__(self, args):
-        """
-
-        :param args:
-        :return: True or False, and a list of (original_si, constrained_si) tuples
-        """
-
-        return self.cts_handler_comparison(args, comp='__ge__')
-
-    def cts_handler_ULT(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='ULT')
-
-    def cts_handler_ULE(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='ULE')
-
-    def cts_handler_UGT(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='UGT')
-
-    def cts_handler_UGE(self, args):
-        """
-
-        :param args:
-        :return:
-        """
-
-        return self.cts_handler_comparison(args, comp='UGE')
-
-    def cts_handler_I(self, args):
+    def cts_handler_I(self, args): #pylint:disable=no-self-use
         a = args[0]
 
         if a in (False, 0):
@@ -729,10 +680,10 @@ class BackendVSA(ModelBackend):
 
         # Both sides must be true
         for arg in args:
-            s, l = self.cts_handle(arg.op, arg.args)
+            sat_, lst_ = self.cts_handle(arg.op, arg.args)
 
-            sat &= s
-            lst.extend(l)
+            sat &= sat_
+            lst.extend(lst_)
 
         if not sat:
             lst = [ ]
@@ -776,14 +727,12 @@ class BackendVSA(ModelBackend):
         size = lhs.size()
         claripy = lhs._claripy
 
-        if type(rhs) in (int, long):
+        if type(rhs) in (int, long): #pylint:disable=unidiomatic-typecheck
             # Convert it into a BVV
-            rhs = I(lhs._claripy, BVV(rhs, size))
+            rhs = claripy.BVV(rhs, size)
 
         if not isinstance(rhs, Base):
             raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
-
-        sat = True
 
         # TODO: Make sure the rhs doesn't contain any IfProxy
 
@@ -853,7 +802,9 @@ class BackendVSA(ModelBackend):
             return True, [ ]
 
     def cts_simplify(self, op, args, expr, condition):
-        return getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
+        new_expr, new_cond = getattr(self, "cts_simplifier_%s" % op)(args, expr, condition)
+
+        return new_expr, new_cond
 
     def cts_handle(self, op, args):
 
@@ -867,11 +818,12 @@ class BackendVSA(ModelBackend):
             op, rhs = new_cond
             args = (lhs, rhs)
 
-            return getattr(self, "cts_handler_%s" % op)(args)
+            sat, lst = getattr(self, "cts_handler_%s" % op)(args)
 
         else:
-            return getattr(self, "cts_handler_%s" % op)(args)
+            sat, lst = getattr(self, "cts_handler_%s" % op)(args)
 
+        return sat, lst
 
     def constraint_to_si(self, expr):
         """
@@ -910,9 +862,9 @@ class BackendVSA(ModelBackend):
     #
 
     def _identical(self, a, b, result=None):
-        return BackendVSA.is_true(a == b)
+        return a.identical(b)
 
-    def _unique(self, obj, result=None):
+    def _unique(self, obj, result=None): #pylint:disable=unused-argument,no-self-use
         if isinstance(obj, StridedInterval):
             return obj.unique
         elif isinstance(obj, ValueSet):
@@ -944,7 +896,42 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @normalize_arg_order
     def ULT(a, b):
-        return a < b
+        return a.ULT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def ULE(a, b):
+        return a.ULE(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def UGT(a, b):
+        return a.UGT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def UGE(a, b):
+        return a.UGE(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SLT(a, b):
+        return a.SLT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SLE(a, b):
+        return a.SLE(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SGT(a, b):
+        return a.SGT(b)
+
+    @staticmethod
+    @normalize_arg_order
+    def SGE(a, b):
+        return a.SGE(b)
 
     def If(self, cond, true_expr, false_expr, result=None): #pylint:disable=unused-argument
         exprs = []
@@ -974,10 +961,10 @@ class BackendVSA(ModelBackend):
     def Concat(*args):
         ret = None
         for expr in args:
-            if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, BVV }:
+            if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, BVV }: #pylint:disable=unidiomatic-typecheck
                 raise BackendError('Unsupported expr type %s' % type(expr))
 
-            if type(expr) is BVV:
+            if type(expr) is BVV: #pylint:disable=unidiomatic-typecheck
                 expr = BackendVSA.CreateStridedInterval(bits=expr.bits, to_conv=expr)
 
             ret = ret.concat(expr) if ret is not None else expr
@@ -986,7 +973,7 @@ class BackendVSA(ModelBackend):
 
     @arg_filter
     def _size(self, arg, result=None):
-        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, IfProxy }:
+        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, IfProxy }: #pylint:disable=unidiomatic-typecheck
             return len(arg)
         else:
             return arg.size()
@@ -998,7 +985,7 @@ class BackendVSA(ModelBackend):
         high_bit = args[0]
         expr = args[2]
 
-        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }:
+        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported expr type %s' % type(expr))
 
         ret = expr.extract(high_bit, low_bit)
@@ -1012,7 +999,7 @@ class BackendVSA(ModelBackend):
         new_bits = args[0]
         expr = args[1]
 
-        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }:
+        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }: #pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported expr type %s' % type(expr))
 
         return expr.sign_extend(new_bits + expr.bits)
@@ -1024,7 +1011,7 @@ class BackendVSA(ModelBackend):
         new_bits = args[0]
         expr = args[1]
 
-        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }:
+        if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet }: #pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported expr type %s' % type(expr))
 
         return expr.zero_extend(new_bits + expr.bits)
@@ -1032,7 +1019,7 @@ class BackendVSA(ModelBackend):
     @staticmethod
     @expand_ifproxy
     def Reverse(arg):
-        if type(arg) not in {StridedInterval, DiscreteStridedIntervalSet, ValueSet}:
+        if type(arg) not in {StridedInterval, DiscreteStridedIntervalSet, ValueSet}: #pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported expr type %s' % type(arg))
 
         return arg.reverse()
@@ -1097,14 +1084,14 @@ class BackendVSA(ModelBackend):
                 # No conversion will be done
                 return to_conv
 
-            if type(to_conv) not in {int, long, BVV}:
+            if type(to_conv) not in {int, long, BVV}: #pylint:disable=unidiomatic-typecheck
                 raise BackendError('Unsupported to_conv type %s' % type(to_conv))
 
             if stride is not None or lower_bound is not None or \
                             upper_bound is not None:
                 raise BackendError('You cannot specify both to_conv and other parameters at the same time.')
 
-            if type(to_conv) is BVV:
+            if type(to_conv) is BVV: #pylint:disable=unidiomatic-typecheck
                 bits = to_conv.bits
                 to_conv_value = to_conv.value
             else:
@@ -1123,8 +1110,8 @@ class BackendVSA(ModelBackend):
         return bi
 
     @staticmethod
-    def CreateTopStridedInterval(bits, name=None, signed=False, uninitialized=False): #pylint:disable=unused-argument,no-self-use
-        return StridedInterval.top(bits, name=None, signed=signed, uninitialized=uninitialized)
+    def CreateTopStridedInterval(bits, name=None, uninitialized=False): #pylint:disable=unused-argument,no-self-use
+        return StridedInterval.top(bits, name=None, uninitialized=uninitialized)
 
 from ..bv import BVV
 from ..ast import Base

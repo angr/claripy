@@ -238,7 +238,7 @@ class Base(ana.Storable):
             #l.debug("... collapsing the AST for operation %s because it's full of constants", self.op)
             return True
 
-        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer()]) > 1:
+        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer]) > 1:
             #l.debug("... collapsing the AST for operation %s because there are more than two SIs", self.op)
             return True
 
@@ -266,7 +266,10 @@ class Base(ana.Storable):
             return self
 
     def _wrap(self, r):
-        if isinstance(r, (BVV, StridedInterval)):
+        if isinstance(r, IfProxy):
+            bits = r.trueexpr.bits
+            return BVI(self._claripy, r, length=bits, variables=self.variables, symbolic=self.symbolic)
+        elif isinstance(r, (BVV, StridedInterval)):
             return BVI(self._claripy, r, length=r.bits, variables=self.variables, symbolic=self.symbolic)
         elif isinstance(r, bool):
             return BoolI(self._claripy, r, variables=self.variables, symbolic=self.symbolic)
@@ -651,7 +654,7 @@ from .. import operations
 from ..operations import reverse_distributable, not_invertible
 from ..bv import BVV
 from ..fp import RM, FSort
-from ..vsa import StridedInterval
+from ..vsa import StridedInterval, IfProxy
 from .. import Claripies
 from ..backend import BackendObject
 from .bv import BVI

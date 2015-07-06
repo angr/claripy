@@ -202,22 +202,22 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __lt__(self, o):
-        return self.signed < o.signed
+        return self.value < o.value
 
     @normalize_types
     @compare_bits
     def __gt__(self, o):
-        return self.signed > o.signed
+        return self.value > o.value
 
     @normalize_types
     @compare_bits
     def __le__(self, o):
-        return self.signed <= o.signed
+        return self.value <= o.value
 
     @normalize_types
     @compare_bits
     def __ge__(self, o):
-        return self.signed >= o.signed
+        return self.value >= o.value
 
     #
     # Conversions
@@ -288,6 +288,27 @@ def ULE(self, o):
 @compare_bits
 def UGE(self, o):
     return self.value >= o.value
+
+@normalize_types
+@compare_bits
+def SLT(self, o):
+    return self.signed < o.signed
+
+@normalize_types
+@compare_bits
+def SGT(self, o):
+    return self.signed > o.signed
+
+@normalize_types
+@compare_bits
+def SLE(self, o):
+    return self.signed <= o.signed
+
+@normalize_types
+@compare_bits
+def SGE(self, o):
+    return self.signed >= o.signed
+
 
 #
 # Pure boolean stuff
