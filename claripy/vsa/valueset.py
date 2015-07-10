@@ -296,6 +296,26 @@ class ValueSet(BackendObject):
 
         return merged_vs
 
+    def identical(self, o):
+        """
+        Used to make exact comparisons between two ValueSets.
+
+        :param o: The other ValueSet to compare with
+        :return: True if they are exactly same, False otherwise
+        """
+        if (self._name != o._name or self._reversed != o._reversed):
+               return False
+
+        for region, si in self.regions.items():
+            if region in o.regions:
+                o_si = o.regions[region]
+                if not si.identical(o_si):
+                    return False
+            else:
+                return False
+
+        return True
+
 from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy

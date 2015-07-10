@@ -862,6 +862,8 @@ class BackendVSA(ModelBackend):
     #
 
     def _identical(self, a, b, result=None):
+        if type(a) != type(b):
+            return False
         return a.identical(b)
 
     def _unique(self, obj, result=None): #pylint:disable=unused-argument,no-self-use
