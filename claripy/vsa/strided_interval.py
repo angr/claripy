@@ -1456,10 +1456,9 @@ class StridedInterval(BackendObject):
         # TODO: SI<16>0xff[0x0, 0xff] + 3
         # TODO: In current implementation, it overflows, but it doesn't have to
 
-        overflow = False
-        if self._wrappedoverflow_add(self, b):
-            # It overflows...
-            overflow = True
+        overflow = self._wrappedoverflow_add(self, b)
+        if overflow:
+            return StridedInterval.top(self.bits)
 
         lb = self._modular_add(self.lower_bound, b.lower_bound, new_bits)
         ub = self._modular_add(self.upper_bound, b.upper_bound, new_bits)
@@ -1470,12 +1469,8 @@ class StridedInterval(BackendObject):
         # Take the GCD of two operands' strides
         stride = fractions.gcd(self.stride, b.stride)
 
-        if overflow:
-            return StridedInterval.top(self.bits)
-
-        else:
-            return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
-                                   uninitialized=uninitialized)
+        return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
+                               uninitialized=uninitialized)
 
     def sub(self, b):
         """
@@ -1487,10 +1482,9 @@ class StridedInterval(BackendObject):
 
         new_bits = max(self.bits, b.bits)
 
-        overflow = False
-        if self._wrappedoverflow_sub(self, b):
-            # It overflows...
-            overflow = True
+        overflow = self._wrappedoverflow_sub(self, b)
+        if overflow:
+            return StridedInterval.top(self.bits)
 
         lb = self._modular_sub(self.lower_bound, b.upper_bound, new_bits)
         ub = self._modular_sub(self.upper_bound, b.lower_bound, new_bits)
@@ -1501,12 +1495,8 @@ class StridedInterval(BackendObject):
         # Take the GCD of two operands' strides
         stride = fractions.gcd(self.stride, b.stride)
 
-        if overflow:
-            return StridedInterval.top(self.bits)
-
-        else:
-            return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
-                                   uninitialized=uninitialized)
+        return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
+                               uninitialized=uninitialized)
 
     def mul(self, o):
         """
