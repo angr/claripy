@@ -123,7 +123,8 @@ class StridedInterval(BackendObject):
                              stride=self.stride,
                              lower_bound=self.lower_bound,
                              upper_bound=self.upper_bound,
-                             uninitialized=self.uninitialized)
+                             uninitialized=self.uninitialized,
+                             bottom=self._is_bottom)
         si._reversed = self._reversed
         return si
 
@@ -132,7 +133,9 @@ class StridedInterval(BackendObject):
                              bits=self.bits,
                              stride=self.stride,
                              lower_bound=self.lower_bound,
-                             upper_bound=self.upper_bound)
+                             upper_bound=self.upper_bound,
+                             uninitialized=self.uninitialized,
+                             bottom=self._is_bottom)
         si._reversed = self._reversed
         return si
 
