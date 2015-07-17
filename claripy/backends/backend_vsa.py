@@ -195,8 +195,17 @@ class BackendVSA(ModelBackend):
 
         if isinstance(obj, BoolResult):
             return v in obj.value
-        else:
-            raise NotImplementedError()
+
+        if isinstance(obj, StridedInterval):
+            return not obj.intersection(v).is_empty
+
+        if isinstance(obj, ValueSet):
+            for _, si in obj.items():
+                if not si.intersection(v).is_empty:
+                    return True
+            return False
+
+        raise NotImplementedError(type(obj).__name__)
 
     @staticmethod
     def has_true(o):

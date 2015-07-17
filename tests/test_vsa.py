@@ -655,9 +655,52 @@ def test_vsa_discrete_value_set():
     nose.tools.assert_true(isinstance(r.model, DiscreteStridedIntervalSet))
     nose.tools.assert_true(r.model.collapse().identical(SI(bits=32, stride=1, lower_bound=0, upper_bound=35).model))
 
+def test_solution():
+    from claripy.backends import BackendVSA
+
+    clrp = claripy.Claripies["SerialZ3"]
+    # Set backend
+    b = BackendVSA()
+    b.set_claripy_object(clrp)
+    clrp.model_backends.append(b)
+    clrp.solver_backends = [ ]
+
+    solver_type = claripy.solvers.BranchingSolver
+    s = solver_type(clrp)
+
+    SI = clrp.SI
+    VS = clrp.ValueSet
+
+    si = SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
+    nose.tools.assert_true(s.solution(si, si))
+    nose.tools.assert_true(s.solution(si, 32))
+    nose.tools.assert_false(s.solution(si, 31))
+
+    si2 = SI(bits=32, stride=0, lower_bound=3, upper_bound=3)
+    nose.tools.assert_true(s.solution(si2, si2))
+    nose.tools.assert_true(s.solution(si2, 3))
+    nose.tools.assert_false(s.solution(si2, 18))
+    nose.tools.assert_false(s.solution(si2, si))
+
+    vs = VS(region='global', bits=32, val=0xDEADCA7)
+    nose.tools.assert_true(s.solution(vs, 0xDEADCA7))
+    nose.tools.assert_false(s.solution(vs, 0xDEADBEEF))
+
+    si = SI(bits=32, stride=0, lower_bound=3, upper_bound=3)
+    si2 = SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
+    vs = VS(bits=32)
+    vs.model.merge_si('global', si)
+    vs.model.merge_si('foo', si2)
+    nose.tools.assert_true(s.solution(vs, 3))
+    nose.tools.assert_true(s.solution(vs, 122))
+    nose.tools.assert_true(s.solution(vs, si))
+    nose.tools.assert_false(s.solution(vs, 18))
+    nose.tools.assert_false(s.solution(vs, 322))
+
 if __name__ == '__main__':
     test_wrapped_intervals()
     test_join()
     test_vsa()
     test_vsa_constraint_to_si()
     test_vsa_discrete_value_set()
+    test_solution()
