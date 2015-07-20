@@ -122,6 +122,9 @@ class Base(ana.Storable):
         @returns a hash
         '''
         to_hash = (claripy.name, op, tuple(hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+        # Why do we use md5 when it's broken? Because speed is more important
+        # than cryptographic integrity here. Then again, look at all those
+        # allocations we're doing here... fast python is painful.
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
         return struct.unpack('2Q', hd)[0] # 64 bits
 
@@ -166,14 +169,19 @@ class Base(ana.Storable):
         #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
-    def make_uuid(self): #pylint:disable=arguments-differ
+    def make_uuid(self, uuid=None):
         '''
         This overrides the default ANA uuid with the hash of the AST. UUID is slow,
         and we'll soon replace it from ANA itself, and this will go away.
 
         @returns a string representation of the AST hash.
         '''
-        return str(self._hash)
+        u = getattr(self, '_ana_uuid', None)
+        if u is None:
+            u = str(self._hash) if uuid is None else uuid
+            ana.get_dl().uuid_cache[u] = self
+            setattr(self, '_ana_uuid', u)
+        return u
 
     @property
     def uuid(self):
