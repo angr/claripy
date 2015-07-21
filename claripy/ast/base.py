@@ -1,12 +1,19 @@
-import sys
-import struct
-import weakref
-import hashlib
-import logging
 import cPickle as pickle
+import hashlib
+import itertools
+import logging
+import os
+import struct
+import sys
+import weakref
 l = logging.getLogger("claripy.ast")
 
 import ana
+
+if os.environ.get('WORKER', False):
+    WORKER = True
+else:
+    WORKER = False
 
 #pylint:enable=unused-argument
 
@@ -423,7 +430,7 @@ class Base(ana.Storable):
         for b in self._claripy.model_backends:
             try: return self.resolved_with(b, result=result)
             except BackendError: self._errored.add(b)
-        l.debug("all model backends failed for op %s", self.op)
+        # l.debug("all model backends failed for op %s", self.op)
         return self
 
     @property
@@ -464,6 +471,9 @@ class Base(ana.Storable):
         return self.__class__.__name__
 
     def __repr__(self, inner=False, explicit_length=False):
+        if WORKER:
+            return '<AST something>'
+
         self = self.reduced
 
         if not isinstance(self.model, Base):
@@ -656,6 +666,28 @@ class Base(ana.Storable):
         if old.size() != new.size():
             raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
+
+    def _identify_vars(self, all_vars, counter):
+        if self.op == 'BitVec':
+            if self.args not in all_vars:
+                all_vars[self.args] = self._claripy.BV('var_' + str(next(counter)),
+                                                       self.args[1],
+                                                       explicit_name=True)
+        else:
+            for arg in self.args:
+                if isinstance(arg, Base):
+                    arg._identify_vars(all_vars, counter)
+
+    def canonicalized(self, existing_vars=None, counter=None):
+        all_vars = {} if existing_vars is None else existing_vars
+        counter = itertools.count() if counter is None else counter
+        self._identify_vars(all_vars, counter)
+
+        expr = self
+        for old_var, new_var in all_vars.items():
+            expr = expr.replace(self._claripy.BV(*old_var, explicit_name=True), new_var)
+
+        return all_vars, expr
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from .. import operations

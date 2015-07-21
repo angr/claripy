@@ -2,6 +2,9 @@
 
 # pylint: disable=F0401,W0401,W0603,
 
+import socket
+import os
+
 import logging
 l = logging.getLogger("claripy")
 
@@ -18,8 +21,13 @@ from . import operations
 from . import backends
 from .vsa import *
 from .backend import Backend, BackendObject
+from .backends import backendremote
+
+g_conn = None
 
 def init_claripies():
+    global g_conn
+
     backend_vsa = backends.BackendVSA()
     backend_concrete = backends.BackendConcrete()
     Claripies['VSA'] = ClaripyStandalone('VSA', model_backends=[backend_concrete, backend_vsa], solver_backends=[])
@@ -27,13 +35,30 @@ def init_claripies():
     backend_concrete.set_claripy_object(Claripies['VSA'])
 
     Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
-    Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
+    Claripies['RealSerialZ3'] = ClaripyStandalone('RealSerialZ3', parallel=False)
+
+    if os.environ.get('WORKER', False):
+        Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
+    else:
+        if os.environ.get('REMOTE', False):
+            try:
+                br = backendremote.BackendRemote()
+                Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', solver_backends=[br], parallel=False)
+                br.set_claripy_object(Claripies['SerialZ3'])
+            except socket.error:
+                pass
+        else:
+            Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
 
     backend_concrete = backends.BackendConcrete()
     Claripies['Concrete'] = ClaripyStandalone('Concrete', model_backends=[backend_concrete], solver_backends=[], parallel=False)
     backend_concrete.set_claripy_object(Claripies['Concrete'])
 
 init_claripies()
+
+if os.environ.get('REMOTE', False):
+    import ana
+    ana.set_dl(mongo_args=())
 
 import sys
 recurse = 15000

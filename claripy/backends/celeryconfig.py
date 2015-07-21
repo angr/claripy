@@ -1,0 +1,1 @@
+CELERY_SEND_EVENTS = False

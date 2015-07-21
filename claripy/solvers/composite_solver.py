@@ -116,7 +116,7 @@ class CompositeSolver(Solver):
         if filtered is None or len(filtered) == 0:
             return
 
-        split = self._independent_constraints(constraints=filtered)
+        split = self.independent_constraints(filtered)
 
         #print "AFTER SPLIT:", split
 

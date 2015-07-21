@@ -73,13 +73,14 @@ class Solver(ana.Storable):
     # Constraint management
     #
 
-    def _independent_constraints(self, constraints=None):
+    @staticmethod
+    def independent_constraints(constraints):
         '''
-        Returns independent constraints, split from this Solver's constraints.
+        Returns independent constraints, split from the given constraints.
         '''
 
         splitted = [ ]
-        for i in self.constraints if constraints is None else constraints: #pylint:disable=E1101
+        for i in constraints: #pylint:disable=E1101
             splitted.extend(i.split(['And']))
 
         l.debug("... splitted of size %d", len(splitted))
@@ -462,7 +463,7 @@ class Solver(ana.Storable):
     def split(self):
         results = [ ]
         l.debug("Splitting!")
-        for variables,c_list in self._independent_constraints():
+        for variables,c_list in self.independent_constraints(self.constraints):
             l.debug("... got %d constraints with %d variables", len(c_list), len(variables))
 
             s = self.__class__(self._claripy, timeout=self._timeout)
