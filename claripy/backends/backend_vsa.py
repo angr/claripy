@@ -1122,7 +1122,7 @@ class BackendVSA(ModelBackend):
 
     @staticmethod
     def CreateTopStridedInterval(bits, name=None, uninitialized=False): #pylint:disable=unused-argument,no-self-use
-        return StridedInterval.top(bits, name=None, uninitialized=uninitialized)
+        return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
 from ..bv import BVV
 from ..ast import Base
