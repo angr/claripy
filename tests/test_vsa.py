@@ -189,6 +189,10 @@ def test_vsa():
     si1 = clrp.TopStridedInterval(32, name="foo")
     nose.tools.assert_equal(si1.model.name, "foo")
 
+    # Normalization
+    si1 = SI(bits=32, stride=1, lower_bound=10, upper_bound=10)
+    nose.tools.assert_equal(si1.model.stride, 0)
+
     # Integers
     si1 = SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
     si2 = SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
