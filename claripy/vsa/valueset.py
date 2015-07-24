@@ -157,8 +157,9 @@ class ValueSet(BackendObject):
     @normalize_types_one_arg
     def __and__(self, other):
         if type(other) is ValueSet:
-            # An address bitwise-and another address? WTF?
-            assert False
+            if self.identical(other):
+                return self.copy()
+            raise NotImplementedError("__and__(vs1, vs2)?")
 
         if BoolResult.is_true(other == 0):
             # Corner case: a & 0 = 0
