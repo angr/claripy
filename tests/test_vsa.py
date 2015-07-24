@@ -407,6 +407,25 @@ def test_vsa():
     nose.tools.assert_true(max_val, 0xffffffff)
     nose.tools.assert_true(min_val, -0x80000000)
 
+    # identical
+    nose.tools.assert_true(if_0.identical(if_0))
+    nose.tools.assert_false(if_0.identical(si))
+    if_0_copy = claripy.If(si == 0, si, si - 1)
+    nose.tools.assert_true(if_0.identical(if_0_copy))
+    if_1 = claripy.If(si == 1, si, si - 1)
+    nose.tools.assert_true(if_0.identical(if_1))
+
+    si = SI(bits=32, stride=0, lower_bound=1, upper_bound=1)
+    if_0 = claripy.If(si == 0, si, si - 1)
+    if_0_copy = claripy.If(si == 0, si, si - 1)
+    nose.tools.assert_true(if_0.identical(if_0_copy))
+    if_1 = claripy.If(si == 1, si, si - 1)
+    nose.tools.assert_false(if_0.identical(if_1))
+    if_1 = claripy.If(si == 0, si + 1, si - 1)
+    nose.tools.assert_true(if_0.identical(if_1))
+    if_1 = claripy.If(si == 0, si, si)
+    nose.tools.assert_false(if_0.identical(if_1))
+
     # if_1 = And(VS_2, IfProxy(si == 0, 0, 1))
     vs_2 = VS(region='global', bits=32, val=0xFA7B00B)
     si = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
