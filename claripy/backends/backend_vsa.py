@@ -442,6 +442,18 @@ class BackendVSA(ModelBackend):
 
         return expr, condition
 
+    def cts_simplifier___or__(self, args, expr, condition):
+        claripy = expr._claripy
+        argl, argr = args
+        if argl is argr or claripy.is_true(argl == argr):
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+        elif claripy.is_true(argl == 0):
+            return self.cts_simplify(argr.op, argr.args, argr, condition)
+        elif claripy.is_true(argr == 0):
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+        else:
+            return expr, condition
+
     def cts_simplifier___and__(self, args, expr, condition):
 
         argl, argr = args
