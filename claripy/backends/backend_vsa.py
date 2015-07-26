@@ -592,8 +592,50 @@ class BackendVSA(Backend):
             raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
 
         if lhs.op == 'If':
-            # TODO: Implement it
-            raise ClaripyVSASimplifierError('Support for lhs being an IfProxy is not implemented')
+            condition, trueexpr, falseexpr = lhs.args
+
+            if is_unsigned:
+                if is_lt:
+                    if is_equal:
+                        take_true = _all_operations.is_true(trueexpr.ULE(rhs))
+                        take_false = _all_operations.is_true(falseexpr.ULE(rhs))
+                    else:
+                        take_true = _all_operations.is_true(falseexpr.ULT(rhs))
+                        take_false = _all_operations.is_true(trueexpr.ULT(rhs))
+                else:
+                    if is_equal:
+                        take_true = _all_operations.is_true(trueexpr.UGE(rhs))
+                        take_false = _all_operations.is_true(falseexpr.UGE(rhs))
+                    else:
+                        take_true = _all_operations.is_true(trueexpr.UGT(rhs))
+                        take_false = _all_operations.is_true(falseexpr.UGT(rhs))
+            else:
+                if is_lt:
+                    if is_equal:
+                        take_true = _all_operations.is_true(trueexpr <= rhs)
+                        take_false = _all_operations.is_true(falseexpr <= rhs)
+                    else:
+                        take_true = _all_operations.is_true(trueexpr < rhs)
+                        take_false = _all_operations.is_true(falseexpr < rhs)
+                else:
+                    if is_equal:
+                        take_true = _all_operations.is_true(trueexpr >= rhs)
+                        take_false = _all_operations.is_true(falseexpr >= rhs)
+                    else:
+                        take_true = _all_operations.is_true(trueexpr > rhs)
+                        take_false = _all_operations.is_true(falseexpr > rhs)
+
+            if take_true and take_false:
+                # It's always satisfiable
+                return True, [ ]
+            elif take_true:
+                return self.cts_handle(condition.op, condition.args)
+            elif take_false:
+                rev_op = self.reversed_operations[condition.op]
+                return self.cts_handle(rev_op, condition.args)
+            else:
+                # Not satisfiable
+                return False, [ ]
 
         elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
             if isinstance(lhs.model, Base):
