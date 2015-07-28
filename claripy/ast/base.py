@@ -284,7 +284,7 @@ class Base(ana.Storable):
         if isinstance(r, IfProxy):
             bits = r.trueexpr.bits
             return BVI(self._claripy, r, length=bits, variables=self.variables, symbolic=self.symbolic)
-        elif isinstance(r, (BVV, StridedInterval)):
+        elif isinstance(r, (BVV, StridedInterval, ValueSet)):
             return BVI(self._claripy, r, length=r.bits, variables=self.variables, symbolic=self.symbolic)
         elif isinstance(r, bool):
             return BoolI(self._claripy, r, variables=self.variables, symbolic=self.symbolic)
@@ -300,9 +300,16 @@ class Base(ana.Storable):
 
         return self
 
+    def _simplify_Concat(self):
+        # TODO: investigate if this makes things worse or better
+        if any(a.op == 'Reverse' for a in self.args):
+            self = self.make_like(self._claripy, self.op, tuple(reversed([a.reversed for a in self.args])))
+
+        return self
+
     def _simplify_Reverse(self):
         if self.args[0].op == 'Reverse':
-            return self.args[0].args[0]
+            return self.args[0].args[0].simplified
 
         if self.args[0].op == 'Concat':
             if all(a.op == 'Extract' for a in self.args[0].args):
@@ -360,6 +367,14 @@ class Base(ana.Storable):
             new_high = new_low + (high - low)
             self = (self.args[2].args[2])[new_high:new_low]
 
+        if self.args[2].op == 'Reverse' and self.args[2].args[0].op == 'Concat':
+            val = self.args[2].make_like(self._claripy,
+                                         'Concat',
+                                         tuple(reversed([a.reversed for a in self.args[2].args[0].args])),
+            )[self.args[0]:self.args[1]].simplified
+            if not val.symbolic:
+                self = val
+
         return self
 
     def _simplify_Not(self):
@@ -381,17 +396,17 @@ class Base(ana.Storable):
         if self._simplified:
             return self
 
-        # note: should cover __radd__ etc. somehow
-        if hasattr(self, '_simplify_' + self.op):
-            self = getattr(self, '_simplify_' + self.op)()
+        # # note: should cover __radd__ etc. somehow
+        # if hasattr(self, '_simplify_' + self.op):
+        #     self = getattr(self, '_simplify_' + self.op)()
 
         if self.op in reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-            inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
-            o = self.make_like(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
+            inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args))
+            o = self.make_like(self._claripy, 'Reverse', (inner_a,), collapsible=True)
             o._simplified = Base.LITE_SIMPLIFY
             return o
 
-        # self = self.make_like(self._claripy, self.op, tuple(a.reduced if isinstance(a, Base) else a for a in self.args))
+        # self = self.make_like(self._claripy, self.op, tuple(a.simplified if isinstance(a, Base) else a for a in self.args))
 
         return self
 
@@ -694,7 +709,7 @@ from .. import operations
 from ..operations import reverse_distributable, not_invertible
 from ..bv import BVV
 from ..fp import RM, FSort
-from ..vsa import StridedInterval, IfProxy
+from ..vsa import StridedInterval, IfProxy, ValueSet
 from .. import Claripies
 from ..backend import BackendObject
 from .bv import BVI
