@@ -3,7 +3,7 @@ import functools
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
-from .model_backend import ModelBackend, BackendError
+from ..backend import Backend, BackendError
 from ..vsa import expand_ifproxy, expr_op_expand_ifproxy
 
 def arg_filter(f):
@@ -106,9 +106,9 @@ def normalize_reversed_arguments(f):
 
     return normalizer
 
-class BackendVSA(ModelBackend):
+class BackendVSA(Backend):
     def __init__(self):
-        ModelBackend.__init__(self)
+        Backend.__init__(self)
         # self._make_raw_ops(set(expression_operations) - set(expression_set_operations), op_module=BackendVSA)
         self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
@@ -131,9 +131,9 @@ class BackendVSA(ModelBackend):
         if isinstance(a, IfProxy):
             return a
 
-        raise NotImplementedError()
+        raise BackendError("why is fish raising NotImplementedError INSTEAD OF THE ERROR THAT'S SUPPOSED TO BE RAISED IN THIS SITUATION? SERIOUSLY, JUST RAISE A BACKENDERROR AND EVERYONE WILL BE HAPPY, BUT NO, PEOPLE HAVE TO RAISE THEIR OWN ERRORS INSTEAD OF USING THE ERRORS THAT WERE ****DESIGNED**** FOR THIS SORT OF THING. WHY DO I BOTHER DESIGNING A GOOD ERROR HIERARCHY, ANYWAYS? WILL IT BE USED? NO! IT'LL BE ALL NotImplementedError('THIS') or Exception('THAT') AND EVERYTHING WILL MELT DOWN. UGH!")
 
-    def _eval(self, expr, n, result=None):
+    def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
         if isinstance(expr, StridedInterval):
             return expr.eval(n)
         elif isinstance(expr, ValueSet):
@@ -153,7 +153,7 @@ class BackendVSA(ModelBackend):
         else:
             raise BackendError('Unsupported type %s' % type(expr))
 
-    def _min(self, expr, result=None):
+    def _min(self, expr, result=None, solver=None, extra_constraints=()):
         if isinstance(expr, IfProxy):
             v1 = self.min(expr.trueexpr)
             v2 = self.min(expr.falseexpr)
@@ -169,7 +169,7 @@ class BackendVSA(ModelBackend):
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def _max(self, expr, result=None):
+    def _max(self, expr, result=None, solver=None, extra_constraints=()):
         if isinstance(expr, IfProxy):
             v1 = self.max(expr.trueexpr)
             v2 = self.max(expr.falseexpr)
@@ -187,7 +187,7 @@ class BackendVSA(ModelBackend):
             else:
                 raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def _solution(self, obj, v, result=None):
+    def _solution(self, obj, v, result=None, solver=None, extra_constraints=()):
         if isinstance(obj, IfProxy):
             ret = self._solution(obj.trueexpr, v, result=result) or \
                 self._solution(obj.falseexpr, v, result=result)
@@ -207,20 +207,16 @@ class BackendVSA(ModelBackend):
 
         raise NotImplementedError(type(obj).__name__)
 
-    @staticmethod
-    def has_true(o):
+    def _has_true(self, o):
         return BoolResult.has_true(o)
 
-    @staticmethod
-    def has_false(o):
+    def _has_false(self, o):
         return BoolResult.has_false(o)
 
-    @staticmethod
-    def is_true(o):
+    def _is_true(self, o):
         return BoolResult.is_true(o)
 
-    @staticmethod
-    def is_false(o):
+    def _is_false(self, o):
         return BoolResult.is_false(o)
 
     #
@@ -264,17 +260,15 @@ class BackendVSA(ModelBackend):
         :param expr:
         :return: (new ast, new condition)
         """
-        claripy = expr._claripy
-
         cond_op, cond_arg = condition
         # Normalize cond_arg
         if type(cond_arg) in (int, long): #pylint:disable=unidiomatic-typecheck
-            cond_arg = claripy.BVV(cond_arg, expr.size())
+            cond_arg = _all_operations.BVV(cond_arg, expr.size())
 
         extended_bits, arg = args
 
         if cond_arg.size() <= arg.size() or \
-                claripy.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
+                _all_operations.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
@@ -298,17 +292,15 @@ class BackendVSA(ModelBackend):
         :return:
         """
         # TODO: Review the logic of this method
-        claripy = expr._claripy
-
         cond_op, cond_arg = condition
         # Normalize them
         if type(cond_arg) in (int, long): #pylint:disable=unidiomatic-typecheck
-            cond_arg = claripy.BVV(cond_arg, expr.size())
+            cond_arg = _all_operations.BVV(cond_arg, expr.size())
 
         extended_bits, arg = args
 
         if cond_arg.size() <= arg.size() or \
-                claripy.is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
+                _all_operations.is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
             # We can safely eliminate this layer of SignExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
@@ -332,8 +324,6 @@ class BackendVSA(ModelBackend):
         '''
 
         high, low, to_extract = args
-        claripy = expr._claripy
-
         ast, cond = self.cts_simplify(to_extract.op, to_extract.args, to_extract, condition)
 
         # Create the new ifproxy
@@ -342,20 +332,20 @@ class BackendVSA(ModelBackend):
             return None, condition
 
         elif ast.op == 'If':
-            new_ifproxy = claripy.If(
+            new_ifproxy = _all_operations.If(
                                 ast.args[0],
-                                ast._claripy.Extract(high, low, ast.args[1]),
-                                ast._claripy.Extract(high, low, ast.args[2])
+                                _all_operations.Extract(high, low, ast.args[1]),
+                                _all_operations.Extract(high, low, ast.args[2])
                             )
 
         else:
             cond_op, cond_arg = cond
             if type(cond_arg.model) in (int, long): #pylint:disable=unidiomatic-typecheck
-                cond_arg = claripy.BVV(cond_arg, to_extract.size())
+                cond_arg = _all_operations.BVV(cond_arg, to_extract.size())
             elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
-                cond_arg = claripy.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
+                cond_arg = _all_operations.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
 
-            if claripy.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
+            if _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
@@ -373,7 +363,6 @@ class BackendVSA(ModelBackend):
         :return:
         '''
 
-        claripy = expr._claripy
         new_args = [ self.cts_simplify(ex.op, ex.args, ex, condition) for ex in args ]
 
         ifproxy_conds = set([ a.args[0] for a, new_cond in new_args if a.op == 'If' ])
@@ -382,7 +371,7 @@ class BackendVSA(ModelBackend):
             # Let's check if we can remove this layer of Concat
             cond = condition[1]
             if len(args) == 2 and \
-                    claripy.is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
+                    _all_operations.is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
                 # Yes! We can remove it!
                 # TODO: This is hackish...
                 new_cond = (condition[0], cond[ cond.size() - args[0].size() - 1 : 0])
@@ -413,10 +402,10 @@ class BackendVSA(ModelBackend):
                     concat_trueexpr.append(a)
                     concat_falseexpr.append(a)
 
-            new_ifproxy = claripy.If(
+            new_ifproxy = _all_operations.If(
                                 list(ifproxy_conds)[0],
-                                expr._claripy.Concat(*concat_trueexpr),
-                                expr._claripy.Concat(*concat_falseexpr)
+                                _all_operations.Concat(*concat_trueexpr),
+                                _all_operations.Concat(*concat_falseexpr)
                             )
 
             return new_ifproxy, condition
@@ -455,14 +444,12 @@ class BackendVSA(ModelBackend):
             return expr, condition
 
     def cts_simplifier___xor__(self, args, expr, condition):
-
-        claripy = expr._claripy
         argl, argr = args
 
-        if claripy.is_true(argl == 0):
+        if _all_operations.is_true(argl == 0):
             # :-)
             return self.cts_simplify(argr.op, argr.args, argr, condition)
-        elif claripy.is_true(argr == 0):
+        elif _all_operations.is_true(argr == 0):
             # :-)
             return self.cts_simplify(argl.op, argl.args, argl, condition)
         else:
@@ -472,12 +459,10 @@ class BackendVSA(ModelBackend):
     def cts_simplifier___add__(self, args, expr, condition):
 
         argl, argr = args
-        claripy = expr._claripy
-
-        if claripy.is_true(argr == 0):
+        if _all_operations.is_true(argr == 0):
             # This layer of __add__ can be removed
             return self.cts_simplify(argl.op, argl.args, argl, condition)
-        elif claripy.is_true(argl == 0):
+        elif _all_operations.is_true(argl == 0):
             # This layer of __add__ can be removed
             return self.cts_simplify(argr.op, argr.args, argr, condition)
         else:
@@ -503,11 +488,9 @@ class BackendVSA(ModelBackend):
         """
 
         argl, argr = args
-        claripy = expr._claripy
-
-        if claripy.is_true(argr == 0):
+        if _all_operations.is_true(argr == 0):
             return self.cts_simplify(argl.op, argl.args, argl, condition)
-        elif claripy.is_true(argl == 0):
+        elif _all_operations.is_true(argl == 0):
             return self.cts_simplify(argr.op, argr.args, argr, condition)
         else:
             #__import__('ipdb').set_trace()
@@ -516,9 +499,7 @@ class BackendVSA(ModelBackend):
     def cts_simplifier___rshift__(self, args, expr, condition):
 
         arg, offset = args
-        claripy = expr._claripy
-
-        if claripy.is_true(offset == 0):
+        if _all_operations.is_true(offset == 0):
             return self.cts_simplify(arg.op, arg.args, arg, condition)
         else:
             return expr, condition
@@ -526,9 +507,7 @@ class BackendVSA(ModelBackend):
     def cts_simplifier___lshift__(self, args, expr, condition):
 
         arg, offset = args
-        claripy = expr._claripy
-
-        if claripy.is_true(offset == 0):
+        if _all_operations.is_true(offset == 0):
             return self.cts_simplify(arg.op, arg.args, arg, condition)
         else:
             return expr, condition
@@ -536,10 +515,8 @@ class BackendVSA(ModelBackend):
     def cts_simplifier___invert__(self, args, expr, condition):
 
         arg = args[0]
-        claripy = expr._claripy
-
         if arg.op == 'If':
-            new_arg = claripy.If(args[0], args[1].__invert__(), args[2].__invert__())
+            new_arg = _all_operations.If(args[0], args[1].__invert__(), args[2].__invert__())
 
             return self.cts_simplify(new_arg.op, new_arg.args, expr, condition)
 
@@ -590,11 +567,9 @@ class BackendVSA(ModelBackend):
             new_lhs, new_rhs = rhs, lhs
             return self.cts_handle(new_op, (new_lhs, new_rhs))
 
-        claripy = lhs._claripy
-
         if type(rhs) in (int, long) or type(rhs.model) is BVV: #pylint:disable=unidiomatic-typecheck
             # Convert it into an SI
-            rhs = claripy.SI(to_conv=rhs)
+            rhs = _all_operations.SI(to_conv=rhs)
 
         if not isinstance(rhs, Base):
             raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
@@ -630,7 +605,7 @@ class BackendVSA(ModelBackend):
                     # >
                     lb = lb + 1
 
-            si_replacement = claripy.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
+            si_replacement = _all_operations.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
             return True, [(lhs, si_replacement)]
         else:
             #import ipdb; ipdb.set_trace()
@@ -707,8 +682,7 @@ class BackendVSA(ModelBackend):
         else:
             if len(args) > 0:
                 args = [ self.cts_handle(a.op, a.args) for a in args ]
-                claripy = args[0]._claripy
-                if any([not claripy.is_false(a) for a in args]):
+                if any([not _all_operations.is_false(a) for a in args]):
                     return True, [ ]
 
                 else:
@@ -734,11 +708,10 @@ class BackendVSA(ModelBackend):
             raise ClaripyBackendVSAError('Left-hand-side expression is not an AST object.')
 
         size = lhs.size()
-        claripy = lhs._claripy
 
         if type(rhs) in (int, long): #pylint:disable=unidiomatic-typecheck
             # Convert it into a BVV
-            rhs = claripy.BVV(rhs, size)
+            rhs = _all_operations.BVV(rhs, size)
 
         if not isinstance(rhs, Base):
             raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
@@ -750,12 +723,12 @@ class BackendVSA(ModelBackend):
 
             if is_eq:
                 # __eq__
-                take_true = claripy.is_true(rhs == trueexpr)
-                take_false = claripy.is_true(rhs == falseexpr)
+                take_true = _all_operations.is_true(rhs == trueexpr)
+                take_false = _all_operations.is_true(rhs == falseexpr)
             else:
                 # __ne__
-                take_true = claripy.is_true(rhs == falseexpr)
-                take_false = claripy.is_true(rhs == trueexpr)
+                take_true = _all_operations.is_true(rhs == falseexpr)
+                take_false = _all_operations.is_true(rhs == trueexpr)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -778,24 +751,24 @@ class BackendVSA(ModelBackend):
                 return False, [ ]
         elif isinstance(lhs.model, StridedInterval) or isinstance(lhs.model, BVV):
             if not isinstance(lhs.model, StridedInterval):
-                try: lhs = claripy.SI(to_conv=lhs)
+                try: lhs = _all_operations.SI(to_conv=lhs)
                 except BackendError: return True, [ ] # We cannot convert it to a StridedInterval
 
-            try: rhs = claripy.SI(to_conv=rhs)
+            try: rhs = _all_operations.SI(to_conv=rhs)
             except BackendError: return True, [ ]
 
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
                 if lhs.model.upper_bound <= rhs.model.upper_bound:
-                    r = claripy.SI(bits=rhs.size(),
+                    r = _all_operations.SI(bits=rhs.size(),
                                     stride=lhs.model.stride,
                                     lower_bound=lhs.model.lower_bound,
                                     upper_bound=rhs.model.lower_bound - 1)
 
                     return True, [ (lhs, r) ]
                 elif lhs.model.lower_bound >= rhs.model.lower_bound:
-                    r = claripy.SI(bits=rhs.size(),
+                    r = _all_operations.SI(bits=rhs.size(),
                                     stride=lhs.model.stride,
                                     lower_bound=rhs.model.lower_bound + 1,
                                     upper_bound=lhs.model.upper_bound)
@@ -1077,56 +1050,16 @@ class BackendVSA(ModelBackend):
         return ret
 
     @staticmethod
-    def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
-        '''
-
-        :param name:
-        :param bits:
-        :param stride:
-        :param lower_bound:
-        :param upper_bound:
-        :param to_conv:
-        :return:
-        '''
-        if to_conv is not None:
-            if isinstance(to_conv, Base):
-                to_conv = to_conv.model
-            if isinstance(to_conv, StridedInterval):
-                # No conversion will be done
-                return to_conv
-
-            if type(to_conv) not in {int, long, BVV}: #pylint:disable=unidiomatic-typecheck
-                raise BackendError('Unsupported to_conv type %s' % type(to_conv))
-
-            if stride is not None or lower_bound is not None or \
-                            upper_bound is not None:
-                raise BackendError('You cannot specify both to_conv and other parameters at the same time.')
-
-            if type(to_conv) is BVV: #pylint:disable=unidiomatic-typecheck
-                bits = to_conv.bits
-                to_conv_value = to_conv.value
-            else:
-                bits = bits
-                to_conv_value = to_conv
-
-            stride = 0
-            lower_bound = to_conv_value
-            upper_bound = to_conv_value
-
-        bi = StridedInterval(name=name,
-                             bits=bits,
-                             stride=stride,
-                             lower_bound=lower_bound,
-                             upper_bound=upper_bound)
-        return bi
-
-    @staticmethod
     def CreateTopStridedInterval(bits, name=None, uninitialized=False): #pylint:disable=unused-argument,no-self-use
         return StridedInterval.top(bits, name=None, uninitialized=uninitialized)
 
 from ..bv import BVV
-from ..ast import Base
+from ..ast_base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
-from ..vsa import StridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
+from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy
 from ..errors import ClaripyBackendVSAError
+
+from .. import _all_operations
+
+BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)

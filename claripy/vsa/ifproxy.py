@@ -2,7 +2,7 @@ import logging
 import functools
 
 from .decorators import expand_ifproxy
-from ..backend import BackendObject
+from ..backend_object import BackendObject
 
 l = logging.getLogger('claripy.vsa.ifproxy')
 

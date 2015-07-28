@@ -2,8 +2,10 @@ import sys
 import struct
 import weakref
 import hashlib
-import logging
+import itertools
 import cPickle as pickle
+
+import logging
 l = logging.getLogger("claripy.ast")
 
 import ana
@@ -26,6 +28,20 @@ def _inner_repr(a, **kwargs):
 
 class ASTCacheKey(object): pass
 
+#
+# AST variable naming
+#
+
+var_counter = itertools.count()
+_unique_names = True
+
+def _make_name(name, size, explicit_name=False, prefix=""):
+    if _unique_names and not explicit_name:
+        return "%s%s_%d_%d" % (prefix, name, var_counter.next(), size)
+    else:
+        return name
+
+
 class Base(ana.Storable):
     '''
     An AST tracks a tree of operations on arguments. It has the following methods:
@@ -45,14 +61,14 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_claripy', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
     LITE_SIMPLIFY=2
     UNSIMPLIFIED=0
 
-    def __new__(cls, claripy, op, args, **kwargs):
+    def __new__(cls, op, args, **kwargs):
         '''
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -93,12 +109,12 @@ class Base(ana.Storable):
         if 'add_variables' in kwargs:
             kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
 
-        h = Base._calc_hash(claripy, op, a_args, kwargs)
+        h = Base._calc_hash(op, a_args, kwargs)
 
         self = cls._hash_cache.get(h, None)
         if self is None:
-            self = super(Base, cls).__new__(cls, claripy, op, a_args, **kwargs)
-            self.__a_init__(claripy, op, a_args, **kwargs)
+            self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
+            self.__a_init__(op, a_args, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -111,7 +127,7 @@ class Base(ana.Storable):
         pass
 
     @staticmethod
-    def _calc_hash(claripy, op, args, k):
+    def _calc_hash(op, args, k):
         '''
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
@@ -121,12 +137,12 @@ class Base(ana.Storable):
 
         @returns a hash
         '''
-        to_hash = (claripy.name, op, tuple(hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+        to_hash = (op, tuple(hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
         return struct.unpack('2Q', hd)[0] # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, claripy, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False, add_variables=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False, add_variables=None): #pylint:disable=unused-argument
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''
@@ -138,7 +154,6 @@ class Base(ana.Storable):
         self.eager = eager
 
         self._collapsible = True if collapsible is None else collapsible
-        self._claripy = claripy
         self._errored = errored if errored is not None else set()
 
         self._simplified = simplified
@@ -160,10 +175,10 @@ class Base(ana.Storable):
             raise ClaripyOperationError("AST with no arguments!")
 
         #if self.op != 'I':
-        #   for a in args:
-        #       if not isinstance(a, Base) and type(a) not in (int, long, bool, str, unicode):
-        #           import ipdb; ipdb.set_trace()
-        #           l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
+        #    for a in args:
+        #        if not isinstance(a, Base) and type(a) not in (int, long, bool, str, unicode):
+        #            import ipdb; ipdb.set_trace()
+        #            l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
     def make_uuid(self): #pylint:disable=arguments-differ
@@ -190,13 +205,13 @@ class Base(ana.Storable):
         '''
         Support for ANA serialization.
         '''
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._claripy.name, self._hash
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash
     def _ana_setstate(self, state):
         '''
         Support for ANA deserialization.
         '''
-        op, args, length, variables, symbolic, clrp, h = state
-        Base.__a_init__(self, Claripies[clrp], op, args, length=length, variables=variables, symbolic=symbolic)
+        op, args, length, variables, symbolic, h = state
+        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic)
         self._hash = h
         Base._hash_cache[h] = self
 
@@ -205,10 +220,10 @@ class Base(ana.Storable):
     #
 
     #def _models_for(self, backend):
-    #   for a in self.args:
-    #       backend.convert_expr(a)
-    #       else:
-    #           yield backend.convert(a)
+    #    for a in self.args:
+    #        backend.convert_expr(a)
+    #        else:
+    #            yield backend.convert(a)
 
     def make_like(self, *args, **kwargs):
         return type(self)(*args, **kwargs)
@@ -229,11 +244,11 @@ class Base(ana.Storable):
                 #l.debug("... not collapsing for op %s because ASTs are present.", self.op)
                 return False
 
-        if self.op in not_invertible:
+        if self.op in operations.not_invertible:
             #l.debug("... collapsing the AST for operation %s because it's not invertible", self.op)
             return True
 
-        constants = sum((types.count(t) for t in (int, long, bool, str, BVV)))
+        constants = sum((types.count(t) for t in (int, long, bool, str, bv.BVV)))
         if constants == len(raw_args):
             #l.debug("... collapsing the AST for operation %s because it's full of constants", self.op)
             return True
@@ -259,22 +274,14 @@ class Base(ana.Storable):
             #l.debug("Collapsing!")
             r = self.model
             if not isinstance(r, Base):
-                return self._wrap(r)
+                if isinstance(self, Bits):
+                    return self.__class__('I', args=(r,), length=len(self), variables=self.variables, symbolic=self.symbolic)
+                else:
+                    return self.__class__('I', args=(r,), variables=self.variables, symbolic=self.symbolic)
             else:
                 return r
         else:
             return self
-
-    def _wrap(self, r):
-        if isinstance(r, IfProxy):
-            bits = r.trueexpr.bits
-            return BVI(self._claripy, r, length=bits, variables=self.variables, symbolic=self.symbolic)
-        elif isinstance(r, (BVV, StridedInterval)):
-            return BVI(self._claripy, r, length=r.bits, variables=self.variables, symbolic=self.symbolic)
-        elif isinstance(r, bool):
-            return BoolI(self._claripy, r, variables=self.variables, symbolic=self.symbolic)
-        else:
-            raise ClaripyTypeError("unrecognized type to wrap {}".format(type(r)))
 
     def _simplify_If(self):
         if self.args[0].reduced.is_true():
@@ -292,10 +299,10 @@ class Base(ana.Storable):
         if self.args[0].op == 'Concat':
             if all(a.op == 'Extract' for a in self.args[0].args):
                 first_ast = self.args[0].args[0].args[2]
-                for i, ast in enumerate(self.args[0].args):
-                    if not (first_ast.identical(ast.args[2])
-                            and ast.args[0] == ((i + 1) * 8 - 1)
-                            and ast.args[1] == i * 8):
+                for i, a in enumerate(self.args[0].args):
+                    if not (first_ast.identical(a.args[2])
+                            and a.args[0] == ((i + 1) * 8 - 1)
+                            and a.args[1] == i * 8):
                         break
                 else:
                     upper_bound = self.args[0].args[-1].args[0]
@@ -311,7 +318,7 @@ class Base(ana.Storable):
 
         val = self.args[2]
         if val.op == 'ZeroExt':
-            val = self._claripy.Concat(self._claripy.BVV(0, val.args[0]), val.args[1])
+            val = Concat(BitVecVal(0, val.args[0]), val.args[1])
 
         if val.op == 'Concat':
             pos = val.length
@@ -330,7 +337,7 @@ class Base(ana.Storable):
             if len(used) == 1:
                 self = used[0]
             else:
-                self = self._claripy.Concat(*used)
+                self = Concat(*used)
 
             new_high = low_loc + high - low
             if new_high == self.length - 1 and low_loc == 0:
@@ -370,9 +377,9 @@ class Base(ana.Storable):
         if hasattr(self, '_simplify_' + self.op):
             self = getattr(self, '_simplify_' + self.op)()
 
-        if self.op in reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-            inner_a = self.make_like(self._claripy, self.op, tuple(a.args[0] for a in self.args)).simplified
-            o = self.make_like(self._claripy, 'Reverse', (inner_a,), collapsible=True).simplified
+        if self.op in operations.reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
+            inner_a = self.make_like(self.op, tuple(a.args[0] for a in self.args)).simplified
+            o = self.make_like('Reverse', (inner_a,), collapsible=True).simplified
             o._simplified = Base.LITE_SIMPLIFY
             return o
 
@@ -412,7 +419,7 @@ class Base(ana.Storable):
         @arg result: a Result object, for resolving symbolic variables using the
                      concrete backend.
         '''
-        for b in self._claripy.model_backends:
+        for b in _model_backends:
             try: return self.resolved_with(b, result=result)
             except BackendError: self._errored.add(b)
         l.debug("all model backends failed for op %s", self.op)
@@ -460,7 +467,7 @@ class Base(ana.Storable):
 
         if not isinstance(self.model, Base):
             if inner:
-                if isinstance(self.model, BVV):
+                if isinstance(self.model, bv.BVV):
                     if self.model.value < 10:
                         val = format(self.model.value, '')
                     else:
@@ -522,7 +529,7 @@ class Base(ana.Storable):
         a depth of 2.
         '''
         if self.op == 'BitVec':
-          return 0
+            return 0
         ast_args = [ a for a in self.args if isinstance(a, Base) ]
         return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
 
@@ -589,7 +596,7 @@ class Base(ana.Storable):
                 new_args.append(new_a)
 
             if replaced:
-                r = self.make_like(self._claripy, self.op, tuple(new_args)).reduced
+                r = self.make_like(self.op, tuple(new_args)).reduced
             else:
                 r = self
 
@@ -637,7 +644,7 @@ class Base(ana.Storable):
         Otherwise, return False. Note that the AST *might* still be identical (i.e.,
         if it were simplified via Z3), but it's hard to quickly tell that.
         '''
-        return self._claripy.is_identical(self, o)
+        return is_identical(self, o)
 
     def replace(self, old, new):
         '''
@@ -649,13 +656,64 @@ class Base(ana.Storable):
             raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
-from .. import operations
-from ..operations import reverse_distributable, not_invertible
-from ..bv import BVV
-from ..fp import RM, FSort
-from ..vsa import StridedInterval, IfProxy
-from .. import Claripies
-from ..backend import BackendObject
-from .bv import BVI
-from .bool import BoolI
+#
+# Unbound methods
+#
+
+def is_identical(*args):
+    '''
+    Attempts to check if the underlying models of the expression are identical,
+    even if the hashes match.
+
+    This process is somewhat conservative: False does not necessarily mean that
+    it's not identical; just that it can't (easily) be determined to be identical.
+    '''
+    if not all([isinstance(a, Base) for a in args]):
+        return False
+
+    if len(set(hash(a) for a in args)) == 1:
+        return True
+
+    first = args[0]
+    identical = None
+    for o in args:
+        for b in _all_backends:
+            try:
+                i = b.identical(first, o)
+                if identical is None:
+                    identical = True
+                identical &= i is True
+            except BackendError:
+                pass
+
+        if not identical:
+            return False
+
+    return identical is True
+
+def model_object(e, result=None):
+    for b in _all_backends:
+        try: return b.convert(e, result=result)
+        except BackendError: pass
+    raise ClaripyTypeError('no model backend can convert expression')
+
+def simplify(e):
+    if isinstance(e, Base) and e.op == 'I':
+        return e
+
+    for b in _all_backends:
+        try: return b.simplify(e)
+        except BackendError: pass
+
+    l.debug("Unable to simplify expression")
+    return e
+
+from .errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
+from . import operations
+from . import bv
+from .fp import RM, FSort
+from .vsa import StridedInterval
+from .backend_object import BackendObject
+from . import _all_backends, _model_backends
+from .ast.bits import Bits
+from .ast.bv import BitVecVal, Concat

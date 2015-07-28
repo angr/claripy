@@ -10,8 +10,8 @@ l = logging.getLogger("claripy.backends.backend_z3_parallel")
 from .backend_z3 import BackendZ3
 
 class BackendZ3Parallel(BackendZ3):
-    def __init__(self, clrp):
-        BackendZ3.__init__(self, clrp)
+    def __init__(self):
+        BackendZ3.__init__(self)
         self._child = False
         self._lock = threading.RLock()
         self._cache_objects = False

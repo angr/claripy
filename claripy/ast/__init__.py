@@ -1,9 +1,10 @@
-from .base import Base
+def _import():
+    global Bits, BV, VS, FP, Bool, Int, Base
 
-from .bits import Bits
-from .bv import BV, BVI
-from .vs import VS
-from .fp import FP, FPI
-
-from .bool import Bool, BoolI
-from .int import Int
+    from .bits import Bits
+    from .bv import BV
+    from .vs import VS
+    from .fp import FP
+    from .bool import Bool
+    from .int import Int
+    from ..ast_base import Base

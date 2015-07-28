@@ -9,8 +9,8 @@ from .solver import Solver
 from .branching_solver import BranchingSolver
 
 class CompositeSolver(Solver):
-    def __init__(self, claripy, timeout=None, solver_class=BranchingSolver, **kwargs):
-        Solver.__init__(self, claripy, timeout=timeout, **kwargs)
+    def __init__(self, solver_backend, timeout=None, solver_class=BranchingSolver, **kwargs):
+        Solver.__init__(self, solver_backend, timeout=timeout, **kwargs)
         self._results = None
         self._solvers = { }
         self._solver_class = solver_class
@@ -62,7 +62,7 @@ class CompositeSolver(Solver):
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
             l.debug("... creating new solver")
-            return self._solver_class(self._claripy, timeout=self._timeout)
+            return self._solver_class(self._solver_backend, timeout=self._timeout)
         elif len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
@@ -106,7 +106,7 @@ class CompositeSolver(Solver):
             filtered = self._constraint_filter(constraints)
         except UnsatError:
             self._result = Result(False, { })
-            self._add_dependent_constraints({ 'CONCRETE' }, [ self._claripy.BoolVal(False) ])
+            self._add_dependent_constraints({ 'CONCRETE' }, [ BoolVal(False) ])
             return
 
         if not invalidate_cache:
@@ -208,7 +208,7 @@ class CompositeSolver(Solver):
         l.debug("... after-split, %r has %d solvers", self, len(self._solver_list))
 
     def branch(self):
-        c = CompositeSolver(self._claripy, timeout=self._timeout)
+        c = CompositeSolver(self._solver_backend, timeout=self._timeout)
         for s in self._solver_list:
             c_s = s.branch()
             for v in c_s.variables:
@@ -221,7 +221,7 @@ class CompositeSolver(Solver):
 
     def merge(self, others, merge_flag, merge_values):
         l.debug("Merging %s with %d other solvers.", self, len(others))
-        merged = CompositeSolver(self._claripy, timeout=self._timeout)
+        merged = CompositeSolver(self._solver_backend, timeout=self._timeout)
         common_solvers = self._shared_solvers(others)
         common_ids = { s.uuid for s in common_solvers }
         l.debug("... %s common solvers", len(common_solvers))
@@ -237,7 +237,7 @@ class CompositeSolver(Solver):
         for ns in noncommon_solvers:
             l.debug("... %d", len(ns))
             if len(ns) == 0:
-                s = self._solver_class(self._claripy, timeout=self._timeout)
+                s = self._solver_class(self._solver_backend, timeout=self._timeout)
                 s.add(True)
                 combined_noncommons.append(s)
             elif len(ns) == 1:
@@ -256,3 +256,4 @@ class CompositeSolver(Solver):
 
 from ..result import Result
 from ..errors import UnsatError
+from ..ast.bool import BoolVal

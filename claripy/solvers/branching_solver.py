@@ -4,20 +4,20 @@ l = logging.getLogger('claripy.solvers.branching_solver')
 from .solver import Solver
 
 class BranchingSolver(Solver):
-    def __init__(self, claripy, **solver_kwargs):
-        Solver.__init__(self, claripy, **solver_kwargs)
+    def __init__(self, solver_backend, **solver_kwargs):
+        Solver.__init__(self, solver_backend, **solver_kwargs)
         self._finalized = False
 
     def add(self, constraints, invalidate_cache=True):
         if self._finalized and invalidate_cache:
             l.debug("%r is finalized...", self)
-            self._solver_states = { }
-            self._to_add = { }
+            self._solver = None
+            self._to_add = [ ]
             self._finalized = False
         Solver.add(self, constraints, invalidate_cache=invalidate_cache)
 
     def branch(self):
-        s = BranchingSolver(self._claripy, timeout=self._timeout, solvers=self._solver_states, to_add=self._to_add, result=self._result)
+        s = BranchingSolver(self._solver_backend, timeout=self._timeout, solver=self._solver, to_add=self._to_add, result=self._result)
         s.constraints = self.constraints[:]
         s.variables = set(self.variables)
         s._simplified = self._simplified

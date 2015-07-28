@@ -2,11 +2,10 @@ import claripy
 import nose
 
 def test_fallback_abstraction():
-    clrp = claripy.Claripies["SerialZ3"]
-    bz = clrp.backend_of_type(claripy.backends.BackendZ3)
+    bz = claripy._backend_z3
 
-    a = clrp.BitVecVal(5, 32)
-    b = clrp.BitVec('x', 32, explicit_name=True)
+    a = claripy.BitVecVal(5, 32)
+    b = claripy.BitVec('x', 32, explicit_name=True)
     c = a+b
     d = 5+b
     e = b+5
@@ -20,13 +19,13 @@ def test_fallback_abstraction():
     nose.tools.assert_true(e.symbolic)
     nose.tools.assert_true(f.symbolic)
 
-    nose.tools.assert_is(type(a.model), claripy.BVV)
+    nose.tools.assert_is(type(a.model), claripy.bv.BVV)
     nose.tools.assert_is_instance(b.model, claripy.Base)
     nose.tools.assert_is_instance(c.model, claripy.Base)
     nose.tools.assert_is_instance(d.model, claripy.Base)
     nose.tools.assert_is_instance(e.model, claripy.Base)
     nose.tools.assert_is_instance(f.model, claripy.Base)
-    nose.tools.assert_is(type(g.model), claripy.BVV)
+    nose.tools.assert_is(type(g.model), claripy.bv.BVV)
 
     nose.tools.assert_equal(str(b.resolved_with(bz)), 'x')
     nose.tools.assert_equal(b.resolved_with(bz).__module__, 'z3')

@@ -3,6 +3,8 @@
 import logging
 l = logging.getLogger("claripy.solvers.solver")
 
+import sys
+
 import time
 l_timing = logging.getLogger("claripy.solvers.solver_timing")
 
@@ -18,16 +20,19 @@ import ana
 #pylint:disable=unidiomatic-typecheck
 
 class Solver(ana.Storable):
-    def __init__(self, claripy, result=None, timeout=None, solvers=None, to_add=None):
-        self._claripy = claripy
+    def __init__(self, solver_backend, result=None, timeout=None, solver=None, to_add=None):
         self._finalized = None
         self._result = result
         self._simplified = True
         self._timeout = timeout if timeout is not None else 300000
+        self._backend_uses_solver = True
 
         # solving
-        self._solver_states = { } if solvers is None else solvers
-        self._to_add = { } if to_add is None else to_add
+        self._solver_backend = solver_backend
+        self._solver = solver
+        self._to_add = [ ] if to_add is None else to_add
+
+        # constraints
         try:
             self.constraints = [ ]
             self.variables = set()
@@ -43,12 +48,12 @@ class Solver(ana.Storable):
 
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
-        return self._claripy.name, self._result, self._timeout, self.constraints, self.variables
+        return self._result, self._timeout, self.constraints, self.variables
 
     def _ana_setstate(self, s):
         self._simplified = True
-        cn, r, to, c, v = s
-        self.__init__(Claripies[cn], result=r, timeout=to)
+        r, to, c, v = s
+        self.__init__(result=r, timeout=to)
         self.constraints = c
         self.variables = v
 
@@ -56,18 +61,21 @@ class Solver(ana.Storable):
     # Solver Creation
     #
 
-    def _get_solver(self, backend):
-        if backend in self._solver_states:
-            s = self._solver_states[backend]
-            backend.add(s, self._to_add[backend])
-            self._to_add[backend] = [ ]
-        else:
-            s = backend.solver(timeout=self._timeout)
-            backend.add(s, self.constraints)
-            self._solver_states[backend] = s
-            self._to_add[backend] = [ ]
+    def _get_solver(self):
+        if not self._backend_uses_solver:
+            return None
 
-        return s
+        if self._solver is None:
+            try:
+                self._solver = self._solver_backend.solver(timeout=self._timeout)
+            except BackendError:
+                self._backend_uses_solver = False
+                return None
+            self._solver_backend.add(self._solver, self.constraints)
+
+        self._solver_backend.add(self._solver, self._to_add)
+        self._to_add = [ ]
+        return self._solver
 
     #
     # Constraint management
@@ -121,7 +129,7 @@ class Solver(ana.Storable):
         for e in ec if type(ec) in (list, tuple, set) else (ec,):
             #e_simp = self._claripy.simplify(e)
             e_simp = e
-            for b in self._claripy.model_backends:
+            for b in _eager_backends + [ self._solver_backend ]:
                 try:
                     o = b.convert(e_simp)
                     if b.is_false(o):
@@ -155,13 +163,13 @@ class Solver(ana.Storable):
             if len(to_add) > 0 and invalidate_cache:
                 self._result = None
         except UnsatError:
-            to_add = [ self._claripy.false ]
+            to_add = [ false ]
             self._result = Result(False, { })
 
         if len(to_add) > 0:
             # generate UUIDs for every constraint
             for c in to_add:
-                c.uuid #pylint:disable=pointless-statement
+                c.make_uuid()
                 if c.length is not None:
                     raise ClaripyTypeError('constraint is not a boolean expression!')
 
@@ -171,19 +179,18 @@ class Solver(ana.Storable):
             for e in to_add:
                 self.variables.update(e.variables)
 
-            for b in self._solver_states:
-                self._to_add[b] += to_add
+            self._to_add += to_add
 
     def simplify(self):
         if self._simplified or len(self.constraints) == 0: return
-        self.constraints = [ self._claripy.simplify(self._claripy.And(*self.constraints)) ]
+        self.constraints = [ simplify(And(*self.constraints)) ]
 
         # generate UUIDs for every constraint
         for c in self.constraints:
             if isinstance(c, Base): c.make_uuid()
 
-        self._solver_states = { }
-        self._to_add = { }
+        self._solver = None
+        self._to_add = [ ]
         self._simplified = True
 
         return self.constraints
@@ -227,7 +234,7 @@ class Solver(ana.Storable):
         if not isinstance(e, Base): raise ValueError("Solver got a non-E for e.")
 
         if len(extra_constraints) == 0:
-            for b in self._claripy.model_backends:
+            for b in _eager_backends:
                 try: return b.eval(e, n, result=self._result)
                 except BackendError: pass
 
@@ -275,7 +282,7 @@ class Solver(ana.Storable):
         # add constraints to help the solver out later
         if len(extra_constraints) == 0 and len(all_results) < n:
             l.debug("... adding constraints for %d values for future speedup", len(all_results))
-            self.add([self._claripy.Or(*[ e == v for v in all_results ])], invalidate_cache=False)
+            self.add([Or(*[ e == v for v in all_results ])], invalidate_cache=False)
 
         # sort so the order of results is consistent when using pypy
         return tuple(sorted(all_results))
@@ -285,7 +292,7 @@ class Solver(ana.Storable):
         extra_constraints = self._constraint_filter(extra_constraints)
 
         if len(extra_constraints) == 0:
-            for b in self._claripy.model_backends:
+            for b in _eager_backends:
                 try: return b.max(e, result=self._result)
                 except BackendError: pass
 
@@ -299,12 +306,12 @@ class Solver(ana.Storable):
         else:
             self.simplify()
 
-            c = extra_constraints + (self._claripy.UGE(e, two[0]), self._claripy.UGE(e, two[1]))
-            r = self._claripy.model_object(self._max(e, extra_constraints=c), result=self._result)
+            c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
+            r = model_object(self._max(e, extra_constraints=c), result=self._result)
 
         if len(extra_constraints) == 0:
             self._result.max_cache[e.uuid] = r
-            self.add([self._claripy.ULE(e, r)], invalidate_cache=False)
+            self.add([ULE(e, r)], invalidate_cache=False)
 
         return r
 
@@ -313,7 +320,7 @@ class Solver(ana.Storable):
         extra_constraints = self._constraint_filter(extra_constraints)
 
         if len(extra_constraints) == 0:
-            for b in self._claripy.model_backends:
+            for b in _eager_backends:
                 try: return b.min(e, result=self._result)
                 except BackendError: pass
 
@@ -327,12 +334,12 @@ class Solver(ana.Storable):
         else:
             self.simplify()
 
-            c = extra_constraints + (self._claripy.ULE(e, two[0]), self._claripy.ULE(e, two[1]))
-            r = self._claripy.model_object(self._min(e, extra_constraints=c), result=self._result)
+            c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
+            r = model_object(self._min(e, extra_constraints=c), result=self._result)
 
         if len(extra_constraints) == 0:
             self._result.min_cache[e.uuid] = r
-            self.add([self._claripy.UGE(e, r)], invalidate_cache=False)
+            self.add([UGE(e, r)], invalidate_cache=False)
 
         return r
 
@@ -343,7 +350,7 @@ class Solver(ana.Storable):
             return False
 
         if len(extra_constraints) == 0:
-            for b in self._claripy.model_backends:
+            for b in _eager_backends:
                 try: return b.solution(e, v, result=self._result)
                 except BackendError: pass
 
@@ -360,72 +367,63 @@ class Solver(ana.Storable):
         # check it!
         l.debug("Solver.solve() checking SATness of %d constraints", len(self.constraints))
 
-        if not self._claripy.solver_backends:
+        if not self._solver_backend:
             # There is no solver backend. Just return True
             return Result(True, [True])
 
-        for b in self._claripy.solver_backends:
-            try:
-                s = self._get_solver(b)
-                l.debug("... trying %s", b)
+        try:
+            s = self._get_solver()
 
-                a = time.time()
-                r = b.results(s, extra_constraints, generic_model=True)
-                b = time.time()
+            a = time.time()
+            r = self._solver_backend.results(s, extra_constraints, generic_model=True)
+            b = time.time()
 
-                l_timing.debug("... %s in %s seconds", r.sat, b - a)
-                return r
-            except BackendError as be:
-                l.debug("... BackendError: %s", be)
-
-        raise ClaripySolverError("all solver backends failed for Solver._solve")
+            l_timing.debug("... %s in %s seconds", r.sat, b - a)
+            return r
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripySolverError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
 
     def _eval(self, e, n, extra_constraints=()):
         l.debug("solver._eval(%d) with %d extra_constraints", n, len(extra_constraints))
 
-        for b in self._claripy.solver_backends:
-            try:
-                l.debug("... trying backend %s", b.__class__.__name__)
-                results = b.eval(self._get_solver(b), e, n, extra_constraints=extra_constraints, result=self._result)
-                return [ self._claripy.model_object(r) for r in results ]
-            except BackendError as be:
-                print "... BackendError: %s" % be
-
-        raise ClaripySolverError("all solver backends failed for Solver._eval")
+        try:
+            results = self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self._result, solver=self._get_solver())
+            return [ model_object(r) for r in results ]
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripySolverError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
 
     def _max(self, e, extra_constraints=()):
         l.debug("Solver.max() with %d extra_constraints", len(extra_constraints))
-        for b in self._claripy.solver_backends:
-            try:
-                return b.max(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
-            except BackendError as be:
-                l.debug("... BackendError: %s", be)
-        raise ClaripySolverError("all solver backends failed for Solver._max")
+        try:
+            return self._solver_backend.max(e, extra_constraints=extra_constraints, result=self._result, solver=self._get_solver())
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripySolverError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
 
     def _min(self, e, extra_constraints=()):
         l.debug("Solver.min() with %d extra_constraints", len(extra_constraints))
-        for b in self._claripy.solver_backends:
-            try:
-                return b.min(self._get_solver(b), e, extra_constraints=extra_constraints, result=self._result)
-            except BackendError as be:
-                l.debug("... BackendError: %s", be)
-        raise ClaripySolverError("all solver backends failed for Solver._min")
+        try:
+            return self._solver_backend.min(e, extra_constraints=extra_constraints, result=self._result, solver=self._get_solver())
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripySolverError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
 
     def _solution(self, e, v, extra_constraints=()):
-        for b in self._claripy.solver_backends:
-            try:
-                return b.solution(self._get_solver(b), e, v, extra_constraints=extra_constraints)
-            except BackendError as be:
-                l.debug("... BackendError: %s", be)
-        raise ClaripySolverError("all solver backends failed for Solver._solution")
+        try:
+            return self._solver_backend.solution(e, v, extra_constraints=extra_constraints, solver=self._get_solver())
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripySolverError, "Backend error during _solution: %s('%s')" % (str(e_type), str(value)), traceback
 
     #
     # Serialization and such.
     #
 
     def downsize(self): #pylint:disable=R0201
-        self._solver_states = { }
-        self._to_add = { }
+        self._solver = { }
+        self._to_add = [ ]
         if self._result is not None:
             self._result.downsize()
 
@@ -440,18 +438,18 @@ class Solver(ana.Storable):
         l.error("branch() called on a non-branching solver! This is probably a serious bug.")
 
     def merge(self, others, merge_flag, merge_values):
-        merged = self.__class__(self._claripy, timeout=self._timeout)
+        merged = self.__class__(self._solver_backend, timeout=self._timeout)
         merged._simplified = False
         options = [ ]
 
         for s, v in zip([self]+others, merge_values):
-            options.append(self._claripy.And(*([ merge_flag == v ] + s.constraints)))
-        merged.add([self._claripy.Or(*options)])
+            options.append(And(*([ merge_flag == v ] + s.constraints)))
+        merged.add([Or(*options)])
 
-        return (len(self._claripy.solver_backends) > 0), merged
+        return self._solver_backend is _backend_z3 , merged
 
     def combine(self, others):
-        combined = self.__class__(self._claripy, timeout=self._timeout)
+        combined = self.__class__(self._solver_backend, timeout=self._timeout)
         combined._simplified = False
 
         combined.add(self.constraints) #pylint:disable=E1101
@@ -465,13 +463,15 @@ class Solver(ana.Storable):
         for variables,c_list in self._independent_constraints():
             l.debug("... got %d constraints with %d variables", len(c_list), len(variables))
 
-            s = self.__class__(self._claripy, timeout=self._timeout)
+            s = self.__class__(self._solver_backend, timeout=self._timeout)
             s._simplified = False
             s.add(c_list)
             results.append(s)
         return results
 
 from ..result import Result
-from ..ast import Base
 from ..errors import UnsatError, BackendError, ClaripySolverError, ClaripyTypeError
-from .. import Claripies
+from .. import _eager_backends, _backend_z3
+from ..ast_base import Base, model_object, simplify
+from ..ast.bool import And, Or, false
+from ..ast.bv import UGE, ULE

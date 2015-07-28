@@ -5,12 +5,11 @@ import z3
 zTrue = z3.BoolVal(True)
 zFalse = z3.BoolVal(False)
 
-from ..backend import BackendError
-from .model_backend import ModelBackend
+from ..backend import BackendError, Backend
 
-class BackendConcrete(ModelBackend):
+class BackendConcrete(Backend):
     def __init__(self):
-        ModelBackend.__init__(self)
+        Backend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw_result['BitVec'] = self.BitVec
@@ -28,9 +27,9 @@ class BackendConcrete(ModelBackend):
     def _size(self, e, result=None):
         if type(e) in { bool, long, int }:
             return None
-        elif type(e) in { BVV }:
+        elif type(e) in { bv.BVV }:
             return e.size()
-        elif isinstance(e, FPV):
+        elif isinstance(e, fp.FPV):
             return e.sort.length
         else:
             raise BackendError("can't get size of type %s" % type(e))
@@ -39,25 +38,24 @@ class BackendConcrete(ModelBackend):
         return None
 
     def _identical(self, a, b, result=None):
-        if type(a) is BVV and type(b) is BVV and a.size() != b.size():
+        if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
             return False
         else:
             return a == b
 
     def _convert(self, a, result=None):
-        if type(a) in { int, long, float, bool, str, BVV, FPV, RM, FSort }:
+        if type(a) in { int, long, float, bool, str, bv.BVV, fp.FPV, fp.RM, fp.FSort }:
             return a
 
         if not hasattr(a, '__module__') or a.__module__ != 'z3':
             raise BackendError("BackendConcrete got an unsupported type %s" % a.__class__)
 
-        z3_backend = self._claripy.backend_of_type(BackendZ3)
-        if z3_backend is None:
-            raise BackendError("can't convert z3 expressions when z3 is not in use")
+        #if _backend_z3 is None:
+        #   raise BackendError("can't convert z3 expressions when z3 is not in use")
 
         try:
-            if hasattr(z3_backend, '_lock'):
-                z3_backend._lock.acquire()
+            #if hasattr(_backend_z3, '_lock'):
+            #   _backend_z3._lock.acquire() #pylint:disable=no-member
 
             if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
             elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
@@ -74,19 +72,20 @@ class BackendConcrete(ModelBackend):
                 #l.warning("TODO: support more complex non-symbolic expressions, maybe?")
                 raise BackendError("TODO: support more complex non-symbolic expressions, maybe?")
         finally:
-            if hasattr(z3_backend, '_lock'):
-                z3_backend._lock.release()
+            pass
+            #if hasattr(_backend_z3, '_lock'):
+            #   _backend_z3._lock.release() #pylint:disable=no-member
 
     def _simplify(self, e):
         return e
 
     def abstract(self, e):
-        if isinstance(e, BVV):
-            return BVI(self._claripy, e, length=e.size())
+        if isinstance(e, bv.BVV):
+            return BVI(e, length=e.size())
         elif isinstance(e, bool):
-            return BoolI(self._claripy, e)
-        elif isinstance(e, FPV):
-            return FPI(self._claripy, e)
+            return BoolI(e)
+        elif isinstance(e, fp.FPV):
+            return FPI(e)
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
@@ -94,18 +93,23 @@ class BackendConcrete(ModelBackend):
     # Evaluation functions
     #
 
-    def _eval(self, expr, n, result=None):
+    def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
         return [ self.convert(expr, result=result if n == 1 else None) ]
-    def _max(self, expr, result=None):
+    def _max(self, expr, result=None, solver=None, extra_constraints=()):
         return self.convert(expr, result=result)
-    def _min(self, expr, result=None):
+    def _min(self, expr, result=None, solver=None, extra_constraints=()):
         return self.convert(expr, result=result)
-    def _solution(self, expr, v, result=None):
+    def _solution(self, expr, v, result=None, solver=None, extra_constraints=()):
         return self.convert(expr, result=result) == v
 
-from ..bv import BVV
-from ..fp import FPV, RM, FSort
+    def _is_true(self, e):
+        return e == True
+    def _is_false(self, e):
+        return e == False
+
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp
-from .backend_z3 import BackendZ3
-from ..ast import BVI, FPI, BoolI
+#from .. import _backend_z3
+from ..ast.bv import BVI
+from ..ast.fp import FPI
+from ..ast.bool import BoolI

@@ -2,50 +2,73 @@
 
 # pylint: disable=F0401,W0401,W0603,
 
+import sys
 import logging
 l = logging.getLogger("claripy")
 
-Claripies = { }
+_all_backends = [ ]
+_eager_backends = [ ]
+_model_backends = [ ]
 
-from .ast import Base, Bits, BV, FP
-from . import bv
-from .result import Result
 from .errors import *
-from .claripy_standalone import ClaripyStandalone
-from .bv import BVV
-from .fp import FPV, FSORT_FLOAT, FSORT_DOUBLE, FSort, RM, RM_RTN, RM_RTP, RM_RNE, RM_RTZ
 from . import operations
-from . import backends
-from .vsa import *
-from .backend import Backend, BackendObject
+from . import ops as _all_operations
 
-def init_claripies():
-    backend_vsa = backends.BackendVSA()
-    backend_concrete = backends.BackendConcrete()
-    Claripies['VSA'] = ClaripyStandalone('VSA', model_backends=[backend_concrete, backend_vsa], solver_backends=[])
-    backend_vsa.set_claripy_object(Claripies['VSA'])
-    backend_concrete.set_claripy_object(Claripies['VSA'])
+from . import backends as _backends
+_backend_vsa = _backends.BackendVSA()
+_backend_z3 = _backends.BackendZ3()
+_backend_concrete = _backends.BackendConcrete()
 
-    Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
-    Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
+_eager_backends[:] = [ _backend_concrete ]
+_model_backends[:] = [ _backend_concrete, _backend_vsa ]
+_all_backends[:] = [ _backend_concrete, _backend_vsa, _backend_z3 ]
 
-    backend_concrete = backends.BackendConcrete()
-    Claripies['Concrete'] = ClaripyStandalone('Concrete', model_backends=[backend_concrete], solver_backends=[], parallel=False)
-    backend_concrete.set_claripy_object(Claripies['Concrete'])
+_recurse = 15000
+l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
+sys.setrecursionlimit(_recurse)
 
-init_claripies()
-
-import sys
-recurse = 15000
-l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", recurse)
-sys.setrecursionlimit(recurse)
-
-#from .operations import *
-#from .wrapper import Wrapper, wrap, unwrap
-#from .solver import Solver, sat, unsat
-#from .utils import *
-#from .composite_solver import CompositeSolver
-#from .bv import BV, BVV
 #
-#empty_solver = Solver()
-#empty_solver.check()
+# Below are some exposed interfaces for general use.
+#
+
+def downsize():
+    _backend_vsa.downsize()
+    _backend_concrete.downsize()
+    _backend_z3.downsize()
+
+#
+# solvers
+#
+
+from .solvers import BranchingSolver, CompositeSolver
+Solver = BranchingSolver
+from .result import Result
+
+#
+# backend objects
+#
+
+from . import bv
+from . import fp
+from . import vsa
+
+#
+# Operations
+#
+
+from .ast_base import *
+from .ast.bv import *
+from .ast.fp import *
+from .ast.bool import *
+from . import ast
+ast._import()
+
+#
+# and some aliases
+#
+
+BVV = BitVecVal
+BV = BitVec
+VS = ValueSet
+SI = StridedInterval
+TSI = TopStridedInterval
