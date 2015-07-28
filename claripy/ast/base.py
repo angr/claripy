@@ -653,8 +653,9 @@ class Base(ana.Storable):
         '''
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyOperationError('replacements must be AST nodes')
-        if old.size() != new.size():
-            raise ClaripyOperationError('replacements must have matching sizes')
+        if not isinstance(new, Bool):
+            if old.size() != new.size():
+                raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
@@ -666,4 +667,4 @@ from ..vsa import StridedInterval, IfProxy
 from .. import Claripies
 from ..backend import BackendObject
 from .bv import BVI
-from .bool import BoolI
+from .bool import BoolI, Bool
