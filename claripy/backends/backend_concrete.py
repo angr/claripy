@@ -60,6 +60,18 @@ class BackendConcrete(ModelBackend):
                 z3_backend._lock.acquire()
 
             if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
+            elif isinstance(a, z3.FPRef):
+                # TODO: don't replicate this code in backend_z3.py
+                # this is really imprecise
+                fp_mantissa = float(a.significand())
+                fp_exp = float(a.exponent())
+                value = fp_mantissa * (2 ** fp_exp)
+
+                ebits = a.ebits()
+                sbits = a.sbits()
+                sort = FSort.from_params(ebits, sbits)
+
+                return FPV(value, sort)
             elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
             elif isinstance(a, z3.BoolRef) and a.eq(zFalse): return False
             elif result is not None and a.num_args() == 0:
