@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 import logging
-l = logging.getLogger("claripy.solvers.full_solver")
+l = logging.getLogger("claripy.frontends.full_frontend")
 
 import sys
 
-from .lightweight_solver import LightweightSolver
+from .light_frontend import LightFrontend
 
-class FullSolver(LightweightSolver):
+class FullFrontend(LightFrontend):
     def __init__(self, solver_backend, timeout=None):
-        LightweightSolver.__init__(self)
+        LightFrontend.__init__(self, solver_backend)
         self.timeout = timeout if timeout is not None else 300000
         self._solver = None
         self._to_add = [ ]
@@ -19,16 +19,16 @@ class FullSolver(LightweightSolver):
     #
 
     def _ana_getstate(self):
-        return self.timeout, LightweightSolver._ana_getstate(self)
+        return self.timeout, LightFrontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
         self.timeout, lightweight_state = s
         self._solver = None
         self._to_add = [ ]
-        LightweightSolver._ana_setstate(lightweight_state)
+        LightFrontend._ana_setstate(self, lightweight_state)
 
     #
-    # Solver Creation
+    # Frontend Creation
     #
 
     def _get_solver(self):
@@ -48,12 +48,12 @@ class FullSolver(LightweightSolver):
     #
 
     def _add_constraints(self, constraints, invalidate_cache=True):
-        to_add = LightweightSolver._add_constraints(self, constraints, invalidate_cache=invalidate_cache)
+        to_add = LightFrontend._add_constraints(self, constraints, invalidate_cache=invalidate_cache)
         self._to_add += to_add
         return to_add
 
     def _simplify(self):
-        LightweightSolver._simplify(self)
+        LightFrontend._simplify(self)
 
         # TODO: should we do this?
         self._solver = None
@@ -63,11 +63,11 @@ class FullSolver(LightweightSolver):
         return self.constraints
 
     def _solve(self, extra_constraints=()):
-        r = LightweightSolver._solve(self, extra_constraints=extra_constraints)
+        r = LightFrontend._solve(self, extra_constraints=extra_constraints)
         if not r.approximation:
             return r
 
-        l.debug("Solver.solve() checking SATness of %d constraints", len(self.constraints))
+        l.debug("Frontend.solve() checking SATness of %d constraints", len(self.constraints))
 
         try:
             s = self._get_solver()
@@ -79,16 +79,16 @@ class FullSolver(LightweightSolver):
             return r
         except BackendError:
             e_type, value, traceback = sys.exc_info()
-            raise ClaripySolverError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
+            raise ClaripyFrontendError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
 
-    # we'll just reuse LightweightSolver's satisfiable(self, extra_constraints=())
+    # we'll just reuse LightFrontend's satisfiable(self, extra_constraints=())
 
     def _eval(self, e, n, extra_constraints=()):
-        try: return LightweightSolver._eval(self, e, n, extra_constraints=extra_constraints)
-        except ClaripySolverError: pass
+        try: return LightFrontend._eval(self, e, n, extra_constraints=extra_constraints)
+        except ClaripyFrontendError: pass
 
         if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
-        l.debug("FullSolver._eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
+        l.debug("FullFrontend._eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
 
         if len(extra_constraints) == 0 and e.uuid in self.result.eval_cache:
             cached_results = self.result.eval_cache[e.uuid][1]
@@ -119,7 +119,7 @@ class FullSolver(LightweightSolver):
                 raise
         except BackendError:
             e_type, value, traceback = sys.exc_info()
-            raise ClaripySolverError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
+            raise ClaripyFrontendError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
 
         if len(extra_constraints) == 0:
             l.debug("... adding cache of %d values for n=%d", len(all_results), n)
@@ -139,49 +139,58 @@ class FullSolver(LightweightSolver):
         return tuple(sorted(all_results))
 
     def _max(self, e, extra_constraints=()):
-        try: return LightweightSolver._max(self, e, extra_constraints=extra_constraints)
-        except ClaripySolverError: pass
+        try: return LightFrontend._max(self, e, extra_constraints=extra_constraints)
+        except ClaripyFrontendError: pass
 
-        l.debug("Solver.max() with %d extra_constraints", len(extra_constraints))
-        self.simplify()
+        if not self.satisfiable(extra_constraints=extra_constraints):
+            raise UnsatError("Unsat during _max()")
+
+        l.debug("Frontend.max() with %d extra_constraints", len(extra_constraints))
 
         two = self.eval(e, 2, extra_constraints=extra_constraints)
         if len(two) == 0: raise UnsatError("unsat during max()")
         elif len(two) == 1: return two[0]
+
+        self.simplify()
 
         try:
             c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
             return model_object(self._solver_backend.max(e, extra_constraints=c, result=self.result, solver=self._get_solver()))
         except BackendError:
             e_type, value, traceback = sys.exc_info()
-            raise ClaripySolverError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
+            raise ClaripyFrontendError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
 
     def _min(self, e, extra_constraints=()):
-        try: return LightweightSolver._min(self, e, extra_constraints=extra_constraints)
-        except ClaripySolverError: pass
+        try: return LightFrontend._min(self, e, extra_constraints=extra_constraints)
+        except ClaripyFrontendError: pass
 
-        l.debug("Solver.min() with %d extra_constraints", len(extra_constraints))
-        self.simplify()
+        if not self.satisfiable(extra_constraints=extra_constraints):
+            raise UnsatError("Unsat during _min()")
+
+        l.debug("Frontend.min() with %d extra_constraints", len(extra_constraints))
 
         two = self.eval(e, 2, extra_constraints=extra_constraints)
         if len(two) == 0: raise UnsatError("unsat during min()")
         elif len(two) == 1: return two[0]
+
+        self.simplify()
 
         try:
             c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
             return model_object(self._solver_backend.min(e, extra_constraints=c, result=self.result, solver=self._get_solver()))
         except BackendError:
             e_type, value, traceback = sys.exc_info()
-            raise ClaripySolverError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
+            raise ClaripyFrontendError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
 
     def _solution(self, e, v, extra_constraints=()):
-        b = self._solution(e, v, extra_constraints=extra_constraints)
+        try: return LightFrontend._solution(self, e, v, extra_constraints=extra_constraints)
+        except ClaripyFrontendError: pass
 
         try:
             b = self._solver_backend.solution(e, v, extra_constraints=extra_constraints, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
-            raise ClaripySolverError, "Backend error during _solution: %s('%s')" % (str(e_type), str(value)), traceback
+            raise ClaripyFrontendError, "Backend error during _solution: %s('%s')" % (str(e_type), str(value)), traceback
 
         return b
 
@@ -190,7 +199,7 @@ class FullSolver(LightweightSolver):
     #
 
     def downsize(self):
-        LightweightSolver.downsize(self)
+        LightFrontend.downsize(self)
         self._solver = None
         self._to_add = [ ]
 
@@ -198,26 +207,26 @@ class FullSolver(LightweightSolver):
     # Merging and splitting
     #
 
-    # we'll reuse LightweightSolver's finalize(self)
+    # we'll reuse LightFrontend's finalize(self)
 
     def branch(self):
-        b = LightweightSolver.branch(self)
+        b = LightFrontend.branch(self)
         b._solver = self._solver
         b._to_add = self._to_add
         b.timeout = self.timeout
         return b
 
-    # we'll reuse LightweightSolver's: merge(self, others, merge_flag, merge_values)
+    # we'll reuse LightFrontend's: merge(self, others, merge_flag, merge_values)
 
-    # we'll reuse LightweightSolver's: combine(self, others)
+    # we'll reuse LightFrontend's: combine(self, others)
 
     def split(self):
-        solvers = LightweightSolver.split(self)
+        solvers = LightFrontend.split(self)
         for s in solvers:
             s.timeout = self.timeout
         return solvers
 
-from ..errors import UnsatError, BackendError, ClaripySolverError
+from ..errors import UnsatError, BackendError, ClaripyFrontendError
 from ..ast_base import model_object
 from ..ast.bool import Or
 from ..ast.bv import UGE, ULE

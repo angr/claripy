@@ -131,8 +131,8 @@ def test_expression():
     nose.tools.assert_is(rbi, True)
 
 def test_ite():
-    raw_ite(claripy.solvers.BranchingSolver)
-    raw_ite(claripy.solvers.CompositeSolver)
+    raw_ite(claripy.frontends.FullFrontend)
+    raw_ite(claripy.frontends.CompositeFrontend)
 
 def raw_ite(solver_type):
     s = solver_type(claripy._backend_z3)

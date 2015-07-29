@@ -1,15 +1,15 @@
 import logging
-l = logging.getLogger("claripy.solvers.composite_solver")
+l = logging.getLogger("claripy.frontends.composite_frontend")
 
 import itertools
 symbolic_count = itertools.count()
 
-from .solver import Solver
-from .full_solver import FullSolver
+from ..frontend import Frontend
+from .full_frontend import FullFrontend
 
-class CompositeSolver(Solver):
-    def __init__(self, solver_backend, timeout=None, solver_class=FullSolver):
-        Solver.__init__(self, solver_backend)
+class CompositeFrontend(Frontend):
+    def __init__(self, solver_backend, timeout=None, solver_class=FullFrontend):
+        Frontend.__init__(self, solver_backend)
         self.timeout = timeout
         self._solvers = { }
         self._solver_class = solver_class
@@ -21,14 +21,14 @@ class CompositeSolver(Solver):
     #
 
     def _ana_getstate(self):
-        return self._solvers, self._solver_class, Solver._ana_getstate(self)
+        return self._solvers, self._solver_class, Frontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
         self._solvers, self._solver_class, base_state = s
-        Solver._ana_setstate(base_state)
+        Frontend._ana_setstate(base_state)
 
     #
-    # Solver management
+    # Frontend management
     #
 
     @property
@@ -143,7 +143,7 @@ class CompositeSolver(Solver):
                 break
 
             l.debug("... %r: True", s)
-            model.update(s._result.model)
+            model.update(s.result.model)
 
         l.debug("... ok!")
         return Result(satness, model=model)
@@ -192,12 +192,12 @@ class CompositeSolver(Solver):
     #
 
     def finalize(self):
-        l.error("CompositeSolver.finalize is incomplete. This represents a big issue.")
+        l.error("CompositeFrontend.finalize is incomplete. This represents a big issue.")
         for s in self._solver_list:
             s.finalize()
 
     def branch(self):
-        c = Solver.branch(self)
+        c = Frontend.branch(self)
         c.timeout = self.timeout
 
         for s in self._solver_list:
@@ -205,14 +205,14 @@ class CompositeSolver(Solver):
             for v in c_s.variables:
                 c._solvers[v] = c_s #pylint:disable=no-member
 
-        if self._result is not None:
-            c._result = self._result.branch()
+        if self.result is not None:
+            c.result = self.result.branch()
 
         return c
 
     def merge(self, others, merge_flag, merge_values):
         l.debug("Merging %s with %d other solvers.", self, len(others))
-        merged = CompositeSolver(self._solver_backend)
+        merged = CompositeFrontend(self._solver_backend)
         common_solvers = self._shared_solvers(others)
         common_ids = { s.uuid for s in common_solvers }
         l.debug("... %s common solvers", len(common_solvers))
@@ -244,10 +244,14 @@ class CompositeSolver(Solver):
         return True, merged
 
     def combine(self, others):
-        raise ClaripySolverError("not implemented")
+        combined = self.__class__(self._solver_backend)
+        combined._simplified = False
+        combined.add(self.constraints)
+        for o in others:
+            combined.add(o.constraints)
+        return combined
 
     def split(self):
-        return [ s.branch() for s in self._solvers.values() ]
+        return [ s.branch() for s in self._solver_list if len(s.variables) > 0 ]
 
 from ..result import Result
-from ..errors import ClaripySolverError

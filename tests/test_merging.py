@@ -2,8 +2,8 @@ import claripy
 import nose
 
 def test_simple_merging():
-    raw_simple_merging(claripy.solvers.BranchingSolver)
-    raw_simple_merging(claripy.solvers.CompositeSolver)
+    raw_simple_merging(claripy.FullFrontend)
+    raw_simple_merging(claripy.CompositeFrontend)
 
 def raw_simple_merging(solver_type):
     s1 = solver_type(claripy._backend_z3)

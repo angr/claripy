@@ -48,19 +48,19 @@ def test_datalayer():
     nose.tools.assert_equal(str(cd), str(d))
 
     l.debug("Time to test some solvers!")
-    s = claripy.Solver(claripy._backend_z3)
+    s = claripy.FullFrontend(claripy._backend_z3)
     x = claripy.BitVec("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.solvers.Solver.ana_load(s.ana_store())
+    ss = claripy.Frontend.ana_load(s.ana_store())
     nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
-    s = claripy.CompositeSolver(claripy._backend_z3)
+    s = claripy.CompositeFrontend(claripy._backend_z3)
     x = claripy.BitVec("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.solvers.CompositeSolver.ana_load(s.ana_store())
+    ss = claripy.CompositeFrontend.ana_load(s.ana_store())
     old_constraint_sets = [[hash(j) for j in k.constraints] for k in s._solver_list]
     new_constraint_sets = [[hash(j) for j in k.constraints] for k in ss._solver_list]
     nose.tools.assert_items_equal(old_constraint_sets, new_constraint_sets)

@@ -422,7 +422,7 @@ def test_vsa():
 def test_vsa_constraint_to_si():
     # Set backend
     b = claripy._backend_vsa
-    s = claripy.BranchingSolver(claripy._backend_vsa)  #pylint:disable=unused-variable
+    s = claripy.LightFrontend(claripy._backend_vsa) #pylint:disable=unused-variable
 
     SI = claripy.SI
     BVV = claripy.BVV
@@ -536,7 +536,7 @@ def test_vsa_discrete_value_set():
     # Set backend
     b = claripy._backend_vsa
 
-    s = claripy.BranchingSolver(claripy._backend_vsa) #pylint:disable=unused-variable
+    s = claripy.LightFrontend(claripy._backend_vsa) #pylint:disable=unused-variable
 
     SI = claripy.StridedInterval
     BVV = claripy.BVV
@@ -626,7 +626,7 @@ def test_solution():
     # Set backend
     b = claripy._backend_vsa
 
-    solver_type = claripy.solvers.BranchingSolver
+    solver_type = claripy.LightFrontend
     s = solver_type(b)
 
     VS = claripy.ValueSet

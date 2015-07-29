@@ -15,13 +15,13 @@ from . import operations
 from . import ops as _all_operations
 
 from . import backends as _backends
-_backend_vsa = _backends.BackendVSA()
-_backend_z3 = _backends.BackendZ3()
-_backend_concrete = _backends.BackendConcrete()
+backend_vsa = _backends.BackendVSA()
+backend_z3 = _backends.BackendZ3()
+backend_concrete = _backends.BackendConcrete()
 
-_eager_backends[:] = [ _backend_concrete ]
-_model_backends[:] = [ _backend_concrete, _backend_vsa ]
-_all_backends[:] = [ _backend_concrete, _backend_vsa, _backend_z3 ]
+_eager_backends[:] = [ backend_concrete ]
+_model_backends[:] = [ backend_concrete, backend_vsa ]
+_all_backends[:] = [ backend_concrete, backend_vsa, backend_z3 ]
 
 _recurse = 15000
 l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
@@ -32,16 +32,16 @@ sys.setrecursionlimit(_recurse)
 #
 
 def downsize():
-    _backend_vsa.downsize()
-    _backend_concrete.downsize()
-    _backend_z3.downsize()
+    backend_vsa.downsize()
+    backend_concrete.downsize()
+    backend_z3.downsize()
 
 #
 # solvers
 #
 
-from .solvers import BranchingSolver, CompositeSolver
-Solver = BranchingSolver
+from .frontends import LightFrontend, FullFrontend, CompositeFrontend
+Frontend = FullFrontend
 from .result import Result
 
 #

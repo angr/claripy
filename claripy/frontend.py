@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 
 import logging
-l = logging.getLogger("claripy.solvers.lightweight_solver")
+l = logging.getLogger("claripy.frontends.frontend")
 
 import ana
 
-#cached_evals = 0
-#cached_min = 0
-#cached_max = 0
-#cached_solve = 0
-#filter_true = 0
-#filter_false = 0
-
 #pylint:disable=unidiomatic-typecheck
 
-class Solver(ana.Storable):
+class Frontend(ana.Storable):
 	def __init__(self, solver_backend):
 		self._solver_backend = solver_backend
 		self.result = None
@@ -43,7 +36,7 @@ class Solver(ana.Storable):
 	@staticmethod
 	def _split_constraints(constraints):
 		'''
-		Returns independent constraints, split from this Solver's constraints.
+		Returns independent constraints, split from this Frontend's constraints.
 		'''
 
 		splitted = [ ]
@@ -61,7 +54,7 @@ class Solver(ana.Storable):
 			connected_constraints = { n }
 
 			if len(connected_variables) == 0:
-				connected_variables.add('CONSTANT')
+				connected_variables.add('CONCRETE')
 
 			for v in s.variables:
 				if v in variable_connections:
@@ -97,8 +90,8 @@ class Solver(ana.Storable):
 						#filter_true +=1
 						break
 					else:
-						l.warning("Solver._constraint_filter got non-boolean from model_backend")
-						raise ClaripySolverError()
+						l.warning("Frontend._constraint_filter got non-boolean from model_backend")
+						raise ClaripyFrontendError()
 				except BackendError:
 					pass
 			else:
@@ -174,7 +167,7 @@ class Solver(ana.Storable):
 		self._add_constraints(to_add, invalidate_cache=invalidate_cache)
 		self._simplified = False
 
-		if invalidate_cache and self.result.sat:
+		if invalidate_cache and self.result is not None and self.result.sat:
 			self.result = None
 
 		return to_add
@@ -199,8 +192,8 @@ class Solver(ana.Storable):
 		except UnsatError:
 			return UnsatResult()
 
-		r = self._solve()
-		if len(extra_constraints) == 0:
+		r = self._solve(extra_constraints=extra_constraints)
+		if len(extra_constraints) == 0 or self.result is None:
 			self.result = r
 		return r
 
@@ -269,9 +262,9 @@ class Solver(ana.Storable):
 		if self.result is not None:
 			self.result.downsize()
 
-from ..result import UnsatResult
-from ..errors import UnsatError, BackendError, ClaripySolverError, ClaripyTypeError
-from .. import _eager_backends
-from ..ast_base import Base
-from ..ast.bool import false, Bool
-from ..ast.bv import UGE, ULE
+from .result import UnsatResult
+from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError
+from . import _eager_backends
+from .ast_base import Base
+from .ast.bool import false, Bool
+from .ast.bv import UGE, ULE

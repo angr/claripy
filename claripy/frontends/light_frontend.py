@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import logging
-l = logging.getLogger("claripy.solvers.lightweight_solver")
+l = logging.getLogger("claripy.frontends.light_frontend")
 
-from .solver import Solver
+from ..frontend import Frontend
 
-class LightweightSolver(Solver):
+class LightFrontend(Frontend):
 	def __init__(self, solver_backend):
-		Solver.__init__(self, solver_backend)
+		Frontend.__init__(self, solver_backend)
 		self.constraints = [ ]
 		self.variables = set()
 		self._finalized = False
@@ -19,11 +19,11 @@ class LightweightSolver(Solver):
 	def _ana_getstate(self):
 		if not self._simplified: self.simplify()
 		self.finalize()
-		return self.constraints, self.variables, Solver._ana_getstate(self)
+		return self.constraints, self.variables, Frontend._ana_getstate(self)
 
 	def _ana_setstate(self, s):
 		self.constraints, self.variables, base_state = s
-		Solver._ana_setstate(self, base_state)
+		Frontend._ana_setstate(self, base_state)
 		self._finalized = True
 
 	#
@@ -31,10 +31,10 @@ class LightweightSolver(Solver):
 	#
 
 	def independent_constraints(self):
-		self._split_constraints(self.constraints)
+		return self._split_constraints(self.constraints)
 
 	#
-	# Lightweight functionality
+	# Light functionality
 	#
 
 	def _add_constraints(self, constraints, invalidate_cache=True):
@@ -69,21 +69,21 @@ class LightweightSolver(Solver):
 				try: return b.eval(e, n, result=self.result)
 				except BackendError: pass
 
-		raise ClaripySolverError("Lightweight solver can't handle this eval().")
+		raise ClaripyFrontendError("Light solver can't handle this eval().")
 
 	def _max(self, e, extra_constraints=()):
 		if len(extra_constraints) == 0:
-			for b in _eager_backends:
+			for b in _eager_backends + [ self._solver_backend ]:
 				try: return b.max(e, result=self.result)
 				except BackendError: pass
 
-		raise ClaripySolverError("Lightweight solver can't handle this max().")
+		raise ClaripyFrontendError("Light solver can't handle this max().")
 
 	def _min(self, e, extra_constraints=()):
 		extra_constraints = self._constraint_filter(extra_constraints)
 
 		if len(extra_constraints) == 0:
-			for b in _eager_backends:
+			for b in _eager_backends + [ self._solver_backend ]:
 				try: return b.min(e, result=self.result)
 				except BackendError: pass
 
@@ -91,22 +91,22 @@ class LightweightSolver(Solver):
 		if len(two) == 0: raise UnsatError("unsat during min()")
 		elif len(two) == 1: return two[0]
 
-		raise ClaripySolverError("Lightweight solver can't handle this min().")
+		raise ClaripyFrontendError("Light solver can't handle this min().")
 
 	def _solution(self, e, v, extra_constraints=()):
 		if len(extra_constraints) == 0:
-			for b in _eager_backends:
+			for b in _eager_backends + [ self._solver_backend ]:
 				try: return b.solution(e, v, result=self.result)
 				except BackendError: pass
 
-		raise ClaripySolverError("Lightweight solver can't handle this solution().")
+		raise ClaripyFrontendError("Light solver can't handle this solution().")
 
 	#
 	# Serialization and such.
 	#
 
 	def downsize(self):
-		Solver.downsize(self)
+		Frontend.downsize(self)
 
 	#
 	# Merging and splitting
@@ -116,7 +116,7 @@ class LightweightSolver(Solver):
 		self._finalized = True
 
 	def branch(self):
-		s = Solver.branch(self)
+		s = Frontend.branch(self)
 		s.constraints = list(self.constraints)
 		s.variables = set(self.variables)
 		self.finalize()
@@ -132,7 +132,7 @@ class LightweightSolver(Solver):
 			options.append(And(*([ merge_flag == v ] + s.constraints)))
 		merged.add([Or(*options)])
 
-		return self._solver_backend is _backend_z3, merged
+		return self._solver_backend is backend_z3, merged
 
 	def combine(self, others):
 		combined = self.__class__(self._solver_backend)
@@ -156,7 +156,7 @@ class LightweightSolver(Solver):
 		return results
 
 from ..result import SatResult
-from ..errors import UnsatError, BackendError, ClaripySolverError
-from .. import _eager_backends, _backend_z3
+from ..errors import UnsatError, BackendError, ClaripyFrontendError
+from .. import _eager_backends, backend_z3
 from ..ast_base import Base, simplify
 from ..ast.bool import And, Or
