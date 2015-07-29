@@ -42,7 +42,8 @@ def downsize():
 #
 
 from .frontends import LightFrontend, FullFrontend, CompositeFrontend
-Solver = FullFrontend
+def Solver():
+    return FullBackend(backend_z3)
 from .result import Result
 
 #
