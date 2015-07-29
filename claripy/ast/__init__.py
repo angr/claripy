@@ -1,3 +1,11 @@
+Bits = None
+BV = None
+VS = None
+FP = None
+Bool = None
+Int = None
+Base = None
+
 def _import():
     global Bits, BV, VS, FP, Bool, Int, Base
 

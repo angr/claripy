@@ -106,6 +106,10 @@ class BackendConcrete(Backend):
         return e == True
     def _is_false(self, e):
         return e == False
+    def _has_true(self, e):
+        return e == True
+    def _has_false(self, e):
+        return e == False
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp

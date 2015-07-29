@@ -702,8 +702,12 @@ def simplify(e):
         return e
 
     for b in _all_backends:
-        try: return b.simplify(e)
-        except BackendError: pass
+        try:
+            s = b.simplify(e)
+            s._simplified = Base.FULL_SIMPLIFY
+            return s
+        except BackendError:
+            pass
 
     l.debug("Unable to simplify expression")
     return e
