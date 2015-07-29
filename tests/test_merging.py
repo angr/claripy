@@ -6,8 +6,8 @@ def test_simple_merging():
     raw_simple_merging(claripy.CompositeFrontend)
 
 def raw_simple_merging(solver_type):
-    s1 = solver_type(claripy._backend_z3)
-    s2 = solver_type(claripy._backend_z3)
+    s1 = solver_type(claripy.backend_z3)
+    s2 = solver_type(claripy.backend_z3)
     w = claripy.BitVec("w", 8)
     x = claripy.BitVec("x", 8)
     y = claripy.BitVec("y", 8)
@@ -66,7 +66,7 @@ def raw_simple_merging(solver_type):
     nose.tools.assert_equal(smm_2.eval(z, 1), (20,))
     nose.tools.assert_equal(smm_2.eval(w, 1), (5,))
 
-    so = solver_type(claripy._backend_z3)
+    so = solver_type(claripy.backend_z3)
     so.add(w == 0)
 
     sa = so.branch()

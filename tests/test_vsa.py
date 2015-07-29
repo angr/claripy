@@ -115,7 +115,7 @@ def test_wrapped_intervals():
 
 def test_join():
     # Set backend
-    b = claripy._backend_vsa
+    b = claripy.backend_vsa
     claripy.solver_backends = [ ]
 
     SI = claripy.StridedInterval
@@ -159,7 +159,7 @@ def test_join():
 
 def test_vsa():
     # Set backend
-    b = claripy._backend_vsa
+    b = claripy.backend_vsa
 
     SI = claripy.StridedInterval
     VS = claripy.ValueSet
@@ -421,8 +421,8 @@ def test_vsa():
 
 def test_vsa_constraint_to_si():
     # Set backend
-    b = claripy._backend_vsa
-    s = claripy.LightFrontend(claripy._backend_vsa) #pylint:disable=unused-variable
+    b = claripy.backend_vsa
+    s = claripy.LightFrontend(claripy.backend_vsa) #pylint:disable=unused-variable
 
     SI = claripy.SI
     BVV = claripy.BVV
@@ -534,9 +534,9 @@ def test_vsa_discrete_value_set():
     Test cases for DiscreteStridedIntervalSet.
     """
     # Set backend
-    b = claripy._backend_vsa
+    b = claripy.backend_vsa
 
-    s = claripy.LightFrontend(claripy._backend_vsa) #pylint:disable=unused-variable
+    s = claripy.LightFrontend(claripy.backend_vsa) #pylint:disable=unused-variable
 
     SI = claripy.StridedInterval
     BVV = claripy.BVV
@@ -624,7 +624,7 @@ def test_vsa_discrete_value_set():
 
 def test_solution():
     # Set backend
-    b = claripy._backend_vsa
+    b = claripy.backend_vsa
 
     solver_type = claripy.LightFrontend
     s = solver_type(b)

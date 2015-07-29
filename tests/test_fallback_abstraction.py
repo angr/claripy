@@ -2,7 +2,7 @@ import claripy
 import nose
 
 def test_fallback_abstraction():
-    bz = claripy._backend_z3
+    bz = claripy.backend_z3
 
     a = claripy.BitVecVal(5, 32)
     b = claripy.BitVec('x', 32, explicit_name=True)

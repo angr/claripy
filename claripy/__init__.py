@@ -22,6 +22,7 @@ backend_concrete = _backends.BackendConcrete()
 _eager_backends[:] = [ backend_concrete ]
 _model_backends[:] = [ backend_concrete, backend_vsa ]
 _all_backends[:] = [ backend_concrete, backend_vsa, backend_z3 ]
+_backends = { 'BackendVSA': backend_vsa, 'BackendZ3': backend_z3, 'BackendConcrete': backend_concrete }
 
 _recurse = 15000
 l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)

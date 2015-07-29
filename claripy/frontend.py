@@ -23,10 +23,11 @@ class Frontend(ana.Storable):
 
 	def _ana_getstate(self):
 		if not self._simplified: self.simplify()
-		return self._solver_backend, self.result
+		return self._solver_backend.__class__.__name__, self.result
 
 	def _ana_setstate(self, s):
-		self._solver_backend, self.result = s
+		solver_backend_name, self.result = s
+		self._solver_backend = _backends[solver_backend_name]
 		self._simplified = True
 
 	#
@@ -264,7 +265,7 @@ class Frontend(ana.Storable):
 
 from .result import UnsatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError
-from . import _eager_backends
+from . import _eager_backends, _backends
 from .ast_base import Base
 from .ast.bool import false, Bool
 from .ast.bv import UGE, ULE

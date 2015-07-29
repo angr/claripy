@@ -2,7 +2,7 @@ import claripy
 import nose
 
 def test_expression():
-    bc = claripy._backend_concrete
+    bc = claripy.backend_concrete
 
     e = claripy.BitVecVal(0x01020304, 32)
     nose.tools.assert_equal(len(e), 32)
@@ -135,7 +135,7 @@ def test_ite():
     raw_ite(claripy.frontends.CompositeFrontend)
 
 def raw_ite(solver_type):
-    s = solver_type(claripy._backend_z3)
+    s = solver_type(claripy.backend_z3)
     x = claripy.BitVec("x", 32)
     y = claripy.BitVec("y", 32)
     z = claripy.BitVec("z", 32)
@@ -173,7 +173,7 @@ def raw_ite(solver_type):
     nose.tools.assert_items_equal(sorted([ b.value for b in ss.eval(y, 100) ]), ( 2, 20, 200 ))
 
 def test_bool():
-    bc = claripy._backend_concrete
+    bc = claripy.backend_concrete
 
     a = claripy.And(*[False, False, True])
     nose.tools.assert_equal(a.resolved_with(bc), False)

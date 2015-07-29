@@ -2,7 +2,7 @@ import claripy
 import nose
 
 def test_model():
-    bc = claripy._backend_concrete
+    bc = claripy.backend_concrete
 
     a = claripy.BitVecVal(5, 32)
     b = claripy.BitVec('x', 32, explicit_name=True)
