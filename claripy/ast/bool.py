@@ -144,7 +144,7 @@ def ite_cases(cases, default):
         sofar = If(c, v, sofar)
     return sofar
 
-def constraint_to_si(self, expr): #pylint:disable=unused-argument
+def constraint_to_si(expr):
     '''
     Convert a constraint to SI if possible
     :param expr:
