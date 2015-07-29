@@ -1,3 +1,4 @@
+import os
 import sys
 import struct
 import weakref
@@ -382,9 +383,19 @@ class Base(ana.Storable):
     # Viewing and debugging
     #
 
-    def dbg_repr(self):
+    def dbg_repr(self, prefix=None):
         try:
-            return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
+            if prefix is not None:
+                new_prefix = prefix + "    "
+                s = prefix + "<%s %s (\n" % (type(self).__name__, self.op)
+                for a in self.args:
+                    s += "%s,\n" % (a.dbg_repr(prefix=new_prefix) if hasattr(a, 'dbg_repr') else (new_prefix + repr(a)))
+                s = s[:-2] + '\n'
+                s += prefix + ")>"
+
+                return s
+            else:
+                return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
         except RuntimeError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
@@ -677,4 +688,4 @@ from .backend_object import BackendObject
 from . import _all_backends, _model_backends
 from .ast.bits import Bits
 from .ast.bool import Bool
-from .ast.bv import BitVecVal, Concat, BV
+from .ast.bv import BV

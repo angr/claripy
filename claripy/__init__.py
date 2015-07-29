@@ -2,7 +2,9 @@
 
 # pylint: disable=F0401,W0401,W0603,
 
+import os
 import sys
+import socket
 import logging
 l = logging.getLogger("claripy")
 
@@ -19,7 +21,7 @@ backend_vsa = _backends.BackendVSA()
 
 if os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
     try:
-        backend_z3 = backends.backendremote.BackendRemote()
+        backend_z3 = _backends.backendremote.BackendRemote()
     except socket.error:
         raise ImportError("can't connect to backend")
 else:
