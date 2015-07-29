@@ -3,7 +3,10 @@ import time
 
 from .solver_backend import SolverBackend
 from .backend_z3 import BackendZ3
-from . import remotetasks
+try:
+    from . import remotetasks
+except ImportError:
+    remotetasks = None
 
 class TrackingSolver(object):
     def __init__(self, sz3):
@@ -22,6 +25,9 @@ def get(res):
 
 class BackendRemote(SolverBackend):
     def __init__(self, host='localhost', port=1337, local_timeout=-1):
+        if remotetasks is None:
+            raise ImportError("celery/pymongo is required for BackendRemote")
+
         super(BackendRemote, self).__init__()
         self.bz3 = BackendZ3()
         self.local_timeout = local_timeout
