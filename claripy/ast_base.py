@@ -10,6 +10,11 @@ l = logging.getLogger("claripy.ast")
 
 import ana
 
+if os.environ.get('WORKER', False):
+    WORKER = True
+else:
+    WORKER = False
+
 #pylint:enable=unused-argument
 
 def _is_eager(a):
@@ -291,85 +296,6 @@ class Base(ana.Storable):
         else:
             return self
 
-    def _simplify_If(self):
-        if self.args[0].reduced.is_true():
-            return self.args[1].reduced
-
-        if self.args[0].reduced.is_false():
-            return self.args[2].reduced
-
-        return self
-
-    def _simplify_Reverse(self):
-        if self.args[0].op == 'Reverse':
-            return self.args[0].args[0]
-
-        if self.args[0].op == 'Concat':
-            if all(a.op == 'Extract' for a in self.args[0].args):
-                first_ast = self.args[0].args[0].args[2]
-                for i, a in enumerate(self.args[0].args):
-                    if not (first_ast.identical(a.args[2])
-                            and a.args[0] == ((i + 1) * 8 - 1)
-                            and a.args[1] == i * 8):
-                        break
-                else:
-                    upper_bound = self.args[0].args[-1].args[0]
-                    if first_ast.length == upper_bound + 1:
-                        return first_ast
-                    else:
-                        return first_ast[upper_bound:0]
-
-        return self
-
-    def _simplify_Extract(self):
-        high, low = self.args[:2]
-
-        val = self.args[2]
-        if val.op == 'ZeroExt':
-            val = Concat(BitVecVal(0, val.args[0]), val.args[1])
-
-        if val.op == 'Concat':
-            pos = val.length
-            high_i, low_i, low_loc = None, None, None
-            for i, v in enumerate(val.args):
-                if high in xrange(pos - v.length, pos):
-                    high_i = i
-                if low in xrange(pos - v.length, pos):
-                    low_i = i
-                    low_loc = low - (pos - v.length)
-                pos -= v.length
-            if high_i is None or low_i is None:
-                raise Exception("wat")
-
-            used = val.args[high_i:low_i+1]
-            if len(used) == 1:
-                self = used[0]
-            else:
-                self = Concat(*used)
-
-            new_high = low_loc + high - low
-            if new_high == self.length - 1 and low_loc == 0:
-                return self
-            else:
-                self = self[new_high:low_loc]
-
-        if self.op == 'Extract' and self.args[2].op == 'Extract':
-            high, low = self.args[:2]
-            _, inner_low = self.args[2].args[:2]
-            new_low = inner_low + low
-            new_high = new_low + (high - low)
-            self = (self.args[2].args[2])[new_high:new_low]
-
-        return self
-
-    def _simplify_Not(self):
-        if self.args[0].op == '__eq__':
-            return self.args[0].args[0] != self.args[0].args[1]
-        elif self.args[0].op == '__ne__':
-            return self.args[0].args[0] == self.args[0].args[1]
-        else:
-            return self
-
     @property
     def simplified(self):
         '''
@@ -380,10 +306,6 @@ class Base(ana.Storable):
 
         if self._simplified:
             return self
-
-        # note: should cover __radd__ etc. somehow
-        if hasattr(self, '_simplify_' + self.op):
-            self = getattr(self, '_simplify_' + self.op)()
 
         if self.op in operations.reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
             inner_a = self.make_like(self.op, tuple(a.args[0] for a in self.args)).simplified
@@ -471,6 +393,9 @@ class Base(ana.Storable):
         return self.__class__.__name__
 
     def __repr__(self, inner=False, explicit_length=False):
+        if WORKER:
+            return '<AST something>'
+
         self = self.reduced
 
         if not isinstance(self.model, Base):
@@ -665,6 +590,28 @@ class Base(ana.Storable):
                 raise ClaripyOperationError('replacements must have matching sizes')
         return self._replace(old, new)
 
+    def _identify_vars(self, all_vars, counter):
+        if self.op == 'BitVec':
+            if self.args not in all_vars:
+                all_vars[self.args] = BV('var_' + str(next(counter)),
+                                         self.args[1],
+                                         explicit_name=True)
+        else:
+            for arg in self.args:
+                if isinstance(arg, Base):
+                    arg._identify_vars(all_vars, counter)
+
+    def canonicalized(self, existing_vars=None, counter=None):
+        all_vars = {} if existing_vars is None else existing_vars
+        counter = itertools.count() if counter is None else counter
+        self._identify_vars(all_vars, counter)
+
+        expr = self
+        for old_var, new_var in all_vars.items():
+            expr = expr.replace(BV(*old_var, explicit_name=True), new_var)
+
+        return all_vars, expr
+
 #
 # Unbound methods
 #
@@ -730,4 +677,4 @@ from .backend_object import BackendObject
 from . import _all_backends, _model_backends
 from .ast.bits import Bits
 from .ast.bool import Bool
-from .ast.bv import BitVecVal, Concat
+from .ast.bv import BitVecVal, Concat, BV
