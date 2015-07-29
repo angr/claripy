@@ -171,6 +171,9 @@ def test_vsa():
     def is_equal(ast_0, ast_1):
         return ast_0.identical(ast_1)
 
+    si1 = claripy.TSI(32, name="foo")
+    nose.tools.assert_equal(si1.model.name, "foo")
+
     # Integers
     si1 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
     si2 = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
