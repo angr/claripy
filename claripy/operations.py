@@ -146,6 +146,8 @@ def lshift_simplifier(val, shift):
     if (shift == 0).is_true():
         return val
 
+SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
+
 def eq_simplifier(a, b):
     if a.op == 'If' and a._claripy.is_true(a.args[1] == b):
         # (If(c, x, y) == x) -> c
@@ -160,6 +162,9 @@ def eq_simplifier(a, b):
         # (y == If(c, x, y)) -> !c
         return b._claripy.Not(b.args[0])
 
+    if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(a._claripy.is_false(a[i:i] == b[i:i]) for i in xrange(a.length)):
+        return a._claripy.false
+
 def ne_simplifier(a, b):
     if a.op == 'If' and a._claripy.is_true(a.args[1] == b):
         # (If(c, x, y) != x) -> !c
@@ -173,6 +178,9 @@ def ne_simplifier(a, b):
     elif b.op == 'If' and b._claripy.is_true(b.args[2] == a):
         # (y != If(c, x, y)) -> c
         return b.args[0]
+
+    if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(a._claripy.is_true(a[i:i] != b[i:i]) for i in xrange(a.length)):
+        return a._claripy.true
 
 def reverse_simplifier(body):
     if body.op == 'Reverse':
@@ -223,6 +231,12 @@ def not_simplifier(body):
         return body.args[0] != body.args[1]
     elif body.op == '__ne__':
         return body.args[0] == body.args[1]
+
+    if body.op == 'Not':
+        return body.args[0]
+
+    if body.op == 'If':
+        return body._claripy.If(body.args[0], body.args[2], body.args[1])
 
 def extract_simplifier(high, low, val):
     simplified = False
