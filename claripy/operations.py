@@ -146,9 +146,40 @@ def lshift_simplifier(val, shift):
     if (shift == 0).is_true():
         return val
 
+def eq_simplifier(a, b):
+    if a.op == 'If' and a._claripy.is_true(a.args[1] == b):
+        # (If(c, x, y) == x) -> c
+        return a.args[0]
+    elif a.op == 'If' and a._claripy.is_true(a.args[2] == b):
+        # (If(c, x, y) == y) -> !c
+        return a._claripy.Not(a.args[0])
+    elif b.op == 'If' and b._claripy.is_true(b.args[1] == a):
+        # (x == If(c, x, y)) -> c
+        return b.args[0]
+    elif b.op == 'If' and b._claripy.is_true(b.args[2] == a):
+        # (y == If(c, x, y)) -> !c
+        return b._claripy.Not(b.args[0])
+
+def ne_simplifier(a, b):
+    if a.op == 'If' and a._claripy.is_true(a.args[1] == b):
+        # (If(c, x, y) != x) -> !c
+        return a._claripy.Not(a.args[0])
+    elif a.op == 'If' and a._claripy.is_true(a.args[2] == b):
+        # (If(c, x, y) != y) -> c
+        return a.args[0]
+    elif b.op == 'If' and b._claripy.is_true(b.args[1] == a):
+        # (x != If(c, x, y)) -> !c
+        return b._claripy.Not(b.args[0])
+    elif b.op == 'If' and b._claripy.is_true(b.args[2] == a):
+        # (y != If(c, x, y)) -> c
+        return b.args[0]
+
 def reverse_simplifier(body):
     if body.op == 'Reverse':
         return body.args[0]
+
+    if body.length == 8:
+        return body
 
     if body.op == 'Concat':
         if all(a.op == 'Extract' for a in body.args):
@@ -169,9 +200,23 @@ def and_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
+    if any(a.is_true() for a in args):
+        new_args = tuple(a for a in args if not a.is_true())
+        if len(new_args) > 0:
+            return args[0]._claripy.And(*new_args)
+        else:
+            return args[0]._claripy.true
+
 def or_simplifier(*args):
     if len(args) == 1:
         return args[0]
+
+    if any(a.is_false() for a in args):
+        new_args = tuple(a for a in args if not a.is_false())
+        if len(new_args) > 0:
+            return args[0]._claripy.Or(*new_args)
+        else:
+            return args[0]._claripy.false
 
 def not_simplifier(body):
     if body.op == '__eq__':
@@ -243,6 +288,9 @@ def extract_simplifier(high, low, val):
         except ClaripyOperationError:
             __import__('ipdb').set_trace()
 
+    if val.op in extract_distributable:
+        return BV(val._claripy, val.op, tuple(a[high:low] for a in val.args), length=(high-low+1))
+
 
 simplifiers = {
     'Reverse': reverse_simplifier,
@@ -254,6 +302,8 @@ simplifiers = {
     'If': if_simplifier,
     '__lshift__': lshift_simplifier,
     '__rshift__': rshift_simplifier,
+    '__eq__': eq_simplifier,
+    '__ne__': ne_simplifier,
 }
 
 #
@@ -462,6 +512,12 @@ length_new_operations = backend_creation_operations
 not_invertible = {'Identical', 'union'}
 reverse_distributable = { 'widen', 'union', 'intersection',
     '__invert__', '__or__', '__ror__', '__and__', '__rand__', '__xor__', '__rxor__',
+}
+
+extract_distributable = {
+    '__and__', '__rand__',
+    '__or__', '__ror__',
+    '__xor__', '__rxor__',
 }
 
 infix = {
