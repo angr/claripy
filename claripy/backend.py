@@ -328,7 +328,7 @@ class Backend(object):
     def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
         '''
         This function should return an instance of whatever object handles
-        solving for this backend. For example, in Z3, this would be z3.Frontend()
+        solving for this backend. For example, in Z3, this would be z3.Solver()
         '''
         raise BackendError("backend doesn't support solving")
 
@@ -406,7 +406,7 @@ class Backend(object):
         @param n: number of results to return
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns a sequence of up to n results (backend objects)
@@ -424,7 +424,7 @@ class Backend(object):
         @param n: number of results to return
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns a sequence of up to n results (backend objects)
@@ -438,7 +438,7 @@ class Backend(object):
         @param expr: expression (claripy.E object) to evaluate
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns the minimum possible value of expr (backend object)
@@ -455,7 +455,7 @@ class Backend(object):
         @param expr: expression (backend object) to evaluate
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns the minimum possible value of expr (backend object)
@@ -469,7 +469,7 @@ class Backend(object):
         @param expr: expression (claripy.E object) to evaluate
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns the maximum possible value of expr (backend object)
@@ -486,7 +486,7 @@ class Backend(object):
         @param expr: expression (backend object) to evaluate
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns the maximum possible value of expr (backend object)
@@ -501,7 +501,7 @@ class Backend(object):
         @param v: the proposed solution (claripy.E)
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns True if v is a solution of expr, False otherwise
@@ -519,7 +519,7 @@ class Backend(object):
         @param v: the proposed solution (backend object)
         @param result: a cached Result from the last constraint solve
         @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Frontend)
+                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         @returns True if v is a solution of expr, False otherwise

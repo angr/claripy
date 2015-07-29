@@ -52,7 +52,7 @@ def test_datalayer():
     x = claripy.BitVec("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.Frontend.ana_load(s.ana_store())
+    ss = claripy.FullFrontend.ana_load(s.ana_store())
     nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 

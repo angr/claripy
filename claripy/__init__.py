@@ -42,7 +42,7 @@ def downsize():
 #
 
 from .frontends import LightFrontend, FullFrontend, CompositeFrontend
-Frontend = FullFrontend
+Solver = FullFrontend
 from .result import Result
 
 #
