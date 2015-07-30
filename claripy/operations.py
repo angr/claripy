@@ -278,48 +278,6 @@ def not_simplifier(body):
 
 def extract_simplifier(high, low, val):
     if val.op == 'ZeroExt':
-<<<<<<< HEAD
-        print "saw ZeroExt, converting to concat"
-        val = clrp.Concat(clrp.BVV(0, val.args[0]), val.args[1])
-
-    if val.op == 'Reverse' and val.args[0].op == 'Concat':
-        print "print saw Reverse+Concat, expanding"
-        val = BV(clrp, 'Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
-
-    # if val.op == 'Concat':
-    #     print "saw concat"
-    #     pos = val.length
-    #     high_i, low_i, low_loc = None, None, None
-    #     for i, v in enumerate(val.args):
-    #         if high in xrange(pos - v.length, pos):
-    #             high_i = i
-    #         if low in xrange(pos - v.length, pos):
-    #             low_i = i
-    #             low_loc = low - (pos - v.length)
-    #         pos -= v.length
-
-    #     used = val.args[high_i:low_i+1]
-    #     if len(used) == 1:
-    #         self = used[0]
-    #     else:
-    #         self = clrp.Concat(*used)
-
-    #     new_high = low_loc + high - low
-    #     if new_high == self.length - 1 and low_loc == 0:
-    #         return self
-    #     else:
-    #         # TODO: fallthrough
-    #         # does this cause infinite recursion?
-    #         if self.op != 'Concat':
-    #             return self[new_high:low_loc]
-    #         else:
-    #             return BV(self._claripy, 'Extract', (new_high, low_loc, self), length=(new_high - low_loc + 1))
-
-    # this might be bad in general... not sure
-    if val.op == 'If':
-        print "saw if"
-        return clrp.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
-=======
         val = ast.all_operations.Concat(ast.all_operations.BVV(0, val.args[0]), val.args[1])
 
     if val.op == 'Reverse' and val.args[0].op == 'Concat':
@@ -356,7 +314,6 @@ def extract_simplifier(high, low, val):
     # this might be bad in general... not sure
     if val.op == 'If':
         return ast.all_operations.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
->>>>>>> origin/heathens-with-a-server
 
     if val.op == 'Extract':
         print "saw inner extract"
@@ -366,13 +323,7 @@ def extract_simplifier(high, low, val):
         return (val.args[2])[new_high:new_low]
 
     if val.op == 'Reverse' and val.args[0].op == 'Concat':
-<<<<<<< HEAD
-        print "saw reverse concat"
-        val = val.make_like(clrp,
-                            'Concat',
-=======
         val = val.make_like('Concat',
->>>>>>> origin/heathens-with-a-server
                             tuple(reversed([a.reversed for a in val.args[0].args])),
         )[high:low].simplified
         if not val.symbolic:
@@ -388,12 +339,7 @@ def extract_simplifier(high, low, val):
     #         __import__('ipdb').set_trace()
 
     if val.op in extract_distributable:
-<<<<<<< HEAD
-        print "distributing extract"
-        return BV(val._claripy, val.op, tuple(a[high:low] for a in val.args), length=(high-low+1))
-=======
         return ast.BV(val.op, tuple(a[high:low] for a in val.args), length=(high-low+1))
->>>>>>> origin/heathens-with-a-server
 
 
 simplifiers = {
