@@ -228,7 +228,6 @@ def and_simplifier(*args):
         return args[0]
 
     if any(a.is_true() for a in args):
-        __import__('ipdb').set_trace()
         new_args = tuple(a for a in args if not a.is_true())
         if len(new_args) > 0:
             return ast.all_operations.And(*new_args)
