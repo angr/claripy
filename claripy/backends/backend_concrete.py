@@ -58,7 +58,7 @@ class BackendConcrete(Backend):
             #   _backend_z3._lock.acquire() #pylint:disable=no-member
 
             if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
-            elif isinstance(a, z3.FPRef):
+            elif isinstance(a, z3.FPNumRef):
                 # TODO: don't replicate this code in backend_z3.py
                 # this is really imprecise
                 fp_mantissa = float(a.significand())
