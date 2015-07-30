@@ -149,35 +149,58 @@ def lshift_simplifier(val, shift):
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
 def eq_simplifier(a, b):
-    if a.op == 'If' and a._claripy.is_true(a.args[1] == b):
-        # (If(c, x, y) == x) -> c
-        return a.args[0]
-    elif a.op == 'If' and a._claripy.is_true(a.args[2] == b):
-        # (If(c, x, y) == y) -> !c
-        return a._claripy.Not(a.args[0])
-    elif b.op == 'If' and b._claripy.is_true(b.args[1] == a):
-        # (x == If(c, x, y)) -> c
-        return b.args[0]
-    elif b.op == 'If' and b._claripy.is_true(b.args[2] == a):
-        # (y == If(c, x, y)) -> !c
-        return b._claripy.Not(b.args[0])
+    # TODO: all these ==/!= might really slow things down...
+    if a.op == 'If':
+        if a.args[1] is b and a._claripy.is_true(a.args[2] != b):
+            # (If(c, x, y) == x, x != y) -> c
+            return a.args[0]
+        elif a.args[2] is b and a._claripy.is_true(a.args[1] != b):
+            # (If(c, x, y) == y, x != y) -> !c
+            return a._claripy.Not(a.args[0])
+        # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
+        #     return a._claripy.true
+        # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
+        #     return a._claripy.false
+
+    if b.op == 'If':
+        if b.args[1] is a and a._claripy.is_true(b.args[2] != b):
+            # (x == If(c, x, y)) -> c
+            return b.args[0]
+        elif b.args[2] is a and a._claripy.is_true(b.args[1] != a):
+            # (y == If(c, x, y)) -> !c
+            return b._claripy.Not(b.args[0])
+        # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
+        #     return b._claripy.true
+        # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
+        #     return b._claripy.false
 
     if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(a._claripy.is_false(a[i:i] == b[i:i]) for i in xrange(a.length)):
         return a._claripy.false
 
 def ne_simplifier(a, b):
-    if a.op == 'If' and a._claripy.is_true(a.args[1] == b):
-        # (If(c, x, y) != x) -> !c
-        return a._claripy.Not(a.args[0])
-    elif a.op == 'If' and a._claripy.is_true(a.args[2] == b):
-        # (If(c, x, y) != y) -> c
-        return a.args[0]
-    elif b.op == 'If' and b._claripy.is_true(b.args[1] == a):
-        # (x != If(c, x, y)) -> !c
-        return b._claripy.Not(b.args[0])
-    elif b.op == 'If' and b._claripy.is_true(b.args[2] == a):
-        # (y != If(c, x, y)) -> c
-        return b.args[0]
+    if a.op == 'If':
+        if a.args[2] is b and a._claripy.is_true(a.args[1] != b):
+            # (If(c, x, y) == x, x != y) -> c
+            return a.args[0]
+        elif a.args[1] is b and a._claripy.is_true(a.args[2] != b):
+            # (If(c, x, y) == y, x != y) -> !c
+            return a._claripy.Not(a.args[0])
+        # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
+        #     return a._claripy.false
+        # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
+        #     return a._claripy.true
+
+    if b.op == 'If':
+        if b.args[2] is a and b._claripy.is_true(b.args[1] != a):
+            # (x == If(c, x, y)) -> c
+            return b.args[0]
+        elif b.args[1] is a and b._claripy.is_true(b.args[2] != a):
+            # (y == If(c, x, y)) -> !c
+            return b._claripy.Not(b.args[0])
+        # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
+        #     return b._claripy.true
+        # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
+        #     return b._claripy.false
 
     if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(a._claripy.is_true(a[i:i] != b[i:i]) for i in xrange(a.length)):
         return a._claripy.true
@@ -209,6 +232,7 @@ def and_simplifier(*args):
         return args[0]
 
     if any(a.is_true() for a in args):
+        __import__('ipdb').set_trace()
         new_args = tuple(a for a in args if not a.is_true())
         if len(new_args) > 0:
             return args[0]._claripy.And(*new_args)
@@ -261,50 +285,56 @@ def extract_simplifier(high, low, val):
     clrp = val._claripy
 
     if val.op == 'ZeroExt':
+        print "saw ZeroExt, converting to concat"
         val = clrp.Concat(clrp.BVV(0, val.args[0]), val.args[1])
 
     if val.op == 'Reverse' and val.args[0].op == 'Concat':
+        print "print saw Reverse+Concat, expanding"
         val = BV(clrp, 'Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
 
-    if val.op == 'Concat':
-        pos = val.length
-        high_i, low_i, low_loc = None, None, None
-        for i, v in enumerate(val.args):
-            if high in xrange(pos - v.length, pos):
-                high_i = i
-            if low in xrange(pos - v.length, pos):
-                low_i = i
-                low_loc = low - (pos - v.length)
-            pos -= v.length
+    # if val.op == 'Concat':
+    #     print "saw concat"
+    #     pos = val.length
+    #     high_i, low_i, low_loc = None, None, None
+    #     for i, v in enumerate(val.args):
+    #         if high in xrange(pos - v.length, pos):
+    #             high_i = i
+    #         if low in xrange(pos - v.length, pos):
+    #             low_i = i
+    #             low_loc = low - (pos - v.length)
+    #         pos -= v.length
 
-        used = val.args[high_i:low_i+1]
-        if len(used) == 1:
-            self = used[0]
-        else:
-            self = clrp.Concat(*used)
+    #     used = val.args[high_i:low_i+1]
+    #     if len(used) == 1:
+    #         self = used[0]
+    #     else:
+    #         self = clrp.Concat(*used)
 
-        new_high = low_loc + high - low
-        if new_high == self.length - 1 and low_loc == 0:
-            return self
-        else:
-            # TODO: fallthrough
-            # does this cause infinite recursion?
-            if self.op != 'Concat':
-                return self[new_high:low_loc]
-            else:
-                return BV(self._claripy, 'Extract', (new_high, low_loc, self), length=(new_high - low_loc + 1))
+    #     new_high = low_loc + high - low
+    #     if new_high == self.length - 1 and low_loc == 0:
+    #         return self
+    #     else:
+    #         # TODO: fallthrough
+    #         # does this cause infinite recursion?
+    #         if self.op != 'Concat':
+    #             return self[new_high:low_loc]
+    #         else:
+    #             return BV(self._claripy, 'Extract', (new_high, low_loc, self), length=(new_high - low_loc + 1))
 
     # this might be bad in general... not sure
     if val.op == 'If':
+        print "saw if"
         return clrp.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
 
     if val.op == 'Extract':
+        print "saw inner extract"
         _, inner_low = val.args[:2]
         new_low = inner_low + low
         new_high = new_low + (high - low)
         return (val.args[2])[new_high:new_low]
 
     if val.op == 'Reverse' and val.args[0].op == 'Concat':
+        print "saw reverse concat"
         val = val.make_like(clrp,
                             'Concat',
                             tuple(reversed([a.reversed for a in val.args[0].args])),
@@ -313,14 +343,16 @@ def extract_simplifier(high, low, val):
             return val
 
     # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
-    if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
-        inner_length = val.args[0].length
-        try:
-            return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
-        except ClaripyOperationError:
-            __import__('ipdb').set_trace()
+    # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
+    #     print "saw reverse, converting"
+    #     inner_length = val.args[0].length
+    #     try:
+    #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
+    #     except ClaripyOperationError:
+    #         __import__('ipdb').set_trace()
 
     if val.op in extract_distributable:
+        print "distributing extract"
         return BV(val._claripy, val.op, tuple(a[high:low] for a in val.args), length=(high-low+1))
 
 
@@ -569,6 +601,16 @@ infix = {
     '__le__': '<=',
     '__gt__': '>',
     '__lt__': '<',
+
+    'UGE': '>=',
+    'ULE': '<=',
+    'UGT': '>',
+    'ULT': '<',
+
+    'SGE': '>=s',
+    'SLE': '<=s',
+    'SGT': '>s',
+    'SLT': '<s',
 
     '__or__': '|',
     '__and__': '&',
