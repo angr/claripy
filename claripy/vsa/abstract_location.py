@@ -1,4 +1,4 @@
-from ..backend import BackendObject
+from ..backend_object import BackendObject
 
 class Segment(object):
     def __init__(self, offset, size=0):

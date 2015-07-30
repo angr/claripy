@@ -5,25 +5,6 @@ import weakref
 import logging
 l = logging.getLogger('claripy.backend')
 
-class BackendObject(object):
-    '''
-    This is a base class for custom backend objects to implement.
-
-    It lets Claripy know that how to deal with those objects, in case they're
-    directly used in operations.
-
-    Backend objects that *don't* derive from this class need to be wrapped in
-    a type-I claripy.ast.Base.
-    '''
-
-    def to_claripy(self):
-        '''
-        Claripy calls this to retrieve something that it can directly reason
-        about.
-        '''
-
-        return self
-
 class Backend(object):
     '''
     Backends are Claripy's workhorses. Claripy exposes ASTs (claripy.ast.Base objects)
@@ -66,16 +47,13 @@ class Backend(object):
     '''
 
 
-    def __init__(self):
+    def __init__(self, solver_required=None):
         self._op_raw = { }
         self._op_raw_result = { } # these are operations that work on raw objects and accept a result arg
         self._op_expr = { }
         self._cache_objects = True
         self._object_cache = weakref.WeakKeyDictionary()
-        self._claripy = None
-
-    def set_claripy_object(self, claripy):
-        self._claripy = claripy
+        self._solver_required = solver_required is not None
 
     def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
         for o in op_list:
@@ -160,7 +138,7 @@ class Backend(object):
                     except (KeyError, BackendError):
                         pass
             if r is None:
-                for b in self._claripy.model_backends + self._claripy.solver_backends:
+                for b in _all_backends:
                     try:
                         r = self._convert(b._object_cache[expr._cache_key])
                         break
@@ -263,6 +241,351 @@ class Backend(object):
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
 
+    #
+    # Some other helpers
+    #
+
+    def is_true(self, e):
+        '''
+        Should return True if e can be easily found to be True.
+
+        @param e: the AST
+        @returns a boolean
+        '''
+
+        return self._is_true(self.convert(e))
+
+    def is_false(self, e):
+        '''
+        Should return False if e can be easily found to be False.
+
+        @param e: the AST
+        @returns a boolean
+        '''
+
+        return self._is_false(self.convert(e))
+
+    def _is_false(self, e): #pylint:disable=no-self-use,unused-argument
+        '''
+        The native version of is_false.
+
+        @param e: the backend object
+        @returns a boolean
+        '''
+        raise BackendError("backend doesn't support _is_false")
+
+    def _is_true(self, e): #pylint:disable=no-self-use,unused-argument
+        '''
+        The native version of is_true.
+
+        @param e: the backend object
+        @returns a boolean
+        '''
+        raise BackendError("backend doesn't support _is_true")
+
+    def has_true(self, e):
+        '''
+        Should return True if e can possible be True.
+
+        @param e: the AST
+        @returns a boolean
+        '''
+
+        return self._has_true(self.convert(e))
+
+    def has_false(self, e):
+        '''
+        Should return False if e can possibly be False.
+
+        @param e: the AST
+        @returns a boolean
+        '''
+
+        return self._has_false(self.convert(e))
+
+    def _has_false(self, e): #pylint:disable=no-self-use,unused-argument
+        '''
+        The native version of has_false.
+
+        @param e: the backend object
+        @returns a boolean
+        '''
+        raise BackendError("backend doesn't support _has_false")
+
+    def _has_true(self, e): #pylint:disable=no-self-use,unused-argument
+        '''
+        The native version of has_true.
+
+        @param e: the backend object
+        @returns a boolean
+        '''
+        raise BackendError("backend doesn't support _has_true")
+
+    #
+    # These functions are straight-up solver functions
+    #
+
+    def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
+        '''
+        This function should return an instance of whatever object handles
+        solving for this backend. For example, in Z3, this would be z3.Solver()
+        '''
+        raise BackendError("backend doesn't support solving")
+
+    def add(self, s, c):
+        '''
+        This function adds constraints to the backend solver.
+
+        @param c: sequence of claripy.E objects
+        @param s: backend solver object
+        '''
+        return self._add(s, self.convert_list(c))
+
+    def _add(self, s, c): #pylint:disable=no-self-use,unused-argument
+        '''
+        This function adds constraints to the backend solver.
+
+        @param c: sequence of converted backend objects
+        @param s: backend solver object
+        '''
+        raise BackendError("backend doesn't support solving")
+
+    def check(self, s, extra_constraints=()):
+        '''
+        This function does a constraint check.
+
+        @param s: backend solver object
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                   to s for this solve
+        @returns True or False, depending on satisfiability
+        '''
+        return self._check(s, extra_constraints=self.convert_list(extra_constraints))
+
+    def _check(self, s, extra_constraints=()): #pylint:disable=no-self-use,unused-argument
+        '''
+        This function does a constraint check.
+
+        @param s: backend solver object
+        @param extra_constraints: extra constraints (backend objects) to add
+                                   to s for this solve
+        @returns True or False, depending on satisfiability
+        '''
+        raise BackendError("backend doesn't support solving")
+
+    def results(self, s, extra_constraints=(), generic_model=None):
+        '''
+        This function does a constraint check.
+
+        @param s: backend solver object
+        @param extra_constraints: extra constraints (claripy.E objects) to add to s for this solve
+        @param generic_model: whether or not to create a generic model
+        @returns a Result object
+        '''
+        return self._results(s, extra_constraints=self.convert_list(extra_constraints), generic_model=generic_model)
+
+    def _results(self, s, extra_constraints=(), generic_model=None): #pylint:disable=no-self-use,unused-argument
+        '''
+        This function does a constraint check.
+
+        @param s: backend solver object
+        @param extra_constraints: extra constraints (backend objects) to add to s for this solve
+        @param generic_model: whether or not to create a generic model
+        @returns a Result object
+        '''
+        raise BackendError("backend doesn't support solving")
+
+    #
+    # These functions provide evaluation support.
+    #
+
+    def eval(self, expr, n, result=None, extra_constraints=(), solver=None):
+        '''
+        This function returns up to n possible solutions for expression expr.
+
+        @param expr: expression (claripy.E object) to evaluate
+        @param n: number of results to return
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns a sequence of up to n results (backend objects)
+        '''
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._eval(self.convert(expr), n, result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+
+    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        '''
+        This function returns up to n possible solutions for expression expr.
+
+        @param expr: expression (backend object) to evaluate
+        @param n: number of results to return
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns a sequence of up to n results (backend objects)
+        '''
+        raise BackendError("backend doesn't support eval()")
+
+    def min(self, expr, result=None, extra_constraints=(), solver=None):
+        '''
+        Return the minimum value of expr.
+
+        @param expr: expression (claripy.E object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the minimum possible value of expr (backend object)
+        '''
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._min(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+
+    def _min(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        '''
+        Return the minimum value of expr.
+
+        @param expr: expression (backend object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the minimum possible value of expr (backend object)
+        '''
+        raise BackendError("backend doesn't support min()")
+
+    def max(self, expr, result=None, extra_constraints=(), solver=None):
+        '''
+        Return the maximum value of expr.
+
+        @param expr: expression (claripy.E object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the maximum possible value of expr (backend object)
+        '''
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._max(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+
+    def _max(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        '''
+        Return the maximum value of expr.
+
+        @param expr: expression (backend object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the maximum possible value of expr (backend object)
+        '''
+        raise BackendError("backend doesn't support max()")
+
+    def solution(self, expr, v, result=None, extra_constraints=(), solver=None):
+        '''
+        Return True if v is a solution of expr with the extra constraints, False otherwise.
+
+        @param expr: expression (claripy.E) to evaluate
+        @param v: the proposed solution (claripy.E)
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns True if v is a solution of expr, False otherwise
+        '''
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._solution(self.convert(expr), self.convert(v), result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+
+    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        '''
+        Return True if v is a solution of expr with the extra constraints, False otherwise.
+
+        @param expr: expression (backend object) to evaluate
+        @param v: the proposed solution (backend object)
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns True if v is a solution of expr, False otherwise
+        '''
+
+        raise BackendError("backend doesn't support solution()")
+
+    #
+    # Some other methods
+    #
+
+    def size(self, a, result=None):
+        '''
+        This should return the size of an expression.
+
+        @param a: the claripy A object
+        '''
+        return self._size(self.convert(a, result=result))
+
+    def _size(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+        '''
+        This should return the size of an object.
+
+        @param o: the (backend-native) object
+        '''
+        raise BackendError("backend doesn't support solution()")
+
+    def name(self, a, result=None):
+        '''
+        This should return the name of an expression.
+
+        @param a: the claripy A object
+        '''
+        return self._name(self.convert(a, result=result))
+
+    def _name(self, o, result=None): #pylint:disable=no-self-use,unused-argument
+        '''
+        This should return the name of an object.
+
+        @param o: the (backend-native) object
+        '''
+        raise BackendError("backend doesn't support solution()")
+
+    def identical(self, a, b, result=None):
+        '''
+        This should return whether a is identical to b. Of course, this isn't always
+        clear. A True should mean that it is definitely identical. False
+        means that, conservitivly, it might not be.
+
+        @param a: a claripy A object
+        @param b: a claripy A object
+        '''
+        return self._identical(self.convert(a, result=result), self.convert(b, result=result))
+
+    def _identical(self, a, b, result=None): #pylint:disable=no-self-use,unused-argument
+        '''
+        This should return whether a is identical to b. Of course, this isn't always
+        clear. A True should mean that it is definitely identical. False
+        means that, conservitivly, it might not be.
+
+        @param a: the (backend-native) object
+        @param b: the (backend-native) object
+        '''
+        raise BackendError("backend doesn't support solution()")
+
 from .ast.base import Base
 from .operations import opposites
 from .errors import BackendError, ClaripyRecursionError
+from . import _all_backends

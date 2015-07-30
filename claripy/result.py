@@ -3,10 +3,11 @@ import collections
 import weakref
 
 class Result(object):
-    def __init__(self, satness, model, backend_model=None):
+    def __init__(self, satness, model=None, approximation=False, backend_model=None):
         self.sat = satness
-        self.model = model
+        self.model = model if model is not None else { }
         self.backend_model = backend_model
+        self.approximation = approximation
         self.eval_cache = { }
         self.min_cache = { }
         self.max_cache = { }
@@ -28,3 +29,9 @@ class Result(object):
 
     def downsize(self):
         self.backend_model = None
+
+def UnsatResult(**kwargs):
+    return Result(False, **kwargs)
+
+def SatResult(**kwargs):
+    return Result(False, **kwargs)

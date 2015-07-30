@@ -1,9 +1,20 @@
-from .base import Base
+Bits = lambda *args, **kwargs: None
+BV = lambda *args, **kwargs: None
+VS = lambda *args, **kwargs: None
+FP = lambda *args, **kwargs: None
+Bool = lambda *args, **kwargs: None
+Int = lambda *args, **kwargs: None
+Base = lambda *args, **kwargs: None
+all_operations = None
 
-from .bits import Bits
-from .bv import BV, BVI
-from .vs import VS
-from .fp import FP, FPI
+def _import():
+    global Bits, BV, VS, FP, Bool, Int, Base, all_operations
 
-from .bool import Bool, BoolI
-from .int import Int
+    from .bits import Bits
+    from .bv import BV
+    from .vs import VS
+    from .fp import FP
+    from .bool import Bool
+    from .int import Int
+    from .base import Base
+    from .. import ops as all_operations

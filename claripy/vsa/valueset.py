@@ -1,6 +1,6 @@
 import functools
 import itertools
-from ..backend import BackendObject
+from ..backend_object import BackendObject
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -303,7 +303,7 @@ class ValueSet(BackendObject):
         :param o: The other ValueSet to compare with
         :return: True if they are exactly same, False otherwise
         """
-        if (self._name != o._name or self._reversed != o._reversed):
+        if self._name != o._name or self._reversed != o._reversed:
                return False
 
         for region, si in self.regions.items():

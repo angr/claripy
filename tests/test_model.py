@@ -2,11 +2,10 @@ import claripy
 import nose
 
 def test_model():
-    clrp = claripy.Claripies["SerialZ3"]
-    bc = clrp.backend_of_type(claripy.backends.BackendConcrete)
+    bc = claripy.backend_concrete
 
-    a = clrp.BitVecVal(5, 32)
-    b = clrp.BitVec('x', 32, explicit_name=True)
+    a = claripy.BitVecVal(5, 32)
+    b = claripy.BitVec('x', 32, explicit_name=True)
     c = a + b
 
     r_c = c.resolved_with(bc, result=claripy.Result(True, {'x': 10}))

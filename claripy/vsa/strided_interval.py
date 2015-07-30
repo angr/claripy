@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
 from .decorators import expand_ifproxy
-from ..backend import BackendObject
+from ..backend_object import BackendObject
 
 def normalize_types(f):
     @functools.wraps(f)
@@ -921,7 +921,7 @@ class StridedInterval(BackendObject):
         '''
         if x == 0:
             return 0
-        y = (~x) & (x - 1)  # There is actually a bug in BAP until 0.8
+        y = (~x) & (x - 1)    # There is actually a bug in BAP until 0.8
 
         def bits(y):
             n = 0
@@ -2291,6 +2291,49 @@ class StridedInterval(BackendObject):
                 si = b if si is None else si.concat(b)
 
             return si
+
+def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
+    '''
+    :param name:
+    :param bits:
+    :param stride:
+    :param lower_bound:
+    :param upper_bound:
+    :param to_conv:
+    :return:
+    '''
+    if to_conv is not None:
+        if isinstance(to_conv, Base):
+            to_conv = to_conv.model
+        if isinstance(to_conv, StridedInterval):
+            # No conversion will be done
+            return to_conv
+
+        if type(to_conv) not in {int, long, BVV}: #pylint:disable=unidiomatic-typecheck
+            raise ClaripyOperationError('Unsupported to_conv type %s' % type(to_conv))
+
+        if stride is not None or lower_bound is not None or \
+                        upper_bound is not None:
+            raise ClaripyOperationError('You cannot specify both to_conv and other parameters at the same time.')
+
+        if type(to_conv) is BVV: #pylint:disable=unidiomatic-typecheck
+            bits = to_conv.bits
+            to_conv_value = to_conv.value
+        else:
+            bits = bits
+            to_conv_value = to_conv
+
+        stride = 0
+        lower_bound = to_conv_value
+        upper_bound = to_conv_value
+
+    bi = StridedInterval(name=name,
+                         bits=bits,
+                         stride=stride,
+                         lower_bound=lower_bound,
+                         upper_bound=upper_bound)
+    return bi
+
 
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult

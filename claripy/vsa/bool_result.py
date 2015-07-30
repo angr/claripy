@@ -1,4 +1,4 @@
-from ..backend import BackendObject
+from ..backend_object import BackendObject
 
 class BoolResult(BackendObject):
     def __init__(self, op=None, args=None):

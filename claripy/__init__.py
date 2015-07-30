@@ -2,75 +2,97 @@
 
 # pylint: disable=F0401,W0401,W0603,
 
-import socket
 import os
-
+import sys
+import socket
 import logging
 l = logging.getLogger("claripy")
 
-Claripies = { }
+_all_backends = [ ]
+_eager_backends = [ ]
+_model_backends = [ ]
 
-from .ast import Base, Bits, BV, FP
-from . import bv
-from .result import Result
 from .errors import *
-from .claripy_standalone import ClaripyStandalone
-from .bv import BVV
-from .fp import FPV, FSORT_FLOAT, FSORT_DOUBLE, FSort, RM, RM_RTN, RM_RTP, RM_RNE, RM_RTZ
 from . import operations
-from . import backends
-from .vsa import *
-from .backend import Backend, BackendObject
-from .backends import backendremote
+from . import ops as _all_operations
 
-g_conn = None
+from . import backends as _backends
+backend_vsa = _backends.BackendVSA()
 
-def init_claripies():
-    global g_conn
+if os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
+    try:
+        backend_z3 = _backends.backendremote.BackendRemote()
+    except socket.error:
+        raise ImportError("can't connect to backend")
+else:
+    backend_z3 = _backends.BackendZ3()
 
-    backend_vsa = backends.BackendVSA()
-    backend_concrete = backends.BackendConcrete()
-    Claripies['VSA'] = ClaripyStandalone('VSA', model_backends=[backend_concrete, backend_vsa], solver_backends=[])
-    backend_vsa.set_claripy_object(Claripies['VSA'])
-    backend_concrete.set_claripy_object(Claripies['VSA'])
+backend_concrete = _backends.BackendConcrete()
 
-    Claripies['ParallelZ3'] = ClaripyStandalone('ParallelZ3', parallel=True)
-    Claripies['RealSerialZ3'] = ClaripyStandalone('RealSerialZ3', parallel=False)
+_eager_backends[:] = [ backend_concrete ]
+_model_backends[:] = [ backend_concrete, backend_vsa ]
+_all_backends[:] = [ backend_concrete, backend_vsa, backend_z3 ]
+_backends = { 'BackendVSA': backend_vsa, 'BackendZ3': backend_z3, 'BackendConcrete': backend_concrete }
 
-    if os.environ.get('WORKER', False):
-        Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
-    else:
-        if os.environ.get('REMOTE', False):
-            try:
-                br = backendremote.BackendRemote()
-                Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', solver_backends=[br], parallel=False)
-                br.set_claripy_object(Claripies['SerialZ3'])
-            except socket.error:
-                pass
-        else:
-            Claripies['SerialZ3'] = ClaripyStandalone('SerialZ3', parallel=False)
+#
+# connect to ANA
+#
 
-    backend_concrete = backends.BackendConcrete()
-    Claripies['Concrete'] = ClaripyStandalone('Concrete', model_backends=[backend_concrete], solver_backends=[], parallel=False)
-    backend_concrete.set_claripy_object(Claripies['Concrete'])
-
-init_claripies()
-
+import ana
 if os.environ.get('REMOTE', False):
-    import ana
     ana.set_dl(mongo_args=())
 
-import sys
-recurse = 15000
-l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", recurse)
-sys.setrecursionlimit(recurse)
-
-#from .operations import *
-#from .wrapper import Wrapper, wrap, unwrap
-#from .solver import Solver, sat, unsat
-#from .utils import *
-#from .composite_solver import CompositeSolver
-#from .bv import BV, BVV
 #
-#empty_solver = Solver()
-#empty_solver.check()
+# Some other misguided setup
+#
+
+_recurse = 15000
+l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
+sys.setrecursionlimit(_recurse)
+
+#
+# Below are some exposed interfaces for general use.
+#
+
+def downsize():
+    backend_vsa.downsize()
+    backend_concrete.downsize()
+    backend_z3.downsize()
+
+#
+# solvers
+#
+
+from .frontends import LightFrontend, FullFrontend, CompositeFrontend
+def Solver():
+    return FullFrontend(backend_z3)
+from .result import Result
+
+#
+# backend objects
+#
+
+from . import bv
+from . import fp
+from . import vsa
+
+#
+# Operations
+#
+
+from .ast.base import *
+from .ast.bv import *
+from .ast.fp import *
+from .ast.bool import *
+from . import ast
+ast._import()
+
+#
+# and some aliases
+#
+
+BVV = BitVecVal
+BV = BitVec
+VS = ValueSet
+SI = StridedInterval
+TSI = TopStridedInterval

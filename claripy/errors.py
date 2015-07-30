@@ -4,7 +4,7 @@ class ClaripyError(Exception):
 class UnsatError(ClaripyError):
     pass
 
-class ClaripySolverError(ClaripyError):
+class ClaripyFrontendError(ClaripyError):
     pass
 
 class ClaripySerializationError(ClaripyError):
