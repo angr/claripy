@@ -147,24 +147,24 @@ SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 def eq_simplifier(a, b):
     # TODO: all these ==/!= might really slow things down...
     if a.op == 'If':
-        if a.args[1] is b and ops.is_true(a.args[2] != b):
+        if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
             # (If(c, x, y) == x, x != y) -> c
             return a.args[0]
-        elif a.args[2] is b and ops.is_true(a.args[1] != b):
+        elif a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
             # (If(c, x, y) == y, x != y) -> !c
-            return ops.Not(a.args[0])
+            return ast.all_operations.Not(a.args[0])
         # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
         #     return a._claripy.true
         # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
         #     return a._claripy.false
 
     if b.op == 'If':
-        if b.args[1] is a and ops.is_true(b.args[2] != b):
+        if b.args[1] is a and ast.all_operations.is_true(b.args[2] != b):
             # (x == If(c, x, y)) -> c
             return b.args[0]
-        elif b.args[2] is a and ops.is_true(b.args[1] != a):
+        elif b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
             # (y == If(c, x, y)) -> !c
-            return ops.Not(b.args[0])
+            return ast.all_operations.Not(b.args[0])
         # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
         #     return b._claripy.true
         # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
@@ -175,24 +175,24 @@ def eq_simplifier(a, b):
 
 def ne_simplifier(a, b):
     if a.op == 'If':
-        if a.args[2] is b and ops.is_true(a.args[1] != b):
+        if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
             # (If(c, x, y) == x, x != y) -> c
             return a.args[0]
-        elif a.args[1] is b and ops.is_true(a.args[2] != b):
+        elif a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
             # (If(c, x, y) == y, x != y) -> !c
-            return ops.Not(a.args[0])
+            return ast.all_operations.Not(a.args[0])
         # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
         #     return a._claripy.false
         # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
         #     return a._claripy.true
 
     if b.op == 'If':
-        if b.args[2] is a and ops.is_true(b.args[1] != a):
+        if b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
             # (x == If(c, x, y)) -> c
             return b.args[0]
-        elif b.args[1] is a and ops.is_true(b.args[2] != a):
+        elif b.args[1] is a and ast.all_operations.is_true(b.args[2] != a):
             # (y == If(c, x, y)) -> !c
-            return ops.Not(b.args[0])
+            return ast.all_operations.Not(b.args[0])
         # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
         #     return b._claripy.true
         # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
@@ -612,4 +612,3 @@ infix = {
 
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import ast
-from . import ops
