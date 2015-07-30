@@ -19,7 +19,7 @@ from . import ops as _all_operations
 from . import backends as _backends
 backend_vsa = _backends.BackendVSA()
 
-if os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
+if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
     try:
         backend_z3 = _backends.backendremote.BackendRemote()
     except socket.error:
