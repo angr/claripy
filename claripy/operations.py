@@ -258,22 +258,22 @@ def not_simplifier(body):
         return ast.all_operations.If(body.args[0], body.args[2], body.args[1])
 
     if body.op == 'SLT':
-        return body._claripy.SGE(body.args[0], body.args[1])
+        return ast.all_operations.SGE(body.args[0], body.args[1])
     elif body.op == 'SLE':
-        return body._claripy.SGT(body.args[0], body.args[1])
+        return ast.all_operations.SGT(body.args[0], body.args[1])
     elif body.op == 'SGT':
-        return body._claripy.SLE(body.args[0], body.args[1])
+        return ast.all_operations.SLE(body.args[0], body.args[1])
     elif body.op == 'SGE':
-        return body._claripy.SLT(body.args[0], body.args[1])
+        return ast.all_operations.SLT(body.args[0], body.args[1])
 
     if body.op == 'ULT':
-        return body._claripy.UGE(body.args[0], body.args[1])
+        return ast.all_operations.UGE(body.args[0], body.args[1])
     elif body.op == 'ULE':
-        return body._claripy.UGT(body.args[0], body.args[1])
+        return ast.all_operations.UGT(body.args[0], body.args[1])
     elif body.op == 'UGT':
-        return body._claripy.ULE(body.args[0], body.args[1])
+        return ast.all_operations.ULE(body.args[0], body.args[1])
     elif body.op == 'UGE':
-        return body._claripy.ULT(body.args[0], body.args[1])
+        return ast.all_operations.ULT(body.args[0], body.args[1])
 
 def extract_simplifier(high, low, val):
     if val.op == 'ZeroExt':
