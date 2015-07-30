@@ -1054,7 +1054,7 @@ class BackendVSA(Backend):
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
 from ..bv import BVV
-from ..ast_base import Base
+from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy

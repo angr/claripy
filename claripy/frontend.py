@@ -266,6 +266,6 @@ class Frontend(ana.Storable):
 from .result import UnsatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError
 from . import _eager_backends, _backends
-from .ast_base import Base
+from .ast.base import Base
 from .ast.bool import false, Bool
 from .ast.bv import UGE, ULE

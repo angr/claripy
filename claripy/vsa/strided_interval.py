@@ -2341,5 +2341,5 @@ from . import discrete_strided_interval_set
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
 from .ifproxy import IfProxy
-from ..ast_base import Base
+from ..ast.base import Base
 from ..bv import BVV

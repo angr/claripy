@@ -16,5 +16,5 @@ def _import():
     from .fp import FP
     from .bool import Bool
     from .int import Int
-    from ..ast_base import Base
+    from .base import Base
     from .. import ops as all_operations

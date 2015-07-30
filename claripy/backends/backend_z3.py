@@ -772,7 +772,7 @@ op_map = {
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast_base import Base, model_object
+from ..ast.base import Base, model_object
 from ..ast.bv import BV, BVI
 from ..ast.bool import BoolI, Bool
 from ..ast.fp import FP, FPI

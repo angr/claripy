@@ -158,5 +158,5 @@ class LightFrontend(Frontend):
 from ..result import SatResult
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
 from .. import _eager_backends, backend_z3
-from ..ast_base import Base, simplify
+from ..ast.base import Base, simplify
 from ..ast.bool import And, Or

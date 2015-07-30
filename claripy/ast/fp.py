@@ -1,5 +1,5 @@
 from .bits import Bits
-from ..ast_base import Base, _make_name
+from ..ast.base import Base, _make_name
 
 class FP(Bits):
     def to_fp(self, rm, sort):

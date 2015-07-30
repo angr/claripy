@@ -316,7 +316,7 @@ class ValueSet(BackendObject):
 
         return True
 
-from ..ast_base import Base
+from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult

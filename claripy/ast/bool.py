@@ -1,7 +1,7 @@
 import logging
 l = logging.getLogger('claripy.ast.bool')
 
-from ..ast_base import Base
+from ..ast.base import Base
 
 class Bool(Base):
     @staticmethod
