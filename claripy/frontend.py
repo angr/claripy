@@ -182,19 +182,25 @@ class Frontend(ana.Storable):
 		return s
 
 	def solve(self, extra_constraints=()):
-		if self.result is not None and not self.result.sat:
-			return self.result
+		l.debug("%s.solve() running with %d extra constraints...", self.__class__.__name__, len(extra_constraints))
 
-		if len(extra_constraints) == 0 and self.result is not None:
-			return self.result
+		if self.result is not None:
+			if not self.result.sat or len(extra_constraints) == 0:
+				l.debug("... returning cached result (sat: %s)", self.result.sat)
+				return self.result
+		else:
+			l.debug("... no cached result")
 
 		try:
 			extra_constraints = self._constraint_filter(extra_constraints)
 		except UnsatError:
+			l.debug("... returning unsat result due to false extra_constraints")
 			return UnsatResult()
 
+		l.debug("... conferring with the solver")
 		r = self._solve(extra_constraints=extra_constraints)
-		if len(extra_constraints) == 0 or self.result is None:
+		if len(extra_constraints) == 0 or (self.result is None and r.sat):
+			l.debug("... caching result (sat: %s)", r.sat)
 			self.result = r
 		return r
 

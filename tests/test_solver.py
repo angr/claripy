@@ -41,6 +41,16 @@ def raw_solver(solver_type):
     nose.tools.assert_equal(len(shards[1].variables), 1)
     nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # adds the != from the solution() check
 
+    # test result caching
+    s = solver_type(claripy.backend_z3)
+    s.add(x == 10)
+    s.add(y == 15)
+    nose.tools.assert_is(s.result, None)
+    nose.tools.assert_false(s.satisfiable(extra_constraints=(x==5,)))
+    nose.tools.assert_is(s.result, None)
+    nose.tools.assert_true(s.satisfiable())
+    nose.tools.assert_is_not(s.result, None)
+
     s = solver_type(claripy.backend_z3)
     #claripy.expression_backends = [ bc, ba, bz ]
     s.add(claripy.UGT(x, 10))
