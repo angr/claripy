@@ -1,4 +1,7 @@
-def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is_clrp=False, do_coerce=True):
+import itertools
+si_counter = itertools.count()
+
+def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
@@ -6,7 +9,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
     else:
         raise ClaripyOperationError("op {} got weird arg_types".format(name))
 
-    def _type_fixer(clrp, args):
+    def _type_fixer(args):
         num_args = len(args)
         if expected_num_args is not None and num_args != expected_num_args:
             raise ClaripyTypeError("Operation {} takes exactly "
@@ -25,21 +28,15 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
             if not matches:
                 if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
                     convert = getattr(argty, '_from_' + type(arg).__name__)
-                    yield convert(clrp, thing, arg)
+                    yield convert(thing, arg)
                 else:
                     yield NotImplemented
                     return
             else:
                 yield arg
 
-    def _op(self, *args):
-        if self_is_clrp:
-            clrp = self
-        else:
-            clrp = self._claripy
-            args = (self,) + args
-
-        fixed_args = tuple(_type_fixer(clrp, args))
+    def _op(*args):
+        fixed_args = tuple(_type_fixer(args))
         for i in fixed_args:
             if i is NotImplemented:
                 return NotImplemented
@@ -62,9 +59,9 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
             args, kwargs = preprocessors[name](*args, **kwargs)
 
         if any(any(v.startswith('SI') for v in a.variables) for a in args if hasattr(a, 'variables')):
-            kwargs['add_variables'] = frozenset(('SI_%d' % next(name_counter),))
+            kwargs['add_variables'] = frozenset(('SI_%d' % next(si_counter),))
 
-        return return_type(clrp, name, fixed_args, **kwargs)
+        return return_type(name, fixed_args, **kwargs)
 
     _op.calc_length = calc_length
     return _op
@@ -74,12 +71,12 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, self_is
 #
 
 def preprocess_intersect(*args, **kwargs):
-    new_name = 'SI_%d' % next(name_counter)
+    new_name = 'SI_%d' % next(si_counter)
     kwargs['add_variables'] = frozenset((new_name,))
     return args, kwargs
 
 def preprocess_union(*args, **kwargs):
-    new_name = 'SI_%d' % next(name_counter)
+    new_name = 'SI_%d' % next(si_counter)
     kwargs['add_variables'] = frozenset((new_name,))
     return args, kwargs
 
@@ -104,10 +101,15 @@ def or_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
+def concat_simplifier(*args):
+    if len(args) == 1:
+        return args[0]
+
 simplifiers = {
     'Reverse': reverse_simplifier,
     'And': and_simplifier,
-    'Or': or_simplifier
+    'Or': or_simplifier,
+    'Concat': concat_simplifier
 }
 
 #
@@ -348,5 +350,4 @@ infix = {
     'Concat': '..',
 }
 
-from .errors import ClaripyTypeError, ClaripyOperationError
-from .vsa.strided_interval import si_id_ctr as name_counter
+from .errors import ClaripyOperationError, ClaripyTypeError

@@ -2,7 +2,7 @@ import functools
 import struct
 
 from .errors import ClaripyOperationError
-from .backend import BackendObject
+from .backend_object import BackendObject
 
 def compare_sorts(f):
     @functools.wraps(f)

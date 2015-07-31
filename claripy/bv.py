@@ -1,6 +1,6 @@
 import functools
 from .errors import ClaripyOperationError
-from .backend import BackendObject
+from .backend_object import BackendObject
 
 def compare_bits(f):
     @functools.wraps(f)

@@ -1,4 +1,4 @@
-from ..backend import BackendObject
+from ..backend_object import BackendObject
 
 class BoolResult(BackendObject):
     def __init__(self, op=None, args=None):
@@ -147,4 +147,4 @@ class MaybeResult(BoolResult):
 
 from ..errors import BackendError
 from .ifproxy import IfProxy
-from ..ast.base import Base
+from ..ast_base import Base

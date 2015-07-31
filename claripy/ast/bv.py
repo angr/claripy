@@ -1,8 +1,5 @@
-from ..operations import op, length_same_check, basic_length_calc, extract_check, extract_length_calc, ext_length_calc, concat_length_calc
-from ..bv import BVV
-
 from .bits import Bits
-from .bool import Bool
+from ..ast_base import Base, _make_name
 
 class BV(Bits):
 
@@ -43,9 +40,9 @@ class BV(Bits):
         @returns the new AST.
         '''
         if type(rng) is slice:
-            return self._claripy.Extract(int(rng.start), int(rng.stop), self)
+            return Extract(int(rng.start), int(rng.stop), self)
         else:
-            return self._claripy.Extract(int(rng), int(rng), self)
+            return Extract(int(rng), int(rng), self)
 
     def zero_extend(self, n):
         '''
@@ -55,7 +52,7 @@ class BV(Bits):
             b = a.zero_extend(4)
             b is BVV(0b00001111)
         '''
-        return self._claripy.ZeroExt(n, self)
+        return ZeroExt(n, self)
 
     def sign_extend(self, n):
         '''
@@ -65,112 +62,174 @@ class BV(Bits):
             b = a.sign_extend(4)
             b is BVV(0b11111111)
         '''
-        return self._claripy.SignExt(n, self)
+        return SignExt(n, self)
 
     def concat(self, *args):
         '''
         Concatenates this AST with the ASTs provided.
         '''
-        return self._claripy.Concat(self, *args)
+        return Concat(self, *args)
 
     @staticmethod
-    def _from_int(clrp, like, value):
-        return BVI(clrp, BVV(value, like.length), length=like.length)
+    def _from_int(like, value):
+        return BVI(bv.BVV(value, like.length), length=like.length)
 
     @staticmethod
-    def _from_long(clrp, like, value):
-        return BVI(clrp, BVV(value, like.length), length=like.length)
+    def _from_long(like, value):
+        return BVI(bv.BVV(value, like.length), length=like.length)
 
     @staticmethod
-    def _from_BVV(clrp, like, value):
-        return BVI(clrp, value, length=value.size())
+    def _from_BVV(like, value): #pylint:disable=unused-argument
+        return BVI(value, length=value.size())
 
     def signed_to_fp(self, rm, sort):
         if rm is None:
-            rm = RM.default()
+            rm = fp.fp.RM.default()
 
-        return self._claripy.fpToFP(rm, self, sort)
+        return fp.fpToFP(rm, self, sort)
 
     def unsigned_to_fp(self, rm, sort):
         if rm is None:
-            rm = RM.default()
-
-        return self._claripy.fpToFPUnsigned(rm, self, sort)
+            rm = fp.fp.RM.default()
+        return fp.fpToFPUnsigned(rm, self, sort)
 
     def raw_to_fp(self):
-        sort = FSort.from_size(self.length)
-
-        return self._claripy.fpToFP(self, sort)
+        sort = fp.fp.FSort.from_size(self.length)
+        return fp.fpToFP(self, sort)
 
     def to_bv(self):
         return self
 
-BV.__add__ = op('__add__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__radd__ = op('__radd__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__div__ = op('__div__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rdiv__ = op('__rdiv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__truediv__ = op('__truediv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rtruediv__ = op('__rtruediv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__floordiv__ = op('__floordiv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rfloordiv__ = op('__rfloordiv__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__mul__ = op('__mul__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rmul__ = op('__rmul__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__sub__ = op('__sub__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rsub__ = op('__rsub__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__pow__ = op('__pow__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rpow__ = op('__rpow__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__mod__ = op('__mod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rmod__ = op('__rmod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__divmod__ = op('__divmod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rdivmod__ = op('__rdivmod__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-
-BV.__neg__ = op('__neg__', (BV,), BV, calc_length=basic_length_calc)
-BV.__pos__ = op('__pos__', (BV,), BV, calc_length=basic_length_calc)
-BV.__abs__ = op('__abs__', (BV,), BV, calc_length=basic_length_calc)
-
-BV.__eq__ = op('__eq__', (BV, BV), Bool, extra_check=length_same_check)
-BV.__ne__ = op('__ne__', (BV, BV), Bool, extra_check=length_same_check)
-BV.__ge__ = op('__ge__', (BV, BV), Bool, extra_check=length_same_check)
-BV.__le__ = op('__le__', (BV, BV), Bool, extra_check=length_same_check)
-BV.__gt__ = op('__gt__', (BV, BV), Bool, extra_check=length_same_check)
-BV.__lt__ = op('__lt__', (BV, BV), Bool, extra_check=length_same_check)
-BV.SLT = op('SLT', (BV, BV), Bool, extra_check=length_same_check)
-BV.SGT = op('SGT', (BV, BV), Bool, extra_check=length_same_check)
-BV.SLE = op('SLE', (BV, BV), Bool, extra_check=length_same_check)
-BV.SGE = op('SGE', (BV, BV), Bool, extra_check=length_same_check)
-BV.ULT = op('ULT', (BV, BV), Bool, extra_check=length_same_check)
-BV.UGT = op('UGT', (BV, BV), Bool, extra_check=length_same_check)
-BV.ULE = op('ULE', (BV, BV), Bool, extra_check=length_same_check)
-BV.UGE = op('UGE', (BV, BV), Bool, extra_check=length_same_check)
-
-BV.__invert__ = op('__invert__', (BV,), BV, calc_length=basic_length_calc)
-BV.__or__ = op('__or__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__ror__ = op('__ror__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__and__ = op('__and__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rand__ = op('__rand__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__xor__ = op('__xor__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rxor__ = op('__rxor__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__lshift__ = op('__lshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rlshift__ = op('__rlshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rshift__ = op('__rshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.__rrshift__ = op('__rrshift__', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.LShR = op('LShR', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-
-BV.Extract = staticmethod(op('Extract', ((int, long), (int, long), BV), BV,
-                             extra_check=extract_check, calc_length=extract_length_calc,
-                         self_is_clrp=True))
-BV.Concat = staticmethod(op('Concat', BV, BV, calc_length=concat_length_calc, self_is_clrp=True))
-
-BV.reversed = property(op('Reverse', (BV,), BV, calc_length=basic_length_calc))
-
-BV.union = op('union', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.widen = op('widen', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-BV.intersection = op('intersection', (BV, BV), BV, extra_check=length_same_check, calc_length=basic_length_calc)
-
-def BVI(claripy, model, **kwargs):
-    eager = isinstance(model, BVV)
+def BVI(model, **kwargs):
+    eager = isinstance(model, bv.BVV)
     kwargs['eager'] = eager
-    return BV(claripy, 'I', (model,), **kwargs)
+    return BV('I', (model,), **kwargs)
 
-from ..bv import BVV
-from ..fp import RM_RTZ, FSort
+def BitVec(name, size, explicit_name=False):
+    n = _make_name(name, size, explicit_name)
+    return BV('BitVec', (n, size), variables={n}, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=size)
+
+def BitVecVal(value, size, name=None, explicit_name=False, variables=frozenset()):
+    if name is not None:
+        n = _make_name(name, size, explicit_name=explicit_name)
+        variables = variables | frozenset((n,))
+    return BVI(bv.BVV(value, size), variables=variables, symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
+
+def StridedInterval(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None):
+    si = vsa.CreateStridedInterval(name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv)
+    return BVI(si, variables={ si.name }, symbolic=False, length=si._bits, eager=False)
+
+def TopStridedInterval(bits, name=None, uninitialized=False):
+    si = vsa.StridedInterval.top(bits, name=name, uninitialized=uninitialized)
+    return BVI(si, variables={ si.name }, symbolic=False, length=bits)
+
+def ValueSet(**kwargs):
+    vs = vsa.ValueSet(**kwargs)
+    return BVI(vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager=False)
+
+#
+# Unbound operations
+#
+
+from .bool import Bool
+from .. import operations
+
+# comparisons
+ULT = operations.op('ULT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+ULE = operations.op('ULE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+UGT = operations.op('UGT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+UGE = operations.op('UGE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+SLT = operations.op('SLT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+SLE = operations.op('SLE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+SGT = operations.op('SGT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+SGE = operations.op('SGE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+
+# bit stuff
+LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check,
+                     calc_length=operations.basic_length_calc, bound=False)
+SignExt = operations.op('SignExt', ((int, long), BV), BV,
+                        calc_length=operations.ext_length_calc, bound=False)
+ZeroExt = operations.op('ZeroExt', ((int, long), BV), BV,
+                        calc_length=operations.ext_length_calc, bound=False)
+Extract = operations.op('Extract', ((int, long), (int, long), BV),
+                        BV, extra_check=operations.extract_check,
+                        calc_length=operations.extract_length_calc, bound=False)
+
+Concat = operations.op('Concat', BV, BV, calc_length=operations.concat_length_calc, bound=False)
+
+RotateLeft = operations.op('RotateLeft', (BV, BV), BV,
+                           extra_check=operations.length_same_check,
+                           calc_length=operations.basic_length_calc, bound=False)
+RotateRight = operations.op('RotateRight', (BV, BV), BV,
+                            extra_check=operations.length_same_check,
+                            calc_length=operations.basic_length_calc, bound=False)
+Reverse = operations.op('Reverse', (BV,), BV,
+                        calc_length=operations.basic_length_calc, bound=False)
+
+#
+# Bound operations
+#
+
+BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__radd__ = operations.op('__radd__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__div__ = operations.op('__div__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rdiv__ = operations.op('__rdiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__truediv__ = operations.op('__truediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rtruediv__ = operations.op('__rtruediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rfloordiv__ = operations.op('__rfloordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rmul__ = operations.op('__rmul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__sub__ = operations.op('__sub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rsub__ = operations.op('__rsub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__pow__ = operations.op('__pow__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rpow__ = operations.op('__rpow__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rmod__ = operations.op('__rmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rdivmod__ = operations.op('__rdivmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+
+BV.__neg__ = operations.op('__neg__', (BV,), BV, calc_length=operations.basic_length_calc)
+BV.__pos__ = operations.op('__pos__', (BV,), BV, calc_length=operations.basic_length_calc)
+BV.__abs__ = operations.op('__abs__', (BV,), BV, calc_length=operations.basic_length_calc)
+
+BV.__eq__ = operations.op('__eq__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__ne__ = operations.op('__ne__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__ge__ = operations.op('__ge__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__le__ = operations.op('__le__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__gt__ = operations.op('__gt__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.__lt__ = operations.op('__lt__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.SLT = operations.op('SLT', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.SGT = operations.op('SGT', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.SLE = operations.op('SLE', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.SGE = operations.op('SGE', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.ULT = operations.op('ULT', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.UGT = operations.op('UGT', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.ULE = operations.op('ULE', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.UGE = operations.op('UGE', (BV, BV), Bool, extra_check=operations.length_same_check)
+
+BV.__invert__ = operations.op('__invert__', (BV,), BV, calc_length=operations.basic_length_calc)
+BV.__or__ = operations.op('__or__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__ror__ = operations.op('__ror__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__and__ = operations.op('__and__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rand__ = operations.op('__rand__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__xor__ = operations.op('__xor__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rxor__ = operations.op('__rxor__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__lshift__ = operations.op('__lshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rlshift__ = operations.op('__rlshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rshift__ = operations.op('__rshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rrshift__ = operations.op('__rrshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+
+BV.Extract = staticmethod(operations.op('Extract', ((int, long), (int, long), BV), BV, extra_check=operations.extract_check, calc_length=operations.extract_length_calc, bound=False))
+BV.Concat = staticmethod(operations.op('Concat', BV, BV, calc_length=operations.concat_length_calc, bound=False))
+BV.reversed = property(operations.op('Reverse', (BV,), BV, calc_length=operations.basic_length_calc))
+
+BV.union = operations.op('union', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.widen = operations.op('widen', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.intersection = operations.op('intersection', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+
+from .. import bv
+from .. import fp
+from . import fp
+from .. import vsa
