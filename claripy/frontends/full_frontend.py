@@ -212,7 +212,7 @@ class FullFrontend(LightFrontend):
     def branch(self):
         b = LightFrontend.branch(self)
         b._solver = self._solver
-        b._to_add = self._to_add
+        b._to_add = list(self._to_add)
         b.timeout = self.timeout
         return b
 
