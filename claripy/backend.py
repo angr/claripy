@@ -170,12 +170,12 @@ class Backend(object):
         @returns an Expression with the result.
         '''
 
-        if result is None:
-            try: return self._object_cache[ast._cache_key]
-            except KeyError: pass
-        else:
+        if result is not None:
             try: return result.resolve_cache[self][ast._cache_key]
             except KeyError: pass
+
+        try: return self._object_cache[ast._cache_key]
+        except KeyError: pass
 
         try:
             if ast.op in self._op_expr:
