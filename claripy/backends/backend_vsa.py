@@ -439,6 +439,11 @@ class BackendVSA(Backend):
             # We can safely remove this layer of __and__
             return self.cts_simplify(argl.op, argl.args, argl, condition)
 
+        elif argl.structurally_match(argr):
+            # Operands are the same
+            # Safely remove the __and__ operation
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+
         else:
             # We cannot handle it
             return expr, condition

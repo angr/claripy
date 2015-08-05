@@ -590,6 +590,44 @@ class Base(ana.Storable):
         '''
         return is_identical(self, o)
 
+    def structurally_match(self, o):
+        """
+        Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
+        (name-wise or hash-identity wise).
+
+        :param o: the other claripy A object
+        :return: True/False
+        """
+
+        # TODO: Convert a and b into canonical forms
+
+        if self.op != o.op:
+            return False
+
+        if len(self.args) != len(o.args):
+            return False
+
+        for arg_a, arg_b in zip(self.args, o.args):
+            if not isinstance(arg_a, Base):
+                if type(arg_a) != type(arg_b):
+                    return False
+                # They are not ASTs
+                if arg_a != arg_b:
+                    return False
+                else:
+                    continue
+
+            if arg_a.op in ('I', 'BitVec', 'FP'):
+                # This is a leaf node in AST tree
+                if arg_a is not arg_b:
+                    return False
+
+            else:
+                if not arg_a.structurally_match(arg_b):
+                    return False
+
+        return True
+
     def replace(self, old, new):
         '''
         Returns an AST with all instances of the AST 'old' replaced with AST 'new'
