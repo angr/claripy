@@ -61,11 +61,11 @@ class BackendZ3(Backend):
 
     def __init__(self):
         Backend.__init__(self, solver_required=True)
-        self._ast_cache = weakref.WeakValueDictionary()
-        self._var_cache = weakref.WeakKeyDictionary()
-        self._sym_cache = weakref.WeakKeyDictionary()
-        self._simplification_cache_key = weakref.WeakKeyDictionary()
-        self._simplification_cache_val = weakref.WeakValueDictionary()
+        self._tls._ast_cache = weakref.WeakValueDictionary()
+        self._tls._var_cache = weakref.WeakKeyDictionary()
+        self._tls._sym_cache = weakref.WeakKeyDictionary()
+        self._tls._simplification_cache_key = weakref.WeakKeyDictionary()
+        self._tls._simplification_cache_val = weakref.WeakValueDictionary()
         self._enable_simplification_cache = False
 
         # and the operations
@@ -86,11 +86,11 @@ class BackendZ3(Backend):
     def downsize(self):
         Backend.downsize(self)
 
-        self._ast_cache.clear()
-        self._var_cache.clear()
-        self._sym_cache.clear()
-        self._simplification_cache_key.clear()
-        self._simplification_cache_val.clear()
+        self._tls._ast_cache.clear()
+        self._tls._var_cache.clear()
+        self._tls._sym_cache.clear()
+        self._tls._simplification_cache_key.clear()
+        self._tls._simplification_cache_val.clear()
 
     @condom
     def _size(self, e, result=None):
@@ -220,7 +220,7 @@ class BackendZ3(Backend):
     def _abstract_internal(self, ctx, ast, split_on=None):
         h = self._z3_ast_hash(ctx, ast)
         try:
-            return self._ast_cache[h]
+            return self._tls._ast_cache[h]
         except KeyError:
             pass
 
@@ -339,7 +339,7 @@ class BackendZ3(Backend):
             else:
                 a = result_ty(op_name, tuple(args))
 
-        self._ast_cache[h] = a
+        self._tls._ast_cache[h] = a
         return a
 
     def solver(self, timeout=None):
@@ -550,13 +550,13 @@ class BackendZ3(Backend):
 
         if self._enable_simplification_cache:
             try:
-                k = self._simplification_cache_key[expr._cache_key]
+                k = self._tls._simplification_cache_key[expr._cache_key]
                 #print "HIT WEAK KEY CACHE"
                 return k
             except KeyError:
                 pass
             try:
-                k = self._simplification_cache_val[expr._cache_key]
+                k = self._tls._simplification_cache_val[expr._cache_key]
                 #print "HIT WEAK VALUE CACHE"
                 return k
             except KeyError:
@@ -601,8 +601,8 @@ class BackendZ3(Backend):
         o._simplified = Base.FULL_SIMPLIFY
 
         if self._enable_simplification_cache:
-            self._simplification_cache_val[expr._cache_key] = o
-            self._simplification_cache_key[expr._cache_key] = o
+            self._tls._simplification_cache_val[expr._cache_key] = o
+            self._tls._simplification_cache_key[expr._cache_key] = o
         return o
 
     @staticmethod
