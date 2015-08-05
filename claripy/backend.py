@@ -56,7 +56,14 @@ class Backend(object):
         self._solver_required = solver_required is not None
 
         self._tls = threading.local()
-        self._tls._object_cache = weakref.WeakKeyDictionary()
+
+    @property
+    def _object_cache(self):
+        try:
+            return self._tls.object_cache
+        except AttributeError:
+            self._tls.object_cache = weakref.WeakKeyDictionary()
+            return self._tls.object_cache
 
     def _make_raw_ops(self, op_list, op_dict=None, op_module=None):
         for o in op_list:
@@ -107,7 +114,7 @@ class Backend(object):
         '''
         Clears all caches associated with this backend.
         '''
-        self._tls._object_cache.clear()
+        self._object_cache.clear()
 
     def convert(self, expr, result=None): #pylint:disable=R0201
         '''
@@ -127,7 +134,7 @@ class Backend(object):
 
             # otherwise, if it's cached in the backend, use it
             if r is None:
-                try: return self._tls._object_cache[expr._cache_key]
+                try: return self._object_cache[expr._cache_key]
                 except KeyError: pass
 
             #l.debug('converting A')
@@ -143,7 +150,7 @@ class Backend(object):
             if r is None:
                 for b in _all_backends:
                     try:
-                        r = self._convert(b._tls._object_cache[expr._cache_key])
+                        r = self._convert(b._object_cache[expr._cache_key])
                         break
                     except (KeyError, BackendError):
                         pass
@@ -152,7 +159,7 @@ class Backend(object):
             if r is None:
                 r = expr.resolved_with(self, result=result)
 
-            if result is None: self._tls._object_cache[expr._cache_key] = r
+            if result is None: self._object_cache[expr._cache_key] = r
             else: result.resolve_cache[self][expr._cache_key] = r
             return r
         else:
@@ -177,7 +184,7 @@ class Backend(object):
             try: return result.resolve_cache[self][ast._cache_key]
             except KeyError: pass
 
-        try: return self._tls._object_cache[ast._cache_key]
+        try: return self._object_cache[ast._cache_key]
         except KeyError: pass
 
         try:
@@ -215,7 +222,7 @@ class Backend(object):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
 
-        if result is None: self._tls._object_cache[ast._cache_key] = r
+        if result is None: self._object_cache[ast._cache_key] = r
         else: result.resolve_cache[self][ast._cache_key] = r
         return r
 
