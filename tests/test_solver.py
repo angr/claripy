@@ -136,7 +136,7 @@ def raw_solver_branching(solver_type):
 
     t = s.branch()
     if isinstance(s, claripy.FullFrontend):
-        nose.tools.assert_is(s._solver, t._solver)
+        nose.tools.assert_is(s._tls.solver, t._tls.solver)
         nose.tools.assert_true(s._finalized)
         nose.tools.assert_true(t._finalized)
     t.add(x > 5)
