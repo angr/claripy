@@ -1,2 +1,8 @@
 from distutils.core import setup
-setup(name='claripy', version='0.01', packages=['claripy', 'claripy.backends', 'claripy.frontends', 'claripy.vsa', 'claripy.ast'])
+
+setup(
+    name='claripy',
+    version='0.9.0',
+    packages=['claripy', 'claripy.backends', 'claripy.frontends', 'claripy.vsa', 'claripy.ast'],
+    install_requires=[i.strip() for i in open('requirements.txt').readlines()],
+)
