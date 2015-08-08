@@ -19,7 +19,7 @@ def FPI(model, **kwargs):
     return FP('I', (model,), **kwargs)
 
 def FloatingPoint(name, sort, explicit_name=None):
-    n = _make_name(name, sort, explicit_name=explicit_name, prefix='FP_')
+    n = _make_name(name, sort.length, explicit_name=explicit_name, prefix='FP_')
     return FP('FP', (n, sort), variables={n}, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=sort.length)
 
 def FPV(*args):
