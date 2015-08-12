@@ -345,7 +345,8 @@ class BackendVSA(Backend):
             elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
                 cond_arg = _all_operations.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
 
-            if _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
+            if to_extract.size() - 1 < high + 1 or \
+                    _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
