@@ -11,16 +11,29 @@ import weakref
 # import and set up Z3
 import os
 import z3
+
+from ..errors import ClaripyZ3Error
+
+_z3_paths = [ ]
+
 if "Z3PATH" in os.environ:
-    z3_path = os.environ["Z3PATH"]
-elif "VIRTUAL_ENV" in os.environ:
+    _z3_paths.append(os.environ["Z3PATH"])
+if "VIRTUAL_ENV" in os.environ:
     virtual_env = os.environ["VIRTUAL_ENV"]
-    z3_path = virtual_env + "/lib/"
+    _z3_paths.append(os.path.join(os.environ["VIRTUAL_ENV"], "lib"))
+_z3_paths.extend(sys.path)
+_z3_paths.append("/usr/local/lib")
+_z3_paths.append("/opt/python/lib")
+
+for z3_path in _z3_paths:
+    if not '.so' in z3_path and not '.dll' in z3_path:
+        z3_path = os.path.join(z3_path, 'libz3.so')
+    if os.path.exists(z3_path):
+        z3.init(z3_path)
+        break
 else:
-    z3_path = "/opt/python/lib/"
-if not '.so' in z3_path and not '.dll' in z3_path:
-    z3_path += 'libz3.so'
-z3.init(z3_path)
+    raise ClaripyZ3Error("Unable to find libz3.so.")
+
 supports_fp = hasattr(z3, 'fpEQ')
 
 from ..backend import Backend
@@ -815,7 +828,7 @@ from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
 from ..bv import BVV as NativeBVV
 from ..fp import FPV as NativeFPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
-from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError, ClaripyZ3Error
+from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
 from .. import _eager_backends, _all_operations
 
 op_type_map = {
