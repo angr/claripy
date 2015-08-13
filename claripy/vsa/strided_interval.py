@@ -2275,6 +2275,9 @@ class StridedInterval(BackendObject):
             return si
 
         else:
+            if self.uninitialized:
+                return self.copy()
+
             if not self.is_integer:
                 # We really don't want to do that. Something is wrong.
                 logger.warning('Reversing a real strided-interval %s is bad', self)
