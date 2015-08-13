@@ -1,2 +1,2 @@
-git+https://github.com/zardus/ana.git#egg=ana
-https://github.com/zardus/z3/archive/pypy-and-setup.zip#egg=z3
+ana
+angr-z3

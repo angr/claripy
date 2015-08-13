@@ -4,6 +4,7 @@ import logging
 l = logging.getLogger("claripy.frontends.full_frontend")
 
 import sys
+import threading
 
 from .light_frontend import LightFrontend
 
@@ -11,7 +12,7 @@ class FullFrontend(LightFrontend):
     def __init__(self, solver_backend, timeout=None):
         LightFrontend.__init__(self, solver_backend)
         self.timeout = timeout if timeout is not None else 300000
-        self._solver = None
+        self._tls = threading.local()
         self._to_add = [ ]
 
     #
@@ -23,7 +24,7 @@ class FullFrontend(LightFrontend):
 
     def _ana_setstate(self, s):
         self.timeout, lightweight_state = s
-        self._solver = None
+        self._tls = None
         self._to_add = [ ]
         LightFrontend._ana_setstate(self, lightweight_state)
 
@@ -32,16 +33,16 @@ class FullFrontend(LightFrontend):
     #
 
     def _get_solver(self):
-        if self._solver is None or (self._finalized and len(self._to_add) > 0):
-            self._solver = self._solver_backend.solver(timeout=self.timeout)
-            self._solver_backend.add(self._solver, self.constraints)
+        if getattr(self._tls, 'solver', None) is None or (self._finalized and len(self._to_add) > 0):
+            self._tls.solver = self._solver_backend.solver(timeout=self.timeout)
+            self._solver_backend.add(self._tls.solver, self.constraints)
             self._to_add = [ ]
 
         if len(self._to_add) > 0:
-            self._solver_backend.add(self._solver, self._to_add)
+            self._solver_backend.add(self._tls.solver, self._to_add)
             self._to_add = [ ]
 
-        return self._solver
+        return self._tls.solver
 
     #
     # Constraint management
@@ -56,7 +57,7 @@ class FullFrontend(LightFrontend):
         LightFrontend._simplify(self)
 
         # TODO: should we do this?
-        self._solver = None
+        self._tls.solver = None
         self._to_add = [ ]
         self._simplified = True
 
@@ -200,7 +201,7 @@ class FullFrontend(LightFrontend):
 
     def downsize(self):
         LightFrontend.downsize(self)
-        self._solver = None
+        self._tls.solver = None
         self._to_add = [ ]
 
     #
@@ -211,8 +212,8 @@ class FullFrontend(LightFrontend):
 
     def branch(self):
         b = LightFrontend.branch(self)
-        b._solver = self._solver
-        b._to_add = self._to_add
+        b._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
+        b._to_add = list(self._to_add)
         b.timeout = self.timeout
         return b
 

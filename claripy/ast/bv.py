@@ -160,7 +160,7 @@ Concat = operations.op('Concat', BV, BV, calc_length=operations.concat_length_ca
 RotateLeft = operations.op('RotateLeft', (BV, BV), BV,
                            extra_check=operations.length_same_check,
                            calc_length=operations.basic_length_calc, bound=False)
-RotateRight = operations.op('RotateLeft', (BV, BV), BV,
+RotateRight = operations.op('RotateRight', (BV, BV), BV,
                             extra_check=operations.length_same_check,
                             calc_length=operations.basic_length_calc, bound=False)
 Reverse = operations.op('Reverse', (BV,), BV,

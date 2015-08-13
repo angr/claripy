@@ -11,16 +11,29 @@ import weakref
 # import and set up Z3
 import os
 import z3
+
+from ..errors import ClaripyZ3Error
+
+_z3_paths = [ ]
+
 if "Z3PATH" in os.environ:
-    z3_path = os.environ["Z3PATH"]
-elif "VIRTUAL_ENV" in os.environ:
+    _z3_paths.append(os.environ["Z3PATH"])
+if "VIRTUAL_ENV" in os.environ:
     virtual_env = os.environ["VIRTUAL_ENV"]
-    z3_path = virtual_env + "/lib/"
+    _z3_paths.append(os.path.join(os.environ["VIRTUAL_ENV"], "lib"))
+_z3_paths.extend(sys.path)
+_z3_paths.append("/usr/local/lib")
+_z3_paths.append("/opt/python/lib")
+
+for z3_path in _z3_paths:
+    if not '.so' in z3_path and not '.dll' in z3_path:
+        z3_path = os.path.join(z3_path, 'libz3.so')
+    if os.path.exists(z3_path):
+        z3.init(z3_path)
+        break
 else:
-    z3_path = "/opt/python/lib/"
-if not '.so' in z3_path and not '.dll' in z3_path:
-    z3_path += 'libz3.so'
-z3.init(z3_path)
+    raise ClaripyZ3Error("Unable to find libz3.so.")
+
 supports_fp = hasattr(z3, 'fpEQ')
 
 from ..backend import Backend
@@ -61,11 +74,6 @@ class BackendZ3(Backend):
 
     def __init__(self):
         Backend.__init__(self, solver_required=True)
-        self._ast_cache = weakref.WeakValueDictionary()
-        self._var_cache = weakref.WeakKeyDictionary()
-        self._sym_cache = weakref.WeakKeyDictionary()
-        self._simplification_cache_key = weakref.WeakKeyDictionary()
-        self._simplification_cache_val = weakref.WeakValueDictionary()
         self._enable_simplification_cache = False
 
         # and the operations
@@ -82,6 +90,46 @@ class BackendZ3(Backend):
         self._op_raw['I'] = lambda thing: thing
         self._op_raw['fpToSBV'] = self.fpToSBV
         self._op_raw['fpToUBV'] = self.fpToUBV
+
+    @property
+    def _ast_cache(self):
+        try:
+            return self._tls.ast_cache
+        except AttributeError:
+            self._tls.ast_cache = weakref.WeakValueDictionary()
+            return self._tls.ast_cache
+
+    @property
+    def _var_cache(self):
+        try:
+            return self._tls.var_cache
+        except AttributeError:
+            self._tls.var_cache = weakref.WeakValueDictionary()
+            return self._tls.var_cache
+
+    @property
+    def _sym_cache(self):
+        try:
+            return self._tls.sym_cache
+        except AttributeError:
+            self._tls.sym_cache = weakref.WeakValueDictionary()
+            return self._tls.sym_cache
+
+    @property
+    def _simplification_cache_key(self):
+        try:
+            return self._tls.simplification_cache_key
+        except AttributeError:
+            self._tls.simplification_cache_key = weakref.WeakValueDictionary()
+            return self._tls.simplification_cache_key
+
+    @property
+    def _simplification_cache_val(self):
+        try:
+            return self._tls.simplification_cache_val
+        except AttributeError:
+            self._tls.simplification_cache_val = weakref.WeakValueDictionary()
+            return self._tls.simplification_cache_val
 
     def downsize(self):
         Backend.downsize(self)
@@ -780,7 +828,7 @@ from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
 from ..bv import BVV as NativeBVV
 from ..fp import FPV as NativeFPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
-from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError, ClaripyZ3Error
+from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
 from .. import _eager_backends, _all_operations
 
 op_type_map = {
