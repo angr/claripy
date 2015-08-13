@@ -1824,6 +1824,7 @@ class StridedInterval(BackendObject):
                 # TODO: How can we do better here? For example, keep the stride information?
                 return self.top(tok)
 
+    @normalize_types
     def concat(self, b):
         # Zero-extend
         a = self.nameless_copy()
@@ -2274,6 +2275,9 @@ class StridedInterval(BackendObject):
             return si
 
         else:
+            if self.uninitialized:
+                return self.copy()
+
             if not self.is_integer:
                 # We really don't want to do that. Something is wrong.
                 logger.warning('Reversing a real strided-interval %s is bad', self)
