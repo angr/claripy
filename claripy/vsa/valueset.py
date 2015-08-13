@@ -50,7 +50,10 @@ class ValueSet(BackendObject):
         self._reversed = False
 
         if region is not None and bits is not None and val is not None:
-            self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
+            if isinstance(val, StridedInterval):
+                self.set_si(region, val)
+            else:
+                self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
 
     @property
     def name(self):
