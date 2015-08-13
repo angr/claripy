@@ -2,8 +2,6 @@ import logging
 l = logging.getLogger("claripy.backends.backend_concrete")
 
 import z3
-zTrue = z3.BoolVal(True)
-zFalse = z3.BoolVal(False)
 
 from ..backend import BackendError, Backend
 
@@ -13,6 +11,8 @@ class BackendConcrete(Backend):
         self._make_raw_ops(set(backend_operations) - { 'BitVec' }, op_module=bv)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw_result['BitVec'] = self.BitVec
+        self._z_true = z3.BoolVal(True)
+        self._z_false = z3.BoolVal(False)
 
     def BitVec(self, name, size, result=None): #pylint:disable=W0613,R0201
         if result is None:
@@ -70,8 +70,8 @@ class BackendConcrete(Backend):
                 sort = fp.FSort.from_params(ebits, sbits)
 
                 return fp.FPV(value, sort)
-            elif isinstance(a, z3.BoolRef) and a.eq(zTrue): return True
-            elif isinstance(a, z3.BoolRef) and a.eq(zFalse): return False
+            elif isinstance(a, z3.BoolRef) and a.eq(self._z_true): return True
+            elif isinstance(a, z3.BoolRef) and a.eq(self._z_false): return False
             elif result is not None and a.num_args() == 0:
                 name = a.decl().name()
                 if name in result.model:
