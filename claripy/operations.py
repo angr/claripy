@@ -315,7 +315,6 @@ def extract_simplifier(high, low, val):
         return ast.all_operations.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
 
     if val.op == 'Extract':
-        print "saw inner extract"
         _, inner_low = val.args[:2]
         new_low = inner_low + low
         new_high = new_low + (high - low)
