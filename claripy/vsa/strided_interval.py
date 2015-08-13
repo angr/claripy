@@ -1824,6 +1824,7 @@ class StridedInterval(BackendObject):
                 # TODO: How can we do better here? For example, keep the stride information?
                 return self.top(tok)
 
+    @normalize_types
     def concat(self, b):
         # Zero-extend
         a = self.nameless_copy()
