@@ -48,13 +48,24 @@ class ValueSet(BackendObject):
         self._regions = {}
 
         self._reversed = False
-        self._bits = bits
+        if bits is None:
+            if val is None:
+                raise ClaripyVSAError("Either 'size' or 'val' must be specified.")
+            else:
+                self._bits = val.bits()
+
+        else:
+            self._bits = bits
 
         if region is not None and val is not None:
-            if isinstance(val, StridedInterval):
+            if isinstance(val, (StridedInterval, IfProxy)):
                 self.set_si(region, val)
-            else:
+
+            elif type(val) in (int, long):
                 self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
+
+            else:
+                raise ClaripyVSAError("Unsuported type '%s' for argument 'val'" % type(val))
 
         else:
             if region is not None or val is not None:
@@ -127,7 +138,7 @@ class ValueSet(BackendObject):
 
             raise NotImplementedError()
         else:
-            new_vs = ValueSet()
+            new_vs = ValueSet(bits=self.bits)
             for region, si in self._regions.items():
                 new_vs._regions[region] = si + other
 
