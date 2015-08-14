@@ -5,6 +5,7 @@
 import sys
 import logging
 l = logging.getLogger("claripy")
+l.addHandler(logging.NullHandler())
 
 _all_backends = [ ]
 _eager_backends = [ ]
