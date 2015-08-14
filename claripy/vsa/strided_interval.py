@@ -36,12 +36,13 @@ def normalize_types(f):
         if type(self) in (int, long):
             self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
 
-        # Make sure they have the same length
-        common_bits = max(o.bits, self.bits)
-        if o.bits < common_bits:
-            o = o.zero_extend(common_bits)
-        if self.bits < common_bits:
-            self = self.zero_extend(common_bits)
+        if f.__name__ not in ('concat', ):
+            # Make sure they have the same length
+            common_bits = max(o.bits, self.bits)
+            if o.bits < common_bits:
+                o = o.zero_extend(common_bits)
+            if self.bits < common_bits:
+                self = self.zero_extend(common_bits)
 
         self_reversed = False
 

@@ -300,6 +300,14 @@ def test_vsa():
     si_concat = part1.concat(part2)
     nose.tools.assert_true(is_equal(si_concat, si))
 
+    # Concatenating two SIs that are of different sizes
+    si_1 = SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)
+    si_2 = SI(bits=32, stride=1, lower_bound=0, upper_bound=0xffffffff)
+    si_concat = si_1.concat(si_2)
+    nose.tools.assert_true(is_equal(si_concat, SI(bits=96, stride=1,
+                                                  lower_bound=0,
+                                                  upper_bound=0xffffffffffffffffffffffff)))
+
     # Zero-Extend the low part
     si_zeroextended = part2.zero_extend(32)
     nose.tools.assert_true(is_equal(si_zeroextended, claripy.SI(bits=64, stride=9, lower_bound=1, upper_bound=10)))
