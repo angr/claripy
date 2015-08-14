@@ -395,6 +395,15 @@ def test_vsa():
     vs_1.model.merge_si('global', si3)
     nose.tools.assert_false(vs_1.identical(vs_2))
 
+    # Subtraction
+    # Subtraction of two pointers yields a concrete value
+
+    vs_1 = claripy.ValueSet(name='foo', region='global', bits=32, val=0x400010)
+    vs_2 = claripy.ValueSet(name='bar', region='global', bits=32, val=0x400000)
+    si = vs_1 - vs_2
+    nose.tools.assert_is(type(si.model), StridedInterval)
+    nose.tools.assert_true(si.identical(claripy.SI(bits=32, stride=0, lower_bound=0x10, upper_bound=0x10)))
+
     #
     # IfProxy
     #

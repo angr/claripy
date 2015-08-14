@@ -139,26 +139,36 @@ class ValueSet(BackendObject):
 
     @normalize_types_one_arg
     def __sub__(self, other):
+        """
+        Binary operation: subtraction
+
+        :param other: The other operand
+        :return: A StridedInterval.
+        """
+
+        deltas = [ ]
+
         if type(other) is ValueSet:
             # It might happen due to imprecision of our analysis (mostly due the absence of contexts)
 
             if self.regions.keys() == other.regions.keys():
-                # Handle it here
-                new_vs = ValueSet()
                 for region, si in self._regions.iteritems():
-                    new_vs._regions[region] = si - other._regions[region]
-
-                return new_vs
+                    deltas.append(si - other._regions[region])
 
             else:
                 __import__('ipdb').set_trace()
                 raise NotImplementedError()
-        else:
-            new_vs = ValueSet()
-            for region, si in self._regions.items():
-                new_vs._regions[region] = si - other
 
-            return new_vs
+        else:
+
+            for region, si in self._regions.items():
+                deltas.append(si - other)
+
+        delta = StridedInterval.empty(self.bits)
+        for d in deltas:
+            delta = delta.union(d)
+
+        return delta
 
     @normalize_types_one_arg
     def __and__(self, other):
