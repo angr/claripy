@@ -48,12 +48,17 @@ class ValueSet(BackendObject):
         self._regions = {}
 
         self._reversed = False
+        self._bits = bits
 
-        if region is not None and bits is not None and val is not None:
+        if region is not None and val is not None:
             if isinstance(val, StridedInterval):
                 self.set_si(region, val)
             else:
                 self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
+
+        else:
+            if region is not None or val is not None:
+                raise ClaripyVSAError("You must specify 'region' and 'val' at the same time.")
 
     @property
     def name(self):
@@ -112,9 +117,7 @@ class ValueSet(BackendObject):
         return "(" + s + ")"
 
     def __len__(self):
-        if self.is_empty:
-            return 0
-        return len(self._regions.items()[0][1])
+        return self._bits
 
     @normalize_types_one_arg
     def __add__(self, other):
@@ -323,4 +326,4 @@ from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
-from .errors import ClaripyVSAOperationError
+from .errors import ClaripyVSAOperationError, ClaripyVSAError
