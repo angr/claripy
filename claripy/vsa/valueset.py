@@ -191,7 +191,7 @@ class ValueSet(BackendObject):
             # Corner case: a & 0 = 0
             return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
 
-        new_vs = ValueSet()
+        new_vs = ValueSet(bits=self.bits)
         if BoolResult.is_true(other < 0x100):
             # Special case - sometimes (addr & mask) is used for testing whether the address is aligned or not
             # We return an SI instead
@@ -252,7 +252,7 @@ class ValueSet(BackendObject):
         return results
 
     def copy(self):
-        vs = ValueSet()
+        vs = ValueSet(bits=self.bits)
         vs._regions = self._regions.copy()
         vs._reversed = self._reversed
 
@@ -270,14 +270,14 @@ class ValueSet(BackendObject):
         return len(self._regions) == 0
 
     def extract(self, high_bit, low_bit):
-        new_vs = ValueSet()
+        new_vs = ValueSet(bits=high_bit - low_bit + 1)
         for region, si in self._regions.items():
             new_vs.set_si(region, si.extract(high_bit, low_bit))
 
         return new_vs
 
     def concat(self, b):
-        new_vs = ValueSet()
+        new_vs = ValueSet(bits=self.bits + b.bits)
         # TODO: This logic is obviously flawed. Correct it later :-(
         if isinstance(b, StridedInterval):
             for region, si in self._regions.items():
