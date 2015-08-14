@@ -86,6 +86,22 @@ def test_wrapped_intervals():
     nose.tools.assert_true((si1 / si2).identical(si3))
 
     #
+    # Extension
+    #
+
+    # zero-extension
+    si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfd)
+    si_zext = si1.zero_extend(32 - 8)
+    si_zext_ = claripy.SI(bits=32, stride=1, lower_bound=0x0, upper_bound=0xfd)
+    nose.tools.assert_true(si_zext.identical(si_zext_))
+
+    # sign-extension
+    si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfd)
+    si_sext = si1.sign_extend(32 - 8)
+    si_sext_ = claripy.SI(bits=32, stride=1, lower_bound=0xffffff80, upper_bound=0x7f)
+    nose.tools.assert_true(si_sext.identical(si_sext_))
+
+    #
     # Comparisons
     #
 
