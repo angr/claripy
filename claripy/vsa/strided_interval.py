@@ -774,11 +774,7 @@ class StridedInterval(BackendObject):
             else:
                 return 1
         else:
-            return self._modular_add(
-                self._modular_sub(self._upper_bound, self._lower_bound, self.bits),
-                1,
-                self.bits
-            ) / self._stride
+            return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + 1) / self._stride
 
     @property
     def lower_bound(self):
