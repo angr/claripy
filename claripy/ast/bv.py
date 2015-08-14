@@ -123,6 +123,10 @@ def TopStridedInterval(bits, name=None, uninitialized=False):
     si = vsa.StridedInterval.top(bits, name=name, uninitialized=uninitialized)
     return BVI(si, variables={ si.name }, symbolic=False, length=bits)
 
+def EmptyStridedInterval(bits, name=None):
+    si = vsa.StridedInterval.empty(bits)
+    return BVI(si, variables={ si.name }, symbolic=False, length=bits)
+
 def ValueSet(**kwargs):
     vs = vsa.ValueSet(**kwargs)
     return BVI(vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager=False)

@@ -96,3 +96,4 @@ BV = BitVec
 VS = ValueSet
 SI = StridedInterval
 TSI = TopStridedInterval
+ESI = EmptyStridedInterval
