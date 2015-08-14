@@ -96,13 +96,19 @@ class StridedInterval(BackendObject):
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
 
+        if lower_bound is not None and type(lower_bound) not in (int, long):
+            raise ClaripyVSAError("'lower_bound' must be an int or a long. %s is not supported." % type(lower_bound))
+
+        if upper_bound is not None and type(upper_bound) not in (int, long):
+            raise ClaripyVSAError("'upper_bound' must be an int or a long. %s is not supported." % type(upper_bound))
+
         self._reversed = False
 
         self._is_bottom = bottom
 
         self.uninitialized = uninitialized
 
-        if self._upper_bound != None and bits == 0:
+        if self._upper_bound is not None and bits == 0:
             self._bits = self._min_bits()
 
         if self._upper_bound is None:
@@ -169,7 +175,11 @@ class StridedInterval(BackendObject):
 
         results = [ ]
 
-        if self.stride == 0 and n > 0:
+        if self.is_empty:
+            # no value is available
+            pass
+
+        elif self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
             if signed:
@@ -2339,6 +2349,7 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
     return bi
 
 
+from .errors import ClaripyVSAError
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
 from . import discrete_strided_interval_set
