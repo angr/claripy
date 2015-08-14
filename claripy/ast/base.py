@@ -331,6 +331,19 @@ class Base(ana.Storable):
 
     # No more size in Base
 
+    @property
+    def cardinality(self):
+        t = type(self.model)
+
+        if t in (int, long, bool, str, bv.BVV):
+            return 1
+
+        elif t in (vsa.IfProxy, vsa.StridedInterval, vsa.ValueSet, vsa.DiscreteStridedIntervalSet):
+            return self.model.cardinality
+
+        else:
+            raise NotImplementedError("'cardinality' is not supported in modes other than static mode")
+
     #
     # Functionality for resolving to model objects
     #
@@ -719,7 +732,7 @@ def simplify(e):
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from .. import operations
-from .. import bv
+from .. import bv, vsa
 from ..fp import RM, FSort
 from ..vsa import StridedInterval
 from ..backend_object import BackendObject
