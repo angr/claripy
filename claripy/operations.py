@@ -277,7 +277,11 @@ def not_simplifier(body):
 
 def extract_simplifier(high, low, val):
     if val.op == 'ZeroExt':
-        val = ast.all_operations.Concat(ast.all_operations.BVV(0, val.args[0]), val.args[1])
+        extending_bits = val.args[0]
+        if extending_bits == 0:
+            val = val.args[1]
+        else:
+            val = ast.all_operations.Concat(ast.all_operations.BVV(0, extending_bits), val.args[1])
 
     if val.op == 'Reverse' and val.args[0].op == 'Concat':
         val = ast.BV('Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
