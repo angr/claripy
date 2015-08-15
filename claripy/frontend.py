@@ -165,10 +165,22 @@ class Frontend(ana.Storable):
 			if not isinstance(c, Bool):
 				raise ClaripyTypeError('constraint is not a boolean expression!')
 
+		if self.result is not None and invalidate_cache:
+			all_true = True
+			for c in to_add:
+				try:
+					v = LightFrontend._eval.im_func(self, c, 1)[0]
+					all_true &= v
+				except ClaripyFrontendError:
+					all_true = False
+					break
+		else:
+			all_true = False
+
 		self._add_constraints(to_add, invalidate_cache=invalidate_cache)
 		self._simplified = False
 
-		if invalidate_cache and self.result is not None and self.result.sat:
+		if invalidate_cache and not all_true and self.result is not None and self.result.sat:
 			self.result = None
 
 		return to_add
@@ -269,6 +281,7 @@ class Frontend(ana.Storable):
 		if self.result is not None:
 			self.result.downsize()
 
+from .frontends import LightFrontend
 from .result import UnsatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError
 from . import _eager_backends, _backends
