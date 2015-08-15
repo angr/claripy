@@ -355,7 +355,7 @@ simplifiers = {
     '__lshift__': lshift_simplifier,
     '__rshift__': rshift_simplifier,
     #'__eq__': eq_simplifier,
-    '__ne__': ne_simplifier,
+    #'__ne__': ne_simplifier,
 }
 
 #
