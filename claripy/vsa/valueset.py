@@ -48,9 +48,28 @@ class ValueSet(BackendObject):
         self._regions = {}
 
         self._reversed = False
+        if bits is None:
+            if val is None:
+                raise ClaripyVSAError("Either 'size' or 'val' must be specified.")
+            else:
+                self._bits = val.bits()
 
-        if region is not None and bits is not None and val is not None:
-            self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
+        else:
+            self._bits = bits
+
+        if region is not None and val is not None:
+            if isinstance(val, (StridedInterval, IfProxy)):
+                self.set_si(region, val)
+
+            elif type(val) in (int, long):
+                self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
+
+            else:
+                raise ClaripyVSAError("Unsuported type '%s' for argument 'val'" % type(val))
+
+        else:
+            if region is not None or val is not None:
+                raise ClaripyVSAError("You must specify 'region' and 'val' at the same time.")
 
     @property
     def name(self):
@@ -109,9 +128,7 @@ class ValueSet(BackendObject):
         return "(" + s + ")"
 
     def __len__(self):
-        if self.is_empty:
-            return 0
-        return len(self._regions.items()[0][1])
+        return self._bits
 
     @normalize_types_one_arg
     def __add__(self, other):
@@ -121,7 +138,7 @@ class ValueSet(BackendObject):
 
             raise NotImplementedError()
         else:
-            new_vs = ValueSet()
+            new_vs = ValueSet(bits=self.bits)
             for region, si in self._regions.items():
                 new_vs._regions[region] = si + other
 
@@ -133,26 +150,36 @@ class ValueSet(BackendObject):
 
     @normalize_types_one_arg
     def __sub__(self, other):
+        """
+        Binary operation: subtraction
+
+        :param other: The other operand
+        :return: A StridedInterval.
+        """
+
+        deltas = [ ]
+
         if type(other) is ValueSet:
             # It might happen due to imprecision of our analysis (mostly due the absence of contexts)
 
             if self.regions.keys() == other.regions.keys():
-                # Handle it here
-                new_vs = ValueSet()
                 for region, si in self._regions.iteritems():
-                    new_vs._regions[region] = si - other._regions[region]
-
-                return new_vs
+                    deltas.append(si - other._regions[region])
 
             else:
                 __import__('ipdb').set_trace()
                 raise NotImplementedError()
-        else:
-            new_vs = ValueSet()
-            for region, si in self._regions.items():
-                new_vs._regions[region] = si - other
 
-            return new_vs
+        else:
+
+            for region, si in self._regions.items():
+                deltas.append(si - other)
+
+        delta = StridedInterval.empty(self.bits)
+        for d in deltas:
+            delta = delta.union(d)
+
+        return delta
 
     @normalize_types_one_arg
     def __and__(self, other):
@@ -164,7 +191,7 @@ class ValueSet(BackendObject):
             # Corner case: a & 0 = 0
             return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
 
-        new_vs = ValueSet()
+        new_vs = ValueSet(bits=self.bits)
         if BoolResult.is_true(other < 0x100):
             # Special case - sometimes (addr & mask) is used for testing whether the address is aligned or not
             # We return an SI instead
@@ -225,7 +252,7 @@ class ValueSet(BackendObject):
         return results
 
     def copy(self):
-        vs = ValueSet()
+        vs = ValueSet(bits=self.bits)
         vs._regions = self._regions.copy()
         vs._reversed = self._reversed
 
@@ -243,14 +270,14 @@ class ValueSet(BackendObject):
         return len(self._regions) == 0
 
     def extract(self, high_bit, low_bit):
-        new_vs = ValueSet()
+        new_vs = ValueSet(bits=high_bit - low_bit + 1)
         for region, si in self._regions.items():
             new_vs.set_si(region, si.extract(high_bit, low_bit))
 
         return new_vs
 
     def concat(self, b):
-        new_vs = ValueSet()
+        new_vs = ValueSet(bits=self.bits + b.bits)
         # TODO: This logic is obviously flawed. Correct it later :-(
         if isinstance(b, StridedInterval):
             for region, si in self._regions.items():
@@ -316,8 +343,8 @@ class ValueSet(BackendObject):
 
         return True
 
-from ..ast_base import Base
+from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
-from .errors import ClaripyVSAOperationError
+from .errors import ClaripyVSAOperationError, ClaripyVSAError

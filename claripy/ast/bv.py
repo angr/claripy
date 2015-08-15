@@ -1,5 +1,5 @@
 from .bits import Bits
-from ..ast_base import Base, _make_name
+from ..ast.base import Base, _make_name
 
 class BV(Bits):
 
@@ -121,6 +121,10 @@ def StridedInterval(name=None, bits=0, lower_bound=None, upper_bound=None, strid
 
 def TopStridedInterval(bits, name=None, uninitialized=False):
     si = vsa.StridedInterval.top(bits, name=name, uninitialized=uninitialized)
+    return BVI(si, variables={ si.name }, symbolic=False, length=bits)
+
+def EmptyStridedInterval(bits, name=None):
+    si = vsa.StridedInterval.empty(bits)
     return BVI(si, variables={ si.name }, symbolic=False, length=bits)
 
 def ValueSet(**kwargs):

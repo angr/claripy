@@ -36,12 +36,13 @@ def normalize_types(f):
         if type(self) in (int, long):
             self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
 
-        # Make sure they have the same length
-        common_bits = max(o.bits, self.bits)
-        if o.bits < common_bits:
-            o = o.zero_extend(common_bits)
-        if self.bits < common_bits:
-            self = self.zero_extend(common_bits)
+        if f.__name__ not in ('concat', ):
+            # Make sure they have the same length
+            common_bits = max(o.bits, self.bits)
+            if o.bits < common_bits:
+                o = o.zero_extend(common_bits)
+            if self.bits < common_bits:
+                self = self.zero_extend(common_bits)
 
         self_reversed = False
 
@@ -96,13 +97,19 @@ class StridedInterval(BackendObject):
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
 
+        if lower_bound is not None and type(lower_bound) not in (int, long):
+            raise ClaripyVSAError("'lower_bound' must be an int or a long. %s is not supported." % type(lower_bound))
+
+        if upper_bound is not None and type(upper_bound) not in (int, long):
+            raise ClaripyVSAError("'upper_bound' must be an int or a long. %s is not supported." % type(upper_bound))
+
         self._reversed = False
 
         self._is_bottom = bottom
 
         self.uninitialized = uninitialized
 
-        if self._upper_bound != None and bits == 0:
+        if self._upper_bound is not None and bits == 0:
             self._bits = self._min_bits()
 
         if self._upper_bound is None:
@@ -169,7 +176,11 @@ class StridedInterval(BackendObject):
 
         results = [ ]
 
-        if self.stride == 0 and n > 0:
+        if self.is_empty:
+            # no value is available
+            pass
+
+        elif self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
             if signed:
@@ -589,18 +600,18 @@ class StridedInterval(BackendObject):
             else:
                 # They are not equal
                 return FalseResult()
-        # TODO:
-        elif self.upper_bound < o.lower_bound or o.upper_bound < self.lower_bound:
-            return FalseResult()
 
         else:
-            stride = fractions.gcd(self.stride, o.stride)
-            remainder_1 = self.upper_bound % stride
-            remainder_2 = o.upper_bound % stride
-            if remainder_1 == remainder_2:
-                return MaybeResult()
-            else:
+            if self.name == o.name:
+                return TrueResult() # They are the same guy
+
+            si_intersection = self.intersection(o)
+
+            if si_intersection.is_empty:
                 return FalseResult()
+
+            else:
+                return MaybeResult()
 
     #
     # Overriding default operators in Python
@@ -763,11 +774,7 @@ class StridedInterval(BackendObject):
             else:
                 return 1
         else:
-            return self._modular_add(
-                self._modular_sub(self._upper_bound, self._lower_bound, self.bits),
-                1,
-                self.bits
-            ) / self._stride
+            return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + 1) / self._stride
 
     @property
     def lower_bound(self):
@@ -1824,6 +1831,7 @@ class StridedInterval(BackendObject):
                 # TODO: How can we do better here? For example, keep the stride information?
                 return self.top(tok)
 
+    @normalize_types
     def concat(self, b):
         # Zero-extend
         a = self.nameless_copy()
@@ -1859,20 +1867,65 @@ class StridedInterval(BackendObject):
         return ret.normalize()
 
     def sign_extend(self, new_length):
-        # FIXME: This implementation is buggy and needs rewritten
+        """
+        Unary operation: SignExtend
 
-        if self.extract(self.bits - 1, self.bits - 1).eval(2) == [ 0 ]:
+        :param new_length: New length after sign-extension
+        :return: A new StridedInterval
+        """
+
+        msb = self.extract(self.bits - 1, self.bits - 1).eval(2)
+
+        if msb == [ 0 ]:
+            # All positive numbers
             return self.zero_extend(new_length)
 
-        si = self.copy()
-        mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
-        si._lower_bound = si._lower_bound | mask
-        si._upper_bound = si._upper_bound | mask
-        si._bits = new_length
+        if msb == [ 1 ]:
+            # All negative numbers
+
+            si = self.copy()
+            si._bits = new_length
+
+            mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
+            si._lower_bound = si._lower_bound | mask
+            si._upper_bound = si._upper_bound | mask
+
+        else:
+            # Both positive numbers and negative numbers
+            numbers = self._nsplit()
+
+            # Since there are both positive and negative numbers, there must be two bounds after nsplit
+            # assert len(numbers) == 2
+
+            si = self.empty(new_length)
+
+            for n in numbers:
+                a, b = n.lower_bound, n.upper_bound
+
+                if b < 2 ** (n.bits - 1):
+                    # msb = 0
+
+                    si_ = StridedInterval(bits=new_length, stride=n.stride, lower_bound=a, upper_bound=b)
+
+                else:
+                    # msb = 1
+
+                    mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
+
+                    si_ = StridedInterval(bits=new_length, stride=n.stride, lower_bound=a | mask, upper_bound=b | mask)
+
+                si = si.union(si_)
 
         return si
 
     def zero_extend(self, new_length):
+        """
+        Unary operation: ZeroExtend
+
+        :param new_length: New length after zero-extension
+        :return: A new StridedInterval
+        """
+
         si = self.copy()
         si._bits = new_length
 
@@ -2274,6 +2327,9 @@ class StridedInterval(BackendObject):
             return si
 
         else:
+            if self.uninitialized:
+                return self.copy()
+
             if not self.is_integer:
                 # We really don't want to do that. Something is wrong.
                 logger.warning('Reversing a real strided-interval %s is bad', self)
@@ -2335,11 +2391,12 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
     return bi
 
 
+from .errors import ClaripyVSAError
 from ..errors import ClaripyOperationError
 from .bool_result import TrueResult, FalseResult, MaybeResult
 from . import discrete_strided_interval_set
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
 from .ifproxy import IfProxy
-from ..ast_base import Base
+from ..ast.base import Base
 from ..bv import BVV

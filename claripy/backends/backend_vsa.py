@@ -345,7 +345,8 @@ class BackendVSA(Backend):
             elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
                 cond_arg = _all_operations.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
 
-            if _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
+            if to_extract.size() - 1 < high + 1 or \
+                    _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
@@ -437,6 +438,11 @@ class BackendVSA(Backend):
         if argl is argr:
             # Operands are the same one!
             # We can safely remove this layer of __and__
+            return self.cts_simplify(argl.op, argl.args, argl, condition)
+
+        elif argl.structurally_match(argr):
+            # Operands are the same
+            # Safely remove the __and__ operation
             return self.cts_simplify(argl.op, argl.args, argl, condition)
 
         else:
@@ -1054,7 +1060,7 @@ class BackendVSA(Backend):
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
 from ..bv import BVV
-from ..ast_base import Base
+from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy

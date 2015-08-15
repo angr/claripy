@@ -19,7 +19,7 @@ def AbstractLocation(*args, **kwargs): #pylint:disable=no-self-use
 #
 
 #pylint:disable=wildcard-import,unused-wildcard-import
-from .ast_base import *
+from .ast.base import *
 from .ast.bv import *
 from .ast.fp import *
 from .ast.bool import *
@@ -30,3 +30,4 @@ BV = BitVec
 VS = ValueSet
 SI = StridedInterval
 TSI = TopStridedInterval
+ESI = EmptyStridedInterval

@@ -86,6 +86,22 @@ def test_wrapped_intervals():
     nose.tools.assert_true((si1 / si2).identical(si3))
 
     #
+    # Extension
+    #
+
+    # zero-extension
+    si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfd)
+    si_zext = si1.zero_extend(32 - 8)
+    si_zext_ = claripy.SI(bits=32, stride=1, lower_bound=0x0, upper_bound=0xfd)
+    nose.tools.assert_true(si_zext.identical(si_zext_))
+
+    # sign-extension
+    si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfd)
+    si_sext = si1.sign_extend(32 - 8)
+    si_sext_ = claripy.SI(bits=32, stride=1, lower_bound=0xffffff80, upper_bound=0x7f)
+    nose.tools.assert_true(si_sext.identical(si_sext_))
+
+    #
     # Comparisons
     #
 
@@ -300,6 +316,14 @@ def test_vsa():
     si_concat = part1.concat(part2)
     nose.tools.assert_true(is_equal(si_concat, si))
 
+    # Concatenating two SIs that are of different sizes
+    si_1 = SI(bits=64, stride=1, lower_bound=0, upper_bound=0xffffffffffffffff)
+    si_2 = SI(bits=32, stride=1, lower_bound=0, upper_bound=0xffffffff)
+    si_concat = si_1.concat(si_2)
+    nose.tools.assert_true(is_equal(si_concat, SI(bits=96, stride=1,
+                                                  lower_bound=0,
+                                                  upper_bound=0xffffffffffffffffffffffff)))
+
     # Zero-Extend the low part
     si_zeroextended = part2.zero_extend(32)
     nose.tools.assert_true(is_equal(si_zeroextended, claripy.SI(bits=64, stride=9, lower_bound=1, upper_bound=10)))
@@ -394,6 +418,15 @@ def test_vsa():
     nose.tools.assert_true(vs_1.identical(vs_2))
     vs_1.model.merge_si('global', si3)
     nose.tools.assert_false(vs_1.identical(vs_2))
+
+    # Subtraction
+    # Subtraction of two pointers yields a concrete value
+
+    vs_1 = claripy.ValueSet(name='foo', region='global', bits=32, val=0x400010)
+    vs_2 = claripy.ValueSet(name='bar', region='global', bits=32, val=0x400000)
+    si = vs_1 - vs_2
+    nose.tools.assert_is(type(si.model), StridedInterval)
+    nose.tools.assert_true(si.identical(claripy.SI(bits=32, stride=0, lower_bound=0x10, upper_bound=0x10)))
 
     #
     # IfProxy

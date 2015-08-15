@@ -89,27 +89,273 @@ preprocessors = {
 # Simplifiers
 #
 
-def reverse_simplifier(*args):
-    if args[0].op == 'Reverse':
-        return args[0].args[0]
+def if_simplifier(cond, if_true, if_false):
+    if cond.reduced.is_true():
+        return if_true.reduced
+
+    if cond.reduced.is_false():
+        return if_false.reduced
+
+def concat_simplifier(*args):
+    orig_args = args
+    args = list(args)
+    #length = sum(arg.length for arg in args)
+    simplified = False
+
+    if any(a.symbolic for a in args):
+        i = 1
+        while i < len(args):
+            previous = args[i-1]
+            current = args[i]
+            if not (previous.symbolic or current.symbolic):
+                args[i-1:i+1] = (ast.all_operations.Concat(previous, current).reduced,)
+            else:
+                i += 1
+
+        if len(args) < len(orig_args):
+            simplified = True
+
+    i = 0
+    while i < len(args):
+        current = args[i]
+        if current.op == 'Concat':
+            simplified = True
+            args[i:i+1] = current.args
+            i += len(current.args)
+        else:
+            i += 1
+
+    # if any(a.op == 'Reverse' for a in args):
+    #     simplified = True
+    #     args = [a.reversed for a in args]
+
+    if simplified:
+        return ast.all_operations.Concat(*args)
+
+    return
+
+def rshift_simplifier(val, shift):
+    if (shift == 0).is_true():
+        return val
+
+def lshift_simplifier(val, shift):
+    if (shift == 0).is_true():
+        return val
+
+SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
+
+def eq_simplifier(a, b):
+    # TODO: all these ==/!= might really slow things down...
+    if a.op == 'If':
+        if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
+            # (If(c, x, y) == x, x != y) -> c
+            return a.args[0]
+        elif a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
+            # (If(c, x, y) == y, x != y) -> !c
+            return ast.all_operations.Not(a.args[0])
+        # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
+        #     return a._claripy.true
+        # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
+        #     return a._claripy.false
+
+    if b.op == 'If':
+        if b.args[1] is a and ast.all_operations.is_true(b.args[2] != b):
+            # (x == If(c, x, y)) -> c
+            return b.args[0]
+        elif b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
+            # (y == If(c, x, y)) -> !c
+            return ast.all_operations.Not(b.args[0])
+        # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
+        #     return b._claripy.true
+        # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
+        #     return b._claripy.false
+
+    if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(ast.all_operations.is_false(a[i:i] == b[i:i]) for i in xrange(a.length)):
+        return ast.all_operations.false
+
+def ne_simplifier(a, b):
+    if a.op == 'If':
+        if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
+            # (If(c, x, y) == x, x != y) -> c
+            return a.args[0]
+        elif a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
+            # (If(c, x, y) == y, x != y) -> !c
+            return ast.all_operations.Not(a.args[0])
+        # elif a._claripy.is_true(a.args[1] == b) and a._claripy.is_true(a.args[2] == b):
+        #     return a._claripy.false
+        # elif a._claripy.is_true(a.args[1] != b) and a._claripy.is_true(a.args[2] != b):
+        #     return a._claripy.true
+
+    if b.op == 'If':
+        if b.args[2] is a and ast.all_operations.is_true(b.args[1] != a):
+            # (x == If(c, x, y)) -> c
+            return b.args[0]
+        elif b.args[1] is a and ast.all_operations.is_true(b.args[2] != a):
+            # (y == If(c, x, y)) -> !c
+            return ast.all_operations.Not(b.args[0])
+        # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
+        #     return b._claripy.true
+        # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
+        #     return b._claripy.false
+
+    if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(ast.all_operations.is_true(a[i:i] != b[i:i]) for i in xrange(a.length)):
+        return ast.all_operations.true
+
+def reverse_simplifier(body):
+    if body.op == 'Reverse':
+        return body.args[0]
+
+    if body.length == 8:
+        return body
+
+    if body.op == 'Concat':
+        if all(a.op == 'Extract' for a in body.args):
+            first_ast = body.args[0].args[2]
+            for i,a in enumerate(body.args):
+                if not (first_ast.identical(a.args[2])
+                        and a.args[0] == ((i + 1) * 8 - 1)
+                        and a.args[1] == i * 8):
+                    break
+            else:
+                upper_bound = body.args[-1].args[0]
+                if first_ast.length == upper_bound + 1:
+                    return first_ast
+                else:
+                    return first_ast[upper_bound:0]
 
 def and_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
+    if any(a.is_true() for a in args):
+        new_args = tuple(a for a in args if not a.is_true())
+        if len(new_args) > 0:
+            return ast.all_operations.And(*new_args)
+        else:
+            return ast.all_operations.true
+
 def or_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
-def concat_simplifier(*args):
-    if len(args) == 1:
-        return args[0]
+    if any(a.is_false() for a in args):
+        new_args = tuple(a for a in args if not a.is_false())
+        if len(new_args) > 0:
+            return ast.all_operations.Or(*new_args)
+        else:
+            return ast.all_operations.false
+
+def not_simplifier(body):
+    if body.op == '__eq__':
+        return body.args[0] != body.args[1]
+    elif body.op == '__ne__':
+        return body.args[0] == body.args[1]
+
+    if body.op == 'Not':
+        return body.args[0]
+
+    if body.op == 'If':
+        return ast.all_operations.If(body.args[0], body.args[2], body.args[1])
+
+    if body.op == 'SLT':
+        return ast.all_operations.SGE(body.args[0], body.args[1])
+    elif body.op == 'SLE':
+        return ast.all_operations.SGT(body.args[0], body.args[1])
+    elif body.op == 'SGT':
+        return ast.all_operations.SLE(body.args[0], body.args[1])
+    elif body.op == 'SGE':
+        return ast.all_operations.SLT(body.args[0], body.args[1])
+
+    if body.op == 'ULT':
+        return ast.all_operations.UGE(body.args[0], body.args[1])
+    elif body.op == 'ULE':
+        return ast.all_operations.UGT(body.args[0], body.args[1])
+    elif body.op == 'UGT':
+        return ast.all_operations.ULE(body.args[0], body.args[1])
+    elif body.op == 'UGE':
+        return ast.all_operations.ULT(body.args[0], body.args[1])
+
+def extract_simplifier(high, low, val):
+    if val.op == 'ZeroExt':
+        extending_bits = val.args[0]
+        if extending_bits == 0:
+            val = val.args[1]
+        else:
+            val = ast.all_operations.Concat(ast.all_operations.BVV(0, extending_bits), val.args[1])
+
+    if val.op == 'Reverse' and val.args[0].op == 'Concat':
+        val = ast.BV('Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
+
+    if val.op == 'Concat':
+        pos = val.length
+        high_i, low_i, low_loc = None, None, None
+        for i, v in enumerate(val.args):
+            if high in xrange(pos - v.length, pos):
+                high_i = i
+            if low in xrange(pos - v.length, pos):
+                low_i = i
+                low_loc = low - (pos - v.length)
+            pos -= v.length
+
+        used = val.args[high_i:low_i+1]
+        if len(used) == 1:
+            self = used[0]
+        else:
+            self = ast.all_operations.Concat(*used)
+
+        new_high = low_loc + high - low
+        if new_high == self.length - 1 and low_loc == 0:
+            return self
+        else:
+            # TODO: fallthrough
+            # does this cause infinite recursion?
+            if self.op != 'Concat':
+                return self[new_high:low_loc]
+            else:
+                return ast.BV('Extract', (new_high, low_loc, self), length=(new_high - low_loc + 1))
+
+    # this might be bad in general... not sure
+    if val.op == 'If':
+        return ast.all_operations.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
+
+    if val.op == 'Extract':
+        _, inner_low = val.args[:2]
+        new_low = inner_low + low
+        new_high = new_low + (high - low)
+        return (val.args[2])[new_high:new_low]
+
+    if val.op == 'Reverse' and val.args[0].op == 'Concat':
+        val = val.make_like('Concat',
+                            tuple(reversed([a.reversed for a in val.args[0].args])),
+        )[high:low].simplified
+        if not val.symbolic:
+            return val
+
+    # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
+    # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
+    #     print "saw reverse, converting"
+    #     inner_length = val.args[0].length
+    #     try:
+    #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
+    #     except ClaripyOperationError:
+    #         __import__('ipdb').set_trace()
+
+    if val.op in extract_distributable:
+        return ast.BV(val.op, tuple(a[high:low] for a in val.args), length=(high-low+1))
+
 
 simplifiers = {
     'Reverse': reverse_simplifier,
     'And': and_simplifier,
     'Or': or_simplifier,
-    'Concat': concat_simplifier
+    'Not': not_simplifier,
+    'Extract': extract_simplifier,
+    'Concat': concat_simplifier,
+    'If': if_simplifier,
+    '__lshift__': lshift_simplifier,
+    '__rshift__': rshift_simplifier,
+    #'__eq__': eq_simplifier,
+    #'__ne__': ne_simplifier,
 }
 
 #
@@ -320,6 +566,12 @@ reverse_distributable = { 'widen', 'union', 'intersection',
     '__invert__', '__or__', '__ror__', '__and__', '__rand__', '__xor__', '__rxor__',
 }
 
+extract_distributable = {
+    '__and__', '__rand__',
+    '__or__', '__ror__',
+    '__xor__', '__rxor__',
+}
+
 infix = {
     '__add__': '+',
     '__sub__': '-',
@@ -338,6 +590,16 @@ infix = {
     '__gt__': '>',
     '__lt__': '<',
 
+    'UGE': '>=',
+    'ULE': '<=',
+    'UGT': '>',
+    'ULT': '<',
+
+    'SGE': '>=s',
+    'SLE': '<=s',
+    'SGT': '>s',
+    'SLT': '<s',
+
     '__or__': '|',
     '__and__': '&',
     '__xor__': '^',
@@ -351,3 +613,4 @@ infix = {
 }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
+from . import ast

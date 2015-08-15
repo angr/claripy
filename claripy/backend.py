@@ -595,7 +595,7 @@ class Backend(object):
         '''
         raise BackendError("backend doesn't support solution()")
 
-from .ast_base import Base
+from .ast.base import Base
 from .operations import opposites
 from .errors import BackendError, ClaripyRecursionError
 from . import _all_backends

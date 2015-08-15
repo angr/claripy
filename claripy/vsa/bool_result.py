@@ -147,4 +147,4 @@ class MaybeResult(BoolResult):
 
 from ..errors import BackendError
 from .ifproxy import IfProxy
-from ..ast_base import Base
+from ..ast.base import Base

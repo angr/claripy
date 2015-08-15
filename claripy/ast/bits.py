@@ -1,4 +1,4 @@
-from ..ast_base import Base
+from ..ast.base import Base
 
 class Bits(Base):
     __slots__ = ['length']

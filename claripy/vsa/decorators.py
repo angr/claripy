@@ -80,4 +80,4 @@ def expr_op_expand_ifproxy(f):
     return expander
 
 from .ifproxy import IfProxy
-from ..ast_base import Base
+from ..ast.base import Base
