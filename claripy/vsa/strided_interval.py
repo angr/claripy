@@ -600,18 +600,18 @@ class StridedInterval(BackendObject):
             else:
                 # They are not equal
                 return FalseResult()
-        # TODO:
-        elif self.upper_bound < o.lower_bound or o.upper_bound < self.lower_bound:
-            return FalseResult()
 
         else:
-            stride = fractions.gcd(self.stride, o.stride)
-            remainder_1 = self.upper_bound % stride
-            remainder_2 = o.upper_bound % stride
-            if remainder_1 == remainder_2:
-                return MaybeResult()
-            else:
+            if self.name == o.name:
+                return TrueResult() # They are the same guy
+
+            si_intersection = self.intersection(o)
+
+            if si_intersection.is_empty:
                 return FalseResult()
+
+            else:
+                return MaybeResult()
 
     #
     # Overriding default operators in Python
