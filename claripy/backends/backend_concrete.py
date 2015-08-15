@@ -106,11 +106,11 @@ class BackendConcrete(Backend):
     #
 
     def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
-        return [ self.convert(expr, result=result if n == 1 else None) ]
+        return (expr,)
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
-        return self.convert(expr, result=result)
+        return expr
     def _min(self, expr, result=None, solver=None, extra_constraints=()):
-        return self.convert(expr, result=result)
+        return expr
     def _solution(self, expr, v, result=None, solver=None, extra_constraints=()):
         return self.convert(expr, result=result) == v
 
