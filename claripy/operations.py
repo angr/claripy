@@ -170,8 +170,18 @@ def eq_simplifier(a, b):
         # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
         #     return b._claripy.false
 
-    if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(ast.all_operations.is_false(a[i:i] == b[i:i]) for i in xrange(a.length)):
-        return ast.all_operations.false
+    if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and a.length == b.length:
+        for i in xrange(a.length):
+            a_bit = a[i:i]
+            if a_bit.symbolic:
+                break
+
+            b_bit = b[i:i]
+            if b_bit.symbolic:
+                break
+
+            if ast.all_operations.is_false(a_bit == b_bit):
+                return ast.all_operations.false
 
 def ne_simplifier(a, b):
     if a.op == 'If':
@@ -198,8 +208,18 @@ def ne_simplifier(a, b):
         # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
         #     return b._claripy.false
 
-    if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and any(ast.all_operations.is_true(a[i:i] != b[i:i]) for i in xrange(a.length)):
-        return ast.all_operations.true
+    if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and a.length == b.length:
+        for i in xrange(a.length):
+            a_bit = a[i:i]
+            if a_bit.symbolic:
+                break
+
+            b_bit = b[i:i]
+            if b_bit.symbolic:
+                break
+
+            if ast.all_operations.is_true(a_bit != b_bit):
+                return ast.all_operations.true
 
 def reverse_simplifier(body):
     if body.op == 'Reverse':
