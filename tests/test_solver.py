@@ -118,8 +118,19 @@ def raw_solver(solver_type):
     nose.tools.assert_true(s.satisfiable())
     s.add(claripy.BoolVal(False))
     nose.tools.assert_false(s.satisfiable())
-    s._result = None
+    s.result = None
     nose.tools.assert_false(s.satisfiable())
+
+    s = solver_type(claripy.backend_z3)
+    x = claripy.BitVec('x', 32)
+    s.add(x == 10)
+    nose.tools.assert_true(s.satisfiable())
+    nose.tools.assert_true(s.result is not None)
+    nose.tools.assert_equals(s.eval(x, 1)[0], 10)
+    s.add(x == 10)
+    s.add(x > 9)
+    s.add(x <= 11)
+    nose.tools.assert_true(s.result is not None)
 
 def test_solver_branching():
     raw_solver_branching(claripy.FullFrontend)
