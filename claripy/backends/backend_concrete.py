@@ -105,12 +105,18 @@ class BackendConcrete(Backend):
     # Evaluation functions
     #
 
+    def _raw(self, r):
+        if isinstance(r, (tuple, list, set)):
+            return type(r)(self._raw(e) for e in r)
+        else:
+            return r.value if isinstance(r, bv.BVV) else r
+
     def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
-        return [ self.convert(expr, result=result if n == 1 else None) ]
+        return self._raw((self.convert(expr, result=result if n == 1 else None),))
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
-        return self.convert(expr, result=result)
+        return self._raw(self.convert(expr, result=result))
     def _min(self, expr, result=None, solver=None, extra_constraints=()):
-        return self.convert(expr, result=result)
+        return self._raw(self.convert(expr, result=result))
     def _solution(self, expr, v, result=None, solver=None, extra_constraints=()):
         return self.convert(expr, result=result) == v
 
