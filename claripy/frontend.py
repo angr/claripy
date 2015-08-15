@@ -180,8 +180,13 @@ class Frontend(ana.Storable):
 		self._add_constraints(to_add, invalidate_cache=invalidate_cache)
 		self._simplified = False
 
-		if invalidate_cache and not all_true and self.result is not None and self.result.sat:
-			self.result = None
+		if invalidate_cache and self.result is not None and self.result.sat:
+			if all_true:
+				new_result = SatResult()
+				new_result.model.update(self.result.model)
+				self.result = new_result
+			else:
+				self.result = None
 
 		return to_add
 
@@ -282,7 +287,7 @@ class Frontend(ana.Storable):
 			self.result.downsize()
 
 from .frontends import LightFrontend
-from .result import UnsatResult
+from .result import UnsatResult, SatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError
 from . import _eager_backends, _backends
 from .ast.base import Base

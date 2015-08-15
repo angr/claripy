@@ -42,4 +42,4 @@ def UnsatResult(**kwargs):
     return Result(False, **kwargs)
 
 def SatResult(**kwargs):
-    return Result(False, **kwargs)
+    return Result(True, **kwargs)
