@@ -484,6 +484,9 @@ class BackendVSA(Backend):
             else:
                 return expr, condition
 
+    def cts_simplifier___radd__(self, args, expr, condition):
+        return self.cts_simplifier___add__((args[1], args[0]), expr, condition)
+
     def cts_simplifier___sub__(self, args, expr, condition):
         """
 
@@ -501,6 +504,9 @@ class BackendVSA(Backend):
         else:
             #__import__('ipdb').set_trace()
             return expr, condition
+
+    def cts_simplifier___rsub__(self, args, expr, condition):
+        return self.cts_simplifier___sub__((args[1], args[0]), expr, condition)
 
     def cts_simplifier___rshift__(self, args, expr, condition):
 
