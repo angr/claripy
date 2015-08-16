@@ -568,11 +568,10 @@ class BackendVSA(Backend):
         :return:
         """
 
-        is_lt, is_equal, is_unsigned = False, False, False # Stop PyCharm from complaining!
         if comp in self.comparison_info:
             is_lt, is_equal, is_unsigned = self.comparison_info[comp]
         else:
-            import ipdb; ipdb.set_trace()
+            raise ClaripyBackendVSAError('Support for comparison %s is not implemented. Please report it.' % comp)
 
         lhs, rhs = args
 
@@ -593,7 +592,8 @@ class BackendVSA(Backend):
             raise ClaripyBackendVSAError('Right-hand-side expression cannot be converted to an AST object.')
 
         if lhs.op == 'If':
-            import ipdb; ipdb.set_trace()
+            # TODO: Implement it
+            raise ClaripyVSASimplifierError('Support for lhs being an IfProxy is not implemented')
 
         elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
             if isinstance(lhs.model, Base):
@@ -625,9 +625,8 @@ class BackendVSA(Backend):
 
             si_replacement = _all_operations.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
             return True, [(lhs, si_replacement)]
-        else:
-            #import ipdb; ipdb.set_trace()
 
+        else:
             return True, [ ]
 
     def cts_handler___lt__(self, args): return self.cts_handler_comparison(args, comp='__lt__')
@@ -853,9 +852,16 @@ class BackendVSA(Backend):
                 (original_si, constrained_si).
         """
 
-        sat, lst = self.cts_handle(expr.op, expr.args)
+        try:
+            sat, lst = self.cts_handle(expr.op, expr.args)
 
-        return sat, lst
+            return sat, lst
+
+        except ClaripyVSASimplifierError as ex:
+            l.error('VSASimplifiers raised an exception %s. Please report it.' % str(ex), exc_info=True)
+
+            # return the dummy result
+            return True, [ ]
 
     #
     # Backend Operations
@@ -1076,7 +1082,7 @@ from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
 from ..vsa import IfProxy
-from ..errors import ClaripyBackendVSAError
+from ..errors import ClaripyBackendVSAError, ClaripyVSASimplifierError
 
 from .. import _all_operations
 
