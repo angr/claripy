@@ -623,6 +623,10 @@ class BackendVSA(Backend):
                     # >
                     lb = lb + 1
 
+            if stride == 0 and lb != ub:
+                # Make sure the final StridedInterval is always meaningful. See issue #55.
+                stride = 1
+
             si_replacement = _all_operations.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
             return True, [(lhs, si_replacement)]
 
