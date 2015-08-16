@@ -371,15 +371,21 @@ class BackendVSA(Backend):
         if len(ifproxy_conds) == 0:
             # Let's check if we can remove this layer of Concat
             cond = condition[1]
-            if len(args) == 2 and \
-                    _all_operations.is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
-                # Yes! We can remove it!
-                # TODO: This is hackish...
-                new_cond = (condition[0], cond[ cond.size() - args[0].size() - 1 : 0])
-                return self.cts_simplify(args[1].op, args[1].args, args[1], new_cond)
+            if len(args) == 2:
+                if cond.size() - 1 >= cond.size() - args[0].size():
+                    if _all_operations.is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
+                        # Yes! We can remove it!
+                        # TODO: This is hackish...
+                        new_cond = (condition[0], cond[ cond.size() - args[0].size() - 1 : 0])
+                        return self.cts_simplify(args[1].op, args[1].args, args[1], new_cond)
 
-            else:
-                return expr, condition
+                else:
+                    # args[0].size() == 0? It must be a bug.
+                    raise ClaripyBackendVSAError(
+                        'args[0].size() == %d (args[0] is \'%s\'). Please report this bug.' % (args[0].size, str(args[0])))
+
+            # Cannot simplify it anymore
+            return expr, condition
 
         elif len(ifproxy_conds) > 1:
             # We have more than one condition. Cannot handle it for now!
