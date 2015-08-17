@@ -416,6 +416,7 @@ def test_vsa():
     nose.tools.assert_false(vs_1.identical(vs_2))
     vs_2.model.merge_si('global', si1)
     nose.tools.assert_true(vs_1.identical(vs_2))
+    nose.tools.assert_true(claripy.is_true((vs_1 & vs_2) == vs_1))
     vs_1.model.merge_si('global', si3)
     nose.tools.assert_false(vs_1.identical(vs_2))
 
