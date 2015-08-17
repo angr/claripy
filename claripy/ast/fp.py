@@ -14,6 +14,10 @@ class FP(Bits):
     def to_bv(self):
         return fpToIEEEBV(self)
 
+    @property
+    def sort(self):
+        return fp.FSort.from_size(self.length)
+
 def FPI(model, **kwargs):
     kwargs['length'] = model.sort.length
     return FP('I', (model,), **kwargs)
