@@ -110,6 +110,9 @@ class IfProxy(BackendObject):
     def __repr__(self):
         return 'IfProxy(%s, %s, %s)' % (self._cond, self._true, self._false)
 
+    def identical(self, o):
+        return self._true.identical(o._true) and self._false.identical(o._false) and self._cond.identical(o._cond)
+
     @proxified
     def __eq__(self, other): pass
 
