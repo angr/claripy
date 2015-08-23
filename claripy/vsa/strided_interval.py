@@ -1263,16 +1263,27 @@ class StridedInterval(BackendObject):
 
         # Special handling for integers
         # TODO: Is this special handling still necessary?
-        if a.stride == 0 and a.lower_bound == a.upper_bound:
+        if a.is_integer:
             # self is an integer
             t = StridedInterval._ntz(b.stride)
-        elif b.stride == 0 and b.lower_bound == b.upper_bound:
+        elif b.is_integer:
             # b is an integer
             t = StridedInterval._ntz(a.stride)
         else:
             t = min(StridedInterval._ntz(a.stride), StridedInterval._ntz(b.stride))
-        stride_ = 1 << t
-        lowbits = (a.lower_bound | b.lower_bound) & (stride_ - 1)
+
+        # If a or b is zero, we can make the stride more precise!
+        premask = 1 << t
+        if a.is_integer and a.lower_bound == 0:
+            # a is 0
+            # or'ng with zero does not change the stride
+            stride_ = b.stride
+        elif b.is_integer and b.lower_bound == 0:
+            # b is 0
+            stride_ = a.stride
+        else:
+            stride_ = 1 << t
+        lowbits = (a.lower_bound | b.lower_bound) & (premask - 1)
 
         # TODO: Make this function looks better
         r_1 = a.lower_bound < 0
@@ -1310,7 +1321,7 @@ class StridedInterval(BackendObject):
         else:
             raise ArithmeticError("Impossible")
 
-        highmask = ~(stride_ - 1)
+        highmask = ~(premask - 1)
         ret = StridedInterval(bits=a.bits, stride=stride_, lower_bound=(lb_ & highmask) | lowbits,
                               upper_bound=(ub_ & highmask) | lowbits)
         ret.normalize()
