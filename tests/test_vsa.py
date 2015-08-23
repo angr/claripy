@@ -395,6 +395,17 @@ def test_vsa():
     si = si_1 & si_2
     nose.tools.assert_true(is_equal(si, claripy.SI(bits=32, stride=0, lower_bound=0, upper_bound=0)))
 
+    # Concatenation: concat with zeros only increases the stride
+    si_1 = claripy.SI(bits=8, stride=0xff, lower_bound=0x0, upper_bound=0xff)
+    si_2 = claripy.SI(bits=8, stride=0, lower_bound=0, upper_bound=0)
+    si = si_1.concat(si_2)
+    nose.tools.assert_true(is_equal(si, claripy.SI(bits=16, stride=0xff00, lower_bound=0, upper_bound=0xff00)))
+
+    # Extract from a reversed value
+    si_1 = claripy.SI(bits=64, stride=0xff, lower_bound=0x0, upper_bound=0xff)
+    si_2 = si_1.reversed[63 : 56]
+    nose.tools.assert_true(is_equal(si_2, claripy.SI(bits=8, stride=0xff, lower_bound=0x0, upper_bound=0xff)))
+
     #
     # ValueSet
     #

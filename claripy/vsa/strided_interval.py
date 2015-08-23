@@ -1864,6 +1864,11 @@ class StridedInterval(BackendObject):
             return new_si.bitwise_or(new_b)
 
     def extract(self, high_bit, low_bit):
+
+        if self._reversed:
+            reversed = self._reverse()
+            return reversed.extract(high_bit, low_bit)
+
         assert low_bit >= 0
 
         bits = high_bit - low_bit + 1
@@ -2324,34 +2329,34 @@ class StridedInterval(BackendObject):
     def _reverse(self):
         """
         This function does the reversing for real.
-        :return:
+        :return: A new reversed StridedInterval instance
         """
 
-        if self.bits == 8:
-            # No need for reversing
-            return self.copy()
+        o = self.copy()
+        # Clear the reversed flag
+        o._reversed = not o._reversed
 
-        if self.is_top:
+        if o.bits == 8:
+            # No need for reversing
+            return o.copy()
+
+        if o.is_top:
             # A TOP is still a TOP after reversing
-            si = self.copy()
-            si._reversed = False
+            si = o.copy()
             return si
 
         else:
-            if self.uninitialized:
-                return self.copy()
-
-            if not self.is_integer:
+            if not o.is_integer:
                 # We really don't want to do that. Something is wrong.
                 logger.warning('Reversing a real strided-interval %s is bad', self)
 
             # Reversing an integer is easy
-            rounded_bits = ((self.bits + 7) / 8) * 8
+            rounded_bits = ((o.bits + 7) / 8) * 8
             list_bytes = [ ]
             si = None
 
             for i in xrange(0, rounded_bits, 8):
-                b = self.extract(min(i + 7, self.bits - 1), i)
+                b = o.extract(min(i + 7, o.bits - 1), i)
                 list_bytes.append(b)
 
             for b in list_bytes:
