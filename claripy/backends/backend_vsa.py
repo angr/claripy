@@ -341,9 +341,11 @@ class BackendVSA(Backend):
         else:
             cond_op, cond_arg = cond
             if type(cond_arg.model) in (int, long): #pylint:disable=unidiomatic-typecheck
-                cond_arg = _all_operations.BVV(cond_arg, to_extract.size())
+                cond_arg = _all_operations.BVV(cond_arg, ast.size())
             elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
-                cond_arg = _all_operations.ZeroExt(to_extract.size() - cond_arg.size(), cond_arg)
+                if ast.size() > cond_arg.size():
+                    # Make sure two operands have the same size
+                    cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)
 
             if to_extract.size() - 1 < high + 1 or \
                     _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
@@ -351,7 +353,7 @@ class BackendVSA(Backend):
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
             else:
-                import ipdb; ipdb.set_trace()
+                # We cannot further simplify it
                 return expr, condition
 
         return new_ifproxy, condition
