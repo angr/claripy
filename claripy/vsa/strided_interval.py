@@ -202,6 +202,9 @@ class StridedInterval(BackendObject):
     # Private methods
     #
 
+    def __hash__(self):
+        return hash((self.bits, self.lower_bound, self.upper_bound, self.stride, self._reversed, self.uninitialized))
+
     def _normalize_top(self):
         if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits) and self.stride == 1:
             # This is a TOP!

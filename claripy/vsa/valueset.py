@@ -350,6 +350,9 @@ class ValueSet(BackendObject):
 
         return True
 
+    def __hash__(self):
+        return hash(tuple([ (r, hash(si)) for r, si in self._regions.iteritems() ]))
+
 from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .ifproxy import IfProxy
