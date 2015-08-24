@@ -277,11 +277,33 @@ class ValueSet(BackendObject):
         return len(self._regions) == 0
 
     def extract(self, high_bit, low_bit):
-        new_vs = ValueSet(bits=high_bit - low_bit + 1)
-        for region, si in self._regions.items():
-            new_vs.set_si(region, si.extract(high_bit, low_bit))
+        """
+        Operation extract
 
-        return new_vs
+        - A cheap hack is implemented: a copy of self is returned if (high_bit - low_bit + 1 == self.bits), which is a
+            ValueSet instance. Otherwise a StridedInterval is returned.
+
+        :param high_bit:
+        :param low_bit:
+        :return: A ValueSet or a StridedInterval
+        """
+
+        if high_bit - low_bit + 1 == self.bits:
+            return self.copy()
+
+        if ('global' in self._regions and len(self._regions.keys()) > 1) or \
+            len(self._regions.keys()) > 0:
+            si_ret = StridedInterval.top(high_bit - low_bit + 1)
+
+        else:
+            if 'global' in self._regions:
+                si = self._regions['global']
+                si_ret = si.extract(high_bit, low_bit)
+
+            else:
+                si_ret = StridedInterval.empty(high_bit - low_bit + 1)
+
+        return si_ret
 
     def concat(self, b):
         new_vs = ValueSet(bits=self.bits + b.bits)
