@@ -337,8 +337,8 @@ class ValueSet(BackendObject):
         :param o: The other ValueSet to compare with
         :return: True if they are exactly same, False otherwise
         """
-        if self._name != o._name or self._reversed != o._reversed:
-               return False
+        if self._reversed != o._reversed:
+            return False
 
         for region, si in self.regions.items():
             if region in o.regions:
