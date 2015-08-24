@@ -159,8 +159,10 @@ class ValueSet(BackendObject):
 
         deltas = [ ]
 
+        # TODO: Handle more cases
+
         if type(other) is ValueSet:
-            # It might happen due to imprecision of our analysis (mostly due the absence of contexts)
+            # A subtraction between two ValueSets produces a StridedInterval
 
             if self.regions.keys() == other.regions.keys():
                 for region, si in self._regions.iteritems():
@@ -170,16 +172,20 @@ class ValueSet(BackendObject):
                 __import__('ipdb').set_trace()
                 raise NotImplementedError()
 
+            delta = StridedInterval.empty(self.bits)
+            for d in deltas:
+                delta = delta.union(d)
+
+            return delta
+
         else:
+            # A subtraction between a ValueSet and an StridedInterval produces another ValueSet
 
-            for region, si in self._regions.items():
-                deltas.append(si - other)
+            new_vs = self.copy()
+            for region, si in new_vs._regions.items():
+                new_vs._regions[region] = si - other
 
-        delta = StridedInterval.empty(self.bits)
-        for d in deltas:
-            delta = delta.union(d)
-
-        return delta
+            return new_vs
 
     @normalize_types_one_arg
     def __and__(self, other):
