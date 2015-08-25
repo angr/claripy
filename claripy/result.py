@@ -18,13 +18,17 @@ class Result(object):
 
     @property
     def backend_model(self):
-        return self._tls.backend_model
+        try:
+            return self._tls.backend_model
+        except AttributeError:
+            return None
 
     def branch(self):
         r = Result(self.sat, copy.copy(self.model), backend_model=self._tls.backend_model)
         r.eval_cache = dict(self.eval_cache)
         r.min_cache = dict(self.min_cache)
         r.max_cache = dict(self.max_cache)
+        return r
 
     def __getstate__(self):
         return ( self.sat, self.model, self.eval_cache, self.min_cache, self.max_cache )
