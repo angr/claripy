@@ -24,5 +24,10 @@ def test_simplification():
     assert_identical(concatted[70:15].reduced, concatted[70:15])
     assert_identical(concatted[70:35].reduced, claripy.Concat(x, y)[38:3])
 
+    # make sure the division simplification works
+    assert_identical(2+x, claripy._backends['BackendZ3'].simplify(1+x+1))
+    assert_identical(x/y, claripy._backends['BackendZ3'].simplify(x/y))
+    assert_identical(x%y, claripy._backends['BackendZ3'].simplify(x%y))
+
 if __name__ == '__main__':
     test_simplification()
