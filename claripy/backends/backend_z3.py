@@ -326,13 +326,24 @@ class BackendZ3(Backend):
                 return FPI(NativeFPV(float('inf'), sort))
             elif op_name == 'NaN':
                 return FPI(NativeFPV(float('nan'), sort))
-        elif op_name == 'UNINTERPRETED': # this *might* be a BitVec ;-)
+        elif op_name == 'UNINTERPRETED' and num_args == 0: # this *might* be a BitVec ;-)
             bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 
             #if bv_name.count('_') < 2:
             #      import ipdb; ipdb.set_trace()
             return BV("BitVec", (bv_name, bv_size), length=bv_size, variables={ bv_name }, symbolic=True)
+        elif op_name == 'UNINTERPRETED':
+            mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
+            args = [ ]
+            if mystery_name == 'bvsmod_i':
+                op_name = '__mod__'
+                decl_num = z3.Z3_OP_BSMOD
+            elif mystery_name == 'bvsdiv_i':
+                op_name = '__div__'
+                decl_num = z3.Z3_OP_BSDIV
+            else:
+                l.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
         elif op_name == 'Extract':
             hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
             lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
