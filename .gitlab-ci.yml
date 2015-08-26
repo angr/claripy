@@ -1,5 +1,5 @@
 before_script:
-    - angr-test sync
+    - angr-test sync hard
 
 claripy:
     script: "angr-test claripy"
