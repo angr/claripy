@@ -228,7 +228,7 @@ class Frontend(ana.Storable):
 		extra_constraints = self._constraint_filter(extra_constraints)
 
 		if not isinstance(e, Base):
-			raise ValueError("Expressions passed to eval() MUST be Claripy ASTs (got %s)" % self.__class__)
+			raise ValueError("Expressions passed to eval() MUST be Claripy ASTs (got %s)" % type(e))
 
 		return self._eval(e, n, extra_constraints=extra_constraints)
 
@@ -236,7 +236,7 @@ class Frontend(ana.Storable):
 		extra_constraints = self._constraint_filter(extra_constraints)
 
 		if not isinstance(e, Base):
-			raise ValueError("Expressions passed to max() MUST be Claripy ASTs (got %s)" % self.__class__)
+			raise ValueError("Expressions passed to max() MUST be Claripy ASTs (got %s)" % type(e))
 
 		if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.max_cache:
 			#cached_max += 1
@@ -252,7 +252,7 @@ class Frontend(ana.Storable):
 		extra_constraints = self._constraint_filter(extra_constraints)
 
 		if not isinstance(e, Base):
-			raise ValueError("Expressions passed to min() MUST be Claripy ASTs (got %s)" % self.__class__)
+			raise ValueError("Expressions passed to min() MUST be Claripy ASTs (got %s)" % type(e))
 
 		if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.min_cache:
 			#cached_min += 1
@@ -271,7 +271,7 @@ class Frontend(ana.Storable):
 			return False
 
 		if not isinstance(e, Base):
-			raise ValueError("Expressions passed to solution() MUST be Claripy ASTs (got %s)" % self.__class__)
+			raise ValueError("Expressions passed to solution() MUST be Claripy ASTs (got %s)" % type(e))
 
 		b = self._solution(e, v, extra_constraints=extra_constraints)
 		if b is False and len(extra_constraints) > 0:
