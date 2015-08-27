@@ -2,6 +2,12 @@ import sys
 import logging
 l = logging.getLogger("claripy.backends.backend_z3")
 
+if sys.platform == 'darwin':
+    z3_library_file = "libz3.dylib"
+else:
+    z3_library_file = "libz3.so"
+
+
 solve_count = 0
 cache_count = 0
 
@@ -28,12 +34,12 @@ _z3_paths.append("/opt/python/lib")
 
 for z3_path in _z3_paths:
     if not '.so' in z3_path and not '.dll' in z3_path:
-        z3_path = os.path.join(z3_path, 'libz3.so')
+        z3_path = os.path.join(z3_path, z3_library_file)
     if os.path.exists(z3_path):
         z3.init(z3_path)
         break
 else:
-    raise ClaripyZ3Error("Unable to find libz3.so.")
+    raise ClaripyZ3Error("Unable to find %s", z3_library_file)
 
 supports_fp = hasattr(z3, 'fpEQ')
 
