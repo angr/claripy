@@ -1096,7 +1096,13 @@ class StridedInterval(BackendObject):
             return StridedInterval.top(bits, uninitialized=False)
 
         else:
-            stride = fractions.gcd(a.stride, b.stride)
+            if b.is_integer:
+                # Multiplication with an integer, and it does not overflow!
+                stride = abs(a.stride * b.lower_bound)
+            elif a.is_integer:
+                stride = abs(a.lower_bound * b.stride)
+            else:
+                stride = fractions.gcd(a.stride, b.stride)
             return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
     @staticmethod
@@ -1115,7 +1121,14 @@ class StridedInterval(BackendObject):
         b_lb_positive = StridedInterval._is_msb_zero(b.lower_bound, bits)
         b_ub_positive = StridedInterval._is_msb_zero(b.upper_bound, bits)
 
-        stride = fractions.gcd(a.stride, b.stride)
+        if b.is_integer:
+            # Multiplication with an integer, and it does not overflow!
+            # Note that as long as it overflows, a TOP will be returned and the stride will be simply ignored
+            stride = abs(a.stride * b.lower_bound)
+        elif a.is_integer:
+            stride = abs(a.lower_bound * b.stride)
+        else:
+            stride = fractions.gcd(a.stride, b.stride)
 
         max_ = StridedInterval.max_int(bits)
 
