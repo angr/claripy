@@ -1541,22 +1541,9 @@ class StridedInterval(BackendObject):
 
             return ret.normalize()
 
-        elif self.is_integer or o.is_integer:
-            # Make sure b is the integer
-            a, b = (o, self.lower_bound) if self.is_integer else (self, o.lower_bound)
-
-            l = self._modular_mul(a.lower_bound, b, a.bits)
-            u = self._modular_mul(a.upper_bound, b, a.bits)
-
-            ret = StridedInterval(bits=a.bits,
-                                  stride=abs(a.stride * b),
-                                  lower_bound=l,
-                                  upper_bound=u
-                                  )
-
-            return ret.normalize()
-
         else:
+            # All other cases
+
             # Cut from both north pole and south pole
             si1_psplit = self._psplit()
             si2_psplit = o._psplit()
@@ -1574,7 +1561,7 @@ class StridedInterval(BackendObject):
                     else:
                         ret = ret.union(tmp_meet)
 
-            return ret.normalize()
+        return ret.normalize()
 
     def sdiv(self, o):
         """
