@@ -740,11 +740,10 @@ class StridedInterval(BackendObject):
         if self.is_empty:
             s = '%s<%d>[EmptySI]' % (self._name, self._bits)
         else:
+            lower_bound = self._lower_bound if type(self._lower_bound) == str else '%#x' % self._lower_bound
+            upper_bound = self._upper_bound if type(self._upper_bound) == str else '%#x' % self._upper_bound
             s = '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
-                                          self._lower_bound if type(self._lower_bound) == str else hex(
-                                              self._lower_bound),
-                                          self._upper_bound if type(self._upper_bound) == str else hex(
-                                              self._upper_bound),
+                                          lower_bound, upper_bound,
                                           'R' if self._reversed else '')
 
         if self.uninitialized:
