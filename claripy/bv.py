@@ -40,7 +40,7 @@ class BVV(BackendObject):
         self.value = value
 
     def __hash__(self):
-        return hash((self.value, self.bits))
+        return hash((str(self.value), self.bits))
 
     def __getstate__(self):
         return (self.bits, self.value)
