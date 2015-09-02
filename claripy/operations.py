@@ -97,6 +97,10 @@ def if_simplifier(cond, if_true, if_false):
         return if_false.reduced
 
 def concat_simplifier(*args):
+
+    if len(args) == 1:
+        return args[0]
+
     orig_args = args
     args = list(args)
     #length = sum(arg.length for arg in args)
