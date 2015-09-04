@@ -16,7 +16,10 @@ if os.environ.get('WORKER', False):
 else:
     WORKER = False
 
+md5_unpacker = struct.Struct('2Q')
+
 #pylint:enable=unused-argument
+#pylint:disable=unidiomatic-typecheck
 
 def _is_eager(a):
     if isinstance(a, (int, long, bool, RM, FSort)):
@@ -143,12 +146,12 @@ class Base(ana.Storable):
 
         @returns a hash
         '''
-        to_hash = (op, tuple(hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+        to_hash = (op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
-        return struct.unpack('2Q', hd)[0] # 64 bits
+        return md5_unpacker.unpack(hd)[0] # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False, add_variables=None): #pylint:disable=unused-argument
