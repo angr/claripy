@@ -4,6 +4,8 @@ l = logging.getLogger("claripy.backends.backend_z3")
 
 if sys.platform == 'darwin':
     z3_library_file = "libz3.dylib"
+elif sys.platform == 'win32':
+    z3_library_file = "libz3.dll"
 else:
     z3_library_file = "libz3.so"
 
