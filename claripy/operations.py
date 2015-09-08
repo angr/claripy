@@ -307,7 +307,9 @@ def extract_simplifier(high, low, val):
         else:
             val = ast.all_operations.Concat(ast.all_operations.BVV(0, extending_bits), val.args[1])
 
-    if val.op == 'Reverse' and val.args[0].op == 'Concat':
+    # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
+    # a and b must have lengths that are a multiple of 8
+    if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
         val = ast.BV('Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
 
     if val.op == 'Concat':
@@ -348,7 +350,7 @@ def extract_simplifier(high, low, val):
         new_high = new_low + (high - low)
         return (val.args[2])[new_high:new_low]
 
-    if val.op == 'Reverse' and val.args[0].op == 'Concat':
+    if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
         val = val.make_like('Concat',
                             tuple(reversed([a.reversed for a in val.args[0].args])),
         )[high:low].simplified
