@@ -31,7 +31,7 @@ class BackendZ3Parallel(BackendZ3):
             self._lock = threading.RLock()
             try:
                 r = f(self, *args, **kwargs)
-            except UnsatError as e:
+            except ClaripySatFailError as e:
                 r = e
 
             #print "WRITING (%d)" % os.getpid()
@@ -117,4 +117,4 @@ class BackendZ3Parallel(BackendZ3):
     def simplify(self, *args, **kwargs):
         return self._synchronize('simplify', *args, **kwargs)
 
-from ..errors import ClaripyError, UnsatError
+from ..errors import ClaripyError, ClaripySatFailError

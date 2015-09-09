@@ -463,7 +463,7 @@ class BackendZ3(Backend):
 
         #if n == 1 and model is None:
         #      import ipdb; ipdb.set_trace()
-
+        all_timeout = True
         results = [ ]
         model = result.backend_model if result else None
         if len(extra_constraints) > 0 or n != 1:
@@ -477,8 +477,10 @@ class BackendZ3(Backend):
             if model is None:
                 solve_count += 1
                 l.debug("Doing a check!")
-                if solver.check() == z3.sat:
+                solve_result = solver.check()
+                if solve_result == z3.sat:
                     model = solver.model()
+                all_timeout = all_timeout and solve_result == z3.unknown
             else:
                 cache_count += 1
 
@@ -499,7 +501,10 @@ class BackendZ3(Backend):
             solver.pop()
 
         if len(results) == 0:
-            raise UnsatError("constraints are unsat")
+            if all_timeout:
+                raise ClaripySatTimeoutError("Sat-solving timeout")
+            else:
+                raise ClaripyUnsatError("constraints are unsat")
 
         return results
 
@@ -840,7 +845,7 @@ from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
 from ..bv import BVV as NativeBVV
 from ..fp import FPV as NativeFPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
-from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
+from ..errors import ClaripyError, BackendError, ClaripyUnsatError, ClaripySatTimeoutError, ClaripyOperationError
 from .. import _eager_backends, _all_operations
 
 op_type_map = {

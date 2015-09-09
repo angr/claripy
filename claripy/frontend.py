@@ -86,7 +86,7 @@ class Frontend(ana.Storable):
                     o = b.convert(e_simp)
                     if b._is_false(o):
                         #filter_false += 1
-                        raise UnsatError("expressions contain False")
+                        raise ClaripyUnsatError("expressions contain False")
                     elif b._has_true(o):
                         #filter_true +=1
                         break
@@ -156,7 +156,7 @@ class Frontend(ana.Storable):
 
         try:
             to_add = self._constraint_filter(constraints)
-        except UnsatError:
+        except ClaripySatFailError:
             self.result = UnsatResult()
             to_add = [ false ]
 
@@ -210,7 +210,7 @@ class Frontend(ana.Storable):
 
         try:
             extra_constraints = self._constraint_filter(extra_constraints)
-        except UnsatError:
+        except ClaripySatFailError:
             l.debug("... returning unsat result due to false extra_constraints")
             return UnsatResult()
 
@@ -267,7 +267,7 @@ class Frontend(ana.Storable):
     def solution(self, e, v, extra_constraints=()):
         try:
             extra_constraints = self._constraint_filter(extra_constraints)
-        except UnsatError:
+        except ClaripySatFailError:
             return False
 
         if not isinstance(e, Base):
@@ -288,7 +288,7 @@ class Frontend(ana.Storable):
 
 from .frontends import LightFrontend
 from .result import UnsatResult, SatResult
-from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError
+from .errors import ClaripyUnsatError, ClaripySatFailError, BackendError, ClaripyFrontendError, ClaripyTypeError
 from . import _eager_backends, _backends
 from .ast.base import Base
 from .ast.bool import false, Bool

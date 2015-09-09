@@ -88,7 +88,7 @@ class LightFrontend(Frontend):
                 except BackendError: pass
 
         two = self.eval(e, 2, extra_constraints=extra_constraints)
-        if len(two) == 0: raise UnsatError("unsat during min()")
+        if len(two) == 0: raise ClaripyUnsatError("unsat during min()")
         elif len(two) == 1: return two[0]
 
         raise ClaripyFrontendError("Light solver can't handle this min().")
@@ -156,7 +156,7 @@ class LightFrontend(Frontend):
         return results
 
 from ..result import SatResult
-from ..errors import UnsatError, BackendError, ClaripyFrontendError
+from ..errors import ClaripyUnsatError, BackendError, ClaripyFrontendError
 from .. import _eager_backends, backend_z3
 from ..ast.base import Base, simplify
 from ..ast.bool import And, Or

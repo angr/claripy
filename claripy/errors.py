@@ -1,7 +1,13 @@
 class ClaripyError(Exception):
     pass
 
-class UnsatError(ClaripyError):
+class ClaripySatFailError(ClaripyError):
+    pass
+
+class ClaripySatTimeoutError(ClaripySatFailError):
+    pass
+
+class ClaripyUnsatError(ClaripySatFailError):
     pass
 
 class ClaripyFrontendError(ClaripyError):

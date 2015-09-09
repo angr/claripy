@@ -88,7 +88,7 @@ class FullFrontend(LightFrontend):
         try: return LightFrontend._eval(self, e, n, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
-        if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
+        if not self.satisfiable(extra_constraints=extra_constraints): raise ClaripyUnsatError('unsat')
         l.debug("FullFrontend._eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
 
         if len(extra_constraints) == 0 and e.uuid in self.result.eval_cache:
@@ -114,7 +114,7 @@ class FullFrontend(LightFrontend):
                                                      result=self.result, solver=self._get_solver())
             all_results.update(model_object(r) for r in eval_results)
             l.debug("... got %d more values", len(all_results) - len(cached_results))
-        except UnsatError:
+        except ClaripySatFailError:
             l.debug("... UNSAT")
             if len(all_results) == 0:
                 raise
@@ -144,12 +144,12 @@ class FullFrontend(LightFrontend):
         except ClaripyFrontendError: pass
 
         if not self.satisfiable(extra_constraints=extra_constraints):
-            raise UnsatError("Unsat during _max()")
+            raise ClaripyUnsatError("Unsat during _max()")
 
         l.debug("Frontend.max() with %d extra_constraints", len(extra_constraints))
 
         two = self.eval(e, 2, extra_constraints=extra_constraints)
-        if len(two) == 0: raise UnsatError("unsat during max()")
+        if len(two) == 0: raise ClaripyUnsatError("unsat during max()")
         elif len(two) == 1: return two[0]
 
         self.simplify()
@@ -166,12 +166,12 @@ class FullFrontend(LightFrontend):
         except ClaripyFrontendError: pass
 
         if not self.satisfiable(extra_constraints=extra_constraints):
-            raise UnsatError("Unsat during _min()")
+            raise ClaripyUnsatError("Unsat during _min()")
 
         l.debug("Frontend.min() with %d extra_constraints", len(extra_constraints))
 
         two = self.eval(e, 2, extra_constraints=extra_constraints)
-        if len(two) == 0: raise UnsatError("unsat during min()")
+        if len(two) == 0: raise ClaripyUnsatError("unsat during min()")
         elif len(two) == 1: return two[0]
 
         self.simplify()
@@ -227,7 +227,7 @@ class FullFrontend(LightFrontend):
             s.timeout = self.timeout
         return solvers
 
-from ..errors import UnsatError, BackendError, ClaripyFrontendError
+from ..errors import ClaripyUnsatError, ClaripySatFailError, BackendError, ClaripyFrontendError
 from ..ast.base import model_object
 from ..ast.bool import Or
 from ..ast.bv import UGE, ULE
