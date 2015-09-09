@@ -1,6 +1,8 @@
 from .bits import Bits
 from ..ast.base import Base, _make_name
 
+_bvv_cache = dict()
+
 class BV(Bits):
 
     # TODO: do these go on Bits or BV?
@@ -113,6 +115,15 @@ def BitVecVal(value, size, name=None, explicit_name=False, variables=frozenset()
     if name is not None:
         n = _make_name(name, size, explicit_name=explicit_name)
         variables = variables | frozenset((n,))
+    # when it has no name or variables we try to get it from the constant cache
+    if len(variables) == 0:
+        global _bvv_cache
+        try:
+            return _bvv_cache[(value, size)]
+        except KeyError:
+            result = BVI(bv.BVV(value, size), variables=variables, symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
+            _bvv_cache[(value, size)] = result
+            return result
     return BVI(bv.BVV(value, size), variables=variables, symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
 
 def StridedInterval(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None):

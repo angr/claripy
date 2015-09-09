@@ -243,7 +243,7 @@ class Frontend(ana.Storable):
             return self.result.max_cache[e.uuid]
 
         m = self._max(e, extra_constraints=extra_constraints)
-        if len(extra_constraints) == 0:
+        if len(extra_constraints) == 0 and e.symbolic:
             if self.result is not None: self.result.max_cache[e.uuid] = m
             self.add([ULE(e, m)], invalidate_cache=False)
         return m
@@ -259,7 +259,7 @@ class Frontend(ana.Storable):
             return self.result.min_cache[e.uuid]
 
         m = self._min(e, extra_constraints=extra_constraints)
-        if len(extra_constraints) == 0:
+        if len(extra_constraints) == 0 and e.symbolic:
             if self.result is not None: self.result.min_cache[e.uuid] = m
             self.add([UGE(e, m)], invalidate_cache=False)
         return m
@@ -274,7 +274,7 @@ class Frontend(ana.Storable):
             raise ValueError("Expressions passed to solution() MUST be Claripy ASTs (got %s)" % type(e))
 
         b = self._solution(e, v, extra_constraints=extra_constraints)
-        if b is False and len(extra_constraints) > 0:
+        if b is False and len(extra_constraints) > 0 and e.symbolic:
             self.add([e != v], invalidate_cache=False)
         return b
 
