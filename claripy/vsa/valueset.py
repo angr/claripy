@@ -266,7 +266,8 @@ class ValueSet(BackendObject):
         return vs
 
     def reverse(self):
-        print "valueset.reverse is not properly implemented"
+        # TODO: obviously valueset.reverse is not properly implemented. I'm disabling the old annoying output line for
+        # TODO: now. I will implement the proper reversing support soon.
         vs = self.copy()
         vs._reversed = not vs._reversed
 
