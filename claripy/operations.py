@@ -312,6 +312,18 @@ def extract_simplifier(high, low, val):
     if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
         val = ast.BV('Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
 
+    # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
+    # No Reverse is required then
+    if val.op == 'Reverse' and high - low + 1 == 8 and low % 8 == 0:
+        byte_pos = low / 8
+        new_byte_pos = val.length / 8 - byte_pos - 1
+
+        val = val.args[0]
+        high = (new_byte_pos + 1) * 8 - 1
+        low = new_byte_pos * 8
+
+        return ast.BV('Extract', (high, low, val), length=high-low+1)
+
     if val.op == 'Concat':
         pos = val.length
         high_i, low_i, low_loc = None, None, None
