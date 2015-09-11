@@ -347,8 +347,8 @@ class BackendVSA(Backend):
                     # Make sure two operands have the same size
                     cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)
 
-            if to_extract.size() - 1 < high + 1 or \
-                    _all_operations.is_true(cond_arg[to_extract.size() - 1 : high + 1] == 0):
+            if cond_arg.size() - 1 < high + 1 or \
+                    _all_operations.is_true(cond_arg[cond_arg.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self.cts_simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
