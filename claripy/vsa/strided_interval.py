@@ -2349,7 +2349,7 @@ class StridedInterval(BackendObject):
 
         else:
             if not o.is_integer:
-                # We really don't want to do that. Something is wrong.
+                # We really don't want to do that... but well, sometimes it just happens...
                 logger.warning('Reversing a real strided-interval %s is bad', self)
 
             # Reversing an integer is easy
