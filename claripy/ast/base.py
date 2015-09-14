@@ -98,10 +98,6 @@ class Base(ana.Storable):
         @param errored: a set of backends that are known to be unable to handle this AST.
         @param eager: whether or not to evaluate future parent ASTs eagerly.
         '''
-        if any(not isinstance(a, (str, int, long, bool, Base, BackendObject, FSort)) for a in args):
-            #import ipdb; ipdb.set_trace()
-            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.Base" % (args,))
-
         # fix up args and kwargs
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
         if 'symbolic' not in kwargs:
