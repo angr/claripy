@@ -17,9 +17,9 @@ def raw_solver(solver_type):
 
     s.simplify()
 
-    x = claripy.BitVec('x', 32)
-    y = claripy.BitVec('y', 32)
-    z = claripy.BitVec('z', 32)
+    x = claripy.BVS('x', 32)
+    y = claripy.BVS('y', 32)
+    z = claripy.BVS('z', 32)
 
     l.debug("adding constraints")
 
@@ -99,14 +99,14 @@ def raw_solver(solver_type):
 
     # test that False makes it unsat
     s = solver_type(claripy.backend_z3)
-    s.add(claripy.BitVecVal(1,1) == claripy.BitVecVal(1,1))
+    s.add(claripy.BVV(1,1) == claripy.BVV(1,1))
     nose.tools.assert_true(s.satisfiable())
-    s.add(claripy.BitVecVal(1,1) == claripy.BitVecVal(0,1))
+    s.add(claripy.BVV(1,1) == claripy.BVV(0,1))
     nose.tools.assert_false(s.satisfiable())
 
     # test extra constraints
     s = solver_type(claripy.backend_z3)
-    x = claripy.BitVec('x', 32)
+    x = claripy.BVS('x', 32)
     nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
     s.add(x == 10)
     nose.tools.assert_false(s.solution(x, 2))
@@ -122,7 +122,7 @@ def raw_solver(solver_type):
     nose.tools.assert_false(s.satisfiable())
 
     s = solver_type(claripy.backend_z3)
-    x = claripy.BitVec('x', 32)
+    x = claripy.BVS('x', 32)
     s.add(x == 10)
     nose.tools.assert_true(s.satisfiable())
     nose.tools.assert_true(s.result is not None)
@@ -138,8 +138,8 @@ def test_solver_branching():
 
 def raw_solver_branching(solver_type):
     s = solver_type(claripy.backend_z3)
-    x = claripy.BitVec("x", 32)
-    y = claripy.BitVec("y", 32)
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
     s.add(claripy.UGT(x, y))
     s.add(claripy.ULT(x, 10))
 
@@ -173,7 +173,7 @@ def raw_combine(solver_type):
     s10 = solver_type(claripy.backend_z3)
     s20 = solver_type(claripy.backend_z3)
     s30 = solver_type(claripy.backend_z3)
-    x = claripy.BitVec("x", 32)
+    x = claripy.BVS("x", 32)
 
     s10.add(x >= 10)
     s20.add(x <= 20)
@@ -191,9 +191,9 @@ def raw_combine(solver_type):
 
 def test_composite_solver():
     s = claripy.CompositeFrontend(claripy.backend_z3)
-    x = claripy.BitVec("x", 32)
-    y = claripy.BitVec("y", 32)
-    z = claripy.BitVec("z", 32)
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
     c = claripy.And(x == 1, y == 2, z == 3)
     s.add(c)
     nose.tools.assert_equals(len(s._solver_list), 4) # including the CONSTANT solver
@@ -214,7 +214,7 @@ def test_composite_solver():
     nose.tools.assert_equal(len(s._solver_list), 4)
     nose.tools.assert_true(s.satisfiable())
 
-    s.add(claripy.BitVecVal(1, 32) == claripy.BitVecVal(2, 32))
+    s.add(claripy.BVV(1, 32) == claripy.BVV(2, 32))
     nose.tools.assert_equal(len(s._solver_list), 4) # the CONCRETE one
     nose.tools.assert_false(s.satisfiable())
 

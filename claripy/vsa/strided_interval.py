@@ -93,9 +93,9 @@ class StridedInterval(BackendObject):
             self._name = "SI_%d" % si_id_ctr.next()
 
         self._bits = bits
-        self._stride = stride
-        self._lower_bound = lower_bound
-        self._upper_bound = upper_bound
+        self._stride = stride if stride is not None else 1
+        self._lower_bound = lower_bound if lower_bound is not None else 0
+        self._upper_bound = upper_bound if upper_bound is not None else (2**bits-1)
 
         if lower_bound is not None and type(lower_bound) not in (int, long):
             raise ClaripyVSAError("'lower_bound' must be an int or a long. %s is not supported." % type(lower_bound))
@@ -738,11 +738,11 @@ class StridedInterval(BackendObject):
     def __repr__(self):
         s = ""
         if self.is_empty:
-            s = '%s<%d>[EmptySI]' % (self._name, self._bits)
+            s = '<%d>[EmptySI]' % (self._bits)
         else:
             lower_bound = self._lower_bound if type(self._lower_bound) == str else '%#x' % self._lower_bound
             upper_bound = self._upper_bound if type(self._upper_bound) == str else '%#x' % self._upper_bound
-            s = '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
+            s = '<%d>0x%x[%s, %s]%s' % (self._bits, self._stride,
                                           lower_bound, upper_bound,
                                           'R' if self._reversed else '')
 

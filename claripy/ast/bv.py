@@ -1,5 +1,5 @@
 from .bits import Bits
-from ..ast.base import Base, _make_name
+from ..ast.base import _make_name
 
 _bvv_cache = dict()
 
@@ -74,15 +74,15 @@ class BV(Bits):
 
     @staticmethod
     def _from_int(like, value):
-        return BVI(bv.BVV(value, like.length), length=like.length)
+        return BVV(value, like.length)
 
     @staticmethod
     def _from_long(like, value):
-        return BVI(bv.BVV(value, like.length), length=like.length)
+        return BVV(value, like.length)
 
     @staticmethod
     def _from_BVV(like, value): #pylint:disable=unused-argument
-        return BVI(value, length=value.size())
+        return BVV(value.value, value.size())
 
     def signed_to_fp(self, rm, sort):
         if rm is None:
@@ -102,45 +102,58 @@ class BV(Bits):
     def to_bv(self):
         return self
 
-def BVI(model, **kwargs):
-    eager = isinstance(model, bv.BVV)
-    kwargs['eager'] = eager
-    return BV('I', (model,), **kwargs)
+def BVS(name, size, min=None, max=None, stride=None, explicit_name=False): #pylint:disable=redefined-builtin
+    '''
+    Creates a bit-vector symbol (i.e., a variable).
 
-def BitVec(name, size, explicit_name=False):
+    @param name: the name of the symbol
+    @param size: the size (in bits) of the bit-vector
+    @param min: the minimum value of the symbol
+    @param max: the maximum value of the symbol
+    @param stride: the stride of the symbol
+    @param explicit_name: if False, an identifier is appended to the name to ensure
+                          uniqueness.
+
+    @returns a BV object representing this symbol
+    '''
     n = _make_name(name, size, explicit_name)
-    return BV('BitVec', (n, size), variables={n}, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=size)
+    return BV('BVS', (n, min, max, stride), variables={n}, length=size, symbolic=True, eager=False)
 
-def BitVecVal(value, size, name=None, explicit_name=False, variables=frozenset()):
-    if name is not None:
-        n = _make_name(name, size, explicit_name=explicit_name)
-        variables = variables | frozenset((n,))
-    # when it has no name or variables we try to get it from the constant cache
-    if len(variables) == 0:
-        global _bvv_cache
-        try:
-            return _bvv_cache[(value, size)]
-        except KeyError:
-            result = BVI(bv.BVV(value, size), variables=variables, symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
-            _bvv_cache[(value, size)] = result
-            return result
-    return BVI(bv.BVV(value, size), variables=variables, symbolic=False, simplified=Base.FULL_SIMPLIFY, length=size, eager=True)
+def BVV(value, size):
+    '''
+    Creates a bit-vector value (i.e., a concrete value).
 
-def StridedInterval(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None):
-    si = vsa.CreateStridedInterval(name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv)
-    return BVI(si, variables={ si.name }, symbolic=False, length=si._bits, eager=False)
+    @param value: the value
+    @param size: the size (in bits) of the bit-vector
 
-def TopStridedInterval(bits, name=None, uninitialized=False):
-    si = vsa.StridedInterval.top(bits, name=name, uninitialized=uninitialized)
-    return BVI(si, variables={ si.name }, symbolic=False, length=bits)
+    @returns a BV object representing this value
+    '''
+    try:
+        return _bvv_cache[(value, size)]
+    except KeyError:
+        result = BV('BVV', (value,), length=size)
+        _bvv_cache[(value, size)] = result
+        return result
 
-def EmptyStridedInterval(bits, name=None):
-    si = vsa.StridedInterval.empty(bits)
-    return BVI(si, variables={ si.name }, symbolic=False, length=bits)
+def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None):
+    name = 'unnamed' if name is None else name
+    return BVS(name, bits, min=lower_bound, max=upper_bound, stride=stride)
+
+def TSI(bits, name=None, uninitialized=False):
+    name = 'unnamed' if name is None else name
+    if uninitialized is not False:
+        raise Exception('TODO')
+    return BVS(name, bits)
+
+def ESI(bits, name=None):
+    name = 'unnamed' if name is None else name
+    # TODO: empty
+    return BVS(name, bits)
 
 def ValueSet(**kwargs):
     vs = vsa.ValueSet(**kwargs)
-    return BVI(vs, variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager=False)
+    return BV('I', (vs,), variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager=False)
+VS = ValueSet
 
 #
 # Unbound operations
@@ -244,7 +257,6 @@ BV.union = operations.op('union', (BV, BV), BV, extra_check=operations.length_sa
 BV.widen = operations.op('widen', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.intersection = operations.op('intersection', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 
-from .. import bv
 from .. import fp
 from . import fp
 from .. import vsa

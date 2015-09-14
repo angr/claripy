@@ -10,12 +10,19 @@ class BackendConcrete(Backend):
         Backend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'BitVec', 'If' }, op_module=bv)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
-        self._op_raw_result['BitVec'] = self._BitVec
         self._op_raw_result['If'] = self._If
+        self._op_expr['BVV'] = self.BVV
+        self._op_expr['BVS'] = self.BVS
         self._z_true = z3.BoolVal(True)
         self._z_false = z3.BoolVal(False)
 
-    def _BitVec(self, name, size, result=None): #pylint:disable=W0613,R0201
+    @staticmethod
+    def BVV(ast, result=None): #pylint:disable=unused-argument
+        return bv.BVV(ast.args[0], ast.size())
+
+    @staticmethod
+    def BVS(ast, result=None):
+        name, mn, mx, stride = ast.args #pylint:disable=unused-variable
         if result is None:
             l.debug("BackendConcrete can only handle BitVec when we are given a model")
             raise BackendError("BackendConcrete can only handle BitVec when we are given a model")
@@ -100,7 +107,7 @@ class BackendConcrete(Backend):
 
     def abstract(self, e):
         if isinstance(e, bv.BVV):
-            return BVI(e, length=e.size())
+            return BVV(e, e.size())
         elif isinstance(e, bool):
             return BoolI(e)
         elif isinstance(e, fp.FPV):
@@ -133,6 +140,6 @@ class BackendConcrete(Backend):
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp
 #from .. import _backend_z3
-from ..ast.bv import BVI
+from ..ast.bv import BVV
 from ..ast.fp import FPI
 from ..ast.bool import BoolI

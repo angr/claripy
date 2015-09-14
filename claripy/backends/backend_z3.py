@@ -99,6 +99,8 @@ class BackendZ3(Backend):
         self._op_raw['I'] = lambda thing: thing
         self._op_raw['fpToSBV'] = self.fpToSBV
         self._op_raw['fpToUBV'] = self.fpToUBV
+        self._op_expr['BVS'] = self.BVS
+        self._op_expr['BVV'] = self.BVV
 
     @property
     def _ast_cache(self):
@@ -169,6 +171,26 @@ class BackendZ3(Backend):
             raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
         else:
             return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+
+    @staticmethod
+    @condom
+    def BVS(ast, result=None): #pylint:disable=unused-argument
+        name, mn, mx, stride = ast.args
+        size = ast.size()
+        expr = z3.BitVec(name, size)
+        if mn is not None:
+            expr = z3.If(z3.ULT(expr, mn), mn, expr)
+        if mx is not None:
+            expr = z3.If(z3.UGT(expr, mx), mx, expr)
+        if stride is not None:
+            expr = (expr / stride) * stride
+        return expr
+
+    @staticmethod
+    @condom
+    def BVV(ast, result=None): #pylint:disable=unused-argument
+        size = ast.size()
+        return z3.BitVecVal(ast.args[0], size)
 
     @staticmethod
     @condom
@@ -307,7 +329,7 @@ class BackendZ3(Backend):
         elif op_name == 'BitVecVal':
             bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            return BVI(NativeBVV(bv_num, bv_size), length=bv_size)
+            return BVV(bv_num, bv_size)
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
@@ -340,7 +362,7 @@ class BackendZ3(Backend):
 
             #if bv_name.count('_') < 2:
             #      import ipdb; ipdb.set_trace()
-            return BV("BitVec", (bv_name, bv_size), length=bv_size, variables={ bv_name }, symbolic=True)
+            return BV("BVS", (bv_name, None, None, None), length=bv_size, variables={ bv_name }, symbolic=True)
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
@@ -675,8 +697,10 @@ class BackendZ3(Backend):
 
     @staticmethod
     def wrap(e):
-        if isinstance(e, (z3.BitVecRef, NativeBVV)):
-            return BVI(e, length=e.size())
+        if isinstance(e, NativeBVV):
+            return BVV(e.value, e.size())
+        if isinstance(e, z3.BitVecRef):
+            return BVV(e.as_long(), e.size())
         elif isinstance(e, (z3.BoolRef, bool)):
             return BoolI(e)
         else:
@@ -841,7 +865,7 @@ op_map = {
 }
 
 from ..ast.base import Base, model_object
-from ..ast.bv import BV, BVI
+from ..ast.bv import BV, BVV
 from ..ast.bool import BoolI, Bool
 from ..ast.fp import FP, FPI
 from ..operations import backend_operations, backend_fp_operations, bin_ops

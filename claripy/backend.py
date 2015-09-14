@@ -189,7 +189,7 @@ class Backend(object):
 
         try:
             if ast.op in self._op_expr:
-                r = self._op_expr[ast.op](*ast.args, result=result)
+                r = self._op_expr[ast.op](ast, result=result)
             else:
                 converted = self.convert_list(ast.args, result=result)
 

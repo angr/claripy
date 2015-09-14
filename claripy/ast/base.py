@@ -446,7 +446,7 @@ class Base(ana.Storable):
                     op = self.op
                     args = self.args
 
-                if op == 'BitVec' and inner:
+                if op == 'BVS' and inner:
                     value = args[0]
                 elif op == 'If':
                     value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
@@ -488,8 +488,6 @@ class Base(ana.Storable):
         The depth of this AST. For example, an AST representing (a+(b+c)) would have
         a depth of 2.
         '''
-        if self.op == 'BitVec':
-            return 0
         ast_args = [ a for a in self.args if isinstance(a, Base) ]
         return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
 
@@ -633,7 +631,7 @@ class Base(ana.Storable):
                 else:
                     continue
 
-            if arg_a.op in ('I', 'BitVec', 'FP'):
+            if arg_a.op in ('I', 'BVS', 'FP'):
                 # This is a leaf node in AST tree
                 if arg_a is not arg_b:
                     return False
@@ -656,7 +654,7 @@ class Base(ana.Storable):
         return self._replace(old, new)
 
     def _identify_vars(self, all_vars, counter):
-        if self.op == 'BitVec':
+        if self.op == 'BVS':
             if self.args not in all_vars:
                 all_vars[self.args] = BV('var_' + str(next(counter)),
                                          self.args[1],

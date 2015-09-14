@@ -5,7 +5,7 @@ def test_simplification():
     def assert_identical(a, b):
         nose.tools.assert_true(a.identical(b))
 
-    x, y, z = (claripy.BV(name, 32) for name in ('x', 'y', 'z'))
+    x, y, z = (claripy.BVS(name, 32) for name in ('x', 'y', 'z'))
 
     # test extraction of concatted values
     concatted = claripy.Concat(x, y, z)

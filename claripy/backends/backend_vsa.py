@@ -1,5 +1,6 @@
 import logging
 import functools
+import operator
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
@@ -118,6 +119,7 @@ class BackendVSA(Backend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_expr['If'] = self.If
+        self._op_expr['BVS'] = self.BVS
 
     def _convert(self, a, result=None):
         if type(a) in { int, long, float, bool, str }: #pylint:disable=unidiomatic-typecheck
@@ -952,8 +954,8 @@ class BackendVSA(Backend):
     @staticmethod
     @expand_ifproxy
     @normalize_boolean_arg_types
-    def And(a, b):
-        return a & b
+    def And(a, *args):
+        return reduce(operator.__and__, args, a)
 
     @staticmethod
     @expand_ifproxy
@@ -1001,7 +1003,14 @@ class BackendVSA(Backend):
     def SGE(a, b):
         return a.SGE(b)
 
-    def If(self, cond, true_expr, false_expr, result=None): #pylint:disable=unused-argument
+    @staticmethod
+    def BVS(ast, result=None): #pylint:disable=unused-argument
+        size = ast.size()
+        name, mn, mx, stride = ast.args
+        return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride)
+
+    def If(self, ast, result=None): #pylint:disable=unused-argument
+        cond, true_expr, false_expr = ast.args
         exprs = []
         cond_model = self.convert(cond)
         if self.has_true(cond_model):

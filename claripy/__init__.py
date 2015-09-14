@@ -88,14 +88,3 @@ from .ast.fp import *
 from .ast.bool import *
 from . import ast
 ast._import()
-
-#
-# and some aliases
-#
-
-BVV = BitVecVal
-BV = BitVec
-VS = ValueSet
-SI = StridedInterval
-TSI = TopStridedInterval
-ESI = EmptyStridedInterval

@@ -160,7 +160,8 @@ def constraint_to_si(expr):
     for i in xrange(len(replace_list)):
         ori, new = replace_list[i]
         if not isinstance(new, Base):
-            new = BVI(new, variables={ new.name }, symbolic=False, length=new._bits, eager=False)
+            #new = BVI(new, variables={ new.name }, symbolic=False, length=new._bits, eager=False)
+            new = BVS(new.name, new._bits, min=new._lower_bound, max=new._upper_bound, stride=new._stride, explicit_name=True)
             replace_list[i] = (ori, new)
 
     return satisfiable, replace_list
@@ -168,4 +169,4 @@ def constraint_to_si(expr):
 from .. import _all_backends
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
-from .bv import BVI
+from .bv import BVS
