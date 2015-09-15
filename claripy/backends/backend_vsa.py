@@ -734,7 +734,7 @@ class BackendVSA(Backend):
         else:
             if len(args) > 0:
                 args = [ self.cts_handle(a.op, a.args) for a in args ]
-                if any([not _all_operations.is_false(a) for a in args]):
+                if any(not _all_operations.is_false(a) for a in args):
                     return True, [ ]
 
                 else:
@@ -893,7 +893,7 @@ class BackendVSA(Backend):
             return sat, lst
 
         except ClaripyVSASimplifierError as ex:
-            l.error('VSASimplifiers raised an exception %s. Please report it.' % str(ex), exc_info=True)
+            l.error('VSASimplifiers raised an exception %s. Please report it.', str(ex), exc_info=True)
 
             # return the dummy result
             return True, [ ]
