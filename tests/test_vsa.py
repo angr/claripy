@@ -25,11 +25,11 @@ def test_wrapped_intervals():
     si1 = claripy.SI(bits=32, stride=1, lower_bound=-1, upper_bound=1)
     si2 = claripy.SI(bits=32, stride=1, lower_bound=-1, upper_bound=1)
     si3 = claripy.SI(bits=32, stride=1, lower_bound=-2, upper_bound=2)
-    nose.tools.assert_true((si1 + si2).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 + si2, si3))
     si4 = claripy.SI(bits=32, stride=1, lower_bound=0xfffffffe, upper_bound=2)
-    nose.tools.assert_true((si1 + si2).identical(si4))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 + si2, si4))
     si5 = claripy.SI(bits=32, stride=1, lower_bound=2, upper_bound=-2)
-    nose.tools.assert_false((si1 + si2).identical(si5))
+    nose.tools.assert_false(claripy.backend_vsa.identical(si1 + si2, si5))
 
     # Addition with overflowing cardinality
     si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfe)
@@ -48,7 +48,7 @@ def test_wrapped_intervals():
     si1 = claripy.SI(bits=8, stride=1, lower_bound=10, upper_bound=15)
     si2 = claripy.SI(bits=8, stride=1, lower_bound=11, upper_bound=12)
     si3 = claripy.SI(bits=8, stride=1, lower_bound=-2, upper_bound=4)
-    nose.tools.assert_true((si1 - si2).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 - si2, si3))
 
     #
     # Multiplication
@@ -58,13 +58,13 @@ def test_wrapped_intervals():
     si1 = claripy.SI(bits=32, to_conv=0xffff)
     si2 = claripy.SI(bits=32, to_conv=0x10000)
     si3 = claripy.SI(bits=32, to_conv=0xffff0000)
-    nose.tools.assert_true((si1 * si2).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 * si2, si3))
 
     # intervals multiplication
     si1 = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=15)
     si2 = claripy.SI(bits=32, stride=1, lower_bound=20, upper_bound=30)
     si3 = claripy.SI(bits=32, stride=1, lower_bound=200, upper_bound=450)
-    nose.tools.assert_true((si1 * si2).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 * si2, si3))
 
     #
     # Division
@@ -74,16 +74,16 @@ def test_wrapped_intervals():
     si1 = claripy.SI(bits=32, to_conv=10)
     si2 = claripy.SI(bits=32, to_conv=5)
     si3 = claripy.SI(bits=32, to_conv=2)
-    nose.tools.assert_true((si1 / si2).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 / si2, si3))
 
     si3 = claripy.SI(bits=32, to_conv=0)
-    nose.tools.assert_true((si2 / si1).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si2 / si1, si3))
 
     # intervals division
     si1 = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=100)
     si2 = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=20)
     si3 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=10)
-    nose.tools.assert_true((si1 / si2).identical(si3))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si1 / si2, si3))
 
     #
     # Extension
@@ -93,13 +93,13 @@ def test_wrapped_intervals():
     si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfd)
     si_zext = si1.zero_extend(32 - 8)
     si_zext_ = claripy.SI(bits=32, stride=1, lower_bound=0x0, upper_bound=0xfd)
-    nose.tools.assert_true(si_zext.identical(si_zext_))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si_zext, si_zext_))
 
     # sign-extension
     si1 = claripy.SI(bits=8, stride=1, lower_bound=0, upper_bound=0xfd)
     si_sext = si1.sign_extend(32 - 8)
     si_sext_ = claripy.SI(bits=32, stride=1, lower_bound=0xffffff80, upper_bound=0x7f)
-    nose.tools.assert_true(si_sext.identical(si_sext_))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si_sext, si_sext_))
 
     #
     # Comparisons
@@ -145,15 +145,15 @@ def test_join():
 
     # union a, b, c, d, e => [2, 132] with a stride of 2
     tmp1 = a.union(b)
-    nose.tools.assert_true(tmp1.identical(SI(bits=8, stride=8, lower_bound=2, upper_bound=10)))
+    nose.tools.assert_true(claripy.backend_vsa.identical(tmp1, SI(bits=8, stride=8, lower_bound=2, upper_bound=10)))
     tmp2 = tmp1.union(c)
-    nose.tools.assert_true(tmp2.identical(SI(bits=8, stride=2, lower_bound=2, upper_bound=120)))
+    nose.tools.assert_true(claripy.backend_vsa.identical(tmp2, SI(bits=8, stride=2, lower_bound=2, upper_bound=120)))
     tmp3 = tmp2.union(d).union(e)
-    nose.tools.assert_true(tmp3.identical(SI(bits=8, stride=2, lower_bound=2, upper_bound=132)))
+    nose.tools.assert_true(claripy.backend_vsa.identical(tmp3, SI(bits=8, stride=2, lower_bound=2, upper_bound=132)))
 
     # union a, b, c, d, e, f => [2, 135] with a stride of 1
     tmp = a.union(b).union(c).union(d).union(e).union(f)
-    nose.tools.assert_true(tmp.identical(SI(bits=8, stride=1, lower_bound=2, upper_bound=135)))
+    nose.tools.assert_true(claripy.backend_vsa.identical(tmp, SI(bits=8, stride=1, lower_bound=2, upper_bound=135)))
 
     a = claripy.SI(bits=8, to_conv=1)
     b = claripy.SI(bits=8, to_conv=10)
@@ -166,7 +166,7 @@ def test_join():
 
     # union a, b, c, d, e, f, g, h => [220, 135] with a stride of 1
     tmp = a.union(b).union(c).union(d).union(e).union(f).union(g).union(h)
-    nose.tools.assert_true(tmp.identical(SI(bits=8, stride=1, lower_bound=220, upper_bound=135)))
+    nose.tools.assert_true(claripy.backend_vsa.identical(tmp, SI(bits=8, stride=1, lower_bound=220, upper_bound=135)))
     nose.tools.assert_true(220 in tmp.model.eval(255))
     nose.tools.assert_true(225 in tmp.model.eval(255))
     nose.tools.assert_true(0 in tmp.model.eval(255))
@@ -421,15 +421,15 @@ def test_vsa():
 
     vs_1 = claripy.ValueSet(name='boo', bits=32)
     vs_2 = claripy.ValueSet(name='foo', bits=32)
-    nose.tools.assert_true(vs_1.identical(vs_1))
-    nose.tools.assert_true(vs_2.identical(vs_2))
+    nose.tools.assert_true(claripy.backend_vsa.identical(vs_1, vs_1))
+    nose.tools.assert_true(claripy.backend_vsa.identical(vs_2, vs_2))
     vs_1.model.merge_si('global', si1)
-    nose.tools.assert_false(vs_1.identical(vs_2))
+    nose.tools.assert_false(claripy.backend_vsa.identical(vs_1, vs_2))
     vs_2.model.merge_si('global', si1)
-    nose.tools.assert_true(vs_1.identical(vs_2))
+    nose.tools.assert_true(claripy.backend_vsa.identical(vs_1, vs_2))
     nose.tools.assert_true(claripy.is_true((vs_1 & vs_2) == vs_1))
     vs_1.model.merge_si('global', si3)
-    nose.tools.assert_false(vs_1.identical(vs_2))
+    nose.tools.assert_false(claripy.backend_vsa.identical(vs_1, vs_2))
 
     # Subtraction
     # Subtraction of two pointers yields a concrete value
@@ -438,11 +438,16 @@ def test_vsa():
     vs_2 = claripy.ValueSet(name='bar', region='global', bits=32, val=0x400000)
     si = vs_1 - vs_2
     nose.tools.assert_is(type(si.model), StridedInterval)
-    nose.tools.assert_true(si.identical(claripy.SI(bits=32, stride=0, lower_bound=0x10, upper_bound=0x10)))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si, claripy.SI(bits=32, stride=0, lower_bound=0x10, upper_bound=0x10)))
 
     #
     # IfProxy
     #
+
+    si = claripy.SI(bits=32, stride=1, lower_bound=10, upper_bound=0xffffffff)
+    if_0 = claripy.If(si == 0, si, si - 1)
+    nose.tools.assert_true(claripy.backend_vsa.identical(if_0, if_0))
+    nose.tools.assert_false(claripy.backend_vsa.identical(if_0, si))
 
     # max and min on IfProxy
     si = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xffffffff)
@@ -522,7 +527,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s1)
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.is_true(falseside_replacement[0][1].identical(SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.is_true(claripy.backend_vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
 
     #
     # If(SI == 0, 1, 0) <= 1
@@ -560,7 +565,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s1)
     # False side; SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.is_true(falseside_replacement[0][1].identical(SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.is_true(claripy.backend_vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
 
     #
     # If(SI == 0, 20, 10) >= 15
@@ -584,7 +589,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s1)
     # False side; SI<32>0[0,0]
     nose.tools.assert_true(
-        claripy.is_true(falseside_replacement[0][1].identical(SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
+        claripy.is_true(claripy.backend_vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
 
     #
     # Extract(0, 0, Concat(BVV(0, 63), If(SI == 0, 1, 0))) == 1
@@ -600,7 +605,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s2)
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.is_true(trueside_replacement[0][1].identical(SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
+        claripy.is_true(claripy.backend_vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -608,7 +613,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s2)
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.is_true(falseside_replacement[0][1].identical(SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.is_true(claripy.backend_vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
 
     #
     # Extract(0, 0, ZeroExt(32, If(SI == 0, BVV(1, 32), BVV(0, 32)))) == 1
@@ -624,7 +629,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s3)
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.is_true(trueside_replacement[0][1].identical(SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
+        claripy.is_true(claripy.backend_vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -632,7 +637,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s3)
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.is_true(falseside_replacement[0][1].identical(SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.is_true(claripy.backend_vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
 
     #
     # Extract(0, 0, ZeroExt(32, If(Extract(32, 0, (SI & claripy.SI)) < 0, BVV(1, 1), BVV(0, 1))))
@@ -650,7 +655,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s4)
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.is_true(trueside_replacement[0][1].identical(SI(bits=64, stride=1, lower_bound=-0x8000000000000000, upper_bound=-1))))
+        claripy.is_true(claripy.backend_vsa.identical(trueside_replacement[0][1], SI(bits=64, stride=1, lower_bound=-0x8000000000000000, upper_bound=-1))))
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -658,7 +663,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s4)
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.is_true(falseside_replacement[0][1].identical(SI(bits=64, stride=1, lower_bound=0, upper_bound=0x7fffffffffffffff))))
+        claripy.is_true(claripy.backend_vsa.identical(falseside_replacement[0][1], SI(bits=64, stride=1, lower_bound=0, upper_bound=0x7fffffffffffffff))))
 
     # TODO: Add some more insane test cases
 

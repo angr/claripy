@@ -609,14 +609,6 @@ class Base(ana.Storable):
         '''
         raise ClaripyOperationError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
-    def identical(self, o):
-        '''
-        Returns True if 'o' can be easily determined to be identical to this AST.
-        Otherwise, return False. Note that the AST *might* still be identical (i.e.,
-        if it were simplified via Z3), but it's hard to quickly tell that.
-        '''
-        return is_identical(self, o)
-
     def structurally_match(self, o):
         """
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object

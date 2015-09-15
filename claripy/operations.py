@@ -236,7 +236,7 @@ def reverse_simplifier(body):
         if all(a.op == 'Extract' for a in body.args):
             first_ast = body.args[0].args[2]
             for i,a in enumerate(body.args):
-                if not (first_ast.identical(a.args[2])
+                if not (first_ast is a.args[2]
                         and a.args[0] == ((i + 1) * 8 - 1)
                         and a.args[1] == i * 8):
                     break

@@ -54,19 +54,22 @@ def test_expression():
     nose.tools.assert_is(r, rrr)
 
     # test identity
-    nose.tools.assert_true(r.identical(rrr))
-    nose.tools.assert_false(r.identical(rr))
+    nose.tools.assert_is(r, rrr)
+    nose.tools.assert_is_not(r, rr)
     ii = claripy.BVS('ii', 32)
     ij = claripy.BVS('ij', 32)
-    nose.tools.assert_true(ii.identical(ii))
-    nose.tools.assert_false(ii.identical(ij))
+    nose.tools.assert_is(ii, ii)
+    nose.tools.assert_is_not(ii, ij)
 
     si = claripy.SI(bits=32, stride=2, lower_bound=20, upper_bound=100)
     sj = claripy.SI(bits=32, stride=2, lower_bound=10, upper_bound=10)
     sk = claripy.SI(bits=32, stride=2, lower_bound=20, upper_bound=100)
-    nose.tools.assert_true(si.identical(si))
-    nose.tools.assert_false(si.identical(sj))
-    nose.tools.assert_false(si.identical(sk)) # REVIEW
+    nose.tools.assert_true(claripy.backend_vsa.identical(si, si))
+    nose.tools.assert_false(claripy.backend_vsa.identical(si, sj))
+    nose.tools.assert_true(claripy.backend_vsa.identical(si, sk))
+    nose.tools.assert_is_not(si, sj)
+    nose.tools.assert_is_not(sj, sk)
+    nose.tools.assert_is_not(sk, si)
 
     # test hash cache
     nose.tools.assert_is(a+a, a+a)
