@@ -90,6 +90,11 @@ class BackendZ3(Backend):
         for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE'}:
             self._op_raw[o] = getattr(z3, o)
 
+        self._op_raw['__ge__'] = z3.UGE
+        self._op_raw['__gt__'] = z3.UGT
+        self._op_raw['__le__'] = z3.ULE
+        self._op_raw['__lt__'] = z3.ULT
+
         self._op_raw['SLT'] = self.SLT
         self._op_raw['SLE'] = self.SLE
         self._op_raw['SGT'] = self.SGT
