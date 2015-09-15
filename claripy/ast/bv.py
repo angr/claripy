@@ -3,6 +3,14 @@ from ..ast.base import _make_name
 
 _bvv_cache = dict()
 
+# this is a hillarious hack to get around some sort of bug in z3's python bindings, where
+# under some circumstances stuff gets destructed out of order
+def cleanup():
+    global _bvv_cache
+    del _bvv_cache
+import atexit
+atexit.register(cleanup)
+
 class BV(Bits):
 
     # TODO: do these go on Bits or BV?
