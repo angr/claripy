@@ -32,7 +32,10 @@ class BoolResult(BackendObject):
             return False
         return True
 
-    def size(self):
+    def union(self, other):
+        raise NotImplementedError()
+
+    def size(self): #pylint:disable=no-self-use
         return None
 
     @staticmethod
@@ -92,6 +95,14 @@ class TrueResult(BoolResult):
         else:
             return TrueResult()
 
+    def union(self, other):
+        if other == True or type(other) is TrueResult:
+            return TrueResult()
+        elif other == False or type(other) is FalseResult:
+            return MaybeResult()
+        else:
+            return NotImplemented
+
     def __repr__(self):
         return '<True>'
 
@@ -115,6 +126,14 @@ class FalseResult(BoolResult):
     def __repr__(self):
         return '<False>'
 
+    def union(self, other):
+        if other == True or type(other) is TrueResult:
+            return MaybeResult()
+        elif other == False or type(other) is FalseResult:
+            return FalseResult()
+        else:
+            return NotImplemented
+
 class MaybeResult(BoolResult):
     @property
     def value(self):
@@ -131,6 +150,9 @@ class MaybeResult(BoolResult):
             return FalseResult()
         else:
             return MaybeResult()
+
+    def union(self, other):
+        return MaybeResult()
 
     def __or__(self, other):
         if BoolResult.is_true(other):
