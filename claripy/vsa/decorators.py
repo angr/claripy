@@ -16,7 +16,7 @@ def expand_ifproxy(f):
         # FIXME: Now we have a very bad assumption - if we see more than one IfProxy
         # instances as the two operands, we assume they must both be true or
         # false.
-        any_ifproxy = any([isinstance(a, IfProxy) for a in args])
+        any_ifproxy = any(isinstance(a, IfProxy) for a in args)
         if any_ifproxy:
             true_args = None
             false_args = None
@@ -41,7 +41,7 @@ def expand_ifproxy(f):
 
 def expr_op_expand_ifproxy(f):
     @functools.wraps(f)
-    def expander(self, *args, **kwargs):
+    def expander(self, ast, result=None):
         '''
         For each IfProxy proxified argument, we expand it so that it is
         converted into two operands (true expr and false expr, respectively).
@@ -55,13 +55,13 @@ def expr_op_expand_ifproxy(f):
         # FIXME: Now we have a very bad assumption - if we see two IfProxy
         # instances as the two operands, we assume they must both be true or
         # false.
-        any_ifproxy = any([isinstance(a, Base) and isinstance(a.model, IfProxy) for a in args])
+        any_ifproxy = any(isinstance(a, Base) and isinstance(a.model, IfProxy) for a in ast.args)
         if any_ifproxy:
             true_args = None
             false_args = None
             cond = None
             # build true_args and false_args
-            for a in args:
+            for a in ast.args:
                 ifproxy = a.model if isinstance(a, Base) and isinstance(a.model, IfProxy) else None
                 cond = ifproxy.condition if ifproxy is not None and cond is None else cond
                 this_true_arg = IfProxy.unwrap(ifproxy, True)[1] if ifproxy is not None else a.model
@@ -69,13 +69,13 @@ def expr_op_expand_ifproxy(f):
                 true_args = (this_true_arg, ) if true_args is None else true_args + (this_true_arg, )
                 false_args = (this_false_arg, ) if false_args is None else false_args + (this_false_arg, )
 
-            trueexpr = f(self, *true_args, **kwargs)
-            falseexpr = f(self, *false_args, **kwargs)
+            trueexpr = f(self, *true_args, result=result)
+            falseexpr = f(self, *false_args, result=result)
 
             return IfProxy(cond, trueexpr, falseexpr)
 
         else:
-            return f(self, *args, **kwargs)
+            return f(self, ast, result=result)
 
     return expander
 
