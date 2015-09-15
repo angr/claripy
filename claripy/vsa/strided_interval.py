@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
-from .decorators import expand_ifproxy
 from ..backend_object import BackendObject
 
 def normalize_types(f):
@@ -19,7 +18,7 @@ def normalize_types(f):
         if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
 
-        if isinstance(o, ValueSet) or isinstance(o, IfProxy) or isinstance(o, DiscreteStridedIntervalSet):
+        if isinstance(o, ValueSet) or isinstance(o, DiscreteStridedIntervalSet):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
@@ -708,7 +707,6 @@ class StridedInterval(BackendObject):
     def __invert__(self):
         return self.bitwise_not()
 
-    @expand_ifproxy
     @normalize_types
     def __or__(self, other):
         return self.bitwise_or(other)
@@ -720,12 +718,10 @@ class StridedInterval(BackendObject):
     def __rand__(self, other):
         return self.__and__(other)
 
-    @expand_ifproxy
     @normalize_types
     def __xor__(self, other):
         return self.bitwise_xor(other)
 
-    @expand_ifproxy
     def __rxor__(self, other):
         return self.__xor__(other)
 
@@ -2415,6 +2411,5 @@ from .bool_result import TrueResult, FalseResult, MaybeResult
 from . import discrete_strided_interval_set
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
-from .ifproxy import IfProxy
 from ..ast.base import Base
 from ..bv import BVV

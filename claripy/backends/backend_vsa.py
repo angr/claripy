@@ -5,7 +5,6 @@ import operator
 l = logging.getLogger("claripy.backends.backend_vsa")
 
 from ..backend import Backend, BackendError
-from ..vsa import expand_ifproxy, expr_op_expand_ifproxy
 
 def arg_filter(f):
     @functools.wraps(f)
@@ -66,37 +65,31 @@ def convert_bvv_args(f):
 
 def normalize_reversed_arguments(f):
     @functools.wraps(f)
-    def normalizer(self, *args, **kwargs):
+    def normalizer(self, ast, result=None):
         arg_reversed = []
         raw_args = []
-        for i in xrange(len(args)):
-            if isinstance(args[i], Base) and \
-                            type(args[i].model) in { #pylint:disable=unidiomatic-typecheck
+        for i in xrange(len(ast.args)):
+            if isinstance(ast.args[i], Base) and \
+                            type(ast.args[i].model) in { #pylint:disable=unidiomatic-typecheck
                                                     StridedInterval,
                                                     DiscreteStridedIntervalSet,
                                                     ValueSet
             }:
-                if args[i].model.reversed:
+                if ast.args[i].model.reversed:
                     arg_reversed.append(True)
-                    raw_args.append(args[i].reversed)
+                    raw_args.append(ast.args[i].reversed)
                     continue
 
             # It's not reversed
             arg_reversed.append(False)
-            raw_args.append(args[i])
+            raw_args.append(ast.args[i])
 
         any_reversed_arg = any(arg_reversed)
         for i in xrange(len(raw_args)):
             raw_args[i] = self.convert(raw_args[i])
 
-        ret = f(self, *raw_args, **kwargs)
-
-        variables = set()
-        for a in raw_args:
-            if isinstance(a, Base):
-                variables |= a.variables
-            else:
-                variables.add(a.name)
+        normalized = ast.swap_args(raw_args)
+        ret = f(self, normalized, result=result)
 
         # inner_i = I(args[0]._claripy, ret, variables=variables)
         if any_reversed_arg:
@@ -118,19 +111,22 @@ class BackendVSA(Backend):
         self._op_raw['ValueSet'] = ValueSet.__init__
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['Reverse'] = BackendVSA.Reverse
-        self._op_expr['If'] = self.If
+        self._op_raw['If'] = self.If
         self._op_expr['BVS'] = self.BVS
 
+    def convert(self, expr, result=None):
+        return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
+
     def _convert(self, a, result=None):
-        if type(a) in { int, long, float, bool, str }: #pylint:disable=unidiomatic-typecheck
+        if type(a) in { int, long, float, str }: #pylint:disable=unidiomatic-typecheck
             return a
+        if type(a) is bool:
+            return TrueResult() if a else FalseResult()
         if type(a) is BVV: #pylint:disable=unidiomatic-typecheck
             return BackendVSA.CreateStridedInterval(bits=a.bits, to_conv=a)
         if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
             return a
         if isinstance(a, BoolResult):
-            return a
-        if isinstance(a, IfProxy):
             return a
 
         raise BackendError("why is fish raising NotImplementedError INSTEAD OF THE ERROR THAT'S SUPPOSED TO BE RAISED IN THIS SITUATION? SERIOUSLY, JUST RAISE A BACKENDERROR AND EVERYONE WILL BE HAPPY, BUT NO, PEOPLE HAVE TO RAISE THEIR OWN ERRORS INSTEAD OF USING THE ERRORS THAT WERE ****DESIGNED**** FOR THIS SORT OF THING. WHY DO I BOTHER DESIGNING A GOOD ERROR HIERARCHY, ANYWAYS? WILL IT BE USED? NO! IT'LL BE ALL NotImplementedError('THIS') or Exception('THAT') AND EVERYTHING WILL MELT DOWN. UGH!")
@@ -147,22 +143,11 @@ class BackendVSA(Backend):
             return results
         elif isinstance(expr, BoolResult):
             return expr.value
-        elif isinstance(expr, IfProxy):
-            results = set(self._eval(expr.trueexpr, n, result=result))
-            if len(results) < n:
-                results |= set(self._eval(expr.falseexpr, n - len(results), result=result))
-            return list(results)
         else:
             raise BackendError('Unsupported type %s' % type(expr))
 
     def _min(self, expr, result=None, solver=None, extra_constraints=()):
-        if isinstance(expr, IfProxy):
-            v1 = self.min(expr.trueexpr)
-            v2 = self.min(expr.falseexpr)
-
-            return min(v1, v2)
-
-        elif isinstance(expr, StridedInterval):
+        if isinstance(expr, StridedInterval):
             if expr.is_top:
                 # TODO: Return
                 return StridedInterval.min_int(expr.bits)
@@ -172,29 +157,17 @@ class BackendVSA(Backend):
             raise BackendError('Unsupported expr type %s' % type(expr))
 
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
-        if isinstance(expr, IfProxy):
-            v1 = self.max(expr.trueexpr)
-            v2 = self.max(expr.falseexpr)
+        if isinstance(expr, StridedInterval):
+            if expr.is_top:
+                # TODO:
+                return StridedInterval.max_int(expr.bits)
 
-            return max(v1, v2)
+            return expr.upper_bound
 
         else:
-            if isinstance(expr, StridedInterval):
-                if expr.is_top:
-                    # TODO:
-                    return StridedInterval.max_int(expr.bits)
-
-                return expr.upper_bound
-
-            else:
-                raise BackendError('Unsupported expr type %s' % type(expr))
+            raise BackendError('Unsupported expr type %s' % type(expr))
 
     def _solution(self, obj, v, result=None, solver=None, extra_constraints=()):
-        if isinstance(obj, IfProxy):
-            ret = self._solution(obj.trueexpr, v, result=result) or \
-                self._solution(obj.falseexpr, v, result=result)
-            return ret
-
         if isinstance(obj, BoolResult):
             return v in obj.value
 
@@ -939,8 +912,6 @@ class BackendVSA(Backend):
             return obj.unique
         elif isinstance(obj, ValueSet):
             return obj.unique
-        elif isinstance(obj, IfProxy):
-            return False
         else:
             raise BackendError('Not supported type of operand %s' % type(obj))
 
@@ -952,13 +923,11 @@ class BackendVSA(Backend):
             return None
 
     @staticmethod
-    @expand_ifproxy
     @normalize_boolean_arg_types
     def And(a, *args):
         return reduce(operator.__and__, args, a)
 
     @staticmethod
-    @expand_ifproxy
     @normalize_boolean_arg_types
     def Not(a):
         return ~a
@@ -1009,32 +978,21 @@ class BackendVSA(Backend):
         name, mn, mx, stride = ast.args
         return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride)
 
-    def If(self, ast, result=None): #pylint:disable=unused-argument
-        cond, true_expr, false_expr = ast.args
-        exprs = []
-        cond_model = self.convert(cond)
-        if self.has_true(cond_model):
-            exprs.append(true_expr)
-        if self.has_false(cond_model):
-            exprs.append(false_expr)
-
-        if len(exprs) == 1:
-            expr = self.convert(exprs[0])
+    def If(self, cond, t, f):
+        if not self.has_true(cond):
+            return f
+        elif not self.has_false(cond):
+            return t
         else:
-            # TODO: How to handle it?
-            expr = IfProxy(cond, self.convert(exprs[0]), self.convert(exprs[1]))
-
-        return expr
+            return t.union(f)
 
     # TODO: Implement other operations!
 
     @staticmethod
-    @expand_ifproxy
     def LShR(expr, shift_amount):
         return expr >> shift_amount
 
     @staticmethod
-    @expand_ifproxy
     def Concat(*args):
         ret = None
         for expr in args:
@@ -1050,13 +1008,12 @@ class BackendVSA(Backend):
 
     @arg_filter
     def _size(self, arg, result=None):
-        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, IfProxy }: #pylint:disable=unidiomatic-typecheck
+        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
             return len(arg)
         else:
             return arg.size()
 
     @staticmethod
-    @expand_ifproxy
     def Extract(*args):
         low_bit = args[1]
         high_bit = args[0]
@@ -1070,7 +1027,6 @@ class BackendVSA(Backend):
         return ret
 
     @staticmethod
-    @expand_ifproxy
     @convert_bvv_args
     def SignExt(*args):
         new_bits = args[0]
@@ -1082,7 +1038,6 @@ class BackendVSA(Backend):
         return expr.sign_extend(new_bits + expr.bits)
 
     @staticmethod
-    @expand_ifproxy
     @convert_bvv_args
     def ZeroExt(*args):
         new_bits = args[0]
@@ -1094,35 +1049,32 @@ class BackendVSA(Backend):
         return expr.zero_extend(new_bits + expr.bits)
 
     @staticmethod
-    @expand_ifproxy
     def Reverse(arg):
         if type(arg) not in {StridedInterval, DiscreteStridedIntervalSet, ValueSet}: #pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported expr type %s' % type(arg))
 
         return arg.reverse()
 
-    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
-    def union(self, *args, **kwargs): #pylint:disable=unused-argument,no-self-use
-        if len(args) != 2:
-            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(args))
+    def union(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+        if len(ast.args) != 2:
+            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(ast.args))
 
-        ret = args[0].union(args[1])
+        ret = ast.args[0].union(ast.args[1])
 
         if ret is NotImplemented:
-            ret = args[1].union(args[0])
+            ret = ast.args[1].union(ast.args[0])
 
         return ret
 
-    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
-    def intersection(self, *args, **kwargs): #pylint:disable=unused-argument,no-self-use
-        if len(args) != 2:
-            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(args))
+    def intersection(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+        if len(ast.args) != 2:
+            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(ast.args))
 
         ret = None
 
-        for arg in args:
+        for arg in ast.args:
             if ret is None:
                 ret = arg
             else:
@@ -1130,15 +1082,14 @@ class BackendVSA(Backend):
 
         return ret
 
-    @expr_op_expand_ifproxy
     @normalize_reversed_arguments
-    def widen(self, *args, **kwargs): #pylint:disable=unused-argument,no-self-use
-        if len(args) != 2:
-            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(args))
+    def widen(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+        if len(ast.args) != 2:
+            raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(ast.args))
 
-        ret = args[0].widen(args[1])
+        ret = ast.args[0].widen(ast.args[1])
         if ret is NotImplemented:
-            ret = args[1].widen(args[0])
+            ret = ast.args[1].widen(ast.args[0])
 
         return ret
 
@@ -1150,7 +1101,6 @@ from ..bv import BVV
 from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
-from ..vsa import IfProxy
 from ..errors import ClaripyBackendVSAError, ClaripyVSASimplifierError
 
 from .. import _all_operations

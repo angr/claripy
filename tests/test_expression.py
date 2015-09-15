@@ -124,11 +124,30 @@ def test_expression():
     #nose.tools.assert_is_instance(rb.args[0], claripy.Base)
     # TODO: Properly delay reversing: should not be eager
 
-    rbi = rb.identical(bb)
-    nose.tools.assert_is(rbi, False)
+    nose.tools.assert_is_not(rb, bb)
+    nose.tools.assert_is(rb, rb)
 
-    rbi = rb.identical(rb)
-    nose.tools.assert_is(rbi, True)
+def test_if_stuff():
+    x = claripy.BVS('x', 32)
+    #y = claripy.BVS('y', 32)
+
+    c = claripy.If(x > 10, (claripy.If(x > 10, x*3, x*2)), x*4) + 2
+    cc = claripy.If(x > 10, x*3, x*4) + 2
+    ccc = claripy.If(x > 10, x*3+2, x*4+2)
+    cccc = x*claripy.If(x > 10, claripy.BVV(3, 32), claripy.BVV(4, 32)) + 2
+
+    nose.tools.assert_is(c, cc)
+    nose.tools.assert_is(c.ite_excavated, ccc)
+    nose.tools.assert_is(ccc.ite_burrowed, cccc)
+
+    i = c + c
+    ii = claripy.If(x > 10, (x*3+2)+(x*3+2), (x*4+2)+(x*4+2))
+    nose.tools.assert_is(i.ite_excavated, ii)
+
+    cn = claripy.If(x <= 10, claripy.BVV(0x10, 32), 0x20)
+    iii = c + cn
+    iiii = claripy.If(x > 10, (x*3+2)+0x20, (x*4+2)+0x10)
+    nose.tools.assert_is(iii.ite_excavated, iiii)
 
 def test_ite():
     raw_ite(claripy.frontends.FullFrontend)
@@ -189,3 +208,4 @@ if __name__ == '__main__':
     test_expression()
     test_bool()
     test_ite()
+    test_if_stuff()

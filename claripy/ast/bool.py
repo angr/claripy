@@ -102,13 +102,18 @@ def If(*args):
             raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
 
     if is_true(args[0]):
-        return args[1].make_like(args[1].op, args[1].args,
-                                 variables=(args[1].variables | args[0].variables),
-                                 symbolic=args[1].symbolic)
+        return args[1]
     elif is_false(args[0]):
-        return args[2].make_like(args[2].op, args[2].args,
-                                 variables=(args[2].variables | args[0].variables),
-                                 symbolic=args[2].symbolic)
+        return args[2]
+
+    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is args[0]:
+        return If(args[0], args[1].args[1], args[2])
+    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is Not(args[0]):
+        return If(args[0], args[1].args[2], args[2])
+    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is args[0]:
+        return If(args[0], args[1], args[2].args[2])
+    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is Not(args[0]):
+        return If(args[0], args[1], args[2].args[1])
 
     if issubclass(ty, Bits):
         return ty('If', tuple(args), length=args[1].length)

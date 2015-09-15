@@ -70,7 +70,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length', '_excavated', '_burrowed' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -166,6 +166,8 @@ class Base(ana.Storable):
 
         self._simplified = simplified
         self._cache_key = ASTCacheKey()
+        self._excavated = None
+        self._burrowed = None
 
         if self.op != 'I' and all(_is_eager(a) for a in self.args):
             model = self.model
@@ -337,7 +339,7 @@ class Base(ana.Storable):
         if t in (int, long, bool, str, bv.BVV):
             return 1
 
-        elif t in (vsa.IfProxy, vsa.StridedInterval, vsa.ValueSet, vsa.DiscreteStridedIntervalSet):
+        elif t in (vsa.StridedInterval, vsa.ValueSet, vsa.DiscreteStridedIntervalSet):
             return self.model.cardinality
 
         else:
@@ -421,7 +423,7 @@ class Base(ana.Storable):
 
         self = self.reduced
 
-        if not isinstance(self.model, Base):
+        if isinstance(self.model, bv.BVV):
             if inner:
                 if isinstance(self.model, bv.BVV):
                     if self.model.value < 10:
@@ -557,6 +559,18 @@ class Base(ana.Storable):
         replacements[hash_key] = r
         return r
 
+    def swap_args(self, new_args, new_length=None):
+        '''
+        This returns the same AST, with the arguments swapped out for new_args.
+        '''
+
+        #symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
+        #variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
+        length = self.length if new_length is None else new_length
+        a = self.__class__(self.op, new_args, length=length)
+        #if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
+        #   raise ClaripyOperationError("major bug in swap_args()")
+        return a
 
     #
     # Other helper functions
@@ -671,40 +685,121 @@ class Base(ana.Storable):
 
         return all_vars, expr
 
-#
-# Unbound methods
-#
+    #
+    # This code handles burrowing ITEs deeper into the ast and excavating
+    # them to shallower levels.
+    #
 
-def is_identical(*args):
-    '''
-    Attempts to check if the underlying models of the expression are identical,
-    even if the hashes match.
+    def _burrow_ite(self):
+        if self.op != 'If':
+            #print "i'm not an if"
+            return self.swap_args([ (a.ite_burrowed if isinstance(a, Base) else a) for a in self.args ])
 
-    This process is somewhat conservative: False does not necessarily mean that
-    it's not identical; just that it can't (easily) be determined to be identical.
-    '''
-    if not all([isinstance(a, Base) for a in args]):
-        return False
+        if not all(isinstance(a, Base) for a in self.args):
+            #print "not all my args are bases"
+            return self
 
-    if len(set(hash(a) for a in args)) == 1:
-        return True
+        old_true = self.args[1]
+        old_false = self.args[2]
 
-    first = args[0]
-    identical = None
-    for o in args:
-        for b in _all_backends:
-            try:
-                i = b.identical(first, o)
-                if identical is None:
-                    identical = True
-                identical &= i is True
-            except BackendError:
-                pass
+        if old_true.op != old_false.op or len(old_true.args) != len(old_false.args):
+            return self
 
-        if not identical:
-            return False
+        if old_true.op == 'If':
+            # let's no go into this right now
+            return self
 
-    return identical is True
+        matches = [ old_true.args[i] is old_false.args[i] for i in range(len(old_true.args)) ]
+        if matches.count(True) != 1 or all(matches):
+            # TODO: handle multiple differences for multi-arg ast nodes
+            #print "wrong number of matches:",matches,old_true,old_false
+            return self
+
+        different_idx = matches.index(False)
+        inner_if = If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
+        new_args = list(old_true.args)
+        new_args[different_idx] = inner_if.ite_burrowed
+        #print "replaced the",different_idx,"arg:",new_args
+        return old_true.__class__(old_true.op, new_args, length=self.length)
+
+    def _excavate_ite(self):
+        if self.op in { 'BVS', 'I', 'BVV' }:
+            return self
+
+        excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]
+        ite_args = [ isinstance(a, Base) and a.op == 'If' for a in excavated_args ]
+
+        if self.op == 'If':
+            # if we are an If, call the If handler so that we can take advantage of its simplifiers
+            return If(*excavated_args)
+        elif ite_args.count(True) == 0:
+            # if there are no ifs that came to the surface, there's nothing more to do
+            return self.swap_args(excavated_args)
+        #elif ite_args.count(True) == 1:
+        #   # if there is exactly one If and we're a non-if operation, then we can distribute
+        #   # ourselves into the If
+        #   if_idx = ite_args.index(True)
+        #   old_if = excavated_args[if_idx]
+        #   _, old_true, old_false = old_if.args
+
+        #   # set up the new true branch
+        #   new_true_args = list(excavated_args)
+        #   new_true_args[if_idx] = old_true
+        #   new_true = self.swap_args(new_true_args, new_length=self.length)
+
+        #   # set up the new false branch
+        #   new_false_args = list(excavated_args)
+        #   new_false_args[if_idx] = old_false
+        #   new_false = self.swap_args(new_false_args, new_length=self.length)
+
+        #   return If(old_if.args[0], new_true, new_false)
+        else:
+            cond = excavated_args[ite_args.index(True)].args[0]
+            new_true_args = [ ]
+            new_false_args = [ ]
+
+            for a in excavated_args:
+                #print "OC", cond.dbg_repr()
+                #print "NC", Not(cond).dbg_repr()
+
+                if a.op != 'If':
+                    new_true_args.append(a)
+                    new_false_args.append(a)
+                elif a.args[0] is cond:
+                    #print "AC", a.args[0].dbg_repr()
+                    new_true_args.append(a.args[1])
+                    new_false_args.append(a.args[2])
+                elif a.args[0] is Not(cond):
+                    #print "AN", a.args[0].dbg_repr()
+                    new_true_args.append(a.args[2])
+                    new_false_args.append(a.args[1])
+                else:
+                    #print "AB", a.args[0].dbg_repr()
+                    # weird conditions -- giving up!
+                    return self.swap_args(excavated_args)
+
+            return If(cond, self.swap_args(new_true_args), self.swap_args(new_false_args))
+
+    @property
+    def ite_burrowed(self):
+        '''
+        Returns an equivalent AST that "burrows" the ITE expressions
+        as deep as possible into the ast, for simpler printing.
+        '''
+        if self._burrowed is None:
+            self._burrowed = self._burrow_ite() #pylint:disable=attribute-defined-outside-init
+        return self._burrowed
+
+    @property
+    def ite_excavated(self):
+        '''
+        Returns an equivalent AST that "excavates" the ITE expressions
+        out as far as possible toward the root of the AST, for processing
+        in static analyses.
+        '''
+        if self._excavated is None:
+            self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
+        return self._excavated
 
 def model_object(e, result=None):
     for b in _all_backends:
@@ -735,5 +830,5 @@ from ..vsa import StridedInterval
 from ..backend_object import BackendObject
 from .. import _all_backends, _model_backends
 from ..ast.bits import Bits
-from ..ast.bool import Bool
+from ..ast.bool import Bool, If, Not
 from ..ast.bv import BV

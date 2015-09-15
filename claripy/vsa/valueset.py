@@ -8,9 +8,6 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if isinstance(o, IfProxy):
-            return NotImplemented
-
         if isinstance(o, Base):
             o = o.model
 
@@ -27,9 +24,6 @@ def normalize_types_one_arg(f):
         '''
         Convert any object to an object that we can process.
         '''
-        if isinstance(o, IfProxy):
-            return NotImplemented
-
         if isinstance(o, Base):
             o = o.model
 
@@ -58,7 +52,7 @@ class ValueSet(BackendObject):
             self._bits = bits
 
         if region is not None and val is not None:
-            if isinstance(val, (StridedInterval, IfProxy)):
+            if isinstance(val, StridedInterval):
                 self.set_si(region, val)
 
             elif type(val) in (int, long):
@@ -378,6 +372,5 @@ class ValueSet(BackendObject):
 
 from ..ast.base import Base
 from .strided_interval import StridedInterval
-from .ifproxy import IfProxy
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
 from .errors import ClaripyVSAOperationError, ClaripyVSAError
