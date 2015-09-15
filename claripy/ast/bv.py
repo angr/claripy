@@ -102,7 +102,7 @@ class BV(Bits):
     def to_bv(self):
         return self
 
-def BVS(name, size, min=None, max=None, stride=None, explicit_name=False): #pylint:disable=redefined-builtin
+def BVS(name, size, min=None, max=None, stride=None, explicit_name=None): #pylint:disable=redefined-builtin
     '''
     Creates a bit-vector symbol (i.e., a variable).
 
@@ -116,7 +116,7 @@ def BVS(name, size, min=None, max=None, stride=None, explicit_name=False): #pyli
 
     @returns a BV object representing this symbol
     '''
-    n = _make_name(name, size, explicit_name)
+    n = _make_name(name, size, False if explicit_name is None else explicit_name)
     return BV('BVS', (n, min, max, stride), variables={n}, length=size, symbolic=True, eager=False)
 
 def BVV(value, size):
@@ -135,20 +135,23 @@ def BVV(value, size):
         _bvv_cache[(value, size)] = result
         return result
 
-def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None):
+def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None, explicit_name=None):
     name = 'unnamed' if name is None else name
-    return BVS(name, bits, min=lower_bound, max=upper_bound, stride=stride)
+    if to_conv is not None:
+        si = vsa.CreateStridedInterval(name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv)
+        return BVS(name, si._bits, min=si._lower_bound, max=si._upper_bound, stride=si._stride, explicit_name=explicit_name)
+    return BVS(name, bits, min=lower_bound, max=upper_bound, stride=stride, explicit_name=explicit_name)
 
-def TSI(bits, name=None, uninitialized=False):
+def TSI(bits, name=None, uninitialized=False, explicit_name=None):
     name = 'unnamed' if name is None else name
     if uninitialized is not False:
         raise Exception('TODO')
-    return BVS(name, bits)
+    return BVS(name, bits, explicit_name=explicit_name)
 
-def ESI(bits, name=None):
+def ESI(bits, name=None, explicit_name=None):
     name = 'unnamed' if name is None else name
     # TODO: empty
-    return BVS(name, bits)
+    return BVS(name, bits, explicit_name=explicit_name)
 
 def ValueSet(**kwargs):
     vs = vsa.ValueSet(**kwargs)

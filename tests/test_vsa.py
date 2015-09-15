@@ -185,9 +185,9 @@ def test_vsa():
     claripy.vsa.strided_interval.allow_dsis = False
 
     def is_equal(ast_0, ast_1):
-        return ast_0.identical(ast_1)
+        return claripy.backend_vsa.identical(ast_0, ast_1)
 
-    si1 = claripy.TSI(32, name="foo")
+    si1 = claripy.TSI(32, name="foo", explicit_name=True)
     nose.tools.assert_equal(si1.model.name, "foo")
 
     # Normalization
