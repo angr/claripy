@@ -166,10 +166,10 @@ from .bool import Bool
 from .. import operations
 
 # comparisons
-ULT = operations.op('ULT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-ULE = operations.op('ULE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-UGT = operations.op('UGT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
-UGE = operations.op('UGE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+ULT = operations.op('__lt__', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+ULE = operations.op('__le__', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+UGT = operations.op('__gt__', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
+UGE = operations.op('__ge__', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
 SLT = operations.op('SLT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
 SLE = operations.op('SLE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
 SGT = operations.op('SGT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
@@ -234,10 +234,10 @@ BV.SLT = operations.op('SLT', (BV, BV), Bool, extra_check=operations.length_same
 BV.SGT = operations.op('SGT', (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.SLE = operations.op('SLE', (BV, BV), Bool, extra_check=operations.length_same_check)
 BV.SGE = operations.op('SGE', (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.ULT = operations.op('ULT', (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.UGT = operations.op('UGT', (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.ULE = operations.op('ULE', (BV, BV), Bool, extra_check=operations.length_same_check)
-BV.UGE = operations.op('UGE', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.ULT = operations.op('__lt__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.UGT = operations.op('__gt__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.ULE = operations.op('__le__', (BV, BV), Bool, extra_check=operations.length_same_check)
+BV.UGE = operations.op('__ge__', (BV, BV), Bool, extra_check=operations.length_same_check)
 
 BV.__invert__ = operations.op('__invert__', (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__or__ = operations.op('__or__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)

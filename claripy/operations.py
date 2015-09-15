@@ -290,13 +290,13 @@ def not_simplifier(body):
     elif body.op == 'SGE':
         return ast.all_operations.SLT(body.args[0], body.args[1])
 
-    if body.op == 'ULT':
+    if body.op == '__lt__':
         return ast.all_operations.UGE(body.args[0], body.args[1])
-    elif body.op == 'ULE':
+    elif body.op == '__le__':
         return ast.all_operations.UGT(body.args[0], body.args[1])
-    elif body.op == 'UGT':
+    elif body.op == '__gt__':
         return ast.all_operations.ULE(body.args[0], body.args[1])
-    elif body.op == 'UGE':
+    elif body.op == '__ge__':
         return ast.all_operations.ULT(body.args[0], body.args[1])
 
 def extract_simplifier(high, low, val):
