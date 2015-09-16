@@ -128,9 +128,15 @@ def BVV(value, size=None):
 
     @returns a BV object representing this value
     '''
-    if size is None and type(value) is str:
-        size = 8*len(str)
-        value = int(value.encode('hex'), 16)
+
+    if type(value) is str:
+        if size is None:
+            size = 8*len(str)
+            value = int(value.encode('hex'), 16)
+        elif size == len(value)*8:
+            value = int(value.encode('hex'), 16)
+        else:
+            raise ClaripyValueError('string/size mismatch for BVV creation')
     elif size is None:
         raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
 
