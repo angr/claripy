@@ -50,6 +50,10 @@ class Balancer(object):
             # return the dummy result
             return True, [ ]
 
+    def _simplify(self, op, args, expr, condition):
+        new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
+        return new_expr, new_cond
+
     def _handle(self, op, args):
 
         if len(args) == 2:
@@ -133,6 +137,9 @@ class Balancer(object):
             # We cannot handle this...
             return expr, condition
 
+    def _simplify_BVS(self, args, expr, condition): #pylint:disable=no-self-use,unused-argument
+        return expr, condition
+
     def _simplify_SignExt(self, args, expr, condition):
         """
 
@@ -192,7 +199,7 @@ class Balancer(object):
             cond_op, cond_arg = cond
             if type(cond_arg.model) in (int, long): #pylint:disable=unidiomatic-typecheck
                 cond_arg = _all_operations.BVV(cond_arg, ast.size())
-            elif type(cond_arg.model) in (StridedInterval, DiscreteStridedIntervalSet, BVV): #pylint:disable=unidiomatic-typecheck
+            elif type(cond_arg.model) in (vsa.StridedInterval, vsa.DiscreteStridedIntervalSet, bv.BVV): #pylint:disable=unidiomatic-typecheck
                 if ast.size() > cond_arg.size():
                     # Make sure two operands have the same size
                     cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)
@@ -343,11 +350,11 @@ class Balancer(object):
             return self._simplify(argr.op, argr.args, argr, condition)
         else:
 
-            if isinstance(argl.model, BVV):
+            if isinstance(argl.model, bv.BVV):
                 new_cond = (condition[0], condition[1] - argl)
                 return self._simplify(argr.op, argr.args, argr, new_cond)
 
-            elif isinstance(argr.model, BVV):
+            elif isinstance(argr.model, bv.BVV):
                 new_cond = (condition[0], condition[1] - argr)
                 return self._simplify(argl.op, argl.args, argl, new_cond)
 
@@ -443,12 +450,12 @@ class Balancer(object):
             raise ClaripyBalancerError('Left-hand-side expression is not an AST object.')
 
         # Maybe the target variable is the rhs
-        if isinstance(lhs.model, BVV):
+        if isinstance(lhs.model, bv.BVV):
             new_op = self.reversed_operations[comp]
             new_lhs, new_rhs = rhs, lhs
             return self._handle(new_op, (new_lhs, new_rhs))
 
-        if type(rhs) in (int, long) or type(rhs.model) is BVV: #pylint:disable=unidiomatic-typecheck
+        if type(rhs) in (int, long) or type(rhs.model) is bv.BVV: #pylint:disable=unidiomatic-typecheck
             # Convert it into an SI
             rhs = _all_operations.SI(to_conv=rhs)
 
@@ -501,7 +508,7 @@ class Balancer(object):
                 # Not satisfiable
                 return False, [ ]
 
-        elif isinstance(rhs.model, StridedInterval) and isinstance(lhs.model, StridedInterval):
+        elif isinstance(rhs.model, vsa.StridedInterval) and isinstance(lhs.model, vsa.StridedInterval):
             if isinstance(lhs.model, Base):
                 # It cannot be computed by our backend...
                 # We just give up for now
@@ -512,7 +519,7 @@ class Balancer(object):
             if is_lt:
                 # < or <=
                 if is_unsigned: lb = 0
-                else: lb = StridedInterval.min_int(rhs.length)
+                else: lb = vsa.StridedInterval.min_int(rhs.length)
 
                 ub = rhs.model.upper_bound
                 if not is_equal:
@@ -521,8 +528,8 @@ class Balancer(object):
 
             else:
                 # > or >=
-                if is_unsigned: ub = StridedInterval.max_int(rhs.length)
-                else: ub = StridedInterval.max_int(rhs.model.bits - 1)
+                if is_unsigned: ub = vsa.StridedInterval.max_int(rhs.length)
+                else: ub = vsa.StridedInterval.max_int(rhs.model.bits - 1)
 
                 lb = rhs.model.lower_bound
                 if not is_equal:
@@ -530,7 +537,7 @@ class Balancer(object):
                     lb = lb + 1
 
             if stride == 0 and lb != ub:
-                # Make sure the final StridedInterval is always meaningful. See issue #55.
+                # Make sure the final vsa.StridedInterval is always meaningful. See issue #55.
                 stride = 1
 
             si_replacement = _all_operations.SI(bits=rhs.length, stride=stride, lower_bound=lb, upper_bound=ub)
@@ -557,7 +564,7 @@ class Balancer(object):
 
         if a in (False, 0):
             return False, [ ]
-        elif isinstance(a, BVV) and a.value == 0:
+        elif isinstance(a, bv.BVV) and a.value == 0:
             return False, [ ]
 
         return True, [ ]
@@ -676,10 +683,10 @@ class Balancer(object):
             else:
                 # Not satisfiable
                 return False, [ ]
-        elif isinstance(lhs.model, StridedInterval) or isinstance(lhs.model, BVV):
-            if not isinstance(lhs.model, StridedInterval):
+        elif isinstance(lhs.model, vsa.StridedInterval) or isinstance(lhs.model, bv.BVV):
+            if not isinstance(lhs.model, vsa.StridedInterval):
                 try: lhs = _all_operations.SI(to_conv=lhs)
-                except BackendError: return True, [ ] # We cannot convert it to a StridedInterval
+                except BackendError: return True, [ ] # We cannot convert it to a vsa.StridedInterval
 
             try: rhs = _all_operations.SI(to_conv=rhs)
             except BackendError: return True, [ ]
@@ -710,10 +717,8 @@ class Balancer(object):
 
             return True, [ ]
 
-    def _simplify(self, op, args, expr, condition):
-        new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
-        return new_expr, new_cond
-
-from .errors import ClaripyBalancerError, ClaripyBackendVSAError
-from .ast import Base
+from .errors import ClaripyBalancerError, ClaripyBackendVSAError, BackendError
+from .ast.base import Base
 from . import _all_operations
+from . import vsa
+from . import bv

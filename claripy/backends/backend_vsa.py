@@ -114,6 +114,8 @@ class BackendVSA(Backend):
         self._op_raw['If'] = self.If
         self._op_expr['BVS'] = self.BVS
 
+        self._balancer = Balancer()
+
     def convert(self, expr, result=None):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
 
@@ -393,9 +395,13 @@ class BackendVSA(Backend):
     def CreateTopStridedInterval(bits, name=None, uninitialized=False): #pylint:disable=unused-argument,no-self-use
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
+    def constraint_to_si(self, expr):
+        return self._balancer.constraint_to_si(expr)
+
 from ..bv import BVV
 from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult
+from ..balancer import Balancer
 
 BackendVSA.CreateStridedInterval = staticmethod(CreateStridedInterval)
