@@ -550,6 +550,10 @@ class Base(ana.Storable):
             # let's no go into this right now
             return self
 
+        if any(a.op in {'BVS', 'BVV', 'FPS', 'FPV', 'BoolS', 'BoolV'} for a in self.args):
+            # burrowing through these is pretty funny
+            return self
+
         matches = [ old_true.args[i] is old_false.args[i] for i in range(len(old_true.args)) ]
         if matches.count(True) != 1 or all(matches):
             # TODO: handle multiple differences for multi-arg ast nodes
