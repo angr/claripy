@@ -21,14 +21,6 @@ md5_unpacker = struct.Struct('2Q')
 #pylint:enable=unused-argument
 #pylint:disable=unidiomatic-typecheck
 
-def _is_eager(a):
-    if isinstance(a, (int, long, bool, RM, FSort)):
-        return True
-    elif isinstance(a, Base):
-        return a.eager
-    else:
-        return False
-
 def _inner_repr(a, **kwargs):
     if isinstance(a, Base):
         return a.__repr__(inner=True, **kwargs)
@@ -70,7 +62,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length', '_excavated', '_burrowed' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -96,7 +88,7 @@ class Base(ana.Storable):
                            fast-simplified (basically, just undoing the Reverse op), and 2 means
                            simplified through z3.
         @param errored: a set of backends that are known to be unable to handle this AST.
-        @param eager: whether or not to evaluate future parent ASTs eagerly.
+        @param eager_backends: a list of backends with which to attempt eager evaluation
         '''
 
         #if any(isinstance(a, BackendObject) for a in args):
@@ -117,6 +109,18 @@ class Base(ana.Storable):
 
         if 'add_variables' in kwargs:
             kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
+
+        eager_backends = list(_eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
+
+        if eager_backends is not None:
+            for eb in eager_backends:
+                try:
+                    return eb._abstract(eb.call(op, args))
+                except BackendError:
+                    eager_backends.remove(eb)
+
+            # if we can't be eager anymore, null out the eagerness
+            kwargs['eager_backends'] = None
 
         h = Base._calc_hash(op, a_args, kwargs)
 
@@ -157,7 +161,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False, add_variables=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None): #pylint:disable=unused-argument
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''
@@ -166,7 +170,7 @@ class Base(ana.Storable):
         self.length = length
         self.variables = frozenset(variables)
         self.symbolic = symbolic
-        self.eager = eager
+        self._eager_backends = eager_backends
 
         self._collapsible = True if collapsible is None else collapsible
         self._errored = errored if errored is not None else set()
@@ -175,18 +179,6 @@ class Base(ana.Storable):
         self._cache_key = ASTCacheKey()
         self._excavated = None
         self._burrowed = None
-
-        if self.op != 'I' and all(_is_eager(a) for a in self.args):
-            model = self.model
-            if model is not self:
-                self.op = 'I'
-                self.args = (model,)
-
-                # Usually `eagerness` should be passed on. However, type of the model might be different than its
-                # arguments. In VSA, for instance, a union of two BVVs can lead to a StridedInterval instance, where
-                # BVVs should be evaluated eagerly while StridedIntervals should not be, Hence we are rechecking if the
-                # model itself should be eagerly evaluated and property set the eager property here.
-                self.eager = _is_eager(model)
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")

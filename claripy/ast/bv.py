@@ -161,7 +161,7 @@ def ESI(bits, name=None, explicit_name=None):
 
 def ValueSet(**kwargs):
     vs = vsa.ValueSet(**kwargs)
-    return BV('I', (vs,), variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager=False)
+    return BV('I', (vs,), variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager_backends=None)
 VS = ValueSet
 
 #
