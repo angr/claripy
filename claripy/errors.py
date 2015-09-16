@@ -19,14 +19,14 @@ class ClaripyZ3Error(ClaripyError):
 class ClaripyBackendVSAError(BackendError):
     pass
 
-class ClaripyVSASimplifierError(ClaripyBackendVSAError):
-    pass
-
 #
 # AST errors
 #
 
 class ClaripyASTError(ClaripyError):
+    pass
+
+class ClaripyBalancerError(ClaripyASTError):
     pass
 
 class ClaripyTypeError(ClaripyASTError):
