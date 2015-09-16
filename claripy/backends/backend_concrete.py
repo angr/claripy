@@ -56,9 +56,9 @@ class BackendConcrete(Backend):
     def _simplify(self, e):
         return e
 
-    def abstract(self, e): #pylint:disable=no-self-use
+    def _abstract(self, e): #pylint:disable=no-self-use
         if isinstance(e, bv.BVV):
-            return BVV(e, e.size())
+            return BVV(e.value, e.size())
         elif isinstance(e, bool):
             return BoolV(e)
         elif isinstance(e, fp.FPV):
