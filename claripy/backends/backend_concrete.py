@@ -30,7 +30,7 @@ class BackendConcrete(Backend):
             l.debug("BackendConcrete needs variable %s in the model", name)
             raise BackendError("BackendConcrete needs variable %s in the model" % name)
         else:
-            return result.model[name]
+            return bv.BVV(result.model[name], ast.length)
 
     def _If(self, b, t, f, result=None): #pylint:disable=no-self-use,unused-argument
         if not isinstance(b, bool):

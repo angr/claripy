@@ -242,155 +242,11 @@ class Base(ana.Storable):
     def make_like(self, *args, **kwargs):
         return type(self)(*args, **kwargs)
 
-    def _should_collapse(self):
-        '''
-        This is a helper function that checks if the AST is "collapsible". It returns
-        False if there is some reason to keep it from being collapsed. For example,
-        an AST that contains only one StridedInterval in its immediate arguments should
-        not be collapsed, because the VSA does tricky things to avoid losing precision.
-        '''
-        raw_args = self.arg_models()
-        types = [ type(a) for a in raw_args ]
-
-        #l.debug("In should_collapse()")
-
-        if types.count(Base) != 0 and not all((a._collapsible for a in raw_args if isinstance(a, Base))):
-                #l.debug("... not collapsing for op %s because ASTs are present.", self.op)
-                return False
-
-        if self.op in operations.not_invertible:
-            #l.debug("... collapsing the AST for operation %s because it's not invertible", self.op)
-            return True
-
-        constants = sum((types.count(t) for t in (int, long, bool, str, bv.BVV)))
-        if constants == len(raw_args):
-            #l.debug("... collapsing the AST for operation %s because it's full of constants", self.op)
-            return True
-
-        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer]) > 1:
-            #l.debug("... collapsing the AST for operation %s because there are more than two SIs", self.op)
-            return True
-
-        #
-        # More complex checks probably go here.
-        #
-
-        # Reversible; don't collapse!
-        #l.debug("not collapsing the AST for operation %s!", self.op)
-        return False
-
-    @property
-    def collapsed(self):
-        '''
-        A collapsed version of the AST, if the AST *can* be collapsed.
-        '''
-        if self._should_collapse() and self._collapsible:
-            #l.debug("Collapsing!")
-            r = self.model
-            if not isinstance(r, Base):
-                if isinstance(self, Bits):
-                    return self.__class__('I', args=(r,), length=len(self), variables=self.variables, symbolic=self.symbolic)
-                else:
-                    return self.__class__('I', args=(r,), variables=self.variables, symbolic=self.symbolic)
-            else:
-                return r
-        else:
-            return self
-
-    @property
-    def simplified(self):
-        '''
-        A lightly simplified version of the AST (simplify level 1). This basically
-        just cancels out two Reverse operations, if they are present. Later on, it will hopefully
-        do more.
-        '''
-
-        if self._simplified:
-            return self
-
-        if self.op in operations.reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-            inner_a = self.make_like(self.op, tuple(a.args[0] for a in self.args)).simplified
-            o = self.make_like('Reverse', (inner_a,), collapsible=True).simplified
-            o._simplified = Base.LITE_SIMPLIFY
-            return o
-
-        # self = self.make_like(self._claripy, self.op, tuple(a.reduced if isinstance(a, Base) else a for a in self.args))
-
-        return self
-
-    @property
-    def reduced(self):
-        '''
-        A simplified, collapsed version of the AST.
-        '''
-        a = self.simplified
-        if isinstance(a, Base):
-            return a.collapsed
-        else:
-            return a
-
-    # No more size in Base
-
     @property
     def cardinality(self):
-        t = type(self.model)
-
-        if t in (int, long, bool, str, bv.BVV):
-            return 1
-
-        elif t in (vsa.StridedInterval, vsa.ValueSet, vsa.DiscreteStridedIntervalSet):
-            return self.model.cardinality
-
-        else:
-            raise NotImplementedError("'cardinality' is not supported in modes other than static mode")
-
-    #
-    # Functionality for resolving to model objects
-    #
-
-    def arg_models(self):
-        '''
-        Helper function to return the model (i.e., non-AST) objects of the arguments.
-        '''
-        return [ (a.model if isinstance(a, Base) else a) for a in self.args ]
-
-    def resolved(self, result=None):
-        '''
-        Returns a model object (i.e., an object that is the result of all the operations
-        in the AST), if there is a backend that can handle this AST. Otherwise, return
-        itself.
-
-        @arg result: a Result object, for resolving symbolic variables using the
-                     concrete backend.
-        '''
-        for b in _model_backends:
-            try: return self.resolved_with(b, result=result)
-            except BackendError: self._errored.add(b)
-        l.debug("all model backends failed for op %s", self.op)
-        return self
-
-    @property
-    def model(self):
-        '''
-        The model object (the result of the operation represented by this AST).
-        '''
-        r = self.resolved()
-        return r
-
-    def resolved_with(self, b, result=None):
-        '''
-        Returns the result of carrying out the operation of this AST with the
-        specified backend.
-
-        @arg b: the backend to resolve with
-        @arg result: a Result object, for resolving symbolic variables using the
-                     concrete backend
-        '''
-        if b in self._errored and result is None:
-            raise BackendError("%s already failed" % b)
-
-        #l.debug("trying evaluation with %s", b)
-        return b.resolve(self, result=result)
+        for b in _all_backends:
+            try: return b.cardinality(self)
+            except BackendError: pass
 
     #
     # Viewing and debugging
@@ -420,64 +276,55 @@ class Base(ana.Storable):
         if WORKER:
             return '<AST something>'
 
-        self = self.reduced
-
-        if isinstance(self.model, bv.BVV):
-            if inner:
-                if isinstance(self.model, bv.BVV):
-                    if self.model.value < 10:
-                        val = format(self.model.value, '')
-                    else:
-                        val = format(self.model.value, '#x')
-                    return val + ('#' + str(self.model.bits) if explicit_length else '')
-                else:
-                    return repr(self.model)
+        try:
+            if self.op in operations.reversed_ops:
+                op = operations.reversed_ops[self.op]
+                args = self.args[::-1]
             else:
-                return '<{} {}>'.format(self._type_name(), self.model)
-        else:
-            try:
-                if self.op in operations.reversed_ops:
-                    op = operations.reversed_ops[self.op]
-                    args = self.args[::-1]
+                op = self.op
+                args = self.args
+
+            if op == 'BVS' and inner:
+                value = args[0]
+            elif op == 'BVV':
+                if self.args[1] < 10:
+                    value = format(self.args[0], '')
                 else:
-                    op = self.op
-                    args = self.args
+                    value = format(self.args[0], '#x')
+                value += ('#' + str(self.length)) if explicit_length else ''
+            elif op == 'If':
+                value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
+                                                       _inner_repr(args[1]),
+                                                       _inner_repr(args[2]))
+                if inner:
+                    value = '({})'.format(value)
+            elif op == 'Not':
+                value = '!{}'.format(_inner_repr(args[0]))
+            elif op == 'Extract':
+                value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
+            elif op == 'ZeroExt':
+                value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
+                if inner:
+                    value = '({})'.format(value)
+            elif op == 'Concat':
+                value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
+            elif len(args) == 2 and op in operations.infix:
+                value = '{} {} {}'.format(_inner_repr(args[0]),
+                                          operations.infix[op],
+                                          _inner_repr(args[1]))
+                if inner:
+                    value = '({})'.format(value)
+            else:
+                value = "{}({})".format(op,
+                                        ', '.join(_inner_repr(a) for a in args))
 
-                if op == 'BVS' and inner:
-                    value = args[0]
-                elif op == 'If':
-                    value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
-                                                           _inner_repr(args[1]),
-                                                           _inner_repr(args[2]))
-                    if inner:
-                        value = '({})'.format(value)
-                elif op == 'Not':
-                    value = '!{}'.format(_inner_repr(args[0]))
-                elif op == 'Extract':
-                    value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
-                elif op == 'ZeroExt':
-                    value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
-                    if inner:
-                        value = '({})'.format(value)
-                elif op == 'Concat':
-                    value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
-                elif len(args) == 2 and op in operations.infix:
-                    value = '{} {} {}'.format(_inner_repr(args[0]),
-                                              operations.infix[op],
-                                              _inner_repr(args[1]))
-                    if inner:
-                        value = '({})'.format(value)
-                else:
-                    value = "{}({})".format(op,
-                                            ', '.join(_inner_repr(a) for a in args))
+            if not inner:
+                value = '<{} {}>'.format(self._type_name(), value)
 
-                if not inner:
-                    value = '<{} {}>'.format(self._type_name(), value)
-
-                return value
-            except RuntimeError:
-                e_type, value, traceback = sys.exc_info()
-                raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
+            return value
+        except RuntimeError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
     @property
     def depth(self):
@@ -551,7 +398,7 @@ class Base(ana.Storable):
                 new_args.append(new_a)
 
             if replaced:
-                r = self.make_like(self.op, tuple(new_args)).reduced
+                r = self.make_like(self.op, tuple(new_args))
             else:
                 r = self
 
@@ -792,12 +639,6 @@ class Base(ana.Storable):
             self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
         return self._excavated
 
-def model_object(e, result=None):
-    for b in _all_backends:
-        try: return b.convert(e, result=result)
-        except BackendError: pass
-    raise ClaripyTypeError('no model backend can convert expression')
-
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
@@ -813,13 +654,9 @@ def simplify(e):
     l.debug("Unable to simplify expression")
     return e
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
+from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
 from .. import operations
-from .. import bv, vsa
-from ..fp import RM, FSort
-from ..vsa import StridedInterval
 from ..backend_object import BackendObject
-from .. import _all_backends, _model_backends
-from ..ast.bits import Bits
-from ..ast.bool import Bool, If, Not
+from .. import _all_backends, _eager_backends
+from ..ast.bool import If, Not
 from ..ast.bv import BV

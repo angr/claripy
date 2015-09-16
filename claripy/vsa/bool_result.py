@@ -41,35 +41,35 @@ class BoolResult(BackendObject):
     @staticmethod
     def is_maybe(o):
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         return isinstance(o, MaybeResult)
 
     @staticmethod
     def has_true(o):
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         return o is True or (isinstance(o, BoolResult) and True in o.value)
 
     @staticmethod
     def has_false(o):
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         return o is False or (isinstance(o, BoolResult) and False in o.value)
 
     @staticmethod
     def is_true(o):
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         return o is True or (isinstance(o, TrueResult))
 
     @staticmethod
     def is_false(o):
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         return o is False or (isinstance(o, FalseResult))
 

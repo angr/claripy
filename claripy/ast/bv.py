@@ -117,7 +117,7 @@ def BVS(name, size, min=None, max=None, stride=None, explicit_name=None): #pylin
     @returns a BV object representing this symbol
     '''
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
-    return BV('BVS', (n, min, max, stride), variables={n}, length=size, symbolic=True, eager=False)
+    return BV('BVS', (n, min, max, stride), variables={n}, length=size, symbolic=True, eager_backends=None)
 
 def BVV(value, size=None):
     '''

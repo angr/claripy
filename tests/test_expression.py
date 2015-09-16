@@ -1,36 +1,59 @@
 import claripy
 import nose
 
+def test_smudging():
+    x = claripy.BVS('x', 32)
+    y = x+1
+    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.BV))
+    nose.tools.assert_equal(y.args[1].args[0], 1)
+    nose.tools.assert_equal(y.args[1].args[1], 32)
+
+    x = claripy.BVS('x', 32)
+    y = x*1
+    z = y+1
+    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.BV))
+    nose.tools.assert_equal(y.args[1].args[0], 1)
+    nose.tools.assert_equal(y.args[1].args[1], 32)
+
+    nose.tools.assert_true(isinstance(z.args[1], claripy.ast.BV))
+    nose.tools.assert_equal(z.args[1].args[0], 1)
+    nose.tools.assert_equal(z.args[1].args[1], 32)
+
+    ccc = claripy.If(x > 10, x*3+2, x*4+2)
+    nose.tools.assert_true(isinstance(ccc.args[1].args[1], claripy.ast.BV))
+    nose.tools.assert_equal(ccc.args[1].args[1].args[0], 2)
+    nose.tools.assert_equal(ccc.args[1].args[1].args[1], 32)
+
 def test_expression():
     bc = claripy.backend_concrete
 
     e = claripy.BVV(0x01020304, 32)
     nose.tools.assert_equal(len(e), 32)
     r = e.reversed
-    nose.tools.assert_equal(r.resolved_with(bc), 0x04030201)
+    nose.tools.assert_equal(bc.convert(r), 0x04030201)
     nose.tools.assert_equal(len(r), 32)
 
-    nose.tools.assert_equal([ i.model for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
+    nose.tools.assert_equal([ bc.convert(i) for i in r.chop(8) ], [ 4, 3, 2, 1 ] )
 
     e1 = r[31:24]
-    nose.tools.assert_equal(e1.model, 0x04)
+    nose.tools.assert_equal(bc.convert(e1), 0x04)
     nose.tools.assert_equal(len(e1), 8)
-    nose.tools.assert_equal(e1[2].model, 1)
-    nose.tools.assert_equal(e1[1].model, 0)
+    nose.tools.assert_equal(bc.convert(e1[2]), 1)
+    nose.tools.assert_equal(bc.convert(e1[1]), 0)
 
     ee1 = e1.zero_extend(8)
-    nose.tools.assert_equal(ee1.model, 0x0004)
+    nose.tools.assert_equal(bc.convert(ee1), 0x0004)
     nose.tools.assert_equal(len(ee1), 16)
 
     ee1 = claripy.BVV(0xfe, 8).sign_extend(8)
-    nose.tools.assert_equal(ee1.model, 0xfffe)
+    nose.tools.assert_equal(bc.convert(ee1), 0xfffe)
     nose.tools.assert_equal(len(ee1), 16)
 
-    xe1 = [ i.model for i in e1.chop(1) ]
+    xe1 = [ bc.convert(i) for i in e1.chop(1) ]
     nose.tools.assert_equal(xe1, [ 0, 0, 0, 0, 0, 1, 0, 0 ])
 
     a = claripy.BVV(1, 1)
-    nose.tools.assert_equal((a+a).model, 2)
+    nose.tools.assert_equal(bc.convert(a+a), 2)
 
     x = claripy.BVV(1, 32)
     nose.tools.assert_equal(x.length, 32)
@@ -39,14 +62,14 @@ def test_expression():
 
     r = claripy.BVV(0x01020304, 32)
     rr = r.reversed
-    rrr = rr.reversed.simplified
-    #nose.tools.assert_is(r.model, rrr.model)
-    #nose.tools.assert_is(type(rr.model), claripy.A)
-    nose.tools.assert_equal(rr.resolved_with(bc), 0x04030201)
+    rrr = rr.reversed
+    #nose.tools.assert_is(bc.convert(r), bc.convert(rrr))
+    #nose.tools.assert_is(type(bc.convert(rr)), claripy.A)
+    nose.tools.assert_equal(bc.convert(rr), 0x04030201)
     nose.tools.assert_is(r.concat(rr), claripy.Concat(r, rr))
 
     rsum = r+rr
-    nose.tools.assert_equal(rsum.model, 0x05050505)
+    nose.tools.assert_equal(bc.convert(rsum), 0x05050505)
 
     r = claripy.BVS('x', 32)
     rr = r.reversed
@@ -100,7 +123,7 @@ def test_expression():
     nose.tools.assert_true(new_formula.symbolic)
 
     nose.tools.assert_equal(str(old_formula).replace('old', 'new'), str(new_formula))
-    nose.tools.assert_equal(ooo_formula.model, 20)
+    nose.tools.assert_equal(bc.convert(ooo_formula), 20)
 
     # test AST collapse
     s = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
@@ -198,16 +221,17 @@ def test_bool():
     bc = claripy.backend_concrete
 
     a = claripy.And(*[False, False, True])
-    nose.tools.assert_equal(a.resolved_with(bc), False)
+    nose.tools.assert_equal(bc.convert(a), False)
     a = claripy.And(*[True, True, True])
-    nose.tools.assert_equal(a.resolved_with(bc), True)
+    nose.tools.assert_equal(bc.convert(a), True)
 
     o = claripy.Or(*[False, False, True])
-    nose.tools.assert_equal(o.resolved_with(bc), True)
+    nose.tools.assert_equal(bc.convert(o), True)
     o = claripy.Or(*[False, False, False])
-    nose.tools.assert_equal(o.resolved_with(bc), False)
+    nose.tools.assert_equal(bc.convert(o), False)
 
 if __name__ == '__main__':
+    test_smudging()
     test_expression()
     test_bool()
     test_ite()

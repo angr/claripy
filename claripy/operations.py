@@ -90,11 +90,11 @@ preprocessors = {
 #
 
 def if_simplifier(cond, if_true, if_false):
-    if cond.reduced.is_true():
-        return if_true.reduced
+    if cond.is_true():
+        return if_true
 
-    if cond.reduced.is_false():
-        return if_false.reduced
+    if cond.is_false():
+        return if_false
 
 def concat_simplifier(*args):
 
@@ -112,7 +112,7 @@ def concat_simplifier(*args):
             previous = args[i-1]
             current = args[i]
             if not (previous.symbolic or current.symbolic):
-                args[i-1:i+1] = (ast.all_operations.Concat(previous, current).reduced,)
+                args[i-1:i+1] = (ast.all_operations.Concat(previous, current),)
             else:
                 i += 1
 
@@ -365,7 +365,7 @@ def extract_simplifier(high, low, val):
     if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
         val = val.make_like('Concat',
                             tuple(reversed([a.reversed for a in val.args[0].args])),
-        )[high:low].simplified
+        )[high:low]
         if not val.symbolic:
             return val
 

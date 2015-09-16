@@ -8,9 +8,9 @@ def test_model():
     b = claripy.BVS('x', 32, explicit_name=True)
     c = a + b
 
-    r_c = c.resolved_with(bc, result=claripy.Result(True, {'x': 10}))
+    r_c = bc.convert(c, result=claripy.Result(True, {'x': 10}))
     nose.tools.assert_equal(r_c, 15)
-    r_d = c.resolved_with(bc, result=claripy.Result(True, {'x': 15}))
+    r_d = bc.convert(c, result=claripy.Result(True, {'x': 15}))
     nose.tools.assert_equal(r_c, 15)
     nose.tools.assert_equal(r_d, 20)
 

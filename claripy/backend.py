@@ -126,38 +126,24 @@ class Backend(object):
         @returns a backend object
         '''
         if isinstance(expr, Base):
-            r = None
             # if we have a result, and it's cached there, use it
             if result is not None:
                 try: return result.resolve_cache[self][expr._cache_key]
                 except KeyError: pass
 
             # otherwise, if it's cached in the backend, use it
-            if r is None:
-                try: return self._object_cache[expr._cache_key]
-                except KeyError: pass
-
-            #l.debug('converting A')
-
-            # otherwise, try to convert something
-            if r is None and result is not None:
-                for rc in result.resolve_cache.values():
-                    try:
-                        r = self._convert(rc[expr._cache_key], result=result)
-                        break
-                    except (KeyError, BackendError):
-                        pass
-            if r is None:
-                for b in _all_backends:
-                    try:
-                        r = self._convert(b._object_cache[expr._cache_key])
-                        break
-                    except (KeyError, BackendError):
-                        pass
+            try: return self._object_cache[expr._cache_key]
+            except KeyError: pass
 
             # otherwise, resolve it!
-            if r is None:
-                r = expr.resolved_with(self, result=result)
+            try:
+                if expr.op in self._op_expr:
+                    r = self._op_expr[expr.op](expr, result=result)
+                else:
+                    r = self.call(expr.op, expr.args, result=result)
+            except (RuntimeError, ctypes.ArgumentError):
+                e_type, value, traceback = sys.exc_info()
+                raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
 
             if result is None: self._object_cache[expr._cache_key] = r
             else: result.resolve_cache[self][expr._cache_key] = r
@@ -207,38 +193,11 @@ class Backend(object):
 
         return obj
 
-    def resolve(self, ast, result=None):
-        '''
-        Resolves the provided AST with this backend.
-
-        @returns a backend object representing the result
-        '''
-
-        if result is not None:
-            try: return result.resolve_cache[self][ast._cache_key]
-            except KeyError: pass
-
-        try: return self._object_cache[ast._cache_key]
-        except KeyError: pass
-
-        try:
-            if ast.op in self._op_expr:
-                r = self._op_expr[ast.op](ast, result=result)
-            else:
-                r = self.call(ast.op, ast.args, result=result)
-        except (RuntimeError, ctypes.ArgumentError):
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
-
-        if result is None: self._object_cache[ast._cache_key] = r
-        else: result.resolve_cache[self][ast._cache_key] = r
-        return r
-
     #
     # Abstraction and resolution.
     #
 
-    def abstract(self, e): #pylint:disable=W0613,R0201
+    def _abstract(self, e): #pylint:disable=W0613,R0201
         '''
         Abstracts the BackendObject e to an AST.
 
@@ -252,7 +211,7 @@ class Backend(object):
     #
 
     def simplify(self, e):
-        o = self.abstract(self._simplify(self.convert(e)))
+        o = self._abstract(self._simplify(self.convert(e)))
         o._simplified = Base.FULL_SIMPLIFY
         return o
 
@@ -563,7 +522,7 @@ class Backend(object):
 
         @param o: the (backend-native) object
         '''
-        raise BackendError("backend doesn't support solution()")
+        raise BackendError("backend doesn't support size()")
 
     def name(self, a, result=None):
         '''
@@ -579,7 +538,7 @@ class Backend(object):
 
         @param o: the (backend-native) object
         '''
-        raise BackendError("backend doesn't support solution()")
+        raise BackendError("backend doesn't support name()")
 
     def identical(self, a, b, result=None):
         '''

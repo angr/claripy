@@ -14,12 +14,12 @@ def test_pickle():
     b = claripy.BVS('x', 32, explicit_name=True)
 
     c = a+b
-    nose.tools.assert_equal(c.resolved_with(bz).__module__, 'z3')
-    nose.tools.assert_equal(str(c.resolved_with(bz)), '0 + x')
+    nose.tools.assert_equal(bz.convert(c).__module__, 'z3')
+    nose.tools.assert_equal(str(bz.convert(c)), '0 + x')
 
     c_copy = pickle.loads(pickle.dumps(c, -1))
-    nose.tools.assert_equal(c_copy.resolved_with(bz).__module__, 'z3')
-    nose.tools.assert_equal(str(c_copy.resolved_with(bz)), '0 + x')
+    nose.tools.assert_equal(bz.convert(c_copy).__module__, 'z3')
+    nose.tools.assert_equal(str(bz.convert(c_copy)), '0 + x')
 
 def test_datalayer():
     l.info("Running test_datalayer")

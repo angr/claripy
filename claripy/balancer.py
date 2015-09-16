@@ -350,11 +350,11 @@ class Balancer(object):
             return self._simplify(argr.op, argr.args, argr, condition)
         else:
 
-            if isinstance(argl.model, bv.BVV):
+            if isinstance(self._backend.convert(argl), bv.BVV):
                 new_cond = (condition[0], condition[1] - argl)
                 return self._simplify(argr.op, argr.args, argr, new_cond)
 
-            elif isinstance(argr.model, bv.BVV):
+            elif isinstance(self._backend.convert(argr), bv.BVV):
                 new_cond = (condition[0], condition[1] - argr)
                 return self._simplify(argl.op, argl.args, argl, new_cond)
 
@@ -379,7 +379,6 @@ class Balancer(object):
         elif _all_operations.is_true(argl == 0):
             return self._simplify(argr.op, argr.args, argr, condition)
         else:
-            #__import__('ipdb').set_trace()
             return expr, condition
 
     def _simplify___rsub__(self, args, expr, condition):
@@ -410,7 +409,6 @@ class Balancer(object):
             return self._simplify(new_arg.op, new_arg.args, expr, condition)
 
         else:
-            __import__('ipdb').set_trace()
             return expr, condition
 
     def _simplify_union(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
@@ -449,52 +447,50 @@ class Balancer(object):
         if not isinstance(lhs, Base):
             raise ClaripyBalancerError('Left-hand-side expression is not an AST object.')
 
+        lhs_bo = self._backend.convert(lhs)
+        rhs_bo = self._backend.convert(rhs)
+
         # Maybe the target variable is the rhs
-        if isinstance(lhs.model, bv.BVV):
+        if lhs.cardinality == 1 or lhs_bo.is_empty:
             new_op = self.reversed_operations[comp]
             new_lhs, new_rhs = rhs, lhs
             return self._handle(new_op, (new_lhs, new_rhs))
 
-        if type(rhs) in (int, long) or type(rhs.model) is bv.BVV: #pylint:disable=unidiomatic-typecheck
-            # Convert it into an SI
-            rhs = _all_operations.SI(to_conv=rhs)
-
-        if not isinstance(rhs, Base):
-            raise ClaripyBalancerError('Right-hand-side expression cannot be converted to an AST object.')
-
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
+            trueexpr = self._backend.convert(trueexpr)
+            falseexpr = self._backend.convert(falseexpr)
 
             if is_unsigned:
                 if is_lt:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr.ULE(rhs))
-                        take_false = _all_operations.is_true(falseexpr.ULE(rhs))
+                        take_true = _all_operations.is_true(trueexpr.ULE(rhs_bo))
+                        take_false = _all_operations.is_true(falseexpr.ULE(rhs_bo))
                     else:
-                        take_true = _all_operations.is_true(falseexpr.ULT(rhs))
-                        take_false = _all_operations.is_true(trueexpr.ULT(rhs))
+                        take_true = _all_operations.is_true(falseexpr.ULT(rhs_bo))
+                        take_false = _all_operations.is_true(trueexpr.ULT(rhs_bo))
                 else:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr.UGE(rhs))
-                        take_false = _all_operations.is_true(falseexpr.UGE(rhs))
+                        take_true = _all_operations.is_true(trueexpr.UGE(rhs_bo))
+                        take_false = _all_operations.is_true(falseexpr.UGE(rhs_bo))
                     else:
-                        take_true = _all_operations.is_true(trueexpr.UGT(rhs))
-                        take_false = _all_operations.is_true(falseexpr.UGT(rhs))
+                        take_true = _all_operations.is_true(trueexpr.UGT(rhs_bo))
+                        take_false = _all_operations.is_true(falseexpr.UGT(rhs_bo))
             else:
                 if is_lt:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr <= rhs)
-                        take_false = _all_operations.is_true(falseexpr <= rhs)
+                        take_true = _all_operations.is_true(trueexpr <= rhs_bo)
+                        take_false = _all_operations.is_true(falseexpr <= rhs_bo)
                     else:
-                        take_true = _all_operations.is_true(trueexpr < rhs)
-                        take_false = _all_operations.is_true(falseexpr < rhs)
+                        take_true = _all_operations.is_true(trueexpr < rhs_bo)
+                        take_false = _all_operations.is_true(falseexpr < rhs_bo)
                 else:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr >= rhs)
-                        take_false = _all_operations.is_true(falseexpr >= rhs)
+                        take_true = _all_operations.is_true(trueexpr >= rhs_bo)
+                        take_false = _all_operations.is_true(falseexpr >= rhs_bo)
                     else:
-                        take_true = _all_operations.is_true(trueexpr > rhs)
-                        take_false = _all_operations.is_true(falseexpr > rhs)
+                        take_true = _all_operations.is_true(trueexpr > rhs_bo)
+                        take_false = _all_operations.is_true(falseexpr > rhs_bo)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -508,20 +504,20 @@ class Balancer(object):
                 # Not satisfiable
                 return False, [ ]
 
-        elif isinstance(rhs.model, vsa.StridedInterval) and isinstance(lhs.model, vsa.StridedInterval):
-            if isinstance(lhs.model, Base):
+        elif isinstance(rhs_bo, vsa.StridedInterval) and isinstance(lhs_bo, vsa.StridedInterval):
+            if isinstance(lhs_bo, Base):
                 # It cannot be computed by our backend...
                 # We just give up for now
                 return True, [ ]
 
-            stride = lhs.model.stride
+            stride = lhs_bo.stride
 
             if is_lt:
                 # < or <=
                 if is_unsigned: lb = 0
                 else: lb = vsa.StridedInterval.min_int(rhs.length)
 
-                ub = rhs.model.upper_bound
+                ub = rhs_bo.upper_bound
                 if not is_equal:
                     # <
                     ub = ub - 1
@@ -529,9 +525,9 @@ class Balancer(object):
             else:
                 # > or >=
                 if is_unsigned: ub = vsa.StridedInterval.max_int(rhs.length)
-                else: ub = vsa.StridedInterval.max_int(rhs.model.bits - 1)
+                else: ub = vsa.StridedInterval.max_int(rhs.length - 1)
 
-                lb = rhs.model.lower_bound
+                lb = rhs_bo.lower_bound
                 if not is_equal:
                     # >
                     lb = lb + 1
@@ -683,29 +679,32 @@ class Balancer(object):
             else:
                 # Not satisfiable
                 return False, [ ]
-        elif isinstance(lhs.model, vsa.StridedInterval) or isinstance(lhs.model, bv.BVV):
-            if not isinstance(lhs.model, vsa.StridedInterval):
+        elif isinstance(self._backend.convert(lhs), vsa.StridedInterval) or isinstance(self._backend.convert(lhs), bv.BVV):
+            if not isinstance(self._backend.convert(lhs), vsa.StridedInterval):
                 try: lhs = _all_operations.SI(to_conv=lhs)
                 except BackendError: return True, [ ] # We cannot convert it to a vsa.StridedInterval
 
-            try: rhs = _all_operations.SI(to_conv=rhs)
+            try: rhs = self._backend.convert(rhs)
             except BackendError: return True, [ ]
 
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
-                if lhs.model.upper_bound <= rhs.model.upper_bound:
-                    r = _all_operations.SI(bits=rhs.size(),
-                                    stride=lhs.model.stride,
-                                    lower_bound=lhs.model.lower_bound,
-                                    upper_bound=rhs.model.lower_bound - 1)
+                lhs_bo = self._backend.convert(lhs)
+                rhs_bo = self._backend.convert(rhs)
+
+                if lhs_bo.upper_bound <= rhs_bo.upper_bound:
+                    r = self._backend.CreateStridedInterval(bits=rhs_bo.bits,
+                                    stride=lhs_bo.stride,
+                                    lower_bound=lhs_bo.lower_bound,
+                                    upper_bound=rhs_bo.lower_bound - 1)
 
                     return True, [ (lhs, r) ]
-                elif lhs.model.lower_bound >= rhs.model.lower_bound:
-                    r = _all_operations.SI(bits=rhs.size(),
-                                    stride=lhs.model.stride,
-                                    lower_bound=rhs.model.lower_bound + 1,
-                                    upper_bound=lhs.model.upper_bound)
+                elif lhs_bo.lower_bound >= rhs_bo.lower_bound:
+                    r = self._backend.CreateStridedInterval(bits=rhs_bo.bits,
+                                    stride=lhs_bo.stride,
+                                    lower_bound=rhs_bo.lower_bound + 1,
+                                    upper_bound=lhs_bo.upper_bound)
 
                     return True, [ (lhs, r) ]
                 else:
@@ -713,8 +712,6 @@ class Balancer(object):
                     return True, [ ]
         else:
             # TODO: handle this
-            #import ipdb; ipdb.set_trace()
-
             return True, [ ]
 
 from .errors import ClaripyBalancerError, ClaripyBackendVSAError, BackendError

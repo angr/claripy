@@ -70,12 +70,12 @@ def normalize_reversed_arguments(f):
         raw_args = []
         for i in xrange(len(ast.args)):
             if isinstance(ast.args[i], Base) and \
-                            type(ast.args[i].model) in { #pylint:disable=unidiomatic-typecheck
+                            type(self.convert(ast.args[i])) in { #pylint:disable=unidiomatic-typecheck
                                                     StridedInterval,
                                                     DiscreteStridedIntervalSet,
                                                     ValueSet
             }:
-                if ast.args[i].model.reversed:
+                if self.convert(ast.args[i]).reversed:
                     arg_reversed.append(True)
                     raw_args.append(ast.args[i].reversed)
                     continue

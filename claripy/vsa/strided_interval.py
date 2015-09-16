@@ -22,10 +22,8 @@ def normalize_types(f):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
-        if isinstance(o, Base):
-            o = o.model
-        if isinstance(self, Base):
-            self = o.model
+        if isinstance(o, Base) or isinstance(self, Base):
+            return NotImplemented
         if type(self) is BVV:
             self = self.value
         if type(o) is BVV:

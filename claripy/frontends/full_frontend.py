@@ -228,6 +228,5 @@ class FullFrontend(LightFrontend):
         return solvers
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
-from ..ast.base import model_object
 from ..ast.bool import Or
 from ..ast.bv import UGE, ULE

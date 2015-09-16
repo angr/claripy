@@ -128,7 +128,9 @@ def raw_solver(solver_type):
     nose.tools.assert_true(s.result is not None)
     nose.tools.assert_equals(s.eval(x, 1)[0], 10)
     s.add(x == 10)
+    nose.tools.assert_true(s.result is not None)
     s.add(x > 9)
+    nose.tools.assert_true(s.result is not None)
     s.add(x <= 11)
     nose.tools.assert_true(s.result is not None)
 

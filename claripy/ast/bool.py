@@ -25,24 +25,30 @@ class Bool(Base):
         return is_false(self)
 
     def _simplify_And(self):
-        if any(a.is_false() for a in self.args):
-            return BoolI(False)
+        new_args = [ ]
+        for a in self.args:
+            if is_false(a):
+                return BoolV(False)
+            elif not is_true(a):
+                new_args.append(a)
+
+        if len(new_args) == 0:
+            return BoolV(True)
         else:
-            new_args = [ a.simplified for a in self.args if not a.is_true() ]
-            if len(new_args) == 0:
-                return BoolI(True)
-            else:
-                return Bool(self.op, new_args)
+            return Bool(self.op, new_args)
 
     def _simplify_Or(self):
-        if any(a.is_true() for a in self.args):
-            return BoolI(True)
+        new_args = [ ]
+        for a in self.args:
+            if is_true(a):
+                return BoolV(False)
+            elif not is_false(a):
+                new_args.append(a)
+
+        if len(new_args) == 0:
+            return BoolV(False)
         else:
-            new_args = [ a.simplified for a in self.args if not a.is_false() ]
-            if len(new_args) == 0:
-                return BoolI(False)
-            else:
-                return Bool(self.op, new_args)
+            return Bool(self.op, new_args)
 
 def BoolI(model, **kwargs):
     return Bool('I', (model,), **kwargs)
@@ -118,7 +124,7 @@ def If(*args):
     if issubclass(ty, Bits):
         return ty('If', tuple(args), length=args[1].length)
     else:
-        return ty('If', tuple(args)).reduced
+        return ty('If', tuple(args))
 
 And = operations.op('And', Bool, Bool, bound=False)
 Or = operations.op('Or', Bool, Bool, bound=False)
