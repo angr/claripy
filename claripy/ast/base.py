@@ -112,7 +112,7 @@ class Base(ana.Storable):
 
         eager_backends = list(_eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
 
-        if eager_backends is not None:
+        if eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
                     return eb._abstract(eb.call(op, args))

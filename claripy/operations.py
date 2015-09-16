@@ -522,6 +522,10 @@ backend_creation_operations = {
     'BoolV', 'BVV', 'FPV'
 }
 
+backend_symbol_creation_operations = {
+    'BoolS', 'BVS', 'FPS'
+}
+
 backend_vsa_creation_operations = {
     'TopStridedInterval', 'StridedInterval', 'ValueSet', 'AbstractLocation'
 }
@@ -594,6 +598,8 @@ length_same_operations = expression_arithmetic_operations | backend_bitwise_oper
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
+
+leaf_operations = backend_symbol_creation_operations | backend_creation_operations
 
 #
 # Reversibility
