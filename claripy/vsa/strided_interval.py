@@ -1125,7 +1125,7 @@ class StridedInterval(BackendObject):
 
         max_ = StridedInterval.max_int(bits)
 
-        if (a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive):
+        if a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive:
             # [2, 5] * [10, 20] = [20, 100]
             lb = a.lower_bound * b.lower_bound
             ub = a.upper_bound * b.upper_bound
@@ -1137,7 +1137,7 @@ class StridedInterval(BackendObject):
             else:
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
-        elif (not a_lb_positive and not a_ub_positive and not b_lb_positive and not b_ub_positive):
+        elif not a_lb_positive and not a_ub_positive and not b_lb_positive and not b_ub_positive:
             # [-5, -2] * [-20, -10] = [20, 100]
             lb = (
                 StridedInterval._unsigned_to_signed(a.upper_bound, bits) *
@@ -1155,7 +1155,7 @@ class StridedInterval(BackendObject):
             else:
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
-        elif (not a_lb_positive and not a_ub_positive and b_lb_positive and b_ub_positive):
+        elif not a_lb_positive and not a_ub_positive and b_lb_positive and b_ub_positive:
             # [-10, -2] * [2, 5] = [-50, -4]
             lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) * b.upper_bound
             ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) * b.lower_bound
@@ -1167,7 +1167,7 @@ class StridedInterval(BackendObject):
             else:
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
-        elif (a_lb_positive and a_ub_positive and not b_lb_positive and not b_ub_positive):
+        elif a_lb_positive and a_ub_positive and not b_lb_positive and not b_ub_positive:
             # [2, 10] * [-5, -2] = [-50, -4]
             lb = a.upper_bound * StridedInterval._unsigned_to_signed(b.lower_bound, bits)
             ub = a.lower_bound * StridedInterval._unsigned_to_signed(b.upper_bound, bits)
@@ -1862,8 +1862,8 @@ class StridedInterval(BackendObject):
     def extract(self, high_bit, low_bit):
 
         if self._reversed:
-            reversed = self._reverse()
-            return reversed.extract(high_bit, low_bit)
+            reversed_thing = self._reverse()
+            return reversed_thing.extract(high_bit, low_bit)
 
         assert low_bit >= 0
 
