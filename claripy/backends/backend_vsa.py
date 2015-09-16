@@ -79,8 +79,8 @@ class BackendVSA(Backend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_raw['If'] = self.If
-        self._op_raw['BVV'] = self.BVV
-        self._op_raw['BoolV'] = self.BVV
+        self._op_expr['BVV'] = self.BVV
+        self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVS'] = self.BVS
 
         self._balancer = Balancer(self)
@@ -190,12 +190,12 @@ class BackendVSA(Backend):
         else:
             return None
 
-    def BVV(self, value, size):
-        return self.CreateStridedInterval(bits=size, stride=0, lower_bound=value, upper_bound=value)
+    def BVV(self, ast, result=None): #pylint:disable=unused-argument
+        return self.CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
-    def BoolV(value):
-        return TrueResult() if value else FalseResult()
+    def BoolV(ast, result=None): #pylint:disable=unused-argument
+        return TrueResult() if ast.args[0] else FalseResult()
 
     @staticmethod
     def And(a, *args):
