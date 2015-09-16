@@ -161,9 +161,9 @@ class Frontend(ana.Storable):
             to_add = [ false ]
 
         for c in to_add:
-            c.make_uuid()
             if not isinstance(c, Bool):
                 raise ClaripyTypeError('constraint is not a boolean expression!')
+            c.make_uuid()
 
         if self.result is not None and invalidate_cache:
             all_true = True

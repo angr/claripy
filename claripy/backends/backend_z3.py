@@ -468,6 +468,31 @@ class BackendZ3(Backend):
         self._ast_cache[h] = a
         return a
 
+    @staticmethod
+    def _abstract_to_primitive(ctx, ast):
+        decl = z3.Z3_get_app_decl(ctx, ast)
+        decl_num = z3.Z3_get_decl_kind(ctx, decl)
+
+        if decl_num not in z3_op_nums:
+            raise ClaripyError("unknown decl kind %d" % decl_num)
+        if z3_op_nums[decl_num] not in op_map:
+            raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+        op_name = op_map[z3_op_nums[decl_num]]
+
+        if op_name == 'BitVecVal':
+            return long(z3.Z3_get_numeral_string(ctx, ast))
+        elif op_name == 'FPVal':
+            # this is really imprecise
+            fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
+            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
+            return fp_mantissa * (2 ** fp_exp)
+        elif op_name == 'True':
+            return BoolV(True)
+        elif op_name == 'False':
+            return BoolV(False)
+        else:
+            raise BackendError("Unable to abstract Z3 object to primitive")
+
     def solver(self, timeout=None):
         s = z3.Solver()
         if timeout is not None:
@@ -517,7 +542,8 @@ class BackendZ3(Backend):
                 for m_f in z3_model:
                     n = m_f.name()
                     m = m_f()
-                    model[n] = model_object(z3_model.eval(m))
+                    me = z3_model.eval(m)
+                    model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
         else:
             l.debug("unsat!")
 
@@ -553,10 +579,11 @@ class BackendZ3(Backend):
 
             if not type(expr) in { int, float, str, bool, long }:
                 v = model.eval(expr, model_completion=True)
+                results.append(self._abstract_to_primitive(v.ctx.ctx, v.ast))
             else:
-                v = expr
+                results.append(expr)
+                break
 
-            results.append(self._abstract(v))
             if i + 1 != n:
                 solver.add(expr != v)
                 model = None
@@ -606,7 +633,7 @@ class BackendZ3(Backend):
 
         #l.debug("final hi/lo: %d, %d", hi, lo)
 
-        if hi == lo: return NativeBVV(lo, expr.size())
+        if hi == lo: return lo
         else:
             solver.push()
             solver.add(expr == lo)
@@ -616,7 +643,7 @@ class BackendZ3(Backend):
                 return NativeBVV(lo, expr.size())
             else:
                 solver.pop()
-        return NativeBVV(hi, expr.size())
+        return hi
 
     @condom
     def _max(self, expr, extra_constraints=(), result=None, solver=None):
@@ -654,17 +681,17 @@ class BackendZ3(Backend):
         for _ in range(numpop):
             solver.pop()
 
-        if hi == lo: return NativeBVV(lo, expr.size())
+        if hi == lo: return lo
         else:
             solver.push()
             solver.add(expr == hi)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 solver.pop()
-                return NativeBVV(hi, expr.size())
+                return hi
             else:
                 solver.pop()
-        return NativeBVV(lo, expr.size())
+        return lo
 
     def _simplify(self, expr): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
@@ -712,14 +739,7 @@ class BackendZ3(Backend):
         else:
             s = expr_raw
 
-        for b in _eager_backends:
-            try:
-                o = self.wrap(b.convert(s))
-                break
-            except BackendError:
-                continue
-        else:
-            o = self._abstract(s)
+        o = self._abstract(s)
 
         #print "SIMPLIFIED"
         #l.debug("... after: %s (%s)", s, s.__class__.__name__)
@@ -730,17 +750,6 @@ class BackendZ3(Backend):
             self._simplification_cache_val[expr._cache_key] = o
             self._simplification_cache_key[expr._cache_key] = o
         return o
-
-    @staticmethod
-    def wrap(e):
-        if isinstance(e, NativeBVV):
-            return BVV(e.value, e.size())
-        if isinstance(e, z3.BitVecRef):
-            return BVV(e.as_long(), e.size())
-        elif isinstance(e, (z3.BoolRef, bool)):
-            return BoolI(e)
-        else:
-            raise Exception("whoops")
 
     def _is_false(self, e):
         return z3.simplify(e).eq(z3.BoolVal(False))

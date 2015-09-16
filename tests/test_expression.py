@@ -214,8 +214,8 @@ def raw_ite(solver_type):
     ss.add(z == itz)
     ss.add(itz != 0)
     nose.tools.assert_equal(ss.eval(y/x, 100), ( 2, ))
-    nose.tools.assert_items_equal(sorted([ b.value for b in ss.eval(x, 100) ]), ( 1, 10, 100 ))
-    nose.tools.assert_items_equal(sorted([ b.value for b in ss.eval(y, 100) ]), ( 2, 20, 200 ))
+    nose.tools.assert_items_equal(sorted(ss.eval(x, 100)), ( 1, 10, 100 ))
+    nose.tools.assert_items_equal(sorted(ss.eval(y, 100)), ( 2, 20, 200 ))
 
 def test_bool():
     bc = claripy.backend_concrete
