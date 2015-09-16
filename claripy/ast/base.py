@@ -607,7 +607,7 @@ class Base(ana.Storable):
                 #print "OC", cond.dbg_repr()
                 #print "NC", Not(cond).dbg_repr()
 
-                if a.op != 'If':
+                if not isinstance(a, Base) or a.op != 'If':
                     new_true_args.append(a)
                     new_false_args.append(a)
                 elif a.args[0] is cond:
