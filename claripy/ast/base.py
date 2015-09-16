@@ -98,6 +98,10 @@ class Base(ana.Storable):
         @param errored: a set of backends that are known to be unable to handle this AST.
         @param eager: whether or not to evaluate future parent ASTs eagerly.
         '''
+
+        #if any(isinstance(a, BackendObject) for a in args):
+        #   raise Exception('asdf')
+
         # fix up args and kwargs
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
         if 'symbolic' not in kwargs:
@@ -394,7 +398,7 @@ class Base(ana.Storable):
             raise BackendError("%s already failed" % b)
 
         #l.debug("trying evaluation with %s", b)
-        return b.call(self, result=result)
+        return b.resolve(self, result=result)
 
     #
     # Viewing and debugging

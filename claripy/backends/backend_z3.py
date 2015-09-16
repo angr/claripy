@@ -278,6 +278,10 @@ class BackendZ3(Backend):
             raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
     @condom
+    def resolve(self, *args, **kwargs):
+        return Backend.resolve(self, *args, **kwargs)
+
+    @condom
     def call(self, *args, **kwargs):
         return Backend.call(self, *args, **kwargs)
 

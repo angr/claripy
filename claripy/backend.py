@@ -173,11 +173,45 @@ class Backend(object):
     # These functions provide support for applying operations to expressions.
     #
 
-    def call(self, ast, result=None):
+    def call(self, op, args, result=None):
         '''
-        Calls the operation specified in the AST on the nodes of the AST.
+        Calls operation 'op' on args 'args' with this backend.
 
-        @returns an Expression with the result.
+        @returns a backend object representing the result
+        '''
+        converted = self.convert_list(args, result=result)
+
+        if op in self._op_raw_result:
+            obj = self._op_raw_result[op](*converted, result=result)
+        elif op in self._op_raw:
+            # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
+            obj = self._op_raw[op](*converted)
+        elif not op.startswith("__"):
+            l.debug("backend has no operation %s", op)
+            raise BackendError("backend has no operation %s" % op)
+        else:
+            obj = NotImplemented
+
+            # first, try the operation with the first guy
+            if hasattr(converted[0], op):
+                op_func = getattr(converted[0], op)
+                obj = op_func(*converted[1:])
+            # now try the reverse operation with the second guy
+            if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[op]):
+                op_func = getattr(converted[1], opposites[op])
+                obj = op_func(converted[0])
+
+            if obj is NotImplemented:
+                l.debug("%s neither %s nor %s apply in backend.call()", self, op, opposites[op])
+                raise BackendError("unable to apply operation on provided converted")
+
+        return obj
+
+    def resolve(self, ast, result=None):
+        '''
+        Resolves the provided AST with this backend.
+
+        @returns a backend object representing the result
         '''
 
         if result is not None:
@@ -191,33 +225,7 @@ class Backend(object):
             if ast.op in self._op_expr:
                 r = self._op_expr[ast.op](ast, result=result)
             else:
-                converted = self.convert_list(ast.args, result=result)
-
-                if ast.op in self._op_raw_result:
-                    obj = self._op_raw_result[ast.op](*converted, result=result)
-                elif ast.op in self._op_raw:
-                    # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
-                    obj = self._op_raw[ast.op](*converted)
-                elif not ast.op.startswith("__"):
-                    l.debug("backend has no operation %s", ast.op)
-                    raise BackendError("backend has no operation %s" % ast.op)
-                else:
-                    obj = NotImplemented
-
-                    # first, try the operation with the first guy
-                    if hasattr(converted[0], ast.op):
-                        op = getattr(converted[0], ast.op)
-                        obj = op(*converted[1:])
-                    # now try the reverse operation with the second guy
-                    if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[ast.op]):
-                        op = getattr(converted[1], opposites[ast.op])
-                        obj = op(converted[0])
-
-                    if obj is NotImplemented:
-                        l.debug("%s neither %s nor %s apply in backend.call()", self, ast.op, opposites[ast.op])
-                        raise BackendError("unable to apply operation on provided converted")
-
-                r = obj
+                r = self.call(ast.op, ast.args, result=result)
         except (RuntimeError, ctypes.ArgumentError):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
