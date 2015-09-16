@@ -215,6 +215,9 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Not supported type of operand %s' % type(obj))
 
+    def _cardinality(self, a, result=None): #pylint:disable=unused-argument,no-self-use
+        return a.cardinality
+
     def name(self, a, result=None):
         if isinstance(a, StridedInterval):
             return a.name

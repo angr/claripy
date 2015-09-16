@@ -560,9 +560,28 @@ class Backend(object):
         @param a: the (backend-native) object
         @param b: the (backend-native) object
         '''
-        raise BackendError("backend doesn't support solution()")
+        raise BackendError("backend doesn't support identical()")
+
+    def cardinality(self, a, result=None):
+        '''
+        This should return the maximum number of values that an expression can
+        take on. This should be a strict *over* approximation.
+
+        @param a: a claripy A object
+        @returns an integer
+        '''
+        return self._cardinality(self.convert(a, result=result))
+
+    def _cardinality(self, b, result=None): #pylint:disable=no-self-use,unused-argument
+        '''
+        This should return the maximum number of values that an expression can
+        take on. This should be a strict *over* approximation.
+
+        @param a: a claripy A object
+        @returns an integer
+        '''
+        raise BackendError("backend doesn't support cardinality()")
 
 from .ast.base import Base
 from .operations import opposites
 from .errors import BackendError, ClaripyRecursionError
-from . import _all_backends
