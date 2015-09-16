@@ -9,8 +9,8 @@ class Balancer(object):
     inequality.
     '''
 
-    def __init__(self):
-        pass
+    def __init__(self, backend):
+        self._backend = backend
 
     def constraint_to_si(self, expr):
         """
@@ -126,14 +126,13 @@ class Balancer(object):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
-                if not isinstance(larger_cond_arg.model, Base):
+                if not isinstance(self._backend.convert(larger_cond_arg), Base):
                     return self._simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
             else:
                 return self._simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
-            #__import__('ipdb').set_trace()
             # We cannot handle this...
             return expr, condition
 
@@ -168,7 +167,6 @@ class Balancer(object):
 
         else:
             # TODO: We may also handle the '__eq__' and '__ne__' case
-            # __import__('ipdb').set_trace()
             # We cannot handle this...
             return expr, condition
 
@@ -197,9 +195,9 @@ class Balancer(object):
 
         else:
             cond_op, cond_arg = cond
-            if type(cond_arg.model) in (int, long): #pylint:disable=unidiomatic-typecheck
+            if type(self._backend.convert(cond_arg)) in (int, long): #pylint:disable=unidiomatic-typecheck
                 cond_arg = _all_operations.BVV(cond_arg, ast.size())
-            elif type(cond_arg.model) in (vsa.StridedInterval, vsa.DiscreteStridedIntervalSet, bv.BVV): #pylint:disable=unidiomatic-typecheck
+            elif type(self._backend.convert(cond_arg)) in (vsa.StridedInterval, vsa.DiscreteStridedIntervalSet, bv.BVV): #pylint:disable=unidiomatic-typecheck
                 if ast.size() > cond_arg.size():
                     # Make sure two operands have the same size
                     cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)

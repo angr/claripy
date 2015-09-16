@@ -83,7 +83,7 @@ class BackendVSA(Backend):
         self._op_raw['BoolV'] = self.BVV
         self._op_expr['BVS'] = self.BVS
 
-        self._balancer = Balancer()
+        self._balancer = Balancer(self)
 
     def convert(self, expr, result=None):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
