@@ -1618,8 +1618,8 @@ class StridedInterval(BackendObject):
         ret = StridedInterval.empty(self.bits)
 
         for si in splitted_si:
-            lb = ~self.upper_bound
-            ub = ~self.lower_bound
+            lb = ~si.upper_bound
+            ub = ~si.lower_bound
             stride = self.stride
 
             tmp = StridedInterval(bits=self.bits, stride=stride, lower_bound=lb, upper_bound=ub)
