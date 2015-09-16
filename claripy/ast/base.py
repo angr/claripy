@@ -496,10 +496,13 @@ class Base(ana.Storable):
         '''
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyOperationError('replacements must be AST nodes')
-        if not isinstance(new, Bool):
-            if old.size() != new.size():
-                raise ClaripyOperationError('replacements must have matching sizes')
+        if type(old) is not type(new):
+            raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
+        old._check_replaceability(new)
         return self._replace(old, new)
+
+    def _check_replaceability(self, new):
+        pass
 
     def _identify_vars(self, all_vars, counter):
         if self.op == 'BVS':
