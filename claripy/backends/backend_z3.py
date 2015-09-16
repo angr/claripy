@@ -87,7 +87,7 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE'}:
+        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE', 'BVV', 'BoolV', 'FPV'}:
             self._op_raw[o] = getattr(z3, o)
 
         self._op_raw['__ge__'] = z3.UGE
@@ -281,9 +281,7 @@ class BackendZ3(Backend):
 
     @condom
     def _convert(self, obj, result=None):
-        if type(obj) is NativeBVV:
-            return z3.BitVecVal(obj.value, obj.bits)
-        elif isinstance(obj, FSort):
+        if isinstance(obj, FSort):
             return z3.FPSort(obj.exp, obj.mantissa)
         elif isinstance(obj, RM):
             if obj == RM_RNE:
@@ -298,22 +296,6 @@ class BackendZ3(Backend):
                 return z3.RTZ()
             else:
                 raise BackendError("unrecognized rounding mode")
-        elif isinstance(obj, NativeFPV):
-            val = str(obj.value)
-            sort = self._convert(obj.sort)
-            if val == 'inf':
-                return z3.fpPlusInfinity(sort)
-            elif val == '-inf':
-                return z3.fpMinusInfinity(sort)
-            elif val == '0.0':
-                return z3.fpPlusZero(sort)
-            elif val == '-0.0':
-                return z3.fpMinusZero(sort)
-            elif val == 'nan':
-                return z3.fpNaN(sort)
-            else:
-                better_val = str(Decimal(obj.value))
-                return z3.FPVal(better_val, sort)
         elif obj is True:
             return z3.BoolVal(True)
         elif obj is False:

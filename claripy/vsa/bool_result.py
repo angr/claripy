@@ -168,5 +168,5 @@ class MaybeResult(BoolResult):
 
 
 
-from ..errors import BackendError
+from ..errors import BackendError, ClaripyValueError
 from ..ast.base import Base

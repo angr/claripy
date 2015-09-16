@@ -30,39 +30,6 @@ def normalize_arg_order(f):
 
     return normalizer
 
-def normalize_boolean_arg_types(f):
-    def convert_bool(a):
-        if isinstance(a, BoolResult):
-            return a
-        if a == True:
-            return TrueResult()
-        elif a == False:
-            return FalseResult()
-        else:
-            raise BackendError('Unsupported type %s' % type(a))
-
-    @functools.wraps(f)
-    def normalizer(*args):
-        new_args = [convert_bool(a) for a in args]
-
-        return f(*new_args)
-
-    return normalizer
-
-def convert_bvv_args(f):
-    def convert_bvv(a):
-        if isinstance(a, BVV):
-            return BackendVSA.CreateStridedInterval(to_conv=a)
-        return a
-
-    @functools.wraps(f)
-    def converter(*args):
-        new_args = [convert_bvv(a) for a in args]
-
-        return f(*new_args)
-
-    return converter
-
 def normalize_reversed_arguments(f):
     @functools.wraps(f)
     def normalizer(self, ast, result=None):
@@ -126,8 +93,6 @@ class BackendVSA(Backend):
             return a
         if type(a) is bool:
             return TrueResult() if a else FalseResult()
-        if type(a) is BVV: #pylint:disable=unidiomatic-typecheck
-            return BackendVSA.CreateStridedInterval(bits=a.bits, to_conv=a)
         if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
             return a
         if isinstance(a, BoolResult):
@@ -233,12 +198,10 @@ class BackendVSA(Backend):
         return TrueResult() if value else FalseResult()
 
     @staticmethod
-    @normalize_boolean_arg_types
     def And(a, *args):
         return reduce(operator.__and__, args, a)
 
     @staticmethod
-    @normalize_boolean_arg_types
     def Not(a):
         return ~a
 
@@ -306,11 +269,8 @@ class BackendVSA(Backend):
     def Concat(*args):
         ret = None
         for expr in args:
-            if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet, BVV }: #pylint:disable=unidiomatic-typecheck
+            if type(expr) not in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
                 raise BackendError('Unsupported expr type %s' % type(expr))
-
-            if type(expr) is BVV: #pylint:disable=unidiomatic-typecheck
-                expr = BackendVSA.CreateStridedInterval(bits=expr.bits, to_conv=expr)
 
             ret = ret.concat(expr) if ret is not None else expr
 
@@ -337,7 +297,6 @@ class BackendVSA(Backend):
         return ret
 
     @staticmethod
-    @convert_bvv_args
     def SignExt(*args):
         new_bits = args[0]
         expr = args[1]
@@ -348,7 +307,6 @@ class BackendVSA(Backend):
         return expr.sign_extend(new_bits + expr.bits)
 
     @staticmethod
-    @convert_bvv_args
     def ZeroExt(*args):
         new_bits = args[0]
         expr = args[1]
@@ -410,7 +368,6 @@ class BackendVSA(Backend):
     def constraint_to_si(self, expr):
         return self._balancer.constraint_to_si(expr)
 
-from ..bv import BVV
 from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations
 from ..vsa import StridedInterval, CreateStridedInterval, DiscreteStridedIntervalSet, ValueSet, AbstractLocation, BoolResult, TrueResult, FalseResult

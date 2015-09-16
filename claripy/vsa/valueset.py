@@ -9,7 +9,7 @@ def normalize_types(f):
         Convert any object to an object that we can process.
         '''
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         if not isinstance(o, StridedInterval):
             raise ClaripyVSAOperationError('Unsupported operand type %s' % type(o))
@@ -25,7 +25,7 @@ def normalize_types_one_arg(f):
         Convert any object to an object that we can process.
         '''
         if isinstance(o, Base):
-            o = o.model
+            raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
         return f(self, o)
 
@@ -374,3 +374,4 @@ from ..ast.base import Base
 from .strided_interval import StridedInterval
 from .bool_result import BoolResult, TrueResult, FalseResult, MaybeResult
 from .errors import ClaripyVSAOperationError, ClaripyVSAError
+from ..errors import ClaripyValueError

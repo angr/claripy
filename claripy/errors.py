@@ -32,6 +32,9 @@ class ClaripyBalancerError(ClaripyASTError):
 class ClaripyTypeError(ClaripyASTError):
     pass
 
+class ClaripyValueError(ClaripyASTError):
+    pass
+
 class ClaripySizeError(ClaripyASTError):
     pass
 
