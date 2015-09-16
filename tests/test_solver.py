@@ -116,7 +116,7 @@ def raw_solver(solver_type):
 
     s = solver_type(claripy.backend_z3)
     nose.tools.assert_true(s.satisfiable())
-    s.add(claripy.BoolVal(False))
+    s.add(claripy.BoolV(False))
     nose.tools.assert_false(s.satisfiable())
     s.result = None
     nose.tools.assert_false(s.satisfiable())

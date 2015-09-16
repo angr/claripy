@@ -1,5 +1,5 @@
 from .bits import Bits
-from ..ast.base import Base, _make_name
+from ..ast.base import _make_name
 
 class FP(Bits):
     def to_fp(self, rm, sort):
@@ -18,16 +18,30 @@ class FP(Bits):
     def sort(self):
         return fp.FSort.from_size(self.length)
 
-def FPI(model, **kwargs):
-    kwargs['length'] = model.sort.length
-    return FP('I', (model,), **kwargs)
+def FPS(name, sort, explicit_name=None):
+    '''
+    Creates a floating-point symbol.
 
-def FloatingPoint(name, sort, explicit_name=None):
-    n = _make_name(name, sort.length, explicit_name=explicit_name, prefix='FP_')
-    return FP('FP', (n, sort), variables={n}, symbolic=True, simplified=Base.FULL_SIMPLIFY, length=sort.length)
+    @param name: the name of the symbol
+    @param sort: the sort of the floating point
+    @param explicit_name: if False, an identifier is appended to the name to ensure
+                          uniqueness.
 
-def FPV(*args):
-    return FPI(fp.FPV(*args), variables=set(), symbolic=False, simplified=Base.FULL_SIMPLIFY, eager=True)
+    @return an FP AST
+    '''
+
+    n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
+    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length)
+
+def FPV(value, sort):
+    '''
+    Creates a concrete floating-point value.
+
+    @param value: the value of the floating point
+    @param sort: the sort of the floating point
+    @return an FP AST
+    '''
+    return FP('FPV', (value, sort))
 
 #
 # unbound floating point conversions

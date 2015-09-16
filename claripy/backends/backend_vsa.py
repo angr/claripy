@@ -112,6 +112,8 @@ class BackendVSA(Backend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_raw['If'] = self.If
+        self._op_raw['BVV'] = self.BVV
+        self._op_raw['BoolV'] = self.BVV
         self._op_expr['BVS'] = self.BVS
 
         self._balancer = Balancer()
@@ -219,6 +221,13 @@ class BackendVSA(Backend):
 
         else:
             return None
+
+    def BVV(self, value, size):
+        return self.CreateStridedInterval(bits=size, stride=0, lower_bound=value, upper_bound=value)
+
+    @staticmethod
+    def BoolV(value):
+        return TrueResult() if value else FalseResult()
 
     @staticmethod
     @normalize_boolean_arg_types

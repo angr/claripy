@@ -519,7 +519,7 @@ backend_bitmod_operations = {
 }
 
 backend_creation_operations = {
-    'BoolVal', 'BitVecVal'
+    'BoolV', 'BVV', 'FPV'
 }
 
 backend_vsa_creation_operations = {

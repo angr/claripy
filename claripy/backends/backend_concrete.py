@@ -109,9 +109,9 @@ class BackendConcrete(Backend):
         if isinstance(e, bv.BVV):
             return BVV(e, e.size())
         elif isinstance(e, bool):
-            return BoolI(e)
+            return BoolV(e)
         elif isinstance(e, fp.FPV):
-            return FPI(e)
+            return FPV(e.value, e.sort)
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
@@ -139,7 +139,6 @@ class BackendConcrete(Backend):
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp
-#from .. import _backend_z3
 from ..ast.bv import BVV
-from ..ast.fp import FPI
-from ..ast.bool import BoolI
+from ..ast.fp import FPV
+from ..ast.bool import BoolV

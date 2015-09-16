@@ -137,7 +137,7 @@ def BVV(value, size=None):
     try:
         return _bvv_cache[(value, size)]
     except KeyError:
-        result = BV('BVV', (value,), length=size)
+        result = BV('BVV', (value, size), length=size)
         _bvv_cache[(value, size)] = result
         return result
 
@@ -269,3 +269,4 @@ BV.intersection = operations.op('intersection', (BV, BV), BV, extra_check=operat
 from .. import fp
 from . import fp
 from .. import vsa
+from ..errors import ClaripyValueError

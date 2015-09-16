@@ -1,12 +1,12 @@
 import logging
 l = logging.getLogger('claripy.ast.bool')
 
-from ..ast.base import Base
+from ..ast.base import Base, _make_name
 
 class Bool(Base):
     @staticmethod
     def _from_bool(like, val): #pylint:disable=unused-argument
-        return BoolI(val)
+        return BoolV(val)
 
     def is_true(self):
         '''
@@ -50,18 +50,28 @@ class Bool(Base):
         else:
             return Bool(self.op, new_args)
 
-def BoolI(model, **kwargs):
-    return Bool('I', (model,), **kwargs)
+def BoolS(name, explicit_name=None):
+    '''
+    Creates a boolean symbol (i.e., a variable).
 
-def BoolVal(val):
-    return BoolI(val, variables=set(), symbolic=False, eager=True)
+    @param name: the name of the symbol
+    @param explicit_name: if False, an identifier is appended to the name to ensure
+                          uniqueness.
+
+    @returns a Bool object representing this symbol
+    '''
+    n = _make_name(name, -1, False if explicit_name is None else explicit_name)
+    return Bool('BoolS', (n,), variables={n}, symbolic=True)
+
+def BoolV(val):
+    return Bool('BoolV', (val,))
 
 #
 # some standard ASTs
 #
 
-true = BoolVal(True)
-false = BoolVal(False)
+true = BoolV(True)
+false = BoolV(False)
 
 #
 # Bound operations
@@ -84,7 +94,7 @@ def If(*args):
     args = list(args)
 
     if isinstance(args[0], bool):
-        args[0] = BoolI(args[0], variables=frozenset(), symbolic=False, eager=True)
+        args[0] = BoolV(args[0])
 
     ty = None
     if isinstance(args[1], Base):
@@ -171,7 +181,6 @@ def constraint_to_si(expr):
     for i in xrange(len(replace_list)):
         ori, new = replace_list[i]
         if not isinstance(new, Base):
-            #new = BVI(new, variables={ new.name }, symbolic=False, length=new._bits, eager=False)
             new = BVS(new.name, new._bits, min=new._lower_bound, max=new._upper_bound, stride=new._stride, explicit_name=True)
             replace_list[i] = (ori, new)
 
