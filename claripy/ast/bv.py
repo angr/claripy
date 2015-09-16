@@ -119,7 +119,7 @@ def BVS(name, size, min=None, max=None, stride=None, explicit_name=None): #pylin
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     return BV('BVS', (n, min, max, stride), variables={n}, length=size, symbolic=True, eager=False)
 
-def BVV(value, size):
+def BVV(value, size=None):
     '''
     Creates a bit-vector value (i.e., a concrete value).
 
@@ -128,6 +128,12 @@ def BVV(value, size):
 
     @returns a BV object representing this value
     '''
+    if size is None and type(value) is str:
+        size = 8*len(str)
+        value = int(value.encode('hex'), 16)
+    elif size is None:
+        raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
+
     try:
         return _bvv_cache[(value, size)]
     except KeyError:
