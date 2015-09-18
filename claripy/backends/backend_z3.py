@@ -640,7 +640,7 @@ class BackendZ3(Backend):
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 solver.pop()
-                return NativeBVV(lo, expr.size())
+                return lo
             else:
                 solver.pop()
         return hi
@@ -915,7 +915,6 @@ from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
-from ..bv import BVV as NativeBVV
 from ..fp import FPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
 from .. import _all_operations
