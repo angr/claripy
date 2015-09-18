@@ -153,6 +153,14 @@ def test_expression():
     nose.tools.assert_is_not(rb, bb)
     nose.tools.assert_is(rb, rb)
 
+    # test some alternate bvv creation methods
+    nose.tools.assert_is(claripy.BVV('AAAA'), claripy.BVV(0x41414141, 32))
+    nose.tools.assert_is(claripy.BVV('AAAA', 32), claripy.BVV(0x41414141, 32))
+    nose.tools.assert_is(claripy.BVV('AB'), claripy.BVV(0x4142, 16))
+    nose.tools.assert_is(claripy.BVV('AB', 16), claripy.BVV(0x4142, 16))
+    nose.tools.assert_raises(claripy.errors.ClaripyValueError, claripy.BVV, 'AB', 8)
+
+
 def test_if_stuff():
     x = claripy.BVS('x', 32)
     #y = claripy.BVS('y', 32)

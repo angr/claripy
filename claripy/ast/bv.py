@@ -131,7 +131,7 @@ def BVV(value, size=None):
 
     if type(value) is str:
         if size is None:
-            size = 8*len(str)
+            size = 8*len(value)
             value = int(value.encode('hex'), 16)
         elif size == len(value)*8:
             value = int(value.encode('hex'), 16)
