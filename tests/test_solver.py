@@ -220,7 +220,16 @@ def test_composite_solver():
     nose.tools.assert_equal(len(s._solver_list), 4) # the CONCRETE one
     nose.tools.assert_false(s.satisfiable())
 
+def test_minmax():
+    s = claripy.FullFrontend(claripy.backend_z3)
+    x = claripy.BVS("x", 32)
+
+    nose.tools.assert_equal(s.max(x), 2**32-1)
+    nose.tools.assert_equal(s.min(x), 0)
+    nose.tools.assert_true(s.satisfiable())
+
 if __name__ == '__main__':
+    test_minmax()
     test_solver()
     test_solver_branching()
     test_combine()
