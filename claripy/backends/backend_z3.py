@@ -108,8 +108,8 @@ class BackendZ3(Backend):
         self._op_expr['BVV'] = self.BVV
         self._op_expr['FPV'] = self.FPV
         self._op_expr['FPS'] = self.FPS
-        self._op_raw['BoolV'] = self.BoolV
-        self._op_raw['BoolS'] = self.BoolS
+        self._op_expr['BoolV'] = self.BoolV
+        self._op_expr['BoolS'] = self.BoolS
 
     @property
     def _ast_cache(self):
@@ -267,13 +267,13 @@ class BackendZ3(Backend):
 
     @staticmethod
     @condom
-    def BoolS(name):
-        return z3.Bool(name)
+    def BoolS(ast, result=None): #pylint:disable=unused-argument
+        return z3.Bool(ast.args[0])
 
     @staticmethod
     @condom
-    def BoolV(v):
-        return z3.BoolVal(v)
+    def BoolV(ast, result=None): #pylint:disable=unused-argument
+        return z3.BoolVal(ast.args[0])
 
     #
     # Conversions
