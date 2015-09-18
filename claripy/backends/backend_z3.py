@@ -728,22 +728,17 @@ class BackendZ3(Backend):
         if isinstance(expr_raw, z3.BoolRef):
             tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
             s = tactics(expr_raw).as_expr()
-            n = s.decl().name()
-
-            if n == 'true':
-                s = True
-            elif n == 'false':
-                s = False
+            #n = s.decl().name()
+            #if n == 'true':
+            #   s = True
+            #elif n == 'false':
+            #   s = False
         elif isinstance(expr_raw, z3.BitVecRef):
             s = z3.simplify(expr_raw)
         else:
             s = expr_raw
 
         o = self._abstract(s)
-
-        #print "SIMPLIFIED"
-        #l.debug("... after: %s (%s)", s, s.__class__.__name__)
-
         o._simplified = Base.FULL_SIMPLIFY
 
         if self._enable_simplification_cache:
