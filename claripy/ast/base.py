@@ -286,6 +286,8 @@ class Base(ana.Storable):
 
             if op == 'BVS' and inner:
                 value = args[0]
+            elif op == 'BoolV':
+                value = str(args[0])
             elif op == 'BVV':
                 if self.args[1] < 10:
                     value = format(self.args[0], '')
