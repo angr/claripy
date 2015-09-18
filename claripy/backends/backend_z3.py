@@ -72,8 +72,8 @@ def condom(f):
         The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
         '''
         try:
-            args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
-            return f(*args, **kwargs)
+            condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
+            return f(*condom_args, **kwargs)
         except z3.Z3Exception as ze:
             raise ClaripyZ3Error("Z3Exception: %s" % ze)
     return z3_condom
