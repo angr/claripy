@@ -248,8 +248,8 @@ class BackendVSA(Backend):
     @staticmethod
     def BVS(ast, result=None): #pylint:disable=unused-argument
         size = ast.size()
-        name, mn, mx, stride = ast.args
-        return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride)
+        name, mn, mx, stride, uninitialized = ast.args
+        return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride, uninitialized=uninitialized)
 
     def If(self, cond, t, f):
         if not self.has_true(cond):

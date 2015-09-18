@@ -2360,7 +2360,7 @@ class StridedInterval(BackendObject):
 
             return si
 
-def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
+def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, to_conv=None):
     '''
     :param name:
     :param bits:
@@ -2399,7 +2399,8 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
                          bits=bits,
                          stride=stride,
                          lower_bound=lower_bound,
-                         upper_bound=upper_bound)
+                         upper_bound=upper_bound,
+                         uninitialized=uninitialized)
     return bi
 
 
