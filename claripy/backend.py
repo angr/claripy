@@ -187,9 +187,9 @@ class Backend(object):
                 op_func = getattr(converted[1], opposites[op])
                 obj = op_func(converted[0])
 
-            if obj is NotImplemented:
-                l.debug("%s neither %s nor %s apply in backend.call()", self, op, opposites[op])
-                raise BackendError("unable to apply operation on provided converted")
+        if obj is NotImplemented:
+            l.debug("received NotImplemented in %s.call() for operation %s", self, op)
+            raise BackendError("unable to apply operation on provided converted")
 
         return obj
 
