@@ -66,17 +66,22 @@ class BackendConcrete(Backend):
 
             if hasattr(a, 'as_long'): return bv.BVV(a.as_long(), a.size())
             elif isinstance(a, z3.FPNumRef):
-                # TODO: don't replicate this code in backend_z3.py
-                # this is really imprecise
-                fp_mantissa = float(a.significand())
-                fp_exp = float(a.exponent())
-                value = fp_mantissa * (2 ** fp_exp)
-
                 ebits = a.ebits()
                 sbits = a.sbits()
                 sort = fp.FSort.from_params(ebits, sbits)
 
-                return fp.FPV(value, sort)
+                if a.isNaN():
+                    return fp.FPV(float('nan'), sort)
+                elif a.isInf():
+                    return fp.FPV(float(('-' if a.sign() else '+') + 'inf'), sort)
+                else:
+                    # TODO: don't replicate this code in backend_z3.py
+                    # this is really imprecise
+                    fp_mantissa = float(a.significand())
+                    fp_exp = float(a.exponent())
+                    value = fp_mantissa * (2 ** fp_exp)
+
+                    return fp.FPV(value, sort)
             elif isinstance(a, z3.BoolRef) and a.eq(self._z_true): return True
             elif isinstance(a, z3.BoolRef) and a.eq(self._z_false): return False
             elif result is not None and a.num_args() == 0:
