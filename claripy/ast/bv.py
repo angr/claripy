@@ -102,7 +102,7 @@ class BV(Bits):
     def to_bv(self):
         return self
 
-def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explicit_name=None): #pylint:disable=redefined-builtin
+def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explicit_name=None, **kwargs): #pylint:disable=redefined-builtin
     '''
     Creates a bit-vector symbol (i.e., a variable).
 
@@ -119,9 +119,9 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explic
     @returns a BV object representing this symbol
     '''
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
-    return BV('BVS', (n, min, max, stride, uninitialized), variables={n}, length=size, symbolic=True, eager_backends=None)
+    return BV('BVS', (n, min, max, stride, uninitialized), variables={n}, length=size, symbolic=True, eager_backends=None, **kwargs)
 
-def BVV(value, size=None):
+def BVV(value, size=None, **kwargs):
     '''
     Creates a bit-vector value (i.e., a concrete value).
 
@@ -142,12 +142,13 @@ def BVV(value, size=None):
     elif size is None:
         raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
 
-    try:
-        return _bvv_cache[(value, size)]
-    except KeyError:
-        result = BV('BVV', (value, size), length=size)
-        _bvv_cache[(value, size)] = result
-        return result
+    if not kwargs:
+        try: return _bvv_cache[(value, size)]
+        except KeyError: pass
+
+    result = BV('BVV', (value, size), length=size, **kwargs)
+    _bvv_cache[(value, size)] = result
+    return result
 
 def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None, explicit_name=None):
     name = 'unnamed' if name is None else name
@@ -160,8 +161,8 @@ def TSI(bits, name=None, uninitialized=False, explicit_name=None):
     name = 'unnamed' if name is None else name
     return BVS(name, bits, uninitialized=uninitialized, explicit_name=explicit_name)
 
-def ESI(bits, name=None):
-    return BVV(None, bits)
+def ESI(bits, **kwargs):
+    return BVV(None, bits, **kwargs)
 
 def ValueSet(**kwargs):
     vs = vsa.ValueSet(**kwargs)
@@ -270,7 +271,6 @@ BV.union = operations.op('union', (BV, BV), BV, extra_check=operations.length_sa
 BV.widen = operations.op('widen', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.intersection = operations.op('intersection', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 
-from .. import fp
 from . import fp
 from .. import vsa
 from ..errors import ClaripyValueError

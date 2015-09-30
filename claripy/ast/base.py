@@ -650,6 +650,31 @@ class Base(ana.Storable):
             self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
         return self._excavated
 
+    #
+    # Alright, I give up. Here are some convenience accessors to backend models.
+    #
+
+    @property
+    def _model_vsa(self):
+        try:
+            return _backends['BackendVSA'].convert(self)
+        except BackendError:
+            return self
+
+    @property
+    def _model_z3(self):
+        try:
+            return _backends['BackendZ3'].convert(self)
+        except BackendError:
+            return self
+
+    @property
+    def _model_concrete(self):
+        try:
+            return _backends['BackendConcrete'].convert(self)
+        except BackendError:
+            return self
+
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
@@ -668,6 +693,6 @@ def simplify(e):
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
 from .. import operations
 from ..backend_object import BackendObject
-from .. import _all_backends, _eager_backends
+from .. import _all_backends, _eager_backends, _backends
 from ..ast.bool import If, Not
 from ..ast.bv import BV
