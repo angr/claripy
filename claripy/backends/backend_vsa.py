@@ -167,6 +167,9 @@ class BackendVSA(Backend):
     # Backend Operations
     #
 
+    def simplify(self, e):
+        raise BackendError('nope')
+
     def _identical(self, a, b, result=None):
         if type(a) != type(b):
             return False
