@@ -10,6 +10,13 @@ class BackendConcrete(Backend):
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw['If'] = self._If
         self._op_expr['BVS'] = self.BVS
+        self._op_raw['BVV'] = self.BVV
+
+    @staticmethod
+    def BVV(value, size):
+        if value is None:
+            raise BackendError("can't handle empty BVVs")
+        return bv.BVV(value, size)
 
     @staticmethod
     def BVS(ast, result=None):

@@ -289,7 +289,9 @@ class Base(ana.Storable):
             elif op == 'BoolV':
                 value = str(args[0])
             elif op == 'BVV':
-                if self.args[1] < 10:
+                if self.args[0] is None:
+                    value = '!'
+                elif self.args[1] < 10:
                     value = format(self.args[0], '')
                 else:
                     value = format(self.args[0], '#x')

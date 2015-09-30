@@ -191,7 +191,10 @@ class BackendVSA(Backend):
             return None
 
     def BVV(self, ast, result=None): #pylint:disable=unused-argument
-        return self.CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
+        if ast.args[0] is None:
+            return StridedInterval.empty(ast.args[1])
+        else:
+            return self.CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
     def BoolV(ast, result=None): #pylint:disable=unused-argument
