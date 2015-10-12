@@ -235,6 +235,9 @@ class Frontend(ana.Storable):
     def max(self, e, extra_constraints=()):
         extra_constraints = self._constraint_filter(extra_constraints)
 
+        if isinstance(e, int):
+            return e
+
         if not isinstance(e, Base):
             raise ValueError("Expressions passed to max() MUST be Claripy ASTs (got %s)" % type(e))
 
@@ -250,6 +253,9 @@ class Frontend(ana.Storable):
 
     def min(self, e, extra_constraints=()):
         extra_constraints = self._constraint_filter(extra_constraints)
+
+        if isinstance(e, int):
+            return e
 
         if not isinstance(e, Base):
             raise ValueError("Expressions passed to min() MUST be Claripy ASTs (got %s)" % type(e))
