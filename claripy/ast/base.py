@@ -414,6 +414,9 @@ class Base(ana.Storable):
         This returns the same AST, with the arguments swapped out for new_args.
         '''
 
+        if len(self.args) == len(new_args) and all(a is b for a,b in zip(self.args, new_args)):
+            return self
+
         #symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
         #variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
         length = self.length if new_length is None else new_length
