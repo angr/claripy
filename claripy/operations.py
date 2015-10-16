@@ -113,7 +113,7 @@ def concat_simplifier(*args):
             previous = args[i-1]
             current = args[i]
 
-            if _backends['BackendConcrete'].handles(previous) and _backends['BackendConcrete'].handles(current):
+            if not (previous.symbolic or current.symbolic) and _backends['BackendConcrete'].handles(previous) and _backends['BackendConcrete'].handles(current):
                 args[i-1:i+1] = (ast.all_operations.Concat(previous, current),)
             else:
                 i += 1

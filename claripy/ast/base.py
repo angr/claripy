@@ -112,16 +112,15 @@ class Base(ana.Storable):
 
         eager_backends = list(_eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
 
-        if eager_backends is not None and op not in operations.leaf_operations:
+        if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
                     return eb._abstract(eb.call(op, args))
                 except BackendError:
                     eager_backends.remove(eb)
 
-            # if we can't be eager anymore, null out the eagerness
-            kwargs['eager_backends'] = None
-
+        # if we can't be eager anymore, null out the eagerness
+        kwargs['eager_backends'] = None
         h = Base._calc_hash(op, a_args, kwargs)
 
         self = cls._hash_cache.get(h, None)
