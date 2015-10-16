@@ -584,24 +584,6 @@ class Base(ana.Storable):
         elif ite_args.count(True) == 0:
             # if there are no ifs that came to the surface, there's nothing more to do
             return self.swap_args(excavated_args)
-        #elif ite_args.count(True) == 1:
-        #   # if there is exactly one If and we're a non-if operation, then we can distribute
-        #   # ourselves into the If
-        #   if_idx = ite_args.index(True)
-        #   old_if = excavated_args[if_idx]
-        #   _, old_true, old_false = old_if.args
-
-        #   # set up the new true branch
-        #   new_true_args = list(excavated_args)
-        #   new_true_args[if_idx] = old_true
-        #   new_true = self.swap_args(new_true_args, new_length=self.length)
-
-        #   # set up the new false branch
-        #   new_false_args = list(excavated_args)
-        #   new_false_args[if_idx] = old_false
-        #   new_false = self.swap_args(new_false_args, new_length=self.length)
-
-        #   return If(old_if.args[0], new_true, new_false)
         else:
             cond = excavated_args[ite_args.index(True)].args[0]
             new_true_args = [ ]
