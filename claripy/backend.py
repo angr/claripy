@@ -116,7 +116,7 @@ class Backend(object):
         '''
         self._object_cache.clear()
 
-    def can_handle(self, expr, result=None):
+    def handles(self, expr, result=None):
         '''
         Checks whether this backend can handle the expression.
 

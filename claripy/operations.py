@@ -108,10 +108,12 @@ def concat_simplifier(*args):
 
     if any(a.symbolic for a in args):
         i = 1
+        # here, we concatenate any consecutive concrete terms
         while i < len(args):
             previous = args[i-1]
             current = args[i]
-            if not (previous.symbolic or current.symbolic):
+
+            if _backends['BackendConcrete'].handles(previous) and _backends['BackendConcrete'].handles(current):
                 args[i-1:i+1] = (ast.all_operations.Concat(previous, current),)
             else:
                 i += 1
@@ -657,4 +659,4 @@ infix = {
 }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
-from . import ast
+from . import ast, _backends
