@@ -239,6 +239,9 @@ class BackendZ3(Backend):
     @staticmethod
     @condom
     def BVV(ast, result=None): #pylint:disable=unused-argument
+        if ast.args[0] is None:
+            raise BackendError("Z3 can't handle empty BVVs")
+
         size = ast.size()
         return z3.BitVecVal(ast.args[0], size)
 
