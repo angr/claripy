@@ -116,6 +116,20 @@ class Backend(object):
         '''
         self._object_cache.clear()
 
+    def can_handle(self, expr, result=None):
+        '''
+        Checks whether this backend can handle the expression.
+
+        @param expr: the expression
+        @param result: a Result object (for concrete-only symbolic evaluation)
+        @returns True if the backend can handle this expression, False if not
+        '''
+        try:
+            self.convert(expr, result=result)
+            return True
+        except BackendError:
+            return False
+
     def convert(self, expr, result=None): #pylint:disable=R0201
         '''
         Resolves a claripy.Base into something usable by the backend.
