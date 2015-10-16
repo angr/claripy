@@ -87,14 +87,6 @@ Bool.__ne__ = operations.op('__ne__', (Bool, Bool), Bool)
 #
 
 def If(*args):
-    '''
-    Returns an If-then-else expression. Takes three parameters: the condition,
-    the value to evaluate to if the condition is True, and the value to evaluate
-    to if the condition is False.
-
-    @param fast: If True, disables slow optimizations. False by default.
-    '''
-
     # the coercion here is strange enough that we'll just implement it manually
     if len(args) != 3:
         raise ClaripyOperationError("invalid number of args passed to If")
@@ -149,18 +141,20 @@ Or = operations.op('Or', Bool, Bool, bound=False)
 Not = operations.op('Not', (Bool,), Bool, bound=False)
 
 def is_true(e):
-    try:
-        return _backends['BackendConcrete'].is_true(e)
-    except BackendError:
-        l.debug("Unable to tell the truth-value of this expression")
-        return False
+    for b in _all_backends:
+        try: return b.is_true(b.convert(e))
+        except BackendError: pass
+
+    l.debug("Unable to tell the truth-value of this expression")
+    return False
 
 def is_false(e):
-    try:
-        return _backends['BackendConcrete'].is_false(e)
-    except BackendError:
-        l.debug("Unable to tell the truth-value of this expression")
-        return False
+    for b in _all_backends:
+        try: return b.is_false(b.convert(e))
+        except BackendError: pass
+
+    l.debug("Unable to tell the truth-value of this expression")
+    return False
 
 def ite_dict(i, d, default):
     return ite_cases([ (i == c, v) for c,v in d.items() ], default)
@@ -181,7 +175,7 @@ def constraint_to_si(expr):
     satisfiable = True
     replace_list = [ ]
 
-    satisfiable, replace_list = _backends['BackendVSA'].constraint_to_si(expr)
+    satisfiable, replace_list = _all_backends[1].constraint_to_si(expr)
 
     # Make sure the replace_list are all ast.bvs
     for i in xrange(len(replace_list)):
@@ -192,7 +186,7 @@ def constraint_to_si(expr):
 
     return satisfiable, replace_list
 
-from .. import _backends
+from .. import _all_backends
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
 from .bv import BVS
