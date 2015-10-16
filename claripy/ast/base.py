@@ -588,6 +588,8 @@ class Base(ana.Storable):
             # if there are no ifs that came to the surface, there's nothing more to do
             return self.swap_args(excavated_args)
         else:
+            # this gets called when we're *not* in an If, but there are Ifs in the args.
+            # it pulls those Ifs out to the surface.
             cond = excavated_args[ite_args.index(True)].args[0]
             new_true_args = [ ]
             new_false_args = [ ]
