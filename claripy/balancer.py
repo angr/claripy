@@ -179,7 +179,10 @@ class Balancer(object):
         '''
 
         high, low, to_extract = args
-        ast, cond = self._simplify(to_extract.op, to_extract.args, to_extract, condition)
+        cond_operation, cond_operand = condition
+        # Make sure the condition operand has the same size as to_extract
+        new_condition = cond_operation, _all_operations.ZeroExt((high - low + 1), cond_operand)
+        ast, cond = self._simplify(to_extract.op, to_extract.args, to_extract, new_condition)
 
         # Create the new ifproxy
         if ast is None:
