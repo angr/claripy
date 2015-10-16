@@ -21,6 +21,10 @@ class BackendConcrete(Backend):
     @staticmethod
     def BVS(ast, result=None):
         name, mn, mx, stride, uninitialized = ast.args #pylint:disable=unused-variable
+
+        if mn is not None and mn == mx:
+            return bv.BVV(mx, ast.length)
+
         if result is None:
             l.debug("BackendConcrete can only handle BitVec when we are given a model")
             raise BackendError("BackendConcrete can only handle BitVec when we are given a model")
