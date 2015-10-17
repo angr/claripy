@@ -149,6 +149,10 @@ class Backend(object):
             try: return self._object_cache[expr._cache_key]
             except KeyError: pass
 
+            # if we've errroed on this in the past, give up
+            if self in expr._errored and result is None:
+                raise BackendError("can't handle this one")
+
             # otherwise, resolve it!
             try:
                 if expr.op in self._op_expr:
@@ -158,6 +162,9 @@ class Backend(object):
             except (RuntimeError, ctypes.ArgumentError):
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
+            except BackendError:
+                expr._errored.add(self)
+                raise
 
             if result is None: self._object_cache[expr._cache_key] = r
             else: result.resolve_cache[self][expr._cache_key] = r
