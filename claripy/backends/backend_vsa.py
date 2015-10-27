@@ -205,10 +205,7 @@ class BackendVSA(Backend):
 
     @staticmethod
     def And(a, *args):
-        try:
-            return reduce(operator.__and__, args, a)
-        except TypeError:
-            import ipdb; ipdb.set_trace()
+        return reduce(operator.__and__, args, a)
 
     @staticmethod
     def Not(a):
