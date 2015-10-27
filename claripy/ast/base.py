@@ -241,12 +241,6 @@ class Base(ana.Storable):
     def make_like(self, *args, **kwargs):
         return type(self)(*args, **kwargs)
 
-    @property
-    def cardinality(self):
-        for b in _all_backends:
-            try: return b.cardinality(self)
-            except BackendError: pass
-
     #
     # Viewing and debugging
     #
@@ -661,20 +655,38 @@ class Base(ana.Storable):
         except BackendError:
             return self
 
+    #
+    # these are convenience operations
+    #
+
+    def _first_backend(self, what):
+        for b in _all_backends:
+            try: return getattr(b, what)(self)
+            except BackendError: pass
+
+    @property
+    def singlevalued(self):
+        return self._first_backend('singlevalued')
+
+    @property
+    def multivalued(self):
+        return self._first_backend('multivalued')
+
+    @property
+    def cardinality(self):
+        return self._first_backend('cardinality')
+
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
 
-    for b in _all_backends:
-        try:
-            s = b.simplify(e)
-            s._simplified = Base.FULL_SIMPLIFY
-            return s
-        except BackendError:
-            pass
-
-    l.debug("Unable to simplify expression")
-    return e
+    s = e._first_backend('simplify')
+    if s is None:
+        l.debug("Unable to simplify expression")
+        return e
+    else:
+        s._simplified = Base.FULL_SIMPLIFY
+        return s
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
 from .. import operations

@@ -603,6 +603,12 @@ class Backend(object):
         '''
         raise BackendError("backend doesn't support cardinality()")
 
+    def singlevalued(self, a, result=None):
+        return self.cardinality(a, result=result) == 1
+
+    def multivalued(self, a, result=None):
+        return self.cardinality(a, result=result) > 1
+
 from .ast.base import Base
 from .operations import opposites
 from .errors import BackendError, ClaripyRecursionError

@@ -160,6 +160,36 @@ def test_expression():
     nose.tools.assert_is(claripy.BVV('AB', 16), claripy.BVV(0x4142, 16))
     nose.tools.assert_raises(claripy.errors.ClaripyValueError, claripy.BVV, 'AB', 8)
 
+def test_cardinality():
+    x = claripy.BVS('x', 32)
+    y = claripy.BVS('y', 32, min=100, max=120)
+    n = claripy.BVV(10, 32)
+    m = claripy.BVV(20, 32)
+
+    nose.tools.assert_equals(y.cardinality, 21)
+    nose.tools.assert_equals(x.cardinality, 2**32)
+    nose.tools.assert_equals(n.cardinality, 1)
+    nose.tools.assert_equals(m.cardinality, 1)
+    nose.tools.assert_equals(n.union(m).cardinality, 2)
+    nose.tools.assert_equals(n.union(y).cardinality, 111)
+    nose.tools.assert_equals(y.intersection(x).cardinality, 21)
+    nose.tools.assert_equals(n.intersection(m).cardinality, 0)
+    nose.tools.assert_equals(y.intersection(m).cardinality, 0)
+
+    nose.tools.assert_true(n.singlevalued)
+    nose.tools.assert_false(n.multivalued)
+
+    nose.tools.assert_true(y.multivalued)
+    nose.tools.assert_false(y.singlevalued)
+
+    nose.tools.assert_false(x.singlevalued)
+    nose.tools.assert_true(x.multivalued)
+
+    nose.tools.assert_false(y.union(m).singlevalued)
+    nose.tools.assert_true(y.union(m).multivalued)
+
+    nose.tools.assert_false(y.intersection(m).singlevalued)
+    nose.tools.assert_false(y.intersection(m).multivalued)
 
 def test_if_stuff():
     x = claripy.BVS('x', 32)

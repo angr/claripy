@@ -77,6 +77,10 @@ class BackendConcrete(Backend):
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
+    def _cardinality(self, b, result=None):
+        # if we got here, it's a cardinality of 1
+        return 1
+
     #
     # Evaluation functions
     #

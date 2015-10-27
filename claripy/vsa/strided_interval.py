@@ -764,11 +764,10 @@ class StridedInterval(BackendObject):
 
     @property
     def cardinality(self):
-        if self.is_integer:
-            if self.is_empty:
-                return 0
-            else:
-                return 1
+        if self.is_bottom:
+            return 0
+        elif self.is_integer:
+            return 1
         else:
             return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + self._stride) / self._stride
 
