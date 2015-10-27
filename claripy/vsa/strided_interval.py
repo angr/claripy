@@ -376,9 +376,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -405,9 +405,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -433,9 +433,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -461,9 +461,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -490,9 +490,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -519,9 +519,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -547,9 +547,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -575,9 +575,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()

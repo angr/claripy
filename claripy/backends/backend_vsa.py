@@ -89,7 +89,7 @@ class BackendVSA(Backend):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
 
     def _convert(self, a, result=None):
-        if type(a) in { int, long, float, str }: #pylint:disable=unidiomatic-typecheck
+        if type(a) in { int, long }: #pylint:disable=unidiomatic-typecheck
             return a
         if type(a) is bool:
             return TrueResult() if a else FalseResult()
@@ -205,7 +205,10 @@ class BackendVSA(Backend):
 
     @staticmethod
     def And(a, *args):
-        return reduce(operator.__and__, args, a)
+        try:
+            return reduce(operator.__and__, args, a)
+        except TypeError:
+            import ipdb; ipdb.set_trace()
 
     @staticmethod
     def Not(a):

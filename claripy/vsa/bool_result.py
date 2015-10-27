@@ -78,8 +78,16 @@ class TrueResult(BoolResult):
     def value(self):
         return (True, )
 
-    def __eq__(self, other):
+    def identical(self, other):
         return isinstance(other, TrueResult)
+
+    def __eq__(self, other):
+        if isinstance(other, FalseResult):
+            return FalseResult()
+        elif isinstance(other, TrueResult):
+            return TrueResult()
+        else:
+            return MaybeResult()
 
     def __invert__(self):
         return FalseResult()
@@ -96,9 +104,9 @@ class TrueResult(BoolResult):
             return TrueResult()
 
     def union(self, other):
-        if other == True or type(other) is TrueResult:
+        if other is True or type(other) is TrueResult:
             return TrueResult()
-        elif other == False or type(other) is FalseResult:
+        elif other is False or type(other) is FalseResult:
             return MaybeResult()
         else:
             return NotImplemented
@@ -111,8 +119,16 @@ class FalseResult(BoolResult):
     def value(self):
         return (False, )
 
-    def __eq__(self, other):
+    def identical(self, other):
         return isinstance(other, FalseResult)
+
+    def __eq__(self, other):
+        if isinstance(other, FalseResult):
+            return TrueResult()
+        elif isinstance(other, TrueResult):
+            return FalseResult()
+        else:
+            return MaybeResult()
 
     def __invert__(self):
         return TrueResult()
@@ -127,9 +143,9 @@ class FalseResult(BoolResult):
         return '<False>'
 
     def union(self, other):
-        if other == True or type(other) is TrueResult:
+        if other is True or type(other) is TrueResult:
             return MaybeResult()
-        elif other == False or type(other) is FalseResult:
+        elif other is False or type(other) is FalseResult:
             return FalseResult()
         else:
             return NotImplemented
@@ -139,8 +155,11 @@ class MaybeResult(BoolResult):
     def value(self):
         return (True, False)
 
-    def __eq__(self, other):
+    def identical(self, other):
         return isinstance(other, MaybeResult)
+
+    def __eq__(self, other):
+        return MaybeResult()
 
     def __invert__(self):
         return MaybeResult()

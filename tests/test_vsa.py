@@ -377,7 +377,7 @@ def test_vsa():
     si.uninitialized = True
     bvv = BVV(0x30, 32)
     comp = (si < bvv)
-    nose.tools.assert_equal(vsa_model(comp), MaybeResult())
+    nose.tools.assert_true(vsa_model(comp).identical(MaybeResult()))
 
     # Better extraction
     # si = <32>0x1000000[0xcffffff, 0xdffffff]R
