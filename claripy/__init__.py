@@ -87,4 +87,8 @@ from .ast.bv import *
 from .ast.fp import *
 from .ast.bool import *
 from . import ast
+del BV
+del Bool
+del FP
+del Base
 ast._import()

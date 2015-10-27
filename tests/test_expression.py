@@ -130,24 +130,24 @@ def test_expression():
     b = claripy.BVV(20, 32)
 
     sb = s+b
-    nose.tools.assert_is_instance(sb.args[0], claripy.Base)
+    nose.tools.assert_is_instance(sb.args[0], claripy.ast.Base)
 
     bb = b+b
     # this was broken previously -- it was checking if type(bb.args[0]) == A,
     # and it wasn't, but was instead a subclass. leaving this out for now
-    # nose.tools.assert_not_is_instance(bb.args[0], claripy.Base)
+    # nose.tools.assert_not_is_instance(bb.args[0], claripy.ast.Base)
 
     # ss = s+s
     # (see above)
-    # nose.tools.assert_not_is_instance(ss.args[0], claripy.Base)
+    # nose.tools.assert_not_is_instance(ss.args[0], claripy.ast.Base)
 
     sob = s|b
     # for now, this is collapsed. Presumably, Fish will make it not collapse at some point
-    nose.tools.assert_is_instance(sob.args[0], claripy.Base)
+    nose.tools.assert_is_instance(sob.args[0], claripy.ast.Base)
 
     # make sure the AST collapses for delayed ops like reversing
     rb = b.reversed
-    #nose.tools.assert_is_instance(rb.args[0], claripy.Base)
+    #nose.tools.assert_is_instance(rb.args[0], claripy.ast.Base)
     # TODO: Properly delay reversing: should not be eager
 
     nose.tools.assert_is_not(rb, bb)
