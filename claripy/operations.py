@@ -1,6 +1,4 @@
 import itertools
-si_counter = itertools.count()
-
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
@@ -58,9 +56,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
-        if any(any(v.startswith('SI') for v in a.variables) for a in args if hasattr(a, 'variables')):
-            kwargs['add_variables'] = frozenset(('SI_%d' % next(si_counter),))
-
         return return_type(name, fixed_args, **kwargs)
 
     _op.calc_length = calc_length
@@ -70,19 +65,22 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 # Extra processors
 #
 
-def preprocess_intersect(*args, **kwargs):
-    new_name = 'SI_%d' % next(si_counter)
-    kwargs['add_variables'] = frozenset((new_name,))
-    return args, kwargs
-
+union_counter = itertools.count()
 def preprocess_union(*args, **kwargs):
-    new_name = 'SI_%d' % next(si_counter)
+
+    #
+    # When we union two values, we implicitly create a new symbolic, multi-valued
+    # variable, because a union is essentially an ITE with an unconstrained
+    # "choice" variable.
+    #
+
+    new_name = 'union_%d' % next(union_counter)
     kwargs['add_variables'] = frozenset((new_name,))
     return args, kwargs
 
 preprocessors = {
     'union': preprocess_union,
-    'intersection': preprocess_intersect
+    #'intersection': preprocess_intersect
 }
 
 #
