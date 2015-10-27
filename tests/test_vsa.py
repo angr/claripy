@@ -25,6 +25,48 @@ def test_wrapped_intervals():
     nose.tools.assert_equal(vsa_model(si1)._unsigned_bounds(), [ (0x0, 0xffffffff) ])
 
     #
+    # Pole-splitting
+    #
+
+    # south-pole splitting
+    si1 = claripy.SI(bits=32, stride=1, lower_bound=-1, upper_bound=1)
+    si_list = vsa_model(si1)._ssplit()
+    nose.tools.assert_equal(len(si_list), 2)
+    nose.tools.assert_true(
+        si_list[0].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=-1, upper_bound=-1))))
+    nose.tools.assert_true(
+        si_list[1].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=1))))
+
+    # north-pole splitting
+    si1 = claripy.SI(bits=32, stride=1, lower_bound=-1, upper_bound=-3)
+    si_list = vsa_model(si1)._nsplit()
+    nose.tools.assert_equal(len(si_list), 2)
+    nose.tools.assert_true(
+        si_list[0].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=-1, upper_bound=0x7fffffff))))
+    nose.tools.assert_true(
+        si_list[1].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=0x80000000, upper_bound=-3))))
+
+    # north-pole splitting, episode 2
+    si1 = claripy.SI(bits=32, stride=3, lower_bound=3, upper_bound=0)
+    si_list = vsa_model(si1)._nsplit()
+    nose.tools.assert_equal(len(si_list), 2)
+    nose.tools.assert_true(
+        si_list[0].identical(vsa_model(claripy.SI(bits=32, stride=3, lower_bound=3, upper_bound=0x7ffffffe))))
+    nose.tools.assert_true(
+        si_list[1].identical(vsa_model(claripy.SI(bits=32, stride=3, lower_bound=0x80000001, upper_bound=0))))
+
+    # bipolar splitting
+    si1 = claripy.SI(bits=32, stride=1, lower_bound=-2, upper_bound=-8)
+    si_list = vsa_model(si1)._psplit()
+    nose.tools.assert_equal(len(si_list), 3)
+    nose.tools.assert_true(
+        si_list[0].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=-2, upper_bound=-1))))
+    nose.tools.assert_true(
+        si_list[1].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0x7fffffff))))
+    nose.tools.assert_true(
+        si_list[2].identical(vsa_model(claripy.SI(bits=32, stride=1, lower_bound=0x80000000, upper_bound=-8))))
+
+    #
     # Addition
     #
 

@@ -245,9 +245,19 @@ class StridedInterval(BackendObject):
         north_pole_right = 2 ** (self.bits - 1) # 1000...0
 
         # Is `self` straddling the north pole?
-        if self.lower_bound <= north_pole_left and self.upper_bound >= north_pole_right:
-            # Yes it does!
+        straddling = False
+        if self.upper_bound >= north_pole_right:
+            if self.lower_bound > self.upper_bound:
+                # Yes it does!
+                straddling = True
+            elif self.lower_bound <= north_pole_left:
+                straddling = True
 
+        else:
+            if self.lower_bound > self.upper_bound and self.lower_bound <= north_pole_left:
+                straddling = True
+
+        if straddling:
             a_upper_bound = north_pole_left - ((north_pole_left - self.lower_bound) % self.stride)
             a = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=self.lower_bound, upper_bound=a_upper_bound)
 
