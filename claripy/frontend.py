@@ -251,7 +251,7 @@ class Frontend(ana.Storable):
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
 
     def eval(self, e, n, extra_constraints=()):
-        if self._concrete_type_check(e): return e
+        if self._concrete_type_check(e): return [e]
 
         extra_constraints = self._constraint_filter(extra_constraints)
         return self._eval(e, n, extra_constraints=extra_constraints)

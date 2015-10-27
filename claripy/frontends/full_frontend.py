@@ -110,8 +110,7 @@ class FullFrontend(LightFrontend):
         # if we still need more results, get them from the solver
         all_results = cached_results
         try:
-            eval_results = self._solver_backend.eval(e, n-len(all_results), extra_constraints=solver_extra_constraints,
-                                                     result=self.result, solver=self._get_solver())
+            eval_results = self._solver_backend.eval(e, n-len(all_results), extra_constraints=solver_extra_constraints, result=self.result, solver=self._get_solver())
             all_results.update(eval_results)
             l.debug("... got %d more values", len(all_results) - len(cached_results))
         except UnsatError:
