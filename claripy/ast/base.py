@@ -617,6 +617,7 @@ class Base(ana.Storable):
         '''
         if self._burrowed is None:
             self._burrowed = self._burrow_ite() #pylint:disable=attribute-defined-outside-init
+            self._burrowed._burrowed = self._burrowed
         return self._burrowed
 
     @property
@@ -628,6 +629,11 @@ class Base(ana.Storable):
         '''
         if self._excavated is None:
             self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
+
+            # we set the flag for the children so that we avoid re-excavating during
+            # VSA backend evaluation (since the backend evaluation recursively works on
+            # the excavated ASTs)
+            self._excavated._excavated = self._excavated
         return self._excavated
 
     #
