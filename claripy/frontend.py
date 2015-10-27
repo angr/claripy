@@ -243,6 +243,13 @@ class Frontend(ana.Storable):
         else:
             return False
 
+    def eval_to_ast(self, e, n, extra_constraints=()):
+        '''
+        Evaluates expression e, returning the results in the form of concrete ASTs.
+        '''
+
+        return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
+
     def eval(self, e, n, extra_constraints=()):
         if self._concrete_type_check(e): return e
 
@@ -304,4 +311,4 @@ from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeE
 from . import _eager_backends, _backends
 from .ast.base import Base
 from .ast.bool import false, Bool
-from .ast.bv import UGE, ULE
+from .ast.bv import UGE, ULE, BVV
