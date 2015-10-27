@@ -682,6 +682,10 @@ class Base(ana.Storable):
     def cardinality(self):
         return self._first_backend('cardinality')
 
+    @property
+    def concrete(self):
+        return _backends['BackendConcrete'].handles(self)
+
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
