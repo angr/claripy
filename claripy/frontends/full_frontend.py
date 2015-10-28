@@ -88,6 +88,9 @@ class FullFrontend(LightFrontend):
         try: return LightFrontend._eval(self, e, n, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
+        if not self.satisfiable(extra_constraints=extra_constraints):
+            raise UnsatError('unsat')
+
         return self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver())
 
     def _max(self, e, extra_constraints=()):

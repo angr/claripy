@@ -251,17 +251,36 @@ class Frontend(ana.Storable):
 
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
 
+    @staticmethod
+    def _eager_resolution(what, default, *args, **kwargs):
+        for b in _eager_backends:
+            try: return getattr(b, what)(*args, **kwargs)
+            except BackendError: pass
+        return default
+
     def eval(self, e, n, extra_constraints=()):
         if self._concrete_type_check(e): return [e]
 
         extra_constraints = self._constraint_filter(extra_constraints)
-        if not self.satisfiable(extra_constraints=extra_constraints):
-            raise UnsatError('unsat')
-
         l.debug("Frontend.eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
 
-        # first, we check the cache
-        if len(extra_constraints) == 0 and e.uuid in self.result.eval_cache:
+        # first, try evaluating through the eager backends
+        try:
+            eager_results = frozenset(self._eager_resolution('eval', (), e, n, extra_constraints=extra_constraints))
+            if not e.symbolic and len(eager_results) > 0:
+                return tuple(sorted(eager_results))
+
+            # put that in the cache
+            if self.result is not None and len(eager_results) > 0 and e.uuid in self.result.eval_cache and not eager_results.issubset(self.result.eval_cache[e.uuid]):
+                self.result.eval_cache[e.uuid] |= eager_results
+        except UnsatError:
+            # this can happen when the eager backend comes across an unsat extra condition
+            # *while using the current model*. A new constraint solve could return a new,
+            # sat model
+            pass
+
+        # then, check the cache
+        if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.eval_cache:
             cached_results = self.result.eval_cache[e.uuid]
             cached_n = self.result.eval_n[e.uuid]
         else:
@@ -289,6 +308,10 @@ class Frontend(ana.Storable):
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
+
+        # if, for some reason, we have no result object, make an approximate one
+        if self.result is None:
+            self.result = SatResult(approximation=True)
 
         # if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
         # add constraints to help the solver out later
