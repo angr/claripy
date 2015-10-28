@@ -585,8 +585,8 @@ class BackendZ3(Backend):
                 break
 
             if not type(expr) in { int, float, str, bool, long }:
-                v = model.eval(expr, model_completion=True)
-                results.append(self._abstract_to_primitive(v.ctx.ctx, v.ast))
+                v = self._primitive_from_model(model, expr)
+                results.append(v)
             else:
                 results.append(expr)
                 break
