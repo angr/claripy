@@ -4,6 +4,7 @@ import logging
 l = logging.getLogger("claripy.frontends.frontend")
 
 import ana
+import sys
 
 #pylint:disable=unidiomatic-typecheck
 
