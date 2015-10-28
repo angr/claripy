@@ -412,7 +412,7 @@ class Backend(object):
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._eval(self.convert(expr, result=result if n == 1 else None), n, result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+        return self._eval(self.convert(expr, result=result if n == 1 else None), n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
     def _eval(self, expr, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         '''
@@ -444,7 +444,7 @@ class Backend(object):
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._min(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+        return self._min(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
     def _min(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         '''
@@ -475,7 +475,7 @@ class Backend(object):
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._max(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+        return self._max(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
     def _max(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         '''
@@ -507,7 +507,7 @@ class Backend(object):
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._solution(self.convert(expr), self.convert(v), result=result, extra_constraints=self.convert_list(extra_constraints), solver=solver)
+        return self._solution(self.convert(expr), self.convert(v), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
     def _solution(self, expr, v, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         '''
