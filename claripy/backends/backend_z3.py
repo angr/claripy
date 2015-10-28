@@ -490,9 +490,9 @@ class BackendZ3(Backend):
             fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
             return fp_mantissa * (2 ** fp_exp)
         elif op_name == 'True':
-            return BoolV(True)
+            return True
         elif op_name == 'False':
-            return BoolV(False)
+            return False
         else:
             raise BackendError("Unable to abstract Z3 object to primitive")
 
