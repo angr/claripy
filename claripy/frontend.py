@@ -341,11 +341,20 @@ class Frontend(ana.Storable):
         except UnsatError:
             return False
 
-        if self._concrete_type_check(e) and self._concrete_type_check(v): return e == v
+        if self._concrete_type_check(e) and self._concrete_type_check(v):
+            return e == v
 
         b = self._solution(e, v, extra_constraints=extra_constraints)
-        if b is False and len(extra_constraints) > 0 and e.symbolic:
+        if b is False and len(extra_constraints) == 0 and e.symbolic:
             self.add([e != v], invalidate_cache=False)
+
+        # add these results to the cache
+        if self.result is not None and b is True:
+            if isinstance(e, Base) and e.symbolic and not isinstance(v, Base):
+                self.result.eval_cache[e.uuid] = self.result.eval_cache.get(e.uuid, frozenset()) | { v }
+            if isinstance(v, Base) and v.symbolic and not isinstance(e, Base):
+                self.result.eval_cache[v.uuid] = self.result.eval_cache.get(v.uuid, frozenset()) | { e }
+
         return b
 
     #
