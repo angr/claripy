@@ -667,6 +667,9 @@ class Base(ana.Storable):
 
     def _first_backend(self, what):
         for b in _all_backends:
+            if b in self._errored:
+                continue
+
             try: return getattr(b, what)(self)
             except BackendError: pass
 
