@@ -88,55 +88,7 @@ class FullFrontend(LightFrontend):
         try: return LightFrontend._eval(self, e, n, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
-        if not self.satisfiable(extra_constraints=extra_constraints): raise UnsatError('unsat')
-        l.debug("FullFrontend._eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
-
-        if len(extra_constraints) == 0 and e.uuid in self.result.eval_cache:
-            cached_results = self.result.eval_cache[e.uuid][1]
-            cached_n = self.result.eval_cache[e.uuid][0]
-
-            if cached_n >= n or len(cached_results) < cached_n:
-                # sort so the order of results is consistent when using pypy
-                return tuple(sorted(cached_results))[:n]
-            else:
-                solver_extra_constraints = [ e != v for v in cached_results ]
-        else:
-            cached_results = set()
-            cached_n = 0
-            solver_extra_constraints = extra_constraints
-
-        l.debug("... %d values (of %d) were already cached.", cached_n, n)
-
-        # if we still need more results, get them from the solver
-        all_results = cached_results
-        try:
-            eval_results = self._solver_backend.eval(e, n-len(all_results), extra_constraints=solver_extra_constraints, result=self.result, solver=self._get_solver())
-            all_results.update(eval_results)
-            l.debug("... got %d more values", len(all_results) - len(cached_results))
-        except UnsatError:
-            l.debug("... UNSAT")
-            if len(all_results) == 0:
-                raise
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
-
-        if len(extra_constraints) == 0:
-            l.debug("... adding cache of %d values for n=%d", len(all_results), n)
-            self.result.eval_cache[e.uuid] = (n, all_results)
-        else:
-            # can't assume that we didn't knock out other possible solutions
-            l.debug("... adding cache of %d values for n=%d", len(all_results), len(all_results))
-            self.result.eval_cache[e.uuid] = (len(all_results), all_results)
-
-        # if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
-        # add constraints to help the solver out later
-        if len(extra_constraints) == 0 and len(all_results) < n:
-            l.debug("... adding constraints for %d values for future speedup", len(all_results))
-            self.add([Or(*[ e == v for v in all_results ])], invalidate_cache=False)
-
-        # sort so the order of results is consistent when using pypy
-        return tuple(sorted(all_results))
+        return self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver())
 
     def _max(self, e, extra_constraints=()):
         try: return LightFrontend._max(self, e, extra_constraints=extra_constraints)
@@ -227,5 +179,4 @@ class FullFrontend(LightFrontend):
         return solvers
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
-from ..ast.bool import Or
 from ..ast.bv import UGE, ULE

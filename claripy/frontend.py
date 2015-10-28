@@ -255,7 +255,57 @@ class Frontend(ana.Storable):
         if self._concrete_type_check(e): return [e]
 
         extra_constraints = self._constraint_filter(extra_constraints)
-        return self._eval(e, n, extra_constraints=extra_constraints)
+        if not self.satisfiable(extra_constraints=extra_constraints):
+            raise UnsatError('unsat')
+
+        l.debug("Frontend.eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
+
+        # first, we check the cache
+        if len(extra_constraints) == 0 and e.uuid in self.result.eval_cache:
+            cached_results = self.result.eval_cache[e.uuid]
+            cached_n = self.result.eval_n[e.uuid]
+        else:
+            cached_results = frozenset()
+            cached_n = 0
+
+        # if there's enough in the cache, return that
+        if cached_n >= n or len(cached_results) < cached_n:
+            return tuple(sorted(cached_results))[:n]
+
+        # try to make sure we don't get more of the same
+        solver_extra_constraints = list(extra_constraints) + [ e != v for v in cached_results ]
+
+        # if we still need more results, get them from the frontend
+        try:
+            n_lacking = n - len(cached_results)
+            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints))
+            l.debug("... got %d more values", len(eval_results - cached_results))
+        except UnsatError:
+            l.debug("... UNSAT")
+            if len(cached_results) == 0:
+                raise
+            else:
+                eval_results = frozenset()
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
+
+        # if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
+        # add constraints to help the solver out later
+        # TODO: does this really help?
+        all_results = cached_results | eval_results
+        if len(extra_constraints) == 0 and len(all_results) < n:
+            l.debug("... adding constraints for %d values for future speedup", len(all_results))
+            self.add([Or(*[ e == v for v in eval_results | cached_results ])], invalidate_cache=False)
+
+        # fix up the cache. If there were extra constraints, we can't assume that we got
+        # all of the possible solutions, so we have to settle for a biggest-evaluated value
+        # equal to the number of values we got
+        self.result.eval_cache[e.uuid] = all_results
+        self.result.eval_n[e.uuid] = n if len(extra_constraints) == 0 else len(all_results)
+
+        # sort so the order of results is consistent when using pypy
+        return tuple(sorted(all_results))
 
     def max(self, e, extra_constraints=()):
         if self._concrete_type_check(e): return e
@@ -311,5 +361,5 @@ from .result import UnsatResult, SatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError, ClaripyValueError
 from . import _eager_backends, _backends
 from .ast.base import Base
-from .ast.bool import false, Bool
+from .ast.bool import false, Bool, Or
 from .ast.bv import UGE, ULE, BVV
