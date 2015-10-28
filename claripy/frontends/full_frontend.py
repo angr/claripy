@@ -108,8 +108,16 @@ class FullFrontend(LightFrontend):
 
         self.simplify()
 
+        c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
         try:
-            c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
+            vals = self._solver_backend.max_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
+            if self.result is not None:
+                self.result.eval_cache[e.uuid] = self.result.eval_cache.get(e.uuid, frozenset()) | vals
+            return max(vals)
+        except BackendError:
+            pass
+
+        try:
             return self._solver_backend.max(e, extra_constraints=c, result=self.result, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
@@ -130,8 +138,16 @@ class FullFrontend(LightFrontend):
 
         self.simplify()
 
+        c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
         try:
-            c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
+            vals = self._solver_backend.min_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
+            if self.result is not None:
+                self.result.eval_cache[e.uuid] = self.result.eval_cache.get(e.uuid, frozenset()) | vals
+            return min(vals)
+        except BackendError:
+            pass
+
+        try:
             return self._solver_backend.min(e, extra_constraints=c, result=self.result, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()

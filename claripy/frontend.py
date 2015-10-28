@@ -282,7 +282,7 @@ class Frontend(ana.Storable):
         # then, check the cache
         if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.eval_cache:
             cached_results = self.result.eval_cache[e.uuid]
-            cached_n = self.result.eval_n[e.uuid]
+            cached_n = self.result.eval_n.get(e.uuid, 0)
         else:
             cached_results = frozenset()
             cached_n = 0
