@@ -20,6 +20,10 @@ class Bits(Base):
     def _type_name(self):
         return self.__class__.__name__ + str(self.length)
 
+    def _check_replaceability(self, new):
+        if self.size() != new.size():
+            raise ClaripyOperationError('replacements must have matching sizes')
+
     __len__ = size
 
 

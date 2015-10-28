@@ -314,7 +314,7 @@ def SGE(self, o):
 # Pure boolean stuff
 #
 
-def BoolVal(b):
+def BoolV(b):
     return b
 
 def And(*args):

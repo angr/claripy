@@ -21,14 +21,6 @@ md5_unpacker = struct.Struct('2Q')
 #pylint:enable=unused-argument
 #pylint:disable=unidiomatic-typecheck
 
-def _is_eager(a):
-    if isinstance(a, (int, long, bool, RM, FSort)):
-        return True
-    elif isinstance(a, Base):
-        return a.eager
-    else:
-        return False
-
 def _inner_repr(a, **kwargs):
     if isinstance(a, Base):
         return a.__repr__(inner=True, **kwargs)
@@ -70,7 +62,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', 'eager', 'length' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -96,11 +88,11 @@ class Base(ana.Storable):
                            fast-simplified (basically, just undoing the Reverse op), and 2 means
                            simplified through z3.
         @param errored: a set of backends that are known to be unable to handle this AST.
-        @param eager: whether or not to evaluate future parent ASTs eagerly.
+        @param eager_backends: a list of backends with which to attempt eager evaluation
         '''
-        if any(not isinstance(a, (str, int, long, bool, Base, BackendObject, FSort)) for a in args):
-            #import ipdb; ipdb.set_trace()
-            raise ClaripyTypeError("arguments %s contain an unknown type to claripy.Base" % (args,))
+
+        #if any(isinstance(a, BackendObject) for a in args):
+        #   raise Exception('asdf')
 
         # fix up args and kwargs
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
@@ -118,6 +110,17 @@ class Base(ana.Storable):
         if 'add_variables' in kwargs:
             kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
 
+        eager_backends = list(_eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
+
+        if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
+            for eb in eager_backends:
+                try:
+                    return eb._abstract(eb.call(op, args))
+                except BackendError:
+                    eager_backends.remove(eb)
+
+        # if we can't be eager anymore, null out the eagerness
+        kwargs['eager_backends'] = None
         h = Base._calc_hash(op, a_args, kwargs)
 
         self = cls._hash_cache.get(h, None)
@@ -153,8 +156,11 @@ class Base(ana.Storable):
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
         return md5_unpacker.unpack(hd)[0] # 64 bits
 
+    def _get_hashables(self):
+        return self.op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
+
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager=False, add_variables=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None): #pylint:disable=unused-argument
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''
@@ -163,25 +169,15 @@ class Base(ana.Storable):
         self.length = length
         self.variables = frozenset(variables)
         self.symbolic = symbolic
-        self.eager = eager
+        self._eager_backends = eager_backends
 
         self._collapsible = True if collapsible is None else collapsible
         self._errored = errored if errored is not None else set()
 
         self._simplified = simplified
         self._cache_key = ASTCacheKey()
-
-        if self.op != 'I' and all(_is_eager(a) for a in self.args):
-            model = self.model
-            if model is not self:
-                self.op = 'I'
-                self.args = (model,)
-
-                # Usually `eagerness` should be passed on. However, type of the model might be different than its
-                # arguments. In VSA, for instance, a union of two BVVs can lead to a StridedInterval instance, where
-                # BVVs should be evaluated eagerly while StridedIntervals should not be, Hence we are rechecking if the
-                # model itself should be eagerly evaluated and property set the eager property here.
-                self.eager = _is_eager(model)
+        self._excavated = None
+        self._burrowed = None
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -245,156 +241,6 @@ class Base(ana.Storable):
     def make_like(self, *args, **kwargs):
         return type(self)(*args, **kwargs)
 
-    def _should_collapse(self):
-        '''
-        This is a helper function that checks if the AST is "collapsible". It returns
-        False if there is some reason to keep it from being collapsed. For example,
-        an AST that contains only one StridedInterval in its immediate arguments should
-        not be collapsed, because the VSA does tricky things to avoid losing precision.
-        '''
-        raw_args = self.arg_models()
-        types = [ type(a) for a in raw_args ]
-
-        #l.debug("In should_collapse()")
-
-        if types.count(Base) != 0 and not all((a._collapsible for a in raw_args if isinstance(a, Base))):
-                #l.debug("... not collapsing for op %s because ASTs are present.", self.op)
-                return False
-
-        if self.op in operations.not_invertible:
-            #l.debug("... collapsing the AST for operation %s because it's not invertible", self.op)
-            return True
-
-        constants = sum((types.count(t) for t in (int, long, bool, str, bv.BVV)))
-        if constants == len(raw_args):
-            #l.debug("... collapsing the AST for operation %s because it's full of constants", self.op)
-            return True
-
-        if len([ a for a in raw_args if isinstance(a, StridedInterval) and a.is_integer]) > 1:
-            #l.debug("... collapsing the AST for operation %s because there are more than two SIs", self.op)
-            return True
-
-        #
-        # More complex checks probably go here.
-        #
-
-        # Reversible; don't collapse!
-        #l.debug("not collapsing the AST for operation %s!", self.op)
-        return False
-
-    @property
-    def collapsed(self):
-        '''
-        A collapsed version of the AST, if the AST *can* be collapsed.
-        '''
-        if self._should_collapse() and self._collapsible:
-            #l.debug("Collapsing!")
-            r = self.model
-            if not isinstance(r, Base):
-                if isinstance(self, Bits):
-                    return self.__class__('I', args=(r,), length=len(self), variables=self.variables, symbolic=self.symbolic)
-                else:
-                    return self.__class__('I', args=(r,), variables=self.variables, symbolic=self.symbolic)
-            else:
-                return r
-        else:
-            return self
-
-    @property
-    def simplified(self):
-        '''
-        A lightly simplified version of the AST (simplify level 1). This basically
-        just cancels out two Reverse operations, if they are present. Later on, it will hopefully
-        do more.
-        '''
-
-        if self._simplified:
-            return self
-
-        if self.op in operations.reverse_distributable and all((isinstance(a, Base) for a in self.args)) and set((a.op for a in self.args)) == { 'Reverse' }:
-            inner_a = self.make_like(self.op, tuple(a.args[0] for a in self.args)).simplified
-            o = self.make_like('Reverse', (inner_a,), collapsible=True).simplified
-            o._simplified = Base.LITE_SIMPLIFY
-            return o
-
-        # self = self.make_like(self._claripy, self.op, tuple(a.reduced if isinstance(a, Base) else a for a in self.args))
-
-        return self
-
-    @property
-    def reduced(self):
-        '''
-        A simplified, collapsed version of the AST.
-        '''
-        a = self.simplified
-        if isinstance(a, Base):
-            return a.collapsed
-        else:
-            return a
-
-    # No more size in Base
-
-    @property
-    def cardinality(self):
-        t = type(self.model)
-
-        if t in (int, long, bool, str, bv.BVV):
-            return 1
-
-        elif t in (vsa.IfProxy, vsa.StridedInterval, vsa.ValueSet, vsa.DiscreteStridedIntervalSet):
-            return self.model.cardinality
-
-        else:
-            raise NotImplementedError("'cardinality' is not supported in modes other than static mode")
-
-    #
-    # Functionality for resolving to model objects
-    #
-
-    def arg_models(self):
-        '''
-        Helper function to return the model (i.e., non-AST) objects of the arguments.
-        '''
-        return [ (a.model if isinstance(a, Base) else a) for a in self.args ]
-
-    def resolved(self, result=None):
-        '''
-        Returns a model object (i.e., an object that is the result of all the operations
-        in the AST), if there is a backend that can handle this AST. Otherwise, return
-        itself.
-
-        @arg result: a Result object, for resolving symbolic variables using the
-                     concrete backend.
-        '''
-        for b in _model_backends:
-            try: return self.resolved_with(b, result=result)
-            except BackendError: self._errored.add(b)
-        l.debug("all model backends failed for op %s", self.op)
-        return self
-
-    @property
-    def model(self):
-        '''
-        The model object (the result of the operation represented by this AST).
-        '''
-        r = self.resolved()
-        return r
-
-    def resolved_with(self, b, result=None):
-        '''
-        Returns the result of carrying out the operation of this AST with the
-        specified backend.
-
-        @arg b: the backend to resolve with
-        @arg result: a Result object, for resolving symbolic variables using the
-                     concrete backend
-        '''
-        if b in self._errored and result is None:
-            raise BackendError("%s already failed" % b)
-
-        #l.debug("trying evaluation with %s", b)
-        return b.call(self, result=result)
-
     #
     # Viewing and debugging
     #
@@ -423,64 +269,59 @@ class Base(ana.Storable):
         if WORKER:
             return '<AST something>'
 
-        self = self.reduced
-
-        if not isinstance(self.model, Base):
-            if inner:
-                if isinstance(self.model, bv.BVV):
-                    if self.model.value < 10:
-                        val = format(self.model.value, '')
-                    else:
-                        val = format(self.model.value, '#x')
-                    return val + ('#' + str(self.model.bits) if explicit_length else '')
-                else:
-                    return repr(self.model)
+        try:
+            if self.op in operations.reversed_ops:
+                op = operations.reversed_ops[self.op]
+                args = self.args[::-1]
             else:
-                return '<{} {}>'.format(self._type_name(), self.model)
-        else:
-            try:
-                if self.op in operations.reversed_ops:
-                    op = operations.reversed_ops[self.op]
-                    args = self.args[::-1]
+                op = self.op
+                args = self.args
+
+            if op == 'BVS' and inner:
+                value = args[0]
+            elif op == 'BoolV':
+                value = str(args[0])
+            elif op == 'BVV':
+                if self.args[0] is None:
+                    value = '!'
+                elif self.args[1] < 10:
+                    value = format(self.args[0], '')
                 else:
-                    op = self.op
-                    args = self.args
+                    value = format(self.args[0], '#x')
+                value += ('#' + str(self.length)) if explicit_length else ''
+            elif op == 'If':
+                value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
+                                                       _inner_repr(args[1]),
+                                                       _inner_repr(args[2]))
+                if inner:
+                    value = '({})'.format(value)
+            elif op == 'Not':
+                value = '!{}'.format(_inner_repr(args[0]))
+            elif op == 'Extract':
+                value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
+            elif op == 'ZeroExt':
+                value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
+                if inner:
+                    value = '({})'.format(value)
+            elif op == 'Concat':
+                value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
+            elif len(args) == 2 and op in operations.infix:
+                value = '{} {} {}'.format(_inner_repr(args[0]),
+                                          operations.infix[op],
+                                          _inner_repr(args[1]))
+                if inner:
+                    value = '({})'.format(value)
+            else:
+                value = "{}({})".format(op,
+                                        ', '.join(_inner_repr(a) for a in args))
 
-                if op == 'BitVec' and inner:
-                    value = args[0]
-                elif op == 'If':
-                    value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
-                                                           _inner_repr(args[1]),
-                                                           _inner_repr(args[2]))
-                    if inner:
-                        value = '({})'.format(value)
-                elif op == 'Not':
-                    value = '!{}'.format(_inner_repr(args[0]))
-                elif op == 'Extract':
-                    value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
-                elif op == 'ZeroExt':
-                    value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
-                    if inner:
-                        value = '({})'.format(value)
-                elif op == 'Concat':
-                    value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
-                elif len(args) == 2 and op in operations.infix:
-                    value = '{} {} {}'.format(_inner_repr(args[0]),
-                                              operations.infix[op],
-                                              _inner_repr(args[1]))
-                    if inner:
-                        value = '({})'.format(value)
-                else:
-                    value = "{}({})".format(op,
-                                            ', '.join(_inner_repr(a) for a in args))
+            if not inner:
+                value = '<{} {}>'.format(self._type_name(), value)
 
-                if not inner:
-                    value = '<{} {}>'.format(self._type_name(), value)
-
-                return value
-            except RuntimeError:
-                e_type, value, traceback = sys.exc_info()
-                raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
+            return value
+        except RuntimeError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
     @property
     def depth(self):
@@ -488,8 +329,6 @@ class Base(ana.Storable):
         The depth of this AST. For example, an AST representing (a+(b+c)) would have
         a depth of 2.
         '''
-        if self.op == 'BitVec':
-            return 0
         ast_args = [ a for a in self.args if isinstance(a, Base) ]
         return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
 
@@ -556,13 +395,28 @@ class Base(ana.Storable):
                 new_args.append(new_a)
 
             if replaced:
-                r = self.make_like(self.op, tuple(new_args)).reduced
+                r = self.make_like(self.op, tuple(new_args))
             else:
                 r = self
 
         replacements[hash_key] = r
         return r
 
+    def swap_args(self, new_args, new_length=None):
+        '''
+        This returns the same AST, with the arguments swapped out for new_args.
+        '''
+
+        if len(self.args) == len(new_args) and all(a is b for a,b in zip(self.args, new_args)):
+            return self
+
+        #symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
+        #variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
+        length = self.length if new_length is None else new_length
+        a = self.__class__(self.op, new_args, length=length)
+        #if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
+        #   raise ClaripyOperationError("major bug in swap_args()")
+        return a
 
     #
     # Other helper functions
@@ -598,14 +452,6 @@ class Base(ana.Storable):
         '''
         raise ClaripyOperationError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
-    def identical(self, o):
-        '''
-        Returns True if 'o' can be easily determined to be identical to this AST.
-        Otherwise, return False. Note that the AST *might* still be identical (i.e.,
-        if it were simplified via Z3), but it's hard to quickly tell that.
-        '''
-        return is_identical(self, o)
-
     def structurally_match(self, o):
         """
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
@@ -633,7 +479,7 @@ class Base(ana.Storable):
                 else:
                     continue
 
-            if arg_a.op in ('I', 'BitVec', 'FP'):
+            if arg_a.op in ('I', 'BVS', 'FP'):
                 # This is a leaf node in AST tree
                 if arg_a is not arg_b:
                     return False
@@ -650,13 +496,16 @@ class Base(ana.Storable):
         '''
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyOperationError('replacements must be AST nodes')
-        if not isinstance(new, Bool):
-            if old.size() != new.size():
-                raise ClaripyOperationError('replacements must have matching sizes')
+        if type(old) is not type(new):
+            raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
+        old._check_replaceability(new)
         return self._replace(old, new)
 
+    def _check_replaceability(self, new):
+        pass
+
     def _identify_vars(self, all_vars, counter):
-        if self.op == 'BitVec':
+        if self.op == 'BVS':
             if self.args not in all_vars:
                 all_vars[self.args] = BV('var_' + str(next(counter)),
                                          self.args[1],
@@ -677,69 +526,181 @@ class Base(ana.Storable):
 
         return all_vars, expr
 
-#
-# Unbound methods
-#
+    #
+    # This code handles burrowing ITEs deeper into the ast and excavating
+    # them to shallower levels.
+    #
 
-def is_identical(*args):
-    '''
-    Attempts to check if the underlying models of the expression are identical,
-    even if the hashes match.
+    def _burrow_ite(self):
+        if self.op != 'If':
+            #print "i'm not an if"
+            return self.swap_args([ (a.ite_burrowed if isinstance(a, Base) else a) for a in self.args ])
 
-    This process is somewhat conservative: False does not necessarily mean that
-    it's not identical; just that it can't (easily) be determined to be identical.
-    '''
-    if not all([isinstance(a, Base) for a in args]):
-        return False
+        if not all(isinstance(a, Base) for a in self.args):
+            #print "not all my args are bases"
+            return self
 
-    if len(set(hash(a) for a in args)) == 1:
-        return True
+        old_true = self.args[1]
+        old_false = self.args[2]
 
-    first = args[0]
-    identical = None
-    for o in args:
+        if old_true.op != old_false.op or len(old_true.args) != len(old_false.args):
+            return self
+
+        if old_true.op == 'If':
+            # let's no go into this right now
+            return self
+
+        if any(a.op in {'BVS', 'BVV', 'FPS', 'FPV', 'BoolS', 'BoolV'} for a in self.args):
+            # burrowing through these is pretty funny
+            return self
+
+        matches = [ old_true.args[i] is old_false.args[i] for i in range(len(old_true.args)) ]
+        if matches.count(True) != 1 or all(matches):
+            # TODO: handle multiple differences for multi-arg ast nodes
+            #print "wrong number of matches:",matches,old_true,old_false
+            return self
+
+        different_idx = matches.index(False)
+        inner_if = If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
+        new_args = list(old_true.args)
+        new_args[different_idx] = inner_if.ite_burrowed
+        #print "replaced the",different_idx,"arg:",new_args
+        return old_true.__class__(old_true.op, new_args, length=self.length)
+
+    def _excavate_ite(self):
+        if self.op in { 'BVS', 'I', 'BVV' }:
+            return self
+
+        excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]
+        ite_args = [ isinstance(a, Base) and a.op == 'If' for a in excavated_args ]
+
+        if self.op == 'If':
+            # if we are an If, call the If handler so that we can take advantage of its simplifiers
+            return If(*excavated_args)
+        elif ite_args.count(True) == 0:
+            # if there are no ifs that came to the surface, there's nothing more to do
+            return self.swap_args(excavated_args)
+        else:
+            # this gets called when we're *not* in an If, but there are Ifs in the args.
+            # it pulls those Ifs out to the surface.
+            cond = excavated_args[ite_args.index(True)].args[0]
+            new_true_args = [ ]
+            new_false_args = [ ]
+
+            for a in excavated_args:
+                #print "OC", cond.dbg_repr()
+                #print "NC", Not(cond).dbg_repr()
+
+                if not isinstance(a, Base) or a.op != 'If':
+                    new_true_args.append(a)
+                    new_false_args.append(a)
+                elif a.args[0] is cond:
+                    #print "AC", a.args[0].dbg_repr()
+                    new_true_args.append(a.args[1])
+                    new_false_args.append(a.args[2])
+                elif a.args[0] is Not(cond):
+                    #print "AN", a.args[0].dbg_repr()
+                    new_true_args.append(a.args[2])
+                    new_false_args.append(a.args[1])
+                else:
+                    #print "AB", a.args[0].dbg_repr()
+                    # weird conditions -- giving up!
+                    return self.swap_args(excavated_args)
+
+            return If(cond, self.swap_args(new_true_args), self.swap_args(new_false_args))
+
+    @property
+    def ite_burrowed(self):
+        '''
+        Returns an equivalent AST that "burrows" the ITE expressions
+        as deep as possible into the ast, for simpler printing.
+        '''
+        if self._burrowed is None:
+            self._burrowed = self._burrow_ite() #pylint:disable=attribute-defined-outside-init
+            self._burrowed._burrowed = self._burrowed
+        return self._burrowed
+
+    @property
+    def ite_excavated(self):
+        '''
+        Returns an equivalent AST that "excavates" the ITE expressions
+        out as far as possible toward the root of the AST, for processing
+        in static analyses.
+        '''
+        if self._excavated is None:
+            self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
+
+            # we set the flag for the children so that we avoid re-excavating during
+            # VSA backend evaluation (since the backend evaluation recursively works on
+            # the excavated ASTs)
+            self._excavated._excavated = self._excavated
+        return self._excavated
+
+    #
+    # Alright, I give up. Here are some convenience accessors to backend models.
+    #
+
+    @property
+    def _model_vsa(self):
+        try:
+            return _backends['BackendVSA'].convert(self)
+        except BackendError:
+            return self
+
+    @property
+    def _model_z3(self):
+        try:
+            return _backends['BackendZ3'].convert(self)
+        except BackendError:
+            return self
+
+    @property
+    def _model_concrete(self):
+        try:
+            return _backends['BackendConcrete'].convert(self)
+        except BackendError:
+            return self
+
+    #
+    # these are convenience operations
+    #
+
+    def _first_backend(self, what):
         for b in _all_backends:
-            try:
-                i = b.identical(first, o)
-                if identical is None:
-                    identical = True
-                identical &= i is True
-            except BackendError:
-                pass
+            try: return getattr(b, what)(self)
+            except BackendError: pass
 
-        if not identical:
-            return False
+    @property
+    def singlevalued(self):
+        return self._first_backend('singlevalued')
 
-    return identical is True
+    @property
+    def multivalued(self):
+        return self._first_backend('multivalued')
 
-def model_object(e, result=None):
-    for b in _all_backends:
-        try: return b.convert(e, result=result)
-        except BackendError: pass
-    raise ClaripyTypeError('no model backend can convert expression')
+    @property
+    def cardinality(self):
+        return self._first_backend('cardinality')
+
+    @property
+    def concrete(self):
+        return _backends['BackendConcrete'].handles(self)
 
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
 
-    for b in _all_backends:
-        try:
-            s = b.simplify(e)
-            s._simplified = Base.FULL_SIMPLIFY
-            return s
-        except BackendError:
-            pass
+    s = e._first_backend('simplify')
+    if s is None:
+        l.debug("Unable to simplify expression")
+        return e
+    else:
+        s._simplified = Base.FULL_SIMPLIFY
+        return s
 
-    l.debug("Unable to simplify expression")
-    return e
-
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
+from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
 from .. import operations
-from .. import bv, vsa
-from ..fp import RM, FSort
-from ..vsa import StridedInterval
 from ..backend_object import BackendObject
-from .. import _all_backends, _model_backends
-from ..ast.bits import Bits
-from ..ast.bool import Bool
+from .. import _all_backends, _eager_backends, _backends
+from ..ast.bool import If, Not
 from ..ast.bv import BV

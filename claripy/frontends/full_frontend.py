@@ -110,9 +110,8 @@ class FullFrontend(LightFrontend):
         # if we still need more results, get them from the solver
         all_results = cached_results
         try:
-            eval_results = self._solver_backend.eval(e, n-len(all_results), extra_constraints=solver_extra_constraints,
-                                                     result=self.result, solver=self._get_solver())
-            all_results.update(model_object(r) for r in eval_results)
+            eval_results = self._solver_backend.eval(e, n-len(all_results), extra_constraints=solver_extra_constraints, result=self.result, solver=self._get_solver())
+            all_results.update(eval_results)
             l.debug("... got %d more values", len(all_results) - len(cached_results))
         except UnsatError:
             l.debug("... UNSAT")
@@ -156,7 +155,7 @@ class FullFrontend(LightFrontend):
 
         try:
             c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
-            return model_object(self._solver_backend.max(e, extra_constraints=c, result=self.result, solver=self._get_solver()))
+            return self._solver_backend.max(e, extra_constraints=c, result=self.result, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
@@ -178,7 +177,7 @@ class FullFrontend(LightFrontend):
 
         try:
             c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
-            return model_object(self._solver_backend.min(e, extra_constraints=c, result=self.result, solver=self._get_solver()))
+            return self._solver_backend.min(e, extra_constraints=c, result=self.result, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
@@ -228,6 +227,5 @@ class FullFrontend(LightFrontend):
         return solvers
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
-from ..ast.base import model_object
 from ..ast.bool import Or
 from ..ast.bv import UGE, ULE

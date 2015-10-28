@@ -72,8 +72,8 @@ def condom(f):
         The Z3 condom intersects Z3Exceptions and throws a ClaripyZ3Error instead.
         '''
         try:
-            args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
-            return f(*args, **kwargs)
+            condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
+            return f(*condom_args, **kwargs)
         except z3.Z3Exception as ze:
             raise ClaripyZ3Error("Z3Exception: %s" % ze)
     return z3_condom
@@ -87,8 +87,13 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE'}:
+        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE', 'BVV', 'BoolV', 'FPV'}:
             self._op_raw[o] = getattr(z3, o)
+
+        self._op_raw['__ge__'] = z3.UGE
+        self._op_raw['__gt__'] = z3.UGT
+        self._op_raw['__le__'] = z3.ULE
+        self._op_raw['__lt__'] = z3.ULT
 
         self._op_raw['SLT'] = self.SLT
         self._op_raw['SLE'] = self.SLE
@@ -99,6 +104,12 @@ class BackendZ3(Backend):
         self._op_raw['I'] = lambda thing: thing
         self._op_raw['fpToSBV'] = self.fpToSBV
         self._op_raw['fpToUBV'] = self.fpToUBV
+        self._op_expr['BVS'] = self.BVS
+        self._op_expr['BVV'] = self.BVV
+        self._op_expr['FPV'] = self.FPV
+        self._op_expr['FPS'] = self.FPS
+        self._op_expr['BoolV'] = self.BoolV
+        self._op_expr['BoolS'] = self.BoolS
 
     @property
     def _ast_cache(self):
@@ -160,6 +171,10 @@ class BackendZ3(Backend):
         l.warning("BackendZ3.name() called. This is weird.")
         raise BackendError("name is not implemented yet")
 
+    #
+    # Operation handlers
+    #
+
     @staticmethod
     @condom
     def reverse(a):
@@ -203,11 +218,73 @@ class BackendZ3(Backend):
     def _identical(self, a, b, result=None):
         return a.eq(b)
 
+    #
+    # Core creation methods
+    #
+
+    @staticmethod
+    @condom
+    def BVS(ast, result=None): #pylint:disable=unused-argument
+        name, mn, mx, stride, _ = ast.args
+        size = ast.size()
+        expr = z3.BitVec(name, size)
+        if mn is not None:
+            expr = z3.If(z3.ULT(expr, mn), mn, expr)
+        if mx is not None:
+            expr = z3.If(z3.UGT(expr, mx), mx, expr)
+        if stride is not None:
+            expr = (expr / stride) * stride
+        return expr
+
+    @staticmethod
+    @condom
+    def BVV(ast, result=None): #pylint:disable=unused-argument
+        if ast.args[0] is None:
+            raise BackendError("Z3 can't handle empty BVVs")
+
+        size = ast.size()
+        return z3.BitVecVal(ast.args[0], size)
+
+    @staticmethod
+    @condom
+    def FPS(name, sort): #pylint:disable=unused-argument
+        raise BackendError("TODO: not sure how to do this")
+
+    @condom
+    def FPV(self, ast, result=None): #pylint:disable=unused-argument
+        val = str(ast.args[0])
+        sort = self._convert(ast.args[1])
+        if val == 'inf':
+            return z3.fpPlusInfinity(sort)
+        elif val == '-inf':
+            return z3.fpMinusInfinity(sort)
+        elif val == '0.0':
+            return z3.fpPlusZero(sort)
+        elif val == '-0.0':
+            return z3.fpMinusZero(sort)
+        elif val == 'nan':
+            return z3.fpNaN(sort)
+        else:
+            better_val = str(Decimal(ast.args[0]))
+            return z3.FPVal(better_val, sort)
+
+    @staticmethod
+    @condom
+    def BoolS(ast, result=None): #pylint:disable=unused-argument
+        return z3.Bool(ast.args[0])
+
+    @staticmethod
+    @condom
+    def BoolV(ast, result=None): #pylint:disable=unused-argument
+        return z3.BoolVal(ast.args[0])
+
+    #
+    # Conversions
+    #
+
     @condom
     def _convert(self, obj, result=None):
-        if type(obj) is NativeBVV:
-            return z3.BitVecVal(obj.value, obj.bits)
-        elif isinstance(obj, FSort):
+        if isinstance(obj, FSort):
             return z3.FPSort(obj.exp, obj.mantissa)
         elif isinstance(obj, RM):
             if obj == RM_RNE:
@@ -222,22 +299,6 @@ class BackendZ3(Backend):
                 return z3.RTZ()
             else:
                 raise BackendError("unrecognized rounding mode")
-        elif isinstance(obj, NativeFPV):
-            val = str(obj.value)
-            sort = self._convert(obj.sort)
-            if val == 'inf':
-                return z3.fpPlusInfinity(sort)
-            elif val == '-inf':
-                return z3.fpMinusInfinity(sort)
-            elif val == '0.0':
-                return z3.fpPlusZero(sort)
-            elif val == '-0.0':
-                return z3.fpMinusZero(sort)
-            elif val == 'nan':
-                return z3.fpNaN(sort)
-            else:
-                better_val = str(Decimal(obj.value))
-                return z3.FPVal(better_val, sort)
         elif obj is True:
             return z3.BoolVal(True)
         elif obj is False:
@@ -299,15 +360,15 @@ class BackendZ3(Backend):
         append_children = True
 
         if op_name == 'True':
-            return BoolI(True)
+            return BoolV(True)
         elif op_name == 'False':
-            return BoolI(False)
+            return BoolV(False)
         elif op_name.startswith('RM_'):
             return RM.from_name(op_name)
         elif op_name == 'BitVecVal':
             bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            return BVI(NativeBVV(bv_num, bv_size), length=bv_size)
+            return BVV(bv_num, bv_size)
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
@@ -318,29 +379,29 @@ class BackendZ3(Backend):
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
 
-            return FPI(NativeFPV(value, sort))
+            return FPV(value, sort)
         elif op_name in ('MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
 
             if op_name == 'MinusZero':
-                return FPI(NativeFPV(-0.0, sort))
+                return FPV(-0.0, sort)
             elif op_name == 'MinusInf':
-                return FPI(NativeFPV(float('-inf'), sort))
+                return FPV(float('-inf'), sort)
             elif op_name == 'PlusZero':
-                return FPI(NativeFPV(0.0, sort))
+                return FPV(0.0, sort)
             elif op_name == 'PlusInf':
-                return FPI(NativeFPV(float('inf'), sort))
+                return FPV(float('inf'), sort)
             elif op_name == 'NaN':
-                return FPI(NativeFPV(float('nan'), sort))
+                return FPV(float('nan'), sort)
         elif op_name == 'UNINTERPRETED' and num_args == 0: # this *might* be a BitVec ;-)
             bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 
             #if bv_name.count('_') < 2:
             #      import ipdb; ipdb.set_trace()
-            return BV("BitVec", (bv_name, bv_size), length=bv_size, variables={ bv_name }, symbolic=True)
+            return BV("BVS", (bv_name, None, None, None, False), length=bv_size, variables={ bv_name }, symbolic=True)
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
@@ -410,6 +471,31 @@ class BackendZ3(Backend):
         self._ast_cache[h] = a
         return a
 
+    @staticmethod
+    def _abstract_to_primitive(ctx, ast):
+        decl = z3.Z3_get_app_decl(ctx, ast)
+        decl_num = z3.Z3_get_decl_kind(ctx, decl)
+
+        if decl_num not in z3_op_nums:
+            raise ClaripyError("unknown decl kind %d" % decl_num)
+        if z3_op_nums[decl_num] not in op_map:
+            raise ClaripyError("unknown decl op %s" % z3_op_nums[decl_num])
+        op_name = op_map[z3_op_nums[decl_num]]
+
+        if op_name == 'BitVecVal':
+            return long(z3.Z3_get_numeral_string(ctx, ast))
+        elif op_name == 'FPVal':
+            # this is really imprecise
+            fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
+            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
+            return fp_mantissa * (2 ** fp_exp)
+        elif op_name == 'True':
+            return BoolV(True)
+        elif op_name == 'False':
+            return BoolV(False)
+        else:
+            raise BackendError("Unable to abstract Z3 object to primitive")
+
     def solver(self, timeout=None):
         s = z3.Solver()
         if timeout is not None:
@@ -459,7 +545,8 @@ class BackendZ3(Backend):
                 for m_f in z3_model:
                     n = m_f.name()
                     m = m_f()
-                    model[n] = model_object(z3_model.eval(m))
+                    me = z3_model.eval(m)
+                    model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
         else:
             l.debug("unsat!")
 
@@ -495,10 +582,11 @@ class BackendZ3(Backend):
 
             if not type(expr) in { int, float, str, bool, long }:
                 v = model.eval(expr, model_completion=True)
+                results.append(self._abstract_to_primitive(v.ctx.ctx, v.ast))
             else:
-                v = expr
+                results.append(expr)
+                break
 
-            results.append(self._abstract(v))
             if i + 1 != n:
                 solver.add(expr != v)
                 model = None
@@ -548,17 +636,17 @@ class BackendZ3(Backend):
 
         #l.debug("final hi/lo: %d, %d", hi, lo)
 
-        if hi == lo: return NativeBVV(lo, expr.size())
+        if hi == lo: return lo
         else:
             solver.push()
             solver.add(expr == lo)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 solver.pop()
-                return NativeBVV(lo, expr.size())
+                return lo
             else:
                 solver.pop()
-        return NativeBVV(hi, expr.size())
+        return hi
 
     @condom
     def _max(self, expr, extra_constraints=(), result=None, solver=None):
@@ -596,17 +684,17 @@ class BackendZ3(Backend):
         for _ in range(numpop):
             solver.pop()
 
-        if hi == lo: return NativeBVV(lo, expr.size())
+        if hi == lo: return lo
         else:
             solver.push()
             solver.add(expr == hi)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 solver.pop()
-                return NativeBVV(hi, expr.size())
+                return hi
             else:
                 solver.pop()
-        return NativeBVV(lo, expr.size())
+        return lo
 
     def _simplify(self, expr): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
@@ -643,44 +731,23 @@ class BackendZ3(Backend):
         if isinstance(expr_raw, z3.BoolRef):
             tactics = z3.Then(z3.Tactic("simplify"), z3.Tactic("propagate-ineqs"), z3.Tactic("propagate-values"), z3.Tactic("unit-subsume-simplify"))
             s = tactics(expr_raw).as_expr()
-            n = s.decl().name()
-
-            if n == 'true':
-                s = True
-            elif n == 'false':
-                s = False
+            #n = s.decl().name()
+            #if n == 'true':
+            #   s = True
+            #elif n == 'false':
+            #   s = False
         elif isinstance(expr_raw, z3.BitVecRef):
             s = z3.simplify(expr_raw)
         else:
             s = expr_raw
 
-        for b in _eager_backends:
-            try:
-                o = self.wrap(b.convert(s))
-                break
-            except BackendError:
-                continue
-        else:
-            o = self._abstract(s)
-
-        #print "SIMPLIFIED"
-        #l.debug("... after: %s (%s)", s, s.__class__.__name__)
-
+        o = self._abstract(s)
         o._simplified = Base.FULL_SIMPLIFY
 
         if self._enable_simplification_cache:
             self._simplification_cache_val[expr._cache_key] = o
             self._simplification_cache_key[expr._cache_key] = o
         return o
-
-    @staticmethod
-    def wrap(e):
-        if isinstance(e, (z3.BitVecRef, NativeBVV)):
-            return BVI(e, length=e.size())
-        elif isinstance(e, (z3.BoolRef, bool)):
-            return BoolI(e)
-        else:
-            raise Exception("whoops")
 
     def _is_false(self, e):
         return z3.simplify(e).eq(z3.BoolVal(False))
@@ -840,16 +907,15 @@ op_map = {
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast.base import Base, model_object
-from ..ast.bv import BV, BVI
-from ..ast.bool import BoolI, Bool
-from ..ast.fp import FP, FPI
+from ..ast.base import Base
+from ..ast.bv import BV, BVV
+from ..ast.bool import BoolV, Bool
+from ..ast.fp import FP, FPV
 from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
-from ..bv import BVV as NativeBVV
-from ..fp import FPV as NativeFPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
+from ..fp import FPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
-from .. import _eager_backends, _all_operations
+from .. import _all_operations
 
 op_type_map = {
     # Boolean

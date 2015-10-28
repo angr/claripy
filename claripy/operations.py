@@ -1,6 +1,4 @@
 import itertools
-si_counter = itertools.count()
-
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
@@ -58,9 +56,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
-        if any(any(v.startswith('SI') for v in a.variables) for a in args if hasattr(a, 'variables')):
-            kwargs['add_variables'] = frozenset(('SI_%d' % next(si_counter),))
-
         return return_type(name, fixed_args, **kwargs)
 
     _op.calc_length = calc_length
@@ -70,19 +65,22 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 # Extra processors
 #
 
-def preprocess_intersect(*args, **kwargs):
-    new_name = 'SI_%d' % next(si_counter)
-    kwargs['add_variables'] = frozenset((new_name,))
-    return args, kwargs
-
+union_counter = itertools.count()
 def preprocess_union(*args, **kwargs):
-    new_name = 'SI_%d' % next(si_counter)
+
+    #
+    # When we union two values, we implicitly create a new symbolic, multi-valued
+    # variable, because a union is essentially an ITE with an unconstrained
+    # "choice" variable.
+    #
+
+    new_name = 'union_%d' % next(union_counter)
     kwargs['add_variables'] = frozenset((new_name,))
     return args, kwargs
 
 preprocessors = {
     'union': preprocess_union,
-    'intersection': preprocess_intersect
+    #'intersection': preprocess_intersect
 }
 
 #
@@ -90,11 +88,11 @@ preprocessors = {
 #
 
 def if_simplifier(cond, if_true, if_false):
-    if cond.reduced.is_true():
-        return if_true.reduced
+    if cond.is_true():
+        return if_true
 
-    if cond.reduced.is_false():
-        return if_false.reduced
+    if cond.is_false():
+        return if_false
 
 def concat_simplifier(*args):
 
@@ -108,11 +106,13 @@ def concat_simplifier(*args):
 
     if any(a.symbolic for a in args):
         i = 1
+        # here, we concatenate any consecutive concrete terms
         while i < len(args):
             previous = args[i-1]
             current = args[i]
-            if not (previous.symbolic or current.symbolic):
-                args[i-1:i+1] = (ast.all_operations.Concat(previous, current).reduced,)
+
+            if not (previous.symbolic or current.symbolic) and _backends['BackendConcrete'].handles(previous) and _backends['BackendConcrete'].handles(current):
+                args[i-1:i+1] = (ast.all_operations.Concat(previous, current),)
             else:
                 i += 1
 
@@ -236,7 +236,7 @@ def reverse_simplifier(body):
         if all(a.op == 'Extract' for a in body.args):
             first_ast = body.args[0].args[2]
             for i,a in enumerate(body.args):
-                if not (first_ast.identical(a.args[2])
+                if not (first_ast is a.args[2]
                         and a.args[0] == ((i + 1) * 8 - 1)
                         and a.args[1] == i * 8):
                     break
@@ -290,13 +290,13 @@ def not_simplifier(body):
     elif body.op == 'SGE':
         return ast.all_operations.SLT(body.args[0], body.args[1])
 
-    if body.op == 'ULT':
+    if body.op == '__lt__':
         return ast.all_operations.UGE(body.args[0], body.args[1])
-    elif body.op == 'ULE':
+    elif body.op == '__le__':
         return ast.all_operations.UGT(body.args[0], body.args[1])
-    elif body.op == 'UGT':
+    elif body.op == '__gt__':
         return ast.all_operations.ULE(body.args[0], body.args[1])
-    elif body.op == 'UGE':
+    elif body.op == '__ge__':
         return ast.all_operations.ULT(body.args[0], body.args[1])
 
 def extract_simplifier(high, low, val):
@@ -365,7 +365,7 @@ def extract_simplifier(high, low, val):
     if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
         val = val.make_like('Concat',
                             tuple(reversed([a.reversed for a in val.args[0].args])),
-        )[high:low].simplified
+        )[high:low]
         if not val.symbolic:
             return val
 
@@ -519,7 +519,11 @@ backend_bitmod_operations = {
 }
 
 backend_creation_operations = {
-    'BoolVal', 'BitVec', 'BitVecVal'
+    'BoolV', 'BVV', 'FPV'
+}
+
+backend_symbol_creation_operations = {
+    'BoolS', 'BVS', 'FPS'
 }
 
 backend_vsa_creation_operations = {
@@ -595,6 +599,8 @@ length_none_operations = backend_comparator_operations | expression_comparator_o
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
 
+leaf_operations = backend_symbol_creation_operations | backend_creation_operations
+
 #
 # Reversibility
 #
@@ -651,4 +657,4 @@ infix = {
 }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
-from . import ast
+from . import ast, _backends

@@ -41,7 +41,7 @@ class BackendRemote(Backend):
     def _convert(self, e, result=None):
         return e
 
-    def call(self, ast, result=None):
+    def resolve(self, ast, result=None):
         return ast
 
     def _add(self, s, c):

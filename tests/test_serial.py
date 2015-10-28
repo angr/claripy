@@ -10,16 +10,16 @@ l = logging.getLogger('claripy.test.serial')
 def test_pickle():
     bz = claripy.backend_z3
 
-    a = claripy.BitVecVal(0, 32)
-    b = claripy.BitVec('x', 32, explicit_name=True)
+    a = claripy.BVV(0, 32)
+    b = claripy.BVS('x', 32, explicit_name=True)
 
     c = a+b
-    nose.tools.assert_equal(c.resolved_with(bz).__module__, 'z3')
-    nose.tools.assert_equal(str(c.resolved_with(bz)), '0 + x')
+    nose.tools.assert_equal(bz.convert(c).__module__, 'z3')
+    nose.tools.assert_equal(str(bz.convert(c)), '0 + x')
 
     c_copy = pickle.loads(pickle.dumps(c, -1))
-    nose.tools.assert_equal(c_copy.resolved_with(bz).__module__, 'z3')
-    nose.tools.assert_equal(str(c_copy.resolved_with(bz)), '0 + x')
+    nose.tools.assert_equal(bz.convert(c_copy).__module__, 'z3')
+    nose.tools.assert_equal(str(bz.convert(c_copy)), '0 + x')
 
 def test_datalayer():
     l.info("Running test_datalayer")
@@ -28,8 +28,8 @@ def test_datalayer():
     ana.set_dl(pickle_dir=pickle_dir)
     l.debug("Pickling to %s",pickle_dir)
 
-    a = claripy.BitVecVal(0, 32)
-    b = claripy.BitVec("x", 32)
+    a = claripy.BVV(0, 32)
+    b = claripy.BVS("x", 32)
     c = a + b
     d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
 
@@ -49,7 +49,7 @@ def test_datalayer():
 
     l.debug("Time to test some solvers!")
     s = claripy.FullFrontend(claripy.backend_z3)
-    x = claripy.BitVec("x", 32)
+    x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()
     ss = claripy.FullFrontend.ana_load(s.ana_store())
@@ -57,7 +57,7 @@ def test_datalayer():
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
     s = claripy.CompositeFrontend(claripy.backend_z3)
-    x = claripy.BitVec("x", 32)
+    x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()
     ss = claripy.CompositeFrontend.ana_load(s.ana_store())

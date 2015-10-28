@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
-from .decorators import expand_ifproxy
 from ..backend_object import BackendObject
 
 def normalize_types(f):
@@ -19,14 +18,12 @@ def normalize_types(f):
         if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
 
-        if isinstance(o, ValueSet) or isinstance(o, IfProxy) or isinstance(o, DiscreteStridedIntervalSet):
+        if isinstance(o, ValueSet) or isinstance(o, DiscreteStridedIntervalSet):
             # It should be put to o.__radd__(self) when o is a ValueSet
             return NotImplemented
 
-        if isinstance(o, Base):
-            o = o.model
-        if isinstance(self, Base):
-            self = o.model
+        if isinstance(o, Base) or isinstance(self, Base):
+            return NotImplemented
         if type(self) is BVV:
             self = self.value
         if type(o) is BVV:
@@ -93,9 +90,9 @@ class StridedInterval(BackendObject):
             self._name = "SI_%d" % si_id_ctr.next()
 
         self._bits = bits
-        self._stride = stride
-        self._lower_bound = lower_bound
-        self._upper_bound = upper_bound
+        self._stride = stride if stride is not None else 1
+        self._lower_bound = lower_bound if lower_bound is not None else 0
+        self._upper_bound = upper_bound if upper_bound is not None else (2**bits-1)
 
         if lower_bound is not None and type(lower_bound) not in (int, long):
             raise ClaripyVSAError("'lower_bound' must be an int or a long. %s is not supported." % type(lower_bound))
@@ -248,9 +245,19 @@ class StridedInterval(BackendObject):
         north_pole_right = 2 ** (self.bits - 1) # 1000...0
 
         # Is `self` straddling the north pole?
-        if self.lower_bound <= north_pole_left and self.upper_bound >= north_pole_right:
-            # Yes it does!
+        straddling = False
+        if self.upper_bound >= north_pole_right:
+            if self.lower_bound > self.upper_bound:
+                # Yes it does!
+                straddling = True
+            elif self.lower_bound <= north_pole_left:
+                straddling = True
 
+        else:
+            if self.lower_bound > self.upper_bound and self.lower_bound <= north_pole_left:
+                straddling = True
+
+        if straddling:
             a_upper_bound = north_pole_left - ((north_pole_left - self.lower_bound) % self.stride)
             a = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=self.lower_bound, upper_bound=a_upper_bound)
 
@@ -379,9 +386,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -408,9 +415,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -436,9 +443,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -464,9 +471,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -493,9 +500,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -522,9 +529,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -550,9 +557,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -578,9 +585,9 @@ class StridedInterval(BackendObject):
                 else:
                     ret.append(MaybeResult())
 
-        if all([r == TrueResult() for r in ret]):
+        if all(r.identical(TrueResult()) for r in ret):
             return TrueResult()
-        elif all([r == FalseResult() for r in ret]):
+        elif all(r.identical(FalseResult()) for r in ret):
             return FalseResult()
         else:
             return MaybeResult()
@@ -708,7 +715,6 @@ class StridedInterval(BackendObject):
     def __invert__(self):
         return self.bitwise_not()
 
-    @expand_ifproxy
     @normalize_types
     def __or__(self, other):
         return self.bitwise_or(other)
@@ -720,12 +726,10 @@ class StridedInterval(BackendObject):
     def __rand__(self, other):
         return self.__and__(other)
 
-    @expand_ifproxy
     @normalize_types
     def __xor__(self, other):
         return self.bitwise_xor(other)
 
-    @expand_ifproxy
     def __rxor__(self, other):
         return self.__xor__(other)
 
@@ -738,11 +742,11 @@ class StridedInterval(BackendObject):
     def __repr__(self):
         s = ""
         if self.is_empty:
-            s = '%s<%d>[EmptySI]' % (self._name, self._bits)
+            s = '<%d>[EmptySI]' % (self._bits)
         else:
             lower_bound = self._lower_bound if type(self._lower_bound) == str else '%#x' % self._lower_bound
             upper_bound = self._upper_bound if type(self._upper_bound) == str else '%#x' % self._upper_bound
-            s = '%s<%d>0x%x[%s, %s]%s' % (self._name, self._bits, self._stride,
+            s = '<%d>0x%x[%s, %s]%s' % (self._bits, self._stride,
                                           lower_bound, upper_bound,
                                           'R' if self._reversed else '')
 
@@ -770,13 +774,12 @@ class StridedInterval(BackendObject):
 
     @property
     def cardinality(self):
-        if self.is_integer:
-            if self.is_empty:
-                return 0
-            else:
-                return 1
+        if self.is_bottom:
+            return 0
+        elif self.is_integer:
+            return 1
         else:
-            return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + 1) / self._stride
+            return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + self._stride) / self._stride
 
     @property
     def lower_bound(self):
@@ -1131,7 +1134,7 @@ class StridedInterval(BackendObject):
 
         max_ = StridedInterval.max_int(bits)
 
-        if (a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive):
+        if a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive:
             # [2, 5] * [10, 20] = [20, 100]
             lb = a.lower_bound * b.lower_bound
             ub = a.upper_bound * b.upper_bound
@@ -1143,7 +1146,7 @@ class StridedInterval(BackendObject):
             else:
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
-        elif (not a_lb_positive and not a_ub_positive and not b_lb_positive and not b_ub_positive):
+        elif not a_lb_positive and not a_ub_positive and not b_lb_positive and not b_ub_positive:
             # [-5, -2] * [-20, -10] = [20, 100]
             lb = (
                 StridedInterval._unsigned_to_signed(a.upper_bound, bits) *
@@ -1161,7 +1164,7 @@ class StridedInterval(BackendObject):
             else:
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
-        elif (not a_lb_positive and not a_ub_positive and b_lb_positive and b_ub_positive):
+        elif not a_lb_positive and not a_ub_positive and b_lb_positive and b_ub_positive:
             # [-10, -2] * [2, 5] = [-50, -4]
             lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) * b.upper_bound
             ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) * b.lower_bound
@@ -1173,7 +1176,7 @@ class StridedInterval(BackendObject):
             else:
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
 
-        elif (a_lb_positive and a_ub_positive and not b_lb_positive and not b_ub_positive):
+        elif a_lb_positive and a_ub_positive and not b_lb_positive and not b_ub_positive:
             # [2, 10] * [-5, -2] = [-50, -4]
             lb = a.upper_bound * StridedInterval._unsigned_to_signed(b.lower_bound, bits)
             ub = a.lower_bound * StridedInterval._unsigned_to_signed(b.upper_bound, bits)
@@ -1624,8 +1627,8 @@ class StridedInterval(BackendObject):
         ret = StridedInterval.empty(self.bits)
 
         for si in splitted_si:
-            lb = ~self.upper_bound
-            ub = ~self.lower_bound
+            lb = ~si.upper_bound
+            ub = ~si.lower_bound
             stride = self.stride
 
             tmp = StridedInterval(bits=self.bits, stride=stride, lower_bound=lb, upper_bound=ub)
@@ -1868,8 +1871,8 @@ class StridedInterval(BackendObject):
     def extract(self, high_bit, low_bit):
 
         if self._reversed:
-            reversed = self._reverse()
-            return reversed.extract(high_bit, low_bit)
+            reversed_thing = self._reverse()
+            return reversed_thing.extract(high_bit, low_bit)
 
         assert low_bit >= 0
 
@@ -2366,7 +2369,7 @@ class StridedInterval(BackendObject):
 
             return si
 
-def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, to_conv=None):
+def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, to_conv=None):
     '''
     :param name:
     :param bits:
@@ -2405,7 +2408,8 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
                          bits=bits,
                          stride=stride,
                          lower_bound=lower_bound,
-                         upper_bound=upper_bound)
+                         upper_bound=upper_bound,
+                         uninitialized=uninitialized)
     return bi
 
 
@@ -2415,6 +2419,5 @@ from .bool_result import TrueResult, FalseResult, MaybeResult
 from . import discrete_strided_interval_set
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .valueset import ValueSet
-from .ifproxy import IfProxy
 from ..ast.base import Base
 from ..bv import BVV

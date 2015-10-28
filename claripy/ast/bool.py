@@ -1,12 +1,12 @@
 import logging
 l = logging.getLogger('claripy.ast.bool')
 
-from ..ast.base import Base
+from ..ast.base import Base, _make_name
 
 class Bool(Base):
     @staticmethod
     def _from_bool(like, val): #pylint:disable=unused-argument
-        return BoolI(val)
+        return BoolV(val)
 
     def is_true(self):
         '''
@@ -25,37 +25,53 @@ class Bool(Base):
         return is_false(self)
 
     def _simplify_And(self):
-        if any(a.is_false() for a in self.args):
-            return BoolI(False)
+        new_args = [ ]
+        for a in self.args:
+            if is_false(a):
+                return BoolV(False)
+            elif not is_true(a):
+                new_args.append(a)
+
+        if len(new_args) == 0:
+            return BoolV(True)
         else:
-            new_args = [ a.simplified for a in self.args if not a.is_true() ]
-            if len(new_args) == 0:
-                return BoolI(True)
-            else:
-                return Bool(self.op, new_args)
+            return Bool(self.op, new_args)
 
     def _simplify_Or(self):
-        if any(a.is_true() for a in self.args):
-            return BoolI(True)
+        new_args = [ ]
+        for a in self.args:
+            if is_true(a):
+                return BoolV(False)
+            elif not is_false(a):
+                new_args.append(a)
+
+        if len(new_args) == 0:
+            return BoolV(False)
         else:
-            new_args = [ a.simplified for a in self.args if not a.is_false() ]
-            if len(new_args) == 0:
-                return BoolI(False)
-            else:
-                return Bool(self.op, new_args)
+            return Bool(self.op, new_args)
 
-def BoolI(model, **kwargs):
-    return Bool('I', (model,), **kwargs)
+def BoolS(name, explicit_name=None):
+    '''
+    Creates a boolean symbol (i.e., a variable).
 
-def BoolVal(val):
-    return BoolI(val, variables=set(), symbolic=False, eager=True)
+    @param name: the name of the symbol
+    @param explicit_name: if False, an identifier is appended to the name to ensure
+                          uniqueness.
+
+    @returns a Bool object representing this symbol
+    '''
+    n = _make_name(name, -1, False if explicit_name is None else explicit_name)
+    return Bool('BoolS', (n,), variables={n}, symbolic=True)
+
+def BoolV(val):
+    return Bool('BoolV', (val,))
 
 #
 # some standard ASTs
 #
 
-true = BoolVal(True)
-false = BoolVal(False)
+true = BoolV(True)
+false = BoolV(False)
 
 #
 # Bound operations
@@ -78,7 +94,7 @@ def If(*args):
     args = list(args)
 
     if isinstance(args[0], bool):
-        args[0] = BoolI(args[0], variables=frozenset(), symbolic=False, eager=True)
+        args[0] = BoolV(args[0])
 
     ty = None
     if isinstance(args[1], Base):
@@ -102,18 +118,23 @@ def If(*args):
             raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
 
     if is_true(args[0]):
-        return args[1].make_like(args[1].op, args[1].args,
-                                 variables=(args[1].variables | args[0].variables),
-                                 symbolic=args[1].symbolic)
+        return args[1]
     elif is_false(args[0]):
-        return args[2].make_like(args[2].op, args[2].args,
-                                 variables=(args[2].variables | args[0].variables),
-                                 symbolic=args[2].symbolic)
+        return args[2]
+
+    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is args[0]:
+        return If(args[0], args[1].args[1], args[2])
+    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is Not(args[0]):
+        return If(args[0], args[1].args[2], args[2])
+    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is args[0]:
+        return If(args[0], args[1], args[2].args[2])
+    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is Not(args[0]):
+        return If(args[0], args[1], args[2].args[1])
 
     if issubclass(ty, Bits):
         return ty('If', tuple(args), length=args[1].length)
     else:
-        return ty('If', tuple(args)).reduced
+        return ty('If', tuple(args))
 
 And = operations.op('And', Bool, Bool, bound=False)
 Or = operations.op('Or', Bool, Bool, bound=False)
@@ -160,7 +181,7 @@ def constraint_to_si(expr):
     for i in xrange(len(replace_list)):
         ori, new = replace_list[i]
         if not isinstance(new, Base):
-            new = BVI(new, variables={ new.name }, symbolic=False, length=new._bits, eager=False)
+            new = BVS(new.name, new._bits, min=new._lower_bound, max=new._upper_bound, stride=new._stride, explicit_name=True)
             replace_list[i] = (ori, new)
 
     return satisfiable, replace_list
@@ -168,4 +189,4 @@ def constraint_to_si(expr):
 from .. import _all_backends
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
-from .bv import BVI
+from .bv import BVS
