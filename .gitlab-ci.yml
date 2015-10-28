@@ -26,8 +26,8 @@ angrop:
     tags:
         - "angr"
 
-pwnrex:
-    script: "angr-test pwnrex"
+angrop:
+    script: "angr-test angrop"
     tags:
         - "angr"
 
