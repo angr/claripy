@@ -6,7 +6,7 @@ _bvv_cache = dict()
 # this is a hillarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
-    global _bvv_cache
+    global _bvv_cache #pylint:disable=global-variable-not-assigned
     del _bvv_cache
 import atexit
 atexit.register(cleanup)
