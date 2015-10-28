@@ -491,6 +491,72 @@ class Backend(object):
         '''
         raise BackendError("backend doesn't support max()")
 
+    def min_values(self, expr, result=None, extra_constraints=(), solver=None):
+        '''
+        Return a set of values of expr, in which the minimum is present.
+        This is an optimization for performing less constraint solving.
+
+        @param expr: expression (claripy.E object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the minimum possible value of expr (backend object)
+        '''
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._min_values(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+
+    def _min_values(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        '''
+        Return a set of values of expr, in which the minimum is present.
+        This is an optimization for performing less constraint solving.
+
+        @param expr: expression (backend object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the minimum possible value of expr (backend object)
+        '''
+        raise BackendError("backend doesn't support min_values()")
+
+    def max_values(self, expr, result=None, extra_constraints=(), solver=None):
+        '''
+        Return a set of values of expr, in which the maximum is present.
+        This is an optimization for performing less constraint solving.
+
+        @param expr: expression (claripy.E object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the maximum possible value of expr (backend object)
+        '''
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._max_values(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+
+    def _max_values(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        '''
+        Return a set of values of expr, in which the maximum is present.
+        This is an optimization for performing less constraint solving.
+
+        @param expr: expression (backend object) to evaluate
+        @param result: a cached Result from the last constraint solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        @param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        @returns the maximum possible value of expr (backend object)
+        '''
+        raise BackendError("backend doesn't support max_values()")
+
     def solution(self, expr, v, result=None, extra_constraints=(), solver=None):
         '''
         Return True if v is a solution of expr with the extra constraints, False otherwise.

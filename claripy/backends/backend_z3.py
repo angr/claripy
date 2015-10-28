@@ -534,6 +534,10 @@ class BackendZ3(Backend):
             s.pop()
         return satness, model
 
+    def _primitive_from_model(self, model, expr):
+        v = model.eval(expr, model_completion=True)
+        return self._abstract_to_primitive(v.ctx.ctx, v.ast)
+
     @condom
     def _results(self, s, extra_constraints=(), generic_model=True):
         satness, z3_model = self._check_and_model(s, extra_constraints=extra_constraints)
@@ -599,12 +603,19 @@ class BackendZ3(Backend):
 
         return results
 
-    @condom
+    def _max(self, expr, extra_constraints=(), result=None, solver=None):
+        return max(self._max_values(expr, extra_constraints=extra_constraints, result=result, solver=solver))
+
     def _min(self, expr, extra_constraints=(), result=None, solver=None):
+        return min(self._min_values(expr, extra_constraints=extra_constraints, result=result, solver=solver))
+
+    @condom
+    def _min_values(self, expr, extra_constraints=(), result=None, solver=None):
         global solve_count
 
         lo = 0
         hi = 2**expr.size()-1
+        vals = set()
 
         numpop = 0
         if len(extra_constraints) > 0:
@@ -624,6 +635,7 @@ class BackendZ3(Backend):
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 l.debug("... still sat")
+                vals.add(self._primitive_from_model(solver.model(), expr))
                 hi = middle
             else:
                 l.debug("... now unsat")
@@ -642,18 +654,21 @@ class BackendZ3(Backend):
             solver.add(expr == lo)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
+                vals.add(lo)
                 solver.pop()
-                return lo
             else:
+                vals.add(hi)
                 solver.pop()
-        return hi
+
+        return vals
 
     @condom
-    def _max(self, expr, extra_constraints=(), result=None, solver=None):
+    def _max_values(self, expr, extra_constraints=(), result=None, solver=None):
         global solve_count
 
         lo = 0
         hi = 2**expr.size()-1
+        vals = set()
 
         numpop = 0
         if len(extra_constraints) > 0:
@@ -674,6 +689,7 @@ class BackendZ3(Backend):
             if solver.check() == z3.sat:
                 l.debug("... still sat")
                 lo = middle
+                vals.add(self._primitive_from_model(solver.model(), expr))
             else:
                 l.debug("... now unsat")
                 hi = middle
@@ -684,17 +700,20 @@ class BackendZ3(Backend):
         for _ in range(numpop):
             solver.pop()
 
-        if hi == lo: return lo
+        if hi == lo:
+            vals.add(hi)
         else:
             solver.push()
             solver.add(expr == hi)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
+                vals.add(hi)
                 solver.pop()
-                return hi
             else:
+                vals.add(lo)
                 solver.pop()
-        return lo
+
+        return vals
 
     def _simplify(self, expr): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
