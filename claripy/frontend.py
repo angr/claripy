@@ -194,12 +194,15 @@ class Frontend(ana.Storable):
         if self.result is not None and invalidate_cache:
             all_true = True
             for c in to_add:
-                try:
-                    v = LightFrontend._eval.im_func(self, c, 1)[0]
+                v = self._eager_resolution('eval', [None], c, 1)[0]
+                if v is None:
+                    try:
+                        all_true &= LightFrontend._eval.im_func(self, c, 1)[0]
+                    except ClaripyFrontendError:
+                        all_true = False
+                        break
+                else:
                     all_true &= v
-                except ClaripyFrontendError:
-                    all_true = False
-                    break
         else:
             all_true = False
 
@@ -276,10 +279,9 @@ class Frontend(ana.Storable):
 
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
 
-    @staticmethod
-    def _eager_resolution(what, default, *args, **kwargs):
+    def _eager_resolution(self, what, default, *args, **kwargs):
         for b in _eager_backends:
-            try: return getattr(b, what)(*args, **kwargs)
+            try: return getattr(b, what)(*args, result=self.result, **kwargs)
             except BackendError: pass
         return default
 
