@@ -389,6 +389,8 @@ class Frontend(ana.Storable):
 
         if self._concrete_type_check(e) and self._concrete_type_check(v):
             return e == v
+        if self._eager_resolution('solution', False, e, v):
+            return True
 
         b = self._solution(e, v, extra_constraints=extra_constraints)
         if b is False and len(extra_constraints) == 0 and e.symbolic:
