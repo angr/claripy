@@ -9,10 +9,11 @@ import sys
 #pylint:disable=unidiomatic-typecheck
 
 class Frontend(ana.Storable):
-    def __init__(self, solver_backend):
+    def __init__(self, solver_backend, cache=None):
         self._solver_backend = solver_backend
         self.result = None
         self._simplified = False
+        self._cache = cache is True
 
     #
     # Storable support
@@ -145,6 +146,30 @@ class Frontend(ana.Storable):
         raise NotImplementedError("split() is not implemented")
 
     #
+    # Caching
+    #
+
+    def _cache_eval(self, e, values, n=None, approximation=None, cache=None):
+        if approximation or cache is False or not self._cache or self.result is None:
+            return
+
+        self.result.eval_cache[e.uuid] = self.result.eval_cache[e.uuid] | values if e.uuid in self.result.eval_cache else values
+        if n is not None:
+            self.result.eval_n[e.uuid] = max(n, self.result.eval_n[e.uuid]) if e.uuid in self.result.eval_n else n
+
+    def _cache_max(self, e, m, approximation=None, cache=None):
+        if approximation or cache is False or not self._cache or self.result is None:
+            return
+
+        self.result.max_cache[e] = m
+
+    def _cache_min(self, e, m, approximation=None, cache=None):
+        if approximation or cache is False or not self._cache or self.result is None:
+            return
+
+        self.result.min_cache[e] = m
+
+    #
     # Solving
     #
 
@@ -269,10 +294,7 @@ class Frontend(ana.Storable):
             eager_results = frozenset(self._eager_resolution('eval', (), e, n, extra_constraints=extra_constraints))
             if not e.symbolic and len(eager_results) > 0:
                 return tuple(sorted(eager_results))
-
-            # put that in the cache
-            if self.result is not None and len(eager_results) > 0 and e.uuid in self.result.eval_cache and not eager_results.issubset(self.result.eval_cache[e.uuid]):
-                self.result.eval_cache[e.uuid] |= eager_results
+            self._cache_eval(e, eager_results)
         except UnsatError:
             # this can happen when the eager backend comes across an unsat extra condition
             # *while using the current model*. A new constraint solve could return a new,
@@ -324,8 +346,7 @@ class Frontend(ana.Storable):
         # fix up the cache. If there were extra constraints, we can't assume that we got
         # all of the possible solutions, so we have to settle for a biggest-evaluated value
         # equal to the number of values we got
-        self.result.eval_cache[e.uuid] = all_results
-        self.result.eval_n[e.uuid] = n if len(extra_constraints) == 0 else len(all_results)
+        self._cache_eval(e, all_results, n=n if len(extra_constraints) == 0 else None)
 
         # sort so the order of results is consistent when using pypy
         return tuple(sorted(all_results))
@@ -340,7 +361,7 @@ class Frontend(ana.Storable):
 
         m = self._max(e, extra_constraints=extra_constraints)
         if len(extra_constraints) == 0 and e.symbolic:
-            if self.result is not None: self.result.max_cache[e.uuid] = m
+            self._cache_max(e, m)
             self.add([ULE(e, m)], invalidate_cache=False)
         return m
 
@@ -354,7 +375,7 @@ class Frontend(ana.Storable):
 
         m = self._min(e, extra_constraints=extra_constraints)
         if len(extra_constraints) == 0 and e.symbolic:
-            if self.result is not None: self.result.min_cache[e.uuid] = m
+            self._cache_min(e, m)
             self.add([UGE(e, m)], invalidate_cache=False)
         return m
 
@@ -374,9 +395,9 @@ class Frontend(ana.Storable):
         # add these results to the cache
         if self.result is not None and b is True:
             if isinstance(e, Base) and e.symbolic and not isinstance(v, Base):
-                self.result.eval_cache[e.uuid] = self.result.eval_cache.get(e.uuid, frozenset()) | { v }
+                self._cache_eval(e, frozenset({v}))
             if isinstance(v, Base) and v.symbolic and not isinstance(e, Base):
-                self.result.eval_cache[v.uuid] = self.result.eval_cache.get(v.uuid, frozenset()) | { e }
+                self._cache_eval(v, frozenset({e}))
 
         return b
 
