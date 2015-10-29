@@ -86,17 +86,29 @@ class BackendConcrete(Backend):
     #
 
     def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
+        if not all(extra_constraints):
+            raise UnsatError('concrete False constraint in extra_constraints')
+
         if type(expr) is bv.BVV:
             return (expr.value,)
         elif type(expr) is fp.FPV:
             return (expr.value,)
         elif type(expr) is bool:
             return (expr,)
+
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
+        if not all(extra_constraints):
+            raise UnsatError('concrete False constraint in extra_constraints')
         return expr
+
     def _min(self, expr, result=None, solver=None, extra_constraints=()):
+        if not all(extra_constraints):
+            raise UnsatError('concrete False constraint in extra_constraints')
         return expr
+
     def _solution(self, expr, v, result=None, solver=None, extra_constraints=()):
+        if not all(extra_constraints):
+            raise UnsatError('concrete False constraint in extra_constraints')
         return self.convert(expr, result=result) == v
 
     def _is_true(self, e):
@@ -113,3 +125,4 @@ from .. import bv, fp
 from ..ast.bv import BVV
 from ..ast.fp import FPV
 from ..ast.bool import BoolV
+from ..errors import UnsatError

@@ -4,14 +4,16 @@ import logging
 l = logging.getLogger("claripy.frontends.frontend")
 
 import ana
+import sys
 
 #pylint:disable=unidiomatic-typecheck
 
 class Frontend(ana.Storable):
-    def __init__(self, solver_backend):
+    def __init__(self, solver_backend, cache=None):
         self._solver_backend = solver_backend
         self.result = None
         self._simplified = False
+        self._cache = cache is True
 
     #
     # Storable support
@@ -144,6 +146,30 @@ class Frontend(ana.Storable):
         raise NotImplementedError("split() is not implemented")
 
     #
+    # Caching
+    #
+
+    def _cache_eval(self, e, values, n=None, approximation=None, cache=None):
+        if approximation or cache is False or not self._cache or self.result is None:
+            return
+
+        self.result.eval_cache[e.uuid] = self.result.eval_cache[e.uuid] | values if e.uuid in self.result.eval_cache else values
+        if n is not None:
+            self.result.eval_n[e.uuid] = max(n, self.result.eval_n[e.uuid]) if e.uuid in self.result.eval_n else n
+
+    def _cache_max(self, e, m, approximation=None, cache=None):
+        if approximation or cache is False or not self._cache or self.result is None:
+            return
+
+        self.result.max_cache[e] = m
+
+    def _cache_min(self, e, m, approximation=None, cache=None):
+        if approximation or cache is False or not self._cache or self.result is None:
+            return
+
+        self.result.min_cache[e] = m
+
+    #
     # Solving
     #
 
@@ -250,11 +276,80 @@ class Frontend(ana.Storable):
 
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
 
+    @staticmethod
+    def _eager_resolution(what, default, *args, **kwargs):
+        for b in _eager_backends:
+            try: return getattr(b, what)(*args, **kwargs)
+            except BackendError: pass
+        return default
+
     def eval(self, e, n, extra_constraints=()):
         if self._concrete_type_check(e): return [e]
 
         extra_constraints = self._constraint_filter(extra_constraints)
-        return self._eval(e, n, extra_constraints=extra_constraints)
+        l.debug("Frontend.eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
+
+        # first, try evaluating through the eager backends
+        try:
+            eager_results = frozenset(self._eager_resolution('eval', (), e, n, extra_constraints=extra_constraints))
+            if not e.symbolic and len(eager_results) > 0:
+                return tuple(sorted(eager_results))
+            self._cache_eval(e, eager_results)
+        except UnsatError:
+            # this can happen when the eager backend comes across an unsat extra condition
+            # *while using the current model*. A new constraint solve could return a new,
+            # sat model
+            pass
+
+        # then, check the cache
+        if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.eval_cache:
+            cached_results = self.result.eval_cache[e.uuid]
+            cached_n = self.result.eval_n.get(e.uuid, 0)
+        else:
+            cached_results = frozenset()
+            cached_n = 0
+
+        # if there's enough in the cache, return that
+        if cached_n >= n or len(cached_results) < cached_n:
+            return tuple(sorted(cached_results))[:n]
+
+        # try to make sure we don't get more of the same
+        solver_extra_constraints = list(extra_constraints) + [ e != v for v in cached_results ]
+
+        # if we still need more results, get them from the frontend
+        try:
+            n_lacking = n - len(cached_results)
+            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints))
+            l.debug("... got %d more values", len(eval_results - cached_results))
+        except UnsatError:
+            l.debug("... UNSAT")
+            if len(cached_results) == 0:
+                raise
+            else:
+                eval_results = frozenset()
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during eval: %s('%s')" % (str(e_type), str(value)), traceback
+
+        # if, for some reason, we have no result object, make an approximate one
+        if self.result is None:
+            self.result = SatResult(approximation=True)
+
+        # if there are less possible solutions than n (i.e., meaning we got all the solutions for e),
+        # add constraints to help the solver out later
+        # TODO: does this really help?
+        all_results = cached_results | eval_results
+        if len(extra_constraints) == 0 and len(all_results) < n:
+            l.debug("... adding constraints for %d values for future speedup", len(all_results))
+            self.add([Or(*[ e == v for v in eval_results | cached_results ])], invalidate_cache=False)
+
+        # fix up the cache. If there were extra constraints, we can't assume that we got
+        # all of the possible solutions, so we have to settle for a biggest-evaluated value
+        # equal to the number of values we got
+        self._cache_eval(e, all_results, n=n if len(extra_constraints) == 0 else None)
+
+        # sort so the order of results is consistent when using pypy
+        return tuple(sorted(all_results))
 
     def max(self, e, extra_constraints=()):
         if self._concrete_type_check(e): return e
@@ -266,7 +361,7 @@ class Frontend(ana.Storable):
 
         m = self._max(e, extra_constraints=extra_constraints)
         if len(extra_constraints) == 0 and e.symbolic:
-            if self.result is not None: self.result.max_cache[e.uuid] = m
+            self._cache_max(e, m)
             self.add([ULE(e, m)], invalidate_cache=False)
         return m
 
@@ -280,7 +375,7 @@ class Frontend(ana.Storable):
 
         m = self._min(e, extra_constraints=extra_constraints)
         if len(extra_constraints) == 0 and e.symbolic:
-            if self.result is not None: self.result.min_cache[e.uuid] = m
+            self._cache_min(e, m)
             self.add([UGE(e, m)], invalidate_cache=False)
         return m
 
@@ -290,11 +385,20 @@ class Frontend(ana.Storable):
         except UnsatError:
             return False
 
-        if self._concrete_type_check(e) and self._concrete_type_check(v): return e == v
+        if self._concrete_type_check(e) and self._concrete_type_check(v):
+            return e == v
 
         b = self._solution(e, v, extra_constraints=extra_constraints)
-        if b is False and len(extra_constraints) > 0 and e.symbolic:
+        if b is False and len(extra_constraints) == 0 and e.symbolic:
             self.add([e != v], invalidate_cache=False)
+
+        # add these results to the cache
+        if self.result is not None and b is True:
+            if isinstance(e, Base) and e.symbolic and not isinstance(v, Base):
+                self._cache_eval(e, frozenset({v}))
+            if isinstance(v, Base) and v.symbolic and not isinstance(e, Base):
+                self._cache_eval(v, frozenset({e}))
+
         return b
 
     #
@@ -310,5 +414,5 @@ from .result import UnsatResult, SatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError, ClaripyValueError
 from . import _eager_backends, _backends
 from .ast.base import Base
-from .ast.bool import false, Bool
+from .ast.bool import false, Bool, Or
 from .ast.bv import UGE, ULE, BVV
