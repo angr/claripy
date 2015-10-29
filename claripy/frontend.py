@@ -321,7 +321,7 @@ class Frontend(ana.Storable):
         # if we still need more results, get them from the frontend
         try:
             n_lacking = n - len(cached_results)
-            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints))
+            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints, exact=exact, cache=cache))
             l.debug("... got %d more values", len(eval_results - cached_results))
         except UnsatError:
             l.debug("... UNSAT")
@@ -361,7 +361,7 @@ class Frontend(ana.Storable):
             #cached_max += 1
             return self.result.max_cache[e.uuid]
 
-        m = self._max(e, extra_constraints=extra_constraints)
+        m = self._max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
         if len(extra_constraints) == 0 and e.symbolic:
             self._cache_max(e, m, exact=exact, cache=cache)
             self.add([ULE(e, m)], invalidate_cache=False)
@@ -375,7 +375,7 @@ class Frontend(ana.Storable):
             #cached_min += 1
             return self.result.min_cache[e.uuid]
 
-        m = self._min(e, extra_constraints=extra_constraints)
+        m = self._min(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
         if len(extra_constraints) == 0 and e.symbolic:
             self._cache_min(e, m, exact=exact, cache=cache)
             self.add([UGE(e, m)], invalidate_cache=False)
@@ -392,7 +392,7 @@ class Frontend(ana.Storable):
         if self._eager_resolution('solution', False, e, v):
             return True
 
-        b = self._solution(e, v, extra_constraints=extra_constraints)
+        b = self._solution(e, v, extra_constraints=extra_constraints, exact=exact, cache=cache)
         if b is False and len(extra_constraints) == 0 and e.symbolic:
             self.add([e != v], invalidate_cache=False)
 
