@@ -57,13 +57,13 @@ class LightFrontend(Frontend):
         self._simplified = True
         return self.constraints
 
-    def _solve(self, extra_constraints=()):
+    def _solve(self, extra_constraints=(), exact=None, cache=None):
         return SatResult(approximation=True)
 
-    def _satisfiable(self, extra_constraints=()):
-        return self.solve(extra_constraints=extra_constraints).sat
+    def _satisfiable(self, extra_constraints=(), exact=None, cache=None):
+        return self.solve(extra_constraints=extra_constraints, exact=exact, cache=cache).sat
 
-    def _eval(self, e, n, extra_constraints=()):
+    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
             for b in _eager_backends + [ self._solver_backend ]:
                 try: return b.eval(e, n, result=self.result)
@@ -71,7 +71,7 @@ class LightFrontend(Frontend):
 
         raise ClaripyFrontendError("Light solver can't handle this eval().")
 
-    def _max(self, e, extra_constraints=()):
+    def _max(self, e, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
             for b in _eager_backends + [ self._solver_backend ]:
                 try: return b.max(e, result=self.result)
@@ -79,9 +79,7 @@ class LightFrontend(Frontend):
 
         raise ClaripyFrontendError("Light solver can't handle this max().")
 
-    def _min(self, e, extra_constraints=()):
-        extra_constraints = self._constraint_filter(extra_constraints)
-
+    def _min(self, e, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
             for b in _eager_backends + [ self._solver_backend ]:
                 try: return b.min(e, result=self.result)
@@ -93,7 +91,7 @@ class LightFrontend(Frontend):
 
         raise ClaripyFrontendError("Light solver can't handle this min().")
 
-    def _solution(self, e, v, extra_constraints=()):
+    def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
             for b in _eager_backends + [ self._solver_backend ]:
                 try: return b.solution(e, v, result=self.result)

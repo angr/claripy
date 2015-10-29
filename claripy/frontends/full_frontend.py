@@ -63,7 +63,7 @@ class FullFrontend(LightFrontend):
 
         return self.constraints
 
-    def _solve(self, extra_constraints=()):
+    def _solve(self, extra_constraints=(), exact=None, cache=None):
         r = LightFrontend._solve(self, extra_constraints=extra_constraints)
         if not r.approximation:
             return r
@@ -84,7 +84,7 @@ class FullFrontend(LightFrontend):
 
     # we'll just reuse LightFrontend's satisfiable(self, extra_constraints=())
 
-    def _eval(self, e, n, extra_constraints=()):
+    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         try: return LightFrontend._eval(self, e, n, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
@@ -93,7 +93,7 @@ class FullFrontend(LightFrontend):
 
         return self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver())
 
-    def _max(self, e, extra_constraints=()):
+    def _max(self, e, extra_constraints=(), exact=None, cache=None):
         try: return LightFrontend._max(self, e, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
@@ -122,7 +122,7 @@ class FullFrontend(LightFrontend):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _min(self, e, extra_constraints=()):
+    def _min(self, e, extra_constraints=(), exact=None, cache=None):
         try: return LightFrontend._min(self, e, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
@@ -151,7 +151,7 @@ class FullFrontend(LightFrontend):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _solution(self, e, v, extra_constraints=()):
+    def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         try: return LightFrontend._solution(self, e, v, extra_constraints=extra_constraints)
         except ClaripyFrontendError: pass
 
