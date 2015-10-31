@@ -121,7 +121,7 @@ class CompositeFrontend(Frontend):
     # Solving
     #
 
-    def _solve(self, extra_constraints=()):
+    def _solve(self, extra_constraints=(), exact=None, cache=None):
         l.debug("%r checking satisfiability...", self)
 
         if len(extra_constraints) != 0:
@@ -137,7 +137,7 @@ class CompositeFrontend(Frontend):
         satness = True
 
         for s in solvers:
-            if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else ()):
+            if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else (), exact=exact, cache=cache):
                 l.debug("... %r: False", s)
                 satness = False
                 break
@@ -156,17 +156,17 @@ class CompositeFrontend(Frontend):
             all_vars = { 'CONCRETE' }
         return all_vars
 
-    def _eval(self, e, n, extra_constraints=()):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints)
+    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
-    def _max(self, e, extra_constraints=()):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints)
+    def _max(self, e, extra_constraints=(), exact=None, cache=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
-    def _min(self, e, extra_constraints=()):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints)
+    def _min(self, e, extra_constraints=(), exact=None, cache=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
-    def _solution(self, e, n, extra_constraints=()):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints)
+    def _solution(self, e, n, extra_constraints=(), exact=None, cache=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
     def _simplify(self):
         l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))

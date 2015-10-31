@@ -8,6 +8,34 @@ def test_solver():
     raw_solver(claripy.FullFrontend)
     raw_solver(claripy.CompositeFrontend)
 
+def test_hybrid_solver():
+    s = claripy.HybridFrontend(claripy.backend_z3)
+
+    x = claripy.BVS('x', 32, min=0, max=10, stride=2)
+    y = claripy.BVS('y', 32, min=20, max=30, stride=5)
+
+    # TODO: for now, the stride isn't respected in symbolic mode, but we'll fix that next.
+    # until we do, let's add constraints
+    s.add(x <= 10)
+    s.add(x % 2 == 0)
+    s.add(y >= 20)
+    s.add(y <= 30)
+    s.add((y-20) % 5 == 0)
+
+    nose.tools.assert_equal(s.eval(x, 20, exact=False), (0, 2, 4, 6, 8, 10))
+    nose.tools.assert_equal(s.eval(x, 20), (0, 2, 4, 6, 8, 10))
+    nose.tools.assert_equal(s.eval(y, 20, exact=False), (20, 25, 30))
+    nose.tools.assert_equal(s.eval(y, 20), (20, 25, 30))
+
+    # now constrain things further so that the VSA overapproximates
+    s.add(x <= 4)
+    nose.tools.assert_equal(s.eval(x, 20, exact=False), (0, 2, 4, 6, 8, 10))
+    nose.tools.assert_equal(s.eval(x, 20), (0, 2, 4))
+
+    s.add(y >= 27)
+    nose.tools.assert_equal(s.eval(y, 20, exact=False), (20, 25, 30))
+    nose.tools.assert_equal(s.eval(y, 20), (30,))
+
 def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
@@ -127,6 +155,7 @@ def raw_solver(solver_type):
     nose.tools.assert_true(s.satisfiable())
     nose.tools.assert_true(s.result is not None)
     nose.tools.assert_equals(s.eval(x, 1)[0], 10)
+    nose.tools.assert_true(s.result is not None)
     s.add(x == 10)
     nose.tools.assert_true(s.result is not None)
     s.add(x > 9)
@@ -136,6 +165,7 @@ def raw_solver(solver_type):
 
 def test_solver_branching():
     raw_solver_branching(claripy.FullFrontend)
+    raw_solver_branching(claripy.HybridFrontend)
     raw_solver_branching(claripy.CompositeFrontend)
 
 def raw_solver_branching(solver_type):
@@ -229,6 +259,7 @@ def test_minmax():
     nose.tools.assert_true(s.satisfiable())
 
 if __name__ == '__main__':
+    test_hybrid_solver()
     test_minmax()
     test_solver()
     test_solver_branching()

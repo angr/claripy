@@ -118,19 +118,19 @@ class Frontend(ana.Storable):
     def _simplify(self):
         raise NotImplementedError("_simplify() is not implemented")
 
-    def _solve(self, extra_constraints=()):
+    def _solve(self, extra_constraints=(), exact=None, cache=None):
         raise NotImplementedError("_solve() is not implemented")
 
-    def _eval(self, e, n, extra_constraints=()):
+    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         raise NotImplementedError("_eval() is not implemented")
 
-    def _min(self, e, extra_constraints=()):
+    def _min(self, e, extra_constraints=(), exact=None, cache=None):
         raise NotImplementedError("_min() is not implemented")
 
-    def _max(self, e, extra_constraints=()):
+    def _max(self, e, extra_constraints=(), exact=None, cache=None):
         raise NotImplementedError("_max() is not implemented")
 
-    def _solution(self, e, v, extra_constraints=()):
+    def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         raise NotImplementedError("_solution() is not implemented")
 
     def finalize(self):
@@ -149,22 +149,22 @@ class Frontend(ana.Storable):
     # Caching
     #
 
-    def _cache_eval(self, e, values, n=None, approximation=None, cache=None):
-        if approximation or cache is False or not self._cache or self.result is None:
+    def _cache_eval(self, e, values, n=None, exact=None, cache=None):
+        if not exact or cache is False or not self._cache or self.result is None:
             return
 
         self.result.eval_cache[e.uuid] = self.result.eval_cache[e.uuid] | values if e.uuid in self.result.eval_cache else values
         if n is not None:
             self.result.eval_n[e.uuid] = max(n, self.result.eval_n[e.uuid]) if e.uuid in self.result.eval_n else n
 
-    def _cache_max(self, e, m, approximation=None, cache=None):
-        if approximation or cache is False or not self._cache or self.result is None:
+    def _cache_max(self, e, m, exact=None, cache=None):
+        if not exact or cache is False or not self._cache or self.result is None:
             return
 
         self.result.max_cache[e] = m
 
-    def _cache_min(self, e, m, approximation=None, cache=None):
-        if approximation or cache is False or not self._cache or self.result is None:
+    def _cache_min(self, e, m, exact=None, cache=None):
+        if not exact or cache is False or not self._cache or self.result is None:
             return
 
         self.result.min_cache[e] = m
@@ -194,12 +194,15 @@ class Frontend(ana.Storable):
         if self.result is not None and invalidate_cache:
             all_true = True
             for c in to_add:
-                try:
-                    v = LightFrontend._eval.im_func(self, c, 1)[0]
+                v = self._eager_resolution('eval', [None], c, 1)[0]
+                if v is None:
+                    try:
+                        all_true &= LightFrontend._eval.im_func(self, c, 1)[0]
+                    except ClaripyFrontendError:
+                        all_true = False
+                        break
+                else:
                     all_true &= v
-                except ClaripyFrontendError:
-                    all_true = False
-                    break
         else:
             all_true = False
 
@@ -224,7 +227,7 @@ class Frontend(ana.Storable):
         self._simplified = True
         return s
 
-    def solve(self, extra_constraints=()):
+    def solve(self, extra_constraints=(), exact=None, cache=None):
         l.debug("%s.solve() running with %d extra constraints...", self.__class__.__name__, len(extra_constraints))
 
         if self.result is not None:
@@ -241,14 +244,14 @@ class Frontend(ana.Storable):
             return UnsatResult()
 
         l.debug("... conferring with the solver")
-        r = self._solve(extra_constraints=extra_constraints)
+        r = self._solve(extra_constraints=extra_constraints, exact=exact, cache=cache)
         if len(extra_constraints) == 0 or (self.result is None and r.sat):
             l.debug("... caching result (sat: %s)", r.sat)
             self.result = r
         return r
 
-    def satisfiable(self, extra_constraints=()):
-        return self.solve(extra_constraints=extra_constraints).sat
+    def satisfiable(self, extra_constraints=(), exact=None, cache=None):
+        return self.solve(extra_constraints=extra_constraints, exact=exact, cache=cache).sat
 
     @staticmethod
     def _concrete_type_check(e):
@@ -276,14 +279,13 @@ class Frontend(ana.Storable):
 
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
 
-    @staticmethod
-    def _eager_resolution(what, default, *args, **kwargs):
+    def _eager_resolution(self, what, default, *args, **kwargs):
         for b in _eager_backends:
-            try: return getattr(b, what)(*args, **kwargs)
+            try: return getattr(b, what)(*args, result=self.result if kwargs.pop('use_result', True) else None, **kwargs)
             except BackendError: pass
         return default
 
-    def eval(self, e, n, extra_constraints=()):
+    def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         if self._concrete_type_check(e): return [e]
 
         extra_constraints = self._constraint_filter(extra_constraints)
@@ -294,7 +296,7 @@ class Frontend(ana.Storable):
             eager_results = frozenset(self._eager_resolution('eval', (), e, n, extra_constraints=extra_constraints))
             if not e.symbolic and len(eager_results) > 0:
                 return tuple(sorted(eager_results))
-            self._cache_eval(e, eager_results)
+            self._cache_eval(e, eager_results, exact=exact, cache=cache)
         except UnsatError:
             # this can happen when the eager backend comes across an unsat extra condition
             # *while using the current model*. A new constraint solve could return a new,
@@ -319,7 +321,7 @@ class Frontend(ana.Storable):
         # if we still need more results, get them from the frontend
         try:
             n_lacking = n - len(cached_results)
-            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints))
+            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints, exact=exact, cache=cache))
             l.debug("... got %d more values", len(eval_results - cached_results))
         except UnsatError:
             l.debug("... UNSAT")
@@ -346,40 +348,50 @@ class Frontend(ana.Storable):
         # fix up the cache. If there were extra constraints, we can't assume that we got
         # all of the possible solutions, so we have to settle for a biggest-evaluated value
         # equal to the number of values we got
-        self._cache_eval(e, all_results, n=n if len(extra_constraints) == 0 else None)
+        self._cache_eval(e, all_results, n=n if len(extra_constraints) == 0 else None, exact=exact, cache=cache)
 
         # sort so the order of results is consistent when using pypy
         return tuple(sorted(all_results))
 
-    def max(self, e, extra_constraints=()):
+    def max(self, e, extra_constraints=(), exact=None, cache=None):
         if self._concrete_type_check(e): return e
         extra_constraints = self._constraint_filter(extra_constraints)
+
+        # first, try evaluating through the eager backends
+        v = self._eager_resolution('max', None, e, extra_constraints=extra_constraints, use_result=False)
+        if v is not None:
+            return v
 
         if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.max_cache:
             #cached_max += 1
             return self.result.max_cache[e.uuid]
 
-        m = self._max(e, extra_constraints=extra_constraints)
+        m = self._max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
         if len(extra_constraints) == 0 and e.symbolic:
-            self._cache_max(e, m)
+            self._cache_max(e, m, exact=exact, cache=cache)
             self.add([ULE(e, m)], invalidate_cache=False)
         return m
 
-    def min(self, e, extra_constraints=()):
+    def min(self, e, extra_constraints=(), exact=None, cache=None):
         if self._concrete_type_check(e): return e
         extra_constraints = self._constraint_filter(extra_constraints)
+
+        # first, try evaluating through the eager backends
+        v = self._eager_resolution('min', None, e, extra_constraints=extra_constraints, use_result=False)
+        if v is not None:
+            return v
 
         if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.min_cache:
             #cached_min += 1
             return self.result.min_cache[e.uuid]
 
-        m = self._min(e, extra_constraints=extra_constraints)
+        m = self._min(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
         if len(extra_constraints) == 0 and e.symbolic:
-            self._cache_min(e, m)
+            self._cache_min(e, m, exact=exact, cache=cache)
             self.add([UGE(e, m)], invalidate_cache=False)
         return m
 
-    def solution(self, e, v, extra_constraints=()):
+    def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         try:
             extra_constraints = self._constraint_filter(extra_constraints)
         except UnsatError:
@@ -387,17 +399,19 @@ class Frontend(ana.Storable):
 
         if self._concrete_type_check(e) and self._concrete_type_check(v):
             return e == v
+        if self._eager_resolution('solution', False, e, v):
+            return True
 
-        b = self._solution(e, v, extra_constraints=extra_constraints)
+        b = self._solution(e, v, extra_constraints=extra_constraints, exact=exact, cache=cache)
         if b is False and len(extra_constraints) == 0 and e.symbolic:
             self.add([e != v], invalidate_cache=False)
 
         # add these results to the cache
         if self.result is not None and b is True:
             if isinstance(e, Base) and e.symbolic and not isinstance(v, Base):
-                self._cache_eval(e, frozenset({v}))
+                self._cache_eval(e, frozenset({v}), exact=exact, cache=cache)
             if isinstance(v, Base) and v.symbolic and not isinstance(e, Base):
-                self._cache_eval(v, frozenset({e}))
+                self._cache_eval(v, frozenset({e}), exact=exact, cache=cache)
 
         return b
 

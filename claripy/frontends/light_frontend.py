@@ -57,47 +57,37 @@ class LightFrontend(Frontend):
         self._simplified = True
         return self.constraints
 
-    def _solve(self, extra_constraints=()):
+    def _solve(self, extra_constraints=(), exact=None, cache=None):
         return SatResult(approximation=True)
 
-    def _satisfiable(self, extra_constraints=()):
-        return self.solve(extra_constraints=extra_constraints).sat
+    def _satisfiable(self, extra_constraints=(), exact=None, cache=None):
+        return self.solve(extra_constraints=extra_constraints, exact=exact, cache=cache).sat
 
-    def _eval(self, e, n, extra_constraints=()):
+    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
-            for b in _eager_backends + [ self._solver_backend ]:
-                try: return b.eval(e, n, result=self.result)
-                except BackendError: pass
+            try: return self._solver_backend.eval(e, n, result=self.result)
+            except BackendError: pass
 
         raise ClaripyFrontendError("Light solver can't handle this eval().")
 
-    def _max(self, e, extra_constraints=()):
+    def _max(self, e, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
-            for b in _eager_backends + [ self._solver_backend ]:
-                try: return b.max(e, result=self.result)
-                except BackendError: pass
+            try: return self._solver_backend.max(e, result=self.result)
+            except BackendError: pass
 
         raise ClaripyFrontendError("Light solver can't handle this max().")
 
-    def _min(self, e, extra_constraints=()):
-        extra_constraints = self._constraint_filter(extra_constraints)
-
+    def _min(self, e, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
-            for b in _eager_backends + [ self._solver_backend ]:
-                try: return b.min(e, result=self.result)
-                except BackendError: pass
-
-        two = self.eval(e, 2, extra_constraints=extra_constraints)
-        if len(two) == 0: raise UnsatError("unsat during min()")
-        elif len(two) == 1: return two[0]
+            try: return self._solver_backend.min(e, result=self.result)
+            except BackendError: pass
 
         raise ClaripyFrontendError("Light solver can't handle this min().")
 
-    def _solution(self, e, v, extra_constraints=()):
+    def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         if len(extra_constraints) == 0:
-            for b in _eager_backends + [ self._solver_backend ]:
-                try: return b.solution(e, v, result=self.result)
-                except BackendError: pass
+            try: return self._solver_backend.solution(e, v, result=self.result)
+            except BackendError: pass
 
         raise ClaripyFrontendError("Light solver can't handle this solution().")
 
@@ -156,7 +146,7 @@ class LightFrontend(Frontend):
         return results
 
 from ..result import SatResult
-from ..errors import UnsatError, BackendError, ClaripyFrontendError
-from .. import _eager_backends, backend_z3
+from ..errors import BackendError, ClaripyFrontendError
+from .. import backend_z3
 from ..ast.base import Base, simplify
 from ..ast.bool import And, Or
