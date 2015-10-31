@@ -281,7 +281,7 @@ class Frontend(ana.Storable):
 
     def _eager_resolution(self, what, default, *args, **kwargs):
         for b in _eager_backends:
-            try: return getattr(b, what)(*args, result=self.result, **kwargs)
+            try: return getattr(b, what)(*args, result=self.result if kwargs.pop('use_result', True) else None, **kwargs)
             except BackendError: pass
         return default
 
@@ -357,6 +357,11 @@ class Frontend(ana.Storable):
         if self._concrete_type_check(e): return e
         extra_constraints = self._constraint_filter(extra_constraints)
 
+        # first, try evaluating through the eager backends
+        v = self._eager_resolution('max', None, e, extra_constraints=extra_constraints, use_result=False)
+        if v is not None:
+            return v
+
         if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.max_cache:
             #cached_max += 1
             return self.result.max_cache[e.uuid]
@@ -370,6 +375,11 @@ class Frontend(ana.Storable):
     def min(self, e, extra_constraints=(), exact=None, cache=None):
         if self._concrete_type_check(e): return e
         extra_constraints = self._constraint_filter(extra_constraints)
+
+        # first, try evaluating through the eager backends
+        v = self._eager_resolution('min', None, e, extra_constraints=extra_constraints, use_result=False)
+        if v is not None:
+            return v
 
         if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.min_cache:
             #cached_min += 1
