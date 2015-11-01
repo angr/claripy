@@ -138,7 +138,7 @@ class BackendVSA(Backend):
 
     def _solution(self, obj, v, result=None, solver=None, extra_constraints=()):
         if isinstance(obj, BoolResult):
-            return v in obj.value
+            return len(set(v.value) & set(obj.value)) > 0
 
         if isinstance(obj, StridedInterval):
             return not obj.intersection(v).is_empty
