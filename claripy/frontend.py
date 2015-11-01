@@ -415,6 +415,24 @@ class Frontend(ana.Storable):
 
         return b
 
+    def is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        if self._concrete_type_check(e):
+            return e is True
+
+        if not isinstance(e, Bool):
+            raise ClaripyValueError("got a non-Boolean expression in Frontend.is_true()")
+
+        return not self.solution(e, False, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
+    def is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        if self._concrete_type_check(e):
+            return e is False
+
+        if not isinstance(e, Bool):
+            raise ClaripyValueError("got a non-Boolean expression in Frontend.is_false()")
+
+        return not self.solution(e, False, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
     #
     # Serialization and such.
     #
