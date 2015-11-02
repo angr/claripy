@@ -431,7 +431,7 @@ class Frontend(ana.Storable):
         if not isinstance(e, Bool):
             raise ClaripyValueError("got a non-Boolean expression in Frontend.is_false()")
 
-        return not self.solution(e, False, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        return not self.solution(e, True, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
     #
     # Serialization and such.
