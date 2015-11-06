@@ -53,6 +53,10 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         if calc_length is not None:
             kwargs['length'] = calc_length(*fixed_args)
 
+        kwargs['uninitialized'] = None
+        if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
+            kwargs['uninitialized'] = True
+
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
