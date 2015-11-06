@@ -416,7 +416,7 @@ def test_vsa():
 
     # Comparison between claripy.SI and BVV
     si = claripy.SI(bits=32, stride=1, lower_bound=-0x7f, upper_bound=0x7f)
-    si.uninitialized = True
+    si._model_vsa.uninitialized = True
     bvv = BVV(0x30, 32)
     comp = (si < bvv)
     nose.tools.assert_true(vsa_model(comp).identical(MaybeResult()))

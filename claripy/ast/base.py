@@ -62,7 +62,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', 'uninitialized' ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -123,6 +123,10 @@ class Base(ana.Storable):
         kwargs['eager_backends'] = None
         h = Base._calc_hash(op, a_args, kwargs)
 
+        # whether this guy is initialized or not
+        if 'uninitialized' not in kwargs:
+            kwargs['uninitialized'] = None
+
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
@@ -160,7 +164,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None): #pylint:disable=unused-argument
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''
@@ -178,6 +182,8 @@ class Base(ana.Storable):
         self._cache_key = ASTCacheKey()
         self._excavated = None
         self._burrowed = None
+
+        self._uninitialized = uninitialized
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -689,6 +695,10 @@ class Base(ana.Storable):
     def concrete(self):
         return _backends['BackendConcrete'].handles(self)
 
+    @property
+    def uninitialized(self):
+        return self._uninitialized
+
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
@@ -698,6 +708,7 @@ def simplify(e):
         l.debug("Unable to simplify expression")
         return e
     else:
+        s._uninitialized = e.uninitialized
         s._simplified = Base.FULL_SIMPLIFY
         return s
 
