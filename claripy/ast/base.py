@@ -335,8 +335,25 @@ class Base(ana.Storable):
         The depth of this AST. For example, an AST representing (a+(b+c)) would have
         a depth of 2.
         '''
+        return self._depth()
+
+    def _depth(self, memoized=None):
+        """
+        :param memoized: dict of ast hashes to depths we've seen before
+        :return: the depth of the AST. For example, an AST representing (a+(b+c)) would have
+        a depth of 2.
+        """
+        if memoized is None:
+            memoized = dict()
+
         ast_args = [ a for a in self.args if isinstance(a, Base) ]
-        return 1 + (max(a.depth for a in ast_args) if len(ast_args) > 0 else 1)
+        max_depth = 0
+        for a in ast_args:
+            if a not in memoized:
+                memoized[a] = a._depth(memoized)
+            max_depth = max(memoized[a], max_depth)
+
+        return 1 + max_depth
 
     @property
     def recursive_children_asts(self):
