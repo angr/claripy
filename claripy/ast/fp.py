@@ -41,7 +41,7 @@ def FPV(value, sort):
     @param sort: the sort of the floating point
     @return an FP AST
     '''
-    return FP('FPV', (value, sort))
+    return FP('FPV', (value, sort), length=sort.length)
 
 #
 # unbound floating point conversions
