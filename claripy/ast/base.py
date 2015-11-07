@@ -401,18 +401,20 @@ class Base(ana.Storable):
     # Various AST modifications (replacements)
     #
 
-    def _replace(self, old, new, replacements=None):
-        '''
+    def _replace(self, replacements, variable_set=None):
+        """
         A helper for replace().
-        '''
-        if replacements is None:
-            replacements = { hash(old): new }
+        :param variable_set: for optimization, ast's without these variables are not checked for replacing
+        :param replacements: dictionary of hashes to their replacements
+        """
+        if variable_set is None:
+            variable_set = {}
 
         hash_key = hash(self)
 
         if hash_key in replacements:
             r = replacements[hash_key]
-        elif not self.variables.issuperset(old.variables):
+        elif not self.variables.issuperset(variable_set):
             r = self
         else:
             new_args = [ ]
@@ -420,7 +422,7 @@ class Base(ana.Storable):
 
             for a in self.args:
                 if isinstance(a, Base):
-                    new_a = a._replace(old, new, replacements=replacements)
+                    new_a = a._replace(replacements=replacements, variable_set=variable_set)
                     replaced |= hash(new_a) != hash(a)
                 else:
                     new_a = a
@@ -532,7 +534,23 @@ class Base(ana.Storable):
         if type(old) is not type(new):
             raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
         old._check_replaceability(new)
-        return self._replace(old, new)
+        replacements = {hash(old): new}
+        return self._replace(replacements, old.variables)
+
+    def replace_multiple(self, replacements):
+        """
+        :param replacements: a dictionary of asts to replace and their replacements
+        :return: an AST with all instances of ast's in replacements
+        """
+        for old, new in replacements.items():
+            if not isinstance(old, Base) or not isinstance(new, Base):
+                raise ClaripyOperationError('replacements must be AST nodes')
+            if type(old) is not type(new):
+                raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
+            old._check_replaceability(new)
+
+        replacements = dict((hash(old), new) for (old, new) in replacements.items())
+        return self._replace(replacements)
 
     def _check_replaceability(self, new):
         pass
