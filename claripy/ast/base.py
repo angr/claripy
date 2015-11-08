@@ -364,6 +364,16 @@ class Base(ana.Storable):
                 for b in a.recursive_children_asts:
                     yield b
 
+    @property
+    def recursive_leaf_asts(self):
+        for a in self.args:
+            if isinstance(a, Base):
+                if a.op in ('BVS', 'BVV', 'I'):
+                    yield a
+                else:
+                    for b in a.recursive_leaf_asts:
+                        yield b
+
     def dbg_is_looped(self, seen=None, checked=None):
         seen = set() if seen is None else seen
         checked = set() if checked is None else checked
