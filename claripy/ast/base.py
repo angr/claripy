@@ -62,7 +62,9 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified', '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', 'uninitialized' ]
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified',
+                  '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
+                  '_uc_alloc_depth']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -127,6 +129,9 @@ class Base(ana.Storable):
         if 'uninitialized' not in kwargs:
             kwargs['uninitialized'] = None
 
+        if 'uc_alloc_depth' not in kwargs:
+            kwargs['uc_alloc_depth'] = None
+
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
@@ -164,7 +169,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None): #pylint:disable=unused-argument
         '''
         Initializes an AST. Takes the same arguments as Base.__new__()
         '''
@@ -184,6 +189,7 @@ class Base(ana.Storable):
         self._burrowed = None
 
         self._uninitialized = uninitialized
+        self._uc_alloc_depth = uc_alloc_depth
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -714,7 +720,27 @@ class Base(ana.Storable):
 
     @property
     def uninitialized(self):
+        """
+        Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic execution
+        mode.
+
+        :return: True/False/None (unspecified)
+        """
+
+        #TODO: It should definitely be moved to the proposed Annotation backend.
+
         return self._uninitialized
+
+    @property
+    def uc_alloc_depth(self):
+        """
+        The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
+
+        :return: An integer indicating the allocation depth, or None if it's not from lazy-initialization.
+        """
+        # TODO: It should definitely be moved to the proposed Annotation backend.
+
+        return self._uc_alloc_depth
 
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
@@ -725,8 +751,12 @@ def simplify(e):
         l.debug("Unable to simplify expression")
         return e
     else:
+        # Copy some parameters (that should really go to the Annotation backend)
         s._uninitialized = e.uninitialized
+        s._uc_alloc_depth = e._uc_alloc_depth
+
         s._simplified = Base.FULL_SIMPLIFY
+
         return s
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
