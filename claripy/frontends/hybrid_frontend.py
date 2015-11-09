@@ -15,10 +15,11 @@ class HybridFrontend(FullFrontend):
     #
 
     def _ana_getstate(self):
-        return (self._approximation_backend, FullFrontend._ana_getstate(self))
+        return (self._solver_backend.__class__.__name__, FullFrontend._ana_getstate(self))
 
     def _ana_setstate(self, s):
-        self._approximation_backend, full_state = s
+        approx_backend_name, full_state = s
+        self._approximation_backend = _backends[approx_backend_name]
         FullFrontend._ana_setstate(self, full_state)
 
     #
