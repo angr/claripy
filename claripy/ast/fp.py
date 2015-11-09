@@ -98,4 +98,9 @@ fpDiv = operations.op('fpDiv', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp
 #
 # bound fp operations
 #
-fp.__eq__ = operations.op('fpEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__eq__ = operations.op('fpEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__ne__ = operations.op('fpNE', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__ge__ = operations.op('fpGEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__le__ = operations.op('fpLEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__gt__ = operations.op('fpGT', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__lt__ = operations.op('fpLT', (FP, FP), Bool, extra_check=_fp_cmp_check)

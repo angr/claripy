@@ -294,6 +294,9 @@ def fpToUBV(rm, fp, size):
 def fpEQ(a, b):
     return a == b
 
+def fpNE(a, b):
+    return a != b
+
 def fpGT(a, b):
     return a > b
 

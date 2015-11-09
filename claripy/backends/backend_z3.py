@@ -932,7 +932,7 @@ from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..operations import backend_operations, backend_fp_operations, bin_ops
 from ..result import Result
-from ..fp import FPV, FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
+from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
 from .. import _all_operations
 
