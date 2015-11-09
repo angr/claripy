@@ -90,6 +90,11 @@ def raw_solver(solver_type):
     s.add(claripy.UGT(y, x))
     s.add(claripy.ULT(z, 5))
 
+    # test that duplicate constraints are ignored
+    old_count = len(s.constraints)
+    s.add(claripy.ULT(z, 5))
+    nose.tools.assert_equal(len(s.constraints), old_count)
+
     #print "========================================================================================"
     #print "========================================================================================"
     #print "========================================================================================"
