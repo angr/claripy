@@ -9,6 +9,7 @@ class LightFrontend(Frontend):
     def __init__(self, solver_backend):
         Frontend.__init__(self, solver_backend)
         self.constraints = [ ]
+        self._constraint_hashes = set()
         self.variables = set()
         self._finalized = False
 
@@ -38,10 +39,12 @@ class LightFrontend(Frontend):
     #
 
     def _add_constraints(self, constraints, invalidate_cache=True):
-        self.constraints += constraints
-        for c in constraints:
+        new_constraints = [ c for c in constraints if hash(c) not in self._constraint_hashes ]
+        self.constraints += new_constraints
+        for c in new_constraints:
             self.variables.update(c.variables)
-        return constraints
+            self._constraint_hashes.add(hash(c))
+        return new_constraints
 
 
     def _simplify(self):
@@ -49,6 +52,11 @@ class LightFrontend(Frontend):
             return
 
         self.constraints = [ simplify(And(*self.constraints)) ]
+
+        # we only add to the constraint hashes because we want to
+        # prevent previous (now simplified) constraints from
+        # being re-added
+        self._constraint_hashes.add(hash(self.constraints[0]))
 
         # generate UUIDs for every constraint
         for c in self.constraints:
@@ -109,6 +117,7 @@ class LightFrontend(Frontend):
         s = Frontend.branch(self)
         s.constraints = list(self.constraints)
         s.variables = set(self.variables)
+        s._constraint_hashes = set(self._constraint_hashes)
         self.finalize()
         s.finalize()
         return s
