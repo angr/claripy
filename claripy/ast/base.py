@@ -222,6 +222,10 @@ class Base(ana.Storable):
     def __hash__(self):
         return self._hash
 
+    @property
+    def cache_key(self):
+        return self._cache_key
+
     #
     # Serialization support
     #
