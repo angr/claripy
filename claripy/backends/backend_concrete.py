@@ -95,6 +95,8 @@ class BackendConcrete(Backend):
             return (expr.value,)
         elif type(expr) is bool:
             return (expr,)
+        elif type(expr) in (int, long):
+            return (expr,)
 
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
         if not all(extra_constraints):

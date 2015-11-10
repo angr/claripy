@@ -5,8 +5,9 @@ import logging
 l = logging.getLogger('claripy.test.solver')
 
 def test_solver():
-    raw_solver(claripy.FullFrontend)
-    raw_solver(claripy.CompositeFrontend)
+    yield raw_solver, claripy.FullFrontend
+    yield raw_solver, claripy.HybridFrontend
+    yield raw_solver, claripy.CompositeFrontend
 
 def test_hybrid_solver():
     s = claripy.HybridFrontend(claripy.backend_z3)
@@ -40,6 +41,14 @@ def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
     #claripy.expression_backends = [ bc, bz, ba ]
+
+    # test replacement
+    sr = solver_type(claripy.backend_z3)
+    x = claripy.BVS('x', 32)
+    nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
+    sr.result = None
+    sr.replacer.add_replacement(x, claripy.BVV(0x101, 32))
+    nose.tools.assert_items_equal(sr.eval(x, 10), [0x101])
 
     s = solver_type(claripy.backend_z3)
 
@@ -89,6 +98,11 @@ def raw_solver(solver_type):
 
     s.add(claripy.UGT(y, x))
     s.add(claripy.ULT(z, 5))
+
+    # test that duplicate constraints are ignored
+    old_count = len(s.constraints)
+    s.add(claripy.ULT(z, 5))
+    nose.tools.assert_equal(len(s.constraints), old_count)
 
     #print "========================================================================================"
     #print "========================================================================================"
@@ -164,9 +178,9 @@ def raw_solver(solver_type):
     nose.tools.assert_true(s.result is not None)
 
 def test_solver_branching():
-    raw_solver_branching(claripy.FullFrontend)
-    raw_solver_branching(claripy.HybridFrontend)
-    raw_solver_branching(claripy.CompositeFrontend)
+    yield raw_solver_branching, claripy.FullFrontend
+    yield raw_solver_branching, claripy.HybridFrontend
+    yield raw_solver_branching, claripy.CompositeFrontend
 
 def raw_solver_branching(solver_type):
     s = solver_type(claripy.backend_z3)
