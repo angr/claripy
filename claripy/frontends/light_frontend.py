@@ -6,12 +6,13 @@ l = logging.getLogger("claripy.frontends.light_frontend")
 from ..frontend import Frontend
 
 class LightFrontend(Frontend):
-    def __init__(self, solver_backend):
-        Frontend.__init__(self, solver_backend)
+    def __init__(self, solver_backend, **kwargs):
+        Frontend.__init__(self, **kwargs)
         self.constraints = [ ]
         self._constraint_hashes = set()
         self.variables = set()
         self._finalized = False
+        self._solver_backend = solver_backend
 
     #
     # Storable support
@@ -20,11 +21,12 @@ class LightFrontend(Frontend):
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
         self.finalize()
-        return self.constraints, self.variables, Frontend._ana_getstate(self)
+        return self._solver_backend.__class__.__name__, self.constraints, self.variables, Frontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self.constraints, self.variables, base_state = s
+        solver_backend_name, self.constraints, self.variables, base_state = s
         Frontend._ana_setstate(self, base_state)
+        self._solver_backend = _backends[solver_backend_name]
         self._finalized = True
 
     #
@@ -113,6 +115,9 @@ class LightFrontend(Frontend):
     def finalize(self):
         self._finalized = True
 
+    def _blank_copy(self):
+        return LightFrontend(self._solver_backend, cache=self._cache)
+
     def branch(self):
         s = Frontend.branch(self)
         s.constraints = list(self.constraints)
@@ -123,7 +128,7 @@ class LightFrontend(Frontend):
         return s
 
     def merge(self, others, merge_flag, merge_values):
-        merged = self.__class__(self._solver_backend)
+        merged = self._blank_copy()
         merged._simplified = False
         options = [ ]
 
@@ -134,7 +139,7 @@ class LightFrontend(Frontend):
         return self._solver_backend is backend_z3, merged
 
     def combine(self, others):
-        combined = self.__class__(self._solver_backend)
+        combined = self._blank_copy()
         combined._simplified = False
 
         combined.add(self.constraints) #pylint:disable=E1101
@@ -148,7 +153,7 @@ class LightFrontend(Frontend):
         for variables,c_list in self.independent_constraints():
             l.debug("... got %d constraints with %d variables", len(c_list), len(variables))
 
-            s = self.__class__(self._solver_backend)
+            s = self._blank_copy()
             s._simplified = False
             s.add(c_list)
             results.append(s)
@@ -159,3 +164,4 @@ from ..errors import BackendError, ClaripyFrontendError
 from .. import backend_z3
 from ..ast.base import Base, simplify
 from ..ast.bool import And, Or
+from .. import _backends

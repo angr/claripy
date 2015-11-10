@@ -222,11 +222,12 @@ def test_if_stuff():
     nose.tools.assert_is(iii.ite_excavated, iiii)
 
 def test_ite():
-    raw_ite(claripy.frontends.FullFrontend)
-    raw_ite(claripy.frontends.CompositeFrontend)
+    yield raw_ite, lambda: claripy.FullFrontend(claripy.backend_z3)
+    yield raw_ite, lambda: claripy.HybridFrontend(claripy.backend_z3)
+    yield raw_ite, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backend_z3))
 
 def raw_ite(solver_type):
-    s = solver_type(claripy.backend_z3)
+    s = solver_type()
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
     z = claripy.BVS("z", 32)

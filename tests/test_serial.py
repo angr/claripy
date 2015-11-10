@@ -56,7 +56,7 @@ def test_datalayer():
     nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
-    s = claripy.CompositeFrontend(claripy.backend_z3)
+    s = claripy.CompositeFrontend(claripy.FullFrontend(claripy.backend_z3))
     x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()

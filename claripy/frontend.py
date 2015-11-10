@@ -9,12 +9,10 @@ import sys
 #pylint:disable=unidiomatic-typecheck
 
 class Frontend(ana.Storable):
-    def __init__(self, solver_backend, cache=None, replacer=None):
-        self._solver_backend = solver_backend
+    def __init__(self, cache=None):
         self.result = None
         self._simplified = False
         self._cache = cache is True
-        self._replacer = replacer
 
     #
     # Storable support
@@ -26,12 +24,20 @@ class Frontend(ana.Storable):
 
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
-        return self._solver_backend.__class__.__name__, self.result, self._replacer
+        return self.result
 
     def _ana_setstate(self, s):
-        solver_backend_name, self.result, self._replacer = s
-        self._solver_backend = _backends[solver_backend_name]
+        self.result = s
         self._simplified = True
+
+    def branch(self):
+        s = self._blank_copy()
+        s.result = self.result
+        s._simplified = self._simplified
+        return s
+
+    def _blank_copy(self):
+        return Frontend(cache=self._cache)
 
     #
     # Constraint management
@@ -79,27 +85,25 @@ class Frontend(ana.Storable):
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
         return results
 
-    def _constraint_filter(self, ec, replace=False):
+    def _filter_single_constraint(self, e_simp): #pylint:disable=no-self-use
+        if not isinstance(e_simp, (Bool, bool)):
+            l.warning("Frontend._constraint_filter got non-boolean from model_backend")
+            raise ClaripyFrontendError()
+
+        if self._eager_resolution('is_false', False, e_simp, use_result=False):
+            raise UnsatError("expressions contain False")
+        elif self._eager_resolution('is_true', False, e_simp, use_result=False):
+            return None
+        else:
+            return e_simp
+
+    def _constraint_filter(self, ec):
         fc = [ ]
         for e in ec if type(ec) in (list, tuple, set) else (ec,):
             #e_simp = self._claripy.simplify(e)
-            e_simp = self._replacement(e) if replace else e
-            for b in _eager_backends + [ self._solver_backend ]:
-                try:
-                    o = b.convert(e_simp)
-                    if b._is_false(o):
-                        #filter_false += 1
-                        raise UnsatError("expressions contain False")
-                    elif b._has_true(o):
-                        #filter_true +=1
-                        break
-                    else:
-                        l.warning("Frontend._constraint_filter got non-boolean from model_backend")
-                        raise ClaripyFrontendError()
-                except BackendError:
-                    pass
-            else:
-                fc.append(e_simp)
+            c = self._filter_single_constraint(e)
+            if c is not None:
+                fc.append(c)
 
         return tuple(fc)
 
@@ -233,7 +237,7 @@ class Frontend(ana.Storable):
             l.debug("... no cached result")
 
         try:
-            extra_constraints = self._constraint_filter(extra_constraints, replace=True)
+            extra_constraints = self._constraint_filter(extra_constraints)
         except UnsatError:
             l.debug("... returning unsat result due to false extra_constraints")
             return UnsatResult()
@@ -263,7 +267,7 @@ class Frontend(ana.Storable):
         if isinstance(e, (int, long)):
             return True
         elif not isinstance(e, Base):
-            raise ClaripyValueError("Expressions passed to _concrete_type_check() MUST be Claripy ASTs (got %s)" % type(e))
+            raise ClaripyValueError("Expressions passed to min() MUST be Claripy ASTs (got %s)" % type(e))
         else:
             return False
 
@@ -281,18 +285,17 @@ class Frontend(ana.Storable):
         return default
 
     def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
-        er = self._replacement(e)
-        if self._concrete_type_check(er): return [er]
+        if self._concrete_type_check(e): return [e]
 
-        extra_constraints = self._constraint_filter(extra_constraints, replace=True)
+        extra_constraints = self._constraint_filter(extra_constraints)
         l.debug("Frontend.eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
 
         # first, try evaluating through the eager backends
         try:
-            eager_results = frozenset(self._eager_resolution('eval', (), er, n, extra_constraints=extra_constraints))
-            if not er.symbolic and len(eager_results) > 0:
+            eager_results = frozenset(self._eager_resolution('eval', (), e, n, extra_constraints=extra_constraints))
+            if not e.symbolic and len(eager_results) > 0:
                 return tuple(sorted(eager_results))
-            self._cache_eval(er, eager_results, exact=exact, cache=cache)
+            self._cache_eval(e, eager_results, exact=exact, cache=cache)
         except UnsatError:
             # this can happen when the eager backend comes across an unsat extra condition
             # *while using the current model*. A new constraint solve could return a new,
@@ -300,9 +303,9 @@ class Frontend(ana.Storable):
             pass
 
         # then, check the cache
-        if len(extra_constraints) == 0 and self.result is not None and er.uuid in self.result.eval_cache:
-            cached_results = self.result.eval_cache[er.uuid]
-            cached_n = self.result.eval_n.get(er.uuid, 0)
+        if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.eval_cache:
+            cached_results = self.result.eval_cache[e.uuid]
+            cached_n = self.result.eval_n.get(e.uuid, 0)
         else:
             cached_results = frozenset()
             cached_n = 0
@@ -317,7 +320,7 @@ class Frontend(ana.Storable):
         # if we still need more results, get them from the frontend
         try:
             n_lacking = n - len(cached_results)
-            eval_results = frozenset(self._eval(er, n_lacking, extra_constraints=solver_extra_constraints, exact=exact, cache=cache))
+            eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints, exact=exact, cache=cache))
             l.debug("... got %d more values", len(eval_results - cached_results))
         except UnsatError:
             l.debug("... UNSAT")
@@ -344,78 +347,71 @@ class Frontend(ana.Storable):
         # fix up the cache. If there were extra constraints, we can't assume that we got
         # all of the possible solutions, so we have to settle for a biggest-evaluated value
         # equal to the number of values we got
-        self._cache_eval(er, all_results, n=n if len(extra_constraints) == 0 else None, exact=exact, cache=cache)
+        self._cache_eval(e, all_results, n=n if len(extra_constraints) == 0 else None, exact=exact, cache=cache)
 
         # sort so the order of results is consistent when using pypy
         return tuple(sorted(all_results))
 
     def max(self, e, extra_constraints=(), exact=None, cache=None):
-        er = self._replacement(e)
-
-        if self._concrete_type_check(er): return er
-        extra_constraints = self._constraint_filter(extra_constraints, replace=True)
+        if self._concrete_type_check(e): return e
+        extra_constraints = self._constraint_filter(extra_constraints)
 
         # first, try evaluating through the eager backends
-        v = self._eager_resolution('max', None, er, extra_constraints=extra_constraints, use_result=False)
+        v = self._eager_resolution('max', None, e, extra_constraints=extra_constraints, use_result=False)
         if v is not None:
             return v
 
-        if len(extra_constraints) == 0 and self.result is not None and er.uuid in self.result.max_cache:
+        if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.max_cache:
             #cached_max += 1
-            return self.result.max_cache[er.uuid]
+            return self.result.max_cache[e.uuid]
 
-        m = self._max(er, extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if len(extra_constraints) == 0 and er.symbolic:
-            self._cache_max(er, m, exact=exact, cache=cache)
+        m = self._max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        if len(extra_constraints) == 0 and e.symbolic:
+            self._cache_max(e, m, exact=exact, cache=cache)
             self.add([ULE(e, m)], invalidate_cache=False)
         return m
 
     def min(self, e, extra_constraints=(), exact=None, cache=None):
-        er = self._replacement(e)
-
-        if self._concrete_type_check(er): return er
-        extra_constraints = self._constraint_filter(extra_constraints, replace=True)
+        if self._concrete_type_check(e): return e
+        extra_constraints = self._constraint_filter(extra_constraints)
 
         # first, try evaluating through the eager backends
-        v = self._eager_resolution('min', None, er, extra_constraints=extra_constraints, use_result=False)
+        v = self._eager_resolution('min', None, e, extra_constraints=extra_constraints, use_result=False)
         if v is not None:
             return v
 
-        if len(extra_constraints) == 0 and self.result is not None and er.uuid in self.result.min_cache:
+        if len(extra_constraints) == 0 and self.result is not None and e.uuid in self.result.min_cache:
             #cached_min += 1
-            return self.result.min_cache[er.uuid]
+            return self.result.min_cache[e.uuid]
 
-        m = self._min(er, extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if len(extra_constraints) == 0 and er.symbolic:
-            self._cache_min(er, m, exact=exact, cache=cache)
+        m = self._min(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        if len(extra_constraints) == 0 and e.symbolic:
+            self._cache_min(e, m, exact=exact, cache=cache)
             self.add([UGE(e, m)], invalidate_cache=False)
         return m
 
     def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
-        er = self._replacement(e)
-        vr = self._replacement(v)
-
         try:
-            extra_constraints = self._constraint_filter(extra_constraints, replace=True)
+            extra_constraints = self._constraint_filter(extra_constraints)
         except UnsatError:
             return False
 
-        if self._concrete_type_check(er) and self._concrete_type_check(vr):
-            return er == vr
-        eager_solution = self._eager_resolution('solution', None, er, vr)
+        if self._concrete_type_check(e) and self._concrete_type_check(v):
+            return e == v
+        eager_solution = self._eager_resolution('solution', None, e, v)
         if eager_solution is not None:
             return eager_solution
 
-        b = self._solution(er, vr, extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if b is False and len(extra_constraints) == 0 and er.symbolic:
+        b = self._solution(e, v, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        if b is False and len(extra_constraints) == 0 and e.symbolic:
             self.add([e != v], invalidate_cache=False)
 
         # add these results to the cache
         if self.result is not None and b is True:
-            if isinstance(er, Base) and er.symbolic and not isinstance(vr, Base):
-                self._cache_eval(er, frozenset({vr}), exact=exact, cache=cache)
+            if isinstance(e, Base) and e.symbolic and not isinstance(v, Base):
+                self._cache_eval(e, frozenset({v}), exact=exact, cache=cache)
             if isinstance(v, Base) and v.symbolic and not isinstance(e, Base):
-                self._cache_eval(vr, frozenset({er}), exact=exact, cache=cache)
+                self._cache_eval(v, frozenset({e}), exact=exact, cache=cache)
 
         return b
 
@@ -445,30 +441,10 @@ class Frontend(ana.Storable):
         if self.result is not None:
             self.result.downsize()
 
-    def _replacement(self, old):
-        if self._replacer is None:
-            return old
-        else:
-            return self._replacer.replacement(old)
-
-    def branch(self):
-        s = self.__class__(self._solver_backend)
-        s.result = self.result
-        s._simplified = self._simplified
-        s._replacer = None if self._replacer is None else s._replacer.branch()
-        return s
-
-    @property
-    def replacer(self):
-        if self._replacer is None:
-            self._replacer = Replacer()
-        return self._replacer
-
 from .frontends import LightFrontend
 from .result import UnsatResult, SatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError, ClaripyValueError
-from . import _eager_backends, _backends
+from . import _eager_backends
 from .ast.base import Base
 from .ast.bool import false, Bool, Or
 from .ast.bv import UGE, ULE, BVV
-from .replacer import Replacer

@@ -22,6 +22,9 @@ class HybridFrontend(FullFrontend):
         self._approximation_backend = _backends[approx_backend_name]
         FullFrontend._ana_setstate(self, full_state)
 
+    def _blank_copy(self):
+        return HybridFrontend(self._solver_backend, approximation_backend=self._approximation_backend, cache=self._cache, timeout=self.timeout)
+
     #
     # Hybrid solving
     #
