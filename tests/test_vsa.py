@@ -22,6 +22,21 @@ def test_fucked_extract():
     m = claripy.backend_vsa.max(fucked)
     assert m > 0
 
+    # here's another case
+    wtf = (
+        (claripy.Reverse(
+            claripy.Concat(
+                claripy.BVS('w', 8), claripy.BVS('x', 8), claripy.BVS('y', 8), claripy.BVS('z', 8)
+            )
+        ) & claripy.BVV(15, 32)) +
+        claripy.BVV(48, 32)
+    )[7:0]
+
+    m = claripy.backend_vsa.max(wtf)
+    assert m > 0
+
+
+
 def test_simple_cardinality():
     x = claripy.BVS('x', 32, 0xa, 0x14, 0xa)
     nose.tools.assert_equal(x.cardinality, 2)
