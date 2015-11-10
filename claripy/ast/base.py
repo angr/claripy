@@ -420,7 +420,7 @@ class Base(ana.Storable):
         if variable_set is None:
             variable_set = {}
 
-        hash_key = hash(self)
+        hash_key = self.cache_key
 
         if hash_key in replacements:
             r = replacements[hash_key]
@@ -544,7 +544,7 @@ class Base(ana.Storable):
         if type(old) is not type(new):
             raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
         old._check_replaceability(new)
-        replacements = {hash(old): new}
+        replacements = {old.cache_key: new}
         return self._replace(replacements, old.variables)
 
     def replace_dict(self, replacements):
