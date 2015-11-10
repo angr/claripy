@@ -26,10 +26,10 @@ class Frontend(ana.Storable):
 
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
-        return self._solver_backend.__class__.__name__, self.result
+        return self._solver_backend.__class__.__name__, self.result, self._replacer
 
     def _ana_setstate(self, s):
-        solver_backend_name, self.result = s
+        solver_backend_name, self.result, self._replacer = s
         self._solver_backend = _backends[solver_backend_name]
         self._simplified = True
 

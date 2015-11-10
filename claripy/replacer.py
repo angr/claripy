@@ -23,3 +23,10 @@ class Replacer(object):
 
     def branch(self):
         return Replacer(replacements=self._replacements, replacement_cache=self._replacement_cache)
+
+    def __getstate__(self):
+        return self._replacements
+
+    def __setstate__(self, s):
+        self._replacements = s
+        self._replacement_cache = weakref.WeakKeyDictionary()
