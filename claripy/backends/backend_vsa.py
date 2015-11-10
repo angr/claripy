@@ -121,7 +121,7 @@ class BackendVSA(Backend):
                 # TODO: Return
                 return StridedInterval.min_int(expr.bits)
 
-            return expr.lower_bound
+            return expr.min
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
@@ -131,7 +131,7 @@ class BackendVSA(Backend):
                 # TODO:
                 return StridedInterval.max_int(expr.bits)
 
-            return expr.upper_bound
+            return expr.max
 
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
