@@ -78,27 +78,25 @@ class Frontend(ana.Storable):
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
         return results
 
+    def _filter_single_constraint(self, e_simp): #pylint:disable=no-self-use
+        if not isinstance(e_simp, (Bool, bool)):
+            l.warning("Frontend._constraint_filter got non-boolean from model_backend")
+            raise ClaripyFrontendError()
+
+        if self._eager_resolution('is_false', False, e_simp, use_result=False):
+            raise UnsatError("expressions contain False")
+        elif self._eager_resolution('is_true', False, e_simp, use_result=False):
+            return None
+        else:
+            return e_simp
+
     def _constraint_filter(self, ec):
         fc = [ ]
         for e in ec if type(ec) in (list, tuple, set) else (ec,):
             #e_simp = self._claripy.simplify(e)
-            e_simp = e
-            for b in _eager_backends + [ self._solver_backend ]:
-                try:
-                    o = b.convert(e_simp)
-                    if b._is_false(o):
-                        #filter_false += 1
-                        raise UnsatError("expressions contain False")
-                    elif b._has_true(o):
-                        #filter_true +=1
-                        break
-                    else:
-                        l.warning("Frontend._constraint_filter got non-boolean from model_backend")
-                        raise ClaripyFrontendError()
-                except BackendError:
-                    pass
-            else:
-                fc.append(e_simp)
+            c = self._filter_single_constraint(e)
+            if c is not None:
+                fc.append(c)
 
         return tuple(fc)
 

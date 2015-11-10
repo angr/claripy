@@ -243,7 +243,7 @@ class Backend(object):
     # Some other helpers
     #
 
-    def is_true(self, e):
+    def is_true(self, e, result=None): #pylint:disable=unused-argument
         '''
         Should return True if e can be easily found to be True.
 
@@ -253,7 +253,7 @@ class Backend(object):
 
         return self._is_true(self.convert(e))
 
-    def is_false(self, e):
+    def is_false(self, e, result=None): #pylint:disable=unused-argument
         '''
         Should return False if e can be easily found to be False.
 
@@ -281,7 +281,7 @@ class Backend(object):
         '''
         raise BackendError("backend doesn't support _is_true")
 
-    def has_true(self, e):
+    def has_true(self, e, result=None): #pylint:disable=unused-argument
         '''
         Should return True if e can possible be True.
 
@@ -291,7 +291,7 @@ class Backend(object):
 
         return self._has_true(self.convert(e))
 
-    def has_false(self, e):
+    def has_false(self, e, result=None): #pylint:disable=unused-argument
         '''
         Should return False if e can possibly be False.
 
