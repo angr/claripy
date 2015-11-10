@@ -537,7 +537,7 @@ class Base(ana.Storable):
         replacements = {hash(old): new}
         return self._replace(replacements, old.variables)
 
-    def replace_multiple(self, replacements):
+    def replace_dict(self, replacements):
         """
         :param replacements: a dictionary of asts to replace and their replacements
         :return: an AST with all instances of ast's in replacements
