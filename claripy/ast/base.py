@@ -27,7 +27,9 @@ def _inner_repr(a, **kwargs):
     else:
         return repr(a)
 
-class ASTCacheKey(object): pass
+class ASTCacheKey(object):
+    def __init__(self, a):
+        self.ast = a
 
 #
 # AST variable naming
@@ -184,7 +186,7 @@ class Base(ana.Storable):
         self._errored = errored if errored is not None else set()
 
         self._simplified = simplified
-        self._cache_key = ASTCacheKey()
+        self._cache_key = ASTCacheKey(self)
         self._excavated = None
         self._burrowed = None
 
@@ -553,13 +555,13 @@ class Base(ana.Storable):
         :return: an AST with all instances of ast's in replacements
         """
         for old, new in replacements.items():
+            old = old.ast
             if not isinstance(old, Base) or not isinstance(new, Base):
                 raise ClaripyOperationError('replacements must be AST nodes')
             if type(old) is not type(new):
                 raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
             old._check_replaceability(new)
 
-        replacements = dict((hash(old), new) for (old, new) in replacements.items())
         return self._replace(replacements)
 
     def _check_replaceability(self, new):

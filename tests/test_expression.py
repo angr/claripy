@@ -125,6 +125,14 @@ def test_expression():
     nose.tools.assert_equal(str(old_formula).replace('old', 'new'), str(new_formula))
     nose.tools.assert_equal(bc.convert(ooo_formula), 20)
 
+    # test dict replacement
+    old = claripy.BVS('old', 32, explicit_name=True)
+    new = claripy.BVS('new', 32, explicit_name=True)
+    c = (old + 10) - (old + 20)
+    d = (old + 1) - (old + 2)
+    cr = c.replace_dict({(old+10).cache_key: (old+1), (old+20).cache_key: (old+2)})
+    nose.tools.assert_is(cr, d)
+
     # test AST collapse
     s = claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)
     b = claripy.BVV(20, 32)
