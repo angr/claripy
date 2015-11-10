@@ -24,12 +24,13 @@ def test_fucked_extract():
 
     # here's another case
     wtf = (
-        (claripy.Reverse(
-            claripy.Concat(
-                claripy.BVS('w', 8), claripy.BVS('x', 8), claripy.BVS('y', 8), claripy.BVS('z', 8)
-            )
-        ) & claripy.BVV(15, 32)) +
-        claripy.BVV(48, 32)
+        (
+            claripy.Reverse(
+                claripy.Concat(
+                    claripy.BVS('w', 8), claripy.BVS('x', 8), claripy.BVS('y', 8), claripy.BVS('z', 8)
+                )
+            ) & claripy.BVV(15, 32)
+        ) + claripy.BVV(48, 32)
     )[7:0]
 
     m = claripy.backend_vsa.max(wtf)
