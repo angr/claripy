@@ -6,6 +6,22 @@ from claripy.vsa import MaybeResult, BoolResult, DiscreteStridedIntervalSet, Str
 def vsa_model(a):
     return claripy.backend_vsa.convert(a)
 
+def test_fucked_extract():
+    not_fucked = claripy.Reverse(claripy.Concat(claripy.BVS('file_/dev/stdin_6_0_16_8', 8, explicit_name=True), claripy.BVS('file_/dev/stdin_6_1_17_8', 8, explicit_name=True)))
+    m = claripy.backend_vsa.max(not_fucked)
+    assert m > 0
+
+    zx = claripy.ZeroExt(16, not_fucked)
+    pre_fucked = claripy.Reverse(zx)
+    m = claripy.backend_vsa.max(pre_fucked)
+    assert m > 0
+
+    #print zx, claripy.backend_vsa.convert(zx)
+    #print pre_fucked, claripy.backend_vsa.convert(pre_fucked)
+    fucked = pre_fucked[31:16]
+    m = claripy.backend_vsa.max(fucked)
+    assert m > 0
+
 def test_simple_cardinality():
     x = claripy.BVS('x', 32, 0xa, 0x14, 0xa)
     nose.tools.assert_equal(x.cardinality, 2)
@@ -845,6 +861,7 @@ def test_solution():
     nose.tools.assert_false(s.solution(vs, 322))
 
 if __name__ == '__main__':
+    test_fucked_extract()
     test_simple_cardinality()
     test_wrapped_intervals()
     test_join()
