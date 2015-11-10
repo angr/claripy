@@ -111,6 +111,9 @@ class BackendZ3(Backend):
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
 
+        self._empty_solver = z3.Solver()
+        self._empty_solver.check()
+
     @property
     def _ast_cache(self):
         try:
@@ -516,6 +519,10 @@ class BackendZ3(Backend):
     @condom
     def _check_and_model(self, s, extra_constraints=()): #pylint:disable=no-self-use
         global solve_count
+
+        if len(s.assertions()) == 0 and len(extra_constraints) == 0:
+            return True, self._empty_solver.model()
+
         solve_count += 1
         if len(extra_constraints) > 0:
             s.push()
