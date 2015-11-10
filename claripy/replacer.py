@@ -14,6 +14,9 @@ class Replacer(object):
         self._replacement_cache[old.cache_key] = new
 
     def replacement(self, old):
+        if not isinstance(old, Base):
+            return old
+
         if old.cache_key in self._replacement_cache:
             return self._replacement_cache[old.cache_key]
         else:
@@ -30,3 +33,5 @@ class Replacer(object):
     def __setstate__(self, s):
         self._replacements = s
         self._replacement_cache = weakref.WeakKeyDictionary()
+
+from .ast.base import Base
