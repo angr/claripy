@@ -65,7 +65,7 @@ def downsize():
 #
 
 from .frontend import Frontend as _Frontend
-from .frontends import LightFrontend, FullFrontend, CompositeFrontend, HybridFrontend
+from .frontends import LightFrontend, FullFrontend, CompositeFrontend, HybridFrontend, ReplacementFrontend
 def Solver():
     return HybridFrontend(backend_z3)
 from .result import Result
