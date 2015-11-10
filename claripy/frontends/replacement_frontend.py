@@ -7,9 +7,10 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, replacements=None, replacement_cache=None, **kwargs):
+    def __init__(self, actual_frontend, replacements=None, replacement_cache=None, auto_replace=None, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
+        self._auto_replace = True if auto_replace is None else auto_replace
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
@@ -87,6 +88,13 @@ class ReplacementFrontend(ConstrainedFrontend):
         return self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact, cache=cache)
 
     def add(self, constraints, **kwargs):
+        for c in constraints:
+            if self._auto_replace and isinstance(c, Base) and c.op == '__eq__' and isinstance(c.args[0], Base) and isinstance(c.args[1], Base):
+                if c.args[0].symbolic and not c.args[1].symbolic and c.args[0].cache_key not in self._replacements and c.args[0].cache_key not in self._replacement_cache:
+                    self.add_replacement(c.args[0], c.args[1])
+                elif not c.args[0].symbolic and c.args[1].symbolic and c.args[1].cache_key not in self._replacements and c.args[1].cache_key not in self._replacement_cache:
+                    self.add_replacement(c.args[1], c.args[0])
+
         cr = self._replace_list(constraints)
         return self._actual_frontend.add(cr, **kwargs)
 

@@ -45,6 +45,11 @@ def test_replacement_solver():
     sr.add_replacement(x, claripy.BVV(0x101, 32))
     nose.tools.assert_items_equal(sr.eval(x, 10), [0x101])
 
+    y = claripy.BVS('y', 32)
+    sr.add([y+1 == 200])
+    assert (y+1).cache_key in sr._replacements
+    assert sr._replacement(y+1) is claripy.BVV(200, 32)
+
 def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
