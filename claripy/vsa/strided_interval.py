@@ -1849,6 +1849,18 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def concat(self, b):
+
+        # check if we are reversed. if we are, we'll have to
+        # un-reverse and pay the precision penalty
+        if self._reversed:
+            reversed_thing = self._reverse()
+            return reversed_thing.concat(b)
+
+        # and same for the other guy
+        if b._reversed:
+            reversed_thing = b._reverse()
+            return self.concat(reversed_thing)
+
         # Zero-extend
         a = self.nameless_copy()
         a._bits += b.bits
@@ -1946,6 +1958,12 @@ class StridedInterval(BackendObject):
         :param new_length: New length after zero-extension
         :return: A new StridedInterval
         """
+
+        # check if we are reversed. if we are, we'll have to
+        # un-reverse and pay the precision penalty
+        if self._reversed:
+            reversed_thing = self._reverse()
+            return reversed_thing.zero_extend(new_length)
 
         si = self.copy()
         si._bits = new_length
