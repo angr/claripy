@@ -36,7 +36,30 @@ def test_fucked_extract():
     m = claripy.backend_vsa.max(wtf)
     assert m > 0
 
+def test_reversed_concat():
+    a = claripy.SI('a', 32, lower_bound=10, upper_bound=0x80, stride=10)
+    b = claripy.SI('b', 32, lower_bound=1, upper_bound=0xff, stride=1)
 
+    reversed_a = claripy.Reverse(a)
+    reversed_b = claripy.Reverse(b)
+
+    # First let's check if the reversing makes sense
+    nose.tools.assert_equal(claripy.backend_vsa.min(reversed_a), 0xa000000)
+    nose.tools.assert_equal(claripy.backend_vsa.max(reversed_a), 0x80000000)
+    nose.tools.assert_equal(claripy.backend_vsa.min(reversed_b), 0x1000000)
+    nose.tools.assert_equal(claripy.backend_vsa.max(reversed_b), 0xff000000)
+
+    a_concat_b = claripy.Concat(a, b)
+    nose.tools.assert_equal(a_concat_b._model_vsa._reversed, False)
+
+    ra_concat_b = claripy.Concat(reversed_a, b)
+    nose.tools.assert_equal(ra_concat_b._model_vsa._reversed, True)
+
+    a_concat_rb = claripy.Concat(a, reversed_b)
+    nose.tools.assert_equal(a_concat_rb._model_vsa._reversed, False)
+
+    ra_concat_rb = claripy.Concat(reversed_a, reversed_b)
+    nose.tools.assert_equal(ra_concat_rb._model_vsa._reversed, False)
 
 def test_simple_cardinality():
     x = claripy.BVS('x', 32, 0xa, 0x14, 0xa)
@@ -877,6 +900,7 @@ def test_solution():
     nose.tools.assert_false(s.solution(vs, 322))
 
 if __name__ == '__main__':
+    test_reversed_concat()
     test_fucked_extract()
     test_simple_cardinality()
     test_wrapped_intervals()

@@ -8,6 +8,16 @@ logger = logging.getLogger('claripy.vsa.strided_interval')
 
 from ..backend_object import BackendObject
 
+def reversed_processor(f):
+    def processor(self, *args):
+        if self._reversed:
+            # Reverse it for real. We have to accept the precision penalty.
+            reversed = self._reverse()
+            return f(reversed, *args)
+        return f(self, *args)
+
+    return processor
+
 def normalize_types(f):
     @functools.wraps(f)
     def normalizer(self, o):
@@ -47,9 +57,11 @@ def normalize_types(f):
             # We are working on two instances that have different endianness!
             # Make sure the `reversed` property of self is kept the same after operation
             if self._reversed:
-                self_reversed = True
-                self = self._reverse()
-                self._reversed = False
+                if o.is_integer:
+                    o = o._reverse()
+                else:
+                    self_reversed = True
+                    self = self._reverse()
 
             else:
                 # If self is an integer, we wanna reverse self as well
@@ -592,6 +604,7 @@ class StridedInterval(BackendObject):
         else:
             return MaybeResult()
 
+    @normalize_types
     def eq(self, o):
         """
         Equal
@@ -634,11 +647,9 @@ class StridedInterval(BackendObject):
         '''
         return self._bits
 
-    @normalize_types
     def __eq__(self, o):
         return self.eq(o)
 
-    @normalize_types
     def __ne__(self, o):
         return ~(self.eq(o))
 
@@ -675,15 +686,12 @@ class StridedInterval(BackendObject):
         """
         return self.ULE(other)
 
-    @normalize_types
     def __add__(self, o):
         return self.add(o)
 
-    @normalize_types
     def __sub__(self, o):
         return self.sub(o)
 
-    @normalize_types
     def __mul__(self, o):
         return self.mul(o)
 
@@ -810,6 +818,7 @@ class StridedInterval(BackendObject):
         self._stride = value
 
     @property
+    @reversed_processor
     def max(self):
         if not self.is_empty:
             return self.upper_bound
@@ -818,6 +827,7 @@ class StridedInterval(BackendObject):
             return None
 
     @property
+    @reversed_processor
     def min(self):
         if not self.is_empty:
             return self.lower_bound
@@ -1473,6 +1483,7 @@ class StridedInterval(BackendObject):
     # Arithmetic operations
     #
 
+    @reversed_processor
     def neg(self):
         """
         Unary operation: neg
@@ -1482,6 +1493,7 @@ class StridedInterval(BackendObject):
 
         return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0).sub(self)
 
+    @normalize_types
     def add(self, b):
         """
         Binary operation: add
@@ -1511,6 +1523,7 @@ class StridedInterval(BackendObject):
         return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
                                uninitialized=uninitialized)
 
+    @normalize_types
     def sub(self, b):
         """
         Binary operation: sub
@@ -1536,7 +1549,7 @@ class StridedInterval(BackendObject):
 
         return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
                                uninitialized=uninitialized)
-
+    @normalize_types
     def mul(self, o):
         """
         Binary operation: multiplication
@@ -1616,6 +1629,7 @@ class StridedInterval(BackendObject):
 
         return ret.normalize()
 
+    @reversed_processor
     def bitwise_not(self):
         """
         Unary operation: bitwise not
@@ -1673,6 +1687,7 @@ class StridedInterval(BackendObject):
                     return tmp2 | b
             m = m >> 1
 
+    @normalize_types
     def bitwise_or(self, b):
         """
         Binary operation: logical or
@@ -1691,6 +1706,7 @@ class StridedInterval(BackendObject):
 
         return ret.normalize()
 
+    @normalize_types
     def bitwise_and(self, b):
         """
         Binary operation: logical and
@@ -1709,6 +1725,7 @@ class StridedInterval(BackendObject):
 
         return ret.normalize()
 
+    @normalize_types
     def bitwise_xor(self, b):
         '''
         Operation xor
@@ -1752,6 +1769,7 @@ class StridedInterval(BackendObject):
 
         return lower, upper
 
+    @reversed_processor
     def rshift(self, shift_amount):
         lower, upper = self._pre_shift(shift_amount)
 
@@ -1779,6 +1797,7 @@ class StridedInterval(BackendObject):
 
         return ret
 
+    @reversed_processor
     def lshift(self, shift_amount):
         lower, upper = self._pre_shift(shift_amount)
 
@@ -1806,6 +1825,7 @@ class StridedInterval(BackendObject):
 
         return ret
 
+    @reversed_processor
     def cast_low(self, tok):
         assert tok <= self.bits
 
@@ -1850,17 +1870,6 @@ class StridedInterval(BackendObject):
     @normalize_types
     def concat(self, b):
 
-        # check if we are reversed. if we are, we'll have to
-        # un-reverse and pay the precision penalty
-        if self._reversed:
-            reversed_thing = self._reverse()
-            return reversed_thing.concat(b)
-
-        # and same for the other guy
-        if b._reversed:
-            reversed_thing = b._reverse()
-            return self.concat(reversed_thing)
-
         # Zero-extend
         a = self.nameless_copy()
         a._bits += b.bits
@@ -1880,11 +1889,8 @@ class StridedInterval(BackendObject):
         else:
             return new_si.bitwise_or(new_b)
 
+    @reversed_processor
     def extract(self, high_bit, low_bit):
-
-        if self._reversed:
-            reversed_thing = self._reverse()
-            return reversed_thing.extract(high_bit, low_bit)
 
         assert low_bit >= 0
 
@@ -1899,6 +1905,7 @@ class StridedInterval(BackendObject):
 
         return ret.normalize()
 
+    @reversed_processor
     def sign_extend(self, new_length):
         """
         Unary operation: SignExtend
@@ -1951,6 +1958,7 @@ class StridedInterval(BackendObject):
 
         return si
 
+    @reversed_processor
     def zero_extend(self, new_length):
         """
         Unary operation: ZeroExtend
@@ -1958,12 +1966,6 @@ class StridedInterval(BackendObject):
         :param new_length: New length after zero-extension
         :return: A new StridedInterval
         """
-
-        # check if we are reversed. if we are, we'll have to
-        # un-reverse and pay the precision penalty
-        if self._reversed:
-            reversed_thing = self._reverse()
-            return reversed_thing.zero_extend(new_length)
 
         si = self.copy()
         si._bits = new_length
@@ -2340,6 +2342,12 @@ class StridedInterval(BackendObject):
         return ret
 
     def reverse(self):
+        """
+        This is a delayed reversing function. All it really does is to invert the _reversed property of this
+        StridedInterval object.
+
+        :return: None
+        """
         if self.bits == 8:
             # We cannot reverse a one-byte value
             return self.copy()
@@ -2351,7 +2359,8 @@ class StridedInterval(BackendObject):
 
     def _reverse(self):
         """
-        This function does the reversing for real.
+        This method reverses the StridedInterval object for real. Do expect loss of precision for most cases!
+
         :return: A new reversed StridedInterval instance
         """
 
