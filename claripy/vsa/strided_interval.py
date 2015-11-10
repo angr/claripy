@@ -48,7 +48,7 @@ def normalize_types(f):
             # Make sure the `reversed` property of self is kept the same after operation
             if self._reversed:
                 self_reversed = True
-                self = self.copy()
+                self = self._reverse()
                 self._reversed = False
 
             else:
