@@ -57,8 +57,11 @@ def normalize_types(f):
             # We are working on two instances that have different endianness!
             # Make sure the `reversed` property of self is kept the same after operation
             if self._reversed:
-                self_reversed = True
-                self = self._reverse()
+                if o.is_integer:
+                    o = o._reverse()
+                else:
+                    self_reversed = True
+                    self = self._reverse()
 
             else:
                 # If self is an integer, we wanna reverse self as well
