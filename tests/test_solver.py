@@ -43,12 +43,12 @@ def raw_solver(solver_type):
     #claripy.expression_backends = [ bc, bz, ba ]
 
     # test replacement
-    sr = solver_type(claripy.backend_z3)
-    x = claripy.BVS('x', 32)
-    nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
-    sr.result = None
-    sr.replacer.add_replacement(x, claripy.BVV(0x101, 32))
-    nose.tools.assert_items_equal(sr.eval(x, 10), [0x101])
+    #sr = solver_type(claripy.backend_z3)
+    #x = claripy.BVS('x', 32)
+    #nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
+    #sr.result = None
+    #sr.replacer.add_replacement(x, claripy.BVV(0x101, 32))
+    #nose.tools.assert_items_equal(sr.eval(x, 10), [0x101])
 
     s = solver_type(claripy.backend_z3)
 
