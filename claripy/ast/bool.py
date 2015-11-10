@@ -140,7 +140,7 @@ And = operations.op('And', Bool, Bool, bound=False)
 Or = operations.op('Or', Bool, Bool, bound=False)
 Not = operations.op('Not', (Bool,), Bool, bound=False)
 
-def is_true(e):
+def is_true(e, exact=None):
     for b in _eager_backends:
         try: return b.is_true(b.convert(e))
         except BackendError: pass
@@ -148,7 +148,7 @@ def is_true(e):
     l.debug("Unable to tell the truth-value of this expression")
     return False
 
-def is_false(e):
+def is_false(e, exact=None):
     for b in _eager_backends:
         try: return b.is_false(b.convert(e))
         except BackendError: pass
