@@ -243,78 +243,106 @@ class Backend(object):
     # Some other helpers
     #
 
-    def is_true(self, e, result=None): #pylint:disable=unused-argument
+    def is_true(self, e, result=None, solver=None): #pylint:disable=unused-argument
         '''
         Should return True if e can be easily found to be True.
 
         @param e: the AST
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
 
-        return self._is_true(self.convert(e))
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-    def is_false(self, e, result=None): #pylint:disable=unused-argument
+        return self._is_true(self.convert(e), result=result, solver=solver)
+
+    def is_false(self, e, result=None, solver=None): #pylint:disable=unused-argument
         '''
         Should return False if e can be easily found to be False.
 
         @param e: the AST
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
 
-        return self._is_false(self.convert(e))
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-    def _is_false(self, e): #pylint:disable=no-self-use,unused-argument
+        return self._is_false(self.convert(e), result=result, solver=solver)
+
+    def _is_false(self, e, result=None, solver=None): #pylint:disable=no-self-use,unused-argument
         '''
         The native version of is_false.
 
         @param e: the backend object
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
         raise BackendError("backend doesn't support _is_false")
 
-    def _is_true(self, e): #pylint:disable=no-self-use,unused-argument
+    def _is_true(self, e, result=None, solver=None): #pylint:disable=no-self-use,unused-argument
         '''
         The native version of is_true.
 
         @param e: the backend object
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
         raise BackendError("backend doesn't support _is_true")
 
-    def has_true(self, e, result=None): #pylint:disable=unused-argument
+    def has_true(self, e, result=None, solver=None): #pylint:disable=unused-argument
         '''
         Should return True if e can possible be True.
 
         @param e: the AST
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
 
-        return self._has_true(self.convert(e))
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-    def has_false(self, e, result=None): #pylint:disable=unused-argument
+        return self._has_true(self.convert(e), result=result, solver=solver)
+
+    def has_false(self, e, result=None, solver=None): #pylint:disable=unused-argument
         '''
         Should return False if e can possibly be False.
 
         @param e: the AST
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
 
-        return self._has_false(self.convert(e))
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-    def _has_false(self, e): #pylint:disable=no-self-use,unused-argument
+        return self._has_false(self.convert(e), result=result, solver=solver)
+
+    def _has_false(self, e, result=None, solver=None): #pylint:disable=no-self-use,unused-argument
         '''
         The native version of has_false.
 
         @param e: the backend object
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
         raise BackendError("backend doesn't support _has_false")
 
-    def _has_true(self, e): #pylint:disable=no-self-use,unused-argument
+    def _has_true(self, e, result=None, solver=None): #pylint:disable=no-self-use,unused-argument
         '''
         The native version of has_true.
 
         @param e: the backend object
+        @param result: the result of the previous solve (TODO)
+        @param solver: a solver, for backends that require it
         @returns a boolean
         '''
         raise BackendError("backend doesn't support _has_true")

@@ -113,13 +113,13 @@ class BackendConcrete(Backend):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self.convert(expr, result=result) == v
 
-    def _is_true(self, e):
+    def _is_true(self, e, result=None, solver=None):
         return e == True
-    def _is_false(self, e):
+    def _is_false(self, e, result=None, solver=None):
         return e == False
-    def _has_true(self, e):
+    def _has_true(self, e, result=None, solver=None):
         return e == True
-    def _has_false(self, e):
+    def _has_false(self, e, result=None, solver=None):
         return e == False
 
 from ..operations import backend_operations, backend_fp_operations
