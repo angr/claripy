@@ -248,7 +248,7 @@ class Backend(object):
         Should return True if e can be easily found to be True.
 
         @param e: the AST
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -263,7 +263,7 @@ class Backend(object):
         Should return False if e can be easily found to be False.
 
         @param e: the AST
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -278,7 +278,7 @@ class Backend(object):
         The native version of is_false.
 
         @param e: the backend object
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -289,7 +289,7 @@ class Backend(object):
         The native version of is_true.
 
         @param e: the backend object
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -300,7 +300,7 @@ class Backend(object):
         Should return True if e can possible be True.
 
         @param e: the AST
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -315,7 +315,7 @@ class Backend(object):
         Should return False if e can possibly be False.
 
         @param e: the AST
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -330,7 +330,7 @@ class Backend(object):
         The native version of has_false.
 
         @param e: the backend object
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
@@ -341,7 +341,7 @@ class Backend(object):
         The native version of has_true.
 
         @param e: the backend object
-        @param result: the result of the previous solve (TODO)
+        @param result: the result of the previous solve
         @param solver: a solver, for backends that require it
         @returns a boolean
         '''
