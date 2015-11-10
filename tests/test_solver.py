@@ -50,6 +50,11 @@ def test_replacement_solver():
     assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
+    srb = sr.branch()
+    assert len(srb.constraints) == len(sr.constraints)
+    assert (y+1).cache_key in sr._replacements
+    assert sr._replacement(y+1) is claripy.BVV(200, 32)
+
 def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
