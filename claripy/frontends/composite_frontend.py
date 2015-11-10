@@ -5,14 +5,12 @@ import itertools
 symbolic_count = itertools.count()
 
 from ..frontend import Frontend
-from .full_frontend import FullFrontend
 
 class CompositeFrontend(Frontend):
-    def __init__(self, solver_backend, timeout=None, solver_class=FullFrontend):
-        Frontend.__init__(self, solver_backend)
-        self.timeout = timeout
+    def __init__(self, template_frontend, **kwargs):
+        Frontend.__init__(self, **kwargs)
         self._solvers = { }
-        self._solver_class = solver_class
+        self._template_frontend = template_frontend
 
         self._solvers['CONCRETE'] = self._merged_solver_for({'CONCRETE'})
 
@@ -21,10 +19,10 @@ class CompositeFrontend(Frontend):
     #
 
     def _ana_getstate(self):
-        return self._solvers, self._solver_class, Frontend._ana_getstate(self)
+        return self._solvers, self._template_frontend, Frontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self._solvers, self._solver_class, base_state = s
+        self._solvers, self._template_frontend, base_state = s
         Frontend._ana_setstate(base_state)
 
     #
@@ -66,7 +64,7 @@ class CompositeFrontend(Frontend):
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
             l.debug("... creating new solver")
-            return self._solver_class(self._solver_backend, timeout=self.timeout)
+            return self._template_frontend._blank_copy()
         elif len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
@@ -198,7 +196,6 @@ class CompositeFrontend(Frontend):
 
     def branch(self):
         c = Frontend.branch(self)
-        c.timeout = self.timeout
 
         for s in self._solver_list:
             c_s = s.branch()
@@ -210,9 +207,27 @@ class CompositeFrontend(Frontend):
 
         return c
 
+    @property
+    def timeout(self):
+        return self._template_frontend.timeout
+
+    @timeout.setter
+    def timeout(self, t):
+        self._template_frontend.timeout = t
+        for s in self._solver_list:
+            s.timeout = t
+
+    # this is for backwards compatibility
+    @property
+    def _solver_backend(self):
+        return self._template_frontend._solver_backend
+
+    def _blank_copy(self):
+        return CompositeFrontend(self._template_frontend, cache=self._cache)
+
     def merge(self, others, merge_flag, merge_values):
         l.debug("Merging %s with %d other solvers.", self, len(others))
-        merged = CompositeFrontend(self._solver_backend)
+        merged = self._blank_copy()
         common_solvers = self._shared_solvers(others)
         common_ids = { s.uuid for s in common_solvers }
         l.debug("... %s common solvers", len(common_solvers))
@@ -228,8 +243,7 @@ class CompositeFrontend(Frontend):
         for ns in noncommon_solvers:
             l.debug("... %d", len(ns))
             if len(ns) == 0:
-                s = self._solver_class(self._solver_backend)
-                s.timeout = self.timeout
+                s = self._blank_copy()
                 s.add(True)
                 combined_noncommons.append(s)
             elif len(ns) == 1:
@@ -244,7 +258,7 @@ class CompositeFrontend(Frontend):
         return True, merged
 
     def combine(self, others):
-        combined = self.__class__(self._solver_backend)
+        combined = self._blank_copy()
         combined._simplified = False
         combined.add(self.constraints)
         for o in others:

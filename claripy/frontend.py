@@ -9,8 +9,7 @@ import sys
 #pylint:disable=unidiomatic-typecheck
 
 class Frontend(ana.Storable):
-    def __init__(self, solver_backend, cache=None):
-        self._solver_backend = solver_backend
+    def __init__(self, cache=None):
         self.result = None
         self._simplified = False
         self._cache = cache is True
@@ -25,12 +24,20 @@ class Frontend(ana.Storable):
 
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
-        return self._solver_backend.__class__.__name__, self.result
+        return self.result
 
     def _ana_setstate(self, s):
-        solver_backend_name, self.result = s
-        self._solver_backend = _backends[solver_backend_name]
+        self.result = s
         self._simplified = True
+
+    def branch(self):
+        s = self._blank_copy()
+        s.result = self.result
+        s._simplified = self._simplified
+        return s
+
+    def _blank_copy(self):
+        return Frontend(cache=self._cache)
 
     #
     # Constraint management
@@ -99,12 +106,6 @@ class Frontend(ana.Storable):
                 fc.append(c)
 
         return tuple(fc)
-
-    def branch(self):
-        s = self.__class__(self._solver_backend)
-        s.result = self.result
-        s._simplified = self._simplified
-        return s
 
     #
     # Stuff that should be implemented by subclasses
@@ -443,7 +444,7 @@ class Frontend(ana.Storable):
 from .frontends import LightFrontend
 from .result import UnsatResult, SatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError, ClaripyValueError
-from . import _eager_backends, _backends
+from . import _eager_backends
 from .ast.base import Base
 from .ast.bool import false, Bool, Or
 from .ast.bv import UGE, ULE, BVV

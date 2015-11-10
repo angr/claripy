@@ -2,12 +2,13 @@ import claripy
 import nose
 
 def test_simple_merging():
-    raw_simple_merging(claripy.FullFrontend)
-    raw_simple_merging(claripy.CompositeFrontend)
+    yield raw_simple_merging, lambda: claripy.FullFrontend(claripy.backend_z3)
+    yield raw_simple_merging, lambda: claripy.HybridFrontend(claripy.backend_z3)
+    yield raw_simple_merging, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backend_z3))
 
 def raw_simple_merging(solver_type):
-    s1 = solver_type(claripy.backend_z3)
-    s2 = solver_type(claripy.backend_z3)
+    s1 = solver_type()
+    s2 = solver_type()
     w = claripy.BVS("w", 8)
     x = claripy.BVS("x", 8)
     y = claripy.BVS("y", 8)
@@ -66,7 +67,7 @@ def raw_simple_merging(solver_type):
     nose.tools.assert_equal(smm_2.eval(z, 1), (20,))
     nose.tools.assert_equal(smm_2.eval(w, 1), (5,))
 
-    so = solver_type(claripy.backend_z3)
+    so = solver_type()
     so.add(w == 0)
 
     sa = so.branch()

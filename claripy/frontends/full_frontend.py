@@ -9,8 +9,8 @@ import threading
 from .light_frontend import LightFrontend
 
 class FullFrontend(LightFrontend):
-    def __init__(self, solver_backend, timeout=None):
-        LightFrontend.__init__(self, solver_backend)
+    def __init__(self, solver_backend, timeout=None, **kwargs):
+        LightFrontend.__init__(self, solver_backend, **kwargs)
         self.timeout = timeout if timeout is not None else 300000
         self._tls = threading.local()
         self._to_add = [ ]
@@ -27,6 +27,9 @@ class FullFrontend(LightFrontend):
         self._tls = None
         self._to_add = [ ]
         LightFrontend._ana_setstate(self, lightweight_state)
+
+    def _blank_copy(self):
+        return FullFrontend(self._solver_backend, cache=self._cache, timeout=self.timeout)
 
     #
     # Frontend Creation
