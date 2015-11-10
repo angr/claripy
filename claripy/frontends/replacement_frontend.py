@@ -14,10 +14,22 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
-    def add_replacement(self, old, new, invalidate_cache=False):
+    def add_replacement(self, old, new, invalidate_cache=False, replace=False):
+        if not isinstance(old, Base):
+            return
+
+        if not replace and old in self._replacements:
+            return
+
+        if not isinstance(new, Base):
+            if not isinstance(new, (int, long)):
+                return
+            new = BVV(new, old.length)
+
         if invalidate_cache:
             self._replacements = dict(self._replacements)
             self._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
+            self._actual_frontend = self._actual_frontend.branch()
 
         self._replacements[old.cache_key] = new
         self._replacement_cache[old.cache_key] = new
@@ -33,6 +45,16 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replacement_cache[old.cache_key] = new
             return new
 
+    def _add_solve_result(self, e, er, r):
+        if not self._auto_replace:
+            return
+        if not isinstance(e, Base) or not e.symbolic:
+            return
+        if er.symbolic:
+            return
+        self.add_replacement(e, r)
+
+
     #
     # Storable support
     #
@@ -41,7 +63,12 @@ class ReplacementFrontend(ConstrainedFrontend):
         return ReplacementFrontend(self._actual_frontend._blank_copy())
 
     def branch(self):
-        return ReplacementFrontend(self._actual_frontend.branch(), replacements=self._replacements, replacement_cache=self._replacement_cache)
+        s = ConstrainedFrontend.branch(self)
+        s._action_frontend = self._actual_frontend.branch()
+        s._auto_replace = self._auto_replace
+        s._replacements = self._replacements
+        s._replacement_cache = self._replacement_cache
+        return s
 
     def downsize(self):
         self._actual_frontend.downsize()
@@ -69,37 +96,50 @@ class ReplacementFrontend(ConstrainedFrontend):
     def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
+        self._add_solve_result(e, er, r[0])
+        return r
 
     def max(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.max(er, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact, cache=cache)
+        self._add_solve_result(e, er, r)
+        return r
 
     def min(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.min(er, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact, cache=cache)
+        self._add_solve_result(e, er, r)
+        return r
 
     def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         vr = self._replacement(v)
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact, cache=cache)
+        if r and (not isinstance(vr, Base) or not vr.symbolic):
+            self._add_solve_result(e, er, vr)
+        return r
 
     def add(self, constraints, **kwargs):
         for c in constraints:
             if self._auto_replace and isinstance(c, Base) and c.op == '__eq__' and isinstance(c.args[0], Base) and isinstance(c.args[1], Base):
                 if c.args[0].symbolic and not c.args[1].symbolic and c.args[0].cache_key not in self._replacements and c.args[0].cache_key not in self._replacement_cache:
-                    self.add_replacement(c.args[0], c.args[1])
+                    self.add_replacement(c.args[0], c.args[1], invalidate_cache=True)
                 elif not c.args[0].symbolic and c.args[1].symbolic and c.args[1].cache_key not in self._replacements and c.args[1].cache_key not in self._replacement_cache:
-                    self.add_replacement(c.args[1], c.args[0])
+                    self.add_replacement(c.args[1], c.args[0], invalidate_cache=True)
+
+        ConstrainedFrontend.add(self, constraints, **kwargs)
 
         cr = self._replace_list(constraints)
+        if any(c.symbolic for c in cr):
+            import ipdb; ipdb.set_trace()
         return self._actual_frontend.add(cr, **kwargs)
 
-    def _add_constraints(self, *args, **kwargs): #pylint:disable=unused-argument
-        raise Exception("this should not be called")
+    #def _add_constraints(self, *args, **kwargs): #pylint:disable=unused-argument
+    #   raise Exception("this should not be called")
     def _solve(self, *args, **kwargs): #pylint:disable=unused-argument
         raise Exception("this should not be called")
     def _eval(self, *args, **kwargs): #pylint:disable=unused-argument
@@ -112,3 +152,4 @@ class ReplacementFrontend(ConstrainedFrontend):
         raise Exception("this should not be called")
 
 from ..ast.base import Base
+from ..ast.bv import BVV
