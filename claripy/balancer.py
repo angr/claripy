@@ -122,7 +122,7 @@ class Balancer(object):
         extended_bits, arg = args
 
         if cond_arg.size() <= arg.size() or \
-                _all_operations.is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
+                is_true(cond_arg[ expr.size() - 1 : expr.size() - extended_bits ] == 0):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
@@ -156,7 +156,7 @@ class Balancer(object):
         extended_bits, arg = args
 
         if cond_arg.size() <= arg.size() or \
-                _all_operations.is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
+                is_true(cond_arg[expr.size() - 1: expr.size() - extended_bits] == 0):
             # We can safely eliminate this layer of SignExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size()).resolved()
@@ -206,7 +206,7 @@ class Balancer(object):
                     cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)
 
             if cond_arg.size() - 1 < high + 1 or \
-                    _all_operations.is_true(cond_arg[cond_arg.size() - 1 : high + 1] == 0):
+                    is_true(cond_arg[cond_arg.size() - 1 : high + 1] == 0):
                 # The upper part doesn't matter
                 # We can handle it
                 return self._simplify(ast.op, ast.args, ast, (cond_op, cond_arg))
@@ -233,7 +233,7 @@ class Balancer(object):
             cond = condition[1]
             if len(args) == 2:
                 if cond.size() - 1 >= cond.size() - args[0].size():
-                    if _all_operations.is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
+                    if is_true(args[0] == cond[ cond.size() - 1 : cond.size() - args[0].size() ]):
                         # Yes! We can remove it!
                         # TODO: This is hackish...
                         new_cond = (condition[0], cond[ cond.size() - args[0].size() - 1 : 0])
@@ -330,10 +330,10 @@ class Balancer(object):
     def _simplify___xor__(self, args, expr, condition):
         argl, argr = args
 
-        if _all_operations.is_true(argl == 0):
+        if is_true(argl == 0):
             # :-)
             return self._simplify(argr.op, argr.args, argr, condition)
-        elif _all_operations.is_true(argr == 0):
+        elif is_true(argr == 0):
             # :-)
             return self._simplify(argl.op, argl.args, argl, condition)
         else:
@@ -343,10 +343,10 @@ class Balancer(object):
     def _simplify___add__(self, args, expr, condition):
 
         argl, argr = args
-        if _all_operations.is_true(argr == 0):
+        if is_true(argr == 0):
             # This layer of __add__ can be removed
             return self._simplify(argl.op, argl.args, argl, condition)
-        elif _all_operations.is_true(argl == 0):
+        elif is_true(argl == 0):
             # This layer of __add__ can be removed
             return self._simplify(argr.op, argr.args, argr, condition)
         else:
@@ -375,9 +375,9 @@ class Balancer(object):
         """
 
         argl, argr = args
-        if _all_operations.is_true(argr == 0):
+        if is_true(argr == 0):
             return self._simplify(argl.op, argl.args, argl, condition)
-        elif _all_operations.is_true(argl == 0):
+        elif is_true(argl == 0):
             return self._simplify(argr.op, argr.args, argr, condition)
         else:
             return expr, condition
@@ -388,7 +388,7 @@ class Balancer(object):
     def _simplify___rshift__(self, args, expr, condition):
 
         arg, offset = args
-        if _all_operations.is_true(offset == 0):
+        if is_true(offset == 0):
             return self._simplify(arg.op, arg.args, arg, condition)
         else:
             return expr, condition
@@ -396,7 +396,7 @@ class Balancer(object):
     def _simplify___lshift__(self, args, expr, condition):
 
         arg, offset = args
-        if _all_operations.is_true(offset == 0):
+        if is_true(offset == 0):
             return self._simplify(arg.op, arg.args, arg, condition)
         else:
             return expr, condition
@@ -465,33 +465,33 @@ class Balancer(object):
             if is_unsigned:
                 if is_lt:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr.ULE(rhs_bo))
-                        take_false = _all_operations.is_true(falseexpr.ULE(rhs_bo))
+                        take_true = is_true(trueexpr.ULE(rhs_bo))
+                        take_false = is_true(falseexpr.ULE(rhs_bo))
                     else:
-                        take_true = _all_operations.is_true(falseexpr.ULT(rhs_bo))
-                        take_false = _all_operations.is_true(trueexpr.ULT(rhs_bo))
+                        take_true = is_true(falseexpr.ULT(rhs_bo))
+                        take_false = is_true(trueexpr.ULT(rhs_bo))
                 else:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr.UGE(rhs_bo))
-                        take_false = _all_operations.is_true(falseexpr.UGE(rhs_bo))
+                        take_true = is_true(trueexpr.UGE(rhs_bo))
+                        take_false = is_true(falseexpr.UGE(rhs_bo))
                     else:
-                        take_true = _all_operations.is_true(trueexpr.UGT(rhs_bo))
-                        take_false = _all_operations.is_true(falseexpr.UGT(rhs_bo))
+                        take_true = is_true(trueexpr.UGT(rhs_bo))
+                        take_false = is_true(falseexpr.UGT(rhs_bo))
             else:
                 if is_lt:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr <= rhs_bo)
-                        take_false = _all_operations.is_true(falseexpr <= rhs_bo)
+                        take_true = is_true(trueexpr <= rhs_bo)
+                        take_false = is_true(falseexpr <= rhs_bo)
                     else:
-                        take_true = _all_operations.is_true(trueexpr < rhs_bo)
-                        take_false = _all_operations.is_true(falseexpr < rhs_bo)
+                        take_true = is_true(trueexpr < rhs_bo)
+                        take_false = is_true(falseexpr < rhs_bo)
                 else:
                     if is_equal:
-                        take_true = _all_operations.is_true(trueexpr >= rhs_bo)
-                        take_false = _all_operations.is_true(falseexpr >= rhs_bo)
+                        take_true = is_true(trueexpr >= rhs_bo)
+                        take_false = is_true(falseexpr >= rhs_bo)
                     else:
-                        take_true = _all_operations.is_true(trueexpr > rhs_bo)
-                        take_false = _all_operations.is_true(falseexpr > rhs_bo)
+                        take_true = is_true(trueexpr > rhs_bo)
+                        take_false = is_true(falseexpr > rhs_bo)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -613,7 +613,7 @@ class Balancer(object):
         else:
             if len(args) > 0:
                 args = [ self._handle(a.op, a.args) for a in args ]
-                if any([not _all_operations.is_false(a) for a in args]):
+                if any([not is_false(a) for a in args]):
                     return True, [ ]
 
                 else:
@@ -654,12 +654,12 @@ class Balancer(object):
 
             if is_eq:
                 # __eq__
-                take_true = _all_operations.is_true(rhs == trueexpr)
-                take_false = _all_operations.is_true(rhs == falseexpr)
+                take_true = is_true(rhs == trueexpr)
+                take_false = is_true(rhs == falseexpr)
             else:
                 # __ne__
-                take_true = _all_operations.is_true(rhs == falseexpr)
-                take_false = _all_operations.is_true(rhs == trueexpr)
+                take_true = is_true(rhs == falseexpr)
+                take_false = is_true(rhs == trueexpr)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -715,8 +715,11 @@ class Balancer(object):
             # TODO: handle this
             return True, [ ]
 
+def is_true(a): return _backends['BackendVSA'].is_true(a)
+def is_false(a): return _backends['BackendVSA'].is_false(a)
+
 from .errors import ClaripyBalancerError, ClaripyBackendVSAError, BackendError
 from .ast.base import Base
-from . import _all_operations
+from . import _all_operations, _backends
 from . import vsa
 from . import bv
