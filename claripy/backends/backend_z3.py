@@ -775,10 +775,10 @@ class BackendZ3(Backend):
             self._simplification_cache_key[expr._cache_key] = o
         return o
 
-    def _is_false(self, e, result=None, solver=None):
+    def _is_false(self, e, extra_constraints=(), result=None, solver=None):
         return z3.simplify(e).eq(z3.BoolVal(False))
 
-    def _is_true(self, e, result=None, solver=None):
+    def _is_true(self, e, extra_constraints=(), result=None, solver=None):
         return z3.simplify(e).eq(z3.BoolVal(True))
 
     def _solution(self, expr, v, result=None, extra_constraints=(), solver=None):

@@ -151,16 +151,16 @@ class BackendVSA(Backend):
 
         raise NotImplementedError(type(obj).__name__)
 
-    def _has_true(self, o, result=None, solver=None):
+    def _has_true(self, o, extra_constraints=(), result=None, solver=None):
         return BoolResult.has_true(o)
 
-    def _has_false(self, o, result=None, solver=None):
+    def _has_false(self, o, extra_constraints=(), result=None, solver=None):
         return BoolResult.has_false(o)
 
-    def _is_true(self, o, result=None, solver=None):
+    def _is_true(self, o, extra_constraints=(), result=None, solver=None):
         return BoolResult.is_true(o)
 
-    def _is_false(self, o, result=None, solver=None):
+    def _is_false(self, o, extra_constraints=(), result=None, solver=None):
         return BoolResult.is_false(o)
 
     #
