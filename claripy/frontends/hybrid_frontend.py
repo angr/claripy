@@ -74,5 +74,23 @@ class HybridFrontend(FullFrontend):
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._solution(e, v, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
+    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        # if approximating, try the approximation backend
+        if exact is False:
+            try: return self._approximation_backend.is_true(e, extra_constraints=extra_constraints)
+            except BackendError: pass
+
+        # if that fails, try the exact backend
+        return super(HybridFrontend, self)._is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
+    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        # if approximating, try the approximation backend
+        if exact is False:
+            try: return self._approximation_backend.is_false(e, extra_constraints=extra_constraints)
+            except BackendError: pass
+
+        # if that fails, try the exact backend
+        return super(HybridFrontend, self)._is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
 from ..errors import BackendError
 from .. import _backends

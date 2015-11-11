@@ -154,6 +154,24 @@ class FullFrontend(LightFrontend):
 
         return b
 
+    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        try:
+            b = self._solver_backend.is_true(e, extra_constraints=extra_constraints, solver=self._get_solver())
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during _is_true: %s('%s')" % (str(e_type), str(value)), traceback
+
+        return b
+
+    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        try:
+            b = self._solver_backend.is_false(e, extra_constraints=extra_constraints, solver=self._get_solver())
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during _is_false: %s('%s')" % (str(e_type), str(value)), traceback
+
+        return b
+
     #
     # Serialization and such.
     #
