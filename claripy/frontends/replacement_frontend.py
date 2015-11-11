@@ -124,6 +124,16 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._add_solve_result(e, er, vr)
         return r
 
+    def is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        er = self._replacement(e)
+        ecr = self._replace_list(extra_constraints)
+        return self._actual_frontend.is_true(er, extra_constraints=ecr, exact=exact, cache=cache)
+
+    def is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        er = self._replacement(e)
+        ecr = self._replace_list(extra_constraints)
+        return self._actual_frontend.is_false(er, extra_constraints=ecr, exact=exact, cache=cache)
+
     def add(self, constraints, **kwargs):
         for c in constraints:
             if self._auto_replace and isinstance(c, Base) and c.op == '__eq__' and isinstance(c.args[0], Base) and isinstance(c.args[1], Base):
@@ -150,6 +160,10 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _min(self, *args, **kwargs): #pylint:disable=unused-argument
         raise Exception("this should not be called")
     def _solution(self, *args, **kwargs): #pylint:disable=unused-argument
+        raise Exception("this should not be called")
+    def _is_true(self, *args, **kwargs): #pylint:disable=unused-argument
+        raise Exception("this should not be called")
+    def _is_false(self, *args, **kwargs): #pylint:disable=unused-argument
         raise Exception("this should not be called")
 
 from ..ast.base import Base
