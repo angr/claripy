@@ -255,8 +255,8 @@ class Backend(object):
         @returns a boolean
         '''
 
-        if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        #if self._solver_required and solver is None:
+        #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
         return self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
 
@@ -272,8 +272,8 @@ class Backend(object):
         @returns a boolean
         '''
 
-        if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        #if self._solver_required and solver is None:
+        #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
         return self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
 
@@ -315,8 +315,8 @@ class Backend(object):
         @returns a boolean
         '''
 
-        if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        #if self._solver_required and solver is None:
+        #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
         return self._has_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
 
@@ -332,8 +332,8 @@ class Backend(object):
         @returns a boolean
         '''
 
-        if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        #if self._solver_required and solver is None:
+        #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
         return self._has_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
 
