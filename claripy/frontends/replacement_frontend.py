@@ -7,9 +7,10 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, replacements=None, replacement_cache=None, auto_replace=None, **kwargs):
+    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, auto_replace=None, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
+        self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
         self._auto_replace = True if auto_replace is None else auto_replace
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
@@ -134,8 +135,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         ConstrainedFrontend.add(self, constraints, **kwargs)
 
         cr = self._replace_list(constraints)
-        if any(c.symbolic for c in cr):
-            import ipdb; ipdb.set_trace()
+        if not self._allow_symbolic and any(c.symbolic for c in cr):
+            raise ClaripyFrontendError("symbolic constraints made it into ReplacementFrontend with allow_symbolic=False")
         return self._actual_frontend.add(cr, **kwargs)
 
     #def _add_constraints(self, *args, **kwargs): #pylint:disable=unused-argument
@@ -153,3 +154,4 @@ class ReplacementFrontend(ConstrainedFrontend):
 
 from ..ast.base import Base
 from ..ast.bv import BVV
+from ..errors import ClaripyFrontendError
