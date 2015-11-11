@@ -54,6 +54,20 @@ class LightFrontend(ConstrainedFrontend):
 
         raise ClaripyFrontendError("Light solver can't handle this solution().")
 
+    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        if len(extra_constraints) == 0:
+            try: return self._solver_backend.is_true(e, result=self.result)
+            except BackendError: pass
+
+        raise ClaripyFrontendError("Light solver can't handle this solution().")
+
+    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        if len(extra_constraints) == 0:
+            try: return self._solver_backend.is_false(e, result=self.result)
+            except BackendError: pass
+
+        raise ClaripyFrontendError("Light solver can't handle this solution().")
+
     #
     # Merging and splitting
     #

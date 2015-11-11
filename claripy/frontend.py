@@ -132,6 +132,12 @@ class Frontend(ana.Storable):
     def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         raise NotImplementedError("_solution() is not implemented")
 
+    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        raise NotImplementedError("_is_true() is not implemented")
+
+    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        raise NotImplementedError("_is_false() is not implemented")
+
     def finalize(self):
         raise NotImplementedError("finalize() is not implemented")
 
@@ -419,7 +425,14 @@ class Frontend(ana.Storable):
         if not isinstance(e, Bool):
             raise ClaripyValueError("got a non-Boolean expression in Frontend.is_true()")
 
-        return not self.solution(e, False, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        eager_solution = self._eager_resolution('is_true', None, e)
+        if eager_solution is True:
+            return eager_solution
+
+        b = self._is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        if b is True and len(extra_constraints) == 0 and e.symbolic:
+            self.add([e == True], invalidate_cache=False)
+        return b
 
     def is_false(self, e, extra_constraints=(), exact=None, cache=None):
         if self._concrete_type_check(e):
@@ -428,7 +441,14 @@ class Frontend(ana.Storable):
         if not isinstance(e, Bool):
             raise ClaripyValueError("got a non-Boolean expression in Frontend.is_false()")
 
-        return not self.solution(e, True, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        eager_solution = self._eager_resolution('is_false', None, e)
+        if eager_solution is True:
+            return eager_solution
+
+        b = self._is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        if b is True and len(extra_constraints) == 0 and e.symbolic:
+            self.add([e == False], invalidate_cache=False)
+        return b
 
     #
     # Serialization and such.

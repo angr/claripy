@@ -166,6 +166,12 @@ class CompositeFrontend(Frontend):
     def _solution(self, e, n, extra_constraints=(), exact=None, cache=None):
         return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
+    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
+    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
     def _simplify(self):
         l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))
         for s in self._solver_list:
