@@ -61,12 +61,14 @@ class ReplacementFrontend(ConstrainedFrontend):
     #
 
     def _blank_copy(self):
-        return ReplacementFrontend(self._actual_frontend._blank_copy())
+        s = ReplacementFrontend(self._actual_frontend._blank_copy())
+        s._auto_replace = self._auto_replace
+        s._allow_symbolic = self._allow_symbolic
+        return s
 
     def branch(self):
         s = ConstrainedFrontend.branch(self)
         s._action_frontend = self._actual_frontend.branch()
-        s._auto_replace = self._auto_replace
         s._replacements = self._replacements
         s._replacement_cache = self._replacement_cache
         return s
