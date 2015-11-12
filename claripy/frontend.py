@@ -166,13 +166,15 @@ class Frontend(ana.Storable):
         if exact is False or cache is False or not self._cache or self.result is None:
             return
 
-        self.result.max_cache[e] = m
+        self._cache_eval(e, {m}, exact=exact, cache=cache)
+        self.result.max_cache[e.uuid] = min(self.result.max_cache.get(e, (2**e.length)-1), m)
 
     def _cache_min(self, e, m, exact=None, cache=None):
         if exact is False or cache is False or not self._cache or self.result is None:
             return
 
-        self.result.min_cache[e] = m
+        self._cache_eval(e, {m}, exact=exact, cache=cache)
+        self.result.min_cache[e.uuid] = max(self.result.min_cache.get(e, 0), m)
 
     #
     # Solving

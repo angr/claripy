@@ -105,7 +105,7 @@ class FullFrontend(ConstrainedFrontend):
         c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
         try:
             vals = self._solver_backend.max_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
-            self._cache_eval(e, vals)
+            self._cache_eval(e, vals, exact=exact, cache=cache)
             return max(vals)
         except BackendError:
             pass
@@ -131,7 +131,7 @@ class FullFrontend(ConstrainedFrontend):
         c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
         try:
             vals = self._solver_backend.min_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
-            self._cache_eval(e, vals)
+            self._cache_eval(e, vals, exact=exact, cache=cache)
             return min(vals)
         except BackendError:
             pass
