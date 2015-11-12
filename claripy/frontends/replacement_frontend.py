@@ -18,7 +18,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
-    def add_replacement(self, old, new, invalidate_cache=False, replace=False):
+    def add_replacement(self, old, new, invalidate_cache=True, replace=True):
         if not isinstance(old, Base):
             return
 
@@ -56,7 +56,7 @@ class ReplacementFrontend(ConstrainedFrontend):
             return
         if er.symbolic:
             return
-        self.add_replacement(e, r)
+        self.add_replacement(e, r, invalidate_cache=False)
 
 
     #
