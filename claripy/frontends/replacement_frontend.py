@@ -33,7 +33,6 @@ class ReplacementFrontend(ConstrainedFrontend):
         if invalidate_cache:
             self._replacements = dict(self._replacements)
             self._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
-            self._actual_frontend = self._actual_frontend.branch()
 
         self._replacements[old.cache_key] = new
         self._replacement_cache[old.cache_key] = new
