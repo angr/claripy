@@ -45,7 +45,8 @@ class ReplacementFrontend(ConstrainedFrontend):
             return self._replacement_cache[old.cache_key]
         else:
             new = old.replace_dict(self._replacement_cache)
-            self._replacement_cache[old.cache_key] = new
+            if new is not old:
+                self._replacement_cache[old.cache_key] = new
             return new
 
     def _add_solve_result(self, e, er, r):
