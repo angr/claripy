@@ -7,15 +7,18 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, auto_replace=None, **kwargs):
+    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, auto_replace=None, replace_constraints=None, **kwargs):
+        kwargs['cache'] = kwargs.get('cache', False)
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
         self._auto_replace = True if auto_replace is None else auto_replace
+        self._replace_constraints = False if replace_constraints is None else replace_constraints
+        self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
-    def add_replacement(self, old, new, invalidate_cache=False, replace=False):
+    def add_replacement(self, old, new, invalidate_cache=True, replace=True):
         if not isinstance(old, Base):
             return
 
@@ -30,7 +33,6 @@ class ReplacementFrontend(ConstrainedFrontend):
         if invalidate_cache:
             self._replacements = dict(self._replacements)
             self._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
-            self._actual_frontend = self._actual_frontend.branch()
 
         self._replacements[old.cache_key] = new
         self._replacement_cache[old.cache_key] = new
@@ -43,7 +45,8 @@ class ReplacementFrontend(ConstrainedFrontend):
             return self._replacement_cache[old.cache_key]
         else:
             new = old.replace_dict(self._replacement_cache)
-            self._replacement_cache[old.cache_key] = new
+            if new is not old:
+                self._replacement_cache[old.cache_key] = new
             return new
 
     def _add_solve_result(self, e, er, r):
@@ -53,7 +56,7 @@ class ReplacementFrontend(ConstrainedFrontend):
             return
         if er.symbolic:
             return
-        self.add_replacement(e, r)
+        self.add_replacement(e, r, invalidate_cache=False)
 
 
     #
@@ -63,6 +66,8 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _blank_copy(self):
         s = ReplacementFrontend(self._actual_frontend._blank_copy())
         s._auto_replace = self._auto_replace
+        s._replace_constraints = self._replace_constraints
+        s._unsafe_replacement = self._unsafe_replacement
         s._allow_symbolic = self._allow_symbolic
         return s
 
@@ -82,7 +87,7 @@ class ReplacementFrontend(ConstrainedFrontend):
 
     def _ana_setstate(self, s):
         self._replacements, self._actual_frontend, base_state = s
-        ConstrainedFrontend._ana_setstate(base_state)
+        ConstrainedFrontend._ana_setstate(self, base_state)
         self._replacement_cache = weakref.WeakKeyDictionary()
 
     #
@@ -100,21 +105,21 @@ class ReplacementFrontend(ConstrainedFrontend):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
-        self._add_solve_result(e, er, r[0])
+        if self._unsafe_replacement: self._add_solve_result(e, er, r[0])
         return r
 
     def max(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact, cache=cache)
-        self._add_solve_result(e, er, r)
+        if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
     def min(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact, cache=cache)
-        self._add_solve_result(e, er, r)
+        if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
     def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
@@ -122,7 +127,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         vr = self._replacement(v)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact, cache=cache)
-        if r and (not isinstance(vr, Base) or not vr.symbolic):
+        if self._unsafe_replacement and r and (not isinstance(vr, Base) or not vr.symbolic):
             self._add_solve_result(e, er, vr)
         return r
 
@@ -136,15 +141,28 @@ class ReplacementFrontend(ConstrainedFrontend):
         ecr = self._replace_list(extra_constraints)
         return self._actual_frontend.is_false(er, extra_constraints=ecr, exact=exact, cache=cache)
 
-    def add(self, constraints, **kwargs):
+    def satisfiable(self, extra_constraints=(), exact=None, cache=None):
+        ecr = self._replace_list(extra_constraints)
+        return self._actual_frontend.satisfiable(extra_constraints=ecr, exact=exact, cache=cache)
+
+    def _filter_single_constraint(self, e):
+        if self._replace_constraints:
+            er = self._replacement(e)
+            return super(ReplacementFrontend, self)._filter_single_constraint(er)
+        else:
+            return super(ReplacementFrontend, self)._filter_single_constraint(e)
+
+    def _add_constraints(self, constraints, **kwargs):
         for c in constraints:
             if self._auto_replace and isinstance(c, Base) and c.op == '__eq__' and isinstance(c.args[0], Base) and isinstance(c.args[1], Base):
-                if c.args[0].symbolic and not c.args[1].symbolic and c.args[0].cache_key not in self._replacements and c.args[0].cache_key not in self._replacement_cache:
-                    self.add_replacement(c.args[0], c.args[1], invalidate_cache=True)
-                elif not c.args[0].symbolic and c.args[1].symbolic and c.args[1].cache_key not in self._replacements and c.args[1].cache_key not in self._replacement_cache:
-                    self.add_replacement(c.args[1], c.args[0], invalidate_cache=True)
+                #print c; import ipdb; ipdb.set_trace()
+                if c.args[0].symbolic ^ c.args[1].symbolic:
+                    if c.args[0].cache_key not in self._replacements and c.args[0].cache_key not in self._replacement_cache:
+                        self.add_replacement(c.args[0], c.args[1], invalidate_cache=True)
+                    elif c.args[1].cache_key not in self._replacements and c.args[1].cache_key not in self._replacement_cache:
+                        self.add_replacement(c.args[1], c.args[0], invalidate_cache=True)
 
-        ConstrainedFrontend.add(self, constraints, **kwargs)
+        ConstrainedFrontend._add_constraints(self, constraints, **kwargs)
 
         cr = self._replace_list(constraints)
         if not self._allow_symbolic and any(c.symbolic for c in cr):

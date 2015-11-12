@@ -249,7 +249,7 @@ class Frontend(ana.Storable):
 
         l.debug("... conferring with the solver")
         r = self._solve(extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if len(extra_constraints) == 0 or (self.result is None and r.sat):
+        if exact is not False and cache is not False and (len(extra_constraints) == 0 or (self.result is None and r.sat)):
             l.debug("... caching result (sat: %s)", r.sat)
             self.result = r
         return r
@@ -276,12 +276,12 @@ class Frontend(ana.Storable):
         else:
             return False
 
-    def eval_to_ast(self, e, n, extra_constraints=()):
+    def eval_to_ast(self, e, n, extra_constraints=(), exact=None, cache=None):
         '''
         Evaluates expression e, returning the results in the form of concrete ASTs.
         '''
 
-        return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
+        return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache) ]
 
     def _eager_resolution(self, what, default, *args, **kwargs):
         for b in _eager_backends:
