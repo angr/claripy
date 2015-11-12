@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+import itertools
 l = logging.getLogger("claripy.frontends.light_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
@@ -59,6 +60,12 @@ class LightFrontend(ConstrainedFrontend):
     def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
         try:
             return self._solver_backend.is_false(e, result=self.result)
+        except BackendError:
+            raise ClaripyFrontendError("Light solver can't handle this is_false().")
+
+    def _satisfiable(self, extra_constraints=(), exact=None, cache=None):
+        try:
+            return any(self._solver_backend.is_false(c) for c in reversed(self.constraints + list(extra_constraints)))
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this is_false().")
 
