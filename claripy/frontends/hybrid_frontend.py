@@ -27,6 +27,37 @@ class HybridFrontend(FullFrontend):
         return HybridFrontend(self._solver_backend, approximation_frontend=self._approximation_frontend, cache=self._cache, timeout=self.timeout)
 
     #
+    # Catch constraint adds and pass them to the replacement frontend
+    #
+
+    def _add_constraints(self, constraints, invalidate_cache=True):
+        super(HybridFrontend, self)._add_constraints(constraints, invalidate_cache=invalidate_cache)
+        self._approximation_frontend.add(constraints, invalidate_cache=invalidate_cache)
+
+    def _cache_eval(self, e, values, n=None, exact=None, cache=None):
+        super(HybridFrontend, self)._cache_eval(e, values, n=None, exact=exact, cache=cache)
+
+        if exact is False or cache is False:
+            if n > 1 and len(values) == 1:
+                self._approximation_frontend.add_replacement(e, next(iter(values)))
+
+    def _cache_max(self, e, m, exact=None, cache=None):
+        super(HybridFrontend, self)._cache_max(e, m, exact=exact, cache=cache)
+
+        if exact is False or cache is False:
+            if isinstance(e, BV):
+                si = BVS('limiter', e.length, max=m)
+                self._approximation_frontend.add_replacement(e, e.intersection(si))
+
+    def _cache_min(self, e, m, exact=None, cache=None):
+        super(HybridFrontend, self)._cache_min(e, m, exact=exact, cache=cache)
+
+        if exact is False or cache is False:
+            if isinstance(e, BV):
+                si = BVS('limiter', e.length, min=m)
+                self._approximation_frontend.add_replacement(e, e.intersection(si))
+
+    #
     # Hybrid solving
     #
 
@@ -95,3 +126,4 @@ class HybridFrontend(FullFrontend):
 
 from ..errors import ClaripyFrontendError
 from .. import _backends
+from ..ast.bv import BV, BVS
