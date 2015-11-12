@@ -119,7 +119,7 @@ class BackendVSA(Backend):
         if isinstance(expr, StridedInterval):
             if expr.is_top:
                 # TODO: Return
-                return StridedInterval.min_int(expr.bits)
+                return 0
 
             return expr.min
         else:
