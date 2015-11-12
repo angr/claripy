@@ -83,7 +83,7 @@ class ReplacementFrontend(ConstrainedFrontend):
 
     def _ana_setstate(self, s):
         self._replacements, self._actual_frontend, base_state = s
-        ConstrainedFrontend._ana_setstate(base_state)
+        ConstrainedFrontend._ana_setstate(self, base_state)
         self._replacement_cache = weakref.WeakKeyDictionary()
 
     #
