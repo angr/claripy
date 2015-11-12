@@ -7,12 +7,13 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, auto_replace=None, **kwargs):
+    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, auto_replace=None, **kwargs):
         kwargs['cache'] = kwargs.get('cache', False)
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
         self._auto_replace = True if auto_replace is None else auto_replace
+        self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
@@ -64,6 +65,7 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _blank_copy(self):
         s = ReplacementFrontend(self._actual_frontend._blank_copy())
         s._auto_replace = self._auto_replace
+        s._unsafe_replacement = self._unsafe_replacement
         s._allow_symbolic = self._allow_symbolic
         return s
 
@@ -101,21 +103,21 @@ class ReplacementFrontend(ConstrainedFrontend):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
-        self._add_solve_result(e, er, r[0])
+        if self._unsafe_replacement: self._add_solve_result(e, er, r[0])
         return r
 
     def max(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact, cache=cache)
-        self._add_solve_result(e, er, r)
+        if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
     def min(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact, cache=cache)
-        self._add_solve_result(e, er, r)
+        if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
     def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
@@ -123,7 +125,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         vr = self._replacement(v)
         ecr = self._replace_list(extra_constraints)
         r = self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact, cache=cache)
-        if r and (not isinstance(vr, Base) or not vr.symbolic):
+        if self._unsafe_replacement and r and (not isinstance(vr, Base) or not vr.symbolic):
             self._add_solve_result(e, er, vr)
         return r
 
