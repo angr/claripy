@@ -46,20 +46,36 @@ class HybridFrontend(FullFrontend):
             if n > 1 and len(values) == 1:
                 self._approximation_frontend.add_replacement(e, next(iter(values)))
 
-    def _cache_max(self, e, m, exact=None, cache=None):
-        super(HybridFrontend, self)._cache_max(e, m, exact=exact, cache=cache)
+    def _cache_max(self, e, mx, exact=None, cache=None):
+        super(HybridFrontend, self)._cache_max(e, mx, exact=exact, cache=cache)
 
         if not exact is False and not cache is False:
             if isinstance(e, BV):
-                si = BVS('limiter', e.length, max=m, min=self._approximation_frontend.min(e))
+                try:
+                    if self.result and e.uuid in self.result.min_cache:
+                        mn = self.result.min_cache[e.uuid]
+                    else:
+                        mn = self._approximation_frontend.min(e)
+                except ClaripyFrontendError:
+                    mn = 0
+
+                si = BVS('limiter', e.length, max=mx, min=mn)
                 self._approximation_frontend.add_replacement(e, e.intersection(si))
 
-    def _cache_min(self, e, m, exact=None, cache=None):
-        super(HybridFrontend, self)._cache_min(e, m, exact=exact, cache=cache)
+    def _cache_min(self, e, mn, exact=None, cache=None):
+        super(HybridFrontend, self)._cache_min(e, mn, exact=exact, cache=cache)
 
         if not exact is False and not cache is False:
             if isinstance(e, BV):
-                si = BVS('limiter', e.length, min=m, max=self._approximation_frontend.max(e))
+                try:
+                    if self.result and e.uuid in self.result.max_cache:
+                        mx = self.result.max_cache[e.uuid]
+                    else:
+                        mx = self._approximation_frontend.max(e)
+                except ClaripyFrontendError:
+                    mx = 0
+
+                si = BVS('limiter', e.length, min=mn, max=mx)
                 self._approximation_frontend.add_replacement(e, e.intersection(si))
 
     #
