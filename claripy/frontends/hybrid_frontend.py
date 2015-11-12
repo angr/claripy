@@ -24,7 +24,12 @@ class HybridFrontend(FullFrontend):
         FullFrontend._ana_setstate(self, full_state)
 
     def _blank_copy(self):
-        return HybridFrontend(self._solver_backend, approximation_frontend=self._approximation_frontend, cache=self._cache, timeout=self.timeout)
+        return HybridFrontend(self._solver_backend, approximation_frontend=self._approximation_frontend._blank_copy(), cache=self._cache, timeout=self.timeout)
+
+    def branch(self):
+        s = super(HybridFrontend, self).branch()
+        s._approximation_frontend = self._approximation_frontend.branch()
+        return s
 
     #
     # Catch constraint adds and pass them to the replacement frontend
