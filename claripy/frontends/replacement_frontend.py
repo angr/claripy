@@ -8,6 +8,7 @@ from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
     def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, auto_replace=None, **kwargs):
+        kwargs['cache'] = kwargs.get('cache', False)
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
