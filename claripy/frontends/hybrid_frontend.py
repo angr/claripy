@@ -143,6 +143,19 @@ class HybridFrontend(FullFrontend):
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
+    def _satisfiable(self, extra_constraints=(), exact=None, cache=None):
+        if exact is False:
+            try:
+                new_constraints = self._approximation_frontend._replace_list(self._approximation_frontend.constraints)
+                self._approximation_frontend.constraints[:] = new_constraints
+                return self._approximation_frontend.satisfiable(extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _satisfiable()")
+
+        # if that fails, try the exact backend
+        return super(HybridFrontend, self)._satisfiable(extra_constraints=extra_constraints, exact=exact, cache=cache)
+
+
 from ..errors import ClaripyFrontendError
 from .. import _backends
 from ..ast.bv import BV, BVS
