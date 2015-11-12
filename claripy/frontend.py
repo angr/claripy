@@ -276,12 +276,12 @@ class Frontend(ana.Storable):
         else:
             return False
 
-    def eval_to_ast(self, e, n, extra_constraints=()):
+    def eval_to_ast(self, e, n, extra_constraints=(), exact=None, cache=None):
         '''
         Evaluates expression e, returning the results in the form of concrete ASTs.
         '''
 
-        return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints) ]
+        return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache) ]
 
     def _eager_resolution(self, what, default, *args, **kwargs):
         for b in _eager_backends:
