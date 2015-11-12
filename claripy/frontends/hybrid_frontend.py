@@ -64,8 +64,10 @@ class HybridFrontend(FullFrontend):
     def _solve(self, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.solve(extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.solve(extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _solve()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._solve(extra_constraints=extra_constraints, exact=exact, cache=cache)
@@ -73,8 +75,10 @@ class HybridFrontend(FullFrontend):
     def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.eval(e, n, extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.eval(e, n, extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _eval()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
@@ -82,8 +86,10 @@ class HybridFrontend(FullFrontend):
     def _max(self, e, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.max(e, extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.max(e, extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _max()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
@@ -91,8 +97,10 @@ class HybridFrontend(FullFrontend):
     def _min(self, e, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.min(e, extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.min(e, extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _min()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._min(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
@@ -100,8 +108,10 @@ class HybridFrontend(FullFrontend):
     def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.solution(e, v, extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.solution(e, v, extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _solution()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._solution(e, v, extra_constraints=extra_constraints, exact=exact, cache=cache)
@@ -109,8 +119,10 @@ class HybridFrontend(FullFrontend):
     def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.is_true(e, extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.is_true(e, extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _is_true()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
@@ -118,8 +130,10 @@ class HybridFrontend(FullFrontend):
     def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:
-            try: return self._approximation_frontend.is_false(e, extra_constraints=extra_constraints)
-            except ClaripyFrontendError: pass
+            try:
+                return self._approximation_frontend.is_false(e, extra_constraints=extra_constraints)
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _is_false()")
 
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
