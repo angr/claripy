@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import logging
-l = logging.getLogger("claripy.frontends.full_frontend")
+l = logging.getLogger("claripy.frontends.hybrid_frontend")
 
 from .full_frontend import FullFrontend
 from .light_frontend import LightFrontend
