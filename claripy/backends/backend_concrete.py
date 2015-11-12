@@ -85,28 +85,32 @@ class BackendConcrete(Backend):
     # Evaluation functions
     #
 
+    @staticmethod
+    def _to_primitive(expr):
+        if type(expr) is bv.BVV:
+            return expr.value
+        elif type(expr) is fp.FPV:
+            return expr.value
+        elif type(expr) is bool:
+            return expr
+        elif type(expr) in (int, long):
+            return expr
+
     def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
 
-        if type(expr) is bv.BVV:
-            return (expr.value,)
-        elif type(expr) is fp.FPV:
-            return (expr.value,)
-        elif type(expr) is bool:
-            return (expr,)
-        elif type(expr) in (int, long):
-            return (expr,)
+        return (self._to_primitive(expr),)
 
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
-        return expr
+        return self._to_primitive(expr)
 
     def _min(self, expr, result=None, solver=None, extra_constraints=()):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
-        return expr
+        return self._to_primitive(expr)
 
     def _solution(self, expr, v, result=None, solver=None, extra_constraints=()):
         if not all(extra_constraints):
