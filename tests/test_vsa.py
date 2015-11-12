@@ -558,8 +558,8 @@ def test_vsa():
     if_0 = claripy.If(si == 0, si, si - 1)
     max_val = b.max(if_0)
     min_val = b.min(if_0)
-    nose.tools.assert_true(max_val, 0xffffffff)
-    nose.tools.assert_true(min_val, -0x80000000)
+    nose.tools.assert_equal(max_val, 0xffffffff)
+    nose.tools.assert_equal(min_val, 0x00000000)
 
     # identical
     nose.tools.assert_true(claripy.backend_vsa.identical(if_0, if_0))
