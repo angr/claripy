@@ -249,7 +249,7 @@ class Frontend(ana.Storable):
 
         l.debug("... conferring with the solver")
         r = self._solve(extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if len(extra_constraints) == 0 or (self.result is None and r.sat):
+        if exact is not False and cache is not False and (len(extra_constraints) == 0 or (self.result is None and r.sat)):
             l.debug("... caching result (sat: %s)", r.sat)
             self.result = r
         return r
