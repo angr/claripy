@@ -12,7 +12,7 @@ class Frontend(ana.Storable):
     def __init__(self, cache=None):
         self.result = None
         self._simplified = False
-        self._cache = cache is True
+        self._cache = cache is not False
 
     #
     # Storable support
@@ -155,7 +155,7 @@ class Frontend(ana.Storable):
     #
 
     def _cache_eval(self, e, values, n=None, exact=None, cache=None):
-        if not exact or cache is False or not self._cache or self.result is None:
+        if exact is False or cache is False or not self._cache or self.result is None:
             return
 
         self.result.eval_cache[e.uuid] = self.result.eval_cache[e.uuid] | values if e.uuid in self.result.eval_cache else values
@@ -163,13 +163,13 @@ class Frontend(ana.Storable):
             self.result.eval_n[e.uuid] = max(n, self.result.eval_n[e.uuid]) if e.uuid in self.result.eval_n else n
 
     def _cache_max(self, e, m, exact=None, cache=None):
-        if not exact or cache is False or not self._cache or self.result is None:
+        if exact is False or cache is False or not self._cache or self.result is None:
             return
 
         self.result.max_cache[e] = m
 
     def _cache_min(self, e, m, exact=None, cache=None):
-        if not exact or cache is False or not self._cache or self.result is None:
+        if exact is False or cache is False or not self._cache or self.result is None:
             return
 
         self.result.min_cache[e] = m

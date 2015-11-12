@@ -6,11 +6,12 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 import sys
 import threading
 
-from .light_frontend import LightFrontend
+from .constrained_frontend import ConstrainedFrontend
 
-class FullFrontend(LightFrontend):
+class FullFrontend(ConstrainedFrontend):
     def __init__(self, solver_backend, timeout=None, **kwargs):
-        LightFrontend.__init__(self, solver_backend, **kwargs)
+        ConstrainedFrontend.__init__(self, **kwargs)
+        self._solver_backend = solver_backend
         self.timeout = timeout if timeout is not None else 300000
         self._tls = threading.local()
         self._to_add = [ ]
@@ -20,16 +21,14 @@ class FullFrontend(LightFrontend):
     #
 
     def _ana_getstate(self):
-        return self.timeout, LightFrontend._ana_getstate(self)
+        return self._solver_backend.__class__.__name__, self.timeout, ConstrainedFrontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self.timeout, lightweight_state = s
+        backend_name, self.timeout, base_state = s
+        self._solver_backend = _backends[backend_name]
         self._tls = None
         self._to_add = [ ]
-        LightFrontend._ana_setstate(self, lightweight_state)
-
-    def _blank_copy(self):
-        return FullFrontend(self._solver_backend, cache=self._cache, timeout=self.timeout)
+        ConstrainedFrontend._ana_setstate(self, base_state)
 
     #
     # Frontend Creation
@@ -52,12 +51,12 @@ class FullFrontend(LightFrontend):
     #
 
     def _add_constraints(self, constraints, invalidate_cache=True):
-        to_add = LightFrontend._add_constraints(self, constraints, invalidate_cache=invalidate_cache)
+        to_add = ConstrainedFrontend._add_constraints(self, constraints, invalidate_cache=invalidate_cache)
         self._to_add += to_add
         return to_add
 
     def _simplify(self):
-        LightFrontend._simplify(self)
+        ConstrainedFrontend._simplify(self)
 
         # TODO: should we do this?
         self._tls.solver = None
@@ -67,7 +66,7 @@ class FullFrontend(LightFrontend):
         return self.constraints
 
     def _solve(self, extra_constraints=(), exact=None, cache=None):
-        r = LightFrontend._solve(self, extra_constraints=extra_constraints)
+        r = ConstrainedFrontend._solve(self, extra_constraints=extra_constraints)
         if not r.approximation:
             return r
 
@@ -84,8 +83,6 @@ class FullFrontend(LightFrontend):
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
-
-    # we'll just reuse LightFrontend's satisfiable(self, extra_constraints=())
 
     def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -177,7 +174,7 @@ class FullFrontend(LightFrontend):
     #
 
     def downsize(self):
-        LightFrontend.downsize(self)
+        ConstrainedFrontend.downsize(self)
         self._tls.solver = None
         self._to_add = [ ]
 
@@ -185,24 +182,18 @@ class FullFrontend(LightFrontend):
     # Merging and splitting
     #
 
-    # we'll reuse LightFrontend's finalize(self)
+    def _blank_copy(self):
+        return FullFrontend(self._solver_backend, cache=self._cache, timeout=self.timeout)
 
     def branch(self):
-        b = LightFrontend.branch(self)
+        b = ConstrainedFrontend.branch(self)
         b._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
         b._to_add = list(self._to_add)
-        b.timeout = self.timeout
         return b
 
-    # we'll reuse LightFrontend's: merge(self, others, merge_flag, merge_values)
-
-    # we'll reuse LightFrontend's: combine(self, others)
-
-    def split(self):
-        solvers = LightFrontend.split(self)
-        for s in solvers:
-            s.timeout = self.timeout
-        return solvers
+    def merge(self, others, merge_flag, merge_values):
+        return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
 from ..ast.bv import UGE, ULE
+from .. import _backends

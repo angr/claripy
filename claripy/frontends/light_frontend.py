@@ -76,8 +76,7 @@ class LightFrontend(ConstrainedFrontend):
         return LightFrontend(self._solver_backend, cache=self._cache)
 
     def merge(self, others, merge_flag, merge_values):
-        return self._solver_backend is backend_z3, ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]
+        return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]
 
 from ..errors import BackendError, ClaripyFrontendError
-from .. import backend_z3
 from .. import _backends
