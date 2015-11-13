@@ -141,7 +141,7 @@ Or = operations.op('Or', Bool, Bool, bound=False)
 Not = operations.op('Not', (Bool,), Bool, bound=False)
 
 def is_true(e, exact=None):
-    for b in _eager_backends:
+    for b in _trusted_backends:
         try: return b.is_true(b.convert(e))
         except BackendError: pass
 
@@ -149,7 +149,7 @@ def is_true(e, exact=None):
     return False
 
 def is_false(e, exact=None):
-    for b in _eager_backends:
+    for b in _trusted_backends:
         try: return b.is_false(b.convert(e))
         except BackendError: pass
 
@@ -186,7 +186,7 @@ def constraint_to_si(expr):
 
     return satisfiable, replace_list
 
-from .. import _eager_backends, _all_backends
+from .. import _trusted_backends, _all_backends
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
 from .bv import BVS

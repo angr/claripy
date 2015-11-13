@@ -10,6 +10,7 @@ l = logging.getLogger("claripy")
 l.addHandler(logging.NullHandler())
 
 _all_backends = [ ]
+_trusted_backends = [ ]
 _eager_backends = [ ]
 _model_backends = [ ]
 _backends = { }
@@ -32,6 +33,7 @@ else:
 
 _eager_backends[:] = [ backend_concrete ]
 _model_backends[:] = [ backend_concrete, backend_vsa ]
+_trusted_backends[:] = [ backend_concrete, backend_z3 ]
 _all_backends[:] = [ backend_concrete, backend_vsa, backend_z3 ]
 _backends.update({ 'BackendVSA': backend_vsa, 'BackendZ3': backend_z3, 'BackendConcrete': backend_concrete })
 
