@@ -51,6 +51,11 @@ class Balancer(object):
             return True, [ ]
 
     def _simplify(self, op, args, expr, condition):
+        handler_name = "_simplify_%s" % op
+        if not hasattr(self, handler_name):
+            l.error('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
+            return expr, condition
+
         new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
         return new_expr, new_cond
 
