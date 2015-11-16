@@ -49,23 +49,6 @@ from ..backend import Backend
 
 #pylint:disable=unidiomatic-typecheck
 
-#import threading
-#import functools
-#z3_lock = threading.RLock()
-#def synchronized(f):
-#      @functools.wraps(f)
-#      def synced(self, *args, **kwargs):
-#          if not (self._background_solve or (self._background_solve is None and self._claripy.parallel)):
-#              return f(self, *args, **kwargs)
-#
-#          try:
-#              #while not z3_lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
-#              z3_lock.acquire()
-#              return f(self, *args, **kwargs)
-#          finally:
-#              z3_lock.release()
-#      return synced
-
 def condom(f):
     def z3_condom(*args, **kwargs):
         '''
