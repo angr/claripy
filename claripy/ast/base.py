@@ -64,7 +64,7 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     '''
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_objects', '_collapsible', '_hash', '_simplified',
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
                   '_uc_alloc_depth']
     _hash_cache = weakref.WeakValueDictionary()
@@ -182,7 +182,6 @@ class Base(ana.Storable):
         self.symbolic = symbolic
         self._eager_backends = eager_backends
 
-        self._collapsible = True if collapsible is None else collapsible
         self._errored = errored if errored is not None else set()
 
         self._simplified = simplified
