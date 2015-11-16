@@ -77,23 +77,19 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'Reverse', 'fpToSBV', 'fpToUBV', 'SLT', 'SLE', 'SGT', 'SGE', 'BVV', 'BoolV', 'FPV'}:
-            self._op_raw[o] = getattr(z3, o)
+        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FP', 'BitVec'}:
+            self._op_raw[o] = getattr(self, '_op_raw_' + o)
 
-        self._op_raw['__ge__'] = z3.UGE
-        self._op_raw['__gt__'] = z3.UGT
-        self._op_raw['__le__'] = z3.ULE
-        self._op_raw['__lt__'] = z3.ULT
+        self._op_raw['__ge__'] = self._op_raw_UGE
+        self._op_raw['__gt__'] = self._op_raw_UGT
+        self._op_raw['__le__'] = self._op_raw_ULE
+        self._op_raw['__lt__'] = self._op_raw_ULT
 
-        self._op_raw['SLT'] = self.SLT
-        self._op_raw['SLE'] = self.SLE
-        self._op_raw['SGT'] = self.SGT
-        self._op_raw['SGE'] = self.SGE
-        self._op_raw['Reverse'] = self.reverse
-        self._op_raw['Identical'] = self.identical
-        self._op_raw['I'] = lambda thing: thing
-        self._op_raw['fpToSBV'] = self.fpToSBV
-        self._op_raw['fpToUBV'] = self.fpToUBV
+        self._op_raw['Reverse'] = self._op_raw_Reverse
+        self._op_raw['Identical'] = self._identical
+        self._op_raw['fpToSBV'] = self._op_raw_fpToSBV
+        self._op_raw['fpToUBV'] = self._op_raw_fpToUBV
+
         self._op_expr['BVS'] = self.BVS
         self._op_expr['BVV'] = self.BVV
         self._op_expr['FPV'] = self.FPV
