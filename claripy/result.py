@@ -15,7 +15,12 @@ class Result(object):
         self.eval_n = { }
         self.min_cache = { }
         self.max_cache = { }
-        self.resolve_cache = collections.defaultdict(weakref.WeakKeyDictionary)
+
+    @property
+    def resolve_cache(self):
+        if not hasattr(self._tls, 'resolve_cache'):
+            self._tls.resolve_cache = collections.defaultdict(weakref.WeakKeyDictionary)
+        return self._tls.resolve_cache
 
     @property
     def backend_model(self):
@@ -30,6 +35,7 @@ class Result(object):
         r.eval_n = dict(self.eval_n)
         r.min_cache = dict(self.min_cache)
         r.max_cache = dict(self.max_cache)
+        self._tls.resolve_cache = collections.defaultdict(weakref.WeakKeyDictionary, { b:weakref.WeakKeyDictionary(c) for b,c in self.resolve_cache.items() })
         return r
 
     def __getstate__(self):
@@ -37,7 +43,6 @@ class Result(object):
 
     def __setstate__(self, state):
         ( self.sat, self.model, self.eval_cache, self.eval_n, self.min_cache, self.max_cache ) = state
-        self.resolve_cache = collections.defaultdict(weakref.WeakKeyDictionary)
         self._tls = threading.local()
         self._tls.backend_model = None
 
