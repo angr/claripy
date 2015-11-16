@@ -58,7 +58,8 @@ def condom(f):
             condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
             return f(*condom_args, **kwargs)
         except z3.Z3Exception as ze:
-            raise ClaripyZ3Error("Z3Exception: %s" % ze)
+            _, _, traceback = sys.exc_info()
+            raise ClaripyZ3Error, ("Z3Exception: %s" % ze), traceback
     return z3_condom
 
 class BackendZ3(Backend):
