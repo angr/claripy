@@ -1,5 +1,6 @@
 import sys
 import logging
+import threading
 l = logging.getLogger("claripy.backends.backend_z3")
 
 if sys.platform == 'darwin':
@@ -102,7 +103,7 @@ class BackendZ3(Backend):
         try:
             return self._tls.context
         except AttributeError:
-            self._tls.context = z3.Context()
+            self._tls.context = z3.Context() if threading.current_thread().name != 'MainThread' else z3.main_ctx()
             return self._tls.context
 
     @property
