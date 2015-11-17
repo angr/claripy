@@ -431,10 +431,13 @@ class Frontend(ana.Storable):
         if eager_solution is True:
             return eager_solution
 
-        b = self._is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if b is True and len(extra_constraints) == 0 and e.symbolic:
-            self.add([e == True], invalidate_cache=False)
-        return b
+        try:
+            b = self._is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+            if b is True and len(extra_constraints) == 0 and e.symbolic:
+                self.add([e == True], invalidate_cache=False)
+            return b
+        except ClaripyFrontendError:
+            return False
 
     def is_false(self, e, extra_constraints=(), exact=None, cache=None):
         if self._concrete_type_check(e):
@@ -447,10 +450,13 @@ class Frontend(ana.Storable):
         if eager_solution is True:
             return eager_solution
 
-        b = self._is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
-        if b is True and len(extra_constraints) == 0 and e.symbolic:
-            self.add([e == False], invalidate_cache=False)
-        return b
+        try:
+            b = self._is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+            if b is True and len(extra_constraints) == 0 and e.symbolic:
+                self.add([e == False], invalidate_cache=False)
+            return b
+        except ClaripyFrontendError:
+            return False
 
     #
     # Serialization and such.
