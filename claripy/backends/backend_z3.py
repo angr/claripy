@@ -106,15 +106,6 @@ class BackendZ3(Backend):
             return self._tls.context
 
     @property
-    def _empty_solver(self):
-        try:
-            return self._tls.empty_solver
-        except AttributeError:
-            self._tls.empty_solver = z3.Solver(ctx=self._context)
-            self._tls.empty_solver.check()
-            return self._tls.empty_solver
-
-    @property
     def _ast_cache(self):
         try:
             return self._tls.ast_cache
@@ -468,9 +459,6 @@ class BackendZ3(Backend):
     @condom
     def _check_and_model(self, s, extra_constraints=()): #pylint:disable=no-self-use
         global solve_count
-
-        if len(s.assertions()) == 0 and len(extra_constraints) == 0:
-            return True, self._empty_solver.model()
 
         solve_count += 1
         if len(extra_constraints) > 0:
