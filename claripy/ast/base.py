@@ -389,24 +389,24 @@ class Base(ana.Storable):
         seen = set() if seen is None else seen
         checked = set() if checked is None else checked
 
-        seen.add(hash(self))
-        for a in self.recursive_children_asts:
-            l.debug("Checking AST with hash %s for looping", hash(a))
-            if hash(a) in seen:
-                return a
-            elif hash(a) in checked:
-                return False
-            else:
-                for a in self.args:
-                    if not isinstance(a, Base):
-                        continue
+        l.debug("Checking AST with hash %s for looping", hash(self))
+        if hash(self) in seen:
+            return self
+        elif hash(self) in checked:
+            return False
+        else:
+            seen.add(hash(self))
 
-                    r = a.dbg_is_looped(seen=seen, checked=checked)
-                    if r is not False: return r
-                    else: checked.add(hash(a))
+            for a in self.args:
+                if not isinstance(a, Base):
+                    continue
 
-        seen.discard(hash(self))
-        return False
+                r = a.dbg_is_looped(seen=set(seen), checked=checked)
+                if r is not False:
+                    return r
+
+            checked.add(hash(self))
+            return False
 
     #
     # Various AST modifications (replacements)

@@ -65,6 +65,7 @@ def condom(f):
 
 def _raw_caller(f):
     @staticmethod
+    @condom
     def raw_caller(*args, **kwargs):
         return f(*args, **kwargs)
     return raw_caller
@@ -255,7 +256,6 @@ class BackendZ3(Backend):
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
             raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-    @condom
     def call(self, *args, **kwargs):
         return Backend.call(self, *args, **kwargs)
 
@@ -453,7 +453,6 @@ class BackendZ3(Backend):
     def _add(self, s, c):
         s.add(*c)
 
-    @condom
     def _check(self, s, extra_constraints=()):
         return self._check_and_model(s, extra_constraints=extra_constraints)[0]
 
