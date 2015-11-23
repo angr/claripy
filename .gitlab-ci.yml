@@ -36,6 +36,16 @@ topsecret:
     tags:
         - "angr"
 
+rex:
+    script: "angr-test rex"
+    tags:
+        - "angr"
+
+pwnrex:
+    script: "angr-test pwnrex"
+    tags:
+        - "angr"
+
 claripy_lint:
     script: "angr-test lint"
     tags:
