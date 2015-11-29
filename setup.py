@@ -8,4 +8,6 @@ setup(
         'ana',
         'angr-z3',
     ],
+    description='An abstraction layer for constraint solvers',
+    url='https://github.com/angr/claripy',
 )
