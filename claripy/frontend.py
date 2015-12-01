@@ -304,7 +304,7 @@ class Frontend(ana.Storable):
         @returns a tuple of python pritives representing results
         '''
 
-        if self._concrete_type_check(e): return [e]
+        if self._concrete_type_check(e): return (e,)
 
         extra_constraints = self._constraint_filter(extra_constraints)
         l.debug("Frontend.eval() for UUID %s with n=%d and %d extra_constraints", e.uuid, n, len(extra_constraints))
