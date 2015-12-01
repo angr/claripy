@@ -290,6 +290,20 @@ class Frontend(ana.Storable):
         return default
 
     def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
+        '''
+        Evaluates an expression, returning a tuple of n solutions.
+
+        @param e: the expression
+        @param n: the number of solutions to return
+        @param extra_constraints: extra constraints to consider when performing
+                                  the evaluation
+        @param exact: whether or not to perform an exact evaluation. Ignored by
+                      non-approximating backends.
+        @param cache: whether or not to cache the results
+
+        @returns a tuple of python pritives representing results
+        '''
+
         if self._concrete_type_check(e): return [e]
 
         extra_constraints = self._constraint_filter(extra_constraints)
