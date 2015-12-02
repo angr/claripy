@@ -7,8 +7,10 @@ l = logging.getLogger("claripy.frontends.light_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class LightFrontend(ConstrainedFrontend):
-    def __init__(self, solver_backend, **kwargs):
-        ConstrainedFrontend.__init__(self, **kwargs)
+    def __init__(self, solver_backend, cache=None, **kwargs):
+        # since the LightFrontend mostly cannot handle extra_constriants, it horribly misuses the cache.
+        # Because of this, we have to disable the caching here.
+        ConstrainedFrontend.__init__(self, cache=False if cache is None else cache, **kwargs)
         self._solver_backend = solver_backend
 
     #
