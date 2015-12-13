@@ -14,5 +14,10 @@ def test_concrete():
     c = claripy.BVV(0, 16)
     nose.tools.assert_is(b, c)
 
+def test_concrete_fp():
+    f = claripy.FPV(1.0, claripy.FSORT_FLOAT)
+    nose.tools.assert_equals(claripy.backend_concrete.eval(f, 2), (1.0,))
+
 if __name__ == '__main__':
     test_concrete()
+    test_concrete_fp()

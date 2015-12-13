@@ -79,6 +79,7 @@ from .result import Result
 from . import bv
 from . import fp
 from . import vsa
+from .fp import FSORT_DOUBLE, FSORT_FLOAT
 
 #
 # Operations
