@@ -114,7 +114,7 @@ class Base(ana.Storable):
         if 'add_variables' in kwargs:
             kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
 
-        eager_backends = list(_eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
+        eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
 
         if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
@@ -705,21 +705,21 @@ class Base(ana.Storable):
     @property
     def _model_vsa(self):
         try:
-            return _backends['BackendVSA'].convert(self)
+            return backends.vsa.convert(self)
         except BackendError:
             return self
 
     @property
     def _model_z3(self):
         try:
-            return _backends['BackendZ3'].convert(self)
+            return backends.z3.convert(self)
         except BackendError:
             return self
 
     @property
     def _model_concrete(self):
         try:
-            return _backends['BackendConcrete'].convert(self)
+            return backends.concrete.convert(self)
         except BackendError:
             return self
 
@@ -728,7 +728,7 @@ class Base(ana.Storable):
     #
 
     def _first_backend(self, what):
-        for b in _all_backends:
+        for b in backends._all_backends:
             if b in self._errored:
                 continue
 
@@ -749,7 +749,7 @@ class Base(ana.Storable):
 
     @property
     def concrete(self):
-        return _backends['BackendConcrete'].handles(self)
+        return backends.concrete.handles(self)
 
     @property
     def uninitialized(self):
@@ -809,6 +809,6 @@ def simplify(e):
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
 from .. import operations
 from ..backend_object import BackendObject
-from .. import _all_backends, _eager_backends, _backends
+from ..backend_manager import backends
 from ..ast.bool import If, Not
 from ..ast.bv import BV

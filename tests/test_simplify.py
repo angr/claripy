@@ -3,7 +3,7 @@ import nose
 
 def test_simplification():
     def assert_correct(a, b):
-        nose.tools.assert_true(claripy.backend_z3.identical(a, b))
+        nose.tools.assert_true(claripy.backends.z3.identical(a, b))
 
     x, y, z = (claripy.BVS(name, 32) for name in ('x', 'y', 'z'))
 
@@ -25,9 +25,9 @@ def test_simplification():
     assert_correct(concatted[70:35], claripy.Concat(x, y)[38:3])
 
     # make sure the division simplification works
-    assert_correct(2+x, claripy._backends['BackendZ3'].simplify(1+x+1))
-    assert_correct(x/y, claripy._backends['BackendZ3'].simplify(x/y))
-    assert_correct(x%y, claripy._backends['BackendZ3'].simplify(x%y))
+    assert_correct(2+x, claripy.backends.z3.simplify(1+x+1))
+    assert_correct(x/y, claripy.backends.z3.simplify(x/y))
+    assert_correct(x%y, claripy.backends.z3.simplify(x%y))
 
 if __name__ == '__main__':
     test_simplification()

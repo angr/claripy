@@ -284,7 +284,7 @@ class Frontend(ana.Storable):
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache) ]
 
     def _eager_resolution(self, what, default, *args, **kwargs):
-        for b in _eager_backends:
+        for b in backends._eager_backends:
             try: return getattr(b, what)(*args, result=self.result if kwargs.pop('use_result', True) else None, **kwargs)
             except BackendError: pass
         return default
@@ -482,7 +482,7 @@ class Frontend(ana.Storable):
 
 from .result import UnsatResult, SatResult
 from .errors import UnsatError, BackendError, ClaripyFrontendError, ClaripyTypeError, ClaripyValueError
-from . import _eager_backends
+from .backend_manager import backends
 from .ast.base import Base
 from .ast.bool import false, Bool, Or
 from .ast.bv import UGE, ULE, BVV

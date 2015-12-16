@@ -8,7 +8,7 @@ import logging
 l = logging.getLogger('claripy.test.serial')
 
 def test_pickle():
-    bz = claripy.backend_z3
+    bz = claripy.backends.z3
 
     a = claripy.BVV(0, 32)
     b = claripy.BVS('x', 32, explicit_name=True)
@@ -48,7 +48,7 @@ def test_datalayer():
     nose.tools.assert_equal(str(cd), str(d))
 
     l.debug("Time to test some solvers!")
-    s = claripy.FullFrontend(claripy.backend_z3)
+    s = claripy.FullFrontend(claripy.backends.z3)
     x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()
@@ -56,7 +56,7 @@ def test_datalayer():
     nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
-    s = claripy.CompositeFrontend(claripy.FullFrontend(claripy.backend_z3))
+    s = claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
     x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()

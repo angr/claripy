@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import logging
-import itertools
 l = logging.getLogger("claripy.frontends.light_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
@@ -23,7 +22,7 @@ class LightFrontend(ConstrainedFrontend):
     def _ana_setstate(self, s):
         solver_backend_name, base_state = s
         ConstrainedFrontend._ana_setstate(self, base_state)
-        self._solver_backend = _backends[solver_backend_name]
+        self._solver_backend = backends._backends_by_type[solver_backend_name]
 
     #
     # Light functionality
@@ -82,4 +81,4 @@ class LightFrontend(ConstrainedFrontend):
         return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]
 
 from ..errors import BackendError, ClaripyFrontendError
-from .. import _backends
+from ..backend_manager import backends
