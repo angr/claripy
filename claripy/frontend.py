@@ -340,7 +340,7 @@ class Frontend(ana.Storable):
         try:
             n_lacking = n - len(cached_results)
             eval_results = frozenset(self._eval(e, n_lacking, extra_constraints=solver_extra_constraints, exact=exact, cache=cache))
-            l.debug("... got %d more values", len(eval_results - cached_results))
+            l.debug("... got %d more values", len(eval_results))
         except UnsatError:
             l.debug("... UNSAT")
             if len(cached_results) == 0:
