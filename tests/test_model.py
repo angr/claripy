@@ -2,7 +2,7 @@ import claripy
 import nose
 
 def test_model():
-    bc = claripy.backend_concrete
+    bc = claripy.backends.concrete
 
     a = claripy.BVV(5, 32)
     b = claripy.BVS('x', 32, explicit_name=True)

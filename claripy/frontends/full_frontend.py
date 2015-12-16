@@ -25,7 +25,7 @@ class FullFrontend(ConstrainedFrontend):
 
     def _ana_setstate(self, s):
         backend_name, self.timeout, base_state = s
-        self._solver_backend = _backends[backend_name]
+        self._solver_backend = backends._backends_by_type[backend_name]
         self._tls = None
         self._to_add = [ ]
         ConstrainedFrontend._ana_setstate(self, base_state)
@@ -196,4 +196,4 @@ class FullFrontend(ConstrainedFrontend):
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
 from ..ast.bv import UGE, ULE
-from .. import _backends
+from ..backend_manager import backends

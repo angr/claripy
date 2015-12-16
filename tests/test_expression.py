@@ -25,7 +25,7 @@ def test_smudging():
     nose.tools.assert_equal(ccc.args[1].args[1].args[1], 32)
 
 def test_expression():
-    bc = claripy.backend_concrete
+    bc = claripy.backends.concrete
 
     e = claripy.BVV(0x01020304, 32)
     nose.tools.assert_equal(len(e), 32)
@@ -87,9 +87,9 @@ def test_expression():
     si = claripy.SI(bits=32, stride=2, lower_bound=20, upper_bound=100)
     sj = claripy.SI(bits=32, stride=2, lower_bound=10, upper_bound=10)
     sk = claripy.SI(bits=32, stride=2, lower_bound=20, upper_bound=100)
-    nose.tools.assert_true(claripy.backend_vsa.identical(si, si))
-    nose.tools.assert_false(claripy.backend_vsa.identical(si, sj))
-    nose.tools.assert_true(claripy.backend_vsa.identical(si, sk))
+    nose.tools.assert_true(claripy.backends.vsa.identical(si, si))
+    nose.tools.assert_false(claripy.backends.vsa.identical(si, sj))
+    nose.tools.assert_true(claripy.backends.vsa.identical(si, sk))
     nose.tools.assert_is_not(si, sj)
     nose.tools.assert_is_not(sj, sk)
     nose.tools.assert_is_not(sk, si)
@@ -222,9 +222,9 @@ def test_if_stuff():
     nose.tools.assert_is(iii.ite_excavated, iiii)
 
 def test_ite():
-    yield raw_ite, lambda: claripy.FullFrontend(claripy.backend_z3)
-    yield raw_ite, lambda: claripy.HybridFrontend(claripy.backend_z3)
-    yield raw_ite, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backend_z3))
+    yield raw_ite, lambda: claripy.FullFrontend(claripy.backends.z3)
+    yield raw_ite, lambda: claripy.HybridFrontend(claripy.backends.z3)
+    yield raw_ite, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
 
 def raw_ite(solver_type):
     s = solver_type()
@@ -265,7 +265,7 @@ def raw_ite(solver_type):
     nose.tools.assert_items_equal(sorted(ss.eval(y, 100)), ( 2, 20, 200 ))
 
 def test_bool():
-    bc = claripy.backend_concrete
+    bc = claripy.backends.concrete
 
     a = claripy.And(*[False, False, True])
     nose.tools.assert_equal(bc.convert(a), False)

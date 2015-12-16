@@ -720,11 +720,12 @@ class Balancer(object):
             # TODO: handle this
             return True, [ ]
 
-def is_true(a): return _backends['BackendVSA'].is_true(a)
-def is_false(a): return _backends['BackendVSA'].is_false(a)
+def is_true(a): return backends.vsa.is_true(a)
+def is_false(a): return backends.vsa.is_false(a)
 
 from .errors import ClaripyBalancerError, ClaripyBackendVSAError, BackendError
 from .ast.base import Base
-from . import _all_operations, _backends
+from . import _all_operations
+from .backend_manager import backends
 from . import vsa
 from . import bv

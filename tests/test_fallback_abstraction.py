@@ -2,7 +2,7 @@ import claripy
 import nose
 
 def test_fallback_abstraction():
-    bz = claripy.backend_z3
+    bz = claripy.backends.z3
 
     a = claripy.BVV(5, 32)
     b = claripy.BVS('x', 32, explicit_name=True)
@@ -19,14 +19,14 @@ def test_fallback_abstraction():
     nose.tools.assert_true(e.symbolic)
     nose.tools.assert_true(f.symbolic)
 
-    nose.tools.assert_is(type(claripy.backend_concrete.convert(a)), claripy.bv.BVV)
-    nose.tools.assert_is(type(claripy.backend_concrete.convert(g)), claripy.bv.BVV)
+    nose.tools.assert_is(type(claripy.backends.concrete.convert(a)), claripy.bv.BVV)
+    nose.tools.assert_is(type(claripy.backends.concrete.convert(g)), claripy.bv.BVV)
 
-    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backend_concrete.convert, b)
-    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backend_concrete.convert, c)
-    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backend_concrete.convert, d)
-    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backend_concrete.convert, e)
-    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backend_concrete.convert, f)
+    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backends.concrete.convert, b)
+    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backends.concrete.convert, c)
+    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backends.concrete.convert, d)
+    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backends.concrete.convert, e)
+    nose.tools.assert_raises(claripy.errors.BackendError, claripy.backends.concrete.convert, f)
 
     nose.tools.assert_equal(str(bz.convert(b)), 'x')
     nose.tools.assert_equal(bz.convert(b).__module__, 'z3')
