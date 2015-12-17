@@ -699,31 +699,6 @@ class Base(ana.Storable):
         return self._excavated
 
     #
-    # Alright, I give up. Here are some convenience accessors to backend models.
-    #
-
-    @property
-    def _model_vsa(self):
-        try:
-            return backends.vsa.convert(self)
-        except BackendError:
-            return self
-
-    @property
-    def _model_z3(self):
-        try:
-            return backends.z3.convert(self)
-        except BackendError:
-            return self
-
-    @property
-    def _model_concrete(self):
-        try:
-            return backends.concrete.convert(self)
-        except BackendError:
-            return self
-
-    #
     # these are convenience operations
     #
 
@@ -788,6 +763,18 @@ class Base(ana.Storable):
                self._model_z3 if self._model_z3 is not self else \
                self
 
+    def __getattr__(self, a):
+        if not a.startswith('_model_'):
+            raise AttributeError(a)
+
+        model_name = a[7:]
+        if not hasattr(backends, model_name):
+            raise AttributeError(a)
+
+        try:
+            return getattr(backends, model_name).convert(self)
+        except BackendError:
+            return self
 
 def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
