@@ -287,7 +287,11 @@ if __name__ == '__main__':
     test_replacement_solver()
     test_hybrid_solver()
     test_minmax()
-    test_solver()
+    for func, param in test_solver():
+        func(param)
     test_solver_branching()
-    test_combine()
+    for func, param in test_solver_branching():
+        func(param)
+    for func, param in test_combine():
+        func(param)
     test_composite_solver()

@@ -281,5 +281,6 @@ if __name__ == '__main__':
     test_smudging()
     test_expression()
     test_bool()
-    test_ite()
+    for func, param in test_ite():
+        func(param)
     test_if_stuff()

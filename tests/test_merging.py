@@ -108,4 +108,5 @@ def raw_simple_merging(solver_type):
     nose.tools.assert_false(smm_1.satisfiable())
 
 if __name__ == '__main__':
-    test_simple_merging()
+    for func, param in test_simple_merging():
+        func(param)
