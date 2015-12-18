@@ -108,6 +108,15 @@ class ReplacementFrontend(ConstrainedFrontend):
         if self._unsafe_replacement: self._add_solve_result(e, er, r[0])
         return r
 
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+        er = self._replace_list(exprs)
+        ecr = self._replace_list(extra_constraints)
+        r = self._actual_frontend.batch_eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
+        if self._unsafe_replacement:
+            for i, original in enumerate(exprs):
+                self._add_solve_result(original, er[i], r[0][i])
+        return r
+
     def max(self, e, extra_constraints=(), exact=None, cache=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
@@ -174,6 +183,8 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _solve(self, *args, **kwargs): #pylint:disable=unused-argument
         raise Exception("this should not be called")
     def _eval(self, *args, **kwargs): #pylint:disable=unused-argument
+        raise Exception("this should not be called")
+    def _batch_eval(self, *args, **kwargs): #pylint:disable=unused-argument
         raise Exception("this should not be called")
     def _max(self, *args, **kwargs): #pylint:disable=unused-argument
         raise Exception("this should not be called")
