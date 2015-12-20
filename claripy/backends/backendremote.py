@@ -64,6 +64,13 @@ class BackendRemote(Backend):
         res = remotetasks.eval.delay(solver.plus_extra(extra_constraints), expr, n)
         return get(res)
 
+    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None):
+        for x in solver.plus_extra(extra_constraints):
+            if hasattr(x, 'make_uuid'):
+                x.make_uuid()
+        res = remotetasks.batch_eval.delay(solver.plus_extra(extra_constraints), exprs, n)
+        return get(res)
+
     def _results(self, s, extra_constraints=(), generic_model=True):
         for x in s.plus_extra(extra_constraints):
             if hasattr(x, 'make_uuid'):

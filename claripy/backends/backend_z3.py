@@ -502,10 +502,13 @@ class BackendZ3(Backend):
 
     @condom
     def _eval(self, expr, n, extra_constraints=(), result=None, solver=None):
-        global solve_count, cache_count
+        r = self._batch_eval([ expr ], n, extra_constraints=extra_constraints, result=result, solver=solver)
+        # Unpack it
+        return [ x[0] for x in r ]
 
-        #if n == 1 and model is None:
-        #      import ipdb; ipdb.set_trace()
+    @condom
+    def _batch_eval(self, exprs, n, extra_constraints=(), result=None, solver=None):
+        global solve_count, cache_count
 
         results = [ ]
         model = result.backend_model if result else None
@@ -528,15 +531,21 @@ class BackendZ3(Backend):
             if model is None:
                 break
 
-            if not type(expr) in { int, float, str, bool, long }:
-                v = self._primitive_from_model(model, expr)
-                results.append(v)
-            else:
-                results.append(expr)
-                break
+            # construct results
+            r = [ ]
+            for expr in exprs:
+                if not type(expr) in {int, float, str, bool, long}:
+                    v = self._primitive_from_model(model, expr)
+                    r.append(v)
+                else:
+                    r.append(expr)
 
+            # Append the solution to the result list
+            results.append(tuple(r))
+
+            # Construct the extra constraint so we don't get the same result anymore
             if i + 1 != n:
-                solver.add(expr != v)
+                solver.add(z3.Not(z3.And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
                 model = None
 
         if len(extra_constraints) > 0 or n != 1:

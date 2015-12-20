@@ -465,13 +465,45 @@ class Backend(object):
         @param expr: expression (backend object) to evaluate
         @param n: number of results to return
         @param result: a cached Result from the last constraint solve
-        @param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Solver)
         @param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
+        @param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
         @returns a sequence of up to n results (backend objects)
         '''
         raise BackendError("backend doesn't support eval()")
+
+    def batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None):
+        """
+        Evaluate one or multiple expressions.
+
+        :param exprs: a list of expressions to evaluate
+        :param n: number of different solutions to return
+        :param result: a cached Result from the last constraint solve
+        :param extra_constraints: extra constraints (claripy.E objects) to add to the solver for this solve
+        :param solver: a solver object, native to the backend, to assist in the evaluation
+        :return: a list of up to n tuples, where each tuple is a solution for all expressions
+        """
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for batch evaluation" % self.__class__.__name__)
+
+        converted_exprs = [ self.convert(ex, result=result if n == 1 else None) for ex in exprs ]
+
+        return self._batch_eval(converted_exprs, n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+
+    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None):
+        """
+        Evaluate one or multiple expressions.
+
+        :param exprs: a list of expressions to evaluate
+        :param n: number of different solutions to return
+        :param result: a cached Result from the last constraint solve
+        :param extra_constraints: extra constraints (claripy.E objects) to add to the solver for this solve
+        :param solver: a solver object, native to the backend, to assist in the evaluation
+        :return: a list of up to n tuples, where each tuple is a solution for all expressions
+        """
+
+        raise BackendError("backend doesn't support batch_eval()")
 
     def min(self, expr, result=None, extra_constraints=(), solver=None):
         '''

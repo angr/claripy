@@ -157,6 +157,18 @@ class CompositeFrontend(Frontend):
     def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
         return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
+    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+
+        the_solver = None
+        for expr in exprs:
+            s = self._merged_solver_for(self._all_variables(expr, extra_constraints=extra_constraints))
+            if the_solver is None:
+                the_solver = s
+            elif the_solver is not s:
+                raise ClaripyFrontendError("having expressions across multiple solvers is not supported by _batch_eval() right now")
+
+        return the_solver.batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+
     def _max(self, e, extra_constraints=(), exact=None, cache=None):
         return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
@@ -275,3 +287,4 @@ class CompositeFrontend(Frontend):
         return [ s.branch() for s in self._solver_list if len(s.variables) > 0 ]
 
 from ..result import Result
+from ..errors import ClaripyFrontendError

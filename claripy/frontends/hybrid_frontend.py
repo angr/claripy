@@ -104,6 +104,23 @@ class HybridFrontend(FullFrontend):
         # if that fails, try the exact backend
         return super(HybridFrontend, self)._eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
+    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+
+        if exact is False:
+            try:
+                return self._approximation_frontend.batch_eval(exprs, n, extra_constraints=extra_constraints)
+
+            except ClaripyFrontendError:
+                l.debug("Approximation failed. Falling back on exact _batch_eval()")
+
+        return super(HybridFrontend, self)._batch_eval(
+                exprs,
+                n,
+                extra_constraints=extra_constraints,
+                exact=exact,
+                cache=cache
+        )
+
     def _max(self, e, extra_constraints=(), exact=None, cache=None):
         # if approximating, try the approximation backend
         if exact is False:

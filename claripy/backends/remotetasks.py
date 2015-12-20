@@ -84,6 +84,13 @@ def eval(constraints, expr, n):
     z3.add(s, constraints)
     return z3.eval(s, expr, n)
 
+@app.task
+def batch_eval(constraints, exprs, n):
+    global z3
+    s = z3.solver()
+    z3.add(s, constraints)
+    return z3.batch_eval(s, exprs, n)
+
 def rename_model(mapping, model, transform=lambda x: x):
     print model
     return {

@@ -90,6 +90,18 @@ class FullFrontend(ConstrainedFrontend):
 
         return self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver())
 
+    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+        if not self.satisfiable(extra_constraints=extra_constraints):
+            raise UnsatError('unsat')
+
+        return self._solver_backend.batch_eval(
+                exprs,
+                n,
+                extra_constraints=extra_constraints,
+                result=self.result,
+                solver=self._get_solver()
+        )
+
     def _max(self, e, extra_constraints=(), exact=None, cache=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _max()")

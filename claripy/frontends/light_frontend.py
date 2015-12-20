@@ -34,6 +34,12 @@ class LightFrontend(ConstrainedFrontend):
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this eval().")
 
+    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+        try:
+            return self._solver_backend._batch_eval(exprs, n, result=self.result)
+        except BackendError:
+            raise ClaripyFrontendError("Light solver can't handle this batch_eval().")
+
     def _max(self, e, extra_constraints=(), exact=None, cache=None):
         try:
             return self._solver_backend.max(e, result=self.result)

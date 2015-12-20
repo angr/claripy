@@ -81,6 +81,12 @@ def raw_solver(solver_type):
     nose.tools.assert_true(s.solution(y, 15))
     nose.tools.assert_false(s.solution(y, 13))
 
+    # Batch evaluation
+    results = s.batch_eval([x + 5, x + 6, 3], 2)
+    nose.tools.assert_equal(len(results), 1)
+    nose.tools.assert_equal(results[0][0], 15) # x + 5
+    nose.tools.assert_equal(results[0][1], 16) # x + 6
+    nose.tools.assert_equal(results[0][2], 3)  # constant
 
     shards = s.split()
     nose.tools.assert_equal(len(shards), 2)
@@ -148,6 +154,19 @@ def raw_solver(solver_type):
         #nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 3 }) # constraints from min or max
         print "TODO: figure out why this is different now"
         nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 2, 2 }) # constraints from min or max
+
+    # Batch evaluation
+    s.add(y < 24)
+    s.add(z < x) # Just to make sure x, y, and z belong to the same solver, since batch evaluation does not support the
+                 # situation where expressions belong to more than one solver
+    results = s.batch_eval([x, y, z], 20)
+    nose.tools.assert_set_equal(
+        set(results),
+        {(21L, 23L, 1L), (22L, 23L, 3L), (22L, 23L, 2L), (22L, 23L, 4L), (21L, 22L, 4L), (21L, 23L, 4L), (22L, 23L, 0L),
+         (22L, 23L, 1L), (21L, 22L, 1L), (21L, 22L, 3L), (21L, 22L, 2L), (21L, 22L, 0L), (21L, 23L, 0L), (21L, 23L, 2L),
+         (21L, 23L, 3L)
+        }
+    )
 
     # test that False makes it unsat
     s = solver_type()

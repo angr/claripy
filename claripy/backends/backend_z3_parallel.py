@@ -93,6 +93,8 @@ class BackendZ3Parallel(BackendZ3):
         return self._background('_results', *args, **kwargs)
     def _eval(self, *args, **kwargs):
         return self._background('_eval', *args, **kwargs)
+    def _batch_eval(self, *args, **kwargs):
+        return self._background('_batch_eval', *args, **kwargs)
     def _min(self, *args, **kwargs):
         return self._background('_min', *args, **kwargs)
     def _max(self, *args, **kwargs):
