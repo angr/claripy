@@ -85,6 +85,14 @@ class ValueSet(BackendObject):
     def bits(self):
         return self.size()
 
+    @property
+    def cardinality(self):
+        card = 0
+        for si in self._regions.itervalues():
+            card += si.cardinality
+
+        return card
+
     @normalize_types
     def set_si(self, region, si):
         if not isinstance(si, StridedInterval):
