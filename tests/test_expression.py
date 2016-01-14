@@ -277,6 +277,15 @@ def test_bool():
     o = claripy.Or(*[False, False, False])
     nose.tools.assert_equal(bc.convert(o), False)
 
+
+def broken_test_istrue_concat():
+    a = claripy.BVS("a", 32)
+    b = a + 100
+    b_concat = b[31:8].concat(b[7:0])
+    a100 = a + 100
+    nose.tools.assert_true(claripy.is_true(b_concat == a100))
+
+
 if __name__ == '__main__':
     test_smudging()
     test_expression()
@@ -284,3 +293,4 @@ if __name__ == '__main__':
     for func, param in test_ite():
         func(param)
     test_if_stuff()
+    broken_test_istrue_concat()
