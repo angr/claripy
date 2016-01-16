@@ -123,6 +123,7 @@ def concat_simplifier(*args):
         if len(args) < len(orig_args):
             simplified = True
 
+    # here, we flatten any concats among the arguments
     i = 0
     while i < len(args):
         current = args[i]
@@ -131,6 +132,27 @@ def concat_simplifier(*args):
             args[i:i+1] = current.args
             i += len(current.args)
         else:
+            i += 1
+
+    # here, we consolidate any consecutive concats on extracts from the same variable
+    i = 0
+    prev_var = None
+    prev_left = None
+    prev_right = None
+    while i < len(args):
+        if args[i].op != 'Extract':
+            prev_var = None
+            prev_left = None
+            prev_right = None
+            i += 1
+        elif prev_var is args[i].args[2] and prev_right == args[i].args[0] + 1:
+            prev_right = args[i].args[1]
+            args[i-1:i+1] = [ ast.all_operations.Extract(prev_left, prev_right, prev_var) ]
+            simplified = True
+        else:
+            prev_left = args[i].args[0]
+            prev_right = args[i].args[1]
+            prev_var = args[i].args[2]
             i += 1
 
     # if any(a.op == 'Reverse' for a in args):
