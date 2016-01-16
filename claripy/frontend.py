@@ -333,7 +333,7 @@ class Frontend(ana.Storable):
             cached_n = 0
 
         # if there's enough in the cache, return that
-        if cached_n >= n or len(cached_results) < cached_n:
+        if cached_n >= n or len(cached_results) < cached_n or len(cached_results) >= n:
             return tuple(sorted(cached_results))[:n]
 
         # try to make sure we don't get more of the same
