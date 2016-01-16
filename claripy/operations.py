@@ -326,6 +326,10 @@ def not_simplifier(body):
         return ast.all_operations.ULT(body.args[0], body.args[1])
 
 def extract_simplifier(high, low, val):
+    # if we're extracting the whole value, return the value
+    if high - low + 1 == val.size():
+        return val
+
     if val.op == 'ZeroExt':
         extending_bits = val.args[0]
         if extending_bits == 0:
