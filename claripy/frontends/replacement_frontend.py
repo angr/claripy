@@ -26,9 +26,12 @@ class ReplacementFrontend(ConstrainedFrontend):
             return
 
         if not isinstance(new, Base):
-            if not isinstance(new, (int, long)):
+            if isinstance(new, bool):
+                new = BoolV(new)
+            elif isinstance(new, (int, long)):
+                new = BVV(new, old.length)
+            else:
                 return
-            new = BVV(new, old.length)
 
         if invalidate_cache:
             self._replacements = dict(self._replacements)
@@ -199,4 +202,5 @@ class ReplacementFrontend(ConstrainedFrontend):
 
 from ..ast.base import Base
 from ..ast.bv import BVV
+from ..ast.bool import BoolV
 from ..errors import ClaripyFrontendError
