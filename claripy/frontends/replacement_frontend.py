@@ -18,11 +18,14 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
-    def add_replacement(self, old, new, invalidate_cache=True, replace=True):
+    def add_replacement(self, old, new, invalidate_cache=True, replace=True, promote=True):
         if not isinstance(old, Base):
             return
 
-        if not replace and old in self._replacements:
+        if not replace and old.cache_key in self._replacements:
+            return
+
+        if not promote and old.cache_key in self._replacement_cache:
             return
 
         if not isinstance(new, Base):
@@ -165,14 +168,16 @@ class ReplacementFrontend(ConstrainedFrontend):
             return super(ReplacementFrontend, self)._filter_single_constraint(e)
 
     def _add_constraints(self, constraints, **kwargs):
-        for c in constraints:
-            if self._auto_replace and isinstance(c, Base) and c.op == '__eq__' and isinstance(c.args[0], Base) and isinstance(c.args[1], Base):
-                #print c; import ipdb; ipdb.set_trace()
-                if c.args[0].symbolic ^ c.args[1].symbolic:
-                    if c.args[0].cache_key not in self._replacements and c.args[0].cache_key not in self._replacement_cache:
-                        self.add_replacement(c.args[0], c.args[1], invalidate_cache=True)
-                    elif c.args[1].cache_key not in self._replacements and c.args[1].cache_key not in self._replacement_cache:
-                        self.add_replacement(c.args[1], c.args[0], invalidate_cache=True)
+        if self._auto_replace:
+            for c in constraints:
+                if not isinstance(c, Base) or not c.symbolic:
+                    continue
+
+                if c.op == 'Not':
+                    self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
+                elif c.op == '__eq__' and c.args[0].symbolic ^ c.args[1].symbolic:
+                    s,c = c.args if c.args[0].symbolic else c.args[::-1]
+                    self.add_replacement(s, c, replace=False, promote=True, invalidate_cache=True)
 
         ConstrainedFrontend._add_constraints(self, constraints, **kwargs)
 
@@ -202,5 +207,5 @@ class ReplacementFrontend(ConstrainedFrontend):
 
 from ..ast.base import Base
 from ..ast.bv import BVV
-from ..ast.bool import BoolV
+from ..ast.bool import BoolV, false
 from ..errors import ClaripyFrontendError

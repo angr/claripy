@@ -55,6 +55,12 @@ def test_replacement_solver():
     assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
+    sr = claripy.ReplacementFrontend(claripy.HybridFrontend(claripy.backends.z3))
+    b = claripy.BoolS('b')
+    assert sr._replacement(b) is b
+    sr.add(claripy.Not(b))
+    assert sr._replacement(b) is claripy.false
+
 def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
