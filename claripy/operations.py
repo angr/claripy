@@ -630,7 +630,11 @@ reversed_ops = {
 
 inverse_operations = {
     '__eq__': '__ne__',
-    '__ne__': '__eq__'
+    '__ne__': '__eq__',
+    '__gt__': '__le__',
+    '__lt__': '__ge__',
+    '__ge__': '__lt__',
+    '__le__': '__gt__'
 }
 
 length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
