@@ -7,7 +7,7 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, auto_replace=None, replace_constraints=None, **kwargs):
+    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, auto_replace=None, replace_constraints=None, balancer=None, **kwargs):
         kwargs['cache'] = kwargs.get('cache', False)
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
@@ -17,6 +17,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
+        self._balancer = Balancer(self._actual_frontend._solver_backend) if balancer is None else balancer
 
     def add_replacement(self, old, new, invalidate_cache=True, replace=True, promote=True):
         if not isinstance(old, Base):
@@ -70,7 +71,7 @@ class ReplacementFrontend(ConstrainedFrontend):
     #
 
     def _blank_copy(self):
-        s = ReplacementFrontend(self._actual_frontend._blank_copy())
+        s = ReplacementFrontend(self._actual_frontend._blank_copy(), balancer=self._balancer)
         s._auto_replace = self._auto_replace
         s._replace_constraints = self._replace_constraints
         s._unsafe_replacement = self._unsafe_replacement
@@ -170,14 +171,26 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _add_constraints(self, constraints, **kwargs):
         if self._auto_replace:
             for c in constraints:
-                if not isinstance(c, Base) or not c.symbolic:
+                # the badass thing here would be to use the *replaced* constraint, but
+                # we don't currently support chains of replacements, so we'll do a
+                # less effective flat-replacement with the original constraint
+                #rc = self._replacement(c)
+                rc = c
+                if not isinstance(rc, Base) or not rc.symbolic:
                     continue
 
-                if c.op == 'Not':
+                if rc.op == 'Not':
                     self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
-                elif c.op == '__eq__' and c.args[0].symbolic ^ c.args[1].symbolic:
-                    s,c = c.args if c.args[0].symbolic else c.args[::-1]
-                    self.add_replacement(s, c, replace=False, promote=True, invalidate_cache=True)
+                elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
+                    old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
+                    self.add_replacement(old, new, promote=True, invalidate_cache=True)
+                else:
+                    satisfiable, replacements = self._balancer.constraint_to_si(rc)
+                    if not satisfiable:
+                        self.add_replacement(rc, false)
+                    for old, new in replacements:
+                        rold = self._replacement(old)
+                        self.add_replacement(old, rold.intersection(new))
 
         ConstrainedFrontend._add_constraints(self, constraints, **kwargs)
 
@@ -209,3 +222,4 @@ from ..ast.base import Base
 from ..ast.bv import BVV
 from ..ast.bool import BoolV, false
 from ..errors import ClaripyFrontendError
+from ..balancer import Balancer
