@@ -418,35 +418,39 @@ class Base(ana.Storable):
         :param variable_set: for optimization, ast's without these variables are not checked for replacing
         :param replacements: dictionary of hashes to their replacements
         """
-        if variable_set is None:
-            variable_set = {}
+        try:
+            if variable_set is None:
+                variable_set = {}
 
-        hash_key = self.cache_key
+            hash_key = self.cache_key
 
-        if hash_key in replacements:
-            r = replacements[hash_key]
-        elif not self.variables.issuperset(variable_set):
-            r = self
-        else:
-            new_args = [ ]
-            replaced = False
-
-            for a in self.args:
-                if isinstance(a, Base):
-                    new_a = a._replace(replacements=replacements, variable_set=variable_set)
-                    replaced |= hash(new_a) != hash(a)
-                else:
-                    new_a = a
-
-                new_args.append(new_a)
-
-            if replaced:
-                r = self.make_like(self.op, tuple(new_args))
-            else:
+            if hash_key in replacements:
+                r = replacements[hash_key]
+            elif not self.variables.issuperset(variable_set):
                 r = self
+            else:
+                new_args = [ ]
+                replaced = False
 
-        replacements[hash_key] = r
-        return r
+                for a in self.args:
+                    if isinstance(a, Base):
+                        new_a = a._replace(replacements=replacements, variable_set=variable_set)
+                        replaced |= new_a is not a
+                    else:
+                        new_a = a
+
+                    new_args.append(new_a)
+
+                if replaced:
+                    r = self.make_like(self.op, tuple(new_args))
+                else:
+                    r = self
+
+            replacements[hash_key] = r
+            return r
+        except ClaripyReplacementError:
+            l.error("Replacement error:", exc_info=True)
+            return self
 
     def swap_args(self, new_args, new_length=None):
         '''
@@ -540,11 +544,7 @@ class Base(ana.Storable):
         '''
         Returns an AST with all instances of the AST 'old' replaced with AST 'new'
         '''
-        if not isinstance(old, Base) or not isinstance(new, Base):
-            raise ClaripyOperationError('replacements must be AST nodes')
-        if type(old) is not type(new):
-            raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
-        old._check_replaceability(new)
+        self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
         return self._replace(replacements, old.variables)
 
@@ -553,18 +553,22 @@ class Base(ana.Storable):
         :param replacements: a dictionary of asts to replace and their replacements
         :return: an AST with all instances of ast's in replacements
         """
-        for old, new in replacements.items():
-            old = old.ast
-            if not isinstance(old, Base) or not isinstance(new, Base):
-                raise ClaripyOperationError('replacements must be AST nodes')
-            if type(old) is not type(new):
-                raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
-            old._check_replaceability(new)
+        #for old, new in replacements.items():
+        #   old = old.ast
+        #   if not isinstance(old, Base) or not isinstance(new, Base):
+        #       raise ClaripyOperationError('replacements must be AST nodes')
+        #   if type(old) is not type(new):
+        #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
+        #   old._check_replaceability(new)
 
         return self._replace(replacements)
 
-    def _check_replaceability(self, new):
-        pass
+    @staticmethod
+    def _check_replaceability(old, new):
+        if not isinstance(old, Base) or not isinstance(new, Base):
+            raise ClaripyReplacementError('replacements must be AST nodes')
+        if type(old) is not type(new):
+            raise ClaripyReplacementError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
 
     def _identify_vars(self, all_vars, counter):
         if self.op == 'BVS':
@@ -793,7 +797,7 @@ def simplify(e):
 
         return s
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError
+from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyReplacementError
 from .. import operations
 from ..backend_object import BackendObject
 from ..backend_manager import backends
