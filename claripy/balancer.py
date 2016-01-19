@@ -111,7 +111,8 @@ class Balancer(object):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
-                if not isinstance(self._backend.convert(larger_cond_arg), Base):
+                larger_cond_arg_bo = self._backend.convert(larger_cond_arg)
+                if not isinstance(larger_cond_arg_bo, Base):
                     return self._simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
             else:
                 return self._simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
@@ -183,9 +184,10 @@ class Balancer(object):
 
         else:
             cond_op, cond_arg = cond
-            if type(self._backend.convert(cond_arg)) in (int, long): #pylint:disable=unidiomatic-typecheck
+            cond_arg_bo = self._backend.convert(cond_arg)
+            if type(cond_arg_bo) in (int, long): #pylint:disable=unidiomatic-typecheck
                 cond_arg = _all_operations.BVV(cond_arg, ast.size())
-            elif type(self._backend.convert(cond_arg)) in (vsa.StridedInterval, vsa.DiscreteStridedIntervalSet): #pylint:disable=unidiomatic-typecheck
+            elif isinstance(cond_arg_bo, vsa.StridedInterval):
                 if ast.size() > cond_arg.size():
                     # Make sure two operands have the same size
                     cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)
@@ -335,15 +337,15 @@ class Balancer(object):
             # This layer of __add__ can be removed
             return self._simplify(argr.op, argr.args, argr, condition)
         else:
+            argl_bo = self._backend.convert(argl)
+            argr_bo = self._backend.convert(argr)
 
-            if isinstance(self._backend.convert(argl), vsa.StridedInterval):
+            if isinstance(argl_bo, vsa.StridedInterval):
                 new_cond = (condition[0], condition[1] - argl)
                 return self._simplify(argr.op, argr.args, argr, new_cond)
-
-            elif isinstance(self._backend.convert(argr), vsa.StridedInterval):
+            elif isinstance(argr_bo, vsa.StridedInterval):
                 new_cond = (condition[0], condition[1] - argr)
                 return self._simplify(argl.op, argl.args, argl, new_cond)
-
             else:
                 return expr, condition
 
@@ -444,39 +446,39 @@ class Balancer(object):
 
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
-            trueexpr = self._backend.convert(trueexpr)
-            falseexpr = self._backend.convert(falseexpr)
+            trueexpr_bo = self._backend.convert(trueexpr)
+            falseexpr_bo = self._backend.convert(falseexpr)
 
             if is_unsigned:
                 if is_lt:
                     if is_equal:
-                        take_true = is_true(trueexpr.ULE(rhs_bo))
-                        take_false = is_true(falseexpr.ULE(rhs_bo))
+                        take_true = is_true(trueexpr_bo.ULE(rhs_bo))
+                        take_false = is_true(falseexpr_bo.ULE(rhs_bo))
                     else:
-                        take_true = is_true(falseexpr.ULT(rhs_bo))
-                        take_false = is_true(trueexpr.ULT(rhs_bo))
+                        take_true = is_true(falseexpr_bo.ULT(rhs_bo))
+                        take_false = is_true(trueexpr_bo.ULT(rhs_bo))
                 else:
                     if is_equal:
-                        take_true = is_true(trueexpr.UGE(rhs_bo))
-                        take_false = is_true(falseexpr.UGE(rhs_bo))
+                        take_true = is_true(trueexpr_bo.UGE(rhs_bo))
+                        take_false = is_true(falseexpr_bo.UGE(rhs_bo))
                     else:
-                        take_true = is_true(trueexpr.UGT(rhs_bo))
-                        take_false = is_true(falseexpr.UGT(rhs_bo))
+                        take_true = is_true(trueexpr_bo.UGT(rhs_bo))
+                        take_false = is_true(falseexpr_bo.UGT(rhs_bo))
             else:
                 if is_lt:
                     if is_equal:
-                        take_true = is_true(trueexpr <= rhs_bo)
-                        take_false = is_true(falseexpr <= rhs_bo)
+                        take_true = is_true(trueexpr_bo <= rhs_bo)
+                        take_false = is_true(falseexpr_bo <= rhs_bo)
                     else:
-                        take_true = is_true(trueexpr < rhs_bo)
-                        take_false = is_true(falseexpr < rhs_bo)
+                        take_true = is_true(trueexpr_bo < rhs_bo)
+                        take_false = is_true(falseexpr_bo < rhs_bo)
                 else:
                     if is_equal:
-                        take_true = is_true(trueexpr >= rhs_bo)
-                        take_false = is_true(falseexpr >= rhs_bo)
+                        take_true = is_true(trueexpr_bo >= rhs_bo)
+                        take_false = is_true(falseexpr_bo >= rhs_bo)
                     else:
-                        take_true = is_true(trueexpr > rhs_bo)
-                        take_false = is_true(falseexpr > rhs_bo)
+                        take_true = is_true(trueexpr_bo > rhs_bo)
+                        take_false = is_true(falseexpr_bo > rhs_bo)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -626,6 +628,8 @@ class Balancer(object):
 
         # TODO: Make sure the rhs doesn't contain any IfProxy
 
+        lhs_bo = self._backend.convert(lhs)
+
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
 
@@ -657,16 +661,12 @@ class Balancer(object):
             else:
                 # Not satisfiable
                 return False, [ ]
-        elif isinstance(self._backend.convert(lhs), vsa.StridedInterval):
-            if not isinstance(self._backend.convert(lhs), vsa.StridedInterval):
-                lhs = _all_operations.SI(to_conv=lhs)
-
+        elif isinstance(lhs_bo, vsa.StridedInterval):
             rhs_bo = self._backend.convert(rhs)
 
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
-                lhs_bo = self._backend.convert(lhs)
                 rhs_bo = self._backend.convert(rhs)
 
                 if lhs_bo.upper_bound <= rhs_bo.upper_bound:
