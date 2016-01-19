@@ -175,6 +175,15 @@ def lshift_simplifier(val, shift):
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
 def eq_simplifier(a, b):
+    if isinstance(a, ast.Bool) and b is ast.true:
+        return a
+    if isinstance(b, ast.Bool) and a is ast.true:
+        return b
+    if isinstance(a, ast.Bool) and b is ast.false:
+        return ast.all_operations.Not(a)
+    if isinstance(b, ast.Bool) and a is ast.false:
+        return ast.all_operations.Not(b)
+
     # TODO: all these ==/!= might really slow things down...
     if a.op == 'If':
         if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
