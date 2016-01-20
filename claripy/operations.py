@@ -260,7 +260,7 @@ def ne_simplifier(a, b):
             if ast.all_operations.is_true(a_bit != b_bit):
                 return ast.all_operations.true
 
-def reverse_simplifier(body):
+def boolean_reverse_simplifier(body):
     if body.op == 'Reverse':
         return body.args[0]
 
@@ -282,7 +282,7 @@ def reverse_simplifier(body):
                 else:
                     return first_ast[upper_bound:0]
 
-def and_simplifier(*args):
+def boolean_and_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
@@ -293,7 +293,7 @@ def and_simplifier(*args):
         else:
             return ast.all_operations.true
 
-def or_simplifier(*args):
+def boolean_or_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
@@ -304,7 +304,47 @@ def or_simplifier(*args):
         else:
             return ast.all_operations.false
 
-def not_simplifier(body):
+def bitwise_add_simplifier(a, b):
+    if (a == 0).is_true():
+        return b
+    elif (b == 0).is_true():
+        return a
+
+def bitwise_sub_simplifier(a, b):
+    if (b == 0).is_true():
+        return a
+    elif a is b or (a == b).is_true():
+        return ast.all_operations.BVV(0, a.size())
+
+def bitwise_xor_simplifier(a, b):
+    if (a == 0).is_true():
+        return b
+    elif (b == 0).is_true():
+        return a
+    elif a is b or (a == b).is_true():
+        return ast.all_operations.BVV(0, a.size())
+
+def bitwise_or_simplifier(a, b):
+    if (a == 0).is_true():
+        return b
+    elif (b == 0).is_true():
+        return a
+    elif (a == b).is_true():
+        return a
+    elif a is b:
+        return a
+
+def bitwise_and_simplifier(a, b):
+    if (a == 2**a.size()-1).is_true():
+        return b
+    elif (b == 2**a.size()-1).is_true():
+        return a
+    elif (a == b).is_true():
+        return a
+    elif a is b:
+        return a
+
+def boolean_not_simplifier(body):
     if body.op == '__eq__':
         return body.args[0] != body.args[1]
     elif body.op == '__ne__':
@@ -422,10 +462,10 @@ def extract_simplifier(high, low, val):
 
 
 simplifiers = {
-    'Reverse': reverse_simplifier,
-    'And': and_simplifier,
-    'Or': or_simplifier,
-    'Not': not_simplifier,
+    'Reverse': boolean_reverse_simplifier,
+    'And': boolean_and_simplifier,
+    'Or': boolean_or_simplifier,
+    'Not': boolean_not_simplifier,
     'Extract': extract_simplifier,
     'Concat': concat_simplifier,
     'If': if_simplifier,
@@ -433,6 +473,11 @@ simplifiers = {
     '__rshift__': rshift_simplifier,
     '__eq__': eq_simplifier,
     '__ne__': ne_simplifier,
+    '__or__': bitwise_or_simplifier,
+    '__and__': bitwise_and_simplifier,
+    '__xor__': bitwise_xor_simplifier,
+    '__add__': bitwise_add_simplifier,
+    '__sub__': bitwise_sub_simplifier,
 }
 
 #
