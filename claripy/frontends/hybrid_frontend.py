@@ -10,7 +10,7 @@ from .replacement_frontend import ReplacementFrontend
 class HybridFrontend(FullFrontend):
     def __init__(self, solver_backend, approximation_frontend=None, **kwargs):
         FullFrontend.__init__(self, solver_backend, **kwargs)
-        self._approximation_frontend = approximation_frontend if approximation_frontend is not None else ReplacementFrontend(LightFrontend(backends.vsa), replace_constraints=True)
+        self._approximation_frontend = approximation_frontend if approximation_frontend is not None else ReplacementFrontend(LightFrontend(backends.vsa), replace_constraints=True, complex_auto_replace=True)
 
     #
     # Storable support

@@ -7,12 +7,13 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, auto_replace=None, replace_constraints=None, balancer=None, **kwargs):
+    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None, balancer=None, **kwargs):
         kwargs['cache'] = kwargs.get('cache', False)
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
         self._auto_replace = True if auto_replace is None else auto_replace
+        self._complex_auto_replace = False if complex_auto_replace is None else complex_auto_replace
         self._replace_constraints = False if replace_constraints is None else replace_constraints
         self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
         self._replacements = { } if replacements is None else replacements
@@ -184,7 +185,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                 elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
                     old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
                     self.add_replacement(old, new, promote=True, invalidate_cache=True)
-                else:
+                elif self._complex_auto_replace:
                     satisfiable, replacements = self._balancer.constraint_to_si(rc)
                     if not satisfiable:
                         self.add_replacement(rc, false)
