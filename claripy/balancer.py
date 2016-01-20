@@ -34,7 +34,7 @@ class Balancer(object):
     def _simplify(self, op, args, expr, condition):
         handler_name = "_simplify_%s" % op
         if not hasattr(self, handler_name):
-            l.error('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
+            l.warning('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
             return expr, condition
 
         new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
@@ -264,158 +264,37 @@ class Balancer(object):
 
             return new_ifproxy, condition
 
-    def _simplify_I(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-        return expr, condition
-
-    def _simplify_If(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-        return expr, condition
-
     def _simplify_Reverse(self, args, expr, condition): #pylint:disable=unused-argument
         # TODO: How should we deal with Reverse in a smart way?
-
         arg = args[0]
-
         return self._simplify(arg.op, arg.args, arg, condition)
 
-    def _simplify_widen(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify_intersection(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___or__(self, args, expr, condition):
-        claripy = expr._claripy
-        argl, argr = args
-        if argl is argr or claripy.is_true(argl == argr):
-            return self._simplify(argl.op, argl.args, argl, condition)
-        elif claripy.is_true(argl == 0):
-            return self._simplify(argr.op, argr.args, argr, condition)
-        elif claripy.is_true(argr == 0):
-            return self._simplify(argl.op, argl.args, argl, condition)
-        else:
-            return expr, condition
-
     def _simplify___and__(self, args, expr, condition):
-
         argl, argr = args
-        if argl is argr:
-            # Operands are the same one!
-            # We can safely remove this layer of __and__
-            return self._simplify(argl.op, argl.args, argl, condition)
-
-        elif argl.structurally_match(argr):
+        if argl.structurally_match(argr):
             # Operands are the same
             # Safely remove the __and__ operation
             return self._simplify(argl.op, argl.args, argl, condition)
-
         else:
             # We cannot handle it
             return expr, condition
 
-    def _simplify___xor__(self, args, expr, condition):
-        argl, argr = args
-
-        if is_true(argl == 0):
-            # :-)
-            return self._simplify(argr.op, argr.args, argr, condition)
-        elif is_true(argr == 0):
-            # :-)
-            return self._simplify(argl.op, argl.args, argl, condition)
-        else:
-            # :-(
-            return expr, condition
-
     def _simplify___add__(self, args, expr, condition):
-
         argl, argr = args
-        if is_true(argr == 0):
-            # This layer of __add__ can be removed
-            return self._simplify(argl.op, argl.args, argl, condition)
-        elif is_true(argl == 0):
-            # This layer of __add__ can be removed
-            return self._simplify(argr.op, argr.args, argr, condition)
-        else:
-            argl_bo = self._backend.convert(argl)
-            argr_bo = self._backend.convert(argr)
 
-            if isinstance(argl_bo, vsa.StridedInterval):
-                new_cond = (condition[0], condition[1] - argl)
-                return self._simplify(argr.op, argr.args, argr, new_cond)
-            elif isinstance(argr_bo, vsa.StridedInterval):
-                new_cond = (condition[0], condition[1] - argr)
-                return self._simplify(argl.op, argl.args, argl, new_cond)
-            else:
-                return expr, condition
+        if not argl.symbolic:
+            new_cond = (condition[0], condition[1] - argl)
+            return self._simplify(argr.op, argr.args, argr, new_cond)
+        elif not argr.symbolic:
+            new_cond = (condition[0], condition[1] - argr)
+            return self._simplify(argl.op, argl.args, argl, new_cond)
+        else:
+            return expr, condition
 
     def _simplify___radd__(self, args, expr, condition):
         return self._simplify___add__((args[1], args[0]), expr, condition)
 
-    def _simplify___sub__(self, args, expr, condition):
-        """
-
-        :param args:
-        :param expr:
-        :param condition:
-        :return:
-        """
-
-        argl, argr = args
-        if is_true(argr == 0):
-            return self._simplify(argl.op, argl.args, argl, condition)
-        elif is_true(argl == 0):
-            return self._simplify(argr.op, argr.args, argr, condition)
-        else:
-            return expr, condition
-
-    def _simplify___rsub__(self, args, expr, condition):
-        return self._simplify___sub__((args[1], args[0]), expr, condition)
-
-    def _simplify___rshift__(self, args, expr, condition):
-
-        arg, offset = args
-        if is_true(offset == 0):
-            return self._simplify(arg.op, arg.args, arg, condition)
-        else:
-            return expr, condition
-
-    def _simplify___lshift__(self, args, expr, condition):
-
-        arg, offset = args
-        if is_true(offset == 0):
-            return self._simplify(arg.op, arg.args, arg, condition)
-        else:
-            return expr, condition
-
-    def _simplify___invert__(self, args, expr, condition):
-
-        arg = args[0]
-        if arg.op == 'If':
-            new_arg = _all_operations.If(args[0], args[1].__invert__(), args[2].__invert__())
-
-            return self._simplify(new_arg.op, new_arg.args, expr, condition)
-
-        else:
-            return expr, condition
-
-    def _simplify_union(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___mod__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___div__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___eq__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        l.error('_simplify___eq__() should not exist. This is just a workaround for VSA. Fish will fix the issue later.')
-
-        return expr, condition
+    # TODO: simplify __sub__
 
     def _handle_comparison(self, args, comp=None):
         """
