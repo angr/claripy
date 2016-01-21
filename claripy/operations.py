@@ -65,6 +65,11 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
     _op.calc_length = calc_length
     return _op
 
+def reversed_op(op_func):
+    def _reversed_op(*args):
+        return op_func(*args[::-1])
+    return _reversed_op
+
 #
 # Extra processors
 #
