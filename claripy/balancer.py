@@ -14,26 +14,7 @@ class Balancer(object):
 
     def constraint_to_si(self, expr):
         """
-        We take in constraints, and convert them into constrained strided-intervals.
-
-        For example, expr =
-        <A __ne__ (
-                    <A Extract (0,
-                                0,
-                                <A Concat (<A BVV(0x0, 63)>,
-                                            <A If (
-                                                    <A ULE (<A SI_1208<64>0x1[0x0, 0x100]>, <A BVV(0x27, 64)>)>,
-                                                    <A BVV(0x1, 1)>,
-                                                    <A BVV(0x0, 1)>
-                                            )>
-                                )>
-                    )>,
-                    0
-        )>
-        The result would be
-        [ ( SI_1208<64>0x1[0x0, 0x100], SI_XXXX<64>0x1[0x0, 0x27] ) ]
-
-        As we can only deal with bits, we will convert all integers into BVV during the solving and conversion process.
+        We take in constraints, and return bounds (in the form of strided intervals) for the variables involved.
 
         :param expr: The constraint
         :return: whether the expr is satisfiable (boolean), and a list of tuples in form of
@@ -44,7 +25,7 @@ class Balancer(object):
             sat, lst = self._handle(expr.op, expr.args)
             return sat, lst
 
-        except ClaripyBalancerError as ex:
+        except (BackendError,ClaripyBalancerError) as ex:
             l.error('VSASimplifiers raised an exception %s. Please report it.', str(ex), exc_info=True)
 
             # return the dummy result
@@ -53,14 +34,13 @@ class Balancer(object):
     def _simplify(self, op, args, expr, condition):
         handler_name = "_simplify_%s" % op
         if not hasattr(self, handler_name):
-            l.error('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
+            l.warning('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
             return expr, condition
 
         new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
         return new_expr, new_cond
 
     def _handle(self, op, args):
-
         if len(args) == 2:
             lhs, rhs = args
 
@@ -131,7 +111,8 @@ class Balancer(object):
             # We can safely eliminate this layer of ZeroExt
             if cond_arg.size() < arg.size():
                 larger_cond_arg = cond_arg.zero_extend(arg.size() - cond_arg.size())
-                if not isinstance(self._backend.convert(larger_cond_arg), Base):
+                larger_cond_arg_bo = self._backend.convert(larger_cond_arg)
+                if not isinstance(larger_cond_arg_bo, Base):
                     return self._simplify(arg.op, arg.args, arg, (cond_op, larger_cond_arg))
             else:
                 return self._simplify(arg.op, arg.args, arg, (cond_op, cond_arg[ arg.size() - 1 : 0 ]))
@@ -203,9 +184,10 @@ class Balancer(object):
 
         else:
             cond_op, cond_arg = cond
-            if type(self._backend.convert(cond_arg)) in (int, long): #pylint:disable=unidiomatic-typecheck
+            cond_arg_bo = self._backend.convert(cond_arg)
+            if type(cond_arg_bo) in (int, long): #pylint:disable=unidiomatic-typecheck
                 cond_arg = _all_operations.BVV(cond_arg, ast.size())
-            elif type(self._backend.convert(cond_arg)) in (vsa.StridedInterval, vsa.DiscreteStridedIntervalSet, bv.BVV): #pylint:disable=unidiomatic-typecheck
+            elif isinstance(cond_arg_bo, vsa.StridedInterval):
                 if ast.size() > cond_arg.size():
                     # Make sure two operands have the same size
                     cond_arg = _all_operations.ZeroExt(ast.size() - cond_arg.size(), cond_arg)
@@ -282,158 +264,37 @@ class Balancer(object):
 
             return new_ifproxy, condition
 
-    def _simplify_I(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-        return expr, condition
-
-    def _simplify_If(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-        return expr, condition
-
     def _simplify_Reverse(self, args, expr, condition): #pylint:disable=unused-argument
         # TODO: How should we deal with Reverse in a smart way?
-
         arg = args[0]
-
         return self._simplify(arg.op, arg.args, arg, condition)
 
-    def _simplify_widen(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify_intersection(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___or__(self, args, expr, condition):
-        claripy = expr._claripy
-        argl, argr = args
-        if argl is argr or claripy.is_true(argl == argr):
-            return self._simplify(argl.op, argl.args, argl, condition)
-        elif claripy.is_true(argl == 0):
-            return self._simplify(argr.op, argr.args, argr, condition)
-        elif claripy.is_true(argr == 0):
-            return self._simplify(argl.op, argl.args, argl, condition)
-        else:
-            return expr, condition
-
     def _simplify___and__(self, args, expr, condition):
-
         argl, argr = args
-        if argl is argr:
-            # Operands are the same one!
-            # We can safely remove this layer of __and__
-            return self._simplify(argl.op, argl.args, argl, condition)
-
-        elif argl.structurally_match(argr):
+        if argl.structurally_match(argr):
             # Operands are the same
             # Safely remove the __and__ operation
             return self._simplify(argl.op, argl.args, argl, condition)
-
         else:
             # We cannot handle it
             return expr, condition
 
-    def _simplify___xor__(self, args, expr, condition):
-        argl, argr = args
-
-        if is_true(argl == 0):
-            # :-)
-            return self._simplify(argr.op, argr.args, argr, condition)
-        elif is_true(argr == 0):
-            # :-)
-            return self._simplify(argl.op, argl.args, argl, condition)
-        else:
-            # :-(
-            return expr, condition
-
     def _simplify___add__(self, args, expr, condition):
-
         argl, argr = args
-        if is_true(argr == 0):
-            # This layer of __add__ can be removed
-            return self._simplify(argl.op, argl.args, argl, condition)
-        elif is_true(argl == 0):
-            # This layer of __add__ can be removed
-            return self._simplify(argr.op, argr.args, argr, condition)
+
+        if argl.singlevalued:
+            new_cond = (condition[0], condition[1] - argl)
+            return self._simplify(argr.op, argr.args, argr, new_cond)
+        elif argr.singlevalued:
+            new_cond = (condition[0], condition[1] - argr)
+            return self._simplify(argl.op, argl.args, argl, new_cond)
         else:
-
-            if isinstance(self._backend.convert(argl), bv.BVV):
-                new_cond = (condition[0], condition[1] - argl)
-                return self._simplify(argr.op, argr.args, argr, new_cond)
-
-            elif isinstance(self._backend.convert(argr), bv.BVV):
-                new_cond = (condition[0], condition[1] - argr)
-                return self._simplify(argl.op, argl.args, argl, new_cond)
-
-            else:
-                return expr, condition
+            return expr, condition
 
     def _simplify___radd__(self, args, expr, condition):
         return self._simplify___add__((args[1], args[0]), expr, condition)
 
-    def _simplify___sub__(self, args, expr, condition):
-        """
-
-        :param args:
-        :param expr:
-        :param condition:
-        :return:
-        """
-
-        argl, argr = args
-        if is_true(argr == 0):
-            return self._simplify(argl.op, argl.args, argl, condition)
-        elif is_true(argl == 0):
-            return self._simplify(argr.op, argr.args, argr, condition)
-        else:
-            return expr, condition
-
-    def _simplify___rsub__(self, args, expr, condition):
-        return self._simplify___sub__((args[1], args[0]), expr, condition)
-
-    def _simplify___rshift__(self, args, expr, condition):
-
-        arg, offset = args
-        if is_true(offset == 0):
-            return self._simplify(arg.op, arg.args, arg, condition)
-        else:
-            return expr, condition
-
-    def _simplify___lshift__(self, args, expr, condition):
-
-        arg, offset = args
-        if is_true(offset == 0):
-            return self._simplify(arg.op, arg.args, arg, condition)
-        else:
-            return expr, condition
-
-    def _simplify___invert__(self, args, expr, condition):
-
-        arg = args[0]
-        if arg.op == 'If':
-            new_arg = _all_operations.If(args[0], args[1].__invert__(), args[2].__invert__())
-
-            return self._simplify(new_arg.op, new_arg.args, expr, condition)
-
-        else:
-            return expr, condition
-
-    def _simplify_union(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___mod__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___div__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        return expr, condition
-
-    def _simplify___eq__(self, args, expr, condition): #pylint:disable=unused-argument,no-self-use
-
-        l.error('_simplify___eq__() should not exist. This is just a workaround for VSA. Fish will fix the issue later.')
-
-        return expr, condition
+    # TODO: simplify __sub__
 
     def _handle_comparison(self, args, comp=None):
         """
@@ -464,39 +325,39 @@ class Balancer(object):
 
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
-            trueexpr = self._backend.convert(trueexpr)
-            falseexpr = self._backend.convert(falseexpr)
+            trueexpr_bo = self._backend.convert(trueexpr)
+            falseexpr_bo = self._backend.convert(falseexpr)
 
             if is_unsigned:
                 if is_lt:
                     if is_equal:
-                        take_true = is_true(trueexpr.ULE(rhs_bo))
-                        take_false = is_true(falseexpr.ULE(rhs_bo))
+                        take_true = is_true(trueexpr_bo.ULE(rhs_bo))
+                        take_false = is_true(falseexpr_bo.ULE(rhs_bo))
                     else:
-                        take_true = is_true(falseexpr.ULT(rhs_bo))
-                        take_false = is_true(trueexpr.ULT(rhs_bo))
+                        take_true = is_true(falseexpr_bo.ULT(rhs_bo))
+                        take_false = is_true(trueexpr_bo.ULT(rhs_bo))
                 else:
                     if is_equal:
-                        take_true = is_true(trueexpr.UGE(rhs_bo))
-                        take_false = is_true(falseexpr.UGE(rhs_bo))
+                        take_true = is_true(trueexpr_bo.UGE(rhs_bo))
+                        take_false = is_true(falseexpr_bo.UGE(rhs_bo))
                     else:
-                        take_true = is_true(trueexpr.UGT(rhs_bo))
-                        take_false = is_true(falseexpr.UGT(rhs_bo))
+                        take_true = is_true(trueexpr_bo.UGT(rhs_bo))
+                        take_false = is_true(falseexpr_bo.UGT(rhs_bo))
             else:
                 if is_lt:
                     if is_equal:
-                        take_true = is_true(trueexpr <= rhs_bo)
-                        take_false = is_true(falseexpr <= rhs_bo)
+                        take_true = is_true(trueexpr_bo <= rhs_bo)
+                        take_false = is_true(falseexpr_bo <= rhs_bo)
                     else:
-                        take_true = is_true(trueexpr < rhs_bo)
-                        take_false = is_true(falseexpr < rhs_bo)
+                        take_true = is_true(trueexpr_bo < rhs_bo)
+                        take_false = is_true(falseexpr_bo < rhs_bo)
                 else:
                     if is_equal:
-                        take_true = is_true(trueexpr >= rhs_bo)
-                        take_false = is_true(falseexpr >= rhs_bo)
+                        take_true = is_true(trueexpr_bo >= rhs_bo)
+                        take_false = is_true(falseexpr_bo >= rhs_bo)
                     else:
-                        take_true = is_true(trueexpr > rhs_bo)
-                        take_false = is_true(falseexpr > rhs_bo)
+                        take_true = is_true(trueexpr_bo > rhs_bo)
+                        take_false = is_true(falseexpr_bo > rhs_bo)
 
             if take_true and take_false:
                 # It's always satisfiable
@@ -561,15 +422,8 @@ class Balancer(object):
     def _handle_SGT(self, args): return self._handle_comparison(args, comp='SGT')
     def _handle_SGE(self, args): return self._handle_comparison(args, comp='SGE')
 
-    def _handle_I(self, args): #pylint:disable=no-self-use
-        a = args[0]
-
-        if a in (False, 0):
-            return False, [ ]
-        elif isinstance(a, bv.BVV) and a.value == 0:
-            return False, [ ]
-
-        return True, [ ]
+    def _handle_BoolV(self, args): #pylint:disable=no-self-use
+        return args[0], [ ]
 
     def _handle_Not(self, args):
         """
@@ -584,9 +438,11 @@ class Balancer(object):
         expr_args = a.args
 
         # Reverse the op
-        expr_op = self.reversed_operations[expr_op]
-
-        return self._handle(expr_op, expr_args)
+        try:
+            expr_op = self.reversed_operations[expr_op]
+            return self._handle(expr_op, expr_args)
+        except KeyError:
+            return True, [ ]
 
     def _handle_And(self, args):
         """
@@ -611,16 +467,13 @@ class Balancer(object):
         return sat, lst
 
     def _handle_Or(self, args):
-
         if len(args) == 1:
             return self._handle(args[0].op, args[0].args)
 
         else:
             if len(args) > 0:
-                args = [ self._handle(a.op, a.args) for a in args ]
-                if any([not is_false(a) for a in args]):
+                if any(self._handle(a.op, a.args)[0] for a in args):
                     return True, [ ]
-
                 else:
                     return False, [ ]
             return True, [ ]
@@ -654,6 +507,8 @@ class Balancer(object):
 
         # TODO: Make sure the rhs doesn't contain any IfProxy
 
+        lhs_bo = self._backend.convert(lhs)
+
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
 
@@ -685,33 +540,19 @@ class Balancer(object):
             else:
                 # Not satisfiable
                 return False, [ ]
-        elif isinstance(self._backend.convert(lhs), vsa.StridedInterval) or isinstance(self._backend.convert(lhs), bv.BVV):
-            if not isinstance(self._backend.convert(lhs), vsa.StridedInterval):
-                try: lhs = _all_operations.SI(to_conv=lhs)
-                except BackendError: return True, [ ] # We cannot convert it to a vsa.StridedInterval
-
-            try: rhs = self._backend.convert(rhs)
-            except BackendError: return True, [ ]
+        elif isinstance(lhs_bo, vsa.StridedInterval):
+            rhs_bo = self._backend.convert(rhs)
 
             if is_eq:
                 return True, [ (lhs, rhs)]
             else:
-                lhs_bo = self._backend.convert(lhs)
                 rhs_bo = self._backend.convert(rhs)
 
                 if lhs_bo.upper_bound <= rhs_bo.upper_bound:
-                    r = self._backend.CreateStridedInterval(bits=rhs_bo.bits,
-                                    stride=lhs_bo.stride,
-                                    lower_bound=lhs_bo.lower_bound,
-                                    upper_bound=rhs_bo.lower_bound - 1)
-
+                    r = _all_operations.SI(bits=rhs_bo.bits, stride=lhs_bo.stride, lower_bound=lhs_bo.lower_bound, upper_bound=rhs_bo.lower_bound - 1)
                     return True, [ (lhs, r) ]
                 elif lhs_bo.lower_bound >= rhs_bo.lower_bound:
-                    r = self._backend.CreateStridedInterval(bits=rhs_bo.bits,
-                                    stride=lhs_bo.stride,
-                                    lower_bound=rhs_bo.lower_bound + 1,
-                                    upper_bound=lhs_bo.upper_bound)
-
+                    r = _all_operations.SI(bits=rhs_bo.bits, stride=lhs_bo.stride, lower_bound=rhs_bo.lower_bound + 1, upper_bound=lhs_bo.upper_bound)
                     return True, [ (lhs, r) ]
                 else:
                     # We cannot handle it precisely
@@ -728,4 +569,3 @@ from .ast.base import Base
 from . import _all_operations
 from .backend_manager import backends
 from . import vsa
-from . import bv

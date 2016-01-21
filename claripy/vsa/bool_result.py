@@ -108,6 +108,8 @@ class TrueResult(BoolResult):
             return TrueResult()
         elif other is False or type(other) is FalseResult:
             return MaybeResult()
+        elif type(other) is MaybeResult:
+            return MaybeResult()
         else:
             return NotImplemented
 
@@ -147,6 +149,8 @@ class FalseResult(BoolResult):
             return MaybeResult()
         elif other is False or type(other) is FalseResult:
             return FalseResult()
+        elif type(other) is MaybeResult:
+            return MaybeResult()
         else:
             return NotImplemented
 

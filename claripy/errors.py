@@ -41,5 +41,8 @@ class ClaripySizeError(ClaripyASTError):
 class ClaripyOperationError(ClaripyASTError):
     pass
 
+class ClaripyReplacementError(ClaripyASTError):
+    pass
+
 class ClaripyRecursionError(ClaripyOperationError):
     pass

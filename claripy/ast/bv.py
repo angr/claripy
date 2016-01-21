@@ -216,28 +216,32 @@ RotateRight = operations.op('RotateRight', (BV, BV), BV,
 Reverse = operations.op('Reverse', (BV,), BV,
                         calc_length=operations.basic_length_calc, bound=False)
 
+union = operations.op('union', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
+widen = operations.op('widen', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
+intersection = operations.op('intersection', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
+
 #
 # Bound operations
 #
 
 BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__radd__ = operations.op('__radd__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__radd__ = operations.reversed_op(BV.__add__.im_func)
 BV.__div__ = operations.op('__div__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdiv__ = operations.op('__rdiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rdiv__ = operations.reversed_op(BV.__div__.im_func)
 BV.__truediv__ = operations.op('__truediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rtruediv__ = operations.op('__rtruediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rtruediv__ = operations.reversed_op(BV.__truediv__.im_func)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rfloordiv__ = operations.op('__rfloordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__.im_func)
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rmul__ = operations.op('__rmul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rmul__ = operations.reversed_op(BV.__mul__.im_func)
 BV.__sub__ = operations.op('__sub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rsub__ = operations.op('__rsub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rsub__ = operations.reversed_op(BV.__sub__.im_func)
 BV.__pow__ = operations.op('__pow__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rpow__ = operations.op('__rpow__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rpow__ = operations.reversed_op(BV.__pow__.im_func)
 BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rmod__ = operations.op('__rmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rmod__ = operations.reversed_op(BV.__mod__.im_func)
 BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdivmod__ = operations.op('__rdivmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rdivmod__ = operations.reversed_op(BV.__divmod__.im_func)
 
 BV.__neg__ = operations.op('__neg__', (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__pos__ = operations.op('__pos__', (BV,), BV, calc_length=operations.basic_length_calc)
@@ -260,15 +264,15 @@ BV.UGE = operations.op('__ge__', (BV, BV), Bool, extra_check=operations.length_s
 
 BV.__invert__ = operations.op('__invert__', (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__or__ = operations.op('__or__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__ror__ = operations.op('__ror__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__ror__ = operations.reversed_op(BV.__or__.im_func)
 BV.__and__ = operations.op('__and__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rand__ = operations.op('__rand__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rand__ = operations.reversed_op(BV.__and__.im_func)
 BV.__xor__ = operations.op('__xor__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rxor__ = operations.op('__rxor__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rxor__ = operations.reversed_op(BV.__xor__.im_func)
 BV.__lshift__ = operations.op('__lshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rlshift__ = operations.op('__rlshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rlshift__ = operations.reversed_op(BV.__lshift__.im_func)
 BV.__rshift__ = operations.op('__rshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rrshift__ = operations.op('__rrshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
+BV.__rrshift__ = operations.reversed_op(BV.__rshift__.im_func)
 BV.LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 
 BV.Extract = staticmethod(operations.op('Extract', ((int, long), (int, long), BV), BV, extra_check=operations.extract_check, calc_length=operations.extract_length_calc, bound=False))
