@@ -216,6 +216,10 @@ RotateRight = operations.op('RotateRight', (BV, BV), BV,
 Reverse = operations.op('Reverse', (BV,), BV,
                         calc_length=operations.basic_length_calc, bound=False)
 
+union = operations.op('union', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
+widen = operations.op('widen', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
+intersection = operations.op('intersection', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
+
 #
 # Bound operations
 #
