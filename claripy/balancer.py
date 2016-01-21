@@ -282,10 +282,10 @@ class Balancer(object):
     def _simplify___add__(self, args, expr, condition):
         argl, argr = args
 
-        if not argl.symbolic:
+        if argl.singlevalued:
             new_cond = (condition[0], condition[1] - argl)
             return self._simplify(argr.op, argr.args, argr, new_cond)
-        elif not argr.symbolic:
+        elif argr.singlevalued:
             new_cond = (condition[0], condition[1] - argr)
             return self._simplify(argl.op, argl.args, argl, new_cond)
         else:
