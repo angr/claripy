@@ -142,7 +142,7 @@ Not = operations.op('Not', (Bool,), Bool, bound=False)
 
 def is_true(e, exact=None): #pylint:disable=unused-argument
     for b in backends._accurate_backends:
-        try: return b.is_true(b.convert(e))
+        try: return b.is_true(e)
         except BackendError: pass
 
     l.debug("Unable to tell the truth-value of this expression")
@@ -150,7 +150,7 @@ def is_true(e, exact=None): #pylint:disable=unused-argument
 
 def is_false(e, exact=None): #pylint:disable=unused-argument
     for b in backends._accurate_backends:
-        try: return b.is_false(b.convert(e))
+        try: return b.is_false(e)
         except BackendError: pass
 
     l.debug("Unable to tell the truth-value of this expression")

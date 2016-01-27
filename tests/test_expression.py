@@ -292,8 +292,17 @@ def test_extract_concat_simplify():
     assert list(claripy.Solver().eval(b_concat == a100, 2)) == [ True ]
     assert claripy.is_true(b_concat == a100)
 
+def test_true_false_cache():
+    a = claripy.BVS("a_WILL_BE_VIOLATED", 32)
+    c = a == a+1
+    assert claripy.is_false(c)
+    c.args[1].args = (a, claripy.BVV(0, 32))
+    assert claripy.is_false(c)
+    assert not claripy.is_true(c)
+    assert not claripy.is_false(a == a)
 
 if __name__ == '__main__':
+    test_true_false_cache()
     test_smudging()
     test_expression()
     test_bool()

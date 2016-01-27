@@ -56,6 +56,8 @@ class Backend(object):
         self._solver_required = solver_required is not None
 
         self._tls = threading.local()
+        self._true_cache = weakref.WeakKeyDictionary()
+        self._false_cache = weakref.WeakKeyDictionary()
 
     @property
     def _object_cache(self):
@@ -115,6 +117,8 @@ class Backend(object):
         Clears all caches associated with this backend.
         '''
         self._object_cache.clear()
+        self._true_cache.clear()
+        self._false_cache.clear()
 
     def handles(self, expr, result=None):
         '''
@@ -257,12 +261,21 @@ class Backend(object):
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        if not isinstance(e, Base):
+            return self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
 
-        return self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+        try:
+            return self._true_cache[e.cache_key]
+        except KeyError:
+            t = self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+            self._true_cache[e.cache_key] = t
+            if t is True:
+                self._false_cache[e.cache_key] = False
+            return t
 
     def is_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=unused-argument
         '''
-        Should return False if e can be easily found to be False.
+        Should return True if e can be easily found to be False.
 
         @param e: the AST
         @param extra_constraints: extra constraints (claripy.E objects) to add
@@ -274,8 +287,17 @@ class Backend(object):
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        if not isinstance(e, Base):
+            return self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
 
-        return self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+        try:
+            return self._false_cache[e.cache_key]
+        except KeyError:
+            f = self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+            self._false_cache[e.cache_key] = f
+            if f is True:
+                self._true_cache[e.cache_key] = False
+            return f
 
     def _is_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=no-self-use,unused-argument
         '''
@@ -491,7 +513,7 @@ class Backend(object):
 
         return self._batch_eval(converted_exprs, n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
-    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None):
+    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         """
         Evaluate one or multiple expressions.
 
