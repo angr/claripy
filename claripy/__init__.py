@@ -85,7 +85,7 @@ if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
 else:
     _backend_z3 = _backends_module.BackendZ3()
 
-_backend_manager.backends._register_backend(_backend_z3, 'z3', False, True)
+_backend_manager.backends._register_backend(_backend_z3, 'z3', False, False)
 backends = _backend_manager.backends
 
 def downsize():
