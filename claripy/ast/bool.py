@@ -141,7 +141,7 @@ Or = operations.op('Or', Bool, Bool, bound=False)
 Not = operations.op('Not', (Bool,), Bool, bound=False)
 
 def is_true(e, exact=None): #pylint:disable=unused-argument
-    for b in backends._accurate_backends:
+    for b in backends._quick_backends:
         try: return b.is_true(e)
         except BackendError: pass
 
@@ -149,7 +149,7 @@ def is_true(e, exact=None): #pylint:disable=unused-argument
     return False
 
 def is_false(e, exact=None): #pylint:disable=unused-argument
-    for b in backends._accurate_backends:
+    for b in backends._quick_backends:
         try: return b.is_false(e)
         except BackendError: pass
 
