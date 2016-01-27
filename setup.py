@@ -6,7 +6,7 @@ setup(
     packages=['claripy', 'claripy.backends', 'claripy.frontends', 'claripy.vsa', 'claripy.ast'],
     install_requires=[
         'ana',
-        'angr-z3',
+        'angr-only-z3-custom',
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
