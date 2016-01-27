@@ -262,7 +262,7 @@ class Backend(object):
 
     def is_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=unused-argument
         '''
-        Should return False if e can be easily found to be False.
+        Should return True if e can be easily found to be False.
 
         @param e: the AST
         @param extra_constraints: extra constraints (claripy.E objects) to add
