@@ -180,6 +180,9 @@ def lshift_simplifier(val, shift):
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
 def eq_simplifier(a, b):
+    if a is b:
+        return ast.true
+
     if isinstance(a, ast.Bool) and b is ast.true:
         return a
     if isinstance(b, ast.Bool) and a is ast.true:
@@ -228,6 +231,9 @@ def eq_simplifier(a, b):
                 return ast.all_operations.false
 
 def ne_simplifier(a, b):
+    if a is b:
+        return ast.false
+
     if a.op == 'If':
         if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
             # (If(c, x, y) == x, x != y) -> c
