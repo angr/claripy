@@ -184,19 +184,24 @@ class ReplacementFrontend(ConstrainedFrontend):
                 if not isinstance(rc, Base) or not rc.symbolic:
                     continue
 
-                if rc.op == 'Not':
-                    self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
-                elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
-                    old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
-                    self.add_replacement(old, new, promote=True, invalidate_cache=True)
-                elif self._complex_auto_replace:
+                if not self._complex_auto_replace:
+                    if rc.op == 'Not':
+                        self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
+                    elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
+                        old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
+                        self.add_replacement(old, new, promote=True, invalidate_cache=True)
+                else:
                     satisfiable, replacements = self._balancer.constraint_to_si(rc)
                     if not satisfiable:
                         self.add_replacement(rc, false)
                     for old, new in replacements:
                         if old.cardinality == 1:
                             continue
+
                         rold = self._replacement(old)
+                        if rold.cardinality == 1:
+                            continue
+
                         self.add_replacement(old, rold.intersection(new))
 
         ConstrainedFrontend._add_constraints(self, constraints, **kwargs)
