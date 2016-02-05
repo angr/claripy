@@ -12,6 +12,11 @@ class Balancer(object):
     def __init__(self, backend):
         self._backend = backend
 
+    @staticmethod
+    def _same_bound_ast(a):
+        si = backends.vsa.convert(a)
+        return BVS('balanced', si._bits, min=si._lower_bound, max=si._upper_bound, stride=si._stride)
+
     def constraint_to_si(self, expr):
         """
         We take in constraints, and return bounds (in the form of strided intervals) for the variables involved.
@@ -167,7 +172,7 @@ class Balancer(object):
         high, low, to_extract = args
         cond_operation, cond_operand = condition
         # Make sure the condition operand has the same size as to_extract
-        new_condition = cond_operation, _all_operations.ZeroExt((high - low + 1), cond_operand)
+        new_condition = cond_operation, _all_operations.ZeroExt(len(to_extract)-len(cond_operand), cond_operand)
         ast, cond = self._simplify(to_extract.op, to_extract.args, to_extract, new_condition)
 
         # Create the new ifproxy
@@ -505,67 +510,69 @@ class Balancer(object):
         if not isinstance(rhs, Base):
             raise ClaripyBalancerError('Right-hand-side expression cannot be converted to an AST object.')
 
-        # TODO: Make sure the rhs doesn't contain any IfProxy
 
-        lhs_bo = self._backend.convert(lhs)
-
-        if lhs.op == 'If':
+        if lhs.cardinality == 1 and rhs.cardinality == 1:
+            do_eq = rhs.intersection(lhs).cardinality != 0
+            return do_eq == is_eq, [ ]
+        elif lhs.cardinality == 1 and rhs.cardinality != 1:
+            # if they're different, we want the multivalued on the left
+            return self._handle_eq_ne(args[::-1], is_eq)
+        elif lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
 
             if is_eq:
-                # __eq__
                 take_true = is_true(rhs == trueexpr)
                 take_false = is_true(rhs == falseexpr)
             else:
-                # __ne__
                 take_true = is_true(rhs == falseexpr)
                 take_false = is_true(rhs == trueexpr)
 
             if take_true and take_false:
                 # It's always satisfiable
                 return True, [ ]
-
             elif take_true:
                 # We take the true side
                 return self._handle(condition.op, condition.args)
-
             elif take_false:
                 # We take the false side
-
                 # Reverse the operation first
                 rev_op = self.reversed_operations[condition.op]
-
                 return self._handle(rev_op, condition.args)
-
             else:
                 # Not satisfiable
                 return False, [ ]
-        elif isinstance(lhs_bo, vsa.StridedInterval):
-            rhs_bo = self._backend.convert(rhs)
-
-            if is_eq:
-                return True, [ (lhs, rhs)]
-            else:
-                rhs_bo = self._backend.convert(rhs)
-
-                if lhs_bo.upper_bound <= rhs_bo.upper_bound:
-                    r = _all_operations.SI(bits=rhs_bo.bits, stride=lhs_bo.stride, lower_bound=lhs_bo.lower_bound, upper_bound=rhs_bo.lower_bound - 1)
-                    return True, [ (lhs, r) ]
-                elif lhs_bo.lower_bound >= rhs_bo.lower_bound:
-                    r = _all_operations.SI(bits=rhs_bo.bits, stride=lhs_bo.stride, lower_bound=rhs_bo.lower_bound + 1, upper_bound=lhs_bo.upper_bound)
-                    return True, [ (lhs, r) ]
-                else:
-                    # We cannot handle it precisely
-                    return True, [ ]
         else:
-            # TODO: handle this
-            return True, [ ]
+            # both are multi-valued. Can't do much
+            can_eq = rhs.intersection(lhs).cardinality != 0
+            if not can_eq and is_eq:
+                return False, [ ]
+            elif not can_eq and not is_eq:
+                return True, [ ]
+            elif can_eq and is_eq:
+                if rhs.cardinality != 1:
+                    common = self._same_bound_ast(lhs.intersection(rhs))
+                    return True, [ (lhs, common), (rhs, common) ]
+                else:
+                    return True, [ (lhs, rhs) ]
+            elif can_eq and not is_eq:
+                if rhs.cardinality == 1:
+                    val = backends.vsa.eval(rhs, 1)[0]
+                    if val == 0:
+                        other_si = BVS('balanced_ne', len(rhs), min=val+1)
+                        return True, [ (lhs, other_si.intersection(lhs)) ]
+                    elif val == (2**len(rhs))-1 or val == -1:
+                        other_si = BVS('balanced_ne', len(rhs), max=val-1)
+                        return True, [ (lhs, other_si.intersection(lhs)) ]
+                    else:
+                        return True, [ ]
+                return True, [ ]
 
 def is_true(a): return backends.vsa.is_true(a)
 def is_false(a): return backends.vsa.is_false(a)
 
 from .errors import ClaripyBalancerError, ClaripyBackendVSAError, BackendError
 from .ast.base import Base
+from .ast.bv import BVS
 from . import _all_operations
 from .backend_manager import backends
 from . import vsa

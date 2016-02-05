@@ -126,6 +126,10 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explic
 
     @returns a BV object representing this symbol
     '''
+
+    if stride == 0 and max != min:
+        raise ClaripyValueError("BVSes of stride 0 should have max == min")
+
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
     return BV('BVS', (n, min, max, stride, uninitialized), variables={n}, length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
 

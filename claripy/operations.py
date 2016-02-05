@@ -442,10 +442,6 @@ def extract_simplifier(high, low, val):
             else:
                 return ast.BV('Extract', (new_high, low_loc, self), length=(new_high - low_loc + 1))
 
-    # this might be bad in general... not sure
-    if val.op == 'If':
-        return ast.all_operations.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
-
     if val.op == 'Extract':
         _, inner_low = val.args[:2]
         new_low = inner_low + low
