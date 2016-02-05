@@ -526,7 +526,6 @@ class Balancer(object):
                 # Not satisfiable
                 return False, [ ]
         else:
-            # both are multi-valued. Can't do much
             can_eq = rhs.intersection(lhs).cardinality != 0
             if not can_eq and is_eq:
                 return False, [ ]
