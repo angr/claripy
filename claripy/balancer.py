@@ -40,22 +40,6 @@ class Balancer(object):
     # Dealing with constraints
     #
 
-    reversed_operations = { }
-    reversed_operations['__ne__'] = '__eq__'
-    reversed_operations['__eq__'] = '__ne__'
-    reversed_operations['ULT'] = 'UGE'
-    reversed_operations['UGT'] = 'ULE'
-    reversed_operations['ULE'] = 'UGT'
-    reversed_operations['UGE'] = 'ULT'
-    reversed_operations['SLT'] = 'SGE'
-    reversed_operations['SLE'] = 'SGT'
-    reversed_operations['SGT'] = 'SLE'
-    reversed_operations['SGE'] = 'SLT'
-    reversed_operations['__le__'] = '__gt__'
-    reversed_operations['__lt__'] = '__ge__'
-    reversed_operations['__ge__'] = '__lt__'
-    reversed_operations['__gt__'] = '__le__'
-
     comparison_info = { }
     # Tuples look like (is_lt, is_eq, is_unsigned)
     comparison_info['SLT'] = (True, False, False)
@@ -295,14 +279,14 @@ class Balancer(object):
         if len(args) == 2:
             lhs, rhs = args
 
-            # Simplify left side
+            # Maybe the target variable is the rhs
+            if ((rhs.multivalued and lhs.singlevalued) or (lhs.cardinality == 0)) and op in opposites:
+                return self._handle(opposites[op], (rhs, lhs))
+
+            # Simplify left side and update args
             lhs, new_cond = self._simplify(lhs.op, lhs.args, lhs, (op, rhs))
-
-            # Update args
             op, rhs = new_cond
-            args = (lhs, rhs)
-
-            sat, lst = getattr(self, "_handle_%s" % op)(args)
+            sat, lst = getattr(self, "_handle_%s" % op)((lhs, rhs))
 
         else:
             sat, lst = getattr(self, "_handle_%s" % op)(args)
@@ -330,12 +314,6 @@ class Balancer(object):
 
         lhs_bo = self._backend.convert(lhs)
         rhs_bo = self._backend.convert(rhs)
-
-        # Maybe the target variable is the rhs
-        if (rhs.cardinality != 1 and lhs.cardinality == 1) or lhs_bo.is_empty:
-            new_op = self.reversed_operations[comp]
-            new_lhs, new_rhs = rhs, lhs
-            return self._handle(new_op, (new_lhs, new_rhs))
 
         if lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
@@ -379,7 +357,7 @@ class Balancer(object):
             elif take_true:
                 return self._handle(condition.op, condition.args)
             elif take_false:
-                rev_op = self.reversed_operations[condition.op]
+                rev_op = inverse_operations[condition.op]
                 return self._handle(rev_op, condition.args)
             else:
                 # Not satisfiable
@@ -453,7 +431,7 @@ class Balancer(object):
 
         # Reverse the op
         try:
-            expr_op = self.reversed_operations[expr_op]
+            expr_op = inverse_operations[expr_op]
             return self._handle(expr_op, expr_args)
         except KeyError:
             return True, [ ]
@@ -523,9 +501,6 @@ class Balancer(object):
         if lhs.cardinality == 1 and rhs.cardinality == 1:
             do_eq = rhs.intersection(lhs).cardinality != 0
             return do_eq == is_eq, [ ]
-        elif lhs.cardinality == 1 and rhs.cardinality != 1:
-            # if they're different, we want the multivalued on the left
-            return self._handle_eq_ne(args[::-1], is_eq)
         elif lhs.op == 'If':
             condition, trueexpr, falseexpr = lhs.args
 
@@ -545,7 +520,7 @@ class Balancer(object):
             elif take_false:
                 # We take the false side
                 # Reverse the operation first
-                rev_op = self.reversed_operations[condition.op]
+                rev_op = inverse_operations[condition.op]
                 return self._handle(rev_op, condition.args)
             else:
                 # Not satisfiable
@@ -585,3 +560,4 @@ from .ast.bv import BVS
 from . import _all_operations
 from .backend_manager import backends
 from . import vsa
+from .operations import opposites, inverse_operations

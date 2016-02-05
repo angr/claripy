@@ -651,6 +651,10 @@ opposites = {
     '__ne__': '__ne__',
     '__ge__': '__le__', '__le__': '__ge__',
     '__gt__': '__lt__', '__lt__': '__gt__',
+    'ULT': 'UGT', 'UGT': 'ULT',
+    'ULE': 'UGE', 'UGE': 'ULE',
+    'SLT': 'SGT', 'SGT': 'SLT',
+    'SLE': 'SGE', 'SGE': 'SLE',
 
     #'__neg__':
     #'__pos__':
@@ -686,7 +690,11 @@ inverse_operations = {
     '__gt__': '__le__',
     '__lt__': '__ge__',
     '__ge__': '__lt__',
-    '__le__': '__gt__'
+    '__le__': '__gt__',
+    'ULT': 'UGE', 'UGE': 'ULT',
+    'UGT': 'ULE', 'ULE': 'UGT',
+    'SLT': 'SGE', 'SGE': 'SLT',
+    'SLE': 'SGT', 'SGT': 'SLE',
 }
 
 length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
