@@ -6,11 +6,11 @@ l = logging.getLogger('claripy.test.solver')
 
 def test_solver():
     yield raw_solver, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_solver, lambda: claripy.HybridFrontend(claripy.backends.z3)
+    yield raw_solver, claripy.hybrid_vsa_z3
     yield raw_solver, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
 
 def test_hybrid_solver():
-    s = claripy.HybridFrontend(claripy.backends.z3)
+    s = claripy.hybrid_vsa_z3()
 
     x = claripy.BVS('x', 32, min=0, max=10, stride=2)
     y = claripy.BVS('y', 32, min=20, max=30, stride=5)
@@ -37,7 +37,7 @@ def test_hybrid_solver():
     nose.tools.assert_equal(s.eval(y, 20, exact=False), (20, 25, 30))
     nose.tools.assert_equal(s.eval(y, 20), (30,))
 
-    t = claripy.HybridFrontend(claripy.backends.z3)
+    t = claripy.hybrid_vsa_z3()
     x = claripy.BVS('x', 32)
     t.add(x <= 10)
     print t.eval(x, 80, exact=False)
@@ -48,7 +48,7 @@ def test_hybrid_solver():
     nose.tools.assert_equal(len(t.eval(x, 99, exact=False)), 11)
 
 def test_replacement_solver():
-    sr = claripy.ReplacementFrontend(claripy.HybridFrontend(claripy.backends.z3))
+    sr = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
     x = claripy.BVS('x', 32)
     nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
     sr.result = None
@@ -65,11 +65,17 @@ def test_replacement_solver():
     assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
-    sr = claripy.ReplacementFrontend(claripy.HybridFrontend(claripy.backends.z3))
+    sr = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
     b = claripy.BoolS('b')
     assert sr._replacement(b) is b
     sr.add(claripy.Not(b))
     assert sr._replacement(b) is claripy.false
+
+    sr = claripy.ReplacementFrontend(claripy.LightFrontend(claripy.backends.vsa), complex_auto_replace=True)
+    x = claripy.BVS('x', 64)
+    sr.add([x + 8 <= 0xffffffffffffffff])
+    sr.add([x + 8 >= 0])
+    assert sr._replacement(x) is not x
 
 def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
@@ -224,7 +230,7 @@ def raw_solver(solver_type):
 
 def test_solver_branching():
     yield raw_solver_branching, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_solver_branching, lambda: claripy.HybridFrontend(claripy.backends.z3)
+    yield raw_solver_branching, claripy.hybrid_vsa_z3
     yield raw_solver_branching, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
 
 def raw_solver_branching(solver_type):
@@ -258,7 +264,7 @@ def raw_solver_branching(solver_type):
 
 def test_combine():
     yield raw_combine, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_combine, lambda: claripy.HybridFrontend(claripy.backends.z3)
+    yield raw_combine, claripy.hybrid_vsa_z3
     yield raw_combine, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
 
 def raw_combine(solver_type):

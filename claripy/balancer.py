@@ -318,7 +318,7 @@ class Balancer(object):
         rhs_bo = self._backend.convert(rhs)
 
         # Maybe the target variable is the rhs
-        if lhs.cardinality == 1 or lhs_bo.is_empty:
+        if (rhs.cardinality != 1 and lhs.cardinality == 1) or lhs_bo.is_empty:
             new_op = self.reversed_operations[comp]
             new_lhs, new_rhs = rhs, lhs
             return self._handle(new_op, (new_lhs, new_rhs))

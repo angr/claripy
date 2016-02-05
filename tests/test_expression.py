@@ -223,7 +223,7 @@ def test_if_stuff():
 
 def test_ite():
     yield raw_ite, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_ite, lambda: claripy.HybridFrontend(claripy.backends.z3)
+    yield raw_ite, claripy.hybrid_vsa_z3
     yield raw_ite, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
 
 def raw_ite(solver_type):

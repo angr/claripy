@@ -443,10 +443,10 @@ class Base(ana.Storable):
 
                 if replaced:
                     r = self.make_like(self.op, tuple(new_args))
+                    replacements[hash_key] = r
                 else:
                     r = self
 
-            replacements[hash_key] = r
             return r
         except ClaripyReplacementError:
             l.error("Replacement error:", exc_info=True)
@@ -546,7 +546,7 @@ class Base(ana.Storable):
         '''
         self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
-        return self._replace(replacements, old.variables)
+        return self._replace(replacements, variable_set=old.variables)
 
     def replace_dict(self, replacements):
         """
@@ -561,7 +561,7 @@ class Base(ana.Storable):
         #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
         #   old._check_replaceability(new)
 
-        return self._replace(replacements)
+        return self._replace(replacements, variable_set=set())
 
     @staticmethod
     def _check_replaceability(old, new):

@@ -24,6 +24,9 @@ class ReplacementFrontend(ConstrainedFrontend):
         if not isinstance(old, Base):
             return
 
+        if old is new:
+            return
+
         if not replace and old.cache_key in self._replacements:
             return
 
@@ -40,7 +43,7 @@ class ReplacementFrontend(ConstrainedFrontend):
 
         if invalidate_cache:
             self._replacements = dict(self._replacements)
-            self._replacement_cache = weakref.WeakKeyDictionary(self._replacement_cache)
+            self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
         self._replacements[old.cache_key] = new
         self._replacement_cache[old.cache_key] = new
@@ -74,6 +77,7 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _blank_copy(self):
         s = ReplacementFrontend(self._actual_frontend._blank_copy(), balancer=self._balancer)
         s._auto_replace = self._auto_replace
+        s._complex_auto_replace = self._complex_auto_replace
         s._replace_constraints = self._replace_constraints
         s._unsafe_replacement = self._unsafe_replacement
         s._allow_symbolic = self._allow_symbolic
