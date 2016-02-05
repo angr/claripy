@@ -48,7 +48,7 @@ def test_hybrid_solver():
     nose.tools.assert_equal(len(t.eval(x, 99, exact=False)), 11)
 
 def test_replacement_solver():
-    sr = claripy.ReplacementFrontend(claripy.HybridFrontend(claripy.backends.z3))
+    sr = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
     x = claripy.BVS('x', 32)
     nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
     sr.result = None
@@ -65,11 +65,17 @@ def test_replacement_solver():
     assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
-    sr = claripy.ReplacementFrontend(claripy.HybridFrontend(claripy.backends.z3))
+    sr = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
     b = claripy.BoolS('b')
     assert sr._replacement(b) is b
     sr.add(claripy.Not(b))
     assert sr._replacement(b) is claripy.false
+
+    sr = claripy.ReplacementFrontend(claripy.LightFrontend(claripy.backends.vsa), complex_auto_replace=True)
+    x = claripy.BVS('x', 64)
+    sr.add([x + 8 <= 0xffffffffffffffff])
+    sr.add([x + 8 >= 0])
+    assert sr._replacement(x) is not x
 
 def raw_solver(solver_type):
     #bc = claripy.backends.BackendConcrete(clrp)
