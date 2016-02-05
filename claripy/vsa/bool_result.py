@@ -74,6 +74,8 @@ class BoolResult(BackendObject):
         return o is False or (isinstance(o, FalseResult))
 
 class TrueResult(BoolResult):
+    cardinality = 1
+
     @property
     def value(self):
         return (True, )
@@ -117,6 +119,8 @@ class TrueResult(BoolResult):
         return '<True>'
 
 class FalseResult(BoolResult):
+    cardinality = 1
+
     @property
     def value(self):
         return (False, )
@@ -155,6 +159,8 @@ class FalseResult(BoolResult):
             return NotImplemented
 
 class MaybeResult(BoolResult):
+    cardinality = 2
+
     @property
     def value(self):
         return (True, False)
