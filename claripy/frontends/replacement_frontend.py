@@ -194,6 +194,8 @@ class ReplacementFrontend(ConstrainedFrontend):
                     if not satisfiable:
                         self.add_replacement(rc, false)
                     for old, new in replacements:
+                        if old.cardinality == 1:
+                            continue
                         rold = self._replacement(old)
                         self.add_replacement(old, rold.intersection(new))
 
