@@ -36,33 +36,6 @@ class Balancer(object):
             # return the dummy result
             return True, [ ]
 
-    def _simplify(self, op, args, expr, condition):
-        handler_name = "_simplify_%s" % op
-        if not hasattr(self, handler_name):
-            l.warning('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
-            return expr, condition
-
-        new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
-        return new_expr, new_cond
-
-    def _handle(self, op, args):
-        if len(args) == 2:
-            lhs, rhs = args
-
-            # Simplify left side
-            lhs, new_cond = self._simplify(lhs.op, lhs.args, lhs, (op, rhs))
-
-            # Update args
-            op, rhs = new_cond
-            args = (lhs, rhs)
-
-            sat, lst = getattr(self, "_handle_%s" % op)(args)
-
-        else:
-            sat, lst = getattr(self, "_handle_%s" % op)(args)
-
-        return sat, lst
-
     #
     # Dealing with constraints
     #
@@ -97,6 +70,19 @@ class Balancer(object):
     comparison_info['__le__'] = comparison_info['ULE']
     comparison_info['__gt__'] = comparison_info['UGT']
     comparison_info['__ge__'] = comparison_info['UGE']
+
+    #
+    # Simplification routines
+    #
+
+    def _simplify(self, op, args, expr, condition):
+        handler_name = "_simplify_%s" % op
+        if not hasattr(self, handler_name):
+            l.warning('Simplification handler "%s" is not found in balancer. Consider implementing.', handler_name)
+            return expr, condition
+
+        new_expr, new_cond = getattr(self, "_simplify_%s" % op)(args, expr, condition)
+        return new_expr, new_cond
 
     def _simplify_ZeroExt(self, args, expr, condition):
         """
@@ -300,6 +286,29 @@ class Balancer(object):
         return self._simplify___add__((args[1], args[0]), expr, condition)
 
     # TODO: simplify __sub__
+
+    #
+    # Constraint handlers
+    #
+
+    def _handle(self, op, args):
+        if len(args) == 2:
+            lhs, rhs = args
+
+            # Simplify left side
+            lhs, new_cond = self._simplify(lhs.op, lhs.args, lhs, (op, rhs))
+
+            # Update args
+            op, rhs = new_cond
+            args = (lhs, rhs)
+
+            sat, lst = getattr(self, "_handle_%s" % op)(args)
+
+        else:
+            sat, lst = getattr(self, "_handle_%s" % op)(args)
+
+        return sat, lst
+
 
     def _handle_comparison(self, args, comp=None):
         """
