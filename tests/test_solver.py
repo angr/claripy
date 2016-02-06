@@ -30,7 +30,7 @@ def test_hybrid_solver():
 
     # now constrain things further so that the VSA overapproximates
     s.add(x <= 4)
-    nose.tools.assert_equal(s.eval(x, 20, exact=False), (0, 2, 4, 6, 8, 10))
+    nose.tools.assert_equal(s.eval(x, 20, exact=False), (0, 2, 4))
     nose.tools.assert_equal(s.eval(x, 20), (0, 2, 4))
 
     s.add(y >= 27)

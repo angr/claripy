@@ -710,7 +710,7 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s1)
     # False side; SI<32>0[0,0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
+        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
 
     #
     # Extract(0, 0, Concat(BVV(0, 63), If(SI == 0, 1, 0))) == 1
@@ -773,18 +773,18 @@ def test_vsa_constraint_to_si():
     trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
     nose.tools.assert_equal(trueside_sat, True)
     nose.tools.assert_equal(len(trueside_replacement), 1)
-    nose.tools.assert_true(trueside_replacement[0][0] is s4)
+    nose.tools.assert_true(trueside_replacement[0][0] is s4[31:0])
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=64, stride=1, lower_bound=-0x8000000000000000, upper_bound=-1))))
+        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=1, lower_bound=-0x80000000, upper_bound=-1))))
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
     nose.tools.assert_equal(len(falseside_replacement), 1)
-    nose.tools.assert_true(falseside_replacement[0][0] is s4)
+    nose.tools.assert_true(falseside_replacement[0][0] is s4[31:0])
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=64, stride=1, lower_bound=0, upper_bound=0x7fffffffffffffff))))
+        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=0, upper_bound=0x7fffffff))))
 
     # TODO: Add some more insane test cases
 
