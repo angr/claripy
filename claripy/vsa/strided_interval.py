@@ -909,6 +909,17 @@ class StridedInterval(BackendObject):
         return a * b // fractions.gcd(a, b)
 
     @staticmethod
+    def gcd(a, b):
+        """
+        Get the greatest common divisor
+        :param a: The first operand (integer)
+        :param b: The second operand (integer)
+        :return: Their GCD
+        """
+
+        return fractions.gcd(a, b)
+
+    @staticmethod
     def highbit(k):
         return 1 << (k - 1)
 
@@ -2110,11 +2121,11 @@ class StridedInterval(BackendObject):
 
         a, b, c, d = self.stride, self.lower_bound, other.stride, other.lower_bound
 
-        if (d - b) % self.lcm(a, c) != 0:
+        if (d - b) % self.gcd(a, c) != 0:
             # They don't overlap
             return None
 
-        if c % a:
+        if c % a != 0:
             p = c / a
 
             if not lb_from_self:
@@ -2128,10 +2139,14 @@ class StridedInterval(BackendObject):
             first_integer = int(c * y + d)
 
         else:
-            if lb_from_self:
-                first_integer = b
+            if a > c:
+                mod = (d - b) % a
+                min_y = a - mod if mod != 0 else 0
+                first_integer = c * min_y + d
             else:
-                first_integer = d
+                mod = (b - d) % c
+                min_x = c - mod if mod != 0 else 0
+                first_integer = a * min_x + b
 
         if self._wrapped_member(first_integer) and \
                 self._modular_sub(first_integer, self.lower_bound, self.bits) % self.stride == 0 and \
