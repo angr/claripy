@@ -192,6 +192,9 @@ def eq_simplifier(a, b):
     if isinstance(b, ast.Bool) and a is ast.false:
         return ast.all_operations.Not(b)
 
+    if a.op == 'Reverse' and b.op == 'Reverse':
+        return a == b
+
     # TODO: all these ==/!= might really slow things down...
     if a.op == 'If':
         if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
@@ -233,6 +236,9 @@ def eq_simplifier(a, b):
 def ne_simplifier(a, b):
     if a is b:
         return ast.false
+
+    if a.op == 'Reverse' and b.op == 'Reverse':
+        return a != b
 
     if a.op == 'If':
         if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
@@ -375,6 +381,15 @@ def boolean_not_simplifier(body):
         return ast.all_operations.SLE(body.args[0], body.args[1])
     elif body.op == 'SGE':
         return ast.all_operations.SLT(body.args[0], body.args[1])
+
+    if body.op == 'ULT':
+        return ast.all_operations.UGE(body.args[0], body.args[1])
+    elif body.op == 'ULE':
+        return ast.all_operations.UGT(body.args[0], body.args[1])
+    elif body.op == 'UGT':
+        return ast.all_operations.ULE(body.args[0], body.args[1])
+    elif body.op == 'UGE':
+        return ast.all_operations.ULT(body.args[0], body.args[1])
 
     if body.op == '__lt__':
         return ast.all_operations.UGE(body.args[0], body.args[1])
