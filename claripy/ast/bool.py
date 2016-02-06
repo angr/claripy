@@ -81,6 +81,7 @@ from .. import operations
 
 Bool.__eq__ = operations.op('__eq__', (Bool, Bool), Bool)
 Bool.__ne__ = operations.op('__ne__', (Bool, Bool), Bool)
+Bool.intersection = operations.op('intersection', (Bool, Bool), Bool)
 
 #
 # Unbound operations
