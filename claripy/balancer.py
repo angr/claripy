@@ -222,6 +222,9 @@ class Balancer(object):
         try:
             outer_aligned = self._align_ast(truism)
             inner_aligned = outer_aligned.make_like(outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
+            if inner_aligned.args[1].cardinality > 1:
+                l.debug("can't do anything because we have multiple multivalued guys")
+                return truism
 
             if not backends.vsa.is_true(inner_aligned == truism):
                 import ipdb; ipdb.set_trace()
