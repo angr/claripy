@@ -268,6 +268,15 @@ class BackendVSA(Backend):
     # TODO: Implement other operations!
 
     @staticmethod
+    def Or(*args):
+        first = args[0]
+        others = args[1:]
+
+        for o in others:
+            first = first.union(o)
+        return first
+
+    @staticmethod
     def LShR(expr, shift_amount):
         return expr >> shift_amount
 
