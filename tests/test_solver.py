@@ -34,7 +34,7 @@ def test_hybrid_solver():
     nose.tools.assert_equal(s.eval(x, 20), (0, 2, 4))
 
     s.add(y >= 27)
-    nose.tools.assert_equal(s.eval(y, 20, exact=False), (20, 25, 30))
+    nose.tools.assert_equal(s.eval(y, 20, exact=False), (30,))
     nose.tools.assert_equal(s.eval(y, 20), (30,))
 
     t = claripy.hybrid_vsa_z3()
