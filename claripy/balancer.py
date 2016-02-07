@@ -22,6 +22,8 @@ class Balancer(object):
         except ClaripyBalancerUnsatError:
             self.bounds = [ ]
             self.sat = False
+        except BackendError:
+            l.warning("Backend error in balancer.", exc_info=True)
 
     @property
     def compat_ret(self):
@@ -476,7 +478,7 @@ class Balancer(object):
 def is_true(a): return backends.vsa.is_true(a)
 def is_false(a): return backends.vsa.is_false(a)
 
-from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError
+from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
 from .ast.base import Base
 from .ast.bool import Bool
 from .ast.bv import BVV, BVS, BV
