@@ -375,9 +375,10 @@ class Balancer(object):
             raise ClaripyBalancerUnsatError()
         elif is_true(truism):
             return
-
-        if self._cardinality(truism.args[0]) == 1:
-            import ipdb; ipdb.set_trace()
+        elif self._cardinality(truism.args[0]) == 1:
+            # we are down to single-cardinality arguments, so our work is not
+            # necessary
+            return
 
         try:
             handler = getattr(self, "_handle_%s" % truism.op)
