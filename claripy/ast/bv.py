@@ -50,7 +50,13 @@ class BV(Bits):
         @returns the new AST.
         '''
         if type(rng) is slice:
-            return Extract(int(rng.start), int(rng.stop), self)
+            left = rng.start if rng.start is not None else len(self)-1
+            right = rng.stop if rng.stop is not None else 0
+            if left < 0:
+                left = len(self) + left
+            if right < 0:
+                right = len(self) + right
+            return Extract(left, right, self)
         else:
             return Extract(int(rng), int(rng), self)
 
