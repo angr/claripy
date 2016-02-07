@@ -408,6 +408,8 @@ def signext_simplifier(n, e):
     if n == 0:
         return e
 
+    # TODO: if top bit is 0, do a zero-extend instead
+
 def extract_simplifier(high, low, val):
     # if we're extracting the whole value, return the value
     if high - low + 1 == val.size():
