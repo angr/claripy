@@ -193,7 +193,7 @@ def eq_simplifier(a, b):
         return ast.all_operations.Not(b)
 
     if a.op == 'Reverse' and b.op == 'Reverse':
-        return a == b
+        return a.args[0] == b.args[0]
 
     # TODO: all these ==/!= might really slow things down...
     if a.op == 'If':
@@ -238,7 +238,7 @@ def ne_simplifier(a, b):
         return ast.false
 
     if a.op == 'Reverse' and b.op == 'Reverse':
-        return a != b
+        return a.args[0] != b.args[0]
 
     if a.op == 'If':
         if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
