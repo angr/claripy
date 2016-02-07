@@ -210,12 +210,6 @@ class Balancer(object):
             return truism
 
         try:
-            balancer = getattr(self, "_balance_%s" % truism.args[0].op)
-        except AttributeError:
-            l.debug("Balance handler %s is not found in balancer. Consider implementing.", truism.args[0].op)
-            return truism
-
-        try:
             outer_aligned = self._align_ast(truism)
             inner_aligned = outer_aligned.make_like(outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
             if inner_aligned.args[1].cardinality > 1:
@@ -224,6 +218,12 @@ class Balancer(object):
 
             if not backends.vsa.is_true(inner_aligned == truism):
                 import ipdb; ipdb.set_trace()
+
+            try:
+                balancer = getattr(self, "_balance_%s" % inner_aligned.args[0].op)
+            except AttributeError:
+                l.debug("Balance handler %s is not found in balancer. Consider implementing.", truism.args[0].op)
+                return truism
 
             balanced = balancer(inner_aligned)
             if balanced is inner_aligned:
