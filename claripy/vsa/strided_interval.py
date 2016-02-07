@@ -2387,11 +2387,11 @@ class StridedInterval(BackendObject):
 
         else:
             new_stride = fractions.gcd(self.stride, b.stride)
-            l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) + 2 if b.lower_bound < self.lower_bound else self.lower_bound
-            u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) - 2 if b.upper_bound > self.upper_bound else self.upper_bound
+            l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) if b.lower_bound < self.lower_bound else self.lower_bound
+            u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) if b.upper_bound > self.upper_bound else self.upper_bound
             if new_stride == 0:
                 if self.is_integer and b.is_integer:
-                    ret = StridedInterval(bits=self.bits, stride=u - l, lower_bound=l, upper_bound=u)
+                    ret = StridedInterval(bits=self.bits, stride=1, lower_bound=l, upper_bound=u)
                 else:
                     raise ClaripyOperationError('SI: operands are not reduced.')
             else:
