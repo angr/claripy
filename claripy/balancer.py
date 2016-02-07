@@ -393,7 +393,7 @@ class Balancer(object):
         Handles all comparisons.
         """
 
-        print "COMP:", truism
+        #print "COMP:", truism
 
         is_lt, is_equal, is_unsigned = self.comparison_info[truism.op]
 
