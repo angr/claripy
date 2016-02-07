@@ -92,19 +92,17 @@ class Balancer(object):
     def _cardinality(a):
         return a.cardinality if isinstance(a, Base) else 0
 
-    def _min(self, a, signed=False):
-        if not signed:
-            return self._helper.min(a)
-        else:
-            bounds = backends.vsa.convert(a)._signed_bounds()
-            return min(mn for mn,mx in bounds)
+    @staticmethod
+    def _min(a, signed=False):
+        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
+        else: bounds = backends.vsa.convert(a)._signed_bounds()
+        return min(mn for mn,mx in bounds)
 
-    def _max(self, a, signed=False):
-        if not signed:
-            return self._helper.max(a)
-        else:
-            bounds = backends.vsa.convert(a)._signed_bounds()
-            return max(mx for mn,mx in bounds)
+    @staticmethod
+    def _max(a, signed=False):
+        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
+        else: bounds = backends.vsa.convert(a)._signed_bounds()
+        return max(mx for mn,mx in bounds)
 
     @staticmethod
     def _invert_comparison(a):
