@@ -23,7 +23,7 @@ class Balancer(object):
             self.bounds = [ ]
             self.sat = False
         except BackendError:
-            l.warning("Backend error in balancer.", exc_info=True)
+            l.debug("Backend error in balancer.", exc_info=True)
 
     @property
     def compat_ret(self):
