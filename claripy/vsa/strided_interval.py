@@ -2114,10 +2114,62 @@ class StridedInterval(BackendObject):
         :return: The minimum integer if there is one, or None if it doesn't exist.
         """
 
-        # It's equivalent to find a integral solution for equation `ax + b = cy + d` that makes `ax + b` minimal
+        # TODO: lb_from_self is unused. Further understanding is needed to determine whether it can be removed or not
+
+        # It's equivalent to finding a integral solution for equation `ax + b = cy + d` that makes `ax + b` minimal
         # Some assumptions:
         # a, b, c, d are all positive integers
         # x >= 0, y >= 0
+
+        if self.lower_bound > self.upper_bound:
+            # straddling the south pole
+
+            A, B = self._ssplit()
+
+            int_0 = A._minimum_intersection_integer(other, lb_from_self)
+            int_1 = B._minimum_intersection_integer(other, lb_from_self)
+
+            # Note that int_1 has priority if both of them are not None, since int_1 is from the right side of the
+            # number ring, and is thereby less than int_0
+            return int_1 if int_0 is None else int_0
+
+        else:
+            if other.lower_bound > other.upper_bound:
+                return other._minimum_intersection_integer(self, lb_from_self)
+
+            else:
+                return self._minimum_intersection_integer_splitted(other)
+
+    def _minimum_intersection_integer_splitted(self, other):
+        """
+        Solves for the minimum integer that exists in both StridedIntervals
+
+        :param other: The other operand
+        :return: The minimum integer if there is one, or None if it doesn't exist.
+        """
+
+        # It's equivalent to finding a integral solution for equation `ax + b = cy + d` that makes `ax + b` minimal
+        # Some assumptions:
+        # a, b, c, d are all positive integers
+        # x >= 0, y >= 0
+
+        # if any of them is an integer
+        if self.is_integer:
+            if other.is_integer:
+                return None if self.lower_bound != other.lower_bound else self.lower_bound
+            elif self.lower_bound >= other.lower_bound and \
+                    self.lower_bound <= other.upper_bound and \
+                    (self.lower_bound - other.lower_bound) % other.stride == 0:
+                return self.lower_bound
+            else:
+                return None
+        elif other.is_integer:
+            return other._minimum_intersection_integer_splitted(self)
+
+        # shortcut
+        if self.upper_bound < other.lower_bound or other.upper_bound < self.lower_bound:
+            # They don't overlap at all
+            return None
 
         a, b, c, d = self.stride, self.lower_bound, other.stride, other.lower_bound
 
@@ -2125,28 +2177,20 @@ class StridedInterval(BackendObject):
             # They don't overlap
             return None
 
-        if c % a != 0:
-            p = c / a
-
-            if not lb_from_self:
-                k1 = (d - b) / a # It must be an integer
-                k = int(k1 + 0.5)
-            else:
-                k2 = (b - d) * (c * 1.0 / a - p) / c + (d - b) / a
-                k = int(k2 + 0.5)
-
-            y = (k - (d - b) / a) / (c * 1.0 / a - p)
-            first_integer = int(c * y + d)
-
+        if a < c:
+            mod = (d - b) % a
+            min_y_mod = a - mod if mod != 0 else 0
+            base_y = int((b - d) / c) if (b - d) % c == 0 else int((b - d) / c) + 1
+            base_y = 0 if base_y < 0 else base_y
+            min_y = min_y_mod + base_y
+            first_integer = c * min_y + d
         else:
-            if a > c:
-                mod = (d - b) % a
-                min_y = a - mod if mod != 0 else 0
-                first_integer = c * min_y + d
-            else:
-                mod = (b - d) % c
-                min_x = c - mod if mod != 0 else 0
-                first_integer = a * min_x + b
+            mod = (b - d) % c
+            min_x_mod = c - mod if mod != 0 else 0
+            base_x = int((d - b) / a) if (d - b) % a == 0 else int((d - b) / a) + 1
+            base_x = 0 if base_x < 0 else base_x
+            min_x = min_x_mod + base_x
+            first_integer = a * min_x + b
 
         if self._wrapped_member(first_integer) and \
                 self._modular_sub(first_integer, self.lower_bound, self.bits) % self.stride == 0 and \

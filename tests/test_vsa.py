@@ -464,6 +464,22 @@ def test_vsa():
     si_intersection_5 = si_b.intersection(si_c)
     nose.tools.assert_true(is_equal(si_intersection_5, claripy.SI(bits=32, stride=6, lower_bound=-100, upper_bound=200)))
 
+    # More intersections
+    t0 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0x27)
+    t1 = claripy.SI(bits=32, stride=0x7fffffff, lower_bound=0x80000002, upper_bound=1)
+    si_is_6 = t0.intersection(t1)
+    nose.tools.assert_true(is_equal(si_is_6, claripy.SI(bits=32, stride=0, lower_bound=1, upper_bound=1)))
+
+    t2 = claripy.SI(bits=32, stride=5, lower_bound=20, upper_bound=30)
+    t3 = claripy.SI(bits=32, stride=1, lower_bound=27, upper_bound=0xffffffff)
+    si_is_7 = t2.intersection(t3)
+    nose.tools.assert_true(is_equal(si_is_7, claripy.SI(bits=32, stride=0, lower_bound=30, upper_bound=30)))
+
+    t4 = claripy.SI(bits=32, stride=5, lower_bound=-400, upper_bound=400)
+    t5 = claripy.SI(bits=32, stride=1, lower_bound=395, upper_bound=-395)
+    si_is_8 = t4.intersection(t5)
+    nose.tools.assert_true(is_equal(si_is_8, claripy.SI(bits=32, stride=5, lower_bound=-400, upper_bound=400)))
+
     # Sign-extension
     si = claripy.SI(bits=1, stride=0, lower_bound=1, upper_bound=1)
     si_signextended = si.sign_extend(31)
