@@ -69,13 +69,13 @@ def test_widened_guy():
     assert s
     assert r[0][0] is w
     assert claripy.backends.vsa.min(r[0][1]) == 0
-    assert claripy.backends.vsa.max(r[0][1]) == 39
+    assert claripy.backends.vsa.max(r[0][1]) == 1 # used to be 39, but that was a bug in the VSA widening
 
     s,r = claripy.balancer.Balancer(claripy.backends.vsa, w + 1 <= claripy.BVV(39, 32)).compat_ret
     assert s
     assert r[0][0] is w
     assert claripy.backends.vsa.min(r[0][1]) == 0
-    assert claripy.backends.vsa.max(r[0][1]) == 38
+    assert claripy.backends.vsa.max(r[0][1]) == 1 # used to be 38, but that was a bug in the VSA widening
 
 if __name__ == '__main__':
     test_simple_guy()
