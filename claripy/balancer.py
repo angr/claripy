@@ -49,7 +49,7 @@ class Balancer(object):
         return BVS('balanced', len(a), min=mn, max=mx, stride=si._stride)
 
     @staticmethod
-    def reverse_comparison(a):
+    def _reverse_comparison(a):
         try:
             new_op = opposites[a.op]
         except KeyError:
@@ -57,17 +57,17 @@ class Balancer(object):
 
         try:
             if new_op.startswith('__'):
-                op = getattr(operator, new_op)(*a.args[::-1])
+                op = getattr(operator, new_op)
             else:
-                op = getattr(_all_operations, new_op)(*a.args[::-1])
+                op = getattr(_all_operations, new_op)
         except AttributeError:
-            raise ClaripyBalancerError("unable to invert comparison %s (AttributeError)", a.op)
+            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)", a.op)
 
         try:
-            op(*a.args[::-1])
+            return op(*a.args[::-1])
         except ClaripyOperationError:
             # TODO: copy trace
-            raise ClaripyBalancerError("unable to invert comparison %s (ClaripyOperationError)", a.op)
+            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)", a.op)
 
     def _align_ast(self, a):
         '''
@@ -80,7 +80,7 @@ class Balancer(object):
             if isinstance(a, BV):
                 return self._align_bv(a)
             elif isinstance(a, Bool) and len(a.args) == 2 and a.args[1].cardinality > a.args[0].cardinality:
-                return self._align_comparison(a)
+                return self._reverse_comparison(a)
             else:
                 return a
         except ClaripyBalancerError:
@@ -109,10 +109,6 @@ class Balancer(object):
     @staticmethod
     def _invert_comparison(a):
         return _all_operations.Not(a)
-
-    def _align_comparison(self, a):
-        n = self._invert_comparison(a)
-        return n.make_like(n.op, n.args[::-1])
 
     def _align_bv(self, a):
         if a.op in commutative_operations:
