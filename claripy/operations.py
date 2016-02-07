@@ -400,6 +400,14 @@ def boolean_not_simplifier(body):
     elif body.op == '__ge__':
         return ast.all_operations.ULT(body.args[0], body.args[1])
 
+def zeroext_simplifier(n, e):
+    if n == 0:
+        return e
+
+def signext_simplifier(n, e):
+    if n == 0:
+        return e
+
 def extract_simplifier(high, low, val):
     # if we're extracting the whole value, return the value
     if high - low + 1 == val.size():
@@ -500,6 +508,8 @@ simplifiers = {
     '__xor__': bitwise_xor_simplifier,
     '__add__': bitwise_add_simplifier,
     '__sub__': bitwise_sub_simplifier,
+    'ZeroExt': zeroext_simplifier,
+    'SignExt': signext_simplifier,
 }
 
 #
