@@ -254,12 +254,12 @@ class Balancer(object):
 
     @staticmethod
     def _balance_ZeroExt(truism):
-        num_zeroes = truism.args[0].args[0]
+        num_zeroes, inner = truism.args[0].args
         other_side = truism.args[1][len(truism.args[1])-1:len(truism.args[1])-num_zeroes]
 
         if is_true(other_side == 0):
             # We can safely eliminate this layer of ZeroExt
-            new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1])-num_zeroes-1:])
+            new_args = (inner, truism.args[1][len(truism.args[1])-num_zeroes-1:0])
             return truism.make_like(truism.op, new_args)
 
         return truism
@@ -273,7 +273,7 @@ class Balancer(object):
         #TODO: what if this is a set value, but *not* the same as other_side
         if is_true(left_side == other_side):
             # We can safely eliminate this layer of ZeroExt
-            new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1])-num_zeroes-1:])
+            new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1])-num_zeroes-1:0])
             return truism.make_like(truism.op, new_args)
 
         return truism
@@ -284,14 +284,14 @@ class Balancer(object):
         high, low, inner = truism.args[0].args
 
         if high < size-1:
-            left_msb = truism.args[0].args[0][size-1:high+1]
+            left_msb = inner[size-1:high+1]
             left_msb_zero = is_true(left_msb == 0)
         else:
             left_msb = None
             left_msb_zero = None
 
         if low > 0:
-            left_lsb = truism.args[0].args[0][high-1:0]
+            left_lsb = inner[high-1:0]
             left_lsb_zero = is_true(left_lsb == 0)
         else:
             left_lsb = None
