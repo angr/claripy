@@ -216,7 +216,7 @@ class Balancer(object):
                 l.debug("can't do anything because we have multiple multivalued guys")
                 return truism
 
-            if not backends.vsa.is_true(inner_aligned == truism):
+            if not backends.vsa.identical(inner_aligned, truism):
                 import ipdb; ipdb.set_trace()
 
             try:
@@ -269,7 +269,7 @@ class Balancer(object):
         other_side = truism.args[1][len(truism.args[1])-1:len(truism.args[1])-num_zeroes]
 
         #TODO: what if this is a set value, but *not* the same as other_side
-        if is_true(left_side == other_side):
+        if backends.vsa.identical(left_side, other_side):
             # We can safely eliminate this layer of ZeroExt
             new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1])-num_zeroes-1:0])
             return truism.make_like(truism.op, new_args)
