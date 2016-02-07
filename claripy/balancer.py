@@ -206,6 +206,10 @@ class Balancer(object):
     def _balance(self, truism):
         #print "BALANCING", truism
 
+        # can't balance single-arg bools (Not) for now
+        if len(truism.args) == 1:
+            return truism
+
         if not isinstance(truism.args[0], Base):
             return truism
 
