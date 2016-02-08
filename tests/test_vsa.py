@@ -648,7 +648,8 @@ def test_vsa_constraint_to_si():
     # False side; claripy.SI<32>1[1, 2]
 
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))
+    )
 
     #
     # If(SI == 0, 1, 0) <= 1
@@ -678,7 +679,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s1)
     # True side: SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(trueside_replacement[0][1] == SI(bits=32, stride=0, lower_bound=0, upper_bound=0)))
+        claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))
+    )
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -686,7 +688,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s1)
     # False side; SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))
+    )
 
     #
     # If(SI == 0, 20, 10) >= 15
@@ -702,7 +705,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s1)
     # True side: SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(trueside_replacement[0][1] == SI(bits=32, stride=0, lower_bound=0, upper_bound=0)))
+        claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))
+    )
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -710,7 +714,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s1)
     # False side; SI<32>0[0,0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))
+    )
 
     #
     # Extract(0, 0, Concat(BVV(0, 63), If(SI == 0, 1, 0))) == 1
@@ -726,7 +731,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s2)
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
+        claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))
+    )
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -734,7 +740,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s2)
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))
+    )
 
     #
     # Extract(0, 0, ZeroExt(32, If(SI == 0, BVV(1, 32), BVV(0, 32)))) == 1
@@ -750,7 +757,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s3)
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))))
+        claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=0, lower_bound=0, upper_bound=0))
+    )
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -758,7 +766,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s3)
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))))
+        claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=1, upper_bound=2))
+    )
 
     #
     # Extract(0, 0, ZeroExt(32, If(Extract(32, 0, (SI & claripy.SI)) < 0, BVV(1, 1), BVV(0, 1))))
@@ -776,7 +785,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(trueside_replacement[0][0] is s4[31:0])
     # True side: claripy.SI<32>0[0, 0]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=1, lower_bound=-0x80000000, upper_bound=-1))))
+        claripy.backends.vsa.identical(trueside_replacement[0][1], SI(bits=32, stride=1, lower_bound=-0x80000000, upper_bound=-1))
+    )
 
     falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
     nose.tools.assert_equal(falseside_sat, True)
@@ -784,7 +794,8 @@ def test_vsa_constraint_to_si():
     nose.tools.assert_true(falseside_replacement[0][0] is s4[31:0])
     # False side; claripy.SI<32>1[1, 2]
     nose.tools.assert_true(
-        claripy.backends.vsa.is_true(claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=0, upper_bound=0x7fffffff))))
+        claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=0, upper_bound=0x7fffffff))
+    )
 
     # TODO: Add some more insane test cases
 
