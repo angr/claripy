@@ -9,12 +9,12 @@ logger = logging.getLogger('claripy.vsa.strided_interval')
 from ..backend_object import BackendObject
 
 def reversed_processor(f):
-    def processor(self, *args):
+    def processor(self, *args, **kwargs):
         if self._reversed:
             # Reverse it for real. We have to accept the precision penalty.
             reversed = self._reverse()
-            return f(reversed, *args)
-        return f(self, *args)
+            return f(reversed, *args, **kwargs)
+        return f(self, *args, **kwargs)
 
     return processor
 
@@ -24,6 +24,7 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
+
         # Special handler for union
         if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
@@ -39,17 +40,25 @@ def normalize_types(f):
         if type(o) is BVV:
             o = o.value
         if type(o) in (int, long):
-            o = StridedInterval(bits=StridedInterval.min_bits(o), stride=0, lower_bound=o, upper_bound=o)
+            min_bits_required = 64
+            if isinstance(self, StridedInterval):
+                min_bits_required = self.bits
+            o = StridedInterval(bits=StridedInterval.min_bits(o, max_bits=min_bits_required), stride=0, lower_bound=o,
+                                upper_bound=o)
         if type(self) in (int, long):
-            self = StridedInterval(bits=StridedInterval.min_bits(self), stride=0, lower_bound=self, upper_bound=self)
+            min_bits_required = 64
+            if isinstance(o, StridedInterval):
+                min_bits_required = o.bits
+            self = StridedInterval(bits=StridedInterval.min_bits(self, max_bits=min_bits_required), stride=0,
+                                   lower_bound=self, upper_bound=self)
 
         if f.__name__ not in ('concat', ):
             # Make sure they have the same length
             common_bits = max(o.bits, self.bits)
             if o.bits < common_bits:
-                o = o.zero_extend(common_bits)
+                o = o.sign_extend(common_bits)
             if self.bits < common_bits:
-                self = self.zero_extend(common_bits)
+                self = self.sign_extend(common_bits)
 
         self_reversed = False
 
@@ -744,8 +753,8 @@ class StridedInterval(BackendObject):
     def __lshift__(self, other):
         return self.lshift(other)
 
-    def __rshift__(self, other):
-        return self.rshift(other)
+    def __rshift__(self, other, preserve_sign=True):
+        return self.rshift(other, preserve_sign=preserve_sign)
 
     def __repr__(self):
         s = ""
@@ -924,11 +933,15 @@ class StridedInterval(BackendObject):
         return 1 << (k - 1)
 
     @staticmethod
-    def min_bits(val):
+    def min_bits(val, max_bits=None):
         if val == 0:
             return 1
         elif val < 0:
-            return int(math.log(-val, 2) + 1) + 1
+            if max_bits is None:
+                return int(math.log(-val, 2) + 1) + 1
+            else:
+                assert isinstance(max_bits, int)
+                return int(math.log((((1 << max_bits) - 1) & ~(-val)) + 1, 2) + 1)
         else:
             # Here we assume the maximum val is 64 bits
             # Special case to deal with the floating-point imprecision
@@ -1522,6 +1535,7 @@ class StridedInterval(BackendObject):
         if overflow:
             return StridedInterval.top(self.bits)
 
+
         lb = self._modular_add(self.lower_bound, b.lower_bound, new_bits)
         ub = self._modular_add(self.upper_bound, b.upper_bound, new_bits)
 
@@ -1542,7 +1556,6 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return: self - b
         """
-
         new_bits = max(self.bits, b.bits)
 
         overflow = self._wrappedoverflow_sub(self, b)
@@ -1781,7 +1794,7 @@ class StridedInterval(BackendObject):
         return lower, upper
 
     @reversed_processor
-    def rshift(self, shift_amount):
+    def rshift(self, shift_amount, preserve_sign=False):
         lower, upper = self._pre_shift(shift_amount)
 
         # Shift the lower_bound and upper_bound by all possible amounts, and
@@ -1789,16 +1802,29 @@ class StridedInterval(BackendObject):
 
         new_lower_bound = None
         new_upper_bound = None
+        lower_bound_shifted = 0
+        upper_bound_shifted = 0
         for shift_amount in xrange(lower, upper + 1):
             l = self.lower_bound >> shift_amount
             if new_lower_bound is None or l < new_lower_bound:
                 new_lower_bound = l
+                lower_bound_shifted = shift_amount
             u = self.upper_bound >> shift_amount
             if new_upper_bound is None or u > new_upper_bound:
                 new_upper_bound = u
+                upper_bound_shifted = shift_amount
 
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
+        if preserve_sign:
+            mask = (2 ** (self.bits - 1))
+            if (self.lower_bound & mask) > 0:
+                bits_sign = ((2 ** lower_bound_shifted) - 1) << (self.bits - lower_bound_shifted)
+                new_lower_bound |= bits_sign
+
+            if (self.upper_bound & mask) > 0:
+                bits_sign = ((2 ** upper_bound_shifted) - 1) << (self.bits - upper_bound_shifted)
+                new_upper_bound |= bits_sign
 
         ret = StridedInterval(bits=self.bits,
                                stride=max(self.stride >> upper, 1),
@@ -1839,7 +1865,8 @@ class StridedInterval(BackendObject):
     @reversed_processor
     def cast_low(self, tok):
         assert tok <= self.bits
-
+        if self.bits == 64 and self.lower_bound == 0xffffffffffffffff and self.upper_bound == 0:
+            import ipdb; ipdb.set_trace()
         if tok == self.bits:
             return self.copy()
         else:
@@ -1925,47 +1952,15 @@ class StridedInterval(BackendObject):
         :return: A new StridedInterval
         """
 
-        msb = self.extract(self.bits - 1, self.bits - 1).eval(2)
+        si = self.copy()
+        si._bits = new_length
 
-        if msb == [ 0 ]:
-            # All positive numbers
-            return self.zero_extend(new_length)
-
-        if msb == [ 1 ]:
-            # All negative numbers
-
-            si = self.copy()
-            si._bits = new_length
-
+        if self.lower_bound & (2 ** (self.bits - 1)) > 0:
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
-            si._lower_bound = si._lower_bound | mask
-            si._upper_bound = si._upper_bound | mask
-
-        else:
-            # Both positive numbers and negative numbers
-            numbers = self._nsplit()
-
-            # Since there are both positive and negative numbers, there must be two bounds after nsplit
-            # assert len(numbers) == 2
-
-            si = self.empty(new_length)
-
-            for n in numbers:
-                a, b = n.lower_bound, n.upper_bound
-
-                if b < 2 ** (n.bits - 1):
-                    # msb = 0
-
-                    si_ = StridedInterval(bits=new_length, stride=n.stride, lower_bound=a, upper_bound=b)
-
-                else:
-                    # msb = 1
-
-                    mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
-
-                    si_ = StridedInterval(bits=new_length, stride=n.stride, lower_bound=a | mask, upper_bound=b | mask)
-
-                si = si.union(si_)
+            si._lower_bound |= mask
+        if self.upper_bound & (2 ** (self.bits - 1)) > 0:
+            mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
+            si._upper_bound |= mask
 
         return si
 
@@ -1977,7 +1972,6 @@ class StridedInterval(BackendObject):
         :param new_length: New length after zero-extension
         :return: A new StridedInterval
         """
-
         si = self.copy()
         si._bits = new_length
 
