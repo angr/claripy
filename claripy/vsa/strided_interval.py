@@ -1580,6 +1580,9 @@ class StridedInterval(BackendObject):
                                   upper_bound=a * b
                                   )
 
+            if a * b > (2 ** self.bits - 1):
+                logger.warning('Overflow in multiplication detected.')
+
             return ret.normalize()
 
         else:
@@ -1940,14 +1943,47 @@ class StridedInterval(BackendObject):
         :param new_length: New length after sign-extension
         :return: A new StridedInterval
         """
+        '''
+        This is a sound approximation of the sign extension.
+        In a sign-agnostic implementation of strided-intervals a number can be signed or unsigned both.
+        Given a number (i.e., lower_bound = upper_bound) situated in the right emisphere we must pay attention on how we
+        extend it: if the number is signed, extending it with leading 1s (i.e., its MSB) is sound given that it preserves
+        its values. If the number is unsigned, we must not replicate its MSB, since this would increase the final value
+        of the number, resulting in a incorrect approximation. In the last case the sound approach would be to add 0 in
+        front of the number, i.e., moving it to the left emisphere.
+
+        Extending this intuition, the implementation follows the below rules:
+        (UB: upper bound, LB: lower bound, RE: right emisphere, LE: left emisphere)
+        1* UB:LE and LB:LE: add leading 0s (sound and precise).
+        2* UB:RE and LB:RE and the LB is closer to the north pole: add leading 0s to LB and leading 1s to the UB (sound)
+        3* UB:RE and LB:RE and UB is closer to the north pole: add leading 1s to LB and UB both (sound).
+        4* UB:LE and LB:RE: add leading 0s to UB and leading 0s to LB (sound).
+        5* UB:RE and LB:LE: add leading 0s to LB and leading 1s to UB (sound).
+        '''
 
         si = self.copy()
         si._bits = new_length
 
+        leading_1_lb = False
+        leading_1_ub = False
+
+        # LB:RE cases
         if self.lower_bound & (2 ** (self.bits - 1)) > 0:
+            #2
+            if self.upper_bound & (2 ** (self.bits - 1)) > 0 and self.upper_bound > self.lower_bound:
+                leading_1_ub = True
+            #3
+            if self.upper_bound & (2 ** (self.bits - 1)) > 0 and self.lower_bound > self.upper_bound:
+                leading_1_ub = True
+                leading_1_lb = True
+        #5
+        elif self.upper_bound & (2 ** (self.bits - 1)) > 0:
+          leading_1_ub = True
+
+        if leading_1_lb:
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
             si._lower_bound |= mask
-        if self.upper_bound & (2 ** (self.bits - 1)) > 0:
+        if leading_1_ub:
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
             si._upper_bound |= mask
 
