@@ -1944,13 +1944,16 @@ class StridedInterval(BackendObject):
         :return: A new StridedInterval
         """
         '''
-        This is a sound approximation of the sign extension.
         In a sign-agnostic implementation of strided-intervals a number can be signed or unsigned both.
-        Given a number (i.e., lower_bound = upper_bound) situated in the right emisphere we must pay attention on how we
-        extend it: if the number is signed, extending it with leading 1s (i.e., its MSB) is sound given that it preserves
-        its values. If the number is unsigned, we must not replicate its MSB, since this would increase the final value
-        of the number, resulting in a incorrect approximation. In the last case the sound approach would be to add 0 in
-        front of the number, i.e., moving it to the left emisphere.
+        Given a SI, we must pay attention how we extend its lower bound and upper bound.
+        Assuming that the lower bound is in the left emishpere (positive number).
+        Let's assume first that the SI is signed and its upper bound is in the right emisphere. Extending it with leading
+        1s (i.e., its MSB)  is correct given that its values would be preserved.
+        On the other hand if the number is unsigned we should not replicate its MSB, since this would increase the value
+        of the upper bound in the new interval. In this case the correct approach would be to add 0 in front of the number,
+        i.e., moving it to the left emisphere. But this approach wouldn't be correct in the first scenario (signed SI).
+        The solution in this case is extend the upper bound with 1s. This gives us an overapproximation of the original
+        SI.
 
         Extending this intuition, the implementation follows the below rules:
         (UB: upper bound, LB: lower bound, RE: right emisphere, LE: left emisphere)
@@ -1987,7 +1990,6 @@ class StridedInterval(BackendObject):
         if leading_1_ub:
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
             si._upper_bound |= mask
-
 
         return si
 
