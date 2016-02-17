@@ -1959,6 +1959,7 @@ class StridedInterval(BackendObject):
         3* UB:RE and LB:RE and UB is closer to the north pole: add leading 1s to LB and UB both (sound).
         4* UB:LE and LB:RE: add leading 0s to UB and leading 0s to LB (sound).
         5* UB:RE and LB:LE: add leading 0s to LB and leading 1s to UB (sound).
+        6* UB:RE and LB:RE and LB = UB: add leading 1s to LB and UB both
         '''
 
         si = self.copy()
@@ -1972,8 +1973,8 @@ class StridedInterval(BackendObject):
             #2
             if self.upper_bound & (2 ** (self.bits - 1)) > 0 and self.upper_bound > self.lower_bound:
                 leading_1_ub = True
-            #3
-            if self.upper_bound & (2 ** (self.bits - 1)) > 0 and self.lower_bound > self.upper_bound:
+            #3/#6
+            if self.upper_bound & (2 ** (self.bits - 1)) > 0 and self.lower_bound >= self.upper_bound:
                 leading_1_ub = True
                 leading_1_lb = True
         #5
@@ -1986,6 +1987,7 @@ class StridedInterval(BackendObject):
         if leading_1_ub:
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
             si._upper_bound |= mask
+
 
         return si
 
