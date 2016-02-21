@@ -1159,12 +1159,7 @@ class StridedInterval(BackendObject):
         lb = a.lower_bound * b.lower_bound
         ub = a.upper_bound * b.upper_bound
 
-        max_ = StridedInterval.max_int(bits)
-        if lb > max_ or ub > max_:
-            # Overflow occurred
-            return StridedInterval.top(bits, uninitialized=False)
-
-        else:
+        if (ub - lb) < (2 ** bits):
             if b.is_integer:
                 # Multiplication with an integer, and it does not overflow!
                 stride = abs(a.stride * b.lower_bound)
@@ -1173,6 +1168,10 @@ class StridedInterval(BackendObject):
             else:
                 stride = fractions.gcd(a.stride, b.stride)
             return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+        else:
+            # Overflow occurred
+            return StridedInterval.top(bits, uninitialized=False)
+
 
     @staticmethod
     def _wrapped_signed_mul(a, b):
@@ -1182,6 +1181,9 @@ class StridedInterval(BackendObject):
         :param b: The second operand (StridedInterval)
         :return: The product
         """
+
+        #NOTE: interval here should never straddle poles
+        #FIXME: add assert to be sure of it!
 
         if a.bits != b.bits:
             logger.warning("Signed mul: two parameters have different bit length")
@@ -1203,21 +1205,15 @@ class StridedInterval(BackendObject):
         else:
             stride = fractions.gcd(a.stride, b.stride)
 
-        max_ = StridedInterval.sign_max_int(bits)
-        min_ = StridedInterval.sign_min_int(bits)
-
         if a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive:
             # [2, 5] * [10, 20] = [20, 100]
             lb = a.lower_bound * b.lower_bound
             ub = a.upper_bound * b.upper_bound
 
-            if lb > max_ or ub > max_:
-                # overflow
-                #FIXME: if only ub > max we can return [lb, top]
-                return StridedInterval.top(bits)
-
-            else:
+            if ub - lb < (2 ** bits):
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+            else:
+                return StridedInterval.top(bits)
 
         elif not a_lb_positive and not a_ub_positive and not b_lb_positive and not b_ub_positive:
             # [-5, -2] * [-20, -10] = [20, 100]
@@ -1230,47 +1226,34 @@ class StridedInterval(BackendObject):
                 StridedInterval._unsigned_to_signed(b.lower_bound, bits)
             )
 
-            if lb > max_ or ub > max_:
-                # overflow
-                #FIXME: if only ub > max we can return [lb, top]
-                return StridedInterval.top(bits)
-
-            else:
+            if ub - lb < (2 ** bits):
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+            else:
+                return StridedInterval.top(bits)
 
         elif not a_lb_positive and not a_ub_positive and b_lb_positive and b_ub_positive:
             # [-10, -2] * [2, 5] = [-50, -4]
             lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) * b.upper_bound
             ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) * b.lower_bound
-
-            if lb < min_ or ub < min_:
-                # overflow
-                # FIXME: if only one of the bound provoke an oferflow, we can preserve
-                # the other
-                return StridedInterval.top(bits)
-
-            else:
-                # two's complement
+            # since the intervals do not straddle the poles, ub is greater than lb
+            if ub - lb < (2 ** bits):
                 lb &= (2 ** bits - 1)
                 ub &= (2 ** bits - 1)
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+            else:
+                return StridedInterval.top(bits)
 
         elif a_lb_positive and a_ub_positive and not b_lb_positive and not b_ub_positive:
             # [2, 10] * [-5, -2] = [-50, -4]
             lb = a.upper_bound * StridedInterval._unsigned_to_signed(b.lower_bound, bits)
             ub = a.lower_bound * StridedInterval._unsigned_to_signed(b.upper_bound, bits)
-
-            if lb < min_ or ub < min_:
-                # overflow
-                # FIXME: if only one of the bound provoke an oferflow, we can preserve
-                # the other
-                return StridedInterval.top(bits)
-
-            else:
-                # two's complement
+            # since the intervals do not straddle the poles, ub is greater than lb
+            if ub - lb < (2 ** bits):
                 lb &= (2 ** bits - 1)
                 ub &= (2 ** bits - 1)
                 return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub)
+            else:
+                return StridedInterval.top(bits)
 
         else:
             raise Exception('We shouldn\'t see this case: %s * %s' % (a, b))
