@@ -11,7 +11,7 @@ class WrappedInterval(object):
         Refer paper: Signedness-agnostic program analysis: Precise integer bounds for low-level code
     """
 
-    def __init__(self, lower_bound, upper_bound, no_of_bits=32, is_bottom=False):
+    def __init__(self, lower_bound, upper_bound, no_of_bits=32, is_bottom_flag=False):
         """
         Construct a new wrapped interval with provided lower and upper bounds.
         :return:
@@ -19,11 +19,43 @@ class WrappedInterval(object):
         assert isinstance(lower_bound, int), "Provided Lower Bound is not integer. Expected Integer."
         assert isinstance(upper_bound, int), "Provided Upper Bound is not integer. Expected Integer."
         assert isinstance(no_of_bits, int), "No of bits is not integer. Expected Integer."
+        assert no_of_bits > 0, "Number of bits should be greater than 0"
 
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
+        # Convert lower bound and upper bound to sign agnostic representation
+        self.lower_bound = WrappedInterval._get_sign_agnostic_repr(lower_bound, no_of_bits)
+        self.upper_bound = WrappedInterval._get_sign_agnostic_repr(upper_bound, no_of_bits)
         self.no_of_bits = no_of_bits
-        self.is_bottom = is_bottom
+        self.is_bottom_flag = is_bottom_flag
+
+    @staticmethod
+    def _get_sign_agnostic_repr(target_num, no_of_bits):
+        """
+        Returns sign agnostic representation of the provided number
+        :param target_num: Target number to convert
+        :param no_of_bits:  Maximum bit width
+        :return: Number in sign agnostic representation
+        Note: The return value will be always positive
+        """
+        return target_num & WrappedInterval._max_upper_bound(no_of_bits)
+
+    @staticmethod
+    def _get_top(no_of_bits):
+        """
+        Return TOP for the given number of bits
+        :param no_of_bits: target number of bits
+        :return: Interval representing TOP
+        """
+        return WrappedInterval(0, WrappedInterval._max_upper_bound(no_of_bits), no_of_bits=no_of_bits)
+
+    @staticmethod
+    def _get_bottom(no_of_bits):
+        """
+        Return Interval Representing Bottom
+        :param no_of_bits: target number of bits
+        :return: Interval representing BOTTOM
+        """
+        return WrappedInterval(0, WrappedInterval._max_upper_bound(no_of_bits), no_of_bits=no_of_bits,
+                               is_bottom_flag=True)
 
     @staticmethod
     def _max_upper_bound(no_of_bits):
@@ -68,6 +100,29 @@ class WrappedInterval(object):
         return (op1 + op2) & WrappedInterval._max_upper_bound(no_of_bits)
 
     @staticmethod
+    def _gap(src_interval, tar_interval):
+        """
+        Refer section 3.1; gap function
+        :param src_interval: first argument or interval 1
+        :param tar_interval: second argument or interval 2
+        :return: Interval representing gap between two intervals
+        """
+        assert src_interval.no_of_bits == tar_interval.no_of_bits, "Number of bits should be same for operands"
+        # use the same variable names as in paper
+        w = src_interval.no_of_bits
+        s = src_interval
+        t = tar_interval
+        (a, b) = (s.lower_bound, s.upper_bound)
+        (c, d) = (t.lower_bound, t.upper_bound)
+
+        w = s.no_of_bits
+        # case 1
+        if (not t.is_in_interval(b)) and (not s.is_in_interval(c)):
+            return WrappedInterval(c, b, no_of_bits=w).get_complement()
+        # otherwise
+        return WrappedInterval._get_bottom(w)
+
+    @staticmethod
     def _less_than_a(num1, num2, a, no_of_bits):
         """
         Implements a less than equal operator as suggested in
@@ -84,6 +139,34 @@ class WrappedInterval(object):
         num2_a = WrappedInterval._mod_sub(num2, a, no_of_bits)
         return num1_a <= num2_a
 
+    @staticmethod
+    def _get_north_pole(no_of_bits):
+        """
+        Get interval representing north pole
+        Refer Section 3.2, nsplit
+        :param no_of_bits: Number of bits or w
+        :return: Interval representing north pole
+        """
+        w = no_of_bits
+        assert w > 0, "Number of bits should be more than 0"
+        np_low = (1 << (w - 1)) - 1  # 01111111..111
+        np_high = 1 << (w - 1)  # 100000..000
+        return WrappedInterval(np_low, np_high, no_of_bits=w)
+
+    @staticmethod
+    def _get_south_pole(no_of_bits):
+        """
+        Get interval representing south pole
+        Refer Section 3.2, ssplit
+        :param no_of_bits: Number of bits or w
+        :return: Interval representing south pole
+        """
+        w = no_of_bits
+        assert w > 0, "Number of bits should be more than 0"
+        sp_low = (1 << w) - 1  # 11111..111
+        sp_high = 0  # 00000
+        return WrappedInterval(sp_low, sp_high, no_of_bits=w)
+
     def is_top(self):
         """
         This function returns if this wrapped interval is top
@@ -99,7 +182,7 @@ class WrappedInterval(object):
         This function returns True if this WrappedInterval is Bottom else False
         :return: True if the wrapped interval is true else false
         """
-        return self.is_bottom
+        return self.is_bottom_flag
 
     def get_size(self):
         """
@@ -125,10 +208,10 @@ class WrappedInterval(object):
         """
         # case 1
         if self.is_bottom():
-            return WrappedInterval(0, (1 << self.no_of_bits)-1, no_of_bits=self.no_of_bits)
+            return WrappedInterval._get_top(self.no_of_bits)
         # case 2
         if self.is_top():
-            return WrappedInterval(0, (1 << self.no_of_bits)-1, no_of_bits=self.no_of_bits, is_bottom=True)
+            return WrappedInterval._get_bottom(self.no_of_bits)
         # case 3
         y_plus_1 = WrappedInterval._mod_add(self.upper_bound, 1, self.no_of_bits)
         x_minus_1 = WrappedInterval._mod_sub(self.lower_bound, 1, self.no_of_bits)
@@ -153,7 +236,8 @@ class WrappedInterval(object):
         if self.is_bottom():
             return False
         # case 3
-        return WrappedInterval._less_than_a(target_number, self.upper_bound, self.lower_bound, self.no_of_bits)
+        return WrappedInterval._less_than_a(target_number, self.upper_bound, self.lower_bound,
+                                            self.no_of_bits)
 
     def is_interval_included(self, to_check_interval):
         """
@@ -174,3 +258,160 @@ class WrappedInterval(object):
                (self.is_in_interval(to_check_interval.upper_bound)) and \
                ((not to_check_interval.is_in_interval(self.lower_bound)) or
                 (not to_check_interval.is_in_interval(self.upper_bound)))
+
+    def join(self, target_interval):
+        """
+        Join of 2-intervals (Pseudo-join operation)
+        Join this interval with given interval
+        Refer section 3.1
+        :param target_interval: Interval containing both the intervals
+        :return: Interval representing join of 2 intervals
+        """
+        assert self.no_of_bits == target_interval.no_of_bits, "Number of bits should be same for both operands"
+        w = self.no_of_bits
+        # we are using same names as in paper
+        s = self
+        t = target_interval
+        # (a, b) = s
+        a = self.lower_bound
+        b = self.upper_bound
+        # (c, d) = t
+        c = t.lower_bound
+        d = t.upper_bound
+        # case 1
+        if t.is_interval_included(s):
+            return t.copy()
+        # case 2
+        if s.is_interval_included(t):
+            return s.copy()
+        # case 3
+        if t.is_in_interval(a) and t.is_in_interval(b) and \
+           s.is_in_interval(c) and s.is_in_interval(d):
+            return WrappedInterval._get_top(w)
+        # case 4
+        if t.is_in_interval(b) and s.is_in_interval(c):
+            return WrappedInterval(a, d, no_of_bits=w)
+        # case 5
+        if s.is_in_interval(d) and t.is_in_interval(a):
+            return WrappedInterval(c, b, no_of_bits=w)
+        # case 6
+        b_c = WrappedInterval(b, c, no_of_bits=w)
+        d_a = WrappedInterval(d, a, no_of_bits=w)
+        if (b_c.get_size() < d_a.get_size()) or ((b_c.get_size() == d_a.get_size()) and a <= c):
+            return WrappedInterval(a, d, no_of_bits=w)
+        # otherwise
+        return WrappedInterval(c, b, no_of_bits=w)
+
+    def meet(self, target_interval):
+        """
+        Meet of 2 intervals (Pseudo meet operator)
+        Perform meet of this interval with given interval
+        Refer Section 3.1
+        :param target_interval: interval to perform meet with
+        :return: new Interval representing meet of the both intervals
+        """
+        s_compl = self.get_complement()
+        t_compl = target_interval.get_complement()
+        return s_compl.join(t_compl).get_complement()
+
+    def add(self, to_add):
+        """
+        Function to add an interval to the current interval
+        Refer section 3.2 Analysing Expressions
+        :param to_add: Target interval to add
+        :return: Result of adding provided interval to this interval
+        """
+        assert to_add is not None, "Interval to add should not be None"
+        result_bit_len = max(self.no_of_bits, to_add.no_of_bits)
+        # case 1
+        if self.is_bottom() or to_add.is_bottom():
+            return WrappedInterval._get_bottom(result_bit_len)
+
+        # case 2
+        if (self.get_size() + to_add.get_size()) <= WrappedInterval._max_upper_bound(result_bit_len):
+            # Get new lower bound; In paper: a +w b
+            new_lower_bound = WrappedInterval._mod_add(self.lower_bound, to_add.lower_bound, result_bit_len)
+            # Get new upper bound; In paper: b +w d
+            new_upper_bound = WrappedInterval._mod_add(self.upper_bound, to_add.upper_bound, result_bit_len)
+            return WrappedInterval(new_lower_bound, new_upper_bound, no_of_bits=result_bit_len)
+        # case 3
+        return WrappedInterval._get_top(result_bit_len)
+
+    def subtract(self, to_sub):
+        """
+        Subtract the provided interval from the current interval
+        Refer section 3.2 Analysing Expressions
+        :param to_sub: Interval to subtract
+        :return: Result of subtracting given interval from the current interval
+        """
+        assert to_sub is not None, "Interval to Subtract should not be None"
+        result_bit_len = max(self.no_of_bits, to_sub.no_of_bits)
+        # case 1
+        if self.is_bottom() or to_sub.is_bottom():
+            return WrappedInterval._get_bottom(result_bit_len)
+
+        # case 2
+        if (self.get_size() + to_sub.get_size()) <= WrappedInterval._max_upper_bound(result_bit_len):
+            # Get new lower bound; In paper: a -w b
+            new_lower_bound = WrappedInterval._mod_sub(self.lower_bound, to_sub.lower_bound, result_bit_len)
+            # Get new upper bound; In paper: b -w d
+            new_upper_bound = WrappedInterval._mod_sub(self.upper_bound, to_sub.upper_bound, result_bit_len)
+            return WrappedInterval(new_lower_bound, new_upper_bound, no_of_bits=result_bit_len)
+        # case 3
+        return WrappedInterval._get_top(result_bit_len)
+
+    def nsplit(self):
+        """
+        Split the interval at north pole
+        Refer section 3.2 Analysing Expressions (nsplit)
+        :return: Set containing resulting intervals after splitting at north pole
+        """
+        # case 1
+        if self.is_bottom():
+            return None
+        north_pole = WrappedInterval._get_north_pole(self.no_of_bits)
+        south_pole = WrappedInterval._get_south_pole(self.no_of_bits)
+        # case 4
+        if self.is_top():
+            elem1 = WrappedInterval(south_pole.upper_bound, north_pole.lower_bound, no_of_bits=self.no_of_bits)
+            elem2 = WrappedInterval(north_pole.upper_bound, south_pole.lower_bound, no_of_bits=self.no_of_bits)
+            return [elem1, elem2]
+        # case 2
+        if not self.is_interval_included(north_pole):
+            return [WrappedInterval(self.lower_bound, self.upper_bound, no_of_bits=self.no_of_bits)]
+        else:  # case 3
+            elem1 = WrappedInterval(self.lower_bound, north_pole.lower_bound, no_of_bits=self.no_of_bits)
+            elem2 = WrappedInterval(north_pole.upper_bound, self.upper_bound, no_of_bits=self.no_of_bits)
+            return [elem1, elem2]
+
+    def ssplit(self):
+        """
+        Split this interval at south pole
+        Refer section 3.2 Analysing Expressions (ssplit)
+        :return: Set containing resulting intervals after splitting at south pole
+        """
+        # case 1
+        if self.is_bottom():
+            return None
+        north_pole = WrappedInterval._get_north_pole(self.no_of_bits)
+        south_pole = WrappedInterval._get_south_pole(self.no_of_bits)
+        # case 4
+        if self.is_top():
+            elem1 = WrappedInterval(south_pole.upper_bound, north_pole.lower_bound, no_of_bits=self.no_of_bits)
+            elem2 = WrappedInterval(north_pole.upper_bound, south_pole.lower_bound, no_of_bits=self.no_of_bits)
+            return [elem1, elem2]
+        # case 2
+        if not self.is_interval_included(south_pole):
+            return [WrappedInterval(self.lower_bound, self.upper_bound, no_of_bits=self.no_of_bits)]
+        else:  # case 3
+            elem1 = WrappedInterval(self.lower_bound, south_pole.lower_bound, no_of_bits=self.no_of_bits)
+            elem2 = WrappedInterval(south_pole.upper_bound, self.upper_bound, no_of_bits=self.no_of_bits)
+            return [elem1, elem2]
+
+    def copy(self):
+        """
+        Copy the given interval
+        :return: Copy of this interval
+        """
+        return WrappedInterval(self.lower_bound, self.upper_bound, no_of_bits=self.no_of_bits,
+                               is_bottom_flag=self.is_bottom())
