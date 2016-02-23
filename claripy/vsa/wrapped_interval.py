@@ -1,5 +1,163 @@
+class WarrenMethods(object):
+    """
+        Methods as suggested in book.
+        Hackers Delight.
+    """
+    @staticmethod
+    def min_or(a, b, c, d, w):
+        """
+        Lower bound of result of ORing 2-intervals
+        :param a: Lower bound of first interval
+        :param b: Upper bound of first interval
+        :param c: Lower bound of second interval
+        :param d: Upper bound of second interval
+        :param w: bit width
+        :return: Lower bound of ORing 2-intervals
+        """
+        m = (1 << (w - 1))
+        while m != 0:
+            if ((~a) & c & m) != 0:
+                temp = (a | m) & -m
+                if temp <= b:
+                    a = temp
+                    break
+            elif (a & (~c) & m) != 0:
+                temp = (c | m) & -m
+                if temp <= d:
+                    c = temp
+                    break
+            m >>= 1
+        return a | c
+
+    @staticmethod
+    def max_or(a, b, c, d, w):
+        """
+        Upper bound of result of ORing 2-intervals
+        :param a: Lower bound of first interval
+        :param b: Upper bound of first interval
+        :param c: Lower bound of second interval
+        :param d: Upper bound of second interval
+        :param w: bit width
+        :return: Upper bound of ORing 2-intervals
+        """
+        m = (1 << (w - 1))
+        while m != 0:
+            if (b & d & m) != 0:
+                temp = (b - m) | (m - 1)
+                if temp >= a:
+                    b = temp
+                    break
+                temp = (d - m) | (m - 1)
+                if temp >= c:
+                    d = temp
+                    break
+            m >>= 1
+        return b | d
+
+    @staticmethod
+    def min_and(a, b, c, d, w):
+        """
+        Lower bound of result of ANDing 2-intervals
+        :param a: Lower bound of first interval
+        :param b: Upper bound of first interval
+        :param c: Lower bound of second interval
+        :param d: Upper bound of second interval
+        :param w: bit width
+        :return: Lower bound of ANDing 2-intervals
+        """
+        m = (1 << (w - 1))
+        while m != 0:
+            if (~a & ~c & m) != 0:
+                temp = (a | m) & -m
+                if temp <= b:
+                    a = temp
+                    break
+                temp = (c | m) & -m
+                if temp <= d:
+                    c = temp
+                    break
+            m >>= 1
+        return a & c
+
+    @staticmethod
+    def max_and(a, b, c, d, w):
+        """
+        Upper bound of result of ANDing 2-intervals
+        :param a: Lower bound of first interval
+        :param b: Upper bound of first interval
+        :param c: Lower bound of second interval
+        :param d: Upper bound of second interval
+        :param w: bit width
+        :return: Upper bound of ANDing 2-intervals
+        """
+        m = (1 << (w - 1))
+        while m != 0:
+            if ((~d) & b & m) != 0:
+                temp = (b & ~m) | (m - 1)
+                if temp >= a:
+                    b = temp
+                    break
+            elif (d & (~b) & m) != 0:
+                temp = (d & ~m) | (m - 1)
+                if temp >= c:
+                    d = temp
+                    break
+            m >>= 1
+        return b & d
+
+    @staticmethod
+    def min_xor(a, b, c, d, w):
+        """
+        Lower bound of result of XORing 2-intervals
+        :param a: Lower bound of first interval
+        :param b: Upper bound of first interval
+        :param c: Lower bound of second interval
+        :param d: Upper bound of second interval
+        :param w: bit width
+        :return: Lower bound of XORing 2-intervals
+        """
+        m = (1 << (w - 1))
+        while m != 0:
+            if ((~a) & c & m) != 0:
+                temp = (a | m) & -m
+                if temp <= b:
+                    a = temp
+            elif (a & (~c) & m) != 0:
+                temp = (c | m) & -m
+                if temp <= d:
+                    c = temp
+            m >>= 1
+        return a ^ c
+
+    @staticmethod
+    def max_xor(a, b, c, d, w):
+        """
+        Upper bound of result of XORing 2-intervals
+        :param a: Lower bound of first interval
+        :param b: Upper bound of first interval
+        :param c: Lower bound of second interval
+        :param d: Upper bound of second interval
+        :param w: bit width
+        :return: Upper bound of XORing 2-intervals
+        """
+        m = (1 << (w - 1))
+        while m != 0:
+            if (b & d & m) != 0:
+                temp = (b - m) | (m - 1)
+                if temp >= a:
+                    b = temp
+                else:
+                    temp = (d - m) | (m - 1)
+                    if temp >= c:
+                        d = temp
+            m >>= 1
+        return b ^ d
+
+
 """
 Faithful reproduction of paper Signedness-agnostic program analysis: Precise integer bounds for low-level code
+
+More details are in another journal paper: Interval analysis and machine arithmetic: Why signedness ignorance is bliss
 This is meant to serve as a base implementation of wrapped intervals.
 Any use of wrapped intervals should reuse this.
 """
@@ -115,6 +273,102 @@ class WrappedInterval(object):
         return (op1 * op2) & WrappedInterval._max_upper_bound(no_of_bits)
 
     @staticmethod
+    def _mod_u_div(op1, op2, no_of_bits):
+        """
+        Performs: Unsigned Modular Division.
+        Perform (op1 / op2) and return result with in no_of_bits
+        Refer Section 3 of the paper.
+        :param op1: operand 1
+        :param op2: operand 2
+        :param no_of_bits: Width of the result.
+        :return: quotient of modular division.
+        Note: The return value will be always positive
+        """
+        assert no_of_bits > 0, "Number of bits should be more than zero"
+        return (op1 / op2) & WrappedInterval._max_upper_bound(no_of_bits)
+
+    @staticmethod
+    def _mod_s_div(op1, op2, no_of_bits):
+        """
+        Performs: Signed Modular Division.
+        Perform (op1 / op2) and return result with in no_of_bits
+        Refer Section 3 of the paper.
+        :param op1: operand 1
+        :param op2: operand 2
+        :param no_of_bits: Width of the result.
+        :return: quotient of modular division.
+        Note: The return value will be always positive
+        """
+        assert no_of_bits > 0, "Number of bits should be more than zero"
+        # convert the numbers into signed representation
+        msb_op1 = WrappedInterval._msb(op1, no_of_bits)
+        if msb_op1 == 1:
+            # subtract 1 from number and get 1s complement
+            op1 = ~(op1 - 1)
+            op1 *= -1
+        # converting to signed representation
+        msb_op2 = WrappedInterval._msb(op2, no_of_bits)
+        if msb_op2 == 1:
+            op2 = ~(op2 - 1)
+            op2 *= -1
+        return (op1 / op2) & WrappedInterval._max_upper_bound(no_of_bits)
+
+    @staticmethod
+    def _mod_u_range_div(a, b, c, d, w):
+        """
+        Perform modular unsigned division of given range
+        Refer 1:15 of paper:
+        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
+        :param a: Lower bound of first operand
+        :param b: Upper bound of first operand
+        :param c: Lower bound of second operand
+        :param d: Upper bound of second operand
+        :param w: Bit width
+        :return: Interval containing the result.
+        """
+        a_div_d = WrappedInterval._mod_u_div(a, d, w)
+        b_div_c = WrappedInterval._mod_u_div(b, c, w)
+        return WrappedInterval(a_div_d, b_div_c, no_of_bits=w)
+
+    @staticmethod
+    def _mod_s_range_div(a, b, c, d, w):
+        """
+        Perform modular signed division of given range
+        Refer 1:16 of paper:
+        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
+        :param a: Lower bound of first operand
+        :param b: Upper bound of first operand
+        :param c: Lower bound of second operand
+        :param d: Upper bound of second operand
+        :param w: Bit width
+        :return: Interval containing the result.
+        """
+        msb_a = WrappedInterval._msb(a, w)
+        msb_c = WrappedInterval._msb(c, w)
+        # case 1
+        if msb_a == msb_c and msb_c == 0:
+            a_div_d = WrappedInterval._mod_s_div(a, d, w)
+            b_div_c = WrappedInterval._mod_s_div(b, c, w)
+            return WrappedInterval(a_div_d, b_div_c, no_of_bits=w)
+        # case 2
+        if msb_a == msb_c and msb_c == 1:
+            a_div_d = WrappedInterval._mod_s_div(a, d, w)
+            b_div_c = WrappedInterval._mod_s_div(b, c, w)
+            return WrappedInterval(b_div_c, a_div_d, no_of_bits=w)
+        # case 3
+        if msb_a == 0 and msb_c == 1:
+            b_div_d = WrappedInterval._mod_s_div(b, d, w)
+            a_div_c = WrappedInterval._mod_s_div(a, c, w)
+            return WrappedInterval(b_div_d, a_div_c, no_of_bits=w)
+        # case 4
+        if msb_a == 1 and msb_c == 0:
+            b_div_d = WrappedInterval._mod_s_div(b, d, w)
+            a_div_c = WrappedInterval._mod_s_div(a, c, w)
+            return WrappedInterval(a_div_c, b_div_d, no_of_bits=w)
+
+        assert False, "We should never reach here, Potential cause: Invalid return value my msb function"
+
+    @staticmethod
     def _gap(src_interval, tar_interval):
         """
         Refer section 3.1; gap function
@@ -141,13 +395,28 @@ class WrappedInterval(object):
     def _extend(src_interval, dst_interval):
         """
         Extend src interval to include destination
-        Refer Section 3.1
+        Refer 1:11 of paper:
+        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
         :param src_interval: Interval to extend
         :param dst_interval: Interval to be extended to
         :return: Interval starting from src interval which also includes dst interval
         """
-        # TODO: Need to check
-        return src_interval.join(dst_interval)
+        s = src_interval
+        t = dst_interval
+        w = s.no_of_bits
+        (a, _) = (s.lower_bound, s.upper_bound)
+        (_, d) = (t.lower_bound, t.upper_bound)
+        # case 1
+        if t.is_interval_included(s):
+            return t.copy()
+        # case 2
+        if s.is_interval_included(t):
+            return s.copy()
+        # case 3
+        if t.is_interval_included(s.get_complement()):
+            return WrappedInterval._get_top(w)
+        # otherwise
+        return WrappedInterval(a, d, no_of_bits=w)
 
     @staticmethod
     def _bigger(interval1, interval2):
@@ -249,7 +518,7 @@ class WrappedInterval(object):
         :param no_of_bits:
         :return:
         """
-        return (1 << (no_of_bits - 1)) & target_number
+        return 1 if ((1 << (no_of_bits - 1)) & target_number) != 0 else 0
 
     @staticmethod
     def _signed_mul(a, b, c, d, w):
@@ -396,13 +665,14 @@ class WrappedInterval(object):
     def is_interval_included(self, to_check_interval):
         """
         Check if to_check_interval is in interval represented by this object.
-        Refer section 3.1
+        Refer 1:8, 3.2 of paper:
+            Interval analysis and machine arithmetic: Why signedness ignorance is bliss
         :param to_check_interval: Interval to check
         :return: True if to_check_interval is in this range else False
         """
         assert to_check_interval is not None, "Interval to check should be not None"
         # Case 1
-        if self.is_top() or to_check_interval.is_bottom():
+        if self.is_top() or to_check_interval.is_bottom() or self == to_check_interval:
             return True
         # Case 2
         if to_check_interval.is_top() or self.is_bottom():
@@ -512,6 +782,8 @@ class WrappedInterval(object):
             return set([item1])
         # otherwise
         return set()
+
+    # Addition and Subtraction
 
     def add(self, to_add):
         """
@@ -626,6 +898,8 @@ class WrappedInterval(object):
         return WrappedInterval(self.lower_bound, self.upper_bound, no_of_bits=self.no_of_bits,
                                is_bottom_flag=self.is_bottom())
 
+    # Multiplication and Division
+
     def multiply(self, operand_interval):
         """
         Multiply this interval with the given interval
@@ -633,8 +907,10 @@ class WrappedInterval(object):
         :param operand_interval: Interval to be multiplied with
         :return: Resulting interval after multiplication
         """
-        # use the same variables as in paper
+        assert self.no_of_bits == operand_interval.no_of_bits, "Number of bits have to be same for both operands of " \
+                                                               "multiplication"
         all_resulting_intervals = set()
+        # using same variable names as in paper
         s = self
         t = operand_interval
         w = s.no_of_bits
@@ -646,6 +922,160 @@ class WrappedInterval(object):
                 all_resulting_intervals.add(m)
 
         return WrappedInterval._least_upper_bound(list(all_resulting_intervals))
+
+    def unsigned_div(self, denominator_interval):
+        """
+        Perform unsigned division of the current interval with given interval
+        Refer 1:15 of paper:
+        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
+        :param denominator_interval: Denominator interval to be used
+        :return: Resulting interval containing all results.
+        """
+        all_resulting_intervals = set()
+        # using same variable names as in paper
+        s = self
+        t = denominator_interval
+        w = s.no_of_bits
+        for u in s.ssplit():
+            for v in t.ssplit():
+                (a, b) = (u.lower_bound, u.upper_bound)
+                (c, d) = (v.lower_bound, v.upper_bound)
+                # v \ (0, 0)
+                if c != 0 and d != 0:
+                    curr_result = WrappedInterval._mod_u_range_div(a, b, c, d, w)
+                    all_resulting_intervals.add(curr_result)
+
+        return WrappedInterval._least_upper_bound(list(all_resulting_intervals))
+
+    def signed_div(self, denominator_interval):
+        """
+        Perform signed division of the current interval with given interval
+        Refer 1:15 of paper:
+        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
+        :param denominator_interval: Denominator interval to be used
+        :return: Resulting interval containing all results.
+        """
+        all_resulting_intervals = set()
+        # using same variable names as in paper
+        s = self
+        t = denominator_interval
+        w = s.no_of_bits
+        for u in s.cut():
+            for v in t.cut():
+                (a, b) = (u.lower_bound, u.upper_bound)
+                (c, d) = (v.lower_bound, v.upper_bound)
+                # v \ (0, 0)
+                if c != 0 and d != 0:
+                    curr_result = WrappedInterval._mod_s_range_div(a, b, c, d, w)
+                    all_resulting_intervals.add(curr_result)
+
+        return WrappedInterval._least_upper_bound(list(all_resulting_intervals))
+
+    # Bitwise Operations
+
+    def bitwise_or(self, operand_interval):
+        """
+        Perform bitwise OR of this interval with provided interval
+        Refer section 3.2
+        :param operand_interval: interval to OR with
+        :return: Interval representing the range of result
+        """
+        assert self.no_of_bits == operand_interval.no_of_bits, "Number of bits should be same for OR operands"
+        # Using same variables as in paper
+        s = self
+        t = operand_interval
+        result_interval_set = set()
+        for u in s.ssplit():
+            for v in t.ssplit():
+                w = u.no_of_bits
+                # u |w v
+                low_bound = WarrenMethods.min_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
+                upper_bound = WarrenMethods.max_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
+                new_interval = WrappedInterval(low_bound, upper_bound, no_of_bits=w)
+                result_interval_set.add(new_interval)
+        return WrappedInterval._least_upper_bound(list(result_interval_set))
+
+    def bitwise_and(self, operand_interval):
+        """
+        Perform bitwise AND of this interval with provided interval
+        Refer section 3.2
+        :param operand_interval: interval to AND with
+        :return: Interval representing the range of result
+        """
+        assert self.no_of_bits == operand_interval.no_of_bits, "Number of bits should be same for AND operands"
+        # Using same variables as in paper
+        s = self
+        t = operand_interval
+        result_interval_set = set()
+        for u in s.ssplit():
+            for v in t.ssplit():
+                w = u.no_of_bits
+                # u &w v
+                low_bound = WarrenMethods.min_and(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
+                upper_bound = WarrenMethods.max_and(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
+                new_interval = WrappedInterval(low_bound, upper_bound, no_of_bits=w)
+                result_interval_set.add(new_interval)
+        return WrappedInterval._least_upper_bound(list(result_interval_set))
+
+    def bitwise_xor(self, operand_interval):
+        """
+        Perform bitwise XOR of this interval with provided interval
+        Refer section 3.2
+        :param operand_interval: interval to XOR with
+        :return: Interval representing the range of result
+        """
+        assert self.no_of_bits == operand_interval.no_of_bits, "Number of bits should be same for XOR operands"
+        # Using same variables as in paper
+        s = self
+        t = operand_interval
+        result_interval_set = set()
+        for u in s.ssplit():
+            for v in t.ssplit():
+                w = u.no_of_bits
+                # u |w v
+                low_bound = WarrenMethods.min_xor(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
+                upper_bound = WarrenMethods.max_xor(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
+                new_interval = WrappedInterval(low_bound, upper_bound, no_of_bits=w)
+                result_interval_set.add(new_interval)
+        return WrappedInterval._least_upper_bound(list(result_interval_set))
+
+    # Extension operations: Zero Extend and Sign Extend
+
+    def zero_extend(self, k):
+        """
+        Zero extend the current interval by given number of bits
+        :param k: Number of bits to extend. New size would be: current size + k
+        :return: New interval whose size is current interval size + k
+        """
+        assert k > 0, "Number of bits to extend should be greater than zero"
+        # Number of bits in result
+        new_bit_length = self.no_of_bits + k
+        s = self
+        result_interval_set = set()
+        for t in s.ssplit():
+            (a, b) = (t.lower_bound, t.upper_bound)
+            curr_result = WrappedInterval(a, b, no_of_bits=new_bit_length)
+            result_interval_set.add(curr_result)
+        return WrappedInterval._least_upper_bound(list(result_interval_set))
+
+    def sign_extend(self, k):
+        """
+        Sign extend the current interval by given number of bits
+        :param k: Number of bits to extend. New size would be: current size + k
+        :return: New interval whose size is current interval size + k
+        """
+        assert k > 0, "Number of bits to extend should be greater than zero"
+        # Number of bits in result
+        new_bit_length = self.no_of_bits + k
+        # value of length new_bit_length bits where most significant k bits are ones.
+        msb_flag = ((1 << k) - 1) << self.no_of_bits
+        s = self
+        result_interval_set = set()
+        for t in s.nsplit():
+            (a, b) = (t.lower_bound, t.upper_bound)
+            curr_result = WrappedInterval(msb_flag | a, msb_flag | b, no_of_bits=new_bit_length)
+            result_interval_set.add(curr_result)
+        return WrappedInterval._least_upper_bound(list(result_interval_set))
 
     def __hash__(self):
         """
