@@ -123,6 +123,65 @@ class WrappedInterval(object):
         return WrappedInterval._get_bottom(w)
 
     @staticmethod
+    def _extend(src_interval, dst_interval):
+        """
+        Extend src interval to include destination
+        Refer Section 3.1
+        :param src_interval: Interval to extend
+        :param dst_interval: Interval to be extended to
+        :return: Interval starting from src interval which also includes dst interval
+        """
+        # TODO: Need to check
+        return src_interval.join(dst_interval)
+
+    @staticmethod
+    def _bigger(interval1, interval2):
+        """
+        Return interval with bigger cardinality
+        Refer Section 3.1
+        :param interval1: first interval
+        :param interval2: second interval
+        :return: Interval or interval2 whichever has greater cardinality
+        """
+        if interval2.get_size() > interval1.get_size():
+            return interval2.copy()
+        return interval1.copy()
+
+    @staticmethod
+    def _least_upper_bound(intervals_to_join):
+        """
+        Pseudo least upper bound.
+        Join the given set of intervals into a big interval
+        Refer section 3.1
+        :param intervals_to_join: Intervals to join
+        :return: Interval that contains all intervals
+        """
+        assert len(intervals_to_join) > 0, "No intervals to join"
+        # Optimization: If we have only one interval, then return that interval as result
+        if len(intervals_to_join) == 1:
+            return intervals_to_join[0].copy()
+        # Check if all intervals are of same width
+        all_same = all(x.no_of_bits == intervals_to_join[0].no_of_bits for x in intervals_to_join)
+        assert all_same, "All intervals to join should be same"
+        # sort the intervals in increasing left bound
+        sorted_intervals = sorted(intervals_to_join, key=lambda x: x.lower_bound)
+        # Fig 3 of the paper
+        w = intervals_to_join[0].no_of_bits
+        f = WrappedInterval._get_bottom(w)
+        g = WrappedInterval._get_bottom(w)
+        for s in sorted_intervals:
+            if s.is_top() or WrappedInterval._less_than_a(s.upper_bound, s.lower_bound, 0, w):
+                # f <- extend(f, s)
+                f = WrappedInterval._extend(f, s)
+        for s in sorted_intervals:
+            # g <- bigger(g, gap(f, s))
+            g = WrappedInterval._bigger(g, WrappedInterval._gap(f, s))
+            # f <- extend(f, s)
+            f = WrappedInterval._extend(f, s)
+        # Result
+        return WrappedInterval._bigger(g, f.get_complement()).get_complement()
+        
+    @staticmethod
     def _less_than_a(num1, num2, a, no_of_bits):
         """
         Implements a less than equal operator as suggested in
