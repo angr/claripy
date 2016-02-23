@@ -228,6 +228,22 @@ class WrappedInterval(object):
         return (1 << no_of_bits) - 1
 
     @staticmethod
+    def _get_signed_repr(target_num, no_of_bits):
+        """
+        Return signed representation of the given number
+        :param target_num: Number to be interpreted
+        :param no_of_bits: Number of bits for number
+        :return: Number in signed representation
+        """
+        msb_num = WrappedInterval._msb(target_num, no_of_bits)
+        if msb_num == 1:
+            # subtract 1 from number and get 1s complement
+            target_num = ~(target_num - 1)
+            target_num *= -1
+        return target_num
+
+
+    @staticmethod
     def _mod_equals(op1, op2, no_of_bits):
         """
         Performs: Modular equality.
@@ -315,16 +331,9 @@ class WrappedInterval(object):
         """
         assert no_of_bits > 0, "Number of bits should be more than zero"
         # convert the numbers into signed representation
-        msb_op1 = WrappedInterval._msb(op1, no_of_bits)
-        if msb_op1 == 1:
-            # subtract 1 from number and get 1s complement
-            op1 = ~(op1 - 1)
-            op1 *= -1
+        op1 = WrappedInterval._get_signed_repr(op1, no_of_bits)
         # converting to signed representation
-        msb_op2 = WrappedInterval._msb(op2, no_of_bits)
-        if msb_op2 == 1:
-            op2 = ~(op2 - 1)
-            op2 *= -1
+        op2 = WrappedInterval._get_signed_repr(op2, no_of_bits)
         return (op1 / op2) & WrappedInterval._max_upper_bound(no_of_bits)
 
     @staticmethod
@@ -615,19 +624,16 @@ class WrappedInterval(object):
         return num & WrappedInterval._max_upper_bound(k)
 
     @staticmethod
-    def _arithmetic_right_shift(num, k):
+    def _arithmetic_right_shift(num, w, k):
         """
         Perform arithmetic shift of the given number by k bits
         :param num: number to be shifted
+        :param w: Size of num in bits
         :param k: number of bits to shift
         :return: Number after shifting k bits
         """
         # convert the number into signed representation
-        msb_num = WrappedInterval._msb(num)
-        if msb_num == 1:
-            # subtract 1 from number and get 1s complement
-            num = ~(num - 1)
-            num *= -1
+        num = WrappedInterval._get_signed_repr(num, w)
         return num >> k
 
     def is_top(self):
@@ -1141,8 +1147,8 @@ class WrappedInterval(object):
             return WrappedInterval._get_bottom(k)
 
         (a, b) = (s.lower_bound, s.upper_bound)
-        a_rshift_k = WrappedInterval._arithmetic_right_shift(a, k)
-        b_rshift_k = WrappedInterval._arithmetic_right_shift(b, k)
+        a_rshift_k = WrappedInterval._arithmetic_right_shift(a, w, k)
+        b_rshift_k = WrappedInterval._arithmetic_right_shift(b, w, k)
         a_trunc_k = WrappedInterval._truncate_num(a, k)
         b_trunc_k = WrappedInterval._truncate_num(b, k)
         # case 2
@@ -1226,8 +1232,8 @@ class WrappedInterval(object):
         if s.is_interval_included(np):
             return WrappedInterval(msb_k, lsb_w_k, no_of_bits=w)
         # otherwise
-        return WrappedInterval(WrappedInterval._arithmetic_right_shift(a, k),
-                               WrappedInterval._arithmetic_right_shift(b, k), no_of_bits=w)
+        return WrappedInterval(WrappedInterval._arithmetic_right_shift(a, w, k),
+                               WrappedInterval._arithmetic_right_shift(b, w, k), no_of_bits=w)
 
     def __hash__(self):
         """
