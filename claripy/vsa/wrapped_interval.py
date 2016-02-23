@@ -100,6 +100,21 @@ class WrappedInterval(object):
         return (op1 + op2) & WrappedInterval._max_upper_bound(no_of_bits)
 
     @staticmethod
+    def _mod_mul(op1, op2, no_of_bits):
+        """
+        Performs: Modular Multiplication.
+        Perform (op1 * op2) and return result with in no_of_bits
+        Refer Section 3 of the paper.
+        :param op1: operand 1
+        :param op2: operand 2
+        :param no_of_bits: Width of the result.
+        :return: result of modular multiplication.
+        Note: The return value will be always positive
+        """
+        assert no_of_bits > 0, "Number of bits should be more than zero"
+        return (op1 * op2) & WrappedInterval._max_upper_bound(no_of_bits)
+
+    @staticmethod
     def _gap(src_interval, tar_interval):
         """
         Refer section 3.1; gap function
@@ -180,7 +195,7 @@ class WrappedInterval(object):
             f = WrappedInterval._extend(f, s)
         # Result
         return WrappedInterval._bigger(g, f.get_complement()).get_complement()
-        
+
     @staticmethod
     def _less_than_a(num1, num2, a, no_of_bits):
         """
@@ -225,6 +240,86 @@ class WrappedInterval(object):
         sp_low = (1 << w) - 1  # 11111..111
         sp_high = 0  # 00000
         return WrappedInterval(sp_low, sp_high, no_of_bits=w)
+
+    @staticmethod
+    def _msb(target_number, no_of_bits):
+        """
+        # TODO
+        :param target_number:
+        :param no_of_bits:
+        :return:
+        """
+        return (1 << (no_of_bits - 1)) & target_number
+
+    @staticmethod
+    def _signed_mul(a, b, c, d, w):
+        """
+        Implementation of signed multiplication
+        Signed multiply the current interval with given interval
+        Refer section 3.2 Analysing expression
+        :param a: first lower bound
+        :param b: first upper bound
+        :param c: second lower bound
+        :param d: second upper bound
+        :param w: bit width
+        :return: Interval representing result interval
+        """
+
+        msb_a = WrappedInterval._msb(a)
+        msb_b = WrappedInterval._msb(b)
+        msb_c = WrappedInterval._msb(c)
+        msb_d = WrappedInterval._msb(d)
+        # case 1
+        if msb_a == msb_b and msb_b == msb_c and msb_c == msb_d and \
+                ((b*d - a*c) <= WrappedInterval._max_upper_bound(w)):
+            return WrappedInterval(WrappedInterval._mod_mul(a, c, w), WrappedInterval._mod_mul(b, d, w), no_of_bits=w)
+        # case 2
+        if msb_a == msb_b and msb_b == 1 and msb_c == msb_d and msb_d == 0 and \
+                ((b*c - a*d) <= WrappedInterval._max_upper_bound(w)):
+            return WrappedInterval(WrappedInterval._mod_mul(a, d, w), WrappedInterval._mod_mul(b, c, w), no_of_bits=w)
+        # case 3
+        if msb_a == msb_b and msb_b == 0 and msb_c == msb_d and msb_d == 1 and \
+                ((a*d - b*c) <= WrappedInterval._max_upper_bound(w)):
+            return WrappedInterval(WrappedInterval._mod_mul(b, c, w), WrappedInterval._mod_mul(a, d, w), no_of_bits=w)
+        # otherwise
+        return WrappedInterval._get_top(w)
+
+    @staticmethod
+    def _unsigned_mul(a, b, c, d, w):
+        """
+        Implementation of unsigned multiplication
+        UnSign multiply the current interval with given interval
+        Refer section 3.2 Analysing expression
+        :param a: first lower bound
+        :param b: first upper bound
+        :param c: second lower bound
+        :param d: second upper bound
+        :param w: bit width
+        :return: Interval representing result interval
+        """
+
+        # case 1
+        if (b*d - a*c) <= WrappedInterval._max_upper_bound(w):
+            return WrappedInterval(WrappedInterval._mod_mul(a, c, w), WrappedInterval._mod_mul(b, d, w), no_of_bits=w)
+        # otherwise
+        return WrappedInterval._get_top(w)
+
+    @staticmethod
+    def _unsigned_signed_mul(a, b, c, d, w):
+        """
+        Implementation of signed-unsigned multiplication
+        UnSign multiply the current interval with given interval
+        Refer section 3.2 Analysing expression
+        :param a: first lower bound
+        :param b: first upper bound
+        :param c: second lower bound
+        :param d: second upper bound
+        :param w: bit width
+        :return: Interval representing result interval
+        """
+        unsigned_res = WrappedInterval._unsigned_mul(a, b, c, d, w)
+        signed_res = WrappedInterval._signed_mul(a, b, c, d, w)
+        return unsigned_res.intersect(signed_res)
 
     def is_top(self):
         """
@@ -373,6 +468,51 @@ class WrappedInterval(object):
         t_compl = target_interval.get_complement()
         return s_compl.join(t_compl).get_complement()
 
+    def intersect(self, target_interval):
+        """
+        Intersect the current interval with given interval and return the set of intervals
+        Refer end of section 3.1, S n U
+        :param target_interval: The target interval to intersect the current interval with
+        :return: Set of intervals which are the result of intersection
+        """
+        assert self.no_of_bits == target_interval.no_of_bits, "Number of bits should be same for intervals to intersect"
+        # using same variable names as in paper
+        s = self
+        t = target_interval
+        w = self.no_of_bits
+        # case 1
+        if s.is_bottom() or t.is_bottom():
+            return set()
+        # case 2
+        if s == t or s.is_top():
+            return set([t.copy()])
+        # case 3
+        if t.is_top():
+            return set([s.copy()])
+        (a, b) = (s.lower_bound, s.upper_bound)
+        (c, d) = (t.lower_bound, t.upper_bound)
+        # case 4
+        if t.is_in_interval(a) and t.is_in_interval(b) and s.is_in_interval(c) and s.is_in_interval(d):
+            item1 = WrappedInterval(a, d, no_of_bits=w)
+            item2 = WrappedInterval(b, c, no_of_bits=w)
+            return set([item1, item2])
+        # case 5
+        if t.is_in_interval(a) and t.is_in_interval(b):
+            return set([s.copy()])
+        # case 6
+        if s.is_in_interval(c) and s.is_in_interval(d):
+            return set([t.copy()])
+        # case 7
+        if t.is_in_interval(a) and s.is_in_interval(d) and (not t.is_in_interval(b)) and (not s.is_in_interval(c)):
+            item1 = WrappedInterval(a, d, no_of_bits=w)
+            return set([item1])
+        # case 8
+        if t.is_in_interval(b) and s.is_in_interval(c) and (not t.is_in_interval(a)) and (not s.is_in_interval(d)):
+            item1 = WrappedInterval(b, c, no_of_bits=w)
+            return set([item1])
+        # otherwise
+        return set()
+
     def add(self, to_add):
         """
         Function to add an interval to the current interval
@@ -467,6 +607,17 @@ class WrappedInterval(object):
             elem2 = WrappedInterval(south_pole.upper_bound, self.upper_bound, no_of_bits=self.no_of_bits)
             return [elem1, elem2]
 
+    def cut(self):
+        """
+        Sphere cut
+        Refer section 3.2
+        :return: Set containing the resulting intervals
+        """
+        to_ret = set()
+        for u in self.nsplit():
+            to_ret.update(set(u.ssplit()))
+        return to_ret
+
     def copy(self):
         """
         Copy the given interval
@@ -474,3 +625,44 @@ class WrappedInterval(object):
         """
         return WrappedInterval(self.lower_bound, self.upper_bound, no_of_bits=self.no_of_bits,
                                is_bottom_flag=self.is_bottom())
+
+    def multiply(self, operand_interval):
+        """
+        Multiply this interval with the given interval
+        Refer section 3.2
+        :param operand_interval: Interval to be multiplied with
+        :return: Resulting interval after multiplication
+        """
+        # use the same variables as in paper
+        all_resulting_intervals = set()
+        s = self
+        t = operand_interval
+        w = s.no_of_bits
+        for u in s.cut():
+            for v in t.cut():
+                (a, b) = (u.lower_bound, u.upper_bound)
+                (c, d) = (v.lower_bound, v.upper_bound)
+                m = WrappedInterval._unsigned_signed_mul(a, b, c, d, w)
+                all_resulting_intervals.add(m)
+
+        return WrappedInterval._least_upper_bound(list(all_resulting_intervals))
+
+    def __hash__(self):
+        """
+        Hash of this interval.
+        :return: integer representing hash of this interval
+        """
+        return hash((self.lower_bound, self.upper_bound, self.no_of_bits, self.is_bottom()))
+
+    def __eq__(self, other):
+        """
+        Function to check equality of 2 intervals
+        :param other: interval to check against
+        :return: True if intervals are equal else false
+        """
+        if isinstance(other, WrappedInterval):
+            return self.lower_bound == other.lower_bound and \
+                   self.upper_bound == other.upper_bound and \
+                   self.no_of_bits == other.no_of_bits and \
+                   self.is_bottom() == other.is_bottom()
+        return False
