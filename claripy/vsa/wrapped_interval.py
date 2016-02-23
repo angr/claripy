@@ -228,6 +228,20 @@ class WrappedInterval(object):
         return (1 << no_of_bits) - 1
 
     @staticmethod
+    def _mod_equals(op1, op2, no_of_bits):
+        """
+        Performs: Modular equality.
+        Perform (op1 ==w op2) and return result with in no_of_bits
+        Refer Section 3.2 of the paper.
+        :param op1: operand 1
+        :param op2: operand 2
+        :param no_of_bits: number of bits to compare.
+        :return: True/False => result of modular equality.
+        """
+        return (op1 & WrappedInterval._max_upper_bound(no_of_bits)) == \
+               (op2 & WrappedInterval._max_upper_bound(no_of_bits))
+
+    @staticmethod
     def _mod_sub(op1, op2, no_of_bits):
         """
         Performs: Modular subtraction.
@@ -513,10 +527,10 @@ class WrappedInterval(object):
     @staticmethod
     def _msb(target_number, no_of_bits):
         """
-        # TODO
-        :param target_number:
-        :param no_of_bits:
-        :return:
+        Get the most significant bit of the given number
+        :param target_number:Number for which bit needs to be fetched
+        :param no_of_bits: Target bit size of given number
+        :return: 1 or 0
         """
         return 1 if ((1 << (no_of_bits - 1)) & target_number) != 0 else 0
 
@@ -589,6 +603,32 @@ class WrappedInterval(object):
         unsigned_res = WrappedInterval._unsigned_mul(a, b, c, d, w)
         signed_res = WrappedInterval._signed_mul(a, b, c, d, w)
         return unsigned_res.intersect(signed_res)
+
+    @staticmethod
+    def _truncate_num(num, k):
+        """
+        Truncate the given number to k bits
+        :param num: Number to truncate
+        :param k: Number of bits in result
+        :return: Result of truncating the number to k bits
+        """
+        return num & WrappedInterval._max_upper_bound(k)
+
+    @staticmethod
+    def _arithmetic_right_shift(num, k):
+        """
+        Perform arithmetic shift of the given number by k bits
+        :param num: number to be shifted
+        :param k: number of bits to shift
+        :return: Number after shifting k bits
+        """
+        # convert the number into signed representation
+        msb_num = WrappedInterval._msb(num)
+        if msb_num == 1:
+            # subtract 1 from number and get 1s complement
+            num = ~(num - 1)
+            num *= -1
+        return num >> k
 
     def is_top(self):
         """
@@ -1044,6 +1084,7 @@ class WrappedInterval(object):
     def zero_extend(self, k):
         """
         Zero extend the current interval by given number of bits
+        Refer section 3.2
         :param k: Number of bits to extend. New size would be: current size + k
         :return: New interval whose size is current interval size + k
         """
@@ -1061,6 +1102,7 @@ class WrappedInterval(object):
     def sign_extend(self, k):
         """
         Sign extend the current interval by given number of bits
+        Refer section 3.2
         :param k: Number of bits to extend. New size would be: current size + k
         :return: New interval whose size is current interval size + k
         """
@@ -1076,6 +1118,116 @@ class WrappedInterval(object):
             curr_result = WrappedInterval(msb_flag | a, msb_flag | b, no_of_bits=new_bit_length)
             result_interval_set.add(curr_result)
         return WrappedInterval._least_upper_bound(list(result_interval_set))
+
+    # Bit shifting operations
+
+    def truncate_range(self, target_bits):
+        """
+        Truncate this range to target bits
+        Refer section 3.2 from paper
+        :param target_bits: Number of bits in the result
+        :return: Range truncated to target_bits
+            Result will be of length target_bits length
+        """
+
+        assert target_bits < self.no_of_bits, "Target number of bits for truncate " \
+                                              "should be less than current number of bits"
+        # Same variable names as in paper
+        s = self
+        w = self.no_of_bits
+        k = target_bits
+        # case 1
+        if self.is_bottom():
+            return WrappedInterval._get_bottom(k)
+
+        (a, b) = (s.lower_bound, s.upper_bound)
+        a_rshift_k = WrappedInterval._arithmetic_right_shift(a, k)
+        b_rshift_k = WrappedInterval._arithmetic_right_shift(b, k)
+        a_trunc_k = WrappedInterval._truncate_num(a, k)
+        b_trunc_k = WrappedInterval._truncate_num(b, k)
+        # case 2
+        if a_rshift_k == b_rshift_k and a_trunc_k <= b_trunc_k:
+            return WrappedInterval(a_trunc_k, b_trunc_k, no_of_bits=k)
+        # case 3
+        if WrappedInterval._mod_equals(a_rshift_k + 1, b_rshift_k, w) and not (a_trunc_k <= b_trunc_k):
+            return WrappedInterval(a_trunc_k, b_trunc_k, no_of_bits=k)
+        # otherwise
+        return WrappedInterval._get_top(k)
+
+    def left_shift(self, target_bits):
+        """
+        Perform left shift of this interval by target bits
+        Refer Section 3.2
+        :param target_bits: number of bits to shift
+        :return: Resulting interval after performing shift
+        """
+        # Same variable names as in paper
+        s = self
+        k = target_bits
+        (a, b) = (s.lower_bound, s.upper_bound)
+        w = self.no_of_bits
+        # case 1
+        if self.is_bottom():
+            return WrappedInterval._get_bottom(w)
+        # case 2
+        trunc_result = s.truncate_range(w - k)
+        if trunc_result.lower_bound == a and trunc_result.upper_bound == b:
+            return WrappedInterval(a << k, b << k, no_of_bits=w)
+
+        # otherwise
+        # 1...w-k..110..k..0
+        msb_w_k = ((1 << (w - k)) - 1) << k
+        return WrappedInterval(0, msb_w_k, no_of_bits=w)
+
+    def logical_right_shift(self, target_bits):
+        """
+        Perform logical right shift of this interval by target bits
+        Refer Section 3.2
+        :param target_bits: number of bits to shift
+        :return: Resulting interval after performing shift
+        """
+        # Same variable names as in paper
+        s = self
+        k = target_bits
+        (a, b) = (s.lower_bound, s.upper_bound)
+        w = self.no_of_bits
+        # case 1
+        if self.is_bottom():
+            return WrappedInterval._get_bottom(w)
+        # case 2
+        # 00...k..0011..w-k.11
+        lsb_w_k = ((1 << (w - k)) - 1)
+        sp = WrappedInterval._get_south_pole(w)
+        if s.is_interval_included(sp):
+            return WrappedInterval(0, lsb_w_k, no_of_bits=w)
+        # otherwise
+        return WrappedInterval(a >> k, b >> k, no_of_bits=w)
+
+    def arithmetic_right_shift(self, target_bits):
+        """
+        Perform arithmetic right shift of this interval by target bits
+        Refer Section 3.2
+        :param target_bits: number of bits to shift
+        :return: Resulting interval after performing shift
+        """
+        # Same variable names as in paper
+        s = self
+        k = target_bits
+        (a, b) = (s.lower_bound, s.upper_bound)
+        w = self.no_of_bits
+        # case 1
+        if self.is_bottom():
+            return WrappedInterval._get_bottom(w)
+        # case 2
+        msb_k = ((1 << k) - 1) << (w - k)
+        # 00...k..0011..w-k.11
+        lsb_w_k = ((1 << (w - k)) - 1)
+        np = WrappedInterval._get_north_pole(w)
+        if s.is_interval_included(np):
+            return WrappedInterval(msb_k, lsb_w_k, no_of_bits=w)
+        # otherwise
+        return WrappedInterval(WrappedInterval._arithmetic_right_shift(a, k),
+                               WrappedInterval._arithmetic_right_shift(b, k), no_of_bits=w)
 
     def __hash__(self):
         """
