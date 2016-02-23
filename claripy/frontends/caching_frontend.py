@@ -22,10 +22,10 @@ class CachingFrontend(Frontend):
 
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
-        return self.result, Frontend._ana_getstate(self)
+        return self.result, self._cache, Frontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self.result, frontend_state = s
+        self.result, self._cache, frontend_state = s
         self._simplified = True
         Frontend._ana_setstate(self, frontend_state)
 
