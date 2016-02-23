@@ -238,10 +238,10 @@ class WrappedInterval(object):
         msb_num = WrappedInterval._msb(target_num, no_of_bits)
         if msb_num == 1:
             # subtract 1 from number and get 1s complement
-            target_num = ~(target_num - 1)
+            # We need to limit this number of given number of bits
+            target_num = (~(target_num - 1)) & WrappedInterval._max_upper_bound(no_of_bits)
             target_num *= -1
         return target_num
-
 
     @staticmethod
     def _mod_equals(op1, op2, no_of_bits):
