@@ -1968,19 +1968,21 @@ class StridedInterval(BackendObject):
     @reversed_processor
     def cast_low(self, tok):
         assert tok <= self.bits
-        if self.bits == 64 and self.lower_bound == 0xffffffffffffffff and self.upper_bound == 0:
-            import ipdb; ipdb.set_trace()
+
+        mask = (1 << tok) - 1
 
         if self.stride >= (1 << tok):
             #this should be bottom
             logger.warning('Tried to cast_low an interval to a an interval shorter than its stride.')
-            import ipdb; ipdb.set_trace()
+            if self.lower_bound & mask == self.lower_bound:
+                return StridedInterval(bits=tok, stride=0,
+                                       lower_bound=self.lower_bound,
+                                       upper_bound=self.lower_bound)
+            StridedInterval.empty(tok)
 
         if tok == self.bits:
             return self.copy()
         else:
-            # Calcualte the new upper bound and lower bound
-            mask = (1 << tok) - 1
             # the interval can be represented in tok bits
             if (self.lower_bound & mask) == self.lower_bound and \
                 (self.upper_bound & mask) == self.upper_bound:
