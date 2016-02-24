@@ -1014,7 +1014,6 @@ class WrappedInterval(object):
                 if c != 0 and d != 0:
                     curr_result = WrappedInterval._mod_s_range_div(a, b, c, d, w)
                     all_resulting_intervals.add(curr_result)
-
         return WrappedInterval._least_upper_bound(list(all_resulting_intervals))
 
     # Bitwise Operations
@@ -1254,3 +1253,10 @@ class WrappedInterval(object):
                    self.no_of_bits == other.no_of_bits and \
                    self.is_bottom() == other.is_bottom()
         return False
+
+    def __str__(self):
+        """
+        String representation of the WrappedInterval
+        :return: String representing wrapped interval
+        """
+        return '[' + str(self.lower_bound) + ',' + str(self.upper_bound) + ']'
