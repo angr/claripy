@@ -1815,13 +1815,13 @@ class StridedInterval(BackendObject):
         s = self
         result_interval = list()
         new_stride = 1
-        for u in s.ssplit():
-            for v in t.ssplit():
-                w = u.no_of_bits
+        for u in s._ssplit():
+            for v in t._ssplit():
+                w = u.bits
                 # u |w v
                 low_bound = WarrenMethods.min_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
                 upper_bound = WarrenMethods.max_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                new_interval = StridedInterval(lower_bound=low_bound, upper_bonud=upper_bound, bits=w, stride=new_stride)
+                new_interval = StridedInterval(lower_bound=low_bound, upper_bound=upper_bound, bits=w, stride=new_stride)
                 result_interval.append(new_interval)
         return StridedInterval._least_upper_bound(list(result_interval)).normalize()
 
