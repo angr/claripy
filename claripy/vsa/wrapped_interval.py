@@ -810,7 +810,7 @@ class WrappedInterval(object):
         # case 4
         if t.is_in_interval(a) and t.is_in_interval(b) and s.is_in_interval(c) and s.is_in_interval(d):
             item1 = WrappedInterval(a, d, no_of_bits=w)
-            item2 = WrappedInterval(b, c, no_of_bits=w)
+            item2 = WrappedInterval(c, b, no_of_bits=w)
             return set([item1, item2])
         # case 5
         if t.is_in_interval(a) and t.is_in_interval(b):
@@ -824,7 +824,7 @@ class WrappedInterval(object):
             return set([item1])
         # case 8
         if t.is_in_interval(b) and s.is_in_interval(c) and (not t.is_in_interval(a)) and (not s.is_in_interval(d)):
-            item1 = WrappedInterval(b, c, no_of_bits=w)
+            item1 = WrappedInterval(c, b, no_of_bits=w)
             return set([item1])
         # otherwise
         return set()
