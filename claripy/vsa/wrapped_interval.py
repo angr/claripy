@@ -870,9 +870,9 @@ class WrappedInterval(object):
         # case 2
         if (self.get_size() + to_sub.get_size()) <= WrappedInterval._max_upper_bound(result_bit_len):
             # Get new lower bound; In paper: a -w b
-            new_lower_bound = WrappedInterval._mod_sub(self.lower_bound, to_sub.lower_bound, result_bit_len)
+            new_lower_bound = WrappedInterval._mod_sub(self.lower_bound, to_sub.upper_bound, result_bit_len)
             # Get new upper bound; In paper: b -w d
-            new_upper_bound = WrappedInterval._mod_sub(self.upper_bound, to_sub.upper_bound, result_bit_len)
+            new_upper_bound = WrappedInterval._mod_sub(self.upper_bound, to_sub.lower_bound, result_bit_len)
             return WrappedInterval(new_lower_bound, new_upper_bound, no_of_bits=result_bit_len)
         # case 3
         return WrappedInterval._get_top(result_bit_len)
