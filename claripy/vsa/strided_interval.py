@@ -1823,7 +1823,7 @@ class StridedInterval(BackendObject):
                 upper_bound = WarrenMethods.max_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
                 new_interval = StridedInterval(lower_bound=low_bound, upper_bound=upper_bound, bits=w, stride=new_stride)
                 result_interval.append(new_interval)
-        return StridedInterval._least_upper_bound(list(result_interval)).normalize()
+        return StridedInterval._least_upper_bound(result_interval).normalize()
 
     @normalize_types
     def bitwise_and(self, t):
