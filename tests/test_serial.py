@@ -7,7 +7,7 @@ import tempfile
 import logging
 l = logging.getLogger('claripy.test.serial')
 
-def test_pickle():
+def test_pickle_ast():
     bz = claripy.backends.z3
 
     a = claripy.BVV(1, 32)
@@ -20,6 +20,21 @@ def test_pickle():
     c_copy = pickle.loads(pickle.dumps(c, -1))
     nose.tools.assert_equal(bz.convert(c_copy).__module__, 'z3')
     nose.tools.assert_equal(str(bz.convert(c_copy)), '1 + x')
+
+def test_pickle_frontend():
+    s = claripy.FullFrontend(claripy.backends.z3)
+    x = claripy.BVS('x', 32)
+
+    s.add(x == 1)
+    assert s.eval(x, 10), (1,)
+
+    ss = pickle.dumps(s)
+    del s
+    import gc
+    gc.collect()
+
+    s = pickle.loads(ss)
+    assert s.eval(x, 10), (1,)
 
 def test_datalayer():
     l.info("Running test_datalayer")
@@ -67,5 +82,6 @@ def test_datalayer():
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
 if __name__ == '__main__':
-    test_pickle()
+    test_pickle_ast()
+    test_pickle_frontend()
     test_datalayer()
