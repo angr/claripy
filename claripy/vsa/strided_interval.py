@@ -1812,7 +1812,7 @@ class StridedInterval(BackendObject):
                 upper_bound = WarrenMethods.max_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
                 new_interval = StridedInterval(lower_bound=low_bound, upper_bound=upper_bound, bits=w, stride=new_stride)
                 result_interval.append(new_interval)
-        return StridedInterval._least_upper_bound(list(result_interval)).normalize()
+        return StridedInterval._least_upper_bound(result_interval).normalize()
 
     @normalize_types
     def bitwise_and(self, t):
@@ -1968,19 +1968,21 @@ class StridedInterval(BackendObject):
     @reversed_processor
     def cast_low(self, tok):
         assert tok <= self.bits
-        if self.bits == 64 and self.lower_bound == 0xffffffffffffffff and self.upper_bound == 0:
-            import ipdb; ipdb.set_trace()
+
+        mask = (1 << tok) - 1
 
         if self.stride >= (1 << tok):
             #this should be bottom
             logger.warning('Tried to cast_low an interval to a an interval shorter than its stride.')
-            import ipdb; ipdb.set_trace()
+            if self.lower_bound & mask == self.lower_bound:
+                return StridedInterval(bits=tok, stride=0,
+                                       lower_bound=self.lower_bound,
+                                       upper_bound=self.lower_bound)
+            StridedInterval.empty(tok)
 
         if tok == self.bits:
             return self.copy()
         else:
-            # Calcualte the new upper bound and lower bound
-            mask = (1 << tok) - 1
             # the interval can be represented in tok bits
             if (self.lower_bound & mask) == self.lower_bound and \
                 (self.upper_bound & mask) == self.upper_bound:
@@ -2261,7 +2263,7 @@ class StridedInterval(BackendObject):
         :param intervals_to_join: Intervals to join
         :return: Interval that contains all intervals
         """
-        #FIXME: handle strides START HERE
+
         assert len(intervals_to_join) > 0, "No intervals to join"
         # Optimization: If we have only one interval, then return that interval as result
         if len(intervals_to_join) == 1:
@@ -2284,8 +2286,21 @@ class StridedInterval(BackendObject):
             g = StridedInterval._bigger(g, StridedInterval._gap(f, s))
             # f <- extend(f, s)
             f = f._interval_extend(s)
-            # Result
-        return StridedInterval._bigger(g, f.complement).complement
+
+        si = StridedInterval._bigger(g, f.complement).complement
+
+        # stride
+        if si.is_integer:
+            si._stride = 0
+        if si.is_top:
+            si._stride = 1
+        else:
+            stride = intervals_to_join[0]._stride
+            for i in intervals_to_join:
+                stride = fractions.gcd(stride, i._stride)
+            si._stride = stride
+
+        return si
 
 
     @normalize_types
