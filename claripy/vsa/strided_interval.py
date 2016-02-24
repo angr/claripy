@@ -637,8 +637,7 @@ class StridedInterval(BackendObject):
             if self.name == o.name:
                 return TrueResult() # They are the same guy
 
-            si_intersection = self.intersection(o)
-
+            si_intersection = self.intersection(o).pop()
             if si_intersection.is_empty:
                 return FalseResult()
 
@@ -824,6 +823,8 @@ class StridedInterval(BackendObject):
         # the new SI is an integer
         if dist < 0:
             new_stride = 0
+        elif self._stride == 0:
+            new_stride = 1
         else:
             new_stride = fractions.gcd(self._stride, dist)
 
@@ -995,7 +996,9 @@ class StridedInterval(BackendObject):
         :return:
         '''
         if x == 0:
+            #FIXME: WTF?
             return 0
+
         y = (~x) & (x - 1)    # There is actually a bug in BAP until 0.8
 
         def bits(y):
@@ -1099,7 +1102,7 @@ class StridedInterval(BackendObject):
         :return: The cardinality
         """
 
-        if x == ((y + 1) % bits):
+        if x == ((y + 1) % (2 ** bits)):
             return 2 ** bits
 
         else:
@@ -1677,14 +1680,14 @@ class StridedInterval(BackendObject):
             # Cut from both north pole and south pole
             si1_psplit = self._psplit()
             si2_psplit = o._psplit()
-            all_resulting_intervals = set()
+            all_resulting_intervals = list()
 
             for si1 in si1_psplit:
                 for si2 in si2_psplit:
                     tmp_unsigned_mul = self._wrapped_unsigned_mul(si1, si2)
                     tmp_signed_mul = self._wrapped_signed_mul(si1, si2)
                     for tmp_meet in tmp_unsigned_mul.intersection(tmp_signed_mul):
-                        all_resulting_intervals.add(tmp_meet)
+                        all_resulting_intervals.append(tmp_meet)
 
         return StridedInterval._least_upper_bound(list(all_resulting_intervals))
 
@@ -2147,7 +2150,7 @@ class StridedInterval(BackendObject):
         if new_stride == -1:
             new_stride = 0
 
-        return StridedInterval(a, d, bits=w, stride=new_stride)
+        return StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
 
     @normalize_types
     def union(self, b):
