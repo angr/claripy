@@ -1688,6 +1688,7 @@ class StridedInterval(BackendObject):
 
         return StridedInterval._least_upper_bound(list(all_resulting_intervals))
 
+    @normalize_types
     def sdiv(self, o):
         """
         Binary operation: signed division
@@ -1696,17 +1697,19 @@ class StridedInterval(BackendObject):
         :return: (self / o) in signed arithmetic
         """
 
-        splitted_dividends = self._nsplit()
-        splitted_divisors = o._nsplit()
+        splitted_dividends = self._psplit()
+        splitted_divisors = o._psplit()
 
         ret = self.empty(self.bits)
+        resulting_intervals = set()
         for dividend in splitted_dividends:
             for divisor in splitted_divisors:
                 tmp = self._wrapped_signed_div(dividend, divisor)
-                ret = ret.union(tmp)
+                resulting_intervals.add(tmp)
 
-        return ret.normalize()
+        return StridedInterval._least_upper_bound(resulting_intervals)
 
+    @normalize_types
     def udiv(self, o):
         """
         Binary operation: unsigned division
@@ -1719,12 +1722,13 @@ class StridedInterval(BackendObject):
         splitted_divisors = o._ssplit()
 
         ret = self.empty(self.bits)
+        resulting_intervals = set()
         for dividend in splitted_dividends:
             for divisor in splitted_divisors:
                 tmp = self._wrapped_unsigned_div(dividend, divisor)
-                ret = ret.union(tmp)
+                resulting_intervals.add(tmp)
 
-        return ret.normalize()
+        return StridedInterval._least_upper_bound(resulting_intervals).normalize()
 
     @reversed_processor
     def bitwise_not(self):
