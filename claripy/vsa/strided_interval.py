@@ -2261,7 +2261,7 @@ class StridedInterval(BackendObject):
         :param intervals_to_join: Intervals to join
         :return: Interval that contains all intervals
         """
-        #FIXME: handle strides START HERE
+
         assert len(intervals_to_join) > 0, "No intervals to join"
         # Optimization: If we have only one interval, then return that interval as result
         if len(intervals_to_join) == 1:
@@ -2284,8 +2284,21 @@ class StridedInterval(BackendObject):
             g = StridedInterval._bigger(g, StridedInterval._gap(f, s))
             # f <- extend(f, s)
             f = f._interval_extend(s)
-            # Result
-        return StridedInterval._bigger(g, f.complement).complement
+
+        si = StridedInterval._bigger(g, f.complement).complement
+
+        # stride
+        if si.is_integer:
+            si._stride = 0
+        if si.is_top:
+            si._stride = 1
+        else:
+            stride = intervals_to_join[0]._stride
+            for i in intervals_to_join:
+                stride = fractions.gcd(stride, i._stride)
+            si._stride = stride
+
+        return si
 
 
     @normalize_types
