@@ -1326,6 +1326,9 @@ class StridedInterval(BackendObject):
                 return StridedInterval.empty(bits)
             else:
                 divisor_lb += 1
+        # If divisor_ub is 0, decrement it to get last but one element
+        if divisor_ub == 0:
+            divisor_ub = (divisor_ub - 1) & (2 ** bits - 1)
 
         lb = a.lower_bound / divisor_ub
         ub = a.upper_bound / divisor_lb
@@ -1356,6 +1359,9 @@ class StridedInterval(BackendObject):
                 return StridedInterval.empty(bits)
             else:
                 divisor_lb = 1
+        # If divisor_ub is 0, decrement it to get last but one element
+        if divisor_ub == 0:
+            divisor_ub = (divisor_ub - 1) & (2 ** bits - 1)
 
         dividend_positive = StridedInterval._is_msb_zero(a.lower_bound, bits)
         divisor_positive = StridedInterval._is_msb_zero(b.lower_bound, bits)
@@ -1651,6 +1657,7 @@ class StridedInterval(BackendObject):
 
         return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
                                uninitialized=uninitialized)
+
     @normalize_types
     def mul(self, o):
         """
@@ -1691,6 +1698,7 @@ class StridedInterval(BackendObject):
 
         return StridedInterval._least_upper_bound(list(all_resulting_intervals))
 
+    @normalize_types
     def sdiv(self, o):
         """
         Binary operation: signed division
@@ -1699,17 +1707,19 @@ class StridedInterval(BackendObject):
         :return: (self / o) in signed arithmetic
         """
 
-        splitted_dividends = self._nsplit()
-        splitted_divisors = o._nsplit()
+        splitted_dividends = self._psplit()
+        splitted_divisors = o._psplit()
 
         ret = self.empty(self.bits)
+        resulting_intervals = set()
         for dividend in splitted_dividends:
             for divisor in splitted_divisors:
                 tmp = self._wrapped_signed_div(dividend, divisor)
-                ret = ret.union(tmp)
+                resulting_intervals.add(tmp)
 
-        return ret.normalize()
+        return StridedInterval._least_upper_bound(list(resulting_intervals)).normalize()
 
+    @normalize_types
     def udiv(self, o):
         """
         Binary operation: unsigned division
@@ -1722,12 +1732,13 @@ class StridedInterval(BackendObject):
         splitted_divisors = o._ssplit()
 
         ret = self.empty(self.bits)
+        resulting_intervals = set()
         for dividend in splitted_dividends:
             for divisor in splitted_divisors:
                 tmp = self._wrapped_unsigned_div(dividend, divisor)
-                ret = ret.union(tmp)
+                resulting_intervals.add(tmp)
 
-        return ret.normalize()
+        return StridedInterval._least_upper_bound(list(resulting_intervals)).normalize()
 
     @reversed_processor
     def bitwise_not(self):
@@ -2329,40 +2340,40 @@ class StridedInterval(BackendObject):
         s = self
         w = s.bits
         if s.is_empty or t.is_empty:
-            return set(StridedInterval.empty(w))
+            return set([StridedInterval.empty(w)])
 
         assert s.bits == t.bits
         if s.is_integer and t.is_integer:
             if s.lower_bound == t.lower_bound:
                 # They are the same number!
-                return set(StridedInterval(bits=w,
+                return set([StridedInterval(bits=w,
                                       stride=0,
                                       lower_bound=s.lower_bound,
-                                      upper_bound=s.lower_bound))
+                                      upper_bound=s.lower_bound)])
             else:
-                return set(StridedInterval.empty(w))
+                return set([StridedInterval.empty(w)])
 
         elif s.is_integer:
             integer = s.lower_bound
             if (t.lower_bound - integer) % t.stride == 0 and \
                     t._wrapped_member(integer):
-                return set(StridedInterval(bits=w,
+                return set([StridedInterval(bits=w,
                                       stride=0,
                                       lower_bound=integer,
-                                      upper_bound=integer))
+                                      upper_bound=integer)])
             else:
-                return set(StridedInterval.empty(w))
+                return set([StridedInterval.empty(w)])
 
         elif t.is_integer:
             integer = t.lower_bound
             if (integer - s.lower_bound) % s.stride == 0 and \
                     s._wrapped_member(integer):
-                return set(StridedInterval(bits=w,
+                return set([StridedInterval(bits=w,
                                       stride=0,
                                       lower_bound=integer,
-                                      upper_bound=integer))
+                                      upper_bound=integer)])
             else:
-                return set(StridedInterval.empty(w))
+                return set([StridedInterval.empty(w)])
 
         else:
             # None of the operands is an integer
@@ -2374,7 +2385,7 @@ class StridedInterval(BackendObject):
 
             # case 1
             if s.is_bottom or t.is_bottom:
-                return set(StridedInterval.empty(w))
+                return set([StridedInterval.empty(w)])
             # case 2
             # s == t
             if (s.lower_bound == t.lower_bound and s.upper_bound == t.upper_bound) or s.is_top:
@@ -2411,7 +2422,7 @@ class StridedInterval(BackendObject):
                 item1 = StridedInterval(lower_bound=c, upper_bound=b, bits=w, stride=new_stride)
                 return set([item1])
         # otherwise
-        return set(StridedInterval.empty(w))
+        return set([StridedInterval.empty(w)])
 
     @normalize_types
     def widen(self, b):
