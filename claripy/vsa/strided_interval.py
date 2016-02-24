@@ -2190,6 +2190,45 @@ class StridedInterval(BackendObject):
 
         return StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
 
+    @reversed_processor
+    def sign_extend(self, new_length):
+        """
+        Unary operation: SignExtend
+
+        :param new_length: New length after sign-extension
+        :return: A new StridedInterval
+        """
+
+        msb = self.extract(self.bits - 1, self.bits - 1).eval(2)
+        if msb == [ 0 ]:
+            # All positive numbers
+            return self.zero_extend(new_length)
+        if msb == [ 1 ]:
+            # All negative numbers
+            si = self.copy()
+            si._bits = new_length
+            mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
+            si._lower_bound = si._lower_bound | mask
+            si._upper_bound = si._upper_bound | mask
+
+        else:
+            # Both positive numbers and negative numbers
+            numbers = self._nsplit()
+            # Since there are both positive and negative numbers, there must be two bounds after nsplit
+            # assert len(numbers) == 2
+            si = self.empty(new_length)
+            for n in numbers:
+                a, b = n.lower_bound, n.upper_bound
+                if b < 2 ** (n.bits - 1):
+                    # msb = 0
+                    si_ = StridedInterval(bits=new_length, stride=n.stride, lower_bound=a, upper_bound=b)
+                else:
+                    # msb = 1
+                    mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
+                    si_ = StridedInterval(bits=new_length, stride=n.stride, lower_bound=a | mask, upper_bound=b | mask)
+                si = si.union(si_)
+        return si
+
     @normalize_types
     def union(self, b):
         """
