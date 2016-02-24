@@ -360,7 +360,14 @@ class BackendVSA(Backend):
                 ret = arg
             else:
                 ret = ret.intersection(arg)
-
+        # Intersection can return multiple Intervals.
+        # we should compute least upper bound.
+        # Check if return value is Set
+        if isinstance(ret, set):
+            # If yes, Try to compute least upper bound
+            tmp_copy = set(ret)
+            if isinstance(tmp_copy.pop(), StridedInterval):
+                ret = StridedInterval._least_upper_bound(list(ret))
         return ret
 
     @normalize_reversed_arguments
