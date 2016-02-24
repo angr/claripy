@@ -819,7 +819,7 @@ class StridedInterval(BackendObject):
         # between the new lower bound and the new upper bound. This assure that in
         # the new interval the boundaries are valid solution when the SI is
         # evaluated.
-        dist = StridedInterval._wrapped_cardinality(y_plus_1, x_minus_1) - 1
+        dist = StridedInterval._wrapped_cardinality(y_plus_1, x_minus_1, self.bits) - 1
 
         # the new SI is an integer
         if dist < 0:
@@ -827,7 +827,7 @@ class StridedInterval(BackendObject):
         else:
             new_stride = fractions.gcd(self._stride, dist)
 
-        return StridedInterval(y_plus_1, x_minus_1, bits=self.bits, stride=new_stride)
+        return StridedInterval(lower_bound=y_plus_1, upper_bound=x_minus_1, bits=self.bits, stride=new_stride)
 
     @property
     def lower_bound(self):
@@ -1064,11 +1064,11 @@ class StridedInterval(BackendObject):
         (a, b) = (s.lower_bound, s.upper_bound)
         (c, d) = (t.lower_bound, t.upper_bound)
 
-        w = s.no_of_bits
+        w = s.bits
         # case 1
-        if (not t._wearapped_member(b)) and (not s._wrapped_member(c)):
+        if (not t._wrapped_member(b)) and (not s._wrapped_member(c)):
             #FIXME: maybe we can do better here and to not fix the stride to 1
-            return StridedInterval(c, b, bits=w, stride=1).complement
+            return StridedInterval(lower_bound=c, upper_bound=b, bits=w, stride=1).complement
         # otherwise
         return StridedInterval.empty(w)
 
@@ -1683,11 +1683,9 @@ class StridedInterval(BackendObject):
                 for si2 in si2_psplit:
                     tmp_unsigned_mul = self._wrapped_unsigned_mul(si1, si2)
                     tmp_signed_mul = self._wrapped_signed_mul(si1, si2)
+                    for tmp_meet in tmp_unsigned_mul.intersection(tmp_signed_mul):
+                        all_resulting_intervals.add(tmp_meet)
 
-                    tmp_meet = tmp_unsigned_mul.intersection(tmp_signed_mul)
-                    all_resulting_intervals.add(tmp_meet)
-
-        #FROM HERE
         return StridedInterval._least_upper_bound(list(all_resulting_intervals))
 
     def sdiv(self, o):
@@ -2136,14 +2134,14 @@ class StridedInterval(BackendObject):
         # as new stride the GCD of the two old strides AND if we assure that the lower bound of the SI 't' is
         # present among the values when the new SI is evaluated.
         if s.is_integer and t.is_integer:
-            new_stride = StridedInterval._wrapped_cardinality(a, c) - 1
+            new_stride = StridedInterval._wrapped_cardinality(a, c, w) - 1
         elif s.is_integer:
-            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(a, c) - 1, t._stride)
+            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(a, c, w) - 1, t._stride)
         elif t.is_integer:
-            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(b, c) - 1, s._stride)
+            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(b, c, w) - 1, s._stride)
         else:
             new_stride = fractions.gcd(s._stride, t._stride)
-            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(a, c) - 1)
+            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(a, c, w) - 1)
 
         # this happens when s and t are the same integer
         if new_stride == -1:
@@ -2331,7 +2329,6 @@ class StridedInterval(BackendObject):
             return set(StridedInterval.empty(w))
 
         assert s.bits == t.bits
-
         if s.is_integer and t.is_integer:
             if s.lower_bound == t.lower_bound:
                 # They are the same number!
@@ -2370,20 +2367,22 @@ class StridedInterval(BackendObject):
             new_stride = s.lcm(s.stride, t.stride)
 
             # case 1
-            if s.is_bottom() or t.is_bottom():
+            if s.is_bottom or t.is_bottom:
                 return set(StridedInterval.empty(w))
             # case 2
-            if s == t or s.is_top():
+            # s == t
+            #FIXME: shall we check also the stride? Shall we return the stride such that new_stride = GCD old strides?
+            if (s.lower_bound == t.lower_bound and s.upper_bound == t.upper_bound) or s.is_top:
                 return set([t.copy()])
             # case 3
-            if t.is_top():
+            if t.is_top:
                 return set([s.copy()])
             (a, b) = (s.lower_bound, s.upper_bound)
             (c, d) = (t.lower_bound, t.upper_bound)
             # case 4
             if t._wrapped_member(a) and t._wrapped_member(b) and s._wrapped_member(c) and s._wrapped_member(d):
-                item1 = StridedInterval(a, d, bits=w, stride=new_stride)
-                item2 = StridedInterval(b, c, bits=w, stride=new_stride)
+                item1 = StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
+                item2 = StridedInterval(lower_bound=b, upper_bound=c, bits=w, stride=new_stride)
                 return set([item1, item2])
             # case 5
             if t._wrapped_member(a) and t._wrapped_member(b):
@@ -2393,11 +2392,11 @@ class StridedInterval(BackendObject):
                 return set([t.copy()])
             # case 7
             if t._wrapped_member(a) and s._wrapped_member(d) and (not t._wrapped_member(b)) and (not s._wrapped_member(c)):
-                item1 = StridedInterval(a, d, bits=w, stride=new_stride)
+                item1 = StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
                 return set([item1])
             # case 8
             if t._wrapped_member(b) and s._wrapped_member(c) and (not t._wrapped_member(a)) and (not s._wrapped_member(d)):
-                item1 = StridedInterval(b, c, bits=w, stride=new_stride)
+                item1 = StridedInterval(lower_bound=b, upper_bound=c, bits=w, stride=new_stride)
                 return set([item1])
         # otherwise
         return set(StridedInterval.empty(w))
