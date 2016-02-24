@@ -557,10 +557,10 @@ class WrappedInterval(object):
         :return: Interval representing result interval
         """
 
-        msb_a = WrappedInterval._msb(a)
-        msb_b = WrappedInterval._msb(b)
-        msb_c = WrappedInterval._msb(c)
-        msb_d = WrappedInterval._msb(d)
+        msb_a = WrappedInterval._msb(a, w)
+        msb_b = WrappedInterval._msb(b, w)
+        msb_c = WrappedInterval._msb(c, w)
+        msb_d = WrappedInterval._msb(d, w)
         # case 1
         if msb_a == msb_b and msb_b == msb_c and msb_c == msb_d and \
                 ((b*d - a*c) <= WrappedInterval._max_upper_bound(w)):
@@ -964,8 +964,8 @@ class WrappedInterval(object):
             for v in t.cut():
                 (a, b) = (u.lower_bound, u.upper_bound)
                 (c, d) = (v.lower_bound, v.upper_bound)
-                m = WrappedInterval._unsigned_signed_mul(a, b, c, d, w)
-                all_resulting_intervals.add(m)
+                for m in WrappedInterval._unsigned_signed_mul(a, b, c, d, w):
+                    all_resulting_intervals.add(m)
 
         return WrappedInterval._least_upper_bound(list(all_resulting_intervals))
 
