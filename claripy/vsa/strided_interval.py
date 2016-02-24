@@ -1811,7 +1811,6 @@ class StridedInterval(BackendObject):
         """
 
         #FIXME: implement the stride. refer to WYSINWYX What You See Is Not What You eXecute section 4.2.4
-        assert self.no_of_bits == operand_interval.no_of_bits, "Number of bits should be same for OR operands"
         # Using same variables as in paper
         s = self
         result_interval = list()
