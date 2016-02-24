@@ -2108,7 +2108,7 @@ class StridedInterval(BackendObject):
         return si
 
     @normalize_types
-    def _extend(self, t):
+    def _interval_extend(self, t):
         """
         Extend src interval to include destination
         Refer 1:11 of paper:
@@ -2213,12 +2213,12 @@ class StridedInterval(BackendObject):
         for s in sorted_intervals:
             if s.is_top or StridedInterval._lex_lte(s.upper_bound, s.lower_bound, w):
                 # f <- extend(f, s)
-                f = f._extend(s)
+                f = f._interval_extend(s)
         for s in sorted_intervals:
             # g <- bigger(g, gap(f, s))
             g = StridedInterval._bigger(g, StridedInterval._gap(f, s))
             # f <- extend(f, s)
-            f = f._extend(s)
+            f = f._interval_extend(s)
             # Result
         return StridedInterval._bigger(g, f.complement).complement
 
@@ -2368,39 +2368,48 @@ class StridedInterval(BackendObject):
         else:
             # None of the operands is an integer
 
-            new_stride = s.lcm(s.stride, t.stride)
+            #FIXME: Fish used LCM, I think we should use GCD
+            #new_stride = s.lcm(s.stride, t.stride)
+            # example mcm doesn't work: s = 3[1, 10], t = 2[2, 8]
+            new_stride = fractions.gcd(s._stride, t._stride)
 
             # case 1
             if s.is_bottom or t.is_bottom:
                 return set(StridedInterval.empty(w))
             # case 2
             # s == t
-            #FIXME: shall we check also the stride? Shall we return the stride such that new_stride = GCD old strides?
             if (s.lower_bound == t.lower_bound and s.upper_bound == t.upper_bound) or s.is_top:
-                return set([t.copy()])
+                item = t.copy()
+                item._stride = new_stride
+                return set([item])
             # case 3
             if t.is_top:
                 return set([s.copy()])
+
             (a, b) = (s.lower_bound, s.upper_bound)
             (c, d) = (t.lower_bound, t.upper_bound)
             # case 4
             if t._wrapped_member(a) and t._wrapped_member(b) and s._wrapped_member(c) and s._wrapped_member(d):
                 item1 = StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
-                item2 = StridedInterval(lower_bound=b, upper_bound=c, bits=w, stride=new_stride)
+                item2 = StridedInterval(lower_bound=c, upper_bound=b, bits=w, stride=new_stride)
                 return set([item1, item2])
             # case 5
             if t._wrapped_member(a) and t._wrapped_member(b):
-                return set([s.copy()])
+                item = s.copy()
+                item._stride = new_stride
+                return set([item])
             # case 6
             if s._wrapped_member(c) and s._wrapped_member(d):
-                return set([t.copy()])
+                item = t.copy()
+                item._stride = new_stride
+                return set([item])
             # case 7
             if t._wrapped_member(a) and s._wrapped_member(d) and (not t._wrapped_member(b)) and (not s._wrapped_member(c)):
                 item1 = StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
                 return set([item1])
             # case 8
             if t._wrapped_member(b) and s._wrapped_member(c) and (not t._wrapped_member(a)) and (not s._wrapped_member(d)):
-                item1 = StridedInterval(lower_bound=b, upper_bound=c, bits=w, stride=new_stride)
+                item1 = StridedInterval(lower_bound=c, upper_bound=b, bits=w, stride=new_stride)
                 return set([item1])
         # otherwise
         return set(StridedInterval.empty(w))
