@@ -2229,12 +2229,12 @@ class StridedInterval(BackendObject):
         :return: A new DiscreteStridedIntervalSet, or a new StridedInterval.
         """
         if not allow_dsis:
-            return self._union(b)
+            return StridedInterval._least_upper_bound([self, b])
 
         else:
             if self.cardinality > discrete_strided_interval_set.MAX_CARDINALITY_WITHOUT_COLLAPSING or \
                     b.cardinality > discrete_strided_interval_set:
-                return self._union(b)
+                return StridedInterval._least_upper_bound([self, b])
 
             else:
                 dsis = DiscreteStridedIntervalSet(bits=self._bits, si_set={ self })
