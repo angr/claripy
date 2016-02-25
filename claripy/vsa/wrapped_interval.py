@@ -480,6 +480,7 @@ class WrappedInterval(object):
             if s.is_top() or WrappedInterval._less_than_a(s.upper_bound, s.lower_bound, 0, w):
                 # f <- extend(f, s)
                 f = WrappedInterval._extend(f, s)
+        f = WrappedInterval._get_bottom(w)
         for s in sorted_intervals:
             # g <- bigger(g, gap(f, s))
             g = WrappedInterval._bigger(g, WrappedInterval._gap(f, s))
@@ -487,6 +488,23 @@ class WrappedInterval(object):
             f = WrappedInterval._extend(f, s)
         # Result
         return WrappedInterval._bigger(g, f.get_complement()).get_complement()
+
+    @staticmethod
+    def _less_or_eq_than_a(num1, num2, a, no_of_bits):
+        """
+        Implements a less than equal operator as suggested in
+        the paper
+        Refer Section 3.
+                Operator: b <=a c
+                iff b -w a <= c -w a
+        :param num1: b or num1
+        :param num2:  c or num2
+        :param a: width.
+        :return: True if num1 <=a  num2 else False
+        """
+        num1_a = WrappedInterval._mod_sub(num1, a, no_of_bits)
+        num2_a = WrappedInterval._mod_sub(num2, a, no_of_bits)
+        return num1_a <= num2_a
 
     @staticmethod
     def _less_than_a(num1, num2, a, no_of_bits):
@@ -503,7 +521,7 @@ class WrappedInterval(object):
         """
         num1_a = WrappedInterval._mod_sub(num1, a, no_of_bits)
         num2_a = WrappedInterval._mod_sub(num2, a, no_of_bits)
-        return num1_a <= num2_a
+        return num1_a < num2_a
 
     @staticmethod
     def _get_north_pole(no_of_bits):
@@ -705,7 +723,7 @@ class WrappedInterval(object):
         if self.is_bottom():
             return False
         # case 3
-        return WrappedInterval._less_than_a(target_number, self.upper_bound, self.lower_bound,
+        return WrappedInterval._less_or_eq_than_a(target_number, self.upper_bound, self.lower_bound,
                                             self.no_of_bits)
 
     def is_interval_included(self, to_check_interval):
@@ -1259,4 +1277,4 @@ class WrappedInterval(object):
         String representation of the WrappedInterval
         :return: String representing wrapped interval
         """
-        return '[' + str(self.lower_bound) + ',' + str(self.upper_bound) + ']'
+        return '[' + str(self.lower_bound) + ',' + str(self.upper_bound) + '], is_bottom=' + str(self.is_bottom())

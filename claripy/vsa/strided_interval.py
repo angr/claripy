@@ -1976,7 +1976,7 @@ class StridedInterval(BackendObject):
                 return StridedInterval(bits=tok, stride=0,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.lower_bound)
-            StridedInterval.empty(tok)
+            return StridedInterval.empty(tok)
 
         if tok == self.bits:
             return self.copy()
@@ -2276,7 +2276,7 @@ class StridedInterval(BackendObject):
         f = StridedInterval.empty(w)
         g = StridedInterval.empty(w)
         for s in sorted_intervals:
-            if s.is_top or StridedInterval._lex_lte(s.upper_bound, s.lower_bound, w):
+            if s.is_top or StridedInterval._lex_lt(s.upper_bound, s.lower_bound, w):
                 # f <- extend(f, s)
                 f = f._interval_extend(s)
         for s in sorted_intervals:
@@ -2290,14 +2290,24 @@ class StridedInterval(BackendObject):
         # stride
         if si.is_integer:
             si._stride = 0
-        if si.is_top:
+        elif si.is_top:
             si._stride = 1
         else:
-            stride = intervals_to_join[0]._stride
+            # if the resulting SI is a limited interval we have to calculate the stride.
+            # the new stride MUST include all the values of all the SI involved in the
+            # union.
+            a = si.lower_bound
+            b = si.upper_bound
+            stride = StridedInterval._wrapped_cardinality(a, b, si.bits) - 1
+            # for each SI involved in the union we calculate the new stride necessary to
+            # include all the values represented by the SI.
             for i in intervals_to_join:
-                stride = fractions.gcd(stride, i._stride)
-            si._stride = stride
+                dist = StridedInterval._wrapped_cardinality(a, i.lower_bound, si.bits) - 1
 
+                stride = fractions.gcd(stride, dist)
+                if i.stride != 0:
+                    stride = fractions.gcd(stride, i.stride)
+            si._stride = stride
         return si
 
 
