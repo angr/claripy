@@ -1332,7 +1332,7 @@ class StridedInterval(BackendObject):
         else:
             card_b = StridedInterval._wrapped_cardinality(b.lower_bound, b.upper_bound, b.bits)
 
-        return (card_self + card_b) > StridedInterval.max_int(a.bits)
+        return (card_self + card_b) > (StridedInterval.max_int(a.bits) + 1)
 
     @staticmethod
     def _wrappedoverflow_sub(a, b):
@@ -1645,7 +1645,6 @@ class StridedInterval(BackendObject):
         # TODO: Some improvements can be made here regarding the following case
         # TODO: SI<16>0xff[0x0, 0xff] + 3
         # TODO: In current implementation, it overflows, but it doesn't have to
-
         overflow = self._wrappedoverflow_add(self, b)
         if overflow:
             return StridedInterval.top(self.bits)
@@ -1972,7 +1971,6 @@ class StridedInterval(BackendObject):
         mask = (1 << tok) - 1
 
         if self.stride >= (1 << tok):
-            #this should be bottom
             logger.warning('Tried to cast_low an interval to a an interval shorter than its stride.')
             if self.lower_bound & mask == self.lower_bound:
                 return StridedInterval(bits=tok, stride=0,
@@ -1985,7 +1983,7 @@ class StridedInterval(BackendObject):
         else:
             # the interval can be represented in tok bits
             if (self.lower_bound & mask) == self.lower_bound and \
-                (self.upper_bound & mask) == self.upper_bound:
+            (self.upper_bound & mask) == self.upper_bound:
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
