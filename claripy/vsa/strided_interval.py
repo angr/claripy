@@ -861,15 +861,27 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def __mod__(self, o):
-        # TODO: Make a better approximation
+        # TODO: Make a better approximatiom
+        # FIXME: this is the implementation of the unsigned modulo
+        # implment also the signed one.
+        if o.is_integer and o.lower_bound == 0:
+            return StridedInterval.empty(o.bits)
         if self.is_integer and o.is_integer:
             r = self.lower_bound % o.lower_bound
             si = StridedInterval(bits=self.bits, stride=0, lower_bound=r, upper_bound=r)
             return si
 
-        else:
-            si = StridedInterval(bits=self.bits, stride=1, lower_bound=0, upper_bound=o.upper_bound - 1)
-            return si
+        all_resulting_intervals = []
+        for s in self._ssplit():
+            for t in o._ssplit():
+                card = s.udiv(t).cardinality
+                if card == 1:
+                    tmp = s.sub(s.udiv(t)).mul(t)
+                else:
+                    tmp = StridedInterval(bits=self.bits, stride=1, lower_bound=0, upper_bound=o.upper_bound - 1)
+                all_resulting_intervals.append(tmp)
+
+        return StridedInterval._least_upper_bound(list(all_resulting_intervals)).normalize()
 
     @normalize_types
     def __div__(self, o):
@@ -1746,7 +1758,7 @@ class StridedInterval(BackendObject):
         :param o: The divisor
         :return: (self / o) in signed arithmetic
         """
-
+        # TODO: copy the code from wrapped interval
         splitted_dividends = self._psplit()
         splitted_divisors = o._psplit()
 
@@ -1767,7 +1779,7 @@ class StridedInterval(BackendObject):
         :param o: The divisor
         :return: (self / o) in unsigned arithmetic
         """
-
+        #FIXME: copy the code fromm wrapped interval
         splitted_dividends = self._ssplit()
         splitted_divisors = o._ssplit()
 
