@@ -29,6 +29,9 @@ class ClaripyASTError(ClaripyError):
 class ClaripyBalancerError(ClaripyASTError):
     pass
 
+class ClaripyBalancerUnsatError(ClaripyBalancerError):
+    pass
+
 class ClaripyTypeError(ClaripyASTError):
     pass
 

@@ -155,7 +155,7 @@ class Backend(object):
 
             # if we've errroed on this in the past, give up
             if self in expr._errored and result is None:
-                raise BackendError("can't handle this one")
+                raise BackendError("%s can't handle operation %s (%s) due to a failed conversion on a child node" % (self, expr.op, expr.__class__.__name__))
 
             # otherwise, resolve it!
             try:
@@ -214,7 +214,7 @@ class Backend(object):
 
         if obj is NotImplemented:
             l.debug("received NotImplemented in %s.call() for operation %s", self, op)
-            raise BackendError("unable to apply operation on provided converted")
+            raise BackendError("%s can't apply operation %s" % (self, op))
 
         return obj
 

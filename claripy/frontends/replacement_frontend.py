@@ -18,7 +18,6 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
         self._replacements = { } if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
-        self._balancer = Balancer(self._actual_frontend._solver_backend) if balancer is None else balancer
 
     def add_replacement(self, old, new, invalidate_cache=True, replace=True, promote=True):
         if not isinstance(old, Base):
@@ -75,7 +74,7 @@ class ReplacementFrontend(ConstrainedFrontend):
     #
 
     def _blank_copy(self):
-        s = ReplacementFrontend(self._actual_frontend._blank_copy(), balancer=self._balancer)
+        s = ReplacementFrontend(self._actual_frontend._blank_copy())
         s._auto_replace = self._auto_replace
         s._complex_auto_replace = self._complex_auto_replace
         s._replace_constraints = self._replace_constraints
@@ -184,19 +183,24 @@ class ReplacementFrontend(ConstrainedFrontend):
                 if not isinstance(rc, Base) or not rc.symbolic:
                     continue
 
-                if rc.op == 'Not':
-                    self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
-                elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
-                    old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
-                    self.add_replacement(old, new, promote=True, invalidate_cache=True)
-                elif self._complex_auto_replace:
-                    satisfiable, replacements = self._balancer.constraint_to_si(rc)
+                if not self._complex_auto_replace:
+                    if rc.op == 'Not':
+                        self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
+                    elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
+                        old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
+                        self.add_replacement(old, new, promote=True, invalidate_cache=True)
+                else:
+                    satisfiable, replacements = Balancer(backends.vsa, rc).compat_ret
                     if not satisfiable:
                         self.add_replacement(rc, false)
                     for old, new in replacements:
                         if old.cardinality == 1:
                             continue
+
                         rold = self._replacement(old)
+                        if rold.cardinality == 1:
+                            continue
+
                         self.add_replacement(old, rold.intersection(new))
 
         ConstrainedFrontend._add_constraints(self, constraints, **kwargs)
@@ -230,3 +234,4 @@ from ..ast.bv import BVV
 from ..ast.bool import BoolV, false
 from ..errors import ClaripyFrontendError
 from ..balancer import Balancer
+from ..backend_manager import backends

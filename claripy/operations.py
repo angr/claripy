@@ -192,6 +192,9 @@ def eq_simplifier(a, b):
     if isinstance(b, ast.Bool) and a is ast.false:
         return ast.all_operations.Not(b)
 
+    if a.op == 'Reverse' and b.op == 'Reverse':
+        return a.args[0] == b.args[0]
+
     # TODO: all these ==/!= might really slow things down...
     if a.op == 'If':
         if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
@@ -233,6 +236,9 @@ def eq_simplifier(a, b):
 def ne_simplifier(a, b):
     if a is b:
         return ast.false
+
+    if a.op == 'Reverse' and b.op == 'Reverse':
+        return a.args[0] != b.args[0]
 
     if a.op == 'If':
         if a.args[2] is b and ast.all_operations.is_true(a.args[1] != b):
@@ -376,6 +382,15 @@ def boolean_not_simplifier(body):
     elif body.op == 'SGE':
         return ast.all_operations.SLT(body.args[0], body.args[1])
 
+    if body.op == 'ULT':
+        return ast.all_operations.UGE(body.args[0], body.args[1])
+    elif body.op == 'ULE':
+        return ast.all_operations.UGT(body.args[0], body.args[1])
+    elif body.op == 'UGT':
+        return ast.all_operations.ULE(body.args[0], body.args[1])
+    elif body.op == 'UGE':
+        return ast.all_operations.ULT(body.args[0], body.args[1])
+
     if body.op == '__lt__':
         return ast.all_operations.UGE(body.args[0], body.args[1])
     elif body.op == '__le__':
@@ -384,6 +399,16 @@ def boolean_not_simplifier(body):
         return ast.all_operations.ULE(body.args[0], body.args[1])
     elif body.op == '__ge__':
         return ast.all_operations.ULT(body.args[0], body.args[1])
+
+def zeroext_simplifier(n, e):
+    if n == 0:
+        return e
+
+def signext_simplifier(n, e):
+    if n == 0:
+        return e
+
+    # TODO: if top bit is 0, do a zero-extend instead
 
 def extract_simplifier(high, low, val):
     # if we're extracting the whole value, return the value
@@ -485,6 +510,8 @@ simplifiers = {
     '__xor__': bitwise_xor_simplifier,
     '__add__': bitwise_add_simplifier,
     '__sub__': bitwise_sub_simplifier,
+    'ZeroExt': zeroext_simplifier,
+    'SignExt': signext_simplifier,
 }
 
 #
@@ -651,6 +678,10 @@ opposites = {
     '__ne__': '__ne__',
     '__ge__': '__le__', '__le__': '__ge__',
     '__gt__': '__lt__', '__lt__': '__gt__',
+    'ULT': 'UGT', 'UGT': 'ULT',
+    'ULE': 'UGE', 'UGE': 'ULE',
+    'SLT': 'SGT', 'SGT': 'SLT',
+    'SLE': 'SGE', 'SGE': 'SLE',
 
     #'__neg__':
     #'__pos__':
@@ -686,7 +717,11 @@ inverse_operations = {
     '__gt__': '__le__',
     '__lt__': '__ge__',
     '__ge__': '__lt__',
-    '__le__': '__gt__'
+    '__le__': '__gt__',
+    'ULT': 'UGE', 'UGE': 'ULT',
+    'UGT': 'ULE', 'ULE': 'UGT',
+    'SLT': 'SGE', 'SGE': 'SLT',
+    'SLE': 'SGT', 'SGT': 'SLE',
 }
 
 length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
@@ -750,6 +785,8 @@ infix = {
 
     'Concat': '..',
 }
+
+commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import ast

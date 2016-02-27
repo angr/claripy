@@ -83,8 +83,6 @@ class BackendVSA(Backend):
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVS'] = self.BVS
 
-        self._balancer = Balancer(self)
-
     def convert(self, expr, result=None):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
 
@@ -268,6 +266,15 @@ class BackendVSA(Backend):
     # TODO: Implement other operations!
 
     @staticmethod
+    def Or(*args):
+        first = args[0]
+        others = args[1:]
+
+        for o in others:
+            first = first.union(o)
+        return first
+
+    @staticmethod
     def LShR(expr, shift_amount):
         return expr >> shift_amount
 
@@ -372,7 +379,7 @@ class BackendVSA(Backend):
         return StridedInterval.top(bits, name, uninitialized=uninitialized)
 
     def constraint_to_si(self, expr):
-        return self._balancer.constraint_to_si(expr)
+        return Balancer(self, expr).compat_ret
 
 from ..ast.base import Base
 from ..operations import backend_operations_vsa_compliant, expression_set_operations

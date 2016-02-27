@@ -277,6 +277,16 @@ def test_bool():
     o = claripy.Or(*[False, False, False])
     nose.tools.assert_equal(bc.convert(o), False)
 
+def test_extract():
+    a = claripy.BVS("a", 32)
+    assert a[7:] is a[7:0]
+    assert a[31:] is a
+    assert a[:] is a
+    assert a[:0] is a
+    assert a[:-8] is a[31:24]
+    assert a[-1:] is a[31:0]
+    assert a[-1:-8] is a[31:24]
+
 def test_extract_concat_simplify():
     a = claripy.BVS("a", 32)
     assert a[31:0] is a
@@ -307,6 +317,7 @@ def test_true_false_cache():
     claripy.backends._quick_backends[-1:] = [ ]
 
 if __name__ == '__main__':
+    test_extract()
     test_true_false_cache()
     test_smudging()
     test_expression()
