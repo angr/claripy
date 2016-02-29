@@ -1798,7 +1798,17 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return: self | b
         """
-
+        """
+        This implementation combines the approaches used by 'WYSINWYX: what you see is not what you execute'
+        paper and 'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'. The
+        first paper provides an sound way to approximate the stride, whereas the second provides a way
+        to calculate the or operation using wrapping intervals.
+        Note that, even though according Warren's work 'Hacker's delight', one should follow different
+        approaches to calculate the minimun/maximum values of an or operations according on the type
+        of the operands (signed/unsigned). On the other other hand, by splitting the wrapping-intervals
+        at the south pole, we can safely and soundly only use the Warren's functions for unsigned
+        integers.
+        """
         s = self
         result_interval = list()
 
@@ -1834,6 +1844,10 @@ class StridedInterval(BackendObject):
         Binary operation: logical and
         :param b: The other operand
         :return:
+        """
+        """
+        The following code implements the and operations as presented in the paper
+        'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'
         """
         s = self
         result_interval = list()
