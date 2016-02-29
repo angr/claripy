@@ -920,7 +920,7 @@ class StridedInterval(BackendObject):
     def __lshift__(self, other):
         return self.lshift(other)
 
-    def __rshift__(self, other, preserve_sign=True):
+    def __rshift__(self, other, preserve_sign=False):
         return self.rshift(other, preserve_sign=preserve_sign)
 
     def __repr__(self):
@@ -1155,28 +1155,6 @@ class StridedInterval(BackendObject):
     def sign_min_int(k):
         return -(2 ** (k - 1))
 
-
-    @staticmethod
-    def _ntz(x):
-        '''
-        Get the position of first non-zero bit
-        :param x:
-        :return:
-        '''
-        if x == 0:
-            #FIXME: WTF?
-            return 0
-
-        y = (~x) & (x - 1)    # There is actually a bug in BAP until 0.8
-
-        def bits(y):
-            n = 0
-            while y != 0:
-                n += 1
-                y >>= 1
-            return n
-
-        return bits(y)
 
     @staticmethod
     def _to_negative(a, bits):
@@ -1810,18 +1788,32 @@ class StridedInterval(BackendObject):
         :return: self | b
         """
 
-        #FIXME: implement the stride. refer to WYSINWYX What You See Is Not What You eXecute section 4.2.4
-        # Using same variables as in paper
         s = self
         result_interval = list()
-        new_stride = 1
+
         for u in s._ssplit():
             for v in t._ssplit():
                 w = u.bits
                 # u |w v
-                low_bound = WarrenMethods.min_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                upper_bound = WarrenMethods.max_or(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                new_interval = StridedInterval(lower_bound=low_bound, upper_bound=upper_bound, bits=w, stride=new_stride)
+                if u.is_integer:
+                    s_t = StridedInterval._ntz(v.stride)
+                elif v.is_integer:
+                    s_t = StridedInterval._ntz(u.stride)
+                else:
+                    s_t = min(StridedInterval._ntz(u.stride), StridedInterval._ntz(v.stride))
+
+                if u.is_integer and u.lower_bound == 0:
+                    new_stride = v.stride
+                elif v.is_integer and v.lower_bound == 0:
+                    new_stride = u.stride
+                else:
+                    new_stride = 2 ** s_t
+                mask = (1 << s_t) - 1
+                r = (u.lower_bound & mask) | (v.lower_bound & mask)
+                m = (2 ** w) - 1
+                low_bound = WarrenMethods.min_or(u.lower_bound & (~mask & m), u.upper_bound & (~mask & m), v.lower_bound & (~mask & m), v.upper_bound & (~mask & m), w)
+                upper_bound = WarrenMethods.max_or(u.lower_bound & (~mask & m), u.upper_bound & (~mask & m), v.lower_bound & (~mask & m), v.upper_bound & (~mask & m), w)
+                new_interval = StridedInterval(lower_bound=((low_bound & (~mask & m) | r)), upper_bound=((upper_bound & (~mask & m)) | r), bits=w, stride=new_stride)
                 result_interval.append(new_interval)
         return StridedInterval._least_upper_bound(result_interval).normalize()
 
@@ -1832,9 +1824,6 @@ class StridedInterval(BackendObject):
         :param b: The other operand
         :return:
         """
-
-        #FIXME: implement the stride. refer to WYSINWYX What You See Is Not What You eXecute section 4.2.5
-        # Using same variables as in paper
         s = self
         result_interval = list()
         new_stride = 1
@@ -1842,9 +1831,7 @@ class StridedInterval(BackendObject):
             for v in t._ssplit():
                 w = u.bits
                 # u &w v
-                low_bound = WarrenMethods.min_and(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                upper_bound = WarrenMethods.max_and(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                new_interval = StridedInterval(lower_bound=low_bound, upper_bound=upper_bound, bits=w, stride=new_stride)
+                new_interval = u.bitwise_not().bitwise_or(t.bitwise_not()).bitwise_not()
                 result_interval.append(new_interval)
         return StridedInterval._least_upper_bound(list(result_interval)).normalize()
 
@@ -1910,7 +1897,6 @@ class StridedInterval(BackendObject):
     @reversed_processor
     def rshift(self, shift_amount, preserve_sign=False):
         lower, upper = self._pre_shift(shift_amount)
-
         # Shift the lower_bound and upper_bound by all possible amounts, and
         # get min/max values from all the resulting values
 
@@ -1918,6 +1904,7 @@ class StridedInterval(BackendObject):
         new_upper_bound = None
         lower_bound_shifted = 0
         upper_bound_shifted = 0
+
         for shift_amount in xrange(lower, upper + 1):
             l = self.lower_bound >> shift_amount
             if new_lower_bound is None or l < new_lower_bound:
@@ -1931,21 +1918,22 @@ class StridedInterval(BackendObject):
         # NOTE: If this is an arithmetic operation, we should take care
         # of sign-changes.
         if preserve_sign:
-            mask = (2 ** (self.bits - 1))
-            if (self.lower_bound & mask) > 0:
-                bits_sign = ((2 ** lower_bound_shifted) - 1) << (self.bits - lower_bound_shifted)
-                new_lower_bound |= bits_sign
-
-            if (self.upper_bound & mask) > 0:
-                bits_sign = ((2 ** upper_bound_shifted) - 1) << (self.bits - upper_bound_shifted)
-                new_upper_bound |= bits_sign
-
-        ret = StridedInterval(bits=self.bits,
-                               stride=max(self.stride >> upper, 1),
-                               lower_bound=new_lower_bound,
-                               upper_bound=new_upper_bound)
+            if lower_bound_shifted != upper_bound_shifted:
+                # FIXME: can this happen?
+                logger.warning("Lower bound shifted of a different amount than the upper bound FIXME")
+                import ipdb; ipdb.set_trace()
+            n_bits = self.bits - lower_bound_shifted
+            ret = StridedInterval(bits=n_bits,
+                                  lower_bound=new_lower_bound,
+                                  upper_bound=new_upper_bound,
+                                  stride=max(self.stride >> upper, 1))
+            ret.agnostic_extend(self.bits)
+        else:
+            ret = StridedInterval(bits=self.bits,
+                                  lower_bound=new_lower_bound,
+                                  upper_bound=new_upper_bound,
+                                  stride=max(self.stride >> upper, 1))
         ret.normalize()
-
         return ret
 
     @reversed_processor
@@ -2263,7 +2251,24 @@ class StridedInterval(BackendObject):
             return interval2.copy()
         return interval1.copy()
 
+    @staticmethod
+    def _ntz(x):
+        '''
+        Get the number of consecutive zeros
+        :param x:
+        :return:
+        '''
+        if x == 0:
+            return 0
+        y = (~x) & (x - 1)    # There is actually a bug in BAP until 0.8
 
+        def bits(y):
+            n = 0
+            while y != 0:
+                n += 1
+                y >>= 1
+            return n
+        return bits(y)
     @staticmethod
     def _least_upper_bound(intervals_to_join):
         """
