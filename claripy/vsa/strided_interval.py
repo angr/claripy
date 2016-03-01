@@ -331,7 +331,7 @@ class StridedInterval(BackendObject):
             self._stride = 0
 
         if self.lower_bound < 0:
-            self.lower_bound = self.lower_bound & (2 ** self.bits - 1)
+            self.lower_bound &= (2 ** self.bits - 1)
 
         self._normalize_top()
 
@@ -863,7 +863,7 @@ class StridedInterval(BackendObject):
     def __mod__(self, o):
         # TODO: Make a better approximatiom
         # FIXME: this is the implementation of the unsigned modulo
-        # implment also the signed one.
+        # implement also the signed one.
         if o.is_integer and o.lower_bound == 0:
             return StridedInterval.empty(o.bits)
         if self.is_integer and o.is_integer:
@@ -924,7 +924,6 @@ class StridedInterval(BackendObject):
         return self.rshift(other, preserve_sign=preserve_sign)
 
     def __repr__(self):
-        s = ""
         if self.is_empty:
             s = '<%d>[EmptySI]' % (self._bits)
         else:
@@ -1635,6 +1634,19 @@ class StridedInterval(BackendObject):
         # TODO: Some improvements can be made here regarding the following case
         # TODO: SI<16>0xff[0x0, 0xff] + 3
         # TODO: In current implementation, it overflows, but it doesn't have to
+
+        # optimization
+        # case: SI<16>0xff[0x0, 0xff] + 3
+        """if self.is_top and b.is_integer:
+            si = self.copy()
+            si.lower_bound = b.lower_bound
+            return si
+        elif b.is_top and self.is_integer:
+            si = b.copy()
+            si.lower_bound = self.lower_bound
+            return si
+        """ #FIXME
+
         overflow = self._wrappedoverflow_add(self, b)
         if overflow:
             return StridedInterval.top(self.bits)
@@ -1839,15 +1851,8 @@ class StridedInterval(BackendObject):
         'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'
         """
         s = self
-        result_interval = list()
-        new_stride = 1
-        for u in s._ssplit():
-            for v in t._ssplit():
-                w = u.bits
-                # u &w v
-                new_interval = u.bitwise_not().bitwise_or(t.bitwise_not()).bitwise_not()
-                result_interval.append(new_interval)
-        return StridedInterval._least_upper_bound(list(result_interval)).normalize()
+        new_interval = s.bitwise_not().bitwise_or(t.bitwise_not()).bitwise_not()
+        return new_interval.normalize()
 
     @normalize_types
     def bitwise_xor(self, t):
@@ -1857,20 +1862,10 @@ class StridedInterval(BackendObject):
         :return:
         '''
 
-        #FIXME: implement the stride. refer to WYSINWYX What You See Is Not What You eXecute section 4.2.5
         # Using same variables as in paper
         s = self
-        result_interval = list()
-        new_stride = 1
-        for u in s._ssplit():
-            for v in t._ssplit():
-                w = u.bits
-                # u |w v
-                low_bound = WarrenMethods.min_xor(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                upper_bound = WarrenMethods.max_xor(u.lower_bound, u.upper_bound, v.lower_bound, v.upper_bound, w)
-                new_interval = StridedInterval(lower_bound=low_bound, upper_bound=upper_bound, bits=w, stride=mew_stride)
-                result_interval.append(new_interval)
-        return StridedInterval._least_upper_bound(list(result_interval)).normalize()
+        new_interval = (s.bitwise_not().bitwise_or(t)).bitwise_not().bitwise_or(s.bitwise_or(t.bitwise_not()).bitwise_not())
+        return new_interval.normalize()
 
 
     def _pre_shift(self, shift_amount):
@@ -1997,7 +1992,7 @@ class StridedInterval(BackendObject):
         else:
             # the interval can be represented in tok bits
             if (self.lower_bound & mask) == self.lower_bound and \
-            (self.upper_bound & mask) == self.upper_bound:
+             (self.upper_bound & mask) == self.upper_bound:
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=self.lower_bound,
                                        upper_bound=self.upper_bound)
@@ -2010,10 +2005,12 @@ class StridedInterval(BackendObject):
                 # Keep the signs!
                 if self.lower_bound < 0:
                     # how this should happen ?
+                    logger.warning("Lower bound values is less than 0")
                     import ipdb; ipdb.set_trace()
                     l = StridedInterval._to_negative(l, tok)
                 if self.upper_bound < 0:
                     # how this should happen ?
+                    logger.warning("Upper bound value is less than 0")
                     import ipdb; ipdb.set_trace()
                     u = StridedInterval._to_negative(u, tok)
                 return StridedInterval(bits=tok, stride=self.stride,
@@ -2123,7 +2120,7 @@ class StridedInterval(BackendObject):
                 leading_1_lb = True
         #5
         elif ub_msb == 1:
-          leading_1_ub = True
+            leading_1_ub = True
 
         if leading_1_lb:
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
@@ -2211,8 +2208,8 @@ class StridedInterval(BackendObject):
             si = self.copy()
             si._bits = new_length
             mask = (2 ** new_length - 1) - (2 ** self.bits - 1)
-            si._lower_bound = si._lower_bound | mask
-            si._upper_bound = si._upper_bound | mask
+            si._lower_bound |= mask
+            si._upper_bound |= mask
 
         else:
             # Both positive numbers and negative numbers
@@ -2351,9 +2348,15 @@ class StridedInterval(BackendObject):
         :param b: The other operand.
         :return: A new StridedInterval
         """
+        """
+        This implementation, even though sound, is not optimal. The union operation is not associative in wrapping intervals
+        (please refer to section 3.1 paper 'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'),
+        therefore the union of three WI may  give us different results according on the order we union them. All of the
+        results will be sound, though.
+        Please use the function _least_upper_bound instead, which is sound and way more precise.
+        """
 
-        logger.warning("StridedInterval._union will be deprecated soon. Please use StridedInterval._least_upper_bound instead.")
-
+        logger.warning("StridedInterval._union is deprecated. Please use StridedInterval._least_upper_bound instead.")
         if self._reversed != b._reversed:
             logger.warning('Incoherent reversed flag between operands %s and %s', self, b)
 
