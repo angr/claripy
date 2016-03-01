@@ -2460,6 +2460,7 @@ class StridedInterval(BackendObject):
                 return StridedInterval(bits=self.bits, stride=new_stride, lower_bound=b.lower_bound,
                                        upper_bound=self.upper_bound)
 
+
     @normalize_types
     def intersection(self, t):
         s = self
