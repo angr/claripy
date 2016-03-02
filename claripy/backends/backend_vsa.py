@@ -139,11 +139,11 @@ class BackendVSA(Backend):
             return len(set(v.value) & set(obj.value)) > 0
 
         if isinstance(obj, StridedInterval):
-            return not obj.intersection(v)[0].is_empty
+            return not obj.intersection(v).pop().is_empty
 
         if isinstance(obj, ValueSet):
             for _, si in obj.items():
-                if not si.intersection(v).is_empty:
+                if not si.intersection(v).pop().is_empty:
                     return True
             return False
 
