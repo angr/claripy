@@ -39,18 +39,32 @@ def normalize_types(f):
             self = self.value
         if type(o) is BVV:
             o = o.value
+
         if type(o) in (int, long):
-            min_bits_required = 64
-            if isinstance(self, StridedInterval):
-                min_bits_required = self.bits
-            o = StridedInterval(bits=StridedInterval.min_bits(o, max_bits=min_bits_required), stride=0, lower_bound=o,
-                                upper_bound=o)
+            min_bits = self.bits if hasattr(self, 'bits') else 64
+            repr_bits = StridedInterval.min_bits(o)
+            n_bits = max(repr_bits, min_bits)
+            si = StridedInterval(bits=n_bits, stride=0, lower_bound=o, upper_bound=o)
+            if o < 0:
+                si.upper_bound &= ((1 << n_bits) - 1)
+                si.lower_bound &= ((1 << n_bits) - 1)
+                mask = (2 ** n_bits - 1) - (2 ** repr_bits - 1)
+                si.lower_bound |= mask
+                si.upper_bound |= mask
+            o = si
+
         if type(self) in (int, long):
-            min_bits_required = 64
-            if isinstance(o, StridedInterval):
-                min_bits_required = o.bits
-            self = StridedInterval(bits=StridedInterval.min_bits(self, max_bits=min_bits_required), stride=0,
-                                   lower_bound=self, upper_bound=self)
+            min_bits = o.bits if hasattr(o, 'bits') else 64
+            repr_bits = StridedInterval.min_bits(self)
+            n_bits = max(repr_bits, min_bits)
+            si = StridedInterval(bits=n_bits, stride=0, lower_bound=self, upper_bound=self)
+            if self < 0:
+                si.upper_bound &= ((1 << n_bits) - 1)
+                si.lower_bound &= ((1 << n_bits) - 1)
+                mask = (2 ** n_bits - 1) - (2 ** repr_bits - 1)
+                si.lower_bound |= mask
+                si.upper_bound |= mask
+            self = si
 
         if f.__name__ not in ('concat', ):
             # Make sure they have the same length
@@ -347,7 +361,6 @@ class StridedInterval(BackendObject):
         :param signed: Treat this StridedInterval as signed or unsigned
         :return: A list of at most `n` concrete integers
         """
-
         results = [ ]
 
         if self.is_empty:
@@ -2391,6 +2404,11 @@ class StridedInterval(BackendObject):
             si._stride = stride
         return si
 
+    @normalize_types
+    def _union(self, b):
+        #FIXME: to remove
+        # this function is here only for retro compatibility with the other parts of angr
+        return StridedInterval._pseudo_join([self, b])
 
     @staticmethod
     def _pseudo_join(intervals_to_join):
@@ -2416,7 +2434,7 @@ class StridedInterval(BackendObject):
         s, b = intervals_to_join[0], intervals_to_join[1]
 
         if s._reversed != b._reversed:
-            logger.warning('Incoherent reversed flag between operands %s and %s', self, b)
+            logger.warning('Incoherent reversed flag between operands %s and %s', s, b)
 
         #
         # Trivial cases
