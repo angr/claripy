@@ -24,7 +24,6 @@ def normalize_types(f):
         '''
         Convert any object to an object that we can process.
         '''
-
         # Special handler for union
         if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
@@ -2571,12 +2570,15 @@ class StridedInterval(BackendObject):
         else:
             # None of the operands is an integer
 
-            #FIXME: Fish used LCM, I think we should use GCD
-            #new_stride = s.lcm(s.stride, t.stride)
-            # example mcm doesn't work: s = 3[1, 10], t = 2[2, 8]
-            # precise intersection should be: 0[4,4]. Intesection given by
-            # the paper's algorithm will be: s[2,8], where s should not be 6
-            # (i.e., mcm(2,3)). GCD is sound, even though may not be precise.
+            # IMPORTANT:
+            # The previous implementation of this function was not sound.
+            # For instance, given s = 3[1, 10], t = 2[2, 8], a precise intersection should be
+            # 0[4,4].
+            # In the previous implementation the intersection between the above two SI was
+            # the empty SI.
+            # The following implementation is sound, even though in same cases is less precise
+            # than the previous one.
+
             new_stride = fractions.gcd(s._stride, t._stride)
             remainder_1 = s.lower_bound % new_stride if new_stride > 0 else 0
             remainder_2 = t.lower_bound % new_stride if new_stride > 0 else 0
