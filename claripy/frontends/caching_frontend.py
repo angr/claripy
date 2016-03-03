@@ -44,9 +44,9 @@ class CachingFrontend(Frontend):
 
     @staticmethod
     def _split_constraints(constraints):
-        '''
-        Returns independent constraints, split from this Frontend's constraints.
-        '''
+        """
+        Returns independent constraints, split from this Frontend's `constraints`.
+        """
 
         splitted = [ ]
         for i in constraints:
@@ -261,7 +261,7 @@ class CachingFrontend(Frontend):
 
     @staticmethod
     def _concrete_type_check(e):
-        '''
+        """
         Checks two things:
 
             1. Whether we can just return this value.
@@ -269,7 +269,7 @@ class CachingFrontend(Frontend):
 
         Returns True if we don't have to pass this to any backends, False if we need
         to, and raises ClaripyValueError otherwise.
-        '''
+        """
 
         if isinstance(e, (int, long)):
             return True
@@ -279,9 +279,9 @@ class CachingFrontend(Frontend):
             return False
 
     def eval_to_ast(self, e, n, extra_constraints=(), exact=None, cache=None):
-        '''
+        """
         Evaluates expression e, returning the results in the form of concrete ASTs.
-        '''
+        """
 
         return [ BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache) ]
 
@@ -292,19 +292,18 @@ class CachingFrontend(Frontend):
         return default
 
     def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
-        '''
+        """
         Evaluates an expression, returning a tuple of n solutions.
 
-        @param e: the expression
-        @param n: the number of solutions to return
-        @param extra_constraints: extra constraints to consider when performing
-                                  the evaluation
-        @param exact: whether or not to perform an exact evaluation. Ignored by
-                      non-approximating backends.
-        @param cache: whether or not to cache the results
+        :param e:                   The expression
+        :param n:                   The number of solutions to return
+        :param extra_constraints:   Extra constraints to consider when performing the evaluation.
+        :param exact:               Whether or not to perform an exact evaluation. Ignored by non-approximating
+                                    backends.
+        :param cache:               Whether or not to cache the results
 
-        @returns a tuple of python pritives representing results
-        '''
+        :returns:                   A tuple of python pritives representing results
+        """
 
         if self._concrete_type_check(e): return (e,)
 

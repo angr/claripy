@@ -4,11 +4,10 @@ import operator
 l = logging.getLogger('claripy.balancer')
 
 class Balancer(object):
-    '''
-    The Balancer is an equation redistributor. The idea is to take an AST and
-    rebalance it to, for example, isolate unknown terms on one side of an
-    inequality.
-    '''
+    """
+    The Balancer is an equation redistributor. The idea is to take an AST and rebalance it to, for example, isolate
+    unknown terms on one side of an inequality.
+    """
 
     def __init__(self, helper, c):
         self._helper = helper
@@ -70,11 +69,11 @@ class Balancer(object):
             raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)", a.op)
 
     def _align_ast(self, a):
-        '''
+        """
         Aligns the AST so that the argument with the highest cardinality is on the left.
 
-        :return: a new AST
-        '''
+        :return: a new AST.
+        """
 
         try:
             if isinstance(a, BV):
@@ -133,9 +132,9 @@ class Balancer(object):
     #
 
     def _doit(self):
-        '''
+        """
         This function processes the list of truisms and finds bounds for ASTs.
-        '''
+        """
 
         while len(self._truisms):
             truism = self._truisms.pop()
@@ -157,10 +156,9 @@ class Balancer(object):
     #
 
     def _unpack_truisms(self, c):
-        '''
-        Given a constraint, _truisms() returns a set of constraints that must be True
-        this constraint to be True.
-        '''
+        """
+        Given a constraint, return a set of constraints that must be True for this constraint to be True.
+        """
 
         try:
             op = getattr(self, '_unpack_truisms_'+c.op)

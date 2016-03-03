@@ -73,9 +73,9 @@ class CompositeFrontend(CachingFrontend):
 			return solvers[0].combine(solvers[1:])
 
 	def _shared_solvers(self, others):
-		'''
+		"""
 		Returns a sequence of the solvers that self and others share.
-		'''
+		"""
 
 		solvers_by_id = { s.uuid: s for s in self._solver_list }
 		common_solvers = set(solvers_by_id.keys())

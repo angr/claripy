@@ -5,9 +5,9 @@ from ..backend_object import BackendObject
 def normalize_types(f):
     @functools.wraps(f)
     def normalizer(self, region, o):
-        '''
+        """
         Convert any object to an object that we can process.
-        '''
+        """
         if isinstance(o, Base):
             raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
@@ -21,9 +21,9 @@ def normalize_types(f):
 def normalize_types_one_arg(f):
     @functools.wraps(f)
     def normalizer(self, o):
-        '''
+        """
         Convert any object to an object that we can process.
-        '''
+        """
         if isinstance(o, Base):
             raise ClaripyValueError("BoolResult can't handle AST objects directly")
 
@@ -359,8 +359,8 @@ class ValueSet(BackendObject):
         """
         Used to make exact comparisons between two ValueSets.
 
-        :param o: The other ValueSet to compare with
-        :return: True if they are exactly same, False otherwise
+        :param o:   The other ValueSet to compare with.
+        :return:    True if they are exactly same, False otherwise.
         """
         if self._reversed != o._reversed:
             return False

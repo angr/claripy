@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # pylint: disable=F0401,W0401,W0603,
 
 import os
