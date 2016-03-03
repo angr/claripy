@@ -169,7 +169,7 @@ class Balancer(object):
         return op(c)
 
     def _unpack_truisms_And(self, c):
-        return set.union(self._unpack_truisms(a) for a in c.args)
+        return set.union(*[self._unpack_truisms(a) for a in c.args])
 
     def _unpack_truisms_Or(self, c):
         vals = [ is_false(v) for v in c.args ]
