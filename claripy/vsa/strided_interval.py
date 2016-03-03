@@ -362,7 +362,6 @@ class StridedInterval(BackendObject):
         :return: A list of at most `n` concrete integers
         """
         results = [ ]
-
         if self.is_empty:
             # no value is available
             pass
@@ -1412,11 +1411,17 @@ class StridedInterval(BackendObject):
         b_ub_positive = StridedInterval._is_msb_zero(b.upper_bound, bits)
 
         if b.is_integer:
-            # Multiplication with an integer, and it does not overflow!
-            # Note that as long as it overflows, a TOP will be returned and the stride will be simply ignored
-            stride = abs(a.stride * b.lower_bound)
+            if b_lb_positive:
+                stride = abs(a.stride * b.lower_bound)
+            else:
+                # if the number is negative we have to get its value first
+                stride = abs(a.stride * StridedInterval._unsigned_to_signed(b.lower_bound, bits))
         elif a.is_integer:
-            stride = abs(a.lower_bound * b.stride)
+            if a_lb_positive:
+                stride = abs(b.stride * a.lower_bound)
+            else:
+                # if the number is negative we have to get its value first:
+                stride = abs(b.stride * StridedInterval._unsigned_to_signed(a.lower_bound, bits))
         else:
             stride = fractions.gcd(a.stride, b.stride)
 

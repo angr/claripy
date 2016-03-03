@@ -158,7 +158,7 @@ def multiplication_tests():
     op1 = StridedInterval(bits=4, stride=1, lower_bound=3, upper_bound=-2)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=-2)
     # Stride should be 2.
-    # previous result was: <4>0x1[0x4, 0x0] which is wrong.
+    # NOTE: previous result was: <4>0x1[0x4, 0x0] which is wrong.
     # possible values of 1[3,e] * 0[e,e] on 4 bits are [a, 8, 6, 4, 2, 0, e, c]
     # in the previous SI 2 was not present.
     assert str(op1.mul(op2)) == "<4>0x2[0x2, 0x0]"
