@@ -30,11 +30,17 @@ def test_hybrid_solver():
 
     # now constrain things further so that the VSA overapproximates
     s.add(x <= 4)
-    nose.tools.assert_equal(s.eval(x, 20, exact=False), (0, 2, 4))
+    # The previous answer was (0,2,4). Please refer to the comment
+    # in the intersection function in strided_interval.py to know the reason
+    # about the new expected answer.
+    nose.tools.assert_equal(s.eval(x, 20, exact=False), (0, 1, 2, 3, 4))
     nose.tools.assert_equal(s.eval(x, 20), (0, 2, 4))
 
     s.add(y >= 27)
-    nose.tools.assert_equal(s.eval(y, 20, exact=False), (30,))
+    # previous expected answer was (30,). Please refer to the comment
+    # in the intersection function in strided_interval.py to know the reason
+    # about the new expected answer.
+    nose.tools.assert_equal(s.eval(y, 20, exact=False), (27, 28, 29, 30))
     nose.tools.assert_equal(s.eval(y, 20), (30,))
 
     t = claripy.hybrid_vsa_z3()
