@@ -11,7 +11,7 @@ from  claripy.vsa import StridedInterval
 
 l = logging.getLogger("angr_tests")
 
-def division_tests():
+def test_division():
     # non-overlapping
     
     # simple case 1
@@ -139,7 +139,7 @@ def division_tests():
     assert str(op1.udiv(op2)) == "<4>0x1[0x1, 0x9]"
     
 
-def multiplication_tests():
+def test_multiplication():
     # non-overlapping
     
     # simple case 1
@@ -244,7 +244,7 @@ def multiplication_tests():
     
     
 
-def subtraction_tests():
+def test_subtraction():
     # Basic Interval Tests
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=0, upper_bound=-6)
@@ -291,7 +291,7 @@ def subtraction_tests():
     assert str(op1.sub(op2)) == "<4>0x1[0xb, 0x5]"
     
 
-def add_tests():
+def test_add():
     # Basic Interval Tests
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=0, upper_bound=-6)
@@ -339,11 +339,11 @@ def add_tests():
 if __name__ == "__main__":
     # Addition tests
     l.info("Performing Add Tests")
-    add_tests()
+    test_add()
     l.info("Performing Subtraction Tests")
-    subtraction_tests()
+    test_subtraction()
     l.info("Performing Multiplication Tests")
-    multiplication_tests()
+    test_multiplication()
     l.info("Performing Division Tests")
-    division_tests()    
+    test_division()
     print "[+] All Tests Passed"
