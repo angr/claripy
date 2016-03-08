@@ -2575,6 +2575,141 @@ class StridedInterval(BackendObject):
             return int_0
 
     @staticmethod
+    def extended_euclid(a, b):
+        """
+        It calculates the GCD of a and b, and two values x and y such that:
+        a*x + b*y = GCD(a,b)
+        :param a: first integer
+        :param b: second integer
+        :return: x,y and the GCD of a and b
+        """
+        if b == 0:
+            return (1, 0, a)
+        x0, y0, d = StridedInterval.extended_euclid(b, a % b)
+        x, y = y0, x0 - (a // b) * y0
+        return x, y, d
+
+    @staticmethod
+    def sign(a):
+        return -1 if a < 0 else 1
+
+    @staticmethod
+    def igcd(a, b):
+        """
+        :param a: First integer
+        :param b: Second integer
+        :return: the integer GCD between a and b
+        """
+        a = int(round(a))
+        b = int(round(b))
+        if b < 0:
+            b = -b
+        while b:
+            a, b = b, a % b
+        if a == 1 or b == 1:
+            return 1
+        return a
+
+    @staticmethod
+    def get_intersection(a, b, a_dir, b_dir):
+        # Do the intersection between two
+        # ranges.
+        if (a_dir, b_dir) == (">=", ">="):
+            lb = a if a > b else b
+            ub = float('inf')
+        elif (a_dir, b_dir) == ("<=", ">="):
+            if a > b:
+                lb = b
+                ub = a
+            else:
+                lb = None
+                ub = None
+        elif (a_dir, b_dir) == (">=", "<="):
+            if b > a:
+                lb = a
+                ub = b
+            else:
+                lb = None
+                ub = None
+        elif (a_dir, b_dir) == ("<=", "<="):
+            ub = a if a < b else b
+            lb = float('-inf')
+
+        return lb, ub
+
+
+    @staticmethod
+    def diop_natural_solution_linear(c, a, b):
+        """
+        It finds the fist natural solution of the diophantine equation
+        a*x + b*y = c
+        :param c: constant
+        :param a: quotient of x
+        :param b: quotient of y
+        :return: the first natural solution of the diophatine equation
+        """
+        d = StridedInterval.igcd(a, StridedInterval.igcd(b, c))
+
+        a = a // d
+        b = b // d
+        c = c // d
+
+        if c == 0:
+            return (0, 0)
+        else:
+            x0, y0, d = StridedInterval.extended_euclid(int(abs(a)), int(abs(b)))
+            x0 = x0 * StridedInterval.sign(a)
+            y0 = y0 * StridedInterval.sign(b)
+
+            if c % d == 0:
+                """
+                Integer solutions are: (c*x0 + b*t, c*y0 - a*t)
+                we have to get the first positive solution, which means
+                that we have to solve the following disequations for t:
+                c*x0 + b*t >= 0 and c*y0 - a*t >= 0.
+                """
+                assert b != 0
+                assert a != 0
+
+                t0 = (-c * x0) / float(b)
+                t1 = (c * y0) / float(a)
+                # direction of the disequation depends on b and a sign
+                if b < 0:
+                    t0_dir = '<='
+                else:
+                    t0_dir = '>='
+                if a < 0:
+                    t1_dir = '>='
+                else:
+                    t1_dir = '<='
+
+                # calculate the intersection between the found
+                # solution intervals to get the common solutions
+                # for t.
+                lb, ub = StridedInterval.get_intersection(t0, t1, t0_dir, t1_dir)
+
+                # Given that we are looking for the first value
+                # which solve the diophantine equation, we have to
+                # select the value of t closer to 0.
+                if lb <= 0 and ub >= 0:
+                    t = 0
+                elif lb == float('inf') or lb == float("-inf"):
+                    t = ub
+                elif ub == float('inf') or ub == float("-inf"):
+                    t = lb
+                else:
+                    t = ub if abs(ub) < abs(lb) else lb
+                # round the value of t
+                if t == ub:
+                    t = int(math.floor(t))
+                else:
+                    t = int(math.ceil(t))
+
+                return (c*x0 + b*t, c*y0 - a*t)
+            else:
+                return (None, None)
+
+    @staticmethod
     def _minimal_common_integer_splitted(si_0, si_1):
         """
         Calculates the minimal integer that appears in both StridedIntervals.
@@ -2619,21 +2754,10 @@ class StridedInterval(BackendObject):
             # They don't overlap
             return None
 
-        if a < c:
-            mod = (d - b) % a
-            min_y_mod = a - mod if mod != 0 else 0
-            base_y = int((b - d) / c) if (b - d) % c == 0 else int((b - d) / c) + 1
-            base_y = 0 if base_y < 0 else base_y
-            min_y = min_y_mod + base_y
-            first_integer = c * min_y + d
-        else:
-            mod = (b - d) % c
-            min_x_mod = c - mod if mod != 0 else 0
-            base_x = int((d - b) / a) if (d - b) % a == 0 else int((d - b) / a) + 1
-            base_x = 0 if base_x < 0 else base_x
-            min_x = min_x_mod + base_x
-            first_integer = a * min_x + b
-
+        x, y = StridedInterval.diop_natural_solution_linear(-(b-d), a, -c)
+        if a == None or b == None:
+            return None
+        first_integer = x * a + b
         if first_integer >= si_0.lower_bound and first_integer <= si_0.upper_bound and \
             first_integer >= si_1.lower_bound and first_integer <= si_1.upper_bound and \
             si_0._modular_sub(first_integer, si_0.lower_bound, si_0.bits) % si_0.stride == 0 and \
