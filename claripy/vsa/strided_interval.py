@@ -2636,13 +2636,18 @@ class StridedInterval(BackendObject):
             if sol_int.is_Integer:
                 tmp = int(sol1)
 
-        # get the symbol used by sympy (e.g., t)
+        # security check
         assert len(sol[0].free_symbols) == 1
+
+        # get the symbol used by sympy (e.g., t)
         sym = sol[0].free_symbols.pop()
         x = sol[0].subs(sym, tmp)
         y = sol[1].subs(sym, tmp)
 
         first_integer = x * a + b
+        # security check
+        assert first_integer == y * c + d
+
         if first_integer.is_integer:
             first_integer = int(first_integer)
             if self._wrapped_member(first_integer) and \
