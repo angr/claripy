@@ -2611,34 +2611,6 @@ class StridedInterval(BackendObject):
         return a
 
     @staticmethod
-    def get_intersection(a, b, a_dir, b_dir):
-        # Do the intersection between two
-        # ranges.
-        if (a_dir, b_dir) == (">=", ">="):
-            lb = a if a > b else b
-            ub = float('inf')
-        elif (a_dir, b_dir) == ("<=", ">="):
-            if a > b:
-                lb = b
-                ub = a
-            else:
-                lb = None
-                ub = None
-        elif (a_dir, b_dir) == (">=", "<="):
-            if b > a:
-                lb = a
-                ub = b
-            else:
-                lb = None
-                ub = None
-        elif (a_dir, b_dir) == ("<=", "<="):
-            ub = a if a < b else b
-            lb = float('-inf')
-
-        return lb, ub
-
-
-    @staticmethod
     def diop_natural_solution_linear(c, a, b):
         """
         It finds the fist natural solution of the diophantine equation
@@ -2648,8 +2620,33 @@ class StridedInterval(BackendObject):
         :param b: quotient of y
         :return: the first natural solution of the diophatine equation
         """
-        d = StridedInterval.igcd(a, StridedInterval.igcd(b, c))
+        def get_intersection(a, b, a_dir, b_dir):
+            # Do the intersection between two
+            # ranges.
+            if (a_dir, b_dir) == (">=", ">="):
+                lb = a if a > b else b
+                ub = float('inf')
+            elif (a_dir, b_dir) == ("<=", ">="):
+                if a > b:
+                    lb = b
+                    ub = a
+                else:
+                    lb = None
+                    ub = None
+            elif (a_dir, b_dir) == (">=", "<="):
+                if b > a:
+                    lb = a
+                    ub = b
+                else:
+                    lb = None
+                    ub = None
+            elif (a_dir, b_dir) == ("<=", "<="):
+                ub = a if a < b else b
+                lb = float('-inf')
 
+            return lb, ub
+
+        d = StridedInterval.igcd(a, StridedInterval.igcd(b, c))
         a = a // d
         b = b // d
         c = c // d
@@ -2686,7 +2683,7 @@ class StridedInterval(BackendObject):
                 # calculate the intersection between the found
                 # solution intervals to get the common solutions
                 # for t.
-                lb, ub = StridedInterval.get_intersection(t0, t1, t0_dir, t1_dir)
+                lb, ub = get_intersection(t0, t1, t0_dir, t1_dir)
 
                 # Given that we are looking for the first value
                 # which solve the diophantine equation, we have to
@@ -2754,14 +2751,22 @@ class StridedInterval(BackendObject):
             # They don't overlap
             return None
 
+        """
+        Given two strided intervals a = sa[lba, uba] and b = sb[lbb, ubb], the first integer shared
+        by them is found by finding the minimum values of ka and kb which solve the equation:
+            ka * sa + lba = kb * sb + lbb
+        In particular one can solve the above diophantine equation and find the parameterized solutions
+        of ka and kb, with respect to a parameter t.
+        The minimum natural value of the parameter t which gives two positive natural values of ka and kb
+        is used to resolve ka and kb, and finally to solve the above equation and get the minimum shared integer.
+        """
         x, y = StridedInterval.diop_natural_solution_linear(-(b-d), a, -c)
         if a == None or b == None:
             return None
         first_integer = x * a + b
+        assert first_integer == y*c + d
         if first_integer >= si_0.lower_bound and first_integer <= si_0.upper_bound and \
-            first_integer >= si_1.lower_bound and first_integer <= si_1.upper_bound and \
-            si_0._modular_sub(first_integer, si_0.lower_bound, si_0.bits) % si_0.stride == 0 and \
-            si_1._modular_sub(first_integer, si_1.lower_bound, si_1.bits) % si_1.stride == 0:
+            first_integer >= si_1.lower_bound and first_integer <= si_1.upper_bound:
             return first_integer
 
         else:
