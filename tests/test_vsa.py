@@ -463,7 +463,6 @@ def test_vsa():
 
     si_intersection_4 = si_a.intersection(si_b)
 
-
     nose.tools.assert_true(is_equal(si_intersection_4, claripy.SI(bits=32, stride=2, lower_bound=10, upper_bound=20)))
     si_intersection_5 = si_b.intersection(si_c)
     nose.tools.assert_true(is_equal(si_intersection_5, claripy.SI(bits=32, stride=6, lower_bound=-100, upper_bound=200)))

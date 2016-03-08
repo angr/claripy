@@ -1,3 +1,2 @@
 ana
-sympy
 angr-only-z3-custom
