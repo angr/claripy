@@ -809,7 +809,7 @@ class StridedInterval(BackendObject):
             if self.name == o.name:
                 return TrueResult() # They are the same guy
 
-            si_intersection = self.intersection(o).pop()
+            si_intersection = self.intersection(o)
             if si_intersection.is_empty:
                 return FalseResult()
 
@@ -1758,8 +1758,8 @@ class StridedInterval(BackendObject):
                 for si2 in si2_psplit:
                     tmp_unsigned_mul = self._wrapped_unsigned_mul(si1, si2)
                     tmp_signed_mul = self._wrapped_signed_mul(si1, si2)
-                    for tmp_meet in tmp_unsigned_mul.intersection(tmp_signed_mul):
-                        all_resulting_intervals.append(tmp_meet)
+                    tmp_meet = tmp_unsigned_mul.intersection(tmp_signed_mul)
+                    all_resulting_intervals.append(tmp_meet)
         return StridedInterval._least_upper_bound(list(all_resulting_intervals)).normalize()
 
     @normalize_types
