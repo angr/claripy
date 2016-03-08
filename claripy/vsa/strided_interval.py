@@ -2635,7 +2635,9 @@ class StridedInterval(BackendObject):
             first_integer = a * min_x + b
 
         if first_integer >= si_0.lower_bound and first_integer <= si_0.upper_bound and \
-            first_integer >= si_1.lower_bound and first_integer <= si_1.upper_bound:
+            first_integer >= si_1.lower_bound and first_integer <= si_1.upper_bound and \
+            si_0._modular_sub(first_integer, si_0.lower_bound, si_0.bits) % si_0.stride == 0 and \
+            si_1._modular_sub(first_integer, si_1.lower_bound, si_1.bits) % si_1.stride == 0:
             return first_integer
 
         else:
