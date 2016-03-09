@@ -2235,10 +2235,7 @@ class StridedInterval(BackendObject):
             new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(b, c, w) - 1, s._stride)
         else:
             new_stride = fractions.gcd(s._stride, t._stride)
-            remainder_1 = s.lower_bound % new_stride if new_stride > 0 else 0
-            remainder_2 = t.lower_bound % new_stride if new_stride > 0 else 0
-            if remainder_1 != remainder_2:
-                new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
+            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(a, c, w) - 1)
 
         # this happens when s and t are the same integer
         if new_stride == -1:
@@ -2442,6 +2439,8 @@ class StridedInterval(BackendObject):
             logger.warning('pseudo-join should be used only with two strided intervals. Fix your code and use least_upper_bound instead')
 
         s, b = intervals_to_join[0], intervals_to_join[1]
+        assert s.bits == b.bits
+        w = s.bits
 
         if s._reversed != b._reversed:
             logger.warning('Incoherent reversed flag between operands %s and %s', s, b)
@@ -2472,10 +2471,6 @@ class StridedInterval(BackendObject):
             new_stride = fractions.gcd(s.stride, s._modular_sub(b.lower_bound, s.lower_bound, s.bits))
         else:
             new_stride = fractions.gcd(s.stride, b.stride)
-        remainder_1 = s.lower_bound % new_stride if new_stride > 0 else 0
-        remainder_2 = b.lower_bound % new_stride if new_stride > 0 else 0
-        if remainder_1 != remainder_2:
-            new_stride = fractions.gcd(abs(remainder_1 - remainder_2), new_stride)
 
         # Then we have different cases
 
@@ -2498,13 +2493,14 @@ class StridedInterval(BackendObject):
 
         elif s._wrapped_member(b.lower_bound):
             # Overlapping
-
+            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
             return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
                                    upper_bound=b.upper_bound)
 
         elif b._wrapped_member(s.lower_bound):
             # Overlapping
 
+            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
             return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
                                    upper_bound=s.upper_bound)
 
@@ -2515,20 +2511,24 @@ class StridedInterval(BackendObject):
             if card_1 == card_2:
                 # Left/right leaning cases
                 if s._lex_lt(s.lower_bound, b.lower_bound, s.bits):
+                    new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
                     return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
                                            upper_bound=b.upper_bound)
 
                 else:
+                    new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
                     return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
                                            upper_bound=s.upper_bound)
 
             elif card_1 < card_2:
                 # non-overlapping case (left)
+                new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
                 return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
                                        upper_bound=b.upper_bound)
 
             else:
                 # non-overlapping case (right)
+                new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
                 return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
                                        upper_bound=s.upper_bound)
 
