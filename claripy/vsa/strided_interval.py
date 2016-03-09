@@ -2864,43 +2864,56 @@ class StridedInterval(BackendObject):
                     b._wrapped_member(self.lower_bound) and \
                     b._wrapped_member(self.upper_bound):
                 # One cover the other
-                card_1 = self._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits)
-                card_2 = self._wrapped_cardinality(b.lower_bound, b.upper_bound, b.bits)
-                if self._lex_lt(card_1, card_2, self.bits) or \
-                        (card_1 == card_2 and self._lex_lte(self.lower_bound, b.lower_bound, self.bits)):
-                    lb = StridedInterval._minimal_common_integer(self, b)
 
-                    if lb is None:
-                        ret = StridedInterval.empty(self.bits)
+                # bounds of the two common intervals
+                # among the SIs
+                lb_s0 = self.lower_bound
+                ub_s0 = b.upper_bound
+                lb_s1 = b.lower_bound
+                ub_s1 = self.upper_bound
 
-                    else:
-                        ub = self._modular_add(
-                            self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
-                            lb,
-                            self.bits
-                        )
-                        ret = StridedInterval(bits=self.bits,
-                                               stride=new_stride,
-                                               lower_bound=lb,
-                                               upper_bound=ub
-                                               )
+                # Let's build the SIs
+                s0 = StridedInterval(bits=self.bits,
+                                     lower_bound=lb_s0,
+                                     upper_bound=ub_s0,
+                                     stride=self.stride)
+                s1 = StridedInterval(bits=self.bits,
+                                     lower_bound=lb_s1,
+                                     upper_bound=ub_s1,
+                                     stride=b.stride)
+                # and find the first common integer
+                lb_s0_new = StridedInterval._minimal_common_integer(s0, b)
+                lb_s1_new = StridedInterval._minimal_common_integer(s1, self)
+
+                if lb_s0_new is None:
+                    s0 = StridedInterval.empty(self.bits)
                 else:
-                    lb = StridedInterval._minimal_common_integer(self, b)
+                    ub_s0_new = self._modular_add(
+                                    self._modular_sub(ub_s0, lb_s0_new, self.bits) / new_stride * new_stride,
+                                    lb_s0_new,
+                                    self.bits
+                                )
+                    s0 = StridedInterval(bits=self.bits,
+                                        lower_bound=lb_s0_new,
+                                        upper_bound=ub_s0_new,
+                                        stride=new_stride)
 
-                    if lb is None:
-                        ret = StridedInterval.empty(self.bits)
+                if lb_s1_new is None:
+                    s1 = StridedInterval.empty(self.bits)
+                else:
+                    ub_s1_new = self._modular_add(
+                                self._modular_sub(ub_s1, lb_s1_new, self.bits) / new_stride * new_stride,
+                                    lb_s1_new,
+                                    self.bits
+                                )
+                    s1 = StridedInterval(bits=self.bits,
+                                        lower_bound=lb_s1_new,
+                                        upper_bound=ub_s1_new,
+                                        stride=new_stride)
 
-                    else:
-                        ub = self._modular_add(
-                            self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
-                            lb,
-                            self.bits
-                        )
-                        ret = StridedInterval(bits=self.bits,
-                                               stride=new_stride,
-                                               lower_bound=lb,
-                                               upper_bound=ub
-                                               )
+                #FIXME: perhaps we should return both of the SI
+                ret = StridedInterval._least_upper_bound([s0, s1])
+
             elif self._wrapped_member(b.lower_bound):
                 # Overlapping case 1
 
