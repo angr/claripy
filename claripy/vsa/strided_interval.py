@@ -809,7 +809,7 @@ class StridedInterval(BackendObject):
             if self.name == o.name:
                 return TrueResult() # They are the same guy
 
-            si_intersection = self.intersection(o)
+            si_intersection = self.precise_intersection(o).pop()
             if si_intersection.is_empty:
                 return FalseResult()
 
@@ -1758,8 +1758,8 @@ class StridedInterval(BackendObject):
                 for si2 in si2_psplit:
                     tmp_unsigned_mul = self._wrapped_unsigned_mul(si1, si2)
                     tmp_signed_mul = self._wrapped_signed_mul(si1, si2)
-                    tmp_meet = tmp_unsigned_mul.intersection(tmp_signed_mul)
-                    all_resulting_intervals.append(tmp_meet)
+                    for tmp_meet in tmp_unsigned_mul.precise_intersection(tmp_signed_mul):
+                        all_resulting_intervals.append(tmp_meet)
         return StridedInterval._least_upper_bound(list(all_resulting_intervals)).normalize()
 
     @normalize_types
@@ -2578,7 +2578,8 @@ class StridedInterval(BackendObject):
     def extended_euclid(a, b):
         """
         It calculates the GCD of a and b, and two values x and y such that:
-        a*x + b*y = GCD(a,b)
+        a*x + b*y = GCD(a,b).
+        This code has been taken from the project sympy.
         :param a: first integer
         :param b: second integer
         :return: x,y and the GCD of a and b
@@ -2614,7 +2615,8 @@ class StridedInterval(BackendObject):
     def diop_natural_solution_linear(c, a, b):
         """
         It finds the fist natural solution of the diophantine equation
-        a*x + b*y = c
+        a*x + b*y = c. Some lines of this code are taken from the project
+        sympy.
         :param c: constant
         :param a: quotient of x
         :param b: quotient of y
@@ -2774,42 +2776,58 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def intersection(self, b):
-        if self.is_empty or b.is_empty:
-            return StridedInterval.empty(self.bits)
+        """
+        Return the intersection between two SI. This function return always
+        only one SI.
+        """
+        intersection = self.precise_intersection(b)
+        si = intersection.pop()
+        if len(intersection) == 1:
+            si = si.union(intersection.pop())
+        return si
 
+    @normalize_types
+    def precise_intersection(self, b):
+        """
+        Return the intersection between two SI. A set is returned since the intersection
+        between two SI can be two new SI (see case 4 in the intersection dfinition
+        in the WI paper).
+        """
+        if self.is_empty or b.is_empty:
+            return {  StridedInterval.empty(self.bits) }
         assert self.bits == b.bits
 
         if self.is_integer and b.is_integer:
             if self.lower_bound == b.lower_bound:
                 # They are the same number!
-                ret = StridedInterval(bits=self.bits,
+                ret = {  StridedInterval(bits=self.bits,
                                       stride=0,
                                       lower_bound=self.lower_bound,
-                                      upper_bound=self.lower_bound)
+                                      upper_bound=self.lower_bound) }
             else:
-                ret = StridedInterval.empty(self.bits)
+                ret = {  StridedInterval.empty(self.bits) }
 
         elif self.is_integer:
             integer = self.lower_bound
             if (b.lower_bound - integer) % b.stride == 0 and \
                     b._wrapped_member(integer):
-                ret = StridedInterval(bits=self.bits,
+                ret = { StridedInterval(bits=self.bits,
                                       stride=0,
                                       lower_bound=integer,
-                                      upper_bound=integer)
+                                      upper_bound=integer) }
             else:
-                ret = StridedInterval.empty(self.bits)
+                ret = {  StridedInterval.empty(self.bits) }
 
         elif b.is_integer:
             integer = b.lower_bound
             if (integer - self.lower_bound) % self.stride == 0 and \
                     self._wrapped_member(integer):
-                ret = StridedInterval(bits=self.bits,
+                ret = { StridedInterval(bits=self.bits,
                                       stride=0,
                                       lower_bound=integer,
-                                      upper_bound=integer)
+                                      upper_bound=integer) }
             else:
-                ret = StridedInterval.empty(self.bits)
+                ret = {  StridedInterval.empty(self.bits) }
 
         else:
             # None of the operands is an integer
@@ -2824,7 +2842,7 @@ class StridedInterval(BackendObject):
 
                 lb = StridedInterval._minimal_common_integer(self, b)
                 if lb is None:
-                    ret = StridedInterval.empty(self.bits)
+                    ret = { StridedInterval.empty(self.bits) }
 
                 else:
                     ub = self._modular_add(
@@ -2832,11 +2850,11 @@ class StridedInterval(BackendObject):
                         lb,
                         self.bits
                     )
-                    ret = StridedInterval(bits=self.bits,
+                    ret = { StridedInterval(bits=self.bits,
                                            stride=new_stride,
                                            lower_bound=lb,
                                            upper_bound=ub
-                                           )
+                                           ) }
 
             elif b._wrapped_lte(self):
                 # Containment case 2
@@ -2845,19 +2863,18 @@ class StridedInterval(BackendObject):
                 lb = StridedInterval._minimal_common_integer(self, b)
 
                 if lb is None:
-                    ret = StridedInterval.empty(self.bits)
-
+                    ret = { StridedInterval.empty(self.bits) }
                 else:
                     ub = self._modular_add(
                         self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
                         lb,
                         self.bits
                     )
-                    ret = StridedInterval(bits=self.bits,
+                    ret = { StridedInterval(bits=self.bits,
                                            stride=new_stride,
                                            lower_bound=lb,
                                            upper_bound=ub
-                                           )
+                                           ) }
 
             elif self._wrapped_member(b.lower_bound) and \
                     self._wrapped_member(b.upper_bound) and \
@@ -2911,8 +2928,7 @@ class StridedInterval(BackendObject):
                                         upper_bound=ub_s1_new,
                                         stride=new_stride)
 
-                #FIXME: perhaps we should return both of the SI
-                ret = StridedInterval._least_upper_bound([s0, s1])
+                ret = { s0, s1 }
 
             elif self._wrapped_member(b.lower_bound):
                 # Overlapping case 1
@@ -2920,19 +2936,18 @@ class StridedInterval(BackendObject):
                 lb = StridedInterval._minimal_common_integer(b, self)
 
                 if lb is None:
-                    ret = StridedInterval.empty(self.bits)
-
+                    ret = { StridedInterval.empty(self.bits) }
                 else:
                     ub = self._modular_add(
                         self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
                         lb,
                         self.bits
                     )
-                    ret = StridedInterval(bits=self.bits,
+                    ret = { StridedInterval(bits=self.bits,
                                            stride=new_stride,
                                            lower_bound=lb,
                                            upper_bound=ub
-                                           )
+                                           ) }
 
             elif b._wrapped_member(self.lower_bound):
                 # Overlapping case 2
@@ -2940,7 +2955,7 @@ class StridedInterval(BackendObject):
                 lb = StridedInterval._minimal_common_integer(self, b)
 
                 if lb is None:
-                    ret = StridedInterval.empty(self.bits)
+                    ret = { StridedInterval.empty(self.bits) }
 
                 else:
                     ub = self._modular_add(
@@ -2948,17 +2963,17 @@ class StridedInterval(BackendObject):
                         lb,
                         self.bits
                     )
-                    ret = StridedInterval(bits=self.bits,
+                    ret = { StridedInterval(bits=self.bits,
                                            stride=new_stride,
                                            lower_bound=lb,
                                            upper_bound=ub
-                                           )
+                                           ) }
 
             else:
                 # Disjoint case
-                ret = StridedInterval.empty(self.bits)
+                ret = { StridedInterval.empty(self.bits) }
 
-        ret.normalize()
+        ret = {a.normalize() for a in ret}
         return ret
 
     @normalize_types

@@ -483,8 +483,9 @@ def test_vsa():
     t4 = claripy.SI(bits=32, stride=5, lower_bound=-400, upper_bound=400)
     t5 = claripy.SI(bits=32, stride=1, lower_bound=395, upper_bound=-395)
     si_is_8 = t4.intersection(t5)
-
-    nose.tools.assert_true(is_equal(si_is_8, claripy.SI(bits=32, stride=5, lower_bound=-400, upper_bound=400)))
+    # stride here was 5. This result is actully even more precise if we use the function precise_intersection since
+    # it would return two SI with stride 5.
+    nose.tools.assert_true(is_equal(si_is_8, claripy.SI(bits=32, stride=1, lower_bound=-400, upper_bound=400)))
 
     # Sign-extension
     si = claripy.SI(bits=1, stride=0, lower_bound=1, upper_bound=1)
