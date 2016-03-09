@@ -2689,7 +2689,7 @@ class StridedInterval(BackendObject):
                 # which solve the diophantine equation, we have to
                 # select the value of t closer to 0.
                 if lb <= 0 and ub >= 0:
-                    t = 0
+                    t = ub if abs(ub) < abs(lb) else lb
                 elif lb == float('inf') or lb == float("-inf"):
                     t = ub
                 elif ub == float('inf') or ub == float("-inf"):
@@ -2864,7 +2864,6 @@ class StridedInterval(BackendObject):
                     b._wrapped_member(self.lower_bound) and \
                     b._wrapped_member(self.upper_bound):
                 # One cover the other
-
                 card_1 = self._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits)
                 card_2 = self._wrapped_cardinality(b.lower_bound, b.upper_bound, b.bits)
                 if self._lex_lt(card_1, card_2, self.bits) or \
