@@ -2220,52 +2220,6 @@ class StridedInterval(BackendObject):
 
         return si
 
-    @normalize_types
-    def _interval_extend(self, t):
-        """
-        Extend src interval to include destination
-        Refer 1:11 of paper:
-        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
-        :param src_interval: Interval to extend
-        :param dst_interval: Interval to be extended to
-        :return: Interval starting from src interval which also includes dst interval
-        """
-        s = self
-        w = s.bits
-        (a, b) = (s.lower_bound, s.upper_bound)
-        (c, d) = (t.lower_bound, t.upper_bound)
-
-        # Calculate the stride
-        if s.is_integer and t.is_integer:
-            new_stride = StridedInterval._wrapped_cardinality(a, c, w) - 1
-        elif s.is_integer:
-            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(a, c, w) - 1, t._stride)
-        elif t.is_integer:
-            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(b, c, w) - 1, s._stride)
-        else:
-            new_stride = fractions.gcd(s._stride, t._stride)
-            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(a, c, w) - 1)
-
-        # this happens when s and t are the same integer
-        if new_stride == -1:
-            new_stride = 0
-
-        # case 1: s <= t
-        if s._wrapped_lte(t):
-            si = t.copy()
-            si.stride = new_stride
-            return si
-        # case 2: t <= s
-        if t._wrapped_lte(s):
-            si = s.copy()
-            si.stride = new_stride
-            return si
-        # case 3: neg(s) <= t
-        if s.complement._wrapped_lte(t):
-            return StridedInterval.top(w)
-
-        return StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
-
     @reversed_processor
     def sign_extend(self, new_length):
         """
