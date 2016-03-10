@@ -276,7 +276,7 @@ class BackendVSA(Backend):
 
     @staticmethod
     def LShR(expr, shift_amount):
-        return expr >> shift_amount
+        return expr.__rshift__(shift_amount, False)
 
     @staticmethod
     def Concat(*args):
@@ -360,7 +360,6 @@ class BackendVSA(Backend):
                 ret = arg
             else:
                 ret = ret.intersection(arg)
-
         return ret
 
     @normalize_reversed_arguments

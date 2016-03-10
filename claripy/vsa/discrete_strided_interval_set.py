@@ -489,8 +489,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         new_si_set = set()
         for si_ in self._si_set:
             r = si_.intersection(si)
-            if not r.is_empty:
-                new_si_set.add(r)
+            new_si_set.add(r)
 
         if len(new_si_set):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)

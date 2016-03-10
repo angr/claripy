@@ -311,6 +311,7 @@ def test_vsa():
     si_f = claripy.SI(bits=16, stride=1, lower_bound=0, upper_bound=255)
     si_g = claripy.SI(bits=16, stride=1, lower_bound=0, upper_bound=0xff)
     si_h = claripy.SI(bits=32, stride=0, lower_bound=0x80000000, upper_bound=0x80000000)
+
     nose.tools.assert_true(is_equal(si1, claripy.SI(bits=32, to_conv=10)))
     nose.tools.assert_true(is_equal(si2, claripy.SI(bits=32, to_conv=10)))
     nose.tools.assert_true(is_equal(si1, si2))
@@ -459,7 +460,9 @@ def test_vsa():
     nose.tools.assert_true(is_equal(si_intersection_2, claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
     si_intersection_3 = si1.intersection(si_a)
     nose.tools.assert_true(is_equal(si_intersection_3, claripy.SI(bits=32, stride=0, lower_bound=10, upper_bound=10)))
+
     si_intersection_4 = si_a.intersection(si_b)
+
     nose.tools.assert_true(is_equal(si_intersection_4, claripy.SI(bits=32, stride=2, lower_bound=10, upper_bound=20)))
     si_intersection_5 = si_b.intersection(si_c)
     nose.tools.assert_true(is_equal(si_intersection_5, claripy.SI(bits=32, stride=6, lower_bound=-100, upper_bound=200)))
@@ -467,11 +470,13 @@ def test_vsa():
     # More intersections
     t0 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0x27)
     t1 = claripy.SI(bits=32, stride=0x7fffffff, lower_bound=0x80000002, upper_bound=1)
+
     si_is_6 = t0.intersection(t1)
     nose.tools.assert_true(is_equal(si_is_6, claripy.SI(bits=32, stride=0, lower_bound=1, upper_bound=1)))
 
     t2 = claripy.SI(bits=32, stride=5, lower_bound=20, upper_bound=30)
     t3 = claripy.SI(bits=32, stride=1, lower_bound=27, upper_bound=0xffffffff)
+
     si_is_7 = t2.intersection(t3)
     nose.tools.assert_true(is_equal(si_is_7, claripy.SI(bits=32, stride=0, lower_bound=30, upper_bound=30)))
 
