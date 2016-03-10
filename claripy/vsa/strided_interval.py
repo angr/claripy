@@ -2464,22 +2464,16 @@ class StridedInterval(BackendObject):
 
         if s._wrapped_lte(b):
             # Containment: s <= b
-            if s.is_integer:
-                new_stride = StridedInterval.gcd(b.stride, s._modular_sub(s.lower_bound, b.lower_bound, w))
-            else:
-                new_stride = StridedInterval.gcd(s.stride, b.stride)
-                new_stride = StridedInterval.gcd(new_stride, s._modular_sub(s.lower_bound, b.lower_bound, w))
+            new_stride = StridedInterval.gcd(s.stride, b.stride) if s.is_interval else b.stride
+            new_stride = StridedInterval.gcd(new_stride, s._modular_sub(s.lower_bound, b.lower_bound, w))
             return StridedInterval(bits=w, stride=new_stride, lower_bound=b.lower_bound,
                                    upper_bound=b.upper_bound)
 
         elif b._wrapped_lte(s):
             # Containment: b <= s
             # TODO: This case is missing in the original implementation. Is that a bug?
-            if b.is_integer:
-                new_stride = StridedInterval.gcd(s.stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
-            else:
-                new_stride = StridedInterval.gcd(s.stride, b.stride)
-                new_stride = StridedInterval.gcd(new_stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
+            new_stride = StridedInterval.gcd(s.stride, b.stride) if b.is_interval else s.stride
+            new_stride = StridedInterval.gcd(new_stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
             return StridedInterval(bits=w, stride=new_stride, lower_bound=s.lower_bound,
                                    upper_bound=s.upper_bound)
 
@@ -2504,19 +2498,19 @@ class StridedInterval(BackendObject):
                                    upper_bound=s.upper_bound)
         else:
             # no overlapping.
-            # we join the two intervals according on the order they are passed
+            # we join the two intervals according on the order they are given
             if not smart_join:
-                # Determine the new strides. They have to change given that we force the order
-                # of the two intervals
                 if s.is_integer:
                     new_stride = StridedInterval.gcd(b.stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
                 elif b.is_integer:
                     new_stride = StridedInterval.gcd(s.stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
                 else:
+                    new_stride = StridedInterval.gcd(s.stride, b.stride)
                     new_stride = StridedInterval.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
                 return StridedInterval(bits=w, stride=new_stride, lower_bound=s.lower_bound, upper_bound=b.upper_bound)
 
-            # Else: we return the join which produce an interval with the least number of values
+            # Else: smart join.
+            # we return the join which produce an interval with the least number of values
             if s.is_integer:
                 new_stride = b.stride
             elif b.is_integer:
