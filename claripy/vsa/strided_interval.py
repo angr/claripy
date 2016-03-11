@@ -68,7 +68,6 @@ def normalize_types(f):
         if f.__name__ not in ('concat', ):
             # Make sure they have the same length
             common_bits = max(o.bits, self.bits)
-            common_bits = max(o.bits, self.bits)
             if o.bits < common_bits:
                 o = o.agnostic_extend(common_bits)
             if self.bits < common_bits:
@@ -266,11 +265,14 @@ class WarrenMethods(object):
 class StridedInterval(BackendObject):
     """
     A Strided Interval is represented in the following form:
-        bits,stride[lower_bound, upper_bound]
+        <bits> stride[lower_bound, upper_bound]
     For more details, please refer to relevant papers like TIE and WYSINWYE.
 
-    This implementation is signedness-agostic, please refer to _Signedness-Agnostic Program Analysis: Precise Integer
+    This implementation is signedness-agostic, please refer to [1]_Signedness-Agnostic Program Analysis: Precise Integer
     Bounds for Low-Level Code_ by Jorge A. Navas, etc. for more details.
+    Note that this implementation only takes hint from [1]. Such a work has been improved to be more precise
+    (and still sound) when dealing with strided intervals.
+    DO NOT expect to see a 1-to-1 reproduction of [1].
 
     Thanks all corresponding authors for their outstanding works.
     """
@@ -491,7 +493,7 @@ class StridedInterval(BackendObject):
             lb = self._unsigned_to_signed(lb, self.bits)
             ub = self._unsigned_to_signed(ub, self.bits)
 
-            return [ (lb, ub) ]
+            return [(lb, ub)]
 
         elif len(nsplit) == 2:
             # nsplit[0] is on the left hemisphere, and nsplit[1] is on the right hemisphere
@@ -1101,6 +1103,15 @@ class StridedInterval(BackendObject):
         :return: True if this is an integer, False otherwise
         '''
         return self.lower_bound == self.upper_bound
+
+    @property
+    def is_interval(self):
+        return not self.is_integer
+
+
+    @property
+    def n_values(self):
+        return math.ceil(StridedInterval._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits) / float(self.stride))
 
     #
     # Modular arithmetic
@@ -1731,7 +1742,6 @@ class StridedInterval(BackendObject):
         :param o: The other operand
         :return: self * o
         """
-
         if self.is_integer and o.is_integer:
             # Two integers!
             a, b = self.lower_bound, o.lower_bound
@@ -1774,7 +1784,6 @@ class StridedInterval(BackendObject):
         splitted_dividends = self._psplit()
         splitted_divisors = o._psplit()
 
-        ret = self.empty(self.bits)
         resulting_intervals = set()
         for dividend in splitted_dividends:
             for divisor in splitted_divisors:
@@ -1795,7 +1804,6 @@ class StridedInterval(BackendObject):
         splitted_dividends = self._ssplit()
         splitted_divisors = o._ssplit()
 
-        ret = self.empty(self.bits)
         resulting_intervals = set()
         for dividend in splitted_dividends:
             for divisor in splitted_divisors:
@@ -1869,7 +1877,7 @@ class StridedInterval(BackendObject):
                 m = (2 ** w) - 1
                 low_bound = WarrenMethods.min_or(u.lower_bound & (~mask & m), u.upper_bound & (~mask & m), v.lower_bound & (~mask & m), v.upper_bound & (~mask & m), w)
                 upper_bound = WarrenMethods.max_or(u.lower_bound & (~mask & m), u.upper_bound & (~mask & m), v.lower_bound & (~mask & m), v.upper_bound & (~mask & m), w)
-                new_interval = StridedInterval(lower_bound=((low_bound & (~mask & m) | r)), upper_bound=((upper_bound & (~mask & m)) | r), bits=w, stride=new_stride)
+                new_interval = StridedInterval(lower_bound=((low_bound & (~mask & m)) | r), upper_bound=((upper_bound & (~mask & m)) | r), bits=w, stride=new_stride)
                 result_interval.append(new_interval)
 
         return StridedInterval.least_upper_bound(*result_interval).normalize()
@@ -2212,53 +2220,6 @@ class StridedInterval(BackendObject):
 
         return si
 
-    @normalize_types
-    def _interval_extend(self, t):
-        """
-        Extend src interval to include destination
-        Refer 1:11 of paper:
-        Interval analysis and machine arithmetic: Why signedness ignorance is bliss
-        :param src_interval: Interval to extend
-        :param dst_interval: Interval to be extended to
-        :return: Interval starting from src interval which also includes dst interval
-        """
-        s = self
-        w = s.bits
-        (a, b) = (s.lower_bound, s.upper_bound)
-        (c, d) = (t.lower_bound, t.upper_bound)
-
-
-        # Calculate the stride
-        if s.is_integer and t.is_integer:
-            new_stride = StridedInterval._wrapped_cardinality(a, c, w) - 1
-        elif s.is_integer:
-            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(a, c, w) - 1, t._stride)
-        elif t.is_integer:
-            new_stride = fractions.gcd(StridedInterval._wrapped_cardinality(b, c, w) - 1, s._stride)
-        else:
-            new_stride = fractions.gcd(s._stride, t._stride)
-            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(a, c, w) - 1)
-
-        # this happens when s and t are the same integer
-        if new_stride == -1:
-            new_stride = 0
-
-        # case 1: s <= t
-        if s._wrapped_lte(t):
-            si = t.copy()
-            si.stride = new_stride
-            return si
-        # case 2: t <= s
-        if t._wrapped_lte(s):
-            si = s.copy()
-            si.stride = new_stride
-            return si
-        # case 3: neg(s) <= t
-        if s.complement._wrapped_lte(t):
-            return StridedInterval.top(w)
-
-        return StridedInterval(lower_bound=a, upper_bound=d, bits=w, stride=new_stride)
-
     @reversed_processor
     def sign_extend(self, new_length):
         """
@@ -2306,6 +2267,7 @@ class StridedInterval(BackendObject):
         :param b: Operand
         :return: A new DiscreteStridedIntervalSet, or a new StridedInterval.
         """
+
         if not allow_dsis:
             return StridedInterval.least_upper_bound(self, b)
 
@@ -2354,12 +2316,25 @@ class StridedInterval(BackendObject):
     def least_upper_bound(*intervals_to_join):
         """
         Pseudo least upper bound.
-        Join the given set of intervals into a big interval
-        Refer section 3.1
+        Join the given set of intervals into a big interval. The resulting strided interval is the one which in
+        all the possible joins of the presented SI, presented the least number of values.
+
+        The number of joins to compute is linear with the number of intervals to join.
+
+        Draft of proof:
+        Considering  three generic SI (a,b, and c) ordered from their lower bounds, such that
+        a.lower_bund <= b.lower_bound <= c.lower_bound, where <= is the lexicographic less or equal.
+        The only joins which have sense to compute are:
+        * a U b U c
+        * b U c U a
+        * c U a U b
+
+        All the other combinations fall in either one of these cases. For example: b U a U c does not make make sense
+        to be calculated. In fact, if one draws this union, the result is exactly either (b U c U a) or (a U b U c) or
+        (c U a U b).
         :param intervals_to_join: Intervals to join
         :return: Interval that contains all intervals
         """
-
         assert len(intervals_to_join) > 0, "No intervals to join"
         # Check if all intervals are of same width
         all_same = all(x.bits == intervals_to_join[0].bits for x in intervals_to_join)
@@ -2370,48 +2345,23 @@ class StridedInterval(BackendObject):
             return intervals_to_join[0].copy()
         # Optimization: If we have only two intervals, the pseudo-join is fine and more precise
         if len(intervals_to_join) == 2:
-            return StridedInterval.pseudo_join(*intervals_to_join)
+            return StridedInterval.pseudo_join(intervals_to_join[0], intervals_to_join[1])
 
         # sort the intervals in increasing left bound
         sorted_intervals = sorted(intervals_to_join, key=lambda x: x.lower_bound)
         # Fig 3 of the paper
-        w = intervals_to_join[0].bits
-        f = StridedInterval.empty(w)
-        g = StridedInterval.empty(w)
+        ret = None
 
-        for s in sorted_intervals:
-            if s.is_top or StridedInterval._lex_lt(s.upper_bound, s.lower_bound, w):
-                # f <- extend(f, s)
-                f = f._interval_extend(s)
-        for s in sorted_intervals:
-            # g <- bigger(g, gap(f, s))
-            g = StridedInterval._bigger(g, StridedInterval._gap(f, s))
-            # f <- extend(f, s)
-            f = f._interval_extend(s)
+        # we try all possible joins (linear with the number of SI to join)
+        # and we return the one with the least number of values.
+        for i in xrange(len(sorted_intervals)):
+            # let's join all of them
+            si = reduce(lambda x, y: StridedInterval.pseudo_join(x, y, False), sorted_intervals[i:] + sorted_intervals[0:i])
 
-        si = StridedInterval._bigger(g, f.complement).complement
+            if ret is None or ret.n_values > si.n_values:
+                ret = si
 
-        # stride
-        if si.is_integer:
-            si._stride = 0
-        elif si.is_top:
-            si._stride = 1
-        else:
-            # if the resulting SI is a limited interval we have to calculate the stride.
-            # the new stride MUST include all the values of all the SI involved in the
-            # union.
-            a = si.lower_bound
-            b = si.upper_bound
-            stride = StridedInterval._wrapped_cardinality(a, b, si.bits) - 1
-            # for each SI involved in the union we calculate the new stride necessary to
-            # include all the values represented by the SI.
-            for i in intervals_to_join:
-                dist = StridedInterval._wrapped_cardinality(a, i.lower_bound, si.bits) - 1
-                stride = fractions.gcd(stride, dist)
-                if i.stride != 0:
-                    stride = fractions.gcd(stride, i.stride)
-            si._stride = stride
-        return si
+        return ret
 
     @normalize_types
     def _union(self, b):
@@ -2420,12 +2370,16 @@ class StridedInterval(BackendObject):
         return StridedInterval.pseudo_join(self, b)
 
     @staticmethod
-    def pseudo_join(*intervals_to_join):
+    def pseudo_join(s, b, smart_join=True):
         """
-        Binary operation: union
-        It's also the join operation.
-
-        :param b: The other operand.
+        It two intervals in a way that the resulting SI is the one that has the least
+        SI cardinality (i.e., which represents the least number of elements) possible if the smart_join flag is enabled,
+        otherwise it just joins the SI according the order they are passed to the function.
+        :param s: The first SI
+        :param b: The other SI.
+        :param smart_join: Enable the smart join behavior. If this flag is set, this function joins the two SI in a way
+        that the resulting Si has least number of elements (more precise). If it is unset, this function will joins the
+        two SI according on the order they are passed to the function.
         :return: A new StridedInterval
         """
         """
@@ -2437,10 +2391,6 @@ class StridedInterval(BackendObject):
         Please use the function least_upper_bound as a stub.
         """
 
-        if len(intervals_to_join) > 2:
-            logger.warning('pseudo-join should be used only with two strided intervals. Fix your code and use least_upper_bound instead')
-
-        s, b = intervals_to_join[0], intervals_to_join[1]
         assert s.bits == b.bits
         w = s.bits
 
@@ -2457,82 +2407,84 @@ class StridedInterval(BackendObject):
             return s
 
         if s.is_integer and b.is_integer:
-            u = max(s.upper_bound, b.upper_bound)
-            l = min(s.lower_bound, b.lower_bound)
+            u = max(s.upper_bound, b.upper_bound) if smart_join else b.upper_bound
+            l = min(s.lower_bound, b.lower_bound) if smart_join else s.lower_bound
             stride = abs(u - l)
-            return StridedInterval(bits=s.bits, stride=stride, lower_bound=l, upper_bound=u)
+            return StridedInterval(bits=w, stride=stride, lower_bound=l, upper_bound=u)
 
         #
         # Other cases
         #
 
-        # Determine the new stride
-        if s.is_integer:
-            new_stride = fractions.gcd(s._modular_sub(s.lower_bound, b.lower_bound, s.bits), b.stride)
-        elif b.is_integer:
-            new_stride = fractions.gcd(s.stride, s._modular_sub(b.lower_bound, s.lower_bound, s.bits))
-        else:
-            new_stride = fractions.gcd(s.stride, b.stride)
-
-        # Then we have different cases
-
         if s._wrapped_lte(b):
-            # Containment
-            return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
+            # Containment: s <= b
+            new_stride = StridedInterval.gcd(s.stride, b.stride) if s.is_interval else b.stride
+            new_stride = StridedInterval.gcd(new_stride, s._modular_sub(s.lower_bound, b.lower_bound, w))
+            return StridedInterval(bits=w, stride=new_stride, lower_bound=b.lower_bound,
                                    upper_bound=b.upper_bound)
 
         elif b._wrapped_lte(s):
-            # Containment
+            # Containment: b <= s
             # TODO: This case is missing in the original implementation. Is that a bug?
-            return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
+            new_stride = StridedInterval.gcd(s.stride, b.stride) if b.is_interval else s.stride
+            new_stride = StridedInterval.gcd(new_stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
+            return StridedInterval(bits=w, stride=new_stride, lower_bound=s.lower_bound,
                                    upper_bound=s.upper_bound)
 
         elif (s._wrapped_member(b.lower_bound) and s._wrapped_member(b.upper_bound) and
             b._wrapped_member(s.lower_bound) and b._wrapped_member(s.upper_bound)):
             # The union of them covers the entire sphere
-
-            return StridedInterval.top(s.bits)
+            return StridedInterval.top(w)
 
         elif s._wrapped_member(b.lower_bound):
-            # Overlapping
-            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
-            return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
+            # Overlapping. Nor s or b are integer here.
+            # We return the join with less values
+            new_stride = StridedInterval.gcd(s.stride, b.stride)
+            new_stride = StridedInterval.gcd(new_stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
+            return StridedInterval(bits=w, stride=new_stride, lower_bound=s.lower_bound,
+                                    upper_bound=b.upper_bound)
+        elif b._wrapped_member(s.lower_bound):
+            # Overlapping. Nor s or b are integer here.
+            # We return the join with less values
+            new_stride = StridedInterval.gcd(s.stride, b.stride)
+            new_stride = StridedInterval.gcd(new_stride, s._modular_sub(s.lower_bound, b.lower_bound, w))
+            return StridedInterval(bits=w, stride=new_stride, lower_bound=b.lower_bound,
+                                   upper_bound=s.upper_bound)
+        else:
+            # no overlapping.
+            # we join the two intervals according on the order they are given
+            if not smart_join:
+                if s.is_integer:
+                    new_stride = StridedInterval.gcd(b.stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
+                elif b.is_integer:
+                    new_stride = StridedInterval.gcd(s.stride, s._modular_sub(b.lower_bound, s.lower_bound, w))
+                else:
+                    new_stride = StridedInterval.gcd(s.stride, b.stride)
+                    new_stride = StridedInterval.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
+                return StridedInterval(bits=w, stride=new_stride, lower_bound=s.lower_bound, upper_bound=b.upper_bound)
+
+            # Else: smart join.
+            # we return the join which produce an interval with the least number of values
+            if s.is_integer:
+                new_stride = b.stride
+            elif b.is_integer:
+                new_stride = s.stride
+            else:
+                new_stride = StridedInterval.gcd(s.stride, b.stride)
+
+            # from b to s
+            new_stride1 = StridedInterval.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
+            # from s to b
+            new_stride2 = StridedInterval.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
+            si1 = StridedInterval(bits=w, stride=new_stride1, lower_bound=b.lower_bound,
+                                   upper_bound=s.upper_bound)
+            si2 = StridedInterval(bits=w, stride=new_stride2, lower_bound=s.lower_bound,
                                    upper_bound=b.upper_bound)
 
-        elif b._wrapped_member(s.lower_bound):
-            # Overlapping
-
-            new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
-            return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
-                                   upper_bound=s.upper_bound)
-
-        else:
-            card_1 = s._wrapped_cardinality(s.upper_bound, b.lower_bound, s.bits)
-            card_2 = s._wrapped_cardinality(b.upper_bound, s.lower_bound, s.bits)
-
-            if card_1 == card_2:
-                # Left/right leaning cases
-                if s._lex_lt(s.lower_bound, b.lower_bound, s.bits):
-                    new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
-                    return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
-                                           upper_bound=b.upper_bound)
-
-                else:
-                    new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
-                    return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
-                                           upper_bound=s.upper_bound)
-
-            elif card_1 < card_2:
-                # non-overlapping case (left)
-                new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(s.lower_bound, b.lower_bound, w) - 1)
-                return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=s.lower_bound,
-                                       upper_bound=b.upper_bound)
-
+            if si1.n_values <= si2.n_values:
+                return si1
             else:
-                # non-overlapping case (right)
-                new_stride = fractions.gcd(new_stride, StridedInterval._wrapped_cardinality(b.lower_bound, s.lower_bound, w) - 1)
-                return StridedInterval(bits=s.bits, stride=new_stride, lower_bound=b.lower_bound,
-                                       upper_bound=s.upper_bound)
+                return si2
 
     @staticmethod
     def _minimal_common_integer(si_0, si_1):
@@ -2985,7 +2937,7 @@ class StridedInterval(BackendObject):
             ret = self
 
         else:
-            new_stride = fractions.gcd(self.stride, b.stride)
+            new_stride = StridedInterval.gcd(self.stride, b.stride)
             l = StridedInterval.lower(self.bits, self.lower_bound, new_stride) if b.lower_bound < self.lower_bound else self.lower_bound
             u = StridedInterval.upper(self.bits, self.upper_bound, new_stride) if b.upper_bound > self.upper_bound else self.upper_bound
             if new_stride == 0:
