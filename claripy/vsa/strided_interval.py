@@ -1046,8 +1046,13 @@ class StridedInterval(BackendObject):
     @property
     @reversed_processor
     def max(self):
+        """
+        Treat this StridedInterval as a set of unsigned numbers, and return the greatest one
+        :return: the greatest number in this StridedInterval when evaluated as unsigned, or None if empty
+        """
         if not self.is_empty:
-            return self.upper_bound
+            splitted = self._ssplit()
+            return splitted[0].upper_bound
         else:
             # It is empty!
             return None
@@ -1055,15 +1060,20 @@ class StridedInterval(BackendObject):
     @property
     @reversed_processor
     def min(self):
+        """
+        Treat this StridedInterval as a set of unsigned numbers, and return the smallest one
+        :return: the smallest number in this StridedInterval when evaluated as unsigned, or None if empty
+        """
         if not self.is_empty:
-            return self.lower_bound
+            splitted = self._ssplit()
+            return splitted[-1].lower_bound
         else:
             # It is empty
             return None
 
     @property
     def unique(self):
-        return self.min is not None and self.min == self.max
+        return self.lower_bound is not None and self.lower_bound == self.upper_bound
 
     def _min_bits(self):
         v = self._upper_bound
