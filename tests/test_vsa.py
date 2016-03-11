@@ -932,7 +932,19 @@ def test_solution():
     nose.tools.assert_false(s.solution(vs, 18))
     nose.tools.assert_false(s.solution(vs, 322))
 
+def test_reasonable_bounds():
+    si = claripy.SI(bits=32, stride=1, lower_bound=-20, upper_bound=-10)
+    b = claripy.backends.vsa
+    assert b.max(si) == 0xfffffff6
+    assert b.min(si) == 0xffffffec
+
+    si = claripy.SI(bits=32, stride=1, lower_bound=-20, upper_bound=10)
+    b = claripy.backends.vsa
+    assert b.max(si) == 0xffffffff
+    assert b.min(si) == 0
+
 if __name__ == '__main__':
+    test_reasonable_bounds()
     test_reversed_concat()
     test_fucked_extract()
     test_simple_cardinality()
