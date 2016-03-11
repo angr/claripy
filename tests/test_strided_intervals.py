@@ -12,6 +12,8 @@ from  claripy.vsa import StridedInterval
 l = logging.getLogger("angr_tests")
 
 def check_si_fields(si, stride, lb, ub):
+    lb &= si.max_int(si.bits)
+    ub &= si.max_int(si.bits)
     if si.stride != stride:
         return False
     if si.lower_bound != lb:
@@ -264,9 +266,9 @@ def test_subtraction():
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=6)
-    # Result should be 1,[15, 1]
+    # Result should be 1,[-5, 5]
     # print str(op1.sub(op2))
-    assert check_si_fields(op1.sub(op2), 1, 11, 5)
+    assert check_si_fields(op1.sub(op2), 1, -5, 5)
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=2)
@@ -276,7 +278,7 @@ def test_subtraction():
     op1 = StridedInterval(bits=4, stride=1, lower_bound=-2, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=2)
     # Result should be 1,[-4, 5]
-    assert check_si_fields(op1.sub(op2), 1, 12, 5)
+    assert check_si_fields(op1.sub(op2), 1, -4, 5)
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=0, upper_bound=0)
@@ -285,7 +287,7 @@ def test_subtraction():
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-5, upper_bound=-1)
-    # Result should be 1,[6, 8]
+    # Result should be 1,[2, 12]
     # print str(op1.sub(op2))
     assert check_si_fields(op1.sub(op2), 1, 2, 12)
 
@@ -297,7 +299,7 @@ def test_subtraction():
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=2, lower_bound=2, upper_bound=6)
-    # Result should be 1,[15, 1]
+    # Result should be 1,[11, 5]
     assert check_si_fields(op1.sub(op2), 1, 11, 5)
 
 
@@ -332,7 +334,7 @@ def test_add():
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-5, upper_bound=-1)
     # Result should be 1,[-4, 6]
-    assert check_si_fields(op1.add(op2), 1, 12, 6)
+    assert check_si_fields(op1.add(op2), 1, -4, 6)
 
     # Strided Tests
     op1 = StridedInterval(bits=4, stride=2, lower_bound=-2, upper_bound=7)
