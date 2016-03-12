@@ -282,7 +282,13 @@ class Base(ana.Storable):
     def _type_name(self):
         return self.__class__.__name__
 
-    def __repr__(self, inner=False, explicit_length=False):
+    def shallow_repr(self, max_depth=8):
+        return self.__repr__(max_depth=max_depth)
+
+    def __repr__(self, inner=False, max_depth=None, explicit_length=False):
+        if max_depth is not None and self.depth < max_depth:
+            return '<...>'
+
         if WORKER:
             return '<AST something>'
 
@@ -307,30 +313,30 @@ class Base(ana.Storable):
                     value = format(self.args[0], '#x')
                 value += ('#' + str(self.length)) if explicit_length else ''
             elif op == 'If':
-                value = 'if {} then {} else {}'.format(_inner_repr(args[0]),
-                                                       _inner_repr(args[1]),
-                                                       _inner_repr(args[2]))
+                value = 'if {} then {} else {}'.format(_inner_repr(args[0], max_depth=max_depth),
+                                                       _inner_repr(args[1], max_depth=max_depth),
+                                                       _inner_repr(args[2], max_depth=max_depth))
                 if inner:
                     value = '({})'.format(value)
             elif op == 'Not':
-                value = '!{}'.format(_inner_repr(args[0]))
+                value = '!{}'.format(_inner_repr(args[0], max_depth=max_depth))
             elif op == 'Extract':
-                value = '{}[{}:{}]'.format(_inner_repr(args[2]), args[0], args[1])
+                value = '{}[{}:{}]'.format(_inner_repr(args[2], max_depth=max_depth), args[0], args[1])
             elif op == 'ZeroExt':
-                value = '0#{} .. {}'.format(args[0], _inner_repr(args[1]))
+                value = '0#{} .. {}'.format(args[0], _inner_repr(args[1], max_depth=max_depth))
                 if inner:
                     value = '({})'.format(value)
             elif op == 'Concat':
-                value = ' .. '.join(_inner_repr(a, explicit_length=True) for a in self.args)
+                value = ' .. '.join(_inner_repr(a, explicit_length=True, max_depth=max_depth) for a in self.args)
             elif len(args) == 2 and op in operations.infix:
-                value = '{} {} {}'.format(_inner_repr(args[0]),
+                value = '{} {} {}'.format(_inner_repr(args[0], max_depth=max_depth),
                                           operations.infix[op],
-                                          _inner_repr(args[1]))
+                                          _inner_repr(args[1], max_depth=max_depth))
                 if inner:
                     value = '({})'.format(value)
             else:
                 value = "{}({})".format(op,
-                                        ', '.join(_inner_repr(a) for a in args))
+                                        ', '.join(_inner_repr(a, max_depth=max_depth) for a in args))
 
             if not inner:
                 value = '<{} {}>'.format(self._type_name(), value)
