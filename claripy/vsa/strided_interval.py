@@ -2051,7 +2051,6 @@ class StridedInterval(BackendObject):
         for a, b in [[s, t], [t, s]]:
             if a.is_integer and number_of_ones(a.lower_bound) == 1:
                 if a.lower_bound == (1 << (t.bits - 1)):
-                    is_sol = (a.lower_bound - b.lower_bound) % b.stride == 0 and b.lower_bound <= a.lower_bound <= b.upper_bound
                     # It's testing the sign bit
                     stride = 1 << (a.bits - 1)
                     if b.is_integer:
@@ -2060,6 +2059,7 @@ class StridedInterval(BackendObject):
                         else:
                             return StridedInterval(bits=b.bits, stride=0, lower_bound=0, upper_bound=0)
                     else:
+                        is_sol = (a.lower_bound - b.lower_bound) % b.stride == 0 and b.lower_bound <= a.lower_bound <= b.upper_bound
                         if is_sol:
                             return StridedInterval(bits=b.bits, stride=stride, lower_bound=0, upper_bound=stride)
                         else:
