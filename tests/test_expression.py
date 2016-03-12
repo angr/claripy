@@ -316,7 +316,20 @@ def test_true_false_cache():
 
     claripy.backends._quick_backends[-1:] = [ ]
 
+def test_depth_repr():
+    x = claripy.BVS("x", 32)
+    y = claripy.LShR(x, 10)
+    y = claripy.LShR(y, 10)
+    y = claripy.LShR(y, 10)
+    y = claripy.LShR(y, 10)
+    y = claripy.LShR(y, 10)
+    y = claripy.LShR(y, 10)
+    y = claripy.LShR(y, 10)
+    print(y.shallow_repr(max_depth=5))
+    nose.tools.assert_equal(y.shallow_repr(max_depth=5), "<BV32 LShR(LShR(LShR(LShR(<...>, <...>), <...>), <...>), <...>)>")
+
 if __name__ == '__main__':
+    test_depth_repr()
     test_extract()
     test_true_false_cache()
     test_smudging()
