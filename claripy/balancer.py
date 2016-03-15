@@ -219,7 +219,8 @@ class Balancer(object):
                 return truism
 
             if not backends.vsa.identical(inner_aligned, truism):
-                import ipdb; ipdb.set_trace()
+                l.critical("ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.", truism.op, truism.args[0].op)
+                return truism
 
             try:
                 balancer = getattr(self, "_balance_%s" % inner_aligned.args[0].op)
