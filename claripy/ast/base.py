@@ -160,7 +160,7 @@ class Base(ana.Storable):
 
         @returns a hash
         '''
-        to_hash = (op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+        to_hash = (op, tuple(a if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.

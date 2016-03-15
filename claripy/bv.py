@@ -56,7 +56,7 @@ class BVV(BackendObject):
 
     @value.setter
     def value(self, v):
-        self._value = v % self.mod
+        self._value = v & (self.mod - 1)
 
     @property
     def signed(self):
