@@ -9,19 +9,17 @@ class Bool(Base):
         return BoolV(val)
 
     def is_true(self):
-        '''
-        Returns True if 'self' can be easily determined to be True.
-        Otherwise, return False. Note that the AST *might* still be True (i.e.,
-        if it were simplified via Z3), but it's hard to quickly tell that.
-        '''
+        """
+        Returns True if 'self' can be easily determined to be True. Otherwise, return False. Note that the AST *might* 
+        still be True (i.e., if it were simplified via Z3), but it's hard to quickly tell that.
+        """
         return is_true(self)
 
     def is_false(self):
-        '''
-        Returns True if 'self' can be easily determined to be False.
-        Otherwise, return False. Note that the AST *might* still be False (i.e.,
-        if it were simplified via Z3), but it's hard to quickly tell that.
-        '''
+        """
+        Returns True if 'self' can be easily determined to be False. Otherwise, return False. Note that the AST *might*
+        still be False (i.e., if it were simplified via Z3), but it's hard to quickly tell that.
+        """
         return is_false(self)
 
     def _simplify_And(self):
@@ -51,15 +49,14 @@ class Bool(Base):
             return Bool(self.op, new_args)
 
 def BoolS(name, explicit_name=None):
-    '''
+    """
     Creates a boolean symbol (i.e., a variable).
 
-    @param name: the name of the symbol
-    @param explicit_name: if False, an identifier is appended to the name to ensure
-                          uniqueness.
+    :param name:            The name of the symbol
+    :param explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
 
-    @returns a Bool object representing this symbol
-    '''
+    :return:                A Bool object representing this symbol.
+    """
     n = _make_name(name, -1, False if explicit_name is None else explicit_name)
     return Bool('BoolS', (n,), variables={n}, symbolic=True)
 
@@ -167,11 +164,12 @@ def ite_cases(cases, default):
     return sofar
 
 def constraint_to_si(expr):
-    '''
-    Convert a constraint to SI if possible
+    """
+    Convert a constraint to SI if possible.
+
     :param expr:
     :return:
-    '''
+    """
 
     satisfiable = True
     replace_list = [ ]

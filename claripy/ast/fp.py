@@ -19,28 +19,26 @@ class FP(Bits):
         return fp.FSort.from_size(self.length)
 
 def FPS(name, sort, explicit_name=None):
-    '''
+    """
     Creates a floating-point symbol.
 
-    @param name: the name of the symbol
-    @param sort: the sort of the floating point
-    @param explicit_name: if False, an identifier is appended to the name to ensure
-                          uniqueness.
-
-    @return an FP AST
-    '''
+    :param name:            The name of the symbol
+    :param sort:            The sort of the floating point
+    :param explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
+    :return:                An FP AST.
+    """
 
     n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
     return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length)
 
 def FPV(value, sort):
-    '''
+    """
     Creates a concrete floating-point value.
 
-    @param value: the value of the floating point
-    @param sort: the sort of the floating point
-    @return an FP AST
-    '''
+    :param value:   The value of the floating point.
+    :param sort:    The sort of the floating point.
+    :return:        An FP AST.
+    """
     return FP('FPV', (value, sort), length=sort.length)
 
 #

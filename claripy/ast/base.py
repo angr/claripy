@@ -46,7 +46,7 @@ def _make_name(name, size, explicit_name=False, prefix=""):
 
 
 class Base(ana.Storable):
-    '''
+    """
     An AST tracks a tree of operations on arguments. It has the following methods:
 
         op: the operation that is being done on the arguments
@@ -62,7 +62,7 @@ class Base(ana.Storable):
         assert c is d
 
     This is done to better support serialization and better manage memory.
-    '''
+    """
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
@@ -74,26 +74,25 @@ class Base(ana.Storable):
     UNSIMPLIFIED=0
 
     def __new__(cls, op, args, **kwargs):
-        '''
+        """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
         a hash. If an AST of this hash already exists, it returns that AST. Otherwise,
         it creates, initializes, and returns the AST.
 
-        @param op: the AST operation ('__add__', 'Or', etc)
-        @param args: the arguments to the AST operation (i.e., the objects to add)
-        @param variables: the symbolic variables present in the AST (default: empty set)
-        @param symbolic: a flag saying whether or not the AST is symbolic (default: False)
-        @param length: an integer specifying the length of this AST (default: None)
-        @param collapsible: a flag of whether or not Claripy can feel free to collapse this AST.
-                            This is mostly used to keep Claripy from collapsing Reverse operations,
-                            so that they can be undone with another Reverse.
-        @param simplified: a measure of how simplified this AST is. 0 means unsimplified, 1 means
-                           fast-simplified (basically, just undoing the Reverse op), and 2 means
-                           simplified through z3.
-        @param errored: a set of backends that are known to be unable to handle this AST.
-        @param eager_backends: a list of backends with which to attempt eager evaluation
-        '''
+        :param op:              The AST operation ('__add__', 'Or', etc)
+        :param args:            The arguments to the AST operation (i.e., the objects to add)
+        :param variables:       The symbolic variables present in the AST (default: empty set)
+        :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
+        :param length:          An integer specifying the length of this AST (default: None)
+        :param collapsible:     A flag of whether or not Claripy can feel free to collapse this AST. This is mostly used
+                                to keep Claripy from collapsing Reverse operations, so that they can be undone with
+                                another Reverse.
+        :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
+                                (basically, just undoing the Reverse op), and 2 means simplified through z3.
+        :param errored:         A set of backends that are known to be unable to handle this AST.
+        :param eager_backends:  A list of backends with which to attempt eager evaluation
+        """
 
         #if any(isinstance(a, BackendObject) for a in args):
         #   raise Exception('asdf')
@@ -151,16 +150,18 @@ class Base(ana.Storable):
 
     @staticmethod
     def _calc_hash(op, args, k):
-        '''
+        """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
-        @param op: the operation
-        @param args: the arguments to the operation
-        @param kwargs: a dict including the 'symbolic', 'variables', and 'length' items
+        :param op:      The operation.
+        :param args:    The arguments to the operation.
+        :param kwargs:  A dict including the 'symbolic', 'variables', and 'length' items.
 
-        @returns a hash
-        '''
+        :returns:       a hash.
+
+        """
         to_hash = (op, tuple(a if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
@@ -172,9 +173,9 @@ class Base(ana.Storable):
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None): #pylint:disable=unused-argument
-        '''
+        """
         Initializes an AST. Takes the same arguments as Base.__new__()
-        '''
+        """
         self.op = op
         self.args = args
         self.length = length
@@ -203,12 +204,12 @@ class Base(ana.Storable):
     #pylint:enable=attribute-defined-outside-init
 
     def make_uuid(self, uuid=None):
-        '''
-        This overrides the default ANA uuid with the hash of the AST. UUID is slow,
-        and we'll soon replace it from ANA itself, and this will go away.
+        """
+        This overrides the default ANA uuid with the hash of the AST. UUID is slow, and we'll soon replace it from ANA
+        itself, and this will go away.
 
-        @returns a string representation of the AST hash.
-        '''
+        :returns: a string representation of the AST hash.
+        """
         u = getattr(self, '_ana_uuid', None)
         if u is None:
             u = str(self._hash) if uuid is None else uuid
@@ -232,14 +233,14 @@ class Base(ana.Storable):
     #
 
     def _ana_getstate(self):
-        '''
+        """
         Support for ANA serialization.
-        '''
+        """
         return self.op, self.args, self.length, self.variables, self.symbolic, self._hash
     def _ana_setstate(self, state):
-        '''
+        """
         Support for ANA deserialization.
-        '''
+        """
         op, args, length, variables, symbolic, h = state
         Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic)
         self._hash = h
@@ -348,17 +349,15 @@ class Base(ana.Storable):
 
     @property
     def depth(self):
-        '''
-        The depth of this AST. For example, an AST representing (a+(b+c)) would have
-        a depth of 2.
-        '''
+        """
+        The depth of this AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
+        """
         return self._depth()
 
     def _depth(self, memoized=None):
         """
-        :param memoized: dict of ast hashes to depths we've seen before
-        :return: the depth of the AST. For example, an AST representing (a+(b+c)) would have
-        a depth of 2.
+        :param memoized:    A dict of ast hashes to depths we've seen before
+        :return:            The depth of the AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
         """
         if memoized is None:
             memoized = dict()
@@ -421,8 +420,9 @@ class Base(ana.Storable):
     def _replace(self, replacements, variable_set=None):
         """
         A helper for replace().
-        :param variable_set: for optimization, ast's without these variables are not checked for replacing
-        :param replacements: dictionary of hashes to their replacements
+
+        :param variable_set: For optimization, ast's without these variables are not checked for replacing.
+        :param replacements: A dictionary of hashes to their replacements.
         """
         try:
             if variable_set is None:
@@ -459,9 +459,9 @@ class Base(ana.Storable):
             return self
 
     def swap_args(self, new_args, new_length=None):
-        '''
+        """
         This returns the same AST, with the arguments swapped out for new_args.
-        '''
+        """
 
         if len(self.args) == len(new_args) and all(a is b for a,b in zip(self.args, new_args)):
             return self
@@ -479,22 +479,22 @@ class Base(ana.Storable):
     #
 
     def split(self, split_on):
-        '''
-        Splits the AST if its operation is split_on (i.e., return all the arguments).
-        Otherwise, return a list with just the AST.
-        '''
+        """
+        Splits the AST if its operation is `split_on` (i.e., return all the arguments). Otherwise, return a list with
+        just the AST.
+        """
         if self.op in split_on: return list(self.args)
         else: return [ self ]
 
     # we don't support iterating over Base objects
     def __iter__(self):
-        '''
+        """
         This prevents people from iterating over ASTs.
-        '''
+        """
         raise ClaripyOperationError("Please don't iterate over, or split, AST nodes!")
 
     def __nonzero__(self):
-        '''
+        """
         This prevents people from accidentally using an AST as a condition. For
         example, the following was previously common:
 
@@ -505,7 +505,7 @@ class Base(ana.Storable):
         The problem is that `a == b` would return an AST, because an AST can be symbolic
         and there could be no way to actually know the value of that without a
         constraint solve. This caused tons of issues.
-        '''
+        """
         raise ClaripyOperationError('testing Expressions for truthiness does not do what you want, as these expressions can be symbolic')
 
     def structurally_match(self, o):
@@ -547,17 +547,17 @@ class Base(ana.Storable):
         return True
 
     def replace(self, old, new):
-        '''
-        Returns an AST with all instances of the AST 'old' replaced with AST 'new'
-        '''
+        """
+        Returns an AST with all instances of the AST 'old' replaced with AST 'new'.
+        """
         self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
         return self._replace(replacements, variable_set=old.variables)
 
     def replace_dict(self, replacements):
         """
-        :param replacements: a dictionary of asts to replace and their replacements
-        :return: an AST with all instances of ast's in replacements
+        :param replacements:    A dictionary of asts to replace and their replacements.
+        :return:                An AST with all instances of ast's in replacements.
         """
         #for old, new in replacements.items():
         #   old = old.ast
@@ -683,10 +683,10 @@ class Base(ana.Storable):
 
     @property
     def ite_burrowed(self):
-        '''
-        Returns an equivalent AST that "burrows" the ITE expressions
-        as deep as possible into the ast, for simpler printing.
-        '''
+        """
+        Returns an equivalent AST that "burrows" the ITE expressions as deep as possible into the ast, for simpler
+        printing.
+        """
         if self._burrowed is None:
             self._burrowed = self._burrow_ite() #pylint:disable=attribute-defined-outside-init
             self._burrowed._burrowed = self._burrowed
@@ -694,11 +694,10 @@ class Base(ana.Storable):
 
     @property
     def ite_excavated(self):
-        '''
-        Returns an equivalent AST that "excavates" the ITE expressions
-        out as far as possible toward the root of the AST, for processing
-        in static analyses.
-        '''
+        """
+        Returns an equivalent AST that "excavates" the ITE expressions out as far as possible toward the root of the
+        AST, for processing in static analyses.
+        """
         if self._excavated is None:
             self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
 
@@ -739,10 +738,10 @@ class Base(ana.Storable):
     @property
     def uninitialized(self):
         """
-        Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic execution
-        mode.
+        Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic
+        execution mode.
 
-        :return: True/False/None (unspecified)
+        :return: True/False/None (unspecified).
         """
 
         #TODO: It should definitely be moved to the proposed Annotation backend.
@@ -766,8 +765,12 @@ class Base(ana.Storable):
 
     @property
     def model(self):
-        l.critical("DEPRECATION WARNING: do not use AST.model. It is deprecated, no longer does what is expected, and will soon be removed. If you *need* to access the model use AST._model_X where X is the backend that you are interested in.")
-        print "DEPRECATION WARNING: do not use AST.model. It is deprecated, no longer does what is expected, and will soon be removed. If you *need* to access the model use AST._model_X where X is the backend that you are interested in."
+        l.critical("DEPRECATION WARNING: do not use AST.model. It is deprecated, no longer does what is expected, and "
+                   "will soon be removed. If you *need* to access the model use AST._model_X where X is the backend "
+                   "that you are interested in.")
+        print("DEPRECATION WARNING: do not use AST.model. It is deprecated, no longer does what is expected, and will "
+              "soon be removed. If you *need* to access the model use AST._model_X where X is the backend that you are "
+              "interested in.")
         return self._model_concrete if self._model_concrete is not self else \
                self._model_vsa if self._model_vsa is not self else \
                self._model_z3 if self._model_z3 is not self else \

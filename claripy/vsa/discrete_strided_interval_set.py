@@ -94,6 +94,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def cardinality(self):
         """
         This is an over-approximation of the cardinality of this DSIS.
+
         :return:
         """
         cardinality = 0
@@ -119,7 +120,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def collapse(self):
         """
         Collapse into a StridedInterval instance.
-        :return: A new StridedInterval instance
+
+        :return: A new StridedInterval instance.
         """
 
         if self.cardinality:
@@ -135,8 +137,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def normalize(self):
         """
-        Return the collapsed object if should_collapse() is True, otherwise return self.
-        :return: A DiscreteStridedIntervalSet object
+        Return the collapsed object if ``should_collapse()`` is True, otherwise return self.
+
+        :return: A DiscreteStridedIntervalSet object.
         """
         if self.should_collapse(): return self.collapse()
         elif self.number_of_values == 1: return list(self._si_set)[0]
@@ -161,8 +164,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __eq__(self, o):
         """
         Operation ==
-        :param o: The other operand
-        :return: An instance of BoolResult
+
+        :param o:   The other operand.
+        :return:    An instance of BoolResult.
         """
 
         return (self.collapse() == o)
@@ -172,8 +176,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __ne__(self, o):
         """
         Operation !=
-        :param o: The other operand
-        :return: An instance of BoolResult
+
+        :param o:   The other operand.
+        :return:    An instance of BoolResult.
         """
 
         return (self.collapse() != o)
@@ -183,8 +188,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __gt__(self, o):
         """
         Operation >
-        :param o: The other operand
-        :return: An instance of BoolResult
+
+        :param o:   The other operand.
+        :return:    An instance of BoolResult.
         """
 
         return (self.collapse() > o)
@@ -194,8 +200,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __le__(self, o):
         """
         Operation <=
-        :param o: The other operand
-        :return: An instance of BoolResult
+
+        :param o:   The other operand.
+        :return:    An instance of BoolResult.
         """
 
         return (self.collapse() <= o)
@@ -205,8 +212,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __lt__(self, o):
         """
         Operation <
-        :param o: The other operand
-        :return: And instance of BoolResult
+
+        :param o:   The other operand.
+        :return:    An instance of BoolResult.
         """
         return (self.collapse() < o)
 
@@ -217,8 +225,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __and__(self, o):
         """
         Operation &
-        :param o: The other operand
-        :return: An instance of DiscreteStridedIntervalSet
+
+        :param o:   The other operand.
+        :return:    An instance of DiscreteStridedIntervalSet.
         """
         pass
 
@@ -230,8 +239,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __or__(self, o):
         """
         Operation |
-        :param o: The other operand
-        :return: An instance of DiscreteStridedIntervalSet
+
+        :param o:   The other operand.
+        :return:    An instance of DiscreteStridedIntervalSet.
         """
         pass
 
@@ -243,8 +253,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __xor__(self, o):
         """
         Operation ^
-        :param o: The other operand
-        :return: An instance of DiscreteStridedIntervalSet
+
+        :param o:   The other operand.
+        :return:    An instance of DiscreteStridedIntervalSet.
         """
         pass
 
@@ -254,7 +265,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __neg__(self):
         """
         Operation ~
-        :return: The negated value
+
+        :return: The negated value.
         """
         new_si_set = set()
         for si in self._si_set:
@@ -266,7 +278,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __invert__(self):
         """
         Operation ~
-        :return: The negated value
+
+        :return: The negated value.
         """
         return self.__neg__()
 
@@ -274,8 +287,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __lshift__(self, o):
         """
         Operation <<
-        :param o: The other operand
-        :return: An instance of DiscreteStridedIntervalSet
+
+        :param o:   The other operand.
+        :return:    An instance of DiscreteStridedIntervalSet.
         """
         pass
 
@@ -283,8 +297,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __rshift__(self, o):
         """
         Operation >>
-        :param o: The other operand
-        :return: An instance of DiscreteStridedIntervalSet
+
+        :param o:   The other operand.
+        :return:    An instance of DiscreteStridedIntervalSet.
         """
         pass
 
@@ -292,17 +307,19 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def concat(self, b):
         """
         Operation concat
-        :param b: The other operand to concatenate with
-        :return: The concatenated value
+
+        :param b:   The other operand to concatenate with.
+        :return:    The concatenated value.
         """
         pass
 
     def extract(self, high_bit, low_bit):
         """
         Operation extract
-        :param high_bit: The highest bit to begin extraction
-        :param low_bit: The lowest bit to end extraction
-        :return: Extracted bits
+
+        :param high_bit:    The highest bit to begin extraction.
+        :param low_bit:     The lowest bit to end extraction.
+        :return:            Extracted bits.
         """
         # TODO: This method can be optimized
 
@@ -325,7 +342,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __add__(self, o):
         """
         Operation +
-        :param o: The other operand
+
+        :param o:   The other operand.
         :return:
         """
         pass
@@ -338,7 +356,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __sub__(self, o):
         """
         Operation -
-        :param o: The other operand
+
+        :param o:   The other operand.
         :return:
         """
         pass
@@ -351,7 +370,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __div__(self, o):
         """
         Operation /
-        :param o: The other operand
+
+        :param o:   The other operand.
         :return:
         """
         pass
@@ -364,7 +384,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def __mod__(self, o):
         """
         Operation %
-        :param o: The other operand
+
+        :param o:   The other operand.
         :return:
         """
         pass
@@ -418,8 +439,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def sign_extend(self, new_length):
         """
         Operation SignExt
-        :param new_length: The length to extend to
-        :return: SignExtended value
+
+        :param new_length:  The length to extend to.
+        :return:            SignExtended value.
         """
         pass
 
@@ -427,17 +449,19 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def zero_extend(self, new_length):
         """
         Operation ZeroExt
-        :param new_length: The length to extend to
-        :return: ZeroExtended value
+
+        :param new_length:  The length to extend to.
+        :return:            ZeroExtended value.
         """
         pass
 
     @collapse_operand
     def widen(self, b):
         """
-        Widening operator
-        :param b: The other operand
-        :return: The widened result
+        Widening operator.
+
+        :param b:   The other operand.
+        :return:    The widened result.
         """
         return self.collapse().widen(b)
 
@@ -448,6 +472,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     def _union_with_si(self, si):
         """
         Union with another StridedInterval.
+
         :param si:
         :return:
         """
@@ -464,7 +489,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def _union_with_dsis(self, dsis):
         """
-        Union with another DiscreteStridedIntervalSet
+        Union with another DiscreteStridedIntervalSet.
+
         :param dsis:
         :return:
         """
@@ -481,7 +507,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def _intersection_with_si(self, si):
         """
-        Intersection with another StridedInterval
+        Intersection with another :class:`StridedInterval`.
+
         :param si: The other operand
         :return:
         """
@@ -503,8 +530,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def _intersection_with_dsis(self, dsis):
         """
-        Intersection with another DiscreteStridedIntervalSet
-        :param dsis: The other operand
+        Intersection with another :class:`DiscreteStridedIntervalSet`.
+
+        :param dsis:    The other operand.
         :return:
         """
 

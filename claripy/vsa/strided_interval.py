@@ -21,9 +21,9 @@ def reversed_processor(f):
 def normalize_types(f):
     @functools.wraps(f)
     def normalizer(self, o):
-        '''
+        """
         Convert any object to an object that we can process.
-        '''
+        """
         # Special handler for union
         if f.__name__ == 'union' and isinstance(o, DiscreteStridedIntervalSet):
             return o.union(self)
@@ -114,7 +114,8 @@ class WarrenMethods(object):
     @staticmethod
     def min_or(a, b, c, d, w):
         """
-        Lower bound of result of ORing 2-intervals
+        Lower bound of result of ORing 2-intervals.
+
         :param a: Lower bound of first interval
         :param b: Upper bound of first interval
         :param c: Lower bound of second interval
@@ -140,7 +141,8 @@ class WarrenMethods(object):
     @staticmethod
     def max_or(a, b, c, d, w):
         """
-        Upper bound of result of ORing 2-intervals
+        Upper bound of result of ORing 2-intervals.
+
         :param a: Lower bound of first interval
         :param b: Upper bound of first interval
         :param c: Lower bound of second interval
@@ -165,7 +167,8 @@ class WarrenMethods(object):
     @staticmethod
     def min_and(a, b, c, d, w):
         """
-        Lower bound of result of ANDing 2-intervals
+        Lower bound of result of ANDing 2-intervals.
+
         :param a: Lower bound of first interval
         :param b: Upper bound of first interval
         :param c: Lower bound of second interval
@@ -190,7 +193,8 @@ class WarrenMethods(object):
     @staticmethod
     def max_and(a, b, c, d, w):
         """
-        Upper bound of result of ANDing 2-intervals
+        Upper bound of result of ANDing 2-intervals.
+
         :param a: Lower bound of first interval
         :param b: Upper bound of first interval
         :param c: Lower bound of second interval
@@ -216,7 +220,8 @@ class WarrenMethods(object):
     @staticmethod
     def min_xor(a, b, c, d, w):
         """
-        Lower bound of result of XORing 2-intervals
+        Lower bound of result of XORing 2-intervals.
+
         :param a: Lower bound of first interval
         :param b: Upper bound of first interval
         :param c: Lower bound of second interval
@@ -240,7 +245,8 @@ class WarrenMethods(object):
     @staticmethod
     def max_xor(a, b, c, d, w):
         """
-        Upper bound of result of XORing 2-intervals
+        Upper bound of result of XORing 2-intervals.
+
         :param a: Lower bound of first interval
         :param b: Upper bound of first interval
         :param c: Lower bound of second interval
@@ -358,7 +364,8 @@ class StridedInterval(BackendObject):
 
     def eval(self, n, signed=False):
         """
-        Evaluate this StridedInterval to obtain a list of concrete integers
+        Evaluate this StridedInterval to obtain a list of concrete integers.
+
         :param n: Upper bound for the number of concrete integers
         :param signed: Treat this StridedInterval as signed or unsigned
         :return: A list of at most `n` concrete integers
@@ -431,7 +438,7 @@ class StridedInterval(BackendObject):
 
     def _nsplit(self):
         """
-        Split `self` at the north pole, which is the same as in signed arithmetic
+        Split `self` at the north pole, which is the same as in signed arithmetic.
 
         :return: A list of split StridedIntervals
         """
@@ -454,10 +461,12 @@ class StridedInterval(BackendObject):
 
         if straddling:
             a_upper_bound = north_pole_left - ((north_pole_left - self.lower_bound) % self.stride)
-            a = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=self.lower_bound, upper_bound=a_upper_bound)
+            a = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=self.lower_bound,
+                                upper_bound=a_upper_bound)
 
             b_lower_bound = a_upper_bound + self.stride
-            b = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=b_lower_bound, upper_bound=self.upper_bound)
+            b = StridedInterval(bits=self.bits, stride=self.stride, lower_bound=b_lower_bound,
+                                upper_bound=self.upper_bound)
 
             return [ a, b ]
 
@@ -466,7 +475,7 @@ class StridedInterval(BackendObject):
 
     def _psplit(self):
         """
-        Split `self` at both north and south poles
+        Split `self` at both north and south poles.
 
         :return: A list of split StridedIntervals
         """
@@ -481,8 +490,9 @@ class StridedInterval(BackendObject):
 
     def _signed_bounds(self):
         """
-        Get lower bound and upper bound for `self` in signed arithmetic
-        :return: a list  of (lower_bound, upper_bound) tuples
+        Get lower bound and upper bound for `self` in signed arithmetic.
+
+        :return: a list of (lower_bound, upper_bound) tuples
         """
 
         nsplit = self._nsplit()
@@ -515,8 +525,9 @@ class StridedInterval(BackendObject):
 
     def _unsigned_bounds(self):
         """
-        Get lower bound and upper bound for `self` in unsigned arithmetic
-        :return: a list of (lower_bound, upper_bound) tuples
+        Get lower bound and upper bound for `self` in unsigned arithmetic.
+
+        :return: a list of (lower_bound, upper_bound) tuples.
         """
 
         ssplit = self._ssplit()
@@ -546,8 +557,8 @@ class StridedInterval(BackendObject):
         """
         Used to make exact comparisons between two StridedIntervals. Usually it is only used in test cases.
 
-        :param o: The other StridedInterval to compare with
-        :return: True if they are exactly same, False otherwise
+        :param o: The other StridedInterval to compare with.
+        :return: True if they are exactly same, False otherwise.
         """
 
         if (self.bits == o.bits and
@@ -591,9 +602,9 @@ class StridedInterval(BackendObject):
     @normalize_types
     def SLE(self, o):
         """
-        Signed less than or equal to
+        Signed less than or equal to.
 
-        :param o: The other operand
+        :param o: The other operand.
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
 
@@ -620,7 +631,8 @@ class StridedInterval(BackendObject):
     @normalize_types
     def SGT(self, o):
         """
-        Signed greater than
+        Signed greater than.
+
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -648,7 +660,8 @@ class StridedInterval(BackendObject):
     @normalize_types
     def SGE(self, o):
         """
-        Signed greater than or equal to
+        Signed greater than or equal to.
+
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -676,7 +689,7 @@ class StridedInterval(BackendObject):
     @normalize_types
     def ULT(self, o):
         """
-        Unsigned less than
+        Unsigned less than.
 
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
@@ -705,7 +718,7 @@ class StridedInterval(BackendObject):
     @normalize_types
     def ULE(self, o):
         """
-        Unsigned less than or equal to
+        Unsigned less than or equal to.
 
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
@@ -734,7 +747,8 @@ class StridedInterval(BackendObject):
     @normalize_types
     def UGT(self, o):
         """
-        Signed greater than
+        Signed greater than.
+
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -762,7 +776,8 @@ class StridedInterval(BackendObject):
     @normalize_types
     def UGE(self, o):
         """
-        Unsigned greater than or equal to
+        Unsigned greater than or equal to.
+
         :param o: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -823,10 +838,10 @@ class StridedInterval(BackendObject):
     #
 
     def __len__(self):
-        '''
+        """
         Get the length in bits of this variable.
         :return:
-        '''
+        """
         return self._bits
 
     def __eq__(self, o):
@@ -838,6 +853,7 @@ class StridedInterval(BackendObject):
     def __gt__(self, other):
         """
         Unsigned greater than
+
         :param other: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -846,6 +862,7 @@ class StridedInterval(BackendObject):
     def __ge__(self, other):
         """
         Unsigned greater than or equal to
+
         :param other: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -855,6 +872,7 @@ class StridedInterval(BackendObject):
     def __lt__(self, other):
         """
         Unsigned less than
+
         :param other: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -863,6 +881,7 @@ class StridedInterval(BackendObject):
     def __le__(self, other):
         """
         Unsigned less than or equal to
+
         :param other: The other operand
         :return: TrueResult(), FalseResult(), or MaybeResult()
         """
@@ -905,6 +924,7 @@ class StridedInterval(BackendObject):
     def __div__(self, o):
         """
         Unsigned division
+
         :param o: The divisor
         :return: The quotient (self / o)
         """
@@ -987,6 +1007,7 @@ class StridedInterval(BackendObject):
         """
         Return the complement of the interval
         Refer section 3.1 augmented for managing strides
+
         :return:
         """
         # case 1
@@ -1048,6 +1069,7 @@ class StridedInterval(BackendObject):
     def max(self):
         """
         Treat this StridedInterval as a set of unsigned numbers, and return the greatest one
+
         :return: the greatest number in this StridedInterval when evaluated as unsigned, or None if empty
         """
         if not self.is_empty:
@@ -1062,6 +1084,7 @@ class StridedInterval(BackendObject):
     def min(self):
         """
         Treat this StridedInterval as a set of unsigned numbers, and return the smallest one
+
         :return: the smallest number in this StridedInterval when evaluated as unsigned, or None if empty
         """
         if not self.is_empty:
@@ -1090,10 +1113,11 @@ class StridedInterval(BackendObject):
 
     @property
     def is_top(self):
-        '''
-        If this is a TOP value
+        """
+        If this is a TOP value.
+
         :return: True if this is a TOP
-        '''
+        """
         return (self.stride == 1 and
                 self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits)
                 )
@@ -1101,17 +1125,19 @@ class StridedInterval(BackendObject):
     @property
     def is_bottom(self):
         """
-        Whether this StridedInterval is a BOTTOM, in other words, describes an empty set of integers
+        Whether this StridedInterval is a BOTTOM, in other words, describes an empty set of integers.
+
         :return: True/False
         """
         return self._is_bottom
 
     @property
     def is_integer(self):
-        '''
-        If this is an integer, i.e. self.lower_bound == self.upper_bound
+        """
+        If this is an integer, i.e. self.lower_bound == self.upper_bound.
+
         :return: True if this is an integer, False otherwise
-        '''
+        """
         return self.lower_bound == self.upper_bound
 
     @property
@@ -1146,7 +1172,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def lcm(a, b):
         """
-        Get the least common multiple
+        Get the least common multiple.
+
         :param a: The first operand (integer)
         :param b: The second operand (integer)
         :return: Their LCM
@@ -1156,7 +1183,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def gcd(a, b):
         """
-        Get the greatest common divisor
+        Get the greatest common divisor.
+
         :param a: The first operand (integer)
         :param b: The second operand (integer)
         :return: Their GCD
@@ -1188,7 +1216,6 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def max_int(k):
-        # return StridedInterval.highbit(k + 1) - 1
         return StridedInterval.highbit(k + 1) - 1
 
     @staticmethod
@@ -1198,6 +1225,7 @@ class StridedInterval(BackendObject):
     @staticmethod
     def sign_max_int(k):
         return 2 ** (k - 1) - 1
+
 
     @staticmethod
     def sign_min_int(k):
@@ -1210,10 +1238,10 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def upper(bits, i, stride):
-        '''
+        """
 
         :return:
-        '''
+        """
         if stride >= 1:
             offset = i % stride
             max = StridedInterval.max_int(bits)  # pylint:disable=redefined-builtin
@@ -1229,10 +1257,10 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def lower(bits, i, stride):
-        '''
+        """
 
         :return:
-        '''
+        """
         if stride >= 1:
             offset = i % stride
             min = StridedInterval.min_int(bits)  # pylint:disable=redefined-builtin
@@ -1249,7 +1277,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _gap(src_interval, tar_interval):
         """
-        Refer section 3.1; gap function
+        Refer section 3.1; gap function.
+
         :param src_interval: first argument or interval 1
         :param tar_interval: second argument or interval 2
         :return: Interval representing gap between two intervals
@@ -1271,11 +1300,11 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def top(bits, name=None, uninitialized=False):
-        '''
-        Get a TOP StridedInterval
+        """
+        Get a TOP StridedInterval.
 
         :return:
-        '''
+        """
         return StridedInterval(name=name,
                                bits=bits,
                                stride=1,
@@ -1290,7 +1319,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _wrapped_cardinality(x, y, bits):
         """
-        Return the cardinality for a set of number (| x, y |) on the wrapped-interval domain
+        Return the cardinality for a set of number (| x, y |) on the wrapped-interval domain.
+
         :param x: The first operand (an integer)
         :param y: The second operand (an integer)
         :return: The cardinality
@@ -1305,7 +1335,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _is_msb_zero(v, bits):
         """
-        Checks if the most significant bit is zero (i.e. is the integer positive under signed arithmetic)
+        Checks if the most significant bit is zero (i.e. is the integer positive under signed arithmetic).
+
         :param v: The integer to check with
         :param bits: Bits of the integer
         :return: True or False
@@ -1315,7 +1346,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _is_msb_one(v, bits):
         """
-        Checks if the most significant bit is one (i.e. is the integer negative under signed arithmetic)
+        Checks if the most significant bit is one (i.e. is the integer negative under signed arithmetic).
+
         :param v: The integer to check with
         :param bits: Bits of the integer
         :return: True or False
@@ -1325,7 +1357,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _get_msb(v, bits):
         """
-        Get the MSB (most significant bit)
+        Get the MSB (most significant bit).
+
         :param v: The integer
         :param bits: Bits of the integer
         :return: the MSB
@@ -1338,7 +1371,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _unsigned_to_signed(v, bits):
         """
-        Convert an unsigned integer to a signed integer
+        Convert an unsigned integer to a signed integer.
+
         :param v: The unsigned integer
         :param bits: How many bits this integer should be
         :return: The converted signed integer
@@ -1387,7 +1421,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _wrapped_unsigned_mul(a, b):
         """
-        Perform wrapped unsigned multiplication on two StridedIntervals
+        Perform wrapped unsigned multiplication on two StridedIntervals.
+
         :param a: The first operand (StridedInterval)
         :param b: The second operand (StridedInterval)
         :return: The multiplication result
@@ -1416,7 +1451,8 @@ class StridedInterval(BackendObject):
     @staticmethod
     def _wrapped_signed_mul(a, b):
         """
-        Perform wrapped signed multiplication on two StridedIntervals
+        Perform wrapped signed multiplication on two StridedIntervals.
+
         :param a: The first operand (StridedInterval)
         :param b: The second operand (StridedInterval)
         :return: The product
@@ -1848,6 +1884,7 @@ class StridedInterval(BackendObject):
     def bitwise_or(self, t):
         """
         Binary operation: logical or
+
         :param b: The other operand
         :return: self | b
         """
@@ -1896,6 +1933,7 @@ class StridedInterval(BackendObject):
     def bitwise_and(self, t):
         """
         Binary operation: logical and
+
         :param b: The other operand
         :return:
         """
@@ -1939,11 +1977,11 @@ class StridedInterval(BackendObject):
 
     @normalize_types
     def bitwise_xor(self, t):
-        '''
+        """
         Operation xor
-        :param b: The other operand
-        :return:
-        '''
+
+        :param t:   The other operand.
+        """
 
         # Using same variables as in paper
         s = self
@@ -1953,11 +1991,12 @@ class StridedInterval(BackendObject):
 
     def _pre_shift(self, shift_amount):
         def get_range(expr):
-            '''
+            """
             Get the range of bits for shifting
+
             :param expr:
             :return: A tuple of maximum and minimum bits to shift
-            '''
+            """
             def round(max, x): #pylint:disable=redefined-builtin
                 if x < 0 or x > max:
                     return max
@@ -2295,6 +2334,7 @@ class StridedInterval(BackendObject):
         """
         Return interval with bigger cardinality
         Refer Section 3.1
+
         :param interval1: first interval
         :param interval2: second interval
         :return: Interval or interval2 whichever has greater cardinality
@@ -2305,11 +2345,11 @@ class StridedInterval(BackendObject):
 
     @staticmethod
     def _ntz(x):
-        '''
+        """
         Get the number of consecutive zeros
         :param x:
         :return:
-        '''
+        """
         if x == 0:
             return 0
         y = (~x) & (x - 1)    # There is actually a bug in BAP until 0.8
@@ -2385,20 +2425,19 @@ class StridedInterval(BackendObject):
         It two intervals in a way that the resulting SI is the one that has the least
         SI cardinality (i.e., which represents the least number of elements) possible if the smart_join flag is enabled,
         otherwise it just joins the SI according the order they are passed to the function.
-        :param s: The first SI
-        :param b: The other SI.
-        :param smart_join: Enable the smart join behavior. If this flag is set, this function joins the two SI in a way
-        that the resulting Si has least number of elements (more precise). If it is unset, this function will joins the
-        two SI according on the order they are passed to the function.
-        :return: A new StridedInterval
-        """
-        """
-        The pseudo-join operation is not associative in wrapping intervals
-        (please refer to section 3.1 paper 'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'),
-        therefore the join of three WI may  give us different results according on the order we join them. All of the
-        results will be sound, though.
+
+        The pseudo-join operation is not associative in wrapping intervals (please refer to section 3.1 paper
+        'Signedness-Agnostic Program Analysis: Precise Integer Bounds for Low-Level Code'), Therefore the join of three
+        WI may  give us different results according on the order we join them. All of the results will be sound, though.
 
         Please use the function least_upper_bound as a stub.
+
+        :param s:           The first SI
+        :param b:           The other SI.
+        :param smart_join:  Enable the smart join behavior. If this flag is set, this function joins the two SI in a way
+                            that the resulting Si has least number of elements (more precise). If it is unset, this
+                            function will join the two SI according on the order they are passed to the function.
+        :return:            A new StridedInterval
         """
 
         assert s.bits == b.bits
@@ -2503,8 +2542,11 @@ class StridedInterval(BackendObject):
         As a wrapper method of _minimal_common_integer_splitted(), this method takes arbitrary StridedIntervals.
         For more information, please refer to the comment of _minimal_common_integer_splitted().
 
-        :param StridedInterval si_0: the first StridedInterval
-        :param StridedInterval si_1: the second StridedInterval
+        :param si_0:   the first StridedInterval
+        :type  si_0:   StridedInterval
+        :param si_1:   the second StridedInterval
+        :type  si_1:   StridedInterval
+
         :return: the minimal common integer, or None if there is no common integer
         """
 
@@ -2544,6 +2586,7 @@ class StridedInterval(BackendObject):
         It calculates the GCD of a and b, and two values x and y such that:
         a*x + b*y = GCD(a,b).
         This code has been taken from the project sympy.
+
         :param a: first integer
         :param b: second integer
         :return: x,y and the GCD of a and b
@@ -2581,6 +2624,7 @@ class StridedInterval(BackendObject):
         It finds the fist natural solution of the diophantine equation
         a*x + b*y = c. Some lines of this code are taken from the project
         sympy.
+        
         :param c: constant
         :param a: quotient of x
         :param b: quotient of y
@@ -3017,7 +3061,7 @@ class StridedInterval(BackendObject):
             return si
 
 def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, to_conv=None):
-    '''
+    """
     :param name:
     :param bits:
     :param stride:
@@ -3025,7 +3069,7 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
     :param upper_bound:
     :param to_conv:
     :return:
-    '''
+    """
     if to_conv is not None:
         if isinstance(to_conv, Base):
             to_conv = to_conv.model

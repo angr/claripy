@@ -3,7 +3,7 @@ from ..ast.base import _make_name
 
 _bvv_cache = dict()
 
-# this is a hillarious hack to get around some sort of bug in z3's python bindings, where
+# This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
     global _bvv_cache #pylint:disable=global-variable-not-assigned
@@ -15,10 +15,10 @@ class BV(Bits):
 
     # TODO: do these go on Bits or BV?
     def chop(self, bits=1):
-        '''
+        """
         Chops an AST into ASTs of size 'bits'. Obviously, the length of the AST must be
         a multiple of bits.
-        '''
+        """
         s = len(self)
         if s % bits != 0:
             raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
@@ -28,7 +28,7 @@ class BV(Bits):
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
 
     def __getitem__(self, rng):
-        '''
+        """
         Extracts bits from the AST. ASTs are indexed weirdly. For a 32-bit AST:
 
             a[31] is the *LEFT* most bit, so it'd be the 0 in
@@ -47,8 +47,8 @@ class BV(Bits):
 
                 11111111111111111111111111111100
 
-        @returns the new AST.
-        '''
+        :return: the new AST.
+        """
         if type(rng) is slice:
             left = rng.start if rng.start is not None else len(self)-1
             right = rng.stop if rng.stop is not None else 0
@@ -61,29 +61,29 @@ class BV(Bits):
             return Extract(int(rng), int(rng), self)
 
     def zero_extend(self, n):
-        '''
+        """
         Zero-extends the AST by n bits. So:
 
             a = BVV(0b1111, 4)
             b = a.zero_extend(4)
             b is BVV(0b00001111)
-        '''
+        """
         return ZeroExt(n, self)
 
     def sign_extend(self, n):
-        '''
+        """
         Sign-extends the AST by n bits. So:
 
             a = BVV(0b1111, 4)
             b = a.sign_extend(4)
             b is BVV(0b11111111)
-        '''
+        """
         return SignExt(n, self)
 
     def concat(self, *args):
-        '''
+        """
         Concatenates this AST with the ASTs provided.
-        '''
+        """
         return Concat(self, *args)
 
     @staticmethod
@@ -117,21 +117,20 @@ class BV(Bits):
         return self
 
 def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explicit_name=None, **kwargs): #pylint:disable=redefined-builtin
-    '''
+    """
     Creates a bit-vector symbol (i.e., a variable).
 
-    @param name: the name of the symbol
-    @param size: the size (in bits) of the bit-vector
-    @param min: the minimum value of the symbol
-    @param max: the maximum value of the symbol
-    @param stride: the stride of the symbol
-    @param uninitialized: whether this value should be counted as an
-                          "uninitialized" value in the course of an analysis.
-    @param explicit_name: if False, an identifier is appended to the name to ensure
-                          uniqueness.
+    :param name:            The name of the symbol.
+    :param size:            The size (in bits) of the bit-vector.
+    :param min:             The minimum value of the symbol.
+    :param max:             The maximum value of the symbol.
+    :param stride:          The stride of the symbol.
+    :param uninitialized:   Whether this value should be counted as an "uninitialized" value in the course of an
+                            analysis.
+    :param explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
 
-    @returns a BV object representing this symbol
-    '''
+    :returns:               a BV object representing this symbol.
+    """
 
     if stride == 0 and max != min:
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
@@ -140,14 +139,14 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explic
     return BV('BVS', (n, min, max, stride, uninitialized), variables={n}, length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
 
 def BVV(value, size=None, **kwargs):
-    '''
+    """
     Creates a bit-vector value (i.e., a concrete value).
 
-    @param value: the value
-    @param size: the size (in bits) of the bit-vector
+    :param value:   The value.
+    :param size:    The size (in bits) of the bit-vector.
 
-    @returns a BV object representing this value
-    '''
+    :returns:       A BV object representing this value.
+    """
 
     if type(value) is str:
         if size is None:
