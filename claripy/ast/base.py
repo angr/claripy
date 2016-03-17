@@ -609,7 +609,7 @@ class Base(ana.Storable):
                 new_name = 'canonical_%d' % next(counter)
                 var_map[v.cache_key] = v._rename(new_name)
 
-        return var_map, self.replace_dict(var_map)
+        return var_map, counter, self.replace_dict(var_map)
 
     #
     # This code handles burrowing ITEs deeper into the ast and excavating

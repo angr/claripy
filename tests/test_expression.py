@@ -350,7 +350,7 @@ def test_canonical():
 
     assert frozenset.union(*[a.variables for a in y1.recursive_leaf_asts]) == one_names
     assert frozenset.union(*[a.variables for a in y2.recursive_leaf_asts]) == two_names
-    assert y1.canonicalize()[1] is y2.canonicalize()[1]
+    assert y1.canonicalize()[-1] is y2.canonicalize()[-1]
 
 if __name__ == '__main__':
     test_rename()
