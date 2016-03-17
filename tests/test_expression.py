@@ -325,10 +325,36 @@ def test_depth_repr():
     y = claripy.LShR(y, 10)
     y = claripy.LShR(y, 10)
     y = claripy.LShR(y, 10)
-    print(y.shallow_repr(max_depth=5))
+    print y.shallow_repr(max_depth=5)
     nose.tools.assert_equal(y.shallow_repr(max_depth=5), "<BV32 LShR(LShR(LShR(LShR(<...>, <...>), <...>), <...>), <...>)>")
 
+def test_rename():
+    x1 = claripy.BVS('x', 32)
+    x2 = x1._rename('y')
+    print x2.variables
+    assert x2.variables == frozenset(('y',))
+
+def test_canonical():
+    x1 = claripy.BVS('x', 32)
+    b1 = claripy.BoolS('b')
+    c1 = claripy.BoolS('c')
+    x2 = claripy.BVS('x', 32)
+    b2 = claripy.BoolS('b')
+    c2 = claripy.BoolS('c')
+
+    y1 = claripy.If(claripy.And(b1, c1), x1, ((x1+x1)*x1)+1)
+    y2 = claripy.If(claripy.And(b2, c2), x2, ((x2+x2)*x2)+1)
+
+    one_names = frozenset.union(x1.variables, b1.variables, c1.variables)
+    two_names = frozenset.union(x2.variables, b2.variables, c2.variables)
+
+    assert frozenset.union(*[a.variables for a in y1.recursive_leaf_asts]) == one_names
+    assert frozenset.union(*[a.variables for a in y2.recursive_leaf_asts]) == two_names
+    assert y1.canonicalize()[1] is y2.canonicalize()[1]
+
 if __name__ == '__main__':
+    test_rename()
+    test_canonical()
     test_depth_repr()
     test_extract()
     test_true_false_cache()
