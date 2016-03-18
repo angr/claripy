@@ -943,6 +943,36 @@ def test_reasonable_bounds():
     assert b.max(si) == 0xffffffff
     assert b.min(si) == 0
 
+def test_shifting():
+
+    SI = claripy.SI
+    identical = claripy.backends.vsa.identical
+
+    # <32>1[2,4] LShR 1 = <32>1[1,2]
+    si = SI(bits=32, stride=1, lower_bound=2, upper_bound=4)
+    r = si.LShR(1)
+    nose.tools.assert_true(identical(r, SI(bits=32, stride=1, lower_bound=1, upper_bound=2)))
+
+    # <32>4[15,11] LShR 4 = <32>1[0, 0xfffffff]
+    si = SI(bits=32, stride=4, lower_bound=15, upper_bound=11)
+    r = si.LShR(4)
+    nose.tools.assert_true(identical(r, SI(bits=32, stride=1, lower_bound=0, upper_bound=0xfffffff)))
+
+    # Extract
+    si = SI(bits=32, stride=4, lower_bound=15, upper_bound=11)
+    r = si[31:4]
+    nose.tools.assert_true(identical(r, SI(bits=28, stride=1, lower_bound=0, upper_bound=0xfffffff)))
+
+    # <32>1[-4,-2] >> 1 = <32>1[-2,-1]
+    si = SI(bits=32, stride=1, lower_bound=-4, upper_bound=-2)
+    r = (si >> 1)
+    nose.tools.assert_true(identical(r, SI(bits=32, stride=1, lower_bound=-2, upper_bound=-1)))
+
+    # <32>1[-4,-2] LShR 1 = <32>1[0x7ffffffe,0x7fffffff]
+    si = SI(bits=32, stride=1, lower_bound=-4, upper_bound=-2)
+    r = si.LShR(1)
+    nose.tools.assert_true(identical(r, SI(bits=32, stride=1, lower_bound=0x7ffffffe, upper_bound=0x7fffffff)))
+
 if __name__ == '__main__':
     test_reasonable_bounds()
     test_reversed_concat()
@@ -954,3 +984,4 @@ if __name__ == '__main__':
     test_vsa_constraint_to_si()
     test_vsa_discrete_value_set()
     test_solution()
+    test_shifting()

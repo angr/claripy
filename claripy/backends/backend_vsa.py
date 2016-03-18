@@ -275,8 +275,12 @@ class BackendVSA(Backend):
         return first
 
     @staticmethod
+    def __rshift__(expr, shift_amount):
+        return expr.__rshift__(shift_amount)
+
+    @staticmethod
     def LShR(expr, shift_amount):
-        return expr.__rshift__(shift_amount, False)
+        return expr.LShR(shift_amount)
 
     @staticmethod
     def Concat(*args):

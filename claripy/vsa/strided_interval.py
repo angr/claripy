@@ -549,6 +549,80 @@ class StridedInterval(BackendObject):
         else:
             raise Exception('WTF')
 
+    def _rshift_logical(self, shift_amount):
+        """
+        Logical shift right with a concrete shift amount
+
+        :param int shift_amount: Number of bits to shift right.
+        :return: The new StridedInterval after right shifting
+        :rtype: StridedInterval
+        """
+
+        if self.is_empty:
+            return self
+
+        # If straddling the south pole, we'll have to split it into two, perform logical right shift on them
+        # individually, then union the result back together for better precision. Note that it's an improvement from
+        # the original WrappedIntervals paper.
+
+        ssplit = self._ssplit()
+        if len(ssplit) == 1:
+            l = self.lower_bound >> shift_amount
+            u = self.upper_bound >> shift_amount
+            stride = max(self.stride >> shift_amount, 1)
+
+            return StridedInterval(bits=self.bits,
+                                   lower_bound=l,
+                                   upper_bound=u,
+                                   stride=stride
+                                   )
+        else:
+            a = ssplit[0]._rshift_logical(shift_amount)
+            b = ssplit[1]._rshift_logical(shift_amount)
+
+            return a.union(b)
+
+    def _rshift_arithmetic(self, shift_amount):
+        """
+        Arithmetic shift right with a concrete shift amount
+
+        :param int shift_amount: Number of bits to shift right.
+        :return: The new StridedInterval after right shifting
+        :rtype: StridedInterval
+        """
+
+        if self.is_empty:
+            return self
+
+        # If straddling the north pole, we'll have to split it into two, perform arithmetic right shift on them
+        # individually, then union the result back together for better precision. Note that it's an improvement from
+        # the original WrappedIntervals paper.
+
+        nsplit = self._nsplit()
+        if len(nsplit) == 1:
+            # preserve the highest bit :-)
+            highest_bit_set = self.lower_bound > StridedInterval.signed_max_int(nsplit[0].bits)
+
+            l = self.lower_bound >> shift_amount
+            u = self.upper_bound >> shift_amount
+            stride = max(self.stride >> shift_amount, 1)
+
+            if highest_bit_set:
+                l = l | StridedInterval.signed_max_int(nsplit[0].bits) + 1
+                u = u | StridedInterval.signed_max_int(nsplit[0].bits) + 1
+
+            return StridedInterval(bits=self.bits,
+                                   lower_bound=l,
+                                   upper_bound=u,
+                                   stride=stride
+                                   )
+        else:
+            a = nsplit[0]._rshift_arithmetic(shift_amount)
+            b = nsplit[1]._rshift_arithmetic(shift_amount)
+
+            return a.union(b)
+
+
     #
     # Comparison operations
     #
@@ -958,8 +1032,15 @@ class StridedInterval(BackendObject):
     def __lshift__(self, other):
         return self.lshift(other)
 
-    def __rshift__(self, other, preserve_sign=False):
-        return self.rshift(other, preserve_sign=preserve_sign)
+    def __rshift__(self, shift_amount):
+        """
+        Arithmetic shift right.
+
+        :param StridedInterval shift_amount: Number of bits to shift right.
+        :return: The shifted StridedInterval object
+        :rtype: StridedInterval
+        """
+        return self.rshift_arithmetic(shift_amount)
 
     def __repr__(self):
         if self.is_empty:
@@ -975,6 +1056,20 @@ class StridedInterval(BackendObject):
             s += "(uninit)"
 
         return s
+
+    #
+    # Other operations
+    #
+
+    def LShR(self, shift_amount):
+        """
+        Logical shift right.
+        :param StridedInterval shift_amount: The amount of shifting
+        :return: The shifted StridedInterval object
+        :rtype: StridedInterval
+        """
+
+        return self.rshift_logical(shift_amount)
 
     #
     # Properties
@@ -2026,44 +2121,50 @@ class StridedInterval(BackendObject):
         return lower, upper
 
     @reversed_processor
-    def rshift(self, shift_amount, preserve_sign=False):
+    def rshift_logical(self, shift_amount):
+        """
+        Logical shift right.
+
+        :param StridedInterval shift_amount: The amount of shifting
+        :return: The shifted StridedInterval
+        :rtype: StridedInterval
+        """
+
         lower, upper = self._pre_shift(shift_amount)
-        # Shift the lower_bound and upper_bound by all possible amounts, and
-        # get min/max values from all the resulting values
 
-        new_lower_bound = None
-        new_upper_bound = None
-        lower_bound_shifted = 0
-        upper_bound_shifted = 0
+        # Shift the lower_bound and upper_bound by all possible amounts, and union all possible results
 
-        for shift_amount in xrange(lower, upper + 1):
-            l = self.lower_bound >> shift_amount
-            if new_lower_bound is None or l < new_lower_bound:
-                new_lower_bound = l
-                lower_bound_shifted = shift_amount
-            u = self.upper_bound >> shift_amount
-            if new_upper_bound is None or u > new_upper_bound:
-                new_upper_bound = u
-                upper_bound_shifted = shift_amount
+        ret = None
 
-        # NOTE: If this is an arithmetic operation, we should take care
-        # of sign-changes.
-        if preserve_sign:
-            if lower_bound_shifted != upper_bound_shifted:
-                # FIXME: can this happen?
-                logger.warning("Lower bound shifted of a different amount than the upper bound FIXME")
-                import ipdb; ipdb.set_trace()
-            n_bits = self.bits - lower_bound_shifted
-            ret = StridedInterval(bits=n_bits,
-                                  lower_bound=new_lower_bound,
-                                  upper_bound=new_upper_bound,
-                                  stride=max(self.stride >> upper, 1))
-            ret.agnostic_extend(self.bits)
-        else:
-            ret = StridedInterval(bits=self.bits,
-                                  lower_bound=new_lower_bound,
-                                  upper_bound=new_upper_bound,
-                                  stride=max(self.stride >> upper, 1))
+        for amount in xrange(lower, upper + 1):
+            si_ = self._rshift_logical(amount)
+
+            ret = si_ if ret is None else ret.union(si_)
+
+        ret.normalize()
+        return ret
+
+    @reversed_processor
+    def rshift_arithmetic(self, shift_amount):
+        """
+        Arithmetic shift right.
+
+        :param StridedInterval shift_amount: The amount of shifting
+        :return: The shifted StridedInterval
+        :rtype: StridedInterval
+        """
+
+        lower, upper = self._pre_shift(shift_amount)
+
+        # Shift the lower_bound and upper_bound by all possible amounts, and union all possible results
+
+        ret = None
+
+        for amount in xrange(lower, upper + 1):
+            si_ = self._rshift_arithmetic(amount)
+
+            ret = si_ if ret is None else ret.union(si_)
+
         ret.normalize()
         return ret
 
@@ -2179,7 +2280,7 @@ class StridedInterval(BackendObject):
         bits = high_bit - low_bit + 1
 
         if low_bit != 0:
-            ret = self.rshift(low_bit)
+            ret = self.rshift_logical(low_bit)
         else:
             ret = self.copy()
         if bits != self.bits:
