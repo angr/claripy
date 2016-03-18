@@ -9,8 +9,9 @@ class Balancer(object):
     unknown terms on one side of an inequality.
     """
 
-    def __init__(self, helper, c):
+    def __init__(self, helper, c, validation_frontend=None):
         self._helper = helper
+        self._validation_frontend = validation_frontend
         self._truisms = [ c.ite_excavated ]
         self._processed_truisms = set()
         self.bounds = [ ]
@@ -31,6 +32,21 @@ class Balancer(object):
     def _replacements_iter(self):
         for o,b in self.bounds:
             yield (o, o.intersection(b))
+
+    def _add_bounds(self, *new_bounds):
+        if self._validation_frontend is not None:
+            for a,b in new_bounds:
+                emax = self._validation_frontend.max(a)
+                emin = self._validation_frontend.min(a)
+                bmax = self._helper.max(b)
+                bmin = self._helper.min(b)
+
+                #print a,b
+                #print emax, emin
+                #print bmax, bmin
+                assert emax <= bmax
+                assert emin >= bmin
+        self.bounds.extend(new_bounds)
 
     @property
     def replacements(self):
@@ -386,7 +402,7 @@ class Balancer(object):
             return
 
         bounds = handler(truism)
-        self.bounds.extend(bounds)
+        self._add_bounds(*bounds)
 
     def _handle_comparison(self, truism):
         """
