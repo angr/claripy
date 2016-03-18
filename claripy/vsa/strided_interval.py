@@ -1223,12 +1223,12 @@ class StridedInterval(BackendObject):
         return -StridedInterval.highbit(k)
 
     @staticmethod
-    def sign_max_int(k):
+    def signed_max_int(k):
         return 2 ** (k - 1) - 1
 
 
     @staticmethod
-    def sign_min_int(k):
+    def signed_min_int(k):
         return -(2 ** (k - 1))
 
 
@@ -1383,7 +1383,7 @@ class StridedInterval(BackendObject):
             return -(2 ** bits - v)
 
     @staticmethod
-    def _wrappedoverflow_add(a, b):
+    def _wrapped_overflow_add(a, b):
         """
         Determines if an overflow happens during the addition of `a` and `b`.
 
@@ -1407,7 +1407,7 @@ class StridedInterval(BackendObject):
         return (card_self + card_b) > (StridedInterval.max_int(a.bits) + 1)
 
     @staticmethod
-    def _wrappedoverflow_sub(a, b):
+    def _wrapped_overflow_sub(a, b):
         """
         Determines if an overflow happens during the subtraction of `a` and `b`.
 
@@ -1416,7 +1416,7 @@ class StridedInterval(BackendObject):
         :return: True if overflows, False otherwise
         """
 
-        return StridedInterval._wrappedoverflow_add(a, b)
+        return StridedInterval._wrapped_overflow_add(a, b)
 
     @staticmethod
     def _wrapped_unsigned_mul(a, b):
@@ -1738,7 +1738,7 @@ class StridedInterval(BackendObject):
             return si
         """ #FIXME
 
-        overflow = self._wrappedoverflow_add(self, b)
+        overflow = self._wrapped_overflow_add(self, b)
         if overflow:
             return StridedInterval.top(self.bits)
 
@@ -1764,7 +1764,7 @@ class StridedInterval(BackendObject):
         """
         new_bits = max(self.bits, b.bits)
 
-        overflow = self._wrappedoverflow_sub(self, b)
+        overflow = self._wrapped_overflow_sub(self, b)
         if overflow:
             return StridedInterval.top(self.bits)
 
