@@ -34,9 +34,12 @@ _z3_paths.extend(sys.path)
 _z3_paths.append("/usr/lib")
 _z3_paths.append("/usr/local/lib")
 _z3_paths.append("/opt/python/lib")
+_z3_paths.append(os.path.join(sys.prefix, "lib"))
 
 for z3_path in _z3_paths:
-    if not '.so' in z3_path and not '.dll' in z3_path:
+    if not '.so' in z3_path and \
+            not '.dll' in z3_path and \
+            not '.dylib' in z3_path:
         z3_path = os.path.join(z3_path, z3_library_file)
     if os.path.exists(z3_path):
         z3.init(z3_path)
