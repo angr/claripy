@@ -194,6 +194,5 @@ def max(constraints, expr):
 
 
 import claripy
-from ..solvers import Solver
 from ..result import Result
 from ..ast import base
