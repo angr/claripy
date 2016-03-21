@@ -240,7 +240,7 @@ class Balancer(object):
     @staticmethod
     def _balance_Reverse(truism):
         if truism.op == '__eq__' or truism.op == '__ne__':
-            return truism.make_like(truism.op, truism.args[0].args[0], truism.args[1].reversed)
+            return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
         else:
             return truism
 
