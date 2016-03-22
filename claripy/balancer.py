@@ -14,13 +14,13 @@ class Balancer(object):
         self._validation_frontend = validation_frontend
         self._truisms = [ c.ite_excavated ]
         self._processed_truisms = set()
-        self.bounds = [ ]
+        self.bounds = { }
 
         self.sat = True
         try:
             self._doit()
         except ClaripyBalancerUnsatError:
-            self.bounds = [ ]
+            self.bounds = { }
             self.sat = False
         except BackendError:
             l.debug("Backend error in balancer.", exc_info=True)
@@ -30,23 +30,25 @@ class Balancer(object):
         return (self.sat, self.replacements)
 
     def _replacements_iter(self):
-        for o,b in self.bounds:
-            yield (o, o.intersection(b))
+        for o,b in self.bounds.iteritems():
+            yield (o.ast, o.ast.intersection(b))
 
-    def _add_bounds(self, *new_bounds):
+    def _add_bound(self, o, b):
+        if o.cache_key in self.bounds:
+            b = b.intersect(self.bounds[o.cache_keys])
+
         if self._validation_frontend is not None:
-            for a,b in new_bounds:
-                emax = self._validation_frontend.max(a)
-                emin = self._validation_frontend.min(a)
-                bmax = self._helper.max(b)
-                bmin = self._helper.min(b)
+            emax = self._validation_frontend.max(o)
+            emin = self._validation_frontend.min(o)
+            bmax = self._helper.max(b)
+            bmin = self._helper.min(b)
 
-                #print a,b
-                #print emax, emin
-                #print bmax, bmin
-                assert emax <= bmax
-                assert emin >= bmin
-        self.bounds.extend(new_bounds)
+            #print a,b
+            #print emax, emin
+            #print bmax, bmin
+            assert emax <= bmax
+            assert emin >= bmin
+        self.bounds[o.cache_key] = b
 
     @property
     def replacements(self):
@@ -405,12 +407,9 @@ class Balancer(object):
 
         try:
             handler = getattr(self, "_handle_%s" % truism.op)
+            handler(truism)
         except AttributeError:
             l.debug("No handler for operation %s", truism.op)
-            return
-
-        bounds = handler(truism)
-        self._add_bounds(*bounds)
 
     def _handle_comparison(self, truism):
         """
@@ -448,7 +447,7 @@ class Balancer(object):
         else:
             current_min = max(int_min, left_min, bound_min)
 
-        return [ (truism.args[0], BVS('bound_inequality', size, min=current_min, max=current_max, stride=1)) ]
+        self._add_bound(truism.args[0], BVS('bound_inequality', size, min=current_min, max=current_max, stride=1))
 
     def _handle_eq_ne(self, truism):
         lhs, rhs = truism.args
@@ -458,9 +457,10 @@ class Balancer(object):
         if eq_comparison:
             if rhs.cardinality != 1:
                 common = self._same_bound_bv(lhs.intersection(rhs))
-                return [ (lhs, common), (rhs, common) ]
+                self._add_bound(lhs, common)
+                self._add_bound(rhs, common)
             else:
-                return [ (lhs, rhs) ]
+                self._add_bound(lhs, rhs)
         else:
             if rhs.cardinality == 1:
                 val = self._helper.eval(rhs, 1)[0]
@@ -468,21 +468,16 @@ class Balancer(object):
 
                 if val == 0:
                     other_si = BVS('bound_ne_min', len(rhs), min=val+1)
-                    return [ (lhs, other_si) ]
+                    self._add_bound(lhs, other_si)
                 elif val == max_int or val == -1:
                     other_si = BVS('bound_ne_max', len(rhs), max=max_int-1)
-                    return [ (lhs, self._same_bound_bv(other_si.intersection(lhs))) ]
-                else:
-                    return [ ]
-            return [ ]
+                    self._add_bound(lhs, self._same_bound_bv(other_si.intersection(lhs)))
 
     def _handle_If(self, truism):
         if is_false(truism.args[2]):
             self._truisms.append(truism.args[0])
         elif is_false(truism.args[1]):
             self._truisms.append(self._invert_comparison(truism.args[0]))
-
-        return [ ]
 
     _handle___lt__ = _handle_comparison
     _handle___le__ = _handle_comparison
