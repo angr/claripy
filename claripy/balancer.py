@@ -159,8 +159,8 @@ class Balancer(object):
                 continue
 
             unpacked_truisms = self._unpack_truisms(truism)
+            self._processed_truisms.add(truism)
             if len(unpacked_truisms):
-                self._processed_truisms.add(truism)
                 self._truisms.extend(unpacked_truisms)
                 continue
 
