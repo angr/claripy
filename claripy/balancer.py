@@ -270,6 +270,14 @@ class Balancer(object):
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
+    def _balance___sub__(truism):
+        new_lhs = truism.args[0].args[0]
+        old_rhs = truism.args[1]
+        other_adds = truism.args[0].args[1:]
+        new_rhs = truism.args[0].make_like('__add__', (old_rhs,) + other_adds)
+        return truism.make_like(truism.op, (new_lhs, new_rhs))
+
+    @staticmethod
     def _balance_ZeroExt(truism):
         num_zeroes, inner = truism.args[0].args
         other_side = truism.args[1][len(truism.args[1])-1:len(truism.args[1])-num_zeroes]
