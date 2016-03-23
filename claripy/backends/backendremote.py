@@ -1,7 +1,7 @@
 #import time
 
 from ..backend import Backend
-from .backends.z3 import BackendZ3
+from .backend_z3 import BackendZ3
 try:
     from . import remotetasks
 except ImportError:

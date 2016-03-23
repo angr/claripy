@@ -270,12 +270,14 @@ class WarrenMethods(object):
 
 class StridedInterval(BackendObject):
     """
-    A Strided Interval is represented in the following form:
+    A Strided Interval is represented in the following form::
+
         <bits> stride[lower_bound, upper_bound]
+
     For more details, please refer to relevant papers like TIE and WYSINWYE.
 
-    This implementation is signedness-agostic, please refer to [1]_Signedness-Agnostic Program Analysis: Precise Integer
-    Bounds for Low-Level Code_ by Jorge A. Navas, etc. for more details.
+    This implementation is signedness-agostic, please refer to [1] *Signedness-Agnostic Program Analysis: Precise Integer
+    Bounds for Low-Level Code* by Jorge A. Navas, etc. for more details.
     Note that this implementation only takes hint from [1]. Such a work has been improved to be more precise
     (and still sound) when dealing with strided intervals.
     DO NOT expect to see a 1-to-1 reproduction of [1].

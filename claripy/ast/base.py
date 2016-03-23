@@ -496,7 +496,7 @@ class Base(ana.Storable):
     def __nonzero__(self):
         """
         This prevents people from accidentally using an AST as a condition. For
-        example, the following was previously common:
+        example, the following was previously common::
 
             a,b = two ASTs
             if a == b:

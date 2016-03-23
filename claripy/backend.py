@@ -256,7 +256,7 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
-        :returns                    A boolean.
+        :returns:                   A boolean.
         """
 
         #if self._solver_required and solver is None:
