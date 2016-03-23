@@ -259,6 +259,12 @@ class Base(ana.Storable):
     def make_like(self, *args, **kwargs):
         return type(self)(*args, **kwargs)
 
+    def _rename(self, new_name):
+        if self.op not in { 'BVS', 'BoolS', 'FPS' }:
+            raise ClaripyOperationError("rename is only supported on leaf nodes")
+        new_args = (new_name,) + self.args[1:]
+        return self.make_like(self.op, new_args, length=self.length, variables={new_name})
+
     #
     # Viewing and debugging
     #
@@ -303,6 +309,19 @@ class Base(ana.Storable):
 
             if op == 'BVS' and inner:
                 value = args[0]
+            elif op == 'BVS':
+                value = "%s" % args[0]
+                extras = [ ]
+                if args[1] is not None:
+                    extras.append("min=%s" % args[1])
+                if args[2] is not None:
+                    extras.append("max=%s" % args[2])
+                if args[3] is not None:
+                    extras.append("stride=%s" % args[3])
+                if args[4] is True:
+                    extras.append("UNINITIALIZED")
+                if len(extras) != 0:
+                    value += "{" + ", ".join(extras) + "}"
             elif op == 'BoolV':
                 value = str(args[0])
             elif op == 'BVV':
@@ -382,9 +401,15 @@ class Base(ana.Storable):
 
     @property
     def recursive_leaf_asts(self):
+        return self._recursive_leaf_asts()
+
+    def _recursive_leaf_asts(self, seen=None):
+        seen = set() if seen is None else seen
         for a in self.args:
-            if isinstance(a, Base):
-                if a.op in ('BVS', 'BVV', 'I'):
+            if isinstance(a, Base) and not a.cache_key in seen:
+                seen.add(a.cache_key)
+
+                if a.op in ('BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'):
                     yield a
                 else:
                     for b in a.recursive_leaf_asts:
@@ -579,24 +604,25 @@ class Base(ana.Storable):
     def _identify_vars(self, all_vars, counter):
         if self.op == 'BVS':
             if self.args not in all_vars:
-                all_vars[self.args] = BV('var_' + str(next(counter)),
-                                         self.args[1],
-                                         explicit_name=True)
+                all_vars[self.args] = BV('BVS', self.args, length=self.length, explicit_name=True)
+        elif self.op == 'BoolS':
+            if self.args not in all_vars:
+                all_vars[self.args] = BoolS('var_' + str(next(counter)))
         else:
             for arg in self.args:
                 if isinstance(arg, Base):
                     arg._identify_vars(all_vars, counter)
 
-    def canonicalized(self, existing_vars=None, counter=None):
-        all_vars = {} if existing_vars is None else existing_vars
+    def canonicalize(self, var_map=None, counter=None):
         counter = itertools.count() if counter is None else counter
-        self._identify_vars(all_vars, counter)
+        var_map = { } if var_map is None else var_map
 
-        expr = self
-        for old_var, new_var in all_vars.items():
-            expr = expr.replace(BV(*old_var, explicit_name=True), new_var)
+        for v in self._recursive_leaf_asts():
+            if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPs' }:
+                new_name = 'canonical_%d' % next(counter)
+                var_map[v.cache_key] = v._rename(new_name)
 
-        return all_vars, expr
+        return var_map, counter, self.replace_dict(var_map)
 
     #
     # This code handles burrowing ITEs deeper into the ast and excavating
@@ -810,5 +836,5 @@ from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError,
 from .. import operations
 from ..backend_object import BackendObject
 from ..backend_manager import backends
-from ..ast.bool import If, Not
+from ..ast.bool import If, Not, BoolS
 from ..ast.bv import BV

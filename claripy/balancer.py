@@ -9,17 +9,22 @@ class Balancer(object):
     unknown terms on one side of an inequality.
     """
 
-    def __init__(self, helper, c):
+    def __init__(self, helper, c, validation_frontend=None):
         self._helper = helper
-        self._truisms = [ c.ite_excavated ]
+        self._validation_frontend = validation_frontend
+        self._truisms = [ ]
         self._processed_truisms = set()
-        self.bounds = [ ]
+        self._identified_assumptions = set()
+        self._lower_bounds = { }
+        self._upper_bounds = { }
+
+        self._queue_truism(c.ite_excavated)
 
         self.sat = True
         try:
             self._doit()
         except ClaripyBalancerUnsatError:
-            self.bounds = [ ]
+            self.bounds = { }
             self.sat = False
         except BackendError:
             l.debug("Backend error in balancer.", exc_info=True)
@@ -29,8 +34,45 @@ class Balancer(object):
         return (self.sat, self.replacements)
 
     def _replacements_iter(self):
-        for o,b in self.bounds:
-            yield (o, o.intersection(b))
+        all_keys = set(self._lower_bounds.keys()) | set(self._upper_bounds.keys())
+        for k in all_keys:
+            max_int = (1 << len(k.ast)) - 1
+            min_int = -(1 << (len(k.ast)-1))
+            mn = self._lower_bounds.get(k, min_int)
+            mx = self._upper_bounds.get(k, max_int)
+            bound_si = BVS('bound', len(k.ast), min=mn, max=mx)
+            l.debug("Yielding bound %s for %s.", bound_si, k.ast)
+            yield (k.ast, k.ast.intersection(bound_si))
+
+    def _add_lower_bound(self, o, b):
+        l.debug("Adding lower bound %s for %s.", b, o)
+        if o.cache_key in self._lower_bounds:
+            old_b = self._lower_bounds[o.cache_key]
+            l.debug("... old bound: %s", old_b)
+            b = max(b, old_b)
+            l.debug("... new bound: %s", b)
+
+        if self._validation_frontend is not None:
+            emin = self._validation_frontend.min(o)
+            bmin = self._helper.min(b)
+            assert emin >= bmin
+
+        self._lower_bounds[o.cache_key] = b
+
+    def _add_upper_bound(self, o, b):
+        l.debug("Adding upper bound %s for %s.", b, o)
+        if o.cache_key in self._upper_bounds:
+            old_b = self._upper_bounds[o.cache_key]
+            l.debug("... old bound: %s", old_b)
+            b = min(b, old_b)
+            l.debug("... new bound: %s", b)
+
+        if self._validation_frontend is not None:
+            emax = self._validation_frontend.max(o)
+            bmax = self._helper.max(b)
+            assert emax <= bmax
+
+        self._upper_bounds[o.cache_key] = b
 
     @property
     def replacements(self):
@@ -42,10 +84,63 @@ class Balancer(object):
 
     def _same_bound_bv(self, a):
         si = backends.vsa.convert(a)
-        mx = self._helper.max(a)
-        mn = self._helper.min(a)
+        mx = self._max(a)
+        mn = self._min(a)
+        return BVS('bounds', len(a), min=mn, max=mx, stride=si._stride)
 
-        return BVS('balanced', len(a), min=mn, max=mx, stride=si._stride)
+    @staticmethod
+    def _cardinality(a):
+        return a.cardinality if isinstance(a, Base) else 0
+
+    @staticmethod
+    def _min(a, signed=False):
+        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
+        else: bounds = backends.vsa.convert(a)._signed_bounds()
+        return min(mn for mn,mx in bounds)
+
+    @staticmethod
+    def _max(a, signed=False):
+        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
+        else: bounds = backends.vsa.convert(a)._signed_bounds()
+        return max(mx for mn,mx in bounds)
+
+    def _range(self, a, signed=False):
+        return (self._min(a, signed=signed), self._max(a, signed=signed))
+
+    @staticmethod
+    def _invert_comparison(a):
+        return _all_operations.Not(a)
+
+    #
+    # Truism alignment
+    #
+
+    def _align_truism(self, truism):
+        outer_aligned = self._align_ast(truism)
+        inner_aligned = outer_aligned.make_like(outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
+
+        if not backends.vsa.identical(inner_aligned, truism):
+            l.critical("ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.", truism.op, truism.args[0].op)
+            return truism
+
+        return inner_aligned
+
+    def _align_ast(self, a):
+        """
+        Aligns the AST so that the argument with the highest cardinality is on the left.
+
+        :return: a new AST.
+        """
+
+        try:
+            if isinstance(a, BV):
+                return self._align_bv(a)
+            elif isinstance(a, Bool) and len(a.args) == 2 and a.args[1].cardinality > a.args[0].cardinality:
+                return self._reverse_comparison(a)
+            else:
+                return a
+        except ClaripyBalancerError:
+            return a
 
     @staticmethod
     def _reverse_comparison(a):
@@ -67,47 +162,6 @@ class Balancer(object):
         except ClaripyOperationError:
             # TODO: copy trace
             raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)", a.op)
-
-    def _align_ast(self, a):
-        """
-        Aligns the AST so that the argument with the highest cardinality is on the left.
-
-        :return: a new AST.
-        """
-
-        try:
-            if isinstance(a, BV):
-                return self._align_bv(a)
-            elif isinstance(a, Bool) and len(a.args) == 2 and a.args[1].cardinality > a.args[0].cardinality:
-                return self._reverse_comparison(a)
-            else:
-                return a
-        except ClaripyBalancerError:
-            return a
-
-    #
-    # Inversion
-    #
-
-    @staticmethod
-    def _cardinality(a):
-        return a.cardinality if isinstance(a, Base) else 0
-
-    @staticmethod
-    def _min(a, signed=False):
-        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
-        else: bounds = backends.vsa.convert(a)._signed_bounds()
-        return min(mn for mn,mx in bounds)
-
-    @staticmethod
-    def _max(a, signed=False):
-        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
-        else: bounds = backends.vsa.convert(a)._signed_bounds()
-        return max(mx for mn,mx in bounds)
-
-    @staticmethod
-    def _invert_comparison(a):
-        return _all_operations.Not(a)
 
     def _align_bv(self, a):
         if a.op in commutative_operations:
@@ -143,13 +197,72 @@ class Balancer(object):
                 continue
 
             unpacked_truisms = self._unpack_truisms(truism)
+            self._processed_truisms.add(truism)
             if len(unpacked_truisms):
-                self._processed_truisms.add(truism)
-                self._truisms.extend(unpacked_truisms)
+                self._queue_truisms(unpacked_truisms, check_true=True)
                 continue
 
+            if not self._handleable_truism(truism):
+                continue
+
+            assumptions = self._get_assumptions(truism)
+            if truism not in self._identified_assumptions and len(assumptions):
+                l.debug("Queued assumptions %s for truism %s.", assumptions, truism)
+                self._truisms.extend(assumptions)
+                self._identified_assumptions.update(assumptions)
+
+            l.debug("Processing truism %s", truism)
             balanced_truism = self._balance(truism)
+            l.debug("... handling")
             self._handle(balanced_truism)
+
+    def _queue_truism(self, t, check_true=False):
+        if not check_true:
+            self._truisms.append(t)
+        elif check_true and not is_true(t):
+            self._truisms.append(t)
+
+    def _queue_truisms(self, ts, check_true=False):
+        if check_true:
+            self._truisms.extend(t for t in ts if not is_true(t))
+        else:
+            self._truisms.extend(ts)
+
+    @staticmethod
+    def _handleable_truism(t):
+        """
+        Checks whether we can handle this truism. The truism should already be aligned.
+        """
+        if len(t.args) < 2:
+            l.debug("can't do anything with an unop bool")
+        elif t.args[1].cardinality > 1:
+            l.debug("can't do anything because we have multiple multivalued guys")
+            return False
+        else:
+            return True
+
+
+    #
+    # Assumptions management
+    #
+
+    @staticmethod
+    def _get_assumptions(t):
+        """
+        Given a consraint, _get_assumptions() returns a set of constraints that are implicitly
+        assumed to be true. For example, `x <= 10` would return `x >= 0`.
+        """
+
+        if t.op in ('__le__', '__lt__', 'ULE', 'ULT'):
+            return [ t.args[0] >= 0 ]
+        elif t.op in ('__ge__', '__gt__', 'UGE', 'UGT'):
+            return [ t.args[0] <= 2**len(t.args[0])-1 ]
+        elif t.op in ('SLE', 'SLT'):
+            return [ _all_operations.SGE(t.args[0], -(1 << (len(t.args[0])-1))) ]
+        elif t.op in ('SGE', 'SGT'):
+            return [ _all_operations.SLE(t.args[0], (1 << (len(t.args[0])-1)) - 1) ]
+        else:
+            return [ ]
 
     #
     # Truism extractor
@@ -157,7 +270,8 @@ class Balancer(object):
 
     def _unpack_truisms(self, c):
         """
-        Given a constraint, return a set of constraints that must be True for this constraint to be True.
+        Given a constraint, _unpack_truisms() returns a set of constraints that must be True
+        this constraint to be True.
         """
 
         try:
@@ -168,6 +282,14 @@ class Balancer(object):
 
     def _unpack_truisms_And(self, c):
         return set.union(*[self._unpack_truisms(a) for a in c.args])
+
+    def _unpack_truisms_Not(self, c):
+        if c.args[0].op == 'And':
+            return self._unpack_truisms(_all_operations.Or(*[_all_operations.Not(a) for a in c.args[0].args]))
+        elif c.args[0].op == 'Or':
+            return self._unpack_truisms(_all_operations.And(*[_all_operations.Not(a) for a in c.args[0].args]))
+        else:
+            return set()
 
     def _unpack_truisms_Or(self, c):
         vals = [ is_false(v) for v in c.args ]
@@ -202,7 +324,7 @@ class Balancer(object):
     #
 
     def _balance(self, truism):
-        #print "BALANCING", truism
+        l.debug("Balancing %s", truism)
 
         # can't balance single-arg bools (Not) for now
         if len(truism.args) == 1:
@@ -212,14 +334,10 @@ class Balancer(object):
             return truism
 
         try:
-            outer_aligned = self._align_ast(truism)
-            inner_aligned = outer_aligned.make_like(outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
+            inner_aligned = self._align_truism(truism)
             if inner_aligned.args[1].cardinality > 1:
                 l.debug("can't do anything because we have multiple multivalued guys")
                 return truism
-
-            if not backends.vsa.identical(inner_aligned, truism):
-                import ipdb; ipdb.set_trace()
 
             try:
                 balancer = getattr(self, "_balance_%s" % inner_aligned.args[0].op)
@@ -240,7 +358,7 @@ class Balancer(object):
     @staticmethod
     def _balance_Reverse(truism):
         if truism.op == '__eq__' or truism.op == '__ne__':
-            return truism.make_like(truism.op, truism.args[0].args[0], truism.args[1].reversed)
+            return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
         else:
             return truism
 
@@ -250,6 +368,14 @@ class Balancer(object):
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
         new_rhs = truism.args[0].make_like('__sub__', (old_rhs,) + other_adds)
+        return truism.make_like(truism.op, (new_lhs, new_rhs))
+
+    @staticmethod
+    def _balance___sub__(truism):
+        new_lhs = truism.args[0].args[0]
+        old_rhs = truism.args[1]
+        other_adds = truism.args[0].args[1:]
+        new_rhs = truism.args[0].make_like('__add__', (old_rhs,) + other_adds)
         return truism.make_like(truism.op, (new_lhs, new_rhs))
 
     @staticmethod
@@ -329,7 +455,7 @@ class Balancer(object):
             return truism
 
     def _balance_If(self, truism):
-        condition, true_expr, false_expr = truism.args[0]
+        condition, true_expr, false_expr = truism.args[0].args
 
         try:
             if truism.op.startswith('__'):
@@ -355,11 +481,11 @@ class Balancer(object):
             raise ClaripyBalancerUnsatError()
         elif must_true or (can_true and not can_false):
             # it will always be true
-            self._truisms.append(condition)
+            self._queue_truism(condition)
             return truism.make_like(truism.op, (true_expr, truism.args[1]))
         elif must_false or (can_false and not can_true):
             # it will always be false
-            self._truisms.append(self._invert_comparison(condition))
+            self._queue_truism(self._invert_comparison(condition))
             return truism.make_like(truism.op, (false_expr, truism.args[1]))
 
     #
@@ -367,12 +493,10 @@ class Balancer(object):
     #
 
     def _handle(self, truism):
-        #print "HANDLING", truism
+        l.debug("Handling %s", truism)
 
         if is_false(truism):
             raise ClaripyBalancerUnsatError()
-        elif is_true(truism):
-            return
         elif self._cardinality(truism.args[0]) == 1:
             # we are down to single-cardinality arguments, so our work is not
             # necessary
@@ -383,9 +507,7 @@ class Balancer(object):
         except AttributeError:
             l.debug("No handler for operation %s", truism.op)
             return
-
-        bounds = handler(truism)
-        self.bounds.extend(bounds)
+        handler(truism)
 
     def _handle_comparison(self, truism):
         """
@@ -398,7 +520,7 @@ class Balancer(object):
 
         size = len(truism.args[0])
         int_max = 2**size-1 if is_unsigned else 2**(size-1)-1
-        int_min = 0 if is_unsigned else -2**(size-1)
+        int_min = -2**(size-1)
 
         left_min = self._min(truism.args[0], signed=not is_unsigned)
         left_max = self._max(truism.args[0], signed=not is_unsigned)
@@ -420,10 +542,10 @@ class Balancer(object):
 
         if is_lt:
             current_max = min(int_max, left_max, bound_max)
+            self._add_upper_bound(truism.args[0], current_max)
         else:
             current_min = max(int_min, left_min, bound_min)
-
-        return [ (truism.args[0], BVS('bound_inequality', size, min=current_min, max=current_max, stride=1)) ]
+            self._add_lower_bound(truism.args[0], current_min)
 
     def _handle_eq_ne(self, truism):
         lhs, rhs = truism.args
@@ -433,31 +555,30 @@ class Balancer(object):
         if eq_comparison:
             if rhs.cardinality != 1:
                 common = self._same_bound_bv(lhs.intersection(rhs))
-                return [ (lhs, common), (rhs, common) ]
+                mn, mx = self._range(common)
+                self._add_upper_bound(lhs, mx)
+                self._add_upper_bound(rhs, mx)
+                self._add_lower_bound(lhs, mn)
+                self._add_lower_bound(rhs, mn)
             else:
-                return [ (lhs, rhs) ]
+                mn, mx = self._range(rhs)
+                self._add_upper_bound(lhs, mx)
+                self._add_lower_bound(lhs, mn)
         else:
             if rhs.cardinality == 1:
                 val = self._helper.eval(rhs, 1)[0]
                 max_int = vsa.StridedInterval.max_int(len(rhs))
 
                 if val == 0:
-                    other_si = BVS('bound_ne_min', len(rhs), min=val+1)
-                    return [ (lhs, other_si) ]
+                    self._add_lower_bound(lhs, val+1)
                 elif val == max_int or val == -1:
-                    other_si = BVS('bound_ne_max', len(rhs), max=max_int-1)
-                    return [ (lhs, self._same_bound_bv(other_si.intersection(lhs))) ]
-                else:
-                    return [ ]
-            return [ ]
+                    self._add_lower_bound(lhs, max_int-1)
 
     def _handle_If(self, truism):
         if is_false(truism.args[2]):
-            self._truisms.append(truism.args[0])
+            self._queue_truism(truism.args[0])
         elif is_false(truism.args[1]):
-            self._truisms.append(self._invert_comparison(truism.args[0]))
-
-        return [ ]
+            self._queue_truism(self._invert_comparison(truism.args[0]))
 
     _handle___lt__ = _handle_comparison
     _handle___le__ = _handle_comparison

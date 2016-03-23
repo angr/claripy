@@ -6,6 +6,7 @@ l = logging.getLogger("claripy.frontends.full_frontend")
 
 from ..frontend import Frontend
 
+_VALIDATE_BALANCER=False
 
 class HybridFrontend(Frontend):
     def __init__(self, exact_frontend, approximate_frontend, **kwargs):
@@ -13,6 +14,9 @@ class HybridFrontend(Frontend):
         self._exact_frontend = exact_frontend
         self._approximate_frontend = approximate_frontend
         self._hook_exact_frontend()
+
+        if _VALIDATE_BALANCER:
+            approximate_frontend._validation_frontend = self._exact_frontend
 
     #
     # Some passthroughs
@@ -40,8 +44,8 @@ class HybridFrontend(Frontend):
 
     def _hook_exact_frontend(self):
         def constraint_hook(constraints, **kwargs):
-            self._approximate_frontend.add(constraints, **kwargs)
             self._exact_frontend._real_add_constraints(constraints, **kwargs)
+            self._approximate_frontend._add_constraints(constraints, **kwargs)
 
         self._exact_frontend._real_add_constraints = self._exact_frontend._add_constraints
         self._exact_frontend._add_constraints = constraint_hook
@@ -106,13 +110,13 @@ class HybridFrontend(Frontend):
     def is_false(self, e, extra_constraints=(), exact=None, cache=None):
         return self._hybrid_call('is_false', e, extra_constraints=extra_constraints, exact=exact, cache=cache)
 
-    def add(self, constraints, invalidate_cache=True):
-        self._exact_frontend.add(constraints, invalidate_cache=invalidate_cache)
-        self._approximate_frontend.add(constraints, invalidate_cache=invalidate_cache)
-
     #
     # Lifecycle
     #
+
+    def add(self, constraints, invalidate_cache=True):
+        self._exact_frontend.add(constraints, invalidate_cache=invalidate_cache)
+        #self._approximate_frontend.add(constraints, invalidate_cache=invalidate_cache)
 
     def combine(self, others):
         other_exact = [o._exact_frontend for o in others]

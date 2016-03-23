@@ -9,10 +9,7 @@ from .constrained_frontend import ConstrainedFrontend
 
 
 class ReplacementFrontend(ConstrainedFrontend):
-    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None,
-                 unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None,
-                 balancer=None, **kwargs):
-
+    def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None, **kwargs):
         kwargs['cache'] = kwargs.get('cache', False)
         ConstrainedFrontend.__init__(self, **kwargs)
         self._actual_frontend = actual_frontend
@@ -23,6 +20,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._unsafe_replacement = False if unsafe_replacement is None else unsafe_replacement
         self._replacements = {} if replacements is None else replacements
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
+
+        self._validation_frontend = None
 
     def add_replacement(self, old, new, invalidate_cache=True, replace=True, promote=True):
         if not isinstance(old, Base):
@@ -194,7 +193,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                         old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
                         self.add_replacement(old, new, promote=True, invalidate_cache=True)
                 else:
-                    satisfiable, replacements = Balancer(backends.vsa, rc).compat_ret
+                    satisfiable, replacements = Balancer(backends.vsa, rc, validation_frontend=self._validation_frontend).compat_ret
                     if not satisfiable:
                         self.add_replacement(rc, false)
                     for old, new in replacements:
