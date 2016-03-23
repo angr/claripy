@@ -309,6 +309,19 @@ class Base(ana.Storable):
 
             if op == 'BVS' and inner:
                 value = args[0]
+            elif op == 'BVS':
+                value = "%s" % args[0]
+                extras = [ ]
+                if args[1] is not None:
+                    extras.append("min=%s" % args[1])
+                if args[2] is not None:
+                    extras.append("max=%s" % args[2])
+                if args[3] is not None:
+                    extras.append("stride=%s" % args[3])
+                if args[4] is True:
+                    extras.append("UNINITIALIZED")
+                if len(extras) != 0:
+                    value += "{" + ", ".join(extras) + "}"
             elif op == 'BoolV':
                 value = str(args[0])
             elif op == 'BVV':
