@@ -25,7 +25,7 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def BVS(ast, result=None):
-        name, mn, mx, stride, uninitialized = ast.args #pylint:disable=unused-variable
+        name, mn, mx, stride, uninitialized, _, _ = ast.args #pylint:disable=unused-variable
 
         if mn is not None and mn == mx:
             return bv.BVV(mx, ast.length)

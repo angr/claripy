@@ -3,7 +3,7 @@ import functools
 
 from .strided_interval import StridedInterval
 
-MAX_CARDINALITY_WITHOUT_COLLAPSING = 256 # We don't collapse until there are more than this many SIs
+DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256 # We don't collapse until there are more than this many SIs
 
 def apply_on_each_si(f):
     @functools.wraps(f)
@@ -60,7 +60,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     """
     A DiscreteStridedIntervalSet represents one or more discrete StridedInterval instances.
     """
-    def __init__(self, name=None, bits=0, si_set=None):
+    def __init__(self, name=None, bits=0, si_set=None, max_cardinality=None):
         if name is None:
             name = "DSIS_%d" % (dsis_id_ctr.next())
 
@@ -70,6 +70,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
         else:
             self._si_set = set()
+
+        self._max_cardinality = DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING if max_cardinality is None else \
+            max_cardinality
 
         StridedInterval.__init__(self, name=name, bits=bits)
 
@@ -115,7 +118,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     #
 
     def should_collapse(self):
-        return self.cardinality > MAX_CARDINALITY_WITHOUT_COLLAPSING
+        return self.cardinality > self._max_cardinality
 
     def collapse(self):
         """
@@ -149,7 +152,8 @@ class DiscreteStridedIntervalSet(StridedInterval):
             return self
 
     def copy(self):
-        copied = DiscreteStridedIntervalSet(bits=self._bits, si_set=self._si_set.copy())
+        copied = DiscreteStridedIntervalSet(bits=self._bits, si_set=self._si_set.copy(),
+                                            max_cardinality=self._max_cardinality)
 
         return copied
 
@@ -395,7 +399,16 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     # Evaluation
 
-    def eval(self, n):
+    def eval(self, n, signed=False):
+        """
+
+        :param n:
+        :param signed:
+        :return:
+        """
+
+        # FIXME: "signed" is silently ignored now
+
         ret = set()
 
         for si in self._si_set:

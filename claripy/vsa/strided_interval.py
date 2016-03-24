@@ -2424,7 +2424,7 @@ class StridedInterval(BackendObject):
             return StridedInterval.least_upper_bound(self, b)
 
         else:
-            if self.cardinality > discrete_strided_interval_set.MAX_CARDINALITY_WITHOUT_COLLAPSING or \
+            if self.cardinality > discrete_strided_interval_set.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING or \
                     b.cardinality > discrete_strided_interval_set:
                 return StridedInterval.least_upper_bound(self, b)
 
@@ -3163,7 +3163,8 @@ class StridedInterval(BackendObject):
 
             return si
 
-def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False, to_conv=None):
+def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, upper_bound=None, uninitialized=False,
+                          to_conv=None, discrete_set=False, discrete_set_max_cardinality=None):
     """
     :param name:
     :param bits:
@@ -3171,11 +3172,13 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
     :param lower_bound:
     :param upper_bound:
     :param to_conv:
+    :param bool discrete_set:
+    :param int discrete_set_max_cardinality:
     :return:
     """
     if to_conv is not None:
         if isinstance(to_conv, Base):
-            to_conv = to_conv.model
+            to_conv = to_conv._model_vsa
         if isinstance(to_conv, StridedInterval):
             # No conversion will be done
             return to_conv
@@ -3204,7 +3207,17 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
                          lower_bound=lower_bound,
                          upper_bound=upper_bound,
                          uninitialized=uninitialized)
-    return bi
+    if not discrete_set:
+        return bi
+    else:
+        dsis = DiscreteStridedIntervalSet(
+            name=name,
+            bits=bits,
+            si_set={ bi },
+            max_cardinality=discrete_set_max_cardinality
+        )
+
+        return dsis
 
 
 from .errors import ClaripyVSAError
