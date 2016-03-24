@@ -293,8 +293,11 @@ class Base(ana.Storable):
         return self.__repr__(max_depth=max_depth)
 
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):
-        if max_depth is not None and self.depth < max_depth:
+        if max_depth is not None and max_depth <= 0:
             return '<...>'
+
+        if max_depth is not None:
+            max_depth -= 1
 
         if WORKER:
             return '<AST something>'
