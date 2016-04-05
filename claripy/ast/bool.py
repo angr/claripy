@@ -3,6 +3,16 @@ l = logging.getLogger('claripy.ast.bool')
 
 from ..ast.base import Base, _make_name
 
+_boolv_cache = dict()
+
+# This is a hilarious hack to get around some sort of bug in z3's python bindings, where
+# under some circumstances stuff gets destructed out of order
+def cleanup():
+    global _boolv_cache #pylint:disable=global-variable-not-assigned
+    del _boolv_cache
+import atexit
+atexit.register(cleanup)
+
 class Bool(Base):
     @staticmethod
     def _from_bool(like, val): #pylint:disable=unused-argument
@@ -61,7 +71,11 @@ def BoolS(name, explicit_name=None):
     return Bool('BoolS', (n,), variables={n}, symbolic=True)
 
 def BoolV(val):
-    return Bool('BoolV', (val,))
+    try: return _boolv_cache[(val)]
+    except KeyError: pass
+    result = Bool('BoolV', (val,))
+    _boolv_cache[val] = result
+    return result
 
 #
 # some standard ASTs
