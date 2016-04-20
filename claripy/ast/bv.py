@@ -116,7 +116,8 @@ class BV(Bits):
     def to_bv(self):
         return self
 
-def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explicit_name=None, **kwargs): #pylint:disable=redefined-builtin
+def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
+        explicit_name=None, discrete_set=False, discrete_set_max_card=None, **kwargs):
     """
     Creates a bit-vector symbol (i.e., a variable).
 
@@ -127,7 +128,10 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explic
     :param stride:          The stride of the symbol.
     :param uninitialized:   Whether this value should be counted as an "uninitialized" value in the course of an
                             analysis.
-    :param explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
+    :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
+    :param bool discrete_set: If True, a DiscreteStridedIntervalSet will be used instead of a normal StridedInterval.
+    :param int discrete_set_max_card: The maximum cardinality of the discrete set. It is ignored if discrete_set is set
+                                      to False or None.
 
     :returns:               a BV object representing this symbol.
     """
@@ -136,7 +140,12 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False, explic
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
-    return BV('BVS', (n, min, max, stride, uninitialized), variables={n}, length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
+
+    if not discrete_set:
+        discrete_set_max_card = None
+
+    return BV('BVS', (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card), variables={n},
+              length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
 
 def BVV(value, size=None, **kwargs):
     """
@@ -167,12 +176,14 @@ def BVV(value, size=None, **kwargs):
     _bvv_cache[(value, size)] = result
     return result
 
-def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None, explicit_name=None):
+def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None, explicit_name=None,
+       discrete_set=False, discrete_set_max_card=None):
     name = 'unnamed' if name is None else name
     if to_conv is not None:
         si = vsa.CreateStridedInterval(name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride, to_conv=to_conv)
         return BVS(name, si._bits, min=si._lower_bound, max=si._upper_bound, stride=si._stride, explicit_name=explicit_name)
-    return BVS(name, bits, min=lower_bound, max=upper_bound, stride=stride, explicit_name=explicit_name)
+    return BVS(name, bits, min=lower_bound, max=upper_bound, stride=stride, explicit_name=explicit_name,
+               discrete_set=discrete_set, discrete_set_max_card=discrete_set_max_card)
 
 def TSI(bits, name=None, uninitialized=False, explicit_name=None):
     name = 'unnamed' if name is None else name
@@ -185,6 +196,16 @@ def ValueSet(**kwargs):
     vs = vsa.ValueSet(**kwargs)
     return BV('I', (vs,), variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager_backends=None)
 VS = ValueSet
+
+def DSIS(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None):
+
+    if to_conv is not None:
+        si = vsa.CreateStridedInterval(bits=to_conv.size(), to_conv=to_conv)
+        return SI(name=name, bits=si._bits, lower_bound=si._lower_bound, upper_bound=si._upper_bound, stride=si._stride,
+                   explicit_name=explicit_name, discrete_set=True, discrete_set_max_card=max_card)
+    else:
+        return SI(name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride,
+                   explicit_name=explicit_name, discrete_set=True, discrete_set_max_card=max_card)
 
 #
 # Unbound operations

@@ -176,7 +176,7 @@ class BackendZ3(Backend):
 
     @condom
     def BVS(self, ast, result=None): #pylint:disable=unused-argument
-        name, mn, mx, stride, _ = ast.args
+        name, mn, mx, stride, _, _, _ = ast.args
         size = ast.size()
         expr = z3.BitVec(name, size, ctx=self._context)
         if mn is not None:
@@ -348,7 +348,7 @@ class BackendZ3(Backend):
 
             #if bv_name.count('_') < 2:
             #      import ipdb; ipdb.set_trace()
-            return BV("BVS", (bv_name, None, None, None, False), length=bv_size, variables={ bv_name }, symbolic=True)
+            return BV("BVS", (bv_name, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True)
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
