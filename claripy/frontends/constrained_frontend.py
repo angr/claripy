@@ -22,10 +22,10 @@ class ConstrainedFrontend(CachingFrontend):  # pylint:disable=abstract-method
     def _ana_getstate(self):
         if not self._simplified: self.simplify()
         self.finalize()
-        return self.constraints, self.variables, CachingFrontend._ana_getstate(self)
+        return self.constraints, self._constraint_hashes, self.variables, CachingFrontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self.constraints, self.variables, base_state = s
+        self.constraints, self._constraint_hashes, self.variables, base_state = s
         CachingFrontend._ana_setstate(self, base_state)
         self._finalized = True
 
