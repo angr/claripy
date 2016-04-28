@@ -387,9 +387,9 @@ class Base(ana.Storable):
         ast_args = [ a for a in self.args if isinstance(a, Base) ]
         max_depth = 0
         for a in ast_args:
-            if a not in memoized:
-                memoized[a] = a._depth(memoized)
-            max_depth = max(memoized[a], max_depth)
+            if a.cache_key not in memoized:
+                memoized[a.cache_key] = a._depth(memoized)
+            max_depth = max(memoized[a.cache_key], max_depth)
 
         return 1 + max_depth
 
