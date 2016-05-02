@@ -24,6 +24,12 @@ def test_smudging():
     nose.tools.assert_equal(ccc.args[1].args[1].args[0], 2)
     nose.tools.assert_equal(ccc.args[1].args[1].args[1], 32)
 
+    x = claripy.BVS('x', 32)
+    y = x + "AAAA"
+    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.BV))
+    nose.tools.assert_equal(y.args[1].args[0], 0x41414141)
+    nose.tools.assert_equal(y.args[1].args[1], 32)
+
 def test_expression():
     bc = claripy.backends.concrete
 

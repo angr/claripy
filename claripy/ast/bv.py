@@ -95,6 +95,10 @@ class BV(Bits):
         return BVV(value, like.length)
 
     @staticmethod
+    def _from_str(like, value): #pylint:disable=unused-argument
+        return BVV(value)
+
+    @staticmethod
     def _from_BVV(like, value): #pylint:disable=unused-argument
         return BVV(value.value, value.size())
 
