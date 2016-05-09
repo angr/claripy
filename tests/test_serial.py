@@ -40,7 +40,7 @@ def test_datalayer():
     l.info("Running test_datalayer")
 
     pickle_dir = tempfile.mkdtemp()
-    ana.set_dl(pickle_dir=pickle_dir)
+    ana.set_dl(ana.DirDataLayer(pickle_dir))
     l.debug("Pickling to %s",pickle_dir)
 
     a = claripy.BVV(1, 32)
@@ -54,7 +54,7 @@ def test_datalayer():
     d_info = d.ana_store()
 
     l.debug("Loading!")
-    ana.set_dl(pickle_dir=pickle_dir)
+    ana.set_dl(ana.DirDataLayer(pickle_dir))
     #nose.tools.assert_equal(len(claripy.dl._cache), 0)
 
     cc = claripy.ast.BV.ana_load(c_info)
