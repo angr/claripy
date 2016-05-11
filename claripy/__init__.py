@@ -21,7 +21,7 @@ from . import backends as _backends_module
 
 import ana
 if os.environ.get('REMOTE', False):
-    ana.set_dl(mongo_args=())
+    ana.set_dl(ana.MongoDataLayer(()))
 
 #
 # Some other misguided setup
