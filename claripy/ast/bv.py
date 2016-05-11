@@ -60,6 +60,15 @@ class BV(Bits):
         else:
             return Extract(int(rng), int(rng), self)
 
+    def get_byte(self, index):
+        """
+        Extracts a byte from a BV, where the index refers to the byte in a big-endian order
+        :param index: the byte to extract
+        :return:
+        """
+        pos = self.size() / 8 - 1 - index
+        return self[pos * 8 + 7 : pos * 8]
+
     def zero_extend(self, n):
         """
         Zero-extends the AST by n bits. So:

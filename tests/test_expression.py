@@ -293,6 +293,10 @@ def test_extract():
     assert a[-1:] is a[31:0]
     assert a[-1:-8] is a[31:24]
 
+def test_get_byte():
+    a = claripy.BVV("ABCD")
+    assert a.get_byte(1) is claripy.BVV("B")
+
 def test_extract_concat_simplify():
     a = claripy.BVS("a", 32)
     assert a[31:0] is a
@@ -368,6 +372,7 @@ if __name__ == '__main__':
     test_expression()
     test_bool()
     test_extract_concat_simplify()
+    test_get_byte()
     for func, param in test_ite():
         func(param)
     test_if_stuff()
