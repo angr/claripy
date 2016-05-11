@@ -87,7 +87,7 @@ class ReplacementFrontend(ConstrainedFrontend):
 
     def branch(self):
         s = ConstrainedFrontend.branch(self)
-        s._action_frontend = self._actual_frontend.branch()
+        s._actual_frontend = self._actual_frontend.branch()
         s._replacements = self._replacements
         s._replacement_cache = self._replacement_cache
         return s
