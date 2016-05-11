@@ -298,6 +298,8 @@ def boolean_reverse_simplifier(body):
                     return first_ast
                 else:
                     return first_ast[upper_bound:0]
+        if all(a.length == 8 for a in body.args):
+            return body.make_like(body.op, body.args[::-1])
 
 def boolean_and_simplifier(*args):
     if len(args) == 1:
