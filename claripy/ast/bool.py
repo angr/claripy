@@ -20,7 +20,7 @@ class Bool(Base):
 
     def is_true(self):
         """
-        Returns True if 'self' can be easily determined to be True. Otherwise, return False. Note that the AST *might* 
+        Returns True if 'self' can be easily determined to be True. Otherwise, return False. Note that the AST *might*
         still be True (i.e., if it were simplified via Z3), but it's hard to quickly tell that.
         """
         return is_true(self)

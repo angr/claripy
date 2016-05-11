@@ -11,11 +11,7 @@ l = logging.getLogger("claripy.ast")
 
 import ana
 
-if os.environ.get('WORKER', False):
-    WORKER = True
-else:
-    WORKER = False
-
+WORKER = bool(os.environ.get('WORKER', False))
 md5_unpacker = struct.Struct('2Q')
 
 #pylint:enable=unused-argument

@@ -173,7 +173,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :return:    An instance of BoolResult.
         """
 
-        return (self.collapse() == o)
+        return self.collapse() == o
 
     @convert_operand_to_si
     @collapse_operand
@@ -185,7 +185,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :return:    An instance of BoolResult.
         """
 
-        return (self.collapse() != o)
+        return self.collapse() != o
 
     @convert_operand_to_si
     @collapse_operand
@@ -197,7 +197,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :return:    An instance of BoolResult.
         """
 
-        return (self.collapse() > o)
+        return self.collapse() > o
 
     @convert_operand_to_si
     @collapse_operand
@@ -209,7 +209,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :return:    An instance of BoolResult.
         """
 
-        return (self.collapse() <= o)
+        return self.collapse() <= o
 
     @convert_operand_to_si
     @collapse_operand
@@ -220,7 +220,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:    An instance of BoolResult.
         """
-        return (self.collapse() < o)
+        return self.collapse() < o
 
     # Bitwise operations
 

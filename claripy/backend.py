@@ -84,7 +84,7 @@ class Backend(object):
     def _make_expr_ops(self, op_list, op_dict=None, op_class=None):
         """
         Fill up `self._op_expr` dict.
-        
+
         :param op_list:     A list of operation names.
         :param op_dict:     A dictionary of operation methods.
         :param op_class:    Where the operation method comes from.
@@ -652,7 +652,7 @@ class Backend(object):
         :param expr:                An expression (claripy.E) to evaluate
         :param v:                   The proposed solution (claripy.E)
         :param result:              A cached Result from the last constraint solve
-        :param solver:              A solver object, native to the backend, to assist in the evaluation (for example, 
+        :param solver:              A solver object, native to the backend, to assist in the evaluation (for example,
                                     a z3.Solver).
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :return:                   True if `v` is a solution of `expr`, False otherwise
