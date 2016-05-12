@@ -39,6 +39,10 @@ docs:
     script: "angr-test docs"
     tags: [angr]
 
+patcherex:
+    script: "angr-test patcherex"
+    tags: [angr]
+
 ### other levels
 tracer:
     script: "angr-test tracer"
