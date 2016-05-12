@@ -1,3 +1,4 @@
+#pylint:disable=redefined-outer-name
 Bits = lambda *args, **kwargs: None
 BV = lambda *args, **kwargs: None
 VS = lambda *args, **kwargs: None

@@ -12,8 +12,8 @@ def reversed_processor(f):
     def processor(self, *args, **kwargs):
         if self._reversed:
             # Reverse it for real. We have to accept the precision penalty.
-            reversed = self._reverse()
-            return f(reversed, *args, **kwargs)
+            reversed_thing = self._reverse()
+            return f(reversed_thing, *args, **kwargs)
         return f(self, *args, **kwargs)
 
     return processor
@@ -637,14 +637,7 @@ class StridedInterval(BackendObject):
         :return: True if they are exactly same, False otherwise.
         """
 
-        if (self.bits == o.bits and
-                self.stride == o.stride and
-                self.lower_bound == o.lower_bound and
-                self.upper_bound == o.upper_bound):
-            return True
-
-        else:
-            return False
+        return self.bits == o.bits and self.stride == o.stride and self.lower_bound == o.lower_bound and self.upper_bound == o.upper_bound
 
     @normalize_types
     def SLT(self, o):
@@ -1384,8 +1377,8 @@ class StridedInterval(BackendObject):
         # use the same variable names as in paper
         s = src_interval
         t = tar_interval
-        (a, b) = (s.lower_bound, s.upper_bound)
-        (c, d) = (t.lower_bound, t.upper_bound)
+        (_, b) = (s.lower_bound, s.upper_bound)
+        (c, _) = (t.lower_bound, t.upper_bound)
 
         w = s.bits
         # case 1
@@ -2727,7 +2720,7 @@ class StridedInterval(BackendObject):
         It finds the fist natural solution of the diophantine equation
         a*x + b*y = c. Some lines of this code are taken from the project
         sympy.
-        
+
         :param c: constant
         :param a: quotient of x
         :param b: quotient of y
@@ -2874,7 +2867,7 @@ class StridedInterval(BackendObject):
         is used to resolve ka and kb, and finally to solve the above equation and get the minimum shared integer.
         """
         x, y = StridedInterval.diop_natural_solution_linear(-(b-d), a, -c)
-        if a == None or b == None:
+        if a is None or b is None:
             return None
         first_integer = x * a + b
         assert first_integer == y*c + d

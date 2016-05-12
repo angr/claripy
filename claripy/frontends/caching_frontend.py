@@ -195,6 +195,9 @@ class CachingFrontend(Frontend):
             self.result = UnsatResult()
             to_add = [ false ]
 
+        if len(to_add) == 0:
+            return [ ]
+
         for c in to_add:
             if not isinstance(c, Bool):
                 raise ClaripyTypeError('constraint is not a boolean expression!')
