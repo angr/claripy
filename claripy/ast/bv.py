@@ -172,12 +172,10 @@ def BVV(value, size=None, **kwargs):
 
     if type(value) is str:
         if size is None:
-            size = 8*len(value)
-            value = int(value.encode('hex'), 16)
-        elif size == len(value)*8:
-            value = int(value.encode('hex'), 16)
-        else:
+            size = len(value)*8
+        elif size != len(value)*8:
             raise ClaripyValueError('string/size mismatch for BVV creation')
+        value = int(value.encode('hex'), 16) if size > 0 else 0
     elif size is None:
         raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
 
