@@ -5,6 +5,9 @@ from .backend_object import BackendObject
 def compare_bits(f):
     @functools.wraps(f)
     def compare_guard(self, o):
+        if self.bits == 0 or o.bits == 0:
+            raise TypeError("The operation is not allowed on zero-length bitvectors.")
+
         if self.bits != o.bits:
             raise TypeError("bitvectors are differently-sized (%d and %d)" % (self.bits, o.bits))
         return f(self, o)
@@ -31,8 +34,11 @@ class BVV(BackendObject):
     __slots__ = [ 'bits', '_value', 'mod', 'value' ]
 
     def __init__(self, value, bits):
-        if bits == 0 or type(bits) not in (int, long) or type(value) not in (int, long):
-            raise ClaripyOperationError("BVV needs a non-zero length and an int/long value")
+        if bits < 0 or type(bits) not in (int, long) or type(value) not in (int, long):
+            raise ClaripyOperationError("BVV needs a non-negative length and an int/long value")
+
+        if bits == 0 and value not in (0, "", None):
+            raise ClaripyOperationError("Zero-length BVVs cannot have a meaningful value.")
 
         self.bits = bits
         self._value = 0
@@ -339,31 +345,3 @@ def If(c, t, f):
 @compare_bits
 def LShR(a, b):
     return BVV(a.value >> b.signed, a.bits)
-
-
-def test():
-    a = BVV(1, 8)
-    b = BVV(2, 8)
-    assert a | b == 3
-    assert a & b == 0
-    assert a / b == 0
-    assert b * b == 4
-    assert a.signed == a.value
-    assert a + 8 == 9
-
-    c = BVV(128, 8)
-    assert c.signed == -128
-
-    d = BVV(255, 8)
-    assert Extract(1, 0, d) == 3
-    assert SignExt(8, d).value == 2**16-1
-    assert ZeroExt(8, d).size() == 16
-    assert ZeroExt(8, d).value == 255
-
-    e = BVV(0b1010, 4)
-    f = BVV(0b11, 2)
-    assert Concat(e, e, e, e) == 0b1010101010101010
-    assert Concat(e,f,f) == 0b10101111
-
-if __name__ == '__main__':
-    test()
