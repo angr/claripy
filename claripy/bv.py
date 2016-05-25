@@ -1,15 +1,15 @@
 import functools
-from .errors import ClaripyOperationError
+from .errors import ClaripyOperationError, ClaripyTypeError
 from .backend_object import BackendObject
 
 def compare_bits(f):
     @functools.wraps(f)
     def compare_guard(self, o):
         if self.bits == 0 or o.bits == 0:
-            raise TypeError("The operation is not allowed on zero-length bitvectors.")
+            raise ClaripyTypeError("The operation is not allowed on zero-length bitvectors.")
 
         if self.bits != o.bits:
-            raise TypeError("bitvectors are differently-sized (%d and %d)" % (self.bits, o.bits))
+            raise ClaripyTypeError("bitvectors are differently-sized (%d and %d)" % (self.bits, o.bits))
         return f(self, o)
 
     return compare_guard

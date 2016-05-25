@@ -4,6 +4,7 @@ import sys
 import nose.tools
 
 from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat
+from claripy.errors import ClaripyTypeError
 
 def test_bv():
     a = BVV(1, 8)
@@ -34,10 +35,10 @@ def test_zero_length():
     b = BVV(0, 0)
     assert Concat(a, b) == 1
 
-    nose.tools.assert_raises(TypeError, lambda: a + b)
-    nose.tools.assert_raises(TypeError, lambda: a - b)
-    nose.tools.assert_raises(TypeError, lambda: a * b)
-    nose.tools.assert_raises(TypeError, lambda: a / b)
+    nose.tools.assert_raises(ClaripyTypeError, lambda: a + b)
+    nose.tools.assert_raises(ClaripyTypeError, lambda: a - b)
+    nose.tools.assert_raises(ClaripyTypeError, lambda: a * b)
+    nose.tools.assert_raises(ClaripyTypeError, lambda: a / b)
 
 if __name__ == '__main__':
 
