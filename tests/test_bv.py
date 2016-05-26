@@ -34,6 +34,7 @@ def test_zero_length():
     a = BVV(1, 8)
     b = BVV(0, 0)
     assert Concat(a, b) == 1
+    assert b == b
 
     nose.tools.assert_raises(ClaripyTypeError, lambda: a + b)
     nose.tools.assert_raises(ClaripyTypeError, lambda: a - b)

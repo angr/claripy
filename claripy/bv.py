@@ -14,6 +14,15 @@ def compare_bits(f):
 
     return compare_guard
 
+def compare_bits_0_length(f):
+    @functools.wraps(f)
+    def compare_guard(self, o):
+        if self.bits != o.bits:
+            raise ClaripyTypeError("bitvectors are differently-sized (%d and %d)" % (self.bits, o.bits))
+        return f(self, o)
+
+    return compare_guard
+
 def normalize_types(f):
     @functools.wraps(f)
     def normalize_helper(self, o):
@@ -196,12 +205,12 @@ class BVV(BackendObject):
     #
 
     @normalize_types
-    @compare_bits
+    @compare_bits_0_length
     def __eq__(self, o):
         return self.value == o.value
 
     @normalize_types
-    @compare_bits
+    @compare_bits_0_length
     def __ne__(self, o):
         return self.value != o.value
 
