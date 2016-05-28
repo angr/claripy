@@ -403,12 +403,16 @@ class Base(ana.Storable):
         return self._recursive_leaf_asts()
 
     def _recursive_leaf_asts(self, seen=None):
+        if self.depth == 1:
+            yield self
+            return
+
         seen = set() if seen is None else seen
         for a in self.args:
             if isinstance(a, Base) and not a.cache_key in seen:
                 seen.add(a.cache_key)
 
-                if a.op in ('BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'):
+                if a.depth == 1:
                     yield a
                 else:
                     for b in a.recursive_leaf_asts:

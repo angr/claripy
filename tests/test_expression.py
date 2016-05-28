@@ -352,6 +352,8 @@ def test_canonical():
     b2 = claripy.BoolS('b')
     c2 = claripy.BoolS('c')
 
+    assert x1.canonicalize()[-1] is x2.canonicalize()[-1]
+
     y1 = claripy.If(claripy.And(b1, c1), x1, ((x1+x1)*x1)+1)
     y2 = claripy.If(claripy.And(b2, c2), x2, ((x2+x2)*x2)+1)
 
@@ -362,7 +364,14 @@ def test_canonical():
     assert frozenset.union(*[a.variables for a in y2.recursive_leaf_asts]) == two_names
     assert y1.canonicalize()[-1] is y2.canonicalize()[-1]
 
+def test_depth():
+    x1 = claripy.BVS('x', 32)
+    assert x1.depth == 1
+    x2 = x1 + 1
+    assert x2.depth == 2
+
 if __name__ == '__main__':
+    test_depth()
     test_rename()
     test_canonical()
     test_depth_repr()
