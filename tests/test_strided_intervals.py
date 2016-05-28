@@ -1,12 +1,5 @@
-import sys
-import time
-import os
 import logging
 
-import nose
-
-import angr
-import simuvex
 from  claripy.vsa import StridedInterval
 
 l = logging.getLogger("angr_tests")
