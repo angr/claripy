@@ -46,12 +46,12 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
         ast_args = tuple(a for a in args if isinstance(a, ast.Base))
 
+        #pylint:disable=too-many-nested-blocks
         if name in simplifiers:
             simp = simplifiers[name](*fixed_args)
             bad_eliminated = 0
 
             if simp is not None:
-                #pylint:disable=too-many-nested-blocks
                 preserved_relocatable = frozenset(simp._relocatable_annotations)
                 relocated_annotations = set()
                 for aa in ast_args:
