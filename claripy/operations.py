@@ -44,10 +44,28 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             if not success:
                 raise ClaripyOperationError(msg)
 
+        ast_args = tuple(a for a in args if isinstance(a, ast.Base))
+
         if name in simplifiers:
             simp = simplifiers[name](*fixed_args)
+            bad_eliminated = 0
+
             if simp is not None:
-                return simp
+                #pylint:disable=too-many-nested-blocks
+                preserved_relocatable = frozenset(simp._relocatable_annotations)
+                relocated_annotations = set()
+                for aa in ast_args:
+                    for oa in aa._relocatable_annotations:
+                        if oa not in preserved_relocatable and oa not in relocated_annotations:
+                            relocated_annotations.add(oa)
+                            na = oa.relocate(aa, simp)
+                            if na is not None:
+                                simp = simp.append_annotation(na)
+
+                    bad_eliminated += len(aa._uneliminatable_annotations - simp._uneliminatable_annotations)
+
+                if bad_eliminated == 0:
+                    return simp
 
         kwargs = {}
         if calc_length is not None:

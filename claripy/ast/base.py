@@ -4,6 +4,7 @@ import struct
 import weakref
 import hashlib
 import itertools
+import collections
 import cPickle as pickle
 
 import logging
@@ -62,7 +63,7 @@ class Base(ana.Storable):
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth']
+                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -88,6 +89,7 @@ class Base(ana.Storable):
                                 (basically, just undoing the Reverse op), and 2 means simplified through z3.
         :param errored:         A set of backends that are known to be unable to handle this AST.
         :param eager_backends:  A list of backends with which to attempt eager evaluation
+        :param annotations:     A frozenset of annotations applied onto this AST.
         """
 
         #if any(isinstance(a, BackendObject) for a in args):
@@ -120,7 +122,6 @@ class Base(ana.Storable):
 
         # if we can't be eager anymore, null out the eagerness
         kwargs['eager_backends'] = None
-        h = Base._calc_hash(op, a_args, kwargs)
 
         # whether this guy is initialized or not
         if 'uninitialized' not in kwargs:
@@ -129,6 +130,10 @@ class Base(ana.Storable):
         if 'uc_alloc_depth' not in kwargs:
             kwargs['uc_alloc_depth'] = None
 
+        if 'annotations' not in kwargs:
+            kwargs['annotations'] = ()
+
+        h = Base._calc_hash(op, a_args, kwargs)
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
@@ -156,7 +161,7 @@ class Base(ana.Storable):
         :returns:       a hash.
 
         """
-        to_hash = (op, tuple(a if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)))
+        to_hash = (op, tuple(a if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
@@ -168,7 +173,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as Base.__new__()
         """
@@ -188,6 +193,18 @@ class Base(ana.Storable):
 
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
+        self.annotations = annotations
+
+        ast_args = tuple(a for a in self.args if isinstance(a, Base))
+        self._uneliminatable_annotations = frozenset(itertools.chain(
+            itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
+            tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
+        ))
+
+        self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
+            itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+            tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
+        ))).keys()
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
@@ -232,13 +249,14 @@ class Base(ana.Storable):
         """
         Support for ANA serialization.
         """
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations
+
     def _ana_setstate(self, state):
         """
         Support for ANA deserialization.
         """
-        op, args, length, variables, symbolic, h = state
-        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic)
+        op, args, length, variables, symbolic, h, annotations = state
+        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
         self._hash = h
         Base._hash_cache[h] = self
 
@@ -253,6 +271,10 @@ class Base(ana.Storable):
     #            yield backend.convert(a)
 
     def make_like(self, *args, **kwargs):
+        if 'annotations' not in kwargs: kwargs['annotations'] = self.annotations
+        if 'variables' not in kwargs and self.depth == 1: kwargs['variables'] = self.variables
+        if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
+        if 'symbolic' not in kwargs and self.depth == 1: kwargs['symbolic'] = self.symbolic
         return type(self)(*args, **kwargs)
 
     def _rename(self, new_name):
@@ -260,6 +282,85 @@ class Base(ana.Storable):
             raise ClaripyOperationError("rename is only supported on leaf nodes")
         new_args = (new_name,) + self.args[1:]
         return self.make_like(self.op, new_args, length=self.length, variables={new_name})
+
+    #
+    # Annotations
+    #
+
+    def _apply_to_annotations(self, f):
+        return self.make_like(self.op, self.args, annotations=f(self.annotations))
+
+    def append_annotation(self, a):
+        """
+        Appends an annotation to this AST.
+
+        :param a: the annotation to append
+        :returns: a new AST, with the annotation added
+        """
+        return self._apply_to_annotations(lambda alist: alist + (a,))
+
+    def append_annotations(self, new_tuple):
+        """
+        Appends several annotations to this AST.
+
+        :param new_tuple: the tuple of annotations to append
+        :returns: a new AST, with the annotations added
+        """
+        return self._apply_to_annotations(lambda alist: alist + new_tuple)
+
+    def annotate(self, *args):
+        """
+        Appends annotations to this AST.
+
+        :param *args: the tuple of annotations to append
+        :returns: a new AST, with the annotations added
+        """
+        return self._apply_to_annotations(lambda alist: alist + args)
+
+    def insert_annotation(self, a):
+        """
+        Inserts an annotation to this AST.
+
+        :param a: the annotation to insert
+        :returns: a new AST, with the annotation added
+        """
+        return self._apply_to_annotations(lambda alist: (a,) + alist)
+
+    def insert_annotations(self, new_tuple):
+        """
+        Inserts several annotations to this AST.
+
+        :param new_tuple: the tuple of annotations to insert
+        :returns: a new AST, with the annotations added
+        """
+        return self._apply_to_annotations(lambda alist: new_tuple + alist)
+
+    def replace_annotations(self, new_tuple):
+        """
+        Replaces annotations on this AST.
+
+        :param new_tuple: the tuple of annotations to replace the old annotations with
+        :returns: a new AST, with the annotations added
+        """
+        return self._apply_to_annotations(lambda alist: new_tuple)
+
+    def remove_annotation(self, a):
+        """
+        Removes an annotation from this AST.
+
+        :param a: the annotation to remove
+        :returns: a new AST, with the annotation removed
+        """
+        return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
+
+    def remove_annotations(self, remove_sequence):
+        """
+        Removes several annotations from this AST.
+
+        :param remove_sequence: a sequence/set of the annotations to remove
+        :returns: a new AST, with the annotations removed
+        """
+        return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa not in remove_sequence))
 
     #
     # Viewing and debugging
