@@ -305,6 +305,9 @@ def boolean_and_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
+    if any(a.is_false() for a in args):
+        return ast.all_operations.false
+
     if any(a.is_true() for a in args):
         new_args = tuple(a for a in args if not a.is_true())
         if len(new_args) > 0:
@@ -315,6 +318,9 @@ def boolean_and_simplifier(*args):
 def boolean_or_simplifier(*args):
     if len(args) == 1:
         return args[0]
+
+    if any(a.is_true() for a in args):
+        return ast.all_operations.true
 
     if any(a.is_false() for a in args):
         new_args = tuple(a for a in args if not a.is_false())
