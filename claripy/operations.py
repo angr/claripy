@@ -305,29 +305,29 @@ def boolean_and_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
-    if any(a.is_false() for a in args):
-        return ast.all_operations.false
+    new_args = []
+    for a in args:
+        if a.is_false():
+            return ast.all_operations.false
+        elif not a.is_true():
+            new_args.append(a)
 
-    if any(a.is_true() for a in args):
-        new_args = tuple(a for a in args if not a.is_true())
-        if len(new_args) > 0:
-            return ast.all_operations.And(*new_args)
-        else:
-            return ast.all_operations.true
+    if len(new_args) < len(args):
+        return ast.all_operations.And(*new_args)
 
 def boolean_or_simplifier(*args):
     if len(args) == 1:
         return args[0]
 
-    if any(a.is_true() for a in args):
-        return ast.all_operations.true
+    new_args = []
+    for a in args:
+        if a.is_true():
+            return ast.all_operations.true
+        elif not a.is_false():
+            new_args.append(a)
 
-    if any(a.is_false() for a in args):
-        new_args = tuple(a for a in args if not a.is_false())
-        if len(new_args) > 0:
-            return ast.all_operations.Or(*new_args)
-        else:
-            return ast.all_operations.false
+    if len(new_args) < len(args):
+        return ast.all_operations.Or(*new_args)
 
 def bitwise_add_simplifier(a, b):
     if (a == 0).is_true():
