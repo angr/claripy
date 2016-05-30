@@ -32,31 +32,6 @@ class Bool(Base):
         """
         return is_false(self)
 
-    def _simplify_And(self):
-        new_args = [ ]
-        for a in self.args:
-            if is_false(a):
-                return BoolV(False)
-            elif not is_true(a):
-                new_args.append(a)
-
-        if len(new_args) == 0:
-            return BoolV(True)
-        else:
-            return Bool(self.op, new_args)
-
-    def _simplify_Or(self):
-        new_args = [ ]
-        for a in self.args:
-            if is_true(a):
-                return BoolV(False)
-            elif not is_false(a):
-                new_args.append(a)
-
-        if len(new_args) == 0:
-            return BoolV(False)
-        else:
-            return Bool(self.op, new_args)
 
 def BoolS(name, explicit_name=None):
     """
