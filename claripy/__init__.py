@@ -47,6 +47,7 @@ from . import bv
 from . import fp
 from . import vsa
 from .fp import FSORT_DOUBLE, FSORT_FLOAT
+from .annotation import Annotation
 
 #
 # Operations
@@ -72,6 +73,7 @@ def BV(name, size, explicit_name=None): #pylint:disable=function-redefined
 # Initialize the backends
 #
 
+from .backend import Backend
 from . import backend_manager as _backend_manager
 _backend_manager.backends._register_backend(_backends_module.BackendConcrete(), 'concrete', True, True)
 _backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa', False, False)

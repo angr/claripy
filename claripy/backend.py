@@ -171,6 +171,10 @@ class Backend(object):
                 expr._errored.add(self)
                 raise
 
+            # apply the annotations
+            for a in expr.annotations:
+                r = self.apply_annotation(r, a)
+
             if result is None: self._object_cache[expr._cache_key] = r
             else: result.resolve_cache[self][expr._cache_key] = r
             return r
@@ -758,6 +762,16 @@ class Backend(object):
 
     def multivalued(self, a, result=None):
         return self.cardinality(a, result=result) > 1
+
+    def apply_annotation(self, o, a): #pylint:disable=no-self-use,unused-argument
+        """
+        This should apply the annotation on the backend object, and return a new backend object.
+
+        :param o: A backend object.
+        :param a: An Annotation object.
+        :return: A backend object.
+        """
+        return o
 
 from .ast.base import Base
 from .operations import opposites
