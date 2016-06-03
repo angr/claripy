@@ -1,4 +1,5 @@
 import logging
+import operator
 l = logging.getLogger("claripy.backends.backend_concrete")
 
 from ..backend import BackendError, Backend
@@ -12,6 +13,7 @@ class BackendConcrete(Backend):
         self._op_expr['BVS'] = self.BVS
         self._op_raw['BVV'] = self.BVV
         self._op_raw['FPV'] = self.FPV
+        self._op_raw['__add__'] = self._op_add
 
     @staticmethod
     def BVV(value, size):
@@ -22,6 +24,10 @@ class BackendConcrete(Backend):
     @staticmethod
     def FPV(op, sort):
         return fp.FPV(op, sort)
+
+    @staticmethod
+    def _op_add(*args):
+        return reduce(operator.add, args)
 
     @staticmethod
     def BVS(ast, result=None):

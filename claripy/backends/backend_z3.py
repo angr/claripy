@@ -1,5 +1,6 @@
 import sys
 import logging
+import operator
 import threading
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -89,6 +90,7 @@ class BackendZ3(Backend):
         self._op_raw['__gt__'] = self._op_raw_UGT
         self._op_raw['__le__'] = self._op_raw_ULE
         self._op_raw['__lt__'] = self._op_raw_ULT
+        self._op_raw['__add__'] = self._op_raw_add
 
         self._op_raw['Reverse'] = self._op_raw_Reverse
         self._op_raw['Identical'] = self._identical
@@ -751,10 +753,13 @@ class BackendZ3(Backend):
     # Some Z3 passthroughs
     #
 
-    # these require the context
+    # these require the context or special treatment
 
     def _op_raw_And(self, *args):
         return z3.And(*(tuple(args) + ( self._context, )))
+
+    def _op_raw_add(self, *args):
+        return reduce(operator.add, args)
 
     def _op_raw_Or(self, *args):
         return z3.Or(*(tuple(args) + ( self._context, )))

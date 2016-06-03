@@ -352,6 +352,13 @@ def bitwise_add_simplifier(a, b):
         return b
     elif (b == 0).is_true():
         return a
+    elif a.op == '__add__' and b.op == '__add__':
+        return a.make_like('__add__', a.args + b.args)
+    elif a.op == '__add__':
+        return a.make_like('__add__', a.args + (b, ))
+    elif b.op == '__add__':
+        return b.make_like('__add__', (a,) + b.args)
+
 
 def bitwise_sub_simplifier(a, b):
     if (b == 0).is_true():

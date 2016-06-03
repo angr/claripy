@@ -79,9 +79,13 @@ class BackendVSA(Backend):
         self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_raw['If'] = self.If
+        self._op_raw['__add__'] = self._op_raw_add
         self._op_expr['BVV'] = self.BVV
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVS'] = self.BVS
+
+    def _op_raw_add(self, *args):
+        return reduce(operator.add, args)
 
     def convert(self, expr, result=None):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)

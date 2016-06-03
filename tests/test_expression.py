@@ -370,6 +370,20 @@ def test_depth():
     x2 = x1 + 1
     assert x2.depth == 2
 
+def test_multiarg_add():
+    x = claripy.BVS('x', 32)
+    o = claripy.BVV(1, 32)
+    assert (x+x+x+x).replace(x, o).args[0] == 4
+
+    # make sure that all backends handle this properly
+    for b in claripy.backends._all_backends:
+        try:
+            b.convert(x+x+x+x)
+        except claripy.BackendError:
+            pass
+    print 'ok'
+
+
 if __name__ == '__main__':
     test_depth()
     test_rename()
