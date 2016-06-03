@@ -161,7 +161,7 @@ class Base(ana.Storable):
         :returns:       a hash.
 
         """
-        to_hash = (op, tuple(a if type(a) in (int, long) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
+        to_hash = (op, tuple(a if type(a) in (int, long, float) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
@@ -170,7 +170,7 @@ class Base(ana.Storable):
         return md5_unpacker.unpack(hd)[0] # 64 bits
 
     def _get_hashables(self):
-        return self.op, tuple(str(a) if type(a) in (int, long) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
+        return self.op, tuple(str(a) if type(a) in (int, long, float) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
