@@ -1,5 +1,6 @@
 import sys
 import logging
+import operator
 import threading
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -101,6 +102,14 @@ class BackendZ3(Backend):
         self._op_expr['FPS'] = self.FPS
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
+
+        # reduceable
+        self._op_raw['__add__'] = self._op_add
+        self._op_raw['__sub__'] = self._op_sub
+        self._op_raw['__mul__'] = self._op_mul
+        self._op_raw['__or__'] = self._op_or
+        self._op_raw['__xor__'] = self._op_xor
+        self._op_raw['__and__'] = self._op_and
 
     @property
     def _context(self):
@@ -751,7 +760,26 @@ class BackendZ3(Backend):
     # Some Z3 passthroughs
     #
 
-    # these require the context
+    # these require the context or special treatment
+
+    @staticmethod
+    def _op_add(*args):
+        return reduce(operator.__add__, args)
+    @staticmethod
+    def _op_sub(*args):
+        return reduce(operator.__sub__, args)
+    @staticmethod
+    def _op_mul(*args):
+        return reduce(operator.__mul__, args)
+    @staticmethod
+    def _op_or(*args):
+        return reduce(operator.__or__, args)
+    @staticmethod
+    def _op_xor(*args):
+        return reduce(operator.__xor__, args)
+    @staticmethod
+    def _op_and(*args):
+        return reduce(operator.__and__, args)
 
     def _op_raw_And(self, *args):
         return z3.And(*(tuple(args) + ( self._context, )))

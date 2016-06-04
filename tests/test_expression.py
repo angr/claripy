@@ -370,7 +370,42 @@ def test_depth():
     x2 = x1 + 1
     assert x2.depth == 2
 
+def test_multiarg():
+    x = claripy.BVS('x', 32)
+    o = claripy.BVV(2, 32)
+
+    x_add = x+x+x+x
+    x_mul = x*x*x*x
+    x_sub = x-(x+1)-(x+2)-(x+3)
+    x_or = x|(x+1)|(x+2)|(x+3)
+    x_xor = x^(x+1)^(x+2)^(x+3)
+    x_and = x&(x+1)&(x+2)&(x+3)
+
+    assert len(x_add.args) == 4
+    assert len(x_mul.args) == 4
+    #assert len(x_sub.args) == 4 # needs more work
+    assert len(x_or.args) == 4
+    assert len(x_xor.args) == 4
+    assert len(x_and.args) == 4
+
+    assert (x_add).replace(x, o).args[0] == 8
+    assert (x_mul).replace(x, o).args[0] == 16
+    assert (x_or).replace(x, o).args[0] == 7
+    assert (x_xor).replace(x, o).args[0] == 0
+    assert (x_and).replace(x, o).args[0] == 0
+    assert (100 + (x_sub).replace(x, o)).args[0] == 90
+
+    # make sure that all backends handle this properly
+    for b in claripy.backends._all_backends:
+        try:
+            b.convert(x+x+x+x)
+        except claripy.BackendError:
+            pass
+    print 'ok'
+
+
 if __name__ == '__main__':
+    test_multiarg()
     test_depth()
     test_rename()
     test_canonical()

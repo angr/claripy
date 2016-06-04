@@ -83,6 +83,33 @@ class BackendVSA(Backend):
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVS'] = self.BVS
 
+        # reduceable
+        self._op_raw['__add__'] = self._op_add
+        self._op_raw['__sub__'] = self._op_sub
+        self._op_raw['__mul__'] = self._op_mul
+        self._op_raw['__or__'] = self._op_or
+        self._op_raw['__xor__'] = self._op_xor
+        self._op_raw['__and__'] = self._op_and
+
+    @staticmethod
+    def _op_add(*args):
+        return reduce(operator.__add__, args)
+    @staticmethod
+    def _op_sub(*args):
+        return reduce(operator.__sub__, args)
+    @staticmethod
+    def _op_mul(*args):
+        return reduce(operator.__mul__, args)
+    @staticmethod
+    def _op_or(*args):
+        return reduce(operator.__or__, args)
+    @staticmethod
+    def _op_xor(*args):
+        return reduce(operator.__xor__, args)
+    @staticmethod
+    def _op_and(*args):
+        return reduce(operator.__and__, args)
+
     def convert(self, expr, result=None):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
 
@@ -277,7 +304,7 @@ class BackendVSA(Backend):
         return first
 
     @staticmethod
-    def __rshift__(expr, shift_amount):
+    def __rshift__(expr, shift_amount): #pylint:disable=unexpected-special-method-signature
         return expr.__rshift__(shift_amount)
 
     @staticmethod

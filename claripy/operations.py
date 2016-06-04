@@ -333,6 +333,8 @@ def boolean_and_simplifier(*args):
     if len(new_args) < len(args):
         return ast.all_operations.And(*new_args)
 
+    return _flatten_simplifier('And', *args)
+
 def boolean_or_simplifier(*args):
     if len(args) == 1:
         return args[0]
@@ -347,11 +349,27 @@ def boolean_or_simplifier(*args):
     if len(new_args) < len(args):
         return ast.all_operations.Or(*new_args)
 
+    return _flatten_simplifier('Or', *args)
+
+def _flatten_simplifier(op_name, *args):
+    if not any(isinstance(a, ast.Base) and a.op == op_name for a in args):
+        return
+
+    new_args = tuple(itertools.chain.from_iterable(
+        (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
+    ))
+    return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args)
+
 def bitwise_add_simplifier(a, b):
     if (a == 0).is_true():
         return b
     elif (b == 0).is_true():
         return a
+
+    return _flatten_simplifier('__add__', a, b)
+
+def bitwise_mul_simplifier(a, b):
+    return _flatten_simplifier('__mul__', a, b)
 
 def bitwise_sub_simplifier(a, b):
     if (b == 0).is_true():
@@ -367,6 +385,8 @@ def bitwise_xor_simplifier(a, b):
     elif a is b or (a == b).is_true():
         return ast.all_operations.BVV(0, a.size())
 
+    return _flatten_simplifier('__xor__', a, b)
+
 def bitwise_or_simplifier(a, b):
     if (a == 0).is_true():
         return b
@@ -377,6 +397,8 @@ def bitwise_or_simplifier(a, b):
     elif a is b:
         return a
 
+    return _flatten_simplifier('__or__', a, b)
+
 def bitwise_and_simplifier(a, b):
     if (a == 2**a.size()-1).is_true():
         return b
@@ -386,6 +408,8 @@ def bitwise_and_simplifier(a, b):
         return a
     elif a is b:
         return a
+
+    return _flatten_simplifier('__and__', a, b)
 
 def boolean_not_simplifier(body):
     if body.op == '__eq__':
@@ -536,6 +560,7 @@ simplifiers = {
     '__xor__': bitwise_xor_simplifier,
     '__add__': bitwise_add_simplifier,
     '__sub__': bitwise_sub_simplifier,
+    '__mul__': bitwise_mul_simplifier,
     'ZeroExt': zeroext_simplifier,
     'SignExt': signext_simplifier,
 }
