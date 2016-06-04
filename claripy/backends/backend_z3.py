@@ -758,7 +758,7 @@ class BackendZ3(Backend):
     def _op_raw_And(self, *args):
         return z3.And(*(tuple(args) + ( self._context, )))
 
-    def _op_raw_add(self, *args):
+    def _op_raw_add(self, *args): #pylint:disable=no-self-use
         return reduce(operator.add, args)
 
     def _op_raw_Or(self, *args):
