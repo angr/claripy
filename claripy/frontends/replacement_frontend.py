@@ -169,8 +169,11 @@ class ReplacementFrontend(ConstrainedFrontend):
         return self._actual_frontend.satisfiable(extra_constraints=ecr, exact=exact, cache=cache)
 
     def _filter_single_constraint(self, e):
+        er = self._replacement(e)
+        if er.is_false():
+            raise UnsatError("Replacement frontend received False constraint after replacement.")
+
         if self._replace_constraints:
-            er = self._replacement(e)
             return super(ReplacementFrontend, self)._filter_single_constraint(er)
         else:
             return super(ReplacementFrontend, self)._filter_single_constraint(e)
@@ -244,6 +247,6 @@ class ReplacementFrontend(ConstrainedFrontend):
 from ..ast.base import Base
 from ..ast.bv import BVV
 from ..ast.bool import BoolV, false
-from ..errors import ClaripyFrontendError
+from ..errors import ClaripyFrontendError, UnsatError
 from ..balancer import Balancer
 from ..backend_manager import backends
