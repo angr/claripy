@@ -547,32 +547,30 @@ class Balancer(object):
             current_min = max(int_min, left_min, bound_min)
             self._add_lower_bound(truism.args[0], current_min)
 
-    def _handle_eq_ne(self, truism):
+    def _handle___eq__(self, truism):
         lhs, rhs = truism.args
-
-        eq_comparison = truism.op == '__eq__'
-
-        if eq_comparison:
-            if rhs.cardinality != 1:
-                common = self._same_bound_bv(lhs.intersection(rhs))
-                mn, mx = self._range(common)
-                self._add_upper_bound(lhs, mx)
-                self._add_upper_bound(rhs, mx)
-                self._add_lower_bound(lhs, mn)
-                self._add_lower_bound(rhs, mn)
-            else:
-                mn, mx = self._range(rhs)
-                self._add_upper_bound(lhs, mx)
-                self._add_lower_bound(lhs, mn)
+        if rhs.cardinality != 1:
+            common = self._same_bound_bv(lhs.intersection(rhs))
+            mn, mx = self._range(common)
+            self._add_upper_bound(lhs, mx)
+            self._add_upper_bound(rhs, mx)
+            self._add_lower_bound(lhs, mn)
+            self._add_lower_bound(rhs, mn)
         else:
-            if rhs.cardinality == 1:
-                val = self._helper.eval(rhs, 1)[0]
-                max_int = vsa.StridedInterval.max_int(len(rhs))
+            mn, mx = self._range(rhs)
+            self._add_upper_bound(lhs, mx)
+            self._add_lower_bound(lhs, mn)
 
-                if val == 0:
-                    self._add_lower_bound(lhs, val+1)
-                elif val == max_int or val == -1:
-                    self._add_lower_bound(lhs, max_int-1)
+    def _handle___ne__(self, truism):
+        lhs, rhs = truism.args
+        if rhs.cardinality == 1:
+            val = self._helper.eval(rhs, 1)[0]
+            max_int = vsa.StridedInterval.max_int(len(rhs))
+
+            if val == 0:
+                self._add_lower_bound(lhs, val+1)
+            elif val == max_int or val == -1:
+                self._add_lower_bound(lhs, max_int-1)
 
     def _handle_If(self, truism):
         if is_false(truism.args[2]):
@@ -592,8 +590,6 @@ class Balancer(object):
     _handle_SLE = _handle_comparison
     _handle_SGT = _handle_comparison
     _handle_SGE = _handle_comparison
-    _handle___ne__ = _handle_eq_ne
-    _handle___eq__ = _handle_eq_ne
 
 def is_true(a): return backends.vsa.is_true(a)
 def is_false(a): return backends.vsa.is_false(a)
