@@ -161,12 +161,18 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __lshift__(self, o):
-        return BVV(self.value << o.signed, self.bits)
+        if o.signed < self.bits:
+            return BVV(self.value << o.signed, self.bits)
+        else:
+            return BVV(0, self.bits)
 
     @normalize_types
     @compare_bits
     def __rshift__(self, o):
-        return BVV(self.signed >> o.signed, self.bits)
+        if o.signed < self.bits:
+            return BVV(self.value >> o.signed, self.bits)
+        else:
+            return BVV(0, self.bits)
 
     def __invert__(self):
         return BVV(self.value ^ self.mod-1, self.bits)
