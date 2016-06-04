@@ -169,11 +169,10 @@ class ReplacementFrontend(ConstrainedFrontend):
         return self._actual_frontend.satisfiable(extra_constraints=ecr, exact=exact, cache=cache)
 
     def _filter_single_constraint(self, e):
-        er = self._replacement(e)
-        if er.is_false():
-            raise UnsatError("Replacement frontend received False constraint after replacement.")
-
+        #if er.is_false():
+        #   raise UnsatError("Replacement frontend received False constraint after replacement.")
         if self._replace_constraints:
+            er = self._replacement(e)
             return super(ReplacementFrontend, self)._filter_single_constraint(er)
         else:
             return super(ReplacementFrontend, self)._filter_single_constraint(e)
@@ -194,7 +193,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                         self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
                     elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
                         old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
-                        self.add_replacement(old, new, promote=True, invalidate_cache=True)
+                        self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
                 else:
                     satisfiable, replacements = Balancer(backends.vsa, rc, validation_frontend=self._validation_frontend).compat_ret
                     if not satisfiable:
@@ -247,6 +246,6 @@ class ReplacementFrontend(ConstrainedFrontend):
 from ..ast.base import Base
 from ..ast.bv import BVV
 from ..ast.bool import BoolV, false
-from ..errors import ClaripyFrontendError, UnsatError
+from ..errors import ClaripyFrontendError
 from ..balancer import Balancer
 from ..backend_manager import backends
