@@ -352,10 +352,17 @@ class BackendZ3(Backend):
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
+
+            #
+            # TODO: DEPRECATED: remove the following after some reasonable amount of time.
+            #
+
             if mystery_name == 'bvsmod_i':
+                l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
                 op_name = '__mod__'
                 decl_num = z3.Z3_OP_BSMOD
             elif mystery_name == 'bvsdiv_i':
+                l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
                 op_name = '__div__'
                 decl_num = z3.Z3_OP_BSDIV
             else:
@@ -897,6 +904,11 @@ op_map = {
     'Z3_OP_BSREM': '__mod__', # TODO: is this correct?
     'Z3_OP_BUREM': '__mod__', # TODO: is this correct?
     'Z3_OP_BSMOD': '__mod__', # TODO: is this correct?
+    'Z3_OP_BSDIV_I': '__div__',
+    'Z3_OP_BUDIV_I': '__div__', # TODO: is this correct?
+    'Z3_OP_BSREM_I': '__mod__', # TODO: is this correct?
+    'Z3_OP_BUREM_I': '__mod__', # TODO: is this correct?
+    'Z3_OP_BSMOD_I': '__mod__', # TODO: is this correct?
 
     # special functions to record the division by 0 cases
     # these are internal functions
@@ -1047,6 +1059,11 @@ op_type_map = {
     'Z3_OP_BSREM': BV,
     'Z3_OP_BUREM': BV,
     'Z3_OP_BSMOD': BV,
+    'Z3_OP_BSDIV_I': BV,
+    'Z3_OP_BUDIV_I': BV,
+    'Z3_OP_BSREM_I': BV,
+    'Z3_OP_BUREM_I': BV,
+    'Z3_OP_BSMOD_I': BV,
 
     # special functions to record the division by 0 cases
     # these are internal functions
