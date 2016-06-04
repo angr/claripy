@@ -13,7 +13,14 @@ class BackendConcrete(Backend):
         self._op_expr['BVS'] = self.BVS
         self._op_raw['BVV'] = self.BVV
         self._op_raw['FPV'] = self.FPV
+
+        # reduceable
         self._op_raw['__add__'] = self._op_add
+        self._op_raw['__sub__'] = self._op_sub
+        self._op_raw['__mul__'] = self._op_mul
+        self._op_raw['__or__'] = self._op_or
+        self._op_raw['__xor__'] = self._op_xor
+        self._op_raw['__and__'] = self._op_and
 
     @staticmethod
     def BVV(value, size):
@@ -27,7 +34,22 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def _op_add(*args):
-        return reduce(operator.add, args)
+        return reduce(operator.__add__, args)
+    @staticmethod
+    def _op_sub(*args):
+        return reduce(operator.__sub__, args)
+    @staticmethod
+    def _op_mul(*args):
+        return reduce(operator.__mul__, args)
+    @staticmethod
+    def _op_or(*args):
+        return reduce(operator.__or__, args)
+    @staticmethod
+    def _op_xor(*args):
+        return reduce(operator.__xor__, args)
+    @staticmethod
+    def _op_and(*args):
+        return reduce(operator.__and__, args)
 
     @staticmethod
     def BVS(ast, result=None):
@@ -134,6 +156,7 @@ class BackendConcrete(Backend):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self.convert(expr, result=result) == v
 
+    #pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), result=None, solver=None):
         return e == True
     def _is_false(self, e, extra_constraints=(), result=None, solver=None):
