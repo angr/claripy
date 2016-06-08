@@ -493,9 +493,9 @@ def extract_simplifier(high, low, val):
         pos = val.length
         high_i, low_i, low_loc = None, None, None
         for i, v in enumerate(val.args):
-            if high in xrange(pos - v.length, pos):
+            if pos - v.length <= high < pos:
                 high_i = i
-            if low in xrange(pos - v.length, pos):
+            if pos - v.length <= low < pos:
                 low_i = i
                 low_loc = low - (pos - v.length)
             pos -= v.length
