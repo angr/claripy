@@ -475,7 +475,7 @@ def extract_simplifier(high, low, val):
     # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
     # a and b must have lengths that are a multiple of 8
     if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
-        val = ast.BV('Concat', tuple(reversed([a.reversed for a in val.args[0].args])), length=val.length)
+        val = ast.all_operations.Concat(*reversed([a.reversed for a in val.args[0].args]))
 
     # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
     # No Reverse is required then
@@ -487,7 +487,7 @@ def extract_simplifier(high, low, val):
         high = (new_byte_pos + 1) * 8 - 1
         low = new_byte_pos * 8
 
-        return ast.BV('Extract', (high, low, val), length=high-low+1)
+        return ast.all_operations.Extract(high, low, val)
 
     if val.op == 'Concat':
         pos = val.length
@@ -510,12 +510,12 @@ def extract_simplifier(high, low, val):
         if new_high == self.length - 1 and low_loc == 0:
             return self
         else:
-            # TODO: fallthrough
-            # does this cause infinite recursion?
             if self.op != 'Concat':
                 return self[new_high:low_loc]
             else:
-                return ast.BV('Extract', (new_high, low_loc, self), length=(new_high - low_loc + 1))
+                # to avoid infinite recursion we only return if something was simplified
+                if len(used) != len(val.args) or new_high != high or low_loc != low:
+                    return ast.all_operations.Extract(new_high, low_loc, self)
 
     if val.op == 'Extract':
         _, inner_low = val.args[:2]
