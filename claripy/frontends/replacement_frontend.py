@@ -97,10 +97,29 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache.clear()
 
     def _ana_getstate(self):
-        return self._replacements, self._actual_frontend, ConstrainedFrontend._ana_getstate(self)
+        return (
+            self._allow_symbolic,
+            self._unsafe_replacement,
+            self._complex_auto_replace,
+            self._auto_replace,
+            self._replace_constraints,
+            self._replacements,
+            self._actual_frontend,
+            ConstrainedFrontend._ana_getstate(self)
+        )
 
     def _ana_setstate(self, s):
-        self._replacements, self._actual_frontend, base_state = s
+        (
+            self._allow_symbolic,
+            self._unsafe_replacement,
+            self._complex_auto_replace,
+            self._auto_replace,
+            self._replace_constraints,
+            self._replacements,
+            self._actual_frontend,
+            base_state
+        ) = s
+
         ConstrainedFrontend._ana_setstate(self, base_state)
         self._replacement_cache = weakref.WeakKeyDictionary()
 
