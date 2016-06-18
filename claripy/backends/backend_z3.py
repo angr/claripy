@@ -400,17 +400,6 @@ class BackendZ3(Backend):
         if append_children:
             args.extend(children)
 
-        # fix up many-arg __add__
-        if op_name in bin_ops and len(args) > 2:
-            many_args = args #pylint:disable=unused-variable
-            last = args[-1]
-            rest = args[:-1]
-
-            a = args[0].make_like(op_name, rest[:2])
-            for b in rest[2:]:
-                a = args[0].make_like(op_name, [a,b])
-            args = [ a, last ]
-
         # hmm.... honestly not sure what to do here
         result_ty = op_type_map[z3_op_nums[decl_num]]
         ty = type(args[-1])
