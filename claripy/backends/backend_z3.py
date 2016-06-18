@@ -400,17 +400,6 @@ class BackendZ3(Backend):
         if append_children:
             args.extend(children)
 
-        # fix up many-arg __add__
-        if op_name in bin_ops and len(args) > 2:
-            many_args = args #pylint:disable=unused-variable
-            last = args[-1]
-            rest = args[:-1]
-
-            a = args[0].make_like(op_name, rest[:2])
-            for b in rest[2:]:
-                a = args[0].make_like(op_name, [a,b])
-            args = [ a, last ]
-
         # hmm.... honestly not sure what to do here
         result_ty = op_type_map[z3_op_nums[decl_num]]
         ty = type(args[-1])
@@ -1019,7 +1008,7 @@ from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
-from ..operations import backend_operations, backend_fp_operations, bin_ops
+from ..operations import backend_operations, backend_fp_operations
 from ..result import Result
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError

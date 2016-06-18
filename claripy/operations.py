@@ -1,3 +1,4 @@
+import operator
 import itertools
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
@@ -361,9 +362,9 @@ def _flatten_simplifier(op_name, *args):
     return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args)
 
 def bitwise_add_simplifier(a, b):
-    if (a == 0).is_true():
+    if a is ast.all_operations.BVV(0, a.size()):
         return b
-    elif (b == 0).is_true():
+    elif b is ast.all_operations.BVV(0, a.size()):
         return a
 
     return _flatten_simplifier('__add__', a, b)
@@ -372,15 +373,15 @@ def bitwise_mul_simplifier(a, b):
     return _flatten_simplifier('__mul__', a, b)
 
 def bitwise_sub_simplifier(a, b):
-    if (b == 0).is_true():
+    if b is ast.all_operations.BVV(0, a.size()):
         return a
     elif a is b or (a == b).is_true():
         return ast.all_operations.BVV(0, a.size())
 
 def bitwise_xor_simplifier(a, b):
-    if (a == 0).is_true():
+    if a is ast.all_operations.BVV(0, a.size()):
         return b
-    elif (b == 0).is_true():
+    elif b is ast.all_operations.BVV(0, a.size()):
         return a
     elif a is b or (a == b).is_true():
         return ast.all_operations.BVV(0, a.size())
@@ -388,9 +389,9 @@ def bitwise_xor_simplifier(a, b):
     return _flatten_simplifier('__xor__', a, b)
 
 def bitwise_or_simplifier(a, b):
-    if (a == 0).is_true():
+    if a is ast.all_operations.BVV(0, a.size()):
         return b
-    elif (b == 0).is_true():
+    elif b is ast.all_operations.BVV(0, a.size()):
         return a
     elif (a == b).is_true():
         return a
@@ -540,7 +541,8 @@ def extract_simplifier(high, low, val):
     #         __import__('ipdb').set_trace()
 
     if val.op in extract_distributable:
-        return ast.BV(val.op, tuple(a[high:low] for a in val.args), length=(high-low+1))
+        all_args = tuple(a[high:low] for a in val.args)
+        return reduce(getattr(operator, val.op), all_args)
 
 
 simplifiers = {
