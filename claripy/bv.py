@@ -290,13 +290,39 @@ def Reverse(a):
     else:
         value = a.value
         out = 0
-        for i in xrange(0, size, 8):
-            out |= ((value & (0xff << i)) >> i) << (size - 8 - i)
+        if size == 64:
+            out = _reverse_64(value)
+        elif size == 32:
+            out = _reverse_32(value)
+        elif size == 16:
+            out = _reverse_16(value)
+        else:
+            for i in xrange(0, size, 8):
+                out |= ((value & (0xff << i)) >> i) << (size - 8 - i)
         return BVV(out, size)
 
         # the RIGHT way to do it:
         #return BVV(int(("%x" % a.value).rjust(size/4, '0').decode('hex')[::-1].encode('hex'), 16), size)
 
+def _reverse_16(v):
+    return ((v & 0xff) << 8) | \
+           ((v & 0xff00) >> 8)
+
+def _reverse_32(v):
+    return ((v & 0xff) << 24) | \
+           ((v & 0xff00) << 8) | \
+           ((v & 0xff0000) >> 8) | \
+           ((v & 0xff000000) >> 24)
+
+def _reverse_64(v):
+    return ((v & 0xff) << 56) | \
+           ((v & 0xff00) << 40) | \
+           ((v & 0xff0000) << 24) | \
+           ((v & 0xff000000) << 8) | \
+           ((v & 0xff00000000) >> 8) | \
+           ((v & 0xff0000000000) >> 24) | \
+           ((v & 0xff000000000000) >> 40) | \
+           ((v & 0xff00000000000000) >> 56)
 
 @normalize_types
 @compare_bits
