@@ -13,10 +13,24 @@ class HybridFrontend(Frontend):
         Frontend.__init__(self, **kwargs)
         self._exact_frontend = exact_frontend
         self._approximate_frontend = approximate_frontend
-        self._hook_exact_frontend()
 
         if _VALIDATE_BALANCER:
             approximate_frontend._validation_frontend = self._exact_frontend
+
+    def _blank_copy(self, c):
+        c._exact_frontend = self._exact_frontend.blank_copy()
+        c._approximate_frontend = self._approximate_frontend.blank_copy()
+
+        if _VALIDATE_BALANCER:
+            c._approximate_frontend._validation_frontend = self._exact_frontend
+
+
+    def _copy(self, c):
+        self._exact_frontend._copy(c._exact_frontend)
+        self._approximate_frontend._copy(c._approximate_frontend)
+
+        if _VALIDATE_BALANCER:
+            c._approximate_frontend._validation_frontend = self._exact_frontend
 
     #
     # Some passthroughs
@@ -42,26 +56,12 @@ class HybridFrontend(Frontend):
     # Storable support
     #
 
-    def _hook_exact_frontend(self):
-        def constraint_hook(constraints, **kwargs):
-            self._exact_frontend._real_add_constraints(constraints, **kwargs)
-            self._approximate_frontend._add_constraints(constraints, **kwargs)
-
-        self._exact_frontend._real_add_constraints = self._exact_frontend._add_constraints
-        self._exact_frontend._add_constraints = constraint_hook
-
     def _ana_getstate(self):
         return (self._exact_frontend, self._approximate_frontend, Frontend._ana_getstate(self))
 
     def _ana_setstate(self, s):
         self._exact_frontend, self._approximate_frontend, base_state = s
         Frontend._ana_setstate(self, base_state)
-
-    def _blank_copy(self):
-        return HybridFrontend(self._exact_frontend._blank_copy(), self._approximate_frontend._blank_copy())
-
-    def branch(self):
-        return HybridFrontend(self._exact_frontend.branch(), self._approximate_frontend.branch())
 
     #
     # Hybrid solving
@@ -80,43 +80,44 @@ class HybridFrontend(Frontend):
         # if that fails, try the exact backend
         return getattr(self._exact_frontend, f_name)(*args, **kwargs)
 
-    def solve(self, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('solve', extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def solve(self, extra_constraints=(), exact=None):
+        return self._hybrid_call('solve', extra_constraints=extra_constraints, exact=exact)
 
-    def satisfiable(self, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('satisfiable', extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def satisfiable(self, extra_constraints=(), exact=None):
+        return self._hybrid_call('satisfiable', extra_constraints=extra_constraints, exact=exact)
 
-    def eval_to_ast(self, e, n, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('eval_to_ast', e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def eval_to_ast(self, e, n, extra_constraints=(), exact=None):
+        return self._hybrid_call('eval_to_ast', e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('eval', e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def eval(self, e, n, extra_constraints=(), exact=None):
+        return self._hybrid_call('eval', e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def batch_eval(self, e, n, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('batch_eval', e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def batch_eval(self, e, n, extra_constraints=(), exact=None):
+        return self._hybrid_call('batch_eval', e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def max(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('max', e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def max(self, e, extra_constraints=(), exact=None):
+        return self._hybrid_call('max', e, extra_constraints=extra_constraints, exact=exact)
 
-    def min(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('min', e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def min(self, e, extra_constraints=(), exact=None):
+        return self._hybrid_call('min', e, extra_constraints=extra_constraints, exact=exact)
 
-    def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('solution', e, v, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def solution(self, e, v, extra_constraints=(), exact=None):
+        return self._hybrid_call('solution', e, v, extra_constraints=extra_constraints, exact=exact)
 
-    def is_true(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('is_true', e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def is_true(self, e, extra_constraints=(), exact=None):
+        return self._hybrid_call('is_true', e, extra_constraints=extra_constraints, exact=exact)
 
-    def is_false(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._hybrid_call('is_false', e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def is_false(self, e, extra_constraints=(), exact=None):
+        return self._hybrid_call('is_false', e, extra_constraints=extra_constraints, exact=exact)
 
     #
     # Lifecycle
     #
 
-    def add(self, constraints, invalidate_cache=True):
-        self._exact_frontend.add(constraints, invalidate_cache=invalidate_cache)
-        #self._approximate_frontend.add(constraints, invalidate_cache=invalidate_cache)
+    def add(self, constraints):
+        added = self._exact_frontend.add(constraints)
+        self._approximate_frontend.add(constraints)
+        return added
 
     def combine(self, others):
         other_exact = [o._exact_frontend for o in others]
@@ -133,8 +134,8 @@ class HybridFrontend(Frontend):
         return (e_merged, HybridFrontend(new_exact, new_approximate))
 
     def simplify(self):
-        self._exact_frontend.simplify()
         self._approximate_frontend.simplify()
+        return self._exact_frontend.simplify()
 
     def downsize(self):
         self._exact_frontend.downsize()
@@ -149,20 +150,10 @@ class HybridFrontend(Frontend):
         exacts = self._exact_frontend.split()
 
         for e in exacts:
-            a = self._approximate_frontend._blank_copy()
+            a = self._approximate_frontend.blank_copy()
             a.add(e.constraints)
             results.append(HybridFrontend(e, a))
         return results
 
 
-def hybrid_vsa_z3():
-    return HybridFrontend(FullFrontend(backends.z3),
-                          ReplacementFrontend(LightFrontend(backends.vsa), replace_constraints=True,
-                                              complex_auto_replace=True))
-
-
-from .full_frontend import FullFrontend
-from .light_frontend import LightFrontend
-from .replacement_frontend import ReplacementFrontend
-from ..backend_manager import backends
 from ..errors import ClaripyFrontendError

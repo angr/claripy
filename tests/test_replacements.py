@@ -4,7 +4,7 @@ import logging
 l = logging.getLogger('claripy.test.replacements')
 
 def test_replacement_solver():
-    sr = claripy.ReplacementFrontend(claripy.LightFrontend(claripy.backends.vsa), replace_constraints=True, complex_auto_replace=True)
+    sr = claripy.SolverReplacement(claripy.SolverVSA(), replace_constraints=True, complex_auto_replace=True)
     x = claripy.BVS('x', 32)
 
     sr.add(x + 8 == 10)
@@ -15,7 +15,7 @@ def test_replacement_solver():
     assert sr2.max(x) == sr2.min(x) == sr.max(x)
 
 def test_contradiction():
-    sr = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3), replace_constraints=True)
+    sr = claripy.SolverReplacement(claripy.Solver(), replace_constraints=True)
     x = claripy.BVS('x', 32)
 
     sr.add(x == 10)
@@ -32,7 +32,7 @@ def test_branching_replacement_solver():
     #
 
     x = claripy.BVS('x', 32)
-    s0 = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
+    s0 = claripy.SolverReplacement(claripy.Solver())
     s0.add(x == 0)
 
     s1a = s0.branch()
@@ -49,7 +49,7 @@ def test_branching_replacement_solver():
     #
 
     x = claripy.BVS('x', 32)
-    s0 = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
+    s0 = claripy.SolverReplacement(claripy.Solver())
     s0.add(x == 0)
 
     s1a = s0.branch()
@@ -66,7 +66,7 @@ def test_branching_replacement_solver():
     #
 
     #x = claripy.BVS('x', 32)
-    #s0 = claripy.ReplacementFrontend(claripy.FullFrontend(claripy.backends.z3))
+    #s0 = claripy.SolverReplacement(claripy.Solver())
     #s0.add(x != 0)
     #s1a = s0.branch()
     #s1b = s0.branch()

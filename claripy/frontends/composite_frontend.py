@@ -4,26 +4,53 @@ l = logging.getLogger("claripy.frontends.composite_frontend")
 import itertools
 symbolic_count = itertools.count()
 
-from .caching_frontend import CachingFrontend
+from .constrained_frontend import ConstrainedFrontend
 
-class CompositeFrontend(CachingFrontend):
+class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, **kwargs):
-        CachingFrontend.__init__(self, **kwargs)
+        super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._template_frontend = template_frontend
+        self.result = None
 
         self._solvers['CONCRETE'] = self._merged_solver_for({'CONCRETE'})
+
+    def _blank_copy(self, c):
+        super(CompositeFrontend, self)._blank_copy(c)
+        c._solvers = { }
+        c._template_frontend = self._template_frontend
+        c.result = None
+
+    def _copy(self, c):
+        super(CompositeFrontend, self)._copy(c)
+        for s in self._solver_list:
+            c_s = s.branch()
+            if len(c_s.variables) > 0:
+                for v in c_s.variables:
+                    c._solvers[v] = c_s #pylint:disable=no-member
+            else:
+                c._solvers['CONCRETE'] = c_s
+
+        if self.result is not None:
+            c.result = self.result.branch()
+
+        return c
+
 
     #
     # Serialization stuff
     #
 
     def _ana_getstate(self):
-        return self._solvers, self._template_frontend, CachingFrontend._ana_getstate(self)
+        return self._solvers, self._template_frontend, super(CompositeFrontend, self)._ana_getstate()
 
     def _ana_setstate(self, s):
         self._solvers, self._template_frontend, base_state = s
-        CachingFrontend._ana_setstate(base_state)
+        super(CompositeFrontend, self)._ana_setstate(base_state)
+
+    def downsize(self):
+        for e in self._solvers.values():
+            e.downsize()
 
     #
     # Frontend management
@@ -43,9 +70,10 @@ class CompositeFrontend(CachingFrontend):
     def variables(self):
         return set(self._solvers.keys()) - { 'CONCRETE' }
 
-    @property
-    def constraints(self):
-        return sum([ s.constraints for s in self._solver_list ], [ ])
+    # this is really hacky, but we want to avoid having our variables messed with
+    @variables.setter
+    def variables(self, v):
+        pass
 
     def _solvers_for_variables(self, names):
         seen_solvers = set()
@@ -64,7 +92,7 @@ class CompositeFrontend(CachingFrontend):
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
             l.debug("... creating new solver")
-            return self._template_frontend._blank_copy()
+            return self._template_frontend.blank_copy()
         elif len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
@@ -99,27 +127,34 @@ class CompositeFrontend(CachingFrontend):
     def _add_dependent_constraints(self, names, constraints):
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
         s = self._merged_solver_for(names)
-        s.add(constraints)
+        added = s.add(constraints)
         for v in s.variables | names:
             self._solvers[v] = s
+        return added
 
-    def _add_constraints(self, constraints, invalidate_cache=True):
+    def add(self, constraints, invalidate_cache=True): #pylint:disable=arguments-differ
+        added = super(CompositeFrontend, self).add(constraints)
+
         if not invalidate_cache:
             l.warning("ignoring non-invalidating constraints")
             return
 
-        split = self._split_constraints(constraints)
+        split = self._split_constraints(added)
+
+        child_added = [ ]
 
         l.debug("%s, solvers before: %d", self, len(self._solvers))
         for names,set_constraints in split:
-            self._add_dependent_constraints(names, set_constraints)
+            child_added += self._add_dependent_constraints(names, set_constraints)
         l.debug("... solvers after add: %d", len(self._solver_list))
+
+        return added
 
     #
     # Solving
     #
 
-    def _solve(self, extra_constraints=(), exact=None, cache=None):
+    def solve(self, extra_constraints=(), exact=None):
         l.debug("%r checking satisfiability...", self)
 
         if len(extra_constraints) != 0:
@@ -135,7 +170,7 @@ class CompositeFrontend(CachingFrontend):
         satness = True
 
         for s in solvers:
-            if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else (), exact=exact, cache=cache):
+            if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else (), exact=exact):
                 l.debug("... %r: False", s)
                 satness = False
                 break
@@ -154,10 +189,10 @@ class CompositeFrontend(CachingFrontend):
             all_vars = { 'CONCRETE' }
         return all_vars
 
-    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def eval(self, e, n, extra_constraints=(), exact=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
 
         the_solver = None
         for expr in exprs:
@@ -167,27 +202,30 @@ class CompositeFrontend(CachingFrontend):
             elif the_solver is not s:
                 raise ClaripyFrontendError("having expressions across multiple solvers is not supported by _batch_eval() right now")
 
-        return the_solver.batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+        return the_solver.batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact)
 
-    def _max(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def max(self, e, extra_constraints=(), exact=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints, exact=exact)
 
-    def _min(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def min(self, e, extra_constraints=(), exact=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints, exact=exact)
 
-    def _solution(self, e, n, extra_constraints=(), exact=None, cache=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def solution(self, e, n, extra_constraints=(), exact=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_true(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def is_true(self, e, extra_constraints=(), exact=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_true(e, extra_constraints=extra_constraints, exact=exact)
 
-    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_false(e, extra_constraints=extra_constraints, exact=exact, cache=cache)
+    def is_false(self, e, extra_constraints=(), exact=None):
+        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_false(e, extra_constraints=extra_constraints, exact=exact)
 
-    def _simplify(self):
+    def simplify(self):
+        new_constraints = [ ]
+
         l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))
         for s in self._solver_list:
             if s._simplified:
+                new_constraints += s.constraints
                 continue
 
             l.debug("... simplifying child solver %r", s)
@@ -199,9 +237,15 @@ class CompositeFrontend(CachingFrontend):
             l.debug("... variable counts: %s", [ len(ss.variables) for ss in split ])
             if len(split) > 1:
                 for s in split:
+                    new_constraints += s.constraints
                     for v in s.variables:
                         self._solvers[v] = s
+            else:
+                new_constraints += s.constraints
         l.debug("... after-split, %r has %d solvers", self, len(self._solver_list))
+
+        self.constraints = new_constraints
+        return new_constraints
 
     #
     # Merging and splitting
@@ -211,19 +255,6 @@ class CompositeFrontend(CachingFrontend):
         l.error("CompositeFrontend.finalize is incomplete. This represents a big issue.")
         for s in self._solver_list:
             s.finalize()
-
-    def branch(self):
-        c = CachingFrontend.branch(self)
-
-        for s in self._solver_list:
-            c_s = s.branch()
-            for v in c_s.variables:
-                c._solvers[v] = c_s #pylint:disable=no-member
-
-        if self.result is not None:
-            c.result = self.result.branch()
-
-        return c
 
     @property
     def timeout(self):
@@ -235,17 +266,9 @@ class CompositeFrontend(CachingFrontend):
         for s in self._solver_list:
             s.timeout = t
 
-    # this is for backwards compatibility
-    @property
-    def _solver_backend(self):
-        return self._template_frontend._solver_backend
-
-    def _blank_copy(self):
-        return CompositeFrontend(self._template_frontend, cache=self._cache)
-
     def merge(self, others, merge_flag, merge_values):
         l.debug("Merging %s with %d other solvers.", self, len(others))
-        merged = self._blank_copy()
+        merged = self.blank_copy()
         common_solvers = self._shared_solvers(others)
         common_ids = { s.uuid for s in common_solvers }
         l.debug("... %s common solvers", len(common_solvers))
@@ -261,7 +284,7 @@ class CompositeFrontend(CachingFrontend):
         for ns in noncommon_solvers:
             l.debug("... %d", len(ns))
             if len(ns) == 0:
-                s = self._blank_copy()
+                s = self.blank_copy()
                 s.add(True)
                 combined_noncommons.append(s)
             elif len(ns) == 1:
@@ -276,7 +299,7 @@ class CompositeFrontend(CachingFrontend):
         return True, merged
 
     def combine(self, others):
-        combined = self._blank_copy()
+        combined = self.blank_copy()
         combined._simplified = False
         combined.add(self.constraints)
         for o in others:

@@ -139,7 +139,7 @@ class BackendConcrete(Backend):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
 
-        return [ tuple([self._to_primitive(ex) for ex in exprs]) ]
+        return [ tuple(self._to_primitive(ex) for ex in exprs) ]
 
     def _max(self, expr, result=None, solver=None, extra_constraints=()):
         if not all(extra_constraints):

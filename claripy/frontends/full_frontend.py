@@ -15,16 +15,30 @@ class FullFrontend(ConstrainedFrontend):
         self.timeout = timeout if timeout is not None else 300000
         self._tls = threading.local()
         self._to_add = [ ]
+        self.result = None
+
+    def _blank_copy(self, c):
+        super(FullFrontend, self)._blank_copy(c)
+        c._solver_backend = self._solver_backend
+        c.timeout = self.timeout
+        c._tls = threading.local()
+        c._to_add = [ ]
+        c.result = None
+
+    def _copy(self, c):
+        super(FullFrontend, self)._copy(c)
+        c._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
+        c._to_add = list(self._to_add)
 
     #
     # Storable support
     #
 
     def _ana_getstate(self):
-        return self._solver_backend.__class__.__name__, self.timeout, ConstrainedFrontend._ana_getstate(self)
+        return self._solver_backend.__class__.__name__, self.timeout, self.result, ConstrainedFrontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        backend_name, self.timeout, base_state = s
+        backend_name, self.timeout, self.result, base_state = s
         self._solver_backend = backends._backends_by_type[backend_name]
         #self._tls = None
         self._tls = threading.local()
@@ -51,13 +65,13 @@ class FullFrontend(ConstrainedFrontend):
     # Constraint management
     #
 
-    def _add_constraints(self, constraints, invalidate_cache=True):
-        to_add = ConstrainedFrontend._add_constraints(self, constraints, invalidate_cache=invalidate_cache)
+    def add(self, constraints):
+        to_add = ConstrainedFrontend.add(self, constraints)
         self._to_add += to_add
         return to_add
 
-    def _simplify(self):
-        ConstrainedFrontend._simplify(self)
+    def simplify(self):
+        ConstrainedFrontend.simplify(self)
 
         # TODO: should we do this?
         self._tls.solver = None
@@ -66,32 +80,21 @@ class FullFrontend(ConstrainedFrontend):
 
         return self.constraints
 
-    def _solve(self, extra_constraints=(), exact=None, cache=None):
-        r = ConstrainedFrontend._solve(self, extra_constraints=extra_constraints)
-        if not r.approximation:
-            return r
-
-        l.debug("Frontend.solve() checking SATness of %d constraints", len(self.constraints))
-
+    def solve(self, extra_constraints=(), exact=None):
         try:
             s = self._get_solver()
-
-            #a = time.time()
-            r = self._solver_backend.results(s, extra_constraints, generic_model=True)
-            #b = time.time()
-            #l_timing.debug("... %s in %s seconds", r.sat, b - a)
-            return r
+            return self._solver_backend.results(s, extra_constraints, generic_model=True)
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
+    def eval(self, e, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
-        return self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver())
+        return tuple(self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver()))
 
-    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
@@ -103,7 +106,7 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver()
         )
 
-    def _max(self, e, extra_constraints=(), exact=None, cache=None):
+    def max(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _max()")
 
@@ -118,7 +121,7 @@ class FullFrontend(ConstrainedFrontend):
         c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
         try:
             vals = self._solver_backend.max_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
-            self._cache_eval(e, vals, exact=exact, cache=cache)
+            #self._cache_eval(e, vals, exact=exact, cache=cache)
             return max(vals)
         except BackendError:
             pass
@@ -129,7 +132,7 @@ class FullFrontend(ConstrainedFrontend):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _min(self, e, extra_constraints=(), exact=None, cache=None):
+    def min(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _min()")
 
@@ -144,7 +147,7 @@ class FullFrontend(ConstrainedFrontend):
         c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
         try:
             vals = self._solver_backend.min_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
-            self._cache_eval(e, vals, exact=exact, cache=cache)
+            # TODO: self._cache_eval(e, vals, exact=exact, cache=cache)
             return min(vals)
         except BackendError:
             pass
@@ -155,32 +158,26 @@ class FullFrontend(ConstrainedFrontend):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
+    def solution(self, e, v, extra_constraints=(), exact=None):
         try:
-            b = self._solver_backend.solution(e, v, extra_constraints=extra_constraints, solver=self._get_solver())
+            return self._solver_backend.solution(e, v, extra_constraints=extra_constraints, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _solution: %s('%s')" % (str(e_type), str(value)), traceback
 
-        return b
-
-    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+    def is_true(self, e, extra_constraints=(), exact=None):
         try:
-            b = self._solver_backend.is_true(e, extra_constraints=extra_constraints, solver=self._get_solver())
+            return self._solver_backend.is_true(e, extra_constraints=extra_constraints, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _is_true: %s('%s')" % (str(e_type), str(value)), traceback
 
-        return b
-
-    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+    def is_false(self, e, extra_constraints=(), exact=None):
         try:
-            b = self._solver_backend.is_false(e, extra_constraints=extra_constraints, solver=self._get_solver())
+            return self._solver_backend.is_false(e, extra_constraints=extra_constraints, solver=self._get_solver())
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _is_false: %s('%s')" % (str(e_type), str(value)), traceback
-
-        return b
 
     #
     # Serialization and such.
@@ -194,15 +191,6 @@ class FullFrontend(ConstrainedFrontend):
     #
     # Merging and splitting
     #
-
-    def _blank_copy(self):
-        return FullFrontend(self._solver_backend, cache=self._cache, timeout=self.timeout)
-
-    def branch(self):
-        b = ConstrainedFrontend.branch(self)
-        b._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
-        b._to_add = list(self._to_add)
-        return b
 
     def merge(self, others, merge_flag, merge_values):
         return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]

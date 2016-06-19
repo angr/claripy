@@ -22,7 +22,7 @@ def test_pickle_ast():
     nose.tools.assert_equal(str(bz.convert(c_copy)), '1 + x')
 
 def test_pickle_frontend():
-    s = claripy.FullFrontend(claripy.backends.z3)
+    s = claripy.Solver()
     x = claripy.BVS('x', 32)
 
     s.add(x == 1)
@@ -63,19 +63,19 @@ def test_datalayer():
     nose.tools.assert_equal(str(cd), str(d))
 
     l.debug("Time to test some solvers!")
-    s = claripy.FullFrontend(claripy.backends.z3)
+    s = claripy.Solver()
     x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.FullFrontend.ana_load(s.ana_store())
+    ss = claripy.Solver.ana_load(s.ana_store())
     nose.tools.assert_equal(str(s.constraints), str(ss.constraints))
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
-    s = claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
+    s = claripy.SolverComposite()
     x = claripy.BVS("x", 32)
     s.add(x == 3)
     s.finalize()
-    ss = claripy.CompositeFrontend.ana_load(s.ana_store())
+    ss = claripy.SolverComposite.ana_load(s.ana_store())
     old_constraint_sets = [[hash(j) for j in k.constraints] for k in s._solver_list]
     new_constraint_sets = [[hash(j) for j in k.constraints] for k in ss._solver_list]
     nose.tools.assert_items_equal(old_constraint_sets, new_constraint_sets)

@@ -228,9 +228,9 @@ def test_if_stuff():
     nose.tools.assert_is(iii.ite_excavated, iiii)
 
 def test_ite():
-    yield raw_ite, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_ite, claripy.hybrid_vsa_z3
-    yield raw_ite, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
+    yield raw_ite, claripy.Solver
+    yield raw_ite, claripy.SolverHybrid
+    yield raw_ite, claripy.SolverComposite
 
 def raw_ite(solver_type):
     s = solver_type()

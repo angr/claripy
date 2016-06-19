@@ -32,14 +32,6 @@ l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I 
 sys.setrecursionlimit(_recurse)
 
 #
-# solvers
-#
-
-from .frontend import Frontend as _Frontend
-from .frontends import LightFrontend, FullFrontend, CompositeFrontend, HybridFrontend, ReplacementFrontend, hybrid_vsa_z3
-from .result import Result
-
-#
 # backend objects
 #
 
@@ -92,5 +84,11 @@ backends = _backend_manager.backends
 def downsize():
     backends.downsize()
 
-def Solver():
-    return hybrid_vsa_z3()
+#
+# Frontends
+#
+
+from .result import Result
+from .frontend import Frontend as _Frontend
+from . import frontends
+from .solvers import *

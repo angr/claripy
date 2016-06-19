@@ -2,9 +2,9 @@ import claripy
 import nose
 
 def test_simple_merging():
-    yield raw_simple_merging, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_simple_merging, claripy.hybrid_vsa_z3
-    yield raw_simple_merging, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
+    yield raw_simple_merging, claripy.Solver
+    yield raw_simple_merging, claripy.SolverHybrid
+    yield raw_simple_merging, claripy.SolverComposite
 
 def raw_simple_merging(solver_type):
     s1 = solver_type()
