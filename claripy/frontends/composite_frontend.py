@@ -126,7 +126,7 @@ class CompositeFrontend(CachingFrontend):
             extra_vars = frozenset.union(*(a.variables for a in extra_constraints))
             solvers = [ self._merged_solver_for(extra_vars) ]
             for s in self._solver_list:
-                if len(s.variables | solvers[0].variables) == 0:
+                if s.variables.isdisjoint(solvers[0].variables):
                     solvers.append(s)
         else:
             solvers = self._solver_list
