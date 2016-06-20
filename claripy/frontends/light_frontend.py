@@ -11,26 +11,23 @@ class LightFrontend(ConstrainedFrontend):
         # Because of this, we have to disable the caching here.
         super(LightFrontend, self).__init__(**kwargs)
         self._solver_backend = solver_backend
-        self.result = None
 
     def _blank_copy(self, c):
         super(LightFrontend, self)._blank_copy(c)
         c._solver_backend = self._solver_backend
-        c.result = None
 
     def _copy(self, c):
         super(LightFrontend, self)._copy(c)
-        c.result = self.result
 
     #
     # Storable support
     #
 
     def _ana_getstate(self):
-        return self._solver_backend.__class__.__name__, self.result, ConstrainedFrontend._ana_getstate(self)
+        return self._solver_backend.__class__.__name__, ConstrainedFrontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        solver_backend_name, self.result, base_state = s
+        solver_backend_name, base_state = s
         ConstrainedFrontend._ana_setstate(self, base_state)
         self._solver_backend = backends._backends_by_type[solver_backend_name]
 
@@ -40,44 +37,44 @@ class LightFrontend(ConstrainedFrontend):
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.eval(e, n, result=self.result)
+            return self._solver_backend.eval(e, n)
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this eval().")
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend._batch_eval(exprs, n, result=self.result)
+            return self._solver_backend._batch_eval(exprs, n)
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this batch_eval().")
 
     def max(self, e, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.max(e, result=self.result)
+            return self._solver_backend.max(e)
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this max().")
 
     def min(self, e, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.min(e, result=self.result)
+            return self._solver_backend.min(e)
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this min().")
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.solution(e, v, result=self.result)
+            return self._solver_backend.solution(e, v)
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this solution().")
 
     def is_true(self, e, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.is_true(e, result=self.result)
+            return self._solver_backend.is_true(e)
         except BackendError:
             l.info("Light solver can't handle this is_true().")
             return False
 
     def is_false(self, e, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.is_false(e, result=self.result)
+            return self._solver_backend.is_false(e)
         except BackendError:
             l.info("Light solver can't handle this is_false().")
             return False

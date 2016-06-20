@@ -44,14 +44,6 @@ class HybridFrontend(Frontend):
     def variables(self):
         return self._exact_frontend.variables
 
-    @property
-    def result(self):
-        return self._exact_frontend.result
-
-    @result.setter
-    def result(self, v):
-        self._exact_frontend.result = v
-
     #
     # Storable support
     #

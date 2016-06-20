@@ -17,8 +17,7 @@ class ConstraintFilterMixin(object):
         try:
             ec = self._constraint_filter(constraints)
         except UnsatError:
-            self.result = UnsatResult()
-            ec = constraints
+            ec = list(constraints) + [ false ]
 
         if len(ec) > 0:
             return super(ConstraintFilterMixin, self).add(ec, **kwargs)
@@ -66,3 +65,4 @@ class ConstraintFilterMixin(object):
 
 from ..errors import UnsatError
 from ..result import UnsatResult
+from .. import false

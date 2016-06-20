@@ -11,7 +11,6 @@ class CompositeFrontend(ConstrainedFrontend):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._template_frontend = template_frontend
-        self.result = None
 
         self._solvers['CONCRETE'] = self._merged_solver_for({'CONCRETE'})
 
@@ -19,7 +18,6 @@ class CompositeFrontend(ConstrainedFrontend):
         super(CompositeFrontend, self)._blank_copy(c)
         c._solvers = { }
         c._template_frontend = self._template_frontend
-        c.result = None
 
     def _copy(self, c):
         super(CompositeFrontend, self)._copy(c)
@@ -30,9 +28,6 @@ class CompositeFrontend(ConstrainedFrontend):
                     c._solvers[v] = c_s #pylint:disable=no-member
             else:
                 c._solvers['CONCRETE'] = c_s
-
-        if self.result is not None:
-            c.result = self.result.branch()
 
         return c
 
@@ -170,13 +165,14 @@ class CompositeFrontend(ConstrainedFrontend):
         satness = True
 
         for s in solvers:
-            if not s.satisfiable(extra_constraints=extra_constraints if s is solvers[0] else (), exact=exact):
+            r = s.solve(extra_constraints=extra_constraints if s is solvers[0] else (), exact=exact)
+            if not r.sat:
                 l.debug("... %r: False", s)
                 satness = False
                 break
 
             l.debug("... %r: True", s)
-            model.update(s.result.model)
+            model.update(r.model)
 
         l.debug("... ok!")
         return Result(satness, model=model)

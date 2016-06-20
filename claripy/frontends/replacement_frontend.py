@@ -22,14 +22,6 @@ class ReplacementFrontend(EagerResolutionMixin, ConstrainedFrontend):
 
         self._validation_frontend = None
 
-    @property
-    def result(self):
-        return None
-
-    @result.setter
-    def result(self, v): #pylint:disable=unused-argument
-        self._actual_frontend.result = None
-
     def _blank_copy(self, c):
         super(ReplacementFrontend, self)._blank_copy(c)
         c._actual_frontend = self._actual_frontend.blank_copy()

@@ -52,7 +52,6 @@ def test_replacement_solver():
     sr = claripy.SolverReplacement()
     x = claripy.BVS('x', 32)
     nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
-    sr.result = None
     sr.add_replacement(x, claripy.BVV(0x101, 32))
     nose.tools.assert_items_equal(sr.eval(x, 10), [0x101])
 
@@ -124,9 +123,7 @@ def raw_solver(solver_type):
     s = solver_type()
     s.add(x == 10)
     s.add(y == 15)
-    nose.tools.assert_is(s.result, None)
     nose.tools.assert_false(s.satisfiable(extra_constraints=(x==5,)))
-    nose.tools.assert_is(s.result, None)
     nose.tools.assert_true(s.satisfiable())
     if isinstance(s, claripy.frontends.CacheMixin):
         nose.tools.assert_is_not(s.result, None)
