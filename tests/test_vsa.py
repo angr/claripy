@@ -1,7 +1,7 @@
 import claripy
 import nose
 
-from claripy.vsa import MaybeResult, BoolResult, DiscreteStridedIntervalSet, StridedInterval
+from claripy.vsa import MaybeResult, BoolResult, DiscreteStridedIntervalSet, StridedInterval, RegionAnnotation
 
 def vsa_model(a):
     return claripy.backends.vsa.convert(a)
@@ -535,32 +535,37 @@ def test_vsa():
     # ValueSet
     #
 
-    vs_1 = claripy.ValueSet(bits=32)
-    nose.tools.assert_true(vsa_model(vs_1).is_empty, True)
+    def VS(name=None, bits=None, region=None, val=None):
+        region = 'foobar' if region is None else 'foobar'
+        return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
+
+    vs_1 = VS(bits=32, val=0)
+    vs_1 = vs_1.intersection(VS(bits=32, val=1))
+    nose.tools.assert_true(vsa_model(vs_1).is_empty)
     # Test merging two addresses
-    vsa_model(vs_1).merge_si('global', vsa_model(si1))
-    vsa_model(vs_1).merge_si('global', vsa_model(si3))
+    vsa_model(vs_1)._merge_si('global', 0, vsa_model(si1))
+    vsa_model(vs_1)._merge_si('global', 0, vsa_model(si3))
     nose.tools.assert_true(vsa_model(vs_1).get_si('global').identical(vsa_model(SI(bits=32, stride=18, lower_bound=10, upper_bound=28))))
     # Length of this ValueSet
     nose.tools.assert_equal(len(vsa_model(vs_1)), 32)
 
-    vs_1 = claripy.ValueSet(name='boo', bits=32)
-    vs_2 = claripy.ValueSet(name='foo', bits=32)
+    vs_1 = VS(name='boo', bits=32, val=0).intersection(VS(name='makeitempty', bits=32, val=1))
+    vs_2 = VS(name='foo', bits=32, val=0).intersection(VS(name='makeitempty', bits=32, val=1))
     nose.tools.assert_true(claripy.backends.vsa.identical(vs_1, vs_1))
     nose.tools.assert_true(claripy.backends.vsa.identical(vs_2, vs_2))
-    vsa_model(vs_1).merge_si('global', vsa_model(si1))
+    vsa_model(vs_1)._merge_si('global', 0, vsa_model(si1))
     nose.tools.assert_false(claripy.backends.vsa.identical(vs_1, vs_2))
-    vsa_model(vs_2).merge_si('global', vsa_model(si1))
+    vsa_model(vs_2)._merge_si('global', 0, vsa_model(si1))
     nose.tools.assert_true(claripy.backends.vsa.identical(vs_1, vs_2))
     nose.tools.assert_true(claripy.backends.vsa.is_true((vs_1 & vs_2) == vs_1))
-    vsa_model(vs_1).merge_si('global', vsa_model(si3))
+    vsa_model(vs_1)._merge_si('global', 0, vsa_model(si3))
     nose.tools.assert_false(claripy.backends.vsa.identical(vs_1, vs_2))
 
     # Subtraction
     # Subtraction of two pointers yields a concrete value
 
-    vs_1 = claripy.ValueSet(name='foo', region='global', bits=32, val=0x400010)
-    vs_2 = claripy.ValueSet(name='bar', region='global', bits=32, val=0x400000)
+    vs_1 = VS(name='foo', region='global', bits=32, val=0x400010)
+    vs_2 = VS(name='bar', region='global', bits=32, val=0x400000)
     si = vs_1 - vs_2
     nose.tools.assert_is(type(vsa_model(si)), StridedInterval)
     nose.tools.assert_true(claripy.backends.vsa.identical(si, claripy.SI(bits=32, stride=0, lower_bound=0x10, upper_bound=0x10)))
@@ -609,7 +614,7 @@ def test_vsa():
     nose.tools.assert_true(claripy.backends.vsa.is_true(vsa_model(if_1.ite_excavated.args[2]) == vsa_model(vs_2)))
 
     # if_2 = And(VS_3, IfProxy(si != 0, 0, 1)
-    vs_3 = claripy.ValueSet(region='global', bits=32, val=0xDEADCA7)
+    vs_3 = VS(region='global', bits=32, val=0xDEADCA7)
     si = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=1)
     if_2 = (vs_3 & claripy.If(si != 0, claripy.SI(bits=32, stride=0, lower_bound=0, upper_bound=0), claripy.SI(bits=32, stride=0, lower_bound=0xffffffff, upper_bound=0xffffffff)))
     nose.tools.assert_true(claripy.backends.vsa.is_true(vsa_model(if_2.ite_excavated.args[1]) == vsa_model(VS(region='global', bits=32, val=0))))
@@ -897,6 +902,9 @@ def test_vsa_discrete_value_set():
     nose.tools.assert_true(isinstance(vsa_model(r), DiscreteStridedIntervalSet))
     nose.tools.assert_true(vsa_model(r).collapse().identical(vsa_model(SI(bits=32, stride=1, lower_bound=0, upper_bound=35))))
 
+    # Disable it in the end
+    claripy.vsa.strided_interval.allow_dsis = False
+
 def test_solution():
     # Set backend
     b = claripy.backends.vsa
@@ -904,7 +912,9 @@ def test_solution():
     solver_type = claripy.LightFrontend
     s = solver_type(b)
 
-    VS = claripy.ValueSet
+    def VS(name=None, bits=None, region=None, val=None):
+        region = 'foobar' if region is None else 'foobar'
+        return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
 
     si = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
     nose.tools.assert_true(s.solution(si, si))
@@ -923,13 +933,16 @@ def test_solution():
 
     si = claripy.SI(bits=32, stride=0, lower_bound=3, upper_bound=3)
     si2 = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)
-    vs = VS(bits=32)
-    vsa_model(vs).merge_si('global', vsa_model(si))
-    vsa_model(vs).merge_si('foo', vsa_model(si2))
+
+    vs = VS(bits=si.size(), region='foo', val=si._model_vsa)
+    # vs = vs.annotate(RegionAnnotation('foo', 0, si2))
+    vs2 = VS(bits=si2.size(), region='foo', val=si2._model_vsa)
+    vs = vs.union(vs2)
+
     nose.tools.assert_true(s.solution(vs, 3))
     nose.tools.assert_true(s.solution(vs, 122))
     nose.tools.assert_true(s.solution(vs, si))
-    nose.tools.assert_false(s.solution(vs, 18))
+    nose.tools.assert_false(s.solution(vs, 2))
     nose.tools.assert_false(s.solution(vs, 322))
 
 def test_reasonable_bounds():

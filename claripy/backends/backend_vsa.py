@@ -5,6 +5,7 @@ import operator
 l = logging.getLogger("claripy.backends.backend_vsa")
 
 from ..backend import Backend, BackendError
+from ..vsa import RegionAnnotation
 
 def arg_filter(f):
     @functools.wraps(f)
@@ -123,7 +124,8 @@ class BackendVSA(Backend):
         if isinstance(a, BoolResult):
             return a
 
-        raise BackendError("why is fish raising NotImplementedError INSTEAD OF THE ERROR THAT'S SUPPOSED TO BE RAISED IN THIS SITUATION? SERIOUSLY, JUST RAISE A BACKENDERROR AND EVERYONE WILL BE HAPPY, BUT NO, PEOPLE HAVE TO RAISE THEIR OWN ERRORS INSTEAD OF USING THE ERRORS THAT WERE ****DESIGNED**** FOR THIS SORT OF THING. WHY DO I BOTHER DESIGNING A GOOD ERROR HIERARCHY, ANYWAYS? WILL IT BE USED? NO! IT'LL BE ALL NotImplementedError('THIS') or Exception('THAT') AND EVERYTHING WILL MELT DOWN. UGH!")
+        # Not supported
+        raise BackendError()
 
     def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
         if isinstance(expr, StridedInterval):
@@ -218,11 +220,32 @@ class BackendVSA(Backend):
         else:
             return None
 
-    def BVV(self, ast, result=None): #pylint:disable=unused-argument
+    def apply_annotation(self, bo, annotation):
+        """
+        Apply an annotation on the backend object.
+
+        :param BackendObject bo: The backend object.
+        :param Annotation annotation: The annotation to be applied
+        :return: A new BackendObject
+        :rtype: BackendObject
+        """
+
+        # Currently we only support RegionAnnotation
+
+        if not isinstance(annotation, RegionAnnotation):
+            return bo
+
+        if not isinstance(bo, ValueSet):
+            # Convert it to a ValueSet first
+            bo = bo.valueset
+
+        return bo.apply_annotation(annotation)
+
+    def BVV(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
         else:
-            return self.CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
+            return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
     def BoolV(ast, result=None): #pylint:disable=unused-argument

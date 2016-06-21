@@ -1,4 +1,4 @@
-from .valueset import ValueSet
+from .valueset import RegionAnnotation, ValueSet
 from .strided_interval import StridedInterval, CreateStridedInterval
 from .discrete_strided_interval_set import DiscreteStridedIntervalSet
 from .abstract_location import AbstractLocation

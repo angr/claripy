@@ -1,8 +1,10 @@
 import functools
 import itertools
-from ..backend_object import BackendObject
 
-def normalize_types(f):
+from ..backend_object import BackendObject
+from ..annotation import Annotation
+
+def normalize_types_two_args(f):
     @functools.wraps(f)
     def normalizer(self, region, o):
         """
@@ -33,41 +35,131 @@ def normalize_types_one_arg(f):
 
 vs_id_ctr = itertools.count()
 
-class ValueSet(BackendObject):
-    def __init__(self, name=None, region=None, bits=None, val=None):
-        self._name = name
-        if self._name is None:
-            self._name = 'VS_%d' % vs_id_ctr.next()
 
+class RegionAnnotation(Annotation):
+    """
+    Use RegionAnnotation to annotate ASTs. Normally, an AST annotated by RegionAnnotations is treated as a ValueSet.
+
+    Note that Annotation objects are immutable. Do not change properties of an Annotation object without creating a new
+    one.
+    """
+
+    def __init__(self, region_id, region_base_addr, offset):
+        self.region_id = region_id
+        self.region_base_addr = region_base_addr
+        self.offset = offset
+
+        # Do necessary conversion here
+        if isinstance(self.region_base_addr, Base):
+            self.region_base_addr = self.region_base_addr._model_vsa
+        if isinstance(self.offset, Base):
+            self.offset = self.offset._model_vsa
+
+    @property
+    def eliminatable(self):
+        """
+        A Region annotation is not eliminatable in simplifications.
+
+        :return: False
+        :rtype: bool
+        """
+
+        return False
+
+    @property
+    def relocatable(self):
+        """
+        A Region annotation annotations are relocatable in simplifications.
+
+        :return: True
+        :rtype: bool
+        """
+
+        return True
+
+    #
+    # Public methods
+    #
+
+    def relocate(self, src, dst):
+        """
+        Override Annotation.relocate().
+
+        :param src: The old AST
+        :param dst: The new AST, as the result of a simplification
+        :return: The new annotation that should be applied on the new AST
+        """
+
+        return self
+
+    #
+    # Overriding base methods
+    #
+
+    def __hash__(self):
+        return hash((self.region_id, self.region_base_addr, hash(self.offset)))
+
+
+class ValueSet(BackendObject):
+    """
+    ValueSet is a mapping between memory regions and corresponding offsets.
+    """
+
+    def __init__(self, name=None, region=None, region_base_addr=None, bits=None, val=None):
+        """
+        Constructor.
+
+        :param str name: Name of this ValueSet object. Only for debugging purposes.
+        :param str region: Region ID.
+        :param int region_base_addr: Base address of the region.
+        :param int bits: Size of the ValueSet.
+        :param val: an initial offset
+        """
+
+        self._name = 'VS_%d' % vs_id_ctr.next() if name is None else name
+        if bits is None:
+            raise ClaripyVSAError('bits must be specified when creating a ValueSet.')
+
+        self._bits = bits
+
+        self._si = StridedInterval.empty(bits)
         self._regions = {}
+        self._region_base_addrs = {}
 
         self._reversed = False
-        if bits is None:
-            if val is None:
-                raise ClaripyVSAError("Either 'size' or 'val' must be specified.")
-            else:
-                self._bits = val.bits()
 
-        else:
-            self._bits = bits
+        # Shortcuts for initialization
+        # May not be useful though...
+        if region is not None and region_base_addr is not None and val is not None:
+            if isinstance(region_base_addr, (int, long)):
+                # Convert it to a StridedInterval
+                region_base_addr = StridedInterval(bits=self._bits, stride=1, lower_bound=region_base_addr,
+                                                   upper_bound=region_base_addr
+                                                   )
 
-        if region is not None and val is not None:
+            if type(val) in (int, long):
+                val = StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val)
+
             if isinstance(val, StridedInterval):
-                self.set_si(region, val)
-
-            elif type(val) in (int, long):
-                self.set_si(region, StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val))
-
+                self._set_si(region, region_base_addr, val)
             else:
-                raise ClaripyVSAError("Unsuported type '%s' for argument 'val'" % type(val))
+                raise ClaripyVSAError("Unsupported type '%s' for argument 'val'" % type(val))
 
         else:
             if region is not None or val is not None:
                 raise ClaripyVSAError("You must specify 'region' and 'val' at the same time.")
 
+    #
+    # Properties
+    #
+
     @property
     def name(self):
         return self._name
+
+    @property
+    def bits(self):
+        return self._bits
 
     @property
     def regions(self):
@@ -82,10 +174,6 @@ class ValueSet(BackendObject):
         return len(self.regions) == 1 and self.regions.values()[0].unique
 
     @property
-    def bits(self):
-        return self.size()
-
-    @property
     def cardinality(self):
         card = 0
         for si in self._regions.itervalues():
@@ -93,18 +181,51 @@ class ValueSet(BackendObject):
 
         return card
 
-    @normalize_types
-    def set_si(self, region, si):
+    @property
+    def is_empty(self):
+        return len(self._regions) == 0
+
+    @property
+    def valueset(self):
+        return self
+
+    #
+    # Private methods
+    #
+
+    def _set_si(self, region, region_base_addr, si):
+        if isinstance(si, (int, long)):
+            si = StridedInterval(bits=self.bits, stride=0, lower_bound=si, upper_bound=si)
+
+        if isinstance(region_base_addr, (int, long)):
+            region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
+                                               upper_bound=region_base_addr
+                                               )
+
         if not isinstance(si, StridedInterval):
             raise ClaripyVSAOperationError('Unsupported type %s for si' % type(si))
 
         self._regions[region] = si
+        self._region_base_addrs[region] = region_base_addr
+        self._si = self._si.union(region_base_addr + si)
 
-    def get_si(self, region):
-        if region in self._regions:
-            return self._regions[region]
-        # TODO: Should we return a None, or an empty SI instead?
-        return None
+    def _merge_si(self, region, region_base_addr, si):
+
+        if isinstance(region_base_addr, (int, long)):
+            region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
+                                               upper_bound=region_base_addr
+                                               )
+
+        if region not in self._regions:
+            self._set_si(region, region_base_addr, si)
+        else:
+            self._regions[region] = self._regions[region].union(si)
+            self._region_base_addrs[region] = self._region_base_addrs[region].union(region_base_addr)
+            self._si = self._si.union(region_base_addr + si)
+
+    #
+    # Public methods
+    #
 
     def items(self):
         return self._regions.items()
@@ -112,16 +233,43 @@ class ValueSet(BackendObject):
     def size(self):
         return len(self)
 
-    @normalize_types
-    def merge_si(self, region, si):
-        if region not in self._regions:
-            self.set_si(region, si)
-        else:
-            self._regions[region] = self._regions[region].union(si)
+    def copy(self):
+        """
+        Make a copy of self and return.
 
-    @normalize_types
-    def remove_si(self, region, si):
-        raise NotImplementedError()
+        :return: A new ValueSet object.
+        :rtype: ValueSet
+        """
+
+        vs = ValueSet(bits=self.bits)
+        vs._regions = self._regions.copy()
+        vs._region_base_addrs = self._region_base_addrs.copy()
+        vs._reversed = self._reversed
+        vs._si = self._si.copy()
+
+        return vs
+
+    def get_si(self, region):
+        if region in self._regions:
+            return self._regions[region]
+        # TODO: Should we return a None, or an empty SI instead?
+        return None
+
+    def stridedinterval(self):
+        return self._si
+
+    def apply_annotation(self, annotation):
+        """
+        Apply a new annotation onto self, and return a new ValueSet object.
+
+        :param RegionAnnotation annotation: The annotation to apply.
+        :return: A new ValueSet object
+        :rtype: ValueSet
+        """
+
+        vs = self.copy()
+        vs._merge_si(annotation.region_id, annotation.region_base_addr, annotation.offset)
+        return vs
 
     def __repr__(self):
         s = ""
@@ -132,19 +280,35 @@ class ValueSet(BackendObject):
     def __len__(self):
         return self._bits
 
+    def __hash__(self):
+        return hash(tuple([(r, hash(si)) for r, si in self._regions.iteritems()]))
+
+    #
+    # Arithmetic operations
+    #
+
     @normalize_types_one_arg
     def __add__(self, other):
-        if type(other) is ValueSet:
-            # Normally, addition between two addresses doesn't make any sense.
-            # So we only handle those corner cases
+        """
+        Binary operation: addition
 
-            raise NotImplementedError()
-        else:
-            new_vs = ValueSet(bits=self.bits)
-            for region, si in self._regions.items():
-                new_vs._regions[region] = si + other
+        Note that even if "other" is a ValueSet object. we still treat it as a StridedInterval. Adding two ValueSets
+        together does not make sense (which is essentially adding two pointers together).
 
-            return new_vs
+        :param StridedInterval other: The other operand.
+        :return: A new ValueSet object
+        :rtype: ValueSet
+        """
+
+        new_vs = ValueSet(bits=self.bits)
+
+        # Call __add__ on self._si
+        new_vs._si = self._si.__add__(other)
+
+        for region, si in self._regions.iteritems():
+            new_vs._regions[region] = si + other
+
+        return new_vs
 
     @normalize_types_one_arg
     def __radd__(self, other):
@@ -156,14 +320,14 @@ class ValueSet(BackendObject):
         Binary operation: subtraction
 
         :param other: The other operand
-        :return: A StridedInterval.
+        :return: A StridedInterval or a ValueSet.
         """
 
         deltas = [ ]
 
         # TODO: Handle more cases
 
-        if type(other) is ValueSet:
+        if isinstance(other, ValueSet):
             # A subtraction between two ValueSets produces a StridedInterval
 
             if self.regions.keys() == other.regions.keys():
@@ -171,7 +335,7 @@ class ValueSet(BackendObject):
                     deltas.append(si - other._regions[region])
 
             else:
-                __import__('ipdb').set_trace()
+                # TODO: raise the proper exception here
                 raise NotImplementedError()
 
             delta = StridedInterval.empty(self.bits)
@@ -181,9 +345,13 @@ class ValueSet(BackendObject):
             return delta
 
         else:
-            # A subtraction between a ValueSet and an StridedInterval produces another ValueSet
+            # A subtraction between a ValueSet and a StridedInterval produces another ValueSet
 
             new_vs = self.copy()
+
+            # Call __sub__ on the base class
+            new_vs._si = self._si.__sub__(other)
+
             for region, si in new_vs._regions.items():
                 new_vs._regions[region] = si - other
 
@@ -191,29 +359,42 @@ class ValueSet(BackendObject):
 
     @normalize_types_one_arg
     def __and__(self, other):
+        """
+        Binary operation: and
+
+        Note that even if `other` is a ValueSet object, it will be treated as a StridedInterval as well. Doing & between
+        two pointers that are not the same do not make sense.
+
+        :param other: The other operand
+        :return: A ValueSet as the result
+        :rtype: ValueSet
+        """
+
         if type(other) is ValueSet:
+            # The only case where calling & between two points makes sense
             if self.identical(other):
                 return self.copy()
-            raise NotImplementedError("__and__(vs1, vs2)?")
 
         if BoolResult.is_true(other == 0):
             # Corner case: a & 0 = 0
             return StridedInterval(bits=self.bits, stride=0, lower_bound=0, upper_bound=0)
 
-        new_vs = ValueSet(bits=self.bits)
         if BoolResult.is_true(other < 0x100):
             # Special case - sometimes (addr & mask) is used for testing whether the address is aligned or not
-            # We return an SI instead
+            # We return a StridedInterval instead
             ret = None
 
             for region, si in self._regions.items():
                 r = si.__and__(other)
-
                 ret = r if ret is None else ret.union(r)
 
             return ret
 
         else:
+            # We should return a ValueSet here
+
+            new_vs = self.copy()
+
             for region, si in self._regions.items():
                 r = si.__and__(other)
 
@@ -222,6 +403,13 @@ class ValueSet(BackendObject):
             return new_vs
 
     def __eq__(self, other):
+        """
+        Binary operation: ==
+
+        :param other: The other operand
+        :return: True/False/Maybe
+        """
+
         if isinstance(other, ValueSet):
             same = False
             different = False
@@ -249,9 +437,25 @@ class ValueSet(BackendObject):
             return FalseResult()
 
     def __ne__(self, other):
+        """
+        Binary operation: ==
+
+        :param other: The other operand
+        :return: True/False/Maybe
+        """
+
         return ~ (self == other)
 
-    def eval(self, n):
+    #
+    # Backend operations
+    #
+
+    def eval(self, n, signed=False):
+
+        if signed:
+            # How are you going to deal with a negative pointer?
+            raise ClaripyVSAOperationError('`signed` cannot be True when calling ValueSet.eval().')
+
         results = []
 
         for _, si in self._regions.items():
@@ -260,13 +464,6 @@ class ValueSet(BackendObject):
 
         return results
 
-    def copy(self):
-        vs = ValueSet(bits=self.bits)
-        vs._regions = self._regions.copy()
-        vs._reversed = self._reversed
-
-        return vs
-
     def reverse(self):
         # TODO: obviously valueset.reverse is not properly implemented. I'm disabling the old annoying output line for
         # TODO: now. I will implement the proper reversing support soon.
@@ -274,10 +471,6 @@ class ValueSet(BackendObject):
         vs._reversed = not vs._reversed
 
         return vs
-
-    @property
-    def is_empty(self):
-        return len(self._regions) == 0
 
     def extract(self, high_bit, low_bit):
         """
@@ -313,11 +506,11 @@ class ValueSet(BackendObject):
         # TODO: This logic is obviously flawed. Correct it later :-(
         if isinstance(b, StridedInterval):
             for region, si in self._regions.items():
-                new_vs.set_si(region, si.concat(b))
+                new_vs._set_si(region, self._region_base_addrs[region], si.concat(b))
 
         elif isinstance(b, ValueSet):
             for region, si in self._regions.items():
-                new_vs.set_si(region, si.concat(b.get_si(region)))
+                new_vs._set_si(region, self._region_base_addrs[region], si.concat(b.get_si(region)))
 
         else:
             raise ClaripyVSAOperationError('ValueSet.concat() got an unsupported operand %s (type %s)' % (b, type(b)))
@@ -327,21 +520,28 @@ class ValueSet(BackendObject):
     @normalize_types_one_arg
     def union(self, b):
         merged_vs = self.copy()
+
         if type(b) is ValueSet:
             for region, si in b.regions.items():
                 if region not in merged_vs._regions:
                     merged_vs._regions[region] = si
                 else:
                     merged_vs._regions[region] = merged_vs._regions[region].union(si)
+
+                merged_vs._si = merged_vs._si.union(b._si)
+
         else:
-            for region, si in self._regions.items():
+            for region, si in merged_vs._regions.items():
                 merged_vs._regions[region] = merged_vs._regions[region].union(b)
+
+            merged_vs._si = merged_vs._si.union(b)
 
         return merged_vs
 
     @normalize_types_one_arg
     def widen(self, b):
         merged_vs = self.copy()
+
         if isinstance(b, ValueSet):
             for region, si in b.regions.items():
                 if region not in merged_vs.regions:
@@ -349,11 +549,42 @@ class ValueSet(BackendObject):
                 else:
                     merged_vs.regions[region] = merged_vs.regions[region].widen(si)
 
+            merged_vs._si = merged_vs._si.widen(b._si)
+
         else:
-            for region, si in self._regions.iteritems():
+            for region, si in merged_vs._regions.iteritems():
                 merged_vs._regions[region] = merged_vs._regions[region].widen(b)
 
+            merged_vs._si = merged_vs._si.widen(b)
+
         return merged_vs
+
+    @normalize_types_one_arg
+    def intersection(self, b):
+        vs = self.copy()
+
+        if isinstance(b, ValueSet):
+            for region, si in b.regions.items():
+                if region not in vs.regions:
+                    pass
+                else:
+                    vs.regions[region] = vs.regions[region].intersection(si)
+
+                    if vs.regions[region].is_empty:
+                        del vs.regions[region]
+
+            vs._si = vs._si.intersection(b._si)
+
+        else:
+            for region, si in self._regions.iteritems():
+                vs.regions[region] = vs.regions[region].intersection(b)
+
+                if vs.regions[region].is_empty:
+                    del vs.regions[region]
+
+            vs._si = vs._si.intersection(b)
+
+        return vs
 
     def identical(self, o):
         """
@@ -375,8 +606,6 @@ class ValueSet(BackendObject):
 
         return True
 
-    def __hash__(self):
-        return hash(tuple([ (r, hash(si)) for r, si in self._regions.iteritems() ]))
 
 from ..ast.base import Base
 from .strided_interval import StridedInterval
