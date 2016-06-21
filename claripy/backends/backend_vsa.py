@@ -237,7 +237,9 @@ class BackendVSA(Backend):
 
         if not isinstance(bo, ValueSet):
             # Convert it to a ValueSet first
-            bo = bo.valueset
+            # Note that the original value is not kept at all. If you want to convert a StridedInterval to a ValueSet,
+            # you gotta do the conversion by calling AST.annotate() from outside.
+            bo = ValueSet.empty(bo.bits)
 
         return bo.apply_annotation(annotation)
 

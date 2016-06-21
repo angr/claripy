@@ -227,6 +227,10 @@ class ValueSet(BackendObject):
     # Public methods
     #
 
+    @staticmethod
+    def empty(bits):
+        return ValueSet(bits=bits)
+
     def items(self):
         return self._regions.items()
 

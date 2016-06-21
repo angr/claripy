@@ -536,7 +536,7 @@ def test_vsa():
     #
 
     def VS(name=None, bits=None, region=None, val=None):
-        region = 'foobar' if region is None else 'foobar'
+        region = 'foobar' if region is None else region
         return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
 
     vs_1 = VS(bits=32, val=0)
@@ -913,7 +913,7 @@ def test_solution():
     s = solver_type(b)
 
     def VS(name=None, bits=None, region=None, val=None):
-        region = 'foobar' if region is None else 'foobar'
+        region = 'foobar' if region is None else region
         return claripy.ValueSet(bits, region=region, region_base_addr=0, value=val, name=name)
 
     si = claripy.SI(bits=32, stride=10, lower_bound=32, upper_bound=320)

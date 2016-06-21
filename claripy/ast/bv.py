@@ -214,7 +214,14 @@ def TSI(bits, name=None, uninitialized=False, explicit_name=None):
 def ESI(bits, **kwargs):
     return BVV(None, bits, **kwargs)
 
-def ValueSet(bits, region, region_base_addr, value, name=None):
+def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, val=None):
+
+    # Backward compatibility
+    if value is None and val is not None:
+        value = val
+    if region_base_addr is None:
+        region_base_addr = 0
+
     v = region_base_addr + value
 
     # Backward compatibility
