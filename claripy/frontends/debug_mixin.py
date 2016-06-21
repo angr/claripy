@@ -25,3 +25,12 @@ class DebugMixin(object):
             return o
         else:
             return _debugged(o)
+
+def debug_decorator(o):
+    if isinstance(o, type):
+        class Debugged(DebugMixin, o):
+            pass
+        Debugged.__name__ = "Debugged" + o.__name__
+        return Debugged
+    elif hasattr(o, '__call__'):
+        return _debugged(o)
