@@ -22,7 +22,6 @@ class Annotation(object):
         """
         return False
 
-    @property
     def relocate(self, src, dst): #pylint:disable=no-self-use,unused-argument
         """
         This is called when an annotation has to be relocated because of simplifications.
