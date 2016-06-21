@@ -19,6 +19,9 @@ def _debugged(f):
     return debugged
 
 class DebugMixin(object):
+    def __init__(self, *args, **kwargs):
+        super(DebugMixin, self).__init__(*args, **kwargs)
+
     def __getattribute__(self, a):
         o = super(DebugMixin, self).__getattribute__(a)
         if a.startswith("__") or not hasattr(o, '__call__'):
