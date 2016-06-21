@@ -214,9 +214,32 @@ def TSI(bits, name=None, uninitialized=False, explicit_name=None):
 def ESI(bits, **kwargs):
     return BVV(None, bits, **kwargs)
 
-def ValueSet(**kwargs):
-    vs = vsa.ValueSet(**kwargs)
-    return BV('I', (vs,), variables={ vs.name }, symbolic=False, length=kwargs['bits'], eager_backends=None)
+def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, val=None):
+
+    # Backward compatibility
+    if value is None and val is not None:
+        value = val
+    if region_base_addr is None:
+        region_base_addr = 0
+
+    v = region_base_addr + value
+
+    # Backward compatibility
+    if isinstance(v, (int, long)):
+        min_v, max_v = v, v
+        stride = 0
+    elif isinstance(v, vsa.StridedInterval):
+        min_v, max_v = v.lower_bound, v.upper_bound
+        stride = v.stride
+    else:
+        raise ClaripyValueError("ValueSet() does not take `value` of type %s" % type(value))
+
+    bvs = BVS(name, bits, min=region_base_addr + min_v, max=region_base_addr + max_v, stride=stride)
+
+    # Annotate the bvs and return the new AST
+    vs = bvs.annotate(vsa.RegionAnnotation(region, region_base_addr, value))
+    return vs
+
 VS = ValueSet
 
 def DSIS(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, explicit_name=None, to_conv=None, max_card=None):

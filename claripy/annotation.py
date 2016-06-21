@@ -22,7 +22,6 @@ class Annotation(object):
         """
         return False
 
-    @property
     def relocate(self, src, dst): #pylint:disable=no-self-use,unused-argument
         """
         This is called when an annotation has to be relocated because of simplifications.
@@ -46,6 +45,6 @@ class Annotation(object):
 
         :param src: the old AST that was eliminated in the simplification
         :param dst: the new AST (the result of a simplification)
-        :return: the annotation that will be applied to `src`
+        :return: the annotation that will be applied to `dst`
         """
         return self

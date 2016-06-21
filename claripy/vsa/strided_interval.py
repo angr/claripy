@@ -959,8 +959,14 @@ class StridedInterval(BackendObject):
     def __add__(self, o):
         return self.add(o)
 
+    def __radd__(self, o):
+        return self.add(o)
+
     def __sub__(self, o):
         return self.sub(o)
+
+    def __rsub__(self, o):
+        return StridedInterval(bits=self.bits, stride=0, lower_bound=o, upper_bound=o).sub(self)
 
     def __mul__(self, o):
         return self.mul(o)
@@ -1238,6 +1244,14 @@ class StridedInterval(BackendObject):
     @property
     def n_values(self):
         return math.ceil(StridedInterval._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits) / float(self.stride))
+
+    @property
+    def valueset(self):
+        if isinstance(self, ValueSet):
+            return self
+        else:
+            # Convert myself to a ValueSet
+            return ValueSet(name=self.name, region='global', region_base_addr=0, bits=self.bits, val=self)
 
     #
     # Modular arithmetic
