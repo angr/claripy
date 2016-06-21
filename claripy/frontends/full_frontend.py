@@ -63,6 +63,9 @@ class FullFrontend(ConstrainedFrontend):
     # Constraint management
     #
 
+    def _model_hook(self, m): #pylint:disable=no-self-use,unused-argument
+        pass
+
     def add(self, constraints):
         to_add = ConstrainedFrontend.add(self, constraints)
         self._to_add += to_add
@@ -78,10 +81,15 @@ class FullFrontend(ConstrainedFrontend):
 
         return self.constraints
 
-    def solve(self, extra_constraints=(), exact=None):
+    def satisfiable(self, extra_constraints=(), exact=None):
         try:
             s = self._get_solver()
-            return self._solver_backend.results(s, extra_constraints, generic_model=True)
+            m = self._solver_backend.model(s, extra_constraints)
+            if m is None:
+                return False
+            else:
+                self._model_hook(m)
+                return True
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
@@ -90,18 +98,22 @@ class FullFrontend(ConstrainedFrontend):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
-        return tuple(self._solver_backend.eval(e, n, extra_constraints=extra_constraints, solver=self._get_solver()))
+        models, values = self._solver_backend.eval_models(e, n, extra_constraints=extra_constraints, solver=self._get_solver())
+        map(self._model_hook, models)
+        return values
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
-        return self._solver_backend.batch_eval(
+        models, values = self._solver_backend.batch_eval_models(
                 exprs,
                 n,
                 extra_constraints=extra_constraints,
                 solver=self._get_solver()
         )
+        map(self._model_hook, models)
+        return values
 
     def max(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -117,9 +129,10 @@ class FullFrontend(ConstrainedFrontend):
 
         c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
         try:
-            vals = self._solver_backend.max_values(e, extra_constraints=c, solver=self._get_solver())
+            models, val = self._solver_backend.max_models(e, extra_constraints=c, solver=self._get_solver())
+            map(self._model_hook, models)
             #self._cache_eval(e, vals, exact=exact, cache=cache)
-            return max(vals)
+            return val
         except BackendError:
             pass
 
@@ -143,9 +156,10 @@ class FullFrontend(ConstrainedFrontend):
 
         c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
         try:
-            vals = self._solver_backend.min_values(e, extra_constraints=c, solver=self._get_solver())
+            models, val = self._solver_backend.min_models(e, extra_constraints=c, solver=self._get_solver())
+            map(self._model_hook, models)
             # TODO: self._cache_eval(e, vals, exact=exact, cache=cache)
-            return min(vals)
+            return val
         except BackendError:
             pass
 

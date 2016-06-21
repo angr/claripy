@@ -72,9 +72,6 @@ class HybridFrontend(Frontend):
         # if that fails, try the exact backend
         return getattr(self._exact_frontend, f_name)(*args, **kwargs)
 
-    def solve(self, extra_constraints=(), exact=None):
-        return self._hybrid_call('solve', extra_constraints=extra_constraints, exact=exact)
-
     def satisfiable(self, extra_constraints=(), exact=None):
         return self._hybrid_call('satisfiable', extra_constraints=extra_constraints, exact=exact)
 

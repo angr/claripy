@@ -12,8 +12,6 @@ class CompositeFrontend(ConstrainedFrontend):
         self._solvers = { }
         self._template_frontend = template_frontend
 
-        self._solvers['CONCRETE'] = self._merged_solver_for({'CONCRETE'})
-
     def _blank_copy(self, c):
         super(CompositeFrontend, self)._blank_copy(c)
         c._solvers = { }
@@ -23,11 +21,11 @@ class CompositeFrontend(ConstrainedFrontend):
         super(CompositeFrontend, self)._copy(c)
         for s in self._solver_list:
             c_s = s.branch()
-            if len(c_s.variables) > 0:
-                for v in c_s.variables:
-                    c._solvers[v] = c_s #pylint:disable=no-member
-            else:
+            if len(c_s.variables) == 0:
                 c._solvers['CONCRETE'] = c_s
+            else:
+                for v in c_s.variables:
+                    c._solvers[v] = c_s
 
         return c
 
@@ -63,7 +61,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     @property
     def variables(self):
-        return set(self._solvers.keys()) - { 'CONCRETE' }
+        return set(self._solvers.keys())
 
     # this is really hacky, but we want to avoid having our variables messed with
     @variables.setter
@@ -135,7 +133,6 @@ class CompositeFrontend(ConstrainedFrontend):
             return
 
         split = self._split_constraints(added)
-
         child_added = [ ]
 
         l.debug("%s, solvers before: %d", self, len(self._solvers))
@@ -149,40 +146,26 @@ class CompositeFrontend(ConstrainedFrontend):
     # Solving
     #
 
-    def solve(self, extra_constraints=(), exact=None):
+    def satisfiable(self, extra_constraints=(), exact=None):
         l.debug("%r checking satisfiability...", self)
 
         if len(extra_constraints) != 0:
             extra_vars = frozenset.union(*(a.variables for a in extra_constraints))
-            solvers = [ self._merged_solver_for(extra_vars) ]
-            for s in self._solver_list:
-                if s.variables.isdisjoint(solvers[0].variables):
-                    solvers.append(s)
+            extra_solver = self._merged_solver_for(extra_vars)
+            if not extra_solver.satisfiable(extra_constraints=extra_constraints, exact=exact):
+                return False
+
+            return all(
+                s.satisfiable(exact=exact) for s in
+                self._solver_list if s.variables.isdisjoint(extra_solver.variables)
+            )
         else:
-            solvers = self._solver_list
-
-        model = { }
-        satness = True
-
-        for s in solvers:
-            r = s.solve(extra_constraints=extra_constraints if s is solvers[0] else (), exact=exact)
-            if not r.sat:
-                l.debug("... %r: False", s)
-                satness = False
-                break
-
-            l.debug("... %r: True", s)
-            model.update(r.model)
-
-        l.debug("... ok!")
-        return Result(satness, model=model)
+            return all(s.satisfiable(exact=exact) for s in self._solver_list)
 
     def _all_variables(self, e, extra_constraints=()): #pylint:disable=no-self-use
         all_vars = e.variables
         if len(extra_constraints) != 0:
             all_vars |= frozenset.union(*(a.variables for a in extra_constraints))
-        if len(all_vars) == 0:
-            all_vars = { 'CONCRETE' }
         return all_vars
 
     def eval(self, e, n, extra_constraints=(), exact=None):
@@ -305,5 +288,4 @@ class CompositeFrontend(ConstrainedFrontend):
     def split(self):
         return [ s.branch() for s in self._solver_list if len(s.variables) > 0 ]
 
-from ..result import Result
 from ..errors import ClaripyFrontendError

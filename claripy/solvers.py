@@ -7,7 +7,8 @@ class Solver(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
-    frontends.CacheMixin,
+    frontends.ModelCacheMixin,
+    frontends.ConstraintExpansionMixin,
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
@@ -48,7 +49,6 @@ class SolverComposite(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
-    frontends.CacheMixin,
     frontends.CompositeFrontend
 ):
     def __init__(self, template_solver=None, **kwargs):

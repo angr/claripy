@@ -68,9 +68,6 @@ class Frontend(ana.Storable):
     def simplify(self):
         raise NotImplementedError()
 
-    def solve(self, extra_constraints=(), exact=None):
-        raise NotImplementedError()
-
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError()
 
@@ -124,6 +121,7 @@ class Frontend(ana.Storable):
 
         l.debug("... splitted of size %d", len(splitted))
 
+        concrete_constraints = [ ]
         variable_connections = { }
         constraint_connections = { }
         for n,s in enumerate(splitted):
@@ -133,7 +131,7 @@ class Frontend(ana.Storable):
             connected_constraints = { n }
 
             if len(connected_variables) == 0:
-                connected_variables.add('CONCRETE')
+                concrete_constraints.append(s)
 
             for v in s.variables:
                 if v in variable_connections:
@@ -152,6 +150,10 @@ class Frontend(ana.Storable):
         results = [ ]
         for v,c_indexes in unique_constraint_sets:
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
+
+        if len(concrete_constraints) > 0:
+            results.append(({ 'CONCRETE' }, concrete_constraints))
+
         return results
 
 from . import ast

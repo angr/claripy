@@ -434,28 +434,6 @@ class Backend(object):
         """
         raise BackendError("backend doesn't support solving")
 
-    def results(self, s, extra_constraints=(), generic_model=None):
-        """
-        This function does a constraint check.
-
-        :param s:                   The backend solver object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to s for this solve
-        :param generic_model:       Whether or not to create a generic model
-        :return:                   A Result object
-        """
-        return self._results(s, extra_constraints=self.convert_list(extra_constraints), generic_model=generic_model)
-
-    def _results(self, s, extra_constraints=(), generic_model=None): #pylint:disable=no-self-use,unused-argument
-        """
-        This function does a constraint check.
-
-        :param s:                   The backend solver object
-        :param extra_constraints:   Extra constraints (backend objects) to add to s for this solve
-        :param generic_model:       Whether or not to create a generic model
-        :return:                   A Result object
-        """
-        raise BackendError("backend doesn't support solving")
-
     #
     # These functions provide evaluation support.
     #
@@ -586,9 +564,13 @@ class Backend(object):
         """
         raise BackendError("backend doesn't support max()")
 
-    def min_values(self, expr, result=None, extra_constraints=(), solver=None):
+    #
+    # New model-based solving.
+    #
+
+    def min_models(self, expr, result=None, extra_constraints=(), solver=None):
         """
-        Return a set of values of expr, in which the minimum is present.
+        Return a set of models of expr, in which the minimum is present.
         This is an optimization for performing less constraint solving.
 
         :param expr: expression (claripy.E object) to evaluate
@@ -597,16 +579,17 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
-        :return: the minimum possible value of expr (backend object)
+        :return: a tuple of - a sequence of models, one of which contains the minimum of expr, and
+                 the minimum value itself (as a primitive)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._min_values(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._min_models(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
-    def _min_values(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _min_models(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         """
-        Return a set of values of expr, in which the minimum is present.
+        Return a set of models of expr, in which the minimum is present.
         This is an optimization for performing less constraint solving.
 
         :param expr: expression (backend object) to evaluate
@@ -615,13 +598,14 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
-        :return: the minimum possible value of expr (backend object)
+        :return: a tuple of - a sequence of models, one of which contains the maximum of expr, and
+                 the maximum value itself (as a primitive)
         """
-        raise BackendError("backend doesn't support min_values()")
+        raise BackendError("backend doesn't support min_models()")
 
-    def max_values(self, expr, result=None, extra_constraints=(), solver=None):
+    def max_models(self, expr, result=None, extra_constraints=(), solver=None):
         """
-        Return a set of values of expr, in which the maximum is present.
+        Return a set of models of expr, in which the maximum is present.
         This is an optimization for performing less constraint solving.
 
         :param expr: expression (claripy.E object) to evaluate
@@ -630,16 +614,17 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
-        :return: the maximum possible value of expr (backend object)
+        :return: a tuple of - a sequence of models, one of which contains the maximum of expr, and
+                 the maximum value itself (as a primitive)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._max_values(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._max_models(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
 
-    def _max_values(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _max_models(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
         """
-        Return a set of values of expr, in which the maximum is present.
+        Return a set of models of expr, in which the maximum is present.
         This is an optimization for performing less constraint solving.
 
         :param expr: expression (backend object) to evaluate
@@ -648,9 +633,94 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
-        :return: the maximum possible value of expr (backend object)
+        :return: a sequence of models, one of which contains the maximum of expr
         """
-        raise BackendError("backend doesn't support max_values()")
+        raise BackendError("backend doesn't support max_models()")
+
+    def eval_models(self, expr, n, result=None, extra_constraints=(), solver=None):
+        """
+        This function returns up to `n` possible solutions for expression `expr`.
+
+        :param expr: expression (claripy.E object) to evaluate
+        :param n: number of results to return
+        :param result: a cached Result from the last constraint solve
+        :param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        :param extra_constraints: extra constraints (claripy.E objects) to add
+                                  to the solver for this solve
+        :return:              A sequence of up to n results (backend objects)
+        """
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        return self._eval_models(self.convert(expr, result=result if n == 1 else None), n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+
+    def _eval_models(self, expr, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        """
+        This function returns up to `n` possible solutions for expression `expr`.
+
+        :param expr:                An expression (backend object) to evaluate.
+        :param n:                   A number of results to return.
+        :param result:              A cached Result from the last constraint solve.
+        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param solver:              A solver object, native to the backend, to assist in the evaluation (for example, a
+                                    z3.Solver).
+        :return:                    A sequence of up to n results (backend objects).
+        """
+        raise BackendError("backend doesn't support eval()")
+
+    def batch_eval_models(self, exprs, n, result=None, extra_constraints=(), solver=None):
+        """
+        Evaluate one or multiple expressions.
+
+        :param exprs:               A list of expressions to evaluate.
+        :param n:                   Number of different solutions to return.
+        :param result:              A cached Result from the last constraint solve.
+        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param solver:              A solver object, native to the backend, to assist in the evaluation.
+        :return:                    a sequence of - A list of models of different solutions, and a list of up to n tuples, where each tuple is a solution for all expressions (primitives).
+        """
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for batch evaluation" % self.__class__.__name__)
+
+        converted_exprs = [ self.convert(ex, result=result if n == 1 else None) for ex in exprs ]
+
+        return self._batch_eval_models(converted_exprs, n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+
+    def _batch_eval_models(self, exprs, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+        """
+        Evaluate one or multiple expressions.
+
+        :param exprs:               A list of expressions to evaluate.
+        :param n:                   Number of different solutions to return.
+        :param result:              A cached Result from the last constraint solve.
+        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param solver:              A solver object, native to the backend, to assist in the evaluation.
+        :return:                    a sequence of - A list of models of different solutions, and a list of up to n tuples, where each tuple is a solution for all expressions (primitives).
+        """
+
+        raise BackendError("backend doesn't support batch_eval()")
+
+    def model(self, s, extra_constraints=()):
+        """
+        This function does a constraint check and returns a model for a solver.
+
+        :param s:                   The backend solver object.
+        :param extra_constraints:   Extra constraints (claripy.E objects) to add to s for this solve
+        :return:                    A model, or None if unsat.
+        """
+        return self._model(s, extra_constraints=self.convert_list(extra_constraints))
+
+    def _model(self, s, extra_constraints=()): #pylint:disable=no-self-use,unused-argument
+        """
+        This function does a constraint check and returns a model for a solver.
+
+        :param s:                   The backend solver object
+        :param extra_constraints:   Extra constraints (backend objects) to add to s for this solve
+        :return:                    A model, or None if unsat.
+        """
+        raise BackendError("backend doesn't support solving")
+
 
     def solution(self, expr, v, result=None, extra_constraints=(), solver=None):
         """

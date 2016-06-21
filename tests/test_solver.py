@@ -205,27 +205,27 @@ def raw_solver(solver_type):
 
     # test result caching
 
-    if isinstance(s, claripy.frontends.CacheMixin):
-        s = solver_type()
-        nose.tools.assert_true(s.satisfiable())
-        s.add(claripy.BoolV(False))
-        nose.tools.assert_false(s.satisfiable())
-        s.result = None
-        nose.tools.assert_false(s.satisfiable())
+    if isinstance(s, claripy.frontends.ModelCacheMixin):
+        count = claripy._backends_module.backend_z3.solve_count
 
         s = solver_type()
         x = claripy.BVS('x', 32)
         s.add(x == 10)
         nose.tools.assert_true(s.satisfiable())
-        nose.tools.assert_true(s.result is not None)
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
         nose.tools.assert_equals(s.eval(x, 1)[0], 10)
-        nose.tools.assert_true(s.result is not None)
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
         s.add(x == 10)
-        nose.tools.assert_true(s.result is not None)
-        #TODO: s.add(x > 9)
-        #TODO: nose.tools.assert_true(s.result is not None)
-        #TODO: s.add(x <= 11)
-        #TODO: nose.tools.assert_true(s.result is not None)
+        s.add(x > 9)
+        nose.tools.assert_equals(s.eval(x, 1)[0], 10)
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
+
+        y = claripy.BVS('y', 32)
+        s.add(y < 999)
+        assert s.satisfiable()
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        nose.tools.assert_equals(s.eval(y, 1)[0], 0)
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
 
 def test_solver_branching():
     for s in solver_list:
@@ -291,29 +291,47 @@ def test_composite_solver():
     z = claripy.BVS("z", 32)
     c = claripy.And(x == 1, y == 2, z == 3)
     s.add(c)
-    nose.tools.assert_equals(len(s._solver_list), 4) # including the CONSTANT solver
+    nose.tools.assert_equals(len(s._solver_list), 3)
     nose.tools.assert_true(s.satisfiable())
 
     s.add(x < y)
-    nose.tools.assert_equal(len(s._solver_list), 3)
+    nose.tools.assert_equal(len(s._solver_list), 2)
     nose.tools.assert_true(s.satisfiable())
 
     s.simplify()
-    nose.tools.assert_equal(len(s._solver_list), 4)
+    nose.tools.assert_equal(len(s._solver_list), 3)
     nose.tools.assert_true(s.satisfiable())
 
     s1 = s.branch()
-    nose.tools.assert_equal(len(s1._solver_list), 4)
+    nose.tools.assert_equal(len(s1._solver_list), 3)
 
     s1.add(x > y)
-    nose.tools.assert_equal(len(s1._solver_list), 3)
+    nose.tools.assert_equal(len(s1._solver_list), 2)
     nose.tools.assert_false(s1.satisfiable())
-    nose.tools.assert_equal(len(s._solver_list), 4)
+    nose.tools.assert_equal(len(s._solver_list), 3)
     nose.tools.assert_true(s.satisfiable())
 
     s.add(claripy.BVV(1, 32) == claripy.BVV(2, 32))
-    nose.tools.assert_equal(len(s._solver_list), 4) # the CONCRETE one
+    nose.tools.assert_equal(len(s._solver_list), 4) # the False
     nose.tools.assert_false(s.satisfiable())
+
+    ss = s.branch()
+    nose.tools.assert_equal(len(ss._solver_list), 4) # the False
+    nose.tools.assert_false(ss.satisfiable())
+
+    s = claripy.SolverComposite()
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+    c = claripy.And(x == 1, y == 2, z == 3)
+    s.add(c)
+
+    assert len(s._solver_list) == 3
+    count = claripy._backends_module.backend_z3.solve_count
+    assert s.satisfiable()
+    assert claripy._backends_module.backend_z3.solve_count == count + 3
+    assert list(s.eval(x+y, 1)) == [3]
+    assert claripy._backends_module.backend_z3.solve_count == count + 3
 
 def test_minmax():
     s = claripy.Solver()
@@ -324,9 +342,9 @@ def test_minmax():
     nose.tools.assert_true(s.satisfiable())
 
 if __name__ == '__main__':
-    test_hybrid_solver()
     for func, param in test_solver():
         func(param)
+    test_hybrid_solver()
     test_replacement_solver()
     test_minmax()
     test_solver_branching()

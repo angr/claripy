@@ -144,10 +144,6 @@ class ReplacementFrontend(EagerResolutionMixin, ConstrainedFrontend):
     def _replace_list(self, lst):
         return tuple(self._replacement(c) for c in lst)
 
-    def solve(self, extra_constraints=(), exact=None):
-        ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.solve(extra_constraints=ecr, exact=exact)
-
     def eval(self, e, n, extra_constraints=(), exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)

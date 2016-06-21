@@ -185,15 +185,15 @@ class BackendZ3(Backend):
 
     @condom
     def BVS(self, ast, result=None): #pylint:disable=unused-argument
-        name, mn, mx, stride, _, _, _ = ast.args
+        name, mn, mx, stride, _, _, _ = ast.args #pylint:disable=unused-variable
         size = ast.size()
         expr = z3.BitVec(name, size, ctx=self._context)
-        if mn is not None:
-            expr = z3.If(z3.ULT(expr, mn), mn, expr, ctx=self._context)
-        if mx is not None:
-            expr = z3.If(z3.UGT(expr, mx), mx, expr, ctx=self._context)
-        if stride is not None:
-            expr = (expr / stride) * stride
+        #if mn is not None:
+        #   expr = z3.If(z3.ULT(expr, mn), mn, expr, ctx=self._context)
+        #if mx is not None:
+        #   expr = z3.If(z3.UGT(expr, mx), mx, expr, ctx=self._context)
+        #if stride is not None:
+        #   expr = (expr / stride) * stride
         return expr
 
     @condom
@@ -506,35 +506,54 @@ class BackendZ3(Backend):
         else:
             l.debug("unsat!")
 
-        return Result(satness, model, backend_model=z3_model)
+        return Result(satness, model)
 
-    @condom
-    def _eval(self, expr, n, extra_constraints=(), result=None, solver=None):
-        r = self._batch_eval([ expr ], n, extra_constraints=extra_constraints, result=result, solver=solver)
+    #
+    # New, model-driven solves
+    #
+
+    def _generic_model(self, z3_model):
+        """
+        Converts a Z3 model to a name->primitive dict.
+        """
+        model = { }
+        for m_f in z3_model:
+            n = m_f.name()
+            m = m_f()
+            me = z3_model.eval(m)
+            model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
+
+        return model
+
+    def _model(self, s, extra_constraints=()):
+        s,m = self._check_and_model(s, extra_constraints=extra_constraints)
+        return self._generic_model(m) if s else None
+
+    def _eval_models(self, expr, n, extra_constraints=(), result=None, solver=None):
+        _, results = self._batch_eval_models(
+            [ expr ], n, extra_constraints=extra_constraints, result=result, solver=solver
+        )
+
         # Unpack it
-        return [ x[0] for x in r ]
+        return [ v[0] for v in results ]
 
     @condom
-    def _batch_eval(self, exprs, n, extra_constraints=(), result=None, solver=None):
-        global solve_count, cache_count
+    def _batch_eval_models(self, exprs, n, extra_constraints=(), result=None, solver=None):
+        global solve_count
 
-        results = [ ]
-        model = result.backend_model if result else None
+        result_models = [ ]
+        result_values = [ ]
+
         if len(extra_constraints) > 0 or n != 1:
             solver.push()
         if len(extra_constraints) > 0:
             solver.add(*extra_constraints)
-            model = None
-            l.debug("Disregarding cache")
 
         for i in range(n):
-            if model is None:
-                solve_count += 1
-                l.debug("Doing a check!")
-                if solver.check() == z3.sat:
-                    model = solver.model()
-            else:
-                cache_count += 1
+            solve_count += 1
+            l.debug("Doing a check!")
+            if solver.check() == z3.sat:
+                model = solver.model()
 
             if model is None:
                 break
@@ -549,7 +568,8 @@ class BackendZ3(Backend):
                     r.append(expr)
 
             # Append the solution to the result list
-            results.append(tuple(r))
+            result_models.append(self._generic_model(model))
+            result_values.append(tuple(r))
 
             # Construct the extra constraint so we don't get the same result anymore
             if i + 1 != n:
@@ -559,23 +579,15 @@ class BackendZ3(Backend):
         if len(extra_constraints) > 0 or n != 1:
             solver.pop()
 
-        if len(results) == 0:
-            raise UnsatError("constraints are unsat")
-
-        return results
-
-    def _max(self, expr, extra_constraints=(), result=None, solver=None):
-        return max(self._max_values(expr, extra_constraints=extra_constraints, result=result, solver=solver))
-
-    def _min(self, expr, extra_constraints=(), result=None, solver=None):
-        return min(self._min_values(expr, extra_constraints=extra_constraints, result=result, solver=solver))
+        return result_models, result_values
 
     @condom
-    def _min_values(self, expr, extra_constraints=(), result=None, solver=None):
+    def _min_models(self, expr, extra_constraints=(), result=None, solver=None):
         global solve_count
 
         lo = 0
         hi = 2**expr.size()-1
+        models = [ ]
         vals = set()
 
         numpop = 0
@@ -596,6 +608,7 @@ class BackendZ3(Backend):
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 l.debug("... still sat")
+                models.append(self._generic_model(solver.model()))
                 vals.add(self._primitive_from_model(solver.model(), expr))
                 hi = middle
             else:
@@ -615,20 +628,22 @@ class BackendZ3(Backend):
             solver.add(expr == lo)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
+                models.append(self._generic_model(solver.model()))
                 vals.add(lo)
                 solver.pop()
             else:
                 vals.add(hi)
                 solver.pop()
 
-        return vals
+        return models, min(vals)
 
     @condom
-    def _max_values(self, expr, extra_constraints=(), result=None, solver=None):
+    def _max_models(self, expr, extra_constraints=(), result=None, solver=None):
         global solve_count
 
         lo = 0
         hi = 2**expr.size()-1
+        models = [ ]
         vals = set()
 
         numpop = 0
@@ -651,6 +666,7 @@ class BackendZ3(Backend):
                 l.debug("... still sat")
                 lo = middle
                 vals.add(self._primitive_from_model(solver.model(), expr))
+                models.append(self._generic_model(solver.model()))
             else:
                 l.debug("... now unsat")
                 hi = middle
@@ -668,13 +684,26 @@ class BackendZ3(Backend):
             solver.add(expr == hi)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
+                models.append(self._generic_model(solver.model()))
                 vals.add(hi)
                 solver.pop()
             else:
                 vals.add(lo)
                 solver.pop()
 
-        return vals
+        return models, max(vals)
+
+    def _eval(self, expr, n, **kwargs):
+        return [ v[0] for v in self._batch_eval_models([ expr ], n, **kwargs)[1] ]
+
+    def _batch_eval(self, exprs, n, **kwargs):
+        return self._batch_eval_models(exprs, n, **kwargs)[1]
+
+    def _max(self, expr, extra_constraints=(), result=None, solver=None):
+        return self._max_models(expr, extra_constraints=extra_constraints, result=result, solver=solver)[1]
+
+    def _min(self, expr, extra_constraints=(), result=None, solver=None):
+        return self._min_models(expr, extra_constraints=extra_constraints, result=result, solver=solver)[1]
 
     def _simplify(self, expr): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
@@ -1011,7 +1040,7 @@ from ..ast.fp import FP, FPV
 from ..operations import backend_operations, backend_fp_operations
 from ..result import Result
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
-from ..errors import ClaripyError, BackendError, UnsatError, ClaripyOperationError
+from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
 
 op_type_map = {

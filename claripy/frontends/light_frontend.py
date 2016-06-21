@@ -79,14 +79,14 @@ class LightFrontend(ConstrainedFrontend):
             l.info("Light solver can't handle this is_false().")
             return False
 
-    def solve(self, extra_constraints=(), exact=None):
+    def satisfiable(self, extra_constraints=(), exact=None):
         if any(
             self._solver_backend.is_false(c) for c in
             reversed(self.constraints + list(extra_constraints))
         ):
-            return UnsatResult()
+            return False
         else:
-            return SatResult()
+            return True
 
     #
     # Merging and splitting
@@ -97,4 +97,3 @@ class LightFrontend(ConstrainedFrontend):
 
 from ..errors import BackendError, ClaripyFrontendError
 from ..backend_manager import backends
-from ..result import SatResult, UnsatResult

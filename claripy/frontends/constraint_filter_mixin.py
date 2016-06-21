@@ -24,10 +24,6 @@ class ConstraintFilterMixin(object):
         else:
             return [ ]
 
-    def solve(self, extra_constraints=(), **kwargs):
-        ec = self._constraint_filter(extra_constraints)
-        return super(ConstraintFilterMixin, self).solve(extra_constraints=ec, **kwargs)
-
     def satisfiable(self, extra_constraints=(), **kwargs):
         try:
             ec = self._constraint_filter(extra_constraints)
@@ -64,5 +60,4 @@ class ConstraintFilterMixin(object):
         return super(ConstraintFilterMixin, self).is_false(e, extra_constraints=ec, **kwargs)
 
 from ..errors import UnsatError
-from ..result import UnsatResult
 from .. import false

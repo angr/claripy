@@ -546,7 +546,7 @@ class Base(ana.Storable):
     # Various AST modifications (replacements)
     #
 
-    def _replace(self, replacements, variable_set=None):
+    def _replace(self, replacements, variable_set=None, leaf_operation=None):
         """
         A helper for replace().
 
@@ -555,7 +555,7 @@ class Base(ana.Storable):
         """
         try:
             if variable_set is None:
-                variable_set = {}
+                variable_set = set()
 
             hash_key = self.cache_key
 
@@ -563,13 +563,18 @@ class Base(ana.Storable):
                 r = replacements[hash_key]
             elif not self.variables.issuperset(variable_set):
                 r = self
+            elif leaf_operation is not None and self.op in operations.leaf_operations:
+                r = leaf_operation(self)
+                if r is not self:
+                    replacements[hash_key] = r
+                return r
             else:
                 new_args = [ ]
                 replaced = False
 
                 for a in self.args:
                     if isinstance(a, Base):
-                        new_a = a._replace(replacements=replacements, variable_set=variable_set)
+                        new_a = a._replace(replacements=replacements, variable_set=variable_set, leaf_operation=leaf_operation)
                         replaced |= new_a is not a
                     else:
                         new_a = a
