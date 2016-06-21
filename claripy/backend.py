@@ -163,7 +163,10 @@ class Backend(object):
                 if expr.op in self._op_expr:
                     r = self._op_expr[expr.op](expr, result=result)
                 else:
-                    r = self.call(expr.op, expr.args, result=result)
+                    try:
+                        r = self.call(expr.op, expr.args, result=result)
+                    except BackendUnsupportedError:
+                        r = self.default_op(expr)
             except (RuntimeError, ctypes.ArgumentError):
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
@@ -204,7 +207,7 @@ class Backend(object):
             obj = self._op_raw[op](*converted)
         elif not op.startswith("__"):
             l.debug("backend has no operation %s", op)
-            raise BackendError("backend has no operation %s" % op)
+            raise BackendUnsupportedError
         else:
             obj = NotImplemented
 
@@ -773,6 +776,10 @@ class Backend(object):
         """
         return o
 
+    def default_op(self, expr):
+        # pylint: disable=unused-argument
+        raise BackendError('Backend %s does not support operation %s' % (self, expr.op))
+
 from .ast.base import Base
 from .operations import opposites
-from .errors import BackendError, ClaripyRecursionError
+from .errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
