@@ -9,6 +9,7 @@ class Solver(
     frontends.ConstraintDeduplicatorMixin,
     frontends.ModelCacheMixin,
     frontends.ConstraintExpansionMixin,
+    frontends.SimplifyHelperMixin,
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):

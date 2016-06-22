@@ -36,12 +36,11 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     #
 
     def _ana_getstate(self):
-        if not self._simplified: self.simplify()
         self.finalize()
-        return self.constraints, self.variables, Frontend._ana_getstate(self)
+        return self.constraints, self.variables, self._simplified, Frontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self.constraints, self.variables, base_state = s
+        self.constraints, self.variables, self._simplified, base_state = s
         Frontend._ana_setstate(self, base_state)
         self._finalized = True
 
