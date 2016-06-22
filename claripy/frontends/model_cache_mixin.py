@@ -7,35 +7,35 @@ class ModelCacheMixin(object):
         self._models = [ ]
         self._model_replacements = [ ]
         self._exhausted = False
-        self._eval_exhausted = set()
-        self._max_exhausted = set()
-        self._min_exhausted = set()
+        self._eval_exhausted = weakref.WeakKeyDictionary()
+        self._max_exhausted = weakref.WeakKeyDictionary()
+        self._min_exhausted = weakref.WeakKeyDictionary()
 
     def _blank_copy(self, c):
         super(ModelCacheMixin, self)._blank_copy(c)
         c._models = [ ]
         c._model_replacements = [ ]
         c._exhausted = False
-        c._eval_exhausted = set()
-        c._max_exhausted = set()
-        c._min_exhausted = set()
+        c._eval_exhausted = weakref.WeakKeyDictionary()
+        c._max_exhausted = weakref.WeakKeyDictionary()
+        c._min_exhausted = weakref.WeakKeyDictionary()
 
     def _copy(self, c):
         super(ModelCacheMixin, self)._copy(c)
         c._models = list(self._models)
         c._model_replacements = list(self._model_replacements)
         c._exhausted = self._exhausted
-        c._eval_exhausted = set(self._eval_exhausted)
-        c._max_exhausted = set(self._max_exhausted)
-        c._min_exhausted = set(self._min_exhausted)
+        c._eval_exhausted = weakref.WeakKeyDictionary(self._eval_exhausted)
+        c._max_exhausted = weakref.WeakKeyDictionary(self._max_exhausted)
+        c._min_exhausted = weakref.WeakKeyDictionary(self._min_exhausted)
 
     def _ana_getstate(self):
         return (
             self._models,
             self._exhausted,
-            self._eval_exhausted,
-            self._max_exhausted,
-            self._min_exhausted,
+            self._eval_exhausted.keys(),
+            self._max_exhausted.keys(),
+            self._min_exhausted.keys(),
             super(ModelCacheMixin, self)._ana_getstate()
         )
 
@@ -43,13 +43,16 @@ class ModelCacheMixin(object):
         (
             self._models,
             self._exhausted,
-            self._eval_exhausted,
-            self._max_exhausted,
-            self._min_exhausted,
+            _eval_exhausted,
+            _max_exhausted,
+            _min_exhausted,
             base_state
         ) = s
         super(ModelCacheMixin, self)._ana_setstate(base_state)
         self._model_replacements = [ weakref.WeakKeyDictionary() for _ in self._models ]
+        self._eval_exhausted = weakref.WeakKeyDictionary((k,True) for k in _eval_exhausted)
+        self._max_exhausted = weakref.WeakKeyDictionary((k,True) for k in _max_exhausted)
+        self._min_exhausted = weakref.WeakKeyDictionary((k,True) for k in _min_exhausted)
 
     #
     # Model cleaning
@@ -213,13 +216,13 @@ class ModelCacheMixin(object):
             if len(results) == 0:
                 raise
 
-        if len(results) < n:
-            self._eval_exhausted.update(e.cache_key for e in asts)
+        if len(extra_constraints) == 0 and len(results) < n:
+            self._eval_exhausted.update({e.cache_key:True for e in asts})
 
         return results
 
     def eval(self, e, n, **kwargs):
-        return tuple( r[0] for r in self.batch_eval([e], n=n, **kwargs) )
+        return tuple( r[0] for r in ModelCacheMixin.batch_eval(self, [e], n=n, **kwargs) )
 
     def min(self, e, extra_constraints=(), **kwargs):
         cached = self._get_solutions(e, extra_constraints=extra_constraints)
@@ -227,7 +230,7 @@ class ModelCacheMixin(object):
             return min(cached)
         else:
             m = super(ModelCacheMixin, self).min(e, extra_constraints=extra_constraints, **kwargs)
-            self._min_exhausted.add(e.cache_key)
+            self._min_exhausted[e.cache_key] = True
             return m
 
     def max(self, e, extra_constraints=(), **kwargs):
@@ -236,7 +239,7 @@ class ModelCacheMixin(object):
             return max(cached)
         else:
             m = super(ModelCacheMixin, self).max(e, extra_constraints=extra_constraints, **kwargs)
-            self._max_exhausted.add(e.cache_key)
+            self._max_exhausted[e.cache_key] = True
             return m
 
 from .. import backends
