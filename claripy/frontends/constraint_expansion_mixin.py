@@ -5,13 +5,11 @@ l = logging.getLogger("claripy.frontends.cache_mixin")
 
 class ConstraintExpansionMixin(object):
     def eval(self, e, n, extra_constraints=(), exact=None, **kwargs):
-        results = frozenset(
-            super(ConstraintExpansionMixin, self).eval(
-                e, n,
-                extra_constraints=extra_constraints,
-                exact=exact,
-                **kwargs
-            )
+        results = super(ConstraintExpansionMixin, self).eval(
+            e, n,
+            extra_constraints=extra_constraints,
+            exact=exact,
+            **kwargs
         )
 
         # if there are less possible solutions than n (i.e., meaning we got all the solutions for e),

@@ -94,10 +94,14 @@ class FullFrontend(ConstrainedFrontend):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
-        return self._solver_backend.eval(
-            e, n, extra_constraints=extra_constraints,
-            solver=self._get_solver(), model_callback=self._model_hook
-        )
+        try:
+            return self._solver_backend.eval(
+                e, n, extra_constraints=extra_constraints,
+                solver=self._get_solver(), model_callback=self._model_hook
+            )
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during _eval: %s('%s')" % (str(e_type), str(value)), traceback
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
