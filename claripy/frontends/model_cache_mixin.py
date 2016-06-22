@@ -148,19 +148,6 @@ class ModelCacheMixin(object):
         self._models.append(m)
         self._model_replacements.append(weakref.WeakKeyDictionary())
 
-    def _do_solve(self, extra_constraints=(), **kwargs):
-        if self._exhausted:
-            raise UnsatError("already unsat -- no further solutions available")
-
-        sat = super(ModelCacheMixin, self).satisfiable(extra_constraints=extra_constraints, **kwargs)
-        if sat:
-            return self._models[-1], self._model_replacements[-1]
-
-        if len(extra_constraints) == 0:
-            self._exhausted = True
-
-        raise UnsatError("unsat result")
-
     def _get_models(self, extra_constraints=(), n=None):
         mr = zip(self._models, self._model_replacements)
         if len(extra_constraints) == 0:
@@ -190,12 +177,7 @@ class ModelCacheMixin(object):
     def satisfiable(self, extra_constraints=(), **kwargs):
         for _ in self._get_models(extra_constraints=extra_constraints, n=1):
             return True
-
-        try:
-            self._do_solve(extra_constraints=extra_constraints, **kwargs)
-            return True
-        except UnsatError:
-            return False
+        return super(ModelCacheMixin, self).satisfiable(extra_constraints=extra_constraints, **kwargs)
 
     def batch_eval(self, asts, n, extra_constraints=(), **kwargs):
         results = self._get_batch_solutions(asts, n=n, extra_constraints=extra_constraints)
@@ -247,7 +229,20 @@ class ModelCacheMixin(object):
             self._max_exhausted[e.cache_key] = True
             return m
 
+    def solution(self, e, v, extra_constraints=(), **kwargs):
+        if isinstance(v, Base):
+            cached = self._get_batch_solutions([e,v], extra_constraints=extra_constraints)
+            if (e,v) in map(tuple, cached):
+                return True
+        else:
+            cached = self._get_solutions(e, extra_constraints=extra_constraints)
+            if v in cached:
+                return True
+
+        return super(ModelCacheMixin, self).solution(e, v, extra_constraints=extra_constraints, **kwargs)
+
+
 from .. import backends
 from ..errors import UnsatError
-from ..ast import all_operations
+from ..ast import all_operations, Base
 from .. import true

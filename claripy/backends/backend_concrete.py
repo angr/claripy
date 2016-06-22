@@ -129,41 +129,41 @@ class BackendConcrete(Backend):
         elif type(expr) in (int, long):
             return expr
 
-    def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
+    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
 
         return (self._to_primitive(expr),)
 
-    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None):
+    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
 
         return [ tuple(self._to_primitive(ex) for ex in exprs) ]
 
-    def _max(self, expr, result=None, solver=None, extra_constraints=()):
+    def _max(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self._to_primitive(expr)
 
-    def _min(self, expr, result=None, solver=None, extra_constraints=()):
+    def _min(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self._to_primitive(expr)
 
-    def _solution(self, expr, v, result=None, solver=None, extra_constraints=()):
+    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self.convert(expr, result=result) == v
 
     #pylint:disable=singleton-comparison
-    def _is_true(self, e, extra_constraints=(), result=None, solver=None):
+    def _is_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
         return e == True
-    def _is_false(self, e, extra_constraints=(), result=None, solver=None):
+    def _is_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
         return e == False
-    def _has_true(self, e, extra_constraints=(), result=None, solver=None):
+    def _has_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
         return e == True
-    def _has_false(self, e, extra_constraints=(), result=None, solver=None):
+    def _has_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
         return e == False
 
 from ..operations import backend_operations, backend_fp_operations

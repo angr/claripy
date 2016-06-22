@@ -1,9 +1,30 @@
 import sys
 import ctypes
 import logging
+import weakref
 import operator
 import threading
+from decimal import Decimal
 l = logging.getLogger("claripy.backends.backend_z3")
+
+#pylint:disable=unidiomatic-typecheck
+
+#
+# Some global variables
+#
+
+# track the count of solves
+solve_count = 0
+
+# a pointer to get values out of Z3
+c_uint64_p = ctypes.pointer(ctypes.c_uint64())
+
+#
+# Import and set up Z3
+#
+
+import os
+import z3
 
 if sys.platform == 'darwin':
     z3_library_file = "libz3.dylib"
@@ -11,17 +32,6 @@ elif sys.platform == 'win32':
     z3_library_file = "libz3.dll"
 else:
     z3_library_file = "libz3.so"
-
-
-solve_count = 0
-cache_count = 0
-
-# a pointer to get values out of Z3
-c_uint64_p = ctypes.pointer(ctypes.c_uint64())
-
-# import and set up Z3
-import os
-import z3
 
 from ..errors import ClaripyZ3Error
 
@@ -51,9 +61,9 @@ else:
 
 supports_fp = hasattr(z3, 'fpEQ')
 
-from ..backend import Backend
-
-#pylint:disable=unidiomatic-typecheck
+#
+# Utility functions
+#
 
 def condom(f):
     def z3_condom(*args, **kwargs):
@@ -75,6 +85,11 @@ def _raw_caller(f):
         return f(*args, **kwargs)
     return raw_caller
 
+#
+# And the (ugh) magic
+#
+
+from ..backend import Backend
 class BackendZ3(Backend):
     _split_on = { 'And', 'Or' }
 
@@ -469,52 +484,10 @@ class BackendZ3(Backend):
     def _add(self, s, c):
         s.add(*c)
 
-    def _check(self, s, extra_constraints=()):
-        return self._check_and_model(s, extra_constraints=extra_constraints)[0]
-
     @condom
-    def _check_and_model(self, s, extra_constraints=()): #pylint:disable=no-self-use
-        global solve_count
-
-        solve_count += 1
-        if len(extra_constraints) > 0:
-            s.push()
-            s.add(*extra_constraints)
-
-        l.debug("Doing a check!")
-        #print "CHECKING"
-        satness = s.check() == z3.sat
-        if satness:
-            model = s.model()
-        else:
-            model = None
-        #print "CHECKED"
-
-        if len(extra_constraints) > 0:
-            s.pop()
-        return satness, model
-
     def _primitive_from_model(self, model, expr):
         v = model.eval(expr, model_completion=True)
         return self._abstract_to_primitive(v.ctx.ctx, v.ast)
-
-    @condom
-    def _results(self, s, extra_constraints=(), generic_model=True):
-        satness, z3_model = self._check_and_model(s, extra_constraints=extra_constraints)
-        model = { }
-
-        if satness:
-            l.debug("sat!")
-            if generic_model:
-                for m_f in z3_model:
-                    n = m_f.name()
-                    m = m_f()
-                    me = z3_model.eval(m)
-                    model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
-        else:
-            l.debug("unsat!")
-
-        return Result(satness, model)
 
     #
     # New, model-driven solves
@@ -533,23 +506,41 @@ class BackendZ3(Backend):
 
         return model
 
-    def _model(self, s, extra_constraints=()):
-        s,m = self._check_and_model(s, extra_constraints=extra_constraints)
-        return self._generic_model(m) if s else None
+    def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
+        global solve_count
 
-    def _eval_models(self, expr, n, extra_constraints=(), result=None, solver=None):
-        _, results = self._batch_eval_models(
-            [ expr ], n, extra_constraints=extra_constraints, result=result, solver=solver
+        solve_count += 1
+        if len(extra_constraints) > 0:
+            solver.push()
+            solver.add(*extra_constraints)
+
+        try:
+
+            l.debug("Doing a check!")
+            #print "CHECKING"
+            if solver.check() != z3.sat:
+                return False
+
+            if model_callback is not None:
+                model_callback(self._generic_model(solver.model()))
+        finally:
+            if len(extra_constraints) > 0:
+                solver.pop()
+        return True
+
+    def _eval(self, expr, n, extra_constraints=(), result=None, solver=None, model_callback=None):
+        results = self._batch_eval(
+            [ expr ], n, extra_constraints=extra_constraints,
+            result=result, solver=solver, model_callback=model_callback
         )
 
         # Unpack it
         return [ v[0] for v in results ]
 
     @condom
-    def _batch_eval_models(self, exprs, n, extra_constraints=(), result=None, solver=None):
+    def _batch_eval(self, exprs, n, extra_constraints=(), result=None, solver=None, model_callback=None):
         global solve_count
 
-        result_models = [ ]
         result_values = [ ]
 
         if len(extra_constraints) > 0 or n != 1:
@@ -560,11 +551,9 @@ class BackendZ3(Backend):
         for i in range(n):
             solve_count += 1
             l.debug("Doing a check!")
-            if solver.check() == z3.sat:
-                model = solver.model()
-
-            if model is None:
+            if solver.check() != z3.sat:
                 break
+            model = solver.model()
 
             # construct results
             r = [ ]
@@ -576,7 +565,8 @@ class BackendZ3(Backend):
                     r.append(expr)
 
             # Append the solution to the result list
-            result_models.append(self._generic_model(model))
+            if model_callback is not None:
+                model_callback(self._generic_model(solver.model()))
             result_values.append(tuple(r))
 
             # Construct the extra constraint so we don't get the same result anymore
@@ -587,15 +577,14 @@ class BackendZ3(Backend):
         if len(extra_constraints) > 0 or n != 1:
             solver.pop()
 
-        return result_models, result_values
+        return result_values
 
     @condom
-    def _min_models(self, expr, extra_constraints=(), result=None, solver=None):
+    def _min(self, expr, extra_constraints=(), result=None, solver=None, model_callback=None):
         global solve_count
 
         lo = 0
         hi = 2**expr.size()-1
-        models = [ ]
         vals = set()
 
         numpop = 0
@@ -616,7 +605,8 @@ class BackendZ3(Backend):
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
                 l.debug("... still sat")
-                models.append(self._generic_model(solver.model()))
+                if model_callback is not None:
+                    model_callback(self._generic_model(solver.model()))
                 vals.add(self._primitive_from_model(solver.model(), expr))
                 hi = middle
             else:
@@ -636,22 +626,22 @@ class BackendZ3(Backend):
             solver.add(expr == lo)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
-                models.append(self._generic_model(solver.model()))
+                if model_callback is not None:
+                    model_callback(self._generic_model(solver.model()))
                 vals.add(lo)
                 solver.pop()
             else:
                 vals.add(hi)
                 solver.pop()
 
-        return models, min(vals)
+        return min(vals)
 
     @condom
-    def _max_models(self, expr, extra_constraints=(), result=None, solver=None):
+    def _max(self, expr, extra_constraints=(), result=None, solver=None, model_callback=None):
         global solve_count
 
         lo = 0
         hi = 2**expr.size()-1
-        models = [ ]
         vals = set()
 
         numpop = 0
@@ -674,7 +664,8 @@ class BackendZ3(Backend):
                 l.debug("... still sat")
                 lo = middle
                 vals.add(self._primitive_from_model(solver.model(), expr))
-                models.append(self._generic_model(solver.model()))
+                if model_callback is not None:
+                    model_callback(self._generic_model(solver.model()))
             else:
                 l.debug("... now unsat")
                 hi = middle
@@ -692,26 +683,15 @@ class BackendZ3(Backend):
             solver.add(expr == hi)
             l.debug("Doing a check!")
             if solver.check() == z3.sat:
-                models.append(self._generic_model(solver.model()))
+                if model_callback is not None:
+                    model_callback(self._generic_model(solver.model()))
                 vals.add(hi)
                 solver.pop()
             else:
                 vals.add(lo)
                 solver.pop()
 
-        return models, max(vals)
-
-    def _eval(self, expr, n, **kwargs):
-        return [ v[0] for v in self._batch_eval_models([ expr ], n, **kwargs)[1] ]
-
-    def _batch_eval(self, exprs, n, **kwargs):
-        return self._batch_eval_models(exprs, n, **kwargs)[1]
-
-    def _max(self, expr, extra_constraints=(), result=None, solver=None):
-        return self._max_models(expr, extra_constraints=extra_constraints, result=result, solver=solver)[1]
-
-    def _min(self, expr, extra_constraints=(), result=None, solver=None):
-        return self._min_models(expr, extra_constraints=extra_constraints, result=result, solver=solver)[1]
+        return max(vals)
 
     def _simplify(self, expr): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
@@ -773,14 +753,14 @@ class BackendZ3(Backend):
             self._simplification_cache_key[expr._cache_key] = o
         return o
 
-    def _is_false(self, e, extra_constraints=(), result=None, solver=None):
+    def _is_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
         return z3.simplify(e).eq(z3.BoolVal(False, ctx=self._context))
 
-    def _is_true(self, e, extra_constraints=(), result=None, solver=None):
+    def _is_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
         return z3.simplify(e).eq(z3.BoolVal(True, ctx=self._context))
 
-    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None):
-        return self._check(solver, extra_constraints=(expr == v,) + tuple(extra_constraints))
+    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None, model_callback=None):
+        return self._satisfiable(extra_constraints=(expr == v,) + tuple(extra_constraints), solver=solver, model_callback=model_callback)
 
     #
     # Some Z3 passthroughs
@@ -1046,7 +1026,6 @@ from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..operations import backend_operations, backend_fp_operations
-from ..result import Result
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
