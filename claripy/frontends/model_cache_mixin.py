@@ -98,11 +98,15 @@ class ModelCacheMixin(object):
             combined_model = { }
 
             conflict = False
+            missing = set()
             for m,s in zip(product, itertools.chain([self], others)):
                 for v in s.variables:
-                    if v in combined_model and combined_model[v] != m[v]:
+                    if (v in combined_model and combined_model[v] != m[v]) or v in missing:
                         conflict = True
-                    combined_model[v] = m[v]
+                    if v not in m:
+                        missing.add(v)
+                    else:
+                        combined_model[v] = m[v]
 
             if not conflict:
                 new_models.append(combined_model)
