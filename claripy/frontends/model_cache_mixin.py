@@ -121,7 +121,7 @@ class ModelCacheMixin(object):
 
     @staticmethod
     def _eval_ast(ast, model, replacements):
-        return backends.concrete.eval(ast._replace(
+        new_ast = ast._replace(
             replacements,
             leaf_operation=lambda a: (
                 all_operations.BVV(model.get(a.args[0], 0), a.length) if a.op == 'BVS' else
@@ -129,7 +129,8 @@ class ModelCacheMixin(object):
                 all_operations.FPV(model.get(a.args[0], 0.0), a.args[1]) if a.op == 'FPS' else
                 a
             )
-        ), 1)[0]
+        )
+        return backends.concrete.eval(new_ast, 1)[0]
 
     @staticmethod
     def _eval_constraints(constraints, model, replacements):
