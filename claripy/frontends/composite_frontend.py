@@ -129,7 +129,7 @@ class CompositeFrontend(ConstrainedFrontend):
         added = super(CompositeFrontend, self).add(constraints)
 
         if not invalidate_cache:
-            l.warning("ignoring non-invalidating constraints")
+            l.debug("ignoring non-invalidating constraints")
             return
 
         split = self._split_constraints(added)
@@ -231,7 +231,6 @@ class CompositeFrontend(ConstrainedFrontend):
     #
 
     def finalize(self):
-        l.error("CompositeFrontend.finalize is incomplete. This represents a big issue.")
         for s in self._solver_list:
             s.finalize()
 
