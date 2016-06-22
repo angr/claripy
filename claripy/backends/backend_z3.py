@@ -1,4 +1,5 @@
 import sys
+import ctypes
 import logging
 import operator
 import threading
@@ -15,8 +16,8 @@ else:
 solve_count = 0
 cache_count = 0
 
-from decimal import Decimal
-import weakref
+# a pointer to get values out of Z3
+c_uint64_p = ctypes.pointer(ctypes.c_uint64())
 
 # import and set up Z3
 import os
@@ -322,9 +323,12 @@ class BackendZ3(Backend):
         elif op_name.startswith('RM_'):
             return RM.from_name(op_name)
         elif op_name == 'BitVecVal':
-            bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            return BVV(bv_num, bv_size)
+            if z3.Z3_get_numeral_uint64(ctx, ast, c_uint64_p):
+                return BVV(c_uint64_p.contents.value, bv_size)
+            else:
+                bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+                return BVV(bv_num, bv_size)
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
@@ -435,7 +439,11 @@ class BackendZ3(Backend):
         op_name = op_map[z3_op_nums[decl_num]]
 
         if op_name == 'BitVecVal':
-            return long(z3.Z3_get_numeral_string(ctx, ast))
+            if z3.Z3_get_numeral_uint64(ctx, ast, c_uint64_p):
+                return c_uint64_p.contents.value
+            else:
+                bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+                return bv_num
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
