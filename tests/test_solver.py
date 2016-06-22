@@ -114,7 +114,7 @@ def raw_solver(solver_type):
     nose.tools.assert_equal(len(shards), 2)
     nose.tools.assert_equal(len(shards[0].variables), 1)
     nose.tools.assert_equal(len(shards[1].variables), 1)
-    if isinstance(s, claripy.frontends.CacheMixin) or isinstance(s, claripy.frontends.HybridFrontend): #the hybrid frontend actually uses the exact frontend for the split
+    if isinstance(s, claripy.frontends.ConstraintExpansionMixin) or isinstance(s, claripy.frontends.HybridFrontend): #the hybrid frontend actually uses the exact frontend for the split
         nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 2, 1 }) # adds the != from the solution() check
     if isinstance(s, claripy.frontends.ReplacementFrontend):
         nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # not a caching frontend
@@ -125,8 +125,6 @@ def raw_solver(solver_type):
     s.add(y == 15)
     nose.tools.assert_false(s.satisfiable(extra_constraints=(x==5,)))
     nose.tools.assert_true(s.satisfiable())
-    if isinstance(s, claripy.frontends.CacheMixin):
-        nose.tools.assert_is_not(s.result, None)
 
     s = solver_type()
     #claripy.expression_backends = [ bc, ba, bz ]
@@ -172,7 +170,7 @@ def raw_solver(solver_type):
 
     ss = s.split()
     nose.tools.assert_equal(len(ss), 2)
-    if isinstance(s, claripy.frontends.CacheMixin):
+    if isinstance(s, claripy.frontends.ConstraintExpansionMixin):
         nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 4 }) # constraints from min or max
 
     # Batch evaluation

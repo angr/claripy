@@ -6,7 +6,6 @@ from .replacement_frontend import ReplacementFrontend
 
 # mixins for frontends
 from .add_list_mixin import AddListMixin
-from .cache_mixin import CacheMixin
 from .constraint_expansion_mixin import ConstraintExpansionMixin
 from .model_cache_mixin import ModelCacheMixin
 from .constraint_filter_mixin import ConstraintFilterMixin
