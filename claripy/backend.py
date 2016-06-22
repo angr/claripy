@@ -1,6 +1,7 @@
 import sys
 import ctypes
 import weakref
+import operator
 import threading
 
 import logging
@@ -212,13 +213,10 @@ class Backend(object):
             obj = NotImplemented
 
             # first, try the operation with the first guy
-            if hasattr(converted[0], op):
-                op_func = getattr(converted[0], op)
-                obj = op_func(*converted[1:])
-            # now try the reverse operation with the second guy
-            if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[op]):
-                op_func = getattr(converted[1], opposites[op])
-                obj = op_func(converted[0])
+            try:
+                obj = getattr(operator, op)(*converted)
+            except (TypeError, ValueError):
+                pass
 
         if obj is NotImplemented:
             l.debug("received NotImplemented in %s.call() for operation %s", self, op)
@@ -851,5 +849,4 @@ class Backend(object):
         raise BackendError('Backend %s does not support operation %s' % (self, expr.op))
 
 from .ast.base import Base
-from .operations import opposites
 from .errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
