@@ -14,6 +14,17 @@ class Solver(
     def __init__(self, backend=backends.z3, **kwargs):
         super(Solver, self).__init__(backend, **kwargs)
 
+class SolverCacheless(
+    frontends.AddListMixin,
+    frontends.ConcreteHandlerMixin,
+    frontends.EagerResolutionMixin,
+    frontends.ConstraintFilterMixin,
+    frontends.ConstraintDeduplicatorMixin,
+    frontends.FullFrontend
+):
+    def __init__(self, backend=backends.z3, **kwargs):
+        super(SolverCacheless, self).__init__(backend, **kwargs)
+
 class SolverReplacement(
     frontends.AddListMixin,
     frontends.ConcreteHandlerMixin,

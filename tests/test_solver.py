@@ -4,7 +4,7 @@ import nose
 import logging
 l = logging.getLogger('claripy.test.solver')
 
-solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, claripy.SolverComposite)
+solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, claripy.SolverComposite, claripy.SolverCacheless)
 
 def test_solver():
     for s in solver_list:
