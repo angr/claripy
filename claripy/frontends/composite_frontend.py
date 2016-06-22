@@ -68,6 +68,10 @@ class CompositeFrontend(ConstrainedFrontend):
     def variables(self, v):
         pass
 
+    #
+    # Solver list management
+    #
+
     def _solvers_for_variables(self, names):
         seen_solvers = set()
         existing_solvers = [ ]
@@ -80,7 +84,22 @@ class CompositeFrontend(ConstrainedFrontend):
             existing_solvers.append(s)
         return existing_solvers
 
-    def _merged_solver_for(self, names):
+    def _merged_solver_for(self, names=None, lst=None, lst2=None, e=None, v=None):
+        if names is None:
+            names = set()
+        if e is not None and isinstance(e, Base):
+            names.update(e.variables)
+        if v is not None and isinstance(v, Base):
+            names.update(v.variables)
+        if lst is not None:
+            for e in lst:
+                if isinstance(e, Base):
+                    names.update(e.variables)
+        if lst2 is not None:
+            for e in lst2:
+                if isinstance(e, Base):
+                    names.update(e.variables)
+
         l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
@@ -119,28 +138,22 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def _add_dependent_constraints(self, names, constraints):
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
-        s = self._merged_solver_for(names)
+        s = self._merged_solver_for(names=names)
         added = s.add(constraints)
         for v in s.variables | names:
             self._solvers[v] = s
         return added
 
-    def add(self, constraints, invalidate_cache=True): #pylint:disable=arguments-differ
-        added = super(CompositeFrontend, self).add(constraints)
-
-        if not invalidate_cache:
-            l.debug("ignoring non-invalidating constraints")
-            return
-
-        split = self._split_constraints(added)
+    def add(self, constraints, **kwargs): #pylint:disable=arguments-differ
+        split = self._split_constraints(constraints)
         child_added = [ ]
 
         l.debug("%s, solvers before: %d", self, len(self._solvers))
         for names,set_constraints in split:
-            child_added += self._add_dependent_constraints(names, set_constraints)
+            child_added += self._add_dependent_constraints(names, set_constraints, **kwargs)
         l.debug("... solvers after add: %d", len(self._solver_list))
 
-        return added
+        return super(CompositeFrontend, self).add(child_added)
 
     #
     # Solving
@@ -150,8 +163,7 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("%r checking satisfiability...", self)
 
         if len(extra_constraints) != 0:
-            extra_vars = frozenset.union(*(a.variables for a in extra_constraints))
-            extra_solver = self._merged_solver_for(extra_vars)
+            extra_solver = self._merged_solver_for(lst=extra_constraints)
             if not extra_solver.satisfiable(extra_constraints=extra_constraints, exact=exact):
                 return False
 
@@ -162,41 +174,40 @@ class CompositeFrontend(ConstrainedFrontend):
         else:
             return all(s.satisfiable(exact=exact) for s in self._solver_list)
 
-    def _all_variables(self, e, extra_constraints=()): #pylint:disable=no-self-use
-        all_vars = e.variables
-        if len(extra_constraints) != 0:
-            all_vars |= frozenset.union(*(a.variables for a in extra_constraints))
-        return all_vars
-
     def eval(self, e, n, extra_constraints=(), exact=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).eval(e, n, extra_constraints=extra_constraints, exact=exact)
+        return self._merged_solver_for(e=e, lst=extra_constraints).eval(
+            e, n, extra_constraints=extra_constraints, exact=exact
+        )
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
-
-        the_solver = None
-        for expr in exprs:
-            s = self._merged_solver_for(self._all_variables(expr, extra_constraints=extra_constraints))
-            if the_solver is None:
-                the_solver = s
-            elif the_solver is not s:
-                raise ClaripyFrontendError("having expressions across multiple solvers is not supported by _batch_eval() right now")
-
-        return the_solver.batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact)
+        return self._merged_solver_for(lst2=exprs, lst=extra_constraints).batch_eval(
+            exprs, n, extra_constraints=extra_constraints, exact=exact
+        )
 
     def max(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).max(e, extra_constraints=extra_constraints, exact=exact)
+        return self._merged_solver_for(e=e, lst=extra_constraints).max(
+            e, extra_constraints=extra_constraints, exact=exact
+        )
 
     def min(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).min(e, extra_constraints=extra_constraints, exact=exact)
+        return self._merged_solver_for(e=e, lst=extra_constraints).min(
+            e, extra_constraints=extra_constraints, exact=exact
+        )
 
-    def solution(self, e, n, extra_constraints=(), exact=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).solution(e, n, extra_constraints=extra_constraints, exact=exact)
+    def solution(self, e, v, extra_constraints=(), exact=None):
+        return self._merged_solver_for(e=e, v=v, lst=extra_constraints).solution(
+            e, v, extra_constraints=extra_constraints, exact=exact
+        )
 
     def is_true(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_true(e, extra_constraints=extra_constraints, exact=exact)
+        return self._merged_solver_for(e=e, lst=extra_constraints).is_true(
+            e, extra_constraints=extra_constraints, exact=exact
+        )
 
     def is_false(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(self._all_variables(e, extra_constraints=extra_constraints)).is_false(e, extra_constraints=extra_constraints, exact=exact)
+        return self._merged_solver_for(e=e, lst=extra_constraints).is_false(
+            e, extra_constraints=extra_constraints, exact=exact
+        )
 
     def simplify(self):
         new_constraints = [ ]
@@ -285,6 +296,6 @@ class CompositeFrontend(ConstrainedFrontend):
         return combined
 
     def split(self):
-        return [ s.branch() for s in self._solver_list if len(s.variables) > 0 ]
+        return [ s.branch() for s in self._solver_list ]
 
-from ..errors import ClaripyFrontendError
+from ..ast import Base
