@@ -339,7 +339,41 @@ def test_minmax():
     nose.tools.assert_equal(s.min(x), 0)
     nose.tools.assert_true(s.satisfiable())
 
+def test_composite_discrepancy():
+    a = claripy.BVS("a", 8)
+    b = claripy.BVS("b", 8)
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+
+    xy = x + y
+    dst = claripy.BVV(0xbaaaaf50, 32) + xy
+    constraints = [ ]
+    constraints.append(x <= 0x1)
+    constraints.append(x != 0x0)
+    constraints.append(claripy.SignExt(24, claripy.If(x > 0x0, a, 0)) != 0xa)
+    constraints.append(x < 0x80)
+    constraints.append(y <= 0x1)
+    constraints.append(x == 0x1)
+    constraints.append((0xbaaaaf50 + x) == 0xbaaaaf51)
+    constraints.append(y != 0x0)
+    constraints.append(claripy.SignExt(24, claripy.If(y > 0x0, b, 0)) != 0xa)
+    constraints.append((x + y) < 0x80)
+    constraints.append(z <= 0x1)
+    constraints.append((x + y) == 0x2)
+
+    sn = claripy.Solver()
+    sc = claripy.SolverComposite()
+
+    sn.add(constraints)
+    sc.add(constraints)
+    print sn.max(dst), sc.max(dst)
+    print sn.min(dst), sc.min(dst)
+    assert sn.max(dst) == sc.max(dst)
+    assert sn.min(dst) == sc.min(dst)
+
 if __name__ == '__main__':
+    test_composite_discrepancy()
     for func, param in test_solver():
         func(param)
     test_hybrid_solver()

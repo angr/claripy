@@ -381,6 +381,14 @@ def test_multiarg():
     x_xor = x^(x+1)^(x+2)^(x+3)
     x_and = x&(x+1)&(x+2)&(x+3)
 
+    assert x_add.variables == x.variables
+    assert x_mul.variables == x.variables
+    assert x_sub.variables == x.variables
+    assert x_or.variables == x.variables
+    assert x_xor.variables == x.variables
+    assert x_and.variables == x.variables
+    assert (claripy.BVV(1, 32)+(x+x)).variables == x.variables
+
     assert len(x_add.args) == 4
     assert len(x_mul.args) == 4
     #assert len(x_sub.args) == 4 # needs more work
