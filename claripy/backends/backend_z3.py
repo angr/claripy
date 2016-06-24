@@ -16,9 +16,6 @@ l = logging.getLogger("claripy.backends.backend_z3")
 # track the count of solves
 solve_count = 0
 
-# a pointer to get values out of Z3
-c_uint64_p = ctypes.pointer(ctypes.c_uint64())
-
 #
 # Import and set up Z3
 #
@@ -126,6 +123,16 @@ class BackendZ3(Backend):
         self._op_raw['__or__'] = self._op_or
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
+
+    @property
+    def _c_uint64_p(self):
+        try:
+            return self._tls.c_uint64_p
+        except AttributeError:
+            # a pointer to get values out of Z3
+            self._tls.c_uint64_p = ctypes.pointer(ctypes.c_uint64())
+
+            return self._tls.c_uint64_p
 
     @property
     def _context(self):
@@ -339,8 +346,8 @@ class BackendZ3(Backend):
             return RM.from_name(op_name)
         elif op_name == 'BitVecVal':
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-            if z3.Z3_get_numeral_uint64(ctx, ast, c_uint64_p):
-                return BVV(c_uint64_p.contents.value, bv_size)
+            if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
+                return BVV(self._c_uint64_p.contents.value, bv_size)
             else:
                 bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
                 return BVV(bv_num, bv_size)
@@ -442,8 +449,7 @@ class BackendZ3(Backend):
         self._ast_cache[h] = a
         return a
 
-    @staticmethod
-    def _abstract_to_primitive(ctx, ast):
+    def _abstract_to_primitive(self, ctx, ast):
         decl = z3.Z3_get_app_decl(ctx, ast)
         decl_num = z3.Z3_get_decl_kind(ctx, decl)
 
@@ -454,8 +460,8 @@ class BackendZ3(Backend):
         op_name = op_map[z3_op_nums[decl_num]]
 
         if op_name == 'BitVecVal':
-            if z3.Z3_get_numeral_uint64(ctx, ast, c_uint64_p):
-                return c_uint64_p.contents.value
+            if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
+                return self._c_uint64_p.contents.value
             else:
                 bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
                 return bv_num
