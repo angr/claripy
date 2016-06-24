@@ -314,11 +314,11 @@ def test_composite_solver():
     nose.tools.assert_true(s.satisfiable())
 
     s.add(claripy.BVV(1, 32) == claripy.BVV(2, 32))
-    nose.tools.assert_equal(len(s._solver_list), 4) # the False
+    nose.tools.assert_equal(len(s._solver_list), 3)
     nose.tools.assert_false(s.satisfiable())
 
     ss = s.branch()
-    nose.tools.assert_equal(len(ss._solver_list), 4) # the False
+    nose.tools.assert_equal(len(ss._solver_list), 3)
     nose.tools.assert_false(ss.satisfiable())
 
     s = claripy.SolverComposite()

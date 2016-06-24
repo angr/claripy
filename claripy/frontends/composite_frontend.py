@@ -11,21 +11,22 @@ class CompositeFrontend(ConstrainedFrontend):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._template_frontend = template_frontend
+        self._unsat = False
 
     def _blank_copy(self, c):
         super(CompositeFrontend, self)._blank_copy(c)
         c._solvers = { }
         c._template_frontend = self._template_frontend
+        c._unsat = False
 
     def _copy(self, c):
         super(CompositeFrontend, self)._copy(c)
+        c._unsat = self._unsat
+
         for s in self._solver_list:
             c_s = s.branch()
-            if len(c_s.variables) == 0:
-                c._solvers['CONCRETE'] = c_s
-            else:
-                for v in c_s.variables:
-                    c._solvers[v] = c_s
+            for v in c_s.variables:
+                c._solvers[v] = c_s
 
         return c
 
@@ -35,10 +36,10 @@ class CompositeFrontend(ConstrainedFrontend):
     #
 
     def _ana_getstate(self):
-        return self._solvers, self._template_frontend, super(CompositeFrontend, self)._ana_getstate()
+        return self._solvers, self._template_frontend, self._unsat, super(CompositeFrontend, self)._ana_getstate()
 
     def _ana_setstate(self, s):
-        self._solvers, self._template_frontend, base_state = s
+        self._solvers, self._template_frontend, self._unsat, base_state = s
         super(CompositeFrontend, self)._ana_setstate(base_state)
 
     def downsize(self):
@@ -149,9 +150,22 @@ class CompositeFrontend(ConstrainedFrontend):
         child_added = [ ]
 
         l.debug("%s, solvers before: %d", self, len(self._solvers))
+        unsure = [ ]
         for names,set_constraints in split:
-            child_added += self._add_dependent_constraints(names, set_constraints, **kwargs)
+            if names == { 'CONCRETE' }:
+                try:
+                    if any(backends.concrete.convert(c) is False for c in set_constraints):
+                        self._unsat = True
+                except BackendError:
+                    unsure.extend(set_constraints)
+            else:
+                child_added += self._add_dependent_constraints(names, set_constraints, **kwargs)
+
         l.debug("... solvers after add: %d", len(self._solver_list))
+
+        if len(unsure) > 0:
+            for s in self._solver_list:
+                s.add(unsure)
 
         return super(CompositeFrontend, self).add(child_added)
 
@@ -159,7 +173,13 @@ class CompositeFrontend(ConstrainedFrontend):
     # Solving
     #
 
+    def _ensure_sat(self, extra_constraints):
+        if self._unsat or (len(extra_constraints) == 0 and not self.satisfiable()):
+            raise UnsatError("CompositeSolver is already unsat")
+
     def satisfiable(self, extra_constraints=(), exact=None):
+        if self._unsat: return False
+
         l.debug("%r checking satisfiability...", self)
 
         if len(extra_constraints) != 0:
@@ -177,42 +197,56 @@ class CompositeFrontend(ConstrainedFrontend):
             return all(s.satisfiable(exact=exact) for s in self._solver_list)
 
     def eval(self, e, n, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.eval(e, n, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(lst2=exprs, lst=extra_constraints)
         r = ms.batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
     def max(self, e, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.max(e, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
     def min(self, e, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.min(e, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
     def solution(self, e, v, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(e=e, v=v, lst=extra_constraints)
         r = ms.solution(e, v, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
     def is_true(self, e, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.is_true(e, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
     def is_false(self, e, extra_constraints=(), exact=None):
+        self._ensure_sat(extra_constraints=extra_constraints)
+
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.is_false(e, extra_constraints=extra_constraints, exact=exact)
         self._reabsorb_solver(ms)
@@ -322,6 +356,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def split(self):
         return [ s.branch() for s in self._solver_list ]
 
-from ..ast import Base, all_operations
-from .. import true, backends
+from ..ast import Base
+from .. import backends
+from ..errors import BackendError, UnsatError
 from .model_cache_mixin import ModelCacheMixin

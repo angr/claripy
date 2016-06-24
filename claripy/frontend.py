@@ -110,7 +110,7 @@ class Frontend(ana.Storable):
         return c
 
     @staticmethod
-    def _split_constraints(constraints):
+    def _split_constraints(constraints, concrete=True):
         """
         Returns independent constraints, split from this Frontend's `constraints`.
         """
@@ -151,7 +151,7 @@ class Frontend(ana.Storable):
         for v,c_indexes in unique_constraint_sets:
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
 
-        if len(concrete_constraints) > 0:
+        if concrete and len(concrete_constraints) > 0:
             results.append(({ 'CONCRETE' }, concrete_constraints))
 
         return results
