@@ -244,19 +244,19 @@ class CompositeFrontend(ConstrainedFrontend):
         return r
 
     def is_true(self, e, extra_constraints=(), exact=None):
-        self._ensure_sat(extra_constraints=extra_constraints)
+        #self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.is_true(e, extra_constraints=extra_constraints, exact=exact)
-        self._reabsorb_solver(ms)
+        #self._reabsorb_solver(ms)
         return r
 
     def is_false(self, e, extra_constraints=(), exact=None):
-        self._ensure_sat(extra_constraints=extra_constraints)
+        #self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
         r = ms.is_false(e, extra_constraints=extra_constraints, exact=exact)
-        self._reabsorb_solver(ms)
+        #self._reabsorb_solver(ms)
         return r
 
     def simplify(self):
