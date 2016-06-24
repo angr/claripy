@@ -146,6 +146,7 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("... variable counts: %s", [ len(cs.variables) for cs in ss ])
 
         for ns in ss:
+            self._owned_solvers[ns] = True
             self._store_child(ns)
 
         return ss
@@ -359,8 +360,12 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("... %s common solvers", len(common_solvers))
 
         for s in common_solvers:
+            self._owned_solvers.pop(s, None)
+            for o in others:
+                o._owned_solvers.pop(s, None)
+
             for v in s.variables:
-                merged._solvers[v] = s.branch()
+                merged._solvers[v] = s
 
         noncommon_solvers = [ [ s for s in cs._solver_list if s.uuid not in common_ids ] for cs in [self]+others ]
 
@@ -375,9 +380,13 @@ class CompositeFrontend(ConstrainedFrontend):
             else:
                 combined_noncommons.append(ns[0].combine(ns[1:]))
 
-        _, merged_noncommon = combined_noncommons[0].merge(combined_noncommons[1:], merge_flag, merge_values)
-        for v in merged_noncommon.variables:
-            merged._solvers[v] = merged_noncommon
+        if len(combined_noncommons):
+            _, merged_noncommon = combined_noncommons[0].merge(
+                combined_noncommons[1:], merge_flag, merge_values
+            )
+
+            merged._owned_solvers[merged_noncommon] = True
+            merged._store_child(merged_noncommon)
 
         return True, merged
 
