@@ -372,7 +372,18 @@ def test_composite_discrepancy():
     assert sn.max(dst) == sc.max(dst)
     assert sn.min(dst) == sc.min(dst)
 
+def test_model():
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    s = claripy.Solver()
+
+    s.add(x < 10)
+    assert sorted(s.eval(x, 20)) == range(10)
+    s.add(y == 1337)
+    assert sorted(s.eval(x, 20)) == range(10)
+
 if __name__ == '__main__':
+    test_model()
     test_composite_discrepancy()
     for func, param in test_solver():
         func(param)

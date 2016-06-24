@@ -62,15 +62,26 @@ class ModelCacheMixin(object):
         if len(constraints) == 0:
             return constraints
 
+        old_vars = frozenset(self.variables)
         added = super(ModelCacheMixin, self).add(constraints, **kwargs)
+        if len(added) == 0:
+            return added
 
-        if any(a.variables - self.variables for a in added) or invalidate_cache:
+        new_vars = any(a.variables - old_vars for a in added)
+        if new_vars or invalidate_cache:
             still_valid = [ (m,r) for m,r in self._get_models(extra_constraints=added) ]
+            if len(still_valid) != len(self._models):
+                self._exhausted = False
+                self._eval_exhausted.clear()
+                self._max_exhausted.clear()
+                self._min_exhausted.clear()
+
             if len(still_valid) == 0:
                 self._models = [ ]
                 self._model_replacements = [ ]
             else:
                 self._models, self._model_replacements = map(list, zip(*still_valid))
+
         return added
 
     def split(self):
