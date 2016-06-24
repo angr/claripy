@@ -15,3 +15,4 @@ from .concrete_handler_mixin import ConcreteHandlerMixin
 from .debug_mixin import DebugMixin
 from .solve_block_mixin import SolveBlockMixin
 from .simplify_helper_mixin import SimplifyHelperMixin
+from .simplify_skipper_mixin import SimplifySkipperMixin

@@ -13,14 +13,12 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         self.constraints = []
         self.variables = set()
         self._finalized = False
-        self._simplified = False
 
     def _blank_copy(self, c):
         super(ConstrainedFrontend, self)._blank_copy(c)
         c.constraints = []
         c.variables = set()
         c._finalized = False
-        c._simplified = False
 
     def _copy(self, c):
         super(ConstrainedFrontend, self)._copy(c)
@@ -37,10 +35,10 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def _ana_getstate(self):
         self.finalize()
-        return self.constraints, self.variables, self._simplified, Frontend._ana_getstate(self)
+        return self.constraints, self.variables, Frontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        self.constraints, self.variables, self._simplified, base_state = s
+        self.constraints, self.variables, base_state = s
         Frontend._ana_setstate(self, base_state)
         self._finalized = True
 
@@ -67,7 +65,6 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def merge(self, others, merge_flag, merge_values):
         merged = self.blank_copy()
-        merged._simplified = False
         options = []
 
         for s, v in zip([self] + others, merge_values):
@@ -78,7 +75,6 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def combine(self, others):
         combined = self.blank_copy()
-        combined._simplified = False
 
         combined.add(self.constraints)    # pylint:disable=E1101
         for o in others:
@@ -92,7 +88,6 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
             l.debug("... got %d constraints with %d variables", len(c_list), len(variables))
 
             s = self.blank_copy()
-            s._simplified = False
             s.add(c_list)
             results.append(s)
         return results
@@ -108,17 +103,9 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         return constraints
 
     def simplify(self):
-        if self._simplified or len(self.constraints) == 0:
-            return [ ]
-
-        self.constraints = [simplify(And(*self.constraints))]
-
-        # generate UUIDs for every constraint
-        for c in self.constraints:
-            if isinstance(c, Base):
-                c.make_uuid() #pylint:disable=no-member
-
-        self._simplified = True
+        if len(self.constraints) == 0:
+            return self.constraints
+        self.constraints = simplify(And(*self.constraints)).split(['And']) #pylint:disable=no-member
         return self.constraints
 
     #
@@ -149,6 +136,5 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def is_false(self, e, extra_constraints=(), exact=None):
         raise NotImplementedError("is_false() is not implemented")
 
-from ..ast.base import Base, simplify
+from ..ast.base import simplify
 from ..ast.bool import And, Or
-from ..ast.bv import BVV

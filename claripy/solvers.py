@@ -7,6 +7,7 @@ class Solver(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
+    frontends.SimplifySkipperMixin,
     frontends.ModelCacheMixin,
     frontends.ConstraintExpansionMixin,
     frontends.SimplifyHelperMixin,
@@ -21,6 +22,7 @@ class SolverCacheless(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
+    frontends.SimplifySkipperMixin,
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
@@ -42,6 +44,8 @@ class SolverHybrid(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
+    frontends.SimplifySkipperMixin,
+    # TODO: frontends.ConstraintExpansionMixin,
     frontends.HybridFrontend
 ):
     def __init__(
@@ -62,6 +66,8 @@ class SolverComposite(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
+    frontends.SimplifySkipperMixin,
+    frontends.SimplifyHelperMixin,
     frontends.ConstraintExpansionMixin,
     frontends.CompositeFrontend
 ):
