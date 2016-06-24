@@ -115,7 +115,10 @@ def raw_solver(solver_type):
     nose.tools.assert_equal(len(shards), 2)
     nose.tools.assert_equal(len(shards[0].variables), 1)
     nose.tools.assert_equal(len(shards[1].variables), 1)
-    if isinstance(s, claripy.frontends.ConstraintExpansionMixin) or isinstance(s, claripy.frontends.HybridFrontend): #the hybrid frontend actually uses the exact frontend for the split
+    if isinstance(s, claripy.frontends.ConstraintExpansionMixin) or (
+        isinstance(s, claripy.frontends.HybridFrontend) and
+        isinstance(s._exact_frontend, claripy.frontends.ConstraintExpansionMixin)
+    ): #the hybrid frontend actually uses the exact frontend for the split
         nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 2, 1 }) # adds the != from the solution() check
     if isinstance(s, claripy.frontends.ReplacementFrontend):
         nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 1, 1 }) # not a caching frontend
@@ -325,12 +328,13 @@ def test_composite_solver():
     c = claripy.And(x == 1, y == 2, z == 3)
     s.add(c)
 
-    assert len(s._solver_list) == 3
-    count = claripy._backends_module.backend_z3.solve_count
-    assert s.satisfiable()
-    assert claripy._backends_module.backend_z3.solve_count == count + 3
-    assert list(s.eval(x+y, 1)) == [3]
-    assert claripy._backends_module.backend_z3.solve_count == count + 3
+    if isinstance(s._template_frontend, claripy.frontends.ModelCacheMixin):
+        assert len(s._solver_list) == 3
+        count = claripy._backends_module.backend_z3.solve_count
+        assert s.satisfiable()
+        assert claripy._backends_module.backend_z3.solve_count == count + 3
+        assert list(s.eval(x+y, 1)) == [3]
+        assert claripy._backends_module.backend_z3.solve_count == count + 3
 
 def test_minmax():
     s = claripy.Solver()
