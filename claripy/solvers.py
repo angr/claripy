@@ -51,6 +51,7 @@ class SolverHybrid(
     ):
         exact_frontend = Solver() if exact_frontend is None else exact_frontend
         approximate_frontend = SolverReplacement(
+            actual_frontend=SolverVSA(),
             complex_auto_replace=complex_auto_replace, replace_constraints=replace_constraints,
         ) if approximate_frontend is None else approximate_frontend
         super(SolverHybrid, self).__init__(exact_frontend, approximate_frontend, **kwargs)

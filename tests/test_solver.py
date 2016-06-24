@@ -23,9 +23,10 @@ def test_hybrid_solver():
     s.add(y >= 20)
     s.add(y <= 30)
     s.add((y-20) % 5 == 0)
+    s.add(x != 8)
 
     nose.tools.assert_items_equal(s.eval(x, 20, exact=False), (0, 2, 4, 6, 8, 10))
-    nose.tools.assert_items_equal(s.eval(x, 20), (0, 2, 4, 6, 8, 10))
+    nose.tools.assert_items_equal(s.eval(x, 20), (0, 2, 4, 6, 10))
     nose.tools.assert_items_equal(s.eval(y, 20, exact=False), (20, 25, 30))
     nose.tools.assert_items_equal(s.eval(y, 20), (20, 25, 30))
 
