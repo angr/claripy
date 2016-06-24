@@ -1,11 +1,67 @@
 import weakref
 import itertools
 
+class ModelCache(object):
+    _defaults = { 0, 0.0, True }
+
+    def __init__(self, model):
+        self.model = model
+        self.replacements = weakref.WeakKeyDictionary()
+        self._hash = None
+
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash(frozenset(self.model.items()))
+        return self._hash
+
+    def __eq__(self, other):
+        return self.model == other.model
+
+    def __getstate__(self):
+        return self.model
+
+    def __setstate__(self, s):
+        self.model = s
+        self.replacements = weakref.WeakKeyDictionary()
+        self._hash = None
+
+    #
+    # Splitting support
+    #
+
+    def filter(self, variables):
+        return ModelCache({ k:v for k,v in self.model.iteritems() if k in variables })
+
+    @staticmethod
+    def combine(*models):
+        return ModelCache(dict(itertools.chain.from_iterable(m.model.iteritems() for m in models)))
+
+    #
+    # Model-driven evaluation
+    #
+
+    def _leaf_op(self, a):
+        return (
+            all_operations.BVV(self.model.get(a.args[0], 0), a.length) if a.op == 'BVS' else
+            all_operations.BoolV(self.model.get(a.args[0], True)) if a.op == 'BoolS' else
+            all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1]) if a.op == 'FPS' else
+            a
+        )
+
+    def eval_ast(self, ast):
+        new_ast = ast._replace(self.replacements, leaf_operation=self._leaf_op)
+        return backends.concrete.eval(new_ast, 1)[0]
+
+    def eval_constraints(self, constraints):
+        return all(self.eval_ast(c) for c in constraints)
+
+    def eval_list(self, asts):
+        return tuple(self.eval_ast(c) for c in asts )
+
 class ModelCacheMixin(object):
     def __init__(self, *args, **kwargs):
         super(ModelCacheMixin, self).__init__(*args, **kwargs)
-        self._models = [ ]
-        self._model_replacements = [ ]
+        self._models = set()
         self._exhausted = False
         self._eval_exhausted = weakref.WeakKeyDictionary()
         self._max_exhausted = weakref.WeakKeyDictionary()
@@ -13,8 +69,7 @@ class ModelCacheMixin(object):
 
     def _blank_copy(self, c):
         super(ModelCacheMixin, self)._blank_copy(c)
-        c._models = [ ]
-        c._model_replacements = [ ]
+        c._models = set()
         c._exhausted = False
         c._eval_exhausted = weakref.WeakKeyDictionary()
         c._max_exhausted = weakref.WeakKeyDictionary()
@@ -22,8 +77,7 @@ class ModelCacheMixin(object):
 
     def _copy(self, c):
         super(ModelCacheMixin, self)._copy(c)
-        c._models = list(self._models)
-        c._model_replacements = list(self._model_replacements)
+        c._models = set(self._models)
         c._exhausted = self._exhausted
         c._eval_exhausted = weakref.WeakKeyDictionary(self._eval_exhausted)
         c._max_exhausted = weakref.WeakKeyDictionary(self._max_exhausted)
@@ -49,7 +103,6 @@ class ModelCacheMixin(object):
             base_state
         ) = s
         super(ModelCacheMixin, self)._ana_setstate(base_state)
-        self._model_replacements = [ weakref.WeakKeyDictionary() for _ in self._models ]
         self._eval_exhausted = weakref.WeakKeyDictionary((k,True) for k in _eval_exhausted)
         self._max_exhausted = weakref.WeakKeyDictionary((k,True) for k in _max_exhausted)
         self._min_exhausted = weakref.WeakKeyDictionary((k,True) for k in _min_exhausted)
@@ -69,29 +122,20 @@ class ModelCacheMixin(object):
 
         new_vars = any(a.variables - old_vars for a in added)
         if new_vars or invalidate_cache:
-            still_valid = [ (m,r) for m,r in self._get_models(extra_constraints=added) ]
+            still_valid = set(self._get_models(extra_constraints=added))
             if len(still_valid) != len(self._models):
                 self._exhausted = False
                 self._eval_exhausted.clear()
                 self._max_exhausted.clear()
                 self._min_exhausted.clear()
-
-            if len(still_valid) == 0:
-                self._models = [ ]
-                self._model_replacements = [ ]
-            else:
-                self._models, self._model_replacements = map(list, zip(*still_valid))
+                self._models = still_valid
 
         return added
 
     def split(self):
         results = super(ModelCacheMixin, self).split()
         for r in results:
-            r._models = [
-                { k:v for k,v in m.iteritems() if k in r.variables }
-                for m in self._models
-            ]
-            r._model_replacements = [ weakref.WeakKeyDictionary() for _ in r._models ]
+            r._models = { m.filter(r.variables) for m in self._models }
         return results
 
     def combine(self, others):
@@ -101,83 +145,44 @@ class ModelCacheMixin(object):
             # this would need a solve anyways, so screw it
             return combined
 
+        vars_count = len(self.variables) + sum(len(s.variables) for s in others)
+        all_vars = self.variables.union(*[s.variables for s in others])
+        if vars_count != len(all_vars):
+            # this is the case where there are variables missing from the models.
+            # We'll need more intelligence here to handle it
+            return combined
+
         models = [ self._models ]
         models.extend(o._models for o in others)
-
-        new_models = [ ]
-        for product in itertools.product(*models):
-            combined_model = { }
-
-            conflict = False
-            missing = set()
-            for m,s in zip(product, itertools.chain([self], others)):
-                for v in s.variables:
-                    if (v in combined_model and combined_model[v] != m[v]) or v in missing:
-                        conflict = True
-                    if v not in m:
-                        missing.add(v)
-                    else:
-                        combined_model[v] = m[v]
-
-            if not conflict:
-                new_models.append(combined_model)
-
-        combined._models = new_models
-        combined._model_replacements = [ weakref.WeakKeyDictionary() for _ in self._models ]
+        combined._models.update(ModelCache.combine(*product) for product in itertools.product(*models))
         return combined
-
-    #
-    # Model-driven evaluation
-    #
-
-    @staticmethod
-    def _eval_ast(ast, model, replacements):
-        new_ast = ast._replace(
-            replacements,
-            leaf_operation=lambda a: (
-                all_operations.BVV(model.get(a.args[0], 0), a.length) if a.op == 'BVS' else
-                all_operations.BoolV(model.get(a.args[0], true)) if a.op == 'BoolS' else
-                all_operations.FPV(model.get(a.args[0], 0.0), a.args[1]) if a.op == 'FPS' else
-                a
-            )
-        )
-        return backends.concrete.eval(new_ast, 1)[0]
-
-    @staticmethod
-    def _eval_constraints(constraints, model, replacements):
-        return all(ModelCacheMixin._eval_ast(c, model, replacements) for c in constraints)
-
-    @staticmethod
-    def _eval_list(asts, model, replacements):
-        return tuple( ModelCacheMixin._eval_ast(c, model, replacements) for c in asts )
 
     #
     # Cache retrieval
     #
 
     def _model_hook(self, m):
-        self._models.append(m)
-        self._model_replacements.append(weakref.WeakKeyDictionary())
+        self._models.add(ModelCache(m))
 
-    def _get_models(self, extra_constraints=(), n=None):
-        mr = zip(self._models, self._model_replacements)
-        if len(extra_constraints) == 0:
-            return mr[:n] if n is not None else mr
-        else:
-            return [ (m,r) for m,r in mr if self._eval_constraints(extra_constraints, m, r) ]
+    def _get_models(self, extra_constraints=()):
+        for m in self._models:
+            if m.eval_constraints(extra_constraints):
+                yield m
 
     def _get_batch_solutions(self, asts, n=None, extra_constraints=()):
         results = set()
 
-        for m,r in self._get_models(extra_constraints):
-            results.add(self._eval_list(asts, m, r))
+        for m in self._get_models(extra_constraints):
+            results.add(m.eval_list(asts))
             if len(results) == n:
                 break
 
         return results
 
     def _get_solutions(self, e, n=None, extra_constraints=()):
-        return tuple(v[0] for v in self._get_batch_solutions([e], n=n, extra_constraints=extra_constraints))
+        return tuple(v[0] for v in self._get_batch_solutions(
+            [e], n=n, extra_constraints=extra_constraints
+        ))
 
 
     #
@@ -186,7 +191,7 @@ class ModelCacheMixin(object):
 
 
     def satisfiable(self, extra_constraints=(), **kwargs):
-        for _ in self._get_models(extra_constraints=extra_constraints, n=1):
+        for _ in self._get_models(extra_constraints=extra_constraints):
             return True
         return super(ModelCacheMixin, self).satisfiable(extra_constraints=extra_constraints, **kwargs)
 
@@ -256,4 +261,3 @@ class ModelCacheMixin(object):
 from .. import backends
 from ..errors import UnsatError
 from ..ast import all_operations, Base
-from .. import true
