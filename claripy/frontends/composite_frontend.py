@@ -1,6 +1,7 @@
 import logging
 l = logging.getLogger("claripy.frontends.composite_frontend")
 
+import weakref
 import itertools
 symbolic_count = itertools.count()
 
@@ -10,11 +11,13 @@ class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
+        self._owned_solvers = weakref.WeakKeyDictionary()
         self._template_frontend = template_frontend
         self._unsat = False
 
     def _blank_copy(self, c):
         super(CompositeFrontend, self)._blank_copy(c)
+        c._owned_solvers = weakref.WeakKeyDictionary()
         c._solvers = { }
         c._template_frontend = self._template_frontend
         c._unsat = False
@@ -23,11 +26,8 @@ class CompositeFrontend(ConstrainedFrontend):
         super(CompositeFrontend, self)._copy(c)
         c._unsat = self._unsat
 
-        for s in self._solver_list:
-            c_s = s.branch()
-            for v in c_s.variables:
-                c._solvers[v] = c_s
-
+        c._solvers = dict(self._solvers)
+        self._owned_solvers = weakref.WeakKeyDictionary() # for the COW
         return c
 
 
@@ -40,6 +40,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def _ana_setstate(self, s):
         self._solvers, self._template_frontend, self._unsat, base_state = s
+        self._owned_solvers = weakref.WeakKeyDictionary({s:True for s in self._solver_list})
         super(CompositeFrontend, self)._ana_setstate(base_state)
 
     def downsize(self):
@@ -136,20 +137,67 @@ class CompositeFrontend(ConstrainedFrontend):
         for o in others: common_varsets &= o.all_varsets()
         return common_varsets
 
+    def _split_child(self, s):
+        ss = s.split()
+        if len(ss) == 1:
+            return [ s ]
+
+        l.debug("... split solver %r into %d parts", s, len(ss))
+        l.debug("... variable counts: %s", [ len(cs.variables) for cs in ss ])
+
+        for ns in ss:
+            self._store_child(ns)
+
+        return ss
+
+    def _reabsorb_solver(self, s):
+        try:
+            if len(s.variables) == 0 or self._solvers[next(iter(s.variables))] is s:
+                return
+        except KeyError:
+            # this happens when a variable is introduced due to constraint expansion
+            return
+
+        if isinstance(s, ModelCacheMixin):
+            self._split_child(s)
+
+    def _store_child(self, ns, extra_names=frozenset()):
+        for v in ns.variables | extra_names:
+            #os = self._solvers[v]
+            self._solvers[v] = ns
+
+        #if isinstance(s, ModelCacheMixin):
+        #   if len(os._models) < len(ns._models):
+        #       print "GOT %d NEW MODELS (before: %d)" % (
+        #           len(ns._models) - len(os._models), len(os._models)
+        #       )
+        #   elif len(os._models) > len(ns._models):
+        #       print "WARNING: LOST %d NEW MODELS (before: %d)" % (
+        #           len(os._models) - len(ns._models), len(os._models)
+        #       )
+        #   else:
+        #       print "Remained at %d models." % len(os._models)
+
     #
     # Constraints
     #
 
+    def _claim(self, s, extra_names=None):
+        if s not in self._owned_solvers:
+            sc = s.branch()
+            self._store_child(sc, extra_names=extra_names)
+            return sc
+        else:
+            return s
+
     def _add_dependent_constraints(self, names, constraints, invalidate_cache=True, **kwargs):
         if not invalidate_cache and len(self._solvers_for_variables(names)) > 1:
             l.debug("Ignoring cross-solver helper constraints.")
-            return
+            return [ ]
 
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
-        s = self._merged_solver_for(names=names)
+        s = self._claim(self._merged_solver_for(names=names), extra_names=names)
         added = s.add(constraints, **kwargs)
-        for v in s.variables | names:
-            self._solvers[v] = s
         return added
 
     def add(self, constraints, **kwargs): #pylint:disable=arguments-differ
@@ -172,6 +220,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
         if len(unsure) > 0:
             for s in self._solver_list:
+                s = self._claim(s)
                 s.add(unsure)
 
         return super(CompositeFrontend, self).add(child_added)
@@ -260,54 +309,29 @@ class CompositeFrontend(ConstrainedFrontend):
         return r
 
     def simplify(self):
+        if self._unsat:
+            return self.constraints
+
         new_constraints = [ ]
 
         l.debug("Simplifying %r with %d solvers", self, len(self._solver_list))
         for s in self._solver_list:
-            if s._simplified:
+            if isinstance(s, SimplifySkipperMixin) and s._simplified:
                 new_constraints += s.constraints
                 continue
 
             l.debug("... simplifying child solver %r", s)
             s.simplify()
-            l.debug("... splitting child solver %r", s)
-            split = s.split()
+            results = self._split_child(s)
+            for ns in results:
+                if isinstance(ns, SimplifySkipperMixin):
+                    ns._simplified = True
+            new_constraints += s.constraints
 
-            l.debug("... split solver %r into %d parts", s, len(split))
-            l.debug("... variable counts: %s", [ len(ss.variables) for ss in split ])
-            if len(split) > 1:
-                for s in split:
-                    new_constraints += s.constraints
-                    for v in s.variables:
-                        self._solvers[v] = s
-            else:
-                new_constraints += s.constraints
         l.debug("... after-split, %r has %d solvers", self, len(self._solver_list))
 
         self.constraints = new_constraints
         return new_constraints
-
-    #
-    # Evaluation and caching
-    #
-
-    def _reabsorb_solver(self, s):
-        try:
-            if len(s.variables) == 0 or self._solvers[next(iter(s.variables))] is s:
-                return
-        except KeyError:
-            # this happens when a variable is introduced due to constraint expansion
-            return
-
-        if isinstance(s, ModelCacheMixin):
-            done = set()
-            for ns in s.split():
-                os = self._solvers[next(iter(ns.variables))]
-                if os in done:
-                    continue
-                done.add(os)
-                new_models = [ nm for nm in ns._models if not any(nm == om for om in os._models) ]
-                os._models.extend(new_models)
 
     #
     # Merging and splitting
@@ -345,9 +369,7 @@ class CompositeFrontend(ConstrainedFrontend):
         for ns in noncommon_solvers:
             l.debug("... %d", len(ns))
             if len(ns) == 0:
-                s = self.blank_copy()
-                s.add(True)
-                combined_noncommons.append(s)
+                pass
             elif len(ns) == 1:
                 combined_noncommons.append(ns[0])
             else:
@@ -361,7 +383,6 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def combine(self, others):
         combined = self.blank_copy()
-        combined._simplified = False
         combined.add(self.constraints)
         for o in others:
             combined.add(o.constraints)
@@ -374,3 +395,4 @@ from ..ast import Base
 from .. import backends
 from ..errors import BackendError, UnsatError
 from .model_cache_mixin import ModelCacheMixin
+from .simplify_skipper_mixin import SimplifySkipperMixin
