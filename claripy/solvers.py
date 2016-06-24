@@ -62,6 +62,7 @@ class SolverComposite(
     frontends.EagerResolutionMixin,
     frontends.ConstraintFilterMixin,
     frontends.ConstraintDeduplicatorMixin,
+    frontends.ConstraintExpansionMixin,
     frontends.CompositeFrontend
 ):
     def __init__(self, template_solver=None, **kwargs):

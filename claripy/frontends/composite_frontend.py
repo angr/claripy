@@ -140,10 +140,14 @@ class CompositeFrontend(ConstrainedFrontend):
     # Constraints
     #
 
-    def _add_dependent_constraints(self, names, constraints):
+    def _add_dependent_constraints(self, names, constraints, invalidate_cache=True, **kwargs):
+        if not invalidate_cache and len(self._solvers_for_variables(names)) > 1:
+            l.debug("Ignoring cross-solver helper constraints.")
+            return
+
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
         s = self._merged_solver_for(names=names)
-        added = s.add(constraints)
+        added = s.add(constraints, **kwargs)
         for v in s.variables | names:
             self._solvers[v] = s
         return added
@@ -288,7 +292,11 @@ class CompositeFrontend(ConstrainedFrontend):
     #
 
     def _reabsorb_solver(self, s):
-        if len(s.variables) == 0 or self._solvers[next(iter(s.variables))] is s:
+        try:
+            if len(s.variables) == 0 or self._solvers[next(iter(s.variables))] is s:
+                return
+        except KeyError:
+            # this happens when a variable is introduced due to constraint expansion
             return
 
         if isinstance(s, ModelCacheMixin):
