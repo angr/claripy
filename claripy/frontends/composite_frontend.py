@@ -43,7 +43,7 @@ class CompositeFrontend(ConstrainedFrontend):
         super(CompositeFrontend, self)._ana_setstate(base_state)
 
     def downsize(self):
-        for e in self._solvers.values():
+        for e in self._solver_list:
             e.downsize()
 
     #
@@ -62,7 +62,10 @@ class CompositeFrontend(ConstrainedFrontend):
 
     @property
     def variables(self):
-        return set(self._solvers.keys())
+        if len(self._solver_list) == 0:
+            return set()
+        else:
+            return set.union(*[s.variables for s in self._solver_list])
 
     # this is really hacky, but we want to avoid having our variables messed with
     @variables.setter
@@ -285,6 +288,9 @@ class CompositeFrontend(ConstrainedFrontend):
     #
 
     def _reabsorb_solver(self, s):
+        if len(s.variables) == 0 or self._solvers[next(iter(s.variables))] is s:
+            return
+
         if isinstance(s, ModelCacheMixin):
             done = set()
             for ns in s.split():
