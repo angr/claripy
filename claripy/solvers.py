@@ -75,6 +75,9 @@ class SolverComposite(
         template_solver = Solver() if template_solver is None else template_solver
         super(SolverComposite, self).__init__(template_solver, **kwargs)
 
+    def __repr__(self):
+        return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))
+
 class SolverVSA(
     frontends.AddListMixin,
     frontends.ConcreteHandlerMixin,
