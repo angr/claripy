@@ -167,47 +167,56 @@ class CompositeFrontend(ConstrainedFrontend):
             if not extra_solver.satisfiable(extra_constraints=extra_constraints, exact=exact):
                 return False
 
-            return all(
+            r = all(
                 s.satisfiable(exact=exact) for s in
                 self._solver_list if s.variables.isdisjoint(extra_solver.variables)
             )
+            self._reabsorb_solver(extra_solver)
+            return r
         else:
             return all(s.satisfiable(exact=exact) for s in self._solver_list)
 
     def eval(self, e, n, extra_constraints=(), exact=None):
-        return self._merged_solver_for(e=e, lst=extra_constraints).eval(
-            e, n, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(e=e, lst=extra_constraints)
+        r = ms.eval(e, n, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
-        return self._merged_solver_for(lst2=exprs, lst=extra_constraints).batch_eval(
-            exprs, n, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(lst2=exprs, lst=extra_constraints)
+        r = ms.batch_eval(exprs, n, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def max(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(e=e, lst=extra_constraints).max(
-            e, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(e=e, lst=extra_constraints)
+        r = ms.max(e, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def min(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(e=e, lst=extra_constraints).min(
-            e, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(e=e, lst=extra_constraints)
+        r = ms.min(e, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def solution(self, e, v, extra_constraints=(), exact=None):
-        return self._merged_solver_for(e=e, v=v, lst=extra_constraints).solution(
-            e, v, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(e=e, v=v, lst=extra_constraints)
+        r = ms.solution(e, v, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def is_true(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(e=e, lst=extra_constraints).is_true(
-            e, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(e=e, lst=extra_constraints)
+        r = ms.is_true(e, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def is_false(self, e, extra_constraints=(), exact=None):
-        return self._merged_solver_for(e=e, lst=extra_constraints).is_false(
-            e, extra_constraints=extra_constraints, exact=exact
-        )
+        ms = self._merged_solver_for(e=e, lst=extra_constraints)
+        r = ms.is_false(e, extra_constraints=extra_constraints, exact=exact)
+        self._reabsorb_solver(ms)
+        return r
 
     def simplify(self):
         new_constraints = [ ]
@@ -236,6 +245,21 @@ class CompositeFrontend(ConstrainedFrontend):
 
         self.constraints = new_constraints
         return new_constraints
+
+    #
+    # Evaluation and caching
+    #
+
+    def _reabsorb_solver(self, s):
+        if isinstance(s, ModelCacheMixin):
+            done = set()
+            for ns in s.split():
+                os = self._solvers[next(iter(ns.variables))]
+                if os in done:
+                    continue
+                done.add(os)
+                new_models = [ nm for nm in ns._models if not any(nm == om for om in os._models) ]
+                os._models.extend(new_models)
 
     #
     # Merging and splitting
@@ -298,4 +322,6 @@ class CompositeFrontend(ConstrainedFrontend):
     def split(self):
         return [ s.branch() for s in self._solver_list ]
 
-from ..ast import Base
+from ..ast import Base, all_operations
+from .. import true, backends
+from .model_cache_mixin import ModelCacheMixin
