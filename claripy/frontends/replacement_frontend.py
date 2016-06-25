@@ -6,9 +6,8 @@ import logging
 l = logging.getLogger("claripy.frontends.replacement_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
-from .eager_resolution_mixin import EagerResolutionMixin
 
-class ReplacementFrontend(EagerResolutionMixin, ConstrainedFrontend):
+class ReplacementFrontend(ConstrainedFrontend):
     def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None, **kwargs):
         super(ReplacementFrontend, self).__init__(**kwargs)
         self._actual_frontend = actual_frontend

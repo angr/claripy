@@ -1,37 +1,38 @@
+from . import frontend_mixins
 from . import frontends
 from . import backends
 
 class Solver(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.EagerResolutionMixin,
-    frontends.ConstraintFilterMixin,
-    frontends.ConstraintDeduplicatorMixin,
-    frontends.SimplifySkipperMixin,
-    frontends.ModelCacheMixin,
-    frontends.ConstraintExpansionMixin,
-    frontends.SimplifyHelperMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.ModelCacheMixin,
+    frontend_mixins.ConstraintExpansionMixin,
+    frontend_mixins.SimplifyHelperMixin,
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
         super(Solver, self).__init__(backend, **kwargs)
 
 class SolverCacheless(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.EagerResolutionMixin,
-    frontends.ConstraintFilterMixin,
-    frontends.ConstraintDeduplicatorMixin,
-    frontends.SimplifySkipperMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SimplifySkipperMixin,
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
         super(SolverCacheless, self).__init__(backend, **kwargs)
 
 class SolverReplacement(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.ConstraintDeduplicatorMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
     frontends.ReplacementFrontend
 ):
     def __init__(self, actual_frontend=None, **kwargs):
@@ -39,13 +40,13 @@ class SolverReplacement(
         super(SolverReplacement, self).__init__(actual_frontend, **kwargs)
 
 class SolverHybrid(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.EagerResolutionMixin,
-    frontends.ConstraintFilterMixin,
-    frontends.ConstraintDeduplicatorMixin,
-    frontends.SimplifySkipperMixin,
-    # TODO: frontends.ConstraintExpansionMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SimplifySkipperMixin,
+    # TODO: frontend_mixins.ConstraintExpansionMixin,
     frontends.HybridFrontend
 ):
     def __init__(
@@ -61,18 +62,18 @@ class SolverHybrid(
         super(SolverHybrid, self).__init__(exact_frontend, approximate_frontend, **kwargs)
 
 class SolverVSA(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.ConstraintFilterMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend
 ):
     def __init__(self, **kwargs):
         super(SolverVSA, self).__init__(backends.vsa, **kwargs)
 
 class SolverConcrete(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.ConstraintFilterMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend
 ):
     def __init__(self, **kwargs):
@@ -84,10 +85,10 @@ class SolverConcrete(
 #
 
 class SolverCompositeChild(
-    frontends.EagerResolutionMixin,
-    frontends.ConstraintDeduplicatorMixin,
-    frontends.SimplifySkipperMixin,
-    frontends.ModelCacheMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.ModelCacheMixin,
     frontends.FullFrontend
 ):
     def __init__(self, backend=backends.z3, **kwargs):
@@ -97,14 +98,14 @@ class SolverCompositeChild(
         return "<SolverCompositeChild with %d variabels>" % len(self.variables)
 
 class SolverComposite(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.EagerResolutionMixin,
-    frontends.ConstraintFilterMixin,
-    frontends.ConstraintDeduplicatorMixin,
-    frontends.SimplifySkipperMixin,
-    frontends.SimplifyHelperMixin,
-    frontends.ConstraintExpansionMixin,
+    frontend_mixins.AddListMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.SimplifyHelperMixin,
+    frontend_mixins.ConstraintExpansionMixin,
     frontends.CompositeFrontend
 ):
     def __init__(self, template_solver=None, **kwargs):

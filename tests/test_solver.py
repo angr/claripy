@@ -62,7 +62,7 @@ def test_replacement_solver():
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
     srb = sr.branch()
-    assert len(srb.constraints) == len(sr.constraints)
+    assert len(srb.constraints) == len(sr.constraints) #pylint:disable=no-member
     assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
@@ -117,9 +117,9 @@ def raw_solver(solver_type):
     nose.tools.assert_equal(len(shards), 2)
     nose.tools.assert_equal(len(shards[0].variables), 1)
     nose.tools.assert_equal(len(shards[1].variables), 1)
-    if isinstance(s, claripy.frontends.ConstraintExpansionMixin) or (
+    if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin) or (
         isinstance(s, claripy.frontends.HybridFrontend) and
-        isinstance(s._exact_frontend, claripy.frontends.ConstraintExpansionMixin)
+        isinstance(s._exact_frontend, claripy.frontend_mixins.ConstraintExpansionMixin)
     ): #the hybrid frontend actually uses the exact frontend for the split
         nose.tools.assert_equal({ len(shards[0].constraints), len(shards[1].constraints) }, { 2, 1 }) # adds the != from the solution() check
     if isinstance(s, claripy.frontends.ReplacementFrontend):
@@ -176,7 +176,7 @@ def raw_solver(solver_type):
 
     ss = s.split()
     nose.tools.assert_equal(len(ss), 2)
-    #if isinstance(s, claripy.frontends.ConstraintExpansionMixin):
+    #if isinstance(s, claripy.frontend_mixins.ConstraintExpansionMixin):
     #   nose.tools.assert_equal({ len(_.constraints) for _ in ss }, { 3, 2 }) # constraints from min or max
 
     # Batch evaluation
@@ -209,7 +209,7 @@ def raw_solver(solver_type):
 
     # test result caching
 
-    if isinstance(s, claripy.frontends.ModelCacheMixin):
+    if isinstance(s, claripy.frontend_mixins.ModelCacheMixin):
         count = claripy._backends_module.backend_z3.solve_count
 
         s = solver_type()
@@ -289,6 +289,7 @@ def raw_combine(solver_type):
     nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
 
 def test_composite_solver():
+    #pylint:disable=no-member
     s = claripy.SolverComposite()
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
@@ -330,7 +331,7 @@ def test_composite_solver():
     c = claripy.And(x == 1, y == 2, z == 3)
     s.add(c)
 
-    if isinstance(s._template_frontend, claripy.frontends.ModelCacheMixin):
+    if isinstance(s._template_frontend, claripy.frontend_mixins.ModelCacheMixin):
         assert len(s._solver_list) == 3
         count = claripy._backends_module.backend_z3.solve_count
         assert s.satisfiable()

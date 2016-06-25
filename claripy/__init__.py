@@ -91,4 +91,5 @@ def downsize():
 from .result import Result
 from .frontend import Frontend as _Frontend
 from . import frontends
+from . import frontend_mixins
 from .solvers import *

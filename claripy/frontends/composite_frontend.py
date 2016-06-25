@@ -418,5 +418,5 @@ class CompositeFrontend(ConstrainedFrontend):
 from ..ast import Base
 from .. import backends
 from ..errors import BackendError, UnsatError
-from .model_cache_mixin import ModelCacheMixin
-from .simplify_skipper_mixin import SimplifySkipperMixin
+from ..frontend_mixins.model_cache_mixin import ModelCacheMixin
+from ..frontend_mixins.simplify_skipper_mixin import SimplifySkipperMixin
