@@ -45,28 +45,11 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             if not success:
                 raise ClaripyOperationError(msg)
 
-        ast_args = tuple(a for a in args if isinstance(a, ast.Base))
-
         #pylint:disable=too-many-nested-blocks
         if name in simplifiers:
-            simp = simplifiers[name](*fixed_args)
-            bad_eliminated = 0
-
+            simp = _handle_annotations(simplifiers[name](*fixed_args), args)
             if simp is not None:
-                preserved_relocatable = frozenset(simp._relocatable_annotations)
-                relocated_annotations = set()
-                for aa in ast_args:
-                    for oa in aa._relocatable_annotations:
-                        if oa not in preserved_relocatable and oa not in relocated_annotations:
-                            relocated_annotations.add(oa)
-                            na = oa.relocate(aa, simp)
-                            if na is not None:
-                                simp = simp.append_annotation(na)
-
-                    bad_eliminated += len(aa._uneliminatable_annotations - simp._uneliminatable_annotations)
-
-                if bad_eliminated == 0:
-                    return simp
+                return simp
 
         kwargs = {}
         if calc_length is not None:
@@ -83,6 +66,29 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
     _op.calc_length = calc_length
     return _op
+
+def _handle_annotations(simp, args):
+    if simp is None:
+        return None
+
+    ast_args = tuple(a for a in args if isinstance(a, ast.Base))
+
+    preserved_relocatable = frozenset(simp._relocatable_annotations)
+    relocated_annotations = set()
+    bad_eliminated = 0
+
+    for aa in ast_args:
+        for oa in aa._relocatable_annotations:
+            if oa not in preserved_relocatable and oa not in relocated_annotations:
+                relocated_annotations.add(oa)
+                na = oa.relocate(aa, simp)
+                if na is not None:
+                    simp = simp.append_annotation(na)
+
+        bad_eliminated += len(aa._uneliminatable_annotations - simp._uneliminatable_annotations)
+
+    if bad_eliminated == 0:
+        return simp
 
 def reversed_op(op_func):
     def _reversed_op(*args):

@@ -27,6 +27,15 @@ class AnnotationC(AnnotationA):
     def relocate(self, src, dst):
         return AnnotationC(self.letter, self.number+1)
 
+class AnnotationD(claripy.Annotation):
+    @property
+    def eliminatable(self):
+        return False
+
+    @property
+    def relocatable(self):
+        return True
+
 class BackendA(claripy.Backend):
     def __init__(self):
         claripy.Backend.__init__(self)
@@ -95,6 +104,12 @@ def test_annotations():
 
     assert claripy.backends.z3.convert(x).eq(claripy.backends.z3.convert(x3))
 
+def test_eagerness():
+    x = claripy.BVV(10, 32).annotate(AnnotationD())
+    y = x + 1
+    assert y.annotations == x.annotations
+
 if __name__ == '__main__':
     test_annotations()
     test_backend()
+    test_eagerness()
