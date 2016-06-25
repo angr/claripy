@@ -7,10 +7,9 @@ class ModelCache(object):
     def __init__(self, model):
         self.model = model
         self.replacements = weakref.WeakKeyDictionary()
-        self._hash = None
 
     def __hash__(self):
-        if self._hash is None:
+        if not hasattr(self, '_hash'):
             self._hash = hash(frozenset(self.model.items()))
         return self._hash
 
@@ -23,7 +22,6 @@ class ModelCache(object):
     def __setstate__(self, s):
         self.model = s
         self.replacements = weakref.WeakKeyDictionary()
-        self._hash = None
 
     #
     # Splitting support
