@@ -13,6 +13,9 @@ class ClaripySerializationError(ClaripyError):
 class BackendError(ClaripyError):
     pass
 
+class BackendUnsupportedError(BackendError):
+    pass
+
 class ClaripyZ3Error(ClaripyError):
     pass
 

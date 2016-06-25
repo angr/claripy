@@ -628,7 +628,7 @@ def test_vsa():
 def test_vsa_constraint_to_si():
     # Set backend
     b = claripy.backends.vsa
-    s = claripy.LightFrontend(claripy.backends.vsa) #pylint:disable=unused-variable
+    s = claripy.SolverVSA() #pylint:disable=unused-variable
 
     SI = claripy.SI
     BVV = claripy.BVV
@@ -816,7 +816,7 @@ def test_vsa_discrete_value_set():
     # Set backend
     b = claripy.backends.vsa
 
-    s = claripy.LightFrontend(claripy.backends.vsa) #pylint:disable=unused-variable
+    s = claripy.SolverVSA() #pylint:disable=unused-variable
 
     SI = claripy.SI
     BVV = claripy.BVV
@@ -907,10 +907,8 @@ def test_vsa_discrete_value_set():
 
 def test_solution():
     # Set backend
-    b = claripy.backends.vsa
-
-    solver_type = claripy.LightFrontend
-    s = solver_type(b)
+    solver_type = claripy.SolverVSA
+    s = solver_type()
 
     def VS(name=None, bits=None, region=None, val=None):
         region = 'foobar' if region is None else region

@@ -1,6 +1,7 @@
 import sys
 import ctypes
 import weakref
+import operator
 import threading
 
 import logging
@@ -163,7 +164,10 @@ class Backend(object):
                 if expr.op in self._op_expr:
                     r = self._op_expr[expr.op](expr, result=result)
                 else:
-                    r = self.call(expr.op, expr.args, result=result)
+                    try:
+                        r = self.call(expr.op, expr.args, result=result)
+                    except BackendUnsupportedError:
+                        r = self.default_op(expr)
             except (RuntimeError, ctypes.ArgumentError):
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
@@ -204,18 +208,15 @@ class Backend(object):
             obj = self._op_raw[op](*converted)
         elif not op.startswith("__"):
             l.debug("backend has no operation %s", op)
-            raise BackendError("backend has no operation %s" % op)
+            raise BackendUnsupportedError
         else:
             obj = NotImplemented
 
             # first, try the operation with the first guy
-            if hasattr(converted[0], op):
-                op_func = getattr(converted[0], op)
-                obj = op_func(*converted[1:])
-            # now try the reverse operation with the second guy
-            if obj is NotImplemented and len(converted) == 2 and hasattr(converted[1], opposites[op]):
-                op_func = getattr(converted[1], opposites[op])
-                obj = op_func(converted[0])
+            try:
+                obj = getattr(operator, op)(*converted)
+            except (TypeError, ValueError):
+                pass
 
         if obj is NotImplemented:
             l.debug("received NotImplemented in %s.call() for operation %s", self, op)
@@ -252,7 +253,7 @@ class Backend(object):
     # Some other helpers
     #
 
-    def is_true(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=unused-argument
+    def is_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=unused-argument
         """
         Should return True if `e` can be easily found to be True.
 
@@ -260,24 +261,25 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :returns:                   A boolean.
         """
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
         if not isinstance(e, Base):
-            return self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+            return self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver, model_callback=model_callback)
 
         try:
             return self._true_cache[e.cache_key]
         except KeyError:
-            t = self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+            t = self._is_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver, model_callback=model_callback)
             self._true_cache[e.cache_key] = t
             if t is True:
                 self._false_cache[e.cache_key] = False
             return t
 
-    def is_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=unused-argument
+    def is_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=unused-argument
         """
         Should return True if e can be easily found to be False.
 
@@ -285,24 +287,25 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve
         :param solver:              A solver, for backends that require it
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
         if not isinstance(e, Base):
-            return self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+            return self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver, model_callback=model_callback)
 
         try:
             return self._false_cache[e.cache_key]
         except KeyError:
-            f = self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+            f = self._is_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver, model_callback=model_callback)
             self._false_cache[e.cache_key] = f
             if f is True:
                 self._true_cache[e.cache_key] = False
             return f
 
-    def _is_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=no-self-use,unused-argument
+    def _is_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=no-self-use,unused-argument
         """
         The native version of is_false.
 
@@ -310,11 +313,12 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
         raise BackendError("backend doesn't support _is_false")
 
-    def _is_true(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=no-self-use,unused-argument
+    def _is_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=no-self-use,unused-argument
         """
         The native version of is_true.
 
@@ -322,11 +326,12 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
         raise BackendError("backend doesn't support _is_true")
 
-    def has_true(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=unused-argument
+    def has_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=unused-argument
         """
         Should return True if `e` can possible be True.
 
@@ -334,15 +339,16 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean
         """
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._has_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+        return self._has_true(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver, model_callback=model_callback)
 
-    def has_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=unused-argument
+    def has_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=unused-argument
         """
         Should return False if `e` can possibly be False.
 
@@ -350,15 +356,16 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._has_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver)
+        return self._has_false(self.convert(e), extra_constraints=extra_constraints, result=result, solver=solver, model_callback=model_callback)
 
-    def _has_false(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=no-self-use,unused-argument
+    def _has_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=no-self-use,unused-argument
         """
         The native version of :func:`has_false`.
 
@@ -366,11 +373,12 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
         raise BackendError("backend doesn't support _has_false")
 
-    def _has_true(self, e, extra_constraints=(), result=None, solver=None): #pylint:disable=no-self-use,unused-argument
+    def _has_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None): #pylint:disable=no-self-use,unused-argument
         """
         The native version of :func:`has_true`.
 
@@ -378,6 +386,7 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param result:              The result of the previous solve.
         :param solver:              A solver, for backends that require it.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
         raise BackendError("backend doesn't support _has_true")
@@ -411,53 +420,11 @@ class Backend(object):
         """
         raise BackendError("backend doesn't support solving")
 
-    def check(self, s, extra_constraints=()):
-        """
-        This function does a constraint check.
-
-        :param s:                   The backend solver object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to s for this solve.
-        :return:                   True or False, depending on satisfiability.
-        """
-        return self._check(s, extra_constraints=self.convert_list(extra_constraints))
-
-    def _check(self, s, extra_constraints=()): #pylint:disable=no-self-use,unused-argument
-        """
-        This function does a constraint check.
-
-        :param s:                   The backend solver object.
-        :param extra_constraints:   Extra constraints (backend objects) to add to s for this solve.
-        :returns                    True or False, depending on satisfiability.
-        """
-        raise BackendError("backend doesn't support solving")
-
-    def results(self, s, extra_constraints=(), generic_model=None):
-        """
-        This function does a constraint check.
-
-        :param s:                   The backend solver object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to s for this solve
-        :param generic_model:       Whether or not to create a generic model
-        :return:                   A Result object
-        """
-        return self._results(s, extra_constraints=self.convert_list(extra_constraints), generic_model=generic_model)
-
-    def _results(self, s, extra_constraints=(), generic_model=None): #pylint:disable=no-self-use,unused-argument
-        """
-        This function does a constraint check.
-
-        :param s:                   The backend solver object
-        :param extra_constraints:   Extra constraints (backend objects) to add to s for this solve
-        :param generic_model:       Whether or not to create a generic model
-        :return:                   A Result object
-        """
-        raise BackendError("backend doesn't support solving")
-
     #
     # These functions provide evaluation support.
     #
 
-    def eval(self, expr, n, result=None, extra_constraints=(), solver=None):
+    def eval(self, expr, n, result=None, extra_constraints=(), solver=None, model_callback=None):
         """
         This function returns up to `n` possible solutions for expression `expr`.
 
@@ -468,14 +435,15 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:              A sequence of up to n results (backend objects)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._eval(self.convert(expr, result=result if n == 1 else None), n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._eval(self.convert(expr, result=result if n == 1 else None), n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver, model_callback=model_callback)
 
-    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         This function returns up to `n` possible solutions for expression `expr`.
 
@@ -485,11 +453,12 @@ class Backend(object):
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param solver:              A solver object, native to the backend, to assist in the evaluation (for example, a
                                     z3.Solver).
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    A sequence of up to n results (backend objects).
         """
         raise BackendError("backend doesn't support eval()")
 
-    def batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None):
+    def batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None, model_callback=None):
         """
         Evaluate one or multiple expressions.
 
@@ -498,6 +467,7 @@ class Backend(object):
         :param result:              A cached Result from the last constraint solve.
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param solver:              A solver object, native to the backend, to assist in the evaluation.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    A list of up to n tuples, where each tuple is a solution for all expressions.
         """
         if self._solver_required and solver is None:
@@ -505,9 +475,9 @@ class Backend(object):
 
         converted_exprs = [ self.convert(ex, result=result if n == 1 else None) for ex in exprs ]
 
-        return self._batch_eval(converted_exprs, n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._batch_eval(converted_exprs, n, result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver, model_callback=model_callback)
 
-    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         Evaluate one or multiple expressions.
 
@@ -516,12 +486,13 @@ class Backend(object):
         :param result:              A cached Result from the last constraint solve.
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
         :param solver:              A solver object, native to the backend, to assist in the evaluation.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    A list of up to n tuples, where each tuple is a solution for all expressions.
         """
 
         raise BackendError("backend doesn't support batch_eval()")
 
-    def min(self, expr, result=None, extra_constraints=(), solver=None):
+    def min(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
         """
         Return the minimum value of `expr`.
 
@@ -531,14 +502,15 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the minimum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._min(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._min(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver, model_callback=model_callback)
 
-    def _min(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _min(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         Return the minimum value of expr.
 
@@ -548,11 +520,12 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the minimum possible value of expr (backend object)
         """
         raise BackendError("backend doesn't support min()")
 
-    def max(self, expr, result=None, extra_constraints=(), solver=None):
+    def max(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
         """
         Return the maximum value of expr.
 
@@ -562,14 +535,15 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the maximum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._max(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._max(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver, model_callback=model_callback)
 
-    def _max(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _max(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         Return the maximum value of expr.
 
@@ -579,77 +553,35 @@ class Backend(object):
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the maximum possible value of expr (backend object)
         """
         raise BackendError("backend doesn't support max()")
 
-    def min_values(self, expr, result=None, extra_constraints=(), solver=None):
+    def satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         """
-        Return a set of values of expr, in which the minimum is present.
-        This is an optimization for performing less constraint solving.
+        This function does a constraint check and checks if the solver is in a sat state.
 
-        :param expr: expression (claripy.E object) to evaluate
-        :param result: a cached Result from the last constraint solve
-        :param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
-        :return: the minimum possible value of expr (backend object)
+        :param solver:              The backend solver object.
+        :param extra_constraints:   Extra constraints (claripy.E objects) to add to s for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
+        :return:                    True if sat, otherwise false
         """
-        if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+        return self._satisfiable(extra_constraints=self.convert_list(extra_constraints), solver=solver, model_callback=model_callback)
 
-        return self._min_values(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
-
-    def _min_values(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=no-self-use,unused-argument
         """
-        Return a set of values of expr, in which the minimum is present.
-        This is an optimization for performing less constraint solving.
+        This function does a constraint check and returns a model for a solver.
 
-        :param expr: expression (backend object) to evaluate
-        :param result: a cached Result from the last constraint solve
-        :param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
-        :return: the minimum possible value of expr (backend object)
+        :param solver:              The backend solver object
+        :param extra_constraints:   Extra constraints (backend objects) to add to s for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
+        :return:                    True if sat, otherwise false
         """
-        raise BackendError("backend doesn't support min_values()")
+        raise BackendError("backend doesn't support solving")
 
-    def max_values(self, expr, result=None, extra_constraints=(), solver=None):
-        """
-        Return a set of values of expr, in which the maximum is present.
-        This is an optimization for performing less constraint solving.
 
-        :param expr: expression (claripy.E object) to evaluate
-        :param result: a cached Result from the last constraint solve
-        :param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
-        :return: the maximum possible value of expr (backend object)
-        """
-        if self._solver_required and solver is None:
-            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
-
-        return self._max_values(self.convert(expr), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
-
-    def _max_values(self, expr, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
-        """
-        Return a set of values of expr, in which the maximum is present.
-        This is an optimization for performing less constraint solving.
-
-        :param expr: expression (backend object) to evaluate
-        :param result: a cached Result from the last constraint solve
-        :param solver: a solver object, native to the backend, to assist in
-                       the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
-        :return: the maximum possible value of expr (backend object)
-        """
-        raise BackendError("backend doesn't support max_values()")
-
-    def solution(self, expr, v, result=None, extra_constraints=(), solver=None):
+    def solution(self, expr, v, result=None, extra_constraints=(), solver=None, model_callback=None):
         """
         Return True if `v` is a solution of `expr` with the extra constraints, False otherwise.
 
@@ -659,14 +591,15 @@ class Backend(object):
         :param solver:              A solver object, native to the backend, to assist in the evaluation (for example,
                                     a z3.Solver).
         :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   True if `v` is a solution of `expr`, False otherwise
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._solution(self.convert(expr), self.convert(v), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver)
+        return self._solution(self.convert(expr), self.convert(v), result=result, extra_constraints=self.convert_list(extra_constraints, result=result), solver=solver, model_callback=model_callback)
 
-    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None): #pylint:disable=unused-argument,no-self-use
+    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         Return True if v is a solution of expr with the extra constraints, False otherwise.
 
@@ -773,6 +706,9 @@ class Backend(object):
         """
         return o
 
+    def default_op(self, expr):
+        # pylint: disable=unused-argument
+        raise BackendError('Backend %s does not support operation %s' % (self, expr.op))
+
 from .ast.base import Base
-from .operations import opposites
-from .errors import BackendError, ClaripyRecursionError
+from .errors import BackendError, ClaripyRecursionError, BackendUnsupportedError

@@ -3,15 +3,13 @@
 import weakref
 import logging
 
-l = logging.getLogger("claripy.frontends.full_frontend")
+l = logging.getLogger("claripy.frontends.replacement_frontend")
 
 from .constrained_frontend import ConstrainedFrontend
 
-
 class ReplacementFrontend(ConstrainedFrontend):
     def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None, **kwargs):
-        kwargs['cache'] = kwargs.get('cache', False)
-        ConstrainedFrontend.__init__(self, **kwargs)
+        super(ReplacementFrontend, self).__init__(**kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
         self._auto_replace = True if auto_replace is None else auto_replace
@@ -22,6 +20,35 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache = weakref.WeakKeyDictionary() if replacement_cache is None else replacement_cache
 
         self._validation_frontend = None
+
+    def _blank_copy(self, c):
+        super(ReplacementFrontend, self)._blank_copy(c)
+        c._actual_frontend = self._actual_frontend.blank_copy()
+        c._allow_symbolic = self._allow_symbolic
+        c._auto_replace = self._auto_replace
+        c._complex_auto_replace = self._complex_auto_replace
+        c._replace_constraints = self._replace_constraints
+        c._unsafe_replacement = self._unsafe_replacement
+        c._replacements = {}
+        c._replacement_cache = weakref.WeakKeyDictionary()
+
+        if self._validation_frontend is not None:
+            c._validation_frontend = self._validation_frontend.blank_copy()
+        else:
+            c._validation_frontend = None
+
+    def _copy(self, c):
+        super(ReplacementFrontend, self)._copy(c)
+        self._actual_frontend._copy(c._actual_frontend)
+        if self._validation_frontend is not None:
+            self._validation_frontend._copy(c._validation_frontend)
+
+        c._replacements = self._replacements
+        c._replacement_cache = self._replacement_cache
+
+    #
+    # Replacements
+    #
 
     def add_replacement(self, old, new, invalidate_cache=True, replace=True, promote=True):
         if not isinstance(old, Base):
@@ -76,22 +103,6 @@ class ReplacementFrontend(ConstrainedFrontend):
     # Storable support
     #
 
-    def _blank_copy(self):
-        s = ReplacementFrontend(self._actual_frontend._blank_copy())
-        s._auto_replace = self._auto_replace
-        s._complex_auto_replace = self._complex_auto_replace
-        s._replace_constraints = self._replace_constraints
-        s._unsafe_replacement = self._unsafe_replacement
-        s._allow_symbolic = self._allow_symbolic
-        return s
-
-    def branch(self):
-        s = ConstrainedFrontend.branch(self)
-        s._actual_frontend = self._actual_frontend.branch()
-        s._replacements = self._replacements
-        s._replacement_cache = self._replacement_cache
-        return s
-
     def downsize(self):
         self._actual_frontend.downsize()
         self._replacement_cache.clear()
@@ -105,7 +116,8 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replace_constraints,
             self._replacements,
             self._actual_frontend,
-            ConstrainedFrontend._ana_getstate(self)
+            self._validation_frontend,
+            super(ReplacementFrontend, self)._ana_getstate()
         )
 
     def _ana_setstate(self, s):
@@ -117,10 +129,11 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replace_constraints,
             self._replacements,
             self._actual_frontend,
+            self._validation_frontend,
             base_state
         ) = s
 
-        ConstrainedFrontend._ana_setstate(self, base_state)
+        super(ReplacementFrontend, self)._ana_setstate(base_state)
         self._replacement_cache = weakref.WeakKeyDictionary()
 
     #
@@ -130,73 +143,82 @@ class ReplacementFrontend(ConstrainedFrontend):
     def _replace_list(self, lst):
         return tuple(self._replacement(c) for c in lst)
 
-    def solve(self, extra_constraints=(), exact=None, cache=None):
-        ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.solve(extra_constraints=ecr, exact=exact, cache=cache)
-
-    def eval(self, e, n, extra_constraints=(), exact=None, cache=None):
+    def eval(self, e, n, extra_constraints=(), exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.eval(er, n, extra_constraints=ecr, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r[0])
         return r
 
-    def batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         er = self._replace_list(exprs)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.batch_eval(er, n, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.batch_eval(er, n, extra_constraints=ecr, exact=exact)
         if self._unsafe_replacement:
             for i, original in enumerate(exprs):
                 self._add_solve_result(original, er[i], r[0][i])
         return r
 
-    def max(self, e, extra_constraints=(), exact=None, cache=None):
+    def max(self, e, extra_constraints=(), exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
-    def min(self, e, extra_constraints=(), exact=None, cache=None):
+    def min(self, e, extra_constraints=(), exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
-    def solution(self, e, v, extra_constraints=(), exact=None, cache=None):
+    def solution(self, e, v, extra_constraints=(), exact=None):
         er = self._replacement(e)
         vr = self._replacement(v)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact, cache=cache)
+        r = self._actual_frontend.solution(er, vr, extra_constraints=ecr, exact=exact)
         if self._unsafe_replacement and r and (not isinstance(vr, Base) or not vr.symbolic):
             self._add_solve_result(e, er, vr)
         return r
 
-    def is_true(self, e, extra_constraints=(), exact=None, cache=None):
+    def is_true(self, e, extra_constraints=(), exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.is_true(er, extra_constraints=ecr, exact=exact, cache=cache)
+        return self._actual_frontend.is_true(er, extra_constraints=ecr, exact=exact)
 
-    def is_false(self, e, extra_constraints=(), exact=None, cache=None):
+    def is_false(self, e, extra_constraints=(), exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.is_false(er, extra_constraints=ecr, exact=exact, cache=cache)
+        return self._actual_frontend.is_false(er, extra_constraints=ecr, exact=exact)
 
-    def satisfiable(self, extra_constraints=(), exact=None, cache=None):
+    def satisfiable(self, extra_constraints=(), exact=None):
         ecr = self._replace_list(extra_constraints)
-        return self._actual_frontend.satisfiable(extra_constraints=ecr, exact=exact, cache=cache)
+        return self._actual_frontend.satisfiable(extra_constraints=ecr, exact=exact)
 
-    def _filter_single_constraint(self, e):
+    def _concrete_value(self, e):
+        c = super(ReplacementFrontend, self)._concrete_value(e)
+        if c is not None: return c
+
+        cr = self._replacement(e)
+        for b in backends._eager_backends:
+            try: return b.eval(cr, 1)[0]
+            except BackendError: pass
+        return None
+
+    def _concrete_constraint(self, e):
+        c = super(ReplacementFrontend, self)._concrete_value(e)
+        if c is not None: return c
+
         #if er.is_false():
         #   raise UnsatError("Replacement frontend received False constraint after replacement.")
         if self._replace_constraints:
             er = self._replacement(e)
-            return super(ReplacementFrontend, self)._filter_single_constraint(er)
+            return super(ReplacementFrontend, self)._concrete_constraint(er)
         else:
-            return super(ReplacementFrontend, self)._filter_single_constraint(e)
+            return super(ReplacementFrontend, self)._concrete_constraint(e)
 
-    def _add_constraints(self, constraints, **kwargs):
+    def add(self, constraints, **kwargs):
         if self._auto_replace:
             for c in constraints:
                 # the badass thing here would be to use the *replaced* constraint, but
@@ -227,44 +249,19 @@ class ReplacementFrontend(ConstrainedFrontend):
 
                         self.add_replacement(old, rold.intersection(new))
 
-        ConstrainedFrontend._add_constraints(self, constraints, **kwargs)
-
-        cr = self._replace_list(constraints)
+        added = super(ReplacementFrontend, self).add(constraints, **kwargs)
+        cr = self._replace_list(added)
         if not self._allow_symbolic and any(c.symbolic for c in cr):
             raise ClaripyFrontendError(
                 "symbolic constraints made it into ReplacementFrontend with allow_symbolic=False")
-        return self._actual_frontend.add(cr, **kwargs)
+        self._actual_frontend.add(cr, **kwargs)
 
-    # def _add_constraints(self, *args, **kwargs): #pylint:disable=unused-argument
-    #   raise Exception("this should not be called")
-    def _solve(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _eval(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _batch_eval(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _max(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _min(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _solution(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _is_true(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
-
-    def _is_false(self, *args, **kwargs):  # pylint:disable=unused-argument
-        raise Exception("this should not be called")
+        return added
 
 
 from ..ast.base import Base
 from ..ast.bv import BVV
 from ..ast.bool import BoolV, false
-from ..errors import ClaripyFrontendError
+from ..errors import ClaripyFrontendError, BackendError
 from ..balancer import Balancer
 from ..backend_manager import backends

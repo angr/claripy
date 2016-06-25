@@ -228,9 +228,9 @@ def test_if_stuff():
     nose.tools.assert_is(iii.ite_excavated, iiii)
 
 def test_ite():
-    yield raw_ite, lambda: claripy.FullFrontend(claripy.backends.z3)
-    yield raw_ite, claripy.hybrid_vsa_z3
-    yield raw_ite, lambda: claripy.CompositeFrontend(claripy.FullFrontend(claripy.backends.z3))
+    yield raw_ite, claripy.Solver
+    yield raw_ite, claripy.SolverHybrid
+    yield raw_ite, claripy.SolverComposite
 
 def raw_ite(solver_type):
     s = solver_type()
@@ -380,6 +380,14 @@ def test_multiarg():
     x_or = x|(x+1)|(x+2)|(x+3)
     x_xor = x^(x+1)^(x+2)^(x+3)
     x_and = x&(x+1)&(x+2)&(x+3)
+
+    assert x_add.variables == x.variables
+    assert x_mul.variables == x.variables
+    assert x_sub.variables == x.variables
+    assert x_or.variables == x.variables
+    assert x_xor.variables == x.variables
+    assert x_and.variables == x.variables
+    assert (claripy.BVV(1, 32)+(x+x)).variables == x.variables
 
     assert len(x_add.args) == 4
     assert len(x_mul.args) == 4

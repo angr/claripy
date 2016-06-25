@@ -127,7 +127,7 @@ class BackendVSA(Backend):
         # Not supported
         raise BackendError()
 
-    def _eval(self, expr, n, result=None, solver=None, extra_constraints=()):
+    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
             return expr.eval(n)
         elif isinstance(expr, ValueSet):
@@ -142,7 +142,7 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Unsupported type %s' % type(expr))
 
-    def _min(self, expr, result=None, solver=None, extra_constraints=()):
+    def _min(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
             if expr.is_top:
                 # TODO: Return
@@ -152,7 +152,7 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def _max(self, expr, result=None, solver=None, extra_constraints=()):
+    def _max(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
             if expr.is_top:
                 # TODO:
@@ -163,7 +163,7 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def _solution(self, obj, v, result=None, solver=None, extra_constraints=()):
+    def _solution(self, obj, v, result=None, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(obj, BoolResult):
             return len(set(v.value) & set(obj.value)) > 0
 
@@ -178,16 +178,16 @@ class BackendVSA(Backend):
 
         raise NotImplementedError(type(obj).__name__)
 
-    def _has_true(self, o, extra_constraints=(), result=None, solver=None):
+    def _has_true(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
         return BoolResult.has_true(o)
 
-    def _has_false(self, o, extra_constraints=(), result=None, solver=None):
+    def _has_false(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
         return BoolResult.has_false(o)
 
-    def _is_true(self, o, extra_constraints=(), result=None, solver=None):
+    def _is_true(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
         return BoolResult.is_true(o)
 
-    def _is_false(self, o, extra_constraints=(), result=None, solver=None):
+    def _is_false(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
         return BoolResult.is_false(o)
 
     #

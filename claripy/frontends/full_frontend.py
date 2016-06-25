@@ -9,12 +9,26 @@ import threading
 from .constrained_frontend import ConstrainedFrontend
 
 class FullFrontend(ConstrainedFrontend):
+    _model_hook = None
+
     def __init__(self, solver_backend, timeout=None, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._solver_backend = solver_backend
         self.timeout = timeout if timeout is not None else 300000
         self._tls = threading.local()
         self._to_add = [ ]
+
+    def _blank_copy(self, c):
+        super(FullFrontend, self)._blank_copy(c)
+        c._solver_backend = self._solver_backend
+        c.timeout = self.timeout
+        c._tls = threading.local()
+        c._to_add = [ ]
+
+    def _copy(self, c):
+        super(FullFrontend, self)._copy(c)
+        c._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
+        c._to_add = list(self._to_add)
 
     #
     # Storable support
@@ -51,59 +65,60 @@ class FullFrontend(ConstrainedFrontend):
     # Constraint management
     #
 
-    def _add_constraints(self, constraints, invalidate_cache=True):
-        to_add = ConstrainedFrontend._add_constraints(self, constraints, invalidate_cache=invalidate_cache)
+    def add(self, constraints):
+        to_add = ConstrainedFrontend.add(self, constraints)
         self._to_add += to_add
         return to_add
 
-    def _simplify(self):
-        ConstrainedFrontend._simplify(self)
+    def simplify(self):
+        ConstrainedFrontend.simplify(self)
 
         # TODO: should we do this?
         self._tls.solver = None
         self._to_add = [ ]
-        self._simplified = True
 
         return self.constraints
 
-    def _solve(self, extra_constraints=(), exact=None, cache=None):
-        r = ConstrainedFrontend._solve(self, extra_constraints=extra_constraints)
-        if not r.approximation:
-            return r
-
-        l.debug("Frontend.solve() checking SATness of %d constraints", len(self.constraints))
-
+    def satisfiable(self, extra_constraints=(), exact=None):
         try:
-            s = self._get_solver()
-
-            #a = time.time()
-            r = self._solver_backend.results(s, extra_constraints, generic_model=True)
-            #b = time.time()
-            #l_timing.debug("... %s in %s seconds", r.sat, b - a)
-            return r
+            return self._solver_backend.satisfiable(
+                extra_constraints=extra_constraints,
+                solver=self._get_solver(), model_callback=self._model_hook
+            )
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _eval(self, e, n, extra_constraints=(), exact=None, cache=None):
+    def eval(self, e, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
-        return self._solver_backend.eval(e, n, extra_constraints=extra_constraints, result=self.result, solver=self._get_solver())
+        try:
+            return self._solver_backend.eval(
+                e, n, extra_constraints=extra_constraints,
+                solver=self._get_solver(), model_callback=self._model_hook
+            )
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during _eval: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _batch_eval(self, exprs, n, extra_constraints=(), exact=None, cache=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
 
-        return self._solver_backend.batch_eval(
+        try:
+            return self._solver_backend.batch_eval(
                 exprs,
                 n,
                 extra_constraints=extra_constraints,
-                result=self.result,
-                solver=self._get_solver()
-        )
+                solver=self._get_solver(),
+                model_callback=self._model_hook
+            )
+        except BackendError:
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyFrontendError, "Backend error during _batch_eval: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _max(self, e, extra_constraints=(), exact=None, cache=None):
+    def max(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _max()")
 
@@ -113,23 +128,18 @@ class FullFrontend(ConstrainedFrontend):
         if len(two) == 0: raise UnsatError("unsat during max()")
         elif len(two) == 1: return two[0]
 
-        self.simplify()
-
         c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
         try:
-            vals = self._solver_backend.max_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
-            self._cache_eval(e, vals, exact=exact, cache=cache)
-            return max(vals)
-        except BackendError:
-            pass
-
-        try:
-            return self._solver_backend.max(e, extra_constraints=c, result=self.result, solver=self._get_solver())
+            return self._solver_backend.max(
+                e, extra_constraints=c,
+                solver=self._get_solver(),
+                model_callback=self._model_hook
+            )
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _min(self, e, extra_constraints=(), exact=None, cache=None):
+    def min(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _min()")
 
@@ -139,48 +149,46 @@ class FullFrontend(ConstrainedFrontend):
         if len(two) == 0: raise UnsatError("unsat during min()")
         elif len(two) == 1: return two[0]
 
-        self.simplify()
-
         c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
         try:
-            vals = self._solver_backend.min_values(e, extra_constraints=c, result=self.result, solver=self._get_solver())
-            self._cache_eval(e, vals, exact=exact, cache=cache)
-            return min(vals)
-        except BackendError:
-            pass
-
-        try:
-            return self._solver_backend.min(e, extra_constraints=c, result=self.result, solver=self._get_solver())
+            return self._solver_backend.min(
+                e, extra_constraints=c,
+                solver=self._get_solver(),
+                model_callback=self._model_hook
+            )
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
 
-    def _solution(self, e, v, extra_constraints=(), exact=None, cache=None):
+    def solution(self, e, v, extra_constraints=(), exact=None):
         try:
-            b = self._solver_backend.solution(e, v, extra_constraints=extra_constraints, solver=self._get_solver())
+            return self._solver_backend.solution(
+                e, v, extra_constraints=extra_constraints,
+                solver=self._get_solver(), model_callback=self._model_hook
+            )
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _solution: %s('%s')" % (str(e_type), str(value)), traceback
 
-        return b
-
-    def _is_true(self, e, extra_constraints=(), exact=None, cache=None):
+    def is_true(self, e, extra_constraints=(), exact=None):
         try:
-            b = self._solver_backend.is_true(e, extra_constraints=extra_constraints, solver=self._get_solver())
+            return self._solver_backend.is_true(
+                e, extra_constraints=extra_constraints,
+                solver=self._get_solver(), model_callback=self._model_hook
+            )
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _is_true: %s('%s')" % (str(e_type), str(value)), traceback
 
-        return b
-
-    def _is_false(self, e, extra_constraints=(), exact=None, cache=None):
+    def is_false(self, e, extra_constraints=(), exact=None):
         try:
-            b = self._solver_backend.is_false(e, extra_constraints=extra_constraints, solver=self._get_solver())
+            return self._solver_backend.is_false(
+                e, extra_constraints=extra_constraints,
+                solver=self._get_solver(), model_callback=self._model_hook
+            )
         except BackendError:
             e_type, value, traceback = sys.exc_info()
             raise ClaripyFrontendError, "Backend error during _is_false: %s('%s')" % (str(e_type), str(value)), traceback
-
-        return b
 
     #
     # Serialization and such.
@@ -194,15 +202,6 @@ class FullFrontend(ConstrainedFrontend):
     #
     # Merging and splitting
     #
-
-    def _blank_copy(self):
-        return FullFrontend(self._solver_backend, cache=self._cache, timeout=self.timeout)
-
-    def branch(self):
-        b = ConstrainedFrontend.branch(self)
-        b._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
-        b._to_add = list(self._to_add)
-        return b
 
     def merge(self, others, merge_flag, merge_values):
         return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]

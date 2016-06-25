@@ -49,6 +49,9 @@ class Result(object):
     def downsize(self):
         self._tls.backend_model = None
 
+    def __repr__(self):
+        return "<Result %s>" % ("sat" if self.sat else "unsat")
+
 def UnsatResult(**kwargs):
     return Result(False, **kwargs)
 

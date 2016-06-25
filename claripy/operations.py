@@ -790,6 +790,7 @@ length_new_operations = backend_creation_operations
 
 leaf_operations = backend_symbol_creation_operations | backend_creation_operations
 leaf_operations_concrete = backend_creation_operations
+leaf_operations_symbolic = backend_symbol_creation_operations
 
 #
 # Reversibility
