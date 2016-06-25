@@ -83,6 +83,7 @@ def raw_solver(solver_type):
     #bz = claripy.backends.BackendZ3(clrp)
     #claripy.expression_backends = [ bc, bz, ba ]
 
+    print "YOYO"
     s = solver_type()
 
     s.simplify()
@@ -95,6 +96,14 @@ def raw_solver(solver_type):
 
     s.add(x == 10)
     s.add(y == 15)
+
+    # Batch evaluation
+    results = s.batch_eval([x + 5, x + 6, 3], 2)
+    nose.tools.assert_equal(len(results), 1)
+    nose.tools.assert_equal(results[0][0], 15) # x + 5
+    nose.tools.assert_equal(results[0][1], 16) # x + 6
+    nose.tools.assert_equal(results[0][2], 3)  # constant
+
     l.debug("checking")
     nose.tools.assert_true(s.satisfiable())
     nose.tools.assert_false(s.satisfiable(extra_constraints=[x == 5]))
@@ -103,13 +112,6 @@ def raw_solver(solver_type):
     nose.tools.assert_true(s.solution(x, 10))
     nose.tools.assert_true(s.solution(y, 15))
     nose.tools.assert_false(s.solution(y, 13))
-
-    # Batch evaluation
-    results = s.batch_eval([x + 5, x + 6, 3], 2)
-    nose.tools.assert_equal(len(results), 1)
-    nose.tools.assert_equal(results[0][0], 15) # x + 5
-    nose.tools.assert_equal(results[0][1], 16) # x + 6
-    nose.tools.assert_equal(results[0][2], 3)  # constant
 
     shards = s.split()
     nose.tools.assert_equal(len(shards), 2)
