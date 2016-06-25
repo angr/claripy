@@ -116,7 +116,11 @@ class Base(ana.Storable):
         if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
-                    return eb._abstract(eb.call(op, args))
+                    r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
+                    if r is not None:
+                        return r
+                    else:
+                        eager_backends.remove(eb)
                 except BackendError:
                     eager_backends.remove(eb)
 
