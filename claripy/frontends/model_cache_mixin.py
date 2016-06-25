@@ -10,17 +10,17 @@ class ModelCache(object):
 
     def __hash__(self):
         if not hasattr(self, '_hash'):
-            self._hash = hash(frozenset(self.model.items()))
+            self._hash = hash(frozenset(self.model.items())) #pylint:disable=attribute-defined-outside-init
         return self._hash
 
     def __eq__(self, other):
         return self.model == other.model
 
     def __getstate__(self):
-        return self.model
+        return (self.model,)
 
     def __setstate__(self, s):
-        self.model = s
+        self.model = s[0]
         self.replacements = weakref.WeakKeyDictionary()
 
     #
