@@ -60,24 +60,6 @@ class SolverHybrid(
         ) if approximate_frontend is None else approximate_frontend
         super(SolverHybrid, self).__init__(exact_frontend, approximate_frontend, **kwargs)
 
-class SolverComposite(
-    frontends.AddListMixin,
-    frontends.ConcreteHandlerMixin,
-    frontends.EagerResolutionMixin,
-    frontends.ConstraintFilterMixin,
-    frontends.ConstraintDeduplicatorMixin,
-    frontends.SimplifySkipperMixin,
-    frontends.SimplifyHelperMixin,
-    frontends.ConstraintExpansionMixin,
-    frontends.CompositeFrontend
-):
-    def __init__(self, template_solver=None, **kwargs):
-        template_solver = Solver() if template_solver is None else template_solver
-        super(SolverComposite, self).__init__(template_solver, **kwargs)
-
-    def __repr__(self):
-        return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))
-
 class SolverVSA(
     frontends.AddListMixin,
     frontends.ConcreteHandlerMixin,
@@ -95,3 +77,39 @@ class SolverConcrete(
 ):
     def __init__(self, **kwargs):
         super(SolverConcrete, self).__init__(backends.concrete, **kwargs)
+
+
+#
+# Composite solving
+#
+
+class SolverCompositeChild(
+    frontends.EagerResolutionMixin,
+    frontends.ConstraintDeduplicatorMixin,
+    frontends.SimplifySkipperMixin,
+    frontends.ModelCacheMixin,
+    frontends.FullFrontend
+):
+    def __init__(self, backend=backends.z3, **kwargs):
+        super(SolverCompositeChild, self).__init__(backend, **kwargs)
+
+    def __repr__(self):
+        return "<SolverCompositeChild with %d variabels>" % len(self.variables)
+
+class SolverComposite(
+    frontends.AddListMixin,
+    frontends.ConcreteHandlerMixin,
+    frontends.EagerResolutionMixin,
+    frontends.ConstraintFilterMixin,
+    frontends.ConstraintDeduplicatorMixin,
+    frontends.SimplifySkipperMixin,
+    frontends.SimplifyHelperMixin,
+    frontends.ConstraintExpansionMixin,
+    frontends.CompositeFrontend
+):
+    def __init__(self, template_solver=None, **kwargs):
+        template_solver = SolverCompositeChild() if template_solver is None else template_solver
+        super(SolverComposite, self).__init__(template_solver, **kwargs)
+
+    def __repr__(self):
+        return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))
