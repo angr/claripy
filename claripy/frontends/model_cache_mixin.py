@@ -165,7 +165,8 @@ class ModelCacheMixin(object):
         Updates this cache mixin with results discovered by the other split off one.
         """
 
-        self._models.update(other._models)
+        acceptable_models = [ m for m in other._models if set(m.model.keys()) == self.variables ]
+        self._models.update(acceptable_models)
         self._eval_exhausted.update(other._eval_exhausted)
         self._max_exhausted.update(other._max_exhausted)
         self._min_exhausted.update(other._min_exhausted)

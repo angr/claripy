@@ -160,7 +160,20 @@ class CompositeFrontend(ConstrainedFrontend):
             return
 
         if isinstance(s, ModelCacheMixin):
-            self._split_child(s)
+            new_solvers = s.split()
+            old_solvers = self._solvers_for_variables(s.variables)
+            if len(new_solvers) == len(old_solvers):
+                done = set()
+                for s in s.split():
+                    if s in done:
+                        continue
+                    done.add(s)
+                    v = next(iter(s.variables))
+                    self._solvers[v].update(s)
+            else:
+                for ns in new_solvers:
+                    self._owned_solvers[ns] = True
+                    self._store_child(ns)
 
     def _store_child(self, ns, extra_names=frozenset()):
         for v in ns.variables | extra_names:
@@ -183,10 +196,10 @@ class CompositeFrontend(ConstrainedFrontend):
     # Constraints
     #
 
-    def _claim(self, s, extra_names=None):
+    def _claim(self, s):
         if s not in self._owned_solvers:
             sc = s.branch()
-            self._store_child(sc, extra_names=extra_names)
+            self._owned_solvers[sc] = True
             return sc
         else:
             return s
@@ -197,8 +210,9 @@ class CompositeFrontend(ConstrainedFrontend):
             return [ ]
 
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
-        s = self._claim(self._merged_solver_for(names=names), extra_names=names)
+        s = self._claim(self._merged_solver_for(names=names))
         added = s.add(constraints, **kwargs)
+        self._store_child(s)
         return added
 
     def add(self, constraints, **kwargs): #pylint:disable=arguments-differ
@@ -223,6 +237,7 @@ class CompositeFrontend(ConstrainedFrontend):
             for s in self._solver_list:
                 s = self._claim(s)
                 s.add(unsure)
+                self._store_child(s)
 
         return super(CompositeFrontend, self).add(child_added)
 
