@@ -76,7 +76,6 @@ class FullFrontend(ConstrainedFrontend):
         # TODO: should we do this?
         self._tls.solver = None
         self._to_add = [ ]
-        self._simplified = True
 
         return self.constraints
 
