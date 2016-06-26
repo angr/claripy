@@ -220,7 +220,7 @@ class Backend(object):
 
         if obj is NotImplemented:
             l.debug("received NotImplemented in %s.call() for operation %s", self, op)
-            raise BackendError("%s can't apply operation %s" % (self, op))
+            raise BackendUnsupportedError
 
         return obj
 
