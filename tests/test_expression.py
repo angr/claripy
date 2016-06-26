@@ -411,6 +411,64 @@ def test_multiarg():
             pass
     print 'ok'
 
+def test_signed_concrete():
+    bc = claripy.backends.concrete
+    a = claripy.BVV(5, 32)
+    b = claripy.BVV(-5, 32)
+    c = claripy.BVV(3, 32)
+    d = claripy.BVV(-3, 32)
+
+    # test unsigned
+    assert bc.convert(a / c) == 1
+    assert bc.convert(a / d) == 0
+    assert bc.convert(b / c) == 0x55555553
+    assert bc.convert(b / d) == 0
+    assert bc.convert(a % c) == 2
+    assert bc.convert(a % d) == 5
+    assert bc.convert(b % c) == 2
+    assert bc.convert(b % d) == -5
+
+    # test unsigned
+    assert bc.convert(a.SDiv(c)) == 1
+    assert bc.convert(a.SDiv(d)) == -1
+    assert bc.convert(b.SDiv(c)) == -1
+    assert bc.convert(b.SDiv(d)) == 1
+    assert bc.convert(a.SMod(c)) == 2
+    assert bc.convert(a.SMod(d)) == 2
+    assert bc.convert(b.SMod(c)) == -2
+    assert bc.convert(b.SMod(d)) == -2
+
+def test_signed_symbolic():
+    solver = claripy.Solver()
+    a = claripy.BVS("a", 32)
+    b = claripy.BVS("b", 32)
+    c = claripy.BVS("c", 32)
+    d = claripy.BVS("d", 32)
+    solver.add(a == 5)
+    solver.add(b == -5)
+    solver.add(c == 3)
+    solver.add(d == -3)
+
+    # test unsigned
+    assert list(solver.eval(a / c, 2)) == [1]
+    assert list(solver.eval(a / d, 2)) == [0]
+    assert list(solver.eval(b / c, 2)) == [0x55555553]
+    assert list(solver.eval(b / d, 2)) == [0]
+    assert list(solver.eval(a % c, 2)) == [2]
+    assert list(solver.eval(a % d, 2)) == [5]
+    assert list(solver.eval(b % c, 2)) == [2]
+    assert list(solver.eval(b % d, 2)) == [2**32-5]
+
+    # test unsigned
+    assert list(solver.eval(a.SDiv(c), 2)) == [1]
+    assert list(solver.eval(a.SDiv(d), 2)) == [2**32-1]
+    assert list(solver.eval(b.SDiv(c), 2)) == [2**32-1]
+    assert list(solver.eval(b.SDiv(d), 2)) == [1]
+    assert list(solver.eval(a.SMod(c), 2)) == [2]
+    assert list(solver.eval(a.SMod(d), 2)) == [2]
+    assert list(solver.eval(b.SMod(c), 2)) == [2**32-2]
+    assert list(solver.eval(b.SMod(d), 2)) == [2**32-2]
+
 
 if __name__ == '__main__':
     test_multiarg()
@@ -428,3 +486,5 @@ if __name__ == '__main__':
     for func, param in test_ite():
         func(param)
     test_if_stuff()
+    test_signed_concrete()
+    test_signed_symbolic()

@@ -269,6 +269,10 @@ SLE = operations.op('SLE', (BV, BV), Bool, extra_check=operations.length_same_ch
 SGT = operations.op('SGT', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
 SGE = operations.op('SGE', (BV, BV), Bool, extra_check=operations.length_same_check, bound=False)
 
+# division
+SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
+SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
+
 # bit stuff
 LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check,
                      calc_length=operations.basic_length_calc, bound=False)
@@ -317,6 +321,8 @@ BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.lengt
 BV.__rmod__ = operations.reversed_op(BV.__mod__.im_func)
 BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rdivmod__ = operations.reversed_op(BV.__divmod__.im_func)
+BV.SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
+BV.SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 
 BV.__neg__ = operations.op('__neg__', (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__pos__ = operations.op('__pos__', (BV,), BV, calc_length=operations.basic_length_calc)

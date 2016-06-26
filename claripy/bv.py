@@ -364,6 +364,24 @@ def SLE(self, o):
 def SGE(self, o):
     return self.signed >= o.signed
 
+@normalize_types
+@compare_bits
+def SMod(self, o):
+    # compute the remainder like the % operator in C
+    a = self.signed
+    b = o.signed
+    division_result = a//b if a*b>0 else (a+(-a%b))//b
+    val = a - division_result*b
+    return BVV(val, self.bits)
+
+@normalize_types
+@compare_bits
+def SDiv(self, o):
+    # compute the round towards 0 division
+    a = self.signed
+    b = o.signed
+    val = a//b if a*b>0 else (a+(-a%b))//b
+    return BVV(val, self.bits)
 
 #
 # Pure boolean stuff

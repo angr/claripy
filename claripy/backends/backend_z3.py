@@ -116,6 +116,9 @@ class BackendZ3(Backend):
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
 
+        self._op_raw['__div__'] = self._op_div
+        self._op_raw['__mod__'] = self._op_mod
+
         # reduceable
         self._op_raw['__add__'] = self._op_add
         self._op_raw['__sub__'] = self._op_sub
@@ -123,6 +126,7 @@ class BackendZ3(Backend):
         self._op_raw['__or__'] = self._op_or
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
+
 
     @property
     def _c_uint64_p(self):
@@ -398,7 +402,7 @@ class BackendZ3(Backend):
                 decl_num = z3.Z3_OP_BSMOD
             elif mystery_name == 'bvsdiv_i':
                 l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
-                op_name = '__div__'
+                op_name = 'SDiv'
                 decl_num = z3.Z3_OP_BSDIV
             else:
                 l.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
@@ -775,6 +779,12 @@ class BackendZ3(Backend):
     # these require the context or special treatment
 
     @staticmethod
+    def _op_div(a, b):
+        return z3.UDiv(a, b)
+    @staticmethod
+    def _op_mod(a, b):
+        return z3.URem(a, b)
+    @staticmethod
     def _op_add(*args):
         return reduce(operator.__add__, args)
     @staticmethod
@@ -825,6 +835,7 @@ class BackendZ3(Backend):
     _op_raw_ULE = _raw_caller(z3.ULE)
     _op_raw_ULT = _raw_caller(z3.ULT)
     _op_raw_ZeroExt = _raw_caller(z3.ZeroExt)
+    _op_raw_SMod = _raw_caller(z3.SRem)
     _op_raw_fpAbs = _raw_caller(z3.fpAbs)
     _op_raw_fpAdd = _raw_caller(z3.fpAdd)
     _op_raw_fpDiv = _raw_caller(z3.fpDiv)
@@ -870,6 +881,11 @@ class BackendZ3(Backend):
     def _op_raw_SGE(a, b):
         return a >= b
 
+    @staticmethod
+    @condom
+    def _op_raw_SDiv(a, b):
+        return a / b
+
     def _identical(self, a, b, result=None):
         return a.eq(b)
 
@@ -908,9 +924,9 @@ op_map = {
     'Z3_OP_SUB': '__sub__',
     'Z3_OP_UMINUS': '__neg__',
     'Z3_OP_MUL': '__mul__',
-    'Z3_OP_DIV': '__div__',
-    'Z3_OP_IDIV': '__div__',
-    'Z3_OP_REM': '__mod__', # TODO: is this correct?
+    'Z3_OP_DIV': 'SDiv',
+    'Z3_OP_IDIV': 'SDiv',
+    'Z3_OP_REM': '__mod__',
     'Z3_OP_MOD': '__mod__',
     #'Z3_OP_TO_REAL': None,
     #'Z3_OP_TO_INT': None,
@@ -939,16 +955,16 @@ op_map = {
     'Z3_OP_BSUB': '__sub__',
     'Z3_OP_BMUL': '__mul__',
 
-    'Z3_OP_BSDIV': '__div__',
-    'Z3_OP_BUDIV': '__div__', # TODO: is this correct?
-    'Z3_OP_BSREM': '__mod__', # TODO: is this correct?
-    'Z3_OP_BUREM': '__mod__', # TODO: is this correct?
-    'Z3_OP_BSMOD': '__mod__', # TODO: is this correct?
-    'Z3_OP_BSDIV_I': '__div__',
-    'Z3_OP_BUDIV_I': '__div__', # TODO: is this correct?
-    'Z3_OP_BSREM_I': '__mod__', # TODO: is this correct?
-    'Z3_OP_BUREM_I': '__mod__', # TODO: is this correct?
-    'Z3_OP_BSMOD_I': '__mod__', # TODO: is this correct?
+    'Z3_OP_BSDIV': 'SDiv',
+    'Z3_OP_BUDIV': '__div__',
+    'Z3_OP_BSREM': 'SMod',
+    'Z3_OP_BUREM': '__mod__',
+    'Z3_OP_BSMOD': 'SMod',
+    'Z3_OP_BSDIV_I': 'SDiv',
+    'Z3_OP_BUDIV_I': '__div__',
+    'Z3_OP_BSREM_I': 'SMod',
+    'Z3_OP_BUREM_I': '__mod__',
+    'Z3_OP_BSMOD_I': 'SMod',
 
     # special functions to record the division by 0 cases
     # these are internal functions
