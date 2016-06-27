@@ -29,8 +29,12 @@ def normalize_types(f):
             return o.union(self)
 
         if isinstance(o, ValueSet) or isinstance(o, DiscreteStridedIntervalSet):
-            # It should be put to o.__radd__(self) when o is a ValueSet
-            return NotImplemented
+            # if it's singlevalued, we can convert it to a StridedInterval
+            if o.cardinality == 1:
+                o = o.stridedinterval()
+            else:
+                # It should be put to o.__radd__(self) when o is a ValueSet
+                return NotImplemented
 
         if isinstance(o, Base) or isinstance(self, Base):
             return NotImplemented
