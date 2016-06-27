@@ -106,6 +106,7 @@ class SolverComposite(
     frontend_mixins.SimplifySkipperMixin,
     frontend_mixins.SimplifyHelperMixin,
     frontend_mixins.ConstraintExpansionMixin,
+    frontend_mixins.CompositedCacheMixin,
     frontends.CompositeFrontend
 ):
     def __init__(self, template_solver=None, **kwargs):

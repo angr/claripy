@@ -89,7 +89,8 @@ class CompositeFrontend(ConstrainedFrontend):
             existing_solvers.append(s)
         return existing_solvers
 
-    def _merged_solver_for(self, names=None, lst=None, lst2=None, e=None, v=None):
+    @staticmethod
+    def _names_for(names=None, lst=None, lst2=None, e=None, v=None):
         if names is None:
             names = set()
         if e is not None and isinstance(e, Base):
@@ -104,7 +105,12 @@ class CompositeFrontend(ConstrainedFrontend):
             for e in lst2:
                 if isinstance(e, Base):
                     names.update(e.variables)
+        return names
 
+    def _merged_solver_for(self, *args, **kwargs):
+        return self._solver_for_names(self._names_for(*args, **kwargs))
+
+    def _solver_for_names(self, names):
         l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
