@@ -3,7 +3,7 @@ import sys
 
 import nose.tools
 
-from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat
+from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat, SDiv
 from claripy.errors import ClaripyTypeError
 
 def test_bv():
@@ -29,6 +29,11 @@ def test_bv():
     f = BVV(0b11, 2)
     assert Concat(e, e, e, e) == 0b1010101010101010
     assert Concat(e,f,f) == 0b10101111
+
+    # test that __div__ is unsigned
+    assert BVV(5, 8) / BVV(254, 8) == 0
+    assert SDiv(BVV(5, 8), BVV(-2, 8)) == -2
+
 
 def test_zero_length():
     a = BVV(1, 8)

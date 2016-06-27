@@ -617,25 +617,11 @@ expression_arithmetic_operations = {
     '__pow__', '__rpow__',
     '__mod__', '__rmod__',
     '__divmod__', '__rdivmod__',
+    'SDiv', 'SMod',
     '__neg__',
     '__pos__',
     '__abs__',
 }
-
-# expression_arithmetic_operations = {
-#     'Add', 'RAdd',
-#     'Div', 'RDiv',
-#     'TrueDiv', 'RTrueDiv',
-#     'FloorDiv', 'RFloorDiv',
-#     'Mul', 'RMul',
-#     'Sub', 'RSub',
-#     'Pow', 'RPow',
-#     'Mod', 'RMod',
-#     'DivMod', 'RDivMod',
-#     'Neg',
-#     'Pos',
-#     'Abs',
-# }
 
 bin_ops = {
     '__add__', '__radd__',
@@ -709,7 +695,10 @@ backend_vsa_creation_operations = {
 
 backend_other_operations = { 'If' }
 
-backend_operations = backend_comparator_operations | backend_bitwise_operations | backend_boolean_operations | backend_bitmod_operations | backend_creation_operations | backend_other_operations
+backend_arithmetic_operations = {'SDiv', 'SMod'}
+
+backend_operations = backend_comparator_operations | backend_bitwise_operations | backend_boolean_operations | \
+                     backend_bitmod_operations | backend_creation_operations | backend_other_operations | backend_arithmetic_operations
 backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparator_operations | backend_boolean_operations | backend_bitmod_operations
 backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
 
@@ -834,6 +823,9 @@ infix = {
     'SLE': '<=s',
     'SGT': '>s',
     'SLT': '<s',
+
+    'SDiv': "/s",
+    'SMod': "%s",
 
     '__or__': '|',
     '__and__': '&',
