@@ -69,13 +69,13 @@ class RegionAnnotation(Annotation):
     @property
     def relocatable(self):
         """
-        A Region annotation annotations are relocatable in simplifications.
+        A Region annotation is not relocatable in simplifications.
 
-        :return: True
+        :return: False
         :rtype: bool
         """
 
-        return True
+        return False
 
     #
     # Public methods
@@ -90,7 +90,7 @@ class RegionAnnotation(Annotation):
         :return: The new annotation that should be applied on the new AST
         """
 
-        return self
+        raise ClaripyVSAError('RegionAnnotation is not relocatable')
 
     #
     # Overriding base methods
@@ -99,6 +99,8 @@ class RegionAnnotation(Annotation):
     def __hash__(self):
         return hash((self.region_id, self.region_base_addr, hash(self.offset)))
 
+    def __repr__(self):
+        return "<RegionAnnotation %s:%#08x>" % (self.region_id, self.offset)
 
 class ValueSet(BackendObject):
     """
