@@ -85,7 +85,6 @@ class SolverConcrete(
 #
 
 class SolverCompositeChild(
-    frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.SimplifySkipperMixin,
     frontend_mixins.ModelCacheMixin,
