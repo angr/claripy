@@ -469,6 +469,15 @@ def test_signed_symbolic():
     assert list(solver.eval(b.SMod(c), 2)) == [2**32-2]
     assert list(solver.eval(b.SMod(d), 2)) == [2**32-2]
 
+def test_arith_shift():
+    bc = claripy.backends.concrete
+    a = claripy.BVV(-4, 32)
+    assert bc.convert(a >> 1) == -2
+
+    solver = claripy.Solver()
+    a = claripy.BVS("a", 32)
+    solver.add(a == -4)
+    assert list(solver.eval(a >> 1, 2)) == [2**32-2]
 
 if __name__ == '__main__':
     test_multiarg()
@@ -488,3 +497,4 @@ if __name__ == '__main__':
     test_if_stuff()
     test_signed_concrete()
     test_signed_symbolic()
+    test_arith_shift()

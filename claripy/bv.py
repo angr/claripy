@@ -169,8 +169,9 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __rshift__(self, o):
+        # arithmetic shift uses the signed version
         if o.signed < self.bits:
-            return BVV(self.value >> o.signed, self.bits)
+            return BVV(self.signed >> o.signed, self.bits)
         else:
             return BVV(0, self.bits)
 
