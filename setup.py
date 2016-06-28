@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='claripy',
     version='4.6.6.28',
-    packages=['claripy', 'claripy.backends', 'claripy.frontends', 'claripy.vsa', 'claripy.ast'],
+    packages=['claripy', 'claripy.backends', 'claripy.frontends', 'claripy.vsa', 'claripy.ast', 'claripy.frontend_mixins'],
     install_requires=[
         'ana',
         'angr-only-z3-custom',
