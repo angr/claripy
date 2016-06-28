@@ -21,6 +21,7 @@ class BackendConcrete(Backend):
         self._op_raw['__or__'] = self._op_or
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
+        self._op_raw['__neg__'] = self._op_neg
 
     @staticmethod
     def BVV(value, size):
@@ -50,6 +51,9 @@ class BackendConcrete(Backend):
     @staticmethod
     def _op_and(*args):
         return reduce(operator.__and__, args)
+    @staticmethod
+    def _op_neg(a):
+        return a ^ (2**a.size() - 1)
 
     @staticmethod
     def BVS(ast, result=None):

@@ -18,6 +18,13 @@ def test_concrete_fp():
     f = claripy.FPV(1.0, claripy.FSORT_FLOAT)
     nose.tools.assert_equals(claripy.backends.concrete.eval(f, 2), (1.0,))
 
+def test_neg():
+    a = claripy.BVV(0, 8)
+    nose.tools.assert_equals(claripy.backends.concrete.eval(-a, 2), (255,))
+    a = claripy.BVV(123, 8)
+    nose.tools.assert_equals(claripy.backends.concrete.eval(-a, 2), (132,))
+
 if __name__ == '__main__':
     test_concrete()
     test_concrete_fp()
+    test_neg()
