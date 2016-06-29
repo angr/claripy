@@ -34,6 +34,13 @@ def test_bv():
     assert BVV(5, 8) / BVV(254, 8) == 0
     assert SDiv(BVV(5, 8), BVV(-2, 8)) == -2
 
+    zero = BVV(0, 8)
+
+    assert -a == 255
+    assert ~a == 254
+    assert -zero == 0
+    assert ~zero == 255
+
 
 def test_zero_length():
     a = BVV(1, 8)
