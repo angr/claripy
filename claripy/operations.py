@@ -839,7 +839,7 @@ infix = {
     'Concat': '..',
 }
 
-commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', }
+commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', 'And', 'Or', 'Xor', }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import ast
