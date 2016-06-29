@@ -9,6 +9,7 @@ class Solver(
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.SatCacheMixin,
     frontend_mixins.ModelCacheMixin,
     frontend_mixins.ConstraintExpansionMixin,
     frontend_mixins.SimplifyHelperMixin,
@@ -86,6 +87,7 @@ class SolverConcrete(
 
 class SolverCompositeChild(
     frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SatCacheMixin,
     frontend_mixins.SimplifySkipperMixin,
     frontend_mixins.ModelCacheMixin,
     frontends.FullFrontend
@@ -102,6 +104,7 @@ class SolverComposite(
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SatCacheMixin,
     frontend_mixins.SimplifySkipperMixin,
     frontend_mixins.SimplifyHelperMixin,
     frontend_mixins.ConstraintExpansionMixin,
