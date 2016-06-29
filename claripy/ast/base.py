@@ -165,7 +165,8 @@ class Base(ana.Storable):
         :returns:       a hash.
 
         """
-        to_hash = (op, tuple(a if type(a) in (int, long, float) else hash(a) for a in args), k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
+        args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in args)
+        to_hash = (op, args_tup, k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
