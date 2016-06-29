@@ -17,7 +17,7 @@ def raw_simple_merging(solver_type):
 
     s1.add([x == 1, y == 10])
     s2.add([x == 2, z == 20, w == 5])
-    _, sm = s1.merge([s2], m, [ 0, 1 ])
+    _, sm = s1.merge([s2], [ m == 0, m == 1 ])
 
     nose.tools.assert_equal(s1.eval(x, 1), (1,))
     nose.tools.assert_equal(s2.eval(x, 1), (2,))
@@ -51,7 +51,7 @@ def raw_simple_merging(solver_type):
     nose.tools.assert_equal(sm2.eval(w, 1), (5,))
 
     m2 = claripy.BVS("m2", 32)
-    _, smm = sm1.merge([sm2], m2, [0, 1])
+    _, smm = sm1.merge([sm2], [ m2 == 0, m2 == 1 ])
 
     smm_1 = smm.branch()
     smm_1.add(x == 1)
@@ -74,14 +74,14 @@ def raw_simple_merging(solver_type):
     sb = so.branch()
     sa.add(x == 1)
     sb.add(x == 2)
-    _, sm = sa.merge([sb], m, [0, 1])
+    _, sm = sa.merge([sb], [ m == 0, m == 1 ])
 
     smc = sm.branch()
     smd = sm.branch()
     smc.add(y == 3)
     smd.add(y == 4)
 
-    _, smm = smc.merge([smd], m2, [0, 1])
+    _, smm = smc.merge([smd], [ m2 == 0, m2 == 1 ])
     wxy = claripy.Concat(w, x, y)
 
     smm_1 = smm.branch()

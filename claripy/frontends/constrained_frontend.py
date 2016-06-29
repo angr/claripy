@@ -63,12 +63,12 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def finalize(self):
         self._finalized = True
 
-    def merge(self, others, merge_flag, merge_values):
+    def merge(self, others, merge_conditions):
         merged = self.blank_copy()
         options = []
 
-        for s, v in zip([self] + others, merge_values):
-            options.append(And(*([merge_flag == v] + s.constraints)))
+        for s,v in zip([self] + others, merge_conditions):
+            options.append(And(*([v] + s.constraints)))
         merged.add([Or(*options)])
 
         return False, merged

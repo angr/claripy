@@ -115,11 +115,11 @@ class HybridFrontend(Frontend):
         new_approximate = self._approximate_frontend.combine(other_approximate)
         return HybridFrontend(new_exact, new_approximate)
 
-    def merge(self, others, merge_flag, merge_values):
+    def merge(self, others, merge_conditions):
         other_exact = [o._exact_frontend for o in others]
         other_approximate = [o._approximate_frontend for o in others]
-        e_merged, new_exact = self._exact_frontend.merge(other_exact, merge_flag, merge_values)
-        new_approximate = self._approximate_frontend.merge(other_approximate, merge_flag, merge_values)[-1]
+        e_merged, new_exact = self._exact_frontend.merge(other_exact, merge_conditions)
+        new_approximate = self._approximate_frontend.merge(other_approximate, merge_conditions)[-1]
         return (e_merged, HybridFrontend(new_exact, new_approximate))
 
     def simplify(self):
