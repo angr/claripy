@@ -178,6 +178,9 @@ class BVV(BackendObject):
     def __invert__(self):
         return BVV(self.value ^ self.mod-1, self.bits)
 
+    def __neg__(self):
+        return BVV((-self.value) % self.mod, self.bits)
+
     #
     # Reverse bit operations
     #
