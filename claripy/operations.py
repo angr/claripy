@@ -550,6 +550,18 @@ def extract_simplifier(high, low, val):
         all_args = tuple(a[high:low] for a in val.args)
         return reduce(getattr(operator, val.op), all_args)
 
+# oh gods
+def fptobv_simplifier(the_fp):
+    if the_fp.op == 'fpToFP' and len(the_fp.args) == 2:
+        return the_fp.args[0]
+
+def fptofp_simplifier(*args):
+    if len(args) == 2 and args[0].op == 'fpToIEEEBV':
+        to_bv, sort = args
+        if sort == fp.FSORT_FLOAT and to_bv.length == 32:
+            return to_bv.args[0]
+        elif sort == fp.FSORT_DOUBLE and to_bv.length == 64:
+            return to_bv.args[0]
 
 simplifiers = {
     'Reverse': boolean_reverse_simplifier,
@@ -571,6 +583,8 @@ simplifiers = {
     '__mul__': bitwise_mul_simplifier,
     'ZeroExt': zeroext_simplifier,
     'SignExt': signext_simplifier,
+    'fpToIEEEBV': fptobv_simplifier,
+    'fpToFP': fptofp_simplifier,
 }
 
 #
@@ -843,4 +857,5 @@ commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__',
 
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import ast
+from . import fp
 from .backend_manager import backends
