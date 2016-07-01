@@ -390,6 +390,15 @@ def test_model():
     s.add(y == 1337)
     assert sorted(s.eval(x, 20)) == range(10)
 
+def test_unsatness():
+    x = claripy.BVS("x", 32)
+
+    s = claripy.Solver()
+    s.add(x == 10)
+    assert s.satisfiable()
+    s.add(claripy.false)
+    assert not s.satisfiable()
+
 if __name__ == '__main__':
     test_model()
     test_composite_discrepancy()

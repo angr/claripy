@@ -111,6 +111,12 @@ class ModelCacheMixin(object):
     # Model cleaning
     #
 
+    def simplify(self, *args, **kwargs):
+        results = super(ModelCacheMixin, self).simplify(*args, **kwargs)
+        if len(results) > 0 and any(c is false for c in results):
+            self._models.clear()
+        return results
+
     def add(self, constraints, invalidate_cache=True, **kwargs):
         if len(constraints) == 0:
             return constraints
@@ -122,6 +128,10 @@ class ModelCacheMixin(object):
 
         new_vars = any(a.variables - old_vars for a in added)
         if new_vars or invalidate_cache:
+            # shortcut for unsat
+            if any(c is false for c in constraints):
+                self._models.clear()
+
             still_valid = set(self._get_models(extra_constraints=added))
             if len(still_valid) != len(self._models):
                 self._exhausted = False
@@ -273,6 +283,6 @@ class ModelCacheMixin(object):
         return super(ModelCacheMixin, self).solution(e, v, extra_constraints=extra_constraints, **kwargs)
 
 
-from .. import backends
+from .. import backends, false
 from ..errors import UnsatError
 from ..ast import all_operations, Base
