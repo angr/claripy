@@ -434,21 +434,25 @@ class BackendZ3(Backend):
         result_ty = op_type_map[z3_op_nums[decl_num]]
         ty = type(args[-1])
 
+        if type(result_ty) is str:
+            err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
+            l.error(err)
+            raise BackendError(err)
+
         if op_name == 'If':
             # If is polymorphic and thus must be handled specially
             ty = type(args[1])
 
             a = ty('If', tuple(args), length=args[1].length)
-        else:
-            if hasattr(ty, op_name) or hasattr(_all_operations, op_name):
-                op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
-                if op.calc_length is not None:
-                    length = op.calc_length(*args)
-                    a = result_ty(op_name, tuple(args), length=length)
-                else:
-                    a = result_ty(op_name, tuple(args))
+        elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
+            op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
+            if op.calc_length is not None:
+                length = op.calc_length(*args)
+                a = result_ty(op_name, tuple(args), length=length)
             else:
                 a = result_ty(op_name, tuple(args))
+        else:
+            a = result_ty(op_name, tuple(args))
 
         self._ast_cache[h] = a
         return a
