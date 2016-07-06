@@ -472,6 +472,9 @@ def extract_simplifier(high, low, val):
     if high - low + 1 == val.size():
         return val
 
+    if (val.op == 'SignExt' or val.op == 'ZeroExt') and low == 0 and high + 1 == val.args[1].size():
+        return val.args[1]
+
     if val.op == 'ZeroExt':
         extending_bits = val.args[0]
         if extending_bits == 0:
