@@ -399,7 +399,20 @@ def test_unsatness():
     s.add(claripy.false)
     assert not s.satisfiable()
 
+def test_simplification_annotations():
+    s = claripy.Solver()
+    x = claripy.BVS("x", 32)
+
+    s.add(x > 10)
+    s.add(x > 11)
+    s.add((x > 12).annotate(claripy.SimplificationAvoidanceAnnotation()))
+
+    assert len(s.constraints) == 3
+    s.simplify()
+    assert len(s.constraints) == 2
+
 if __name__ == '__main__':
+    test_simplification_annotations()
     test_model()
     test_composite_discrepancy()
     for func, param in test_solver():

@@ -48,3 +48,16 @@ class Annotation(object):
         :return: the annotation that will be applied to `dst`
         """
         return self
+
+#
+# Some built-in annotations
+#
+
+class SimplificationAvoidanceAnnotation(Annotation):
+    @property
+    def eliminatable(self):
+        return False
+
+    @property
+    def relocatable(self):
+        return False

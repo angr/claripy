@@ -103,9 +103,18 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         return constraints
 
     def simplify(self):
-        if len(self.constraints) == 0:
+        to_simplify = [ c for c in self.constraints if not any(
+            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations
+        ) ]
+        no_simplify = [ c for c in self.constraints if any(
+            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations
+        ) ]
+
+        if len(to_simplify) == 0:
             return self.constraints
-        self.constraints = simplify(And(*self.constraints)).split(['And']) #pylint:disable=no-member
+
+        simplified = simplify(And(*self.constraints)).split(['And']) #pylint:disable=no-member
+        self.constraints = no_simplify + simplified
         return self.constraints
 
     #
@@ -138,3 +147,4 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
 from ..ast.base import simplify
 from ..ast.bool import And, Or
+from ..annotation import SimplificationAvoidanceAnnotation

@@ -39,7 +39,7 @@ from . import bv
 from . import fp
 from . import vsa
 from .fp import FSORT_DOUBLE, FSORT_FLOAT
-from .annotation import Annotation
+from .annotation import *
 
 #
 # Operations
