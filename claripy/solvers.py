@@ -3,7 +3,7 @@ from . import frontends
 from . import backends
 
 class Solver(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
@@ -19,7 +19,7 @@ class Solver(
         super(Solver, self).__init__(backend, **kwargs)
 
 class SolverCacheless(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
@@ -31,7 +31,7 @@ class SolverCacheless(
         super(SolverCacheless, self).__init__(backend, **kwargs)
 
 class SolverReplacement(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontends.ReplacementFrontend
@@ -41,7 +41,7 @@ class SolverReplacement(
         super(SolverReplacement, self).__init__(actual_frontend, **kwargs)
 
 class SolverHybrid(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
@@ -63,7 +63,7 @@ class SolverHybrid(
         super(SolverHybrid, self).__init__(exact_frontend, approximate_frontend, **kwargs)
 
 class SolverVSA(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend
@@ -72,7 +72,7 @@ class SolverVSA(
         super(SolverVSA, self).__init__(backends.vsa, **kwargs)
 
 class SolverConcrete(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontends.LightFrontend
@@ -99,7 +99,7 @@ class SolverCompositeChild(
         return "<SolverCompositeChild with %d variabels>" % len(self.variables)
 
 class SolverComposite(
-    frontend_mixins.AddListMixin,
+    frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.ConstraintFilterMixin,
