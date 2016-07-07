@@ -14,5 +14,5 @@ General usage is similar to z3:
 >>> b = claripy.BV('var_b', 32)
 >>> s = claripy.Solver()
 >>> s.add(b > a)
->>> print s.eval(b, 1)[0].value
+>>> print s.eval(b, 1)[0]
 ```
