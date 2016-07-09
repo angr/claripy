@@ -92,8 +92,10 @@ class LightFrontend(ConstrainedFrontend):
     # Merging and splitting
     #
 
-    def merge(self, others, merge_flag, merge_values):
-        return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(self, others, merge_flag, merge_values)[1]
+    def merge(self, others, merge_conditions):
+        return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(
+            self, others, merge_conditions
+        )[1]
 
 from ..errors import BackendError, ClaripyFrontendError
 from ..backend_manager import backends

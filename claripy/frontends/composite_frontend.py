@@ -373,7 +373,7 @@ class CompositeFrontend(ConstrainedFrontend):
         for s in self._solver_list:
             s.timeout = t
 
-    def merge(self, others, merge_flag, merge_values):
+    def merge(self, others, merge_conditions):
         l.debug("Merging %s with %d other solvers.", self, len(others))
         merged = self.blank_copy()
         common_solvers = self._shared_solvers(others)
@@ -403,7 +403,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
         if len(combined_noncommons):
             _, merged_noncommon = combined_noncommons[0].merge(
-                combined_noncommons[1:], merge_flag, merge_values
+                combined_noncommons[1:], merge_conditions
             )
 
             merged._owned_solvers[merged_noncommon] = True
