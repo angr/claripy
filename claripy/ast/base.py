@@ -28,6 +28,12 @@ class ASTCacheKey(object):
     def __init__(self, a):
         self.ast = a
 
+    def __hash__(self):
+        return hash(self.ast)
+
+    def __eq__(self, other):
+        return self.ast is other.ast
+
 #
 # AST variable naming
 #
