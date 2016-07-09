@@ -6,7 +6,7 @@ class EagerResolutionMixin(object):
 
         for b in backends._eager_backends:
             try:
-                return b.convert(e)
+                return b.eval(e, 1)[0]
             except BackendError:
                 pass
 
