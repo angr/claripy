@@ -276,10 +276,11 @@ class Base(ana.Storable):
     #            yield backend.convert(a)
 
     def make_like(self, *args, **kwargs):
+        all_operations = operations.leaf_operations_symbolic | {'union'}
         if 'annotations' not in kwargs: kwargs['annotations'] = self.annotations
-        if 'variables' not in kwargs and self.op in operations.leaf_operations_symbolic: kwargs['variables'] = self.variables
+        if 'variables' not in kwargs and self.op in all_operations: kwargs['variables'] = self.variables
         if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
-        if 'symbolic' not in kwargs and self.op in operations.leaf_operations_symbolic: kwargs['symbolic'] = self.symbolic
+        if 'symbolic' not in kwargs and self.op in all_operations: kwargs['symbolic'] = self.symbolic
         return type(self)(*args, **kwargs)
 
     def _rename(self, new_name):
