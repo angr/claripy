@@ -34,6 +34,9 @@ class ASTCacheKey(object):
     def __eq__(self, other):
         return self.ast is other.ast
 
+    def __repr__(self):
+        return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
+
 #
 # AST variable naming
 #
