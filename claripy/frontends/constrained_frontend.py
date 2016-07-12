@@ -113,7 +113,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         if len(to_simplify) == 0:
             return self.constraints
 
-        simplified = simplify(And(*self.constraints)).split(['And']) #pylint:disable=no-member
+        simplified = simplify(And(*to_simplify)).split(['And']) #pylint:disable=no-member
         self.constraints = no_simplify + simplified
         return self.constraints
 
