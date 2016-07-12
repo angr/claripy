@@ -373,7 +373,17 @@ class CompositeFrontend(ConstrainedFrontend):
         for s in self._solver_list:
             s.timeout = t
 
-    def merge(self, others, merge_conditions):
+    @staticmethod
+    def _merge_with_ancestor(common_ancestor, merge_conditions):
+        merged = common_ancestor.branch()
+        merged.add([Or(*merge_conditions)])
+        #import ipdb; ipdb.set_trace()
+        return True, merged
+
+    def merge(self, others, merge_conditions, common_ancestor=None):
+        if common_ancestor is not None:
+            return self._merge_with_ancestor(common_ancestor, merge_conditions)
+
         l.debug("Merging %s with %d other solvers.", self, len(others))
         merged = self.blank_copy()
         common_solvers = self._shared_solvers(others)
@@ -409,6 +419,9 @@ class CompositeFrontend(ConstrainedFrontend):
             merged._owned_solvers[merged_noncommon] = True
             merged._store_child(merged_noncommon)
 
+        merged.constraints = list(
+            itertools.chain.from_iterable(a.constraints for a in merged._solver_list)
+        )
         return True, merged
 
     def combine(self, others):
@@ -422,6 +435,7 @@ class CompositeFrontend(ConstrainedFrontend):
         return [ s.branch() for s in self._solver_list ]
 
 from ..ast import Base
+from ..ast.bool import Or
 from .. import backends
 from ..errors import BackendError, UnsatError
 from ..frontend_mixins.model_cache_mixin import ModelCacheMixin

@@ -411,7 +411,37 @@ def test_simplification_annotations():
     s.simplify()
     assert len(s.constraints) == 2
 
+def raw_ancestor_merge(solver):
+    s = solver()
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+
+    s.add(x == 10)
+    s.add(y == x)
+
+    p = s.branch()
+    q = s.branch()
+    p.add(z == 1)
+    q.add(z == 2)
+
+    r = p.merge([q], [claripy.true, claripy.true])[-1]
+    t = p.merge([q], [p.constraints[-1], q.constraints[-1]], common_ancestor=s)[-1]
+
+    if not isinstance(r, claripy.frontends.CompositeFrontend):
+        assert len(r.constraints) == 1
+    assert len(t.constraints) == 3
+    assert t.constraints[-1].variables == z.variables
+    assert t.constraints[-1].op == 'Or'
+    assert len(t.constraints[-1].args) == 2
+
+def test_ancestor_merge():
+    for s in solver_list:
+        yield raw_ancestor_merge, s
+
 if __name__ == '__main__':
+    for func,param in test_ancestor_merge():
+        func(param)
     test_simplification_annotations()
     test_model()
     test_composite_discrepancy()

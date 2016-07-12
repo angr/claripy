@@ -53,7 +53,7 @@ class Frontend(ana.Storable):
     def finalize(self):
         raise NotImplementedError("finalize() is not implemented")
 
-    def merge(self, others, merge_conditions):
+    def merge(self, others, merge_conditions, common_ancestor=None):
         raise NotImplementedError("merge() is not implemented")
 
     def combine(self, others):
