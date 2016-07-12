@@ -86,7 +86,7 @@ def _raw_caller(f):
 # And the (ugh) magic
 #
 
-from ..backend import Backend
+from . import Backend
 class BackendZ3(Backend):
     _split_on = { 'And', 'Or' }
 

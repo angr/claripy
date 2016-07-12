@@ -14,6 +14,7 @@ from . import ops as _all_operations
 
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
+from .backends import Backend
 
 #
 # connect to ANA
@@ -65,7 +66,6 @@ def BV(name, size, explicit_name=None): #pylint:disable=function-redefined
 # Initialize the backends
 #
 
-from .backend import Backend
 from . import backend_manager as _backend_manager
 _backend_manager.backends._register_backend(_backends_module.BackendConcrete(), 'concrete', True, True)
 _backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa', False, False)

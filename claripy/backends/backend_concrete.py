@@ -2,7 +2,7 @@ import logging
 import operator
 l = logging.getLogger("claripy.backends.backend_concrete")
 
-from ..backend import BackendError, Backend
+from . import BackendError, Backend
 
 class BackendConcrete(Backend):
     def __init__(self):

@@ -4,7 +4,7 @@ import operator
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
-from ..backend import Backend, BackendError
+from . import Backend, BackendError
 from ..vsa import RegionAnnotation
 
 def arg_filter(f):
