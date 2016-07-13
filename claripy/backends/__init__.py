@@ -143,9 +143,10 @@ class Backend(object):
         :return:        A backend object.
         """
         if isinstance(expr, Base):
-            # otherwise, if it's cached in the backend, use it
-            try: return self._object_cache[expr._cache_key]
-            except KeyError: pass
+            # if it's cached in the backend, use it
+            if self._cache_objects:
+                try: return self._object_cache[expr._cache_key]
+                except KeyError: pass
 
             # if we've errroed on this in the past, give up
             if self in expr._errored:
@@ -171,7 +172,8 @@ class Backend(object):
             for a in expr.annotations:
                 r = self.apply_annotation(r, a)
 
-            self._object_cache[expr._cache_key] = r
+            if self._cache_objects:
+                self._object_cache[expr._cache_key] = r
             return r
         else:
             #l.debug('converting non-expr')

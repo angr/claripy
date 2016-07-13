@@ -21,6 +21,8 @@ class BackendConcrete(Backend):
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
 
+        self._cache_objects = False
+
     @staticmethod
     def BVV(value, size):
         if value is None:
