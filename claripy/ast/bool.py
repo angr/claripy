@@ -91,6 +91,9 @@ def If(*args):
     else:
         raise ClaripyTypeError("true/false clause of If must have bearable types")
 
+    if isinstance(args[1], Bits) and isinstance(args[2], Bits) and args[1].length != args[2].length:
+        raise ClaripyTypeError("sized arguments to If must have the same length")
+
     if not isinstance(args[1], ty):
         if hasattr(ty, '_from_' + type(args[1]).__name__):
             convert = getattr(ty, '_from_' + type(args[1]).__name__)
