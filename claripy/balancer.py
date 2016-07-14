@@ -527,8 +527,8 @@ class Balancer(object):
         right_min = self._min(truism.args[1], signed=not is_unsigned)
         right_max = self._max(truism.args[1], signed=not is_unsigned)
 
-        bound_max = right_max if is_equal else (right_max-1)
-        bound_min = right_min if is_equal else (right_min-1)
+        bound_max = right_max if is_equal else (right_max-1 if is_lt else right_max+1)
+        bound_min = right_min if is_equal else (right_min-1 if is_lt else right_min+1)
 
         if is_lt and bound_max < int_min:
             # if the bound max is negative and we're unsigned less than, we're fucked
