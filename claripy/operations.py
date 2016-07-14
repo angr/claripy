@@ -362,6 +362,10 @@ def _flatten_simplifier(op_name, *args):
     if not any(isinstance(a, ast.Base) and a.op == op_name for a in args):
         return
 
+    # we cannot further flatten if any top-level argument has non-relocatable annotaitons
+    if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
+        return
+
     new_args = tuple(itertools.chain.from_iterable(
         (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
     ))
