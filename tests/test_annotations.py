@@ -104,6 +104,15 @@ def test_annotations():
 
     assert claripy.backends.z3.convert(x).eq(claripy.backends.z3.convert(x3))
 
+    const = claripy.BVV(1, 32)
+    consta = const.annotate(AnnotationB('a', 0))
+    const1 = consta + 1
+    const1a = const1.annotate(AnnotationB('b', 1))
+    const2 = const1a + 1
+    # const2 should be (const1a + 1), instead of (1 + 1 + 1)
+    # the flatten simplifier for __add__ should not be applied as AnnotationB is not relocatable (and not eliminatable)
+    assert const2.depth == 3
+
 def test_eagerness():
     x = claripy.BVV(10, 32).annotate(AnnotationD())
     y = x + 1
