@@ -4,7 +4,7 @@ import operator
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
-from ..backend import Backend, BackendError
+from . import Backend, BackendError
 from ..vsa import RegionAnnotation
 
 def arg_filter(f):
@@ -33,7 +33,7 @@ def normalize_arg_order(f):
 
 def normalize_reversed_arguments(f):
     @functools.wraps(f)
-    def normalizer(self, ast, result=None):
+    def normalizer(self, ast):
         arg_reversed = []
         raw_args = []
         for i in xrange(len(ast.args)):
@@ -57,7 +57,7 @@ def normalize_reversed_arguments(f):
             raw_args[i] = self.convert(raw_args[i])
 
         normalized = ast.swap_args(raw_args)
-        ret = f(self, normalized, result=result)
+        ret = f(self, normalized)
 
         # inner_i = I(args[0]._claripy, ret, variables=variables)
         if any_reversed_arg:
@@ -111,10 +111,10 @@ class BackendVSA(Backend):
     def _op_and(*args):
         return reduce(operator.__and__, args)
 
-    def convert(self, expr, result=None):
-        return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr, result=result)
+    def convert(self, expr):
+        return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr)
 
-    def _convert(self, a, result=None):
+    def _convert(self, a):
         if type(a) in { int, long }: #pylint:disable=unidiomatic-typecheck
             return a
         if type(a) is bool:
@@ -127,7 +127,7 @@ class BackendVSA(Backend):
         # Not supported
         raise BackendError()
 
-    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
             return expr.eval(n)
         elif isinstance(expr, ValueSet):
@@ -142,7 +142,7 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Unsupported type %s' % type(expr))
 
-    def _min(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _min(self, expr, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
             if expr.is_top:
                 # TODO: Return
@@ -152,7 +152,7 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def _max(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _max(self, expr, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(expr, StridedInterval):
             if expr.is_top:
                 # TODO:
@@ -163,7 +163,7 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Unsupported expr type %s' % type(expr))
 
-    def _solution(self, obj, v, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _solution(self, obj, v, extra_constraints=(), solver=None, model_callback=None):
         if isinstance(obj, BoolResult):
             return len(set(v.value) & set(obj.value)) > 0
 
@@ -178,16 +178,16 @@ class BackendVSA(Backend):
 
         raise NotImplementedError(type(obj).__name__)
 
-    def _has_true(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _has_true(self, o, extra_constraints=(), solver=None, model_callback=None):
         return BoolResult.has_true(o)
 
-    def _has_false(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _has_false(self, o, extra_constraints=(), solver=None, model_callback=None):
         return BoolResult.has_false(o)
 
-    def _is_true(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _is_true(self, o, extra_constraints=(), solver=None, model_callback=None):
         return BoolResult.is_true(o)
 
-    def _is_false(self, o, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _is_false(self, o, extra_constraints=(), solver=None, model_callback=None):
         return BoolResult.is_false(o)
 
     #
@@ -197,12 +197,12 @@ class BackendVSA(Backend):
     def simplify(self, e):
         raise BackendError('nope')
 
-    def _identical(self, a, b, result=None):
+    def _identical(self, a, b):
         if type(a) != type(b):
             return False
         return a.identical(b)
 
-    def _unique(self, obj, result=None): #pylint:disable=unused-argument,no-self-use
+    def _unique(self, obj): #pylint:disable=unused-argument,no-self-use
         if isinstance(obj, StridedInterval):
             return obj.unique
         elif isinstance(obj, ValueSet):
@@ -210,10 +210,10 @@ class BackendVSA(Backend):
         else:
             raise BackendError('Not supported type of operand %s' % type(obj))
 
-    def _cardinality(self, a, result=None): #pylint:disable=unused-argument,no-self-use
+    def _cardinality(self, a): #pylint:disable=unused-argument,no-self-use
         return a.cardinality
 
-    def name(self, a, result=None):
+    def name(self, a):
         if isinstance(a, StridedInterval):
             return a.name
 
@@ -243,14 +243,14 @@ class BackendVSA(Backend):
 
         return bo.apply_annotation(annotation)
 
-    def BVV(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+    def BVV(self, ast): #pylint:disable=unused-argument,no-self-use
         if ast.args[0] is None:
             return StridedInterval.empty(ast.args[1])
         else:
             return CreateStridedInterval(bits=ast.args[1], stride=0, lower_bound=ast.args[0], upper_bound=ast.args[0])
 
     @staticmethod
-    def BoolV(ast, result=None): #pylint:disable=unused-argument
+    def BoolV(ast): #pylint:disable=unused-argument
         return TrueResult() if ast.args[0] else FalseResult()
 
     @staticmethod
@@ -302,7 +302,7 @@ class BackendVSA(Backend):
         return a.SGE(b)
 
     @staticmethod
-    def BVS(ast, result=None): #pylint:disable=unused-argument
+    def BVS(ast): #pylint:disable=unused-argument
         size = ast.size()
         name, mn, mx, stride, uninitialized, discrete_set, max_card = ast.args
         return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride,
@@ -348,7 +348,7 @@ class BackendVSA(Backend):
         return ret
 
     @arg_filter
-    def _size(self, arg, result=None):
+    def _size(self, arg):
         if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
             return len(arg)
         else:
@@ -395,7 +395,7 @@ class BackendVSA(Backend):
         return arg.reverse()
 
     @normalize_reversed_arguments
-    def union(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+    def union(self, ast): #pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(ast.args))
 
@@ -407,7 +407,7 @@ class BackendVSA(Backend):
         return ret
 
     @normalize_reversed_arguments
-    def intersection(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+    def intersection(self, ast): #pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(ast.args))
 
@@ -421,7 +421,7 @@ class BackendVSA(Backend):
         return ret
 
     @normalize_reversed_arguments
-    def widen(self, ast, result=None): #pylint:disable=unused-argument,no-self-use
+    def widen(self, ast): #pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(ast.args))
 

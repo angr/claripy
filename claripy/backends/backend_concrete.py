@@ -2,7 +2,7 @@ import logging
 import operator
 l = logging.getLogger("claripy.backends.backend_concrete")
 
-from ..backend import BackendError, Backend
+from . import BackendError, Backend
 
 class BackendConcrete(Backend):
     def __init__(self):
@@ -10,7 +10,6 @@ class BackendConcrete(Backend):
         self._make_raw_ops(set(backend_operations) - { 'If' }, op_module=bv)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw['If'] = self._If
-        self._op_expr['BVS'] = self.BVS
         self._op_raw['BVV'] = self.BVV
         self._op_raw['FPV'] = self.FPV
 
@@ -21,6 +20,8 @@ class BackendConcrete(Backend):
         self._op_raw['__or__'] = self._op_or
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
+
+        self._cache_objects = False
 
     @staticmethod
     def BVV(value, size):
@@ -51,29 +52,13 @@ class BackendConcrete(Backend):
     def _op_and(*args):
         return reduce(operator.__and__, args)
 
-    @staticmethod
-    def BVS(ast, result=None):
-        name, mn, mx, stride, uninitialized, _, _ = ast.args #pylint:disable=unused-variable
-
-        if mn is not None and mn == mx:
-            return bv.BVV(mx, ast.length)
-
-        if result is None:
-            l.debug("BackendConcrete can only handle BitVec when we are given a model")
-            raise BackendError("BackendConcrete can only handle BitVec when we are given a model")
-        if name not in result.model:
-            l.debug("BackendConcrete needs variable %s in the model", name)
-            raise BackendError("BackendConcrete needs variable %s in the model" % name)
-        else:
-            return bv.BVV(result.model[name], ast.length)
-
-    def _If(self, b, t, f, result=None): #pylint:disable=no-self-use,unused-argument
+    def _If(self, b, t, f): #pylint:disable=no-self-use,unused-argument
         if not isinstance(b, bool):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
         else:
             return t if b else f
 
-    def _size(self, e, result=None):
+    def _size(self, e):
         if type(e) in { bool, long, int }:
             return None
         elif type(e) in { bv.BVV }:
@@ -83,16 +68,16 @@ class BackendConcrete(Backend):
         else:
             raise BackendError("can't get size of type %s" % type(e))
 
-    def _name(self, e, result=None): #pylint:disable=unused-argument,no-self-use
+    def _name(self, e): #pylint:disable=unused-argument,no-self-use
         return None
 
-    def _identical(self, a, b, result=None):
+    def _identical(self, a, b):
         if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
             return False
         else:
             return a == b
 
-    def _convert(self, a, result=None):
+    def _convert(self, a):
         if type(a) in { int, long, float, bool, str, bv.BVV, fp.FPV, fp.RM, fp.FSort }:
             return a
         raise BackendError("can't handle AST of type %s" % type(a))
@@ -110,7 +95,7 @@ class BackendConcrete(Backend):
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
-    def _cardinality(self, b, result=None):
+    def _cardinality(self, b):
         # if we got here, it's a cardinality of 1
         return 1
 
@@ -129,41 +114,41 @@ class BackendConcrete(Backend):
         elif type(expr) in (int, long):
             return expr
 
-    def _eval(self, expr, n, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
 
         return (self._to_primitive(expr),)
 
-    def _batch_eval(self, exprs, n, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
 
         return [ tuple(self._to_primitive(ex) for ex in exprs) ]
 
-    def _max(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _max(self, expr, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self._to_primitive(expr)
 
-    def _min(self, expr, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _min(self, expr, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self._to_primitive(expr)
 
-    def _solution(self, expr, v, result=None, extra_constraints=(), solver=None, model_callback=None):
+    def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
-        return self.convert(expr, result=result) == v
+        return self.convert(expr) == v
 
     #pylint:disable=singleton-comparison
-    def _is_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == True
-    def _is_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == False
-    def _has_true(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == True
-    def _has_false(self, e, extra_constraints=(), result=None, solver=None, model_callback=None):
+    def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == False
 
 from ..operations import backend_operations, backend_fp_operations

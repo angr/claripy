@@ -24,18 +24,6 @@ def _inner_repr(a, **kwargs):
     else:
         return repr(a)
 
-class ASTCacheKey(object):
-    def __init__(self, a):
-        self.ast = a
-
-    def __hash__(self):
-        return hash(self.ast)
-
-    def __eq__(self, other):
-        return self.ast is other.ast
-
-    def __repr__(self):
-        return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
 
 #
 # AST variable naming
@@ -50,6 +38,54 @@ def _make_name(name, size, explicit_name=False, prefix=""):
     else:
         return name
 
+class ASTCacheKey(object):
+    def __init__(self, op, args, symbolic, variables, length=None, annotations=None):
+        self.op = op
+        self.args = args
+        self.symbolic = symbolic
+        self.variables = variables
+        self.length = length
+        self.annotations = annotations
+        self.ast = None
+        self._hash = None
+
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash(self._cache_hashables())
+        return self._hash
+
+    def _cache_hashables(self):
+        return (
+            self.op,
+            tuple((a.cache_key if type(a) is Base else a) for a in self.args),
+            self.symbolic,
+            self.variables,
+            self.length,
+            self.annotations
+        )
+
+    def __eq__(self, o):
+        if type(o) is ASTCacheKey:
+            return self.ast is o.ast
+        else:
+            return (
+                self.op == o[0] and
+                self.length == o[4] and
+                len(self.args) == len(o[1]) and
+                len(self.annotations) == len(o[5]) and
+                all((
+                    a == b if type(a) in (int, long, str, float) and type(b) in (int, long, str, float)
+                    else a is b
+                ) for a,b in zip(self.args, o[1])) and
+                all(a is b for a,b in zip(self.annotations, o[5])) and
+                self.variables == o[3] and self.symbolic == o[2]
+            )
+
+    def __repr__(self):
+        return '<Data %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
+
+cache_hit = 0
+cache_miss = 0
 
 class Base(ana.Storable):
     """
@@ -70,9 +106,14 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     """
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
-                  '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
+    __slots__ = [
+        'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
+        '_cache_key', '_errored', '_eager_backends', 'length', '_excavated',
+        '_burrowed', '_uninitialized', '_uc_alloc_depth', 'annotations',
+        'simplifiable', '_uneliminatable_annotations',
+        '_relocatable_annotations'
+    ]
+
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -100,6 +141,8 @@ class Base(ana.Storable):
         :param eager_backends:  A list of backends with which to attempt eager evaluation
         :param annotations:     A frozenset of annotations applied onto this AST.
         """
+
+        global cache_hit, cache_miss
 
         #if any(isinstance(a, BackendObject) for a in args):
         #   raise Exception('asdf')
@@ -146,13 +189,18 @@ class Base(ana.Storable):
         if 'annotations' not in kwargs:
             kwargs['annotations'] = ()
 
-        h = Base._calc_hash(op, a_args, kwargs)
-        self = cls._hash_cache.get(h, None)
+        cache_key = (
+            op, a_args, kwargs['symbolic'], kwargs['variables'],
+            kwargs.get('length', None), kwargs['annotations']
+        )
+        self = cls._hash_cache.get(cache_key, None)
         if self is None:
+            cache_miss += 1
             self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
             self.__a_init__(op, a_args, **kwargs)
-            self._hash = h
-            cls._hash_cache[h] = self
+            cls._hash_cache[self.cache_key] = self
+        else:
+            cache_hit += 1
         # else:
         #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
         #        raise Exception("CRAP -- hash collision")
@@ -162,29 +210,26 @@ class Base(ana.Storable):
     def __init__(self, *args, **kwargs):
         pass
 
-    @staticmethod
-    def _calc_hash(op, args, k):
+    def _calc_hash(self):
         """
-        Calculates the hash of an AST, given the operation, args, and kwargs.
-
-        :param op:      The operation.
-        :param args:    The arguments to the operation.
-        :param kwargs:  A dict including the 'symbolic', 'variables', and 'length' items.
-
+        Calculates the hash of the AST.
         :returns:       a hash.
 
         """
-        args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in args)
-        to_hash = (op, args_tup, k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
+        args_tup = tuple(
+            long(a) if type(a) is int else a if type(a) in (long, float) else hash(a)
+            for a in self.args
+        )
+        to_hash = (
+            self.op, args_tup, self.symbolic, self.variables,
+            str(self.length), hash(self.annotations)
+        )
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
         return md5_unpacker.unpack(hd)[0] # 64 bits
-
-    def _get_hashables(self):
-        return self.op, tuple(str(a) if type(a) in (int, long, float) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
@@ -197,11 +242,13 @@ class Base(ana.Storable):
         self.variables = frozenset(variables)
         self.symbolic = symbolic
         self._eager_backends = eager_backends
+        self._hash = None
+        self._cache_key = ASTCacheKey(op, args, symbolic, self.variables, length, annotations)
+        self._cache_key.ast = self
 
         self._errored = errored if errored is not None else set()
 
         self._simplified = simplified
-        self._cache_key = ASTCacheKey(self)
         self._excavated = None
         self._burrowed = None
 
@@ -239,7 +286,7 @@ class Base(ana.Storable):
         """
         u = getattr(self, '_ana_uuid', None)
         if u is None:
-            u = str(self._hash) if uuid is None else uuid
+            u = str(hash(self)) if uuid is None else uuid
             ana.get_dl().uuid_cache[u] = self
             setattr(self, '_ana_uuid', u)
         return u
@@ -249,6 +296,8 @@ class Base(ana.Storable):
         return self.ana_uuid
 
     def __hash__(self):
+        if self._hash is None:
+            self._hash = self._calc_hash() #pylint:disable=attribute-defined-outside-init
         return self._hash
 
     @property
@@ -271,7 +320,7 @@ class Base(ana.Storable):
         """
         op, args, length, variables, symbolic, h, annotations = state
         Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
-        self._hash = h
+        self._hash = h #pylint:disable=attribute-defined-outside-init
         Base._hash_cache[h] = self
 
     #
