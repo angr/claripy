@@ -134,7 +134,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         ) = s
 
         super(ReplacementFrontend, self)._ana_setstate(base_state)
-        self._replacement_cache = weakref.WeakKeyDictionary()
+        self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     #
     # Replacement solving
