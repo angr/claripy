@@ -42,7 +42,10 @@ class Balancer(object):
             mx = self._upper_bounds.get(k, max_int)
             bound_si = BVS('bound', len(k.ast), min=mn, max=mx)
             l.debug("Yielding bound %s for %s.", bound_si, k.ast)
-            yield (k.ast, k.ast.intersection(bound_si))
+            if k.ast.op == 'Reverse':
+                yield (k.ast.args[0], k.ast.intersection(bound_si).reversed)
+            else:
+                yield (k.ast, k.ast.intersection(bound_si))
 
     def _add_lower_bound(self, o, b):
         l.debug("Adding lower bound %s for %s.", b, o)
