@@ -31,42 +31,23 @@ def normalize_arg_order(f):
 
     return normalizer
 
-def normalize_reversed_arguments(f):
+def convert_args(f):
     @functools.wraps(f)
-    def normalizer(self, ast):
-        arg_reversed = []
+    def converter(self, ast):
         raw_args = []
         for i in xrange(len(ast.args)):
-            if isinstance(ast.args[i], Base) and \
-                            type(self.convert(ast.args[i])) in { #pylint:disable=unidiomatic-typecheck
-                                                    StridedInterval,
-                                                    DiscreteStridedIntervalSet,
-                                                    ValueSet
-            }:
-                if self.convert(ast.args[i]).reversed:
-                    arg_reversed.append(True)
-                    raw_args.append(ast.args[i].reversed)
-                    continue
-
             # It's not reversed
-            arg_reversed.append(False)
             raw_args.append(ast.args[i])
 
-        any_reversed_arg = any(arg_reversed)
         for i in xrange(len(raw_args)):
             raw_args[i] = self.convert(raw_args[i])
 
         normalized = ast.swap_args(raw_args)
         ret = f(self, normalized)
 
-        # inner_i = I(args[0]._claripy, ret, variables=variables)
-        if any_reversed_arg:
-            return ret.reverse()
-            #ret = A(args[0]._claripy, 'Reverse', (inner_i,), variables=variables, collapsible=False)
-
         return ret
 
-    return normalizer
+    return converter
 
 class BackendVSA(Backend):
     def __init__(self):
@@ -394,7 +375,7 @@ class BackendVSA(Backend):
 
         return arg.reverse()
 
-    @normalize_reversed_arguments
+    @convert_args
     def union(self, ast): #pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.union().' % len(ast.args))
@@ -406,7 +387,7 @@ class BackendVSA(Backend):
 
         return ret
 
-    @normalize_reversed_arguments
+    @convert_args
     def intersection(self, ast): #pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.intersection().' % len(ast.args))
@@ -420,7 +401,7 @@ class BackendVSA(Backend):
                 ret = ret.intersection(arg)
         return ret
 
-    @normalize_reversed_arguments
+    @convert_args
     def widen(self, ast): #pylint:disable=unused-argument,no-self-use
         if len(ast.args) != 2:
             raise BackendError('Incorrect number of arguments (%d) passed to BackendVSA.widen().' % len(ast.args))
