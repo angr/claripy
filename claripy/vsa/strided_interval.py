@@ -80,6 +80,11 @@ def normalize_types(f):
         self_reversed = False
 
         if self._reversed != o._reversed:
+            if self.uninitialized:
+                # we can arbitrarily reverse `self` without any penalty
+                self = self._reverse()
+
+        if self._reversed != o._reversed:
             # We are working on two instances that have different endianness!
             # Make sure the `reversed` property of self is kept the same after operation
             if self._reversed:
