@@ -820,12 +820,68 @@ class BackendZ3(Backend):
         return z3.If(i, t, e, ctx=self._context)
 
     @condom
+    def _op_raw_fpAbs(self, a):
+        return z3.fpAbs(a, ctx=self._context)
+
+    @condom
+    def _op_raw_fpNeg(self, a):
+        return z3.fpNeg(a, ctx=self._context)
+
+    @condom
+    def _op_raw_fpAdd(self, rm, a, b):
+        return z3.fpAdd(rm, a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpSub(self, rm, a, b):
+        return z3.fpSub(rm, a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpMul(self, rm, a, b):
+        return z3.fpMul(rm, a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpDiv(self, rm, a, b):
+        return z3.fpDiv(rm, a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpLT(self, a, b):
+        return z3.fpLT(a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpLEQ(self, a, b):
+        return z3.fpLEQ(a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpGT(self, a, b):
+        return z3.fpGT(a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpGEQ(self, a, b):
+        return z3.fpGEQ(a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpEQ(self, a, b):
+        return z3.fpEQ(a, b, ctx=self._context)
+
+    @condom
+    def _op_raw_fpFP(self, sgn, exp, sig):
+        return z3.fpFP(sgn, exp, sig, ctx=self._context)
+
+    @condom
     def _op_raw_fpToSBV(self, rm, fp, bv_len):
         return z3.fpToSBV(rm, fp, z3.BitVecSort(bv_len, ctx=self._context))
 
     @condom
     def _op_raw_fpToUBV(self, rm, fp, bv_len):
         return z3.fpToUBV(rm, fp, z3.BitVecSort(bv_len, ctx=self._context))
+
+    @condom
+    def _op_raw_fpToFP(self, a1, a2=None, a3=None):
+        return z3.fpToFP(a1, a2=a2, a3=a3, ctx=self._context)
+
+    @condom
+    def _op_raw_fpToIEEEBV(self, x):
+        return z3.fpToIEEEBV(x, ctx=self._context)
 
     # and these do not
     _op_raw_Concat = _raw_caller(z3.Concat)
@@ -840,20 +896,6 @@ class BackendZ3(Backend):
     _op_raw_ULT = _raw_caller(z3.ULT)
     _op_raw_ZeroExt = _raw_caller(z3.ZeroExt)
     _op_raw_SMod = _raw_caller(z3.SRem)
-    _op_raw_fpAbs = _raw_caller(z3.fpAbs)
-    _op_raw_fpAdd = _raw_caller(z3.fpAdd)
-    _op_raw_fpDiv = _raw_caller(z3.fpDiv)
-    _op_raw_fpEQ = _raw_caller(z3.fpEQ)
-    _op_raw_fpFP = _raw_caller(z3.fpFP)
-    _op_raw_fpGEQ = _raw_caller(z3.fpGEQ)
-    _op_raw_fpGT = _raw_caller(z3.fpGT)
-    _op_raw_fpLEQ = _raw_caller(z3.fpLEQ)
-    _op_raw_fpLT = _raw_caller(z3.fpLT)
-    _op_raw_fpMul = _raw_caller(z3.fpMul)
-    _op_raw_fpNeg = _raw_caller(z3.fpNeg)
-    _op_raw_fpSub = _raw_caller(z3.fpSub)
-    _op_raw_fpToFP = _raw_caller(z3.fpToFP)
-    _op_raw_fpToIEEEBV = _raw_caller(z3.fpToIEEEBV)
 
     @staticmethod
     @condom
