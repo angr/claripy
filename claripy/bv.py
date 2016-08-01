@@ -1,5 +1,5 @@
 import functools
-from .errors import ClaripyOperationError, ClaripyTypeError
+from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
 
 def compare_bits(f):
@@ -103,12 +103,18 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __mod__(self, o):
-        return BVV(self.value % o.value, self.bits)
+        try:
+            return BVV(self.value % o.value, self.bits)
+        except ZeroDivisionError:
+            raise ClaripyZeroDivisionError()
 
     @normalize_types
     @compare_bits
     def __div__(self, o):
-        return BVV(self.value / o.value, self.bits)
+        try:
+            return BVV(self.value / o.value, self.bits)
+        except ZeroDivisionError:
+            raise ClaripyZeroDivisionError()
 
     #
     # Reverse arithmetic stuff

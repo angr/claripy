@@ -52,3 +52,6 @@ class ClaripyReplacementError(ClaripyASTError):
 
 class ClaripyRecursionError(ClaripyOperationError):
     pass
+
+class ClaripyZeroDivisionError(ClaripyOperationError, ZeroDivisionError):
+    pass
