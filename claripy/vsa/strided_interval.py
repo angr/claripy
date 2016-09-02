@@ -2090,6 +2090,9 @@ class StridedInterval(BackendObject):
                 m = (2 ** w) - 1
                 low_bound = WarrenMethods.min_or(u.lower_bound & (~mask & m), u.upper_bound & (~mask & m), v.lower_bound & (~mask & m), v.upper_bound & (~mask & m), w)
                 upper_bound = WarrenMethods.max_or(u.lower_bound & (~mask & m), u.upper_bound & (~mask & m), v.lower_bound & (~mask & m), v.upper_bound & (~mask & m), w)
+                if low_bound == upper_bound:
+                    new_stride = 0
+
                 new_interval = StridedInterval(lower_bound=((low_bound & (~mask & m)) | r), upper_bound=((upper_bound & (~mask & m)) | r), bits=w, stride=new_stride)
                 result_interval.append(new_interval)
 
