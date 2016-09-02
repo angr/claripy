@@ -12,8 +12,8 @@ def reversed_processor(f):
     def processor(self, *args, **kwargs):
         if self._reversed:
             # Reverse it for real. We have to accept the precision penalty.
-            reversed = self._reverse()
-            return f(reversed, *args, **kwargs)
+            reversed_thing = self._reverse()
+            return f(reversed_thing, *args, **kwargs)
         return f(self, *args, **kwargs)
 
     return processor
@@ -1879,7 +1879,7 @@ class StridedInterval(BackendObject):
             return b.lower_bound == a.lower_bound and a.is_integer
 
         if b._wrapped_member(a.lower_bound) and b._wrapped_member(a.upper_bound):
-            if (b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound):
+            if b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound:
                 return True
             if (not a._wrapped_member(b.lower_bound) or not a._wrapped_member(b.upper_bound)) and \
                             ((a.lower_bound - b.lower_bound) % a.stride) == 0 and (a.stride % b.stride) == 0:
@@ -1918,7 +1918,8 @@ class StridedInterval(BackendObject):
 
         # optimization
         # case: SI<16>0xff[0x0, 0xff] + 3
-        """if self.is_top and b.is_integer:
+        """
+        if self.is_top and b.is_integer:
             si = self.copy()
             si.lower_bound = b.lower_bound
             return si
@@ -1926,7 +1927,8 @@ class StridedInterval(BackendObject):
             si = b.copy()
             si.lower_bound = self.lower_bound
             return si
-        """ #FIXME
+        """
+        #FIXME
 
         overflow = self._wrapped_overflow_add(self, b)
         if overflow:
@@ -2380,7 +2382,7 @@ class StridedInterval(BackendObject):
             else:
                 ntz = StridedInterval._ntz(self.stride)
 
-                if (tok > ntz):
+                if tok > ntz:
                     new_lower = self.lower_bound & ((2 ** ntz) - 1)
                     stride = 2 ** ntz
                     ret = self.top(tok, uninitialized=self.uninitialized)
@@ -3103,7 +3105,7 @@ class StridedInterval(BackendObject):
         is used to resolve ka and kb, and finally to solve the above equation and get the minimum shared integer.
         """
         x, y = StridedInterval.diop_natural_solution_linear(-(b-d), a, -c)
-        if a == None or b == None:
+        if a is None or b is None:
             return None
         first_integer = x * a + b
         assert first_integer == y*c + d
