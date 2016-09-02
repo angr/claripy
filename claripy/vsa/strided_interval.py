@@ -1429,7 +1429,7 @@ class StridedInterval(BackendObject):
 
         w = s.bits
         # case 1
-        if (not t._surrounds(b)) and (not s._surrounds(c)):
+        if (not t._surrounds_member(b)) and (not s._surrounds_member(c)):
             #FIXME: maybe we can do better here and to not fix the stride to 1
             #FIXME: found the first common integer for more precision
             return StridedInterval(lower_bound=c, upper_bound=b, bits=w, stride=1).complement
@@ -1819,9 +1819,37 @@ class StridedInterval(BackendObject):
             return (v - s.lower_bound) / float(s.stride) == ((v - s.lower_bound) / s.stride)
         return False
 
-    def _surrounds(self, v):
+    def _surrounds_member(self, v):
         s = self
         return self._lex_lte(v - s.lower_bound, s.upper_bound - s.lower_bound, s.bits)
+
+    def _surrounds(self, b):
+        """
+            Perform a wrapped LTE comparison only considering the SI bounds
+
+            :param a: The first operand
+            :param b: The second operand
+            :return: True if a <= b, False otherwise
+            """
+
+        a = self
+        if a.is_empty:
+            return True
+
+        if a.is_top and b.is_top:
+            return True
+
+        elif a.is_top:
+            return False
+
+        elif b.is_top:
+            return True
+
+        if b._surrounds_member(a.lower_bound) and b._surrounds_member(a.upper_bound):
+            if ((b.lower_bound == a.lower_bound and b.upper_bound == a.upper_bound)
+                or not a._surrounds_member(b.lower_bound) or not a._surrounds_member(b.upper_bound)):
+                return True
+        return False
 
     def _wrapped_lte(self, b):
         """
@@ -3101,7 +3129,6 @@ class StridedInterval(BackendObject):
             return (StridedInterval.empty(self.bits), )
 
         assert self.bits == b.bits
-
         if self.is_integer and b.is_integer:
             if self.lower_bound == b.lower_bound:
                 # They are the same number!
@@ -3115,7 +3142,7 @@ class StridedInterval(BackendObject):
         elif self.is_integer:
             integer = self.lower_bound
             if (b.lower_bound - integer) % b.stride == 0 and \
-                    b._surrounds(integer):
+                    b._surrounds_member(integer):
                 ret = (StridedInterval(bits=self.bits,
                                       stride=0,
                                       lower_bound=integer,
@@ -3126,7 +3153,7 @@ class StridedInterval(BackendObject):
         elif b.is_integer:
             integer = b.lower_bound
             if (integer - self.lower_bound) % self.stride == 0 and \
-                    self._surrounds(integer):
+                    self._surrounds_member(integer):
                 ret = (StridedInterval(bits=self.bits,
                                       stride=0,
                                       lower_bound=integer,
@@ -3140,7 +3167,7 @@ class StridedInterval(BackendObject):
             # wrapped-intervals:lib/RangeAnalysis/WrappedRange.cpp . Please see wrapped-intervals on GitHub at
             # https://github.com/sav-tools/wrapped-intervals
             new_stride = self.lcm(self.stride, b.stride)
-            if self._wrapped_lte(b):
+            if self._surrounds(b):
                 # Containment case
                 # `b` may fully contain `self`
 
@@ -3159,7 +3186,7 @@ class StridedInterval(BackendObject):
                                            upper_bound=ub
                                            ), )
 
-            elif b._wrapped_lte(self):
+            elif b._surrounds(self):
                 # Containment case 2
                 # `self` contains `b`
 
@@ -3179,10 +3206,10 @@ class StridedInterval(BackendObject):
                                            upper_bound=ub
                                            ), )
 
-            elif self._surrounds(b.lower_bound) and \
-                    self._surrounds(b.upper_bound) and \
-                    b._surrounds(self.lower_bound) and \
-                    b._surrounds(self.upper_bound):
+            elif self._surrounds_member(b.lower_bound) and \
+                    self._surrounds_member(b.upper_bound) and \
+                    b._surrounds_member(self.lower_bound) and \
+                    b._surrounds_member(self.upper_bound):
                 # One cover the other
 
                 # bounds of the two common intervals
@@ -3234,7 +3261,7 @@ class StridedInterval(BackendObject):
                 ret = (s0, s1)
 
             # here we have four cases since the overlapping depends also on the stride
-            elif self._surrounds(b.lower_bound):
+            elif self._surrounds_member(b.lower_bound):
                 # Overlapping case 1a
 
                 lb = StridedInterval._minimal_common_integer(b, self)
@@ -3253,7 +3280,7 @@ class StridedInterval(BackendObject):
                                            upper_bound=ub
                                            ), )
 
-            elif self._surrounds(b.upper_bound):
+            elif self._surrounds_member(b.upper_bound):
                 # Overlapping case 1b
 
                 lb = StridedInterval._minimal_common_integer(b, self)
@@ -3272,7 +3299,7 @@ class StridedInterval(BackendObject):
                                            upper_bound=ub
                                            ), )
 
-            elif b._surrounds(self.lower_bound):
+            elif b._surrounds_member(self.lower_bound):
                 # Overlapping case 2a
 
                 lb = StridedInterval._minimal_common_integer(self, b)
@@ -3292,7 +3319,7 @@ class StridedInterval(BackendObject):
                                            upper_bound=ub
                                            ), )
 
-            elif b._surrounds(self.upper_bound):
+            elif b._surrounds_member(self.upper_bound):
                 # Overlapping case 2b
 
                 lb = StridedInterval._minimal_common_integer(self, b)
