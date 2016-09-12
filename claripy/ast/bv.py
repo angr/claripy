@@ -190,6 +190,11 @@ def BVV(value, size=None, **kwargs):
     elif size is None:
         raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
 
+    # ensure the 0 <= value < (1 << size)
+    # FIXME hack to handle None which is used for an Empty Strided Interval (ESI)
+    if value is not None:
+        value &= (1 << size) -1
+
     if not kwargs:
         try: return _bvv_cache[(value, size)]
         except KeyError: pass
