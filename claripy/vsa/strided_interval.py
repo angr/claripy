@@ -29,6 +29,7 @@ def normalize_types(f):
             return o.union(self)
 
         if isinstance(o, ValueSet) or isinstance(o, DiscreteStridedIntervalSet):
+            # if it's singlevalued, we can convert it to a StridedInterval
             if o.cardinality == 1:
                 o = o.stridedinterval()
             else:
@@ -1807,12 +1808,12 @@ class StridedInterval(BackendObject):
 
     def _is_surrounded(self, b):
         """
-            Perform a wrapped LTE comparison only considering the SI bounds
+        Perform a wrapped LTE comparison only considering the SI bounds
 
-            :param a: The first operand
-            :param b: The second operand
-            :return: True if a <= b, False otherwise
-            """
+        :param a: The first operand
+        :param b: The second operand
+        :return: True if a <= b, False otherwise
+        """
 
         a = self
         if a.is_empty:
@@ -2280,7 +2281,7 @@ class StridedInterval(BackendObject):
         mask = (1 << tok) - 1
 
         if self.stride >= (1 << tok):
-            logger.warning('Tried to cast_low an interval to a an interval shorter than its stride.')
+            logger.warning('Tried to cast_low an interval to an interval shorter than its stride.')
 
         if tok == self.bits:
             return self.copy()
@@ -2298,17 +2299,6 @@ class StridedInterval(BackendObject):
             elif 0 <= (self.upper_bound - self.lower_bound) <= mask:
                 l = self.lower_bound & mask
                 u = self.upper_bound & mask
-                # Keep the signs!
-                if self.lower_bound < 0:
-                    # how this should happen ?
-                    logger.warning("Lower bound values is less than 0")
-                    import ipdb; ipdb.set_trace()
-                    l = StridedInterval._to_negative(l, tok)
-                if self.upper_bound < 0:
-                    # how this should happen ?
-                    logger.warning("Upper bound value is less than 0")
-                    import ipdb; ipdb.set_trace()
-                    u = StridedInterval._to_negative(u, tok)
                 return StridedInterval(bits=tok, stride=self.stride,
                                        lower_bound=l,
                                        upper_bound=u,
