@@ -47,6 +47,10 @@ patcherex:
     script: "angr-test patcherex"
     tags: [angr]
 
+alphack:
+    script: "angr-test alphack"
+    tags: [angr]
+
 ### other levels
 tracer:
     script: "angr-test tracer"
