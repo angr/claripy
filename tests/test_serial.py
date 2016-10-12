@@ -14,11 +14,11 @@ def test_pickle_ast():
     b = claripy.BVS('x', 32, explicit_name=True)
 
     c = a+b
-    nose.tools.assert_equal(bz.convert(c).__module__, 'z3')
+    nose.tools.assert_equal(bz.convert(c).__module__, 'z3.z3')
     nose.tools.assert_equal(str(bz.convert(c)), '1 + x')
 
     c_copy = pickle.loads(pickle.dumps(c, -1))
-    nose.tools.assert_equal(bz.convert(c_copy).__module__, 'z3')
+    nose.tools.assert_equal(bz.convert(c_copy).__module__, 'z3.z3')
     nose.tools.assert_equal(str(bz.convert(c_copy)), '1 + x')
 
 def test_pickle_frontend():

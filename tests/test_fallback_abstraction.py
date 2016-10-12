@@ -29,7 +29,7 @@ def test_fallback_abstraction():
     nose.tools.assert_raises(claripy.errors.BackendError, claripy.backends.concrete.convert, f)
 
     nose.tools.assert_equal(str(bz.convert(b)), 'x')
-    nose.tools.assert_equal(bz.convert(b).__module__, 'z3')
+    nose.tools.assert_equal(bz.convert(b).__module__, 'z3.z3')
 
     nose.tools.assert_equal(str(bz.convert(c)), '5 + x')
     nose.tools.assert_equal(str(bz.convert(d)), '5 + x')
