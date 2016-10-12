@@ -45,16 +45,19 @@ _z3_paths.append("/usr/local/lib")
 _z3_paths.append("/opt/python/lib")
 _z3_paths.append(os.path.join(sys.prefix, "lib"))
 
-for z3_path in _z3_paths:
-    if not '.so' in z3_path and \
-            not '.dll' in z3_path and \
-            not '.dylib' in z3_path:
-        z3_path = os.path.join(z3_path, z3_library_file)
-    if os.path.exists(z3_path):
-        z3.init(z3_path)
-        break
-else:
-    raise ClaripyZ3Error("Unable to find %s", z3_library_file)
+try:
+    z3.z3core.lib()
+except:
+    for z3_path in _z3_paths:
+        if not '.so' in z3_path and \
+                not '.dll' in z3_path and \
+                not '.dylib' in z3_path:
+            z3_path = os.path.join(z3_path, z3_library_file)
+        if os.path.exists(z3_path):
+            z3.init(z3_path)
+            break
+    else:
+        raise ClaripyZ3Error("Unable to find %s", z3_library_file)
 
 supports_fp = hasattr(z3, 'fpEQ')
 
@@ -289,7 +292,7 @@ class BackendZ3(Backend):
             return z3.BoolVal(False, ctx=self._context)
         elif type(obj) in (int, long, float, str):
             return obj
-        elif hasattr(obj, '__module__') and obj.__module__ == 'z3':
+        elif hasattr(obj, '__module__') and obj.__module__ in ('z3', 'z3.z3'):
             return obj
         else:
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
