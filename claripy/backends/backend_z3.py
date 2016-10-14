@@ -101,6 +101,7 @@ class BackendZ3(Backend):
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
         for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FP', 'BitVec'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
+        self._op_raw['Xor'] = self._op_raw_Xor
 
         self._op_raw['__ge__'] = self._op_raw_UGE
         self._op_raw['__gt__'] = self._op_raw_UGT
@@ -812,6 +813,9 @@ class BackendZ3(Backend):
 
     def _op_raw_And(self, *args):
         return z3.And(*(tuple(args) + ( self._context, )))
+
+    def _op_raw_Xor(self, *args):
+        return z3.Xor(*(tuple(args) + ( self._context, )))
 
     def _op_raw_Or(self, *args):
         return z3.Or(*(tuple(args) + ( self._context, )))
