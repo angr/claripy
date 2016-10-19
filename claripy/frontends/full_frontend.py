@@ -205,9 +205,9 @@ class FullFrontend(ConstrainedFrontend):
     # Merging and splitting
     #
 
-    def merge(self, others, merge_conditions):
+    def merge(self, others, merge_conditions, common_ancestor=None):
         return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(
-            self, others, merge_conditions
+            self, others, merge_conditions, common_ancestor=common_ancestor
         )[1]
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
