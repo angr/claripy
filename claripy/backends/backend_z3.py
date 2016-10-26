@@ -39,6 +39,8 @@ if "Z3PATH" in os.environ:
 if "VIRTUAL_ENV" in os.environ:
     virtual_env = os.environ["VIRTUAL_ENV"]
     _z3_paths.append(os.path.join(os.environ["VIRTUAL_ENV"], "lib"))
+    _z3_paths.append(os.path.join(os.environ["VIRTUAL_ENV"], "site-packages/z3/lib"))
+
 _z3_paths.extend(sys.path)
 _z3_paths.append("/usr/lib")
 _z3_paths.append("/usr/local/lib")
