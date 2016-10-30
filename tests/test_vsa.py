@@ -807,6 +807,34 @@ def test_vsa_constraint_to_si():
         claripy.backends.vsa.identical(falseside_replacement[0][1], SI(bits=32, stride=1, lower_bound=0, upper_bound=0x7fffffff))
     )
 
+    #
+    # TOP_SI != -1
+    #
+
+    s5 = claripy.SI(bits=32, stride=1, lower_bound=0, upper_bound=0xffffffff)
+    ast_true = (s5 == claripy.SI(bits=32, stride=1, lower_bound=0xffffffff, upper_bound=0xffffffff))
+    ast_false = (s5 != claripy.SI(bits=32, stride=1, lower_bound=0xffffffff, upper_bound=0xffffffff))
+
+    trueside_sat, trueside_replacement = b.constraint_to_si(ast_true)
+    nose.tools.assert_true(trueside_sat)
+    nose.tools.assert_equal(len(trueside_replacement), 1)
+    nose.tools.assert_true(trueside_replacement[0][0] is s5)
+    nose.tools.assert_true(claripy.backends.vsa.identical(trueside_replacement[0][1],
+                                                          SI(bits=32, stride=1, lower_bound=0xffffffff,
+                                                             upper_bound=0xffffffff)
+                                                          )
+                           )
+
+    falseside_sat, falseside_replacement = b.constraint_to_si(ast_false)
+    nose.tools.assert_true(falseside_sat)
+    nose.tools.assert_equal(len(falseside_replacement), 1)
+    nose.tools.assert_true(falseside_replacement[0][0] is s5)
+    nose.tools.assert_true(claripy.backends.vsa.identical(falseside_replacement[0][1],
+                                                          SI(bits=32, stride=1, lower_bound=0,
+                                                             upper_bound=0xfffffffe)
+                                                          )
+                           )
+
     # TODO: Add some more insane test cases
 
 def test_vsa_discrete_value_set():
