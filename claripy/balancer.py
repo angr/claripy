@@ -37,7 +37,7 @@ class Balancer(object):
         all_keys = set(self._lower_bounds.keys()) | set(self._upper_bounds.keys())
         for k in all_keys:
             max_int = (1 << len(k.ast)) - 1
-            min_int = -(1 << (len(k.ast)-1))
+            min_int = 0
             mn = self._lower_bounds.get(k, min_int)
             mx = self._upper_bounds.get(k, max_int)
             bound_si = BVS('bound', len(k.ast), min=mn, max=mx)
@@ -573,7 +573,7 @@ class Balancer(object):
             if val == 0:
                 self._add_lower_bound(lhs, val+1)
             elif val == max_int or val == -1:
-                self._add_lower_bound(lhs, max_int-1)
+                self._add_upper_bound(lhs, max_int-1)
 
     def _handle_If(self, truism):
         if is_false(truism.args[2]):
