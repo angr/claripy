@@ -11,8 +11,9 @@ from .constrained_frontend import ConstrainedFrontend
 class FullFrontend(ConstrainedFrontend):
     _model_hook = None
 
-    def __init__(self, solver_backend, timeout=None, **kwargs):
+    def __init__(self, solver_backend, timeout=None, track=False, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
+        self._track = track
         self._solver_backend = solver_backend
         self.timeout = timeout if timeout is not None else 300000
         self._tls = threading.local()
@@ -20,6 +21,7 @@ class FullFrontend(ConstrainedFrontend):
 
     def _blank_copy(self, c):
         super(FullFrontend, self)._blank_copy(c)
+        c._track = self._track
         c._solver_backend = self._solver_backend
         c.timeout = self.timeout
         c._tls = threading.local()
@@ -27,6 +29,7 @@ class FullFrontend(ConstrainedFrontend):
 
     def _copy(self, c):
         super(FullFrontend, self)._copy(c)
+        c._track = self._track
         c._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
         c._to_add = list(self._to_add)
 
@@ -35,10 +38,10 @@ class FullFrontend(ConstrainedFrontend):
     #
 
     def _ana_getstate(self):
-        return self._solver_backend.__class__.__name__, self.timeout, ConstrainedFrontend._ana_getstate(self)
+        return self._solver_backend.__class__.__name__, self.timeout, self._track, ConstrainedFrontend._ana_getstate(self)
 
     def _ana_setstate(self, s):
-        backend_name, self.timeout, base_state = s
+        backend_name, self.timeout, self._track, base_state = s
         self._solver_backend = backends._backends_by_type[backend_name]
         #self._tls = None
         self._tls = threading.local()
@@ -52,14 +55,16 @@ class FullFrontend(ConstrainedFrontend):
     def _get_solver(self):
         if getattr(self._tls, 'solver', None) is None or (self._finalized and len(self._to_add) > 0):
             self._tls.solver = self._solver_backend.solver(timeout=self.timeout)
-            self._solver_backend.add(self._tls.solver, self.constraints)
-            self._to_add = [ ]
+            self._add_constraints()
 
         if len(self._to_add) > 0:
-            self._solver_backend.add(self._tls.solver, self._to_add)
-            self._to_add = [ ]
+            self._add_constraints()
 
         return self._tls.solver
+
+    def _add_constraints(self):
+        self._solver_backend.add(self._tls.solver, self.constraints, track=self._track)
+        self._to_add = [ ]
 
     #
     # Constraint management
@@ -191,6 +196,15 @@ class FullFrontend(ConstrainedFrontend):
         #except BackendError:
         #   e_type, value, traceback = sys.exc_info()
         #   raise ClaripyFrontendError, "Backend error during _is_false: %s('%s')" % (str(e_type), str(value)), traceback
+
+    def unsat_core(self, extra_constraints=()):
+        if self.satisfiable(extra_constraints=extra_constraints):
+            # all constraints are satisfied
+            return tuple()
+
+        unsat_core = self._solver_backend.unsat_core(self._get_solver())
+
+        return tuple(unsat_core)
 
     #
     # Serialization and such.

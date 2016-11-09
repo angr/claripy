@@ -98,6 +98,7 @@ class BackendZ3(Backend):
     def __init__(self):
         Backend.__init__(self, solver_required=True)
         self._enable_simplification_cache = False
+        self._hash_to_constraint = weakref.WeakValueDictionary()
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
@@ -501,8 +502,21 @@ class BackendZ3(Backend):
                 s.set('timeout', timeout)
         return s
 
-    def _add(self, s, c):
-        s.add(*c)
+    def _add(self, s, c, track=False):
+        if track:
+            for constraint in c:
+                name = str(hash(constraint))
+                self._hash_to_constraint[name] = constraint
+                s.assert_and_track(constraint, name)
+        else:
+            s.add(*c)
+
+    def _unsat_core(self, s):
+        cores = s.unsat_core()
+        constraints = [ ]
+        for core in cores:
+            constraints.append(self._hash_to_constraint.get(str(core)))
+        return constraints
 
     @condom
     def _primitive_from_model(self, model, expr):
