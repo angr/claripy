@@ -224,8 +224,12 @@ def fpToFP(a1, a2, a3=None):
         else:
             raise ClaripyOperationError("unrecognized float sort")
 
-        packed = struct.pack('<' + pack, a1.value)
-        unpacked, = struct.unpack('<' + unpack, packed)
+        try:
+            packed = struct.pack('<' + pack, a1.value)
+            unpacked, = struct.unpack('<' + unpack, packed)
+        except OverflowError as e:
+            # struct.pack sometimes overflows
+            raise ClaripyOperationError("OverflowError: " + str(e))
 
         return FPV(unpacked, sort)
     elif isinstance(a1, RM) and isinstance(a2, FPV) and isinstance(a3, FSort):
@@ -247,8 +251,12 @@ def fpToIEEEBV(fpv):
     else:
         raise ClaripyOperationError("unrecognized float sort")
 
-    packed = struct.pack('<' + pack, fpv.value)
-    unpacked, = struct.unpack('<' + unpack, packed)
+    try:
+        packed = struct.pack('<' + pack, fpv.value)
+        unpacked, = struct.unpack('<' + unpack, packed)
+    except OverflowError as e:
+        # struct.pack sometimes overflows
+        raise ClaripyOperationError("OverflowError: " + str(e))
 
     return BVV(unpacked, fpv.sort.length)
 
@@ -263,8 +271,12 @@ def fpFP(sgn, exp, mantissa):
     else:
         raise ClaripyOperationError("unrecognized float sort")
 
-    packed = struct.pack('<' + pack, concatted.value)
-    unpacked, = struct.unpack('<' + unpack, packed)
+    try:
+        packed = struct.pack('<' + pack, concatted.value)
+        unpacked, = struct.unpack('<' + unpack, packed)
+    except OverflowError as e:
+        # struct.pack sometimes overflows
+        raise ClaripyOperationError("OverflowError: " + str(e))
 
     return FPV(unpacked, sort)
 
