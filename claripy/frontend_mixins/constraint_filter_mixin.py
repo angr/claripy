@@ -1,5 +1,8 @@
 class ConstraintFilterMixin(object):
     def _constraint_filter(self, constraints, **kwargs):
+        if type(constraints) not in (tuple, list):
+            raise ClaripyValueError("The extra_constraints argument should be a list of constraints.")
+
         if len(constraints) == 0:
             return constraints
 
@@ -11,14 +14,14 @@ class ConstraintFilterMixin(object):
             return tuple((o if n is None else o) for o,n in zip(constraints, ccs) if n is not True)
 
     def add(self, constraints, **kwargs):
-        if len(constraints) == 0:
-            return [ ]
-
         try:
             ec = self._constraint_filter(constraints)
         except UnsatError:
             # filter out concrete False
             ec = list(c for c in constraints if c is not False) + [ false ]
+
+        if len(constraints) == 0:
+            return [ ]
 
         if len(ec) > 0:
             return super(ConstraintFilterMixin, self).add(ec, **kwargs)
@@ -60,5 +63,5 @@ class ConstraintFilterMixin(object):
         ec = self._constraint_filter(extra_constraints)
         return super(ConstraintFilterMixin, self).is_false(e, extra_constraints=ec, **kwargs)
 
-from ..errors import UnsatError
+from ..errors import UnsatError, ClaripyValueError
 from .. import false
