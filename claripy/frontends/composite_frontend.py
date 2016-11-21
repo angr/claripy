@@ -8,12 +8,13 @@ symbolic_count = itertools.count()
 from .constrained_frontend import ConstrainedFrontend
 
 class CompositeFrontend(ConstrainedFrontend):
-    def __init__(self, template_frontend, **kwargs):
+    def __init__(self, template_frontend, track=False, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._owned_solvers = weakref.WeakKeyDictionary()
         self._template_frontend = template_frontend
         self._unsat = False
+        self._track = track
 
     def _blank_copy(self, c):
         super(CompositeFrontend, self)._blank_copy(c)
@@ -21,10 +22,12 @@ class CompositeFrontend(ConstrainedFrontend):
         c._solvers = { }
         c._template_frontend = self._template_frontend
         c._unsat = False
+        c._track = self._track
 
     def _copy(self, c):
         super(CompositeFrontend, self)._copy(c)
         c._unsat = self._unsat
+        c._track = self._track
 
         c._solvers = dict(self._solvers)
         self._owned_solvers = weakref.WeakKeyDictionary() # for the COW
@@ -36,10 +39,10 @@ class CompositeFrontend(ConstrainedFrontend):
     #
 
     def _ana_getstate(self):
-        return self._solvers, self._template_frontend, self._unsat, super(CompositeFrontend, self)._ana_getstate()
+        return self._solvers, self._template_frontend, self._unsat, self._track, super(CompositeFrontend, self)._ana_getstate()
 
     def _ana_setstate(self, s):
-        self._solvers, self._template_frontend, self._unsat, base_state = s
+        self._solvers, self._template_frontend, self._unsat, self._track, base_state = s
         self._owned_solvers = weakref.WeakKeyDictionary({s:True for s in self._solver_list})
         super(CompositeFrontend, self)._ana_setstate(base_state)
 
@@ -329,6 +332,17 @@ class CompositeFrontend(ConstrainedFrontend):
         r = ms.is_false(e, extra_constraints=extra_constraints, exact=exact)
         #self._reabsorb_solver(ms)
         return r
+
+    def unsat_core(self, extra_constraints=()):
+        if self.satisfiable(extra_constraints=extra_constraints):
+            return tuple()
+
+        cores = [ ]
+
+        for solver in self._solver_list:
+            cores.extend(list(solver.unsat_core()))
+
+        return cores
 
     def simplify(self):
         if self._unsat:

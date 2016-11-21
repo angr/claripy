@@ -439,7 +439,38 @@ def test_ancestor_merge():
     for s in solver_list:
         yield raw_ancestor_merge, s
 
+
+def raw_unsat_core(solver):
+    s = solver(track=True)
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+    a = claripy.BVS("a", 32)
+
+    s.add(x == y)
+    s.add(x == 1)
+    s.add(z != a)
+    s.add(z == 2)
+    s.add(a == 2)
+
+    assert not s.satisfiable()
+    unsat_core = s.unsat_core()
+    assert len(unsat_core) == 3
+    assert unsat_core[0] is not None
+    assert unsat_core[1] is not None
+    assert unsat_core[2] is not None
+
+
+def test_unsat_core():
+    for s in (claripy.Solver, claripy.SolverComposite, claripy.SolverCacheless, claripy.SolverHybrid):
+        yield raw_unsat_core, s
+
+
 if __name__ == '__main__':
+
+    for func, param in test_unsat_core():
+        func(param)
+
     for func,param in test_ancestor_merge():
         func(param)
     test_simplification_annotations()

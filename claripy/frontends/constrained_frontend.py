@@ -8,8 +8,8 @@ from ..frontend import Frontend
 
 
 class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
-    def __init__(self, **kwargs):
-        Frontend.__init__(self, **kwargs)
+    def __init__(self):
+        Frontend.__init__(self)
         self.constraints = []
         self.variables = set()
         self._finalized = False

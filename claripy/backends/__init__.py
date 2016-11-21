@@ -385,23 +385,45 @@ class Backend(object):
         """
         raise BackendError("backend doesn't support solving")
 
-    def add(self, s, c):
+    def add(self, s, c, track=False):
         """
         This function adds constraints to the backend solver.
 
         :param c: A sequence of claripy.E objects.
         :param s: A backend solver object.
+        :param bool track: True to enable constraint tracking, which is used in unsat_core().
         """
-        return self._add(s, self.convert_list(c))
+        return self._add(s, self.convert_list(c), track=track)
 
-    def _add(self, s, c): #pylint:disable=no-self-use,unused-argument
+    def _add(self, s, c, track=False): #pylint:disable=no-self-use,unused-argument
         """
         This function adds constraints to the backend solver.
 
         :param c: sequence of converted backend objects
         :param s: backend solver object
+        :param bool track: True to enable constraint tracking, which is used in unsat_core().
         """
         raise BackendError("backend doesn't support solving")
+
+    def unsat_core(self, s):
+        """
+        This function returns the unsat core from the backend solver.
+
+        :param s: A backend solver object.
+        :return: The unsat core.
+        """
+
+        return [ self._abstract(core) for core in self._unsat_core(s) ]
+
+    def _unsat_core(self, s):  #pylint:disable=no-self-use,unused-argument
+        """
+        This function returns the unsat core from the backend solver.
+
+        :param s: A backend solver object.
+        :return: The unsat core.
+        """
+
+        raise BackendError("backend doesn't support unsat_core")
 
     #
     # These functions provide evaluation support.

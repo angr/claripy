@@ -99,6 +99,9 @@ class HybridFrontend(Frontend):
     def is_false(self, e, extra_constraints=(), exact=None):
         return self._hybrid_call('is_false', e, extra_constraints=extra_constraints, exact=exact)
 
+    def unsat_core(self, extra_constraints=()):
+        return self._hybrid_call('unsat_core', extra_constraints=extra_constraints)
+
     #
     # Lifecycle
     #

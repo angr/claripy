@@ -53,9 +53,10 @@ class SolverHybrid(
     def __init__(
         self, exact_frontend=None, approximate_frontend=None,
         complex_auto_replace=True, replace_constraints=True,
+        track=False,
         **kwargs
     ):
-        exact_frontend = Solver() if exact_frontend is None else exact_frontend
+        exact_frontend = Solver(track=track) if exact_frontend is None else exact_frontend
         approximate_frontend = SolverReplacement(
             actual_frontend=SolverVSA(),
             complex_auto_replace=complex_auto_replace, replace_constraints=replace_constraints,
@@ -96,7 +97,7 @@ class SolverCompositeChild(
         super(SolverCompositeChild, self).__init__(backend, **kwargs)
 
     def __repr__(self):
-        return "<SolverCompositeChild with %d variabels>" % len(self.variables)
+        return "<SolverCompositeChild with %d variables>" % len(self.variables)
 
 class SolverComposite(
     frontend_mixins.ConstraintFixerMixin,
@@ -111,9 +112,9 @@ class SolverComposite(
     frontend_mixins.CompositedCacheMixin,
     frontends.CompositeFrontend
 ):
-    def __init__(self, template_solver=None, **kwargs):
-        template_solver = SolverCompositeChild() if template_solver is None else template_solver
-        super(SolverComposite, self).__init__(template_solver, **kwargs)
+    def __init__(self, template_solver=None, track=False, **kwargs):
+        template_solver = SolverCompositeChild(track=track) if template_solver is None else template_solver
+        super(SolverComposite, self).__init__(template_solver, track=track, **kwargs)
 
     def __repr__(self):
         return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))
