@@ -108,9 +108,30 @@ def test_overflow():
     #assert s
     #assert r[0][0] is x
 
+def test_complex_case_0():
+
+    #
+
+    """
+    <Bool ((0#48 .. Reverse(unconstrained_read_69_16)) << 0x30) <= 0x40000000000000>
+
+    Created by VEX running on the following x86_64 assembly:
+    cmp     word ptr [rdi], 40h
+    ja      skip
+    """
+
+    x = claripy.BVS('x', 16)
+    expr = (claripy.ZeroExt(48, claripy.Reverse(x)) << 0x30) <= 0x40000000000000
+
+    s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+
+    assert s
+    assert r[0][0] is x
+    assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == set(range(0, 65 * 0x100, 0x100))
 
 if __name__ == '__main__':
     test_overflow()
     test_simple_guy()
     test_widened_guy()
     test_complex_guy()
+    test_complex_case_0()
