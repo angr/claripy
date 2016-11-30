@@ -457,6 +457,26 @@ class Balancer(object):
             #TODO: handle non-zero single-valued cases
             return truism
 
+    def _balance___lshift__(self, truism):
+        lhs = truism.args[0]
+        rhs = truism.args[1]
+        shift_amount_expr = lhs.args[1]
+        expr = lhs.args[0]
+
+        shift_amount_values = self._helper.eval(shift_amount_expr, 2)
+        if len(shift_amount_values) != 1:
+            return truism
+        shift_amount = shift_amount_values[0]
+
+        rhs_lower = _all_operations.Extract(shift_amount - 1, 0, rhs)
+        rhs_lower_values = self._helper.eval(rhs_lower, 2)
+        if len(rhs_lower_values) == 1 and rhs_lower_values[0] == 0:
+            # we can remove the __lshift__
+
+            return truism.make_like(truism.op, (expr, rhs >> shift_amount))
+
+        return truism
+
     def _balance_If(self, truism):
         condition, true_expr, false_expr = truism.args[0].args
 
