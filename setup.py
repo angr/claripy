@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='claripy',
-    version='5.6.10.12',
+    version='5.6.12.3',
     packages=['claripy', 'claripy.backends', 'claripy.frontends', 'claripy.vsa', 'claripy.ast', 'claripy.frontend_mixins'],
     install_requires=[
         'ana',
