@@ -365,7 +365,7 @@ class BackendZ3(Backend):
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
+            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
             value = fp_mantissa * (2 ** fp_exp)
 
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
