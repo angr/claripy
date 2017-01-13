@@ -306,12 +306,21 @@ def ne_simplifier(a, b):
             if ast.all_operations.is_true(a_bit != b_bit):
                 return ast.all_operations.true
 
-def boolean_reverse_simplifier(body):
+def reverse_simplifier(body):
     if body.op == 'Reverse':
         return body.args[0]
 
     if body.length == 8:
         return body
+
+    if body.op == 'Extract':
+        inner_ast = body.args[2]
+        if inner_ast.op == 'Reverse':
+            high = body.args[0]
+            low = body.args[1]
+            new_high = inner_ast.size()-1-low
+            new_low = inner_ast.size()-1-high
+            return extract_simplifier(new_high, new_low, inner_ast.args[0])
 
     if body.op == 'Concat':
         if all(a.op == 'Extract' for a in body.args):
@@ -599,7 +608,7 @@ def fptofp_simplifier(*args):
             return to_bv.args[0]
 
 simplifiers = {
-    'Reverse': boolean_reverse_simplifier,
+    'Reverse': reverse_simplifier,
     'And': boolean_and_simplifier,
     'Or': boolean_or_simplifier,
     'Not': boolean_not_simplifier,
