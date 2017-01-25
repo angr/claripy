@@ -179,7 +179,7 @@ def BVV(value, size=None, **kwargs):
     :returns:       A BV object representing this value.
     """
 
-    if type(value) is str:
+    if type(value) is str or type(value) is unicode:
         if size is None:
             size = 8*len(value)
             value = int(value.encode('hex'), 16) if value != "" else 0
