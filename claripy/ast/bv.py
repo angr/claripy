@@ -1,6 +1,9 @@
 from .bits import Bits
 from ..ast.base import _make_name
 
+import logging
+l = logging.getLogger("claripy.ast.bv")
+
 _bvv_cache = dict()
 
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
@@ -180,6 +183,8 @@ def BVV(value, size=None, **kwargs):
     """
 
     if type(value) is str or type(value) is unicode:
+        if type(value) is unicode:
+            l.warn("BVV value is a unicode string")
         if size is None:
             size = 8*len(value)
             value = int(value.encode('hex'), 16) if value != "" else 0
