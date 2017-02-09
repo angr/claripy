@@ -327,7 +327,7 @@ class Base(ana.Storable):
         """
         Appends annotations to this AST.
 
-        :param *args: the tuple of annotations to append
+        :param args: the tuple of annotations to append (variadic positional args)
         :returns: a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + args)
