@@ -574,9 +574,12 @@ class Base(ana.Storable):
 
             hash_key = self.cache_key
 
-            if hash_key in replacements:
-                r = replacements[hash_key]
-            elif not self.variables.issuperset(variable_set):
+            try:
+                return replacements[hash_key]
+            except KeyError:
+                pass
+
+            if not self.variables.issuperset(variable_set):
                 r = self
             elif leaf_operation is not None and self.op in operations.leaf_operations:
                 r = leaf_operation(self)
@@ -715,6 +718,9 @@ class Base(ana.Storable):
         #   if type(old) is not type(new):
         #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
         #   old._check_replaceability(new)
+
+        if not self.variables:
+            return self
 
         return self._replace(replacements, variable_set=set())
 
