@@ -1,6 +1,9 @@
 import operator
 import itertools
 import collections
+
+from .utils import OrderedSet
+
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
@@ -343,7 +346,7 @@ def boolean_and_simplifier(*args):
 
     def _flattening_filter(args):
         # a And a == a
-        return tuple(set(args))
+        return tuple(OrderedSet(args))
 
     return _flatten_simplifier('And', _flattening_filter, *args)
 
@@ -363,11 +366,11 @@ def boolean_or_simplifier(*args):
 
     def _flattening_filter(args):
         # a Or a == a
-        return tuple(set(args))
+        return tuple(OrderedSet(args))
 
     return _flatten_simplifier('Or', _flattening_filter, *args)
 
-def _flatten_simplifier(op_name, filter, *args):
+def _flatten_simplifier(op_name, filter_func, *args):
     if not any(isinstance(a, ast.Base) and a.op == op_name for a in args):
         return
 
@@ -378,7 +381,7 @@ def _flatten_simplifier(op_name, filter, *args):
     new_args = tuple(itertools.chain.from_iterable(
         (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
     ))
-    if filter: new_args = filter(new_args)
+    if filter_func: new_args = filter_func(new_args)
     return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args)
 
 def bitwise_add_simplifier(a, b):
@@ -408,9 +411,10 @@ def bitwise_xor_simplifier(a, b):
 
     def _flattening_filter(args):
         # since a ^ a == 0, we can safely remove those from args
+        # this procedure is done carefully in order to keep the ordering of arguments
         ctr = collections.Counter(args)
-        ctr = dict((k, v) for k, v in ctr.iteritems() if v % 2 != 0)
-        return tuple(ctr.keys())
+        unique_args = set(k for k, v in ctr.iteritems() if v % 2 != 0)
+        return tuple([ arg for arg in args if arg in unique_args ])
 
     return _flatten_simplifier('__xor__', _flattening_filter, a, b)
 
@@ -426,7 +430,7 @@ def bitwise_or_simplifier(a, b):
 
     def _flattening_filter(args):
         # a | a == a
-        return tuple(set(args))
+        return tuple(OrderedSet(args))
 
     return _flatten_simplifier('__or__', _flattening_filter, a, b)
 
@@ -442,7 +446,7 @@ def bitwise_and_simplifier(a, b):
 
     def _flattening_filter(args):
         # a & a == a
-        return tuple(set(args))
+        return tuple(OrderedSet(args))
 
     return _flatten_simplifier('__and__', _flattening_filter, a, b)
 
