@@ -341,7 +341,11 @@ def boolean_and_simplifier(*args):
     if len(new_args) < len(args):
         return ast.all_operations.And(*new_args)
 
-    return _flatten_simplifier('And', None, *args)
+    def _flattening_filter(args):
+        # a And a == a
+        return tuple(set(args))
+
+    return _flatten_simplifier('And', _flattening_filter, *args)
 
 def boolean_or_simplifier(*args):
     if len(args) == 1:
@@ -357,7 +361,11 @@ def boolean_or_simplifier(*args):
     if len(new_args) < len(args):
         return ast.all_operations.Or(*new_args)
 
-    return _flatten_simplifier('Or', None, *args)
+    def _flattening_filter(args):
+        # a Or a == a
+        return tuple(set(args))
+
+    return _flatten_simplifier('Or', _flattening_filter, *args)
 
 def _flatten_simplifier(op_name, filter, *args):
     if not any(isinstance(a, ast.Base) and a.op == op_name for a in args):
@@ -416,7 +424,11 @@ def bitwise_or_simplifier(a, b):
     elif a is b:
         return a
 
-    return _flatten_simplifier('__or__', None, a, b)
+    def _flattening_filter(args):
+        # a | a == a
+        return tuple(set(args))
+
+    return _flatten_simplifier('__or__', _flattening_filter, a, b)
 
 def bitwise_and_simplifier(a, b):
     if (a == 2**a.size()-1).is_true():
@@ -428,7 +440,11 @@ def bitwise_and_simplifier(a, b):
     elif a is b:
         return a
 
-    return _flatten_simplifier('__and__', None, a, b)
+    def _flattening_filter(args):
+        # a & a == a
+        return tuple(set(args))
+
+    return _flatten_simplifier('__and__', _flattening_filter, a, b)
 
 def boolean_not_simplifier(body):
     if body.op == '__eq__':
