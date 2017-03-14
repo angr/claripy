@@ -82,9 +82,10 @@ class ReplacementFrontend(ConstrainedFrontend):
         if not isinstance(old, Base):
             return old
 
-        if old.cache_key in self._replacement_cache:
+        try:
             return self._replacement_cache[old.cache_key]
-        else:
+        except KeyError:
+            # not found in the cache
             new = old.replace_dict(self._replacement_cache)
             if new is not old:
                 self._replacement_cache[old.cache_key] = new
