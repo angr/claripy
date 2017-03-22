@@ -574,9 +574,13 @@ class Base(ana.Storable):
 
             hash_key = self.cache_key
 
-            if hash_key in replacements:
+            try:
                 r = replacements[hash_key]
-            elif not self.variables.issuperset(variable_set):
+                return r
+            except KeyError:
+                pass
+
+            if not self.variables.issuperset(variable_set):
                 r = self
             elif leaf_operation is not None and self.op in operations.leaf_operations:
                 r = leaf_operation(self)
