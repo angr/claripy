@@ -173,11 +173,11 @@ def BVS(
 
     return BV(
         'BVS', (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card),
-        variables={n}, length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized,
+        variables={n}, length=size, symbolic=True, uninitialized=uninitialized,
         **kwargs
-    )
+    )._deduplicate()
 
-def BVV(value, size=None, filters=(), **kwargs):
+def BVV(value, size=None, **kwargs):
     """
     Creates a bit-vector value (i.e., a concrete value).
 
@@ -205,12 +205,14 @@ def BVV(value, size=None, filters=(), **kwargs):
     if value is not None:
         value &= (1 << size) -1
 
-    if not kwargs and not filters:
-        try: return _bvv_cache[(value, size)]
-        except KeyError: pass
-
-    result = BV('BVV', (value, size), length=size, filters=filters, **kwargs)
-    _bvv_cache[(value, size)] = result
+    if not kwargs:
+        try:
+            return _bvv_cache[(value, size)]
+        except KeyError:
+            pass
+    result = BV('BVV', (value, size), length=size, **kwargs)._deduplicate()
+    if not kwargs:
+        _bvv_cache[(value, size)] = result
     return result
 
 def SI(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, to_conv=None, explicit_name=None,
@@ -382,3 +384,4 @@ BV.intersection = operations.op('intersection', (BV, BV), BV, extra_check=operat
 from . import fp
 from .. import vsa
 from ..errors import ClaripyValueError
+from ..backend_manager import backends

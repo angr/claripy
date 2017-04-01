@@ -53,22 +53,10 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         if calc_length is not None:
             kwargs['length'] = calc_length(*fixed_args)
 
-        ast_args = [ a for a in args if isinstance(a, ast.Base) ]
-        kwargs['filters'] = max(ast_args, key=lambda a:len(a.filters)).filters if ast_args else ()
-        kwargs['uninitialized'] = any(a.uninitialized is True for a in ast_args) or None
-
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
-        new_ast = return_type(name, fixed_args, **kwargs)
-        for f in new_ast.filters:
-            try:
-                l.debug("Running filter %s.", f)
-                new_ast = f(new_ast) if hasattr(f, '__call__') else f.convert(new_ast)
-            except BackendError:
-                l.warning("Ignoring BackendError during AST filter application.")
-
-        return new_ast
+        return return_type(name, fixed_args, **kwargs)._apply_filters()
 
 
     _op.calc_length = calc_length

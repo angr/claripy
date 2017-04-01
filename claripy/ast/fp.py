@@ -29,9 +29,9 @@ def FPS(name, sort, explicit_name=None, **kwargs):
     """
 
     n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
-    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length, **kwargs)
+    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length, **kwargs)._deduplicate()
 
-def FPV(value, sort, filters=(), **kwargs):
+def FPV(value, sort, **kwargs):
     """
     Creates a concrete floating-point value.
 
@@ -39,7 +39,7 @@ def FPV(value, sort, filters=(), **kwargs):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
-    return FP('FPV', (value, sort), length=sort.length, filters=filters, **kwargs)
+    return FP('FPV', (value, sort), length=sort.length, **kwargs)._deduplicate()
 
 #
 # unbound floating point conversions
@@ -47,6 +47,7 @@ def FPV(value, sort, filters=(), **kwargs):
 
 from .. import operations
 from .. import fp
+from ..backend_manager import backends
 from .bv import BV
 from .bool import Bool
 

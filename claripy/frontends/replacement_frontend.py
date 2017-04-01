@@ -270,7 +270,8 @@ class ReplacementFrontend(ConstrainedFrontend):
 
 from ..ast.base import Base
 from ..ast.bv import BVV
-from ..ast.bool import BoolV, false
+from ..ast.bool import BoolV
 from ..errors import ClaripyFrontendError, BackendError
 from ..balancer import Balancer
 from ..backend_manager import backends
+from .. import false

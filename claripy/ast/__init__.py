@@ -6,18 +6,16 @@ FP = lambda *args, **kwargs: None
 Bool = lambda *args, **kwargs: None
 Int = lambda *args, **kwargs: None
 Base = lambda *args, **kwargs: None
-true = lambda *args, **kwargs: None
-false = lambda *args, **kwargs: None
 all_operations = None
 
 def _import():
-    global Bits, BV, VS, FP, Bool, Int, Base, true, false, all_operations
+    global Bits, BV, VS, FP, Bool, Int, Base, all_operations
 
     from .bits import Bits
     from .bv import BV
     from .vs import VS
     from .fp import FP
-    from .bool import Bool, true, false
+    from .bool import Bool
     from .int import Int
     from .base import Base
     from .. import ops as all_operations

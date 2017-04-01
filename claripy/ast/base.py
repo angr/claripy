@@ -24,6 +24,10 @@ def _inner_repr(a, **kwargs):
     else:
         return repr(a)
 
+#
+# Deduplication and caching
+#
+
 class ASTCacheKey(object):
     def __init__(self, a):
         self.ast = a
@@ -37,6 +41,32 @@ class ASTCacheKey(object):
     def __repr__(self):
         return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
 
+_hash_cache = weakref.WeakValueDictionary()
+def _deduplicate(expr):
+    return _hash_cache.setdefault(hash(expr), expr)
+
+def _eager_evaluate(expr):
+    if expr.symbolic or expr.op in operations.leaf_operations:
+        return expr
+
+    for eb in expr._eager_backends:
+        try:
+            r = backends.simplifier._handle_annotations(eb._abstract(eb.convert(expr)), *expr.args)
+            if r is not None:
+                return r
+            else:
+                expr._eager_backends.remove(eb)
+        except BackendError:
+            expr._eager_backends.remove(eb)
+
+    return expr
+
+def _simplify(expr):
+    return backends.simplifier.convert(expr)
+
+_default_symbolic_filters = ( _deduplicate, _simplify, _deduplicate )
+_default_concrete_filters = ( _eager_evaluate, _deduplicate )
+
 #
 # AST variable naming
 #
@@ -49,7 +79,6 @@ def _make_name(name, size, explicit_name=False, prefix=""):
         return "%s%s_%d_%d" % (prefix, name, var_counter.next(), size)
     else:
         return name
-
 
 class Base(ana.Storable):
     """
@@ -76,13 +105,17 @@ class Base(ana.Storable):
         '_burrowed', '_uninitialized', '_uc_alloc_depth', 'annotations', 'simplifiable',
         '_uneliminatable_annotations', '_relocatable_annotations', 'filters'
     ]
-    _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
     LITE_SIMPLIFY=2
     UNSIMPLIFIED=0
 
-    def __new__(cls, op, args, **kwargs):
+    def __init__(
+        self, op, args,
+        variables=None, symbolic=None, add_variables=None, length=None,
+        collapsible=None, simplified=0, uninitialized=None, uc_alloc_depth=None,
+        errored=None, eager_backends=None, annotations=None, filters=None
+    ): #pylint:disable=unused-argument
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -104,73 +137,100 @@ class Base(ana.Storable):
         :param annotations:     A frozenset of annotations applied onto this AST.
         """
 
-        #if any(isinstance(a, BackendObject) for a in args):
-        #   raise Exception('asdf')
+        if len(args) == 0:
+            raise ClaripyOperationError("AST with no arguments!")
 
         # fix up args and kwargs
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
-        if 'symbolic' not in kwargs:
-            kwargs['symbolic'] = any(a.symbolic for a in a_args if isinstance(a, Base))
-        if 'variables' not in kwargs:
-            kwargs['variables'] = frozenset.union(
-                frozenset(), *(a.variables for a in a_args if isinstance(a, Base))
-            )
-        elif type(kwargs['variables']) is not frozenset: #pylint:disable=unidiomatic-typecheck
-            kwargs['variables'] = frozenset(kwargs['variables'])
-        if 'errored' not in kwargs:
-            kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
+        ast_args = [ a for a in a_args if isinstance(a, Base) ]
 
-        if 'add_variables' in kwargs:
-            kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
+        # if symbolicity isn't explicitly provided, take the symbolicity of any args
+        self.symbolic = any(a.symbolic for a in ast_args) if symbolic is None else symbolic
 
-        eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
+        # for variables, take the union of the variables of the arguments
+        self.variables = (
+            frozenset.union(frozenset(), *(a.variables for a in ast_args)) if variables is None
+            else variables if type(variables) is frozenset
+            else frozenset(variables)
+        ) | (frozenset() if add_variables is None else add_variables)
 
-        if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
-            for eb in eager_backends:
-                try:
-                    r = backends.simplifier._handle_annotations(eb._abstract(eb.call(op, args)), *args)
-                    if r is not None:
-                        return r
-                    else:
-                        eager_backends.remove(eb)
-                except BackendError:
-                    eager_backends.remove(eb)
+        # track the list of backends for which this AST has errored
+        self._errored = set.union(set(), *(a._errored for a in ast_args)) if errored is None else errored
 
-        # if we can't be eager anymore, null out the eagerness
-        kwargs['eager_backends'] = None
+        # and track the list of backends that can eagerly evaluate this AST
+        if eager_backends is not None:
+            self._eager_backends = list(eager_backends)
+        elif op in operations.leaf_operations and not self.symbolic:
+            self._eager_backends = list(backends._eager_backends)
+        elif ast_args:
+            self._eager_backends = list(min(ast_args, key=lambda a: len(a._eager_backends))._eager_backends)
+        else:
+            self._eager_backends = ()
 
-        # whether this guy is initialized or not
-        if 'uninitialized' not in kwargs:
-            kwargs['uninitialized'] = None
+        # these are filters that get applied to the AST at every operation
+        if filters is None:
+            nondefault_filters = [ a.filters for a in ast_args if a.filters is not _default_symbolic_filters and a.filters is not _default_concrete_filters]
+            self.filters = max(nondefault_filters, key=len) if nondefault_filters else _default_symbolic_filters if self.symbolic else _default_concrete_filters
+        else:
+            self.filters = filters
 
-        if 'uc_alloc_depth' not in kwargs:
-            kwargs['uc_alloc_depth'] = None
+        # the depth of underconstrained allocation
+        self._uc_alloc_depth = uc_alloc_depth
 
-        if 'annotations' not in kwargs:
-            kwargs['annotations'] = ()
+        # whether this guy is uninitialized
+        self._uninitialized = any(a.uninitialized is True for a in ast_args) if uninitialized is None else uninitialized
 
-        if kwargs.get('filters', None) is None:
-            ast_args = tuple(a for a in a_args if isinstance(a, Base))
-            kwargs['filters'] = max(ast_args, key=lambda a:len(a.filters)).filters if ast_args else (backends.simplifier,)
+        # and some basic stuff
+        self.op = op
+        self.args = a_args
+        self.length = length
 
-        h = Base._calc_hash(op, a_args, kwargs)
-        self = cls._hash_cache.get(h, None)
-        if self is None:
-            self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
-            self.__a_init__(op, a_args, **kwargs)
-            self._hash = h
-            cls._hash_cache[h] = self
-        # else:
-        #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
-        #        raise Exception("CRAP -- hash collision")
+        # how simplified this AST is
+        self._simplified = simplified
 
-        return self
+        # a cache key, to use when storing this AST in dicts (to survive bucket collisions)
+        self._cache_key = ASTCacheKey(self)
 
-    def __init__(self, *args, **kwargs):
-        pass
+        # references to the ITE-excavated and ITE-burrowed instances of this AST
+        self._excavated = None
+        self._burrowed = None
 
-    @staticmethod
-    def _calc_hash(op, args, k):
+        # and our annotations
+        self.annotations = () if annotations is None else annotations
+
+        # these annotations cannot be eliminated by simplification, and it's easiest to track them on the AST
+        self._uneliminatable_annotations = frozenset(itertools.chain(
+            itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
+            tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
+        ))
+
+        # these annotations must be relocated by simplification rather than being eliminated, and it's easiest to track them on the AST
+        self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
+            itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+            tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
+        ))).keys()
+
+        self._hash = None
+
+    def _apply_filters(self):
+        new_ast = self
+        for f in new_ast.filters:
+            try:
+                l.debug("Running filter %s.", f)
+                new_ast = f(new_ast) if hasattr(f, '__call__') else f.convert(new_ast)
+            except BackendError:
+                l.warning("Ignoring BackendError during AST filter application.")
+        return new_ast
+
+    def _deduplicate(self):
+        return _deduplicate(self)
+
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = self._calc_hash()
+        return self._hash
+
+    def _calc_hash(self):
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
@@ -181,67 +241,14 @@ class Base(ana.Storable):
         :returns:       a hash.
 
         """
-        args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in args)
-        to_hash = (
-            op, args_tup,
-            k['symbolic'], hash(k['variables']), hash(k.get('filters', ())),
-            str(k.get('length', None)), hash(k.get('annotations', None))
-        )
+        args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in self.args)
+        to_hash = (self.op, args_tup, self.symbolic, hash(self.variables), str(self.length), hash(self.annotations), hash(self.filters))
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
         return md5_unpacker.unpack(hd)[0] # 64 bits
-
-    def _get_hashables(self):
-        return self.op, tuple(str(a) if type(a) in (int, long, float) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
-
-    #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, filters=None, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
-        """
-        Initializes an AST. Takes the same arguments as Base.__new__()
-        """
-        self.op = op
-        self.args = args
-        self.length = length
-        self.variables = frozenset(variables)
-        self.symbolic = symbolic
-        self._eager_backends = eager_backends
-
-        self._errored = errored if errored is not None else set()
-
-        self._simplified = simplified
-        self._cache_key = ASTCacheKey(self)
-        self._excavated = None
-        self._burrowed = None
-
-        self._uninitialized = uninitialized
-        self._uc_alloc_depth = uc_alloc_depth
-        self.annotations = annotations
-
-        ast_args = tuple(a for a in self.args if isinstance(a, Base))
-        self._uneliminatable_annotations = frozenset(itertools.chain(
-            itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
-            tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
-        ))
-
-        self.filters = filters
-
-        self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
-            itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
-            tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
-        ))).keys()
-
-        if len(args) == 0:
-            raise ClaripyOperationError("AST with no arguments!")
-
-        #if self.op != 'I':
-        #    for a in args:
-        #        if not isinstance(a, Base) and type(a) not in (int, long, bool, str, unicode):
-        #            import ipdb; ipdb.set_trace()
-        #            l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
-    #pylint:enable=attribute-defined-outside-init
 
     def make_uuid(self, uuid=None):
         """
@@ -252,7 +259,7 @@ class Base(ana.Storable):
         """
         u = getattr(self, '_ana_uuid', None)
         if u is None:
-            u = str(self._hash) if uuid is None else uuid
+            u = str(hash(self)) if uuid is None else uuid
             ana.get_dl().uuid_cache[u] = self
             setattr(self, '_ana_uuid', u)
         return u
@@ -260,9 +267,6 @@ class Base(ana.Storable):
     @property
     def uuid(self):
         return self.ana_uuid
-
-    def __hash__(self):
-        return self._hash
 
     @property
     def cache_key(self):
@@ -283,9 +287,9 @@ class Base(ana.Storable):
         Support for ANA deserialization.
         """
         op, args, length, variables, symbolic, h, annotations, filters = state
-        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, filters=filters)
+        Base.__init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, filters=filters)
         self._hash = h
-        Base._hash_cache[h] = self
+        _hash_cache[h] = self
 
     #
     # Collapsing and simplification
@@ -303,8 +307,8 @@ class Base(ana.Storable):
         if 'variables' not in kwargs and self.op in all_operations: kwargs['variables'] = self.variables
         if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
         if 'symbolic' not in kwargs and self.op in all_operations: kwargs['symbolic'] = self.symbolic
-        if 'filters' not in kwargs: kwargs['filters'] = self.filters
-        return type(self)(*args, **kwargs)
+        if self.filters is not _default_symbolic_filters and self.filters is not _default_concrete_filters and 'filters' not in kwargs: kwargs['filters'] = self.filters
+        return type(self)(*args, **kwargs)._apply_filters()
 
     def _rename(self, new_name):
         if self.op not in { 'BVS', 'BoolS', 'FPS' }:
@@ -639,7 +643,7 @@ class Base(ana.Storable):
         a = self.__class__(self.op, new_args, length=length, filters=self.filters)
         #if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
         #   raise ClaripyOperationError("major bug in swap_args()")
-        return a
+        return a._apply_filters()
 
     #
     # Other helper functions
@@ -663,7 +667,7 @@ class Base(ana.Storable):
     def __nonzero__(self):
         """
         This prevents people from accidentally using an AST as a condition. For
-        example, the following was previously common::
+        example, the following was previously a common error:
 
             a,b = two ASTs
             if a == b:
@@ -774,7 +778,7 @@ class Base(ana.Storable):
     def _burrow_ite(self):
         if self.op != 'If':
             #print "i'm not an if"
-            return self.swap_args([ (a.ite_burrowed if isinstance(a, Base) else a) for a in self.args ])
+            return self.swap_args([ (_deduplicate(a.ite_burrowed) if isinstance(a, Base) else a) for a in self.args ])
 
         if not all(isinstance(a, Base) for a in self.args):
             #print "not all my args are bases"
@@ -811,7 +815,7 @@ class Base(ana.Storable):
         if self.op in { 'BVS', 'I', 'BVV' }:
             return self
 
-        excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]
+        excavated_args = [ (_deduplicate(a.ite_excavated) if isinstance(a, Base) else a) for a in self.args ]
         ite_args = [ isinstance(a, Base) and a.op == 'If' for a in excavated_args ]
 
         if self.op == 'If':

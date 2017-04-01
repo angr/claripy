@@ -88,6 +88,17 @@ def downsize():
     backends.downsize()
 
 #
+# some standard ASTs
+#
+
+true = BoolV(True)
+false = BoolV(False)
+ast.true = true
+ast.false = false
+_all_operations.true = true
+_all_operations.false = false
+
+#
 # Frontends
 #
 

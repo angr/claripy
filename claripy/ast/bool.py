@@ -33,7 +33,7 @@ class Bool(Base):
         return is_false(self)
 
 
-def BoolS(name, explicit_name=None, filters=None):
+def BoolS(name, explicit_name=None, **kwargs):
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -43,21 +43,23 @@ def BoolS(name, explicit_name=None, filters=None):
     :return:                A Bool object representing this symbol.
     """
     n = _make_name(name, -1, False if explicit_name is None else explicit_name)
-    return Bool('BoolS', (n,), variables={n}, symbolic=True, filters=filters)
+    return Bool('BoolS', (n,), variables={n}, symbolic=True, **kwargs)._deduplicate()
 
-def BoolV(val, filters=()):
-    try: return _boolv_cache[(val)]
-    except KeyError: pass
-    result = Bool('BoolV', (val,), filters=filters)
-    _boolv_cache[val] = result
-    return result
+# why the fuck does this have to be so high up? with this lower, the reference to backends fails,
+# although it doesn't do that when this is put below other module-level functions that reference
+# backends
+from ..backend_manager import backends
 
-#
-# some standard ASTs
-#
-
-true = BoolV(True)
-false = BoolV(False)
+def BoolV(val, **kwargs):
+    if not kwargs:
+        try:
+            return _boolv_cache[(val)]
+        except KeyError:
+            pass
+    result = Bool('BoolV', (val,), **kwargs)
+    if not kwargs:
+        _boolv_cache[val] = result
+    return result._deduplicate()
 
 #
 # Bound operations
@@ -122,9 +124,9 @@ def If(*args):
         return If(args[0], args[1], args[2].args[1])
 
     if issubclass(ty, Bits):
-        return ty('If', tuple(args), length=args[1].length)
+        return ty('If', tuple(args), length=args[1].length)._apply_filters()
     else:
-        return ty('If', tuple(args))
+        return ty('If', tuple(args))._apply_filters()
 
 And = operations.op('And', Bool, Bool, bound=False)
 Or = operations.op('Or', Bool, Bool, bound=False)
@@ -177,7 +179,6 @@ def constraint_to_si(expr):
 
     return satisfiable, replace_list
 
-from ..backend_manager import backends
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
 from .bv import BVS

@@ -394,7 +394,7 @@ class BackendZ3(Backend):
 
             #if bv_name.count('_') < 2:
             #       import ipdb; ipdb.set_trace()
-            return BV("BVS", (bv_name, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True, filters=(backends.simplifier,))
+            return BV("BVS", (bv_name, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True)
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
@@ -450,16 +450,16 @@ class BackendZ3(Backend):
             # If is polymorphic and thus must be handled specially
             ty = type(args[1])
 
-            a = ty('If', tuple(args), length=args[1].length)
+            a = ty('If', tuple(args), length=args[1].length)._deduplicate()
         elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
             op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
             if op.calc_length is not None:
                 length = op.calc_length(*args)
-                a = result_ty(op_name, tuple(args), length=length)
+                a = result_ty(op_name, tuple(args), length=length)._deduplicate()
             else:
-                a = result_ty(op_name, tuple(args))
+                a = result_ty(op_name, tuple(args))._deduplicate()
         else:
-            a = result_ty(op_name, tuple(args))
+            a = result_ty(op_name, tuple(args))._deduplicate()
 
         self._ast_cache[h] = a
         return a
@@ -1120,7 +1120,6 @@ from ..operations import backend_operations, backend_fp_operations
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
-from ..backend_manager import backends
 
 op_type_map = {
     # Boolean
