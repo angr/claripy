@@ -149,6 +149,10 @@ class Base(ana.Storable):
         if 'annotations' not in kwargs:
             kwargs['annotations'] = ()
 
+        if kwargs.get('filters', None) is None:
+            ast_args = tuple(a for a in a_args if isinstance(a, Base))
+            kwargs['filters'] = max(ast_args, key=lambda a:len(a.filters)).filters if ast_args else (backends.simplifier,)
+
         h = Base._calc_hash(op, a_args, kwargs)
         self = cls._hash_cache.get(h, None)
         if self is None:
@@ -222,12 +226,7 @@ class Base(ana.Storable):
             tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
         ))
 
-        if filters is None:
-            self.filters = max(ast_args, key=lambda a:len(a.filters)).filters if ast_args else (backends.simplifier,)
-        else:
-            self.filters = filters
-        #if len(self.filters) == 0 and op[-1] != 'V':
-        #   import ipdb; ipdb.set_trace()
+        self.filters = filters
 
         self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
             itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),

@@ -227,7 +227,6 @@ class BackendSimplifier(Backend):
         filtered_args = [
             a for a in expr.args if a is not ast.all_operations.BVV(0, a.size()) and a is not 0
         ]
-        a,b = expr.args
         if len(filtered_args) == 1:
             return filtered_args[0]
         elif len(filtered_args) == 2:
