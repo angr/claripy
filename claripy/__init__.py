@@ -13,6 +13,8 @@ from . import operations
 from . import ops as _all_operations
 
 # This is here for later, because we'll fuck the namespace in a few lines
+# (unfortunately, this is the least hacky hack)
+from . import backend_manager as _backend_manager
 from . import backends as _backends_module
 from .backends import Backend
 

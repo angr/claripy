@@ -26,4 +26,13 @@ class BackendManager(object):
         for b in self._all_backends:
             b.downsize()
 
+    def _get_name_of(self, b):
+        for k,v in self._backends_by_name.iteritems():
+            if v is b:
+                return k
+
+def _get_by_name(name):
+    return getattr(backends, name)
+_get_by_name.__safe_for_unpickling__ = True
+
 backends = BackendManager()

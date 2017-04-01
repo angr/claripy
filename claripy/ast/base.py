@@ -276,14 +276,14 @@ class Base(ana.Storable):
         """
         Support for ANA serialization.
         """
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations, self.filters
 
     def _ana_setstate(self, state):
         """
         Support for ANA deserialization.
         """
-        op, args, length, variables, symbolic, h, annotations = state
-        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
+        op, args, length, variables, symbolic, h, annotations, filters = state
+        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, filters=filters)
         self._hash = h
         Base._hash_cache[h] = self
 

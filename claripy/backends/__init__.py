@@ -714,6 +714,9 @@ class Backend(object):
         # pylint: disable=unused-argument
         raise BackendError('Backend %s does not support operation %s' % (self, expr.op))
 
+    def __reduce__(self):
+        return (_backend_manager._get_by_name, (_backend_manager.backends._get_name_of(self),))
+
 from ..errors import BackendError, ClaripyRecursionError, BackendUnsupportedError
 from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
@@ -721,3 +724,4 @@ from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
 from .backend_simplifier import BackendSimplifier
 from ..ast.base import Base
+from .. import _backend_manager
