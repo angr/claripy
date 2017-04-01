@@ -122,3 +122,4 @@ if __name__ == '__main__':
     test_annotations()
     test_backend()
     test_eagerness()
+    test_simplification()

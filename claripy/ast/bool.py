@@ -33,7 +33,7 @@ class Bool(Base):
         return is_false(self)
 
 
-def BoolS(name, explicit_name=None):
+def BoolS(name, explicit_name=None, filters=None):
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -43,12 +43,12 @@ def BoolS(name, explicit_name=None):
     :return:                A Bool object representing this symbol.
     """
     n = _make_name(name, -1, False if explicit_name is None else explicit_name)
-    return Bool('BoolS', (n,), variables={n}, symbolic=True)
+    return Bool('BoolS', (n,), variables={n}, symbolic=True, filters=filters)
 
-def BoolV(val):
+def BoolV(val, filters=()):
     try: return _boolv_cache[(val)]
     except KeyError: pass
-    result = Bool('BoolV', (val,))
+    result = Bool('BoolV', (val,), filters=filters)
     _boolv_cache[val] = result
     return result
 

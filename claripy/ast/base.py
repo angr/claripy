@@ -70,9 +70,12 @@ class Base(ana.Storable):
     This is done to better support serialization and better manage memory.
     """
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
-                  '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
+    __slots__ = [
+        'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
+        '_cache_key', '_errored', '_eager_backends', 'length', '_excavated',
+        '_burrowed', '_uninitialized', '_uc_alloc_depth', 'annotations', 'simplifiable',
+        '_uneliminatable_annotations', '_relocatable_annotations', 'filters'
+    ]
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -125,7 +128,7 @@ class Base(ana.Storable):
         if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
-                    r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
+                    r = backends.simplifier._handle_annotations(eb._abstract(eb.call(op, args)), *args)
                     if r is not None:
                         return r
                     else:
@@ -175,7 +178,11 @@ class Base(ana.Storable):
 
         """
         args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in args)
-        to_hash = (op, args_tup, k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
+        to_hash = (
+            op, args_tup,
+            k['symbolic'], hash(k['variables']), hash(k.get('filters', ())),
+            str(k.get('length', None)), hash(k.get('annotations', None))
+        )
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
@@ -187,7 +194,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if type(a) in (int, long, float) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, filters=None, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as Base.__new__()
         """
@@ -214,6 +221,13 @@ class Base(ana.Storable):
             itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
             tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
         ))
+
+        if filters is None:
+            self.filters = max(ast_args, key=lambda a:len(a.filters)).filters if ast_args else (backends.simplifier,)
+        else:
+            self.filters = filters
+        #if len(self.filters) == 0 and op[-1] != 'V':
+        #   import ipdb; ipdb.set_trace()
 
         self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
             itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
@@ -290,6 +304,7 @@ class Base(ana.Storable):
         if 'variables' not in kwargs and self.op in all_operations: kwargs['variables'] = self.variables
         if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
         if 'symbolic' not in kwargs and self.op in all_operations: kwargs['symbolic'] = self.symbolic
+        if 'filters' not in kwargs: kwargs['filters'] = self.filters
         return type(self)(*args, **kwargs)
 
     def _rename(self, new_name):
@@ -622,7 +637,7 @@ class Base(ana.Storable):
         #symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
         #variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
         length = self.length if new_length is None else new_length
-        a = self.__class__(self.op, new_args, length=length)
+        a = self.__class__(self.op, new_args, length=length, filters=self.filters)
         #if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
         #   raise ClaripyOperationError("major bug in swap_args()")
         return a
@@ -732,7 +747,7 @@ class Base(ana.Storable):
     def _identify_vars(self, all_vars, counter):
         if self.op == 'BVS':
             if self.args not in all_vars:
-                all_vars[self.args] = BV('BVS', self.args, length=self.length, explicit_name=True)
+                all_vars[self.args] = BV('BVS', self.args, length=self.length, explicit_name=True, filters=self.filters)
         elif self.op == 'BoolS':
             if self.args not in all_vars:
                 all_vars[self.args] = BoolS('var_' + str(next(counter)))
@@ -791,7 +806,7 @@ class Base(ana.Storable):
         new_args = list(old_true.args)
         new_args[different_idx] = inner_if.ite_burrowed
         #print "replaced the",different_idx,"arg:",new_args
-        return old_true.__class__(old_true.op, new_args, length=self.length)
+        return old_true.__class__(old_true.op, new_args, length=self.length, filters=self.filters)
 
     def _excavate_ite(self):
         if self.op in { 'BVS', 'I', 'BVV' }:

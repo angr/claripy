@@ -394,7 +394,7 @@ class BackendZ3(Backend):
 
             #if bv_name.count('_') < 2:
             #       import ipdb; ipdb.set_trace()
-            return BV("BVS", (bv_name, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True)
+            return BV("BVS", (bv_name, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True, filters=(backends.simplifier,))
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
@@ -1120,6 +1120,7 @@ from ..operations import backend_operations, backend_fp_operations
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
+from ..backend_manager import backends
 
 op_type_map = {
     # Boolean

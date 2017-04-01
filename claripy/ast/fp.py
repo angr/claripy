@@ -18,7 +18,7 @@ class FP(Bits):
     def sort(self):
         return fp.FSort.from_size(self.length)
 
-def FPS(name, sort, explicit_name=None):
+def FPS(name, sort, explicit_name=None, **kwargs):
     """
     Creates a floating-point symbol.
 
@@ -29,9 +29,9 @@ def FPS(name, sort, explicit_name=None):
     """
 
     n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
-    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length)
+    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length, **kwargs)
 
-def FPV(value, sort):
+def FPV(value, sort, filters=(), **kwargs):
     """
     Creates a concrete floating-point value.
 
@@ -39,7 +39,7 @@ def FPV(value, sort):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
-    return FP('FPV', (value, sort), length=sort.length)
+    return FP('FPV', (value, sort), length=sort.length, filters=filters, **kwargs)
 
 #
 # unbound floating point conversions

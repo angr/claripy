@@ -58,6 +58,7 @@ class Backend(object):
         self._tls = threading.local()
         self._true_cache = weakref.WeakKeyDictionary()
         self._false_cache = weakref.WeakKeyDictionary()
+        self._expr_only = False
 
     @property
     def _object_cache(self):
@@ -156,11 +157,13 @@ class Backend(object):
             try:
                 if expr.op in self._op_expr:
                     r = self._op_expr[expr.op](expr)
-                else:
+                elif not self._expr_only:
                     try:
                         r = self.call(expr.op, expr.args)
                     except BackendUnsupportedError:
                         r = self.default_op(expr)
+                else:
+                    r = self.default_op(expr)
             except (RuntimeError, ctypes.ArgumentError):
                 e_type, value, traceback = sys.exc_info()
                 raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
@@ -716,4 +719,5 @@ from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
+from .backend_simplifier import BackendSimplifier
 from ..ast.base import Base

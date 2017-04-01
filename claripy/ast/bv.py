@@ -141,8 +141,10 @@ class BV(Bits):
     def to_bv(self):
         return self
 
-def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
-        explicit_name=None, discrete_set=False, discrete_set_max_card=None, **kwargs):
+def BVS(
+    name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
+    explicit_name=None, discrete_set=False, discrete_set_max_card=None, **kwargs
+):
     """
     Creates a bit-vector symbol (i.e., a variable).
 
@@ -169,10 +171,13 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pyli
     if not discrete_set:
         discrete_set_max_card = None
 
-    return BV('BVS', (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card), variables={n},
-              length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
+    return BV(
+        'BVS', (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card),
+        variables={n}, length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized,
+        **kwargs
+    )
 
-def BVV(value, size=None, **kwargs):
+def BVV(value, size=None, filters=(), **kwargs):
     """
     Creates a bit-vector value (i.e., a concrete value).
 
@@ -200,11 +205,11 @@ def BVV(value, size=None, **kwargs):
     if value is not None:
         value &= (1 << size) -1
 
-    if not kwargs:
+    if not kwargs and not filters:
         try: return _bvv_cache[(value, size)]
         except KeyError: pass
 
-    result = BV('BVV', (value, size), length=size, **kwargs)
+    result = BV('BVV', (value, size), length=size, filters=filters, **kwargs)
     _bvv_cache[(value, size)] = result
     return result
 
