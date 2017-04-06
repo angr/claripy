@@ -64,7 +64,7 @@ def _eager_evaluate(expr):
 def _simplify(expr):
     return simplifier.simplify(expr)
 
-_default_symbolic_filters = ( _deduplicate, _simplify, _deduplicate )
+_default_symbolic_filters = ( _deduplicate, _simplify )
 _default_concrete_filters = ( _eager_evaluate, _deduplicate )
 
 #
@@ -112,9 +112,9 @@ class Base(ana.Storable):
 
     def __init__(
         self, op, args,
-        variables=None, symbolic=None, add_variables=None, length=None,
+        variables=None, symbolic=None, add_variables=frozenset(), length=None,
         collapsible=None, simplified=0, uninitialized=None, uc_alloc_depth=None,
-        errored=None, eager_backends=None, annotations=None, filters=None
+        eager_backends=None, annotations=None, filters=None
     ): #pylint:disable=unused-argument
         """
         This is called when you create a new Base object, whether directly or through an operation.
@@ -132,7 +132,6 @@ class Base(ana.Storable):
                                 another Reverse.
         :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
                                 (basically, just undoing the Reverse op), and 2 means simplified through z3.
-        :param errored:         A set of backends that are known to be unable to handle this AST.
         :param eager_backends:  A list of backends with which to attempt eager evaluation
         :param annotations:     A frozenset of annotations applied onto this AST.
         """
@@ -149,13 +148,13 @@ class Base(ana.Storable):
 
         # for variables, take the union of the variables of the arguments
         self.variables = (
-            frozenset.union(frozenset(), *(a.variables for a in ast_args)) if variables is None
+            frozenset.union(add_variables, *(a.variables for a in ast_args)) if variables is None
             else variables if type(variables) is frozenset
             else frozenset(variables)
-        ) | (frozenset() if add_variables is None else add_variables)
+        )
 
         # track the list of backends for which this AST has errored
-        self._errored = set.union(set(), *(a._errored for a in ast_args)) if errored is None else errored
+        self._errored = set.union(*(a._errored for a in ast_args)) if ast_args else set()
 
         # and track the list of backends that can eagerly evaluate this AST
         if eager_backends is not None:

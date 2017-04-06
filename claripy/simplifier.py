@@ -43,8 +43,9 @@ class Simplifier(object):
         except KeyError:
             s = self._handle_annotations(self._simplifiers[e.op](e), e)
             if s is not None:
-                self._simplification_cache[e.cache_key] = s
-                return s
+                ss = s._deduplicate()
+                self._simplification_cache[e.cache_key] = ss
+                return ss
             else:
                 return e
 
