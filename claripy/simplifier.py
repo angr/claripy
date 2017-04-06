@@ -1,14 +1,13 @@
 import collections
 import itertools
 import operator
+import weakref
 
-from . import Backend
-
-class BackendSimplifier(Backend):
+class Simplifier(object):
     SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
     def __init__(self):
-        super(BackendSimplifier, self).__init__()
+        super(Simplifier, self).__init__()
         self._simplifiers = {
             'Reverse': self.boolean_reverse_simplifier,
             'And': self.boolean_and_simplifier,
@@ -32,15 +31,22 @@ class BackendSimplifier(Backend):
             'fpToIEEEBV': self.fptobv_simplifier,
             'fpToFP': self.fptofp_simplifier,
         }
-        self._expr_only = True
 
-    def default_op(self, e):
-        if e.op in self._simplifiers:
+        self._simplification_cache = weakref.WeakKeyDictionary()
+
+    def simplify(self, e):
+        if e.op not in self._simplifiers:
+            return e
+
+        try:
+            return self._simplification_cache[e.cache_key]
+        except KeyError:
             s = self._handle_annotations(self._simplifiers[e.op](e), e)
             if s is not None:
+                self._simplification_cache[e.cache_key] = s
                 return s
-
-        return e
+            else:
+                return e
 
     #
     # Helpers
@@ -187,11 +193,11 @@ class BackendSimplifier(Backend):
         if len(filtered_args) == 1:
             return filtered_args[0]
         else:
-            return BackendSimplifier._flatten_simplifier(expr, None, *filtered_args)
+            return Simplifier._flatten_simplifier(expr, None, *filtered_args)
 
     @staticmethod
     def bitwise_mul_simplifier(expr):
-        return BackendSimplifier._flatten_simplifier(expr, None, *expr.args)
+        return Simplifier._flatten_simplifier(expr, None, *expr.args)
 
     @staticmethod
     def bitwise_sub_simplifier(expr):
@@ -220,7 +226,7 @@ class BackendSimplifier(Backend):
             unique_args = set(k for k, v in ctr.iteritems() if v % 2 != 0)
             return tuple([ arg for arg in args if arg in unique_args ])
 
-        return BackendSimplifier._flatten_simplifier(expr, _flattening_filter, *filtered_args)
+        return Simplifier._flatten_simplifier(expr, _flattening_filter, *filtered_args)
 
     @staticmethod
     def bitwise_or_simplifier(expr):
@@ -238,7 +244,7 @@ class BackendSimplifier(Backend):
             # a | a == a
             return tuple(OrderedSet(args))
 
-        return BackendSimplifier._flatten_simplifier(expr, _flattening_filter, *filtered_args)
+        return Simplifier._flatten_simplifier(expr, _flattening_filter, *filtered_args)
 
     @staticmethod
     def bitwise_and_simplifier(expr):
@@ -257,7 +263,7 @@ class BackendSimplifier(Backend):
             # a & a == a
             return tuple(OrderedSet(args))
 
-        return BackendSimplifier._flatten_simplifier(expr, _flattening_filter, *filtered_args)
+        return Simplifier._flatten_simplifier(expr, _flattening_filter, *filtered_args)
 
     @staticmethod
     def zeroext_simplifier(expr):
@@ -410,7 +416,7 @@ class BackendSimplifier(Backend):
             # elif b._claripy.is_true(b.args[1] != a) and b._claripy.is_true(b.args[2] != a):
             #     return b._claripy.false
 
-        if (a.op in BackendSimplifier.SIMPLE_OPS or b.op in BackendSimplifier.SIMPLE_OPS) and a.length > 1 and a.length == b.length:
+        if (a.op in Simplifier.SIMPLE_OPS or b.op in Simplifier.SIMPLE_OPS) and a.length > 1 and a.length == b.length:
             for i in xrange(a.length):
                 a_bit = a[i:i]
                 if a_bit.symbolic:
@@ -457,7 +463,7 @@ class BackendSimplifier(Backend):
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
             #     return b._claripy.false
 
-        if (a.op == BackendSimplifier.SIMPLE_OPS or b.op in BackendSimplifier.SIMPLE_OPS) and a.length > 1 and a.length == b.length:
+        if (a.op == Simplifier.SIMPLE_OPS or b.op in Simplifier.SIMPLE_OPS) and a.length > 1 and a.length == b.length:
             for i in xrange(a.length):
                 a_bit = a[i:i]
                 if a_bit.symbolic:
@@ -516,7 +522,7 @@ class BackendSimplifier(Backend):
             # a And a == a
             return tuple(OrderedSet(args))
 
-        return BackendSimplifier._flatten_simplifier(expr, _flattening_filter, *args)
+        return Simplifier._flatten_simplifier(expr, _flattening_filter, *args)
 
     @staticmethod
     def boolean_or_simplifier(expr):
@@ -538,7 +544,7 @@ class BackendSimplifier(Backend):
             # a Or a == a
             return tuple(OrderedSet(args))
 
-        return BackendSimplifier._flatten_simplifier(expr, _flattening_filter, *args)
+        return Simplifier._flatten_simplifier(expr, _flattening_filter, *args)
 
     @staticmethod
     def boolean_not_simplifier(expr):
@@ -601,8 +607,10 @@ class BackendSimplifier(Backend):
             elif sort == fp.FSORT_DOUBLE and to_bv.length == 64:
                 return to_bv.args[0]
 
-from ..utils import OrderedSet
-from .. import ast
-from .. import fp
-from .. import operations
-from ..backend_manager import backends
+simplifier = Simplifier()
+
+from .utils import OrderedSet
+from . import ast
+from . import fp
+from . import operations
+from .backend_manager import backends

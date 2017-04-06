@@ -51,7 +51,7 @@ def _eager_evaluate(expr):
 
     for eb in expr._eager_backends:
         try:
-            r = backends.simplifier._handle_annotations(eb._abstract(eb.convert(expr)), *expr.args)
+            r = simplifier._handle_annotations(eb._abstract(eb.convert(expr)), *expr.args)
             if r is not None:
                 return r
             else:
@@ -62,7 +62,7 @@ def _eager_evaluate(expr):
     return expr
 
 def _simplify(expr):
-    return backends.simplifier.convert(expr)
+    return simplifier.simplify(expr)
 
 _default_symbolic_filters = ( _deduplicate, _simplify, _deduplicate )
 _default_concrete_filters = ( _eager_evaluate, _deduplicate )
@@ -984,3 +984,4 @@ from ..backend_object import BackendObject
 from ..backend_manager import backends
 from ..ast.bool import If, Not, BoolS
 from ..ast.bv import BV
+from ..simplifier import simplifier

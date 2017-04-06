@@ -722,6 +722,5 @@ from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
-from .backend_simplifier import BackendSimplifier
 from ..ast.base import Base
 from .. import _backend_manager
