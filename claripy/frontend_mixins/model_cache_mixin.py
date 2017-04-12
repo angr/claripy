@@ -273,7 +273,7 @@ class ModelCacheMixin(object):
     def solution(self, e, v, extra_constraints=(), **kwargs):
         if isinstance(v, Base):
             cached = self._get_batch_solutions([e,v], extra_constraints=extra_constraints)
-            if (e,v) in map(tuple, cached):
+            if any(ec == vc for ec,vc in cached):
                 return True
         else:
             cached = self._get_solutions(e, extra_constraints=extra_constraints)
