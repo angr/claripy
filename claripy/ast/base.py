@@ -4,7 +4,6 @@ import struct
 import weakref
 import hashlib
 import itertools
-import collections
 import cPickle as pickle
 
 import logging
@@ -197,17 +196,19 @@ class Base(ana.Storable):
         # and our annotations
         self.annotations = () if annotations is None else annotations
 
-        # these annotations cannot be eliminated by simplification, and it's easiest to track them on the AST
-        self._uneliminatable_annotations = frozenset(itertools.chain(
-            itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
-            tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
-        ))
+        # these annotations cannot be eliminated by simplification,
+        # and it's easiest to track them on the AST
+        self._uneliminatable_annotations = frozenset.union(
+            frozenset(a for a in self.annotations if not a.eliminatable and not a.relocatable),
+            *(a._uneliminatable_annotations for a in ast_args)
+        )
 
-        # these annotations must be relocated by simplification rather than being eliminated, and it's easiest to track them on the AST
-        self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
-            itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
-            tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
-        ))).keys()
+        # these annotations must be relocated by simplification rather
+        # than being eliminated, and it's easiest to track them on the AST
+        self._relocatable_annotations = frozenset.union(
+            frozenset(a for a in self.annotations if not a.eliminatable and a.relocatable),
+            *(a._relocatable_annotations for a in ast_args)
+        )
 
         self._hash = None
 
