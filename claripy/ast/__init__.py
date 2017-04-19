@@ -6,10 +6,11 @@ FP = lambda *args, **kwargs: None
 Bool = lambda *args, **kwargs: None
 Int = lambda *args, **kwargs: None
 Base = lambda *args, **kwargs: None
+ASTStructure = lambda *args, **kwargs: None
 all_operations = None
 
 def _import():
-    global Bits, BV, VS, FP, Bool, Int, Base, all_operations
+    global Bits, BV, VS, FP, Bool, Int, Base, ASTStructure, all_operations
 
     from .bits import Bits
     from .bv import BV
@@ -18,4 +19,5 @@ def _import():
     from .bool import Bool
     from .int import Int
     from .base import Base
+    from .structure import ASTStructure
     from .. import ops as all_operations

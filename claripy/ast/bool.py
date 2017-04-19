@@ -1,7 +1,7 @@
 import logging
 l = logging.getLogger('claripy.ast.bool')
 
-from ..ast.base import Base, _make_name
+from .base import Base, _make_name, make_op, _default_concrete_filters, _default_symbolic_filters
 
 _boolv_cache = dict()
 
@@ -33,7 +33,7 @@ class Bool(Base):
         return is_false(self)
 
 
-def BoolS(name, explicit_name=None, **kwargs):
+def BoolS(name, explicit_name=None, filters=_default_symbolic_filters):
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -43,33 +43,26 @@ def BoolS(name, explicit_name=None, **kwargs):
     :return:                A Bool object representing this symbol.
     """
     n = _make_name(name, -1, False if explicit_name is None else explicit_name)
-    return Bool('BoolS', (n,), variables={n}, symbolic=True, **kwargs)._deduplicate()
+    return Bool(ASTStructure('BoolS', (n,), ())._deduplicate(), (), filters=filters, _eager=False)
 
 # why the fuck does this have to be so high up? with this lower, the reference to backends fails,
 # although it doesn't do that when this is put below other module-level functions that reference
 # backends
 from ..backend_manager import backends
 
-def BoolV(val, **kwargs):
-    if not kwargs:
-        try:
-            return _boolv_cache[(val)]
-        except KeyError:
-            pass
-    result = Bool('BoolV', (val,), **kwargs)
-    if not kwargs:
-        _boolv_cache[val] = result
-    return result._deduplicate()
+def BoolV(val, filters=_default_concrete_filters):
+    if filters is None:
+        return true if val else false
+    else:
+        return Bool(ASTStructure('BoolV', (val,), ()), (), filters=filters)
 
 #
 # Bound operations
 #
 
-from .. import operations
-
-Bool.__eq__ = operations.op('__eq__', (Bool, Bool), Bool)
-Bool.__ne__ = operations.op('__ne__', (Bool, Bool), Bool)
-Bool.intersection = operations.op('intersection', (Bool, Bool), Bool)
+Bool.__eq__ = make_op('__eq__', (Bool, Bool), Bool)
+Bool.__ne__ = make_op('__ne__', (Bool, Bool), Bool)
+Bool.intersection = make_op('intersection', (Bool, Bool), Bool)
 
 #
 # Unbound operations
@@ -128,9 +121,9 @@ def If(*args):
     else:
         return ty('If', tuple(args))._apply_filters()
 
-And = operations.op('And', Bool, Bool, bound=False)
-Or = operations.op('Or', Bool, Bool, bound=False)
-Not = operations.op('Not', (Bool,), Bool, bound=False)
+And = make_op('And', Bool, Bool, bound=False)
+Or = make_op('Or', Bool, Bool, bound=False)
+Not = make_op('Not', (Bool,), Bool, bound=False)
 
 def is_true(e, exact=None): #pylint:disable=unused-argument
     for b in backends._quick_backends:
@@ -182,3 +175,6 @@ def constraint_to_si(expr):
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
 from .bv import BVS
+from .structure import ASTStructure
+true = Bool(ASTStructure('BoolV', (True,), ()), (), _default_concrete_filters)
+false = Bool(ASTStructure('BoolV', (False,), ()), (), _default_concrete_filters)

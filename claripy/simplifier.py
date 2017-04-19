@@ -39,41 +39,19 @@ class Simplifier(object):
             return e
 
         try:
-            return self._simplification_cache[e.cache_key]
+            return self._simplification_cache[e]
         except KeyError:
-            s = self._handle_annotations(self._simplifiers[e.op](e), e)
+            s = self._simplifiers[e.op](e)
             if s is not None:
-                ss = s._deduplicate()
-                self._simplification_cache[e.cache_key] = ss
-                return ss
+                self._simplification_cache[e] = s
+                self._simplification_cache[s] = s
+                return s
             else:
                 return e
 
     #
     # Helpers
     #
-
-    @staticmethod
-    def _handle_annotations(simp, *args):
-        if simp is None:
-            return None
-
-        preserved_relocatable = frozenset(simp._relocatable_annotations)
-        relocated_annotations = set()
-        bad_eliminated = 0
-
-        for aa in (a for a in args if isinstance(a, ast.Base)):
-            for oa in aa._relocatable_annotations:
-                if oa not in preserved_relocatable and oa not in relocated_annotations:
-                    relocated_annotations.add(oa)
-                    na = oa.relocate(aa, simp)
-                    if na is not None:
-                        simp = simp.append_annotation(na)
-
-            bad_eliminated += len(aa._uneliminatable_annotations - simp._uneliminatable_annotations)
-
-        if bad_eliminated == 0:
-            return simp
 
     @staticmethod
     def _flatten_simplifier(orig_expr, filter_func, *args):
@@ -190,7 +168,7 @@ class Simplifier(object):
 
     @staticmethod
     def bitwise_add_simplifier(expr):
-        filtered_args = [ a for a in expr.args if a is not ast.all_operations.BVV(0, a.size()) ]
+        filtered_args = [ a for a in expr.args if a is not ast.all_operations.BVV(0, a.length) ]
         if len(filtered_args) == 1:
             return filtered_args[0]
         else:
@@ -203,22 +181,22 @@ class Simplifier(object):
     @staticmethod
     def bitwise_sub_simplifier(expr):
         a,b = expr.args
-        if b is ast.all_operations.BVV(0, a.size()):
+        if b is ast.all_operations.BVV(0, a.length):
             return a
         elif a is b or (a == b).is_true():
-            return ast.all_operations.BVV(0, a.size())
+            return ast.all_operations.BVV(0, a.length)
 
     @staticmethod
     def bitwise_xor_simplifier(expr):
         filtered_args = [
-            a for a in expr.args if a is not ast.all_operations.BVV(0, a.size()) and a is not 0
+            a for a in expr.args if a is not ast.all_operations.BVV(0, a.length) and a is not 0
         ]
         if len(filtered_args) == 1:
             return filtered_args[0]
         if len(filtered_args) == 2 and (
             filtered_args[0] is filtered_args[1] or (filtered_args[0] == filtered_args[1]).is_true()
         ):
-            return ast.all_operations.BVV(0, expr.size())
+            return ast.all_operations.BVV(0, expr.length)
 
         def _flattening_filter(args):
             # since a ^ a == 0, we can safely remove those from args
@@ -232,7 +210,7 @@ class Simplifier(object):
     @staticmethod
     def bitwise_or_simplifier(expr):
         filtered_args = [
-            a for a in expr.args if a is not ast.all_operations.BVV(0, a.size()) and a is not 0
+            a for a in expr.args if a is not ast.all_operations.BVV(0, a.length) and a is not 0
         ]
         if len(filtered_args) == 1:
             return filtered_args[0]
@@ -249,9 +227,9 @@ class Simplifier(object):
 
     @staticmethod
     def bitwise_and_simplifier(expr):
-        maxval = 2**expr.size()-1
+        maxval = 2**expr.length-1
         filtered_args = [
-            a for a in expr.args if a is not ast.all_operations.BVV(maxval, a.size()) and a is not maxval
+            a for a in expr.args if a is not ast.all_operations.BVV(maxval, a.length) and a is not maxval
         ]
         if len(filtered_args) == 1:
             return filtered_args[0]
@@ -285,10 +263,10 @@ class Simplifier(object):
         high, low, val = expr.args
 
         # if we're extracting the whole value, return the value
-        if high - low + 1 == val.size():
+        if high - low + 1 == val.length:
             return val
 
-        if (val.op == 'SignExt' or val.op == 'ZeroExt') and low == 0 and high + 1 == val.args[1].size():
+        if (val.op == 'SignExt' or val.op == 'ZeroExt') and low == 0 and high + 1 == val.args[1].length:
             return val.args[1]
 
         if val.op == 'ZeroExt':

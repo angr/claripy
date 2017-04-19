@@ -108,19 +108,19 @@ class Backend(object):
     # can understand.
     #
 
+    def downsize(self):
+        """
+        Clears all caches associated with this backend.
+        """
+        self._tls = threading.local()
+        self._true_cache.clear()
+        self._false_cache.clear()
+
     def _convert(self, r): #pylint:disable=W0613,R0201
         """
         Converts `r` to something usable by this backend.
         """
         return r
-
-    def downsize(self):
-        """
-        Clears all caches associated with this backend.
-        """
-        self._object_cache.clear()
-        self._true_cache.clear()
-        self._false_cache.clear()
 
     def handles(self, expr):
         """
@@ -145,78 +145,78 @@ class Backend(object):
         """
         if isinstance(expr, Base):
             # if it's cached in the backend, use it
-            if self._cache_objects:
+            if self._cache_objects and expr.outer_annotations:
                 try: return self._object_cache[expr._cache_key]
                 except KeyError: pass
 
-            # if we've errroed on this in the past, give up
-            if self in expr._errored:
-                raise BackendError("%s can't handle operation %s (%s) due to a failed conversion on a child node" % (self, expr.op, expr.__class__.__name__))
-
             # otherwise, resolve it!
-            try:
-                if expr.op in self._op_expr:
-                    r = self._op_expr[expr.op](expr)
-                elif not self._expr_only:
-                    try:
-                        r = self.call(expr.op, expr.args)
-                    except BackendUnsupportedError:
-                        r = self.default_op(expr)
-                else:
-                    r = self.default_op(expr)
-            except (RuntimeError, ctypes.ArgumentError):
-                e_type, value, traceback = sys.exc_info()
-                raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
-            except BackendError:
-                expr._errored.add(self)
-                raise
+            r = self.convert_structure(expr.structure)
 
-            # apply the annotations
-            for a in expr.annotations:
-                r = self.apply_annotation(r, a)
-
-            if self._cache_objects:
-                self._object_cache[expr._cache_key] = r
+            # apply the outer annotations
+            if expr.outer_annotations:
+                for a in expr.outer_annotations:
+                    r = self.apply_annotation(r, a)
+                if self._cache_objects:
+                    self._object_cache[expr._cache_key] = r
             return r
+        elif type(expr) is ASTStructure:
+            #l.warning("ASTSturcture object passed to Backend.convert()")
+            return self.convert_structure(expr)
         else:
             #l.debug('converting non-expr')
             return self._convert(expr)
 
     def convert_list(self, args):
+        """
+        Converts a list of expressions to a list of backend objects.
+        """
         return [ self.convert(a) for a in args ]
 
-    #
-    # These functions provide support for applying operations to expressions.
-    #
-
-    def call(self, op, args):
+    def convert_structure(self, structure):
         """
-        Calls operation `op` on args `args` with this backend.
-
-        :return:   A backend object representing the result.
+        Convert an ASTStructure object into an object for this backend.
         """
-        converted = self.convert_list(args)
 
-        if op in self._op_raw:
-            # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
-            obj = self._op_raw[op](*converted)
-        elif not op.startswith("__"):
-            l.debug("backend has no operation %s", op)
-            raise BackendUnsupportedError
-        else:
-            obj = NotImplemented
+        ## if we've errroed on this in the past, give up
+        #if self in expr._errored:
+        #   raise BackendError("%s can't handle operation %s (%s) due to a failed conversion on a child node" % (self, expr.op, expr.__class__.__name__))
 
-            # first, try the operation with the first guy
-            try:
-                obj = getattr(operator, op)(*converted)
-            except (TypeError, ValueError):
-                pass
+        # if it's cached in the backend, use it
+        if self._cache_objects:
+            try: return self._object_cache[structure]
+            except KeyError: pass
 
-        if obj is NotImplemented:
-            l.debug("received NotImplemented in %s.call() for operation %s", self, op)
-            raise BackendUnsupportedError
+        try:
+            if structure.op in self._op_expr:
+                r = self._op_expr[structure.op](structure)
+            elif structure.op in self._op_raw:
+                converted = self.convert_list(structure.args)
+                r = self._op_raw[structure.op](*converted)
+            elif self.default_op.im_func is not Backend.default_op.im_func:
+                r = self.default_op(structure)
+            elif self._default_op.im_func is not Backend._default_op.im_func:
+                r = self._default_op(structure.op, *self.convert_list(structure.args))
+            elif structure.op.startswith("__"):
+                converted = self.convert_list(structure.args)
+                try:
+                    r = getattr(operator, structure.op)(*converted)
+                except (TypeError, ValueError):
+                    raise BackendError("Operator-passthrough raised (TypeError, ValueError) for backend objects of types %s", map(type, converted))
 
-        return obj
+                if r is NotImplemented:
+                    raise BackendError("Operator-passthrough returned NotImplemented for backend objects of types %s", map(type, converted))
+        except (RuntimeError, ctypes.ArgumentError):
+            e_type, value, traceback = sys.exc_info()
+            raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
+
+        for a in structure.annotations:
+            self.apply_annotation(r, a)
+
+        # if it's cached in the backend, use it
+        if self._cache_objects:
+            self._object_cache[structure] = r
+        return r
+
 
     #
     # Abstraction and resolution.
@@ -237,7 +237,6 @@ class Backend(object):
 
     def simplify(self, e):
         o = self._abstract(self._simplify(self.convert(e)))
-        o._simplified = Base.FULL_SIMPLIFY
         return o
 
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
@@ -714,6 +713,10 @@ class Backend(object):
         # pylint: disable=unused-argument
         raise BackendError('Backend %s does not support operation %s' % (self, expr.op))
 
+    def _default_op(self, op, *args):
+        # pylint: disable=unused-argument
+        raise BackendError('Backend %s does not support operation %s' % (self, op))
+
     def __reduce__(self):
         return (_backend_manager._get_by_name, (_backend_manager.backends._get_name_of(self),))
 
@@ -722,5 +725,8 @@ from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
+from .backend_length import BackendLength
+from .backend_symbolic import BackendSymbolic
 from ..ast.base import Base
+from ..ast.structure import ASTStructure
 from .. import _backend_manager

@@ -73,15 +73,9 @@ def BV(name, size, explicit_name=None): #pylint:disable=function-redefined
 from . import backend_manager as _backend_manager
 _backend_manager.backends._register_backend(_backends_module.BackendConcrete(), 'concrete', True, True)
 _backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa', False, False)
-
-if not os.environ.get('WORKER', False) and os.environ.get('REMOTE', False):
-    try:
-        _backend_z3 = _backends_module.backendremote.BackendRemote()
-    except socket.error:
-        raise ImportError("can't connect to backend")
-else:
-    _backend_z3 = _backends_module.BackendZ3()
-
+_backend_manager.backends._register_backend(_backends_module.BackendLength(), 'length', False, False)
+_backend_manager.backends._register_backend(_backends_module.BackendSymbolic(), 'symbolic', False, False)
+_backend_z3 = _backends_module.BackendZ3()
 _backend_manager.backends._register_backend(_backend_z3, 'z3', False, False)
 backends = _backend_manager.backends
 
@@ -92,8 +86,8 @@ def downsize():
 # some standard ASTs
 #
 
-true = BoolV(True)
-false = BoolV(False)
+#true = BoolV(True)
+#false = BoolV(False)
 ast.true = true
 ast.false = false
 _all_operations.true = true

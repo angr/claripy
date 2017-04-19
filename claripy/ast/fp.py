@@ -1,5 +1,5 @@
 from .bits import Bits
-from ..ast.base import _make_name
+from ..ast.base import _make_name, make_op, _default_symbolic_filters, _default_concrete_filters
 
 class FP(Bits):
     def to_fp(self, rm, sort):
@@ -18,7 +18,7 @@ class FP(Bits):
     def sort(self):
         return fp.FSort.from_size(self.length)
 
-def FPS(name, sort, explicit_name=None, **kwargs):
+def FPS(name, sort, explicit_name=None, filters=_default_symbolic_filters):
     """
     Creates a floating-point symbol.
 
@@ -29,9 +29,9 @@ def FPS(name, sort, explicit_name=None, **kwargs):
     """
 
     n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
-    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length, **kwargs)._deduplicate()
+    return FP(ASTStructure('FPS', (n, sort), ())._deduplicate(), (), filters=filters, _eager=False)
 
-def FPV(value, sort, **kwargs):
+def FPV(value, sort, filters=_default_concrete_filters):
     """
     Creates a concrete floating-point value.
 
@@ -39,67 +39,51 @@ def FPV(value, sort, **kwargs):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
-    return FP('FPV', (value, sort), length=sort.length, **kwargs)._deduplicate()
+    return FP(ASTStructure('FPV', (value, sort), ())._deduplicate(), (), filters)
 
 #
 # unbound floating point conversions
 #
 
-from .. import operations
 from .. import fp
-from ..backend_manager import backends
 from .bv import BV
 from .bool import Bool
+from .structure import ASTStructure
 
-def _fp_length_calc(a1, a2, a3=None):
-    if isinstance(a1, fp.RM) and a3 is None:
-        raise Exception()
-    if a3 is None:
-        return a2.length
-    else:
-        return a3.length
-
-fpToFP = operations.op('fpToFP', object, FP, bound=False, calc_length=_fp_length_calc)
-fpToFPUnsigned = operations.op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP, bound=False, calc_length=_fp_length_calc)
-fpFP = operations.op('fpFP', (BV, BV, BV), FP, bound=False,
-                  calc_length=lambda a, b, c: a.length + b.length + c.length)
-fpToIEEEBV = operations.op('fpToIEEEBV', (FP,), BV, bound=False, calc_length=lambda fp: fp.length)
-fpToSBV = operations.op('fpToSBV', (fp.RM, FP, (int, long)), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
-fpToUBV = operations.op('fpToUBV', (fp.RM, FP, (int, long)), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
+fpToFP = make_op('fpToFP', object, FP, bound=False)
+fpToFPUnsigned = make_op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP, bound=False)
+fpFP = make_op('fpFP', (BV, BV, BV), FP, bound=False)
+fpToIEEEBV = make_op('fpToIEEEBV', (FP,), BV, bound=False)
+fpToSBV = make_op('fpToSBV', (fp.RM, FP, (int, long)), BV, bound=False)
+fpToUBV = make_op('fpToUBV', (fp.RM, FP, (int, long)), BV, bound=False)
 
 #
 # unbound float point comparisons
 #
 
-def _fp_cmp_check(a, b):
-    return a.length == b.length, "FP lengths must be the same"
-fpEQ = operations.op('fpEQ', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpGT = operations.op('fpGT', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpGEQ = operations.op('fpGEQ', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpLT = operations.op('fpLT', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
-fpLEQ = operations.op('fpLEQ', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
+fpEQ = make_op('fpEQ', (FP, FP), Bool, bound=False)
+fpGT = make_op('fpGT', (FP, FP), Bool, bound=False)
+fpGEQ = make_op('fpGEQ', (FP, FP), Bool, bound=False)
+fpLT = make_op('fpLT', (FP, FP), Bool, bound=False)
+fpLEQ = make_op('fpLEQ', (FP, FP), Bool, bound=False)
 
 #
 # unbound floating point arithmetic
 #
 
-def _fp_binop_check(rm, a, b): #pylint:disable=unused-argument
-    return a.length == b.length, "Lengths must be equal"
-def _fp_binop_length(rm, a, b): #pylint:disable=unused-argument
-    return a.length
-fpAbs = operations.op('fpAbs', (FP,), FP, bound=False, calc_length=lambda x: x.length)
-fpNeg = operations.op('fpNeg', (FP,), FP, bound=False, calc_length=lambda x: x.length)
-fpSub = operations.op('fpSub', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpAdd = operations.op('fpAdd', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpMul = operations.op('fpMul', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
-fpDiv = operations.op('fpDiv', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp_binop_check, calc_length=_fp_binop_length)
+fpAbs = make_op('fpAbs', (FP,), FP, bound=False)
+fpNeg = make_op('fpNeg', (FP,), FP, bound=False)
+fpSub = make_op('fpSub', (fp.RM, FP, FP), FP, bound=False)
+fpAdd = make_op('fpAdd', (fp.RM, FP, FP), FP, bound=False)
+fpMul = make_op('fpMul', (fp.RM, FP, FP), FP, bound=False)
+fpDiv = make_op('fpDiv', (fp.RM, FP, FP), FP, bound=False)
 
 #
 # bound fp operations
 #
-FP.__eq__ = operations.op('fpEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
-FP.__ne__ = operations.op('fpNE', (FP, FP), Bool, extra_check=_fp_cmp_check)
-FP.__ge__ = operations.op('fpGEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
-FP.__le__ = operations.op('fpLEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
-FP.__gt__ = operations.op('fpGT', (FP, FP), Bool, extra_check=_fp_cmp_check)
-FP.__lt__ = operations.op('fpLT', (FP, FP), Bool, extra_check=_fp_cmp_check)
+FP.__eq__ = make_op('fpEQ', (FP, FP), Bool)
+FP.__ne__ = make_op('fpNE', (FP, FP), Bool)
+FP.__ge__ = make_op('fpGEQ', (FP, FP), Bool)
+FP.__le__ = make_op('fpLEQ', (FP, FP), Bool)
+FP.__gt__ = make_op('fpGT', (FP, FP), Bool)
+FP.__lt__ = make_op('fpLT', (FP, FP), Bool)

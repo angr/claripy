@@ -1,123 +1,3 @@
-import itertools
-import logging
-
-l = logging.getLogger('claripy.operations')
-
-def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
-    if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
-        expected_num_args = len(arg_types)
-    elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
-        expected_num_args = None
-    else:
-        raise ClaripyOperationError("op {} got weird arg_types".format(name))
-
-    def _type_fixer(args):
-        num_args = len(args)
-        if expected_num_args is not None and num_args != expected_num_args:
-            raise ClaripyTypeError("Operation {} takes exactly "
-                                   "{} arguments ({} given)".format(name, len(arg_types), len(args)))
-
-        if type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
-            actual_arg_types = (arg_types,) * num_args
-        else:
-            actual_arg_types = arg_types
-        matches = [ isinstance(arg, argty) for arg,argty in zip(args, actual_arg_types) ]
-
-        # heuristically, this works!
-        thing = args[matches.index(True)] if True in matches else None
-
-        for arg, argty, matches in zip(args, actual_arg_types, matches):
-            if not matches:
-                if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
-                    convert = getattr(argty, '_from_' + type(arg).__name__)
-                    yield convert(thing, arg)
-                else:
-                    yield NotImplemented
-                    return
-            else:
-                yield arg
-
-    def _op(*args):
-        fixed_args = tuple(_type_fixer(args))
-        for i in fixed_args:
-            if i is NotImplemented:
-                return NotImplemented
-
-        if extra_check is not None:
-            success, msg = extra_check(*fixed_args)
-            if not success:
-                raise ClaripyOperationError(msg)
-
-        #pylint:disable=too-many-nested-blocks
-        kwargs = {}
-        if calc_length is not None:
-            kwargs['length'] = calc_length(*fixed_args)
-
-        if name in preprocessors:
-            args, kwargs = preprocessors[name](*args, **kwargs)
-
-        return return_type(name, fixed_args, **kwargs)._apply_filters()
-
-
-    _op.calc_length = calc_length
-    return _op
-
-def reversed_op(op_func):
-    def _reversed_op(*args):
-        return op_func(*args[::-1])
-    return _reversed_op
-
-#
-# Extra processors
-#
-
-union_counter = itertools.count()
-def preprocess_union(*args, **kwargs):
-
-    #
-    # When we union two values, we implicitly create a new symbolic, multi-valued
-    # variable, because a union is essentially an ITE with an unconstrained
-    # "choice" variable.
-    #
-
-    new_name = 'union_%d' % next(union_counter)
-    kwargs['add_variables'] = frozenset((new_name,))
-    return args, kwargs
-
-preprocessors = {
-    'union': preprocess_union,
-    #'intersection': preprocess_intersect
-}
-
-#
-# Length checkers
-#
-
-def length_same_check(*args):
-    return all(a.length == args[0].length for a in args), "args' length must all be equal"
-
-def basic_length_calc(*args):
-    return args[0].length
-
-def extract_check(high, low, bv):
-    if high < 0 or low < 0:
-        return False, "Extract high and low must be nonnegative"
-    elif low > high:
-        return False, "Extract low must be <= high"
-    elif high >= bv.size():
-        return False, "Extract bound must be less than BV size"
-
-    return True, ""
-
-def extract_length_calc(high, low, _):
-    return high - low + 1
-
-def ext_length_calc(ext, orig):
-    return orig.length + ext
-
-def concat_length_calc(*args):
-    return sum(arg.size() for arg in args)
-
 #
 # Operation lists
 #
@@ -219,13 +99,16 @@ backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparat
 backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
 
 backend_fp_cmp_operations = {
-    'fpLT', 'fpLEQ', 'fpGT', 'fpGEQ', 'fpEQ',
+    'fpLT', 'fpLEQ', 'fpGT', 'fpGEQ', 'fpEQ', 'fpNeg', 'fpSub',
+}
+
+backend_fp_arithmetic_operations = {
+    'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
 }
 
 backend_fp_operations = {
     'FP', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
-    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
-} | backend_fp_cmp_operations
+} | backend_fp_cmp_operations | backend_fp_arithmetic_operations
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',
@@ -288,7 +171,7 @@ inverse_operations = {
     'SLE': 'SGT', 'SGT': 'SLE',
 }
 
-length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
+length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'} | backend_fp_arithmetic_operations
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
@@ -356,6 +239,3 @@ infix = {
 }
 
 commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', 'And', 'Or', 'Xor', }
-
-from .errors import ClaripyOperationError, ClaripyTypeError, BackendError
-from . import ast

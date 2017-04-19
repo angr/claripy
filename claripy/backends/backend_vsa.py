@@ -284,8 +284,7 @@ class BackendVSA(Backend):
 
     @staticmethod
     def BVS(ast): #pylint:disable=unused-argument
-        size = ast.size()
-        name, mn, mx, stride, uninitialized, discrete_set, max_card = ast.args
+        name, size, mn, mx, stride, uninitialized, discrete_set, max_card = ast.args
         return CreateStridedInterval(name=name, bits=size, lower_bound=mn, upper_bound=mx, stride=stride,
                                      uninitialized=uninitialized, discrete_set=discrete_set,
                                      discrete_set_max_cardinality=max_card)
