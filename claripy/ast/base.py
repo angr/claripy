@@ -72,7 +72,7 @@ class Base(object):
         'outer_annotations'
     ]
 
-    def __init__(self, structure, outer_annotations, filters=None, _eager=True):
+    def __init__(self, structure, outer_annotations=(), filters=None, _eager=True):
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
