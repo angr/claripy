@@ -381,4 +381,4 @@ from . import fp
 from .. import vsa
 from ..errors import ClaripyValueError
 from .structure import get_structure
-from ..annotation import VariableAnnotation
+from ..annotations import VariableAnnotation

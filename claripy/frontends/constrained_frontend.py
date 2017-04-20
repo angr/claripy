@@ -150,4 +150,4 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
 from ..ast.base import simplify
 from ..ast.bool import And, Or
-from ..annotation import SimplificationAvoidanceAnnotation
+from ..annotations import SimplificationAvoidanceAnnotation

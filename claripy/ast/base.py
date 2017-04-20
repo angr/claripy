@@ -297,7 +297,7 @@ class Base(object):
         :param args: the tuple of annotations to append (variadic positional args)
         :returns: a new AST, with the annotations added
         """
-        return self.swap_outer_annotations(self.outer_annotations + args)
+        return self.swap_outer_annotations(self.outer_annotations.union(args))
 
     #
     # Viewing and debugging

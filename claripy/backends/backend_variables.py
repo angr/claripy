@@ -30,4 +30,4 @@ class BackendVariables(Backend):
         else:
             return s
 
-from ..annotation import VariableAnnotation
+from ..annotations import VariableAnnotation

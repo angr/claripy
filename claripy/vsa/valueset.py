@@ -2,7 +2,6 @@ import functools
 import itertools
 
 from ..backend_object import BackendObject
-from ..annotation import Annotation
 
 def normalize_types_two_args(f):
     @functools.wraps(f)
@@ -36,7 +35,7 @@ def normalize_types_one_arg(f):
 vs_id_ctr = itertools.count()
 
 
-class RegionAnnotation(Annotation):
+class RegionAnnotation(object):
     """
     Use RegionAnnotation to annotate ASTs. Normally, an AST annotated by RegionAnnotations is treated as a ValueSet.
 
@@ -54,28 +53,6 @@ class RegionAnnotation(Annotation):
             self.region_base_addr = self.region_base_addr._model_vsa
         if isinstance(self.offset, Base):
             self.offset = self.offset._model_vsa
-
-    @property
-    def eliminatable(self):
-        """
-        A Region annotation is not eliminatable in simplifications.
-
-        :return: False
-        :rtype: bool
-        """
-
-        return False
-
-    @property
-    def relocatable(self):
-        """
-        A Region annotation is not relocatable in simplifications.
-
-        :return: False
-        :rtype: bool
-        """
-
-        return False
 
     #
     # Public methods
