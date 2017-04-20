@@ -205,6 +205,8 @@ class Backend(object):
 
                 if r is NotImplemented:
                     raise BackendError("Operator-passthrough returned NotImplemented for backend objects of types %s", map(type, converted))
+            else:
+                raise BackendError("Backend does not support operation %s" % structure.op)
         except (RuntimeError, ctypes.ArgumentError):
             e_type, value, traceback = sys.exc_info()
             raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
