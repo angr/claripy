@@ -4,29 +4,29 @@ import nose
 def test_smudging():
     x = claripy.BVS('x', 32)
     y = x+1
-    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.BV))
+    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(y.args[1].args[0], 1)
     nose.tools.assert_equal(y.args[1].args[1], 32)
 
     x = claripy.BVS('x', 32)
     y = x*1
     z = y+1
-    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.BV))
+    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(y.args[1].args[0], 1)
     nose.tools.assert_equal(y.args[1].args[1], 32)
 
-    nose.tools.assert_true(isinstance(z.args[1], claripy.ast.BV))
+    nose.tools.assert_true(isinstance(z.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(z.args[1].args[0], 1)
     nose.tools.assert_equal(z.args[1].args[1], 32)
 
     ccc = claripy.If(x > 10, x*3+2, x*4+2)
-    nose.tools.assert_true(isinstance(ccc.args[1].args[1], claripy.ast.BV))
+    nose.tools.assert_true(isinstance(ccc.args[1].args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(ccc.args[1].args[1].args[0], 2)
     nose.tools.assert_equal(ccc.args[1].args[1].args[1], 32)
 
     x = claripy.BVS('x', 32)
     y = x + "AAAA"
-    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.BV))
+    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(y.args[1].args[0], 0x41414141)
     nose.tools.assert_equal(y.args[1].args[1], 32)
 
@@ -136,7 +136,7 @@ def test_expression():
     new = claripy.BVS('new', 32, explicit_name=True)
     c = (old + 10) - (old + 20)
     d = (old + 1) - (old + 2)
-    cr = c.replace_dict({(old+10).cache_key: (old+1), (old+20).cache_key: (old+2)})
+    cr = c.replace_dict({(old+10).structure: (old+1).structure, (old+20).structure: (old+2).structure})
     nose.tools.assert_is(cr, d)
 
     # test AST collapse
@@ -144,7 +144,7 @@ def test_expression():
     b = claripy.BVV(20, 32)
 
     sb = s+b
-    nose.tools.assert_is_instance(sb.args[0], claripy.ast.Base)
+    nose.tools.assert_is_instance(sb.args[0], claripy.ast.ASTStructure)
 
     bb = b+b
     # this was broken previously -- it was checking if type(bb.args[0]) == A,
@@ -157,7 +157,7 @@ def test_expression():
 
     sob = s|b
     # for now, this is collapsed. Presumably, Fish will make it not collapse at some point
-    nose.tools.assert_is_instance(sob.args[0], claripy.ast.Base)
+    nose.tools.assert_is_instance(sob.args[0], claripy.ast.ASTStructure)
 
     # make sure the AST collapses for delayed ops like reversing
     rb = b.reversed
@@ -336,13 +336,7 @@ def test_depth_repr():
     y = claripy.LShR(y, 10)
     y = claripy.LShR(y, 10)
     print y.shallow_repr(max_depth=5)
-    nose.tools.assert_equal(y.shallow_repr(max_depth=5), "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>")
-
-def test_rename():
-    x1 = claripy.BVS('x', 32)
-    x2 = x1._rename('y')
-    print x2.variables
-    assert x2.variables == frozenset(('y',))
+    nose.tools.assert_equal(y.shallow_repr(max_depth=5), "<BV32 LShR(LShR(LShR(LShR(LShR(..., ...), 0xa), 0xa), 0xa), 0xa)>")
 
 def test_canonical():
     x1 = claripy.BVS('x', 32)
@@ -360,15 +354,15 @@ def test_canonical():
     one_names = frozenset.union(x1.variables, b1.variables, c1.variables)
     two_names = frozenset.union(x2.variables, b2.variables, c2.variables)
 
-    assert frozenset.union(*[a.variables for a in y1.recursive_leaf_asts]) == one_names
-    assert frozenset.union(*[a.variables for a in y2.recursive_leaf_asts]) == two_names
+    assert y1.variables == one_names
+    assert y2.variables == two_names
     assert y1.canonicalize()[-1] is y2.canonicalize()[-1]
 
 def test_depth():
     x1 = claripy.BVS('x', 32)
-    assert x1.depth == 1
+    assert x1.structure.depth == 1
     x2 = x1 + 1
-    assert x2.depth == 2
+    assert x2.structure.depth == 2
 
 def test_multiarg():
     x = claripy.BVS('x', 32)
@@ -479,10 +473,21 @@ def test_arith_shift():
     solver.add(a == -4)
     assert list(solver.eval(a >> 1, 2)) == [2**32-2]
 
+def test_primitive_comparisons():
+    #pylint:disable=singleton-comparison
+    assert claripy.true.structure == True
+    assert claripy.true.structure != False
+    assert claripy.false.structure != True
+    assert claripy.false.structure == False
+    assert claripy.BVV(0, 32).structure == 0
+    assert claripy.BVV(0, 32).structure != 10
+    assert claripy.BVV(10, 32).structure != 0
+    assert claripy.BVV(10, 32).structure == 10
+
 if __name__ == '__main__':
+    test_primitive_comparisons()
     test_multiarg()
     test_depth()
-    test_rename()
     test_canonical()
     test_depth_repr()
     test_extract()

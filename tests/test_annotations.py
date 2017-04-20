@@ -51,16 +51,16 @@ def test_backend():
 def test_simplification():
     x = claripy.BVS('x', 32).annotate(AnnotationA('a', 1))
     y = x ^ x
-    assert y.depth == 1
+    assert y.structure.dbg_depth == 1
     assert len(y.annotations) == 0
 
     x = claripy.BVS('x', 32).annotate(AnnotationB('a', 1))
     y = x ^ x
-    assert y.depth == 2
+    assert y.structure.dbg_depth == 2
 
     x = claripy.BVS('x', 32).annotate(AnnotationC('a', 1))
     y = x ^ x
-    assert y.depth == 1
+    assert y.structure.dbg_depth == 1
     assert len(y.annotations) == 1
     assert y.annotations[0].number == 2
 
@@ -111,7 +111,7 @@ def test_annotations():
     const2 = const1a + 1
     # const2 should be (const1a + 1), instead of (1 + 1 + 1)
     # the flatten simplifier for __add__ should not be applied as AnnotationB is not relocatable (and not eliminatable)
-    assert const2.depth == 3
+    assert const2.structure.dbg_depth == 3
 
 def test_eagerness():
     x = claripy.BVV(10, 32).annotate(AnnotationD())
