@@ -40,14 +40,14 @@ class ModelCache(object):
 
     def _leaf_op(self, a):
         return (
-            all_operations.BVV(self.model.get(a.args[0], 0), a.length) if a.op == 'BVS' else
-            all_operations.BoolV(self.model.get(a.args[0], True)) if a.op == 'BoolS' else
-            all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1]) if a.op == 'FPS' else
+            all_operations.BVV(self.model.get(a.args[0], 0), a.length).structure if a.op == 'BVS' else
+            all_operations.BoolV(self.model.get(a.args[0], True)).structure if a.op == 'BoolS' else
+            all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1]).structure if a.op == 'FPS' else
             a
         )
 
     def eval_ast(self, ast):
-        new_ast = ast._replace(self.replacements, leaf_operation=self._leaf_op)
+        new_ast = ast.structure.replace(self.replacements, leaf_operation=self._leaf_op)
         return backends.concrete.eval(new_ast, 1)[0]
 
     def eval_constraints(self, constraints):

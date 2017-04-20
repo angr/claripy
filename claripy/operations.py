@@ -110,17 +110,7 @@ backend_fp_operations = {
     'FP', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
 } | backend_fp_cmp_operations | backend_fp_arithmetic_operations
 
-opposites = {
-    '__add__': '__radd__', '__radd__': '__add__',
-    '__div__': '__rdiv__', '__rdiv__': '__div__',
-    '__truediv__': '__rtruediv__', '__rtruediv__': '__truediv__',
-    '__floordiv__': '__rfloordiv__', '__rfloordiv__': '__floordiv__',
-    '__mul__': '__rmul__', '__rmul__': '__mul__',
-    '__sub__': '__rsub__', '__rsub__': '__sub__',
-    '__pow__': '__rpow__', '__rpow__': '__pow__',
-    '__mod__': '__rmod__', '__rmod__': '__mod__',
-    '__divmod__': '__rdivmod__', '__rdivmod__': '__divmod__',
-
+boolean_opposites = {
     '__eq__': '__eq__',
     '__ne__': '__ne__',
     '__ge__': '__le__', '__le__': '__ge__',
@@ -129,16 +119,6 @@ opposites = {
     'ULE': 'UGE', 'UGE': 'ULE',
     'SLT': 'SGT', 'SGT': 'SLT',
     'SLE': 'SGE', 'SGE': 'SLE',
-
-    #'__neg__':
-    #'__pos__':
-    #'__abs__':
-    #'__invert__':
-    '__or__': '__ror__', '__ror__': '__or__',
-    '__and__': '__rand__', '__rand__': '__and__',
-    '__xor__': '__rxor__', '__rxor__': '__xor__',
-    '__lshift__': '__rlshift__', '__rlshift__': '__lshift__',
-    '__rshift__': '__rrshift__', '__rrshift__': '__rshift__',
 }
 
 reversed_ops = {

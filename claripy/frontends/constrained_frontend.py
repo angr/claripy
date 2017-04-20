@@ -107,10 +107,10 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
 
     def simplify(self):
         to_simplify = [ c for c in self.constraints if not any(
-            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations
+            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.outer_annotations
         ) ]
         no_simplify = [ c for c in self.constraints if any(
-            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.annotations
+            isinstance(a, SimplificationAvoidanceAnnotation) for a in c.outer_annotations
         ) ]
 
         if len(to_simplify) == 0:

@@ -1,7 +1,7 @@
 import logging
 l = logging.getLogger('claripy.ast.bool')
 
-from .base import Base, _make_name, make_op, _default_concrete_filters, _default_symbolic_filters
+from .base import Base, _make_name, make_op
 
 _boolv_cache = dict()
 
@@ -33,7 +33,7 @@ class Bool(Base):
         return is_false(self)
 
 
-def BoolS(name, explicit_name=None, filters=_default_symbolic_filters):
+def BoolS(name, explicit_name=None, filters=None):
     """
     Creates a boolean symbol (i.e., a variable).
 
@@ -43,18 +43,18 @@ def BoolS(name, explicit_name=None, filters=_default_symbolic_filters):
     :return:                A Bool object representing this symbol.
     """
     n = _make_name(name, -1, False if explicit_name is None else explicit_name)
-    return Bool(ASTStructure('BoolS', (n,), ())._deduplicate(), (), filters=filters, _eager=False)
+    return Bool(get_structure('BoolS', (n,)), filters=filters, _eager=False)._deduplicate()._apply_filters()
 
 # why the fuck does this have to be so high up? with this lower, the reference to backends fails,
 # although it doesn't do that when this is put below other module-level functions that reference
 # backends
 from ..backend_manager import backends
 
-def BoolV(val, filters=_default_concrete_filters):
+def BoolV(val, filters=None):
     if filters is None:
         return true if val else false
     else:
-        return Bool(ASTStructure('BoolV', (val,), ()), (), filters=filters)
+        return Bool(get_structure('BoolV', (val,)), filters=filters)._deduplicate()._apply_filters()
 
 #
 # Bound operations
@@ -68,58 +68,46 @@ Bool.intersection = make_op('intersection', (Bool, Bool), Bool)
 # Unbound operations
 #
 
-def If(*args):
+from .bv import BVS, BV
+from .fp import FP
+
+_If_bool = make_op('If', (Bool, Bool, Bool), Bool)
+_If_bv = make_op('If', (Bool, BV, BV), BV)
+_If_fp = make_op('If', (Bool, FP, FP), FP)
+def If(c, t, f):
     # the coercion here is strange enough that we'll just implement it manually
-    if len(args) != 3:
-        raise ClaripyOperationError("invalid number of args passed to If")
+    tt = type(t)
+    tf = type(f)
 
-    args = list(args)
-
-    if isinstance(args[0], bool):
-        args[0] = BoolV(args[0])
-
-    ty = None
-    if isinstance(args[1], Base):
-        ty = type(args[1])
-    elif isinstance(args[2], Base):
-        ty = type(args[2])
-    else:
-        raise ClaripyTypeError("true/false clause of If must have bearable types")
-
-    if isinstance(args[1], Bits) and isinstance(args[2], Bits) and args[1].length != args[2].length:
-        raise ClaripyTypeError("sized arguments to If must have the same length")
-
-    if not isinstance(args[1], ty):
-        if hasattr(ty, '_from_' + type(args[1]).__name__):
-            convert = getattr(ty, '_from_' + type(args[1]).__name__)
-            args[1] = convert(args[2], args[1])
+    # figure out our Base-subclass (bc)
+    bc, nbc = (tt, tf) if issubclass(tt, Base) else (tf, tt)
+    if not issubclass(bc, Base):
+        raise ClaripyTypeError("At least one of the clauses to If() must be an AST.")
+    if issubclass(nbc, Base):
+        if bc is not nbc:
+            raise ClaripyTypeError("If() received two different AST types for its true and false value.")
+        elif t.length != f.length:
+            raise ClaripyTypeError("True and false value arguments to If() must have the same length")
         else:
-            raise ClaripyTypeError("can't convert {} to {}".format(type(args[1]), ty))
-    if not isinstance(args[2], ty):
-        if hasattr(ty, '_from_' + type(args[2]).__name__):
-            convert = getattr(ty, '_from_' + type(args[2]).__name__)
-            args[2] = convert(args[1], args[2])
-        else:
-            raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
-
-    if is_true(args[0]):
-        return args[1]
-    elif is_false(args[0]):
-        return args[2]
-
-    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is args[0]:
-        return If(args[0], args[1].args[1], args[2])
-    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is Not(args[0]):
-        return If(args[0], args[1].args[2], args[2])
-    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is args[0]:
-        return If(args[0], args[1], args[2].args[2])
-    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is Not(args[0]):
-        return If(args[0], args[1], args[2].args[1])
-
-    if issubclass(ty, Bits):
-        return ty('If', tuple(args), length=args[1].length)._apply_filters()
+            ct, cf = t, f
     else:
-        return ty('If', tuple(args))._apply_filters()
+        convert = getattr(bc, '_from_' + nbc.__name__, None)
+        if convert is None:
+            raise ClaripyTypeError("Can't convert {} to {}".format(nbc, bc))
+
+        if tt is nbc: # convert t
+            ct, cf = convert(f, t), f
+        else: # convert f
+            ct, cf = t, convert(t, f)
+
+    if bc is BV:
+        return _If_bv(c, ct, cf)
+    elif bc is Bool:
+        return _If_bool(c, ct, cf)
+    elif bc is FP:
+        return _If_fp(c, ct, cf)
+    else:
+        raise ClaripyTypeError("Unsupported type %s for true and false value arguments to If()" % bc.__name__)
 
 And = make_op('And', Bool, Bool)
 Or = make_op('Or', Bool, Bool)
@@ -172,9 +160,7 @@ def constraint_to_si(expr):
 
     return satisfiable, replace_list
 
-from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
-from .bits import Bits
-from .bv import BVS
-from .structure import ASTStructure
-true = Bool(ASTStructure('BoolV', (True,), ()), (), _default_concrete_filters)
-false = Bool(ASTStructure('BoolV', (False,), ()), (), _default_concrete_filters)
+from ..errors import ClaripyTypeError, BackendError
+from .structure import get_structure
+true = Bool(get_structure('BoolV', (True,)))._deduplicate()
+false = Bool(get_structure('BoolV', (False,)))._deduplicate()

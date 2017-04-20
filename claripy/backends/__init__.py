@@ -53,11 +53,14 @@ class Backend(object):
         self._op_raw = { }
         self._op_expr = { }
         self._cache_objects = True
+        self._cache_simplifications = True
         self._solver_required = solver_required is not None
 
         self._tls = threading.local()
         self._true_cache = weakref.WeakKeyDictionary()
         self._false_cache = weakref.WeakKeyDictionary()
+        self._simplification_cache = weakref.WeakKeyDictionary()
+        self._simplified_set = weakref.WeakSet()
         self._expr_only = False
 
     @property
@@ -212,7 +215,7 @@ class Backend(object):
             raise ClaripyRecursionError, ("Recursion limit reached. I sorry.", e_type, value), traceback
 
         for a in structure.annotations:
-            self.apply_annotation(r, a)
+            r = self.apply_annotation(r, a)
 
         # if it's cached in the backend, use it
         if self._cache_objects:
@@ -238,8 +241,26 @@ class Backend(object):
     #
 
     def simplify(self, e):
-        o = self._abstract(self._simplify(self.convert(e)))
-        return o
+        if e.structure in self._simplified_set:
+            return e
+
+        o = None
+        if self._cache_simplifications:
+            try: o = self._simplification_cache[e.structure]
+            except KeyError: pass
+
+        if o is None:
+            converted = self.convert(e.structure)
+            simplified = self._simplify(converted)
+            o = self._abstract(simplified)
+
+        if o is not e.structure and self._cache_simplifications:
+            self._simplification_cache[e.structure] = o
+            # This causes a reference loop
+            #self._simplification_cache[o] = o
+
+        self._simplified_set.add(o)
+        return e.swap_structure(o)
 
     def _simplify(self, e): # pylint:disable=R0201,unused-argument
         raise BackendError("backend %s can't simplify" % self.__class__.__name__)
@@ -417,7 +438,7 @@ class Backend(object):
         :return: The unsat core.
         """
 
-        return [ self._abstract(core) for core in self._unsat_core(s) ]
+        return [ BV(self._abstract(core)) for core in self._unsat_core(s) ]
 
     def _unsat_core(self, s):  #pylint:disable=no-self-use,unused-argument
         """
@@ -729,6 +750,9 @@ from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
 from .backend_length import BackendLength
 from .backend_symbolic import BackendSymbolic
+from .backend_variables import BackendVariables
+from .backend_depth import BackendDepth
 from ..ast.base import Base
+from ..ast.bv import BV
 from ..ast.structure import ASTStructure
 from .. import _backend_manager

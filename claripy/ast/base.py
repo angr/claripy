@@ -27,21 +27,20 @@ class ASTCacheKey(object):
         return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
 
 def _concrete_evaluate(expr):
-    if not expr._eager:
+    if not expr._eager or expr.op in operations.backend_creation_operations:
         return expr
 
     try:
-        return backends.concrete._abstract(backends.concrete.convert(expr))
+        return backends.concrete.simplify(expr)
     except BackendError:
         expr._eager = False
-
-    return expr
+        return expr
 
 def _simplify(expr):
-    return expr.swap_structure(simplifier.simplify(expr.structure))
+    s = simplifier.simplify(expr.structure)
+    return expr.swap_structure(simplifier.simplify(expr.structure), apply_filters=False)._deduplicate() if s is not expr.structure else expr
 
-_default_symbolic_filters = ( _simplify, )
-_default_concrete_filters = ( _concrete_evaluate, )
+default_filters = ( _concrete_evaluate, _simplify )
 
 _hash_cache = weakref.WeakValueDictionary()
 def _deduplicate(expr):
@@ -72,7 +71,7 @@ class Base(object):
         'outer_annotations'
     ]
 
-    def __init__(self, structure, outer_annotations=(), filters=None, _eager=True):
+    def __init__(self, structure, outer_annotations=frozenset(), filters=None, _eager=True):
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -95,7 +94,7 @@ class Base(object):
         self.outer_annotations = outer_annotations
 
         # these are filters that get applied to the AST at every operation
-        self.filters = () if filters is None else filters
+        self.filters = default_filters if filters is None else filters
 
         # a cache key, to use when storing this AST in dicts (to survive bucket collisions)
         self.cache_key = ASTCacheKey(self)
@@ -165,13 +164,18 @@ class Base(object):
 
     @property
     def variables(self):
-        raise Exception("TODO")
+        try:
+            return backends.variables.convert(self)
+        except BackendError:
+            l.critical("BackendVariables failed to compute variables of AST %s", self)
+            return frozenset()
 
     @property
     def symbolic(self):
         try:
             return backends.symbolic.convert(self)
         except BackendError:
+            l.critical("BackendSymbolic failed to compute symbolicity of AST %s", self)
             return None
 
     @property
@@ -181,12 +185,19 @@ class Base(object):
         except BackendError:
             return None
 
+    @property
+    def depth(self):
+        return self.structure.depth
+
     def _apply_filters(self):
         new_ast = self
         for f in new_ast.filters:
             try:
                 l.debug("Running filter %s.", f)
+                old_ast = new_ast
                 new_ast = f(new_ast) if hasattr(f, '__call__') else f.convert(new_ast)
+                if old_ast is not new_ast:
+                    new_ast = new_ast._deduplicate()
             except BackendError:
                 l.warning("Ignoring BackendError during AST filter application.")
         return new_ast
@@ -214,13 +225,17 @@ class Base(object):
 
         return self.swap_structure(self.structure.swap_args(new_args))
 
-    def swap_structure(self, structure):
+    def swap_structure(self, structure, apply_filters=True, _eager=None, filters=None):
         """
         This returns the same AST, with the structure swapped out for a different one.
         """
 
-        a = self.__class__(structure, self.outer_annotations, filters=self.filters)
-        return a._apply_filters()
+        a = self.__class__(
+            structure, self.outer_annotations,
+            filters=self.filters if filters is None else filters,
+            _eager=self._eager if _eager is None else _eager
+        )._deduplicate()
+        return a._apply_filters() if apply_filters else a
 
     def swap_inline_annotations(self, new_tuple):
         """
@@ -231,21 +246,36 @@ class Base(object):
         """
         return self.swap_structure(self.structure.swap_annotations(new_tuple))
 
-    def swap_outer_annotations(self, new_tuple):
+    def swap_outer_annotations(self, new_tuple, apply_filters=True):
         """
         Replaces annotations on this AST.
 
         :param new_tuple: the tuple of annotations to replace the old annotations with
         :returns: a new AST, with the annotations added
         """
-        return self.__class__(self.structure, new_tuple, filters=self.filters, _eager=self._eager)
+        a = self.__class__(self.structure, new_tuple, filters=self.filters, _eager=self._eager)._deduplicate()
+        return a._apply_filters() if apply_filters else a
 
-    #def replace(self, old, new):
-    #    """
-    #    Returns an AST with all instances of the AST 'old' replaced with AST 'new'.
-    #    """
-    #    replacements = {old.structure: new.structure}
-    #    return self.swap_structure(self.structure.replace(replacements))
+    def replace(self, old, new):
+        """
+        Returns an AST with all instances of the AST 'old' replaced with AST 'new'.
+        """
+        replacements = { old.structure: new.structure }
+        return self.swap_structure(self.structure.replace(replacements), _eager=True)
+
+    def replace_dict(self, replacements):
+        """
+        Returns an AST with ASTStructure replacements from the replacements dictionary applied.
+        """
+        return self.swap_structure(self.structure.replace(replacements), _eager=True)
+
+    def canonicalize(self, var_map=None, counter=None):
+        """
+        Pass-through to ASTStructure.canonicalize.
+        """
+
+        vm, c, s = self.structure.canonicalize(var_map=var_map, counter=counter)
+        return vm, c, self.swap_structure(s)
 
     #
     # Annotations
@@ -334,25 +364,17 @@ class Base(object):
     # these are convenience operations
     #
 
-    def _first_backend(self, what):
-        for b in backends._all_backends:
-            #if b in self._errored:
-            #    continue
-
-            try: return getattr(b, what)(self)
-            except BackendError: pass
-
     @property
     def singlevalued(self):
-        return self._first_backend('singlevalued')
+        return backends.first_successful('singlevalued', self)
 
     @property
     def multivalued(self):
-        return self._first_backend('multivalued')
+        return backends.first_successful('multivalued', self)
 
     @property
     def cardinality(self):
-        return self._first_backend('cardinality')
+        return backends.first_successful('cardinality', self)
 
     @property
     def concrete(self):
@@ -383,7 +405,7 @@ def simplify(e):
     if isinstance(e, Base) and e.op == 'I':
         return e
 
-    s = e._first_backend('simplify')
+    s = backends.first_successful('simplify', e)
     if s is None:
         l.debug("Unable to simplify expression")
         return e
@@ -394,7 +416,7 @@ def simplify(e):
 # Operation support
 #
 
-def make_op(name, arg_types, return_type, do_coerce=True):
+def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocessor=None):
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
@@ -420,7 +442,7 @@ def make_op(name, arg_types, return_type, do_coerce=True):
 
         for arg, argty, matches in zip(args, actual_arg_types, matches):
             if not matches:
-                if do_coerce and hasattr(argty, '_from_' + type(arg).__name__):
+                if hasattr(argty, '_from_' + type(arg).__name__):
                     convert = getattr(argty, '_from_' + type(arg).__name__)
                     yield convert(thing, arg).structure
                 else:
@@ -430,23 +452,23 @@ def make_op(name, arg_types, return_type, do_coerce=True):
                 yield arg.structure if isinstance(arg, Base) else arg
 
     def _op(*args):
-        fixed_args = tuple(_type_fixer(args))
+        fixed_args = tuple(_type_fixer(args)) if do_coerce else tuple(a.structure for a in args)
         if any(i is NotImplemented for i in fixed_args):
             return NotImplemented
         ast_args = [ a for a in args if isinstance(a, Base) ]
 
-        new_structure = ASTStructure(name, fixed_args, ())
+        new_structure = get_structure(name, fixed_args)
+        if structure_postprocessor is not None:
+            new_structure = structure_postprocessor(new_structure)
         new_outer_annotations = frozenset().union(*(a.outer_annotations for a in ast_args))
         new_eager = all(a._eager for a in ast_args)
-        nondefault_filters = [ a.filters for a in ast_args if a.filters is not _default_symbolic_filters and a.filters is not _default_concrete_filters ]
+        nondefault_filters = [ a.filters for a in ast_args if a.filters is not default_filters ]
         if nondefault_filters:
             new_filters = max(nondefault_filters, key=len)
-        elif any(a.filters is _default_symbolic_filters for a in ast_args):
-            new_filters = _default_symbolic_filters
         else:
-            new_filters = _default_concrete_filters
+            new_filters = default_filters
 
-        return return_type(new_structure, new_outer_annotations, filters=new_filters, _eager=new_eager)._apply_filters()._deduplicate()
+        return return_type(new_structure, new_outer_annotations, filters=new_filters, _eager=new_eager)._deduplicate()._apply_filters()
 
     return _op
 
@@ -458,4 +480,5 @@ def make_reversed_op(op_func):
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from ..backend_manager import backends
 from ..simplifier import simplifier
-from .structure import ASTStructure
+from .structure import get_structure
+from .. import operations

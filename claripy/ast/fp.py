@@ -1,5 +1,5 @@
 from .bits import Bits
-from ..ast.base import _make_name, make_op, _default_symbolic_filters, _default_concrete_filters
+from ..ast.base import _make_name, make_op
 
 class FP(Bits):
     def to_fp(self, rm, sort):
@@ -18,7 +18,7 @@ class FP(Bits):
     def sort(self):
         return fp.FSort.from_size(self.length)
 
-def FPS(name, sort, explicit_name=None, filters=_default_symbolic_filters):
+def FPS(name, sort, explicit_name=None, filters=None):
     """
     Creates a floating-point symbol.
 
@@ -29,9 +29,9 @@ def FPS(name, sort, explicit_name=None, filters=_default_symbolic_filters):
     """
 
     n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
-    return FP(ASTStructure('FPS', (n, sort), ())._deduplicate(), (), filters=filters, _eager=False)
+    return FP(get_structure('FPS', (n, sort)), filters=filters, _eager=False)._deduplicate()._apply_filters()
 
-def FPV(value, sort, filters=_default_concrete_filters):
+def FPV(value, sort, filters=None):
     """
     Creates a concrete floating-point value.
 
@@ -39,7 +39,7 @@ def FPV(value, sort, filters=_default_concrete_filters):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
-    return FP(ASTStructure('FPV', (value, sort), ())._deduplicate(), (), filters)
+    return FP(get_structure('FPV', (value, sort)), filters=filters)._deduplicate()._apply_filters()
 
 #
 # unbound floating point conversions
@@ -48,7 +48,7 @@ def FPV(value, sort, filters=_default_concrete_filters):
 from .. import fp
 from .bv import BV
 from .bool import Bool
-from .structure import ASTStructure
+from .structure import get_structure
 
 fpToFP = make_op('fpToFP', object, FP)
 fpToFPUnsigned = make_op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP)

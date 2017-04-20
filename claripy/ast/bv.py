@@ -1,7 +1,8 @@
 from .bits import Bits
-from .base import _make_name, _default_symbolic_filters, _default_concrete_filters, make_op, make_reversed_op
+from .base import _make_name, make_op, make_reversed_op
 
 import logging
+import itertools
 l = logging.getLogger("claripy.ast.bv")
 
 _bvv_cache = dict()
@@ -144,7 +145,7 @@ class BV(Bits):
 def BVS(
     name, length, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
     explicit_name=None, discrete_set=False, discrete_set_max_card=None,
-    filters=_default_symbolic_filters
+    filters=None
 ):
     """
     Creates a bit-vector symbol (i.e., a variable).
@@ -174,13 +175,11 @@ def BVS(
         discrete_set_max_card = None
 
     return BV(
-        ASTStructure('BVS', (n, length, min, max, stride, uninitialized, discrete_set, discrete_set_max_card), ())._deduplicate(),
-        (),
-        filters=filters,
-        _eager=False
-    )
+        get_structure('BVS', (n, length, min, max, stride, uninitialized, discrete_set, discrete_set_max_card)),
+        filters=filters, _eager=False
+    )._deduplicate()._apply_filters()
 
-def BVV(value, size=None, filters=_default_concrete_filters):
+def BVV(value, size=None, filters=None):
     """
     Creates a bit-vector value (i.e., a concrete value).
 
@@ -213,7 +212,7 @@ def BVV(value, size=None, filters=_default_concrete_filters):
         return _bvv_cache[(value, size)]
     except KeyError:
         pass
-    result = BV(ASTStructure('BVV', (value, size), ())._deduplicate(), (), filters=filters)
+    result = BV(get_structure('BVV', (value, size)), filters=filters)._deduplicate()._apply_filters()
     _bvv_cache[(value, size)] = result
     return result
 
@@ -303,7 +302,13 @@ RotateLeft = make_op('RotateLeft', (BV, BV), BV)
 RotateRight = make_op('RotateRight', (BV, BV), BV)
 Reverse = make_op('Reverse', (BV,), BV)
 
-union = make_op('union', (BV, BV), BV)
+union_counter = itertools.count()
+def _union_postprocessor(union_structure):
+    new_name = 'union_%d' % next(union_counter)
+    va = VariableAnnotation(frozenset((new_name,)))
+    return union_structure.annotate(va)
+
+union = make_op('union', (BV, BV), BV, structure_postprocessor=_union_postprocessor)
 widen = make_op('widen', (BV, BV), BV)
 intersection = make_op('intersection', (BV, BV), BV)
 
@@ -368,11 +373,12 @@ BV.Extract = staticmethod(make_op('Extract', ((int, long), (int, long), BV), BV)
 BV.Concat = staticmethod(make_op('Concat', BV, BV))
 BV.reversed = property(make_op('Reverse', (BV,), BV))
 
-BV.union = make_op('union', (BV, BV), BV)
+BV.union = make_op('union', (BV, BV), BV, structure_postprocessor=_union_postprocessor)
 BV.widen = make_op('widen', (BV, BV), BV)
 BV.intersection = make_op('intersection', (BV, BV), BV)
 
 from . import fp
 from .. import vsa
 from ..errors import ClaripyValueError
-from .structure import ASTStructure
+from .structure import get_structure
+from ..annotation import VariableAnnotation

@@ -49,7 +49,7 @@ _z3_paths.append(os.path.join(sys.prefix, "lib"))
 
 try:
     z3.z3core.lib()
-except:
+except: #pylint:disable=broad-except,bare-except
     for z3_path in _z3_paths:
         if not '.so' in z3_path and \
                 not '.dll' in z3_path and \
@@ -234,7 +234,7 @@ class BackendZ3(Backend):
         if ast.args[0] is None:
             raise BackendError("Z3 can't handle empty BVVs")
 
-        size = ast.size()
+        size = ast.length
         return z3.BitVecVal(ast.args[0], size, ctx=self._context)
 
     @staticmethod
@@ -301,9 +301,6 @@ class BackendZ3(Backend):
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
             raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-    def call(self, *args, **kwargs):
-        return Backend.call(self, *args, **kwargs)
-
     @condom
     def _abstract(self, z):
         #return self._abstract(z, split_on=split_on)[0]
@@ -349,18 +346,18 @@ class BackendZ3(Backend):
         append_children = True
 
         if op_name == 'True':
-            return BoolV(True)
+            return get_structure('BoolV', (True,))
         elif op_name == 'False':
-            return BoolV(False)
+            return get_structure('BoolV', (False,))
         elif op_name.startswith('RM_'):
             return RM.from_name(op_name)
         elif op_name == 'BitVecVal':
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
-                return BVV(self._c_uint64_p.contents.value, bv_size)
+                return get_structure('BVV', (self._c_uint64_p.contents.value, bv_size))
             else:
                 bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
-                return BVV(bv_num, bv_size)
+                return get_structure('BVV', (bv_num, bv_size))
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
@@ -371,47 +368,33 @@ class BackendZ3(Backend):
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
 
-            return FPV(value, sort)
+            return get_structure('FPV', (value, sort))
         elif op_name in ('MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
 
             if op_name == 'MinusZero':
-                return FPV(-0.0, sort)
+                return get_structure('FPV', (-0.0, sort))
             elif op_name == 'MinusInf':
-                return FPV(float('-inf'), sort)
+                return get_structure('FPV', (float('-inf'), sort))
             elif op_name == 'PlusZero':
-                return FPV(0.0, sort)
+                return get_structure('FPV', (0.0, sort))
             elif op_name == 'PlusInf':
-                return FPV(float('inf'), sort)
+                return get_structure('FPV', (float('inf'), sort))
             elif op_name == 'NaN':
-                return FPV(float('nan'), sort)
+                return get_structure('FPV', (float('nan'), sort))
         elif op_name == 'UNINTERPRETED' and num_args == 0: # this *might* be a BitVec ;-)
             bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 
             #if bv_name.count('_') < 2:
             #       import ipdb; ipdb.set_trace()
-            return BV("BVS", (bv_name, bv_size, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True)
+            return get_structure('BVS', (bv_name, bv_size, None, None, None, False, False, None))
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
-
-            #
-            # TODO: DEPRECATED: remove the following after some reasonable amount of time.
-            #
-
-            if mystery_name == 'bvsmod_i':
-                l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
-                op_name = '__mod__'
-                decl_num = z3.Z3_OP_BSMOD
-            elif mystery_name == 'bvsdiv_i':
-                l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
-                op_name = 'SDiv'
-                decl_num = z3.Z3_OP_BSDIV
-            else:
-                l.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
+            l.critical("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
         elif op_name == 'Extract':
             hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
             lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
@@ -436,30 +419,7 @@ class BackendZ3(Backend):
         if append_children:
             args.extend(children)
 
-        # hmm.... honestly not sure what to do here
-        result_ty = op_type_map[z3_op_nums[decl_num]]
-        ty = type(args[-1])
-
-        if type(result_ty) is str:
-            err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
-            l.error(err)
-            raise BackendError(err)
-
-        if op_name == 'If':
-            # If is polymorphic and thus must be handled specially
-            ty = type(args[1])
-
-            a = ty('If', tuple(args), length=args[1].length)._deduplicate()
-        elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
-            op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
-            if op.calc_length is not None:
-                length = op.calc_length(*args)
-                a = result_ty(op_name, tuple(args), length=length)._deduplicate()
-            else:
-                a = result_ty(op_name, tuple(args))._deduplicate()
-        else:
-            a = result_ty(op_name, tuple(args))._deduplicate()
-
+        a = get_structure(op_name, tuple(args))
         self._ast_cache[h] = a
         return a
 
@@ -482,7 +442,7 @@ class BackendZ3(Backend):
         elif op_name == 'FPVal':
             # this is really imprecise
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
+            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
             return fp_mantissa * (2 ** fp_exp)
         elif op_name == 'True':
             return True
@@ -726,38 +686,8 @@ class BackendZ3(Backend):
 
         return max(vals)
 
-    def _simplify(self, expr): #pylint:disable=W0613,R0201
-        raise Exception("This shouldn't be called. Bug Yan.")
-
     @condom
-    def simplify(self, expr):
-        if expr._simplified:
-            return expr
-
-        if self._enable_simplification_cache:
-            try:
-                k = self._simplification_cache_key[expr.cache_key]
-                #print "HIT WEAK KEY CACHE"
-                return k
-            except KeyError:
-                pass
-            try:
-                k = self._simplification_cache_val[expr.cache_key]
-                #print "HIT WEAK VALUE CACHE"
-                return k
-            except KeyError:
-                pass
-
-            #print "MISS CACHE"
-
-        l.debug("SIMPLIFYING EXPRESSION")
-
-        #print "SIMPLIFYING"
-
-        expr_raw = self.convert(expr)
-
-        #l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
-
+    def _simplify(self, expr_raw):
         #s = expr_raw
         if isinstance(expr_raw, z3.BoolRef):
             tactics = z3.Then(
@@ -778,13 +708,7 @@ class BackendZ3(Backend):
         else:
             s = expr_raw
 
-        o = self._abstract(s)
-        o._simplified = Base.FULL_SIMPLIFY
-
-        if self._enable_simplification_cache:
-            self._simplification_cache_val[expr.cache_key] = o
-            self._simplification_cache_key[expr.cache_key] = o
-        return o
+        return s
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return z3.simplify(e).eq(z3.BoolVal(False, ctx=self._context))
@@ -1111,150 +1035,146 @@ op_map = {
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
-from ..ast.base import Base
-from ..ast.bv import BV, BVV
-from ..ast.bool import BoolV, Bool
-from ..ast.fp import FP, FPV
+from ..ast.structure import get_structure
 from ..operations import backend_operations, backend_fp_operations
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
-from .. import _all_operations
 
-op_type_map = {
-    # Boolean
-    'Z3_OP_TRUE': Bool,
-    'Z3_OP_FALSE': Bool,
-    'Z3_OP_EQ': Bool,
-    'Z3_OP_DISTINCT': Bool,
-    'Z3_OP_ITE': Bool,
-    'Z3_OP_AND': Bool,
-    'Z3_OP_OR': Bool,
-    'Z3_OP_IFF': Bool,
-    'Z3_OP_XOR': Bool,
-    'Z3_OP_NOT': Bool,
-    'Z3_OP_IMPLIES': Bool,
-    #'Z3_OP_OEQ': None,
-
-    # Arithmetic
-    #'Z3_OP_ANUM': None,
-    #'Z3_OP_AGNUM': None,
-    'Z3_OP_LE': None,
-    'Z3_OP_GE': None,
-    'Z3_OP_LT': None,
-    'Z3_OP_GT': None,
-    'Z3_OP_ADD': None,
-    'Z3_OP_SUB': None,
-    'Z3_OP_UMINUS': None,
-    'Z3_OP_MUL': None,
-    'Z3_OP_DIV': None,
-    'Z3_OP_IDIV': None,
-    'Z3_OP_REM': None, # TODO: is this correct?
-    'Z3_OP_MOD': None,
-    #'Z3_OP_TO_REAL': None,
-    #'Z3_OP_TO_INT': None,
-    #'Z3_OP_IS_INT': None,
-    'Z3_OP_POWER': None,
-
-    # Arrays & Sets
-    #'Z3_OP_STORE': None,
-    #'Z3_OP_SELECT': None,
-    #'Z3_OP_CONST_ARRAY': None,
-    #'Z3_OP_ARRAY_MAP': None,
-    #'Z3_OP_ARRAY_DEFAULT': None,
-    #'Z3_OP_SET_UNION': None,
-    #'Z3_OP_SET_INTERSECT': None,
-    #'Z3_OP_SET_DIFFERENCE': None,
-    #'Z3_OP_SET_COMPLEMENT': None,
-    #'Z3_OP_SET_SUBSET': None,
-    #'Z3_OP_AS_ARRAY': None,
-
-    # Bit-vectors
-    'Z3_OP_BNUM': 'BitVecVal',
-    #'Z3_OP_BIT1': None, # MAYBE TODO
-    #'Z3_OP_BIT0': None, # MAYBE TODO
-    'Z3_OP_BNEG': BV,
-    'Z3_OP_BADD': BV,
-    'Z3_OP_BSUB': BV,
-    'Z3_OP_BMUL': BV,
-
-    'Z3_OP_BSDIV': BV,
-    'Z3_OP_BUDIV': BV,
-    'Z3_OP_BSREM': BV,
-    'Z3_OP_BUREM': BV,
-    'Z3_OP_BSMOD': BV,
-    'Z3_OP_BSDIV_I': BV,
-    'Z3_OP_BUDIV_I': BV,
-    'Z3_OP_BSREM_I': BV,
-    'Z3_OP_BUREM_I': BV,
-    'Z3_OP_BSMOD_I': BV,
-
-    # special functions to record the division by 0 cases
-    # these are internal functions
-    #'Z3_OP_BSDIV0': None,
-    #'Z3_OP_BUDIV0': None,
-    #'Z3_OP_BSREM0': None,
-    #'Z3_OP_BUREM0': None,
-    #'Z3_OP_BSMOD0': None,
-
-    'Z3_OP_ULEQ': Bool,
-    'Z3_OP_SLEQ': Bool,
-    'Z3_OP_UGEQ': Bool,
-    'Z3_OP_SGEQ': Bool,
-    'Z3_OP_ULT': Bool,
-    'Z3_OP_SLT': Bool,
-    'Z3_OP_UGT': Bool,
-    'Z3_OP_SGT': Bool,
-
-    'Z3_OP_BAND': BV,
-    'Z3_OP_BOR': BV,
-    'Z3_OP_BNOT': BV,
-    'Z3_OP_BXOR': BV,
-    #'Z3_OP_BNAND': None,
-    #'Z3_OP_BNOR': None,
-    #'Z3_OP_BXNOR': None,
-
-    'Z3_OP_CONCAT': BV,
-    'Z3_OP_SIGN_EXT': BV,
-    'Z3_OP_ZERO_EXT': BV,
-    'Z3_OP_EXTRACT': BV,
-    'Z3_OP_REPEAT': BV,
-
-    #'Z3_OP_BREDOR': None,
-    #'Z3_OP_BREDAND': None,
-    #'Z3_OP_BCOMP': None,
-
-    'Z3_OP_BSHL': BV,
-    'Z3_OP_BLSHR': BV,
-    'Z3_OP_BASHR': BV,
-    #'Z3_OP_ROTATE_LEFT': None,
-    #'Z3_OP_ROTATE_RIGHT': None,
-    'Z3_OP_EXT_ROTATE_LEFT': BV,
-    'Z3_OP_EXT_ROTATE_RIGHT': BV,
-
-    'Z3_OP_FPA_TO_SBV': BV,
-    'Z3_OP_FPA_TO_UBV': BV,
-    'Z3_OP_FPA_TO_IEEE_BV': BV,
-    'Z3_OP_FPA_TO_FP': FP,
-    'Z3_OP_FPA_NUM': FP,
-
-    'Z3_OP_FPA_MINUS_ZERO': FP,
-    'Z3_OP_FPA_MINUS_INF': FP,
-    'Z3_OP_FPA_PLUS_ZERO': FP,
-    'Z3_OP_FPA_PLUS_INF': FP,
-    'Z3_OP_FPA_NAN': FP,
-
-    'Z3_OP_FPA_EQ': Bool,
-    'Z3_OP_FPA_GT': Bool,
-    'Z3_OP_FPA_GE': Bool,
-    'Z3_OP_FPA_LT': Bool,
-    'Z3_OP_FPA_LE': Bool,
-
-    'Z3_OP_FPA_ABS': FP,
-    'Z3_OP_FPA_NEG': FP,
-    'Z3_OP_FPA_ADD': FP,
-    'Z3_OP_FPA_SUB': FP,
-    'Z3_OP_FPA_MUL': FP,
-    'Z3_OP_FPA_DIV': FP,
-
-    'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
-}
+#op_type_map = {
+#   # Boolean
+#   'Z3_OP_TRUE': Bool,
+#   'Z3_OP_FALSE': Bool,
+#   'Z3_OP_EQ': Bool,
+#   'Z3_OP_DISTINCT': Bool,
+#   'Z3_OP_ITE': Bool,
+#   'Z3_OP_AND': Bool,
+#   'Z3_OP_OR': Bool,
+#   'Z3_OP_IFF': Bool,
+#   'Z3_OP_XOR': Bool,
+#   'Z3_OP_NOT': Bool,
+#   'Z3_OP_IMPLIES': Bool,
+#   #'Z3_OP_OEQ': None,
+#
+#   # Arithmetic
+#   #'Z3_OP_ANUM': None,
+#   #'Z3_OP_AGNUM': None,
+#   'Z3_OP_LE': None,
+#   'Z3_OP_GE': None,
+#   'Z3_OP_LT': None,
+#   'Z3_OP_GT': None,
+#   'Z3_OP_ADD': None,
+#   'Z3_OP_SUB': None,
+#   'Z3_OP_UMINUS': None,
+#   'Z3_OP_MUL': None,
+#   'Z3_OP_DIV': None,
+#   'Z3_OP_IDIV': None,
+#   'Z3_OP_REM': None, # TODO: is this correct?
+#   'Z3_OP_MOD': None,
+#   #'Z3_OP_TO_REAL': None,
+#   #'Z3_OP_TO_INT': None,
+#   #'Z3_OP_IS_INT': None,
+#   'Z3_OP_POWER': None,
+#
+#   # Arrays & Sets
+#   #'Z3_OP_STORE': None,
+#   #'Z3_OP_SELECT': None,
+#   #'Z3_OP_CONST_ARRAY': None,
+#   #'Z3_OP_ARRAY_MAP': None,
+#   #'Z3_OP_ARRAY_DEFAULT': None,
+#   #'Z3_OP_SET_UNION': None,
+#   #'Z3_OP_SET_INTERSECT': None,
+#   #'Z3_OP_SET_DIFFERENCE': None,
+#   #'Z3_OP_SET_COMPLEMENT': None,
+#   #'Z3_OP_SET_SUBSET': None,
+#   #'Z3_OP_AS_ARRAY': None,
+#
+#   # Bit-vectors
+#   'Z3_OP_BNUM': 'BitVecVal',
+#   #'Z3_OP_BIT1': None, # MAYBE TODO
+#   #'Z3_OP_BIT0': None, # MAYBE TODO
+#   'Z3_OP_BNEG': BV,
+#   'Z3_OP_BADD': BV,
+#   'Z3_OP_BSUB': BV,
+#   'Z3_OP_BMUL': BV,
+#
+#   'Z3_OP_BSDIV': BV,
+#   'Z3_OP_BUDIV': BV,
+#   'Z3_OP_BSREM': BV,
+#   'Z3_OP_BUREM': BV,
+#   'Z3_OP_BSMOD': BV,
+#   'Z3_OP_BSDIV_I': BV,
+#   'Z3_OP_BUDIV_I': BV,
+#   'Z3_OP_BSREM_I': BV,
+#   'Z3_OP_BUREM_I': BV,
+#   'Z3_OP_BSMOD_I': BV,
+#
+#   # special functions to record the division by 0 cases
+#   # these are internal functions
+#   #'Z3_OP_BSDIV0': None,
+#   #'Z3_OP_BUDIV0': None,
+#   #'Z3_OP_BSREM0': None,
+#   #'Z3_OP_BUREM0': None,
+#   #'Z3_OP_BSMOD0': None,
+#
+#   'Z3_OP_ULEQ': Bool,
+#   'Z3_OP_SLEQ': Bool,
+#   'Z3_OP_UGEQ': Bool,
+#   'Z3_OP_SGEQ': Bool,
+#   'Z3_OP_ULT': Bool,
+#   'Z3_OP_SLT': Bool,
+#   'Z3_OP_UGT': Bool,
+#   'Z3_OP_SGT': Bool,
+#
+#   'Z3_OP_BAND': BV,
+#   'Z3_OP_BOR': BV,
+#   'Z3_OP_BNOT': BV,
+#   'Z3_OP_BXOR': BV,
+#   #'Z3_OP_BNAND': None,
+#   #'Z3_OP_BNOR': None,
+#   #'Z3_OP_BXNOR': None,
+#
+#   'Z3_OP_CONCAT': BV,
+#   'Z3_OP_SIGN_EXT': BV,
+#   'Z3_OP_ZERO_EXT': BV,
+#   'Z3_OP_EXTRACT': BV,
+#   'Z3_OP_REPEAT': BV,
+#
+#   #'Z3_OP_BREDOR': None,
+#   #'Z3_OP_BREDAND': None,
+#   #'Z3_OP_BCOMP': None,
+#
+#   'Z3_OP_BSHL': BV,
+#   'Z3_OP_BLSHR': BV,
+#   'Z3_OP_BASHR': BV,
+#   #'Z3_OP_ROTATE_LEFT': None,
+#   #'Z3_OP_ROTATE_RIGHT': None,
+#   'Z3_OP_EXT_ROTATE_LEFT': BV,
+#   'Z3_OP_EXT_ROTATE_RIGHT': BV,
+#
+#   'Z3_OP_FPA_TO_SBV': BV,
+#   'Z3_OP_FPA_TO_UBV': BV,
+#   'Z3_OP_FPA_TO_IEEE_BV': BV,
+#   'Z3_OP_FPA_TO_FP': FP,
+#   'Z3_OP_FPA_NUM': FP,
+#
+#   'Z3_OP_FPA_MINUS_ZERO': FP,
+#   'Z3_OP_FPA_MINUS_INF': FP,
+#   'Z3_OP_FPA_PLUS_ZERO': FP,
+#   'Z3_OP_FPA_PLUS_INF': FP,
+#   'Z3_OP_FPA_NAN': FP,
+#
+#   'Z3_OP_FPA_EQ': Bool,
+#   'Z3_OP_FPA_GT': Bool,
+#   'Z3_OP_FPA_GE': Bool,
+#   'Z3_OP_FPA_LT': Bool,
+#   'Z3_OP_FPA_LE': Bool,
+#
+#   'Z3_OP_FPA_ABS': FP,
+#   'Z3_OP_FPA_NEG': FP,
+#   'Z3_OP_FPA_ADD': FP,
+#   'Z3_OP_FPA_SUB': FP,
+#   'Z3_OP_FPA_MUL': FP,
+#   'Z3_OP_FPA_DIV': FP,
+#
+#   'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
+#}

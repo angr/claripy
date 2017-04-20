@@ -31,8 +31,14 @@ class BackendManager(object):
             if v is b:
                 return k
 
+    def first_successful(self, op, ast):
+        for b in self._all_backends:
+            try: return getattr(b, op)(ast)
+            except BackendError: pass
+
 def _get_by_name(name):
     return getattr(backends, name)
 _get_by_name.__safe_for_unpickling__ = True
 
 backends = BackendManager()
+from .errors import BackendError

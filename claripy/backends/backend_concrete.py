@@ -22,6 +22,7 @@ class BackendConcrete(Backend):
         self._op_raw['__and__'] = self._op_and
 
         self._cache_objects = False
+        self._cache_simplifications = False
 
     @staticmethod
     def BVV(value, size):
@@ -87,11 +88,11 @@ class BackendConcrete(Backend):
 
     def _abstract(self, e): #pylint:disable=no-self-use
         if isinstance(e, bv.BVV):
-            return BVV(e.value, e.size())
+            return get_structure('BVV', (e.value, e.size()))
         elif isinstance(e, bool):
-            return BoolV(e)
+            return get_structure('BoolV', (e,))
         elif isinstance(e, fp.FPV):
-            return FPV(e.value, e.sort)
+            return get_structure('FPV', (e.value, e.sort))
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
@@ -153,7 +154,5 @@ class BackendConcrete(Backend):
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp
-from ..ast.bv import BVV
-from ..ast.fp import FPV
-from ..ast.bool import BoolV
+from ..ast.structure import get_structure
 from ..errors import UnsatError

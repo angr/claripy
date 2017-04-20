@@ -38,14 +38,7 @@ class ASTStructure(ana.Storable):
 
     def _calc_hash(self):
         """
-        Calculates the hash of an ASTStructure, given the operation, args, and kwargs.
-
-        :param op:        The operation.
-        :param args:    The arguments to the operation.
-        :param kwargs:    A dict including the 'symbolic', 'variables', and 'length' items.
-
-        :returns:        a hash.
-
+        Calculates the hash of an ASTStructure.
         """
         args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in self.args)
         to_hash = (self.op, args_tup, hash(self.annotations))
@@ -57,7 +50,19 @@ class ASTStructure(ana.Storable):
         return _md5_unpacker.unpack(hd)[0] # 64 bits
 
     def __eq__(self, o):
-        return self is o or hash(self) == hash(o) or (self.op == o.op and self.args == o.args and self.annotations == o.annotations)
+        # special-case for BVV and BoolV
+        if type(o) in (int, long, float, bool):
+            if self.op in operations.backend_creation_operations:
+                return self.args[0] == o
+            else:
+                return False
+
+        if type(o) is not ASTStructure:
+            return False
+
+        return self is o or hash(self) == hash(o) # or (self.op == o.op and self.args == o.args and self.annotations == o.annotations)
+    def __ne__(self, o):
+        return not self.__eq__(o)
 
     @property
     def symbolic(self):
@@ -71,15 +76,21 @@ class ASTStructure(ana.Storable):
     #
 
     def annotate(self, *annotations):
-        return _deduplicate(ASTStructure(self.op, self.args, self.annotations+annotations))
+        return get_structure(self.op, self.args, self.annotations+annotations)
 
     def swap_annotations(self, annotations):
-        return _deduplicate(ASTStructure(self.op, self.args, annotations))
+        return get_structure(self.op, self.args, annotations)
 
     def swap_args(self, args):
         if len(self.args) == len(args) and all(a is b for a,b in zip(self.args, args)):
             return self
-        return _deduplicate(ASTStructure(self.op, args, self.annotations))
+        return get_structure(self.op, args, self.annotations)
+
+    def reverse_operation(self):
+        if self.op in operations.boolean_opposites:
+            return get_structure(operations.boolean_opposites[self.op], self.args[::-1], self.annotations)
+        else:
+            raise ClaripyOperationError("Cannot reverse operation %s" % self.op)
 
     def replace(self, replacements, leaf_operation=None):
         """
@@ -91,15 +102,15 @@ class ASTStructure(ana.Storable):
         except KeyError: pass
 
         if leaf_operation is not None and self.op in operations.leaf_operations:
-            r = leaf_operation(self)
+            r = _deduplicate(leaf_operation(self))
         else:
             new_args = [
-                a._replace(replacements=replacements, leaf_operation=leaf_operation) if isinstance(a, ASTStructure) else a
+                a.replace(replacements=replacements, leaf_operation=leaf_operation) if isinstance(a, ASTStructure) else a
                 for a in self.args
             ]
 
             if any(old_a is not new_a for old_a,new_a in zip(self.args,new_args)):
-                r = self.swap_args(tuple(new_args))
+                r = _deduplicate(self.swap_args(tuple(new_args)))
             else:
                 r = self
 
@@ -120,9 +131,9 @@ class ASTStructure(ana.Storable):
         var_map = { } if var_map is None else var_map
 
         for v in self._recursive_leaves():
-            if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
+            if v not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
                 new_name = 'cv%d' % next(counter)
-                var_map[v.cache_key] = v.swap_args((new_name,)+v.args)
+                var_map[v] = v.swap_args((new_name,)+v.args[1:])
 
         return var_map, counter, self.replace(var_map)
 
@@ -211,27 +222,11 @@ class ASTStructure(ana.Storable):
             return False
 
     @property
-    def dbg_depth(self):
+    def depth(self):
         """
         The depth of this AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
         """
-        return self._dbg_depth()
-
-    def _dbg_depth(self, memoized=None):
-        """
-        :param memoized:    A dict of ast hashes to depths we've seen before
-        :return:            The depth of the AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
-        """
-        if memoized is None:
-            memoized = dict()
-
-        try: return memoized[self]
-        except KeyError: pass
-
-        try:
-            return 1 + max(a._dbg_depth(memoized=memoized) for a in self.args if isinstance(a, ASTStructure))
-        except TypeError:
-            return 0
+        return backends.depth.convert(self)
 
     #
     # String representation
@@ -257,13 +252,13 @@ class ASTStructure(ana.Storable):
             elif op == 'BVS':
                 value = "%s" % args[0]
                 extras = [ ]
-                if args[1] is not None:
-                    extras.append("min=%s" % args[1])
                 if args[2] is not None:
-                    extras.append("max=%s" % args[2])
+                    extras.append("min=%s" % args[1])
                 if args[3] is not None:
+                    extras.append("max=%s" % args[2])
+                if args[4] is not None:
                     extras.append("stride=%s" % args[3])
-                if args[4] is True:
+                if args[5] is True:
                     extras.append("UNINITIALIZED")
                 if len(extras) != 0:
                     value += "{" + ", ".join(extras) + "}"
@@ -359,7 +354,7 @@ class ASTStructure(ana.Storable):
         if self.op == 'If':
             # if we are an If, call the If handler so that we can take advantage of its simplifiers
             # TODO: make this simplifiable
-            return If(*excavated_args)
+            return get_structure('If', tuple(excavated_args))._simplify()
         elif ite_args.count(True) == 0:
             # if there are no ifs that came to the surface, there's nothing more to do
             return self.swap_args(excavated_args)
@@ -381,7 +376,7 @@ class ASTStructure(ana.Storable):
                     #print "AC", a.args[0].dbg_repr()
                     new_true_args.append(a.args[1])
                     new_false_args.append(a.args[2])
-                elif a.args[0] is Not(cond):
+                elif a.args[0] is get_structure('Not', (cond,))._simplify():
                     #print "AN", a.args[0].dbg_repr()
                     new_true_args.append(a.args[2])
                     new_false_args.append(a.args[1])
@@ -390,10 +385,13 @@ class ASTStructure(ana.Storable):
                     # weird conditions -- giving up!
                     return self.swap_args(excavated_args)
 
-            return If(cond, self.swap_args(new_true_args), self.swap_args(new_false_args))
+            return get_structure('If', (cond, self.swap_args(new_true_args), self.swap_args(new_false_args)))
 
     def _deduplicate(self):
         return _deduplicate(self)
+
+    def _simplify(self):
+        return simplifier.simplify(self)
 
 
 _hash_cache = weakref.WeakValueDictionary()
@@ -401,9 +399,12 @@ def _deduplicate(expr):
     return _hash_cache.setdefault(hash(expr), expr)
 
 def _do_op(op, args):
-    return _deduplicate(ASTStructure(op, args, ()))
+    return get_structure(op, args)
+
+def get_structure(op, args, annotations=()):
+    return _deduplicate(ASTStructure(op, args, annotations=annotations))
 
 from .. import operations
-from ..errors import ClaripyRecursionError
-from .bool import Not, If
+from ..errors import ClaripyRecursionError, ClaripyOperationError
 from ..backend_manager import backends
+from ..simplifier import simplifier
