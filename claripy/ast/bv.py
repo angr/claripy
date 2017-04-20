@@ -278,34 +278,34 @@ def DSIS(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, exp
 from .bool import Bool
 
 # comparisons
-ULT = make_op('__lt__', (BV, BV), Bool, bound=False)
-ULE = make_op('__le__', (BV, BV), Bool, bound=False)
-UGT = make_op('__gt__', (BV, BV), Bool, bound=False)
-UGE = make_op('__ge__', (BV, BV), Bool, bound=False)
-SLT = make_op('SLT', (BV, BV), Bool, bound=False)
-SLE = make_op('SLE', (BV, BV), Bool, bound=False)
-SGT = make_op('SGT', (BV, BV), Bool, bound=False)
-SGE = make_op('SGE', (BV, BV), Bool, bound=False)
+ULT = make_op('__lt__', (BV, BV), Bool)
+ULE = make_op('__le__', (BV, BV), Bool)
+UGT = make_op('__gt__', (BV, BV), Bool)
+UGE = make_op('__ge__', (BV, BV), Bool)
+SLT = make_op('SLT', (BV, BV), Bool)
+SLE = make_op('SLE', (BV, BV), Bool)
+SGT = make_op('SGT', (BV, BV), Bool)
+SGE = make_op('SGE', (BV, BV), Bool)
 
 # division
-SDiv = make_op('SDiv', (BV, BV), BV, bound=False)
-SMod = make_op('SMod', (BV, BV), BV, bound=False)
+SDiv = make_op('SDiv', (BV, BV), BV)
+SMod = make_op('SMod', (BV, BV), BV)
 
 # bit stuff
-LShR = make_op('LShR', (BV, BV), BV, bound=False)
-SignExt = make_op('SignExt', ((int, long), BV), BV, bound=False)
-ZeroExt = make_op('ZeroExt', ((int, long), BV), BV, bound=False)
-Extract = make_op('Extract', ((int, long), (int, long), BV), BV, bound=False)
+LShR = make_op('LShR', (BV, BV), BV)
+SignExt = make_op('SignExt', ((int, long), BV), BV)
+ZeroExt = make_op('ZeroExt', ((int, long), BV), BV)
+Extract = make_op('Extract', ((int, long), (int, long), BV), BV)
 
-Concat = make_op('Concat', BV, BV, bound=False)
+Concat = make_op('Concat', BV, BV)
 
-RotateLeft = make_op('RotateLeft', (BV, BV), BV, bound=False)
-RotateRight = make_op('RotateRight', (BV, BV), BV, bound=False)
-Reverse = make_op('Reverse', (BV,), BV, bound=False)
+RotateLeft = make_op('RotateLeft', (BV, BV), BV)
+RotateRight = make_op('RotateRight', (BV, BV), BV)
+Reverse = make_op('Reverse', (BV,), BV)
 
-union = make_op('union', (BV, BV), BV, bound=False)
-widen = make_op('widen', (BV, BV), BV, bound=False)
-intersection = make_op('intersection', (BV, BV), BV, bound=False)
+union = make_op('union', (BV, BV), BV)
+widen = make_op('widen', (BV, BV), BV)
+intersection = make_op('intersection', (BV, BV), BV)
 
 #
 # Bound operations
@@ -329,8 +329,8 @@ BV.__mod__ = make_op('__mod__', (BV, BV), BV)
 BV.__rmod__ = make_reversed_op(BV.__mod__.im_func)
 BV.__divmod__ = make_op('__divmod__', (BV, BV), BV)
 BV.__rdivmod__ = make_reversed_op(BV.__divmod__.im_func)
-BV.SDiv = make_op('SDiv', (BV, BV), BV, bound=False)
-BV.SMod = make_op('SMod', (BV, BV), BV, bound=False)
+BV.SDiv = make_op('SDiv', (BV, BV), BV)
+BV.SMod = make_op('SMod', (BV, BV), BV)
 
 BV.__neg__ = make_op('__neg__', (BV,), BV)
 BV.__pos__ = make_op('__pos__', (BV,), BV)
@@ -364,8 +364,8 @@ BV.__rshift__ = make_op('__rshift__', (BV, BV), BV)
 BV.__rrshift__ = make_reversed_op(BV.__rshift__.im_func)
 BV.LShR = make_op('LShR', (BV, BV), BV)
 
-BV.Extract = staticmethod(make_op('Extract', ((int, long), (int, long), BV), BV, bound=False))
-BV.Concat = staticmethod(make_op('Concat', BV, BV, bound=False))
+BV.Extract = staticmethod(make_op('Extract', ((int, long), (int, long), BV), BV))
+BV.Concat = staticmethod(make_op('Concat', BV, BV))
 BV.reversed = property(make_op('Reverse', (BV,), BV))
 
 BV.union = make_op('union', (BV, BV), BV)

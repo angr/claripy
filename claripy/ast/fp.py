@@ -50,33 +50,33 @@ from .bv import BV
 from .bool import Bool
 from .structure import ASTStructure
 
-fpToFP = make_op('fpToFP', object, FP, bound=False)
-fpToFPUnsigned = make_op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP, bound=False)
-fpFP = make_op('fpFP', (BV, BV, BV), FP, bound=False)
-fpToIEEEBV = make_op('fpToIEEEBV', (FP,), BV, bound=False)
-fpToSBV = make_op('fpToSBV', (fp.RM, FP, (int, long)), BV, bound=False)
-fpToUBV = make_op('fpToUBV', (fp.RM, FP, (int, long)), BV, bound=False)
+fpToFP = make_op('fpToFP', object, FP)
+fpToFPUnsigned = make_op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP)
+fpFP = make_op('fpFP', (BV, BV, BV), FP)
+fpToIEEEBV = make_op('fpToIEEEBV', (FP,), BV)
+fpToSBV = make_op('fpToSBV', (fp.RM, FP, (int, long)), BV)
+fpToUBV = make_op('fpToUBV', (fp.RM, FP, (int, long)), BV)
 
 #
 # unbound float point comparisons
 #
 
-fpEQ = make_op('fpEQ', (FP, FP), Bool, bound=False)
-fpGT = make_op('fpGT', (FP, FP), Bool, bound=False)
-fpGEQ = make_op('fpGEQ', (FP, FP), Bool, bound=False)
-fpLT = make_op('fpLT', (FP, FP), Bool, bound=False)
-fpLEQ = make_op('fpLEQ', (FP, FP), Bool, bound=False)
+fpEQ = make_op('fpEQ', (FP, FP), Bool)
+fpGT = make_op('fpGT', (FP, FP), Bool)
+fpGEQ = make_op('fpGEQ', (FP, FP), Bool)
+fpLT = make_op('fpLT', (FP, FP), Bool)
+fpLEQ = make_op('fpLEQ', (FP, FP), Bool)
 
 #
 # unbound floating point arithmetic
 #
 
-fpAbs = make_op('fpAbs', (FP,), FP, bound=False)
-fpNeg = make_op('fpNeg', (FP,), FP, bound=False)
-fpSub = make_op('fpSub', (fp.RM, FP, FP), FP, bound=False)
-fpAdd = make_op('fpAdd', (fp.RM, FP, FP), FP, bound=False)
-fpMul = make_op('fpMul', (fp.RM, FP, FP), FP, bound=False)
-fpDiv = make_op('fpDiv', (fp.RM, FP, FP), FP, bound=False)
+fpAbs = make_op('fpAbs', (FP,), FP)
+fpNeg = make_op('fpNeg', (FP,), FP)
+fpSub = make_op('fpSub', (fp.RM, FP, FP), FP)
+fpAdd = make_op('fpAdd', (fp.RM, FP, FP), FP)
+fpMul = make_op('fpMul', (fp.RM, FP, FP), FP)
+fpDiv = make_op('fpDiv', (fp.RM, FP, FP), FP)
 
 #
 # bound fp operations

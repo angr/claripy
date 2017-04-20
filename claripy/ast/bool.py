@@ -121,9 +121,9 @@ def If(*args):
     else:
         return ty('If', tuple(args))._apply_filters()
 
-And = make_op('And', Bool, Bool, bound=False)
-Or = make_op('Or', Bool, Bool, bound=False)
-Not = make_op('Not', (Bool,), Bool, bound=False)
+And = make_op('And', Bool, Bool)
+Or = make_op('Or', Bool, Bool)
+Not = make_op('Not', (Bool,), Bool)
 
 def is_true(e, exact=None): #pylint:disable=unused-argument
     for b in backends._quick_backends:
