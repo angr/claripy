@@ -736,13 +736,13 @@ class BackendZ3(Backend):
 
         if self._enable_simplification_cache:
             try:
-                k = self._simplification_cache_key[expr._cache_key]
+                k = self._simplification_cache_key[expr.cache_key]
                 #print "HIT WEAK KEY CACHE"
                 return k
             except KeyError:
                 pass
             try:
-                k = self._simplification_cache_val[expr._cache_key]
+                k = self._simplification_cache_val[expr.cache_key]
                 #print "HIT WEAK VALUE CACHE"
                 return k
             except KeyError:
@@ -782,8 +782,8 @@ class BackendZ3(Backend):
         o._simplified = Base.FULL_SIMPLIFY
 
         if self._enable_simplification_cache:
-            self._simplification_cache_val[expr._cache_key] = o
-            self._simplification_cache_key[expr._cache_key] = o
+            self._simplification_cache_val[expr.cache_key] = o
+            self._simplification_cache_key[expr.cache_key] = o
         return o
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):

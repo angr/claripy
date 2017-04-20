@@ -146,7 +146,7 @@ class Backend(object):
         if isinstance(expr, Base):
             # if it's cached in the backend, use it
             if self._cache_objects and expr.outer_annotations:
-                try: return self._object_cache[expr._cache_key]
+                try: return self._object_cache[expr.cache_key]
                 except KeyError: pass
 
             # otherwise, resolve it!
@@ -157,7 +157,7 @@ class Backend(object):
                 for a in expr.outer_annotations:
                     r = self.apply_annotation(r, a)
                 if self._cache_objects:
-                    self._object_cache[expr._cache_key] = r
+                    self._object_cache[expr.cache_key] = r
             return r
         elif type(expr) is ASTStructure:
             #l.warning("ASTSturcture object passed to Backend.convert()")
