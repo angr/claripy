@@ -152,9 +152,7 @@ class Base(object):
         Returns an equivalent AST that "burrows" the ITE expressions as deep as possible into the ast, for simpler
         printing.
         """
-        if self._burrowed is None:
-            self._burrowed = self.swap_structure(self.structure._burrow_ite())
-        return self._burrowed
+        return self.swap_structure(backends.ite_burrower.convert(self.structure))
 
     @property
     def ite_excavated(self):

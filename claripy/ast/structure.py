@@ -311,42 +311,6 @@ class ASTStructure(ana.Storable):
     # them to shallower levels.
     #
 
-    def _burrow_ite(self):
-        if self.op != 'If':
-            #print "i'm not an if"
-            return self.swap_args(tuple((a._burrow_ite() if isinstance(a, ASTStructure) else a) for a in self.args))
-
-        if not all(isinstance(a, ASTStructure) for a in self.args):
-            #print "not all my args are bases"
-            return self
-
-        old_true = self.args[1]
-        old_false = self.args[2]
-
-        if old_true.op != old_false.op or len(old_true.args) != len(old_false.args):
-            return self
-
-        if old_true.op == 'If':
-            # let's no go into this right now
-            return self
-
-        if any(a.op in operations.leaf_operations for a in self.args):
-            # burrowing through these is pretty funny
-            return self
-
-        matches = [ old_true.args[i] == old_false.args[i] for i in range(len(old_true.args)) ]
-        if matches.count(False) != 1 or all(matches):
-            # TODO: handle multiple differences for multi-arg ast nodes
-            #print "wrong number of matches:",matches,old_true,old_false
-            return self
-
-        different_idx = matches.index(False)
-        inner_if = self.swap_args((self.args[0], old_true.args[different_idx], old_false.args[different_idx]))
-        new_args = list(old_true.args)
-        new_args[different_idx] = inner_if._burrow_ite()
-        #print "replaced the",different_idx,"arg:",new_args
-        return old_true.swap_args(new_args)
-
     def _deduplicate(self):
         return _deduplicate(self)
 

@@ -79,6 +79,7 @@ _backend_manager.backends._register_backend(_backends_module.BackendVariables(),
 _backend_manager.backends._register_backend(_backends_module.BackendDepth(), 'depth', False, False)
 _backend_manager.backends._register_backend(_backends_module.BackendASTType(), 'ast_type', False, False)
 _backend_manager.backends._register_backend(_backends_module.BackendITEExcavator(), 'ite_excavator', False, False)
+_backend_manager.backends._register_backend(_backends_module.BackendITEBurrower(), 'ite_burrower', False, False)
 _backend_z3 = _backends_module.BackendZ3()
 _backend_manager.backends._register_backend(_backend_z3, 'z3', False, False)
 backends = _backend_manager.backends

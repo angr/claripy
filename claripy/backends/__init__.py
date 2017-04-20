@@ -754,6 +754,7 @@ from .backend_variables import BackendVariables
 from .backend_depth import BackendDepth
 from .backend_ast_type import BackendASTType
 from .backend_ite_excavator import BackendITEExcavator
+from .backend_ite_burrower import BackendITEBurrower
 from ..ast.base import Base
 from ..ast.bv import BV
 from ..ast.structure import ASTStructure
