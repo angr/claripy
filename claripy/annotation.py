@@ -61,3 +61,7 @@ class SimplificationAvoidanceAnnotation(Annotation):
     @property
     def relocatable(self):
         return False
+
+class VariableAnnotation(Annotation):
+    def __init__(self, extra_variables):
+        self.extra_variables = extra_variables

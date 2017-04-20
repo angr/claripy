@@ -75,6 +75,8 @@ _backend_manager.backends._register_backend(_backends_module.BackendConcrete(), 
 _backend_manager.backends._register_backend(_backends_module.BackendVSA(), 'vsa', False, False)
 _backend_manager.backends._register_backend(_backends_module.BackendLength(), 'length', False, False)
 _backend_manager.backends._register_backend(_backends_module.BackendSymbolic(), 'symbolic', False, False)
+_backend_manager.backends._register_backend(_backends_module.BackendVariables(), 'variables', False, False)
+_backend_manager.backends._register_backend(_backends_module.BackendDepth(), 'depth', False, False)
 _backend_z3 = _backends_module.BackendZ3()
 _backend_manager.backends._register_backend(_backend_z3, 'z3', False, False)
 backends = _backend_manager.backends
