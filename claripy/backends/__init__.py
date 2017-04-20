@@ -752,6 +752,8 @@ from .backend_length import BackendLength
 from .backend_symbolic import BackendSymbolic
 from .backend_variables import BackendVariables
 from .backend_depth import BackendDepth
+from .backend_ast_type import BackendASTType
+from .backend_ite_excavator import BackendITEExcavator
 from ..ast.base import Base
 from ..ast.bv import BV
 from ..ast.structure import ASTStructure

@@ -232,6 +232,9 @@ class ASTStructure(ana.Storable):
     # String representation
     #
 
+    def __repr__(self):
+        return self.repr(inner=True)
+
     def repr(self, inner=False, max_depth=None, explicit_length=False):
         if max_depth is not None and max_depth <= 0:
             return '...'
@@ -343,49 +346,6 @@ class ASTStructure(ana.Storable):
         new_args[different_idx] = inner_if._burrow_ite()
         #print "replaced the",different_idx,"arg:",new_args
         return old_true.swap_args(new_args)
-
-    def _excavate_ite(self):
-        if self.op in operations.leaf_operations:
-            return self
-
-        excavated_args = [ (a._excavate_ite() if isinstance(a, ASTStructure) else a) for a in self.args ]
-        ite_args = [ isinstance(a, ASTStructure) and a.op == 'If' for a in excavated_args ]
-
-        if self.op == 'If':
-            # if we are an If, call the If handler so that we can take advantage of its simplifiers
-            # TODO: make this simplifiable
-            return get_structure('If', tuple(excavated_args))._simplify()
-        elif ite_args.count(True) == 0:
-            # if there are no ifs that came to the surface, there's nothing more to do
-            return self.swap_args(excavated_args)
-        else:
-            # this gets called when we're *not* in an If, but there are Ifs in the args.
-            # it pulls those Ifs out to the surface.
-            cond = excavated_args[ite_args.index(True)].args[0]
-            new_true_args = [ ]
-            new_false_args = [ ]
-
-            for a in excavated_args:
-                #print "OC", cond.dbg_repr()
-                #print "NC", Not(cond).dbg_repr()
-
-                if not isinstance(a, ASTStructure) or a.op != 'If':
-                    new_true_args.append(a)
-                    new_false_args.append(a)
-                elif a.args[0] is cond:
-                    #print "AC", a.args[0].dbg_repr()
-                    new_true_args.append(a.args[1])
-                    new_false_args.append(a.args[2])
-                elif a.args[0] is get_structure('Not', (cond,))._simplify():
-                    #print "AN", a.args[0].dbg_repr()
-                    new_true_args.append(a.args[2])
-                    new_false_args.append(a.args[1])
-                else:
-                    #print "AB", a.args[0].dbg_repr()
-                    # weird conditions -- giving up!
-                    return self.swap_args(excavated_args)
-
-            return get_structure('If', (cond, self.swap_args(new_true_args), self.swap_args(new_false_args)))
 
     def _deduplicate(self):
         return _deduplicate(self)

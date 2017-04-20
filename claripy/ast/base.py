@@ -135,9 +135,9 @@ class Base(object):
     @property
     def args(self):
         """
-        The arguments of the AST.
+        The arguments of the AST, as AST-wrapped structures.
         """
-        return self.structure.args
+        return tuple((backends.ast_type.convert(a)(a) if isinstance(a, ASTStructure) else a) for a in self.structure.args)
 
     @property
     def inline_annotations(self):
@@ -152,7 +152,9 @@ class Base(object):
         Returns an equivalent AST that "burrows" the ITE expressions as deep as possible into the ast, for simpler
         printing.
         """
-        return self.swap_structure(self.structure._burrow_ite())
+        if self._burrowed is None:
+            self._burrowed = self.swap_structure(self.structure._burrow_ite())
+        return self._burrowed
 
     @property
     def ite_excavated(self):
@@ -160,7 +162,7 @@ class Base(object):
         Returns an equivalent AST that "excavates" the ITE expressions out as far as possible toward the root of the
         AST, for processing in static analyses.
         """
-        return self.swap_structure(self.structure._excavate_ite())
+        return self.swap_structure(backends.ite_excavator.convert(self.structure))
 
     @property
     def variables(self):
@@ -223,7 +225,7 @@ class Base(object):
         This returns the same AST, with the arguments swapped out for new_args.
         """
 
-        return self.swap_structure(self.structure.swap_args(new_args))
+        return self.swap_structure(self.structure.swap_args(tuple((a.structure if isinstance(a, Base) else a) for a in new_args)))
 
     def swap_structure(self, structure, apply_filters=True, _eager=None, filters=None):
         """
@@ -480,5 +482,5 @@ def make_reversed_op(op_func):
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from ..backend_manager import backends
 from ..simplifier import simplifier
-from .structure import get_structure
+from .structure import get_structure, ASTStructure
 from .. import operations

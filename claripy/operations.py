@@ -106,9 +106,13 @@ backend_fp_arithmetic_operations = {
     'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
 }
 
-backend_fp_operations = {
-    'FP', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
-} | backend_fp_cmp_operations | backend_fp_arithmetic_operations
+backend_fp_other_operations = { 'FP', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV' }
+
+backend_fp_operations = backend_fp_other_operations | backend_fp_cmp_operations | backend_fp_arithmetic_operations
+
+resulting_boolean_operations = { 'BoolS', 'BoolV' } | backend_comparator_operations | backend_boolean_operations | expression_comparator_operations | backend_fp_cmp_operations
+resulting_bv_operations = { 'BVS', 'BVV', 'Reversed' } | backend_arithmetic_operations | expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | expression_set_operations | backend_bitmod_operations
+resulting_fp_operations = backend_fp_arithmetic_operations | backend_fp_other_operations
 
 boolean_opposites = {
     '__eq__': '__eq__',
@@ -151,7 +155,7 @@ inverse_operations = {
     'SLE': 'SGT', 'SGT': 'SLE',
 }
 
-length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'} | backend_fp_arithmetic_operations
+length_same_operations = backend_arithmetic_operations | expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'} | backend_fp_arithmetic_operations
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations

@@ -4,29 +4,29 @@ import nose
 def test_smudging():
     x = claripy.BVS('x', 32)
     y = x+1
-    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.ASTStructure))
+    nose.tools.assert_true(isinstance(y.structure.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(y.args[1].args[0], 1)
     nose.tools.assert_equal(y.args[1].args[1], 32)
 
     x = claripy.BVS('x', 32)
     y = x*1
     z = y+1
-    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.ASTStructure))
+    nose.tools.assert_true(isinstance(y.structure.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(y.args[1].args[0], 1)
     nose.tools.assert_equal(y.args[1].args[1], 32)
 
-    nose.tools.assert_true(isinstance(z.args[1], claripy.ast.ASTStructure))
+    nose.tools.assert_true(isinstance(z.structure.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(z.args[1].args[0], 1)
     nose.tools.assert_equal(z.args[1].args[1], 32)
 
     ccc = claripy.If(x > 10, x*3+2, x*4+2)
-    nose.tools.assert_true(isinstance(ccc.args[1].args[1], claripy.ast.ASTStructure))
+    nose.tools.assert_true(isinstance(ccc.structure.args[1].args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(ccc.args[1].args[1].args[0], 2)
     nose.tools.assert_equal(ccc.args[1].args[1].args[1], 32)
 
     x = claripy.BVS('x', 32)
     y = x + "AAAA"
-    nose.tools.assert_true(isinstance(y.args[1], claripy.ast.ASTStructure))
+    nose.tools.assert_true(isinstance(y.structure.args[1], claripy.ast.ASTStructure))
     nose.tools.assert_equal(y.args[1].args[0], 0x41414141)
     nose.tools.assert_equal(y.args[1].args[1], 32)
 
@@ -144,7 +144,7 @@ def test_expression():
     b = claripy.BVV(20, 32)
 
     sb = s+b
-    nose.tools.assert_is_instance(sb.args[0], claripy.ast.ASTStructure)
+    nose.tools.assert_is_instance(sb.structure.args[0], claripy.ast.ASTStructure)
 
     bb = b+b
     # this was broken previously -- it was checking if type(bb.args[0]) == A,
@@ -157,7 +157,7 @@ def test_expression():
 
     sob = s|b
     # for now, this is collapsed. Presumably, Fish will make it not collapse at some point
-    nose.tools.assert_is_instance(sob.args[0], claripy.ast.ASTStructure)
+    nose.tools.assert_is_instance(sob.structure.args[0], claripy.ast.ASTStructure)
 
     # make sure the AST collapses for delayed ops like reversing
     rb = b.reversed
@@ -319,7 +319,7 @@ def test_true_false_cache():
     a = claripy.BVS("a_WILL_BE_VIOLATED", 32)
     c = a == a+1
     assert claripy.is_false(c)
-    c.args[1].args = (a, claripy.BVV(0, 32))
+    c.structure.args[1].args = (a.structure, claripy.BVV(0, 32).structure)
     assert claripy.is_false(c)
     assert not claripy.is_true(c)
     assert not claripy.is_false(a == a)

@@ -42,7 +42,7 @@ class ModelCache(object):
         return (
             all_operations.BVV(self.model.get(a.args[0], 0), a.length).structure if a.op == 'BVS' else
             all_operations.BoolV(self.model.get(a.args[0], True)).structure if a.op == 'BoolS' else
-            all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1]).structure if a.op == 'FPS' else
+            all_operations.FPV(self.model.get(a.args[0], 0.0), a.structure.args[1]).structure if a.op == 'FPS' else
             a
         )
 

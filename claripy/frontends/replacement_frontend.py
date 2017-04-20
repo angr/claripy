@@ -51,16 +51,21 @@ class ReplacementFrontend(ConstrainedFrontend):
     #
 
     def add_replacement(self, old, new, invalidate_cache=True, replace=True, promote=True):
-        if not isinstance(old, Base):
+        if isinstance(old, Base):
+            old = old.structure
+        if isinstance(new, Base):
+            new = new.structure
+
+        if not isinstance(old, ASTStructure):
             return
 
         if old is new:
             return
 
-        if not replace and old.cache_key in self._replacements:
+        if not replace and old in self._replacements:
             return
 
-        if not promote and old.cache_key in self._replacement_cache:
+        if not promote and old in self._replacement_cache:
             return
 
         if not isinstance(new, Base):
@@ -75,8 +80,8 @@ class ReplacementFrontend(ConstrainedFrontend):
             self._replacements = dict(self._replacements)
             self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
-        self._replacements[old.cache_key] = new
-        self._replacement_cache[old.cache_key] = new
+        self._replacements[old] = new
+        self._replacement_cache[old] = new
 
     def remove_replacements(self, old_entries):
         self._replacements = {k: v for k, v in self._replacements if k not in old_entries}
@@ -240,9 +245,9 @@ class ReplacementFrontend(ConstrainedFrontend):
 
                 if not self._complex_auto_replace:
                     if rc.op == 'Not':
-                        self.add_replacement(c.args[0], false, replace=False, promote=True, invalidate_cache=True)
-                    elif rc.op == '__eq__' and rc.args[0].symbolic ^ rc.args[1].symbolic:
-                        old, new = rc.args if rc.args[0].symbolic else rc.args[::-1]
+                        self.add_replacement(c.structure.args[0], false.structure, replace=False, promote=True, invalidate_cache=True)
+                    elif rc.op == '__eq__' and backends.symbolic.convert(rc.structure.args[0]).symbolic ^ backends.symbolic.convert(rc.structure.args[1]):
+                        old, new = rc.structure.args if backends.symbolic.convert(rc.structure.args[0]) else rc.structure.args[::-1]
                         self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
                 else:
                     satisfiable, replacements = Balancer(backends.vsa, rc, validation_frontend=self._validation_frontend).compat_ret
@@ -256,7 +261,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                         if rold.cardinality == 1:
                             continue
 
-                        self.add_replacement(old, rold.intersection(new))
+                        self.add_replacement(old.structure, rold.intersection(new).structure)
 
         added = super(ReplacementFrontend, self).add(constraints, **kwargs)
         cr = self._replace_list(added)
@@ -268,6 +273,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         return added
 
 
+from ..ast.structure import ASTStructure
 from ..ast.base import Base
 from ..ast.bv import BVV
 from ..ast.bool import BoolV

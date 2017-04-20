@@ -120,7 +120,7 @@ class Balancer(object):
 
     def _align_truism(self, truism):
         outer_aligned = self._align_ast(truism)
-        inner_aligned = outer_aligned.make_like(outer_aligned.op, (self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
+        inner_aligned = outer_aligned.swap_args((self._align_ast(outer_aligned.args[0]),) + outer_aligned.args[1:])
 
         if not backends.vsa.identical(inner_aligned, truism):
             l.critical("ERROR: the balancer is messing up an AST. This must be looked into. Please submit the binary and script to the angr project, if possible. Outer op is %s and inner op is %s.", truism.op, truism.args[0].op)
@@ -148,7 +148,7 @@ class Balancer(object):
     @staticmethod
     def _reverse_comparison(a):
         try:
-            new_op = opposites[a.op]
+            new_op = boolean_opposites[a.op]
         except KeyError:
             raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')", a.op)
 
@@ -168,7 +168,7 @@ class Balancer(object):
 
     def _align_bv(self, a):
         if a.op in commutative_operations:
-            return a.make_like(a.op, tuple(sorted(a.args, key=lambda v: -self._cardinality(v))))
+            return a.swap_args(tuple(sorted(a.args, key=lambda v: -self._cardinality(v))))
         else:
             try:
                 op = getattr(self, '_align_'+a.op)
@@ -182,7 +182,7 @@ class Balancer(object):
             return a
 
         adjusted = tuple(operator.__neg__(v) for v in a.args[1:]) + a.args[:1]
-        return a.make_like('__add__', tuple(sorted(adjusted, key=lambda v: -self._cardinality(v))))
+        return a.swap_structure(get_structure('__add__', tuple(sorted(adjusted, key=lambda v: -self._cardinality(v)))))
 
     #
     # Find bounds
@@ -361,7 +361,7 @@ class Balancer(object):
     @staticmethod
     def _balance_Reverse(truism):
         if truism.op == '__eq__' or truism.op == '__ne__':
-            return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
+            return truism.swap_args((truism.args[0].args[0], truism.args[1].reversed))
         else:
             return truism
 
@@ -370,16 +370,16 @@ class Balancer(object):
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like('__sub__', (old_rhs,) + other_adds)
-        return truism.make_like(truism.op, (new_lhs, new_rhs))
+        new_rhs = truism.args[0].swap_structure(get_structure('__sub__', (old_rhs,) + other_adds))
+        return truism.swap_structure((new_lhs, new_rhs))
 
     @staticmethod
     def _balance___sub__(truism):
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].make_like('__add__', (old_rhs,) + other_adds)
-        return truism.make_like(truism.op, (new_lhs, new_rhs))
+        new_rhs = truism.args[0].swap_args(get_structure('__add__', (old_rhs,) + other_adds))
+        return truism.swap_args((new_lhs, new_rhs))
 
     @staticmethod
     def _balance_ZeroExt(truism):
@@ -389,7 +389,7 @@ class Balancer(object):
         if is_true(other_side == 0):
             # We can safely eliminate this layer of ZeroExt
             new_args = (inner, truism.args[1][len(truism.args[1])-num_zeroes-1:0])
-            return truism.make_like(truism.op, new_args)
+            return truism.swap_args(new_args)
 
         return truism
 
@@ -403,7 +403,7 @@ class Balancer(object):
         if backends.vsa.identical(left_side, other_side):
             # We can safely eliminate this layer of ZeroExt
             new_args = (truism.args[0].args[1], truism.args[1][len(truism.args[1])-num_zeroes-1:0])
-            return truism.make_like(truism.op, new_args)
+            return truism.swap_args(new_args)
 
         return truism
 
@@ -429,15 +429,15 @@ class Balancer(object):
         if left_msb_zero and left_lsb_zero:
             new_left = inner
             new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.arg[1], BVV(0, len(left_lsb)))
-            return truism.make_like(truism.op, (new_left, new_right))
+            return truism.swap_args((new_left, new_right))
         elif left_msb_zero:
             new_left = inner[high:0]
             new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.arg[1])
-            return truism.make_like(truism.op, (new_left, new_right))
+            return truism.swap_args((new_left, new_right))
         elif left_lsb_zero:
             new_left = inner[size-1:low]
             new_right = _all_operations.Concat(truism.arg[1], BVV(0, len(left_lsb)))
-            return truism.make_like(truism.op, (new_left, new_right))
+            return truism.swap_args((new_left, new_right))
         else:
             #TODO: handle non-zero single-valued cases
             return truism
@@ -452,7 +452,7 @@ class Balancer(object):
             # we can cut these guys off!
             remaining_left = _all_operations.Concat(truism.args[0].args[1:])
             remaining_right = truism.args[1][size-len(left_msb)-1:0]
-            return truism.make_like(truism.op, (remaining_left, remaining_right))
+            return truism.swap_args((remaining_left, remaining_right))
         else:
             #TODO: handle non-zero single-valued cases
             return truism
@@ -473,7 +473,7 @@ class Balancer(object):
         if len(rhs_lower_values) == 1 and rhs_lower_values[0] == 0:
             # we can remove the __lshift__
 
-            return truism.make_like(truism.op, (expr, rhs >> shift_amount))
+            return truism.swap_args((expr, rhs >> shift_amount))
 
         return truism
 
@@ -505,11 +505,11 @@ class Balancer(object):
         elif must_true or (can_true and not can_false):
             # it will always be true
             self._queue_truism(condition)
-            return truism.make_like(truism.op, (true_expr, truism.args[1]))
+            return truism.swap_args((true_expr, truism.args[1]))
         elif must_false or (can_false and not can_true):
             # it will always be false
             self._queue_truism(self._invert_comparison(condition))
-            return truism.make_like(truism.op, (false_expr, truism.args[1]))
+            return truism.swap_args((false_expr, truism.args[1]))
 
     #
     # Constraint handlers
@@ -618,10 +618,11 @@ def is_true(a): return backends.vsa.is_true(a)
 def is_false(a): return backends.vsa.is_false(a)
 
 from .errors import ClaripyBalancerError, ClaripyBalancerUnsatError, ClaripyOperationError, BackendError
+from .ast.structure import get_structure
 from .ast.base import Base
 from .ast.bool import Bool
 from .ast.bv import BVV, BVS, BV
 from . import _all_operations
 from .backend_manager import backends
 from . import vsa
-from .operations import opposites, commutative_operations
+from .operations import boolean_opposites, commutative_operations
