@@ -380,6 +380,9 @@ class Base(object):
     def concrete(self):
         return backends.concrete.handles(self)
 
+    def __reduce__(self):
+        return (_unpickle_structure, (self.structure, self.outer_annotations, self.filters))
+
     #
     # Backwards compatibility crap
     #
@@ -396,6 +399,9 @@ class Base(object):
     #        return getattr(backends, model_name).convert(self)
     #    except BackendError:
     #        return self
+
+def _unpickle_structure(structure, outer_annotations, filters):
+    return Base(structure, outer_annotations=outer_annotations, filters=filters)._deduplicate()
 
 #
 # Simplification helper

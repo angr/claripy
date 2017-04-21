@@ -49,18 +49,20 @@ def test_datalayer():
     d = a+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b+b
 
     l.debug("Storing!")
-    a.ana_store()
-    c_info = c.ana_store()
-    d_info = d.ana_store()
+    a.structure.make_uuid()
+    c_info = pickle.dumps(c)
+    d_info = pickle.dumps(d)
 
     l.debug("Loading!")
     ana.set_dl(ana.DirDataLayer(pickle_dir))
     #nose.tools.assert_equal(len(claripy.dl._cache), 0)
 
-    cc = claripy.ast.BV.ana_load(c_info)
+    cc = pickle.loads(c_info)
     nose.tools.assert_equal(str(cc), str(c))
-    cd = claripy.ast.BV.ana_load(d_info)
+    cd = pickle.loads(d_info)
     nose.tools.assert_equal(str(cd), str(d))
+    assert cd is d
+    assert cc is c
 
     l.debug("Time to test some solvers!")
     s = claripy.Solver()
