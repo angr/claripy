@@ -241,11 +241,11 @@ class Backend(object):
     #
 
     def simplify(self, e):
-        if e.structure in self._simplified_set:
-            return e
-
         o = None
         if self._cache_simplifications:
+            if e.structure in self._simplified_set:
+                return e
+
             try: o = self._simplification_cache[e.structure]
             except KeyError: pass
 
@@ -256,10 +256,8 @@ class Backend(object):
 
         if o is not e.structure and self._cache_simplifications:
             self._simplification_cache[e.structure] = o
-            # This causes a reference loop
-            #self._simplification_cache[o] = o
+            self._simplified_set.add(o)
 
-        self._simplified_set.add(o)
         return e.swap_structure(o)
 
     def _simplify(self, e): # pylint:disable=R0201,unused-argument

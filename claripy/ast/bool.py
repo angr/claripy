@@ -1,7 +1,7 @@
 import logging
 l = logging.getLogger('claripy.ast.bool')
 
-from .base import Base, _make_name, make_op
+from .base import Base, _make_name, make_op, _type_fixers
 
 _boolv_cache = dict()
 
@@ -14,10 +14,6 @@ import atexit
 atexit.register(cleanup)
 
 class Bool(Base):
-    @staticmethod
-    def _from_bool(like, val): #pylint:disable=unused-argument
-        return BoolV(val)
-
     def is_true(self):
         """
         Returns True if 'self' can be easily determined to be True. Otherwise, return False. Note that the AST *might*
@@ -31,7 +27,6 @@ class Bool(Base):
         still be False (i.e., if it were simplified via Z3), but it's hard to quickly tell that.
         """
         return is_false(self)
-
 
 def BoolS(name, explicit_name=None, filters=None):
     """
@@ -55,6 +50,9 @@ def BoolV(val, filters=None):
         return true if val else false
     else:
         return Bool(get_structure('BoolV', (val,)), filters=filters)._deduplicate()._apply_filters()
+
+_type_fixers[bool] = lambda b,r: true if b else false
+_type_fixers[Bool] = lambda b,r: b
 
 #
 # Bound operations
@@ -91,14 +89,13 @@ def If(c, t, f):
         else:
             ct, cf = t, f
     else:
-        convert = getattr(bc, '_from_' + nbc.__name__, None)
-        if convert is None:
+        try:
+            if tt is nbc: # convert t
+                ct, cf = _type_fixers[nbc](t, f), f
+            else: # convert f
+                ct, cf = t, _type_fixers[nbc](f, t)
+        except KeyError:
             raise ClaripyTypeError("Can't convert {} to {}".format(nbc, bc))
-
-        if tt is nbc: # convert t
-            ct, cf = convert(f, t), f
-        else: # convert f
-            ct, cf = t, convert(t, f)
 
     if bc is BV:
         return _If_bv(c, ct, cf)

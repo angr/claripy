@@ -198,9 +198,9 @@ class Base(object):
         new_ast = self
         for f in new_ast.filters:
             try:
-                l.debug("Running filter %s.", f)
+                #l.debug("Running filter %s.", f)
                 old_ast = new_ast
-                new_ast = f(new_ast) if hasattr(f, '__call__') else f.convert(new_ast)
+                new_ast = f(new_ast) #if hasattr(f, '__call__') else f.convert(new_ast)
                 if old_ast is not new_ast:
                     new_ast = new_ast._deduplicate()
             except BackendError:
@@ -433,6 +433,8 @@ def simplify(e):
 # Operation support
 #
 
+_type_fixers = { }
+
 def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocessor=None, expression_postprocessor=None):
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
@@ -441,42 +443,36 @@ def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocesso
     else:
         raise ClaripyOperationError("op {} got weird arg_types".format(name))
 
-    def _type_fixer(args):
-        num_args = len(args)
-        if expected_num_args is not None and num_args != expected_num_args:
-            raise ClaripyTypeError(
-                "Operation {} takes exactly {} arguments ({} given)".format(name, len(arg_types), len(args))
+    if expected_num_args is None:
+        def _type_fixer(args, reference):
+            return tuple(
+                a if isinstance(a, arg_types) else _type_fixers[type(a)](a, reference)
+                for a in args
+            )
+    else:
+        def _type_fixer(args, reference):
+            if len(args) != expected_num_args:
+                raise ClaripyTypeError("Operation {} takes exactly {} arguments ({} given)".format(name, expected_num_args, len(args)))
+            return tuple(
+                a if isinstance(a, t) else _type_fixers[type(a)](a, reference)
+                for a,t in zip(args, arg_types)
             )
 
-        if type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
-            actual_arg_types = (arg_types,) * num_args
-        else:
-            actual_arg_types = arg_types
-        matches = [ isinstance(arg, argty) for arg,argty in zip(args, actual_arg_types) ]
-
-        # heuristically, this works!
-        thing = args[matches.index(True)] if True in matches else None
-
-        for arg, argty, matches in zip(args, actual_arg_types, matches):
-            if not matches:
-                if hasattr(argty, '_from_' + type(arg).__name__):
-                    convert = getattr(argty, '_from_' + type(arg).__name__)
-                    yield convert(thing, arg).structure
-                else:
-                    yield NotImplemented
-                    return
-            else:
-                yield arg.structure if isinstance(arg, Base) else arg
-
     def _op(*args):
-        fixed_args = tuple(_type_fixer(args)) if do_coerce else tuple(a.structure for a in args)
-        if any(i is NotImplemented for i in fixed_args):
-            return NotImplemented
-        ast_args = [ a for a in args if isinstance(a, Base) ]
+        if do_coerce:
+            reference = next(a for a in args if isinstance(a, Base))
+            try:
+                fixed_args = _type_fixer(args, reference)
+            except KeyError:
+                return NotImplemented
+        else:
+            fixed_args = tuple(a for a in args)
 
-        new_structure = get_structure(name, fixed_args)
+        new_structure = get_structure(name, tuple(a.structure if isinstance(a, Base) else a for a in fixed_args))
         if structure_postprocessor is not None:
             new_structure = structure_postprocessor(new_structure)
+
+        ast_args = [ a for a in args if isinstance(a, Base) ]
         new_outer_annotations = frozenset().union(*(a.outer_annotations for a in ast_args))
         new_eager = all(a._eager for a in ast_args)
         nondefault_filters = [ a.filters for a in ast_args if a.filters is not Base.DEFAULT_FILTERS ]

@@ -1,5 +1,5 @@
 from .bits import Bits
-from .base import _make_name, make_op, make_reversed_op
+from .base import _make_name, make_op, make_reversed_op, _type_fixers
 
 import logging
 import itertools
@@ -107,22 +107,6 @@ class BV(Bits):
         Concatenates this AST with the ASTs provided.
         """
         return Concat(self, *args)
-
-    @staticmethod
-    def _from_int(like, value):
-        return BVV(value, like.length)
-
-    @staticmethod
-    def _from_long(like, value):
-        return BVV(value, like.length)
-
-    @staticmethod
-    def _from_str(like, value): #pylint:disable=unused-argument
-        return BVV(value)
-
-    @staticmethod
-    def _from_BVV(like, value): #pylint:disable=unused-argument
-        return BVV(value.value, value.size())
 
     def signed_to_fp(self, rm, sort):
         if rm is None:
@@ -269,6 +253,11 @@ def DSIS(name=None, bits=0, lower_bound=None, upper_bound=None, stride=None, exp
     else:
         return SI(name=name, bits=bits, lower_bound=lower_bound, upper_bound=upper_bound, stride=stride,
                    explicit_name=explicit_name, discrete_set=True, discrete_set_max_card=max_card)
+
+_type_fixers[int] = lambda i,r: BVV(i,r.length)
+_type_fixers[long] = lambda i,r: BVV(i,r.length)
+_type_fixers[str] = lambda s,r: BVV(s)
+_type_fixers[BV] = lambda b,r: b
 
 #
 # Unbound operations

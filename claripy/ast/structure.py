@@ -1,13 +1,16 @@
 import itertools
 import logging
 import weakref
-import hashlib
-import cPickle as pickle
 import struct
 import sys
 import ana
 
-_md5_unpacker = struct.Struct('2Q')
+#import xxhash
+#_hasher = xxhash.xxh64
+#_hash_unpacker = struct.Struct('Q')
+import hashlib
+_hasher = hashlib.md5
+_hash_unpacker = struct.Struct('2Q')
 l = logging.getLogger("claripy.expressions.structure")
 
 #
@@ -32,22 +35,27 @@ class ASTStructure(ana.Storable):
         self._hash = None
 
     def __hash__(self):
-        if self._hash is None:
-            self._hash = self._calc_hash()
-        return self._hash
+        return _hash_unpacker.unpack(self._get_hash())[0] # 64 bits
 
-    def _calc_hash(self):
+    def _get_hash(self):
         """
         Calculates the hash of an ASTStructure.
         """
-        args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in self.args)
-        to_hash = (self.op, args_tup, hash(self.annotations))
+        if self._hash is None:
+            args_tup = tuple(
+                long(a) if type(a) is int else
+                a if type(a) in (long, float) else
+                a._get_hash() if type(a) is ASTStructure else
+                hash(a)
+                for a in self.args
+            )
+            to_hash = (self.op, args_tup, hash(self.annotations))
 
-        # Why do we use md5 when it's broken? Because speed is more important
-        # than cryptographic integrity here. Then again, look at all those
-        # allocations we're doing here... fast python is painful.
-        hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
-        return _md5_unpacker.unpack(hd)[0] # 64 bits
+            # Why do we use md5 when it's broken? Because speed is more important
+            # than cryptographic integrity here. Then again, look at all those
+            # allocations we're doing here... fast python is painful.
+            self._hash = _hasher(str(to_hash)).digest()
+        return self._hash
 
     def __eq__(self, o):
         # special-case for BVV and BoolV
@@ -60,7 +68,7 @@ class ASTStructure(ana.Storable):
         if type(o) is not ASTStructure:
             return False
 
-        return self is o or hash(self) == hash(o) # or (self.op == o.op and self.args == o.args and self.annotations == o.annotations)
+        return self is o or self._get_hash() == o._get_hash() # or (self.op == o.op and self.args == o.args and self.annotations == o.annotations)
     def __ne__(self, o):
         return not self.__eq__(o)
 
@@ -163,7 +171,7 @@ class ASTStructure(ana.Storable):
         """
         u = getattr(self, '_ana_uuid', None)
         if u is None:
-            u = str(hash(self)) if uuid is None else uuid
+            u = str(self._get_hash()) if uuid is None else uuid
             ana.get_dl().uuid_cache[u] = self
             setattr(self, '_ana_uuid', u)
         return u
@@ -325,7 +333,7 @@ class ASTStructure(ana.Storable):
 
 _hash_cache = weakref.WeakValueDictionary()
 def _deduplicate(expr):
-    return _hash_cache.setdefault(hash(expr), expr)
+    return _hash_cache.setdefault(expr._get_hash(), expr)
 
 def _do_op(op, args):
     return get_structure(op, args)

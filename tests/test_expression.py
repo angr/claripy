@@ -273,14 +273,14 @@ def raw_ite(solver_type):
 def test_bool():
     bc = claripy.backends.concrete
 
-    a = claripy.And(*[False, False, True])
+    a = claripy.And(claripy.false, claripy.false, claripy.true)
     nose.tools.assert_equal(bc.convert(a), False)
-    a = claripy.And(*[True, True, True])
+    a = claripy.And(claripy.true, claripy.true, claripy.true)
     nose.tools.assert_equal(bc.convert(a), True)
 
-    o = claripy.Or(*[False, False, True])
+    o = claripy.Or(claripy.false, False, True)
     nose.tools.assert_equal(bc.convert(o), True)
-    o = claripy.Or(*[False, False, False])
+    o = claripy.Or(claripy.false, False, False)
     nose.tools.assert_equal(bc.convert(o), False)
 
 def test_extract():
