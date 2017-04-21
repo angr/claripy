@@ -246,7 +246,7 @@ class Base(object):
         """
         return self.swap_structure(self.structure.swap_annotations(new_tuple))
 
-    def swap_outer_annotations(self, new_tuple, apply_filters=True):
+    def swap_outer_annotations(self, new_tuple, apply_filters=False):
         """
         Replaces annotations on this AST.
 
