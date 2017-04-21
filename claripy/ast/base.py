@@ -40,8 +40,6 @@ def _simplify(expr):
     s = simplifier.simplify(expr.structure)
     return expr.swap_structure(simplifier.simplify(expr.structure), apply_filters=False)._deduplicate() if s is not expr.structure else expr
 
-default_filters = ( _concrete_evaluate, _simplify )
-
 _hash_cache = weakref.WeakValueDictionary()
 def _deduplicate(expr):
     return _hash_cache.setdefault(hash(expr), expr)
@@ -71,6 +69,8 @@ class Base(object):
         'outer_annotations'
     ]
 
+    DEFAULT_FILTERS = ( _concrete_evaluate, _simplify )
+
     def __init__(self, structure, outer_annotations=frozenset(), filters=None, _eager=True):
         """
         This is called when you create a new Base object, whether directly or through an operation.
@@ -86,6 +86,8 @@ class Base(object):
 
         # store the AST structure
         self.structure = structure
+        if not isinstance(structure, ASTStructure):
+            raise ClaripyTypeError("Invalid structure encountered in expression constructor.")
 
         # whether this AST could be eager evaluated
         self._eager = _eager
@@ -94,7 +96,7 @@ class Base(object):
         self.outer_annotations = outer_annotations
 
         # these are filters that get applied to the AST at every operation
-        self.filters = default_filters if filters is None else filters
+        self.filters = Base.DEFAULT_FILTERS if filters is None else filters
 
         # a cache key, to use when storing this AST in dicts (to survive bucket collisions)
         self.cache_key = ASTCacheKey(self)
@@ -137,7 +139,9 @@ class Base(object):
         """
         The arguments of the AST, as AST-wrapped structures.
         """
-        return tuple((backends.ast_type.convert(a)(a) if isinstance(a, ASTStructure) else a) for a in self.structure.args)
+        return tuple((backends.ast_type.convert(a)(
+            a, outer_annotations=self.outer_annotations, filters=self.filters
+        )._deduplicate() if isinstance(a, ASTStructure) else a) for a in self.structure.args)
 
     @property
     def inline_annotations(self):
@@ -387,18 +391,17 @@ class Base(object):
     # Backwards compatibility crap
     #
 
-    #def __getattr__(self, a):
-    #    if not a.startswith('_model_'):
-    #        raise AttributeError(a)
+    @property
+    def _model_vsa(self):
+        return backends.vsa.convert(self)
 
-    #    model_name = a[7:]
-    #    if not hasattr(backends, model_name):
-    #        raise AttributeError(a)
+    @property
+    def _model_concrete(self):
+        return backends.concrete.convert(self)
 
-    #    try:
-    #        return getattr(backends, model_name).convert(self)
-    #    except BackendError:
-    #        return self
+    @property
+    def _model_z3(self):
+        return backends.z3.convert(self)
 
 def _unpickle_structure(structure, outer_annotations, filters):
     return Base(structure, outer_annotations=outer_annotations, filters=filters)._deduplicate()
@@ -422,7 +425,7 @@ def simplify(e):
 # Operation support
 #
 
-def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocessor=None):
+def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocessor=None, expression_postprocessor=None):
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
@@ -468,13 +471,16 @@ def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocesso
             new_structure = structure_postprocessor(new_structure)
         new_outer_annotations = frozenset().union(*(a.outer_annotations for a in ast_args))
         new_eager = all(a._eager for a in ast_args)
-        nondefault_filters = [ a.filters for a in ast_args if a.filters is not default_filters ]
+        nondefault_filters = [ a.filters for a in ast_args if a.filters is not Base.DEFAULT_FILTERS ]
         if nondefault_filters:
             new_filters = max(nondefault_filters, key=len)
         else:
-            new_filters = default_filters
+            new_filters = None
 
-        return return_type(new_structure, new_outer_annotations, filters=new_filters, _eager=new_eager)._deduplicate()._apply_filters()
+        e = return_type(new_structure, new_outer_annotations, filters=new_filters, _eager=new_eager)._deduplicate()._apply_filters()
+        if expression_postprocessor is not None:
+            e = expression_postprocessor(e)
+        return e
 
     return _op
 
@@ -485,6 +491,6 @@ def make_reversed_op(op_func):
 
 from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyTypeError
 from ..backend_manager import backends
-from ..simplifier import simplifier
 from .structure import get_structure, ASTStructure
 from .. import operations
+from ..simplifier import simplifier

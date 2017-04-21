@@ -317,6 +317,9 @@ class ASTStructure(ana.Storable):
     def _simplify(self):
         return simplifier.simplify(self)
 
+#
+# Deduplication helpers
+#
 
 _hash_cache = weakref.WeakValueDictionary()
 def _deduplicate(expr):
@@ -327,6 +330,13 @@ def _do_op(op, args):
 
 def get_structure(op, args, annotations=()):
     return _deduplicate(ASTStructure(op, args, annotations=annotations))
+
+#
+# These are structures for true and false boolean ASTs
+#
+
+_true_structure = get_structure('BoolV', (True,))
+_false_structure = get_structure('BoolV', (False,))
 
 from .. import operations
 from ..errors import ClaripyRecursionError, ClaripyOperationError

@@ -72,9 +72,9 @@ class Simplifier(object):
 	def if_simplifier(self, expr):
 		cond, if_true, if_false = expr.args
 
-		if cond == true:
+		if cond == _true_structure:
 			return if_true
-		if cond == false:
+		if cond == _false_structure:
 			return if_false
 
 		if isinstance(if_true, ASTStructure) and if_true.op == 'If':
@@ -370,15 +370,15 @@ class Simplifier(object):
 		a,b = expr.args
 
 		if a == b:
-			return true.structure
+			return _true_structure
 
-		if isinstance(a, ASTStructure) and b == true.structure:
+		if isinstance(a, ASTStructure) and b == _true_structure:
 			return a
-		if isinstance(b, ASTStructure) and a == true.structure:
+		if isinstance(b, ASTStructure) and a == _true_structure:
 			return b
-		if isinstance(a, ASTStructure) and b == false.structure:
+		if isinstance(a, ASTStructure) and b == _false_structure:
 			return self._new_structure('Not', (a,))
-		if isinstance(b, ASTStructure) and a == false.structure:
+		if isinstance(b, ASTStructure) and a == _false_structure:
 			return self._new_structure('Not', (b,))
 
 		if a.op == 'Reverse' and b.op == 'Reverse':
@@ -419,13 +419,13 @@ class Simplifier(object):
 		# 		if b_bit.symbolic:
 		# 			break
 		# 		if a_bit != b_bit:
-		# 			return false.structure
+		# 			return _false_structure
 
 	def boolean_ne_simplifier(self, expr):
 		a,b = expr.args
 
 		if a == b:
-			return false.structure
+			return _false_structure
 
 		if a.op == 'Reverse' and b.op == 'Reverse':
 			return self._new_structure('__ne__', (a.args[0], b.args[0]))
@@ -464,7 +464,7 @@ class Simplifier(object):
 		#		if b_bit.symbolic:
 		#			break
 		#		if a_bit != b_bit:
-		#			return true.structure
+		#			return _true_structure
 
 	def boolean_and_simplifier(self, expr):
 		args = expr.args
@@ -473,9 +473,9 @@ class Simplifier(object):
 
 		new_args = []
 		for a in args:
-			if a == false:
-				return false.structure
-			elif a != true:
+			if a == _false_structure:
+				return _false_structure
+			elif a != _true_structure:
 				new_args.append(a)
 
 		if len(new_args) < len(args):
@@ -494,9 +494,9 @@ class Simplifier(object):
 
 		new_args = []
 		for a in args:
-			if a == true:
-				return true.structure
-			elif a != false:
+			if a  == _true_structure:
+				return _true_structure
+			elif a != _false_structure:
 				new_args.append(a)
 
 		if len(new_args) < len(args):
@@ -574,6 +574,5 @@ from .utils import OrderedSet
 #from . import ast
 from . import fp
 from . import operations
-from .ast.structure import ASTStructure, get_structure
-from .ast.bool import true, false
+from .ast.structure import ASTStructure, get_structure, _true_structure, _false_structure
 from .backend_manager import backends

@@ -23,8 +23,8 @@ class BackendLength(Backend):
         self._op_raw['fpFP'] = self.length_fp_fp
         self._op_raw['Concat'] = self.length_concat
         self._op_raw['Extract'] = self.length_extract
-        self._op_raw['SignExt'] = self.length_extend
-        self._op_raw['ZeroExt'] = self.length_extend
+        self._op_expr['SignExt'] = self.length_extend
+        self._op_expr['ZeroExt'] = self.length_extend
 
     def _convert(self, a): #pylint:disable=unused-argument
         return None
@@ -73,9 +73,8 @@ class BackendLength(Backend):
 
         return high - low + 1
 
-    @staticmethod
-    def length_extend(ext, orig):
-        return orig.length + ext
+    def length_extend(self, s):
+        return s.args[0] + self.convert(s.args[1])
 
     @staticmethod
     def length_concat(*args):

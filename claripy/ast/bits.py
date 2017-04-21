@@ -1,4 +1,4 @@
-from ..ast.base import Base
+from .base import Base
 
 class Bits(Base):
     def size(self):

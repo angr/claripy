@@ -303,12 +303,12 @@ RotateRight = make_op('RotateRight', (BV, BV), BV)
 Reverse = make_op('Reverse', (BV,), BV)
 
 union_counter = itertools.count()
-def _union_postprocessor(union_structure):
+def _union_postprocessor(union_expression):
     new_name = 'union_%d' % next(union_counter)
     va = VariableAnnotation(frozenset((new_name,)))
-    return union_structure.annotate(va)
+    return union_expression.annotate_outer(va)
 
-union = make_op('union', (BV, BV), BV, structure_postprocessor=_union_postprocessor)
+union = make_op('union', (BV, BV), BV, expression_postprocessor=_union_postprocessor)
 widen = make_op('widen', (BV, BV), BV)
 intersection = make_op('intersection', (BV, BV), BV)
 

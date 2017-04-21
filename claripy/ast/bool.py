@@ -161,6 +161,6 @@ def constraint_to_si(expr):
     return satisfiable, replace_list
 
 from ..errors import ClaripyTypeError, BackendError
-from .structure import get_structure
-true = Bool(get_structure('BoolV', (True,)))._deduplicate()
-false = Bool(get_structure('BoolV', (False,)))._deduplicate()
+from .structure import get_structure, _true_structure, _false_structure
+true = Bool(_true_structure)._deduplicate()
+false = Bool(_false_structure)._deduplicate()

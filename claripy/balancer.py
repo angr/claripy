@@ -182,7 +182,7 @@ class Balancer(object):
             return a
 
         adjusted = tuple(operator.__neg__(v) for v in a.args[1:]) + a.args[:1]
-        return a.swap_structure(get_structure('__add__', tuple(sorted(adjusted, key=lambda v: -self._cardinality(v)))))
+        return a.swap_structure(get_structure('__add__', tuple(sorted(adjusted.structure, key=lambda v: -self._cardinality(v)))))
 
     #
     # Find bounds
@@ -370,15 +370,15 @@ class Balancer(object):
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].swap_structure(get_structure('__sub__', (old_rhs,) + other_adds))
-        return truism.swap_structure((new_lhs, new_rhs))
+        new_rhs = truism.args[0].swap_structure(get_structure('__sub__', (old_rhs.structure,) + tuple(o.structure for o in other_adds)))
+        return truism.swap_args((new_lhs, new_rhs))
 
     @staticmethod
     def _balance___sub__(truism):
         new_lhs = truism.args[0].args[0]
         old_rhs = truism.args[1]
         other_adds = truism.args[0].args[1:]
-        new_rhs = truism.args[0].swap_args(get_structure('__add__', (old_rhs,) + other_adds))
+        new_rhs = truism.args[0].swap_structure(get_structure('__add__', (old_rhs.structure,) + tuple(o.structure for o in other_adds)))
         return truism.swap_args((new_lhs, new_rhs))
 
     @staticmethod
