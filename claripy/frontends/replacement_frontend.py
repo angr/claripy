@@ -87,6 +87,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     def _replacement(self, old):
+        if not self._replacement_cache:
+            return old
         if not isinstance(old, Base):
             return old
 

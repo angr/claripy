@@ -720,6 +720,9 @@ class Base(ana.Storable):
         #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
         #   old._check_replaceability(new)
 
+        if not replacements:
+            return self
+
         return self._replace(replacements, variable_set=set())
 
     @staticmethod
