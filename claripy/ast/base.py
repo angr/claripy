@@ -720,7 +720,7 @@ class Base(ana.Storable):
         #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
         #   old._check_replaceability(new)
 
-        if replacements is None or len(replacements) == 0:
+        if replacements is None or len(replacements) == 0:  # pylint:disable=len-as-condition
             return self
 
         return self._replace(replacements, variable_set=set())

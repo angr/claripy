@@ -87,8 +87,9 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     def _replacement(self, old):
-        if self._replacement_cache is None or len(self._replacement_cache) == 0:
+        if self._replacement_cache is None or len(self._replacement_cache) == 0: # pylint:disable=len-as-condition
             return old
+
         if not isinstance(old, Base):
             return old
 
