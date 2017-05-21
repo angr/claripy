@@ -4,6 +4,7 @@ import weakref
 import struct
 import sys
 import ana
+from .base import Base
 from collections import Counter, defaultdict, deque
 
 #import xxhash
@@ -258,8 +259,16 @@ class ASTStructure(ana.Storable):
                 that level?
         """
 
+        if isinstance(other, ASTStructure):
+            other_struct = other
+        elif isinstance(other, Base):
+            other_struct = other.structure
+        else:
+            raise TypeError("in <ASTStructure> requires ASTStructure or Base " +
+                            "as left operand, not %s" % type(other))
+
         for v in self._bottom_up_dfs():
-            if v == other:
+            if v == other_struct:
                 return True
 
         return False
@@ -280,8 +289,15 @@ class ASTStructure(ana.Storable):
                 that level?
         """
 
-        canonical_other_stuff = other.canonicalize()
-        canonical_other = canonical_other_stuff[1]
+        if isinstance(other, ASTStructure):
+            other_struct = other
+        elif isinstance(other, Base):
+            other_struct = other.structure
+        else:
+            raise TypeError("in <ASTStructure> requires ASTStructure or Base " +
+                            "as left operand, not %s" % type(other))
+
+        canonical_other = other_struct.canonicalize()[1]
 
         for v in self._bottom_up_dfs():
             if v.canonicalize()[1] == canonical_other:

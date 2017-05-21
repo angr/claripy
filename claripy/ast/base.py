@@ -281,13 +281,13 @@ class Base(object):
         """
         return self.swap_structure(self.structure.replace(replacements), _eager=True)
 
-    def canonicalize(self, var_map=None, counter=None):
+    def canonicalize(self):
         """
         Pass-through to ASTStructure.canonicalize.
         """
 
-        vm, c, s = self.structure.canonicalize(var_map=var_map, counter=counter)
-        return vm, c, self.swap_structure(s)
+        vm, s = self.structure.canonicalize()
+        return vm, self.swap_structure(s)
 
     #
     # Annotations
