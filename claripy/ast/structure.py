@@ -4,6 +4,7 @@ import weakref
 import struct
 import sys
 import ana
+from collections import Counter, defaultdict, deque
 
 #import xxhash
 #_hasher = xxhash.xxh64
@@ -33,6 +34,7 @@ class ASTStructure(ana.Storable):
         self.args = args
         self.annotations = annotations
         self._hash = None
+        self._canonical_info = None
 
     def __hash__(self):
         return _hash_unpacker.unpack(self._get_hash())[0] # 64 bits
@@ -72,6 +74,12 @@ class ASTStructure(ana.Storable):
     def __ne__(self, o):
         return not self.__eq__(o)
 
+    def _compare_args(self, other_args):
+        if isinstance(self.args, tuple):
+            return all(a is b for a, b in zip(self.args, other_args))
+        else:
+            return False
+
     @property
     def symbolic(self):
         return backends.symbolic.convert(self)
@@ -89,10 +97,11 @@ class ASTStructure(ana.Storable):
     def swap_annotations(self, annotations):
         return get_structure(self.op, self.args, annotations)
 
-    def swap_args(self, args):
-        if len(self.args) == len(args) and all(a is b for a,b in zip(self.args, args)):
+    def swap_args(self, args, op=None):
+        op = op if op else self.op
+        if self._compare_args(args) and op == self.op:
             return self
-        return get_structure(self.op, args, self.annotations)
+        return get_structure(op, args, self.annotations)
 
     def reverse_operation(self):
         if self.op in operations.boolean_opposites:
@@ -117,7 +126,7 @@ class ASTStructure(ana.Storable):
                 for a in self.args
             ]
 
-            if any(old_a is not new_a for old_a,new_a in zip(self.args,new_args)):
+            if not self._compare_args(new_args):
                 r = _deduplicate(self.swap_args(tuple(new_args)))
             else:
                 r = self
@@ -125,25 +134,160 @@ class ASTStructure(ana.Storable):
         replacements[self] = r
         return r
 
-    def canonicalize(self, var_map=None, counter=None):
+    def canonicalize(self):
         """
-        Converts the structure to a canonical form (just normalizing variable names for now).
+        Converts the structure to a canonical form:
+            * Correct any "backwards" ops (`radd` -> `add`, `lt` -> `gt`)
+            * Use the structure of the operations to generate a "hash" of
+                  each variable independent of the name
+            * Normalize variable names (ordering *should* be consistent)
+            * Sort args of commutative operations
 
-        :param var_map:    A map of variable name normalizations -- MODIFIED IN PLACE.
-        :param counter: An iterator to generate normalized numbers for names.
+        TODO: Add support for variable length bitvectors
 
-        :returns: a tuple of (new_var_map, new_counter, new_structure)
+        :returns: a tuple of (variable_mapping, canonicalized_structure)
         """
 
-        counter = itertools.count() if counter is None else counter
-        var_map = { } if var_map is None else var_map
+        if self._canonical_info is not None:
+            return self._canonical_info
 
-        for v in self._recursive_leaves():
-            if v not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
-                new_name = 'cv%d' % next(counter)
-                var_map[v] = v.swap_args((new_name,)+v.args[1:])
+        working_ast = self
 
-        return var_map, counter, self.replace(var_map)
+
+        # Swap reversed ops (`radd` -> `add`, `lt` -> `gt`)
+
+        replacements = { }
+        for v in working_ast._bottom_up_dfs():
+            if v.op in operations.nonstandard_reversible_ops and len(v.args) == 2:
+                replacements[v] = v.swap_args(v.args[::-1],
+                                              op=operations.nonstandard_reversible_ops[v.op])
+
+        working_ast = working_ast.replace(replacements)
+
+
+        # Generate variable (BVS, BoolS, and FPS) hashes
+
+        variable_map = defaultdict(Counter)
+
+        def _traverse(node_stack):
+            current_node = node_stack[-1][1]
+            if current_node.op in operations.backend_creation_operations or \
+               current_node.op in operations.backend_symbol_creation_operations:
+                # the DRESEL COMMUTATION INDEPENDENT PATH OPERATION TRACE (TM)
+                path_trace = tuple((v.op, i) for i, v in node_stack)
+                path_trace += (current_node.args[1:],)
+                variable_map[current_node][path_trace] += 1
+                return
+
+            for index, node in enumerate(current_node.args):
+                if isinstance(node, ASTStructure):
+                    node_stack.append((None if current_node.op in operations.commutative_operations else index,
+                                       node))
+                    _traverse(node_stack)
+                    node_stack.pop()
+
+        stack = [(0, working_ast)]
+        _traverse(stack)
+
+        sorted_map = { node: tuple(sorted(c.iteritems(), key=lambda x: hash(x[0]))) for node, c in variable_map.iteritems() }
+        hash_map = { node: hash(v) for node, v in sorted_map.iteritems() }
+        sorted_nodes = tuple(sorted(hash_map.iterkeys(), key=lambda x: hash_map[x]))
+
+        full_hash_map = hash_map.copy()
+        it = list(working_ast._bottom_up_dfs())
+        for node in it:
+            if node not in full_hash_map:
+                if node.op in operations.commutative_operations:
+                    args = tuple(sorted(node.args, key=lambda x: full_hash_map[x]))
+                else:
+                    args = node.args
+
+                full_hash_map[node] = hash(tuple(map(lambda x: full_hash_map[x], args)))
+
+        q = []
+        q.append(working_ast)
+        name_mapping = { }
+        while len(q) > 0:
+            node = q.pop()
+            q.extend(sorted(filter(lambda arg: isinstance(arg, ASTStructure), node.args),
+                            key=lambda x: full_hash_map[x]))
+            if node.op in operations.backend_symbol_creation_operations and node not in name_mapping:
+                name_mapping[node] = "cv%d" % len(name_mapping)
+
+        # Rename the variables
+
+        replacements = { node: node.swap_args((name_mapping[node],) + node.args[1:]) for node in sorted_nodes if node.op in operations.backend_symbol_creation_operations }
+
+        working_ast = working_ast.replace(replacements)
+
+
+        # Sort commutative operations
+
+        """
+        replacements = { }
+        for v in working_ast._bottom_up_dfs():
+            if v.op in operations.commutative_operations:
+                replacements[v] = v.swap_args(tuple(sorted(v.args, key=lambda x: hash(x))))
+
+        working_ast = working_ast.replace(replacements)
+        """
+
+        early_leaves = set()
+        while True:
+            for v in working_ast._bottom_up_bfs(preleaves=early_leaves):
+                early_leaves.add(v)
+                if v.op in operations.commutative_operations:
+                    new_args = tuple(sorted(v.args, key=lambda x: hash(x)))
+                    if not v._compare_args(new_args):
+                        working_ast = working_ast.replace({v: v.swap_args(new_args)})
+                        break
+            else:
+                break
+
+        self._canonical_info = (name_mapping, working_ast)
+        return self._canonical_info
+
+    def __contains__(self, other):
+        """
+        Checks if `other` is a subtree of `self`.
+        """
+
+        """
+        TODO: make this more efficient . . .
+            - get height of other, only iterate over nodes in self that are at
+                that level?
+        """
+
+        for v in self._bottom_up_dfs():
+            if v == other:
+                return True
+
+        return False
+
+    def canonically_contains(self, other):
+        """
+        Checks if the cannonical version of `other` is a subtree of the
+        canonical version of `self`.
+
+        :param other: The ASTStructure to check for inside self
+
+        :returns: True if other is in self, False otherwise
+        """
+
+        """
+        TODO: make this more efficient . . .
+            - get height of other, only iterate over nodes in self that are at
+                that level?
+        """
+
+        canonical_other_stuff = other.canonicalize()
+        canonical_other = canonical_other_stuff[1]
+
+        for v in self._bottom_up_dfs():
+            if v.canonicalize()[1] == canonical_other:
+                return True
+
+        return False
 
     #
     # Serialization support
@@ -175,6 +319,27 @@ class ASTStructure(ana.Storable):
             ana.get_dl().uuid_cache[u] = self
             setattr(self, '_ana_uuid', u)
         return u
+
+    def _bottom_up_dfs(self):
+        for a in self.args:
+            if isinstance(a, ASTStructure):
+                for b in a._bottom_up_dfs():
+                    yield b
+        yield self
+
+    def _bfs(self, preleaves=()):
+        q = deque()
+        q.appendleft(self)
+        while len(q) > 0:
+            node = q.pop()
+            q.extendleft(filter(lambda x: isinstance(x, ASTStructure) and x not in preleaves, node.args))
+            yield node
+
+    def _bottom_up_bfs(self, preleaves=()):
+        stack = list(self._bfs(preleaves=preleaves))
+        while len(stack) > 0:
+            yield stack.pop()
+
 
     #
     # Debugging
@@ -253,10 +418,10 @@ class ASTStructure(ana.Storable):
         try:
             if self.op in operations.reversed_ops:
                 op = operations.reversed_ops[self.op]
-                args = self.args[::-1]
+                args = tuple(self.args[::-1])
             else:
                 op = self.op
-                args = self.args
+                args = tuple(self.args)
 
             if op == 'BVS' and inner:
                 value = args[0]
