@@ -78,7 +78,18 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacements[old.cache_key] = new
         self._replacement_cache[old.cache_key] = new
 
+    def remove_replacements(self, old_entries):
+        self._replacements = {k: v for k, v in self._replacements if k not in old_entries}
+        self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
+
+    def clear_replacements(self):
+        self._replacements = dict()
+        self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
+
     def _replacement(self, old):
+        if self._replacement_cache is None or len(self._replacement_cache) == 0: # pylint:disable=len-as-condition
+            return old
+
         if not isinstance(old, Base):
             return old
 
