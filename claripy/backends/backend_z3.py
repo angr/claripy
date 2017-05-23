@@ -102,7 +102,7 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FP', 'BitVec'}:
+        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
 
@@ -238,10 +238,11 @@ class BackendZ3(Backend):
         size = ast.size()
         return z3.BitVecVal(ast.args[0], size, ctx=self._context)
 
-    @staticmethod
     @condom
-    def FPS(name, sort): #pylint:disable=unused-argument
-        raise BackendError("TODO: not sure how to do this")
+    def FPS(self, ast): #pylint:disable=unused-argument
+        name, sort_claripy = ast.args
+        sort_z3 = self._convert(sort_claripy)
+        return z3.FP(name, sort_z3, ctx=self._context)
 
     @condom
     def FPV(self, ast): #pylint:disable=unused-argument
@@ -362,39 +363,36 @@ class BackendZ3(Backend):
             else:
                 bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
                 return BVV(bv_num, bv_size)
-        elif op_name == 'FPVal':
-            # this is really imprecise
-            fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
-            value = fp_mantissa * (2 ** fp_exp)
-
+        elif op_name in ('FPVal', 'MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
             sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
             sort = FSort.from_params(ebits, sbits)
+            val = self._abstract_fp_val(ctx, ast, op_name)
+            return FPV(val, sort)
 
-            return FPV(value, sort)
-        elif op_name in ('MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
-            ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
-            sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
-            sort = FSort.from_params(ebits, sbits)
+        elif op_name == 'UNINTERPRETED' and num_args == 0: # symbolic value
+            symbol_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
+            symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
 
-            if op_name == 'MinusZero':
-                return FPV(-0.0, sort)
-            elif op_name == 'MinusInf':
-                return FPV(float('-inf'), sort)
-            elif op_name == 'PlusZero':
-                return FPV(0.0, sort)
-            elif op_name == 'PlusInf':
-                return FPV(float('inf'), sort)
-            elif op_name == 'NaN':
-                return FPV(float('nan'), sort)
-        elif op_name == 'UNINTERPRETED' and num_args == 0: # this *might* be a BitVec ;-)
-            bv_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
-            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+            if symbol_ty == z3.Z3_BV_SORT:
+                bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+                return BV('BVS',
+                        (symbol_name, None, None, None, False, False, None),
+                        length=bv_size,
+                        variables={ symbol_name },
+                        symbolic=True)
+            elif symbol_ty == z3.Z3_FLOATING_POINT_SORT:
+                ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
+                sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
+                sort = FSort.from_params(ebits, sbits)
+                return FP('FPS',
+                        (symbol_name, sort),
+                        variables={ symbol_name },
+                        symbolic=True,
+                        length=sort.length)
+            else:
+                raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
 
-            #if bv_name.count('_') < 2:
-            #       import ipdb; ipdb.set_trace()
-            return BV("BVS", (bv_name, None, None, None, False, False, None), length=bv_size, variables={ bv_name }, symbolic=True)
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
             args = [ ]
@@ -480,17 +478,34 @@ class BackendZ3(Backend):
             else:
                 bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
                 return bv_num
-        elif op_name == 'FPVal':
-            # this is really imprecise
-            fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast))
-            return fp_mantissa * (2 ** fp_exp)
         elif op_name == 'True':
             return True
         elif op_name == 'False':
             return False
+        elif op_name in ('FPVal', 'MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
+            return self._abstract_fp_val(ctx, ast, op_name)
         else:
             raise BackendError("Unable to abstract Z3 object to primitive")
+
+    def _abstract_fp_val(self, ctx, ast, op_name):
+        if op_name == 'FPVal':
+            # TODO: do better than this
+            fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
+            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
+            value = fp_mantissa * (2 ** fp_exp)
+            return value
+        elif op_name == 'MinusZero':
+            return -0.0
+        elif op_name == 'MinusInf':
+            return float('-inf')
+        elif op_name == 'PlusZero':
+            return 0.0
+        elif op_name == 'PlusInf':
+            return float('inf')
+        elif op_name == 'NaN':
+            return float('nan')
+        else:
+            raise BackendError("Called _abstract_fp_val with unknown type")
 
     def solver(self, timeout=None):
         s = z3.Solver(ctx=self._context)

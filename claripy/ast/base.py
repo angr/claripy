@@ -688,7 +688,7 @@ class Base(ana.Storable):
                 else:
                     continue
 
-            if arg_a.op in ('I', 'BVS', 'FP'):
+            if arg_a.op in ('I', 'BVS', 'FPS'):
                 # This is a leaf node in AST tree
                 if arg_a is not arg_b:
                     return False
@@ -749,7 +749,7 @@ class Base(ana.Storable):
         var_map = { } if var_map is None else var_map
 
         for v in self._recursive_leaf_asts():
-            if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPs' }:
+            if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
                 new_name = 'canonical_%d' % next(counter)
                 var_map[v.cache_key] = v._rename(new_name)
 

@@ -29,7 +29,7 @@ def FPS(name, sort, explicit_name=None):
     """
 
     n = _make_name(name, sort.length, False if explicit_name is None else explicit_name, prefix='FP_')
-    return FP('FP', (n, sort), variables={n}, symbolic=True, length=sort.length)
+    return FP('FPS', (n, sort), variables={n}, symbolic=True, length=sort.length)
 
 def FPV(value, sort):
     """
