@@ -22,7 +22,7 @@ class BackendLength(Backend):
 
         self._op_raw['fpFP'] = self.length_fp_fp
         self._op_raw['Concat'] = self.length_concat
-        self._op_raw['Extract'] = self.length_extract
+        self._op_expr['Extract'] = self.length_extract
         self._op_expr['SignExt'] = self.length_extend
         self._op_expr['ZeroExt'] = self.length_extend
 
@@ -62,8 +62,9 @@ class BackendLength(Backend):
             raise ClaripyOperationError("Encountered an invalid length combination when processing an expression.")
         return lengthed[0]
 
-    @staticmethod
-    def length_extract(high, low, original):
+    def length_extract(self, s):
+        high, low, orig_expr = s.args
+        original = self.convert(orig_expr)
         if high < 0 or low < 0:
             raise ClaripyOperationError("Extract high and low bit indices must be nonnegative")
         elif low > high:
