@@ -63,6 +63,7 @@ class Base(object):
     """
 
     __slots__ = [
+        '__weakref__',
         'structure', 'outer_annotations', 'filters',
         'cache_key', '_hash', '_eager',
         '_simplified', '_excavated', '_burrowed',
