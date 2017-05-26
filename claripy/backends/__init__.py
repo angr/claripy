@@ -465,7 +465,7 @@ class Backend(object):
         :param extra_constraints: extra constraints (claripy.E objects) to add
                                   to the solver for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
-        :return:              A sequence of up to n results (backend objects)
+        :return:              A sequence of up to n results (python primitives)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
@@ -485,7 +485,7 @@ class Backend(object):
         :param solver:              A solver object, native to the backend, to assist in the evaluation (for example, a
                                     z3.Solver).
         :param model_callback:      a function that will be executed with recovered models (if any)
-        :return:                    A sequence of up to n results (backend objects).
+        :return:                    A sequence of up to n results (python primitives).
         """
         raise BackendError("backend doesn't support eval()")
 
