@@ -255,12 +255,14 @@ class ASTStructure(ana.Storable):
             elif op == 'BVS':
                 value = "%s" % args[0]
                 extras = [ ]
+                # from ast.bv.BVS(): n, length, min, max, stride, uninitialized, discrete_set, discrete_set_max_card
+
                 if args[2] is not None:
-                    extras.append("min=%s" % args[1])
+                    extras.append("min=%s" % args[2])
                 if args[3] is not None:
-                    extras.append("max=%s" % args[2])
+                    extras.append("max=%s" % args[3])
                 if args[4] is not None:
-                    extras.append("stride=%s" % args[3])
+                    extras.append("stride=%s" % args[4])
                 if args[5] is True:
                     extras.append("UNINITIALIZED")
                 if len(extras) != 0:

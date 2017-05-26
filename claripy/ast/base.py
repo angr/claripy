@@ -24,7 +24,7 @@ class ASTCacheKey(object):
         return hash(self.ast) == hash(other.ast)
 
     def __repr__(self):
-        return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
+        return "<Key " + self.ast.__repr__()[1:]
 
 def _concrete_evaluate(expr):
     if not expr._eager or expr.op in operations.backend_creation_operations:
