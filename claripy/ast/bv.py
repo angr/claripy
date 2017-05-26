@@ -373,7 +373,7 @@ BV.Extract = staticmethod(make_op('Extract', ((int, long), (int, long), BV), BV)
 BV.Concat = staticmethod(make_op('Concat', BV, BV))
 BV.reversed = property(make_op('Reverse', (BV,), BV))
 
-BV.union = make_op('union', (BV, BV), BV, structure_postprocessor=_union_postprocessor)
+BV.union = make_op('union', (BV, BV), BV, expression_postprocessor=_union_postprocessor)
 BV.widen = make_op('widen', (BV, BV), BV)
 BV.intersection = make_op('intersection', (BV, BV), BV)
 
