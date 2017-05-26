@@ -56,7 +56,8 @@ class ReplacementFrontend(ConstrainedFrontend):
         if isinstance(new, Base):
             new = new.structure
 
-        if not isinstance(old, ASTStructure):
+        if not isinstance(old, ASTStructure) or not isinstance(new, ASTStructure):
+            l.warning("Non-AST passed into ReplacementFrontend.add_replacements")
             return
 
         if old is new:
@@ -68,13 +69,13 @@ class ReplacementFrontend(ConstrainedFrontend):
         if not promote and old in self._replacement_cache:
             return
 
-        if not isinstance(new, Base):
-            if isinstance(new, bool):
-                new = BoolV(new)
-            elif isinstance(new, (int, long)):
-                new = BVV(new, old.length)
-            else:
-                return
+        #if not isinstance(new, Base):
+        #   if isinstance(new, bool):
+        #       new = BoolV(new)
+        #   elif isinstance(new, (int, long)):
+        #       new = BVV(new, old.length)
+        #   else:
+        #       return
 
         if invalidate_cache:
             self._replacements = dict(self._replacements)
@@ -95,13 +96,16 @@ class ReplacementFrontend(ConstrainedFrontend):
         if not isinstance(old, Base):
             return old
 
+        return old.swap_structure(self._replace_structure(old.structure))
+
+    def _replace_structure(self, old):
         try:
-            return self._replacement_cache[old.cache_key]
+            return self._replacement_cache[old]
         except KeyError:
             # not found in the cache
-            new = old.replace_dict(self._replacement_cache)
+            new = old.replace(self._replacement_cache)
             if new is not old:
-                self._replacement_cache[old.cache_key] = new
+                self._replacement_cache[old] = new
             return new
 
     def _add_solve_result(self, e, er, r):
@@ -246,7 +250,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                 if not self._complex_auto_replace:
                     if rc.op == 'Not':
                         self.add_replacement(c.structure.args[0], false.structure, replace=False, promote=True, invalidate_cache=True)
-                    elif rc.op == '__eq__' and backends.symbolic.convert(rc.structure.args[0]).symbolic ^ backends.symbolic.convert(rc.structure.args[1]):
+                    elif rc.op == '__eq__' and backends.symbolic.convert(rc.structure.args[0]) ^ backends.symbolic.convert(rc.structure.args[1]):
                         old, new = rc.structure.args if backends.symbolic.convert(rc.structure.args[0]) else rc.structure.args[::-1]
                         self.add_replacement(old, new, replace=False, promote=True, invalidate_cache=True)
                 else:
@@ -261,7 +265,7 @@ class ReplacementFrontend(ConstrainedFrontend):
                         if rold.cardinality == 1:
                             continue
 
-                        self.add_replacement(old.structure, rold.intersection(new).structure)
+                        self.add_replacement(old, rold.intersection(new))
 
         added = super(ReplacementFrontend, self).add(constraints, **kwargs)
         cr = self._replace_list(added)
