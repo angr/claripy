@@ -438,7 +438,7 @@ class Backend(object):
         :return: The unsat core.
         """
 
-        return [ BV(self._abstract(core)) for core in self._unsat_core(s) ]
+        return [ self._abstract(core) for core in self._unsat_core(s) ]
 
     def _unsat_core(self, s):  #pylint:disable=no-self-use,unused-argument
         """
