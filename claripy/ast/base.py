@@ -219,6 +219,13 @@ class Base(object):
         """
         return hash((self.structure, self.outer_annotations, self.filters))
 
+    def globalize(self):
+        """
+        Makes this AST globally storable and referenceable. "Globally" here refers
+        to being transferrable between different processes and so forth.
+        """
+        self.structure.make_uuid()
+
     #
     # AST modifications.
     #
