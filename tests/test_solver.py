@@ -58,12 +58,10 @@ def test_replacement_solver():
 
     y = claripy.BVS('y', 32)
     sr.add([y+1 == 200])
-    assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
     srb = sr.branch()
     assert len(srb.constraints) == len(sr.constraints) #pylint:disable=no-member
-    assert (y+1).cache_key in sr._replacements
     assert sr._replacement(y+1) is claripy.BVV(200, 32)
 
     sr = claripy.SolverReplacement()
@@ -405,7 +403,7 @@ def test_simplification_annotations():
 
     s.add(x > 10)
     s.add(x > 11)
-    s.add((x > 12).annotate(claripy.SimplificationAvoidanceAnnotation()))
+    s.add((x > 12).annotate_outer(claripy.SimplificationAvoidanceAnnotation()))
 
     assert len(s.constraints) == 3
     s.simplify()
