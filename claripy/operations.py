@@ -15,8 +15,11 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
     def _type_fixer(args):
         num_args = len(args)
         if expected_num_args is not None and num_args != expected_num_args:
-            raise ClaripyTypeError("Operation {} takes exactly "
-                                   "{} arguments ({} given)".format(name, len(arg_types), len(args)))
+            if num_args + 1 == expected_num_args and arg_types[0] is fp.RM:
+                args = (fp.RM.default(),) + args
+            else:
+                raise ClaripyTypeError("Operation {} takes exactly "
+                                       "{} arguments ({} given)".format(name, len(arg_types), len(args)))
 
         if type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
             actual_arg_types = (arg_types,) * num_args
@@ -25,7 +28,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         matches = [ isinstance(arg, argty) for arg,argty in zip(args, actual_arg_types) ]
 
         # heuristically, this works!
-        thing = args[matches.index(True)] if True in matches else None
+        thing = args[matches.index(True, 1 if actual_arg_types[0] is fp.RM else 0)] if True in matches else None
 
         for arg, argty, matches in zip(args, actual_arg_types, matches):
             if not matches:

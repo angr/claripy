@@ -18,6 +18,13 @@ class FP(Bits):
     def sort(self):
         return fp.FSort.from_size(self.length)
 
+    @staticmethod
+    def _from_float(like, value):
+        return FPV(float(value), like.sort)
+
+    _from_int = _from_float
+    _from_str = _from_float
+
 def FPS(name, sort, explicit_name=None):
     """
     Creates a floating-point symbol.
@@ -96,9 +103,23 @@ fpDiv = operations.op('fpDiv', (fp.RM, FP, FP), FP, bound=False, extra_check=_fp
 #
 # bound fp operations
 #
+
 FP.__eq__ = operations.op('fpEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__ne__ = operations.op('fpNE', (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__ge__ = operations.op('fpGEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__le__ = operations.op('fpLEQ', (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__gt__ = operations.op('fpGT', (FP, FP), Bool, extra_check=_fp_cmp_check)
 FP.__lt__ = operations.op('fpLT', (FP, FP), Bool, extra_check=_fp_cmp_check)
+
+FP.__abs__ = fpAbs
+FP.__neg__ = fpNeg
+
+FP.__add__ = fpAdd
+FP.__sub__ = fpSub
+FP.__mul__ = fpMul
+FP.__div__ = fpDiv
+
+FP.__radd__ = operations.reversed_op(FP.__add__.im_func)
+FP.__rsub__ = operations.reversed_op(FP.__sub__.im_func)
+FP.__rmul__ = operations.reversed_op(FP.__mul__.im_func)
+FP.__rdiv__ = operations.reversed_op(FP.__div__.im_func)
