@@ -9,7 +9,7 @@ except ImportError:
 
 setup(
     name='claripy',
-    version='6.7.4.12',
+    version='6.7.6.9',
     packages=packages,
     install_requires=[
         'ana',
