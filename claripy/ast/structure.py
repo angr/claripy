@@ -224,15 +224,6 @@ class ASTStructure(ana.Storable):
 
         # Sort commutative operations
 
-        """
-        replacements = { }
-        for v in working_ast._bottom_up_dfs():
-            if v.op in operations.commutative_operations:
-                replacements[v] = v.swap_args(tuple(sorted(v.args, key=lambda x: hash(x))))
-
-        working_ast = working_ast.replace(replacements)
-        """
-
         early_leaves = set()
         while True:
             for v in working_ast._bottom_up_bfs(preleaves=early_leaves):
@@ -246,6 +237,7 @@ class ASTStructure(ana.Storable):
                 break
 
         self._canonical_info = (name_mapping, working_ast)
+        working_ast._canonical_info = self._canonical_info
         return self._canonical_info
 
     def __contains__(self, other):

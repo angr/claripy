@@ -1,11 +1,15 @@
 import string
 import claripy
+import time
 
 for i in string.lowercase[:8] + string.lowercase[-8:]:
     globals()[i] = claripy.BVS(i, 32)
 
 def can(ast):
     return ast.structure.canonicalize()[1]
+
+start = time.time()
+
 
 assert can(x) == can(y)
 
@@ -47,3 +51,8 @@ assert can((a + 1) <= b) == can(b >= (c + 1))
 
 assert can(a | ((a - b) + (c - d))) == can(a | ((c - d) + (a - b)))
 assert can(a | ((a - b) + (c - d))) == can(b | ((b - c) + (d - e))) # c and e have the same hash
+
+
+time_taken = time.time() - start
+
+print "took", time_taken, "seconds"
