@@ -9,6 +9,7 @@ class Solver(
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.CanonicalCacheMixin,
     frontend_mixins.SatCacheMixin,
     frontend_mixins.ModelCacheMixin,
     frontend_mixins.ConstraintExpansionMixin,

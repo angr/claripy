@@ -12,3 +12,4 @@ from .simplify_helper_mixin import SimplifyHelperMixin
 from .simplify_skipper_mixin import SimplifySkipperMixin
 from .composited_cache_mixin import CompositedCacheMixin
 from .sat_cache_mixin import SatCacheMixin
+from .canonical_cache_mixin import CanonicalCacheMixin

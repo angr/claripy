@@ -18,6 +18,9 @@ from . import backend_manager as _backend_manager
 from . import backends as _backends_module
 from .backends import Backend
 
+# Import the global solution cache
+from solver_cache import global_solution_cache
+
 #
 # connect to ANA
 #

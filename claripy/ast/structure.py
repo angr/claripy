@@ -236,8 +236,10 @@ class ASTStructure(ana.Storable):
             else:
                 break
 
-        self._canonical_info = (name_mapping, working_ast)
-        working_ast._canonical_info = self._canonical_info
+        pure_mapping = { node.args[0]: v for node, v in name_mapping.iteritems() }
+        self._canonical_info = (pure_mapping, working_ast)
+        trivial_mapping = { v: v for v in pure_mapping.itervalues() }
+        working_ast._canonical_info = (trivial_mapping, working_ast)
         return self._canonical_info
 
     def __contains__(self, other):
@@ -264,6 +266,9 @@ class ASTStructure(ana.Storable):
                 return True
 
         return False
+
+    def canonically_equals(self, other):
+        return self.canonicalize()[1] == other.canonicalize()[1]
 
     def canonically_contains(self, other):
         """
@@ -297,6 +302,38 @@ class ASTStructure(ana.Storable):
 
         return False
 
+    def canonically_replace(self, replacements, is_hashmap=False):
+        """
+        Traverses `self` and, where a node canonically equals a key in of
+        `replacements`, replace that node with the corresponding node in
+        `replacements`
+
+        :param replacements: A dictionary of nodes to their replacements.
+        :param is_hashmap: if True, treat replacements as a dict of hashes
+
+        :returns: the new tree
+        """
+
+        if not is_hashmap:
+            swaps = {canonical_structure(n): v for n, v in replacements.iteritems()}
+        else:
+            swaps = replacements
+        replace_args = {}
+
+        for node in self._bottom_up_dfs():
+            can = node.canonicalize()[1]
+            key = hash(can) if is_hashmap else can
+            if key in swaps:
+                given = swaps[key]
+                if isinstance(given, ASTStructure):
+                    rep = given
+                elif isinstance(given, bool):
+                    rep = _true_structure if given else _false_structure
+                else:
+                    TypeError(type(given))
+                replace_args[node] = rep
+
+        return self.replace(replace_args)
     #
     # Serialization support
     #
@@ -499,6 +536,23 @@ class ASTStructure(ana.Storable):
 
     def _simplify(self):
         return simplifier.simplify(self)
+
+
+def canonical_structure(s):
+    if isinstance(s, ASTStructure):
+        return s.canonicalize()[1]
+    elif isinstance(s, Base):
+        return s.structure.canonicalize()[1]
+    else:
+        raise TypeError("Unknown type %s passed to `canonical_structure`" % str(type(s)))
+
+def get_structure_form(s):
+    if isinstance(s, ASTStructure):
+        return s
+    elif isinstance(s, Base):
+        return s.structure
+    else:
+        raise TypeError("Unknown type %s passed to `get_structure_form`" % str(type(s)))
 
 #
 # Deduplication helpers
