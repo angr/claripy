@@ -8,7 +8,7 @@ l = logging.getLogger("claripy.frontend_mixins.canonical_cache_mixin")
 
 def replace_unsats(constraints):
     return [constraint.swap_structure(
-              get_structure_form(constraint).canonically_replace(global_solution_cache.unsats)
+              get_structure_form(constraint).canonically_replace(global_solution_cache.unsats, is_hashmap=True)
             )
             for constraint in constraints if isinstance(constraint, ASTStructure)
                                           or isinstance(constraint, Base)]
@@ -23,9 +23,8 @@ class CanonicalCacheMixin(object):
         return replaced
 
     def add(self, constraints, **kwargs):
-        added = super(CanonicalCacheMixin, self).add(constraints, **kwargs)
-        replaced = replace_unsats(added)
-        return replaced
+        replaced = replace_unsats(constraints)
+        return super(CanonicalCacheMixin, self).add(replaced, **kwargs)
 
     def satisfiable(self, extra_constraints=(), **kwargs):
         rep_extras = replace_unsats(extra_constraints)

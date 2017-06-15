@@ -25,9 +25,9 @@ class CanonicalCache(dict):
     def __setitem__(self, key, value):
         canonical = hash(canonical_structure(key))
         if value is False:
-            self.unsats[key] = False
+            self.unsats[canonical] = False
         elif isinstance(value, dict):
-            self.models[key] = value
+            self.models[canonical] = value
         else:
             raise TypeError(type(value))
         return super(CanonicalCache, self).__setitem__(canonical, value)
