@@ -1,3 +1,7 @@
+"""
+Collection of exceptions raised by Claripy.
+"""
+
 class ClaripyError(Exception):
     pass
 
