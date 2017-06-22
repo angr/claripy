@@ -1,3 +1,7 @@
+"""
+Module containing support for concrete backend floating point values.
+"""
+
 import functools
 import struct
 
