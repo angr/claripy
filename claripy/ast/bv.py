@@ -1,3 +1,8 @@
+"""
+Classes and methods manipulating and representing concrete and symbolic
+(frontend) bitvectors.
+"""
+
 from .bits import Bits
 from ..ast.base import _make_name
 
