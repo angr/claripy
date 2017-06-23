@@ -1,6 +1,16 @@
+"""
+AST class representing a collection of bits of a specified length.
+Meant to be subclassed, e.g. by BVV.
+"""
+
 from ..ast.base import Base
 
 class Bits(Base):
+    """
+    AST class representing a collection of bits of a certain length.
+
+    :param length: Length (number) of bits. Must not be None.
+    """
     __slots__ = ['length']
 
     def __init__(self, *args, **kwargs):
@@ -15,6 +25,9 @@ class Bits(Base):
         return Base.make_like(self, *args, **kwargs)
 
     def size(self):
+        """
+        Returns the length of the Bits object.
+        """
         return self.length
 
     def _type_name(self):
