@@ -1,3 +1,7 @@
+"""
+Base AST class and its associated mathods.
+"""
+
 import os
 import sys
 import struct
@@ -19,12 +23,19 @@ md5_unpacker = struct.Struct('2Q')
 #pylint:disable=unidiomatic-typecheck
 
 def _inner_repr(a, **kwargs):
+    """
+    Calls `__repr` on the argument `a` with `inner=True` and `kwargs`.
+    """
     if isinstance(a, Base):
         return a.__repr__(inner=True, **kwargs)
     else:
         return repr(a)
 
 class ASTCacheKey(object):
+    """
+    Classed used as a key for dictionaries of ASTs, typically for replacement
+    lists.
+    """
     def __init__(self, a):
         self.ast = a
 
@@ -45,6 +56,17 @@ var_counter = itertools.count()
 _unique_names = True
 
 def _make_name(name, size, explicit_name=False, prefix=""):
+    """
+    Create a unique fresh name.
+
+    :param name: (Base) Name of variable.
+    :param size: An integer.
+    :param explicit_name: If True, just return the `name` instead of generating
+                          a fresh name. False by default.
+    :param prefix: Prefix of the generated name.
+
+    :returns: A fresh name if `explicit_name` is False, else just `name`.
+    """
     if _unique_names and not explicit_name:
         return "%s%s_%d_%d" % (prefix, name, var_counter.next(), size)
     else:
@@ -184,6 +206,13 @@ class Base(ana.Storable):
         return md5_unpacker.unpack(hd)[0] # 64 bits
 
     def _get_hashables(self):
+        """
+        Get the items that are used in the hash of the AST.
+
+        :returns: A tuple of (`self.op`, tuple of the arguments to the operation
+                  (either in string form or hashed), `self.symbolic`, a hash of
+                  `self.variables`, the length as a string)
+        """
         return self.op, tuple(str(a) if type(a) in (int, long, float) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
@@ -246,6 +275,9 @@ class Base(ana.Storable):
 
     @property
     def uuid(self):
+        """
+        The UUID of the AST (currently equal to its hash).
+        """
         return self.ana_uuid
 
     def __hash__(self):
@@ -253,6 +285,9 @@ class Base(ana.Storable):
 
     @property
     def cache_key(self):
+        """
+        The cache key of the AST (?).
+        """
         return self._cache_key
 
     #
@@ -285,6 +320,17 @@ class Base(ana.Storable):
     #            yield backend.convert(a)
 
     def make_like(self, *args, **kwargs):
+        """
+        Create a new AST based off the current one, possibly overriding some
+        arguments and options.
+
+        :param args: Arguments to the new AST.
+        :param kwargs: Keyword arguments to the new AST.
+
+        :returns: New AST with the same operator at the top, with the given
+                  arguments and kwargs, and with unspecified arguments copied
+                  from the current AST.
+        """
         all_operations = operations.leaf_operations_symbolic | {'union'}
         if 'annotations' not in kwargs: kwargs['annotations'] = self.annotations
         if 'variables' not in kwargs and self.op in all_operations: kwargs['variables'] = self.variables
@@ -293,6 +339,14 @@ class Base(ana.Storable):
         return type(self)(*args, **kwargs)
 
     def _rename(self, new_name):
+        """
+        Renames a symbolic variable in an AST leaf node.
+
+        :param new_name: New name of variable.
+
+        :returns: New AST with the variable renamed to the new name.
+        :raises: ClaripyOperationError
+        """
         if self.op not in { 'BVS', 'BoolS', 'FPS' }:
             raise ClaripyOperationError("rename is only supported on leaf nodes")
         new_args = (new_name,) + self.args[1:]
@@ -303,6 +357,13 @@ class Base(ana.Storable):
     #
 
     def _apply_to_annotations(self, f):
+        """
+        Apply a function to the annotations of the AST.
+
+        :param f: Function to apply
+
+        :returns: A new AST with the function applied to the annotations.
+        """
         return self.make_like(self.op, self.args, annotations=f(self.annotations))
 
     def append_annotation(self, a):
@@ -382,6 +443,13 @@ class Base(ana.Storable):
     #
 
     def dbg_repr(self, prefix=None):
+        """
+        Print the AST for debugging purposes.
+
+        :param prefix: Optional prefix to insert before printing each node of
+                       the AST.
+        :raises: ClaripyRecursionError
+        """
         try:
             if prefix is not None:
                 new_prefix = prefix + "    "
@@ -399,9 +467,16 @@ class Base(ana.Storable):
             raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
     def _type_name(self):
+        """
+        Return the type name of the AST.
+        """
         return self.__class__.__name__
 
     def shallow_repr(self, max_depth=8):
+        """
+        Returns a representation of the AST up to a maximum depth `max_depth`
+        as a string.
+        """
         return self.__repr__(max_depth=max_depth)
 
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):
@@ -507,6 +582,9 @@ class Base(ana.Storable):
 
     @property
     def recursive_children_asts(self):
+        """
+        Yields all subtrees of the AST in a depth-first preorder traversal.
+        """
         for a in self.args:
             if isinstance(a, Base):
                 l.debug("Yielding AST %s with hash %s with %d children", a, hash(a), len(a.args))
@@ -516,9 +594,15 @@ class Base(ana.Storable):
 
     @property
     def recursive_leaf_asts(self):
+        """
+        Yields all unique leaves of the AST.
+        """
         return self._recursive_leaf_asts()
 
     def _recursive_leaf_asts(self, seen=None):
+        """
+        Helper function that implements recursive_leaf_asts.
+        """
         if self.depth == 1:
             yield self
             return
@@ -535,6 +619,10 @@ class Base(ana.Storable):
                         yield b
 
     def dbg_is_looped(self, seen=None, checked=None):
+        """
+        Checks if the AST has loops. Returns False if there are no loops,
+        or a repeated subtree of the AST if there are loops.
+        """
         seen = set() if seen is None else seen
         checked = set() if checked is None else checked
 
@@ -727,12 +815,28 @@ class Base(ana.Storable):
 
     @staticmethod
     def _check_replaceability(old, new):
+        """
+        Checks if AST `old` is replaceable by `new`. Raises ClaripyReplacementError
+        if they are not both AST nodes or if they are not of the same AST type.
+
+        :param old: The AST to replace.
+        :param new: The AST to replace `old` with.
+
+        :raises: ClaripyReplacementError
+        """
         if not isinstance(old, Base) or not isinstance(new, Base):
             raise ClaripyReplacementError('replacements must be AST nodes')
         if type(old) is not type(new):
             raise ClaripyReplacementError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
 
     def _identify_vars(self, all_vars, counter):
+        """
+        Insert copies of all variables in the AST into the dictionary all_vars.
+
+        :param all_vars: A dictionary that will contain the variables at the
+                         end.
+        :param counter: An integer, a counter for generating variable names.
+        """
         if self.op == 'BVS':
             if self.args not in all_vars:
                 all_vars[self.args] = BV('BVS', self.args, length=self.length, explicit_name=True)
@@ -745,6 +849,14 @@ class Base(ana.Storable):
                     arg._identify_vars(all_vars, counter)
 
     def canonicalize(self, var_map=None, counter=None):
+        """
+        Rename all variables with canonical names.
+
+        :param var_map: Dictionary that will contain the variable mappings.
+        :param counter: A iterator used to generate variable names.
+
+        :returns: Tuple of the variable map, the final counter value, 
+        """
         counter = itertools.count() if counter is None else counter
         var_map = { } if var_map is None else var_map
 
@@ -761,6 +873,13 @@ class Base(ana.Storable):
     #
 
     def _burrow_ite(self):
+        """
+        Push ITEs downwards when possible, e.g.
+        If(cond, op(arg1), op(arg2)) --> op(If(cond, arg1, arg2)).
+        Only works for unary operations at the moment.
+
+        :returns: New AST with the ITE pushed down.
+        """
         if self.op != 'If':
             #print "i'm not an if"
             return self.swap_args([ (a.ite_burrowed if isinstance(a, Base) else a) for a in self.args ])
@@ -797,6 +916,11 @@ class Base(ana.Storable):
         return old_true.__class__(old_true.op, new_args, length=self.length)
 
     def _excavate_ite(self):
+        """
+        Opposite of `_burrow_ite`, pulls out the ITEs as far as possible.
+
+        :returns: New AST with the ITEs pulled out.
+        """
         if self.op in { 'BVS', 'I', 'BVV' }:
             return self
 
@@ -869,6 +993,15 @@ class Base(ana.Storable):
     #
 
     def _first_backend(self, what):
+        """
+        Applies an operation of the first backend that hasn't errored on this
+        expression to the current AST.
+
+        :param what: The function of the backend to apply.
+
+        returns: `getattr(b, what)(self)` for the first backend `b` that
+                 hasn't errored.
+        """
         for b in backends._all_backends:
             if b in self._errored:
                 continue
@@ -878,18 +1011,30 @@ class Base(ana.Storable):
 
     @property
     def singlevalued(self):
+        """
+        True if the AST takes on only one value.
+        """
         return self._first_backend('singlevalued')
 
     @property
     def multivalued(self):
+        """
+        True if the AST takes on multiple values.
+        """
         return self._first_backend('multivalued')
 
     @property
     def cardinality(self):
+        """
+        Returns the number of values the AST is estimated to take on.
+        """
         return self._first_backend('cardinality')
 
     @property
     def concrete(self):
+        """
+        True if the AST is concrete.
+        """
         return backends.concrete.handles(self)
 
     @property
@@ -947,6 +1092,9 @@ class Base(ana.Storable):
             return self
 
 def simplify(e):
+    """
+    Attempt to simply the expression with the first non-errored backend.
+    """
     if isinstance(e, Base) and e.op == 'I':
         return e
 
