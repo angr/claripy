@@ -9,13 +9,18 @@ _bvv_cache = dict()
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
+    """
+    Clears the bitvector cache.
+    """
     global _bvv_cache #pylint:disable=global-variable-not-assigned
     del _bvv_cache
 import atexit
 atexit.register(cleanup)
 
 class BV(Bits):
-
+    """
+    Class representing bitvectors of various lengths.
+    """
     # TODO: do these go on Bits or BV?
     def chop(self, bits=1):
         """
@@ -109,36 +114,72 @@ class BV(Bits):
 
     @staticmethod
     def _from_int(like, value):
+        """
+        Constructs a BVV from an integer `value` with the same length as
+        BV `like`.
+        """
         return BVV(value, like.length)
 
     @staticmethod
     def _from_long(like, value):
+        """
+        Constructs a BVV from a long `value` with the same length as BV `like`.
+        """
         return BVV(value, like.length)
 
     @staticmethod
     def _from_str(like, value): #pylint:disable=unused-argument
+        """
+        Constructs a BVV from a string `value`.
+        """
         return BVV(value)
 
     @staticmethod
     def _from_BVV(like, value): #pylint:disable=unused-argument
+        """
+        Constructs an identical BVV from another BVV `value`.
+        """
         return BVV(value.value, value.size())
 
     def signed_to_fp(self, rm, sort):
+        """
+        Convert a signed BVV to a float.
+
+        :param rm: Rounding mode. Can pass `None` to use the default rounding mode.
+        :param sort: Floating point type to convert to (`FSort` object)
+
+        :returns: FPV representing the floating point value.
+        """
         if rm is None:
             rm = fp.fp.RM.default()
 
         return fp.fpToFP(rm, self, sort)
 
     def unsigned_to_fp(self, rm, sort):
+        """
+        Convert an unsigned BVV to a float.
+
+        :param rm: Rounding mode. Can pass `None` to use the default rounding mode.
+        :param sort: Floating point type to convert to (`FSort` object)
+
+        :returns: FPV representing the floating point value.
+        """
         if rm is None:
             rm = fp.fp.RM.default()
         return fp.fpToFPUnsigned(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        Converts a BVV storing a floating point value in IEEE encoding, to a
+        floating point value, length of BVV must be the correct size.
+        """
         sort = fp.fp.FSort.from_size(self.length)
         return fp.fpToFP(self, sort)
 
     def to_bv(self):
+        """
+        Returns the BV itself.
+        """
         return self
 
 def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin

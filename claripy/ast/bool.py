@@ -12,6 +12,9 @@ _boolv_cache = dict()
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
+    """
+    Clears the boolean value cache.
+    """
     global _boolv_cache #pylint:disable=global-variable-not-assigned
     del _boolv_cache
 import atexit
@@ -20,7 +23,6 @@ atexit.register(cleanup)
 class Bool(Base):
     """
     Base class specialized to boolean values.
-    Meant to be subclassed.
     """
     @staticmethod
     def _from_bool(like, val): #pylint:disable=unused-argument
