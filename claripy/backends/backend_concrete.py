@@ -1,3 +1,7 @@
+"""
+Backend that handles concrete objects.
+"""
+
 import logging
 import operator
 l = logging.getLogger("claripy.backends.backend_concrete")
