@@ -6,23 +6,39 @@ l = logging.getLogger("claripy.frontends.frontend")
 import ana
 
 class Frontend(ana.Storable):
+    """
+    Base Frontend class to be subclassed by the other frontends.
+    """
+
     def __init__(self):
         pass
 
     def branch(self):
+        """
+        Returns a new copy of the frontend.
+        """
         c = self.blank_copy()
         self._copy(c)
         return c
 
     def blank_copy(self):
+        """
+        Returns a new blank instance of the frontend.
+        """
         c = self.__class__.__new__(self.__class__)
         self._blank_copy(c)
         return c
 
     def _blank_copy(self, c): #pylint:disable=no-self-use,unused-argument
+        """
+        Resets the state of frontend `c` to a default 'blank' state.
+        """
         return
 
     def _copy(self, c): #pylint:disable=no-self-use,unused-argument
+        """
+        Copies the state of frontend `self` into the state of `c`.
+        """
         return
 
     #
@@ -31,6 +47,9 @@ class Frontend(ana.Storable):
 
     @property
     def uuid(self):
+        """
+        Returns the ana UUID of the frontend.
+        """
         return self.ana_uuid
 
     def _ana_getstate(self):
