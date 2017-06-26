@@ -1,3 +1,9 @@
+"""
+Module containing functions to create new AST operations, as well as AST
+simplifiers, length checkers and length calculators. Also includes lists of
+all AST operators present.
+"""
+
 import operator
 import itertools
 import collections
@@ -5,6 +11,25 @@ import collections
 from .utils import OrderedSet
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
+    """
+    Creates a claripy AST operator.
+
+    :param name: Name of the operator.
+    :param arg_types: Types of the arguments that the operator accepts. Either a
+                      tuple/list of types, or a single type (indicating a
+                      variable number of arguments with the same type)
+    :param return_type: The return type of the operator.
+    :param extra_check: A function which does an extra check on the arguments.
+                        None by default.
+    :param calc_length: A function which recalculates the bitlength of the AST.
+                        None by default.
+    :param do_coerce: True if type coercion should be attempted. True by default.
+    :param bound: Argument does not appear to be in use.
+
+    :returns: A claripy AST operator than can be used to construct ASTs.
+
+    :raises: ClaripyOperationError
+    """
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
@@ -13,6 +38,21 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         raise ClaripyOperationError("op {} got weird arg_types".format(name))
 
     def _type_fixer(args):
+        """
+        Check if the arguments to the operation match the types, and coerce if
+        required.
+
+        :param args: List of arguments to the operation.
+
+        :returns: Generator that yields the typechecked arguments.
+                  If there is no type mismatch, it yields the original argument.
+                  If op was created with do_coerce set, then the generator will
+                  attempt to coerce any type mismatches into the correct type.
+                  If no appropriate coercion was found, or do_coerce was not
+                  set, then it yields NotImplemented and returns.
+                  If an appropriate coercion was found and do_coerce is set,
+                  then it yields the coerced argument.
+        """
         num_args = len(args)
         if expected_num_args is not None and num_args != expected_num_args:
             if num_args + 1 == expected_num_args and arg_types[0] is fp.RM:
@@ -42,6 +82,22 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
                 yield arg
 
     def _op(*args):
+        """
+        The wrapped AST operator. It typechecks (and possibly fixes) all
+        arguments, performs any extra check, and runs any associated AST
+        simplification routine. The new length is calculated if necessary, and
+        the unintialized flag on the resulting AST is set if any of its
+        arguments are uninitialized. Finally, any preprocessors are applied
+        to the arguments, and the resulting arguments are used to form an AST
+        with the operation at the root.
+
+        :params args: The arguments to the operator.
+
+        :returns: NotImplemented if the arguments could not be fixed,
+                  else the AST (possibly simplified) corresponding to the
+                  application of the operation to the arguments.
+        :raises: ClaripyOperationError
+        """
         fixed_args = tuple(_type_fixer(args))
         for i in fixed_args:
             if i is NotImplemented:
@@ -98,7 +154,14 @@ def _handle_annotations(simp, args):
         return simp
 
 def reversed_op(op_func):
+    """
+    Returns a function that takes the arguments of `op_func` in the reverse
+    order.
+    """
     def _reversed_op(*args):
+        """
+        The reversed function.
+        """
         return op_func(*args[::-1])
     return _reversed_op
 
@@ -108,7 +171,11 @@ def reversed_op(op_func):
 
 union_counter = itertools.count()
 def preprocess_union(*args, **kwargs):
-
+    """
+    Adds a keyword argument 'add_variables' that contains a frozenset containing
+    the name of a new union to the keyword arguments being passed to the AST
+    operator.
+    """
     #
     # When we union two values, we implicitly create a new symbolic, multi-valued
     # variable, because a union is essentially an ITE with an unconstrained
@@ -129,6 +196,10 @@ preprocessors = {
 #
 
 def if_simplifier(cond, if_true, if_false):
+    """
+    If `cond` is easily seen to be true, simplifies ast by returning the correct
+    branch of the If.
+    """
     if cond.is_true():
         return if_true
 
@@ -136,6 +207,10 @@ def if_simplifier(cond, if_true, if_false):
         return if_false
 
 def concat_simplifier(*args):
+    """
+    Simplifies AST by concatenating any consecutive concrete items beforehand,
+    as well as consolidating consecutive Extract operations on the same variable.
+    """
 
     if len(args) == 1:
         return args[0]
@@ -202,16 +277,28 @@ def concat_simplifier(*args):
     return
 
 def rshift_simplifier(val, shift):
+    """
+    Simplifies right shifts by checking if the shift value `shift` can be easily shown
+    to be zero.
+    """
     if (shift == 0).is_true():
         return val
 
 def lshift_simplifier(val, shift):
+    """
+    Simplifies left shifts by checking if the shift value `shift` can be easily shown
+    to be zero.
+    """
     if (shift == 0).is_true():
         return val
 
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
 def eq_simplifier(a, b):
+    """
+    Simplifies equalities by checking for trivial equivalence and simplifying
+    comparisons between Bools, Ifs, Concats, SignExt, and ZeroExt.
+    """
     if a is b:
         return ast.true
 
@@ -266,6 +353,10 @@ def eq_simplifier(a, b):
                 return ast.all_operations.false
 
 def ne_simplifier(a, b):
+    """
+    Simplifies disequalities by checking for trivial equivalence and simplifying
+    comparisons between Reverses, Ifs, Concats, SignExts, and ZeroExts.
+    """
     if a is b:
         return ast.false
 
@@ -310,6 +401,10 @@ def ne_simplifier(a, b):
                 return ast.all_operations.true
 
 def boolean_reverse_simplifier(body):
+    """
+    Simplifies Reverse operations by eliminating double reverses, reverse on a
+    single byte, and reversing certain concatenations.
+    """
     if body.op == 'Reverse':
         return body.args[0]
 
@@ -334,6 +429,10 @@ def boolean_reverse_simplifier(body):
             return body.make_like(body.op, body.args[::-1])
 
 def boolean_and_simplifier(*args):
+    """
+    Simplifies boolean And by checking for trivially false conditions, and
+    flattening out the AST.
+    """
     if len(args) == 1:
         return args[0]
 
@@ -354,6 +453,10 @@ def boolean_and_simplifier(*args):
     return _flatten_simplifier('And', _flattening_filter, *args)
 
 def boolean_or_simplifier(*args):
+    """
+    Simplifies boolean Or by checking for trivially true ocnditions, and
+    flattening out the AST.
+    """
     if len(args) == 1:
         return args[0]
 
@@ -388,6 +491,10 @@ def _flatten_simplifier(op_name, filter_func, *args):
     return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args)
 
 def bitwise_add_simplifier(a, b):
+    """
+    Simplifies bitwise addition by checking for addition by 0 and flattening
+    the AST.
+    """
     if a is ast.all_operations.BVV(0, a.size()):
         return b
     elif b is ast.all_operations.BVV(0, a.size()):
@@ -396,15 +503,26 @@ def bitwise_add_simplifier(a, b):
     return _flatten_simplifier('__add__', None, a, b)
 
 def bitwise_mul_simplifier(a, b):
+    """
+    Simplifies bitwise multiplication by flattening the AST.
+    """
     return _flatten_simplifier('__mul__', None, a, b)
 
 def bitwise_sub_simplifier(a, b):
+    """
+    Simplifies bitwise subtraction by checking for subtraction of 0, or by
+    checking if the two things being subtracted can be seen to be equal.
+    """
     if b is ast.all_operations.BVV(0, a.size()):
         return a
     elif a is b or (a == b).is_true():
         return ast.all_operations.BVV(0, a.size())
 
 def bitwise_xor_simplifier(a, b):
+    """
+    Simplifies bitwise xor by checking for xor with 0, or if the arguments are
+    equal, and flattens the AST.
+    """
     if a is ast.all_operations.BVV(0, a.size()):
         return b
     elif b is ast.all_operations.BVV(0, a.size()):
@@ -422,6 +540,10 @@ def bitwise_xor_simplifier(a, b):
     return _flatten_simplifier('__xor__', _flattening_filter, a, b)
 
 def bitwise_or_simplifier(a, b):
+    """
+    Simplifies bitwise or by checking if either argument is 0, or if both
+    arguments are equal, and flattens the AST.
+    """
     if a is ast.all_operations.BVV(0, a.size()):
         return b
     elif b is ast.all_operations.BVV(0, a.size()):
@@ -438,6 +560,10 @@ def bitwise_or_simplifier(a, b):
     return _flatten_simplifier('__or__', _flattening_filter, a, b)
 
 def bitwise_and_simplifier(a, b):
+    """
+    Simplifies bitwise and by checking if either argument is all ones, or if
+    both arguments are equal, and flattens the AST.
+    """
     if (a == 2**a.size()-1).is_true():
         return b
     elif (b == 2**a.size()-1).is_true():
@@ -454,6 +580,10 @@ def bitwise_and_simplifier(a, b):
     return _flatten_simplifier('__and__', _flattening_filter, a, b)
 
 def boolean_not_simplifier(body):
+    """
+    Simplifies bitwise not, by collapsing its interactions with other AST
+    operations.
+    """
     if body.op == '__eq__':
         return body.args[0] != body.args[1]
     elif body.op == '__ne__':
@@ -493,16 +623,25 @@ def boolean_not_simplifier(body):
         return ast.all_operations.ULT(body.args[0], body.args[1])
 
 def zeroext_simplifier(n, e):
+    """
+    Simplifies zero extension by checking if the argument is 0.
+    """
     if n == 0:
         return e
 
 def signext_simplifier(n, e):
+    """
+    Simplifies sign extension by checking if the argument is 0.
+    """
     if n == 0:
         return e
 
     # TODO: if top bit is 0, do a zero-extend instead
 
 def extract_simplifier(high, low, val):
+    """
+    Simplifies Extract by simplifying its interactions with other AST operations.
+    """
     # if we're extracting the whole value, return the value
     if high - low + 1 == val.size():
         return val
@@ -590,10 +729,18 @@ def extract_simplifier(high, low, val):
 
 # oh gods
 def fptobv_simplifier(the_fp):
+    """
+    Simplifies fpToIEEEBV operations by checking if the inner operation is
+    fpToFP.
+    """
     if the_fp.op == 'fpToFP' and len(the_fp.args) == 2:
         return the_fp.args[0]
 
 def fptofp_simplifier(*args):
+    """
+    Simplifies fpToFP operations by checking if the inner operation is 
+    fpToIEEEBV.
+    """
     if len(args) == 2 and args[0].op == 'fpToIEEEBV':
         to_bv, sort = args
         if sort == fp.FSORT_FLOAT and to_bv.length == 32:
@@ -630,12 +777,21 @@ simplifiers = {
 #
 
 def length_same_check(*args):
+    """
+    Checks if the length of all arguments are equal.
+    """
     return all(a.length == args[0].length for a in args), "args' length must all be equal"
 
 def basic_length_calc(*args):
+    """
+    Returns the length of the first argument.
+    """
     return args[0].length
 
 def extract_check(high, low, bv):
+    """
+    Simple sanity checking for the high and low bounds of extract.
+    """
     if high < 0 or low < 0:
         return False, "Extract high and low must be nonnegative"
     elif low > high:
@@ -646,12 +802,21 @@ def extract_check(high, low, bv):
     return True, ""
 
 def extract_length_calc(high, low, _):
+    """
+    Calculates the length of an extract.
+    """
     return high - low + 1
 
 def ext_length_calc(ext, orig):
+    """
+    Calculates the length of an extension.
+    """
     return orig.length + ext
 
 def concat_length_calc(*args):
+    """
+    Calculates the length of a concatenation.
+    """
     return sum(arg.size() for arg in args)
 
 #

@@ -1,3 +1,7 @@
+"""
+Backend that handles concrete objects.
+"""
+
 import logging
 import operator
 l = logging.getLogger("claripy.backends.backend_concrete")
@@ -5,6 +9,9 @@ l = logging.getLogger("claripy.backends.backend_concrete")
 from . import BackendError, Backend
 
 class BackendConcrete(Backend):
+    """
+    Backend that operates on concrete objects.
+    """
     def __init__(self):
         Backend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'If' }, op_module=bv)
@@ -25,34 +32,80 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def BVV(value, size):
+        """
+        Creates a BVV.
+
+        :param value: Value of BVV. Must not be None.
+        :param size: Size of BVV.
+
+        :returns: Backend BVV with the correct value and size.
+        """
         if value is None:
             raise BackendError("can't handle empty BVVs")
         return bv.BVV(value, size)
 
     @staticmethod
     def FPV(op, sort):
+        """
+        Creates a FPV.
+
+        :param op: Value of floating point.
+        :param sort: Sort of floating point (FSort object).
+
+        :returns: FPV with the correct value and size.
+        """
         return fp.FPV(op, sort)
 
     @staticmethod
     def _op_add(*args):
+        """
+        Sums the argument bitvectors/floating points and returns the result.
+        """
         return reduce(operator.__add__, args)
     @staticmethod
     def _op_sub(*args):
+        """
+        Subtracts the argument bitvectors/floating points and returns the result.
+        E.g. if arguments are `a`, `b`, `c`, return is `a - b - c`.
+        """
         return reduce(operator.__sub__, args)
     @staticmethod
     def _op_mul(*args):
+        """
+        Multiplies the argument bitvectors/floating points and returns the result.
+        """
         return reduce(operator.__mul__, args)
     @staticmethod
     def _op_or(*args):
+        """
+        Calculates the `or` of the arguments and returns the result.
+        """
         return reduce(operator.__or__, args)
     @staticmethod
     def _op_xor(*args):
+        """
+        Calculates the `xor` of the arguments and returns the result.
+        """
         return reduce(operator.__xor__, args)
     @staticmethod
     def _op_and(*args):
+        """
+        Calculates the `and` of the arguments and returns the result.
+        """
         return reduce(operator.__and__, args)
 
     def _If(self, b, t, f): #pylint:disable=no-self-use,unused-argument
+        """
+        Calculates an ITE statement.
+
+        :param b: Boolean representing the condition.
+        :param t: Value if true.
+        :param f: Value if false.
+
+        :returns: `t` if `b` is true, else `f`.
+
+        :raises: BackendError
+        """
         if not isinstance(b, bool):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
         else:
@@ -105,6 +158,9 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def _to_primitive(expr):
+        """
+        Converts backend object `expr` to a python primitive.
+        """
         if type(expr) is bv.BVV:
             return expr.value
         elif type(expr) is fp.FPV:

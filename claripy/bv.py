@@ -1,8 +1,18 @@
+"""
+Module containing support for concrete backend bitvector values.
+"""
+
 import functools
 from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
 
 def compare_bits(f):
+    """
+    Decorator, wraps BV function `f(self, o)` to check if the two BVs have the
+    same nonzero length.
+
+    :raises: ClaripyError
+    """
     @functools.wraps(f)
     def compare_guard(self, o):
         if self.bits == 0 or o.bits == 0:
@@ -15,6 +25,12 @@ def compare_bits(f):
     return compare_guard
 
 def compare_bits_0_length(f):
+    """
+    Decorator, wraps BV function `f(self, o)` to check if the two BVs have the
+    same (possibly zero) length.
+
+    :raises: ClaripyError
+    """
     @functools.wraps(f)
     def compare_guard(self, o):
         if self.bits != o.bits:
@@ -24,6 +40,12 @@ def compare_bits_0_length(f):
     return compare_guard
 
 def normalize_types(f):
+    """
+    Decorator, wraps BV function `f(self, o)` to convert arguments passed as
+    Python ints/longs to BVVs of the appropriate length.
+
+    :raises: ValueError, NotImplemented
+    """
     @functools.wraps(f)
     def normalize_helper(self, o):
         if hasattr(o, '__module__') and o.__module__ == 'z3':
@@ -40,6 +62,12 @@ def normalize_types(f):
     return normalize_helper
 
 class BVV(BackendObject):
+    """
+    Claripy backend bitvector value class, represents a concrete bitvector.
+
+    :param value: Value of bitvector.
+    :param bits: Size of bitvector.
+    """
     __slots__ = [ 'bits', '_value', 'mod', 'value' ]
 
     def __init__(self, value, bits):
@@ -67,18 +95,30 @@ class BVV(BackendObject):
 
     @property
     def value(self):
+        """
+        Retrieve the unsigned value of a bitvector.
+        """
         return self._value
 
     @value.setter
     def value(self, v):
+        """
+        Sets value of a bitvector, truncating to the bitvector length.
+        """
         self._value = v & (self.mod - 1)
 
     @property
     def signed(self):
+        """
+        Retrieve the signed value of a bitvector.
+        """
         return self._value if self._value < self.mod/2 else self._value % (self.mod/2) - (self.mod/2)
 
     @signed.setter
     def signed(self, v):
+        """
+        Set the signed value of a bitvector (?).
+        """
         self._value = v % -self.mod
 
     #
@@ -255,6 +295,9 @@ class BVV(BackendObject):
     #
 
     def size(self):
+        """
+        Returns size of the bitvector.
+        """
         return self.bits
 
     def __repr__(self):
@@ -265,18 +308,41 @@ class BVV(BackendObject):
 #
 
 def BitVecVal(value, bits):
+    """
+    Creates a backend BVV with value `value` and size `bits`.
+    """
     return BVV(value, bits)
 
 def ZeroExt(num, o):
+    """
+    Zero extends a backend BVV `o` by `num` bits.
+    """
     return BVV(o.value, o.bits + num)
 
 def SignExt(num, o):
+    """
+    Sign extends a backend BVV `o` by `num` bits.
+    """
     return BVV(o.signed, o.bits + num)
 
 def Extract(f, t, o):
+    """
+    Extracts a slice of a bitvector.
+
+    :param f: Index of end bit (LSB is index 0).
+    :param t: Index of start bit.
+    :param o: Backend BVV to slice.
+
+    :returns: Backend BVV representing slice of `o` from bit `f` down to bit `t`
+              inclusive
+    """
     return BVV((o.value >> t) & (2**(f+1) - 1), f-t+1)
 
 def Concat(*args):
+    """
+    Concatenate multiple bitvectors into a larger bitvector with size the sum
+    of the sizes of the individual bitvectors.
+    """
     total_bits = 0
     total_value = 0
 
@@ -286,12 +352,21 @@ def Concat(*args):
     return BVV(total_value, total_bits)
 
 def RotateRight(self, bits):
+    """
+    Rotate BVV `self` right by `bits`.
+    """
     return LShR(self, bits) | (self << (self.size()-bits))
 
 def RotateLeft(self, bits):
+    """
+    Rotate BVV `self` left by `bits`.
+    """
     return (self << bits) | (LShR(self, (self.size()-bits)))
 
 def Reverse(a):
+    """
+    Reverse the order of bytes in a BVV.
+    """
     size = a.size()
     if size == 8:
         return a
@@ -337,46 +412,73 @@ def _reverse_64(v):
 @normalize_types
 @compare_bits
 def ULT(self, o):
+    """
+    Unsigned less than comparison between two backend BVVs.
+    """
     return self.value < o.value
 
 @normalize_types
 @compare_bits
 def UGT(self, o):
+    """
+    Unsigned greater than comparison between two backend BVVss.
+    """
     return self.value > o.value
 
 @normalize_types
 @compare_bits
 def ULE(self, o):
+    """
+    Unsigned less than or equal comparison between two backend BVVs.
+    """
     return self.value <= o.value
 
 @normalize_types
 @compare_bits
 def UGE(self, o):
+    """
+    Unsigned greater than or equal comparison between two backend BVVs.
+    """
     return self.value >= o.value
 
 @normalize_types
 @compare_bits
 def SLT(self, o):
+    """
+    Signed less than comparison between two backend BVVs.
+    """
     return self.signed < o.signed
 
 @normalize_types
 @compare_bits
 def SGT(self, o):
+    """
+    Signed greater than comparison between two backend BVVs.
+    """
     return self.signed > o.signed
 
 @normalize_types
 @compare_bits
 def SLE(self, o):
+    """
+    Signed less than or equal comparison between two backend BVVs.
+    """
     return self.signed <= o.signed
 
 @normalize_types
 @compare_bits
 def SGE(self, o):
+    """
+    Signed greater than or equal comparison between two backend BVVs.
+    """
     return self.signed >= o.signed
 
 @normalize_types
 @compare_bits
 def SMod(self, o):
+    """
+    Signed modulus operation between two backend BVVs, similar to C % operator.
+    """
     # compute the remainder like the % operator in C
     a = self.signed
     b = o.signed
@@ -387,6 +489,9 @@ def SMod(self, o):
 @normalize_types
 @compare_bits
 def SDiv(self, o):
+    """
+    Signed round towards 0 division between two backend BVVs.
+    """
     # compute the round towards 0 division
     a = self.signed
     b = o.signed
@@ -398,22 +503,41 @@ def SDiv(self, o):
 #
 
 def BoolV(b):
+    """
+    Takes a boolean and returns it.
+    """
     return b
 
 def And(*args):
+    """
+    Returns the conjunction of multiple booleans.
+    """
     return all(args)
 
 def Or(*args):
+    """
+    Returns the disjunction of multiple booleans.
+    """
     return any(args)
 
 def Not(b):
+    """
+    Returns the negation of a boolean.
+    """
     return not b
 
 @normalize_types
 def normalizer(*args):
+    """
+    Normalizes the types of the arguments using the normalize_types decorator.
+    """
     return args
 
 def If(c, t, f):
+    """
+    If-then-else; evalues to BVV `t` if condition `c` is true, else BVV `f`.
+    Normalizes arguments.
+    """
     t,f = normalizer(t,f) #pylint:disable=unbalanced-tuple-unpacking
     if c: return t
     else: return f
@@ -421,4 +545,7 @@ def If(c, t, f):
 @normalize_types
 @compare_bits
 def LShR(a, b):
+    """
+    Right shift backend BVV `a` by the value of `b`.
+    """
     return BVV(a.value >> b.signed, a.bits)

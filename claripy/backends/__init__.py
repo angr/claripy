@@ -692,9 +692,23 @@ class Backend(object):
         raise BackendError("backend doesn't support cardinality()")
 
     def singlevalued(self, a):
+        """
+        Returns True if the expression can only take on one value.
+
+        :param a: A claripy A object.
+
+        :return: True or False.
+        """
         return self.cardinality(a) == 1
 
     def multivalued(self, a):
+        """
+        Returns True if the expression can take on more than on value.
+
+        :param a: A claripy A object.
+
+        :return: True or False.
+        """
         return self.cardinality(a) > 1
 
     def apply_annotation(self, o, a): #pylint:disable=no-self-use,unused-argument

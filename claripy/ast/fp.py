@@ -1,25 +1,53 @@
+"""
+Classes and functions to create and manipulate concrete and symbolic floating
+point values.
+"""
+
 from .bits import Bits
 from ..ast.base import _make_name
 
 class FP(Bits):
+    """
+    Class representing floating points.
+    """
     def to_fp(self, rm, sort):
+        """
+        Converts itself to a floating point value (so it shouldn't do much,
+        except possibly change the size).
+
+        :param rm: Rounding mode. Can be None, to use the default.
+        :param sort: Sort of floating point to convert to.
+        """
         if rm is None:
             rm = fp.RM.default()
 
         return fpToFP(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        Returns itself.
+        """
         return self
 
     def to_bv(self):
+        """
+        Converts to a bitvector encoding the floating point in IEEE encoding.
+        """
         return fpToIEEEBV(self)
 
     @property
     def sort(self):
+        """
+        Get the sort of the floating point.
+        """
         return fp.FSort.from_size(self.length)
 
     @staticmethod
     def _from_float(like, value):
+        """
+        Construct a floating point value from a Python float `value`, with the
+        same sort as `like`.
+        """
         return FPV(float(value), like.sort)
 
     _from_int = _from_float
@@ -58,6 +86,9 @@ from .bv import BV
 from .bool import Bool
 
 def _fp_length_calc(a1, a2, a3=None):
+    """
+    Calculates the length of the resulting float, typically after a conversion.
+    """
     if isinstance(a1, fp.RM) and a3 is None:
         raise Exception()
     if a3 is None:
@@ -78,6 +109,9 @@ fpToUBV = operations.op('fpToUBV', (fp.RM, FP, (int, long)), BV, bound=False, ca
 #
 
 def _fp_cmp_check(a, b):
+    """
+    True if the lengths of both `a` and `b` are the same.
+    """
     return a.length == b.length, "FP lengths must be the same"
 fpEQ = operations.op('fpEQ', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
 fpGT = operations.op('fpGT', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_check)
@@ -90,8 +124,14 @@ fpLEQ = operations.op('fpLEQ', (FP, FP), Bool, bound=False, extra_check=_fp_cmp_
 #
 
 def _fp_binop_check(rm, a, b): #pylint:disable=unused-argument
+    """
+    True if the lengths of both `a` and `b` are the same.
+    """
     return a.length == b.length, "Lengths must be equal"
 def _fp_binop_length(rm, a, b): #pylint:disable=unused-argument
+    """
+    True if the lengths of both `a` and `b` are the same.
+    """
     return a.length
 fpAbs = operations.op('fpAbs', (FP,), FP, bound=False, calc_length=lambda x: x.length)
 fpNeg = operations.op('fpNeg', (FP,), FP, bound=False, calc_length=lambda x: x.length)
