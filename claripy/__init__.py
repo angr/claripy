@@ -17,6 +17,7 @@ from . import ops as _all_operations
 from . import backend_manager as _backend_manager
 from . import backends as _backends_module
 from .backends import Backend
+from .backend_object import BackendObject
 
 # Import the global solution cache
 from solver_cache import global_solution_cache

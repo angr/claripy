@@ -85,6 +85,10 @@ backend_symbol_creation_operations = {
     'BoolS', 'BVS', 'FPS'
 }
 
+backend_potentially_uninitialized = {
+    'BVS'
+}
+
 backend_vsa_creation_operations = {
     'TopStridedInterval', 'StridedInterval', 'ValueSet', 'AbstractLocation'
 }

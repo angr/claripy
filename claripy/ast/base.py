@@ -2,6 +2,7 @@ import sys
 import logging
 import weakref
 import itertools
+import ana
 
 l = logging.getLogger("claripy.ast")
 
@@ -57,17 +58,16 @@ def _make_name(name, size, explicit_name=False, prefix=""):
     else:
         return name
 
-class Base(object):
+class Base(ana.Storable):
     """
     An AST tracks a tree of operations on arguments. It has the following methods:
     """
 
     __slots__ = [
-        '__weakref__',
+        # '__weakref__', (in ana.Storable)
         'structure', 'outer_annotations', 'filters',
         'cache_key', '_hash', '_eager',
         '_simplified', '_excavated', '_burrowed',
-        'outer_annotations'
     ]
 
     DEFAULT_FILTERS = ( _concrete_evaluate, _simplify )
@@ -126,7 +126,7 @@ class Base(object):
         Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic
         execution mode.
         """
-        raise Exception("TODO")
+        return self.structure.uninitialized
 
     @property
     def op(self):
@@ -193,6 +193,20 @@ class Base(object):
     @property
     def depth(self):
         return self.structure.depth
+
+    @property
+    def uuid(self):
+        return self.ana_uuide
+
+    def _ana_getstate(self):
+        return self.structure, self.outer_annotations, self.filters, self._eager, self._hash
+
+    def _ana_setstate(self, state):
+        structure, outer_annotations, filters, _eager, h = state
+        Base.__init__(self, structure, outer_annotations=outer_annotations,
+                      filters=filters, _eager=eager)
+        self._hash = h
+        _hash_cache[h] = self
 
     def _apply_filters(self):
         new_ast = self
@@ -292,6 +306,11 @@ class Base(object):
     #
     # Annotations
     #
+
+    def annotate(self, *args):
+        l.critical("Base.annotate is deprecated. Use Base.annotate_outer.")
+        print "Base.annotate is deprecated. Use Base.annotate_outer."
+        return self.annotate_outer(self, *args)
 
     def annotate_inline(self, *args):
         """

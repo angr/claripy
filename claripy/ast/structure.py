@@ -6,6 +6,7 @@ import sys
 import ana
 from .base import Base
 from collections import Counter, defaultdict, deque
+from ..operations import backend_potentially_uninitialized as potentially_uninit
 
 #import xxhash
 #_hasher = xxhash.xxh64
@@ -34,6 +35,7 @@ class ASTStructure(ana.Storable):
         self.op = op
         self.args = args
         self.annotations = annotations
+        self._uninitialized = None if not self.op in potentially_uninit else self.args[5]
         self._hash = None
         self._canonical_info = None
 
@@ -87,6 +89,15 @@ class ASTStructure(ana.Storable):
     @property
     def length(self):
         return backends.length.convert(self)
+
+    @property
+    def uninitialized(self):
+        if self._uninitialized is not None:
+            return self._uninitialized
+
+        self._uninitialized = any(a.uninitialized is True for a in self.args
+                                  if isinstance(a, ASTStructure))
+        return self._uninitialized
 
     #
     # Various structural modifications
