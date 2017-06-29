@@ -103,6 +103,7 @@ class Simplifier(object):
         #length = sum(arg.length for arg in args)
         simplified = False
 
+        """
         if any(a.symbolic for a in args):
             i = 1
             # here, we concatenate any consecutive concrete terms
@@ -117,6 +118,7 @@ class Simplifier(object):
 
             if len(args) < len(orig_args):
                 simplified = True
+        """
 
         # here, we flatten any concats among the arguments
         i = 0
@@ -269,7 +271,7 @@ class Simplifier(object):
             # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
             # a and b must have lengths that are a multiple of 8
             if all(a.length % 8 == 0 for a in body.args):
-                return self._new_structure('Concat', reversed(self._new_structure('Reverse', (a,)) for a in body.args))
+                return self._new_structure('Concat', reversed([self._new_structure('Reverse', (a,)) for a in body.args]))
 
     @staticmethod
     def zeroext_simplifier(expr):
