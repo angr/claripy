@@ -19,6 +19,8 @@ assert can(a | (b & c)) == can((a & b) | c)
 
 assert can(a | ((a - b) + (c - d))) != can(e | ((a - b) + (c - d)))
 
+assert can((a - b) * (a - b)) != can((b - a) * (a - b))
+
 assert  can(a + b + (b - a))  ==  can((x - y) + x + y)
 assert can((a + b) + (b - a)) == can((x - y) + (x + y))
 

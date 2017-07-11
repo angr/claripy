@@ -19,11 +19,20 @@ class CanonicalCache(dict):
         self.models = {}
 
     def __getitem__(self, key):
-        canonical = hash(canonical_structure(key))
+        if isinstance(key, int) or isinstance(key, long):
+            canonical = key
+        else:
+            canonical = hash(canonical_structure(key))
+
         return super(CanonicalCache, self).__getitem__(canonical)
 
     def __setitem__(self, key, value):
-        canonical = hash(canonical_structure(key))
+        if isinstance(key, int) or isinstance(key, long):
+            l.debug("Adding to solver_cache based on only a hash")
+            canonical = key
+        else:
+            canonical = hash(canonical_structure(key))
+
         if value is False:
             self.unsats[canonical] = False
         elif isinstance(value, dict):
@@ -46,6 +55,12 @@ class CanonicalCache(dict):
         if model is False:
             raise UnsatError("key is unsat")
         return model
+
+    def clear(self):
+        l.debug("Clearing canonical cache")
+        self.unsats.clear()
+        self.models.clear()
+        super(self, dict).clear()
 
 
 global_solution_cache = CanonicalCache()

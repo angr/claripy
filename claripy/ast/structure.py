@@ -214,8 +214,10 @@ class ASTStructure(ana.Storable):
                 else:
                     args = node.args
 
-                full_hash_map[node] = hash(tuple(map(lambda x: full_hash_map[x], args)))
-
+                full_hash_map[node] = hash(tuple(map(lambda x: full_hash_map[x]
+                                                     if not (isinstance(x, int) or isinstance(x, long))
+                                                     else x,
+                                                     args)))
         q = []
         q.append(working_ast)
         name_mapping = { }

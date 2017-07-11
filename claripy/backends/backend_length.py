@@ -58,8 +58,11 @@ class BackendLength(Backend):
         Verify and return the length of length-preserving operations.
         """
         lengthed = [ a for a in args if a is not None ]
-        if len(set(lengthed)) != 1:
+        if len(set(lengthed)) > 1:
             raise ClaripyOperationError("Encountered an invalid length combination when processing an expression.")
+        elif len(lengthed) == 0:
+            return None
+
         return lengthed[0]
 
     def length_extract(self, s):
