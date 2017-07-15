@@ -286,10 +286,12 @@ def Concat(*args):
     return BVV(total_value, total_bits)
 
 def RotateRight(self, bits):
-    return LShR(self, bits) | (self << (self.size()-bits))
+    bits_smaller = bits % self.size()
+    return LShR(self, bits_smaller) | (self << (self.size()-bits_smaller))
 
 def RotateLeft(self, bits):
-    return (self << bits) | (LShR(self, (self.size()-bits)))
+    bits_smaller = bits % self.size()
+    return (self << bits_smaller) | (LShR(self, (self.size()-bits_smaller)))
 
 def Reverse(a):
     size = a.size()
