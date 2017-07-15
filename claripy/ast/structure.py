@@ -404,7 +404,7 @@ class ASTStructure(ana.Storable):
                 elif isinstance(given, bool):
                     rep = _true_structure if given else _false_structure
                 else:
-                    TypeError(type(given))
+                    raise TypeError(type(given))
                 replace_args[node] = rep
 
         return self.replace(replace_args)
