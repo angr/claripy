@@ -20,20 +20,20 @@ _hasher = hashlib.md5
 _hash_unpacker = struct.Struct('2Q')
 l = logging.getLogger("claripy.expressions.structure")
 
+
 #
 # Some helpers
 #
-
 def _inner_repr(a, **kwargs):
     if isinstance(a, ASTStructure):
         return a.repr(inner=True, **kwargs)
     else:
         return repr(a)
 
+
 #
 # AST Structure
 #
-
 class ASTStructure(ana.Storable):
     def __init__(self, op, args, annotations=()):
         self.op = op
@@ -46,7 +46,7 @@ class ASTStructure(ana.Storable):
         self._canonical_info = None
 
     def __hash__(self):
-        return _hash_unpacker.unpack(self._get_hash())[0] # 64 bits
+        return _hash_unpacker.unpack(self._get_hash())[0]  # 64 bits
 
     def _get_hash(self):
         """
@@ -79,7 +79,8 @@ class ASTStructure(ana.Storable):
         if type(o) is not ASTStructure:
             return False
 
-        return self is o or self._get_hash() == o._get_hash() # or (self.op == o.op and self.args == o.args and self.annotations == o.annotations)
+        return self is o or self._get_hash() == o._get_hash()
+
     def __ne__(self, o):
         return not self.__eq__(o)
 
@@ -92,6 +93,7 @@ class ASTStructure(ana.Storable):
     @property
     def symbolic(self):
         return backends.symbolic.convert(self)
+
     @property
     def length(self):
         return backends.length.convert(self)
@@ -181,7 +183,7 @@ class ASTStructure(ana.Storable):
                 if not isinstance(arg, ASTStructure):
                     continue
                 for var in arg._variable_paths:
-                    if not var in tmp_var_paths:
+                    if var not in tmp_var_paths:
                         tmp_var_paths[var] = Counter()
                     i = None if new_op in commutative else index
                     tmp_var_paths[var].update({
@@ -277,9 +279,8 @@ class ASTStructure(ana.Storable):
                 full_hash_map[node] = hash(tuple(full_hash_map[x] if isinstance(x, ASTStructure) else hash(x)
                                                  for x in args))
 
-        q = []
-        q.append(working_ast)
-        name_mapping = { }
+        q = [working_ast]
+        name_mapping = {}
         while len(q) > 0:
             node = q.pop()
             q.extend(sorted(filter(lambda arg: isinstance(arg, ASTStructure), node.args),
@@ -293,9 +294,7 @@ class ASTStructure(ana.Storable):
 
         working_ast = working_ast.replace(replacements)
 
-
         # Sort commutative operations
-
         early_leaves = set()
         while True:
             for v in working_ast._bottom_up_bfs(preleaves=early_leaves):
@@ -459,18 +458,16 @@ class ASTStructure(ana.Storable):
         while len(stack) > 0:
             yield stack.pop()
 
-
     #
     # Debugging
     #
-
     @property
     def dbg_recursive_children(self):
         for a in self.args:
             if isinstance(a, ASTStructure):
                 l.debug("Yielding node %s with hash %s with %d children", a, hash(a), len(a.args))
                 yield a
-                for b in a.recursive_children:
+                for b in a.dbg_recursive_children:
                     yield b
 
     @property
@@ -485,7 +482,7 @@ class ASTStructure(ana.Storable):
 
         seen = set() if seen is None else seen
         for a in self.args:
-            if isinstance(a, ASTStructure) and not a in seen:
+            if isinstance(a, ASTStructure) and a not in seen:
                 seen.add(a)
                 for b in a._recursive_leaves(seen=seen):
                     yield b
@@ -546,7 +543,7 @@ class ASTStructure(ana.Storable):
                 value = args[0]
             elif op == 'BVS':
                 value = "%s" % args[0]
-                extras = [ ]
+                extras = []
                 # from ast.bv.BVS(): n, length, min, max, stride, uninitialized, discrete_set, discrete_set_max_card
 
                 if args[2] is not None:
@@ -620,8 +617,10 @@ def canonical_structure(s):
     else:
         raise TypeError("Unknown type %s passed to `canonical_structure`" % str(type(s)))
 
+
 def get_canonical_hash(s):
     return get_structure_form(s).canonical_hash()
+
 
 def get_structure_form(s):
     if isinstance(s, ASTStructure):
@@ -636,11 +635,15 @@ def get_structure_form(s):
 #
 
 _hash_cache = weakref.WeakValueDictionary()
+
+
 def _deduplicate(expr):
     return _hash_cache.setdefault(expr._get_hash(), expr)
 
+
 def _do_op(op, args):
     return get_structure(op, args)
+
 
 def get_structure(op, args, annotations=()):
     return _deduplicate(ASTStructure(op, args, annotations=annotations))
