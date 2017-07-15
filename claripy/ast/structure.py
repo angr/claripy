@@ -5,8 +5,12 @@ import struct
 import sys
 import ana
 from .base import Base
-from collections import Counter, defaultdict, deque
-from ..operations import backend_potentially_uninitialized as potentially_uninit
+from collections import Counter, defaultdict, deque, OrderedDict
+from ..operations import backend_potentially_uninitialized as potentially_uninit, \
+                         nonstandard_reversible_ops as reversible, \
+                         backend_symbol_creation_operations as symbol_creation, \
+                         commutative_operations as commutative, \
+                         backend_creation_operations as literal_creation
 
 #import xxhash
 #_hasher = xxhash.xxh64
@@ -37,6 +41,8 @@ class ASTStructure(ana.Storable):
         self.annotations = annotations
         self._uninitialized = None if not self.op in potentially_uninit else self.args[5]
         self._hash = None
+        self._variable_paths = None
+        self._canonical_hash = None
         self._canonical_info = None
 
     def __hash__(self):
@@ -133,18 +139,71 @@ class ASTStructure(ana.Storable):
         if leaf_operation is not None and self.op in operations.leaf_operations:
             r = _deduplicate(leaf_operation(self))
         else:
-            new_args = [
-                a.replace(replacements=replacements, leaf_operation=leaf_operation) if isinstance(a, ASTStructure) else a
+            new_args = tuple(
+                a.replace(replacements=replacements, leaf_operation=leaf_operation)
+                if isinstance(a, ASTStructure) else a
                 for a in self.args
-            ]
+            )
 
-            if not self._compare_args(new_args):
-                r = _deduplicate(self.swap_args(tuple(new_args)))
-            else:
-                r = self
+            r = self.swap_args(new_args)
 
         replacements[self] = r
         return r
+
+    def canonical_hash(self):
+        if self._canonical_hash is not None:
+            return self._canonical_hash
+
+        if self.op in symbol_creation:
+            path = ((self.op, 0),)
+            counter = Counter()
+            counter[path] += 1
+            self._variable_paths = OrderedDict()
+            self._variable_paths[self] = counter
+            can_hash = hash((self.op,) + tuple(long(hash(t)) for t in self.args[1:]))
+        elif self.op in literal_creation:
+            self._variable_paths = OrderedDict()
+            can_hash = hash((self.op,) + tuple(long(hash(t)) for t in self.args))
+        else:
+            if self.op in reversible:
+                new_op   = reversible[self.op]
+                new_args = self.args[::-1]
+            else:
+                new_op   = self.op
+                new_args = self.args
+
+            canonical_args = list(t.canonical_hash() if isinstance(t, ASTStructure) else long(hash(t))
+                                  for t in new_args)
+
+            tmp_var_paths = OrderedDict()
+
+            for index, arg in enumerate(new_args):
+                if not isinstance(arg, ASTStructure):
+                    continue
+                for var in arg._variable_paths:
+                    if not var in tmp_var_paths:
+                        tmp_var_paths[var] = Counter()
+                    i = None if new_op in commutative else index
+                    tmp_var_paths[var].update({
+                            ((new_op, i),) + path: count
+                            for path, count in arg._variable_paths[var].iteritems()
+                        })
+
+            modified_args = zip(canonical_args, ([tmp_var_paths[var]
+                                                 for var in arg._variable_paths]
+                                                 if isinstance(arg, ASTStructure) else None
+                                                 for arg in new_args))
+            sorted_args = sorted(zip(new_args, modified_args), key=lambda x: x[1])
+            sorted_hashes = [a[1][0] for a in sorted_args]
+
+            self._variable_paths = tmp_var_paths
+
+            nameless = sorted([sorted(paths.iteritems()) for paths in self._variable_paths.itervalues()])
+
+            can_hash = _hash_unpacker.unpack(_hasher(str(sorted_hashes) + str(nameless)).digest())[0]
+
+        self._canonical_hash = long(can_hash)
+        return self._canonical_hash
 
     def canonicalize(self):
         """
@@ -160,11 +219,13 @@ class ASTStructure(ana.Storable):
         :returns: a tuple of (variable_mapping, canonicalized_structure)
         """
 
+        l.warning("ASTStructure.canonicalize() is *very* slow. " +
+                  "Consider using ASTStructure.canonical_hash() instead.")
+
         if self._canonical_info is not None:
             return self._canonical_info
 
         working_ast = self
-
 
         # Swap reversed ops (`radd` -> `add`, `lt` -> `gt`)
 
@@ -175,7 +236,6 @@ class ASTStructure(ana.Storable):
                                               op=operations.nonstandard_reversible_ops[v.op])
 
         working_ast = working_ast.replace(replacements)
-
 
         # Generate variable (BVS, BoolS, and FPS) hashes
 
@@ -214,10 +274,9 @@ class ASTStructure(ana.Storable):
                 else:
                     args = node.args
 
-                full_hash_map[node] = hash(tuple(map(lambda x: full_hash_map[x]
-                                                     if not (isinstance(x, int) or isinstance(x, long))
-                                                     else x,
-                                                     args)))
+                full_hash_map[node] = hash(tuple(full_hash_map[x] if isinstance(x, ASTStructure) else hash(x)
+                                                 for x in args))
+
         q = []
         q.append(working_ast)
         name_mapping = { }
@@ -253,6 +312,7 @@ class ASTStructure(ana.Storable):
         self._canonical_info = (pure_mapping, working_ast)
         trivial_mapping = { v: v for v in pure_mapping.itervalues() }
         working_ast._canonical_info = (trivial_mapping, working_ast)
+
         return self._canonical_info
 
     def __contains__(self, other):
@@ -281,7 +341,7 @@ class ASTStructure(ana.Storable):
         return False
 
     def canonically_equals(self, other):
-        return self.canonicalize()[1] == other.canonicalize()[1]
+        return self.canonical_hash() == other.canonical_hash()
 
     def canonically_contains(self, other):
         """
@@ -307,10 +367,10 @@ class ASTStructure(ana.Storable):
             raise TypeError("in <ASTStructure> requires ASTStructure or Base " +
                             "as left operand, not %s" % type(other))
 
-        canonical_other = other_struct.canonicalize()[1]
+        canonical_other = other_struct.canonical_hash()
 
         for v in self._bottom_up_dfs():
-            if v.canonicalize()[1] == canonical_other:
+            if v.canonical_hash() == canonical_other:
                 return True
 
         return False
@@ -328,14 +388,15 @@ class ASTStructure(ana.Storable):
         """
 
         if not is_hashmap:
-            swaps = {canonical_structure(n): v for n, v in replacements.iteritems()}
+            swaps = {get_canonical_hash(n): v for n, v in replacements.iteritems()}
         else:
             swaps = replacements
         replace_args = {}
 
+        self.canonical_hash()
+
         for node in self._bottom_up_dfs():
-            can = node.canonicalize()[1]
-            key = hash(can) if is_hashmap else can
+            key = node.canonical_hash()
             if key in swaps:
                 given = swaps[key]
                 if isinstance(given, ASTStructure):
@@ -558,6 +619,9 @@ def canonical_structure(s):
         return s.structure.canonicalize()[1]
     else:
         raise TypeError("Unknown type %s passed to `canonical_structure`" % str(type(s)))
+
+def get_canonical_hash(s):
+    return get_structure_form(s).canonical_hash()
 
 def get_structure_form(s):
     if isinstance(s, ASTStructure):

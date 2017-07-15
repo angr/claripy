@@ -5,8 +5,14 @@ import time
 for i in string.lowercase[:8] + string.lowercase[-8:]:
     globals()[i] = claripy.BVS(i, 32)
 
-def can(ast):
-    return ast.structure.canonicalize()[1]
+full_test = False
+
+if full_test:
+    def can(ast):
+        return (ast.structure.canonicalize()[1], ast.structure.canonical_hash())
+else:
+    def can(ast):
+        return ast.structure.canonical_hash()
 
 start = time.time()
 
@@ -34,6 +40,8 @@ assert can(a + b + c + d) == can(((a + b) + c) + d)
 
 assert can(a + 2) != can(a + 4)
 assert can(x + 2) == can(x + 2)
+
+assert can(x + y) != can(x * y)
 
 # Do we want to implement this? (probably as a simplifier)
 # assert can(x - 1) == can(x + -1)

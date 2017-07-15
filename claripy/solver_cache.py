@@ -1,5 +1,5 @@
 import weakref
-from ast.structure import canonical_structure
+from ast.structure import get_canonical_hash
 from . import UnsatError
 import logging
 
@@ -22,7 +22,7 @@ class CanonicalCache(dict):
         if isinstance(key, int) or isinstance(key, long):
             canonical = key
         else:
-            canonical = hash(canonical_structure(key))
+            canonical = get_canonical_hash(key)
 
         return super(CanonicalCache, self).__getitem__(canonical)
 
@@ -31,7 +31,7 @@ class CanonicalCache(dict):
             l.debug("Adding to solver_cache based on only a hash")
             canonical = key
         else:
-            canonical = hash(canonical_structure(key))
+            canonical = get_canonical_hash(key)
 
         if value is False:
             self.unsats[canonical] = False
