@@ -30,7 +30,7 @@ class CanonicalCacheMixin(object):
         rep_extras = replace_unsats(extra_constraints)
         sat = super(CanonicalCacheMixin, self).satisfiable(extra_constraints=rep_extras,
                                                            **kwargs)
-        if not sat:
+        if not sat and len(rep_extras) + len(self.constraints) > 0:
             ast = And(*(rep_extras + self.constraints))
             global_solution_cache.add_unsat(ast)
 
@@ -43,7 +43,7 @@ class CanonicalCacheMixin(object):
                                                      **kwargs):
             return True
         else:
-            ast = And(*(rep_extras + self.constraints + (e == v,)))
+            ast = And(*(rep_extras + self.constraints + [e == v,]))
             global_solution_cache.add_unsat(ast)
             return False
 
@@ -58,8 +58,9 @@ class CanonicalCacheMixin(object):
                     r = getattr(super(CanonicalCacheMixin, self), attr)(*args, **kwargs)
                     return r
                 except UnsatError:
-                    ast = And(*(rep_extras + self.constraints))
-                    global_solution_cache.add_unsat(ast)
+                    if len(rep_extras) + len(self.constraints) > 0:
+                        ast = And(*(rep_extras + self.constraints))
+                        global_solution_cache.add_unsat(ast)
                     raise
             return handler
         else:
