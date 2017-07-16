@@ -394,7 +394,7 @@ class ASTStructure(ana.Storable):
 
         self.canonical_hash()
 
-        for node in self._bottom_up_dfs():
+        for node in self._bfs():
             key = node.canonical_hash()
             if key in swaps:
                 given = swaps[key]
