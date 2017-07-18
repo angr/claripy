@@ -9,6 +9,7 @@ class BackendASTType(Backend):
             self._op_expr[o] = lambda a: BV
         for o in operations.resulting_fp_operations:
             self._op_expr[o] = lambda a: FP
+        self._op_expr['If'] = lambda structure: self._op_expr[structure.args[1].op](structure)
 
 from ..ast.bv import BV
 from ..ast.fp import FP
