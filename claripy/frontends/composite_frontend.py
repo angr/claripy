@@ -6,6 +6,7 @@ import itertools
 symbolic_count = itertools.count()
 
 from .constrained_frontend import ConstrainedFrontend
+from ..ast.bool import false
 
 class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, track=False, **kwargs):
@@ -230,11 +231,13 @@ class CompositeFrontend(ConstrainedFrontend):
 
         l.debug("%s, solvers before: %d", self, len(self._solvers))
         unsure = [ ]
+        add_false = False
         for names,set_constraints in split:
             if names == { 'CONCRETE' }:
                 try:
                     if any(backends.concrete.convert(c) is False for c in set_constraints):
                         self._unsat = True
+                        add_false = True
                 except BackendError:
                     unsure.extend(set_constraints)
             else:
@@ -248,7 +251,11 @@ class CompositeFrontend(ConstrainedFrontend):
                 s.add(unsure)
                 self._store_child(s)
 
-        return super(CompositeFrontend, self).add(child_added)
+        added = child_added + unsure
+        if add_false:
+            added += [false]
+
+        return super(CompositeFrontend, self).add(added)
 
     #
     # Solving
