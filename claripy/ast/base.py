@@ -1,3 +1,7 @@
+"""
+Base AST class and its associated mathods.
+"""
+
 import sys
 import logging
 import weakref
@@ -15,6 +19,10 @@ l = logging.getLogger("claripy.ast")
 #
 
 class ASTCacheKey(object):
+    """
+    Class used as a key for dictionaries of ASTs, typically for replacement
+    lists.
+    """
     def __init__(self, a):
         self.ast = a
 
@@ -53,6 +61,17 @@ var_counter = itertools.count()
 _unique_names = True
 
 def _make_name(name, size, explicit_name=False, prefix=""):
+    """
+    Create a unique fresh name.
+
+    :param name: (Base) Name of variable.
+    :param size: An integer.
+    :param explicit_name: If True, just return the `name` instead of generating
+                          a fresh name. False by default.
+    :param prefix: Prefix of the generated name.
+
+    :returns: A fresh name if `explicit_name` is False, else just `name`.
+    """
     if _unique_names and not explicit_name:
         return "%s%s_%d_%d" % (prefix, name, var_counter.next(), size)
     else:
@@ -60,7 +79,21 @@ def _make_name(name, size, explicit_name=False, prefix=""):
 
 class Base(ana.Storable):
     """
-    An AST tracks a tree of operations on arguments. It has the following methods:
+    An AST tracks a tree of operations on arguments. It has the following properties:
+
+        op: the operation that is being done on the arguments
+        args: the arguments that are being used
+        length: the length (in bits)
+
+    AST objects have *hash identity*. This means that an AST that has the same hash as
+    another AST will be the *same* object. For example, the following is true:
+
+        a, b = two different ASTs
+        c = b + a
+        d = b + a
+        assert c is d
+
+    This is done to better support serialization and better manage memory.
     """
 
     __slots__ = [
@@ -81,8 +114,8 @@ class Base(ana.Storable):
 
         :param structure:            The structure of the AST (operation, arguments, etc).
         :param outer_annotations:    A frozenset of annotations applied onto this AST.
-        :param filters:                Filter functions to run on this AST after every operation.
-        :param eager_backends:        A list of backends with which to attempt eager evaluation
+        :param filters:              Filter functions to run on this AST after every operation.
+        :param _eager:               Whether or not this AST could be eager evaluated
         """
 
         # store the AST structure
@@ -117,6 +150,8 @@ class Base(ana.Storable):
     def uc_alloc_depth(self):
         """
         The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
+
+        :return: An integer indicating the allocation depth, or None if it's not from lazy-initialization.
         """
         raise Exception("TODO")
 
@@ -192,19 +227,45 @@ class Base(ana.Storable):
 
     @property
     def depth(self):
+        """
+        The depth of this tree. For example, an AST representing (a+(b+c)) would have a depth of 2.
+        """
         return self.structure.depth
+
+    def make_uuid(self, uuid=None):
+        """
+        This overrides the default ANA uuid with the hash of the AST. UUID is slow, and we'll soon replace it from ANA
+        itself, and this will go away.
+
+        :returns: a string representation of the AST hash.
+        """
+        u = getattr(self, '_ana_uuid', None)
+        if u is None:
+            u = str(self._hash) if uuid is None else uuid
+            ana.get_dl().uuid_cache[u] = self
+            setattr(self, '_ana_uuid', u)
+        return u
 
     @property
     def uuid(self):
-        return self.ana_uuide
+        """
+        The UUID of the AST (currently equal to its hash).
+        """
+        return self.ana_uuid
 
     def _ana_getstate(self):
+        """
+        Support for ANA serialization.
+        """
         return self.structure, self.outer_annotations, self.filters, self._eager, self._hash
 
     def _ana_setstate(self, state):
+        """
+        Support for ANA deserialization.
+        """
         structure, outer_annotations, filters, _eager, h = state
         Base.__init__(self, structure, outer_annotations=outer_annotations,
-                      filters=filters, _eager=eager)
+                      filters=filters, _eager=_eager)
         self._hash = h
         _hash_cache[h] = self
 
@@ -308,13 +369,20 @@ class Base(ana.Storable):
     #
 
     def annotate(self, *args):
+        """
+        WARNING: DEPRECATED. USE annotate_outer INSTEAD.
+        Appends annotations to this AST.
+
+        :param args: the tuple of annotations to append (variadic positional args)
+        :returns: a new AST, with the annotations added
+        """
         l.critical("Base.annotate is deprecated. Use Base.annotate_outer.")
         print "Base.annotate is deprecated. Use Base.annotate_outer."
         return self.annotate_outer(self, *args)
 
     def annotate_inline(self, *args):
         """
-        Appends annotations to this AST.
+        Appends annotations to this AST's structure.
 
         :param args: the tuple of annotations to append (variadic positional args)
         :returns: a new AST, with the annotations added
@@ -335,6 +403,13 @@ class Base(ana.Storable):
     #
 
     def dbg_repr(self, prefix=None):
+        """
+        Print the AST for debugging purposes.
+
+        :param prefix: Optional prefix to insert before printing each node of
+                       the AST.
+        :raises: ClaripyRecursionError
+        """
         try:
             if prefix is not None:
                 new_prefix = prefix + "    "
@@ -352,6 +427,10 @@ class Base(ana.Storable):
             raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
 
     def shallow_repr(self, max_depth=8):
+        """
+        Returns a representation of the AST up to a maximum depth `max_depth`
+        as a string.
+        """
         return self.__repr__(max_depth=max_depth)
 
     def __repr__(self, **kwargs):
@@ -397,18 +476,30 @@ class Base(ana.Storable):
 
     @property
     def singlevalued(self):
+        """
+        True if the AST takes on only one value.
+        """
         return backends.first_successful('singlevalued', self)
 
     @property
     def multivalued(self):
+        """
+        True if the AST takes on multiple values.
+        """
         return backends.first_successful('multivalued', self)
 
     @property
     def cardinality(self):
+        """
+        Returns the number of values the AST is estimated to take on.
+        """
         return backends.first_successful('cardinality', self)
 
     @property
     def concrete(self):
+        """
+        True if the AST is concrete.
+        """
         return backends.concrete.handles(self)
 
     def __reduce__(self):
@@ -438,6 +529,9 @@ def _unpickle_structure(structure, outer_annotations, filters):
 #
 
 def simplify(e):
+    """
+    Attempt to simply the expression with the first non-errored backend.
+    """
     if isinstance(e, Base) and e.op == 'I':
         return e
 
@@ -455,6 +549,25 @@ def simplify(e):
 _type_fixers = { }
 
 def make_op(name, arg_types, return_type, do_coerce=True, structure_postprocessor=None, expression_postprocessor=None):
+    """
+    Creates a claripy AST operator.
+
+    :param name: Name of the operator.
+    :param arg_types: Types of the arguments that the operator accepts. Either a
+                      tuple/list of types, or a single type (indicating a
+                      variable number of arguments with the same type)
+    :param return_type: The return type of the operator.
+    :param do_coerce: True if type coercion should be attempted. True by default.
+    :param structure_postprocessor: Callable that takes the ASTStructure after
+                                    types have been coerced.
+    :param expression_postprocessor: Callable that takes the return object
+                                     (of type return_type) immediately before
+                                     it is returned.
+
+    :returns: A claripy AST operator than can be used to construct ASTs.
+
+    :raises: ClaripyOperationError
+    """
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
     elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck

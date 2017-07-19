@@ -1,3 +1,9 @@
+"""
+Classes and methods manipulating and representing concrete and symbolic
+(frontend) bitvectors.
+"""
+
+
 from .bits import Bits
 from .base import _make_name, make_op, make_reversed_op, _type_fixers
 
@@ -10,12 +16,20 @@ _bvv_cache = dict()
 # This is a hilarious hack to get around some sort of bug in z3's python bindings, where
 # under some circumstances stuff gets destructed out of order
 def cleanup():
+    """
+    Clears the bitvector cache.
+    """
+
     global _bvv_cache #pylint:disable=global-variable-not-assigned
     del _bvv_cache
+
 import atexit
 atexit.register(cleanup)
 
 class BV(Bits):
+    """
+    Class representing bitvectors of various lengths.
+    """
 
     # TODO: do these go on Bits or BV?
     def chop(self, bits=1):
@@ -109,21 +123,44 @@ class BV(Bits):
         return Concat(self, *args)
 
     def signed_to_fp(self, rm, sort):
+        """
+        Convert a signed BVV to a float.
+
+        :param rm: Rounding mode. Can pass `None` to use the default rounding mode.
+        :param sort: Floating point type to convert to (`FSort` object)
+
+        :returns: FPV representing the floating point value.
+        """
         if rm is None:
             rm = fp.fp.RM.default()
 
         return fp.fpToFP(rm, self, sort)
 
     def unsigned_to_fp(self, rm, sort):
+        """
+        Convert an unsigned BVV to a float.
+
+        :param rm: Rounding mode. Can pass `None` to use the default rounding mode.
+        :param sort: Floating point type to convert to (`FSort` object)
+
+        :returns: FPV representing the floating point value.
+        """
         if rm is None:
             rm = fp.fp.RM.default()
         return fp.fpToFPUnsigned(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        Converts a BVV storing a floating point value in IEEE encoding, to a
+        floating point value, length of BVV must be the correct size.
+        """
         sort = fp.fp.FSort.from_size(self.length)
         return fp.fpToFP(self, sort)
 
     def to_bv(self):
+        """
+        Returns the BV itself.
+        """
         return self
 
 def BVS(

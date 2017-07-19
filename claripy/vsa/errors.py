@@ -1,3 +1,6 @@
+"""
+Collection of claripy VSA errors.
+"""
 
 from ..errors import ClaripyError
 

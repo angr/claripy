@@ -1,21 +1,45 @@
+"""
+Classes and functions to create and manipulate concrete and symbolic floating
+point values.
+"""
+
 from .bits import Bits
 from ..ast.base import _make_name, make_op
 
 class FP(Bits):
+    """
+    Class representing floating points.
+    """
     def to_fp(self, rm, sort):
+        """
+        Converts itself to a floating point value (so it shouldn't do much,
+        except possibly change the size).
+
+        :param rm: Rounding mode. Can be None, to use the default.
+        :param sort: Sort of floating point to convert to.
+        """
         if rm is None:
             rm = fp.RM.default()
 
         return fpToFP(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        Returns itself.
+        """
         return self
 
     def to_bv(self):
+        """
+        Converts to a bitvector encoding the floating point in IEEE encoding.
+        """
         return fpToIEEEBV(self)
 
     @property
     def sort(self):
+        """
+        Get the sort of the floating point (e.g. float, double, etc.).
+        """
         return fp.FSort.from_size(self.length)
 
 def FPS(name, sort, explicit_name=None, filters=None):
