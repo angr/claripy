@@ -1,5 +1,5 @@
 """
-Base AST class and its associated mathods.
+Module containing Base AST class and associated functions.
 """
 
 import sys
