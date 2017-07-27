@@ -107,6 +107,12 @@ class BV(Bits):
         """
         return Concat(self, *args)
 
+    @property
+    def me_coding(self):
+        if self.length != 27:
+            raise ValueError("me_coding only supported on 27-bit BVs")
+        return Concat(self[17:9], self[27:18], self[8:0])
+
     @staticmethod
     def _from_int(like, value):
         return BVV(value, like.length)
