@@ -114,7 +114,7 @@ class BV(Bits):
         elif self.length == 18:
             return Concat(self[8:0], self[17:9])
         elif self.length == 27:
-            return Concat(self[17:9], self[27:18], self[8:0])
+            return Concat(self[17:9], self[26:18], self[8:0])
         else:
             raise ValueError("me_coding only supported on 9-, 18-, and 27-bit BVs")
 
