@@ -112,12 +112,7 @@ class BackendVSA(Backend):
         if isinstance(expr, StridedInterval):
             return expr.eval(n)
         elif isinstance(expr, ValueSet):
-            results = []
-
-            while len(results) < n:
-                results.extend(expr.eval(n - len(results)))
-
-            return results
+            return expr.eval(n)
         elif isinstance(expr, BoolResult):
             return expr.value
         else:
