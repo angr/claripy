@@ -29,7 +29,7 @@ if os.environ.get('REMOTE', False):
 #
 
 _recurse = 15000
-l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
+l.info("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
 sys.setrecursionlimit(_recurse)
 
 #
