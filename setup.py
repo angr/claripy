@@ -13,7 +13,7 @@ setup(
     packages=packages,
     install_requires=[
         'ana',
-        'angr-only-z3-custom==9002',
+        'z3-solver',
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
