@@ -466,7 +466,7 @@ def test_unsat_core():
         yield raw_unsat_core, s
 
 
-def test_issue49():
+def test_zero_division_in_cache_mixin():
     # Bug in the caching backend. See issue #49 on github.
     num = claripy.BVS('num', 256)
     denum = claripy.BVS('denum', 256)
@@ -504,4 +504,4 @@ if __name__ == '__main__':
     for func, param in test_combine():
         func(param)
     test_composite_solver()
-    test_issue49()
+    test_zero_division_in_cache_mixin()
