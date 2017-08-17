@@ -324,7 +324,7 @@ class BackendZ3(Backend):
         z3_hash = z3.Z3_get_ast_hash(ctx, ast)
         z3_ast_ref = ast.value # this seems to be the memory address
         z3_sort = z3.Z3_get_sort(ctx, ast).value
-        return hash("%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref))
+        return "%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref)
 
     def _abstract_internal(self, ctx, ast, split_on=None):
         h = self._z3_ast_hash(ctx, ast)
