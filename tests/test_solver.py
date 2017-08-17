@@ -466,6 +466,23 @@ def test_unsat_core():
         yield raw_unsat_core, s
 
 
+def test_issue49():
+    # Bug in the caching backend. See issue #49 on github.
+    num = claripy.BVS('num', 256)
+    denum = claripy.BVS('denum', 256)
+    e = claripy.BVS('e', 256)
+    s = claripy.Solver()
+    s.add(e == 8)
+    assert s.satisfiable()
+    s.add(claripy.If(denum == 0, 0, num / denum) == e)
+    assert s.satisfiable()
+    # As a bonus:
+    s.add(num == 16)
+    assert s.satisfiable()
+    s.add(denum == 3)
+    assert not s.satisfiable()
+
+
 if __name__ == '__main__':
 
     for func, param in test_unsat_core():
@@ -487,3 +504,4 @@ if __name__ == '__main__':
     for func, param in test_combine():
         func(param)
     test_composite_solver()
+    test_issue49()
