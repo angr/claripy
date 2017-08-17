@@ -1,6 +1,9 @@
 import weakref
 import itertools
 
+from claripy import errors
+
+
 class ModelCache(object):
     _defaults = { 0, 0.0, True }
 
@@ -47,14 +50,25 @@ class ModelCache(object):
         )
 
     def eval_ast(self, ast):
+        """Eval the ast, replacing symbols by their last value in the model.
+        """
+        # If there was no last value, it was not constrained, so we can use
+        # anything.
         new_ast = ast._replace(self.replacements, leaf_operation=self._leaf_op)
         return backends.concrete.eval(new_ast, 1)[0]
 
     def eval_constraints(self, constraints):
-        return all(self.eval_ast(c) for c in constraints)
+        """Returns whether the constraints is satisfied trivially by using the
+        last model."""
+        # eval_ast is concretizing symbols and evaluating them, this can raise
+        # exceptions.
+        try:
+            return all(self.eval_ast(c) for c in constraints)
+        except errors.ClaripyZeroDivisionError:
+            return False
 
     def eval_list(self, asts):
-        return tuple(self.eval_ast(c) for c in asts )
+        return tuple(self.eval_ast(c) for c in asts)
 
 class ModelCacheMixin(object):
     _MODEL_LIMIT = 257
