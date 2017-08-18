@@ -191,15 +191,15 @@ class CompositeFrontend(ConstrainedFrontend):
 
         #if isinstance(s, ModelCacheMixin):
         #   if len(os._models) < len(ns._models):
-        #       print "GOT %d NEW MODELS (before: %d)" % (
+        #       print("GOT %d NEW MODELS (before: %d)" % (
         #           len(ns._models) - len(os._models), len(os._models)
-        #       )
+        #       ))
         #   elif len(os._models) > len(ns._models):
-        #       print "WARNING: LOST %d NEW MODELS (before: %d)" % (
+        #       print("WARNING: LOST %d NEW MODELS (before: %d)" % (
         #           len(os._models) - len(ns._models), len(os._models)
-        #       )
+        #       ))
         #   else:
-        #       print "Remained at %d models." % len(os._models)
+        #       print("Remained at %d models." % len(os._models))
 
     #
     # Constraints

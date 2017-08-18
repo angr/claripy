@@ -1,8 +1,9 @@
 import fractions
 import functools
-import math
 import itertools
 import logging
+import math
+import numbers
 
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
@@ -38,12 +39,12 @@ def normalize_types(f):
 
         if isinstance(o, Base) or isinstance(self, Base):
             return NotImplemented
-        if type(self) is BVV:
+        if isinstance(self, BVV):
             self = self.value
-        if type(o) is BVV:
+        if isinstance(o, BVV):
             o = o.value
 
-        if type(o) in (int, long):
+        if isinstance(o, numbers.Number):
             min_bits = self.bits if hasattr(self, 'bits') else 64
             repr_bits = StridedInterval.min_bits(o)
             n_bits = max(repr_bits, min_bits)
@@ -56,7 +57,7 @@ def normalize_types(f):
                 si.upper_bound |= mask
             o = si
 
-        if type(self) in (int, long):
+        if isinstance(self, numbers.Number):
             min_bits = o.bits if hasattr(o, 'bits') else 64
             repr_bits = StridedInterval.min_bits(self)
             n_bits = max(repr_bits, min_bits)
@@ -69,7 +70,7 @@ def normalize_types(f):
                 si.upper_bound |= mask
             self = si
 
-        if f.__name__ not in ('concat', ):
+        if f.__name__ != 'concat':
             # Make sure they have the same length
             common_bits = max(o.bits, self.bits)
             if o.bits < common_bits:
@@ -312,10 +313,10 @@ class StridedInterval(BackendObject):
         self._lower_bound = lower_bound if lower_bound is not None else 0
         self._upper_bound = upper_bound if upper_bound is not None else (2**bits-1)
 
-        if lower_bound is not None and type(lower_bound) not in (int, long):
+        if lower_bound is not None and not isinstance(lower_bound, numbers.Number):
             raise ClaripyVSAError("'lower_bound' must be an int or a long. %s is not supported." % type(lower_bound))
 
-        if upper_bound is not None and type(upper_bound) not in (int, long):
+        if upper_bound is not None and not isinstance(upper_bound, numbers.Number):
             raise ClaripyVSAError("'upper_bound' must be an int or a long. %s is not supported." % type(upper_bound))
 
         self._reversed = False
@@ -419,7 +420,7 @@ class StridedInterval(BackendObject):
         :return: True if b belongs to the current Strided Interval, False otherwhise
         """
 
-        if type(b) in (int, long):
+        if isinstance(b, numbers.Number):
             b = StridedInterval(lower_bound=b, upper_bound=b, stride=0, bits=self.bits)
         else:
             raise ClaripyOperationError('Oops, Strided intervals cannot be passed as "'
@@ -2149,7 +2150,7 @@ class StridedInterval(BackendObject):
                 else:
                     return x
 
-            if type(expr) in [int, long]:
+            if isinstance(expr, numbers.Number):
                 return (expr, expr)
 
             assert type(expr) is StridedInterval
@@ -3460,14 +3461,15 @@ def CreateStridedInterval(name=None, bits=0, stride=None, lower_bound=None, uppe
             # No conversion will be done
             return to_conv
 
-        if type(to_conv) not in {int, long, BVV}: #pylint:disable=unidiomatic-typecheck
+        if not isinstance(to_conv, (numbers.Number, BVV)):
             raise ClaripyOperationError('Unsupported to_conv type %s' % type(to_conv))
 
-        if stride is not None or lower_bound is not None or \
-                        upper_bound is not None:
+        if (stride is not None
+            or lower_bound is not None
+            or upper_bound is not None):
             raise ClaripyOperationError('You cannot specify both to_conv and other parameters at the same time.')
 
-        if type(to_conv) is BVV: #pylint:disable=unidiomatic-typecheck
+        if isinstance(to_conv, BVV):
             bits = to_conv.bits
             to_conv_value = to_conv.value
         else:

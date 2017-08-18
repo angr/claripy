@@ -1,7 +1,7 @@
 call_depth = 0
 
 def _log(s):
-    print "|  " * call_depth + s
+    print("|  " * call_depth + s)
 
 def _debugged(f):
     def debugged(*args, **kwargs):

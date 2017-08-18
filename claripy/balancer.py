@@ -350,7 +350,7 @@ class Balancer(object):
 
             balanced = balancer(inner_aligned)
             if balanced is inner_aligned:
-                #print "... balanced:", balanced
+                # print("... balanced:", balanced)
                 return balanced
             else:
                 return self._balance(balanced)
@@ -360,7 +360,7 @@ class Balancer(object):
 
     @staticmethod
     def _balance_Reverse(truism):
-        if truism.op == '__eq__' or truism.op == '__ne__':
+        if truism.op in ['__eq__', '__ne__']:
             return truism.make_like(truism.op, (truism.args[0].args[0], truism.args[1].reversed))
         else:
             return truism
@@ -537,7 +537,7 @@ class Balancer(object):
         Handles all comparisons.
         """
 
-        #print "COMP:", truism
+        # print("COMP:", truism)
 
         is_lt, is_equal, is_unsigned = self.comparison_info[truism.op]
 

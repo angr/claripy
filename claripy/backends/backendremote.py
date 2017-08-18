@@ -19,7 +19,7 @@ class TrackingSolver(object):
 def get(res):
     #before = time.time()
     result = res.get(interval=0.02)
-    # print "task took %f" % (time.time() - before)
+    # print("task took %f" % (time.time() - before))
     return result
 
 class BackendRemote(Backend):
@@ -52,7 +52,7 @@ class BackendRemote(Backend):
         for x in s.plus_extra(extra_constraints):
             if hasattr(x, 'make_uuid'):
                 x.make_uuid()
-        # print pickle.dumps(s.plus_extra(extra_constraints))
+        # print(pickle.dumps(s.plus_extra(extra_constraints)))
         res = remotetasks.check.delay(s.plus_extra(extra_constraints))
         return get(res)
 
@@ -60,7 +60,7 @@ class BackendRemote(Backend):
         for x in solver.plus_extra(extra_constraints):
             if hasattr(x, 'make_uuid'):
                 x.make_uuid()
-        # print pickle.dumps(s.plus_extra(extra_constraints))
+        # print(pickle.dumps(s.plus_extra(extra_constraints)))
         res = remotetasks.eval.delay(solver.plus_extra(extra_constraints), expr, n)
         return get(res)
 
@@ -75,7 +75,7 @@ class BackendRemote(Backend):
         for x in s.plus_extra(extra_constraints):
             if hasattr(x, 'make_uuid'):
                 x.make_uuid()
-        # print pickle.dumps(s.plus_extra(extra_constraints))
+        # print(pickle.dumps(s.plus_extra(extra_constraints)))
         res = remotetasks.results.delay(s.plus_extra(extra_constraints))
         return get(res)
 
@@ -83,7 +83,7 @@ class BackendRemote(Backend):
         for x in solver.plus_extra(extra_constraints):
             if hasattr(x, 'make_uuid'):
                 x.make_uuid()
-        # print pickle.dumps(s.plus_extra(extra_constraints))
+        # print(pickle.dumps(s.plus_extra(extra_constraints)))
         res = remotetasks.min.delay(solver.plus_extra(extra_constraints), expr)
         return get(res)
 
@@ -91,7 +91,7 @@ class BackendRemote(Backend):
         for x in solver.plus_extra(extra_constraints):
             if hasattr(x, 'make_uuid'):
                 x.make_uuid()
-        # print pickle.dumps(s.plus_extra(extra_constraints))
+        # print(pickle.dumps(s.plus_extra(extra_constraints)))
         res = remotetasks.max.delay(solver.plus_extra(extra_constraints), expr)
         return get(res)
 
@@ -99,7 +99,7 @@ class BackendRemote(Backend):
         return o.length
 
     def _name(self, o):
-        raise Exception('wat')
+        raise Exception('wat') # TODO: Be more explicit :p
 
     def _identical(self, a, b):
         return a.identical(b)

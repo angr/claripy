@@ -42,7 +42,7 @@ def test_hybrid_solver():
     t = claripy.SolverHybrid()
     x = claripy.BVS('x', 32)
     t.add(x <= 10)
-    print t.eval(x, 80, exact=False)
+    print(t.eval(x, 80, exact=False))
     nose.tools.assert_equal(len(t.eval(x, 5, exact=False)), 5)
     nose.tools.assert_equal(len(t.eval(x, 5, exact=False)), 5)
     nose.tools.assert_equal(len(t.eval(x, 6, exact=False)), 6)
@@ -83,7 +83,7 @@ def raw_solver(solver_type):
     #bz = claripy.backends.BackendZ3(clrp)
     #claripy.expression_backends = [ bc, bz, ba ]
 
-    print "YOYO"
+    print("YOYO")
     s = solver_type()
 
     s.simplify()
@@ -148,31 +148,31 @@ def raw_solver(solver_type):
     s.add(claripy.ULT(z, 5))
     nose.tools.assert_equal(len(s.constraints), old_count)
 
-    #print "========================================================================================"
-    #print "========================================================================================"
-    #print "========================================================================================"
-    #print "========================================================================================"
+    #print("========================================================================================")
+    #print("========================================================================================")
+    #print("========================================================================================")
+    #print("========================================================================================")
     #a = s.eval(z, 100)
-    #print "ANY:", a
-    #print "========================================================================================"
+    #print("ANY:", a)
+    #print("========================================================================================")
     #mx = s.max(z)
-    #print "MAX",mx
-    #print "========================================================================================"
+    #print("MAX",mx)
+    #print("========================================================================================")
     #mn = s.min(z)
-    #print "MIN",mn
-    #print "========================================================================================"
-    #print "========================================================================================"
-    #print "========================================================================================"
-    #print "========================================================================================"
+    #print("MIN",mn)
+    #print("========================================================================================")
+    #print("========================================================================================")
+    #print("========================================================================================")
+    #print("========================================================================================")
 
-    print "CONSTRATINT COUNTS:", [ len(_.constraints) for _ in s.split() ]
+    print("CONSTRAINT COUNTS:", [ len(_.constraints) for _ in s.split() ])
 
     nose.tools.assert_equal(s.max(z), 4)
     nose.tools.assert_equal(s.min(z), 0)
     nose.tools.assert_equal(s.min(y), 22)
     nose.tools.assert_equal(s.max(y), 2**y.size()-1)
 
-    print "CONSTRATINT COUNTS:", [ len(_.constraints) for _ in s.split() ]
+    print("CONSTRAINT COUNTS:", [ len(_.constraints) for _ in s.split() ])
 
     ss = s.split()
     nose.tools.assert_equal(len(ss), 2)
@@ -375,8 +375,8 @@ def test_composite_discrepancy():
 
     sn.add(constraints)
     sc.add(constraints)
-    print sn.max(dst), sc.max(dst)
-    print sn.min(dst), sc.min(dst)
+    print(sn.max(dst), sc.max(dst))
+    print(sn.min(dst), sc.min(dst))
     assert sn.max(dst) == sc.max(dst)
     assert sn.min(dst) == sc.min(dst)
 

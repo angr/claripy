@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import weakref
 import logging
+import numbers
+import weakref
 
 l = logging.getLogger("claripy.frontends.replacement_frontend")
 
@@ -66,7 +67,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         if not isinstance(new, Base):
             if isinstance(new, bool):
                 new = BoolV(new)
-            elif isinstance(new, (int, long)):
+            elif isinstance(new, numbers.Number):
                 new = BVV(new, old.length)
             else:
                 return

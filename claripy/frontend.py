@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import logging
-l = logging.getLogger("claripy.frontends.frontend")
+import numbers
 
 import ana
+
+l = logging.getLogger("claripy.frontends.frontend")
+
 
 class Frontend(ana.Storable):
     def __init__(self):
@@ -100,7 +103,7 @@ class Frontend(ana.Storable):
     #
 
     def _concrete_value(self, e): #pylint:disable=no-self-use
-        if isinstance(e, (int, long, bool, float)):
+        if isinstance(e, numbers.Number):
             return e
         else:
             return None

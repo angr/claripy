@@ -1,4 +1,6 @@
 import functools
+import numbers
+
 from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
 
@@ -28,9 +30,9 @@ def normalize_types(f):
     def normalize_helper(self, o):
         if hasattr(o, '__module__') and o.__module__ == 'z3':
             raise ValueError("this should no longer happen")
-        if type(o) in (int, long):
+        if isinstance(o, numbers.Number):
             o = BVV(o, self.bits)
-        if type(self) in (int, long):
+        if isinstance(self, numbers.Number):
             self = BVV(self, self.bits)
 
         if not isinstance(self, BVV) or not isinstance(o, BVV):
@@ -43,8 +45,8 @@ class BVV(BackendObject):
     __slots__ = [ 'bits', '_value', 'mod', 'value' ]
 
     def __init__(self, value, bits):
-        if bits < 0 or type(bits) not in (int, long) or type(value) not in (int, long):
-            raise ClaripyOperationError("BVV needs a non-negative length and an int/long value")
+        if bits < 0 or not isinstance(bits, numbers.Number) or not isinstance(value, numbers.Number):
+            raise ClaripyOperationError("BVV needs a non-negative length and an int value")
 
         if bits == 0 and value not in (0, "", None):
             raise ClaripyOperationError("Zero-length BVVs cannot have a meaningful value.")
@@ -309,7 +311,7 @@ def Reverse(a):
         elif size == 16:
             out = _reverse_16(value)
         else:
-            for i in xrange(0, size, 8):
+            for i in range(0, size, 8):
                 out |= ((value & (0xff << i)) >> i) << (size - 8 - i)
         return BVV(out, size)
 

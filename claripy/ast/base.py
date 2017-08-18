@@ -1,16 +1,17 @@
-import os
-import sys
-import struct
-import weakref
-import hashlib
-import itertools
 import collections
 import cPickle as pickle
-
+import hashlib
+import itertools
 import logging
-l = logging.getLogger("claripy.ast")
+import numbers
+import os
+import struct
+import sys
+import weakref
 
 import ana
+
+l = logging.getLogger("claripy.ast")
 
 WORKER = bool(os.environ.get('WORKER', False))
 md5_unpacker = struct.Struct('2Q')
@@ -170,8 +171,10 @@ class Base(ana.Storable):
         :param op:      The operation.
         :param args:    The arguments to the operation.
         :param kwargs:  A dict including the 'symbolic', 'variables', and 'length' items.
-
         :returns:       a hash.
+
+        We do it using md5 to avoid hash collisions.
+        (hash(-1) == hash(-2), for example)
         """
         args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in args)
         to_hash = (op, args_tup, k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
@@ -183,15 +186,12 @@ class Base(ana.Storable):
         return md5_unpacker.unpack(hd)[0] # 64 bits
 
     def _get_hashables(self):
-        return self.op, tuple(str(a) if type(a) in (int, long, float) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
+        return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
-        Initializes an AST. Takes the same arguments as ``Base.__new__()``
-
-        We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
-        return from ``__new__``.
+        Initializes an AST. Takes the same arguments as Base.__new__()
         """
         self.op = op
         self.args = args
@@ -255,9 +255,6 @@ class Base(ana.Storable):
 
     @property
     def cache_key(self):
-        """
-        A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
-        """
         return self._cache_key
 
     #
@@ -387,9 +384,6 @@ class Base(ana.Storable):
     #
 
     def dbg_repr(self, prefix=None):
-        """
-        Returns a debug representation of this AST
-        """
         try:
             if prefix is not None:
                 new_prefix = prefix + "    "
@@ -410,12 +404,6 @@ class Base(ana.Storable):
         return self.__class__.__name__
 
     def shallow_repr(self, max_depth=8):
-        """
-        Returns a string representation of this AST, but with a maximum depth to prevent floods of text being printed.
-
-        :param max_depth:   The maximum depth to print
-        :return:            A string representing the AST
-        """
         return self.__repr__(max_depth=max_depth)
 
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):
@@ -653,6 +641,7 @@ class Base(ana.Storable):
         if self.op in split_on: return list(self.args)
         else: return [ self ]
 
+    # we don't support iterating over Base objects
     def __iter__(self):
         """
         This prevents people from iterating over ASTs.
@@ -714,7 +703,7 @@ class Base(ana.Storable):
 
     def replace(self, old, new):
         """
-        Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
+        Returns an AST with all instances of the AST 'old' replaced with AST 'new'.
         """
         self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
@@ -775,11 +764,11 @@ class Base(ana.Storable):
 
     def _burrow_ite(self):
         if self.op != 'If':
-            #print "i'm not an if"
+            # print("i'm not an if")
             return self.swap_args([ (a.ite_burrowed if isinstance(a, Base) else a) for a in self.args ])
 
         if not all(isinstance(a, Base) for a in self.args):
-            #print "not all my args are bases"
+            # print("not all my args are bases")
             return self
 
         old_true = self.args[1]
@@ -799,14 +788,14 @@ class Base(ana.Storable):
         matches = [ old_true.args[i] is old_false.args[i] for i in range(len(old_true.args)) ]
         if matches.count(True) != 1 or all(matches):
             # TODO: handle multiple differences for multi-arg ast nodes
-            #print "wrong number of matches:",matches,old_true,old_false
+            # print("wrong number of matches:",matches,old_true,old_false)
             return self
 
         different_idx = matches.index(False)
         inner_if = If(self.args[0], old_true.args[different_idx], old_false.args[different_idx])
         new_args = list(old_true.args)
         new_args[different_idx] = inner_if.ite_burrowed
-        #print "replaced the",different_idx,"arg:",new_args
+        # print("replaced the",different_idx,"arg:",new_args)
         return old_true.__class__(old_true.op, new_args, length=self.length)
 
     def _excavate_ite(self):
@@ -830,22 +819,22 @@ class Base(ana.Storable):
             new_false_args = [ ]
 
             for a in excavated_args:
-                #print "OC", cond.dbg_repr()
-                #print "NC", Not(cond).dbg_repr()
+                # print("OC", cond.dbg_repr())
+                # print("NC", Not(cond).dbg_repr())
 
                 if not isinstance(a, Base) or a.op != 'If':
                     new_true_args.append(a)
                     new_false_args.append(a)
                 elif a.args[0] is cond:
-                    #print "AC", a.args[0].dbg_repr()
+                    # print("AC", a.args[0].dbg_repr())
                     new_true_args.append(a.args[1])
                     new_false_args.append(a.args[2])
                 elif a.args[0] is Not(cond):
-                    #print "AN", a.args[0].dbg_repr()
+                    # print("AN", a.args[0].dbg_repr())
                     new_true_args.append(a.args[2])
                     new_false_args.append(a.args[1])
                 else:
-                    #print "AB", a.args[0].dbg_repr()
+                    # print("AB", a.args[0].dbg_repr())
                     # weird conditions -- giving up!
                     return self.swap_args(excavated_args)
 

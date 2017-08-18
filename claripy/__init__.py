@@ -59,7 +59,7 @@ ast._import()
 
 def BV(name, size, explicit_name=None): #pylint:disable=function-redefined
     l.critical("DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead.")
-    print "DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead."
+    print("DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead.")
     return BVS(name, size, explicit_name=explicit_name)
 
 #

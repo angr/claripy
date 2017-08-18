@@ -1,4 +1,5 @@
 import logging
+import numbers
 import functools
 import operator
 
@@ -10,7 +11,7 @@ from ..vsa import RegionAnnotation
 def arg_filter(f):
     @functools.wraps(f)
     def filter(*args): #pylint:disable=redefined-builtin
-        if type(args[0]) in {int, long}: #pylint:disable=unidiomatic-typecheck
+        if isinstance(args[0], numbers.Number): # pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported argument type %s' % type(args[0]))
         return f(*args)
 
@@ -96,11 +97,11 @@ class BackendVSA(Backend):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr)
 
     def _convert(self, a):
-        if type(a) in { int, long }: #pylint:disable=unidiomatic-typecheck
+        if isinstance(a, numbers.Number):
             return a
-        if type(a) is bool:
+        elif isinstance(a, bool):
             return TrueResult() if a else FalseResult()
-        if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
+        if isinstance(a, (StridedInterval, DiscreteStridedIntervalSet, ValueSet)):
             return a
         if isinstance(a, BoolResult):
             return a

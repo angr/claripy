@@ -109,12 +109,12 @@ def test_expression():
     ooo = claripy.BVV(0, 32)
 
     old_formula = claripy.If((old + 1)%256 == 0, old+10, old+20)
-    print old_formula.dbg_repr()
+    print(old_formula.dbg_repr())
     new_formula = old_formula.replace(old, new)
-    print new_formula.dbg_repr()
+    print(new_formula.dbg_repr())
     ooo_formula = new_formula.replace(new, ooo)
 
-    print ooo_formula.dbg_repr()
+    print(ooo_formula.dbg_repr())
 
     nose.tools.assert_not_equal(hash(old_formula), hash(new_formula))
     nose.tools.assert_not_equal(hash(old_formula), hash(ooo_formula))
@@ -335,13 +335,13 @@ def test_depth_repr():
     y = claripy.LShR(y, 10)
     y = claripy.LShR(y, 10)
     y = claripy.LShR(y, 10)
-    print y.shallow_repr(max_depth=5)
+    print(y.shallow_repr(max_depth=5))
     nose.tools.assert_equal(y.shallow_repr(max_depth=5), "<BV32 LShR(LShR(LShR(LShR(LShR(<...>, <...>), 0xa), 0xa), 0xa), 0xa)>")
 
 def test_rename():
     x1 = claripy.BVS('x', 32)
     x2 = x1._rename('y')
-    print x2.variables
+    print(x2.variables)
     assert x2.variables == frozenset(('y',))
 
 def test_canonical():
@@ -409,7 +409,7 @@ def test_multiarg():
             b.convert(x+x+x+x)
         except claripy.BackendError:
             pass
-    print 'ok'
+    print('ok')
 
 def test_signed_concrete():
     bc = claripy.backends.concrete
