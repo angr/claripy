@@ -15,12 +15,37 @@ import atexit
 atexit.register(cleanup)
 
 class BV(Bits):
+    """
+    A class representing an AST of operations culminating in a bitvector.
+    Do not instantiate this class directly, instead use BVS or BVV to construct a symbol or value, and then use
+    operations to construct more complicated expressions.
 
-    # TODO: do these go on Bits or BV?
+    Individual sub-bits and bit-ranges can be extracted from a bitvector using index and slice notation.
+    Bits are indexed weirdly. For a 32-bit AST:
+
+        a[31] is the *LEFT* most bit, so it'd be the 0 in
+
+            01111111111111111111111111111111
+
+        a[0] is the *RIGHT* most bit, so it'd be the 0 in
+
+            11111111111111111111111111111110
+
+        a[31:30] are the two leftmost bits, so they'd be the 0s in:
+
+            00111111111111111111111111111111
+
+        a[1:0] are the two rightmost bits, so they'd be the 0s in:
+
+            11111111111111111111111111111100
+    """
+
     def chop(self, bits=1):
         """
-        Chops an AST into ASTs of size 'bits'. Obviously, the length of the AST must be
-        a multiple of bits.
+        Chops a BV into consecutive sub-slices. Obviously, the length of this BV must be a multiple of bits.
+
+        :returns:   A list of smaller bitvectors, each ``bits`` in length. The first one will be the left-most (i.e.
+                    most significant) bits.
         """
         s = len(self)
         if s % bits != 0:
@@ -31,27 +56,6 @@ class BV(Bits):
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
 
     def __getitem__(self, rng):
-        """
-        Extracts bits from the AST. ASTs are indexed weirdly. For a 32-bit AST:
-
-            a[31] is the *LEFT* most bit, so it'd be the 0 in
-
-                01111111111111111111111111111111
-
-            a[0] is the *RIGHT* most bit, so it'd be the 0 in
-
-                11111111111111111111111111111110
-
-            a[31:30] are the two leftmost bits, so they'd be the 0s in:
-
-                00111111111111111111111111111111
-
-            a[1:0] are the two rightmost bits, so they'd be the 0s in:
-
-                11111111111111111111111111111100
-
-        :return: the new AST.
-        """
         if type(rng) is slice:
             left = rng.start if rng.start is not None else len(self)-1
             right = rng.stop if rng.stop is not None else 0
@@ -66,24 +70,26 @@ class BV(Bits):
     def get_byte(self, index):
         """
         Extracts a byte from a BV, where the index refers to the byte in a big-endian order
+
         :param index: the byte to extract
-        :return:
+        :return: An 8-bit BV
         """
         pos = self.size() / 8 - 1 - index
         return self[pos * 8 + 7 : pos * 8]
 
     def get_bytes(self, index, size):
         """
-        Extracts several byte from a BV, where the index refers to the byte in a big-endian order
+        Extracts several bytes from a bitvector, where the index refers to the byte in a big-endian order
+
         :param index: the byte to extract
-        :return:
+        :return: A BV of size ``size * 8``
         """
         pos = self.size() / 8 - 1 - index
         return self[pos * 8 + 7 : (pos - size + 1) * 8]
 
     def zero_extend(self, n):
         """
-        Zero-extends the AST by n bits. So:
+        Zero-extends the bitvector by n bits. So:
 
             a = BVV(0b1111, 4)
             b = a.zero_extend(4)
@@ -93,7 +99,7 @@ class BV(Bits):
 
     def sign_extend(self, n):
         """
-        Sign-extends the AST by n bits. So:
+        Sign-extends the bitvector by n bits. So:
 
             a = BVV(0b1111, 4)
             b = a.sign_extend(4)
@@ -103,7 +109,8 @@ class BV(Bits):
 
     def concat(self, *args):
         """
-        Concatenates this AST with the ASTs provided.
+        Concatenates this bitvector with the bitvectors provided.
+        This bitvector will be on the far-left, i.e. the most significant bits.
         """
         return Concat(self, *args)
 
@@ -123,22 +130,50 @@ class BV(Bits):
     def _from_BVV(like, value): #pylint:disable=unused-argument
         return BVV(value.value, value.size())
 
-    def signed_to_fp(self, rm, sort):
+    def signed_to_fp(self, sort, rm=None):
+        """
+        Interpret this bitvector as a signed integer, and return the floating-point representation of that integer.
+
+        :param sort:    The sort of floating point value to return
+        :param rm:      Optional: the rounding mode to use
+        :return:        An FP AST
+        """
         if rm is None:
             rm = fp.fp.RM.default()
+        if sort is None:
+            sort = fp.fp.FSort.from_size(self.length)
 
         return fp.fpToFP(rm, self, sort)
 
-    def unsigned_to_fp(self, rm, sort):
+    def unsigned_to_fp(self, sort, rm=None):
+        """
+        Interpret this bitvector as an unsigned integer, and return the floating-point representation of that integer.
+
+        :param sort:    The sort of floating point value to return
+        :param rm:      Optional: the rounding mode to use
+        :return:        An FP AST
+        """
         if rm is None:
             rm = fp.fp.RM.default()
+        if sort is None:
+            sort = fp.fp.FSort.from_size(self.length)
+
         return fp.fpToFPUnsigned(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        Interpret the bits of this bitvector as an IEEE754 floating point number.
+        The inverse of this function is to_bv.
+
+        :return:        An FP AST
+        """
         sort = fp.fp.FSort.from_size(self.length)
         return fp.fpToFP(self, sort)
 
     def to_bv(self):
+        """
+        A counterpart to FP.to_bv - does nothing and returns itself.
+        """
         return self
 
 def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
@@ -146,11 +181,14 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pyli
     """
     Creates a bit-vector symbol (i.e., a variable).
 
+    If you want to specify the maximum value of a normal symbol that is not part of value-set analysis, you should
+    manually add constraints to that effect.
+
     :param name:            The name of the symbol.
     :param size:            The size (in bits) of the bit-vector.
-    :param min:             The minimum value of the symbol.
-    :param max:             The maximum value of the symbol.
-    :param stride:          The stride of the symbol.
+    :param min:             The minimum value of the symbol, used only for value-set analysis
+    :param max:             The maximum value of the symbol, used only for value-set analysis
+    :param stride:          The stride of the symbol, used only for value-set analysis
     :param uninitialized:   Whether this value should be counted as an "uninitialized" value in the course of an
                             analysis.
     :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.

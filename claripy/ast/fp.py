@@ -2,16 +2,41 @@ from .bits import Bits
 from ..ast.base import _make_name
 
 class FP(Bits):
-    def to_fp(self, rm, sort):
+    """
+    An AST representing a set of operations culminating in an IEEE754 floating point number.
+
+    Do not instantiate this class directly, instead use FPV or FPS to construct a value or symbol, and then use
+    operations to construct more complicated expressions.
+
+    :ivar length:   The length of this value
+    :ivar sort:     The sort of this value, usually either FSORT_FLOAT or FSORT_DOUBLE
+    """
+    def to_fp(self, sort, rm=None):
+        """
+        Convert this float to a different sort
+
+        :param sort:    The sort to convert to
+        :param rm:      Optional: The rounding mode to use
+        :return:        An FP AST
+        """
         if rm is None:
             rm = fp.RM.default()
 
         return fpToFP(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        A counterpart to BV.raw_to_fp - does nothing and returns itself.
+        """
         return self
 
     def to_bv(self):
+        """
+        Interpret the bit-pattern of this IEEE754 floating point number as a bitvector.
+        The inverse of this function is to_bv.
+
+        :return:        A BV AST
+        """
         return fpToIEEEBV(self)
 
     @property
