@@ -130,51 +130,41 @@ class BV(Bits):
     def _from_BVV(like, value): #pylint:disable=unused-argument
         return BVV(value.value, value.size())
 
-    def signed_to_fp(self, sort, rm=None):
+    def val_to_fp(self, sort, signed=True, rm=None):
         """
-        Interpret this bitvector as a signed integer, and return the floating-point representation of that integer.
+        Interpret this bitvector as an integer, and return the floating-point representation of that integer.
 
         :param sort:    The sort of floating point value to return
+        :param signed:  Optional: whether this value is a signed integer
         :param rm:      Optional: the rounding mode to use
-        :return:        An FP AST
+        :return:        An FP AST whose value is the same as this BV
         """
         if rm is None:
             rm = fp.fp.RM.default()
         if sort is None:
             sort = fp.fp.FSort.from_size(self.length)
 
-        return fp.fpToFP(rm, self, sort)
-
-    def unsigned_to_fp(self, sort, rm=None):
-        """
-        Interpret this bitvector as an unsigned integer, and return the floating-point representation of that integer.
-
-        :param sort:    The sort of floating point value to return
-        :param rm:      Optional: the rounding mode to use
-        :return:        An FP AST
-        """
-        if rm is None:
-            rm = fp.fp.RM.default()
-        if sort is None:
-            sort = fp.fp.FSort.from_size(self.length)
-
-        return fp.fpToFPUnsigned(rm, self, sort)
+        op = fp.fpToFP if signed else fp.fpToFPUnsigned
+        return op(rm, self, sort)
 
     def raw_to_fp(self):
         """
         Interpret the bits of this bitvector as an IEEE754 floating point number.
-        The inverse of this function is to_bv.
+        The inverse of this function is raw_to_bv.
 
-        :return:        An FP AST
+        :return:        An FP AST whose bit-pattern is the same as this BV
         """
         sort = fp.fp.FSort.from_size(self.length)
         return fp.fpToFP(self, sort)
 
-    def to_bv(self):
+    def raw_to_bv(self):
         """
-        A counterpart to FP.to_bv - does nothing and returns itself.
+        A counterpart to FP.raw_to_bv - does nothing and returns itself.
         """
         return self
+
+    def to_bv(self):
+        return self.raw_to_bv()
 
 def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
         explicit_name=None, discrete_set=False, discrete_set_max_card=None, **kwargs):

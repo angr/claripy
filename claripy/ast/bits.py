@@ -25,7 +25,7 @@ class Bits(Base):
     def _type_name(self):
         return self.__class__.__name__ + str(self.length)
 
-    def to_bv(self):
+    def raw_to_bv(self):
         """
         Converts this data's bit-pattern to a bitvector.
         """

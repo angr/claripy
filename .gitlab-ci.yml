@@ -11,10 +11,6 @@ lint:
     tags: [angr]
 
 ### first level
-simuvex:
-    script: "angr-test simuvex"
-    tags: [angr]
-
 angr:
     script: "angr-test angr"
     tags: [angr]

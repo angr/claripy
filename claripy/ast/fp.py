@@ -30,14 +30,32 @@ class FP(Bits):
         """
         return self
 
-    def to_bv(self):
+    def raw_to_bv(self):
         """
         Interpret the bit-pattern of this IEEE754 floating point number as a bitvector.
         The inverse of this function is to_bv.
 
-        :return:        A BV AST
+        :return:        A BV AST whose bit-pattern is the same as this FP
         """
         return fpToIEEEBV(self)
+
+    def to_bv(self):
+        return self.raw_to_bv()
+
+    def val_to_bv(self, size, signed=True, rm=None):
+        """
+        Convert this floating point value to an integer.
+
+        :param size:    The size of the bitvector to return
+        :param signed:  Optional: Whether the target integer is signed
+        :param rm:      Optional: The rounding mode to use
+        :return:        A bitvector whose value is the rounded version of this FP's value
+        """
+        if rm is None:
+            rm = fp.RM.default()
+
+        op = fpToSBV if signed else fpToUBV
+        return op(rm, self, size)
 
     @property
     def sort(self):
