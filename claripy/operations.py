@@ -160,11 +160,14 @@ def concat_simplifier(*args):
         if len(args) < len(orig_args):
             simplified = True
 
-    # here, we flatten any concats among the arguments
+    # here, we flatten any concats among the arguments and remove zero-length arguments
     i = 0
     while i < len(args):
         current = args[i]
-        if current.op == 'Concat':
+        if current.length == 0:
+            args.pop(i)
+            simplified = True
+        elif current.op == 'Concat':
             simplified = True
             args[i:i+1] = current.args
             i += len(current.args)
