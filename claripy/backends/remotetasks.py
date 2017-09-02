@@ -8,10 +8,10 @@ l = logging.getLogger('claripy.backends.remotetasks')
 
 from . import celeryconfig
 
-import bson
 import celery
 from celery.contrib import rdb
 import pymongo
+import bson
 
 app = celery.Celery('tasks', broker='amqp://guest@localhost//', backend='mongodb://localhost/')
 app.config_from_object(celeryconfig)
@@ -194,4 +194,4 @@ def max(constraints, expr):
 import claripy
 from .. import Solver
 from ..result import Result
-from ..ast import base
+from ..ast import base  # pylint: disable=unused-import

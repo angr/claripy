@@ -62,7 +62,7 @@ class BackendConcrete(Backend):
             return t if b else f
 
     def _size(self, e):
-        if isinstance(e, bool) or isinstance(e, numbers.Number):
+        if isinstance(e, (bool, numbers.Number)):
             return None
         elif isinstance(e, bv.BVV):
             return e.size()
