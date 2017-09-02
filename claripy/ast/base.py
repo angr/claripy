@@ -192,6 +192,9 @@ class Base(ana.Storable):
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as Base.__new__()
+
+        We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
+        return from ``__new__``.
         """
         self.op = op
         self.args = args
@@ -255,6 +258,9 @@ class Base(ana.Storable):
 
     @property
     def cache_key(self):
+        """
+        A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
+        """
         return self._cache_key
 
     #
@@ -384,6 +390,9 @@ class Base(ana.Storable):
     #
 
     def dbg_repr(self, prefix=None):
+        """
+        Returns a debug representation of this AST.
+        """
         try:
             if prefix is not None:
                 new_prefix = prefix + "    "
@@ -404,6 +413,12 @@ class Base(ana.Storable):
         return self.__class__.__name__
 
     def shallow_repr(self, max_depth=8):
+        """
+        Returns a string representation of this AST, but with a maximum depth to prevent floods of text being printed.
+
+        :param max_depth:   The maximum depth to print
+        :return:            A string representing the AST
+        """
         return self.__repr__(max_depth=max_depth)
 
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):
@@ -703,7 +718,7 @@ class Base(ana.Storable):
 
     def replace(self, old, new):
         """
-        Returns an AST with all instances of the AST 'old' replaced with AST 'new'.
+        Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
         self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
