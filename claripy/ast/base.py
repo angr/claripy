@@ -191,7 +191,7 @@ class Base(ana.Storable):
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
-        Initializes an AST. Takes the same arguments as Base.__new__()
+        Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
         We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
         return from ``__new__``.
