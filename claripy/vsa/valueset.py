@@ -1,5 +1,6 @@
 import functools
 import itertools
+import numbers
 
 from ..backend_object import BackendObject
 from ..annotation import Annotation
@@ -133,13 +134,13 @@ class ValueSet(BackendObject):
         # Shortcuts for initialization
         # May not be useful though...
         if region is not None and region_base_addr is not None and val is not None:
-            if isinstance(region_base_addr, (int, long)):
+            if isinstance(region_base_addr, numbers.Number):
                 # Convert it to a StridedInterval
-                region_base_addr = StridedInterval(bits=self._bits, stride=1, lower_bound=region_base_addr,
-                                                   upper_bound=region_base_addr
-                                                   )
+                region_base_addr = StridedInterval(bits=self._bits, stride=1,
+                                                   lower_bound=region_base_addr,
+                                                   upper_bound=region_base_addr)
 
-            if type(val) in (int, long):
+            if isinstance(val, numbers.Number):
                 val = StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val)
 
             if isinstance(val, StridedInterval):
@@ -196,10 +197,10 @@ class ValueSet(BackendObject):
     #
 
     def _set_si(self, region, region_base_addr, si):
-        if isinstance(si, (int, long)):
+        if isinstance(si, numbers.Number):
             si = StridedInterval(bits=self.bits, stride=0, lower_bound=si, upper_bound=si)
 
-        if isinstance(region_base_addr, (int, long)):
+        if isinstance(region_base_addr, numbers.Number):
             region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
                                                upper_bound=region_base_addr
                                                )
@@ -213,7 +214,7 @@ class ValueSet(BackendObject):
 
     def _merge_si(self, region, region_base_addr, si):
 
-        if isinstance(region_base_addr, (int, long)):
+        if isinstance(region_base_addr, numbers.Number):
             region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
                                                upper_bound=region_base_addr
                                                )

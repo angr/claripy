@@ -46,11 +46,12 @@ def BoolS(name, explicit_name=None):
     return Bool('BoolS', (n,), variables={n}, symbolic=True)
 
 def BoolV(val):
-    try: return _boolv_cache[(val)]
-    except KeyError: pass
-    result = Bool('BoolV', (val,))
-    _boolv_cache[val] = result
-    return result
+    try:
+        return _boolv_cache[(val)]
+    except KeyError:
+        result = Bool('BoolV', (val,))
+        _boolv_cache[val] = result
+        return result
 
 #
 # some standard ASTs

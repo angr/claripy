@@ -1,7 +1,9 @@
+import logging
+import numbers
+
 from .bits import Bits
 from ..ast.base import _make_name
 
-import logging
 l = logging.getLogger("claripy.ast.bv")
 
 _bvv_cache = dict()
@@ -263,7 +265,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     v = region_base_addr + value
 
     # Backward compatibility
-    if isinstance(v, (int, long)):
+    if isinstance(v, numbers.Number):
         min_v, max_v = v, v
         stride = 0
     elif isinstance(v, vsa.StridedInterval):

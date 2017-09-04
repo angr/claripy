@@ -1,8 +1,11 @@
 import logging
+import numbers
 import operator
+
 l = logging.getLogger("claripy.backends.backend_concrete")
 
 from . import BackendError, Backend
+
 
 class BackendConcrete(Backend):
     def __init__(self):
@@ -59,9 +62,9 @@ class BackendConcrete(Backend):
             return t if b else f
 
     def _size(self, e):
-        if type(e) in { bool, long, int }:
+        if isinstance(e, (bool, numbers.Number)):
             return None
-        elif type(e) in { bv.BVV }:
+        elif isinstance(e, bv.BVV):
             return e.size()
         elif isinstance(e, fp.FPV):
             return e.sort.length
@@ -78,7 +81,7 @@ class BackendConcrete(Backend):
             return a == b
 
     def _convert(self, a):
-        if type(a) in { int, long, float, bool, str, bv.BVV, fp.FPV, fp.RM, fp.FSort }:
+        if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort)):
             return a
         raise BackendError("can't handle AST of type %s" % type(a))
 
@@ -105,13 +108,13 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def _to_primitive(expr):
-        if type(expr) is bv.BVV:
+        if isinstance(expr, bv.BVV):
             return expr.value
-        elif type(expr) is fp.FPV:
+        if isinstance(expr, fp.FPV):
             return expr.value
-        elif type(expr) is bool:
+        if isinstance(expr, bool):
             return expr
-        elif type(expr) in (int, long):
+        if isinstance(expr, numbers.Number):
             return expr
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):

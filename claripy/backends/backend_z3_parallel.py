@@ -34,14 +34,14 @@ class BackendZ3Parallel(BackendZ3):
             except UnsatError as e:
                 r = e
 
-            #print "WRITING (%d)" % os.getpid()
+            # print("WRITING (%d)" % os.getpid())
             pickled = pickle.dumps(r, -1)
             written = 0
             while written < len(pickled):
                 written += os.write(p_w, pickled[written:])
             os.close(p_w)
             os.close(p_r)
-            #print "WROTE (%d)" % os.getpid()
+            # print("WROTE (%d)" % os.getpid())
 
             os.kill(os.getpid(), 9)
             #os.abort()
@@ -52,16 +52,16 @@ class BackendZ3Parallel(BackendZ3):
             num_children += 1
             l.debug("in _background with function %s and child %d (among %d)", f, p, num_children)
 
-            #print "READING (from %d)" % p
+            # print("READING (from %d)" % p)
             try:
                 strs = [ os.read(p_r, 1024*1024) ]
                 while strs[-1] != "": strs.append(os.read(p_r, 1024*1024))
             except EOFError:
                 raise ClaripyError("read error while receiving data from child")
             os.close(p_r)
-            #print "READ (from %d)" % p
+            # print("READ (from %d)" % p)
 
-            #thread.start_new_thread(os.wait, ())
+            # thread.start_new_thread(os.wait, ())
             r = pickle.loads("".join(strs))
 
             os.waitpid(p, 0)
@@ -76,7 +76,7 @@ class BackendZ3Parallel(BackendZ3):
             return getattr(BackendZ3, f)(self, *args, **kwargs)
 
         self._lock.acquire()
-        #while not self._lock.acquire(blocking=False): print "ACQUIRING...",__import__('time').sleep(1)
+        #while not self._lock.acquire(blocking=False): print("ACQUIRING...",__import__('time').sleep(1))
         try:
             return getattr(BackendZ3, f)(self, *args, **kwargs)
         finally:

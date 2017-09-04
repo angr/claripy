@@ -1,10 +1,12 @@
-import sys
 import ctypes
-import logging
-import weakref
-import operator
-import threading
 from decimal import Decimal
+import logging
+import numbers
+import operator
+import sys
+import threading
+import weakref
+
 l = logging.getLogger("claripy.backends.backend_z3")
 
 #pylint:disable=unidiomatic-typecheck
@@ -295,7 +297,7 @@ class BackendZ3(Backend):
             return z3.BoolVal(True, ctx=self._context)
         elif obj is False:
             return z3.BoolVal(False, ctx=self._context)
-        elif type(obj) in (int, long, float, str):
+        elif isinstance(obj, (numbers.Number, str)):
             return obj
         elif hasattr(obj, '__module__') and obj.__module__ in ('z3', 'z3.z3'):
             return obj
@@ -610,7 +612,7 @@ class BackendZ3(Backend):
             # construct results
             r = [ ]
             for expr in exprs:
-                if not type(expr) in {int, float, str, bool, long}:
+                if not isinstance(expr, (numbers.Number, str, bool)):
                     v = self._primitive_from_model(model, expr)
                     r.append(v)
                 else:

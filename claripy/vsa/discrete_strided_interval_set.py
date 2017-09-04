@@ -1,9 +1,11 @@
-import itertools
 import functools
+import numbers
+import itertools
 
 from .strided_interval import StridedInterval
 
 DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256 # We don't collapse until there are more than this many SIs
+
 
 def apply_on_each_si(f):
     @functools.wraps(f)
@@ -19,7 +21,7 @@ def apply_on_each_si(f):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
             return ret.normalize()
 
-        elif isinstance(o, StridedInterval) or type(o) in (int, long, BVV):
+        elif isinstance(o, (StridedInterval, numbers.Number, BVV)):
             new_si_set = set()
             for si in self._si_set:
                 new_si_set.add(getattr(si, f.__name__)(o))
@@ -35,9 +37,9 @@ def apply_on_each_si(f):
 def convert_operand_to_si(f):
     @functools.wraps(f)
     def converter(self, o):
-        if type(o) is BVV:
+        if isinstance(o, BVV):
             o = o.value
-        if type(o) in (int, long):
+        if isinstance(o, numbers.Number):
             o = StridedInterval(bits=self.bits, stride=0, lower_bound=o, upper_bound=o)
 
         return f(self, o)
@@ -62,7 +64,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     """
     def __init__(self, name=None, bits=0, si_set=None, max_cardinality=None):
         if name is None:
-            name = "DSIS_%d" % (dsis_id_ctr.next())
+            name = "DSIS_%d" % dsis_id_ctr.next()
 
          # Initialize the set for strided intervals
         if si_set is not None and len(si_set):

@@ -5,7 +5,7 @@ class ConstraintFixerMixin(object):
         if len(constraints) == 0:
             return [ ]
 
-        constraints = [ BoolV(c) if type(c) is bool else c for c in constraints ]
+        constraints = [ BoolV(c) if isinstance(c, bool) else c for c in constraints ]
         return super(ConstraintFixerMixin, self).add(constraints, **kwargs)
 
 from .. import BoolV

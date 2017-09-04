@@ -3,6 +3,7 @@ import functools
 import itertools
 import logging
 import time
+
 l = logging.getLogger('claripy.backends.remotetasks')
 
 from . import celeryconfig
@@ -23,9 +24,6 @@ def init_z3_and_conns(sender, instance, **kwargs):
     z3 = claripy.backends.BackendZ3()
     z3.set_claripy_object(claripy.Claripies['SerialZ3'])
     mongo = pymongo.MongoClient()['lemma_cache']
-
-def flip_dict(d):
-    return {val: key for (key, val) in d.items()}
 
 def canonicalize_all(exprs):
     known_vars = {}
@@ -92,7 +90,7 @@ def batch_eval(constraints, exprs, n):
     return z3.batch_eval(s, exprs, n)
 
 def rename_model(mapping, model, transform=lambda x: x):
-    print model
+    l.debug("rename_model: %r", model)
     return {
         # if the name isn't in the model, then it's a "don't care",
         # i.e., it can hold any value
@@ -130,16 +128,16 @@ def results(constraints):
     parts = split_and_canonicalize(constraints)
     all_uuids = sorted(uu for uuids in parts for uu in uuids)
 
-    print "before mongo stuff took %f" % (time.time() - before)
+    print("before mongo stuff took %f" % (time.time() - before))
 
     if mongo['results'].find({'uuids': mongo_superset(all_uuids), 'sat': False}).limit(1).count(with_limit_and_skip=True) > 0:
         # this means a constraint set consisting of a subset of the
         # uuids is unsat, meaning all the uuids together must also be
         # unsat
-        print "found unsat $in"
+        print("found unsat $in")
         return Result(False, {})
 
-    print "whole pre-solve took %f" % (time.time() - before)
+    print("whole pre-solve took %f" % (time.time() - before))
 
     # for doc in mongo['results'].find({'$or': [{'uuids': uu} for uu in parts]}):
     #     l.info("lemma cache find for %r, sat is %s and model is %s", doc['uuids'], doc['sat'], doc['model'])
@@ -196,4 +194,4 @@ def max(constraints, expr):
 import claripy
 from .. import Solver
 from ..result import Result
-from ..ast import base
+from ..ast import base  # pylint: disable=unused-import

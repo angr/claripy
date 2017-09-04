@@ -580,7 +580,7 @@ def extract_simplifier(high, low, val):
 
     # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
     # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
-    #     print "saw reverse, converting"
+    #     print("saw reverse, converting")
     #     inner_length = val.args[0].length
     #     try:
     #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
