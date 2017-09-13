@@ -64,7 +64,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     """
     def __init__(self, name=None, bits=0, si_set=None, max_cardinality=None):
         if name is None:
-            name = "DSIS_%d" % dsis_id_ctr.next()
+            name = "DSIS_%d" % next(dsis_id_ctr)
 
          # Initialize the set for strided intervals
         if si_set is not None and len(si_set):

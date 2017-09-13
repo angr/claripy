@@ -98,6 +98,8 @@ def _handle_annotations(simp, args):
         return simp
 
 def reversed_op(op_func):
+    if type(op_func) is not type(reversed_op):
+        op_func = op_func.im_func # unwrap instancemethod into function
     def _reversed_op(*args):
         return op_func(*args[::-1])
     return _reversed_op

@@ -99,11 +99,10 @@ class FPV(BackendObject):
         return hash((self.value, self.sort))
 
     def __getstate__(self):
-        return (self.value, self.sort)
+        return self.value, self.sort
 
-    def __setstate__(self, (value, sort)):
-        self.value = value
-        self.sort = sort
+    def __setstate__(self, st):
+        self.value, self.sort = st
 
     def __abs__(self):
         return FPV(abs(self.value), self.sort)

@@ -1,13 +1,18 @@
 import collections
-import cPickle as pickle
 import hashlib
 import itertools
 import logging
 import numbers
 import os
 import struct
-import sys
 import weakref
+from future.utils import raise_from
+from past.builtins import long
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 import ana
 
@@ -47,7 +52,7 @@ _unique_names = True
 
 def _make_name(name, size, explicit_name=False, prefix=""):
     if _unique_names and not explicit_name:
-        return "%s%s_%d_%d" % (prefix, name, var_counter.next(), size)
+        return "%s%s_%d_%d" % (prefix, name, next(var_counter), size)
     else:
         return name
 
@@ -150,7 +155,7 @@ class Base(ana.Storable):
         h = Base._calc_hash(op, a_args, kwargs)
         self = cls._hash_cache.get(h, None)
         if self is None:
-            self = super(Base, cls).__new__(cls, op, a_args, **kwargs)
+            self = super(Base, cls).__new__(cls)
             self.__a_init__(op, a_args, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
@@ -164,20 +169,20 @@ class Base(ana.Storable):
         pass
 
     @staticmethod
-    def _calc_hash(op, args, k):
+    def _calc_hash(op, args, keywords):
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
-        :param op:      The operation.
-        :param args:    The arguments to the operation.
-        :param kwargs:  A dict including the 'symbolic', 'variables', and 'length' items.
-        :returns:       a hash.
+        :param op:          The operation.
+        :param args:        The arguments to the operation.
+        :param keywords:    A dict including the 'symbolic', 'variables', and 'length' items.
+        :returns:           a hash.
 
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
         """
-        args_tup = tuple(long(a) if type(a) is int else (a if type(a) in (long, float) else hash(a)) for a in args)
-        to_hash = (op, args_tup, k['symbolic'], hash(k['variables']), str(k.get('length', None)), hash(k.get('annotations', None)))
+        args_tup = tuple(long(a) if type(a) is int and int is not long else (a if type(a) in (long, float) else hash(a)) for a in args)
+        to_hash = (op, args_tup, keywords['symbolic'], hash(keywords['variables']), str(keywords.get('length', None)), hash(keywords.get('annotations', None)))
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
@@ -405,9 +410,8 @@ class Base(ana.Storable):
                 return s
             else:
                 return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
-        except RuntimeError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
+        except RuntimeError as e:
+            raise_from(ClaripyRecursionError("Recursion limit reached during display. Sorry about that."), e)
 
     def _type_name(self):
         return self.__class__.__name__
@@ -494,9 +498,8 @@ class Base(ana.Storable):
                 value = '<{} {}>'.format(self._type_name(), value)
 
             return value
-        except RuntimeError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyRecursionError, ("Recursion limit reached during display. I sorry.", e_type, value), traceback
+        except RuntimeError as e:
+            raise_from(ClaripyRecursionError("Recursion limit reached during display. Sorry about that."), e)
 
     @property
     def depth(self):

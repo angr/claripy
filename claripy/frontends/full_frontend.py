@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-
 import logging
-l = logging.getLogger("claripy.frontends.full_frontend")
-
 import sys
 import threading
+from future.utils import raise_from
 
 from .constrained_frontend import ConstrainedFrontend
+
+l = logging.getLogger("claripy.frontends.full_frontend")
 
 class FullFrontend(ConstrainedFrontend):
     _model_hook = None
@@ -90,9 +89,8 @@ class FullFrontend(ConstrainedFrontend):
                 extra_constraints=extra_constraints,
                 solver=self._get_solver(), model_callback=self._model_hook
             )
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during solve: %s('%s')" % (str(e_type), str(value)), traceback
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during solve"), e)
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -103,9 +101,8 @@ class FullFrontend(ConstrainedFrontend):
                 e, n, extra_constraints=extra_constraints,
                 solver=self._get_solver(), model_callback=self._model_hook
             )
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during _eval: %s('%s')" % (str(e_type), str(value)), traceback
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during eval"), e)
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -119,9 +116,8 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver(),
                 model_callback=self._model_hook
             )
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during _batch_eval: %s('%s')" % (str(e_type), str(value)), traceback
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during batch_eval"), e)
 
     def max(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -140,9 +136,8 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver(),
                 model_callback=self._model_hook
             )
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during _max: %s('%s')" % (str(e_type), str(value)), traceback
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during max"), e)
 
     def min(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -161,9 +156,8 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver(),
                 model_callback=self._model_hook
             )
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during _min: %s('%s')" % (str(e_type), str(value)), traceback
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during min"), e)
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         try:
@@ -171,9 +165,8 @@ class FullFrontend(ConstrainedFrontend):
                 e, v, extra_constraints=extra_constraints,
                 solver=self._get_solver(), model_callback=self._model_hook
             )
-        except BackendError:
-            e_type, value, traceback = sys.exc_info()
-            raise ClaripyFrontendError, "Backend error during _solution: %s('%s')" % (str(e_type), str(value)), traceback
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during solution"), e)
 
     def is_true(self, e, extra_constraints=(), exact=None):
         return e.is_true()

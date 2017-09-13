@@ -14,6 +14,7 @@ setup(
     install_requires=[
         'ana',
         'z3-solver',
+        'future',
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',

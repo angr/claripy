@@ -1,5 +1,7 @@
+import binascii
 import logging
 import numbers
+from past.builtins import long, unicode
 
 from .bits import Bits
 from ..ast.base import _make_name
@@ -212,14 +214,15 @@ def BVV(value, size=None, **kwargs):
     :returns:       A BV object representing this value.
     """
 
-    if type(value) is str or type(value) is unicode:
+    if type(value) in (bytes, str, unicode):
         if type(value) is unicode:
-            l.warn("BVV value is a unicode string")
+            l.warn("BVV value is a unicode string, encoding as utf-8")
+            value = value.encode('utf-8')
         if size is None:
             size = 8*len(value)
-            value = int(value.encode('hex'), 16) if value != "" else 0
+            value = int(binascii.hexlify(value), 16) if value != "" else 0
         elif size == len(value)*8:
-            value = int(value.encode('hex'), 16) if value != "" else 0
+            value = int(binascii.hexlify(value), 16) if value != "" else 0
         else:
             raise ClaripyValueError('string/size mismatch for BVV creation')
     elif size is None:
@@ -344,23 +347,23 @@ intersection = operations.op('intersection', (BV, BV), BV, extra_check=operation
 #
 
 BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__radd__ = operations.reversed_op(BV.__add__.im_func)
+BV.__radd__ = operations.reversed_op(BV.__add__)
 BV.__div__ = operations.op('__div__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdiv__ = operations.reversed_op(BV.__div__.im_func)
+BV.__rdiv__ = operations.reversed_op(BV.__div__)
 BV.__truediv__ = operations.op('__truediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rtruediv__ = operations.reversed_op(BV.__truediv__.im_func)
+BV.__rtruediv__ = operations.reversed_op(BV.__truediv__)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__.im_func)
+BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__)
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rmul__ = operations.reversed_op(BV.__mul__.im_func)
+BV.__rmul__ = operations.reversed_op(BV.__mul__)
 BV.__sub__ = operations.op('__sub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rsub__ = operations.reversed_op(BV.__sub__.im_func)
+BV.__rsub__ = operations.reversed_op(BV.__sub__)
 BV.__pow__ = operations.op('__pow__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rpow__ = operations.reversed_op(BV.__pow__.im_func)
+BV.__rpow__ = operations.reversed_op(BV.__pow__)
 BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rmod__ = operations.reversed_op(BV.__mod__.im_func)
+BV.__rmod__ = operations.reversed_op(BV.__mod__)
 BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdivmod__ = operations.reversed_op(BV.__divmod__.im_func)
+BV.__rdivmod__ = operations.reversed_op(BV.__divmod__)
 BV.SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 BV.SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 
@@ -385,15 +388,15 @@ BV.UGE = operations.op('__ge__', (BV, BV), Bool, extra_check=operations.length_s
 
 BV.__invert__ = operations.op('__invert__', (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__or__ = operations.op('__or__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__ror__ = operations.reversed_op(BV.__or__.im_func)
+BV.__ror__ = operations.reversed_op(BV.__or__)
 BV.__and__ = operations.op('__and__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rand__ = operations.reversed_op(BV.__and__.im_func)
+BV.__rand__ = operations.reversed_op(BV.__and__)
 BV.__xor__ = operations.op('__xor__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rxor__ = operations.reversed_op(BV.__xor__.im_func)
+BV.__rxor__ = operations.reversed_op(BV.__xor__)
 BV.__lshift__ = operations.op('__lshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rlshift__ = operations.reversed_op(BV.__lshift__.im_func)
+BV.__rlshift__ = operations.reversed_op(BV.__lshift__)
 BV.__rshift__ = operations.op('__rshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rrshift__ = operations.reversed_op(BV.__rshift__.im_func)
+BV.__rrshift__ = operations.reversed_op(BV.__rshift__)
 BV.LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 
 BV.Extract = staticmethod(operations.op('Extract', ((int, long), (int, long), BV), BV, extra_check=operations.extract_check, calc_length=operations.extract_length_calc, bound=False))

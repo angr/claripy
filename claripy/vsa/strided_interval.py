@@ -306,7 +306,7 @@ class StridedInterval(BackendObject):
         self._name = name
 
         if self._name is None:
-            self._name = "SI_%d" % si_id_ctr.next()
+            self._name = "SI_%d" % next(si_id_ctr)
 
         self._bits = bits
         self._stride = stride if stride is not None else 1

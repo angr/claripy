@@ -1,3 +1,5 @@
+from past.builtins import long
+
 from .bits import Bits
 from ..ast.base import _make_name
 
@@ -162,7 +164,7 @@ FP.__sub__ = fpSub
 FP.__mul__ = fpMul
 FP.__div__ = fpDiv
 
-FP.__radd__ = operations.reversed_op(FP.__add__.im_func)
-FP.__rsub__ = operations.reversed_op(FP.__sub__.im_func)
-FP.__rmul__ = operations.reversed_op(FP.__mul__.im_func)
-FP.__rdiv__ = operations.reversed_op(FP.__div__.im_func)
+FP.__radd__ = operations.reversed_op(FP.__add__)
+FP.__rsub__ = operations.reversed_op(FP.__sub__)
+FP.__rmul__ = operations.reversed_op(FP.__mul__)
+FP.__rdiv__ = operations.reversed_op(FP.__div__)

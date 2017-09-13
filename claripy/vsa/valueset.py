@@ -119,7 +119,7 @@ class ValueSet(BackendObject):
         :param val: an initial offset
         """
 
-        self._name = 'VS_%d' % vs_id_ctr.next() if name is None else name
+        self._name = 'VS_%d' % next(vs_id_ctr) if name is None else name
         if bits is None:
             raise ClaripyVSAError('bits must be specified when creating a ValueSet.')
 

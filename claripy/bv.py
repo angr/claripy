@@ -42,7 +42,7 @@ def normalize_types(f):
     return normalize_helper
 
 class BVV(BackendObject):
-    __slots__ = [ 'bits', '_value', 'mod', 'value' ]
+    __slots__ = [ 'bits', '_value', 'mod' ]
 
     def __init__(self, value, bits):
         if bits < 0 or not isinstance(bits, numbers.Number) or not isinstance(value, numbers.Number):

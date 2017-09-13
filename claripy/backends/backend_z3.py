@@ -6,6 +6,8 @@ import operator
 import sys
 import threading
 import weakref
+from future.utils import raise_from
+from past.builtins import long
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -75,11 +77,13 @@ def condom(f):
         The Z3 condom intercepts Z3Exceptions and throws a ClaripyZ3Error instead.
         """
         try:
-            condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
+            if int is not long:
+                condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
+            else:
+                condom_args = args
             return f(*condom_args, **kwargs)
         except z3.Z3Exception as ze:
-            _, _, traceback = sys.exc_info()
-            raise ClaripyZ3Error, ("Z3Exception: %s" % ze), traceback
+            raise_from(ClaripyZ3Error("Z3Exception: %s" % ze), ze)
     return z3_condom
 
 def _raw_caller(f):
@@ -363,7 +367,7 @@ class BackendZ3(Backend):
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
                 return BVV(self._c_uint64_p.contents.value, bv_size)
             else:
-                bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+                bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
                 return BVV(bv_num, bv_size)
         elif op_name in ('FPVal', 'MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
@@ -478,7 +482,7 @@ class BackendZ3(Backend):
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
                 return self._c_uint64_p.contents.value
             else:
-                bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+                bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
                 return bv_num
         elif op_name == 'True':
             return True
@@ -493,7 +497,7 @@ class BackendZ3(Backend):
         if op_name == 'FPVal':
             # TODO: do better than this
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
+            fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
             fp_sign_c = ctypes.c_int()
             z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
             fp_sign = -1 if fp_sign_c.value != 0 else 1
