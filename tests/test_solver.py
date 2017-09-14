@@ -25,19 +25,19 @@ def test_hybrid_solver():
     s.add((y-20) % 5 == 0)
     s.add(x != 8)
 
-    nose.tools.assert_items_equal(s.eval(x, 20, exact=False), (0, 2, 4, 6, 8, 10))
-    nose.tools.assert_items_equal(s.eval(x, 20), (0, 2, 4, 6, 10))
-    nose.tools.assert_items_equal(s.eval(y, 20, exact=False), (20, 25, 30))
-    nose.tools.assert_items_equal(s.eval(y, 20), (20, 25, 30))
+    nose.tools.assert_equal(sorted(s.eval(x, 20, exact=False)), [0, 2, 4, 6, 8, 10])
+    nose.tools.assert_equal(sorted(s.eval(x, 20)), [0, 2, 4, 6, 10])
+    nose.tools.assert_equal(sorted(s.eval(y, 20, exact=False)), [20, 25, 30])
+    nose.tools.assert_equal(sorted(s.eval(y, 20)), [20, 25, 30])
 
     # now constrain things further so that the VSA overapproximates
     s.add(x <= 4)
-    nose.tools.assert_items_equal(s.eval(x, 20, exact=False), (0, 2, 4))
-    nose.tools.assert_items_equal(s.eval(x, 20), (0, 2, 4))
+    nose.tools.assert_equal(sorted(s.eval(x, 20, exact=False)), [0, 2, 4])
+    nose.tools.assert_equal(sorted(s.eval(x, 20)), [0, 2, 4])
 
     s.add(y >= 27)
-    nose.tools.assert_items_equal(s.eval(y, 20, exact=False), (30,))
-    nose.tools.assert_items_equal(s.eval(y, 20), (30,))
+    nose.tools.assert_equal(s.eval(y, 20, exact=False), (30,))
+    nose.tools.assert_equal(s.eval(y, 20), (30,))
 
     t = claripy.SolverHybrid()
     x = claripy.BVS('x', 32)
@@ -52,9 +52,9 @@ def test_hybrid_solver():
 def test_replacement_solver():
     sr = claripy.SolverReplacement()
     x = claripy.BVS('x', 32)
-    nose.tools.assert_equals(len(sr.eval(x, 10)), 10)
+    nose.tools.assert_equal(len(sr.eval(x, 10)), 10)
     sr.add_replacement(x, claripy.BVV(0x101, 32))
-    nose.tools.assert_items_equal(sr.eval(x, 10), [0x101])
+    nose.tools.assert_equal(sr.eval(x, 10), (0x101,))
 
     y = claripy.BVS('y', 32)
     sr.add([y+1 == 200])
@@ -186,9 +186,9 @@ def raw_solver(solver_type):
     results = s.batch_eval([x, y, z], 20)
     nose.tools.assert_set_equal(
         set(results),
-        {(21L, 23L, 1L), (22L, 23L, 3L), (22L, 23L, 2L), (22L, 23L, 4L), (21L, 22L, 4L), (21L, 23L, 4L), (22L, 23L, 0L),
-         (22L, 23L, 1L), (21L, 22L, 1L), (21L, 22L, 3L), (21L, 22L, 2L), (21L, 22L, 0L), (21L, 23L, 0L), (21L, 23L, 2L),
-         (21L, 23L, 3L)
+        {(21, 23, 1), (22, 23, 3), (22, 23, 2), (22, 23, 4), (21, 22, 4), (21, 23, 4), (22, 23, 0),
+         (22, 23, 1), (21, 22, 1), (21, 22, 3), (21, 22, 2), (21, 22, 0), (21, 23, 0), (21, 23, 2),
+         (21, 23, 3)
         }
     )
 
@@ -202,7 +202,7 @@ def raw_solver(solver_type):
     # test extra constraints
     s = solver_type()
     x = claripy.BVS('x', 32)
-    nose.tools.assert_items_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
+    nose.tools.assert_equal(s.eval(x, 2, extra_constraints=[x==10]), ( 10, ))
     s.add(x == 10)
     nose.tools.assert_false(s.solution(x, 2))
     nose.tools.assert_true(s.solution(x, 10))
@@ -217,18 +217,18 @@ def raw_solver(solver_type):
         s.add(x == 10)
         nose.tools.assert_true(s.satisfiable())
         assert claripy._backends_module.backend_z3.solve_count == count + 1
-        nose.tools.assert_equals(s.eval(x, 1)[0], 10)
+        nose.tools.assert_equal(s.eval(x, 1)[0], 10)
         assert claripy._backends_module.backend_z3.solve_count == count + 1
         s.add(x == 10)
         s.add(x > 9)
-        nose.tools.assert_equals(s.eval(x, 1)[0], 10)
+        nose.tools.assert_equal(s.eval(x, 1)[0], 10)
         assert claripy._backends_module.backend_z3.solve_count == count + 1
 
         y = claripy.BVS('y', 32)
         s.add(y < 999)
         assert s.satisfiable()
         assert claripy._backends_module.backend_z3.solve_count == count + 1
-        nose.tools.assert_equals(s.eval(y, 1)[0], 0)
+        nose.tools.assert_equal(s.eval(y, 1)[0], 0)
         assert claripy._backends_module.backend_z3.solve_count == count + 1
 
 def test_solver_branching():
@@ -260,8 +260,8 @@ def raw_solver_branching(solver_type):
 
     s.add(y == 2)
     nose.tools.assert_true(s.satisfiable())
-    nose.tools.assert_equals(s.eval(x, 1)[0], 3)
-    nose.tools.assert_equals(s.eval(y, 1)[0], 2)
+    nose.tools.assert_equal(s.eval(x, 1)[0], 3)
+    nose.tools.assert_equal(s.eval(y, 1)[0], 2)
     nose.tools.assert_false(t.satisfiable())
 
 def test_combine():
@@ -285,7 +285,7 @@ def raw_combine(solver_type):
     nose.tools.assert_true(s20.combine([s10]).satisfiable())
     nose.tools.assert_true(s30.combine([s10]).satisfiable())
     nose.tools.assert_false(s30.combine([s20]).satisfiable())
-    nose.tools.assert_items_equal(s30.combine([s10]).eval(x, 1), ( 30, ))
+    nose.tools.assert_equal(s30.combine([s10]).eval(x, 1), ( 30, ))
     nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
 
 def test_composite_solver():
@@ -296,7 +296,7 @@ def test_composite_solver():
     z = claripy.BVS("z", 32)
     c = claripy.And(x == 1, y == 2, z == 3)
     s.add(c)
-    nose.tools.assert_equals(len(s._solver_list), 3)
+    nose.tools.assert_equal(len(s._solver_list), 3)
     nose.tools.assert_true(s.satisfiable())
 
     s.add(x < y)
@@ -386,9 +386,9 @@ def test_model():
     s = claripy.Solver()
 
     s.add(x < 10)
-    assert sorted(s.eval(x, 20)) == range(10)
+    assert sorted(s.eval(x, 20)) == list(range(10))
     s.add(y == 1337)
-    assert sorted(s.eval(x, 20)) == range(10)
+    assert sorted(s.eval(x, 20)) == list(range(10))
 
 def test_unsatness():
     x = claripy.BVS("x", 32)

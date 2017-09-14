@@ -57,7 +57,7 @@ class BV(Bits):
         elif s == bits:
             return [ self ]
         else:
-            return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
+            return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s // bits) ]))
 
     def __getitem__(self, rng):
         if type(rng) is slice:
@@ -78,7 +78,7 @@ class BV(Bits):
         :param index: the byte to extract
         :return: An 8-bit BV
         """
-        pos = self.size() / 8 - 1 - index
+        pos = self.size() // 8 - 1 - index
         return self[pos * 8 + 7 : pos * 8]
 
     def get_bytes(self, index, size):
@@ -88,7 +88,7 @@ class BV(Bits):
         :param index: the byte to extract
         :return: A BV of size ``size * 8``
         """
-        pos = self.size() / 8 - 1 - index
+        pos = self.size() // 8 - 1 - index
         return self[pos * 8 + 7 : (pos - size + 1) * 8]
 
     def zero_extend(self, n):
@@ -348,12 +348,12 @@ intersection = operations.op('intersection', (BV, BV), BV, extra_check=operation
 
 BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__radd__ = operations.reversed_op(BV.__add__)
-BV.__div__ = operations.op('__div__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdiv__ = operations.reversed_op(BV.__div__)
-BV.__truediv__ = operations.op('__truediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rtruediv__ = operations.reversed_op(BV.__truediv__)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__)
+BV.__div__ = BV.__floordiv__
+BV.__rdiv__ = BV.__rfloordiv__
+BV.__truediv__ = BV.__floordiv__
+BV.__rtruediv__ = BV.__rfloordiv__
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rmul__ = operations.reversed_op(BV.__mul__)
 BV.__sub__ = operations.op('__sub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)

@@ -37,7 +37,7 @@ class LightFrontend(ConstrainedFrontend):
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         try:
-            return self._solver_backend.eval(e, n)
+            return tuple(self._solver_backend.eval(e, n))
         except BackendError:
             raise ClaripyFrontendError("Light solver can't handle this eval().")
 

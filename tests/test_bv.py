@@ -60,6 +60,6 @@ if __name__ == '__main__':
 
     else:
         g = globals().copy()
-        for func_name, func in g.iteritems():
+        for func_name, func in g.items():
             if func_name.startswith("test_") and hasattr(func, "__call__"):
                 func()

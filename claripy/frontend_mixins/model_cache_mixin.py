@@ -31,11 +31,11 @@ class ModelCache(object):
     #
 
     def filter(self, variables):
-        return ModelCache({ k:v for k,v in self.model.iteritems() if k in variables })
+        return ModelCache({ k:self.model[k] for k in self.model if k in variables })
 
     @staticmethod
     def combine(*models):
-        return ModelCache(dict(itertools.chain.from_iterable(m.model.iteritems() for m in models)))
+        return ModelCache(dict(itertools.chain.from_iterable(m.model.items() for m in models)))
 
     #
     # Model-driven evaluation

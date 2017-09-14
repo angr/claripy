@@ -58,7 +58,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def _solver_list(self):
         seen_solvers = set()
         solver_list = [ ]
-        for s in self._solvers.itervalues():
+        for s in self._solvers.values():
             if id(s) in seen_solvers: continue
             seen_solvers.add(id(s))
             solver_list.append(s)

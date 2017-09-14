@@ -1,6 +1,7 @@
 import logging
 import numbers
 import operator
+from functools import reduce
 
 l = logging.getLogger("claripy.backends.backend_concrete")
 

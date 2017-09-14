@@ -179,8 +179,8 @@ class ValueSet(BackendObject):
     @property
     def cardinality(self):
         card = 0
-        for si in self._regions.itervalues():
-            card += si.cardinality
+        for region in self._regions:
+            card += self._regions[region].cardinality
 
         return card
 
@@ -288,7 +288,7 @@ class ValueSet(BackendObject):
         return self._bits
 
     def __hash__(self):
-        return hash(tuple([(r, hash(si)) for r, si in self._regions.iteritems()]))
+        return hash(tuple((r, hash(self._regions[r])) for r in self._regions))
 
     #
     # Arithmetic operations
@@ -312,8 +312,8 @@ class ValueSet(BackendObject):
         # Call __add__ on self._si
         new_vs._si = self._si.__add__(other)
 
-        for region, si in self._regions.iteritems():
-            new_vs._regions[region] = si + other
+        for region in self._regions:
+            new_vs._regions[region] = self._regions[region] + other
 
         return new_vs
 
@@ -338,8 +338,8 @@ class ValueSet(BackendObject):
             # A subtraction between two ValueSets produces a StridedInterval
 
             if self.regions.keys() == other.regions.keys():
-                for region, si in self._regions.iteritems():
-                    deltas.append(si - other._regions[region])
+                for region in self._regions:
+                    deltas.append(self._regions[region] - other._regions[region])
 
             else:
                 # TODO: raise the proper exception here
@@ -559,7 +559,7 @@ class ValueSet(BackendObject):
             merged_vs._si = merged_vs._si.widen(b._si)
 
         else:
-            for region, si in merged_vs._regions.iteritems():
+            for region in merged_vs._regions:
                 merged_vs._regions[region] = merged_vs._regions[region].widen(b)
 
             merged_vs._si = merged_vs._si.widen(b)
@@ -583,7 +583,7 @@ class ValueSet(BackendObject):
             vs._si = vs._si.intersection(b._si)
 
         else:
-            for region, si in self._regions.iteritems():
+            for region in self._regions:
                 vs.regions[region] = vs.regions[region].intersection(b)
 
                 if vs.regions[region].is_empty:

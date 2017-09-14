@@ -660,7 +660,10 @@ class Backend(object):
         :param a: a claripy A object
         :param b: a claripy A object
         """
-        return self._identical(self.convert(a), self.convert(b))
+        o = self._identical(self.convert(a), self.convert(b))
+        self.convert(a)
+        self.convert(b)
+        return o
 
     def _identical(self, a, b): #pylint:disable=no-self-use,unused-argument
         """

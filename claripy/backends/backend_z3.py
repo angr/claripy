@@ -8,6 +8,7 @@ import threading
 import weakref
 from future.utils import raise_from
 from past.builtins import long
+from functools import reduce
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -129,7 +130,7 @@ class BackendZ3(Backend):
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
 
-        self._op_raw['__div__'] = self._op_div
+        self._op_raw['__floordiv__'] = self._op_div
         self._op_raw['__mod__'] = self._op_mod
 
         # reduceable
@@ -651,8 +652,9 @@ class BackendZ3(Backend):
             numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
 
+        # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
-            middle = (lo + hi)/2
+            middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
@@ -708,8 +710,9 @@ class BackendZ3(Backend):
             numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
 
+        # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
-            middle = (lo + hi)/2
+            middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
@@ -1049,12 +1052,12 @@ op_map = {
     'Z3_OP_BMUL': '__mul__',
 
     'Z3_OP_BSDIV': 'SDiv',
-    'Z3_OP_BUDIV': '__div__',
+    'Z3_OP_BUDIV': '__floordiv__',
     'Z3_OP_BSREM': 'SMod',
     'Z3_OP_BUREM': '__mod__',
     'Z3_OP_BSMOD': 'SMod',
     'Z3_OP_BSDIV_I': 'SDiv',
-    'Z3_OP_BUDIV_I': '__div__',
+    'Z3_OP_BUDIV_I': '__floordiv__',
     'Z3_OP_BSREM_I': 'SMod',
     'Z3_OP_BUREM_I': '__mod__',
     'Z3_OP_BSMOD_I': 'SMod',

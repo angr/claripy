@@ -2,6 +2,7 @@ import logging
 import numbers
 import functools
 import operator
+from functools import reduce
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
@@ -36,11 +37,11 @@ def convert_args(f):
     @functools.wraps(f)
     def converter(self, ast):
         raw_args = []
-        for i in xrange(len(ast.args)):
+        for i in range(len(ast.args)):
             # It's not reversed
             raw_args.append(ast.args[i])
 
-        for i in xrange(len(raw_args)):
+        for i in range(len(raw_args)):
             raw_args[i] = self.convert(raw_args[i])
 
         normalized = ast.swap_args(raw_args)

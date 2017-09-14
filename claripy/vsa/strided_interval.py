@@ -4,6 +4,8 @@ import itertools
 import logging
 import math
 import numbers
+from functools import reduce
+from past.builtins import xrange
 
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
@@ -435,7 +437,7 @@ class StridedInterval(BackendObject):
     #
 
     def __hash__(self):
-        return hash((self.bits, self.lower_bound, self.upper_bound, self.stride, self._reversed, self.uninitialized))
+        return hash(('%x %x %x %x' % (self.bits, self.lower_bound, self.upper_bound, self.stride), self._reversed, self.uninitialized))
 
     def _normalize_top(self):
         if self.lower_bound == self._modular_add(self.upper_bound, 1, self.bits) and self.stride == 1:
@@ -675,7 +677,6 @@ class StridedInterval(BackendObject):
         :param o: The other StridedInterval to compare with.
         :return: True if they are exactly same, False otherwise.
         """
-
         return self.bits == o.bits and self.stride == o.stride and self.lower_bound == o.lower_bound and self.upper_bound == o.upper_bound
 
     @normalize_types
@@ -1036,7 +1037,7 @@ class StridedInterval(BackendObject):
         return StridedInterval.least_upper_bound(*all_resulting_intervals).normalize()
 
     @normalize_types
-    def __div__(self, o):
+    def __floordiv__(self, o):
         """
         Unsigned division
 
@@ -1045,6 +1046,11 @@ class StridedInterval(BackendObject):
         """
 
         return self.udiv(o)
+
+    def __div__(self, other):
+        return self // other
+    def __truediv__(self, other):
+        return self // other # decline to involve floating point numbers at ALL
 
     def __neg__(self):
         return self.bitwise_not()
@@ -1136,7 +1142,7 @@ class StridedInterval(BackendObject):
         elif self.is_integer:
             return 1
         else:
-            return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + self._stride) / self._stride
+            return (self._modular_sub(self._upper_bound, self._lower_bound, self.bits) + self._stride) // self._stride
 
     @property
     def complement(self):
@@ -1286,7 +1292,7 @@ class StridedInterval(BackendObject):
 
     @property
     def n_values(self):
-        return (StridedInterval._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits) / self.stride) + 1
+        return (StridedInterval._wrapped_cardinality(self.lower_bound, self.upper_bound, self.bits) // self.stride) + 1
 
     #
     # Modular arithmetic
@@ -1709,8 +1715,8 @@ class StridedInterval(BackendObject):
         if divisor_ub == 0:
             divisor_ub = (divisor_ub - 1) & (2 ** bits - 1)
 
-        lb = a.lower_bound / divisor_ub
-        ub = a.upper_bound / divisor_lb
+        lb = a.lower_bound // divisor_ub
+        ub = a.upper_bound // divisor_lb
 
         # TODO: Can we make a more precise estimate of the stride?
         stride = 1
@@ -1751,24 +1757,24 @@ class StridedInterval(BackendObject):
         stride = 1
         if dividend_positive and divisor_positive:
             # They are all positive numbers!
-            lb = a.lower_bound / divisor_ub
-            ub = a.upper_bound / divisor_lb
+            lb = a.lower_bound // divisor_ub
+            ub = a.upper_bound // divisor_lb
 
         elif dividend_positive and not divisor_positive:
             # + / -
-            lb = a.upper_bound / StridedInterval._unsigned_to_signed(divisor_ub, bits)
-            ub = a.lower_bound / StridedInterval._unsigned_to_signed(divisor_lb, bits)
+            lb = a.upper_bound // StridedInterval._unsigned_to_signed(divisor_ub, bits)
+            ub = a.lower_bound // StridedInterval._unsigned_to_signed(divisor_lb, bits)
 
         elif not dividend_positive and divisor_positive:
             # - / +
-            lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) / divisor_lb
-            ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) / divisor_ub
+            lb = StridedInterval._unsigned_to_signed(a.lower_bound, bits) // divisor_lb
+            ub = StridedInterval._unsigned_to_signed(a.upper_bound, bits) // divisor_ub
 
         else:
             # - / -
-            lb = StridedInterval._unsigned_to_signed(a.upper_bound, bits) / \
+            lb = StridedInterval._unsigned_to_signed(a.upper_bound, bits) // \
                  StridedInterval._unsigned_to_signed(b.lower_bound, bits)
-            ub = StridedInterval._unsigned_to_signed(a.lower_bound, bits) / \
+            ub = StridedInterval._unsigned_to_signed(a.lower_bound, bits) // \
                  StridedInterval._unsigned_to_signed(b.upper_bound, bits)
 
         return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub, uninitialized=uninit_flag)
@@ -2326,7 +2332,7 @@ class StridedInterval(BackendObject):
                     ret = self.top(tok, uninitialized=self.uninitialized)
                     ret.stride = stride
                     ret.lower_bound = new_lower
-                    k = (ret.upper_bound - ret.lower_bound) / ret.stride
+                    k = (ret.upper_bound - ret.lower_bound) // ret.stride
                     ret.upper_bound = ret.stride * k + ret.lower_bound
                 else:
                     ret = StridedInterval(bits=tok, stride=0, lower_bound=(self.lower_bound & ((2**tok)-1)), upper_bound=(self.upper_bound & ((2 ** tok) - 1)))
@@ -2589,7 +2595,7 @@ class StridedInterval(BackendObject):
 
         else:
             if self.cardinality > discrete_strided_interval_set.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING or \
-                    b.cardinality > discrete_strided_interval_set:
+                    b.cardinality > discrete_strided_interval_set.DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING:
                 return StridedInterval.least_upper_bound(self, b)
 
             else:
@@ -3116,7 +3122,7 @@ class StridedInterval(BackendObject):
                     ret = (StridedInterval.empty(self.bits), )
                 else:
                     ub = self._modular_add(
-                        self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        self._modular_sub(self.upper_bound, lb, self.bits) // new_stride * new_stride,
                         lb,
                         self.bits
                     )
@@ -3136,7 +3142,7 @@ class StridedInterval(BackendObject):
                     ret = (StridedInterval.empty(self.bits), )
                 else:
                     ub = self._modular_add(
-                        self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        self._modular_sub(b.upper_bound, lb, self.bits) // new_stride * new_stride,
                         lb,
                         self.bits
                     )
@@ -3176,7 +3182,7 @@ class StridedInterval(BackendObject):
                     s0 = StridedInterval.empty(self.bits)
                 else:
                     ub_s0_new = self._modular_add(
-                                    self._modular_sub(ub_s0, lb_s0_new, self.bits) / new_stride * new_stride,
+                                    self._modular_sub(ub_s0, lb_s0_new, self.bits) // new_stride * new_stride,
                                     lb_s0_new,
                                     self.bits
                                 )
@@ -3189,7 +3195,7 @@ class StridedInterval(BackendObject):
                     s1 = StridedInterval.empty(self.bits)
                 else:
                     ub_s1_new = self._modular_add(
-                                self._modular_sub(ub_s1, lb_s1_new, self.bits) / new_stride * new_stride,
+                                self._modular_sub(ub_s1, lb_s1_new, self.bits) // new_stride * new_stride,
                                     lb_s1_new,
                                     self.bits
                                 )
@@ -3210,7 +3216,7 @@ class StridedInterval(BackendObject):
                     ret = (StridedInterval.empty(self.bits), )
                 else:
                     ub = self._modular_add(
-                        self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        self._modular_sub(self.upper_bound, lb, self.bits) // new_stride * new_stride,
                         lb,
                         self.bits
                     )
@@ -3229,7 +3235,7 @@ class StridedInterval(BackendObject):
                     ret = (StridedInterval.empty(self.bits), )
                 else:
                     ub = self._modular_add(
-                        self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        self._modular_sub(b.upper_bound, lb, self.bits) // new_stride * new_stride,
                         lb,
                         self.bits
                     )
@@ -3249,7 +3255,7 @@ class StridedInterval(BackendObject):
 
                 else:
                     ub = self._modular_add(
-                        self._modular_sub(b.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        self._modular_sub(b.upper_bound, lb, self.bits) // new_stride * new_stride,
                         lb,
                         self.bits
                     )
@@ -3269,7 +3275,7 @@ class StridedInterval(BackendObject):
 
                 else:
                     ub = self._modular_add(
-                        self._modular_sub(self.upper_bound, lb, self.bits) / new_stride * new_stride,
+                        self._modular_sub(self.upper_bound, lb, self.bits) // new_stride * new_stride,
                         lb,
                         self.bits
                     )
@@ -3356,7 +3362,7 @@ class StridedInterval(BackendObject):
                 logger.warning('Reversing a real strided-interval %s is bad', self)
 
             # Reversing an integer is easy
-            rounded_bits = ((o.bits + 7) / 8) * 8
+            rounded_bits = ((o.bits + 7) // 8) * 8
             list_bytes = [ ]
             si = None
 
@@ -3401,7 +3407,7 @@ class StridedInterval(BackendObject):
             lb = o._lower_bound
             ub = o._upper_bound
 
-            rounded_bits = ((o.bits + 7) / 8) * 8
+            rounded_bits = ((o.bits + 7) // 8) * 8
             lb_r = []
             ub_r = []
 

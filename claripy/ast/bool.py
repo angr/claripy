@@ -1,7 +1,9 @@
 import logging
-l = logging.getLogger('claripy.ast.bool')
+from past.builtins import xrange
 
 from ..ast.base import Base, _make_name
+
+l = logging.getLogger('claripy.ast.bool')
 
 _boolv_cache = dict()
 

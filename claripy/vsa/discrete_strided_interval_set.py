@@ -159,6 +159,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
         return copied
 
+    def __hash__(self):
+        return id(self) # ...not sure how to do this. these objects are mutable.
+
     #
     # Operations
     #
@@ -373,7 +376,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     @convert_operand_to_si
     @apply_on_each_si
-    def __div__(self, o):
+    def __floordiv__(self, o):
         """
         Operation /
 
@@ -382,8 +385,17 @@ class DiscreteStridedIntervalSet(StridedInterval):
         """
         pass
 
+    def __div__(self, o):
+        return self.__floordiv__(o)
+    def __truediv__(self, o):
+        return self.__floordiv__(o) # floats not welcome
+
+    def __rfloordiv__(self, o):
+        return self.__floordiv__(o)
     def __rdiv__(self, o):
-        return self.__div__(o)
+        return self.__rfloordiv__(o)
+    def __rtruediv__(self, o):
+        return self.__rfloordiv__(o)
 
     @convert_operand_to_si
     @apply_on_each_si

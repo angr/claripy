@@ -78,7 +78,7 @@ def test_datalayer():
     ss = claripy.SolverComposite.ana_load(s.ana_store())
     old_constraint_sets = [[hash(j) for j in k.constraints] for k in s._solver_list]
     new_constraint_sets = [[hash(j) for j in k.constraints] for k in ss._solver_list]
-    nose.tools.assert_items_equal(old_constraint_sets, new_constraint_sets)
+    nose.tools.assert_equal(old_constraint_sets, new_constraint_sets)
     nose.tools.assert_equal(str(s.variables), str(ss.variables))
 
 if __name__ == '__main__':

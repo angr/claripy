@@ -97,10 +97,10 @@ class FullFrontend(ConstrainedFrontend):
             raise UnsatError('unsat')
 
         try:
-            return self._solver_backend.eval(
+            return tuple(self._solver_backend.eval(
                 e, n, extra_constraints=extra_constraints,
                 solver=self._get_solver(), model_callback=self._model_hook
-            )
+            ))
         except BackendError as e:
             raise_from(ClaripyFrontendError("Backend error during eval"), e)
 

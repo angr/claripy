@@ -77,7 +77,7 @@ class BVV(BackendObject):
 
     @property
     def signed(self):
-        return self._value if self._value < self.mod/2 else self._value % (self.mod/2) - (self.mod/2)
+        return self._value if self._value < self.mod//2 else self._value % (self.mod//2) - (self.mod//2)
 
     @signed.setter
     def signed(self, v):
@@ -112,11 +112,16 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
-    def __div__(self, o):
+    def __floordiv__(self, o):
         try:
-            return BVV(self.value / o.value, self.bits)
+            return BVV(self.value // o.value, self.bits)
         except ZeroDivisionError:
             raise ClaripyZeroDivisionError()
+
+    def __truediv__(self, other):
+        return self // other # decline to implicitly have anything to do with floats
+    def __div__(self, other):
+        return self // other
 
     #
     # Reverse arithmetic stuff
@@ -144,8 +149,13 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
+    def __rfloordiv__(self, o):
+        return BVV(o.value // self.value, self.bits)
+
     def __rdiv__(self, o):
-        return BVV(o.value / self.value, self.bits)
+        return self.__rfloordiv__(o)
+    def __rtruediv__(self, o):
+        return self.__rfloordiv__(o)
 
     #
     # Bit operations
