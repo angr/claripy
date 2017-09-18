@@ -1,6 +1,21 @@
 import claripy
 import nose
 
+def test_bool_simplification():
+    def assert_correct(a, b):
+        nose.tools.assert_true(claripy.backends.z3.identical(claripy.simplify(a), b))
+
+    a, b, c = (claripy.BoolS(name) for name in ('a', 'b', 'c'))
+
+    assert_correct(claripy.And(a, claripy.Not(a)), claripy.false)
+    assert_correct(claripy.Or(a, claripy.Not(a)), claripy.true)
+
+    complex_true_expression = claripy.Or(
+        claripy.And(a,b),
+        claripy.Or(claripy.And(a, claripy.Not(b)), claripy.And(claripy.Not(a), c)),
+        claripy.Or(claripy.And(a, claripy.Not(b)), claripy.And(claripy.Not(a), claripy.Not(c))))
+    assert_correct(complex_true_expression, claripy.true)
+
 def test_simplification():
     def assert_correct(a, b):
         nose.tools.assert_true(claripy.backends.z3.identical(a, b))
@@ -31,3 +46,4 @@ def test_simplification():
 
 if __name__ == '__main__':
     test_simplification()
+    test_bool_simplification()
