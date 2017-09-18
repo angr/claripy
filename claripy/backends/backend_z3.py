@@ -388,6 +388,11 @@ class BackendZ3(Backend):
                         length=bv_size,
                         variables={ symbol_name },
                         symbolic=True)
+            elif symbol_ty == z3.Z3_BOOL_SORT:
+                return Bool('BoolS',
+                        (symbol_name,),
+                        variables={ symbol_name },
+                        symbolic=True)
             elif symbol_ty == z3.Z3_FLOATING_POINT_SORT:
                 ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
                 sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
@@ -793,6 +798,7 @@ class BackendZ3(Backend):
                 z3.Tactic("propagate-ineqs", ctx=self._context),
                 z3.Tactic("propagate-values", ctx=self._context),
                 z3.Tactic("unit-subsume-simplify", ctx=self._context),
+                z3.Tactic("aig", ctx=self._context),
                 ctx=self._context
             )
             s = tactics(expr_raw).as_expr()
