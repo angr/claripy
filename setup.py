@@ -9,11 +9,12 @@ except ImportError:
 
 setup(
     name='claripy',
-    version='6.7.7.27',
+    version='7.7.9.14',
     packages=packages,
     install_requires=[
         'ana',
-        'angr-only-z3-custom==9002',
+        'z3-solver',
+        'future',
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',

@@ -16,8 +16,8 @@ def test_fucked_extract():
     m = claripy.backends.vsa.max(pre_fucked)
     assert m > 0
 
-    #print zx, claripy.backends.vsa.convert(zx)
-    #print pre_fucked, claripy.backends.vsa.convert(pre_fucked)
+    #print(zx, claripy.backends.vsa.convert(zx))
+    #print(pre_fucked, claripy.backends.vsa.convert(pre_fucked))
     fucked = pre_fucked[31:16]
     m = claripy.backends.vsa.max(fucked)
     assert m > 0

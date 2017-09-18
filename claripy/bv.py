@@ -1,4 +1,6 @@
 import functools
+import numbers
+
 from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
 
@@ -28,9 +30,9 @@ def normalize_types(f):
     def normalize_helper(self, o):
         if hasattr(o, '__module__') and o.__module__ == 'z3':
             raise ValueError("this should no longer happen")
-        if type(o) in (int, long):
+        if isinstance(o, numbers.Number):
             o = BVV(o, self.bits)
-        if type(self) in (int, long):
+        if isinstance(self, numbers.Number):
             self = BVV(self, self.bits)
 
         if not isinstance(self, BVV) or not isinstance(o, BVV):
@@ -40,11 +42,11 @@ def normalize_types(f):
     return normalize_helper
 
 class BVV(BackendObject):
-    __slots__ = [ 'bits', '_value', 'mod', 'value' ]
+    __slots__ = [ 'bits', '_value', 'mod' ]
 
     def __init__(self, value, bits):
-        if bits < 0 or type(bits) not in (int, long) or type(value) not in (int, long):
-            raise ClaripyOperationError("BVV needs a non-negative length and an int/long value")
+        if bits < 0 or not isinstance(bits, numbers.Number) or not isinstance(value, numbers.Number):
+            raise ClaripyOperationError("BVV needs a non-negative length and an int value")
 
         if bits == 0 and value not in (0, "", None):
             raise ClaripyOperationError("Zero-length BVVs cannot have a meaningful value.")
@@ -75,7 +77,7 @@ class BVV(BackendObject):
 
     @property
     def signed(self):
-        return self._value if self._value < self.mod/2 else self._value % (self.mod/2) - (self.mod/2)
+        return self._value if self._value < self.mod//2 else self._value % (self.mod//2) - (self.mod//2)
 
     @signed.setter
     def signed(self, v):
@@ -110,11 +112,16 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
-    def __div__(self, o):
+    def __floordiv__(self, o):
         try:
-            return BVV(self.value / o.value, self.bits)
+            return BVV(self.value // o.value, self.bits)
         except ZeroDivisionError:
             raise ClaripyZeroDivisionError()
+
+    def __truediv__(self, other):
+        return self // other # decline to implicitly have anything to do with floats
+    def __div__(self, other):
+        return self // other
 
     #
     # Reverse arithmetic stuff
@@ -142,8 +149,13 @@ class BVV(BackendObject):
 
     @normalize_types
     @compare_bits
+    def __rfloordiv__(self, o):
+        return BVV(o.value // self.value, self.bits)
+
     def __rdiv__(self, o):
-        return BVV(o.value / self.value, self.bits)
+        return self.__rfloordiv__(o)
+    def __rtruediv__(self, o):
+        return self.__rfloordiv__(o)
 
     #
     # Bit operations
@@ -309,7 +321,7 @@ def Reverse(a):
         elif size == 16:
             out = _reverse_16(value)
         else:
-            for i in xrange(0, size, 8):
+            for i in range(0, size, 8):
                 out |= ((value & (0xff << i)) >> i) << (size - 8 - i)
         return BVV(out, size)
 

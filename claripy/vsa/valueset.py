@@ -1,5 +1,6 @@
 import functools
 import itertools
+import numbers
 
 from ..backend_object import BackendObject
 from ..annotation import Annotation
@@ -118,7 +119,7 @@ class ValueSet(BackendObject):
         :param val: an initial offset
         """
 
-        self._name = 'VS_%d' % vs_id_ctr.next() if name is None else name
+        self._name = 'VS_%d' % next(vs_id_ctr) if name is None else name
         if bits is None:
             raise ClaripyVSAError('bits must be specified when creating a ValueSet.')
 
@@ -133,13 +134,13 @@ class ValueSet(BackendObject):
         # Shortcuts for initialization
         # May not be useful though...
         if region is not None and region_base_addr is not None and val is not None:
-            if isinstance(region_base_addr, (int, long)):
+            if isinstance(region_base_addr, numbers.Number):
                 # Convert it to a StridedInterval
-                region_base_addr = StridedInterval(bits=self._bits, stride=1, lower_bound=region_base_addr,
-                                                   upper_bound=region_base_addr
-                                                   )
+                region_base_addr = StridedInterval(bits=self._bits, stride=1,
+                                                   lower_bound=region_base_addr,
+                                                   upper_bound=region_base_addr)
 
-            if type(val) in (int, long):
+            if isinstance(val, numbers.Number):
                 val = StridedInterval(bits=bits, stride=0, lower_bound=val, upper_bound=val)
 
             if isinstance(val, StridedInterval):
@@ -178,8 +179,8 @@ class ValueSet(BackendObject):
     @property
     def cardinality(self):
         card = 0
-        for si in self._regions.itervalues():
-            card += si.cardinality
+        for region in self._regions:
+            card += self._regions[region].cardinality
 
         return card
 
@@ -196,10 +197,10 @@ class ValueSet(BackendObject):
     #
 
     def _set_si(self, region, region_base_addr, si):
-        if isinstance(si, (int, long)):
+        if isinstance(si, numbers.Number):
             si = StridedInterval(bits=self.bits, stride=0, lower_bound=si, upper_bound=si)
 
-        if isinstance(region_base_addr, (int, long)):
+        if isinstance(region_base_addr, numbers.Number):
             region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
                                                upper_bound=region_base_addr
                                                )
@@ -213,7 +214,7 @@ class ValueSet(BackendObject):
 
     def _merge_si(self, region, region_base_addr, si):
 
-        if isinstance(region_base_addr, (int, long)):
+        if isinstance(region_base_addr, numbers.Number):
             region_base_addr = StridedInterval(bits=self.bits, stride=0, lower_bound=region_base_addr,
                                                upper_bound=region_base_addr
                                                )
@@ -287,7 +288,7 @@ class ValueSet(BackendObject):
         return self._bits
 
     def __hash__(self):
-        return hash(tuple([(r, hash(si)) for r, si in self._regions.iteritems()]))
+        return hash(tuple((r, hash(self._regions[r])) for r in self._regions))
 
     #
     # Arithmetic operations
@@ -311,8 +312,8 @@ class ValueSet(BackendObject):
         # Call __add__ on self._si
         new_vs._si = self._si.__add__(other)
 
-        for region, si in self._regions.iteritems():
-            new_vs._regions[region] = si + other
+        for region in self._regions:
+            new_vs._regions[region] = self._regions[region] + other
 
         return new_vs
 
@@ -337,8 +338,8 @@ class ValueSet(BackendObject):
             # A subtraction between two ValueSets produces a StridedInterval
 
             if self.regions.keys() == other.regions.keys():
-                for region, si in self._regions.iteritems():
-                    deltas.append(si - other._regions[region])
+                for region in self._regions:
+                    deltas.append(self._regions[region] - other._regions[region])
 
             else:
                 # TODO: raise the proper exception here
@@ -558,7 +559,7 @@ class ValueSet(BackendObject):
             merged_vs._si = merged_vs._si.widen(b._si)
 
         else:
-            for region, si in merged_vs._regions.iteritems():
+            for region in merged_vs._regions:
                 merged_vs._regions[region] = merged_vs._regions[region].widen(b)
 
             merged_vs._si = merged_vs._si.widen(b)
@@ -582,7 +583,7 @@ class ValueSet(BackendObject):
             vs._si = vs._si.intersection(b._si)
 
         else:
-            for region, si in self._regions.iteritems():
+            for region in self._regions:
                 vs.regions[region] = vs.regions[region].intersection(b)
 
                 if vs.regions[region].is_empty:

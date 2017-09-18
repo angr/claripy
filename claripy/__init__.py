@@ -29,7 +29,7 @@ if os.environ.get('REMOTE', False):
 #
 
 _recurse = 15000
-l.warning("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
+l.info("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
 sys.setrecursionlimit(_recurse)
 
 #
@@ -59,7 +59,7 @@ ast._import()
 
 def BV(name, size, explicit_name=None): #pylint:disable=function-redefined
     l.critical("DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead.")
-    print "DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead."
+    print("DEPRECATION WARNING: claripy.BV is deprecated and will soon be removed. Please use claripy.BVS, instead.")
     return BVS(name, size, explicit_name=explicit_name)
 
 #

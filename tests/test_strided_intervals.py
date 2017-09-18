@@ -260,7 +260,7 @@ def test_subtraction():
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=2, upper_bound=6)
     # Result should be 1,[-5, 5]
-    # print str(op1.sub(op2))
+    # print(str(op1.sub(op2)))
     assert check_si_fields(op1.sub(op2), 1, -5, 5)
 
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
@@ -281,7 +281,7 @@ def test_subtraction():
     op1 = StridedInterval(bits=4, stride=1, lower_bound=1, upper_bound=7)
     op2 = StridedInterval(bits=4, stride=1, lower_bound=-5, upper_bound=-1)
     # Result should be 1,[2, 12]
-    # print str(op1.sub(op2))
+    # print(str(op1.sub(op2)))
     assert check_si_fields(op1.sub(op2), 1, 2, 12)
 
     # Strided Tests
@@ -351,4 +351,4 @@ if __name__ == "__main__":
     test_multiplication()
     l.info("Performing Division Tests")
     test_division()
-    print "[+] All Tests Passed"
+    print("[+] All Tests Passed")

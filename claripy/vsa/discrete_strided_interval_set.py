@@ -1,9 +1,11 @@
-import itertools
 import functools
+import numbers
+import itertools
 
 from .strided_interval import StridedInterval
 
 DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256 # We don't collapse until there are more than this many SIs
+
 
 def apply_on_each_si(f):
     @functools.wraps(f)
@@ -19,7 +21,7 @@ def apply_on_each_si(f):
             ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
             return ret.normalize()
 
-        elif isinstance(o, StridedInterval) or type(o) in (int, long, BVV):
+        elif isinstance(o, (StridedInterval, numbers.Number, BVV)):
             new_si_set = set()
             for si in self._si_set:
                 new_si_set.add(getattr(si, f.__name__)(o))
@@ -35,9 +37,9 @@ def apply_on_each_si(f):
 def convert_operand_to_si(f):
     @functools.wraps(f)
     def converter(self, o):
-        if type(o) is BVV:
+        if isinstance(o, BVV):
             o = o.value
-        if type(o) in (int, long):
+        if isinstance(o, numbers.Number):
             o = StridedInterval(bits=self.bits, stride=0, lower_bound=o, upper_bound=o)
 
         return f(self, o)
@@ -62,7 +64,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
     """
     def __init__(self, name=None, bits=0, si_set=None, max_cardinality=None):
         if name is None:
-            name = "DSIS_%d" % (dsis_id_ctr.next())
+            name = "DSIS_%d" % next(dsis_id_ctr)
 
          # Initialize the set for strided intervals
         if si_set is not None and len(si_set):
@@ -156,6 +158,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
                                             max_cardinality=self._max_cardinality)
 
         return copied
+
+    def __hash__(self):
+        return id(self) # ...not sure how to do this. these objects are mutable.
 
     #
     # Operations
@@ -371,7 +376,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     @convert_operand_to_si
     @apply_on_each_si
-    def __div__(self, o):
+    def __floordiv__(self, o):
         """
         Operation /
 
@@ -380,8 +385,17 @@ class DiscreteStridedIntervalSet(StridedInterval):
         """
         pass
 
+    def __div__(self, o):
+        return self.__floordiv__(o)
+    def __truediv__(self, o):
+        return self.__floordiv__(o) # floats not welcome
+
+    def __rfloordiv__(self, o):
+        return self.__floordiv__(o)
     def __rdiv__(self, o):
-        return self.__div__(o)
+        return self.__rfloordiv__(o)
+    def __rtruediv__(self, o):
+        return self.__rfloordiv__(o)
 
     @convert_operand_to_si
     @apply_on_each_si

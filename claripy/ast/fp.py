@@ -1,18 +1,63 @@
+from past.builtins import long
+
 from .bits import Bits
 from ..ast.base import _make_name
 
 class FP(Bits):
-    def to_fp(self, rm, sort):
+    """
+    An AST representing a set of operations culminating in an IEEE754 floating point number.
+
+    Do not instantiate this class directly, instead use FPV or FPS to construct a value or symbol, and then use
+    operations to construct more complicated expressions.
+
+    :ivar length:   The length of this value
+    :ivar sort:     The sort of this value, usually either FSORT_FLOAT or FSORT_DOUBLE
+    """
+    def to_fp(self, sort, rm=None):
+        """
+        Convert this float to a different sort
+
+        :param sort:    The sort to convert to
+        :param rm:      Optional: The rounding mode to use
+        :return:        An FP AST
+        """
         if rm is None:
             rm = fp.RM.default()
 
         return fpToFP(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        A counterpart to BV.raw_to_fp - does nothing and returns itself.
+        """
         return self
 
-    def to_bv(self):
+    def raw_to_bv(self):
+        """
+        Interpret the bit-pattern of this IEEE754 floating point number as a bitvector.
+        The inverse of this function is to_bv.
+
+        :return:        A BV AST whose bit-pattern is the same as this FP
+        """
         return fpToIEEEBV(self)
+
+    def to_bv(self):
+        return self.raw_to_bv()
+
+    def val_to_bv(self, size, signed=True, rm=None):
+        """
+        Convert this floating point value to an integer.
+
+        :param size:    The size of the bitvector to return
+        :param signed:  Optional: Whether the target integer is signed
+        :param rm:      Optional: The rounding mode to use
+        :return:        A bitvector whose value is the rounded version of this FP's value
+        """
+        if rm is None:
+            rm = fp.RM.default()
+
+        op = fpToSBV if signed else fpToUBV
+        return op(rm, self, size)
 
     @property
     def sort(self):
@@ -119,7 +164,7 @@ FP.__sub__ = fpSub
 FP.__mul__ = fpMul
 FP.__div__ = fpDiv
 
-FP.__radd__ = operations.reversed_op(FP.__add__.im_func)
-FP.__rsub__ = operations.reversed_op(FP.__sub__.im_func)
-FP.__rmul__ = operations.reversed_op(FP.__mul__.im_func)
-FP.__rdiv__ = operations.reversed_op(FP.__div__.im_func)
+FP.__radd__ = operations.reversed_op(FP.__add__)
+FP.__rsub__ = operations.reversed_op(FP.__sub__)
+FP.__rmul__ = operations.reversed_op(FP.__mul__)
+FP.__rdiv__ = operations.reversed_op(FP.__div__)

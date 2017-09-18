@@ -1,10 +1,15 @@
-import sys
 import ctypes
-import logging
-import weakref
-import operator
-import threading
 from decimal import Decimal
+import logging
+import numbers
+import operator
+import sys
+import threading
+import weakref
+from future.utils import raise_from
+from past.builtins import long
+from functools import reduce
+
 l = logging.getLogger("claripy.backends.backend_z3")
 
 #pylint:disable=unidiomatic-typecheck
@@ -73,11 +78,13 @@ def condom(f):
         The Z3 condom intercepts Z3Exceptions and throws a ClaripyZ3Error instead.
         """
         try:
-            condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
+            if int is not long:
+                condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
+            else:
+                condom_args = args
             return f(*condom_args, **kwargs)
         except z3.Z3Exception as ze:
-            _, _, traceback = sys.exc_info()
-            raise ClaripyZ3Error, ("Z3Exception: %s" % ze), traceback
+            raise_from(ClaripyZ3Error("Z3Exception: %s" % ze), ze)
     return z3_condom
 
 def _raw_caller(f):
@@ -123,7 +130,7 @@ class BackendZ3(Backend):
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
 
-        self._op_raw['__div__'] = self._op_div
+        self._op_raw['__floordiv__'] = self._op_div
         self._op_raw['__mod__'] = self._op_mod
 
         # reduceable
@@ -295,7 +302,7 @@ class BackendZ3(Backend):
             return z3.BoolVal(True, ctx=self._context)
         elif obj is False:
             return z3.BoolVal(False, ctx=self._context)
-        elif type(obj) in (int, long, float, str):
+        elif isinstance(obj, (numbers.Number, str)):
             return obj
         elif hasattr(obj, '__module__') and obj.__module__ in ('z3', 'z3.z3'):
             return obj
@@ -324,7 +331,7 @@ class BackendZ3(Backend):
         z3_hash = z3.Z3_get_ast_hash(ctx, ast)
         z3_ast_ref = ast.value # this seems to be the memory address
         z3_sort = z3.Z3_get_sort(ctx, ast).value
-        return hash("%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref))
+        return "%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref)
 
     def _abstract_internal(self, ctx, ast, split_on=None):
         h = self._z3_ast_hash(ctx, ast)
@@ -361,7 +368,7 @@ class BackendZ3(Backend):
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
                 return BVV(self._c_uint64_p.contents.value, bv_size)
             else:
-                bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+                bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
                 return BVV(bv_num, bv_size)
         elif op_name in ('FPVal', 'MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
@@ -476,7 +483,7 @@ class BackendZ3(Backend):
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
                 return self._c_uint64_p.contents.value
             else:
-                bv_num = long(z3.Z3_get_numeral_string(ctx, ast))
+                bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
                 return bv_num
         elif op_name == 'True':
             return True
@@ -491,7 +498,7 @@ class BackendZ3(Backend):
         if op_name == 'FPVal':
             # TODO: do better than this
             fp_mantissa = float(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
-            fp_exp = long(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
+            fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, False))
             fp_sign_c = ctypes.c_int()
             z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
             fp_sign = -1 if fp_sign_c.value != 0 else 1
@@ -610,7 +617,7 @@ class BackendZ3(Backend):
             # construct results
             r = [ ]
             for expr in exprs:
-                if not type(expr) in {int, float, str, bool, long}:
+                if not isinstance(expr, (numbers.Number, str, bool)):
                     v = self._primitive_from_model(model, expr)
                     r.append(v)
                 else:
@@ -645,8 +652,9 @@ class BackendZ3(Backend):
             numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
 
+        # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
-            middle = (lo + hi)/2
+            middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
@@ -702,8 +710,9 @@ class BackendZ3(Backend):
             numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
 
+        # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
-            middle = (lo + hi)/2
+            middle = (lo + hi)//2
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
@@ -1043,12 +1052,12 @@ op_map = {
     'Z3_OP_BMUL': '__mul__',
 
     'Z3_OP_BSDIV': 'SDiv',
-    'Z3_OP_BUDIV': '__div__',
+    'Z3_OP_BUDIV': '__floordiv__',
     'Z3_OP_BSREM': 'SMod',
     'Z3_OP_BUREM': '__mod__',
     'Z3_OP_BSMOD': 'SMod',
     'Z3_OP_BSDIV_I': 'SDiv',
-    'Z3_OP_BUDIV_I': '__div__',
+    'Z3_OP_BUDIV_I': '__floordiv__',
     'Z3_OP_BSREM_I': 'SMod',
     'Z3_OP_BUREM_I': '__mod__',
     'Z3_OP_BSMOD_I': 'SMod',

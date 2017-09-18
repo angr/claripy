@@ -24,7 +24,7 @@ def test_concrete():
 
 def test_concrete_fp():
     f = claripy.FPV(1.0, claripy.FSORT_FLOAT)
-    nose.tools.assert_equals(claripy.backends.concrete.eval(f, 2), (1.0,))
+    nose.tools.assert_equal(claripy.backends.concrete.eval(f, 2), (1.0,))
 
 if __name__ == '__main__':
     test_concrete()

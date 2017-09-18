@@ -1,6 +1,8 @@
 import logging
+import numbers
 import functools
 import operator
+from functools import reduce
 
 l = logging.getLogger("claripy.backends.backend_vsa")
 
@@ -10,7 +12,7 @@ from ..vsa import RegionAnnotation
 def arg_filter(f):
     @functools.wraps(f)
     def filter(*args): #pylint:disable=redefined-builtin
-        if type(args[0]) in {int, long}: #pylint:disable=unidiomatic-typecheck
+        if isinstance(args[0], numbers.Number): # pylint:disable=unidiomatic-typecheck
             raise BackendError('Unsupported argument type %s' % type(args[0]))
         return f(*args)
 
@@ -35,11 +37,11 @@ def convert_args(f):
     @functools.wraps(f)
     def converter(self, ast):
         raw_args = []
-        for i in xrange(len(ast.args)):
+        for i in range(len(ast.args)):
             # It's not reversed
             raw_args.append(ast.args[i])
 
-        for i in xrange(len(raw_args)):
+        for i in range(len(raw_args)):
             raw_args[i] = self.convert(raw_args[i])
 
         normalized = ast.swap_args(raw_args)
@@ -96,11 +98,11 @@ class BackendVSA(Backend):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr)
 
     def _convert(self, a):
-        if type(a) in { int, long }: #pylint:disable=unidiomatic-typecheck
+        if isinstance(a, numbers.Number):
             return a
-        if type(a) is bool:
+        elif isinstance(a, bool):
             return TrueResult() if a else FalseResult()
-        if type(a) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
+        if isinstance(a, (StridedInterval, DiscreteStridedIntervalSet, ValueSet)):
             return a
         if isinstance(a, BoolResult):
             return a
@@ -112,12 +114,7 @@ class BackendVSA(Backend):
         if isinstance(expr, StridedInterval):
             return expr.eval(n)
         elif isinstance(expr, ValueSet):
-            results = []
-
-            while len(results) < n:
-                results.extend(expr.eval(n - len(results)))
-
-            return results
+            return expr.eval(n)
         elif isinstance(expr, BoolResult):
             return expr.value
         else:

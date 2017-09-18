@@ -59,6 +59,9 @@ class FSort(object):
     def __repr__(self):
         return self.name
 
+    def __hash__(self):
+        return hash((self.name, self.exp, self.mantissa))
+
     @property
     def length(self):
         return self.exp + self.mantissa
@@ -99,11 +102,10 @@ class FPV(BackendObject):
         return hash((self.value, self.sort))
 
     def __getstate__(self):
-        return (self.value, self.sort)
+        return self.value, self.sort
 
-    def __setstate__(self, (value, sort)):
-        self.value = value
-        self.sort = sort
+    def __setstate__(self, st):
+        self.value, self.sort = st
 
     def __abs__(self):
         return FPV(abs(self.value), self.sort)
@@ -133,7 +135,7 @@ class FPV(BackendObject):
 
     @normalize_types
     @compare_sorts
-    def __div__(self, o):
+    def __truediv__(self, o):
         try:
             return FPV(self.value / o.value, self.sort)
         except ZeroDivisionError:
@@ -141,6 +143,11 @@ class FPV(BackendObject):
                 return FPV(float('-inf'), self.sort)
             else:
                 return FPV(float('inf'), self.sort)
+
+    def __div__(self, other):
+        return self.__truediv__(other)
+    def __floordiv__(self, other): # decline to involve integers in this floating point process
+        return self.__truediv__(other)
 
     #
     # Reverse arithmetic stuff
@@ -168,7 +175,7 @@ class FPV(BackendObject):
 
     @normalize_types
     @compare_sorts
-    def __rdiv__(self, o):
+    def __rtruediv__(self, o):
         try:
             return FPV(o.value / self.value, self.sort)
         except ZeroDivisionError:
@@ -176,6 +183,11 @@ class FPV(BackendObject):
                 return FPV(float('-inf'), self.sort)
             else:
                 return FPV(float('inf'), self.sort)
+
+    def __rdiv__(self, other):
+        return self.__rtruediv__(other)
+    def __rfloordiv__(self, other): # decline to involve integers in this floating point process
+        return self.__rtruediv__(other)
 
     #
     # Boolean stuff

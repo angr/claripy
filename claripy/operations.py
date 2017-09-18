@@ -1,6 +1,7 @@
 import operator
 import itertools
 import collections
+from functools import reduce
 
 from .utils import OrderedSet
 
@@ -98,6 +99,8 @@ def _handle_annotations(simp, args):
         return simp
 
 def reversed_op(op_func):
+    if type(op_func) is not type(reversed_op):
+        op_func = op_func.im_func # unwrap instancemethod into function
     def _reversed_op(*args):
         return op_func(*args[::-1])
     return _reversed_op
@@ -160,11 +163,14 @@ def concat_simplifier(*args):
         if len(args) < len(orig_args):
             simplified = True
 
-    # here, we flatten any concats among the arguments
+    # here, we flatten any concats among the arguments and remove zero-length arguments
     i = 0
     while i < len(args):
         current = args[i]
-        if current.op == 'Concat':
+        if current.length == 0:
+            args.pop(i)
+            simplified = True
+        elif current.op == 'Concat':
             simplified = True
             args[i:i+1] = current.args
             i += len(current.args)
@@ -253,7 +259,7 @@ def eq_simplifier(a, b):
         #     return b._claripy.false
 
     if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and a.length == b.length:
-        for i in xrange(a.length):
+        for i in range(a.length):
             a_bit = a[i:i]
             if a_bit.symbolic:
                 break
@@ -297,7 +303,7 @@ def ne_simplifier(a, b):
         #     return b._claripy.false
 
     if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and a.length == b.length:
-        for i in xrange(a.length):
+        for i in range(a.length):
             a_bit = a[i:i]
             if a_bit.symbolic:
                 break
@@ -416,7 +422,7 @@ def bitwise_xor_simplifier(a, b):
         # since a ^ a == 0, we can safely remove those from args
         # this procedure is done carefully in order to keep the ordering of arguments
         ctr = collections.Counter(args)
-        unique_args = set(k for k, v in ctr.iteritems() if v % 2 != 0)
+        unique_args = set(k for k in ctr if ctr[k] % 2 != 0)
         return tuple([ arg for arg in args if arg in unique_args ])
 
     return _flatten_simplifier('__xor__', _flattening_filter, a, b)
@@ -525,8 +531,8 @@ def extract_simplifier(high, low, val):
     # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
     # No Reverse is required then
     if val.op == 'Reverse' and high - low + 1 == 8 and low % 8 == 0:
-        byte_pos = low / 8
-        new_byte_pos = val.length / 8 - byte_pos - 1
+        byte_pos = low // 8
+        new_byte_pos = val.length // 8 - byte_pos - 1
 
         val = val.args[0]
         high = (new_byte_pos + 1) * 8 - 1
@@ -577,7 +583,7 @@ def extract_simplifier(high, low, val):
 
     # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
     # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
-    #     print "saw reverse, converting"
+    #     print("saw reverse, converting")
     #     inner_length = val.args[0].length
     #     try:
     #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
@@ -854,7 +860,7 @@ infix = {
     '__mul__': '*',
     '__div__': '/',
     '__floordiv__': '/',
-#    '__truediv__': 'does this come up?',
+    '__truediv__': '/', # the raw / operator should use integral semantics on bitvectors
     '__pow__': '**',
     '__mod__': '%',
 #    '__divmod__': "don't think this is used either",

@@ -1,7 +1,11 @@
+import binascii
+import logging
+import numbers
+from past.builtins import long, unicode
+
 from .bits import Bits
 from ..ast.base import _make_name
 
-import logging
 l = logging.getLogger("claripy.ast.bv")
 
 _bvv_cache = dict()
@@ -15,12 +19,37 @@ import atexit
 atexit.register(cleanup)
 
 class BV(Bits):
+    """
+    A class representing an AST of operations culminating in a bitvector.
+    Do not instantiate this class directly, instead use BVS or BVV to construct a symbol or value, and then use
+    operations to construct more complicated expressions.
 
-    # TODO: do these go on Bits or BV?
+    Individual sub-bits and bit-ranges can be extracted from a bitvector using index and slice notation.
+    Bits are indexed weirdly. For a 32-bit AST:
+
+        a[31] is the *LEFT* most bit, so it'd be the 0 in
+
+            01111111111111111111111111111111
+
+        a[0] is the *RIGHT* most bit, so it'd be the 0 in
+
+            11111111111111111111111111111110
+
+        a[31:30] are the two leftmost bits, so they'd be the 0s in:
+
+            00111111111111111111111111111111
+
+        a[1:0] are the two rightmost bits, so they'd be the 0s in:
+
+            11111111111111111111111111111100
+    """
+
     def chop(self, bits=1):
         """
-        Chops an AST into ASTs of size 'bits'. Obviously, the length of the AST must be
-        a multiple of bits.
+        Chops a BV into consecutive sub-slices. Obviously, the length of this BV must be a multiple of bits.
+
+        :returns:   A list of smaller bitvectors, each ``bits`` in length. The first one will be the left-most (i.e.
+                    most significant) bits.
         """
         s = len(self)
         if s % bits != 0:
@@ -28,30 +57,9 @@ class BV(Bits):
         elif s == bits:
             return [ self ]
         else:
-            return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s / bits) ]))
+            return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s // bits) ]))
 
     def __getitem__(self, rng):
-        """
-        Extracts bits from the AST. ASTs are indexed weirdly. For a 32-bit AST:
-
-            a[31] is the *LEFT* most bit, so it'd be the 0 in
-
-                01111111111111111111111111111111
-
-            a[0] is the *RIGHT* most bit, so it'd be the 0 in
-
-                11111111111111111111111111111110
-
-            a[31:30] are the two leftmost bits, so they'd be the 0s in:
-
-                00111111111111111111111111111111
-
-            a[1:0] are the two rightmost bits, so they'd be the 0s in:
-
-                11111111111111111111111111111100
-
-        :return: the new AST.
-        """
         if type(rng) is slice:
             left = rng.start if rng.start is not None else len(self)-1
             right = rng.stop if rng.stop is not None else 0
@@ -66,24 +74,26 @@ class BV(Bits):
     def get_byte(self, index):
         """
         Extracts a byte from a BV, where the index refers to the byte in a big-endian order
+
         :param index: the byte to extract
-        :return:
+        :return: An 8-bit BV
         """
-        pos = self.size() / 8 - 1 - index
+        pos = self.size() // 8 - 1 - index
         return self[pos * 8 + 7 : pos * 8]
 
     def get_bytes(self, index, size):
         """
-        Extracts several byte from a BV, where the index refers to the byte in a big-endian order
+        Extracts several bytes from a bitvector, where the index refers to the byte in a big-endian order
+
         :param index: the byte to extract
-        :return:
+        :return: A BV of size ``size * 8``
         """
-        pos = self.size() / 8 - 1 - index
+        pos = self.size() // 8 - 1 - index
         return self[pos * 8 + 7 : (pos - size + 1) * 8]
 
     def zero_extend(self, n):
         """
-        Zero-extends the AST by n bits. So:
+        Zero-extends the bitvector by n bits. So:
 
             a = BVV(0b1111, 4)
             b = a.zero_extend(4)
@@ -93,7 +103,7 @@ class BV(Bits):
 
     def sign_extend(self, n):
         """
-        Sign-extends the AST by n bits. So:
+        Sign-extends the bitvector by n bits. So:
 
             a = BVV(0b1111, 4)
             b = a.sign_extend(4)
@@ -103,7 +113,8 @@ class BV(Bits):
 
     def concat(self, *args):
         """
-        Concatenates this AST with the ASTs provided.
+        Concatenates this bitvector with the bitvectors provided.
+        This bitvector will be on the far-left, i.e. the most significant bits.
         """
         return Concat(self, *args)
 
@@ -123,34 +134,55 @@ class BV(Bits):
     def _from_BVV(like, value): #pylint:disable=unused-argument
         return BVV(value.value, value.size())
 
-    def signed_to_fp(self, rm, sort):
+    def val_to_fp(self, sort, signed=True, rm=None):
+        """
+        Interpret this bitvector as an integer, and return the floating-point representation of that integer.
+
+        :param sort:    The sort of floating point value to return
+        :param signed:  Optional: whether this value is a signed integer
+        :param rm:      Optional: the rounding mode to use
+        :return:        An FP AST whose value is the same as this BV
+        """
         if rm is None:
             rm = fp.fp.RM.default()
+        if sort is None:
+            sort = fp.fp.FSort.from_size(self.length)
 
-        return fp.fpToFP(rm, self, sort)
-
-    def unsigned_to_fp(self, rm, sort):
-        if rm is None:
-            rm = fp.fp.RM.default()
-        return fp.fpToFPUnsigned(rm, self, sort)
+        op = fp.fpToFP if signed else fp.fpToFPUnsigned
+        return op(rm, self, sort)
 
     def raw_to_fp(self):
+        """
+        Interpret the bits of this bitvector as an IEEE754 floating point number.
+        The inverse of this function is raw_to_bv.
+
+        :return:        An FP AST whose bit-pattern is the same as this BV
+        """
         sort = fp.fp.FSort.from_size(self.length)
         return fp.fpToFP(self, sort)
 
-    def to_bv(self):
+    def raw_to_bv(self):
+        """
+        A counterpart to FP.raw_to_bv - does nothing and returns itself.
+        """
         return self
+
+    def to_bv(self):
+        return self.raw_to_bv()
 
 def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pylint:disable=redefined-builtin
         explicit_name=None, discrete_set=False, discrete_set_max_card=None, **kwargs):
     """
     Creates a bit-vector symbol (i.e., a variable).
 
+    If you want to specify the maximum value of a normal symbol that is not part of value-set analysis, you should
+    manually add constraints to that effect.
+
     :param name:            The name of the symbol.
     :param size:            The size (in bits) of the bit-vector.
-    :param min:             The minimum value of the symbol.
-    :param max:             The maximum value of the symbol.
-    :param stride:          The stride of the symbol.
+    :param min:             The minimum value of the symbol, used only for value-set analysis
+    :param max:             The maximum value of the symbol, used only for value-set analysis
+    :param stride:          The stride of the symbol, used only for value-set analysis
     :param uninitialized:   Whether this value should be counted as an "uninitialized" value in the course of an
                             analysis.
     :param bool explicit_name:   If False, an identifier is appended to the name to ensure uniqueness.
@@ -182,14 +214,15 @@ def BVV(value, size=None, **kwargs):
     :returns:       A BV object representing this value.
     """
 
-    if type(value) is str or type(value) is unicode:
+    if type(value) in (bytes, str, unicode):
         if type(value) is unicode:
-            l.warn("BVV value is a unicode string")
+            l.warn("BVV value is a unicode string, encoding as utf-8")
+            value = value.encode('utf-8')
         if size is None:
             size = 8*len(value)
-            value = int(value.encode('hex'), 16) if value != "" else 0
+            value = int(binascii.hexlify(value), 16) if value != "" else 0
         elif size == len(value)*8:
-            value = int(value.encode('hex'), 16) if value != "" else 0
+            value = int(binascii.hexlify(value), 16) if value != "" else 0
         else:
             raise ClaripyValueError('string/size mismatch for BVV creation')
     elif size is None:
@@ -235,7 +268,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     v = region_base_addr + value
 
     # Backward compatibility
-    if isinstance(v, (int, long)):
+    if isinstance(v, numbers.Number):
         min_v, max_v = v, v
         stride = 0
     elif isinstance(v, vsa.StridedInterval):
@@ -314,23 +347,23 @@ intersection = operations.op('intersection', (BV, BV), BV, extra_check=operation
 #
 
 BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__radd__ = operations.reversed_op(BV.__add__.im_func)
-BV.__div__ = operations.op('__div__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdiv__ = operations.reversed_op(BV.__div__.im_func)
-BV.__truediv__ = operations.op('__truediv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rtruediv__ = operations.reversed_op(BV.__truediv__.im_func)
+BV.__radd__ = operations.reversed_op(BV.__add__)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__.im_func)
+BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__)
+BV.__div__ = BV.__floordiv__
+BV.__rdiv__ = BV.__rfloordiv__
+BV.__truediv__ = BV.__floordiv__
+BV.__rtruediv__ = BV.__rfloordiv__
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rmul__ = operations.reversed_op(BV.__mul__.im_func)
+BV.__rmul__ = operations.reversed_op(BV.__mul__)
 BV.__sub__ = operations.op('__sub__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rsub__ = operations.reversed_op(BV.__sub__.im_func)
+BV.__rsub__ = operations.reversed_op(BV.__sub__)
 BV.__pow__ = operations.op('__pow__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rpow__ = operations.reversed_op(BV.__pow__.im_func)
+BV.__rpow__ = operations.reversed_op(BV.__pow__)
 BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rmod__ = operations.reversed_op(BV.__mod__.im_func)
+BV.__rmod__ = operations.reversed_op(BV.__mod__)
 BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdivmod__ = operations.reversed_op(BV.__divmod__.im_func)
+BV.__rdivmod__ = operations.reversed_op(BV.__divmod__)
 BV.SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 BV.SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 
@@ -355,15 +388,15 @@ BV.UGE = operations.op('__ge__', (BV, BV), Bool, extra_check=operations.length_s
 
 BV.__invert__ = operations.op('__invert__', (BV,), BV, calc_length=operations.basic_length_calc)
 BV.__or__ = operations.op('__or__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__ror__ = operations.reversed_op(BV.__or__.im_func)
+BV.__ror__ = operations.reversed_op(BV.__or__)
 BV.__and__ = operations.op('__and__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rand__ = operations.reversed_op(BV.__and__.im_func)
+BV.__rand__ = operations.reversed_op(BV.__and__)
 BV.__xor__ = operations.op('__xor__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rxor__ = operations.reversed_op(BV.__xor__.im_func)
+BV.__rxor__ = operations.reversed_op(BV.__xor__)
 BV.__lshift__ = operations.op('__lshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rlshift__ = operations.reversed_op(BV.__lshift__.im_func)
+BV.__rlshift__ = operations.reversed_op(BV.__lshift__)
 BV.__rshift__ = operations.op('__rshift__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rrshift__ = operations.reversed_op(BV.__rshift__.im_func)
+BV.__rrshift__ = operations.reversed_op(BV.__rshift__)
 BV.LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 
 BV.Extract = staticmethod(operations.op('Extract', ((int, long), (int, long), BV), BV, extra_check=operations.extract_check, calc_length=operations.extract_length_calc, bound=False))

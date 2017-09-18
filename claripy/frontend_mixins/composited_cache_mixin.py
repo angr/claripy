@@ -26,7 +26,7 @@ class CompositedCacheMixin(object):
     def _remove_cached(self, names):
         #global ejects
 
-        for k in self._merged_solvers.keys():
+        for k in list(self._merged_solvers.keys()):
             if k & names:
                 #ejects += 1
                 self._merged_solvers.pop(k)

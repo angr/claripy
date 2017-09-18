@@ -1,7 +1,9 @@
 import logging
-l = logging.getLogger('claripy.ast.bool')
+from past.builtins import xrange
 
 from ..ast.base import Base, _make_name
+
+l = logging.getLogger('claripy.ast.bool')
 
 _boolv_cache = dict()
 
@@ -46,11 +48,12 @@ def BoolS(name, explicit_name=None):
     return Bool('BoolS', (n,), variables={n}, symbolic=True)
 
 def BoolV(val):
-    try: return _boolv_cache[(val)]
-    except KeyError: pass
-    result = Bool('BoolV', (val,))
-    _boolv_cache[val] = result
-    return result
+    try:
+        return _boolv_cache[(val)]
+    except KeyError:
+        result = Bool('BoolV', (val,))
+        _boolv_cache[val] = result
+        return result
 
 #
 # some standard ASTs
