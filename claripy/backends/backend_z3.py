@@ -6,7 +6,7 @@ import operator
 import sys
 import threading
 import weakref
-from future.utils import raise_from
+from ..transition import raise_from
 from past.builtins import long
 from functools import reduce
 
