@@ -64,7 +64,7 @@ except:
             z3.init(z3_path)
             break
     else:
-        raise ClaripyZ3Error("Unable to find %s", z3_library_file)
+        raise ClaripyZ3Error("Unable to find %s" % z3_library_file)
 
 supports_fp = hasattr(z3, 'fpEQ')
 

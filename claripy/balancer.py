@@ -150,7 +150,7 @@ class Balancer(object):
         try:
             new_op = opposites[a.op]
         except KeyError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')", a.op)
+            raise ClaripyBalancerError("unable to reverse comparison %s (missing from 'opposites')" % a.op)
 
         try:
             if new_op.startswith('__'):
@@ -158,13 +158,13 @@ class Balancer(object):
             else:
                 op = getattr(_all_operations, new_op)
         except AttributeError:
-            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)", a.op)
+            raise ClaripyBalancerError("unable to reverse comparison %s (AttributeError)" % a.op)
 
         try:
             return op(*a.args[::-1])
         except ClaripyOperationError:
             # TODO: copy trace
-            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)", a.op)
+            raise ClaripyBalancerError("unable to reverse comparison %s (ClaripyOperationError)" % a.op)
 
     def _align_bv(self, a):
         if a.op in commutative_operations:
