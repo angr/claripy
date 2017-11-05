@@ -651,11 +651,11 @@ class BackendZ3(Backend):
         hi = 2**expr.size()-1
         vals = set()
 
-        numpop = 0
         if len(extra_constraints) > 0:
             solver.push()
-            numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
+
+        numpop = 0
 
         # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
@@ -699,6 +699,9 @@ class BackendZ3(Backend):
                 vals.add(hi)
                 solver.pop()
 
+        if len(extra_constraints) > 0:
+            solver.pop()
+
         return min(vals)
 
     @condom
@@ -709,11 +712,11 @@ class BackendZ3(Backend):
         hi = 2**expr.size()-1
         vals = set()
 
-        numpop = 0
         if len(extra_constraints) > 0:
             solver.push()
-            numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
+
+        numpop = 0
 
         # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
@@ -756,6 +759,9 @@ class BackendZ3(Backend):
             else:
                 vals.add(lo)
                 solver.pop()
+
+        if len(extra_constraints) > 0:
+            solver.pop()
 
         return max(vals)
 
