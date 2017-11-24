@@ -225,7 +225,7 @@ def BVV(value, size=None, **kwargs):
             value = int(binascii.hexlify(value), 16) if value != "" else 0
         else:
             raise ClaripyValueError('string/size mismatch for BVV creation')
-    elif size is None:
+    elif size is None or (type(value) not in (int, long) and value is not None):
         raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
 
     # ensure the 0 <= value < (1 << size)

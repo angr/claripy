@@ -6,7 +6,7 @@ import numbers
 import os
 import struct
 import weakref
-from future.utils import raise_from
+from ..transition import raise_from
 from past.builtins import long
 
 try:
@@ -817,7 +817,7 @@ class Base(ana.Storable):
         return old_true.__class__(old_true.op, new_args, length=self.length)
 
     def _excavate_ite(self):
-        if self.op in { 'BVS', 'I', 'BVV' }:
+        if self.op in { 'BVS', 'I', 'BVV' } or self.annotations:
             return self
 
         excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]

@@ -2,7 +2,7 @@ import ctypes
 import weakref
 import operator
 import threading
-from future.utils import raise_from
+from ..transition import raise_from
 
 import logging
 l = logging.getLogger('claripy.backend')

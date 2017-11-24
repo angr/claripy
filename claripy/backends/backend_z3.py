@@ -6,7 +6,7 @@ import operator
 import sys
 import threading
 import weakref
-from future.utils import raise_from
+from ..transition import raise_from
 from past.builtins import long
 from functools import reduce
 
@@ -64,7 +64,7 @@ except:
             z3.init(z3_path)
             break
     else:
-        raise ClaripyZ3Error("Unable to find %s", z3_library_file)
+        raise ClaripyZ3Error("Unable to find %s" % z3_library_file)
 
 supports_fp = hasattr(z3, 'fpEQ')
 
@@ -388,6 +388,11 @@ class BackendZ3(Backend):
                         length=bv_size,
                         variables={ symbol_name },
                         symbolic=True)
+            elif symbol_ty == z3.Z3_BOOL_SORT:
+                return Bool('BoolS',
+                        (symbol_name,),
+                        variables={ symbol_name },
+                        symbolic=True)
             elif symbol_ty == z3.Z3_FLOATING_POINT_SORT:
                 ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
                 sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
@@ -646,11 +651,11 @@ class BackendZ3(Backend):
         hi = 2**expr.size()-1
         vals = set()
 
-        numpop = 0
         if len(extra_constraints) > 0:
             solver.push()
-            numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
+
+        numpop = 0
 
         # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
@@ -694,6 +699,9 @@ class BackendZ3(Backend):
                 vals.add(hi)
                 solver.pop()
 
+        if len(extra_constraints) > 0:
+            solver.pop()
+
         return min(vals)
 
     @condom
@@ -704,11 +712,11 @@ class BackendZ3(Backend):
         hi = 2**expr.size()-1
         vals = set()
 
-        numpop = 0
         if len(extra_constraints) > 0:
             solver.push()
-            numpop += 1
             solver.add(*[self.convert(e) for e in extra_constraints])
+
+        numpop = 0
 
         # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
@@ -752,6 +760,9 @@ class BackendZ3(Backend):
                 vals.add(lo)
                 solver.pop()
 
+        if len(extra_constraints) > 0:
+            solver.pop()
+
         return max(vals)
 
     def _simplify(self, expr): #pylint:disable=W0613,R0201
@@ -793,6 +804,7 @@ class BackendZ3(Backend):
                 z3.Tactic("propagate-ineqs", ctx=self._context),
                 z3.Tactic("propagate-values", ctx=self._context),
                 z3.Tactic("unit-subsume-simplify", ctx=self._context),
+                z3.Tactic("aig", ctx=self._context),
                 ctx=self._context
             )
             s = tactics(expr_raw).as_expr()
