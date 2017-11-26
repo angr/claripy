@@ -3,8 +3,10 @@ import sys
 
 import nose.tools
 
+import claripy
 from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat, SDiv
-from claripy.errors import ClaripyTypeError
+from claripy.errors import ClaripyTypeError, ClaripyZeroDivisionError
+
 
 def test_bv():
     a = BVV(1, 8)
@@ -52,6 +54,36 @@ def test_zero_length():
     nose.tools.assert_raises(ClaripyTypeError, lambda: a - b)
     nose.tools.assert_raises(ClaripyTypeError, lambda: a * b)
     nose.tools.assert_raises(ClaripyTypeError, lambda: a / b)
+
+
+def test_zero_division_errors():
+    a = BVV(1, 32)
+    b = BVV(0, 32)
+
+    def _check_exception(va, vb, op):
+
+        try:
+            if hasattr(va, op):
+                getattr(va, op)(vb)
+            elif hasattr(claripy, op):
+                getattr(claripy, op)(va, vb)
+            else:
+                raise Exception('Operation %s does not exist.' % op)
+            raise Exception('The expected exception is not raised.')
+        except Exception as ex:  # pylint:disable=broad-except
+            assert type(ex) is ClaripyZeroDivisionError
+
+    _check_exception(a, b, '__div__')
+    _check_exception(a, b, '__truediv__')
+    _check_exception(a, b, '__floordiv__')
+    _check_exception(a, b, '__mod__')
+    _check_exception(b, a, '__rdiv__')
+    _check_exception(b, a, '__rtruediv__')
+    _check_exception(b, a, '__rfloordiv__')
+    _check_exception(b, a, '__rmod__')
+    _check_exception(a, b, 'SMod')
+    _check_exception(a, b, 'SDiv')
+
 
 if __name__ == '__main__':
 
