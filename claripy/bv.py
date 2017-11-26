@@ -105,21 +105,20 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __mod__(self, o):
-        try:
-            return BVV(self.value % o.value, self.bits)
-        except ZeroDivisionError:
+        if o.value == 0:
             raise ClaripyZeroDivisionError()
+        return BVV(self.value % o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __floordiv__(self, o):
-        try:
-            return BVV(self.value // o.value, self.bits)
-        except ZeroDivisionError:
+        if o.value == 0:
             raise ClaripyZeroDivisionError()
+        return BVV(self.value // o.value, self.bits)
 
     def __truediv__(self, other):
         return self // other # decline to implicitly have anything to do with floats
+
     def __div__(self, other):
         return self // other
 
@@ -145,15 +144,20 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __rmod__(self, o):
+        if self.value == 0:
+            raise ClaripyZeroDivisionError()
         return BVV(o.value % self.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rfloordiv__(self, o):
+        if self.value == 0:
+            raise ClaripyZeroDivisionError()
         return BVV(o.value // self.value, self.bits)
 
     def __rdiv__(self, o):
         return self.__rfloordiv__(o)
+
     def __rtruediv__(self, o):
         return self.__rfloordiv__(o)
 
@@ -394,6 +398,8 @@ def SMod(self, o):
     # compute the remainder like the % operator in C
     a = self.signed
     b = o.signed
+    if b == 0:
+        raise ClaripyZeroDivisionError()
     division_result = a//b if a*b>0 else (a+(-a%b))//b
     val = a - division_result*b
     return BVV(val, self.bits)
@@ -404,6 +410,8 @@ def SDiv(self, o):
     # compute the round towards 0 division
     a = self.signed
     b = o.signed
+    if b == 0:
+        raise ClaripyZeroDivisionError()
     val = a//b if a*b>0 else (a+(-a%b))//b
     return BVV(val, self.bits)
 
