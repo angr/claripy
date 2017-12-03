@@ -162,7 +162,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def _reabsorb_solver(self, s):
         try:
-            if len(s.variables) == 0 or self._solvers[next(iter(s.variables))] is s:
+            if len(s.variables) == 0 or self._solvers[min(iter(s.variables))] is s:
                 return
         except KeyError:
             # this happens when a variable is introduced due to constraint expansion
@@ -177,7 +177,7 @@ class CompositeFrontend(ConstrainedFrontend):
                     if s in done:
                         continue
                     done.add(s)
-                    v = next(iter(s.variables))
+                    v = min(iter(s.variables))
                     self._solvers[v].update(s)
             else:
                 for ns in new_solvers:
