@@ -77,33 +77,33 @@ class ModelCacheMixin(object):
         super(ModelCacheMixin, self).__init__(*args, **kwargs)
         self._models = set()
         self._exhausted = False
-        self._eval_exhausted = weakref.WeakSet()
-        self._max_exhausted = weakref.WeakSet()
-        self._min_exhausted = weakref.WeakSet()
+        self._eval_exhausted = weakref.WeakKeyDictionary()
+        self._max_exhausted = weakref.WeakKeyDictionary()
+        self._min_exhausted = weakref.WeakKeyDictionary()
 
     def _blank_copy(self, c):
         super(ModelCacheMixin, self)._blank_copy(c)
         c._models = set()
         c._exhausted = False
-        c._eval_exhausted = weakref.WeakSet()
-        c._max_exhausted = weakref.WeakSet()
-        c._min_exhausted = weakref.WeakSet()
+        c._eval_exhausted = weakref.WeakKeyDictionary()
+        c._max_exhausted = weakref.WeakKeyDictionary()
+        c._min_exhausted = weakref.WeakKeyDictionary()
 
     def _copy(self, c):
         super(ModelCacheMixin, self)._copy(c)
         c._models = set(self._models)
         c._exhausted = self._exhausted
-        c._eval_exhausted = weakref.WeakSet(self._eval_exhausted)
-        c._max_exhausted = weakref.WeakSet(self._max_exhausted)
-        c._min_exhausted = weakref.WeakSet(self._min_exhausted)
+        c._eval_exhausted = weakref.WeakKeyDictionary(self._eval_exhausted)
+        c._max_exhausted = weakref.WeakKeyDictionary(self._max_exhausted)
+        c._min_exhausted = weakref.WeakKeyDictionary(self._min_exhausted)
 
     def _ana_getstate(self):
         return (
             self._models,
             self._exhausted,
-            tuple(self._eval_exhausted),
-            tuple(self._max_exhausted),
-            tuple(self._min_exhausted),
+            dict(self._eval_exhausted),
+            dict(self._max_exhausted),
+            dict(self._min_exhausted),
             super(ModelCacheMixin, self)._ana_getstate()
         )
 
@@ -117,9 +117,9 @@ class ModelCacheMixin(object):
             base_state
         ) = s
         super(ModelCacheMixin, self)._ana_setstate(base_state)
-        self._eval_exhausted = weakref.WeakSet(_eval_exhausted)
-        self._max_exhausted = weakref.WeakSet(_max_exhausted)
-        self._min_exhausted = weakref.WeakSet(_min_exhausted)
+        self._eval_exhausted = weakref.WeakKeyDictionary(_eval_exhausted)
+        self._max_exhausted = weakref.WeakKeyDictionary(_max_exhausted)
+        self._min_exhausted = weakref.WeakKeyDictionary(_min_exhausted)
 
     #
     # Model cleaning
@@ -237,7 +237,7 @@ class ModelCacheMixin(object):
     def batch_eval(self, asts, n, extra_constraints=(), **kwargs):
         results = self._get_batch_solutions(asts, n=n, extra_constraints=extra_constraints)
 
-        if len(results) == n or (len(asts) == 1 and asts[0].cache_key in self._eval_exhausted):
+        if len(results) == n or (len(asts) == 1 and self._eval_exhausted.get(asts[0].cache_key, -1) == len(results)):
             return results
 
         remaining = n - len(results)
@@ -259,7 +259,7 @@ class ModelCacheMixin(object):
                 raise
 
         if len(extra_constraints) == 0 and len(results) < n:
-            self._eval_exhausted.update(e.cache_key for e in asts)
+            self._eval_exhausted.update({e.cache_key: len(results) for e in asts})
 
         return results
 
@@ -267,21 +267,33 @@ class ModelCacheMixin(object):
         return tuple( r[0] for r in ModelCacheMixin.batch_eval(self, [e], n=n, **kwargs) )
 
     def min(self, e, extra_constraints=(), **kwargs):
+        if e.cache_key in self._min_exhausted:
+            return self._min_exhausted[e.cache_key]
+
         cached = self._get_solutions(e, extra_constraints=extra_constraints)
-        if len(cached) > 0 and (e.cache_key in self._eval_exhausted or e.cache_key in self._min_exhausted):
+
+        if len(cached) > 0 and self._eval_exhausted.get(e.cache_key, -1) == len(cached):
+            self._min_exhausted[e.cache_key] = min(cached)
             return min(cached)
+
         else:
             m = super(ModelCacheMixin, self).min(e, extra_constraints=extra_constraints, **kwargs)
-            self._min_exhausted.add(e.cache_key)
+            self._min_exhausted[e.cache_key] = m
             return m
 
     def max(self, e, extra_constraints=(), **kwargs):
+        if e.cache_key in self._max_exhausted:
+            return self._max_exhausted[e.cache_key]
+
         cached = self._get_solutions(e, extra_constraints=extra_constraints)
-        if len(cached) > 0 and (e.cache_key in self._eval_exhausted or e.cache_key in self._max_exhausted):
+
+        if len(cached) > 0 and self._eval_exhausted.get(e.cache_key, -1) == len(cached):
+            self._max_exhausted[e.cache_key] = max(cached)
             return max(cached)
+
         else:
             m = super(ModelCacheMixin, self).max(e, extra_constraints=extra_constraints, **kwargs)
-            self._max_exhausted.add(e.cache_key)
+            self._max_exhausted[e.cache_key] = m
             return m
 
     def solution(self, e, v, extra_constraints=(), **kwargs):
