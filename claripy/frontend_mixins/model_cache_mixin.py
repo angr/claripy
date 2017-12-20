@@ -235,9 +235,12 @@ class ModelCacheMixin(object):
         return super(ModelCacheMixin, self).satisfiable(extra_constraints=extra_constraints, **kwargs)
 
     def batch_eval(self, asts, n, extra_constraints=(), **kwargs):
+        if len(asts) == 1 and asts[0].cache_key in self._eval_exhausted:
+            return self._eval_exhausted[asts[0].cache_key]
+
         results = self._get_batch_solutions(asts, n=n, extra_constraints=extra_constraints)
 
-        if len(results) == n or (len(asts) == 1 and self._eval_exhausted.get(asts[0].cache_key, -1) == len(results)):
+        if len(results) == n:
             return results
 
         remaining = n - len(results)
@@ -259,7 +262,7 @@ class ModelCacheMixin(object):
                 raise
 
         if len(extra_constraints) == 0 and len(results) < n:
-            self._eval_exhausted.update({e.cache_key: len(results) for e in asts})
+            self._eval_exhausted.update({e.cache_key: results for e in asts})
 
         return results
 
