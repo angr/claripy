@@ -12,8 +12,20 @@ def test_exhausted():
         tmp = a[8 * (i + 1) - 1:8 * i]
         v1 = s.eval(tmp, 260)
         v2 = s.eval(tmp, 260)
-        print len(v1), len(v2)
-       #nose.tools.assert_equal(v1, v2)
+        nose.tools.assert_equal(v1, v2)
+        nose.tools.assert_equal(len(v2), 256)
+
+        s.add(claripy.ULE(tmp, 250))
+        m1 = s.max(tmp)
+        m2 = s.max(tmp)
+        nose.tools.assert_equal(m1, m2)
+        nose.tools.assert_equal(m2, 250)
+
+        s.add(claripy.UGT(tmp, 5))
+        m1 = s.min(tmp)
+        m2 = s.min(tmp)
+        nose.tools.assert_equal(m1, m2)
+        nose.tools.assert_equal(m2, 6)
 
 
 if __name__ == '__main__':
