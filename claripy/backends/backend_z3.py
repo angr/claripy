@@ -1,14 +1,17 @@
+import sys
+import z3
 import ctypes
-from decimal import Decimal
 import logging
 import numbers
 import operator
-import sys
 import threading
 import weakref
-from ..transition import raise_from
 from past.builtins import long
 from functools import reduce
+from decimal import Decimal
+
+from ..utils.transition import raise_from
+from ..errors import ClaripyZ3Error
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -20,51 +23,6 @@ l = logging.getLogger("claripy.backends.backend_z3")
 
 # track the count of solves
 solve_count = 0
-
-#
-# Import and set up Z3
-#
-
-import os
-import z3
-
-if sys.platform == 'darwin':
-    z3_library_file = "libz3.dylib"
-elif sys.platform == 'win32':
-    z3_library_file = "libz3.dll"
-else:
-    z3_library_file = "libz3.so"
-
-from ..errors import ClaripyZ3Error
-
-_z3_paths = [ ]
-
-if "Z3PATH" in os.environ:
-    _z3_paths.append(os.environ["Z3PATH"])
-if "VIRTUAL_ENV" in os.environ:
-    virtual_env = os.environ["VIRTUAL_ENV"]
-    _z3_paths.append(os.path.join(os.environ["VIRTUAL_ENV"], "lib"))
-    _z3_paths.append(os.path.join(os.environ["VIRTUAL_ENV"], "site-packages/z3/lib"))
-
-_z3_paths.extend(sys.path)
-_z3_paths.append("/usr/lib")
-_z3_paths.append("/usr/local/lib")
-_z3_paths.append("/opt/python/lib")
-_z3_paths.append(os.path.join(sys.prefix, "lib"))
-
-try:
-    z3.z3core.lib()
-except:
-    for z3_path in _z3_paths:
-        if not '.so' in z3_path and \
-                not '.dll' in z3_path and \
-                not '.dylib' in z3_path:
-            z3_path = os.path.join(z3_path, z3_library_file)
-        if os.path.exists(z3_path):
-            z3.init(z3_path)
-            break
-    else:
-        raise ClaripyZ3Error("Unable to find %s" % z3_library_file)
 
 supports_fp = hasattr(z3, 'fpEQ')
 

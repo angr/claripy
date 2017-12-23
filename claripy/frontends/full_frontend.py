@@ -1,7 +1,7 @@
 import logging
 import sys
 import threading
-from ..transition import raise_from
+from ..utils.transition import raise_from
 
 from .constrained_frontend import ConstrainedFrontend
 

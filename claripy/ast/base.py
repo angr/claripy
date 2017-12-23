@@ -6,7 +6,7 @@ import numbers
 import os
 import struct
 import weakref
-from ..transition import raise_from
+from ..utils.transition import raise_from
 from past.builtins import long
 
 try:
