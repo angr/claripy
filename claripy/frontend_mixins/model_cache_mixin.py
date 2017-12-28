@@ -71,8 +71,6 @@ class ModelCache(object):
         return tuple(self.eval_ast(c) for c in asts)
 
 class ModelCacheMixin(object):
-    _MODEL_LIMIT = 257
-
     def __init__(self, *args, **kwargs):
         super(ModelCacheMixin, self).__init__(*args, **kwargs)
         self._models = set()
@@ -180,7 +178,7 @@ class ModelCacheMixin(object):
         model_lists.extend(o._models for o in others)
         combined._models.update(
             ModelCache.combine(*product) for product in
-            itertools.islice(itertools.product(*model_lists), self._MODEL_LIMIT)
+            itertools.islice(itertools.product(*model_lists), len(self._models))
         )
         return combined
 
@@ -200,8 +198,7 @@ class ModelCacheMixin(object):
     #
 
     def _model_hook(self, m):
-        if len(self._models) < self._MODEL_LIMIT:
-            self._models.add(ModelCache(m))
+        self._models.add(ModelCache(m))
 
     def _get_models(self, extra_constraints=()):
         for m in self._models:
