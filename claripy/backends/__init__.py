@@ -31,9 +31,9 @@ class Backend(object):
     the next backend in its list.
 
     All backends must implement a convert() function. This function receives a
-    claripy.A and should return an object that the backend can handle in its
+    claripy.ast.Base and should return an object that the backend can handle in its
     private methods. Backends should also implement a _convert() method, which
-    will receive anything that is *not* a claripy.A object (i.e., an integer or
+    will receive anything that is *not* a claripy.ast.Base object (i.e., an integer or
     an object from a different backend). If convert() or _convert() receives
     something that the backend can't translate to a format that is usable
     internally, the backend should raise BackendError, and thus won't be used
@@ -136,7 +136,7 @@ class Backend(object):
 
     def convert(self, expr): #pylint:disable=R0201
         """
-        Resolves a claripy.Base into something usable by the backend.
+        Resolves a claripy.ast.Base into something usable by the backend.
 
         :param expr:    The expression.
         :param save:    Save the result in the expression's object cache
@@ -249,7 +249,7 @@ class Backend(object):
         Should return True if `e` can be easily found to be True.
 
         :param e:                   The AST.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :returns:                   A boolean.
@@ -274,7 +274,7 @@ class Backend(object):
         Should return True if e can be easily found to be False.
 
         :param e:                   The AST
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
@@ -299,7 +299,7 @@ class Backend(object):
         The native version of is_false.
 
         :param e:                   The backend object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
@@ -311,7 +311,7 @@ class Backend(object):
         The native version of is_true.
 
         :param e:                   The backend object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
@@ -323,7 +323,7 @@ class Backend(object):
         Should return True if `e` can possible be True.
 
         :param e:                   The AST.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean
@@ -339,7 +339,7 @@ class Backend(object):
         Should return False if `e` can possibly be False.
 
         :param e:                   The AST.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
@@ -355,7 +355,7 @@ class Backend(object):
         The native version of :func:`has_false`.
 
         :param e:                   The backend object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
@@ -367,7 +367,7 @@ class Backend(object):
         The native version of :func:`has_true`.
 
         :param e:                   The backend object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver, for backends that require it.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
@@ -389,9 +389,9 @@ class Backend(object):
         """
         This function adds constraints to the backend solver.
 
-        :param c: A sequence of claripy.E objects.
-        :param s: A backend solver object.
-        :param bool track: True to enable constraint tracking, which is used in unsat_core().
+        :param c: A sequence of ASTs
+        :param s: A backend solver object
+        :param bool track: True to enable constraint tracking, which is used in unsat_core()
         """
         return self._add(s, self.convert_list(c), track=track)
 
@@ -433,12 +433,11 @@ class Backend(object):
         """
         This function returns up to `n` possible solutions for expression `expr`.
 
-        :param expr: expression (claripy.E object) to evaluate
+        :param expr: expression (an AST) to evaluate
         :param n: number of results to return
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:              A sequence of up to n results (backend objects)
         """
@@ -456,7 +455,7 @@ class Backend(object):
 
         :param expr:                An expression (backend object) to evaluate.
         :param n:                   A number of results to return.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver object, native to the backend, to assist in the evaluation (for example, a
                                     z3.Solver).
         :param model_callback:      a function that will be executed with recovered models (if any)
@@ -470,7 +469,7 @@ class Backend(object):
 
         :param exprs:               A list of expressions to evaluate.
         :param n:                   Number of different solutions to return.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver object, native to the backend, to assist in the evaluation.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    A list of up to n tuples, where each tuple is a solution for all expressions.
@@ -491,7 +490,7 @@ class Backend(object):
 
         :param exprs:               A list of expressions to evaluate.
         :param n:                   Number of different solutions to return.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param solver:              A solver object, native to the backend, to assist in the evaluation.
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    A list of up to n tuples, where each tuple is a solution for all expressions.
@@ -503,11 +502,10 @@ class Backend(object):
         """
         Return the minimum value of `expr`.
 
-        :param expr: expression (claripy.E object) to evaluate
+        :param expr: expression (an AST) to evaluate
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the minimum possible value of expr (backend object)
         """
@@ -523,8 +521,7 @@ class Backend(object):
         :param expr: expression (backend object) to evaluate
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the minimum possible value of expr (backend object)
         """
@@ -534,11 +531,10 @@ class Backend(object):
         """
         Return the maximum value of expr.
 
-        :param expr: expression (claripy.E object) to evaluate
+        :param expr: expression (an AST) to evaluate
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the maximum possible value of expr (backend object)
         """
@@ -554,8 +550,7 @@ class Backend(object):
         :param expr: expression (backend object) to evaluate
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the maximum possible value of expr (backend object)
         """
@@ -566,7 +561,7 @@ class Backend(object):
         This function does a constraint check and checks if the solver is in a sat state.
 
         :param solver:              The backend solver object.
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to s for this solve
+        :param extra_constraints:   Extra constraints (as ASTs) to add to s for this solve
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    True if sat, otherwise false
         """
@@ -588,13 +583,13 @@ class Backend(object):
         """
         Return True if `v` is a solution of `expr` with the extra constraints, False otherwise.
 
-        :param expr:                An expression (claripy.E) to evaluate
-        :param v:                   The proposed solution (claripy.E)
+        :param expr:                An expression (an AST) to evaluate
+        :param v:                   The proposed solution (an AST)
         :param solver:              A solver object, native to the backend, to assist in the evaluation (for example,
                                     a z3.Solver).
-        :param extra_constraints:   Extra constraints (claripy.E objects) to add to the solver for this solve.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to the solver for this solve.
         :param model_callback:      a function that will be executed with recovered models (if any)
-        :return:                   True if `v` is a solution of `expr`, False otherwise
+        :return:                    True if `v` is a solution of `expr`, False otherwise
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
@@ -609,8 +604,7 @@ class Backend(object):
         :param v: the proposed solution (backend object)
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
-        :param extra_constraints: extra constraints (claripy.E objects) to add
-                                  to the solver for this solve
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
         :return: True if v is a solution of expr, False otherwise
         """
 
@@ -624,7 +618,7 @@ class Backend(object):
         """
         This should return the size of an expression.
 
-        :param a: the claripy A object
+        :param a: the AST to evaluate
         """
         return self._size(self.convert(a))
 
@@ -640,7 +634,7 @@ class Backend(object):
         """
         This should return the name of an expression.
 
-        :param a: the claripy A object
+        :param a: the AST to evaluate
         """
         return self._name(self.convert(a))
 
@@ -657,8 +651,8 @@ class Backend(object):
         This should return whether `a` is identical to `b`. Of course, this isn't always clear. True should mean that it
         is definitely identical. False eans that, conservatively, it might not be.
 
-        :param a: a claripy A object
-        :param b: a claripy A object
+        :param a: an AST
+        :param b: another AST
         """
         return self._identical(self.convert(a), self.convert(b))
 
@@ -676,8 +670,8 @@ class Backend(object):
         This should return the maximum number of values that an expression can take on. This should be a strict *over*
         approximation.
 
-        :param a:   A claripy A object.
-        :return:    An integer.
+        :param a:   The AST to evaluate
+        :return:    An integer
         """
         return self._cardinality(self.convert(a))
 
@@ -686,8 +680,8 @@ class Backend(object):
         This should return the maximum number of values that an expression can take on. This should be a strict
         *over* approximation.
 
-        :param a:   A claripy A object.
-        :return:    An integer.
+        :param a:   The AST to evalute
+        :return:    An integer
         """
         raise BackendError("backend doesn't support cardinality()")
 
