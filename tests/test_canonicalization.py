@@ -9,10 +9,17 @@ def compare(a1, a2):
     return a1[0] == a2[0] and a1[1] is a2[1]
 
 def test_canonicalization():
-    for i in string.lowercase[:8] + string.lowercase[-8:]:
-        exec "%s = claripy.BVS(i, 32)" % i
 
-    print locals()
+    a = claripy.BVS("a", 32)
+    b = claripy.BVS("b", 32)
+    c = claripy.BVS("c", 32)
+    d = claripy.BVS("d", 32)
+    e = claripy.BVS("e", 32)
+
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+
     if full_test:
         def can(ast):
             return (ast.canonical_hash(), ast.canonicalize())
