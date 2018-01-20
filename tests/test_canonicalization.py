@@ -1,4 +1,3 @@
-import string
 import claripy
 import time
 
@@ -18,7 +17,6 @@ def test_canonicalization():
 
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
-    z = claripy.BVS("z", 32)
 
     if full_test:
         def can(ast):

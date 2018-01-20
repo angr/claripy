@@ -78,7 +78,8 @@ class Base(ana.Storable):
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
+                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
+                  '_variable_paths', '_canonical_hash']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -272,6 +273,7 @@ class Base(ana.Storable):
         self.variables = frozenset(variables)
         self.symbolic = symbolic
         self._eager_backends = eager_backends
+        self._variable_paths = None
         self._canonical_hash = None
 
         self._errored = errored if errored is not None else set()
@@ -344,11 +346,11 @@ class Base(ana.Storable):
         """
         return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations
 
-    def _ana_setstate(self, state):
+    def _ana_setstate(self, s):
         """
         Support for ANA deserialization.
         """
-        op, args, length, variables, symbolic, h, annotations = state
+        op, args, length, variables, symbolic, h, annotations = s
         Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
         self._hash = h
         Base._hash_cache[h] = self
