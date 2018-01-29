@@ -74,7 +74,6 @@ def _handle_annotations(simp, args):
         return None
 
     ast_args = tuple(a for a in args if isinstance(a, ast.Base))
-
     preserved_relocatable = frozenset(simp._relocatable_annotations)
     relocated_annotations = set()
     bad_eliminated = 0
