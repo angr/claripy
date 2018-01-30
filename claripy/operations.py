@@ -217,6 +217,7 @@ def lshift_simplifier(val, shift):
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
 def eq_simplifier(a, b):
+    import ipdb; ipdb.set_trace()
     if a is b:
         return ast.true
 
@@ -739,11 +740,11 @@ backend_bitmod_operations = {
 }
 
 backend_creation_operations = {
-    'BoolV', 'BVV', 'FPV'
+    'BoolV', 'BVV', 'FPV', 'StringV'
 }
 
 backend_symbol_creation_operations = {
-    'BoolS', 'BVS', 'FPS'
+    'BoolS', 'BVS', 'FPS', 'StringS'
 }
 
 backend_vsa_creation_operations = {
