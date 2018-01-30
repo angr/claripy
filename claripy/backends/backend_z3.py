@@ -326,8 +326,7 @@ class BackendZ3(Backend):
 
     @condom
     def StringV(self, ast):
-        import ipdb; ipdb.set_trace()
-        return z3.StringV(ast.args[0], ctx=self._context)
+        return z3.StringVal(ast.args[0], ctx=self._context)
 
     @condom
     def StringS(self, ast):
