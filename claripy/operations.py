@@ -217,7 +217,6 @@ def lshift_simplifier(val, shift):
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
 def eq_simplifier(a, b):
-    import ipdb; ipdb.set_trace()
     if a is b:
         return ast.true
 
