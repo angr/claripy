@@ -122,7 +122,7 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec'}:
+        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
 
@@ -142,6 +142,8 @@ class BackendZ3(Backend):
         self._op_expr['FPS'] = self.FPS
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
+        self._op_expr['StringV'] = self.StringV
+        self._op_expr['StringS'] = self.StringS
 
         self._op_raw['__floordiv__'] = self._op_div
         self._op_raw['__mod__'] = self._op_mod
@@ -322,6 +324,14 @@ class BackendZ3(Backend):
     def BoolV(self, ast): #pylint:disable=unused-argument
         return z3.BoolVal(ast.args[0], ctx=self._context)
 
+    @condom
+    def StringV(self, ast):
+        import ipdb; ipdb.set_trace()
+        return z3.StringV(ast.args[0], ctx=self._context)
+
+    @condom
+    def StringS(self, ast):
+        return z3.String(ast.args[0], ctx=self._context)
     #
     # Conversions
     #
@@ -1213,6 +1223,7 @@ from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
+from ..ast.strings import StringV, StringS
 from ..operations import backend_operations, backend_fp_operations
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
