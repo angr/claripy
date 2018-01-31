@@ -482,6 +482,10 @@ def test_zero_division_in_cache_mixin():
     s.add(denum == 3)
     assert not s.satisfiable()
 
+    a = claripy.BVS('a', 32)
+    b = claripy.BVS('b', 32)
+    s = claripy.Solver()
+    assert s.min(a/b) == 0
 
 if __name__ == '__main__':
 
