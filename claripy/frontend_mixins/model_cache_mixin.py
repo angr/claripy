@@ -209,7 +209,10 @@ class ModelCacheMixin(object):
         results = set()
 
         for m in self._get_models(extra_constraints):
-            results.add(m.eval_list(asts))
+            try:
+                results.add(m.eval_list(asts))
+            except ZeroDivisionError:
+                continue
             if len(results) == n:
                 break
 
