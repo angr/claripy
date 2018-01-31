@@ -264,8 +264,11 @@ class ModelCacheMixin(object):
         return tuple( r[0] for r in ModelCacheMixin.batch_eval(self, [e], n=n, **kwargs) )
 
     def min(self, e, extra_constraints=(), **kwargs):
-        cached = self._get_solutions(e, extra_constraints=extra_constraints)
-        if len(cached) > 0 and (e.cache_key in self._eval_exhausted or e.cache_key in self._min_exhausted):
+        cached = [ ]
+        if e.cache_key in self._eval_exhausted or e.cache_key in self._min_exhausted:
+            cached = self._get_solutions(e, extra_constraints=extra_constraints)
+
+        if len(cached) > 0:
             return min(cached)
         else:
             m = super(ModelCacheMixin, self).min(e, extra_constraints=extra_constraints, **kwargs)
@@ -273,8 +276,11 @@ class ModelCacheMixin(object):
             return m
 
     def max(self, e, extra_constraints=(), **kwargs):
-        cached = self._get_solutions(e, extra_constraints=extra_constraints)
-        if len(cached) > 0 and (e.cache_key in self._eval_exhausted or e.cache_key in self._max_exhausted):
+        cached = [ ]
+        if e.cache_key in self._eval_exhausted or e.cache_key in self._max_exhausted:
+            cached = self._get_solutions(e, extra_constraints=extra_constraints)
+
+        if len(cached) > 0:
             return max(cached)
         else:
             m = super(ModelCacheMixin, self).max(e, extra_constraints=extra_constraints, **kwargs)
