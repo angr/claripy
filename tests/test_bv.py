@@ -5,7 +5,7 @@ import nose.tools
 
 import claripy
 from claripy.bv import BVV, Extract, SignExt, ZeroExt, Concat, SDiv
-from claripy.errors import ClaripyTypeError, ClaripyZeroDivisionError
+from claripy.errors import ClaripyTypeError, ClaripyZeroDivisionError, ClaripyValueError
 
 
 def test_bv():
@@ -83,6 +83,19 @@ def test_zero_division_errors():
     _check_exception(b, a, '__rmod__')
     _check_exception(a, b, 'SMod')
     _check_exception(a, b, 'SDiv')
+
+def test_type_errors():
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVV(None))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVV(3))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVV(1.2))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVV("asdf", "qwer"))
+    nose.tools.assert_raises(ClaripyValueError, lambda: claripy.BVV("asdf", 8))
+
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVS(None, None))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVS(None, 3))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVS(3, 3))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVS(3, None))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVS('asdf', None))
 
 
 if __name__ == '__main__':
