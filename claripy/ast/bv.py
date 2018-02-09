@@ -286,6 +286,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     else:
         raise ClaripyValueError("ValueSet() does not take `value` of type %s" % type(value))
 
+    if name is None: name = 'ValueSet'
     bvs = BVS(name, bits, min=region_base_addr + min_v, max=region_base_addr + max_v, stride=stride)
 
     # Annotate the bvs and return the new AST
