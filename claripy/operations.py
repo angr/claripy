@@ -156,9 +156,20 @@ def concat_simplifier(*args):
             current = args[i]
 
             if not (previous.symbolic or current.symbolic) and backends.concrete.handles(previous) and backends.concrete.handles(current):
-                args[i-1:i+1] = (ast.all_operations.Concat(previous, current),)
-            else:
-                i += 1
+                concatted = ast.all_operations.Concat(previous, current)
+                # If the concrete arguments to concat have non-relocatable annotations attached,
+                # we may not be able to simplify the concrete concat. This check makes sure we don't
+                # create a nested concat in that case.
+                #
+                # This is necessary to ensure that simplified is set correctly. If we don't check this here,
+                # later the concat-of-concat will eliminate the newly introduced concat again, meaning we end
+                # up with the same args that we started with. But because we only eliminate the concat later,
+                # the simplified variable would still be set to True after this loop which is wrong.
+                if concatted.op != "Concat":
+                    args[i-1:i+1] = (concatted,)
+                    continue
+
+            i += 1
 
         if len(args) < len(orig_args):
             simplified = True
