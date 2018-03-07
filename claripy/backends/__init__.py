@@ -323,7 +323,6 @@ class Backend:
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                   A boolean.
         """
-
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
         if not isinstance(e, Base):
@@ -754,4 +753,5 @@ from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
+from .backend_smt import BackendSMT
 from ..ast.base import Base
