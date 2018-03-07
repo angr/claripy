@@ -112,31 +112,16 @@ class BackendSMT(Backend):
     #     return None
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
+        '''
+        Returns a SMT script that declare all the symbols and constraint and checks
+        their satisfiability (check-sat)
+        '''
         smt_script = ''
         smt_script += '\n'.join(map(lambda decl: "%r" % decl, self._assertion_stack))
-        smt_script += '\n(assert\n'
-        smt_script += '\n'.join(map(lambda constr: constr.to_smtlib(), extra_constraints))
-        smt_script += '\n)'
+        for constr in extra_constraints:
+            smt_script += "\n(assert %s)" % constr.to_smtlib()
         smt_script += '\n(check-sat)'
         return smt_script
-        # solve_count += 1
-        # if len(extra_constraints) > 0:
-        #     solver.push()
-        #     solver.add(*extra_constraints)
-
-        # try:
-
-        #     l.debug("Doing a check!")
-        #     #print "CHECKING"
-        #     if solver.check() != z3.sat:
-        #         return False
-
-        #     if model_callback is not None:
-        #         model_callback(self._generic_model(solver.model()))
-        # finally:
-        #     if len(extra_constraints) > 0:
-        #         solver.pop()
-        # return True
 
     # def _identical(self, a, b):
     #     if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
