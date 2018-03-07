@@ -81,6 +81,15 @@ class SolverConcrete(
     def __init__(self, **kwargs):
         super(SolverConcrete, self).__init__(backends.concrete, **kwargs)
 
+class SolverSMT(
+    frontend_mixins.ConstraintFixerMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontends.DumperFrontend
+):
+    def __init__(self, **kwargs):
+        super(SolverSMT, self).__init__(backends.smt, **kwargs)
+
 
 #
 # Composite solving
