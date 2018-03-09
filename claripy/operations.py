@@ -47,7 +47,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         for i in fixed_args:
             if i is NotImplemented:
                 return NotImplemented
-
+                
         if extra_check is not None:
             success, msg = extra_check(*fixed_args)
             if not success:
@@ -66,7 +66,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         kwargs['uninitialized'] = None
         if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
             kwargs['uninitialized'] = True
-
+         
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
@@ -593,6 +593,85 @@ def extract_simplifier(high, low, val):
         all_args = tuple(a[high:low] for a in val.args)
         return reduce(getattr(operator, val.op), all_args)
 
+
+def substr_simplifier(low, high, val):
+    # if we're extracting the whole value, return the value
+    if high - low + 1 == val.size():
+        return val
+
+    # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
+    # a and b must have lengths that are a multiple of 8
+    # if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
+    #     val = ast.all_operations.Concat(*reversed([a.reversed for a in val.args[0].args]))
+
+    # # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
+    # # No Reverse is required then
+    # if val.op == 'Reverse' and high - low + 1 == 8 and low % 8 == 0:
+    #     byte_pos = low // 8
+    #     new_byte_pos = val.length // 8 - byte_pos - 1
+
+    #     val = val.args[0]
+    #     high = (new_byte_pos + 1) * 8 - 1
+    #     low = new_byte_pos * 8
+
+    #     return ast.all_operations.Extract(high, low, val)
+
+    if val.op == 'Concat':
+        pos = val.length
+        high_i, low_i, low_loc = None, None, None
+        for i, v in enumerate(val.args):
+            if pos - v.length <= high < pos:
+                high_i = i
+            if pos - v.length <= low < pos:
+                low_i = i
+                low_loc = low - (pos - v.length)
+            pos -= v.length
+
+        used = val.args[high_i:low_i+1]
+        if len(used) == 1:
+            self = used[0]
+        else:
+            self = ast.all_operations.Concat(*used)
+
+        new_high = low_loc + high - low
+        if new_high == self.length - 1 and low_loc == 0:
+            return self
+        else:
+            if self.op != 'Concat':
+                return self[new_high:low_loc]
+            else:
+                # to avoid infinite recursion we only return if something was simplified
+                if len(used) != len(val.args) or new_high != high or low_loc != low:
+                    return ast.all_operations.Extract(new_high, low_loc, self)
+
+    if val.op == 'Substr':
+        import ipdb; ipdb.set_trace()
+        _, inner_low = val.args[:2]
+        new_low = inner_low + low
+        new_high = new_low + (high - low)
+        return (val.args[2])[new_high:new_low]
+
+    # if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
+    #     val = val.make_like('Concat',
+    #                         tuple(reversed([a.reversed for a in val.args[0].args])),
+    #     )[high:low]
+    #     if not val.symbolic:
+    #         return val
+
+    # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
+    # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
+    #     print("saw reverse, converting")
+    #     inner_length = val.args[0].length
+    #     try:
+    #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
+    #     except ClaripyOperationError:
+    #         __import__('ipdb').set_trace()
+
+    if val.op in extract_distributable:
+        all_args = tuple(a[high:low] for a in val.args)
+        return reduce(getattr(operator, val.op), all_args)
+
+
 # oh gods
 def fptobv_simplifier(the_fp):
     if the_fp.op == 'fpToFP' and len(the_fp.args) == 2:
@@ -612,6 +691,7 @@ simplifiers = {
     'Or': boolean_or_simplifier,
     'Not': boolean_not_simplifier,
     'Extract': extract_simplifier,
+    'Substr': substr_simplifier,
     'Concat': concat_simplifier,
     'If': if_simplifier,
     '__lshift__': lshift_simplifier,
@@ -650,8 +730,24 @@ def extract_check(high, low, bv):
 
     return True, ""
 
+def substr_check(low, high, string):
+    if high < 0 or low < 0:
+        return False, "Extract high and low must be nonnegative"
+    elif low > high:
+        return False, "Extract low must be <= high"
+    elif high >= string.size():
+        return False, "Extract bound must be less than string size"
+
+    return True, ""
+
 def extract_length_calc(high, low, _):
     return high - low + 1
+
+def substr_length_calc(low, high, _):
+    if low == high:
+        return 1
+    else:
+        return high - low
 
 def ext_length_calc(ext, orig):
     return orig.length + ext
@@ -767,6 +863,10 @@ backend_fp_operations = {
     'FPS', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
     'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
 } | backend_fp_cmp_operations
+
+backend_strings_operations = {
+    'Substr'
+}
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',

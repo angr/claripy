@@ -107,9 +107,6 @@ class Base(ana.Storable):
         :param annotations:     A frozenset of annotations applied onto this AST.
         """
 
-        #if any(isinstance(a, BackendObject) for a in args):
-        #   raise Exception('asdf')
-
         # fix up args and kwargs
         a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
         if 'symbolic' not in kwargs:
@@ -910,6 +907,7 @@ class Base(ana.Storable):
 
     @property
     def concrete(self):
+        import ipdb; ipdb.set_trace()
         return backends.concrete.handles(self)
 
     @property

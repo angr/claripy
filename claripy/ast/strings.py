@@ -20,9 +20,9 @@ class String(Bits):
                 left = len(self) + left
             if right < 0:
                 right = len(self) + right
-            return Extract(left, right, self)
+            return Substr(left, right, self)
         else:
-            return Extract(int(rng), int(rng), self)
+            return Substr(int(rng), int(rng), self)
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     """
@@ -64,9 +64,10 @@ SGT = operations.op('SGT', (String, String), Bool, extra_check=operations.length
 SGE = operations.op('SGE', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
 
 Concat = operations.op('Concat', String, String, calc_length=operations.concat_length_calc, bound=False)
-Extract = operations.op('Extract', ((int, long), (int, long), String),
-                        String, extra_check=operations.extract_check,
-                        calc_length=operations.extract_length_calc, bound=False)
+# Length = operations.op('Length', String, int, calc_length=operations.basic_length_calc, bound=False)
+Substr = operations.op('Substr', ((int, long), (int, long), String),
+                        String, extra_check=operations.substr_check,
+                        calc_length=operations.substr_length_calc, bound=False)
 
 # called before simplifaction
 
@@ -88,5 +89,8 @@ String.UGE = operations.op('__ge__', (String, String), Bool, extra_check=operati
 
 # String manipulation
 String.__add__ = operations.op('Concat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-String.Extract = staticmethod(operations.op('Extract', ((int, long), (int, long), String), String, extra_check=operations.extract_check, calc_length=operations.extract_length_calc, bound=False))
+String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), String),
+                              String, extra_check=operations.substr_check,
+                              calc_length=operations.substr_length_calc, bound=False))
 String.Concat = staticmethod(operations.op('Concat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
+# String.Length = staticmethod(operations.op('Lenght', (String), int, calc_length=operations.basic_length_calc, bound=False))
