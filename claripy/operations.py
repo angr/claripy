@@ -42,7 +42,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         for i in fixed_args:
             if i is NotImplemented:
                 return NotImplemented
-
+                
         if extra_check is not None:
             success, msg = extra_check(*fixed_args)
             if not success:
@@ -60,7 +60,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         kwargs['uninitialized'] = None
         if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
             kwargs['uninitialized'] = True
-
+         
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
@@ -142,8 +142,24 @@ def extract_check(high, low, bv):
 
     return True, ""
 
+def substr_check(low, high, string):
+    if high < 0 or low < 0:
+        return False, "Extract high and low must be nonnegative"
+    elif low > high:
+        return False, "Extract low must be <= high"
+    elif high >= string.size():
+        return False, "Extract bound must be less than string size"
+
+    return True, ""
+
 def extract_length_calc(high, low, _):
     return high - low + 1
+
+def substr_length_calc(low, high, _):
+    if low == high:
+        return 1
+    else:
+        return high - low
 
 def ext_length_calc(ext, orig):
     return orig.length + ext
@@ -259,6 +275,10 @@ backend_fp_operations = {
     'FPS', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
     'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
 } | backend_fp_cmp_operations
+
+backend_strings_operations = {
+    'Substr'
+}
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',
