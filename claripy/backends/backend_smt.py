@@ -1,26 +1,20 @@
 import logging
 
-from pysmt.shortcuts import Symbol, String, StrConcat, Equals
+from pysmt.shortcuts import Symbol, String, StrConcat, Equals, \
+                            StrSubstr, Int
+                            
 from pysmt.typing import STRING
 
 l = logging.getLogger("claripy.backends.backend_smt")
 
 from . import BackendError, Backend
 
-class DeclareConst():
-    def __init__(self, name, sort):
-        self.name = name
-        self.sort = sort
-
-    def __repr__(self):
-        return "(declare-const %s %r)" % (self.name, self.sort)
-
 
 class BackendSMT(Backend):
     def __init__(self):
         Backend.__init__(self)
 
-        self._assertion_stack = []
+        self._assertions_stack = []
 
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
@@ -29,6 +23,7 @@ class BackendSMT(Backend):
         # self._op_raw['__add__'] = self._op_add
         self._op_raw['__eq__'] = self._op_raw_eq
         self._op_raw['Concat'] = self._op_raw_concat
+        self._op_raw['Substr'] = self._op_raw_substr
         # self._op_raw['__sub__'] = self._op_sub
         # self._op_raw['__mul__'] = self._op_mul
         # self._op_raw['__or__'] = self._op_or
@@ -37,7 +32,21 @@ class BackendSMT(Backend):
 
         # self._cache_objects = False
 
-    # --------------- EXPRESSIONS ---------------- 
+    def _dump_symbol_declaration(self, symb):
+        return "(declare-const %s %s)\n" % (symb.symbol_name(), symb.symbol_type())
+
+    def _dump_constraint(self, constraint):
+        return "(assert %s)\n" % constraint.to_smtlib()
+
+    def _dump_assertion_stack(self):
+        smt_script = "" 
+        for assertion in self._assertions_stack:
+            # TODO: manages all types of assertions
+            if assertion.is_symbol():
+                smt_script += self._dump_symbol_declaration(assertion)
+            else:
+                smt_script += self._dump_constraint(assertion)
+        return smt_script
 
     def StringV(self, ast):
         # TODO: check correct format
@@ -50,11 +59,10 @@ class BackendSMT(Backend):
         # TODO: check correct format
         #       if format not correct throw exception BackError()
         name, _ = ast.args
-        assertion = DeclareConst(name, STRING) 
-        self._assertion_stack.append(assertion)
-        return Symbol(name, STRING) 
+        assertion = Symbol(name, STRING) 
+        self._assertions_stack.append(assertion)
+        return assertion
 
-    # --------------- RAW ---------------- 
     # @staticmethod
     # def BVV(value, size):
     #     if value is None:
@@ -75,6 +83,10 @@ class BackendSMT(Backend):
 
     def _op_raw_concat(self, *args):
         return StrConcat(args)
+
+    def _op_raw_substr(self, *args):
+        i, j, symb = args
+        return StrSubstr(symb, Int(i), Int(j))
 
     # @staticmethod
     # def _op_sub(*args):
@@ -116,12 +128,15 @@ class BackendSMT(Backend):
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
         '''
-        smt_script = ''
-        smt_script += '\n'.join(map(lambda decl: "%r" % decl, self._assertion_stack))
-        for constr in extra_constraints:
-            smt_script += "\n(assert %s)" % constr.to_smtlib()
-        smt_script += '\n(check-sat)'
+        smt_script = self._dump_assertion_stack()
+        # TODO: manage extra constraint in a sane manner
+        # for constr in extra_constraints:
+        #     smt_script += "\n(assert %s)" % constr.to_smtlib()
+        smt_script += '(check-sat)\n'
         return smt_script
+
+    def _add(self, constraint):
+        self._assertions_stack.append(constraint)
 
     # def _identical(self, a, b):
     #     if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
@@ -206,7 +221,5 @@ class BackendSMT(Backend):
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp, strings
-from ..ast.bv import BVV
-from ..ast.fp import FPV
-from ..ast.bool import BoolV
+from ..ast.bool import Bool
 from ..errors import UnsatError

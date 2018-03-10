@@ -730,12 +730,12 @@ def extract_check(high, low, bv):
 
     return True, ""
 
-def substr_check(low, high, string):
+def substr_check(low, high, string_val):
     if high < 0 or low < 0:
         return False, "Extract high and low must be nonnegative"
     elif low > high:
         return False, "Extract low must be <= high"
-    elif high >= string.size():
+    elif high >= string_val.size():
         return False, "Extract bound must be less than string size"
 
     return True, ""
