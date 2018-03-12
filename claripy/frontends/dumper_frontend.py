@@ -70,9 +70,15 @@ class DumperFrontend(ConstrainedFrontend):
     # #
 
     def add(self, constraints):
-        to_add = ConstrainedFrontend.add(self, constraints)
-        self._to_add += to_add
-        return to_add
+        try:
+            to_add = ConstrainedFrontend.add(self, constraints)
+            # TODO: Understand if this is a correct way to do this
+            #       (software engineering POV)
+            self._to_add += to_add
+            self._solver_backend._add(self._solver_backend.convert(self.constraints[-1]))
+            return to_add
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during add"), e)
 
     # def simplify(self):
     #     ConstrainedFrontend.simplify(self)

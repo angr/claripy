@@ -3,6 +3,7 @@ from ..ast.base import _make_name
 
 from .. import operations
 from .bool import Bool
+from .int import Int
 
 
 class String(Bits):
@@ -64,10 +65,13 @@ SGT = operations.op('SGT', (String, String), Bool, extra_check=operations.length
 SGE = operations.op('SGE', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
 
 Concat = operations.op('Concat', String, String, calc_length=operations.concat_length_calc, bound=False)
-# Length = operations.op('Length', String, int, calc_length=operations.basic_length_calc, bound=False)
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
+# Length = operations.op('Length', String, int, calc_length=operations.basic_length_calc, bound=False)
+Replace = operations.op('Replace', (String, String, String), String,
+                        extra_check=operations.replace_check,
+                        calc_length=operations.replace_length_calc, bound=False)
 
 # called before simplifaction
 
@@ -93,4 +97,8 @@ String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), 
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
 String.Concat = staticmethod(operations.op('Concat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
-# String.Length = staticmethod(operations.op('Lenght', (String), int, calc_length=operations.basic_length_calc, bound=False))
+# String.Length = staticmethod(operations.op('Lenght', (String), Int, calc_length=operations.basic_length_calc, bound=False))
+
+String.Replace = staticmethod(operations.op('Replace', (String, String, String),
+                               String, extra_check=operations.replace_check,
+                               calc_length=operations.replace_length_calc))
