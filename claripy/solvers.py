@@ -87,6 +87,8 @@ class SolverSMT(
     frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.EagerResolutionMixin,
     frontends.DumperFrontend
 ):
     def __init__(self, **kwargs):

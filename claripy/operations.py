@@ -292,7 +292,7 @@ backend_fp_operations = {
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
-    'Substr'
+    'Substr', 'Replace'
 }
 
 opposites = {
