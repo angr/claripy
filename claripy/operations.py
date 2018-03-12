@@ -599,23 +599,6 @@ def substr_simplifier(low, high, val):
     if high - low + 1 == val.size():
         return val
 
-    # Reverse(concat(a, b)) -> concat(Reverse(b), Reverse(a))
-    # a and b must have lengths that are a multiple of 8
-    # if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
-    #     val = ast.all_operations.Concat(*reversed([a.reversed for a in val.args[0].args]))
-
-    # # Reading one byte from a reversed ast can be converted to reading the corresponding byte from the original ast
-    # # No Reverse is required then
-    # if val.op == 'Reverse' and high - low + 1 == 8 and low % 8 == 0:
-    #     byte_pos = low // 8
-    #     new_byte_pos = val.length // 8 - byte_pos - 1
-
-    #     val = val.args[0]
-    #     high = (new_byte_pos + 1) * 8 - 1
-    #     low = new_byte_pos * 8
-
-    #     return ast.all_operations.Extract(high, low, val)
-
     if val.op == 'Concat':
         pos = val.length
         high_i, low_i, low_loc = None, None, None
@@ -650,22 +633,6 @@ def substr_simplifier(low, high, val):
         new_low = inner_low + low
         new_high = new_low + (high - low)
         return (val.args[2])[new_high:new_low]
-
-    # if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
-    #     val = val.make_like('Concat',
-    #                         tuple(reversed([a.reversed for a in val.args[0].args])),
-    #     )[high:low]
-    #     if not val.symbolic:
-    #         return val
-
-    # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
-    # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
-    #     print("saw reverse, converting")
-    #     inner_length = val.args[0].length
-    #     try:
-    #         return val.args[0][(inner_length - 1 - low):(inner_length - 1 - low - (high - low))].reversed
-    #     except ClaripyOperationError:
-    #         __import__('ipdb').set_trace()
 
     if val.op in extract_distributable:
         all_args = tuple(a[high:low] for a in val.args)
@@ -880,7 +847,7 @@ backend_fp_operations = {
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
-    'Substr'
+    'Substr', 'Replace'
 }
 
 opposites = {

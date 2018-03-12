@@ -39,7 +39,7 @@ class BackendConcrete(Backend):
     def StringV(value, size):
         if value is None:
             raise BackendError("can't handle empty Strings")
-        return StringV(value)
+        return strings.StringV(value)
 
     @staticmethod
     def FPV(op, sort):

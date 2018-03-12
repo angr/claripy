@@ -1,7 +1,8 @@
 import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, \
-                            StrSubstr, Int, StrLength, StrReplace
+                            StrSubstr, Int, StrLength, StrReplace, \
+                            Bool
                             
 from pysmt.typing import STRING
 
@@ -18,6 +19,7 @@ class BackendSMT(Backend):
 
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
+        self._op_expr['BoolV'] = self.BoolV
         # self._op_raw['FPV'] = self.FPV
 
         # self._op_raw['__add__'] = self._op_add
@@ -64,6 +66,9 @@ class BackendSMT(Backend):
         assertion = Symbol(name, STRING) 
         self._assertions_stack.append(assertion)
         return assertion
+
+    def BoolV(self, ast):
+        return Bool(ast.is_true())
 
     # def _op_add(self, *args):
     #     import ipdb; ipdb.set_trace()
@@ -221,5 +226,4 @@ class BackendSMT(Backend):
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp, strings
-from ..ast.bool import Bool
 from ..errors import UnsatError
