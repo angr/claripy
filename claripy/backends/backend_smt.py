@@ -1,7 +1,7 @@
 import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, \
-                            StrSubstr, Int
+                            StrSubstr, Int, StrLength, StrReplace
                             
 from pysmt.typing import STRING
 
@@ -24,6 +24,8 @@ class BackendSMT(Backend):
         self._op_raw['__eq__'] = self._op_raw_eq
         self._op_raw['Concat'] = self._op_raw_concat
         self._op_raw['Substr'] = self._op_raw_substr
+        # self._op_raw['Length'] = self._op_raw_lenght
+        self._op_raw['Replace'] = self._op_raw_replace
         # self._op_raw['__sub__'] = self._op_sub
         # self._op_raw['__mul__'] = self._op_mul
         # self._op_raw['__or__'] = self._op_or
@@ -63,16 +65,6 @@ class BackendSMT(Backend):
         self._assertions_stack.append(assertion)
         return assertion
 
-    # @staticmethod
-    # def BVV(value, size):
-    #     if value is None:
-    #         raise BackendError("can't handle empty BVVs")
-    #     return bv.BVV(value, size)
-
-    # @staticmethod
-    # def FPV(op, sort):
-    #     return fp.FPV(op, sort)
-
     # def _op_add(self, *args):
     #     import ipdb; ipdb.set_trace()
     #     return reduce(operator.__add__, args)
@@ -87,6 +79,14 @@ class BackendSMT(Backend):
     def _op_raw_substr(self, *args):
         i, j, symb = args
         return StrSubstr(symb, Int(i), Int(j))
+
+    # def _op_raw_lenght(self, *args):
+    #     i, j, symb = args
+    #     return StrSubstr(symb, Int(i), Int(j))
+
+    def _op_raw_replace(self, *args):
+        initial_str, pattern_to_replace, replacement_pattern = args
+        return StrReplace(initial_str, pattern_to_replace, replacement_pattern)
 
     # @staticmethod
     # def _op_sub(*args):
