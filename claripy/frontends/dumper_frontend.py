@@ -78,7 +78,7 @@ class DumperFrontend(ConstrainedFrontend):
             self._solver_backend._add(self._solver_backend.convert(self.constraints[-1]))
             return to_add
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during solve"), e)
+            raise_from(ClaripyFrontendError("Backend error during add"), e)
 
     # def simplify(self):
     #     ConstrainedFrontend.simplify(self)

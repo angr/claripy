@@ -740,6 +740,13 @@ def substr_check(low, high, string_val):
 
     return True, ""
 
+def replace_check(*args):
+    str_1, str_2, _ = args
+    if str_1.length < str_2.length:
+        return False, "The pattern that has to be replaced is longer than the string itself"
+    return True, ""
+
+
 def extract_length_calc(high, low, _):
     return high - low + 1
 
@@ -754,6 +761,14 @@ def ext_length_calc(ext, orig):
 
 def concat_length_calc(*args):
     return sum(arg.size() for arg in args)
+
+def replace_length_calc(*args):
+    str_1, str_2, str_3 = args
+    # TODO: figure out how to deal with this
+    #       we need to know if the string has been replaced correctly
+    #       or not first in order to calculate the lenght...
+    return str_1.length - str_2.length + str_3.length
+
 
 #
 # Operation lists

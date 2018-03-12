@@ -6,6 +6,12 @@ class StringV(BackendObject):
         self.value = value
     
 def Substr(f, t, o):
+    """
+    Create a concrete version of the substring
+    :param f : starting index of the substring
+    :param t : last index of the substring
+    :o : Argument of the AST 
+    """
     if f == t:
         new_value = o.args[0][f]
     else:
