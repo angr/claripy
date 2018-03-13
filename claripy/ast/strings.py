@@ -54,7 +54,6 @@ def StringV(value, **kwargs):
     result = String("StringV", (value, len(value)), length=len(value), **kwargs)
     return result
 
-# called after simplifaction
 ULT = operations.op('__lt__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
 ULE = operations.op('__le__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
 UGT = operations.op('__gt__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
@@ -64,16 +63,15 @@ SLE = operations.op('SLE', (String, String), Bool, extra_check=operations.length
 SGT = operations.op('SGT', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
 SGE = operations.op('SGE', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
 
-Concat = operations.op('Concat', String, String, calc_length=operations.concat_length_calc, bound=False)
+StrConcat = operations.op('StrConcat', String, String, calc_length=operations.concat_length_calc, bound=False)
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
 # Length = operations.op('Length', String, int, calc_length=operations.basic_length_calc, bound=False)
-Replace = operations.op('Replace', (String, String, String), String,
-                        extra_check=operations.replace_check,
-                        calc_length=operations.replace_length_calc, bound=False)
+StrReplace = operations.op('StrReplace', (String, String, String), String,
+                        extra_check=operations.str_replace_check,
+                        calc_length=operations.str_replace_length_calc, bound=False)
 
-# called before simplifaction
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool, extra_check=operations.length_same_check)
@@ -92,13 +90,13 @@ String.ULE = operations.op('__le__', (String, String), Bool, extra_check=operati
 String.UGE = operations.op('__ge__', (String, String), Bool, extra_check=operations.length_same_check)
 
 # String manipulation
-String.__add__ = operations.op('Concat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
+String.__add__ = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
 String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), String),
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
-String.Concat = staticmethod(operations.op('Concat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
+String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
 # String.Length = staticmethod(operations.op('Lenght', (String), Int, calc_length=operations.basic_length_calc, bound=False))
 
-String.Replace = staticmethod(operations.op('Replace', (String, String, String),
-                               String, extra_check=operations.replace_check,
-                               calc_length=operations.replace_length_calc))
+String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
+                               String, extra_check=operations.str_replace_check,
+                               calc_length=operations.str_replace_length_calc))
