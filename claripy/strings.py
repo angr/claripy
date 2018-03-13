@@ -7,13 +7,23 @@ class StringV(BackendObject):
 
     def __repr__(self):
         return 'StringV(%s)' % (self.value)
+
+def StrConcat(*args):
+    """
+    Create a concrete version of the concatenated string
+    :param args: List of string that has to be concatenated
+
+    :return : a concrete version of the concatenated string
+    """
+    new_value = ''.join([arg.value for arg in args])
+    return StringV(new_value)
     
 def Substr(start_idx, end_idx, initial_string):
     """
     Create a concrete version of the substring
     :param start_idx : starting index of the substring
     :param end_idx : last index of the substring
-    :param initial_string : Argument of the AST 
+    :param initial_string 
 
     :return : a concrete version of the substring
     """
@@ -24,7 +34,7 @@ def Substr(start_idx, end_idx, initial_string):
     return StringV(new_value)
 
 
-def Replace(initial_string, pattern_to_be_replaced, replacement_pattern):
+def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
     """
     Create a concrete version of the replaced string
     (replace ONLY th efirst occurrence of the pattern)
