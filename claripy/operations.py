@@ -707,7 +707,7 @@ def substr_check(low, high, string_val):
 
     return True, ""
 
-def replace_check(*args):
+def str_replace_check(*args):
     str_1, str_2, _ = args
     if str_1.length < str_2.length:
         return False, "The pattern that has to be replaced is longer than the string itself"
@@ -729,7 +729,7 @@ def ext_length_calc(ext, orig):
 def concat_length_calc(*args):
     return sum(arg.size() for arg in args)
 
-def replace_length_calc(*args):
+def str_replace_length_calc(*args):
     str_1, str_2, str_3 = args
     # TODO: figure out how to deal with this
     #       we need to know if the string has been replaced correctly
@@ -847,7 +847,7 @@ backend_fp_operations = {
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
-    'Substr', 'Replace'
+    'Substr', 'StrReplace', 'StrConcat'
 }
 
 opposites = {
