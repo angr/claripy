@@ -210,7 +210,6 @@ class BackendSMT(Backend):
     # def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
     #     return e == True
     # def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-    #     # TODO : Should we implement something smarter
     #     return e == False
     # def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
     #     return e == True
