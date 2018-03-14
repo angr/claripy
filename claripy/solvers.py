@@ -82,6 +82,7 @@ class SolverConcrete(
         super(SolverConcrete, self).__init__(backends.concrete, **kwargs)
 
 class SolverSMT(
+    # TODO: Figure ot if we need to use all these mixins
     frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
