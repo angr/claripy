@@ -3,7 +3,7 @@ from ..ast.base import _make_name
 
 from .. import operations
 from .bool import Bool
-from .int import Int
+from .bv import BV
 
 
 class String(Bits):
@@ -41,7 +41,6 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
     return result
 
-
 def StringV(value, **kwargs):
     """
     Create a new Concrete string (analogous to z3.StringVal())
@@ -54,50 +53,26 @@ def StringV(value, **kwargs):
     result = String("StringV", (value, len(value)), length=len(value), **kwargs)
     return result
 
-ULT = operations.op('__lt__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-ULE = operations.op('__le__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-UGT = operations.op('__gt__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-UGE = operations.op('__ge__', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-SLT = operations.op('SLT', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-SLE = operations.op('SLE', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-SGT = operations.op('SGT', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-SGE = operations.op('SGE', (String, String), Bool, extra_check=operations.length_same_check, bound=False)
-
 StrConcat = operations.op('StrConcat', String, String, calc_length=operations.concat_length_calc, bound=False)
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
-StrLen = operations.op('StrLen', String, Int, calc_length=operations.basic_length_calc, bound=False)
+StrLen = operations.op('StrLen', String, BV, calc_length=operations.basic_length_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
                         calc_length=operations.str_replace_length_calc, bound=False)
 
-
 # Equality / inequality check
-String.__eq__ = operations.op('__eq__', (String, String), Bool, extra_check=operations.length_same_check)
-String.__ne__ = operations.op('__ne__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.__ge__ = operations.op('__ge__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.__le__ = operations.op('__le__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.__gt__ = operations.op('__gt__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.__lt__ = operations.op('__lt__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.SLT = operations.op('SLT', (String, String), Bool, extra_check=operations.length_same_check)
-# String.SGT = operations.op('SGT', (String, String), Bool, extra_check=operations.length_same_check)
-# String.SLE = operations.op('SLE', (String, String), Bool, extra_check=operations.length_same_check)
-# String.SGE = operations.op('SGE', (String, String), Bool, extra_check=operations.length_same_check)
-# String.ULT = operations.op('__lt__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.UGT = operations.op('__gt__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.ULE = operations.op('__le__', (String, String), Bool, extra_check=operations.length_same_check)
-# String.UGE = operations.op('__ge__', (String, String), Bool, extra_check=operations.length_same_check)
+String.__eq__ = operations.op('__eq__', (String, String), Bool)
+String.__ne__ = operations.op('__ne__', (String, String), Bool)
 
 # String manipulation
 String.__add__ = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-# # TODO: understand how to use the magic method __non_zero
-# String.Or = operations.op('Or', (String, String), Bool, bound=False)
 String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), String),
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
 String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
-String.StrLen = staticmethod(operations.op('StrLen', (String), Int, calc_length=operations.basic_length_calc, bound=False))
+String.StrLen = staticmethod(operations.op('StrLen', String, BV, calc_length=operations.basic_length_calc, bound=False))
 String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
                                String, extra_check=operations.str_replace_check,
                                calc_length=operations.str_replace_length_calc))
