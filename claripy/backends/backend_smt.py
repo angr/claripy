@@ -1,6 +1,6 @@
 import logging
 
-from pysmt.shortcuts import Symbol, String, StrConcat, Equals, \
+from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
                             Bool
 from pysmt.typing import STRING
@@ -30,13 +30,12 @@ class BackendSMT(Backend):
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
-        # self._op_raw['FPV'] = self.FPV
 
-        # self._op_raw['__add__'] = self._op_add
-        self._op_raw['__eq__'] = self._op_raw_eq
+        self._op_raw['__eq__'] = self._op_eq
+        # self._op_raw['__ne__'] = self._op_ne
         self._op_raw['StrConcat'] = self._op_raw_str_concat
         self._op_raw['Substr'] = self._op_raw_str_substr
-        # self._op_raw['Length'] = self._op_raw_lenght
+        self._op_raw['StrLen'] = self._op_raw_str_strlen
         self._op_raw['StrReplace'] = self._op_raw_str_replace
         # self._op_raw['__sub__'] = self._op_sub
         # self._op_raw['__mul__'] = self._op_mul
@@ -66,14 +65,6 @@ class BackendSMT(Backend):
     def BoolV(self, ast):
         return Bool(ast.is_true())
 
-    # def _op_add(self, *args):
-    #     import ipdb; ipdb.set_trace()
-    #     return reduce(operator.__add__, args)
-
-    def _op_raw_eq(self, *args):
-        expr_left, expr_rigth = args
-        return Equals(expr_left, expr_rigth)
-
     def _op_raw_str_concat(self, *args):
         return StrConcat(args)
 
@@ -81,13 +72,22 @@ class BackendSMT(Backend):
         i, j, symb = args
         return StrSubstr(symb, Int(i), Int(j))
 
-    # def _op_raw_lenght(self, *args):
-    #     i, j, symb = args
-    #     return StrSubstr(symb, Int(i), Int(j))
+    def _op_raw_str_strlen(self, *args):
+        import ipdb; ipdb.set_trace()
+        i, j, symb = args
+        return StrSubstr(symb, Int(i), Int(j))
 
     def _op_raw_str_replace(self, *args):
         initial_str, pattern_to_replace, replacement_pattern = args
         return StrReplace(initial_str, pattern_to_replace, replacement_pattern)
+
+    def _op_eq(self, *args):
+        expr_left, expr_rigth = args
+        return Equals(expr_left, expr_rigth)
+
+    def _op_eq(self, *args):
+        expr_left, expr_rigth = args
+        return Equals(expr_left, expr_rigth)
 
     # @staticmethod
     # def _op_sub(*args):
@@ -134,6 +134,7 @@ class BackendSMT(Backend):
         for constr in extra_constraints:
             smt_script += "\n(assert %s)" % constr.to_smtlib()
         smt_script += '\n(check-sat)'
+        self._assertions_stack = []
         return smt_script
 
     # def _identical(self, a, b):
