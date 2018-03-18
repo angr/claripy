@@ -86,6 +86,21 @@ class TestStringOperation(unittest.TestCase):
         script = solver.satisfiable()
         self.assertEqual(script, '(check-sat)\n')
 
+    def test_ne(self):
+        correct_script='''
+        (declare-const symb_ne String)
+        (assert (let ((.def_0 (= symb_ne "concrete"))) (let ((.def_1 (not .def_0))) .def_1)))
+        (check-sat)
+        '''
+        str_symb = claripy.StringS("symb_ne", 12, explicit_name=True)
+        solver = claripy.SolverSMT()
+        solver.add(str_symb != claripy.StringV("concrete"))
+        script = solver.satisfiable()
+        # with open("dump_ne.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertTrue(correct_script, script)
+
+
     # def test_length(self):
     #     str_concrete = claripy.StringV("concrete")
     #     length_concrete = claripy.StrLen(str_concrete)

@@ -32,7 +32,7 @@ class BackendSMT(Backend):
         self._op_expr['BoolV'] = self.BoolV
 
         self._op_raw['__eq__'] = self._op_eq
-        # self._op_raw['__ne__'] = self._op_ne
+        self._op_raw['__ne__'] = self._op_ne
         self._op_raw['StrConcat'] = self._op_raw_str_concat
         self._op_raw['Substr'] = self._op_raw_str_substr
         self._op_raw['StrLen'] = self._op_raw_str_strlen
@@ -85,9 +85,9 @@ class BackendSMT(Backend):
         expr_left, expr_rigth = args
         return Equals(expr_left, expr_rigth)
 
-    def _op_eq(self, *args):
+    def _op_ne(self, *args):
         expr_left, expr_rigth = args
-        return Equals(expr_left, expr_rigth)
+        return NotEquals(expr_left, expr_rigth)
 
     # @staticmethod
     # def _op_sub(*args):
