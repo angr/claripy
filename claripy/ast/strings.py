@@ -38,7 +38,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     :returns:                    The String object representing the symbolic string
     """
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
-    result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
+    result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
     return result
 
 def StringV(value, **kwargs):
@@ -61,8 +61,9 @@ StrLen = operations.op('StrLen', String, BV, calc_length=operations.str_strlen_l
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
                         calc_length=operations.str_replace_length_calc, bound=False)
-
 StrContains = operations.op("StrContains", (String, String), Bool, bound=False)
+StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
+StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -78,5 +79,6 @@ String.StrLen = staticmethod(operations.op('StrLen', String, BV, calc_length=ope
 String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
                                String, extra_check=operations.str_replace_check,
                                calc_length=operations.str_replace_length_calc))
-
 String.StrContains = staticmethod(operations.op("StrContains", (String, String), Bool, bound=False))
+String.StrPrefixOf = staticmethod(operations.op("StrPrefixOf", (String, String), Bool, bound=False))
+String.StrSuffixOf = staticmethod(operations.op("StrSuffixOf", (String, String), Bool, bound=False))

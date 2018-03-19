@@ -55,10 +55,6 @@ class BackendSMT(Backend):
     def __init__(self, *args, **kwargs):
         Backend.__init__(self, *args, **kwargs)
 
-        # The assertions stack is inside tehe solver so we need the resference
-        #  to it in order to retrieve variable declarations
-        self.solver = None
-
         # ------------------- LEAF OPERATIONS ------------------- 
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
@@ -81,18 +77,6 @@ class BackendSMT(Backend):
         self._op_raw['StrReplace'] = self._op_raw_str_replace
         self._op_raw["StrContains"] = self._op_raw_str_contains
 
-    def register_solver(self, solver):
-        """
-        Since the backend is shared among all the solver we need to register
-        the correct solver for this backend so the backend can retieve the
-        correct assertion_stack.
-
-        This implementation is still wrong because if we register a new solver,
-        All the other solvers wioll lose their assertion stacks
-
-        :param solver : the appropriate solver for this backend
-        """
-        self.solver = solver
 
     def _smtlib_exprs(self, extra_constraints=()):
         """
@@ -155,7 +139,6 @@ class BackendSMT(Backend):
         # because when we dump the constraints we need to dump the
         # declaration as well
         assertion = Symbol(name, STRING)
-        self.solver.push(assertion)
         return assertion
 
     def BoolV(self, ast):
