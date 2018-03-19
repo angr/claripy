@@ -45,8 +45,6 @@ class BackendSMT(Backend):
 
         # self._cache_objects = False
 
-    # --------------- EXPRESSIONS ---------------- 
-
     def StringV(self, ast):
         # TODO: check correct format
         # self._op_expr['StringV'] = self.StringV
