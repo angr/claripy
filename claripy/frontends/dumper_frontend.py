@@ -8,28 +8,39 @@ from .constrained_frontend import ConstrainedFrontend
 l = logging.getLogger("claripy.frontends.full_frontend")
 
 class DumperFrontend(ConstrainedFrontend):
-    _model_hook = None
 
     def __init__(self, solver_backend, timeout=None, track=False, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._solver_backend = solver_backend
         self._solver_backend.register_solver(self)
+        # The assertion stack keeps track of all the declared variables
         self._assertion_stack = []
 
 
     def get_assertions(self):
+        """
+        Return current assertion stack
+        """
         return self._assertion_stack
 
     def push(self, assertion):
+        """
+        Push a new assertion on the assertion stack
+
+        :param assertion: Assertion that needs to be pushed
+        """
         self._assertion_stack.append(assertion)
 
 
     def pop(self):
+        """
+        Pop an assertion from the assertion stack
+        """
         self._assertion_stack.pop()
 
 
     def satisfiable(self, extra_constraints=(), exact=None):
-        # TODO: Deal with extra constrains
+        # TODO: Where are all the current constraints
         try:
             return self._solver_backend.satisfiable(
                 extra_constraints=extra_constraints,
@@ -39,9 +50,14 @@ class DumperFrontend(ConstrainedFrontend):
 
 
     def get_smtlib_script_satisfiability(self,  extra_constraints=()):
+        """
+        Return an smt-lib script that check the satisfiability of the current constraints
+
+        :return string: smt-lib script
+        """
         try:
             return self._solver_backend._get_satisfiability_smt_script(
-                extra_constraints=self._solver_backend.convert_list(self.constraints))
+                extra_constraints=self._solver_backend.convert_list(tuple(self.constraints) + extra_constraints))
         except BackendError as e:
             raise_from(ClaripyFrontendError("Backend error during solve"), e)
 
