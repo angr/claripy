@@ -2,7 +2,9 @@ import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
-                            Bool, BV, Or, LT, LE, GT, GE
+                            Bool, BV, Or, LT, LE, GT, GE, \
+                            StrContains
+
 from pysmt.typing import STRING
 
 l = logging.getLogger("claripy.backends.backend_smt")
@@ -75,6 +77,7 @@ class BackendSMT(Backend):
         self._op_raw['Substr'] = self._op_raw_str_substr
         self._op_raw['StrLen'] = self._op_raw_str_strlen
         self._op_raw['StrReplace'] = self._op_raw_str_replace
+        self._op_raw["StrContains"] = self._op_raw_str_contains
 
     def register_solver(self, solver):
         """
@@ -241,6 +244,9 @@ class BackendSMT(Backend):
         initial_str, pattern_to_replace, replacement_pattern = args
         return StrReplace(initial_str, pattern_to_replace, replacement_pattern)
 
+    def _op_raw_str_contains(self, *args):
+        input_string, substring = args
+        return StrContains(input_string, substring)
 
 
 from ..operations import backend_operations, backend_fp_operations
