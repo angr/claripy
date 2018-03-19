@@ -5,7 +5,7 @@ from ..utils.transition import raise_from
 
 from .constrained_frontend import ConstrainedFrontend
 
-l = logging.getLogger("claripy.frontends.full_frontend")
+l = logging.getLogger("claripy.frontends.dumper_frontend")
 
 class DumperFrontend(ConstrainedFrontend):
 

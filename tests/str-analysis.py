@@ -145,18 +145,21 @@ class TestStringOperation(unittest.TestCase):
         self.assertEqual(correct_script, script)
 
 
-        # script = solver.get_smtlib_script_satisfiability()
-        # self.assertEqual(correct_script, script)
-    # def test_or(self):
-    #     str_concrete = claripy.StringV("ciao")
-    #     str_symb = claripy.StringS("Symb_2", 4)
-    #     solver = SolverSMT()
-    #     res = claripy.Or(str_symb == , str_concrete)
-
-    #     import ipdb; ipdb.set_trace()
-        # solver.add((res or claripy.StringS("symb3", 8)) == (claripy.StringV("ciaociao")))
-
-
+    def test_or(self):
+        correct_script = '''(set-logic ALL)
+(declare-const Symb_2_0_4 String)
+(assert (let ((.def_0 (= Symb_2_0_4 "ciao"))) (let ((.def_1 (= Symb_2_0_4 "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
+(check-sat)
+'''
+        str_symb = claripy.StringS("Symb_2", 4)
+        solver = SolverSMT()
+        res = claripy.Or((str_symb == claripy.StringV("abc")),
+                         (str_symb == claripy.StringV("ciao")))
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_or.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
 
 
 if __name__ == "__main__":
