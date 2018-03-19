@@ -36,22 +36,6 @@ class BackendSMT(Backend):
 
         # self._cache_objects = False
 
-    def _dump_symbol_declaration(self, symb):
-        return "(declare-const %s %s)\n" % (symb.symbol_name(), symb.symbol_type())
-
-    def _dump_constraint(self, constraint):
-        return "(assert %s)\n" % constraint.to_smtlib()
-
-    def _dump_assertion_stack(self):
-        smt_script = "" 
-        for assertion in self._assertions_stack:
-            # TODO: manages all types of assertions
-            if assertion.is_symbol():
-                smt_script += self._dump_symbol_declaration(assertion)
-            else:
-                smt_script += self._dump_constraint(assertion)
-        return smt_script
-
     def StringV(self, ast):
         # TODO: check correct format
         # self._op_expr['StringV'] = self.StringV
