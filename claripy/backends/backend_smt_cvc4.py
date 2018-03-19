@@ -1,9 +1,13 @@
-from .backend_smt import BackendSMT
+import json
 import subprocess
-from pysmt.smtlib.parser import SmtLibParser
+
 from six.moves import cStringIO
 
+import pysmt
+from pysmt.smtlib.parser import SmtLibParser, SmtLib20Parser, Tokenizer, PysmtSyntaxError
+from pysmt.shortcuts import Symbol
 
+from .backend_smt import BackendSMT
 
 class CVC4(object):
     def __init__(self):
@@ -36,12 +40,53 @@ class CVC4(object):
         read_model = self.readuntil('\n)\n').strip()
         return read_model
 
+class ParsedSMT(object):
+    def __init__(self, tokens):
+        self.p = SmtLibParser()
+        self.tokens = tokens
+
+    def expect(self, *allowed):
+        t = self.tokens.consume()
+        if t not in allowed:
+            raise PysmtSyntaxError("Invalid token, expected any of {}, got '{}'".format(allowed, t))
+        return t
+
+    def expect_assignment_tuple(self):
+        self.expect('(')
+        self.expect('define-fun')
+        vname = self.p.parse_atom(self.tokens, 'define-fun')
+        self.expect('(')
+        self.expect(')')
+        t = self.p.parse_type(self.tokens, 'define-fun')
+        val_repr = self.p.parse_atom(self.tokens, 'define-fun')
+        self.expect(')')
+        val = json.loads(val_repr) # hacky, but works
+
+        return Symbol(vname, t), getattr(pysmt.shortcuts, t.name)(val)
+
+    def consume_assignment_list(self):
+        self.expect('(')
+        self.expect('model')
+        """Parses a list of expressions from the tokens"""
+
+        assignments = []
+        while True:
+            next_token = self.tokens.consume()
+            self.tokens.add_extra_token(next_token)  # push it back
+            if next_token == ')':
+                break
+
+            assignments.append(self.expect_assignment_tuple())
+
+        self.expect(')')
+
+        return assignments
+
 
 class BackendSMT_CVC4(BackendSMT):
     def __init__(self):
         super(BackendSMT_CVC4, self).__init__()
         self.cvc4 = CVC4()
-        self.smtlib_parser = SmtLibParser()
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         smt_script = self._get_satisfiability_smt_script(extra_constraints)
@@ -57,9 +102,54 @@ class BackendSMT_CVC4(BackendSMT):
         sat = self.cvc4.read_sat()
         if sat == 'sat':
             model_string = self.cvc4.read_model()
-            ass_list = self.smtlib_parser.get_assignment_list(cStringIO(model_string))
+            tokens = Tokenizer(cStringIO(model_string), interactive=True)
+            ass_list = ParsedSMT(tokens).consume_assignment_list()
             return sat, ass_list
         else:
             error = self.cvc4.readline()
 
         return sat, error
+
+
+'''
+# from http://probablyprogramming.com/2009/11/23/a-simple-lisp-parser-in-python
+
+from string import whitespace
+
+atom_end = set('()"\'') | set(whitespace)
+
+def parse(sexp):
+    stack, i, length = [[]], 0, len(sexp)
+    while i < length:
+        c = sexp[i]
+
+        print c, stack
+        reading = type(stack[-1])
+        if reading == list:
+            if   c == '(': stack.append([])
+            elif c == ')':
+                stack[-2].append(stack.pop())
+                if stack[-1][0] == ('quote',): stack[-2].append(stack.pop())
+            elif c == '"': stack.append('')
+            elif c == "'": stack.append([('quote',)])
+            elif c in whitespace: pass
+            else: stack.append((c,))
+        elif reading == str:
+            if   c == '"':
+                stack[-2].append(stack.pop())
+                if stack[-1][0] == ('quote',): stack[-2].append(stack.pop())
+            elif c == '\\':
+                i += 1
+                stack[-1] += sexp[i]
+            else: stack[-1] += c
+        elif reading == tuple:
+            if c in atom_end:
+                atom = stack.pop()
+                if atom[0][0].isdigit(): stack[-1].append(eval(atom[0]))
+                else: stack[-1].append(atom)
+                if stack[-1][0] == ('quote',): stack[-2].append(stack.pop())
+                continue
+            else: stack[-1] = ((stack[-1][0] + c),)
+        i += 1
+    return stack.pop()
+'''
