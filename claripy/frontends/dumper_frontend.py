@@ -8,15 +8,14 @@ from .constrained_frontend import ConstrainedFrontend
 l = logging.getLogger("claripy.frontends.full_frontend")
 
 class DumperFrontend(ConstrainedFrontend):
-    _model_hook = None
 
     def __init__(self, solver_backend, timeout=None, track=False, **kwargs):
         ConstrainedFrontend.__init__(self, **kwargs)
         self._track = track
         self._solver_backend = solver_backend
-        self.timeout = timeout if timeout is not None else 300000
-        self._tls = threading.local()
-        self._to_add = [ ]
+        self._solver_backend.register_solver(self)
+        # The assertion stack keeps track of all the declared variables
+        self._assertion_stack = []
 
     # def _blank_copy(self, c):
     #     super(FullFrontend, self)._blank_copy(c)
@@ -26,26 +25,28 @@ class DumperFrontend(ConstrainedFrontend):
     #     c._tls = threading.local()
     #     c._to_add = [ ]
 
-    # def _copy(self, c):
-    #     super(FullFrontend, self)._copy(c)
-    #     c._track = self._track
-    #     c._tls.solver = getattr(self._tls, 'solver', None) #pylint:disable=no-member
-    #     c._to_add = list(self._to_add)
+    def get_assertions(self):
+        """
+        Return current assertion stack
+        """
+        return self._assertion_stack
 
-    # #
-    # # Storable support
-    # #
+    def push(self, assertion):
+        """
+        Push a new assertion on the assertion stack
+
+        :param assertion: Assertion that needs to be pushed
+        """
+        self._assertion_stack.append(assertion)
 
     # def _ana_getstate(self):
     #     return self._solver_backend.__class__.__name__, self.timeout, self._track, ConstrainedFrontend._ana_getstate(self)
 
-    # def _ana_setstate(self, s):
-    #     backend_name, self.timeout, self._track, base_state = s
-    #     self._solver_backend = backends._backends_by_type[backend_name]
-    #     #self._tls = None
-    #     self._tls = threading.local()
-    #     self._to_add = [ ]
-    #     ConstrainedFrontend._ana_setstate(self, base_state)
+    def pop(self):
+        """
+        Pop an assertion from the assertion stack
+        """
+        self._assertion_stack.pop()
 
     # #
     # # Frontend Creation
@@ -90,7 +91,7 @@ class DumperFrontend(ConstrainedFrontend):
     #     return self.constraints
 
     def satisfiable(self, extra_constraints=(), exact=None):
-        # TODO: Deal with extra constrains
+        # TODO: Where are all the current constraints
         try:
             return self._solver_backend.satisfiable(
                 extra_constraints=self.constraints,
@@ -102,121 +103,17 @@ class DumperFrontend(ConstrainedFrontend):
     #     if not self.satisfiable(extra_constraints=extra_constraints):
     #         raise UnsatError('unsat')
 
-    #     try:
-    #         return tuple(self._solver_backend.eval(
-    #             e, n, extra_constraints=extra_constraints,
-    #             solver=self._get_solver(), model_callback=self._model_hook
-    #         ))
-    #     except BackendError as e:
-    #         raise_from(ClaripyFrontendError("Backend error during eval"), e)
+    def get_smtlib_script_satisfiability(self,  extra_constraints=()):
+        """
+        Return an smt-lib script that check the satisfiability of the current constraints
 
-    # def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
-    #     if not self.satisfiable(extra_constraints=extra_constraints):
-    #         raise UnsatError('unsat')
-
-    #     try:
-    #         return self._solver_backend.batch_eval(
-    #             exprs,
-    #             n,
-    #             extra_constraints=extra_constraints,
-    #             solver=self._get_solver(),
-    #             model_callback=self._model_hook
-    #         )
-    #     except BackendError as e:
-    #         raise_from(ClaripyFrontendError("Backend error during batch_eval"), e)
-
-    # def max(self, e, extra_constraints=(), exact=None):
-    #     if not self.satisfiable(extra_constraints=extra_constraints):
-    #         raise UnsatError("Unsat during _max()")
-
-    #     l.debug("Frontend.max() with %d extra_constraints", len(extra_constraints))
-
-    #     two = self.eval(e, 2, extra_constraints=extra_constraints)
-    #     if len(two) == 0: raise UnsatError("unsat during max()")
-    #     elif len(two) == 1: return two[0]
-
-    #     c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
-    #     try:
-    #         return self._solver_backend.max(
-    #             e, extra_constraints=c,
-    #             solver=self._get_solver(),
-    #             model_callback=self._model_hook
-    #         )
-    #     except BackendError as e:
-    #         raise_from(ClaripyFrontendError("Backend error during max"), e)
-
-    # def min(self, e, extra_constraints=(), exact=None):
-    #     if not self.satisfiable(extra_constraints=extra_constraints):
-    #         raise UnsatError("Unsat during _min()")
-
-    #     l.debug("Frontend.min() with %d extra_constraints", len(extra_constraints))
-
-    #     two = self.eval(e, 2, extra_constraints=extra_constraints)
-    #     if len(two) == 0: raise UnsatError("unsat during min()")
-    #     elif len(two) == 1: return two[0]
-
-    #     c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
-    #     try:
-    #         return self._solver_backend.min(
-    #             e, extra_constraints=c,
-    #             solver=self._get_solver(),
-    #             model_callback=self._model_hook
-    #         )
-    #     except BackendError as e:
-    #         raise_from(ClaripyFrontendError("Backend error during min"), e)
-
-    # def solution(self, e, v, extra_constraints=(), exact=None):
-    #     try:
-    #         return self._solver_backend.solution(
-    #             e, v, extra_constraints=extra_constraints,
-    #             solver=self._get_solver(), model_callback=self._model_hook
-    #         )
-    #     except BackendError as e:
-    #         raise_from(ClaripyFrontendError("Backend error during solution"), e)
-
-    # def is_true(self, e, extra_constraints=(), exact=None):
-    #     return e.is_true()
-    #     #try:
-    #     #   return self._solver_backend.is_true(
-    #     #       e, extra_constraints=extra_constraints,
-    #     #       solver=self._get_solver(), model_callback=self._model_hook
-    #     #   )
-    #     #except BackendError:
-    #     #   e_type, value, traceback = sys.exc_info()
-    #     #   raise ClaripyFrontendError, "Backend error during _is_true: %s('%s')" % (str(e_type), str(value)), traceback
-
-    # def is_false(self, e, extra_constraints=(), exact=None):
-    #     return e.is_false()
-    #     #try:
-    #     #   return self._solver_backend.is_false(
-    #     #       e, extra_constraints=extra_constraints,
-    #     #       solver=self._get_solver(), model_callback=self._model_hook
-    #     #   )
-    #     #except BackendError:
-    #     #   e_type, value, traceback = sys.exc_info()
-    #     #   raise ClaripyFrontendError, "Backend error during _is_false: %s('%s')" % (str(e_type), str(value)), traceback
-
-    # def unsat_core(self, extra_constraints=()):
-    #     if self.satisfiable(extra_constraints=extra_constraints):
-    #         # all constraints are satisfied
-    #         return tuple()
-
-    #     unsat_core = self._solver_backend.unsat_core(self._get_solver())
-
-    #     return tuple(unsat_core)
-
-    # #
-    # # Serialization and such.
-    # #
-
-    # def downsize(self):
-    #     ConstrainedFrontend.downsize(self)
-    #     self._tls.solver = None
-    #     self._to_add = [ ]
-
-    # #
-    # # Merging and splitting
-    # #
+        :return string: smt-lib script
+        """
+        try:
+            return self._solver_backend._get_satisfiability_smt_script(
+                extra_constraints=self._solver_backend.convert_list(tuple(self.constraints) + extra_constraints))
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during solve"), e)
 
     # def merge(self, others, merge_conditions, common_ancestor=None):
     #     return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(
