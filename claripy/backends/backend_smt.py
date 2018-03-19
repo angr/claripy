@@ -2,7 +2,7 @@ import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
-                            Bool 
+                            Bool, BV
                             
 from pysmt.typing import STRING
 
@@ -20,6 +20,7 @@ class BackendSMT(Backend):
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
+        self._op_expr['BVV'] = self.BVV
 
         self._op_raw['__eq__'] = self._op_eq
         self._op_raw['__ne__'] = self._op_ne
@@ -69,6 +70,10 @@ class BackendSMT(Backend):
     def BoolV(self, ast):
         return Bool(ast.is_true())
 
+    def BVV(self, ast):
+        val, size = ast.args
+        return BV(val, size)
+
     def _op_raw_str_concat(self, *args):
         return StrConcat(args)
 
@@ -77,9 +82,7 @@ class BackendSMT(Backend):
         return StrSubstr(symb, Int(i), Int(j))
 
     def _op_raw_str_strlen(self, *args):
-        import ipdb; ipdb.set_trace()
-        i, j, symb = args
-        return StrSubstr(symb, Int(i), Int(j))
+        return StrLength(args[0])
 
     def _op_raw_str_replace(self, *args):
         initial_str, pattern_to_replace, replacement_pattern = args
@@ -87,6 +90,15 @@ class BackendSMT(Backend):
 
     def _op_eq(self, *args):
         expr_left, expr_rigth = args
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        if expr_left.is_str_op() and expr_rigth.is_bv_constant():
+            return Equals(expr_left, Int(expr_rigth.bv_signed_value()))
+        elif expr_left.is_bv_constant() and expr_rigth.is_str_op():
+            return Equals(expr_rigth, Int(expr_left.bv_signed_value())) 
         return Equals(expr_left, expr_rigth)
 
     def _op_ne(self, *args):

@@ -736,6 +736,9 @@ def str_replace_length_calc(*args):
     #       or not first in order to calculate the lenght...
     return str_1.length - str_2.length + str_3.length
 
+def str_strlen_lenght_calc(*args):
+    return 64
+
 
 #
 # Operation lists
@@ -847,7 +850,7 @@ backend_fp_operations = {
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
-    'Substr', 'StrReplace', 'StrConcat'
+    'Substr', 'StrReplace', 'StrConcat', 'StrLen'
 }
 
 opposites = {
