@@ -114,6 +114,7 @@ class TestStringOperation(unittest.TestCase):
         script = solver.satisfiable()
         self.assertEqual(script, '(check-sat)\n')
 
+<<<<<<< d441ec083e47058b73e47eea0653aa89d6f204b2
     # def test_or(self):
     #     str_concrete = claripy.StringV("ciao")
     #     str_symb = claripy.StringS("Symb_2", 4)
@@ -124,6 +125,23 @@ class TestStringOperation(unittest.TestCase):
         # solver.add((res or claripy.StringS("symb3", 8)) == (claripy.StringV("ciaociao")))
 
 
+=======
+    def test_or(self):
+        correct_script = '''(set-logic ALL)
+(declare-const Symb_2_0_4 String)
+(assert (let ((.def_0 (= Symb_2_0_4 "ciao"))) (let ((.def_1 (= Symb_2_0_4 "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
+(check-sat)
+'''
+        str_symb = claripy.StringS("Symb_2", 4)
+        solver = SolverSMT()
+        res = claripy.Or((str_symb == claripy.StringV("abc")),
+                         (str_symb == claripy.StringV("ciao")))
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_or.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+>>>>>>> Add Or operation dumnp in smt format
 
 
 if __name__ == "__main__":

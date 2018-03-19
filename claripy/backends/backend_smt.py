@@ -2,8 +2,12 @@ import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
+<<<<<<< d441ec083e47058b73e47eea0653aa89d6f204b2
                             Bool, BV
                             
+=======
+                            Bool, BV, Or
+>>>>>>> Add Or operation dumnp in smt format
 from pysmt.typing import STRING
 
 l = logging.getLogger("claripy.backends.backend_smt")
@@ -58,13 +62,18 @@ class BackendSMT(Backend):
         #  to it in order to retrieve variable declarations
         self.solver = None
 
+        # ------------------- LEAF OPERATIONS ------------------- 
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVV'] = self.BVV
 
-        self._op_raw['__eq__'] = self._op_eq
-        self._op_raw['__ne__'] = self._op_ne
+        # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
+        self._op_raw['__eq__'] = self._op_raw_eq
+        self._op_raw['__ne__'] = self._op_raw_ne
+        self._op_raw['Or'] = self._op_raw_or
+
+        # ------------------- STRINGS OPERATIONS ------------------- 
         self._op_raw['StrConcat'] = self._op_raw_str_concat
         self._op_raw['Substr'] = self._op_raw_str_substr
         self._op_raw['StrLen'] = self._op_raw_str_strlen
@@ -132,12 +141,18 @@ class BackendSMT(Backend):
         smt_script += '(get-model)\n'
         return smt_script
 
+    def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
+        raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
+
+    # ------------------- LEAF OPERATIONS ------------------- 
 
     def StringV(self, ast):
         content, _ = ast.args
         return String(content)
 
     def StringS(self, ast):
+        # TODO: check correct format
+        #       if format not correct throw exception BackError()
         name, _ = ast.args
         # We need to keep track of new declarations
         # because when we dump the constraints we need to dump the
@@ -153,8 +168,36 @@ class BackendSMT(Backend):
         val, size = ast.args
         return BV(val, size)
 
+    # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
+
+    def _op_raw_eq(self, *args):
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        left_expr, right_expr = args
+        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
+        return Equals(norm_left_expr, norm_right_expr)
+
+    def _op_raw_ne(self, *args):
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        left_expr, right_expr = args
+        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
+        # norm_left_expr, norm_right_expr = _normalize_arguments(*args)
+        return NotEquals(norm_left_expr, norm_right_expr)
+
+    def _op_raw_or(self, *args):
+        return Or(*args)
+
+    # ------------------- STRINGS OPERATIONS ------------------- 
+    
     def _op_raw_str_concat(self, *args):
-        return StrConcat(args)
+        return StrConcat(*args)
 
     def _op_raw_str_substr(self, *args):
         i, j, symb = args
@@ -167,63 +210,6 @@ class BackendSMT(Backend):
         initial_str, pattern_to_replace, replacement_pattern = args
         return StrReplace(initial_str, pattern_to_replace, replacement_pattern)
 
-    def _op_eq(self, *args):
-        # We emulate the integer through a bitvector but
-        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
-        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
-        #
-        # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return Equals(norm_left_expr, norm_right_expr)
-
-    def _op_ne(self, *args):
-        # We emulate the integer through a bitvector but
-        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
-        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
-        #
-        # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return NotEquals(norm_left_expr, norm_right_expr)
-
-    # @staticmethod
-    # def _op_sub(*args):
-    #     return reduce(operator.__sub__, args)
-    # @staticmethod
-    # def _op_mul(*args):
-    #     return reduce(operator.__mul__, args)
-    # @staticmethod
-    # def _op_or(*args):
-    #     return reduce(operator.__or__, args)
-    # @staticmethod
-    # def _op_xor(*args):
-    #     return reduce(operator.__xor__, args)
-    # @staticmethod
-    # def _op_and(*args):
-    #     return reduce(operator.__and__, args)
-
-    # def _If(self, b, t, f): #pylint:disable=no-self-use,unused-argument
-    #     if not isinstance(b, bool):
-    #         raise BackendError("BackendConcrete can't handle non-bool condition in If.")
-    #     else:
-    #         return t if b else f
-
-    # def _size(self, e):
-    #     if isinstance(e, (bool, numbers.Number)):
-    #         return None
-    #     elif isinstance(e, bv.BVV):
-    #         return e.size()
-    #     elif isinstance(e, fp.FPV):
-    #         return e.sort.length
-    #     else:
-    #         raise BackendError("can't get size of type %s" % type(e))
-
-    # def _name(self, e): #pylint:disable=unused-argument,no-self-use
-    #     return None
-
-    def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
 
     def _add(self, constraint):
         self._assertions_stack.append(constraint)
