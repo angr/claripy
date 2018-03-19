@@ -1,21 +1,11 @@
-#!/usr/bin/env python
-
-import claripy
-import ipdb
-from IPython import embed
 import unittest
-
-str_concrete = claripy.StringV("conc")
-str_symbol = claripy.StringS("symb", 4)
-
-solverSMT = claripy.SolverSMT()
-solverz3 = claripy.Solver()
+import claripy
 
 
 class TestStringOperation(unittest.TestCase):
 
     def test_concat(self):
-        correct_script ='''
+        correct_script = '''
         (declare-const symb_concat String)
         (assert (let ((.def_0 (str.++  "conc" symb_concat))) (let ((.def_1 (= .def_0 "concrete"))) .def_1)))
         (check-sat)'
@@ -54,13 +44,14 @@ class TestStringOperation(unittest.TestCase):
         self.assertTrue(correct_script, script)
 
     def test_substr_simplification(self):
+        str_concrete = claripy.StringV("concrete")
         solver = claripy.SolverSMT()
         solver.add(str_concrete[1:2] == claripy.StringV('o'))
         script = solver.satisfiable()
         self.assertEqual(script, '(check-sat)\n')
 
     def test_replace(self):
-        correct_script ='''
+        correct_script = '''
         (declare-const symb_repl String)
         (assert (let ((.def_0 (= ( str.replace symb_repl "a" "b" ) "cbne"))) .def_0))
         (check-sat)'
@@ -70,7 +61,7 @@ class TestStringOperation(unittest.TestCase):
         replacement = claripy.StringV("b")
         solver = claripy.SolverSMT()
         repl_stringa = claripy.StrReplace(str_to_replace_symb, sub_str_to_repl, replacement)
-        solverSMT.add(repl_stringa == claripy.StringV("cbne"))
+        solver.add(repl_stringa == claripy.StringV("cbne"))
         script = solver.satisfiable()
         # with open("dump_replace.smt2", "w") as dump_f:
             # dump_f.write(script)
@@ -81,13 +72,14 @@ class TestStringOperation(unittest.TestCase):
         sub_str_to_repl = claripy.StringV("a")
         replacement = claripy.StringV("b")
         repl_stringa = claripy.StrReplace(str_to_replace, sub_str_to_repl, replacement)
-        solverSMT.add(repl_stringa == claripy.StringV("cbne"))
+        solver = claripy.SolverSMT()
+        solver.add(repl_stringa == claripy.StringV("cbne"))
         solver = claripy.SolverSMT()
         script = solver.satisfiable()
         self.assertEqual(script, '(check-sat)\n')
 
     def test_ne(self):
-        correct_script='''
+        correct_script = '''
         (declare-const symb_ne String)
         (assert (let ((.def_0 (= symb_ne "concrete"))) (let ((.def_1 (not .def_0))) .def_1)))
         (check-sat)
@@ -100,16 +92,27 @@ class TestStringOperation(unittest.TestCase):
         #     dump_f.write(script)
         self.assertTrue(correct_script, script)
 
+    def test_length(self):
+        correct_script = '''
+        (declare-const symb_length String)
+        (assert (let ((.def_0 (= (str.len symb_length) 14))) .def_0))
+        (check-sat)
+        '''
+        str_symb = claripy.StringS("symb_length", 12, explicit_name=True)
+        solver = claripy.SolverSMT()
+        # TODO: How do we want to dela with the size of a symbolic string?
+        solver.add(claripy.StrLen(str_symb) == 14)
+        script = solver.satisfiable()
+        # with open("dump_length.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertTrue(correct_script, script)
 
-    # def test_length(self):
-    #     str_concrete = claripy.StringV("concrete")
-    #     length_concrete = claripy.StrLen(str_concrete)
-    #     str_symb = claripy.StringS("symb_len", 4, explicit_name=True)
-    #     length = claripy.StrLen(str_concrete)
-    #     solver = claripy.SolverSMT()
-    #     import ipdb; ipdb.set_trace()
-    #     constr = length == claripy.Int(8)
-    #     solver.add(length == 8)
+    def test_length_simplification(self):
+        str_concrete = claripy.StringV("concrete")
+        solver = claripy.SolverSMT()
+        solver.add(claripy.StrLen(str_concrete) == 8)
+        script = solver.satisfiable()
+        self.assertEqual(script, '(check-sat)\n')
 
     # def test_or(self):
     #     str_concrete = claripy.StringV("ciao")

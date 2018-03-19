@@ -57,7 +57,7 @@ StrConcat = operations.op('StrConcat', String, String, calc_length=operations.co
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
-StrLen = operations.op('StrLen', String, BV, calc_length=operations.basic_length_calc, bound=False)
+StrLen = operations.op('StrLen', String, BV, calc_length=operations.str_strlen_lenght_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
                         calc_length=operations.str_replace_length_calc, bound=False)
@@ -72,7 +72,7 @@ String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), 
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
 String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
-String.StrLen = staticmethod(operations.op('StrLen', String, BV, calc_length=operations.basic_length_calc, bound=False))
+String.StrLen = staticmethod(operations.op('StrLen', String, BV, calc_length=operations.str_strlen_lenght_calc, bound=False))
 String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
                                String, extra_check=operations.str_replace_check,
                                calc_length=operations.str_replace_length_calc))
