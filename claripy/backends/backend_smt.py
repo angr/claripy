@@ -21,6 +21,17 @@ class DeclareConst():
         return "(declare-const %s %r)" % (self.name, self.sort)
 
 
+def _expr_to_smtlib(e):
+    if e.is_symbol():
+        return "(declare-const %s %s)" % (e.symbol_name(), e.symbol_type())
+    else:
+        return "(assert %s)" % e.to_smtlib()
+
+
+def _exprs_to_smtlib(*exprs):
+    return '\n'.join(_expr_to_smtlib(e) for e in exprs) + '\n'
+
+
 class BackendSMT(Backend):
     def __init__(self):
         Backend.__init__(self)
@@ -45,6 +56,33 @@ class BackendSMT(Backend):
         # self._op_raw['__and__'] = self._op_and
 
         # self._cache_objects = False
+
+    def _smtlib_exprs(self, extra_constraints=()):
+        all_exprs = tuple(self._assertions_stack) + tuple(extra_constraints)
+        return _exprs_to_smtlib(*all_exprs)
+
+    def _get_satisfiability_smt_script(self, extra_constraints=()):
+        '''
+        Returns a SMT script that declare all the symbols and constraint and checks
+        their satisfiability (check-sat)
+        '''
+        smt_script = '(set-logic ALL)\n'
+        smt_script += self._smtlib_exprs(extra_constraints)
+        smt_script += '(check-sat)\n'
+        return smt_script
+
+    def _get_full_model_smt_script(self, extra_constraints=()):
+        '''
+        Returns a SMT script that declare all the symbols and constraint and checks
+        their satisfiability (check-sat)
+        '''
+        smt_script = '(set-logic ALL)\n'
+        smt_script += '(set-option :produce-models true)\n'
+        smt_script += self._smtlib_exprs(extra_constraints)
+        smt_script += '(check-sat)\n'
+        smt_script += '(get-model)\n'
+        return smt_script
+
 
     def StringV(self, ast):
         # TODO: check correct format
@@ -135,17 +173,7 @@ class BackendSMT(Backend):
     #     return None
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        '''
-        Returns a SMT script that declare all the symbols and constraint and checks
-        their satisfiability (check-sat)
-        '''
-        smt_script = ''
-        smt_script += '\n'.join(map(lambda decl: "%r" % decl, self._assertion_stack))
-        for constr in extra_constraints:
-            smt_script += "\n(assert %s)" % constr.to_smtlib()
-        smt_script += '\n(check-sat)'
-        self._assertions_stack = []
-        return smt_script
+        raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
 
     # def _identical(self, a, b):
     #     if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
