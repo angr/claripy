@@ -53,7 +53,7 @@ def StringV(value, **kwargs):
     result = String("StringV", (value, len(value)), length=len(value), **kwargs)
     return result
 
-StrConcat = operations.op('StrConcat', String, String, calc_length=operations.concat_length_calc, bound=False)
+StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
@@ -61,6 +61,8 @@ StrLen = operations.op('StrLen', String, BV, calc_length=operations.str_strlen_l
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
                         calc_length=operations.str_replace_length_calc, bound=False)
+
+StrContains = operations.op("StrContains", (String, String), Bool, bound=False)
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -76,3 +78,5 @@ String.StrLen = staticmethod(operations.op('StrLen', String, BV, calc_length=ope
 String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
                                String, extra_check=operations.str_replace_check,
                                calc_length=operations.str_replace_length_calc))
+
+String.StrContains = staticmethod(operations.op("StrContains", (String, String), Bool, bound=False))
