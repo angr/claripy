@@ -50,8 +50,8 @@ def _normalize_arguments(expr_left, expr_rigth):
 
 
 class BackendSMT(Backend):
-    def __init__(self):
-        Backend.__init__(self)
+    def __init__(self, *args, **kwargs):
+        Backend.__init__(self, *args, **kwargs)
 
         # ------------------- LEAF OPERATIONS ------------------- 
         self._op_expr['StringV'] = self.StringV

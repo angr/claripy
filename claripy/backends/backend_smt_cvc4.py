@@ -85,28 +85,34 @@ class ParsedSMT(object):
 
 class BackendSMT_CVC4(BackendSMT):
     def __init__(self):
-        super(BackendSMT_CVC4, self).__init__()
-        self.cvc4 = CVC4()
+        super(BackendSMT_CVC4, self).__init__(solver_required=True)
+
+    def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
+        """
+        This function should return an instance of whatever object handles
+        solving for this backend. For example, in Z3, this would be z3.Solver().
+        """
+        return CVC4()
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         smt_script = self._get_satisfiability_smt_script(extra_constraints)
-        self.cvc4.reset()
-        self.cvc4.write(smt_script)
-        sat = self.cvc4.read_sat()
+        solver.reset()
+        solver.write(smt_script)
+        sat = solver.read_sat()
         return sat == 'sat'
 
-    def _get_model(self, extra_constraints=()):
+    def _get_model(self, extra_constraints=(), solver=None):
         smt_script = self._get_full_model_smt_script(extra_constraints)
-        self.cvc4.reset()
-        self.cvc4.write(smt_script)
-        sat = self.cvc4.read_sat()
+        solver.reset()
+        solver.write(smt_script)
+        sat = solver.read_sat()
         if sat == 'sat':
-            model_string = self.cvc4.read_model()
+            model_string = solver.read_model()
             tokens = Tokenizer(cStringIO(model_string), interactive=True)
             ass_list = ParsedSMT(tokens).consume_assignment_list()
             return sat, ass_list
         else:
-            error = self.cvc4.readline()
+            error = solver.readline()
 
         return sat, error
 
