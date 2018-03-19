@@ -59,3 +59,16 @@ def StrLen(input_string):
     :return : Bit vector holding the size of the string in bytes
     """
     return BVV(len(input_string.value), 64)
+
+
+def StrContains(input_string, substring):
+    """
+    Return True if the substring is contained in the concrete value of the input_string
+    otherwise false.
+
+    :param input_string: the string we want to check
+    :param substring: the string we want to check if it's contained inside the input_string
+    
+    :return : True is substring is contained in input_string else false 
+    """
+    return substring.value in input_string.value
