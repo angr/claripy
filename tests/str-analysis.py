@@ -128,11 +128,11 @@ class TestStringOperation(unittest.TestCase):
 =======
     def test_or(self):
         correct_script = '''(set-logic ALL)
-(declare-const Symb_2_0_4 String)
-(assert (let ((.def_0 (= Symb_2_0_4 "ciao"))) (let ((.def_1 (= Symb_2_0_4 "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
+(declare-const Symb_or String)
+(assert (let ((.def_0 (= Symb_or "ciao"))) (let ((.def_1 (= Symb_or "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
 (check-sat)
 '''
-        str_symb = claripy.StringS("Symb_2", 4)
+        str_symb = claripy.StringS("Symb_or", 4, explicit_name=True)
         solver = SolverSMT()
         res = claripy.Or((str_symb == claripy.StringV("abc")),
                          (str_symb == claripy.StringV("ciao")))
@@ -142,6 +142,31 @@ class TestStringOperation(unittest.TestCase):
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 >>>>>>> Add Or operation dumnp in smt format
+
+    def test_lt_etc(self):
+        correct_script = '''(set-logic ALL)
+(declare-const Symb_2_0_4 String)
+(assert (let ((.def_0 (<= (str.len Symb_2_0_4) 4))) .def_0))
+(assert (let ((.def_0 (< (str.len Symb_2_0_4) 4))) .def_0))
+(assert (let ((.def_0 (<= 4 (str.len Symb_2_0_4)))) .def_0))
+(assert (let ((.def_0 (< 4 (str.len Symb_2_0_4)))) .def_0))
+(check-sat)
+'''
+        str_symb = claripy.StringS("Symb_2", 4)
+        solver = SolverSMT()
+        c1 = claripy.StrLen(str_symb) <= 4
+        c2 = claripy.StrLen(str_symb) < 4
+        c3 = claripy.StrLen(str_symb) >= 4
+        c4 = claripy.StrLen(str_symb) > 4
+        solver.add(c1)
+        solver.add(c2)
+        solver.add(c3)
+        solver.add(c4)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_lt_etc.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
 
 
 if __name__ == "__main__":
