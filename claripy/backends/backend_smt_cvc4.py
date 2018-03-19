@@ -95,14 +95,14 @@ class BackendSMT_CVC4(BackendSMT):
         return CVC4()
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        smt_script = self._get_satisfiability_smt_script(extra_constraints)
+        smt_script = self._get_satisfiability_smt_script(extra_constraints, solver)
         solver.reset()
         solver.write(smt_script)
         sat = solver.read_sat()
         return sat == 'sat'
 
     def _get_model(self, extra_constraints=(), solver=None):
-        smt_script = self._get_full_model_smt_script(extra_constraints)
+        smt_script = self._get_full_model_smt_script(extra_constraints, solver)
         solver.reset()
         solver.write(smt_script)
         sat = solver.read_sat()
