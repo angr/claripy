@@ -89,7 +89,7 @@ class BackendSMT(Backend):
         self._op_raw["StrContains"] = self._op_raw_str_contains
 
 
-    def _smtlib_exprs(self, extra_constraints=()):
+    def _smtlib_exprs(self, constraints=()):
         """
         Return the smt-lib representation of the current context and constraints
 
@@ -98,10 +98,11 @@ class BackendSMT(Backend):
 
         :return string: smt-lib representation of the list of expressions and variable declarations
         """
-        all_exprs = tuple(self.solver.get_assertions()) + tuple(extra_constraints)
+        free_variables = set().union(*[c.get_free_variables() for c in constraints])
+        all_exprs = tuple(free_variables) +  tuple(constraints)
         return _exprs_to_smtlib(*all_exprs)
 
-    def _get_satisfiability_smt_script(self, extra_constraints=()):
+    def _get_satisfiability_smt_script(self, constraints=()):
         '''
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
@@ -112,11 +113,11 @@ class BackendSMT(Backend):
         :return string: smt-lib representation of the script that checks the satisfiability
         '''
         smt_script = '(set-logic ALL)\n'
-        smt_script += self._smtlib_exprs(extra_constraints)
+        smt_script += self._smtlib_exprs(constraints)
         smt_script += '(check-sat)\n'
         return smt_script
 
-    def _get_full_model_smt_script(self, extra_constraints=()):
+    def _get_full_model_smt_script(self, constraints=()):
         '''
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
@@ -128,7 +129,7 @@ class BackendSMT(Backend):
         '''
         smt_script = '(set-logic ALL)\n'
         smt_script += '(set-option :produce-models true)\n'
-        smt_script += self._smtlib_exprs(extra_constraints)
+        smt_script += self._smtlib_exprs(constraints)
         smt_script += '(check-sat)\n'
         smt_script += '(get-model)\n'
         return smt_script
@@ -146,11 +147,7 @@ class BackendSMT(Backend):
         # TODO: check correct format
         #       if format not correct throw exception BackError()
         name, _ = ast.args
-        # We need to keep track of new declarations
-        # because when we dump the constraints we need to dump the
-        # declaration as well
-        assertion = Symbol(name, STRING)
-        return assertion
+        return Symbol(name, STRING)
 
     def BoolV(self, ast):
         return Bool(ast.is_true())
@@ -167,9 +164,7 @@ class BackendSMT(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return Equals(norm_left_expr, norm_right_expr)
+        return Equals(*_normalize_arguments(*args))
 
     def _op_raw_ne(self, *args):
         # We emulate the integer through a bitvector but
@@ -177,9 +172,7 @@ class BackendSMT(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return NotEquals(norm_left_expr, norm_right_expr)
+        return NotEquals(*_normalize_arguments(*args))
 
     def _op_raw_lt(self, *args):
         # We emulate the integer through a bitvector but
@@ -187,9 +180,7 @@ class BackendSMT(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return LT(norm_left_expr, norm_right_expr)
+        return LT(*_normalize_arguments(*args))
 
     def _op_raw_le(self, *args):
         # We emulate the integer through a bitvector but
@@ -197,9 +188,7 @@ class BackendSMT(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return LE(norm_left_expr, norm_right_expr)
+        return LE(*_normalize_arguments(*args))
 
     def _op_raw_gt(self, *args):
         # We emulate the integer through a bitvector but
@@ -207,9 +196,7 @@ class BackendSMT(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return GT(norm_left_expr, norm_right_expr)
+        return GT(*_normalize_arguments(*args))
 
     def _op_raw_ge(self, *args):
         # We emulate the integer through a bitvector but
@@ -217,9 +204,7 @@ class BackendSMT(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        left_expr, right_expr = args
-        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        return GE(norm_left_expr, norm_right_expr)
+        return GE(*_normalize_arguments(*args))
 
     def _op_raw_or(self, *args):
         return Or(*args)
