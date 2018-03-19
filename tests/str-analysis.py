@@ -24,7 +24,7 @@ class TestStringOperation(unittest.TestCase):
         solver = claripy.SolverSMT()
         str_concrete = claripy.StringV("conc")
         res = str_concrete + str_concrete + str_concrete
-        res2 = claripy.StrConcat(str_concrete, str_concrete, str_concrete)
+        res2 = claripy.StrConcat(str_concrete, str_concrete) + str_concrete
         solver.add(res == res2)
         script = solver.satisfiable()
         self.assertEqual(script, '(check-sat)\n')
@@ -167,6 +167,33 @@ class TestStringOperation(unittest.TestCase):
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
+
+    def test_contains(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_contains String)
+(assert ( str.contains symb_contains "an"))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_contains", 4, explicit_name=True)
+        res = claripy.StrContains(str_symb, claripy.StringV("an"))
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_contains.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_contains_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("concrete")
+        solver = SolverSMT()
+        res = claripy.StrContains(str_concrete, claripy.StringV("nc"))
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
 
 
 if __name__ == "__main__":
