@@ -2,12 +2,7 @@ import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
-<<<<<<< d441ec083e47058b73e47eea0653aa89d6f204b2
-                            Bool, BV
-                            
-=======
-                            Bool, BV, Or
->>>>>>> Add Or operation dumnp in smt format
+                            Bool, BV, Or, LT, LE, GT, GE
 from pysmt.typing import STRING
 
 l = logging.getLogger("claripy.backends.backend_smt")
@@ -71,6 +66,10 @@ class BackendSMT(Backend):
         # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
         self._op_raw['__eq__'] = self._op_raw_eq
         self._op_raw['__ne__'] = self._op_raw_ne
+        self._op_raw['__lt__'] = self._op_raw_lt
+        self._op_raw['__le__'] = self._op_raw_le
+        self._op_raw['__gt__'] = self._op_raw_gt
+        self._op_raw['__ge__'] = self._op_raw_ge
         self._op_raw['Or'] = self._op_raw_or
 
         # ------------------- STRINGS OPERATIONS ------------------- 
@@ -188,8 +187,47 @@ class BackendSMT(Backend):
         # TODO: implement logic for integer
         left_expr, right_expr = args
         norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
-        # norm_left_expr, norm_right_expr = _normalize_arguments(*args)
         return NotEquals(norm_left_expr, norm_right_expr)
+
+    def _op_raw_lt(self, *args):
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        left_expr, right_expr = args
+        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
+        return LT(norm_left_expr, norm_right_expr)
+
+    def _op_raw_le(self, *args):
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        left_expr, right_expr = args
+        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
+        return LE(norm_left_expr, norm_right_expr)
+
+    def _op_raw_gt(self, *args):
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        left_expr, right_expr = args
+        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
+        return GT(norm_left_expr, norm_right_expr)
+
+    def _op_raw_ge(self, *args):
+        # We emulate the integer through a bitvector but
+        # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
+        # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
+        #
+        # TODO: implement logic for integer
+        left_expr, right_expr = args
+        norm_left_expr, norm_right_expr = _normalize_arguments(left_expr, right_expr)
+        return GE(norm_left_expr, norm_right_expr)
 
     def _op_raw_or(self, *args):
         return Or(*args)
