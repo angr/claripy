@@ -52,8 +52,8 @@ def _normalize_arguments(expr_left, expr_rigth):
 
 
 class BackendSMT(Backend):
-    def __init__(self):
-        Backend.__init__(self)
+    def __init__(self, *args, **kwargs):
+        Backend.__init__(self, *args, **kwargs)
 
         # The assertions stack is inside tehe solver so we need the resference
         #  to it in order to retrieve variable declarations
