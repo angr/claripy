@@ -711,4 +711,5 @@ from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
 from .backend_smt import BackendSMT
+from .backend_smt_cvc4 import BackendSMT_CVC4
 from ..ast.base import Base
