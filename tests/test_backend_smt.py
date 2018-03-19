@@ -39,14 +39,28 @@ solverz3 = claripy.Solver()
 
 def test_backend_smt(solver):
     str_concrete = claripy.StringV("conc")
+    str_concrete2 = claripy.StringV("con2")
     str_symbol = claripy.StringS("symb_concat", 4, explicit_name=True)
+    str_symbol2 = claripy.StringS("symb_concat2", 4, explicit_name=True)
     solver.add(str_concrete == str_symbol)
-    ipdb.set_trace()
+    solver.add(str_concrete2 == str_symbol2)
+    #ipdb.set_trace()
     result = solver.satisfiable()
     model = solver._solver_backend._get_model()
+    solver.eval_to_ast(str_concrete)
     return result
 
+def test_comparison_z3():
+    solver = claripy.Solver()
+    a = claripy.BVS('x', 32)
+    b = claripy.BVS('y', 32)
+    solver.add(a + b == 32)
+    solver.add(claripy.And(b > 0, b < 10))
+    result = solver.eval_to_ast(a + b, 10)
+    print result
+    return result
 
+test_comparison_z3()
 test_backend_smt(solverSMT_CVC4)
 
 
