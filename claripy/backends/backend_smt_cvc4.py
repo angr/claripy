@@ -6,7 +6,7 @@ from six.moves import cStringIO
 
 import pysmt
 from pysmt.smtlib.parser import SmtLibParser, SmtLib20Parser, Tokenizer, PysmtSyntaxError
-from pysmt.shortcuts import Symbol, And, NotEquals
+from pysmt.shortcuts import Symbol, And, NotEquals, Not
 
 from .backend_smt import BackendSMT
 
@@ -165,6 +165,16 @@ class BackendSMT_CVC4(BackendSMT):
             e_c.append(And(*[NotEquals(s, val) for s, val in ass_list]))
 
         return results
+
+    def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
+        if e.is_constant() and e.constant_value() == False:
+            return True
+        return False
+
+    def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
+        if e.is_constant() and e.constant_value() == True:
+            return True
+        return False
 
     def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
         return [self._eval(e, n, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback) for e in exprs]
