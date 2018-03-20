@@ -5,4 +5,4 @@ class EvalStringsToASTsMixin(object):
 
         return super(EvalStringsToASTsMixin, self).eval_to_ast(e, n, extra_constraints=extra_constraints, exact=None)
 
-from .. import backends, String, StringV
+from .. import String, StringV

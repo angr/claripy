@@ -162,3 +162,6 @@ class BackendSMT_CVC4(BackendSMT):
             e_c.append(And(*[NotEquals(s, val) for s, val in ass_list]))
 
         return results
+
+    def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
+        return [self._eval(e, n, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback) for e in exprs]
