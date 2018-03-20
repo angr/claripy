@@ -21,12 +21,15 @@ class String(Bits):
 
     def __getitem__(self, rng):
         if type(rng) is slice:
-            left = rng.start / 8 if rng.start is not None else len(self)-1
-            right = rng.stop / 8 if rng.stop is not None else 0
+            left = rng.start / 8 if rng.start is not None else self.string_length - 1
+            right = rng.stop / 8if rng.stop is not None else 0
             if left < 0:
                 left = len(self) + left
             if right < 0:
-                right = len(self) + right
+                right = self.string_length + right
+
+            right = self.string_length - 1 - right
+            left = self.string_length - 1 - left
             return Substr(left, right, self)
         else:
             return Substr(int(rng+7), int(rng), self)
