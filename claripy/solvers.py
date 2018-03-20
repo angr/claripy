@@ -90,7 +90,8 @@ class SolverSMT(
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.EagerResolutionMixin,
-    frontends.DumperFrontend
+    frontend_mixins.EvalStringsToASTsMixin,
+    frontends.DumperFrontend,
 ):
     def __init__(self, **kwargs):
         super(SolverSMT, self).__init__(backends.smt, **kwargs)
