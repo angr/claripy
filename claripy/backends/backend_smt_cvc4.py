@@ -121,6 +121,9 @@ class BackendSMT_CVC4(BackendSMT):
         solver.reset()
         solver.write(smt_script)
         sat = solver.read_sat()
+        if sat not in {'sat', 'unsat'}:
+            import ipdb; ipdb.set_trace()
+            raise ValueError("Solver error")
         return sat == 'sat'
 
     def _get_model(self, extra_constraints=(), solver=None):
@@ -132,20 +135,26 @@ class BackendSMT_CVC4(BackendSMT):
             model_string = solver.read_model()
             tokens = Tokenizer(cStringIO(model_string), interactive=True)
             ass_list = ParsedSMT(tokens).consume_assignment_list()
-            return sat, {s.symbol_name(): val for s, val in ass_list}, ass_list
+            return sat, {s: val for s, val in ass_list}, ass_list
         else:
             error = solver.readline()
 
         return sat, error, None
 
     def _get_primitive_for_expr(self, model, e):
-        if e.is_symbol():
-            name = e.symbol_name()
-            return model[name].constant_value()
-        elif e.is_constant():
-            return e.constant_value()
-        else:
-            raise BackendError("CVC4 backend currently only supports requests for symbols directly!")
+        substituted = e.substitute(model).simplify()
+        if not substituted.is_constant():
+            raise BackendError(
+                "CVC4 backend currently only supports requests for symbols directly! This is a weird one that doesn't turn constant after substitution??")
+
+        return substituted.constant_value()
+        # if e.is_symbol():
+        #     return model[e].constant_value()
+        # elif e.is_constant():
+        #     return e.constant_value()
+        # else:
+        #
+        #     return substituted.constant_value()
 
     def _simplify(self, e):
         return e

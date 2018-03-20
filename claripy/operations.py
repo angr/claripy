@@ -160,13 +160,10 @@ def str_replace_check(*args):
 
 
 def extract_length_calc(high, low, _):
-    return high - low + 1
+    return high + 1 - low
 
 def substr_length_calc(low, high, _):
-    if low == high:
-        return 1
-    else:
-        return high - low
+    return high + 1 - low
 
 def ext_length_calc(ext, orig):
     return orig.length + ext
