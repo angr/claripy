@@ -21,13 +21,16 @@ class String(Bits):
 
     def __getitem__(self, rng):
         if type(rng) is slice:
-            left = rng.start / 8 if rng.start is not None else self.string_length -1
-            right = rng.stop / 8 if rng.stop is not None else 0
+            left = rng.start / 8 if rng.start is not None else self.string_length - 1
+            right = rng.stop / 8if rng.stop is not None else 0
             if left < 0:
                 left = self.string_length + left
             if right < 0:
                 right = self.string_length + right
-            return Substr(right, left, self)
+
+            right = self.string_length - 1 - right
+            left = self.string_length - 1 - left
+            return Substr(left, right, self)
         else:
             raise ValueError("Only slices allowed for string extraction")
 
