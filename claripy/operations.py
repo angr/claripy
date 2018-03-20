@@ -690,6 +690,9 @@ def str_replace_length_calc(*args):
 def str_strlen_length_calc(s, bitlength):
     return bitlength
 
+def integer_size_calc(s1, s2, bitlength):
+    return bitlength
+
 
 #
 # Operation lists
@@ -802,7 +805,7 @@ backend_fp_operations = {
 
 backend_strings_operations = {
     'Substr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
-    'StrPrefixOf', 'StrSuffixOf'
+    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf'
 }
 
 opposites = {

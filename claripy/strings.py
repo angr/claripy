@@ -55,7 +55,9 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
 def StrLen(input_string, bitlength):
     """
     Create a concrete Bit-Vector of 32(?) bit size and as value the length of the string in bytes
+
     :param input_string: the string we want to calculate the lenght 
+    :param bitlength: bitlength of the bitvector representing the length of the string
     
     :return : Bit vector holding the size of the string in bytes
     """
@@ -98,3 +100,19 @@ def StrSuffixOf(suffix, input_string):
     :return : True if the input_string ends with suffix else false 
     """
     return True if re.match(r'.*' + suffix.value + '$', input_string.value) is not None else False
+
+def StrIndexOf(input_string, substring, bitlength):
+    """
+    Return True if the concrete value of the input_string ends with suffix
+    otherwise false.
+
+    :param input_string: the string we want to check
+    :param substring: the substring we want to finde the index
+    :param bitlength: bitlength of the bitvector representing the index of the substring
+    
+    :return BVV: index of the substring in bit-vector representation or -1 in bitvector representation
+    """
+    try:
+        return BVV(input_string.value.index(substring.value), 32)
+    except ValueError:
+        return BVV(-1, 32)
