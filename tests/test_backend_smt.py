@@ -269,21 +269,32 @@ class TestStringOperation(unittest.TestCase):
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
-#     def test_index_of(self):
-#         correct_script = '''(set-logic ALL)
-# (declare-const symb_suffix String)
-# (assert ( str.suffixof "an" symb_suffix ))
-# (check-sat)
-# '''
-#         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
-#         res = claripy.StrIndexOf(str_symb, claripy.StringV("an"))
-#         solver = SolverSMT()
-#         solver.add(res)
-#         script = solver.get_smtlib_script_satisfiability()
-#         import ipdb; ipdb.set_trace()
-#         # with open("dump_suffix.smt2", "w") as dump_f:
-#         #     dump_f.write(script)
-#         self.assertEqual(correct_script, script)
+    def test_index_of(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_suffix String)
+(assert ( str.indexof symb_suffix "an" 0 ))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 32)
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_suffix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_index_of_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("concrete")
+        solver = SolverSMT()
+        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 32)
+        solver.add(res == 4)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)

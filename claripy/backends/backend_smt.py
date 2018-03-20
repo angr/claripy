@@ -246,8 +246,8 @@ class BackendSMT(Backend):
         return StrSuffixOf(suffix, input_string)
 
     def _op_raw_str_indexof(self, *args):
-        input_string, substring = args
-        return StrIndexOf(input_string, substring, 0)
+        input_string, substring, _= args
+        return StrIndexOf(input_string, substring, Int(0))
 
 
 from ..operations import backend_operations, backend_fp_operations
