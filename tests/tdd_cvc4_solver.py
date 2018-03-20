@@ -11,6 +11,7 @@ class SolverSMT_CVC4(
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.EvalStringsToASTsMixin,
     frontends.FullFrontend,
 ):
     def __init__(self, **kwargs):
@@ -28,6 +29,9 @@ class TestStringOperation(unittest.TestCase):
         result = solver.eval(str_symbol, 2)
         self.assertEqual(1, len(result))
         self.assertEqual("rete", result[0])
+
+        result = solver.eval_to_ast(str_symbol, 2)
+        self.assertEqual([claripy.StringV("rete")], list(result))
 
     def test_concat_simplification(self):
         solver = SolverSMT_CVC4()
