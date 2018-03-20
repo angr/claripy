@@ -1,44 +1,15 @@
 import json
 import subprocess
 
+from claripy import BackendError
 from six.moves import cStringIO
 
 import pysmt
 from pysmt.smtlib.parser import SmtLibParser, SmtLib20Parser, Tokenizer, PysmtSyntaxError
-from pysmt.shortcuts import Symbol
+from pysmt.shortcuts import Symbol, And, NotEquals
 
 from .backend_smt import BackendSMT
 
-class CVC4(object):
-    def __init__(self):
-        super(CVC4, self).__init__()
-        self.p = subprocess.Popen(['cvc4', '--lang=smt', '-q'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    def read(self, n):
-        return self.p.stdout.read(n)
-
-    def readuntil(self, s):
-        buf = ''
-        while s not in buf:
-            buf += self.p.stdout.read(1)
-        return buf
-
-    def readline(self):
-        return self.readuntil('\n')
-
-    def write(self, smt):
-        self.p.stdin.write(smt)
-        self.p.stdin.flush()
-
-    def reset(self):
-        self.write('(reset)\n')
-
-    def read_sat(self):
-        return self.readline().strip()
-
-    def read_model(self):
-        read_model = self.readuntil('\n)\n').strip()
-        return read_model
 
 class ParsedSMT(object):
     def __init__(self, tokens):
@@ -60,7 +31,7 @@ class ParsedSMT(object):
         t = self.p.parse_type(self.tokens, 'define-fun')
         val_repr = self.p.parse_atom(self.tokens, 'define-fun')
         self.expect(')')
-        val = json.loads(val_repr) # hacky, but works
+        val = json.loads(val_repr).encode() # hacky, but works
 
         return Symbol(vname, t), getattr(pysmt.shortcuts, t.name)(val)
 
@@ -83,6 +54,54 @@ class ParsedSMT(object):
         return assignments
 
 
+class CVC4(object):
+    def __init__(self):
+        super(CVC4, self).__init__()
+        self.p = subprocess.Popen(['cvc4', '--lang=smt', '-q', '--strings-exp'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    def setup(self):
+        self.writeline('(set-logic QF_SLIA)')
+        self.writeline('(set-option :produce-models true)')
+
+    def reset(self):
+        self.write('(reset)\n')
+
+    def read(self, n):
+        return self.p.stdout.read(n)
+
+    def readuntil(self, s):
+        buf = ''
+        while s not in buf:
+            buf += self.p.stdout.read(1)
+        return buf
+
+    def readline(self):
+        return self.readuntil('\n')
+
+    def write(self, smt):
+        self.p.stdin.write(smt)
+        self.p.stdin.flush()
+
+    def writeline(self, l):
+        return self.write(l + '\n')
+
+    def read_sat(self):
+        return self.readline().strip()
+
+    def read_model(self):
+        read_model = self.readuntil('\n)\n').strip()
+        return read_model
+
+
+class CVC4_Solver(CVC4):
+    def __init__(self):
+        super(CVC4_Solver, self).__init__()
+        self.constraints = []
+
+    def add_constraints(self, csts, track=False):
+        self.constraints.extend(csts)
+
+
 class BackendSMT_CVC4(BackendSMT):
     def __init__(self):
         super(BackendSMT_CVC4, self).__init__(solver_required=True)
@@ -92,17 +111,20 @@ class BackendSMT_CVC4(BackendSMT):
         This function should return an instance of whatever object handles
         solving for this backend. For example, in Z3, this would be z3.Solver().
         """
-        return CVC4()
+        return CVC4_Solver()
+
+    def _add(self, s, c, track=False):
+        s.add_constraints(c, track=track)
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        smt_script = self._get_satisfiability_smt_script(extra_constraints)
+        smt_script = self._get_satisfiability_smt_script(tuple(extra_constraints) + tuple(solver.constraints))
         solver.reset()
         solver.write(smt_script)
         sat = solver.read_sat()
         return sat == 'sat'
 
     def _get_model(self, extra_constraints=(), solver=None):
-        smt_script = self._get_full_model_smt_script(extra_constraints)
+        smt_script = self._get_full_model_smt_script(tuple(extra_constraints) + tuple(solver.constraints))
         solver.reset()
         solver.write(smt_script)
         sat = solver.read_sat()
@@ -110,52 +132,36 @@ class BackendSMT_CVC4(BackendSMT):
             model_string = solver.read_model()
             tokens = Tokenizer(cStringIO(model_string), interactive=True)
             ass_list = ParsedSMT(tokens).consume_assignment_list()
-            return sat, ass_list
+            return sat, {s.symbol_name(): val for s, val in ass_list}, ass_list
         else:
             error = solver.readline()
 
-        return sat, error
+        return sat, error, None
 
+    def _get_primitive_for_expr(self, model, e):
+        if e.is_symbol():
+            name = e.symbol_name()
+            return model[name].constant_value()
+        elif e.is_constant():
+            return e.constant_value()
+        else:
+            raise BackendError("CVC4 backend currently only supports requests for symbols directly!")
 
-'''
-# from http://probablyprogramming.com/2009/11/23/a-simple-lisp-parser-in-python
+    def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
+        e_c = list(extra_constraints)
 
-from string import whitespace
+        if expr.is_constant():
+            return [expr.constant_value()]
 
-atom_end = set('()"\'') | set(whitespace)
+        results = []
+        while len(results) < n:
+            sat, model, ass_list = self._get_model(extra_constraints=e_c, solver=solver)
+            if sat != 'sat':
+                break
+            results.append(self._get_primitive_for_expr(model, expr))
+            e_c.append(And(*[NotEquals(s, val) for s, val in ass_list]))
 
-def parse(sexp):
-    stack, i, length = [[]], 0, len(sexp)
-    while i < length:
-        c = sexp[i]
+        return results
 
-        print c, stack
-        reading = type(stack[-1])
-        if reading == list:
-            if   c == '(': stack.append([])
-            elif c == ')':
-                stack[-2].append(stack.pop())
-                if stack[-1][0] == ('quote',): stack[-2].append(stack.pop())
-            elif c == '"': stack.append('')
-            elif c == "'": stack.append([('quote',)])
-            elif c in whitespace: pass
-            else: stack.append((c,))
-        elif reading == str:
-            if   c == '"':
-                stack[-2].append(stack.pop())
-                if stack[-1][0] == ('quote',): stack[-2].append(stack.pop())
-            elif c == '\\':
-                i += 1
-                stack[-1] += sexp[i]
-            else: stack[-1] += c
-        elif reading == tuple:
-            if c in atom_end:
-                atom = stack.pop()
-                if atom[0][0].isdigit(): stack[-1].append(eval(atom[0]))
-                else: stack[-1].append(atom)
-                if stack[-1][0] == ('quote',): stack[-2].append(stack.pop())
-                continue
-            else: stack[-1] = ((stack[-1][0] + c),)
-        i += 1
-    return stack.pop()
-'''
+    def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
+        return [self._eval(e, n, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback) for e in exprs]
