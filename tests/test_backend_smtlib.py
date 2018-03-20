@@ -114,18 +114,6 @@ class TestStringOperation(unittest.TestCase):
         script = solver.satisfiable()
         self.assertEqual(script, '(check-sat)\n')
 
-<<<<<<< d441ec083e47058b73e47eea0653aa89d6f204b2
-    # def test_or(self):
-    #     str_concrete = claripy.StringV("ciao")
-    #     str_symb = claripy.StringS("Symb_2", 4)
-    #     solver = claripy.SolverSMT()
-    #     res = claripy.Or(str_symb == , str_concrete)
-
-    #     import ipdb; ipdb.set_trace()
-        # solver.add((res or claripy.StringS("symb3", 8)) == (claripy.StringV("ciaociao")))
-
-
-=======
     def test_or(self):
         correct_script = '''(set-logic ALL)
 (declare-const Symb_or String)
@@ -141,7 +129,6 @@ class TestStringOperation(unittest.TestCase):
         # with open("dump_or.smt2", "w") as dump_f:
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
->>>>>>> Add Or operation dumnp in smt format
 
     def test_lt_etc(self):
         correct_script = '''(set-logic ALL)
@@ -195,6 +182,76 @@ class TestStringOperation(unittest.TestCase):
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
+
+    def test_prefix(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_prefix String)
+(assert ( str.prefixof "an" symb_prefix ))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_prefix", 4, explicit_name=True)
+        res = claripy.StrPrefixOf(claripy.StringV("an"), str_symb)
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_prefix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_suffix(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_suffix String)
+(assert ( str.suffixof "an" symb_suffix ))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+        res = claripy.StrSuffixOf(claripy.StringV("an"), str_symb)
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_suffix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_prefix_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("concrete")
+        solver = SolverSMT()
+        res = claripy.StrPrefixOf(claripy.StringV("conc"), str_concrete)
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
+    def test_suffix_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("concrete")
+        solver = SolverSMT()
+        res = claripy.StrSuffixOf(claripy.StringV("rete"), str_concrete)
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
+    def test_index_of(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_suffix String)
+(assert ( str.suffixof "an" symb_suffix ))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"))
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        import ipdb; ipdb.set_trace()
+        # with open("dump_suffix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)
