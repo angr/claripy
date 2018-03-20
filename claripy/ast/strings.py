@@ -38,10 +38,10 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     :returns:                    The String object representing the symbolic string
     """
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
-    result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
+    result = String("StringS", (n, uninitialized), length=size * 8, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
     return result
 
-def StringV(value, **kwargs):
+def StringV(value, length=None, **kwargs):
     """
     Create a new Concrete string (analogous to z3.StringVal())
 
@@ -50,7 +50,13 @@ def StringV(value, **kwargs):
     :returns:                    The String object representing the concrete string
     """
 
-    result = String("StringV", (value, len(value)), length=len(value), **kwargs)
+    if length is None:
+        length = len(value)
+
+    if length < len(value):
+        raise ValueError("Can't make a concrete string value longer than the specified length!")
+
+    result = String("StringV", (value, len(value)), length=length * 8, **kwargs)
     return result
 
 StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
