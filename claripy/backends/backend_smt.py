@@ -3,7 +3,11 @@ import logging
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
                             Bool, BV, Or, LT, LE, GT, GE, \
+<<<<<<< 28fee0841dcf6cc83526ca15f69e625876c0c17e
                             StrContains
+=======
+                            StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf
+>>>>>>> Add indexof on strings
 
 from pysmt.typing import STRING, BVType
 
@@ -79,7 +83,10 @@ class BackendSMT(Backend):
         self._op_raw['Substr'] = self._op_raw_str_substr
         self._op_raw['StrLen'] = self._op_raw_str_strlen
         self._op_raw['StrReplace'] = self._op_raw_str_replace
-        self._op_raw['StrContains'] = self._op_raw_str_contains
+        self._op_raw["StrContains"] = self._op_raw_str_contains
+        self._op_raw["StrPrefixOf"] = self._op_raw_str_prefixof
+        self._op_raw["StrSuffixOf"] = self._op_raw_str_suffixof
+        self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
 
 
     def _smtlib_exprs(self, constraints=()):
@@ -318,6 +325,11 @@ class BackendSMT(Backend):
     #     return e == True
     # def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
     #     return e == False
+
+    def _op_raw_str_indexof(self, *args):
+        input_string, substring = args
+        return StrIndexOf(input_string, substring, 0)
+
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp, strings
