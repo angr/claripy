@@ -690,8 +690,8 @@ def str_replace_length_calc(*args):
     #       or not first in order to calculate the lenght...
     return str_1.length - str_2.length + str_3.length
 
-def str_strlen_lenght_calc(*args):
-    return 64
+def str_strlen_length_calc(s, bitlength):
+    return bitlength
 
 
 #
