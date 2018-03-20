@@ -147,6 +147,9 @@ class BackendSMT_CVC4(BackendSMT):
         else:
             raise BackendError("CVC4 backend currently only supports requests for symbols directly!")
 
+    def _simplify(self, e):
+        return e
+
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         e_c = list(extra_constraints)
 
