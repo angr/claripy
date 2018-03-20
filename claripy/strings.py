@@ -54,7 +54,9 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
 def StrLen(input_string):
     """
     Create a concrete Bit-Vector of 32(?) bit size and as value the length of the string in bytes
+
     :param input_string: the string we want to calculate the lenght 
+    :param bitlength: bitlength of the bitvector representing the length of the string
     
     :return : Bit vector holding the size of the string in bytes
     """
@@ -71,4 +73,49 @@ def StrContains(input_string, substring):
     
     :return : True is substring is contained in input_string else false 
     """
+<<<<<<< 4d310eed70fe478a50c3b2381caf2bb58dfec4b5
     return substring.value in input_string.value
+=======
+    return substring.value in input_string.value
+
+
+def StrPrefixOf(prefix, input_string):
+    """
+    Return True if the concrete value of the input_string starts with prefix
+    otherwise false.
+
+    :param prefix: prefix we want to check 
+    :param input_string: the string we want to check
+    
+    :return : True if the input_string starts with prefix else false 
+    """
+    return True if re.match(r'^' + prefix.value, input_string.value) is not None else False
+
+def StrSuffixOf(suffix, input_string):
+    """
+    Return True if the concrete value of the input_string ends with suffix
+    otherwise false.
+
+    :param suffix: suffix we want to check 
+    :param input_string: the string we want to check
+    
+    :return : True if the input_string ends with suffix else false 
+    """
+    return True if re.match(r'.*' + suffix.value + '$', input_string.value) is not None else False
+
+def StrIndexOf(input_string, substring, bitlength):
+    """
+    Return True if the concrete value of the input_string ends with suffix
+    otherwise false.
+
+    :param input_string: the string we want to check
+    :param substring: the substring we want to finde the index
+    :param bitlength: bitlength of the bitvector representing the index of the substring
+    
+    :return : True if the input_string ends with suffix else false 
+    """
+    try:
+        return BVV(input_string.value.index(substring.value), 32)
+    except ValueError:
+        return BVV(-1, 32)
+>>>>>>> Add IndexOf ond its simplification
