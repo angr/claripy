@@ -112,7 +112,7 @@ def StrIndexOf(input_string, substring, bitlength):
     :param substring: the substring we want to finde the index
     :param bitlength: bitlength of the bitvector representing the index of the substring
     
-    :return : True if the input_string ends with suffix else false 
+    :return BVV: index of the substring in bit-vector representation or -1 in bitvector representation
     """
     try:
         return BVV(input_string.value.index(substring.value), 32)
