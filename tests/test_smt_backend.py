@@ -214,6 +214,61 @@ class TestStringOperation(unittest.TestCase):
         self.assertEqual(correct_script, script)
 
 
+    def test_prefix(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_prefix String)
+(assert ( str.prefixof "an" symb_prefix ))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_prefix", 4, explicit_name=True)
+        res = claripy.StrPrefixOf(claripy.StringV("an"), str_symb)
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_prefix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_suffix(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_suffix String)
+(assert ( str.suffixof "an" symb_suffix ))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+        res = claripy.StrSuffixOf(claripy.StringV("an"), str_symb)
+        solver = SolverSMT()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_suffix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_prefix_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("concrete")
+        solver = SolverSMT()
+        res = claripy.StrPrefixOf(claripy.StringV("conc"), str_concrete)
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
+    def test_suffix_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("concrete")
+        solver = SolverSMT()
+        res = claripy.StrSuffixOf(claripy.StringV("rete"), str_concrete)
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
+
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)
     unittest.TextTestRunner(verbosity=2).run(suite)

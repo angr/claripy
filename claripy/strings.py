@@ -1,3 +1,4 @@
+import re
 from .backend_object import BackendObject
 from .bv import BVV
 
@@ -72,3 +73,28 @@ def StrContains(input_string, substring):
     :return : True is substring is contained in input_string else false 
     """
     return substring.value in input_string.value
+
+
+def StrPrefixOf(prefix, input_string):
+    """
+    Return True if the concrete value of the input_string starts with prefix
+    otherwise false.
+
+    :param prefix: prefix we want to check 
+    :param input_string: the string we want to check
+    
+    :return : True if the input_string starts with prefix else false 
+    """
+    return True if re.match(r'^' + prefix.value, input_string.value) is not None else False
+
+def StrSuffixOf(suffix, input_string):
+    """
+    Return True if the concrete value of the input_string ends with suffix
+    otherwise false.
+
+    :param suffix: suffix we want to check 
+    :param input_string: the string we want to check
+    
+    :return : True if the input_string ends with suffix else false 
+    """
+    return True if re.match(r'.*' + suffix.value + '$', input_string.value) is not None else False
