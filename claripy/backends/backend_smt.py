@@ -5,7 +5,7 @@ from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             Bool, BV, Or, LT, LE, GT, GE, \
                             StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf
 
-from pysmt.typing import STRING
+from pysmt.typing import STRING, BVType
 
 l = logging.getLogger("claripy.backends.backend_smt")
 
@@ -58,6 +58,10 @@ class BackendSMT(Backend):
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVV'] = self.BVV
+
+        # ------------------- BITVECTOR OPERATIONS -------------------
+        # self._op_raw['Extract'] = self._op_raw_extract
+        # self._op_raw['Concat'] = self._op_raw_concat
 
         # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
         self._op_raw['__eq__'] = self._op_raw_eq
@@ -145,6 +149,20 @@ class BackendSMT(Backend):
     def BVV(self, ast):
         val, size = ast.args
         return BV(val, size)
+
+    def BVS(self, ast):
+        return Symbol(ast.args[0], BVType(ast.length))
+
+    # ------------------- BITVECTOR OPERATIONS -------------------
+    '''
+    def _op_raw_extract(self, high, low, val):
+        import ipdb; ipdb.set_trace()
+        return BVExtract(val, start=low, end=high)
+
+    def _op_raw_concat(self, left, right):
+        import ipdb; ipdb.set_trace()
+        return BVConcat(left, right)
+    '''
 
     # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
 

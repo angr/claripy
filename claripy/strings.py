@@ -52,14 +52,14 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
     return StringV(new_value)
 
 
-def StrLen(input_string):
+def StrLen(input_string, bitlength):
     """
     Create a concrete Bit-Vector of 32(?) bit size and as value the length of the string in bytes
     :param input_string: the string we want to calculate the lenght 
     
     :return : Bit vector holding the size of the string in bytes
     """
-    return BVV(len(input_string.value), 64)
+    return BVV(len(input_string.value), bitlength)
 
 
 def StrContains(input_string, substring):

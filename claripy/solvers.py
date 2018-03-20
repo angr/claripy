@@ -89,7 +89,7 @@ class SolverSMT_CVC4(
     frontend_mixins.ConstraintDeduplicatorMixin,
     frontend_mixins.EagerResolutionMixin,
     frontend_mixins.EvalStringsToASTsMixin,
-    frontends.DumperFrontend,
+    frontends.LightFrontend,
 ):
     def __init__(self, **kwargs):
         super(SolverSMT_CVC4, self).__init__(backends.smt_cvc4, **kwargs)

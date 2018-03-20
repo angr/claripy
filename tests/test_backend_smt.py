@@ -55,7 +55,8 @@ class TestStringOperation(unittest.TestCase):
 '''
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
         solver = SolverSMT()
-        solver.add(str_symbol[1:2] == claripy.StringV('o'))
+        res = claripy.Substr(1, 2, str_symbol) == claripy.StringV('o') 
+        solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_substr.smt2", "w") as dump_f:
             # dump_f.write(script)
@@ -68,7 +69,7 @@ class TestStringOperation(unittest.TestCase):
 '''
         str_concrete = claripy.StringV("concrete")
         solver = SolverSMT()
-        solver.add(str_concrete[1:2] == claripy.StringV('o'))
+        solver.add(claripy.Substr(1, 2, str_concrete) == claripy.StringV('o'))
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
@@ -127,7 +128,7 @@ class TestStringOperation(unittest.TestCase):
         str_symb = claripy.StringS("symb_length", 12, explicit_name=True)
         solver = SolverSMT()
         # TODO: How do we want to dela with the size of a symbolic string?
-        solver.add(claripy.StrLen(str_symb) == 14)
+        solver.add(claripy.StrLen(str_symb, 32) == 14)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_length.smt2", "w") as dump_f:
         #     dump_f.write(script)
@@ -140,7 +141,7 @@ class TestStringOperation(unittest.TestCase):
 '''
         str_concrete = claripy.StringV("concrete")
         solver = SolverSMT()
-        solver.add(claripy.StrLen(str_concrete) == 8)
+        solver.add(claripy.StrLen(str_concrete, 32) == 8)
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
@@ -172,10 +173,10 @@ class TestStringOperation(unittest.TestCase):
 '''
         str_symb = claripy.StringS("Symb_2", 4)
         solver = SolverSMT()
-        c1 = claripy.StrLen(str_symb) <= 4
-        c2 = claripy.StrLen(str_symb) < 4
-        c3 = claripy.StrLen(str_symb) >= 4
-        c4 = claripy.StrLen(str_symb) > 4
+        c1 = claripy.StrLen(str_symb, 32) <= 4
+        c2 = claripy.StrLen(str_symb, 32) < 4
+        c3 = claripy.StrLen(str_symb, 32) >= 4
+        c4 = claripy.StrLen(str_symb, 32) > 4
         solver.add(c1)
         solver.add(c2)
         solver.add(c3)
@@ -268,21 +269,21 @@ class TestStringOperation(unittest.TestCase):
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
-    def test_index_of(self):
-        correct_script = '''(set-logic ALL)
-(declare-const symb_suffix String)
-(assert ( str.suffixof "an" symb_suffix ))
-(check-sat)
-'''
-        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
-        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"))
-        solver = SolverSMT()
-        solver.add(res)
-        script = solver.get_smtlib_script_satisfiability()
-        import ipdb; ipdb.set_trace()
-        # with open("dump_suffix.smt2", "w") as dump_f:
-        #     dump_f.write(script)
-        self.assertEqual(correct_script, script)
+#     def test_index_of(self):
+#         correct_script = '''(set-logic ALL)
+# (declare-const symb_suffix String)
+# (assert ( str.suffixof "an" symb_suffix ))
+# (check-sat)
+# '''
+#         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+#         res = claripy.StrIndexOf(str_symb, claripy.StringV("an"))
+#         solver = SolverSMT()
+#         solver.add(res)
+#         script = solver.get_smtlib_script_satisfiability()
+#         import ipdb; ipdb.set_trace()
+#         # with open("dump_suffix.smt2", "w") as dump_f:
+#         #     dump_f.write(script)
+#         self.assertEqual(correct_script, script)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)
