@@ -594,51 +594,6 @@ def extract_simplifier(high, low, val):
         return reduce(getattr(operator, val.op), all_args)
 
 
-def substr_simplifier(low, high, val):
-    # if we're extracting the whole value, return the value
-    if high - low + 1 == val.size():
-        return val
-
-    if val.op == 'Concat':
-        pos = val.length
-        high_i, low_i, low_loc = None, None, None
-        for i, v in enumerate(val.args):
-            if pos - v.length <= high < pos:
-                high_i = i
-            if pos - v.length <= low < pos:
-                low_i = i
-                low_loc = low - (pos - v.length)
-            pos -= v.length
-
-        used = val.args[high_i:low_i+1]
-        if len(used) == 1:
-            self = used[0]
-        else:
-            self = ast.all_operations.Concat(*used)
-
-        new_high = low_loc + high - low
-        if new_high == self.length - 1 and low_loc == 0:
-            return self
-        else:
-            if self.op != 'Concat':
-                return self[new_high:low_loc]
-            else:
-                # to avoid infinite recursion we only return if something was simplified
-                if len(used) != len(val.args) or new_high != high or low_loc != low:
-                    return ast.all_operations.Extract(new_high, low_loc, self)
-
-    if val.op == 'Substr':
-        import ipdb; ipdb.set_trace()
-        _, inner_low = val.args[:2]
-        new_low = inner_low + low
-        new_high = new_low + (high - low)
-        return (val.args[2])[new_high:new_low]
-
-    if val.op in extract_distributable:
-        all_args = tuple(a[high:low] for a in val.args)
-        return reduce(getattr(operator, val.op), all_args)
-
-
 # oh gods
 def fptobv_simplifier(the_fp):
     if the_fp.op == 'fpToFP' and len(the_fp.args) == 2:
@@ -658,7 +613,6 @@ simplifiers = {
     'Or': boolean_or_simplifier,
     'Not': boolean_not_simplifier,
     'Extract': extract_simplifier,
-    'Substr': substr_simplifier,
     'Concat': concat_simplifier,
     'If': if_simplifier,
     '__lshift__': lshift_simplifier,
