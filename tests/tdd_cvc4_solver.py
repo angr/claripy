@@ -19,11 +19,6 @@ class SolverSMT_CVC4(
 
 class TestStringOperation(unittest.TestCase):
     def test_concat(self):
-        correct_script = '''(set-logic ALL)
-(declare-const symb_concat String)
-(assert (let ((.def_0 (str.++  "conc" symb_concat))) (let ((.def_1 (= .def_0 "concrete"))) .def_1)))
-(check-sat)
-'''
         str_concrete = claripy.StringV("conc")
         str_symbol = claripy.StringS("symb_concat", 4, explicit_name=True)
         solver = SolverSMT_CVC4()
@@ -31,17 +26,19 @@ class TestStringOperation(unittest.TestCase):
         solver.add(res == claripy.StringV("concrete"))
         self.assertTrue(solver.satisfiable())
         result = solver.eval(str_symbol, 2)
-        self.assertEqual(result, ["rete"])
+        self.assertEqual(1, len(result))
+        self.assertEqual("rete", result[0])
 
     def test_concat_simplification(self):
         solver = SolverSMT_CVC4()
         str_concrete = claripy.StringV("conc")
         res = str_concrete + str_concrete + str_concrete
-        res2 = claripy.StrConcat(str_concrete, str_concrete, str_concrete)
-        solver.add(res == res2)
+        res2 = claripy.StrConcat(str_concrete, str_concrete)
+        res3 = claripy.StrConcat(res2, str_concrete)
+        solver.add(res == res3)
         self.assertTrue(solver.satisfiable())
         result = solver.eval(str_concrete, 2)
-        self.assertEqual(result, ["conc"])
+        self.assertEqual(["conc"], list(result))
 
     def test_substr(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
@@ -59,7 +56,7 @@ class TestStringOperation(unittest.TestCase):
         solver.add(str_concrete[1:2] == claripy.StringV('o'))
         self.assertTrue(solver.satisfiable())
         result = solver.eval(str_concrete, 2)
-        self.assertEqual(result, ["concrete"])
+        self.assertEqual(list(result), ["concrete"])
 
     def test_replace(self):
         str_to_replace_symb = claripy.StringS("symb_repl", 4, explicit_name=True)
@@ -71,10 +68,10 @@ class TestStringOperation(unittest.TestCase):
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(repl_stringa, 2)
-        self.assertEqual(result, ["cbne"])
+        self.assertEqual(list(result), ["cbne"])
 
         result = solver.eval(str_to_replace_symb, 2)
-        self.assertEqual(result, ["cane"])
+        self.assertEqual(list(result), ["cane"])
 
     def test_replace_simplification(self):
         str_to_replace = claripy.StringV("cane")
@@ -87,10 +84,10 @@ class TestStringOperation(unittest.TestCase):
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(repl_stringa, 2)
-        self.assertEqual(result, ["cbne"])
+        self.assertEqual(["cbne"], list(result))
 
         result = solver.eval(str_to_replace, 2)
-        self.assertEqual(result, ["cane"])
+        self.assertEqual(["cane"], list(result))
 
     def test_ne(self):
         str_symb = claripy.StringS("symb_ne", 12, explicit_name=True)
@@ -119,7 +116,7 @@ class TestStringOperation(unittest.TestCase):
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_concrete, 2)
-        self.assertEqual(result, ['concrete'])
+        self.assertEqual(['concrete'], list(result))
         for r in result:
             self.assertTrue(len(r) == 8)
 
@@ -133,7 +130,7 @@ class TestStringOperation(unittest.TestCase):
         self.assertTrue(solver.satisfiable())
 
         result = solver.eval(str_symb, 3)
-        self.assertEqual(set(result), {'abc', 'ciao'})
+        self.assertEqual({'ciao', 'abc'}, set(result))
 
     def test_lt_etc(self):
         str_symb = claripy.StringS("Symb_2", 4)
