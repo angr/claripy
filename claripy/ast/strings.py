@@ -13,17 +13,23 @@ class String(Bits):
     Do not instantiate this class directly, instead use StringS or StringV to construct a symbol or value, and then use
     operations to construct more complicated expressions.
     """
+    def __init__(self, *args, **kwargs):
+        str_len = kwargs['length']
+        kwargs['length'] *= 8
+        super(String, self).__init__(*args, **kwargs)
+        self.string_length = str_len
+
     def __getitem__(self, rng):
         if type(rng) is slice:
-            left = rng.start if rng.start is not None else len(self)-1
-            right = rng.stop if rng.stop is not None else 0
+            left = rng.start / 8 if rng.start is not None else len(self)-1
+            right = rng.stop / 8 if rng.stop is not None else 0
             if left < 0:
                 left = len(self) + left
             if right < 0:
                 right = len(self) + right
             return Substr(left, right, self)
         else:
-            return Substr(int(rng), int(rng), self)
+            return Substr(int(rng+7), int(rng), self)
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     """
@@ -38,7 +44,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     :returns:                    The String object representing the symbolic string
     """
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
-    result = String("StringS", (n, uninitialized), length=size * 8, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
+    result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
     return result
 
 def StringV(value, length=None, **kwargs):
@@ -56,14 +62,14 @@ def StringV(value, length=None, **kwargs):
     if length < len(value):
         raise ValueError("Can't make a concrete string value longer than the specified length!")
 
-    result = String("StringV", (value, len(value)), length=length * 8, **kwargs)
+    result = String("StringV", (value, len(value)), length=length, **kwargs)
     return result
 
 StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
-StrLen = operations.op('StrLen', String, BV, calc_length=operations.str_strlen_lenght_calc, bound=False)
+StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.str_strlen_length_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
                         calc_length=operations.str_replace_length_calc, bound=False)
@@ -81,7 +87,7 @@ String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), 
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
 String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
-String.StrLen = staticmethod(operations.op('StrLen', String, BV, calc_length=operations.str_strlen_lenght_calc, bound=False))
+String.StrLen = staticmethod(operations.op('StrLen', (String, int), BV, calc_length=operations.str_strlen_length_calc, bound=False))
 String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
                                String, extra_check=operations.str_replace_check,
                                calc_length=operations.str_replace_length_calc))
