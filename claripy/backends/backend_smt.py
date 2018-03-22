@@ -3,7 +3,8 @@ import logging
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
                             Bool, BV, Or, LT, LE, GT, GE, \
-                            StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf
+                            StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
+                            StrToInt
 
 from pysmt.typing import STRING, BVType
 
@@ -81,6 +82,7 @@ class BackendSMT(Backend):
         self._op_raw["StrPrefixOf"] = self._op_raw_str_prefixof
         self._op_raw["StrSuffixOf"] = self._op_raw_str_suffixof
         self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
+        self._op_raw["StrToInt"] = self._op_raw_str_strtoint
 
 
     def _smtlib_exprs(self, constraints=()):
@@ -246,8 +248,12 @@ class BackendSMT(Backend):
         return StrSuffixOf(suffix, input_string)
 
     def _op_raw_str_indexof(self, *args):
-        input_string, substring, _= args
+        input_string, substring, _ = args
         return StrIndexOf(input_string, substring, Int(0))
+
+    def _op_raw_str_strtoint(self, *args):
+        input_string, _ = args
+        return StrToInt(input_string)
 
 
 from ..operations import backend_operations, backend_fp_operations

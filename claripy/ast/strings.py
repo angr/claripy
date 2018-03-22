@@ -72,14 +72,15 @@ StrConcat = operations.op('StrConcat', (String, String), String, calc_length=ope
 Substr = operations.op('Substr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
-StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.str_strlen_length_calc, bound=False)
+StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
                         calc_length=operations.str_replace_length_calc, bound=False)
 StrContains = operations.op("StrContains", (String, String), Bool, bound=False)
 StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
-StrIndexOf = operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.integer_size_calc, bound=False)
+StrIndexOf = operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
+StrToint = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -91,11 +92,12 @@ String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), 
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
 String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
-String.StrLen = staticmethod(operations.op('StrLen', (String, int), BV, calc_length=operations.str_strlen_length_calc, bound=False))
+String.StrLen = staticmethod(operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False))
 String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
                                String, extra_check=operations.str_replace_check,
                                calc_length=operations.str_replace_length_calc))
 String.StrContains = staticmethod(operations.op("StrContains", (String, String), Bool, bound=False))
 String.StrPrefixOf = staticmethod(operations.op("StrPrefixOf", (String, String), Bool, bound=False))
 String.StrSuffixOf = staticmethod(operations.op("StrSuffixOf", (String, String), Bool, bound=False))
-String.StrIndexOf = staticmethod(operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.integer_size_calc, bound=False))
+String.StrIndexOf = staticmethod(operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False))
+String.StrToint = staticmethod(operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False))
