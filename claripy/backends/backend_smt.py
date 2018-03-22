@@ -4,7 +4,7 @@ from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrSubstr, Int, StrLength, StrReplace, \
                             Bool, BV, Or, LT, LE, GT, GE, \
                             StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-                            StrToInt
+                            StrToInt, BVAdd, BVSub
 
 from pysmt.typing import STRING, BVType
 
@@ -65,6 +65,8 @@ class BackendSMT(Backend):
         # ------------------- BITVECTOR OPERATIONS -------------------
         # self._op_raw['Extract'] = self._op_raw_extract
         # self._op_raw['Concat'] = self._op_raw_concat
+        self._op_raw['__add__'] = self._op_raw_add
+        self._op_raw['__sub__'] = self._op_raw_sub
 
         # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
         self._op_raw['__eq__'] = self._op_raw_eq
@@ -167,6 +169,12 @@ class BackendSMT(Backend):
         import ipdb; ipdb.set_trace()
         return BVConcat(left, right)
     '''
+
+    def _op_raw_add(self, *args):
+        return BVAdd(*args)
+
+    def _op_raw_sub(self, *args):
+        return BVSub(*args)
 
     # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
 
