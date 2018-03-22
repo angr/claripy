@@ -178,12 +178,14 @@ def str_replace_length_calc(*args):
     #       or not first in order to calculate the lenght...
     return str_1.length - str_2.length + str_3.length
 
-def str_strlen_length_calc(s, bitlength):
+def strlen_bv_size_calc(s, bitlength):
     return bitlength
 
-def integer_size_calc(s1, s2, bitlength):
+def strindexof_bv_size_calc(s1, s2, bitlength):
     return bitlength
 
+def strtoint_bv_size_calc(s, bitlength):
+    return bitlength
 
 #
 # Operation lists
