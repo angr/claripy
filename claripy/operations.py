@@ -807,7 +807,7 @@ backend_fp_operations = {
 
 backend_strings_operations = {
     'Substr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
-    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf'
+    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt'
 }
 
 opposites = {
