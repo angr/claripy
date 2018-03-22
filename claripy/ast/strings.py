@@ -80,7 +80,7 @@ StrContains = operations.op("StrContains", (String, String), Bool, bound=False)
 StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
 StrIndexOf = operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
-StrToint = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
+StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -100,4 +100,4 @@ String.StrContains = staticmethod(operations.op("StrContains", (String, String),
 String.StrPrefixOf = staticmethod(operations.op("StrPrefixOf", (String, String), Bool, bound=False))
 String.StrSuffixOf = staticmethod(operations.op("StrSuffixOf", (String, String), Bool, bound=False))
 String.StrIndexOf = staticmethod(operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False))
-String.StrToint = staticmethod(operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False))
+String.StrToInt = staticmethod(operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False))
