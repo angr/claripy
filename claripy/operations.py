@@ -297,12 +297,8 @@ backend_fp_operations = {
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
-<<<<<<< 4d310eed70fe478a50c3b2381caf2bb58dfec4b5
-    'Substr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains'
-=======
     'Substr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
-    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf'
->>>>>>> Add IndexOf ond its simplification
+    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt'
 }
 
 opposites = {

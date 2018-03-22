@@ -73,9 +73,6 @@ def StrContains(input_string, substring):
     
     :return : True is substring is contained in input_string else false 
     """
-<<<<<<< 4d310eed70fe478a50c3b2381caf2bb58dfec4b5
-    return substring.value in input_string.value
-=======
     return substring.value in input_string.value
 
 
@@ -115,7 +112,22 @@ def StrIndexOf(input_string, substring, bitlength):
     :return BVV: index of the substring in bit-vector representation or -1 in bitvector representation
     """
     try:
-        return BVV(input_string.value.index(substring.value), 32)
+        return BVV(input_string.value.index(substring.value), bitlength)
     except ValueError:
-        return BVV(-1, 32)
->>>>>>> Add IndexOf ond its simplification
+        return BVV(-1, bitlength)
+
+def StrToInt(input_string, bitlength):
+    """
+    Return True if the concrete value of the input_string ends with suffix
+    otherwise false.
+
+    :param input_string: the string we want to transform in an integer
+    :param bitlength: bitlength of the bitvector representing the index of the substring
+    
+    :return BVV: bit-vector representation of the integer resulting from ythe string or -1 in bitvector representation
+                 if the string cannot be transformed into an integer
+    """
+    try:
+        return BVV(int(input_string.value), bitlength)
+    except ValueError:
+        return BVV(-1, bitlength)

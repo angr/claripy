@@ -279,6 +279,19 @@ class TestStringOperation(unittest.TestCase):
         # with open("dump_strtoint.smt2", "w") as dump_f:
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
+
+    def test_str_to_int_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+(check-sat)
+'''
+        str_concrete = claripy.StringV("12")
+        solver = SolverSMT()
+        res = claripy.StrToint(str_concrete, 32)
+        solver.add(res == 12)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)
     unittest.TextTestRunner(verbosity=2).run(suite)
