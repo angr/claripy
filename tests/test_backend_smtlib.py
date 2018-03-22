@@ -264,6 +264,21 @@ class TestStringOperation(unittest.TestCase):
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
+    
+    def test_str_to_int(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_strtoint String)
+(assert (let ((.def_0 (= ( str.to.int symb_strtoint ) 12))) .def_0))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
+        res = claripy.StrToint(str_symb, 32)
+        solver = SolverSMT()
+        solver.add(res == 12)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_strtoint.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)
     unittest.TextTestRunner(verbosity=2).run(suite)
