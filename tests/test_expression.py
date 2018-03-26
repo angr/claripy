@@ -120,8 +120,8 @@ def test_expression():
     nose.tools.assert_not_equal(hash(old_formula), hash(ooo_formula))
     nose.tools.assert_not_equal(hash(new_formula), hash(ooo_formula))
 
-    nose.tools.assert_equal(old_formula.variables, { 'old' })
-    nose.tools.assert_equal(new_formula.variables, { 'new' })
+    nose.tools.assert_equal(old_formula.variables, { b'old' })
+    nose.tools.assert_equal(new_formula.variables, { b'new' })
     nose.tools.assert_equal(ooo_formula.variables, ooo.variables)
 
     nose.tools.assert_true(old_formula.symbolic)

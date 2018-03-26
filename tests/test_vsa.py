@@ -292,7 +292,7 @@ def test_vsa():
         return claripy.backends.vsa.identical(ast_0, ast_1)
 
     si1 = claripy.TSI(32, name="foo", explicit_name=True)
-    nose.tools.assert_equal(vsa_model(si1).name, "foo")
+    nose.tools.assert_equal(vsa_model(si1).name, b"foo")
 
     # Normalization
     si1 = SI(bits=32, stride=1, lower_bound=10, upper_bound=10)
