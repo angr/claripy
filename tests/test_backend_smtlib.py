@@ -272,7 +272,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
-        res = claripy.StrToint(str_symb, 32)
+        res = claripy.StrToInt(str_symb, 32)
         solver = SolverSMT()
         solver.add(res == 12)
         script = solver.get_smtlib_script_satisfiability()
@@ -287,7 +287,7 @@ class TestStringOperation(unittest.TestCase):
 '''
         str_concrete = claripy.StringV("12")
         solver = SolverSMT()
-        res = claripy.StrToint(str_concrete, 32)
+        res = claripy.StrToInt(str_concrete, 32)
         solver.add(res == 12)
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
