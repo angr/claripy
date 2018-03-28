@@ -132,6 +132,14 @@ class BackendSMT(Backend):
         smt_script += '(get-model)\n'
         return smt_script
 
+    def get_satisfiability_smt_script(self, solver, extra_constraints=()):
+        all_csts = tuple(extra_constraints) + tuple(solver.constraints)
+        return self._get_satisfiability_smt_script(all_csts)
+
+    def get_full_model_smt_script(self, solver, extra_constraints=()):
+        all_csts = tuple(extra_constraints) + tuple(solver.constraints)
+        return self._get_full_model_smt_script(all_csts)
+
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
 
