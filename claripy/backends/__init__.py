@@ -710,6 +710,6 @@ from .backend_z3 import BackendZ3
 from .backend_z3_parallel import BackendZ3Parallel
 from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
-from .backend_smt import BackendSMT
-from .backend_smt_cvc4 import BackendSMT_CVC4
+from .backend_smtlib import BackendSMTLibBase
+from .backend_smtlib_solvers import *
 from ..ast.base import Base

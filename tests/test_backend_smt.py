@@ -1,9 +1,9 @@
 import unittest
 import claripy
 from claripy import frontend_mixins, frontends, backend_manager, backends
-from claripy.backends.backend_smt import BackendSMT
+from claripy.backends.backend_smtlib import BackendSMTLibBase
 
-backend_smt = backend_manager.backends._register_backend(BackendSMT(), 'smt', False, False)
+backend_smt = backend_manager.backends._register_backend(BackendSMTLibBase(), 'smt', False, False)
 
 class SolverSMT(
     frontend_mixins.ConstraintFixerMixin,

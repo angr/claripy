@@ -12,7 +12,7 @@ l = logging.getLogger("claripy.backends.backend_smt")
 
 from . import BackendError, Backend
 
-def _expr_to_smtlib(e):
+def _expr_to_smtlib(e, daggify=True):
     """
     Dump the symbol in its smt-format depending on its type
 
@@ -23,9 +23,9 @@ def _expr_to_smtlib(e):
     if e.is_symbol():
         return "(declare-const %s %s)" % (e.symbol_name(), e.symbol_type())
     else:
-        return "(assert %s)" % e.to_smtlib()
+        return "(assert %s)" % e.to_smtlib(daggify=daggify)
 
-def _exprs_to_smtlib(*exprs):
+def _exprs_to_smtlib(*exprs, **kwargs):
     """
     Dump all the variables and all the constraints in an smt-lib format
 
@@ -34,7 +34,20 @@ def _exprs_to_smtlib(*exprs):
 
     :return string: smt-lib representation of the list of expressions 
     """
-    return '\n'.join(_expr_to_smtlib(e) for e in exprs) + '\n'
+    return '\n'.join(_expr_to_smtlib(e, **kwargs) for e in exprs) + '\n'
+
+def _csts_to_smtlib_exprs(constraints=(), **kwargs):
+    """
+    Return the smt-lib representation of the current context and constraints
+
+    :param extra-constraints: list of extra constraints that we want to evaluate only
+                             in the scope of this call
+
+    :return string: smt-lib representation of the list of expressions and variable declarations
+    """
+    free_variables = set().union(*[c.get_free_variables() for c in constraints])
+    all_exprs = tuple(free_variables) +  tuple(constraints)
+    return _exprs_to_smtlib(*all_exprs, **kwargs)
 
 
 def _normalize_arguments(expr_left, expr_rigth):
@@ -50,8 +63,9 @@ def _normalize_arguments(expr_left, expr_rigth):
 
 
 
-class BackendSMT(Backend):
+class BackendSMTLibBase(Backend):
     def __init__(self, *args, **kwargs):
+        self.daggify = kwargs.pop('daggify', True)
         Backend.__init__(self, *args, **kwargs)
 
         # ------------------- LEAF OPERATIONS ------------------- 
@@ -86,19 +100,8 @@ class BackendSMT(Backend):
         self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
         self._op_raw["StrToInt"] = self._op_raw_str_strtoint
 
-
     def _smtlib_exprs(self, constraints=()):
-        """
-        Return the smt-lib representation of the current context and constraints
-
-        :param extra-constraints: list of extra constraints that we want to evaluate only
-                                 in the scope of this call
-
-        :return string: smt-lib representation of the list of expressions and variable declarations
-        """
-        free_variables = set().union(*[c.get_free_variables() for c in constraints])
-        all_exprs = tuple(free_variables) +  tuple(constraints)
-        return _exprs_to_smtlib(*all_exprs)
+        return _csts_to_smtlib_exprs(constraints=constraints, daggify=self.daggify)
 
     def _get_satisfiability_smt_script(self, constraints=()):
         '''
@@ -156,7 +159,7 @@ class BackendSMT(Backend):
         return Symbol(name, STRING)
 
     def BoolV(self, ast):
-        return Bool(ast.is_true())
+        return Bool(ast.args[0])
 
     def BVV(self, ast):
         val, size = ast.args
