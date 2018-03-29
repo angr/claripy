@@ -89,7 +89,6 @@ class SolverStrings(
     frontend_mixins.ConcreteHandlerMixin,
     frontend_mixins.ConstraintFilterMixin,
     frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.EagerResolutionMixin,
     frontend_mixins.EvalStringsToASTsMixin,
     frontends.FullFrontend,
 ):
