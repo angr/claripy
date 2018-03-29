@@ -27,7 +27,7 @@ if IS_INSTALLED:
         def __init__(self, timeout=None):
             cmd = ['z3', '-smt2', '-in']
             if timeout is not None:
-                cmd.append('-t:{}'.format(timeout))
+                cmd.append('-t:{}'.format(timeout/1000))  # our timeout is in milliseconds
 
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             super(Z3Proxy, self).__init__(p)
@@ -41,7 +41,7 @@ if IS_INSTALLED:
             return Z3Proxy(timeout=timeout)
 
     from ... import backend_manager as backend_manager
-    backend_manager.backends._register_backend(SolverBackendZ3(), 'smtlib_z3', True, True)
+    backend_manager.backends._register_backend(SolverBackendZ3(), 'smtlib_z3', False, False)
 
 else:
     # Z3 is not installed
