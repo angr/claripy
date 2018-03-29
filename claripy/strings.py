@@ -27,7 +27,7 @@ def StrSubstr(start_idx, count, initial_string):
 
     :return : a concrete version of the substring
     """
-    new_value = initial_string.value[start_idx:start_idx + count]
+    new_value = initial_string.value[start_idx.value:start_idx.value + count.value]
     return StringV(new_value)
 
 

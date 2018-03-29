@@ -22,7 +22,7 @@ class String(Bits):
     def __getitem__(self, rng):
         if type(rng) is slice:
             left = rng.start / 8 if rng.start is not None else self.string_length - 1
-            right = rng.stop / 8if rng.stop is not None else 0
+            right = rng.stop / 8 if rng.stop is not None else 0
             if left < 0:
                 left = len(self) + left
             if right < 0:
@@ -30,7 +30,7 @@ class String(Bits):
 
             right = self.string_length - 1 - right
             left = self.string_length - 1 - left
-            return Substr(left, right, self)
+            return StrSubstr(left, right, self)
         else:
             return Substr(int(rng+7), int(rng), self)
 
@@ -69,9 +69,8 @@ def StringV(value, length=None, **kwargs):
     return result
 
 StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-StrSubstr = operations.op('StrSubstr', ((int, long), (int, long), String),
-                        String, extra_check=operations.substr_check,
-                        calc_length=operations.substr_length_calc, bound=False)
+StrSubstr = operations.op('StrSubstr', (BV, BV, String),
+                        String, calc_length=operations.substr_length_calc, bound=False)
 StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
@@ -88,8 +87,8 @@ String.__ne__ = operations.op('__ne__', (String, String), Bool)
 
 # String manipulation
 String.__add__ = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-String.StrSubstr = staticmethod(operations.op('StrSubstr', ((int, long), (int, long), String),
-                              String, extra_check=operations.substr_check,
+String.StrSubstr = staticmethod(operations.op('StrSubstr', (BV, BV, String),
+                              String,
                               calc_length=operations.substr_length_calc, bound=False))
 String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
 String.StrLen = staticmethod(operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False))
