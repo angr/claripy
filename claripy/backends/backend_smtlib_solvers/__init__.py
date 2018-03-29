@@ -5,7 +5,7 @@ from claripy.utils import OrderedSet
 from six.moves import cStringIO
 
 from pysmt.smtlib.parser import Tokenizer
-from pysmt.shortcuts import And, NotEquals
+from pysmt.shortcuts import And, NotEquals, String
 
 class AbstractSMTLibSolverProxy(object):
     def write(self, smt):
@@ -127,7 +127,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         if expr.is_constant():
             return [expr.constant_value()]
 
-        results = OrderedSet()
+        results = []
         while len(results) < n:
             sat, model, ass_list = self._get_model(extra_constraints=e_c, solver=solver)
             if sat != 'sat':
@@ -137,8 +137,9 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             if val in results:
                 raise ValueError("Solver error, solver returned the same value twice incorrectly!")
 
-            results.add(val)
-            e_c.append(NotEquals(expr, val))
+            results.append(val)
+            # e_c.append(And(*[NotEquals(s, val) for s, val in ass_list]))
+            e_c.append(NotEquals(String(val), expr))
 
         return list(results)
 

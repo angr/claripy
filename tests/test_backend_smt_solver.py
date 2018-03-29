@@ -48,7 +48,8 @@ class SmtLibSolverTest(unittest.TestCase):
     def test_substr_simplification(self):
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
-        solver.add(claripy.Substr(1, 2, str_concrete) == claripy.StringV('o'))
+        # TODO: Make sure that semantics of Substr match the ones of SMTLib substr
+        solver.add(claripy.Substr(1, 2, str_concrete) == claripy.StringV('on'))
         self.assertTrue(solver.satisfiable())
         result = solver.eval(str_concrete, 2)
         self.assertEqual(list(result), ["concrete"])
@@ -66,7 +67,7 @@ class SmtLibSolverTest(unittest.TestCase):
         self.assertEqual(list(result), ["cbne"])
 
         result = solver.eval(str_to_replace_symb, 2)
-        self.assertEqual(list(result), ["cane", "cbne"])
+        self.assertEqual(set(result), {"cbne", "cane"})
 
     def test_replace_simplification(self):
         str_to_replace = claripy.StringV("cane")
