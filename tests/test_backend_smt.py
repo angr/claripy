@@ -62,6 +62,60 @@ class TestStringOperation(unittest.TestCase):
             # dump_f.write(script)
         self.assertEqual(correct_script, script)
 
+    def test_substr_BV_conrete_index(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_subst String)
+(assert (let ((.def_0 (= ( str.substr symb_subst 1 2) "on"))) .def_0))
+(check-sat)
+'''
+        str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
+        solver = SolverSMT()
+        bv1 = claripy.BVV(1, 32)
+        bv2 = claripy.BVV(2, 32)
+        res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_substr_bv_concrete.smt2", "w") as dump_f:
+            # dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_substr_BV_symbolic_index(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_subst_start_idx Int)
+(declare-const symb_subst String)
+(declare-const symb_subst_count Int)
+(assert (let ((.def_0 (= ( str.substr symb_subst symb_subst_start_idx symb_subst_count) "on"))) .def_0))
+(check-sat)
+'''
+        str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
+        solver = SolverSMT()
+        bv1 = claripy.BVS("start_idx", 32)
+        bv2 = claripy.BVS("count", 32)
+        res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_substr_bv_symbolic.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
+    def test_substr_BV_mixed_index(self):
+        correct_script = '''(set-logic ALL)
+(declare-const symb_subst_start_idx Int)
+(declare-const symb_subst String)
+(assert (let ((.def_0 (= ( str.substr symb_subst symb_subst_start_idx 2) "on"))) .def_0))
+(check-sat)
+'''
+        str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
+        solver = SolverSMT()
+        bv1 = claripy.BVS("start_idx", 32)
+        bv2 = claripy.BVV(2, 32)
+        res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_substr_bv_symbolic.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
+
     def test_substr_simplification(self):
         correct_script = '''(set-logic ALL)
 

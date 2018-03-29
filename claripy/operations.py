@@ -651,15 +651,6 @@ def extract_check(high, low, bv):
 
     return True, ""
 
-def substr_check(low, high, string_val):
-    if high < 0 or low < 0:
-        return False, "Extract high and low must be nonnegative"
-    elif low > high:
-        return False, "Extract low must be <= high"
-    elif high >= string_val.size():
-        return False, "Extract bound must be less than string size"
-
-    return True, ""
 
 def str_replace_check(*args):
     str_1, str_2, _ = args
@@ -671,8 +662,8 @@ def str_replace_check(*args):
 def extract_length_calc(high, low, _):
     return high + 1 - low
 
-def substr_length_calc(low, high, _):
-    return high + 1 - low
+def substr_length_calc(start_idx, count, strval):
+    return strval.length
 
 def ext_length_calc(ext, orig):
     return orig.length + ext
