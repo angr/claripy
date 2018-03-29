@@ -18,7 +18,7 @@ def StrConcat(*args):
     new_value = ''.join([arg.value for arg in args])
     return StringV(new_value)
     
-def Substr(start_idx, end_idx, initial_string):
+def Substr(start_idx, count, initial_string):
     """
     Create a concrete version of the substring
     :param start_idx : starting index of the substring
@@ -27,10 +27,7 @@ def Substr(start_idx, end_idx, initial_string):
 
     :return : a concrete version of the substring
     """
-    if start_idx == end_idx:
-        new_value = initial_string.value[start_idx]
-    else:
-        new_value = initial_string.value[start_idx:end_idx]
+    new_value = initial_string.value[start_idx:start_idx + count]
     return StringV(new_value)
 
 

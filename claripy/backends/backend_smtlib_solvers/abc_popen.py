@@ -38,7 +38,7 @@ if IS_INSTALLED:
             return ABCProxy()
 
     from ... import backend_manager as backend_manager
-    backend_manager.backends._register_backend(SolverBackendABC(), 'smtlib_abc', True, True)
+    backend_manager.backends._register_backend(SolverBackendABC(), 'smtlib_abc', False, False)
 
 else:
     # ABC is not installed
