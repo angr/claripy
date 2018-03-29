@@ -91,7 +91,7 @@ class SmtLibSolverTest(unittest.TestCase):
         solver.add(str_symb != claripy.StringV("concrete"))
         self.assertTrue(solver.satisfiable())
 
-        result = solver.eval(str_symb, 100)
+        result = solver.eval(str_symb, 20)
         self.assertTrue('concrete' not in result)
 
     def test_length(self):
@@ -101,7 +101,7 @@ class SmtLibSolverTest(unittest.TestCase):
         solver.add(claripy.StrLen(str_symb, 32) == 14)
         self.assertTrue(solver.satisfiable())
 
-        result = solver.eval(str_symb, 100)
+        result = solver.eval(str_symb, 20)
         for r in result:
             self.assertTrue(len(r) == 14)
 

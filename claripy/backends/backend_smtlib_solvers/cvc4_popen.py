@@ -38,7 +38,7 @@ if IS_INSTALLED:
             return CVC4Proxy()
 
     from ... import backend_manager as backend_manager
-    backend_manager.backends._register_backend(SolverBackendCVC4(), 'smtlib_cvc4', True, True)
+    backend_manager.backends._register_backend(SolverBackendCVC4(), 'smtlib_cvc4', False, False)
 
 else:
     # CVC4 is not installed

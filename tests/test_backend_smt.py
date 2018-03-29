@@ -50,12 +50,12 @@ class TestStringOperation(unittest.TestCase):
     def test_substr(self):
         correct_script = '''(set-logic ALL)
 (declare-const symb_subst String)
-(assert (let ((.def_0 (= ( str.substr symb_subst 1 2) "o"))) .def_0))
+(assert (let ((.def_0 (= ( str.substr symb_subst 1 2) "on"))) .def_0))
 (check-sat)
 '''
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
         solver = SolverSMT()
-        res = claripy.Substr(1, 2, str_symbol) == claripy.StringV('o') 
+        res = claripy.Substr(1, 2, str_symbol) == claripy.StringV('on')
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_substr.smt2", "w") as dump_f:
@@ -69,7 +69,7 @@ class TestStringOperation(unittest.TestCase):
 '''
         str_concrete = claripy.StringV("concrete")
         solver = SolverSMT()
-        solver.add(claripy.Substr(1, 2, str_concrete) == claripy.StringV('o'))
+        solver.add(claripy.Substr(1, 2, str_concrete) == claripy.StringV('on'))
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 

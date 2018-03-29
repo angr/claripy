@@ -135,6 +135,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
             val = self._get_primitive_for_expr(model, expr)
             if val in results:
+                import ipdb; ipdb.set_trace()
                 raise ValueError("Solver error, solver returned the same value twice incorrectly!")
 
             results.append(val)
