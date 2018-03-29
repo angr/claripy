@@ -1,6 +1,6 @@
 import unittest
 import claripy
-from claripy.backends import SolverBackendZ3
+from claripy.backends.backend_smtlib_solvers.z3_popen import SolverBackendZ3
 from test_backend_smt_solver import SmtLibSolverTest
 
 

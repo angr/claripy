@@ -297,7 +297,7 @@ backend_fp_operations = {
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {
-    'Substr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
+    'StrSubstr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
     'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt'
 }
 
