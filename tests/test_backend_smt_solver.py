@@ -38,7 +38,7 @@ class SmtLibSolverTest(unittest.TestCase):
     def test_substr(self):
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
         solver = self.get_solver()
-        solver.add(claripy.Substr(1, 2, str_symbol) == claripy.StringV('o'))
+        solver.add(claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV('o'))
         self.assertTrue(solver.satisfiable())
         results = solver.eval(str_symbol, 2)
         self.assertEqual(len(results), 2)
@@ -49,7 +49,7 @@ class SmtLibSolverTest(unittest.TestCase):
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
         # TODO: Make sure that semantics of Substr match the ones of SMTLib substr
-        solver.add(claripy.Substr(1, 2, str_concrete) == claripy.StringV('on'))
+        solver.add(claripy.StrSubstr(1, 2, str_concrete) == claripy.StringV('on'))
         self.assertTrue(solver.satisfiable())
         result = solver.eval(str_concrete, 2)
         self.assertEqual(list(result), ["concrete"])
