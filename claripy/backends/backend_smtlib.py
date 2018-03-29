@@ -6,7 +6,7 @@ from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
                             StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
                             StrToInt, BVAdd, BVSub
 
-from pysmt.typing import STRING, BVType
+from pysmt.typing import STRING, BVType, INT
 
 
 l = logging.getLogger("claripy.backends.backend_smt")
@@ -85,6 +85,7 @@ class BackendSMTLibBase(Backend):
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BVV'] = self.BVV
+        self._op_expr['BVS'] = self.BVS
 
         # ------------------- BITVECTOR OPERATIONS -------------------
         # self._op_raw['Extract'] = self._op_raw_extract
@@ -256,8 +257,10 @@ class BackendSMTLibBase(Backend):
         return StrConcat(*args)
 
     def _op_raw_str_substr(self, *args):
-        i, j, symb = args
-        return StrSubstr(symb, Int(i), Int(j))
+        start_idx, count, symb = args
+        start_idx_operand = Int(start_idx.constant_value()) if start_idx.is_bv_constant() else Symbol("%s_start_idx" % symb, INT)
+        count_operand = Int(count.constant_value()) if count.is_bv_constant() else Symbol("%s_count" % symb, INT)
+        return StrSubstr(symb, start_idx_operand, count_operand)
 
     def _op_raw_str_strlen(self, *args):
         return StrLength(args[0])
