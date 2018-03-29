@@ -19,7 +19,7 @@ def StrConcat(*args):
     new_value = ''.join([arg.value for arg in args])
     return StringV(new_value)
     
-def Substr(start_idx, count, initial_string):
+def StrSubstr(start_idx, count, initial_string):
     """
     Create a concrete version of the substring
     :param start_idx : starting index of the substring

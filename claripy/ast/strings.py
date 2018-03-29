@@ -69,7 +69,7 @@ def StringV(value, length=None, **kwargs):
     return result
 
 StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-Substr = operations.op('Substr', ((int, long), (int, long), String),
+StrSubstr = operations.op('StrSubstr', ((int, long), (int, long), String),
                         String, extra_check=operations.substr_check,
                         calc_length=operations.substr_length_calc, bound=False)
 StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)
@@ -88,7 +88,7 @@ String.__ne__ = operations.op('__ne__', (String, String), Bool)
 
 # String manipulation
 String.__add__ = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-String.Substr = staticmethod(operations.op('Substr', ((int, long), (int, long), String),
+String.StrSubstr = staticmethod(operations.op('StrSubstr', ((int, long), (int, long), String),
                               String, extra_check=operations.substr_check,
                               calc_length=operations.substr_length_calc, bound=False))
 String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
