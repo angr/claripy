@@ -17,7 +17,9 @@ def get_version():
         return True, version_match.group(1), None
 
     except subprocess.CalledProcessError as ex:
-        return False, None, "Not found, error: {}".format(ex.message)
+        return False, None, "Not found, error: {}".format(ex)
+    except OSError as ex:
+        return False, None, "Not found, error: {}".format(ex)
 
 
 IS_INSTALLED, VERSION, ERROR = get_version()

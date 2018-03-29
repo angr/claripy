@@ -103,7 +103,7 @@ class BackendSMTLibBase(Backend):
 
         # ------------------- STRINGS OPERATIONS ------------------- 
         self._op_raw['StrConcat'] = self._op_raw_str_concat
-        self._op_raw['Substr'] = self._op_raw_str_substr
+        self._op_raw['StrSubstr'] = self._op_raw_str_substr
         self._op_raw['StrLen'] = self._op_raw_str_strlen
         self._op_raw['StrReplace'] = self._op_raw_str_replace
         self._op_raw["StrContains"] = self._op_raw_str_contains
