@@ -99,8 +99,9 @@ class SMTLibSolverBackend(BackendSMTLibBase):
     def _add(self, s, c, track=False):
         s.add_constraints(c, track=track)
 
-    def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
-        smt_script = self._get_satisfiability_smt_script(tuple(extra_constraints) + tuple(solver.constraints))
+    def _satisfiable(self, solver=None, extra_constraints=(), model_callback=None, extra_variables=()):
+        vars, csts = self._get_all_vars_and_constraints(solver=solver, e_c=extra_constraints, e_v=extra_variables)
+        smt_script = self._get_satisfiability_smt_script(constraints=csts, variables=vars)
 
         if self.smt_script_log_dir is not None:
             fname = 'check-sat_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
@@ -116,8 +117,9 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             raise ValueError("Solver error, don't understand (check-sat) response: {}".format(repr(sat)))
         return sat == 'sat'
 
-    def _get_model(self, extra_constraints=(), solver=None):
-        smt_script = self._get_full_model_smt_script(tuple(extra_constraints) + tuple(solver.constraints))
+    def _get_model(self, solver=None, extra_constraints=(), extra_variables=()):
+        vars, csts = self._get_all_vars_and_constraints(solver=solver, e_c=extra_constraints, e_v=extra_variables)
+        smt_script = self._get_full_model_smt_script(constraints=csts, variables=vars)
         if self.smt_script_log_dir is not None:
             fname = 'get-model_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
             with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
@@ -143,9 +145,11 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         if expr.is_constant():
             return [expr.constant_value()]
 
+        expr_vars = expr.get_free_variables()
+
         results = []
         while len(results) < n:
-            sat, model, ass_list = self._get_model(extra_constraints=e_c, solver=solver)
+            sat, model, ass_list = self._get_model(solver=solver, extra_constraints=e_c, extra_variables=expr_vars)
             if sat != 'sat':
                 break
 

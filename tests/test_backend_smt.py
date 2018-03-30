@@ -45,6 +45,7 @@ class TestSMTLibBackend(unittest.TestCase):
     def test_concat_simplification(self):
         correct_script = '''(set-logic ALL)
 
+
 (check-sat)
 '''
         solver = self.get_solver()
@@ -127,6 +128,7 @@ class TestSMTLibBackend(unittest.TestCase):
     def test_substr_simplification(self):
         correct_script = '''(set-logic ALL)
 
+
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
@@ -154,6 +156,7 @@ class TestSMTLibBackend(unittest.TestCase):
 
     def test_replace_simplification(self):
         correct_script = '''(set-logic ALL)
+
 
 (check-sat)
 '''
@@ -198,6 +201,7 @@ class TestSMTLibBackend(unittest.TestCase):
 
     def test_length_simplification(self):
         correct_script = '''(set-logic ALL)
+
 
 (check-sat)
 '''
@@ -267,6 +271,7 @@ class TestSMTLibBackend(unittest.TestCase):
     def test_contains_simplification(self):
         correct_script = '''(set-logic ALL)
 
+
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
@@ -310,6 +315,7 @@ class TestSMTLibBackend(unittest.TestCase):
     def test_prefix_simplification(self):
         correct_script = '''(set-logic ALL)
 
+
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
@@ -321,6 +327,7 @@ class TestSMTLibBackend(unittest.TestCase):
 
     def test_suffix_simplification(self):
         correct_script = '''(set-logic ALL)
+
 
 (check-sat)
 '''
@@ -349,6 +356,7 @@ class TestSMTLibBackend(unittest.TestCase):
     def test_index_of_simplification(self):
         correct_script = '''(set-logic ALL)
 
+
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
@@ -376,6 +384,7 @@ class TestSMTLibBackend(unittest.TestCase):
 
     def test_str_to_int_simplification(self):
         correct_script = '''(set-logic ALL)
+
 
 (check-sat)
 '''
