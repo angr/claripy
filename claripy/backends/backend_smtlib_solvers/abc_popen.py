@@ -30,7 +30,6 @@ if IS_INSTALLED:
             p = subprocess.Popen(['abc'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             super(ABCProxy, self).__init__(p)
 
-
     class SolverBackendABC(SMTLibSolverBackend):
         def solver(self, timeout=None):
             """

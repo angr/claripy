@@ -26,8 +26,11 @@ IS_INSTALLED, VERSION, ERROR = get_version()
 
 if IS_INSTALLED:
     class CVC4Proxy(PopenSolverProxy):
-        def __init__(self):
-            p = subprocess.Popen(['cvc4', '--lang=smt', '-q', '--strings-exp'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        def __init__(self, timeout=None):
+            cmd = ['cvc4', '--lang=smt', '-q', '--strings-exp']
+            if timeout is not None:
+                cmd += ['--tlimit-per={}'.format(timeout)]
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             super(CVC4Proxy, self).__init__(p)
 
 
@@ -37,7 +40,7 @@ if IS_INSTALLED:
             This function should return an instance of whatever object handles
             solving for this backend. For example, in Z3, this would be z3.Solver().
             """
-            return CVC4Proxy()
+            return CVC4Proxy(timeout)
 
     from ... import backend_manager as backend_manager
     backend_manager.backends._register_backend(SolverBackendCVC4(), 'smtlib_cvc4', False, False)
