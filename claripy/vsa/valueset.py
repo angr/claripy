@@ -471,6 +471,34 @@ class ValueSet(BackendObject):
 
         return results
 
+    @property
+    def min(self):
+        """
+        The minimum integer value of a value-set. It is only defined when there is exactly one region.
+
+        :return: A integer that represents the minimum integer value of this value-set.
+        :rtype:  int
+        """
+
+        if len(self.regions) != 1:
+            raise ClaripyVSAOperationError("'min()' onlly works on single-region value-sets.")
+
+        return self.get_si(next(iter(self.regions))).min
+
+    @property
+    def max(self):
+        """
+        The maximum integer value of a value-set. It is only defined when there is exactly one region.
+
+        :return: A integer that represents the maximum integer value of this value-set.
+        :rtype:  int
+        """
+
+        if len(self.regions) != 1:
+            raise ClaripyVSAOperationError("'max()' onlly works on single-region value-sets.")
+
+        return self.get_si(next(iter(self.regions))).max
+
     def reverse(self):
         # TODO: obviously valueset.reverse is not properly implemented. I'm disabling the old annoying output line for
         # TODO: now. I will implement the proper reversing support soon.

@@ -175,8 +175,8 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pyli
     """
     Creates a bit-vector symbol (i.e., a variable).
 
-    If you want to specify the maximum value of a normal symbol that is not part of value-set analysis, you should
-    manually add constraints to that effect.
+    If you want to specify the maximum or minimum value of a normal symbol that is not part of value-set analysis, you
+    should manually add constraints to that effect. **Do not use ``min`` and ``max`` for symbolic execution.**
 
     :param name:            The name of the symbol.
     :param size:            The size (in bits) of the bit-vector.
@@ -196,6 +196,11 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pyli
     if stride == 0 and max != min:
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
+    if type(name) is unicode:
+        name = name.encode('utf-8')
+    if type(name) is not bytes:
+        raise TypeError("Name value for BVS must be a string, got %r" % type(name))
+
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
 
     if not discrete_set:
@@ -208,8 +213,9 @@ def BVV(value, size=None, **kwargs):
     """
     Creates a bit-vector value (i.e., a concrete value).
 
-    :param value:   The value.
-    :param size:    The size (in bits) of the bit-vector.
+    :param value:   The value. Either an integer or a string. If it's a string, it will be interpreted as the bytes of
+                    a big-endian constant.
+    :param size:    The size (in bits) of the bit-vector. Optional if you provide a string, required for an integer.
 
     :returns:       A BV object representing this value.
     """
@@ -218,15 +224,18 @@ def BVV(value, size=None, **kwargs):
         if type(value) is unicode:
             l.warn("BVV value is a unicode string, encoding as utf-8")
             value = value.encode('utf-8')
+
         if size is None:
-            size = 8*len(value)
-            value = int(binascii.hexlify(value), 16) if value != "" else 0
-        elif size == len(value)*8:
-            value = int(binascii.hexlify(value), 16) if value != "" else 0
-        else:
+            size = len(value)*8
+        elif type(size) not in (int, long):
+            raise TypeError("Bitvector size  must be either absent (implicit) or an integer")
+        elif size != len(value)*8:
             raise ClaripyValueError('string/size mismatch for BVV creation')
+
+        value = int(binascii.hexlify(value), 16) if value != "" else 0
+
     elif size is None or (type(value) not in (int, long) and value is not None):
-        raise ClaripyValueError('BVV() takes either an integer value and a size or a string of bytes')
+        raise TypeError('BVV() takes either an integer value and a size or a string of bytes')
 
     # ensure the 0 <= value < (1 << size)
     # FIXME hack to handle None which is used for an Empty Strided Interval (ESI)
@@ -277,6 +286,7 @@ def ValueSet(bits, region=None, region_base_addr=None, value=None, name=None, va
     else:
         raise ClaripyValueError("ValueSet() does not take `value` of type %s" % type(value))
 
+    if name is None: name = 'ValueSet'
     bvs = BVS(name, bits, min=region_base_addr + min_v, max=region_base_addr + max_v, stride=stride)
 
     # Annotate the bvs and return the new AST
