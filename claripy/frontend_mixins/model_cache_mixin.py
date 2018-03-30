@@ -1,7 +1,7 @@
 import weakref
 import itertools
 
-from claripy import errors
+from .. import errors
 
 
 class ModelCache(object):

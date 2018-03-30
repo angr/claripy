@@ -142,6 +142,20 @@ def extract_check(high, low, bv):
 
     return True, ""
 
+def extract_length_calc(high, low, _):
+    return high + 1 - low
+
+
+def str_extract_check(start_idx, count, str_val):
+    if start_idx < 0 :
+        return False, "StrExtract start_idx must be nonnegative"
+    elif not (0 <= count < str_val.size()):
+        return False, "StrExtract count must be in the range [ 0, str_val.size() )"
+    else:
+        return True, ""
+
+def str_extract_length_calc(start_idx, count, str_val):
+    return count
 
 def str_replace_check(*args):
     str_1, str_2, _ = args
@@ -149,12 +163,8 @@ def str_replace_check(*args):
         return False, "The pattern that has to be replaced is longer than the string itself"
     return True, ""
 
-
-def extract_length_calc(high, low, _):
-    return high + 1 - low
-
 def substr_length_calc(start_idx, count, strval):
-    return strval.length
+    return strval.string_length
 
 def ext_length_calc(ext, orig):
     return orig.length + ext

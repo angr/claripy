@@ -3,9 +3,10 @@ from abc import abstractmethod
 import abc
 
 import claripy
+from test_backend_smt import TestSMTLibBackend
 
 
-class SmtLibSolverTest(unittest.TestCase):
+class SmtLibSolverTest(TestSMTLibBackend):
     @abstractmethod
     def get_solver(self):
         raise NotImplementedError
@@ -140,3 +141,66 @@ class SmtLibSolverTest(unittest.TestCase):
         solver.add(c3)
         solver.add(c4)
         self.assertFalse(solver.satisfiable())
+
+    def test_substr_BV_concrete_index(self):
+        str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
+        solver = self.get_solver()
+        bv1 = claripy.BVV(1, 32)
+        bv2 = claripy.BVV(2, 32)
+        res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual('on', solver.eval(str_symbol, 1)[0][1:3])
+
+    def test_substr_BV_symbolic_index(self):
+        str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
+        solver = self.get_solver()
+        start = claripy.BVS("start_idx", 32)
+        count = claripy.BVS("count", 32)
+        res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV('on')
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 2))[0][0:2])
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 2))[0][1:3])
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 2))[0][2:4])
+
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 3))[0][2:4])
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2, count == 4))[0][2:4])
+
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 3))[0])
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 4))[0][1:])
+
+
+
+    def test_substr_BV_mixed_index(self):
+        super(SmtLibSolverTest, self).test_substr_BV_mixed_index()
+
+    def test_contains(self):
+        super(SmtLibSolverTest, self).test_contains()
+
+    def test_contains_simplification(self):
+        super(SmtLibSolverTest, self).test_contains_simplification()
+
+    def test_prefix(self):
+        super(SmtLibSolverTest, self).test_prefix()
+
+    def test_suffix(self):
+        super(SmtLibSolverTest, self).test_suffix()
+
+    def test_prefix_simplification(self):
+        super(SmtLibSolverTest, self).test_prefix_simplification()
+
+    def test_suffix_simplification(self):
+        super(SmtLibSolverTest, self).test_suffix_simplification()
+
+    def test_index_of(self):
+        super(SmtLibSolverTest, self).test_index_of()
+
+    def test_index_of_simplification(self):
+        super(SmtLibSolverTest, self).test_index_of_simplification()
+
+    def test_str_to_int(self):
+        super(SmtLibSolverTest, self).test_str_to_int()
+
+    def test_str_to_int_simplification(self):
+        super(SmtLibSolverTest, self).test_str_to_int_simplification()

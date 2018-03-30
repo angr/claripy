@@ -1,7 +1,7 @@
 import json
 
 import pysmt
-from pysmt.shortcuts import Symbol
+from pysmt.shortcuts import Symbol, get_env
 from pysmt.smtlib.parser import SmtLibParser, PysmtSyntaxError
 
 
@@ -23,13 +23,11 @@ class SMTParser(object):
         self.expect('(')
         self.expect(')')
         t = self.p.parse_type(self.tokens, 'define-fun')
-        val_repr = self.p.parse_atom(self.tokens, 'define-fun')
+        value_token = self.p.parse_atom(self.tokens, 'define-fun')
+        val_repr = self.p.atom(value_token, get_env().formula_manager)
         self.expect(')')
 
-        val = val_repr[1:-1] # strip quotes
-        val = val.decode('string_escape') # decode escape sequences
-
-        return Symbol(vname, t), getattr(pysmt.shortcuts, t.name)(val)
+        return Symbol(vname, t), getattr(pysmt.shortcuts, t.name)(val_repr.constant_value())
 
     def consume_assignment_list(self):
         self.expect('(')
