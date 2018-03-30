@@ -49,19 +49,6 @@ def _exprs_to_smtlib(*exprs, **kwargs):
     """
     return '\n'.join(_expr_to_smtlib(e, **kwargs) for e in exprs) + '\n'
 
-def _csts_to_smtlib_exprs(constraints=(), **kwargs):
-    """
-    Return the smt-lib representation of the current context and constraints
-
-    :param extra-constraints: list of extra constraints that we want to evaluate only
-                             in the scope of this call
-
-    :return string: smt-lib representation of the list of expressions and variable declarations
-    """
-    free_variables = sorted(set().union(*[c.get_free_variables() for c in constraints]), key=lambda s: s.symbol_name())
-    all_exprs = tuple(free_variables) +  tuple(constraints)
-    return _exprs_to_smtlib(*all_exprs, **kwargs)
-
 
 def _normalize_arguments(expr_left, expr_rigth):
     """
@@ -115,10 +102,10 @@ class BackendSMTLibBase(Backend):
         self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
         self._op_raw["StrToInt"] = self._op_raw_str_strtoint
 
-    def _smtlib_exprs(self, constraints=()):
-        return _csts_to_smtlib_exprs(constraints=constraints, daggify=self.daggify)
+    def _smtlib_exprs(self, exprs):
+        return _exprs_to_smtlib(*exprs, daggify=self.daggify)
 
-    def _get_satisfiability_smt_script(self, constraints=()):
+    def _get_satisfiability_smt_script(self, constraints=(), variables=()):
         '''
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
@@ -129,11 +116,12 @@ class BackendSMTLibBase(Backend):
         :return string: smt-lib representation of the script that checks the satisfiability
         '''
         smt_script = '(set-logic ALL)\n'
+        smt_script += self._smtlib_exprs(variables)
         smt_script += self._smtlib_exprs(constraints)
         smt_script += '(check-sat)\n'
         return smt_script
 
-    def _get_full_model_smt_script(self, constraints=()):
+    def _get_full_model_smt_script(self, constraints=(), variables=()):
         '''
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
@@ -145,18 +133,17 @@ class BackendSMTLibBase(Backend):
         '''
         smt_script = '(set-logic ALL)\n'
         smt_script += '(set-option :produce-models true)\n'
+        smt_script += self._smtlib_exprs(variables)
         smt_script += self._smtlib_exprs(constraints)
         smt_script += '(check-sat)\n'
         smt_script += '(get-model)\n'
         return smt_script
 
-    def get_satisfiability_smt_script(self, solver, extra_constraints=()):
-        all_csts = tuple(extra_constraints) + tuple(solver.constraints)
-        return self._get_satisfiability_smt_script(all_csts)
-
-    def get_full_model_smt_script(self, solver, extra_constraints=()):
-        all_csts = tuple(extra_constraints) + tuple(solver.constraints)
-        return self._get_full_model_smt_script(all_csts)
+    def _get_all_vars_and_constraints(self, solver=None, e_c=(), e_v=()):
+        all_csts = tuple(e_c) + (tuple(solver.constraints) if solver is not None else ())
+        free_variables = set(e_v).union(*[c.get_free_variables() for c in all_csts])
+        sorted_vars = sorted(free_variables, key=lambda s: s.symbol_name())
+        return sorted_vars, all_csts
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
