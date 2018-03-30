@@ -1,11 +1,9 @@
-from claripy import BackendError
-from claripy.backends import BackendSMTLibBase
-from claripy.smtlib_utils import SMTParser
-from claripy.utils import OrderedSet
+from .. import BackendError, BackendSMTLibBase
+from ...smtlib_utils import SMTParser
 from six.moves import cStringIO
 
 from pysmt.smtlib.parser import Tokenizer
-from pysmt.shortcuts import And, NotEquals, String
+from pysmt.shortcuts import NotEquals, String
 
 class AbstractSMTLibSolverProxy(object):
     def write(self, smt):

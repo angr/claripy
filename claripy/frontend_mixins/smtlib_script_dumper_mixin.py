@@ -3,16 +3,11 @@ import sys
 import threading
 from ..utils.transition import raise_from
 
-from .constrained_frontend import ConstrainedFrontend
+from ..frontends.constrained_frontend import ConstrainedFrontend
 
-l = logging.getLogger("claripy.frontends.dumper_frontend")
+l = logging.getLogger(__name__)
 
-class DumperFrontend(ConstrainedFrontend):
-
-    def __init__(self, solver_backend, timeout=None, track=False, **kwargs):
-        ConstrainedFrontend.__init__(self, **kwargs)
-        self._solver_backend = solver_backend
-
+class SMTLibScriptDumperMixin(object):
     def get_smtlib_script_satisfiability(self, extra_constraints=()):
         """
         Return an smt-lib script that check the satisfiability of the current constraints
@@ -23,7 +18,7 @@ class DumperFrontend(ConstrainedFrontend):
             return self._solver_backend._get_satisfiability_smt_script(
                 constraints=self._solver_backend.convert_list(tuple(self.constraints) + extra_constraints))
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during solve"), e)
+            raise_from(ClaripyFrontendError("Backend error during smtlib script generation"), e)
 
 
-from ..errors import UnsatError, BackendError, ClaripyFrontendError
+from ..errors import BackendError, ClaripyFrontendError

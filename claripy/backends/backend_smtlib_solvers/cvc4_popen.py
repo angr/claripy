@@ -2,7 +2,7 @@ import subprocess
 import logging
 
 import re
-from claripy.backends.backend_smtlib_solvers import SMTLibSolverBackend, PopenSolverProxy
+from . import SMTLibSolverBackend, PopenSolverProxy
 
 log = logging.getLogger(__name__)
 
