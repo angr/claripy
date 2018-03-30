@@ -5,6 +5,10 @@ from pysmt.shortcuts import Symbol, get_env
 from pysmt.smtlib.parser import SmtLibParser, PysmtSyntaxError
 
 
+def make_pysmt_const_from_type(val, type):
+    return getattr(pysmt.shortcuts, str(type))(val)
+
+
 class SMTParser(object):
     def __init__(self, tokens):
         self.p = SmtLibParser()

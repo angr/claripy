@@ -5,6 +5,7 @@ import abc
 import claripy
 from test_backend_smt import TestSMTLibBackend
 
+KEEP_TEST_PERFORMANT = True
 
 class SmtLibSolverTest(TestSMTLibBackend):
     @abstractmethod
@@ -41,8 +42,8 @@ class SmtLibSolverTest(TestSMTLibBackend):
         solver = self.get_solver()
         solver.add(claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV('o'))
         self.assertTrue(solver.satisfiable())
-        results = solver.eval(str_symbol, 2)
-        self.assertEqual(len(results), 2)
+        results = solver.eval(str_symbol, 2 if KEEP_TEST_PERFORMANT else 100)
+        self.assertEqual(len(results), 2 if KEEP_TEST_PERFORMANT else 100)
         for s in results:
             self.assertTrue(s[1:2] == 'o')
 
@@ -67,7 +68,7 @@ class SmtLibSolverTest(TestSMTLibBackend):
         result = solver.eval(repl_stringa, 2)
         self.assertEqual(list(result), ["cbne"])
 
-        result = solver.eval(str_to_replace_symb, 2)
+        result = solver.eval(str_to_replace_symb, 2 if KEEP_TEST_PERFORMANT else 100)
         self.assertEqual(set(result), {"cbne", "cane"})
 
     def test_replace_simplification(self):
@@ -92,7 +93,7 @@ class SmtLibSolverTest(TestSMTLibBackend):
         solver.add(str_symb != claripy.StringV("concrete"))
         self.assertTrue(solver.satisfiable())
 
-        result = solver.eval(str_symb, 20)
+        result = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         self.assertTrue('concrete' not in result)
 
     def test_length(self):
@@ -102,7 +103,7 @@ class SmtLibSolverTest(TestSMTLibBackend):
         solver.add(claripy.StrLen(str_symb, 32) == 14)
         self.assertTrue(solver.satisfiable())
 
-        result = solver.eval(str_symb, 20)
+        result = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         for r in result:
             self.assertTrue(len(r) == 14)
 
@@ -126,7 +127,7 @@ class SmtLibSolverTest(TestSMTLibBackend):
         solver.add(res)
         self.assertTrue(solver.satisfiable())
 
-        result = solver.eval(str_symb, 3)
+        result = solver.eval(str_symb, 3 if KEEP_TEST_PERFORMANT else 100)
         self.assertEqual({'ciao', 'abc'}, set(result))
 
     def test_lt_etc(self):
@@ -170,37 +171,125 @@ class SmtLibSolverTest(TestSMTLibBackend):
         self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0, count == 3))[0])
         self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1, count == 4))[0][1:])
 
-
-
     def test_substr_BV_mixed_index(self):
-        super(SmtLibSolverTest, self).test_substr_BV_mixed_index()
+        str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
+        solver = self.get_solver()
+        start = claripy.BVS("symb_subst_start_idx", 32, explicit_name=True)
+        count = claripy.BVV(2, 32)
+        res = claripy.StrSubstr(start, count, str_symbol) == claripy.StringV('on')
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 0,))[0][0:2])
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 1,))[0][1:3])
+        self.assertEqual('on', solver.eval(str_symbol, 1, extra_constraints=(start == 2,))[0][2:4])
 
     def test_contains(self):
-        super(SmtLibSolverTest, self).test_contains()
+        str_symb = claripy.StringS("symb_contains", 4, explicit_name=True)
+        res = claripy.StrContains(str_symb, claripy.StringV("an"))
+        solver = self.get_solver()
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
+        for sol in solutions:
+            self.assertTrue('an' in sol)
 
     def test_contains_simplification(self):
-        super(SmtLibSolverTest, self).test_contains_simplification()
+        str_concrete = claripy.StringV("concrete")
+        solver = self.get_solver()
+        res = claripy.StrContains(str_concrete, claripy.StringV("nc"))
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual(("concrete",), solver.eval(str_concrete, 2))
+        self.assertEqual((True,), solver.eval(res, 2))
 
     def test_prefix(self):
-        super(SmtLibSolverTest, self).test_prefix()
+        str_symb = claripy.StringS("symb_prefix", 4, explicit_name=True)
+        res = claripy.StrPrefixOf(claripy.StringV("an"), str_symb)
+        solver = self.get_solver()
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+
+        solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
+        for sol in solutions:
+            self.assertTrue(sol.startswith('an'))
 
     def test_suffix(self):
-        super(SmtLibSolverTest, self).test_suffix()
+        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+        res = claripy.StrSuffixOf(claripy.StringV("an"), str_symb)
+        solver = self.get_solver()
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+
+        solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
+        for sol in solutions:
+            self.assertTrue(sol.endswith('an'))
 
     def test_prefix_simplification(self):
-        super(SmtLibSolverTest, self).test_prefix_simplification()
+        str_concrete = claripy.StringV("concrete")
+        solver = self.get_solver()
+        res = claripy.StrPrefixOf(claripy.StringV("conc"), str_concrete)
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual(("concrete",), solver.eval(str_concrete, 2))
+        self.assertEqual((True,), solver.eval(res, 2))
 
     def test_suffix_simplification(self):
-        super(SmtLibSolverTest, self).test_suffix_simplification()
+        str_concrete = claripy.StringV("concrete")
+        solver = self.get_solver()
+        res = claripy.StrSuffixOf(claripy.StringV("rete"), str_concrete)
+        solver.add(res)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual(("concrete",), solver.eval(str_concrete, 2))
+        self.assertEqual((True,), solver.eval(res, 2))
 
     def test_index_of(self):
-        super(SmtLibSolverTest, self).test_index_of()
+        str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 32)
+        solver = self.get_solver()
+
+        target_idx = 4 if KEEP_TEST_PERFORMANT else 100
+        solver.add(res == target_idx)
+        self.assertTrue(solver.satisfiable())
+
+        solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
+        for sol in solutions:
+            self.assertEqual('an', sol[target_idx:target_idx+2])
+
+        self.assertEqual((target_idx,), solver.eval(res, 2))
 
     def test_index_of_simplification(self):
-        super(SmtLibSolverTest, self).test_index_of_simplification()
+        str_concrete = claripy.StringV("concrete")
+        solver = self.get_solver()
+        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 32)
+        target_idx = 4 if KEEP_TEST_PERFORMANT else 100
+        solver.add(res == target_idx)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((target_idx,), solver.eval(res, 2))
 
     def test_str_to_int(self):
-        super(SmtLibSolverTest, self).test_str_to_int()
+        str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
+        res = claripy.StrToInt(str_symb, 32)
+        solver = self.get_solver()
+        target_num = 12 if KEEP_TEST_PERFORMANT else 100000
+        solver.add(res == target_num)
+        self.assertTrue(solver.satisfiable())
+
+        solutions = solver.eval(str_symb, 2 if KEEP_TEST_PERFORMANT else 1000000)
+        for sol in solutions:
+            self.assertTrue(int(sol) == target_num)
 
     def test_str_to_int_simplification(self):
-        super(SmtLibSolverTest, self).test_str_to_int_simplification()
+        target_num = 12 if not KEEP_TEST_PERFORMANT else 1000000
+
+        str_concrete = claripy.StringV(str(target_num))
+        solver = self.get_solver()
+        res = claripy.StrToInt(str_concrete, 32)
+
+        solver.add(res == target_num)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual(tuple(), tuple(solver.constraints))
+        self.assertEqual((target_num,), solver.eval(res, 2))
