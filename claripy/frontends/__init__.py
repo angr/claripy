@@ -3,4 +3,3 @@ from .full_frontend import FullFrontend
 from .hybrid_frontend import HybridFrontend
 from .composite_frontend import CompositeFrontend
 from .replacement_frontend import ReplacementFrontend
-from .dumper_frontend import DumperFrontend
