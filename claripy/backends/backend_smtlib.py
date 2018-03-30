@@ -1,10 +1,11 @@
 import logging
 
+import pysmt
 from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
-                            StrSubstr, Int, StrLength, StrReplace, \
-                            Bool, BV, Or, LT, LE, GT, GE, \
-                            StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-                            StrToInt, BVAdd, BVSub
+    StrSubstr, Int, StrLength, StrReplace, \
+    Bool, BV, Or, LT, LE, GT, GE, \
+    StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
+    StrToInt, BVAdd, BVSub, BVToNatural
 
 from pysmt.typing import STRING, BVType, INT
 
@@ -33,7 +34,7 @@ def _expr_to_smtlib(e, daggify=True):
     :return string: smt-lib representation of the symbol
     """
     if e.is_symbol():
-        return "(declare-const %s %s)" % (e.symbol_name(), e.symbol_type())
+        return "(declare-fun %s %s)" % (e.symbol_name(), e.symbol_type().as_smtlib())
     else:
         return "(assert %s)" % e.to_smtlib(daggify=daggify)
 
@@ -57,7 +58,7 @@ def _csts_to_smtlib_exprs(constraints=(), **kwargs):
 
     :return string: smt-lib representation of the list of expressions and variable declarations
     """
-    free_variables = set().union(*[c.get_free_variables() for c in constraints])
+    free_variables = sorted(set().union(*[c.get_free_variables() for c in constraints]), key=lambda s: s.symbol_name())
     all_exprs = tuple(free_variables) +  tuple(constraints)
     return _exprs_to_smtlib(*all_exprs, **kwargs)
 
@@ -105,6 +106,7 @@ class BackendSMTLibBase(Backend):
         # ------------------- STRINGS OPERATIONS ------------------- 
         self._op_raw['StrConcat'] = self._op_raw_str_concat
         self._op_raw['StrSubstr'] = self._op_raw_str_substr
+        self._op_raw['StrExtract'] = self._op_raw_str_extract
         self._op_raw['StrLen'] = self._op_raw_str_strlen
         self._op_raw['StrReplace'] = self._op_raw_str_replace
         self._op_raw["StrContains"] = self._op_raw_str_contains
@@ -175,11 +177,11 @@ class BackendSMTLibBase(Backend):
         return Bool(ast.args[0])
 
     def BVV(self, ast):
-        val, size = ast.args
-        return BV(val, size)
+        val, _ = ast.args
+        return Int(val)
 
     def BVS(self, ast):
-        return Symbol(ast.args[0], BVType(ast.length))
+        return Symbol(ast.args[0], INT) #BVType(ast.length))
 
     # ------------------- BITVECTOR OPERATIONS -------------------
     '''
@@ -258,9 +260,15 @@ class BackendSMTLibBase(Backend):
 
     def _op_raw_str_substr(self, *args):
         start_idx, count, symb = args
-        start_idx_operand = Int(start_idx.constant_value()) if start_idx.is_bv_constant() else Symbol("%s_start_idx" % symb, INT)
-        count_operand = Int(count.constant_value()) if count.is_bv_constant() else Symbol("%s_count" % symb, INT)
+        start_idx_operand = start_idx
+        count_operand = count
+        # start_idx_operand = BVToNatural(start_idx) if start_idx.get_type().is_bv_type() else start_idx
+        # count_operand = BVToNatural(count) if count.get_type().is_bv_type() else count
         return StrSubstr(symb, start_idx_operand, count_operand)
+
+    def _op_raw_str_extract(self, *args):
+        start_idx, count, symb = args
+        return StrSubstr(symb, Int(start_idx), Int(count))
 
     def _op_raw_str_strlen(self, *args):
         return StrLength(args[0])

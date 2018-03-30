@@ -21,16 +21,17 @@ class String(Bits):
 
     def __getitem__(self, rng):
         if type(rng) is slice:
-            left = rng.start / 8 if rng.start is not None else self.string_length - 1
-            right = rng.stop / 8 if rng.stop is not None else 0
-            if left < 0:
-                left = len(self) + left
-            if right < 0:
-                right = self.string_length + right
+            high = rng.start / 8 if rng.start is not None else self.string_length - 1
+            low = rng.stop / 8 if rng.stop is not None else 0
+            if high < 0:
+                high = self.string_length + high
+            if low < 0:
+                low = self.string_length + low
 
-            right = self.string_length - 1 - right
-            left = self.string_length - 1 - left
-            return StrSubstr(left, right, self)
+            # Because we are indexing from the end, what was high becomes low and vice-versa
+            high_str_idx = self.string_length - 1 - low
+            low_str_idx = self.string_length - 1 - high
+            return StrExtract(low_str_idx, high_str_idx + 1 - low_str_idx, self)
         else:
             return Substr(int(rng+7), int(rng), self)
 
@@ -71,6 +72,9 @@ def StringV(value, length=None, **kwargs):
 StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
 StrSubstr = operations.op('StrSubstr', (BV, BV, String),
                         String, calc_length=operations.substr_length_calc, bound=False)
+StrExtract = operations.op('StrExtract', ((int, long), (int, long), String),
+                              String, extra_check=operations.str_extract_check,
+                              calc_length=operations.str_extract_length_calc, bound=False)
 StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
@@ -86,17 +90,14 @@ String.__eq__ = operations.op('__eq__', (String, String), Bool)
 String.__ne__ = operations.op('__ne__', (String, String), Bool)
 
 # String manipulation
-String.__add__ = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
-String.StrSubstr = staticmethod(operations.op('StrSubstr', (BV, BV, String),
-                              String,
-                              calc_length=operations.substr_length_calc, bound=False))
-String.StrConcat = staticmethod(operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False))
-String.StrLen = staticmethod(operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False))
-String.StrReplace = staticmethod(operations.op('StrReplace', (String, String, String),
-                               String, extra_check=operations.str_replace_check,
-                               calc_length=operations.str_replace_length_calc))
-String.StrContains = staticmethod(operations.op("StrContains", (String, String), Bool, bound=False))
-String.StrPrefixOf = staticmethod(operations.op("StrPrefixOf", (String, String), Bool, bound=False))
-String.StrSuffixOf = staticmethod(operations.op("StrSuffixOf", (String, String), Bool, bound=False))
-String.StrIndexOf = staticmethod(operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False))
-String.StrToInt = staticmethod(operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False))
+String.__add__ = StrConcat
+String.StrSubstr = staticmethod(StrSubstr)
+String.StrExtract = staticmethod(StrExtract)
+String.StrConcat = staticmethod(StrConcat)
+String.StrLen = staticmethod(StrLen)
+String.StrReplace = staticmethod(StrReplace)
+String.StrContains = staticmethod(StrContains)
+String.StrPrefixOf = staticmethod(StrPrefixOf)
+String.StrSuffixOf = staticmethod(StrSuffixOf)
+String.StrIndexOf = staticmethod(StrIndexOf)
+String.StrToInt = staticmethod(StrToInt)

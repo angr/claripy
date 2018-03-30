@@ -1,32 +1,40 @@
 import unittest
 import claripy
+
 from claripy import frontend_mixins, frontends, backend_manager, backends
 from claripy.backends.backend_smtlib import BackendSMTLibBase
+from claripy.frontends.constrained_frontend import ConstrainedFrontend
 
-backend_smt = backend_manager.backends._register_backend(BackendSMTLibBase(), 'smt', False, False)
 
-class SolverSMT(
-    frontend_mixins.ConstraintFixerMixin,
-    frontend_mixins.ConcreteHandlerMixin,
-    frontend_mixins.ConstraintFilterMixin,
-    frontend_mixins.ConstraintDeduplicatorMixin,
-    frontend_mixins.EagerResolutionMixin,
-    frontends.DumperFrontend
-):
-    def __init__(self, **kwargs):
-        super(SolverSMT, self).__init__(backends.smt, **kwargs)
 
-class TestStringOperation(unittest.TestCase):
+class TestSMTLibBackend(unittest.TestCase):
+    def get_solver(self):
+        backend_manager.backends._register_backend(BackendSMTLibBase(), 'smt', False, False)
+
+        class SolverSMT(
+            frontend_mixins.ConstraintFixerMixin,
+            frontend_mixins.ConcreteHandlerMixin,
+            frontend_mixins.ConstraintFilterMixin,
+            frontend_mixins.ConstraintDeduplicatorMixin,
+            frontend_mixins.EagerResolutionMixin,
+            frontend_mixins.SMTLibScriptDumperMixin,
+            ConstrainedFrontend
+        ):
+            def __init__(self, *args, **kwargs):
+                self._solver_backend = backend_manager.backends.smt
+                super(SolverSMT, self).__init__(*args, **kwargs)
+
+        return SolverSMT()
 
     def test_concat(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_concat String)
+(declare-fun symb_concat () String)
 (assert (let ((.def_0 (str.++  "conc" symb_concat))) (let ((.def_1 (= .def_0 "concrete"))) .def_1)))
 (check-sat)
 '''
         str_concrete = claripy.StringV("conc")
         str_symbol = claripy.StringS("symb_concat", 4, explicit_name=True)
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = str_concrete + str_symbol
         solver.add(res == claripy.StringV("concrete"))
         script = solver.get_smtlib_script_satisfiability()
@@ -39,7 +47,7 @@ class TestStringOperation(unittest.TestCase):
 
 (check-sat)
 '''
-        solver = SolverSMT()
+        solver = self.get_solver()
         str_concrete = claripy.StringV("conc")
         res = str_concrete + str_concrete + str_concrete
         res2 = claripy.StrConcat(str_concrete, str_concrete) + str_concrete
@@ -49,12 +57,12 @@ class TestStringOperation(unittest.TestCase):
 
     def test_substr(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_subst String)
+(declare-fun symb_subst () String)
 (assert (let ((.def_0 (= ( str.substr symb_subst 1 2) "on"))) .def_0))
 (check-sat)
 '''
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.StrSubstr(1, 2, str_symbol) == claripy.StringV('on')
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
@@ -62,14 +70,14 @@ class TestStringOperation(unittest.TestCase):
             # dump_f.write(script)
         self.assertEqual(correct_script, script)
 
-    def test_substr_BV_conrete_index(self):
+    def test_substr_BV_concrete_index(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_subst String)
+(declare-fun symb_subst () String)
 (assert (let ((.def_0 (= ( str.substr symb_subst 1 2) "on"))) .def_0))
 (check-sat)
 '''
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = SolverSMT()
+        solver = self.get_solver()
         bv1 = claripy.BVV(1, 32)
         bv2 = claripy.BVV(2, 32)
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
@@ -81,16 +89,16 @@ class TestStringOperation(unittest.TestCase):
 
     def test_substr_BV_symbolic_index(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_subst_start_idx Int)
-(declare-const symb_subst String)
-(declare-const symb_subst_count Int)
+(declare-fun symb_subst () String)
+(declare-fun symb_subst_count () Int)
+(declare-fun symb_subst_start_idx () Int)
 (assert (let ((.def_0 (= ( str.substr symb_subst symb_subst_start_idx symb_subst_count) "on"))) .def_0))
 (check-sat)
 '''
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = SolverSMT()
-        bv1 = claripy.BVS("start_idx", 32)
-        bv2 = claripy.BVS("count", 32)
+        solver = self.get_solver()
+        bv1 = claripy.BVS("symb_subst_start_idx", 32, explicit_name=True)
+        bv2 = claripy.BVS("symb_subst_count", 32, explicit_name=True)
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
@@ -100,14 +108,14 @@ class TestStringOperation(unittest.TestCase):
 
     def test_substr_BV_mixed_index(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_subst_start_idx Int)
-(declare-const symb_subst String)
+(declare-fun symb_subst () String)
+(declare-fun symb_subst_start_idx () Int)
 (assert (let ((.def_0 (= ( str.substr symb_subst symb_subst_start_idx 2) "on"))) .def_0))
 (check-sat)
 '''
         str_symbol = claripy.StringS("symb_subst", 4, explicit_name=True)
-        solver = SolverSMT()
-        bv1 = claripy.BVS("start_idx", 32)
+        solver = self.get_solver()
+        bv1 = claripy.BVS("symb_subst_start_idx", 32, explicit_name=True)
         bv2 = claripy.BVV(2, 32)
         res = claripy.StrSubstr(bv1, bv2, str_symbol) == claripy.StringV('on')
         solver.add(res)
@@ -122,21 +130,21 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(claripy.StrSubstr(1, 2, str_concrete) == claripy.StringV('on'))
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
     def test_replace(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_repl String)
+(declare-fun symb_repl () String)
 (assert (let ((.def_0 (= ( str.replace symb_repl "a" "b" ) "cbne"))) .def_0))
 (check-sat)
 '''
         str_to_replace_symb = claripy.StringS("symb_repl", 4, explicit_name=True)
         sub_str_to_repl = claripy.StringV("a")
         replacement = claripy.StringV("b")
-        solver = SolverSMT()
+        solver = self.get_solver()
         repl_stringa = claripy.StrReplace(str_to_replace_symb, sub_str_to_repl, replacement)
         solver.add(repl_stringa == claripy.StringV("cbne"))
         script = solver.get_smtlib_script_satisfiability()
@@ -153,20 +161,20 @@ class TestStringOperation(unittest.TestCase):
         sub_str_to_repl = claripy.StringV("a")
         replacement = claripy.StringV("b")
         repl_stringa = claripy.StrReplace(str_to_replace, sub_str_to_repl, replacement)
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(repl_stringa == claripy.StringV("cbne"))
-        solver = SolverSMT()
+        solver = self.get_solver()
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
     def test_ne(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_ne String)
+(declare-fun symb_ne () String)
 (assert (let ((.def_0 (= symb_ne "concrete"))) (let ((.def_1 (not .def_0))) .def_1)))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_ne", 12, explicit_name=True)
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(str_symb != claripy.StringV("concrete"))
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_ne.smt2", "w") as dump_f:
@@ -175,12 +183,12 @@ class TestStringOperation(unittest.TestCase):
 
     def test_length(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_length String)
+(declare-fun symb_length () String)
 (assert (let ((.def_0 (= (str.len symb_length) 14))) .def_0))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_length", 12, explicit_name=True)
-        solver = SolverSMT()
+        solver = self.get_solver()
         # TODO: How do we want to dela with the size of a symbolic string?
         solver.add(claripy.StrLen(str_symb, 32) == 14)
         script = solver.get_smtlib_script_satisfiability()
@@ -194,7 +202,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(claripy.StrLen(str_concrete, 32) == 8)
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
@@ -202,12 +210,12 @@ class TestStringOperation(unittest.TestCase):
 
     def test_or(self):
         correct_script = '''(set-logic ALL)
-(declare-const Symb_or String)
+(declare-fun Symb_or () String)
 (assert (let ((.def_0 (= Symb_or "ciao"))) (let ((.def_1 (= Symb_or "abc"))) (let ((.def_2 (or .def_1 .def_0))) .def_2))))
 (check-sat)
 '''
         str_symb = claripy.StringS("Symb_or", 4, explicit_name=True)
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.Or((str_symb == claripy.StringV("abc")),
                          (str_symb == claripy.StringV("ciao")))
         solver.add(res)
@@ -218,7 +226,7 @@ class TestStringOperation(unittest.TestCase):
 
     def test_lt_etc(self):
         correct_script = '''(set-logic ALL)
-(declare-const Symb_2_0_4 String)
+(declare-fun Symb_2_0_4 () String)
 (assert (let ((.def_0 (<= (str.len Symb_2_0_4) 4))) .def_0))
 (assert (let ((.def_0 (< (str.len Symb_2_0_4) 4))) .def_0))
 (assert (let ((.def_0 (<= 4 (str.len Symb_2_0_4)))) .def_0))
@@ -226,7 +234,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_symb = claripy.StringS("Symb_2", 4)
-        solver = SolverSMT()
+        solver = self.get_solver()
         c1 = claripy.StrLen(str_symb, 32) <= 4
         c2 = claripy.StrLen(str_symb, 32) < 4
         c3 = claripy.StrLen(str_symb, 32) >= 4
@@ -243,13 +251,13 @@ class TestStringOperation(unittest.TestCase):
 
     def test_contains(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_contains String)
+(declare-fun symb_contains () String)
 (assert ( str.contains symb_contains "an"))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_contains", 4, explicit_name=True)
         res = claripy.StrContains(str_symb, claripy.StringV("an"))
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_contains.smt2", "w") as dump_f:
@@ -262,7 +270,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.StrContains(str_concrete, claripy.StringV("nc"))
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
@@ -271,13 +279,13 @@ class TestStringOperation(unittest.TestCase):
 
     def test_prefix(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_prefix String)
+(declare-fun symb_prefix () String)
 (assert ( str.prefixof "an" symb_prefix ))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_prefix", 4, explicit_name=True)
         res = claripy.StrPrefixOf(claripy.StringV("an"), str_symb)
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_prefix.smt2", "w") as dump_f:
@@ -286,13 +294,13 @@ class TestStringOperation(unittest.TestCase):
 
     def test_suffix(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_suffix String)
+(declare-fun symb_suffix () String)
 (assert ( str.suffixof "an" symb_suffix ))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
         res = claripy.StrSuffixOf(claripy.StringV("an"), str_symb)
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_suffix.smt2", "w") as dump_f:
@@ -305,7 +313,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.StrPrefixOf(claripy.StringV("conc"), str_concrete)
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
@@ -317,7 +325,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.StrSuffixOf(claripy.StringV("rete"), str_concrete)
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
@@ -325,13 +333,13 @@ class TestStringOperation(unittest.TestCase):
 
     def test_index_of(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_suffix String)
+(declare-fun symb_suffix () String)
 (assert ( str.indexof symb_suffix "an" 0 ))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
         res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 32)
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_suffix.smt2", "w") as dump_f:
@@ -344,7 +352,7 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("concrete")
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 32)
         solver.add(res == 4)
         script = solver.get_smtlib_script_satisfiability()
@@ -353,13 +361,13 @@ class TestStringOperation(unittest.TestCase):
     
     def test_str_to_int(self):
         correct_script = '''(set-logic ALL)
-(declare-const symb_strtoint String)
+(declare-fun symb_strtoint () String)
 (assert (let ((.def_0 (= ( str.to.int symb_strtoint ) 12))) .def_0))
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
         res = claripy.StrToInt(str_symb, 32)
-        solver = SolverSMT()
+        solver = self.get_solver()
         solver.add(res == 12)
         script = solver.get_smtlib_script_satisfiability()
         # with open("dump_strtoint.smt2", "w") as dump_f:
@@ -372,12 +380,13 @@ class TestStringOperation(unittest.TestCase):
 (check-sat)
 '''
         str_concrete = claripy.StringV("12")
-        solver = SolverSMT()
+        solver = self.get_solver()
         res = claripy.StrToInt(str_concrete, 32)
         solver.add(res == 12)
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
+
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestStringOperation)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestSMTLibBackend)
     unittest.TextTestRunner(verbosity=2).run(suite)
