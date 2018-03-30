@@ -5,7 +5,7 @@ from claripy import frontend_mixins, frontends, backend_manager, backends
 from claripy.backends.backend_smtlib import BackendSMTLibBase
 from claripy.frontends.constrained_frontend import ConstrainedFrontend
 
-
+KEEP_TEST_PERFORMANT = True
 
 class TestSMTLibBackend(unittest.TestCase):
     def get_solver(self):

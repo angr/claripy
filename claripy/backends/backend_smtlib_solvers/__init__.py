@@ -1,5 +1,9 @@
+import hashlib
+
+import os
+
 from .. import BackendError, BackendSMTLibBase
-from ...smtlib_utils import SMTParser
+from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
 from six.moves import cStringIO
 
 from pysmt.smtlib.parser import Tokenizer
@@ -57,6 +61,7 @@ class PopenSolverProxy(AbstractSMTLibSolverProxy):
 class SMTLibSolverBackend(BackendSMTLibBase):
     def __init__(self, *args, **kwargs):
         kwargs['solver_required'] = True
+        self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', None)
         super(SMTLibSolverBackend, self).__init__(*args, **kwargs)
 
     def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
@@ -96,18 +101,31 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         smt_script = self._get_satisfiability_smt_script(tuple(extra_constraints) + tuple(solver.constraints))
+
+        if self.smt_script_log_dir is not None:
+            fname = 'check-sat_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
+            with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
+                f.write(smt_script)
+
         solver.reset()
         solver.write(smt_script)
+
         sat = solver.read_sat()
         if sat not in {'sat', 'unsat'}:
-            import ipdb; ipdb.set_trace()
+            # import ipdb; ipdb.set_trace()
             raise ValueError("Solver error, don't understand (check-sat) response: {}".format(repr(sat)))
         return sat == 'sat'
 
     def _get_model(self, extra_constraints=(), solver=None):
         smt_script = self._get_full_model_smt_script(tuple(extra_constraints) + tuple(solver.constraints))
+        if self.smt_script_log_dir is not None:
+            fname = 'get-model_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
+            with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
+                f.write(smt_script)
+
         solver.reset()
         solver.write(smt_script)
+
         sat = solver.read_sat()
         if sat == 'sat':
             model_string = solver.read_model()
@@ -133,12 +151,12 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
             val = self._get_primitive_for_expr(model, expr)
             if val in results:
-                import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
                 raise ValueError("Solver error, solver returned the same value twice incorrectly!")
 
             results.append(val)
             # e_c.append(And(*[NotEquals(s, val) for s, val in ass_list]))
-            e_c.append(NotEquals(String(val), expr))
+            e_c.append(NotEquals(make_pysmt_const_from_type(val, expr.get_type()), expr))
 
         return list(results)
 
