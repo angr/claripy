@@ -605,10 +605,7 @@ def extract_simplifier(high, low, val):
         return reduce(getattr(operator, val.op), all_args)
 
 def str_extract_simplifier(start_idx, count, val):
-    # TODO: what if we have StrExtract(0,10, StrExtract(0, 4, symb))
-    #       (i. e. we want to extract too much)
-    # if we're extracting the whole value, return the value
-    if start_idx == 0 and count == val.size():
+    if start_idx == 0 and count == val.string_length:
         return val
     # if we are dealing with a chain of extractions on the same string we can
     # simplify the chain in one single StrExtract
@@ -708,10 +705,16 @@ def concat_length_calc(*args):
 
 def str_replace_length_calc(*args):
     str_1, str_2, str_3 = args
-    # TODO: figure out how to deal with this
-    #       we need to know if the string has been replaced correctly
-    #       or not first in order to calculate the lenght...
-    return str_1.length - str_2.length + str_3.length
+    # Return the maximum length that the string can assume after the replace
+    # operation
+    #
+    # If the part that has to be replaced if greater than
+    # the replacement than the we have the maximum length possible
+    # when the part that has to be replaced is not found inside the string
+    if str_2.string_length >= str_3.string_length:
+        return str_1.string_length
+    # Otherwise We have the maximum length when teh replacement happens
+    return str_1.string_length - str_2.string_length + str_3.string_length
 
 def strlen_bv_size_calc(s, bitlength):
     return bitlength
