@@ -101,19 +101,23 @@ def StrSuffixOf(suffix, input_string):
     """
     return True if re.match(r'.*' + suffix.value + '$', input_string.value) is not None else False
 
-def StrIndexOf(input_string, substring, bitlength):
+def StrIndexOf(input_string, substring, startIndex, bitlength):
     """
     Return True if the concrete value of the input_string ends with suffix
     otherwise false.
 
     :param input_string: the string we want to check
-    :param substring: the substring we want to finde the index
+    :param substring: the substring we want to find the index
+    :param startIndex: the index to start searching at
     :param bitlength: bitlength of the bitvector representing the index of the substring
     
     :return BVV: index of the substring in bit-vector representation or -1 in bitvector representation
     """
     try:
-        return BVV(input_string.value.index(substring.value), bitlength)
+        s = input_string.value
+        t = substring.value
+        i = startIndex.value
+        return BVV(i + s[i:].index(t), bitlength)
     except ValueError:
         return BVV(-1, bitlength)
 
