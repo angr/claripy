@@ -182,7 +182,7 @@ def str_replace_length_calc(*args):
 def strlen_bv_size_calc(s, bitlength):
     return bitlength
 
-def strindexof_bv_size_calc(s1, s2, bitlength):
+def strindexof_bv_size_calc(s1, s2, start_idx, bitlength):
     return bitlength
 
 def strtoint_bv_size_calc(s, bitlength):

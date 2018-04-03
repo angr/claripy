@@ -247,7 +247,7 @@ class SmtLibSolverTest(TestSMTLibBackend):
 
     def test_index_of(self):
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
-        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 32)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 0, 32)
         solver = self.get_solver()
 
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
@@ -263,12 +263,32 @@ class SmtLibSolverTest(TestSMTLibBackend):
     def test_index_of_simplification(self):
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
-        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 32)
+        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 0, 32)
         target_idx = 4 if KEEP_TEST_PERFORMANT else 100
         solver.add(res == target_idx)
         self.assertTrue(solver.satisfiable())
         self.assertEqual(tuple(), tuple(solver.constraints))
         self.assertEqual((target_idx,), solver.eval(res, 2))
+
+    def test_index_of_symbolic_start_idx(self):
+        str_symb = claripy.StringS("symb_index_of", 4, explicit_name=True)
+        start_idx = claripy.BVS("symb_start_idx", 32, explicit_name=True)
+
+        solver = self.get_solver()
+
+        solver.add(start_idx > 32)
+        solver.add(start_idx < 35)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), start_idx, 32)
+
+        solver.add(res != -1)
+        solver.add(res < 38)
+        self.assertTrue(solver.satisfiable())
+        self.assertEqual({33, 34, 35, 36, 37}, set(solver.eval(res, 10)))
+
+        strs = solver.eval(str_symb, 10 if KEEP_TEST_PERFORMANT else 100)
+        for s in strs:
+            self.assertTrue(32 < s.index('an') < 38)
+
 
     def test_str_to_int(self):
         str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)

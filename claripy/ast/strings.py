@@ -82,7 +82,7 @@ StrReplace = operations.op('StrReplace', (String, String, String), String,
 StrContains = operations.op("StrContains", (String, String), Bool, bound=False)
 StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
-StrIndexOf = operations.op("StrIndexOf", (String, String, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
+StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
 StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
 
 # Equality / inequality check
