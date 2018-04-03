@@ -5,9 +5,9 @@ from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
     StrSubstr, Int, StrLength, StrReplace, \
     Bool, BV, Or, LT, LE, GT, GE, \
     StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-    StrToInt, BVAdd, BVSub, BVToNatural
+    StrToInt, BVAdd, BVSub, BVToNatural, Ite, EqualsOrIff
 
-from pysmt.typing import STRING, BVType, INT
+from pysmt.typing import STRING, BVType, INT, BOOL
 
 
 l = logging.getLogger("claripy.backends.backend_smt")
@@ -72,6 +72,7 @@ class BackendSMTLibBase(Backend):
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
+        self._op_expr['BoolS'] = self.BoolS
         self._op_expr['BVV'] = self.BVV
         self._op_expr['BVS'] = self.BVS
 
@@ -89,6 +90,7 @@ class BackendSMTLibBase(Backend):
         self._op_raw['__gt__'] = self._op_raw_gt
         self._op_raw['__ge__'] = self._op_raw_ge
         self._op_raw['Or'] = self._op_raw_or
+        self._op_raw['If'] = self._op_raw_if
 
         # ------------------- STRINGS OPERATIONS ------------------- 
         self._op_raw['StrConcat'] = self._op_raw_str_concat
@@ -163,8 +165,14 @@ class BackendSMTLibBase(Backend):
     def BoolV(self, ast):
         return Bool(ast.args[0])
 
+    def BoolS(self, ast):
+        return Symbol(ast.args[0], BOOL)
+
     def BVV(self, ast):
         val, _ = ast.args
+        if val & (1 << (ast.length - 1)):
+            # negative
+            val = -((1 << ast.length) - val)
         return Int(val)
 
     def BVS(self, ast):
@@ -187,7 +195,10 @@ class BackendSMTLibBase(Backend):
     def _op_raw_sub(self, *args):
         return BVSub(*args)
 
-    # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
+    # ------------------- GENERAL PURPOSE OPERATIONS -------------------
+
+    def _op_raw_if(self, *args):
+        return Ited(*args)
 
     def _op_raw_eq(self, *args):
         # We emulate the integer through a bitvector but
@@ -195,7 +206,7 @@ class BackendSMTLibBase(Backend):
         # is not valid we need to tranform the concrete vqalue of the bitvector in an integer
         #
         # TODO: implement logic for integer
-        return Equals(*_normalize_arguments(*args))
+        return EqualsOrIff(*_normalize_arguments(*args))
 
     def _op_raw_ne(self, *args):
         # We emulate the integer through a bitvector but
@@ -239,6 +250,9 @@ class BackendSMTLibBase(Backend):
 
     def _op_raw_or(self, *args):
         return Or(*args)
+
+    def _op_raw_if(self, *args):
+        return Ite(*args)
 
     # ------------------- STRINGS OPERATIONS ------------------- 
     
