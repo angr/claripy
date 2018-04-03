@@ -605,17 +605,17 @@ def extract_simplifier(high, low, val):
         return reduce(getattr(operator, val.op), all_args)
 
 def str_extract_simplifier(start_idx, count, val):
+    # TODO: what if we have StrExtract(0,10, StrExtract(0, 4, symb))
+    #       (i. e. we want to extract too much)
     # if we're extracting the whole value, return the value
     if start_idx == 0 and count == val.size():
         return val
-
+    # if we are dealing with a chain of extractions on the same string we can
+    # simplify the chain in one single StrExtract
     if val.op == 'StrExtract':
-        v_start_idx, v_count, v_str = val.args
-
-        new_start = max(start_idx, v_start_idx)
-        new_end = min(start_idx + count, v_start_idx + v_count)
-
-        new_count = new_end - new_start
+        v_start_idx, _, v_str = val.args
+        new_start = v_start_idx + start_idx
+        new_count = count
         return v_str.StrExtract(new_start, new_count, v_str)
 
 # oh gods
@@ -637,6 +637,7 @@ simplifiers = {
     'Or': boolean_or_simplifier,
     'Not': boolean_not_simplifier,
     'Extract': extract_simplifier,
+    'StrExtract': str_extract_simplifier,
     'Concat': concat_simplifier,
     'If': if_simplifier,
     '__lshift__': lshift_simplifier,
