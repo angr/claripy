@@ -678,10 +678,12 @@ def extract_length_calc(high, low, _):
 
 
 def str_extract_check(start_idx, count, str_val):
-    if start_idx < 0 :
+    if start_idx < 0:
         return False, "StrExtract start_idx must be nonnegative"
-    elif not (0 <= count < str_val.size()):
-        return False, "StrExtract count must be in the range [ 0, str_val.size() )"
+    elif count <= 0:
+        return False, "StrExtract count must be positive"
+    elif start_idx + count >= str_val.string_length:
+        return False, "count must not exceed the length of the string."
     else:
         return True, ""
 
@@ -701,7 +703,7 @@ def ext_length_calc(ext, orig):
     return orig.length + ext
 
 def concat_length_calc(*args):
-    return sum(arg.size() for arg in args)
+    return sum(arg.string_length for arg in args)
 
 def str_replace_length_calc(*args):
     str_1, str_2, str_3 = args

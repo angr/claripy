@@ -422,23 +422,22 @@ class TestSMTLibBackend(unittest.TestCase):
         # TODO: does strextract works bit or byte wise?
         correct_script = '''(set-logic ALL)
 (declare-fun symb_strtoint () String)
-(assert (let ((.def_0 (= ( str.substr symb_strtoint 7 1) "abc"))) .def_0))
+(assert (let ((.def_0 (= ( str.substr symb_strtoint 6 1) "abc"))) .def_0))
 (check-sat)
 '''
-        str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
-        res = claripy.StrExtract(1, 1, claripy.StrExtract(2, 2, claripy.StrExtract(4, 8, str_symb)))
+        str_symb = claripy.StringS("symb_strtoint", 32, explicit_name=True)
+        res = claripy.StrExtract(0, 1, claripy.StrExtract(2, 2, claripy.StrExtract(4, 8, str_symb)))
         solver = self.get_solver()
         solver.add(res == claripy.StringV("abc"))
         script = solver.get_smtlib_script_satisfiability()
-        with open("dump_strextract.smt2", "w") as dump_f:
-            dump_f.write(script)
+        # with open("dump_strextract.smt2", "w") as dump_f:
+        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_methods(self):
         str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
         res = str_symb.replace(claripy.StringV("a"), claripy.StringV("a"))
         res2 = claripy.StrReplace(str_symb, claripy.StringV("a"), claripy.StringV("a"))
-        import ipdb; ipdb.set_trace()
 
 
 if __name__ == "__main__":
