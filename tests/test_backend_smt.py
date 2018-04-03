@@ -230,14 +230,14 @@ class TestSMTLibBackend(unittest.TestCase):
 
     def test_lt_etc(self):
         correct_script = '''(set-logic ALL)
-(declare-fun Symb_2_0_4 () String)
-(assert (let ((.def_0 (<= (str.len Symb_2_0_4) 4))) .def_0))
-(assert (let ((.def_0 (< (str.len Symb_2_0_4) 4))) .def_0))
-(assert (let ((.def_0 (<= 4 (str.len Symb_2_0_4)))) .def_0))
-(assert (let ((.def_0 (< 4 (str.len Symb_2_0_4)))) .def_0))
+(declare-fun Symb_lt_test () String)
+(assert (let ((.def_0 (<= (str.len Symb_lt_test) 4))) .def_0))
+(assert (let ((.def_0 (< (str.len Symb_lt_test) 4))) .def_0))
+(assert (let ((.def_0 (<= 4 (str.len Symb_lt_test)))) .def_0))
+(assert (let ((.def_0 (< 4 (str.len Symb_lt_test)))) .def_0))
 (check-sat)
 '''
-        str_symb = claripy.StringS("Symb_2", 4)
+        str_symb = claripy.StringS("Symb_lt_test", 4, explicit_name=True)
         solver = self.get_solver()
         c1 = claripy.StrLen(str_symb, 32) <= 4
         c2 = claripy.StrLen(str_symb, 32) < 4
@@ -345,7 +345,7 @@ class TestSMTLibBackend(unittest.TestCase):
 (check-sat)
 '''
         str_symb = claripy.StringS("symb_suffix", 4, explicit_name=True)
-        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 32)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), 0, 32)
         solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
@@ -361,11 +361,34 @@ class TestSMTLibBackend(unittest.TestCase):
 '''
         str_concrete = claripy.StringV("concrete")
         solver = self.get_solver()
-        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 32)
+        res = claripy.StrIndexOf(str_concrete, claripy.StringV("rete"), 0, 32)
         solver.add(res == 4)
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
+    def test_index_of_symbolic_start_idx(self):
+        correct_script = '''(set-logic ALL)
+(declare-fun symb_index_of () String)
+(declare-fun symb_start_idx () Int)
+(assert (let ((.def_0 (< 32 symb_start_idx))) .def_0))
+(assert (let ((.def_0 (< symb_start_idx 35))) .def_0))
+(assert (let ((.def_0 (= ( str.indexof symb_index_of "an" symb_start_idx ) 33))) .def_0))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_index_of", 4, explicit_name=True)
+        start_idx = claripy.BVS("symb_start_idx", 32, explicit_name=True)
+
+        solver = self.get_solver()
+
+        solver.add(start_idx > 32)
+        solver.add(start_idx < 35)
+        res = claripy.StrIndexOf(str_symb, claripy.StringV("an"), start_idx, 32)
+
+        solver.add(res == 33)
+        script = solver.get_smtlib_script_satisfiability()
+        # with open("dump_suffix.smt2", "w") as dump_f:
+        #     dump_f.write(script)
+        self.assertEqual(correct_script, script)
     
     def test_str_to_int(self):
         correct_script = '''(set-logic ALL)
