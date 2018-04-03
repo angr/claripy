@@ -349,8 +349,8 @@ class BackendSMTLibBase(Backend):
     #     return e == False
 
     def _op_raw_str_indexof(self, *args):
-        input_string, substring, _ = args
-        return StrIndexOf(input_string, substring, Int(0))
+        input_string, substring, start, bitlength = args
+        return StrIndexOf(input_string, substring, start)
 
     def _op_raw_str_strtoint(self, *args):
         input_string, _ = args
