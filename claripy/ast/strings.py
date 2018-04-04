@@ -35,6 +35,10 @@ class String(Bits):
         else:
             raise ValueError("Only slices allowed for string extraction")
 
+    def replace(self, str_to_replace, replacement):
+        return StrReplace(self, str_to_replace, replacement)
+
+
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
     """
     Create a new symbolic string (analogous to z3.String())
