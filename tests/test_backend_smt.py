@@ -434,10 +434,12 @@ class TestSMTLibBackend(unittest.TestCase):
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
-    def test_methods(self):
-        str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
-        res = str_symb.replace(claripy.StringV("a"), claripy.StringV("a"))
-        res2 = claripy.StrReplace(str_symb, claripy.StringV("a"), claripy.StringV("a"))
+    # def test_methods(self):
+    #     str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
+    #     # res = str_symb.replace(claripy.StringV("a"), claripy.StringV("a"))
+    #     # res2 = claripy.StrReplace(str_symb, claripy.StringV("a"), claripy.StringV("a"))
+    #     res = len(str_symb, 32)
+    #     import ipdb; ipdb.set_trace()
 
 
 if __name__ == "__main__":
