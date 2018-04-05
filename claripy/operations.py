@@ -682,7 +682,7 @@ def str_extract_check(start_idx, count, str_val):
         return False, "StrExtract start_idx must be nonnegative"
     elif count <= 0:
         return False, "StrExtract count must be positive"
-    elif start_idx + count >= str_val.string_length:
+    elif start_idx + count > str_val.string_length:
         return False, "count must not exceed the length of the string."
     else:
         return True, ""

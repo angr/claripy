@@ -419,14 +419,13 @@ class TestSMTLibBackend(unittest.TestCase):
         self.assertEqual(correct_script, script)
 
     def test_str_extract(self):
-        # TODO: does strextract works bit or byte wise?
         correct_script = '''(set-logic ALL)
-(declare-fun symb_strtoint () String)
-(assert (let ((.def_0 (= ( str.substr symb_strtoint 6 1) "abc"))) .def_0))
+(declare-fun symb_str_extract () String)
+(assert (let ((.def_0 (= ( str.substr symb_str_extract 5 1) "abc"))) .def_0))
 (check-sat)
 '''
-        str_symb = claripy.StringS("symb_strtoint", 32, explicit_name=True)
-        res = claripy.StrExtract(0, 1, claripy.StrExtract(2, 2, claripy.StrExtract(4, 8, str_symb)))
+        str_symb = claripy.StringS("symb_str_extract", 12, explicit_name=True)
+        res = claripy.StrExtract(0, 1, claripy.StrExtract(1, 2, claripy.StrExtract(4, 8, str_symb)))
         solver = self.get_solver()
         solver.add(res == claripy.StringV("abc"))
         script = solver.get_smtlib_script_satisfiability()
