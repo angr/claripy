@@ -773,7 +773,8 @@ class BackendZ3(Backend):
 
         #s = expr_raw
         if isinstance(expr_raw, z3.BoolRef):
-            s = self._boolref_tactics(expr_raw).as_expr()
+            boolref_tactics = self._boolref_tactics
+            s = boolref_tactics(expr_raw).as_expr()
             #n = s.decl().name()
             #if n == 'true':
             #    s = True
