@@ -119,6 +119,22 @@ class BackendZ3(Backend):
             return self._tls.context
 
     @property
+    def _boolref_tactics(self):
+        try:
+            return self._tls.boolref_tactics
+        except AttributeError:
+            tactics = z3.Then(
+                z3.Tactic("simplify", ctx=self._context),
+                z3.Tactic("propagate-ineqs", ctx=self._context),
+                z3.Tactic("propagate-values", ctx=self._context),
+                z3.Tactic("unit-subsume-simplify", ctx=self._context),
+                z3.Tactic("aig", ctx=self._context),
+                ctx=self._context
+            )
+            self._tls.boolref_tactics = tactics
+            return self._tls.boolref_tactics
+
+    @property
     def _ast_cache(self):
         try:
             return self._tls.ast_cache
@@ -757,15 +773,7 @@ class BackendZ3(Backend):
 
         #s = expr_raw
         if isinstance(expr_raw, z3.BoolRef):
-            tactics = z3.Then(
-                z3.Tactic("simplify", ctx=self._context),
-                z3.Tactic("propagate-ineqs", ctx=self._context),
-                z3.Tactic("propagate-values", ctx=self._context),
-                z3.Tactic("unit-subsume-simplify", ctx=self._context),
-                z3.Tactic("aig", ctx=self._context),
-                ctx=self._context
-            )
-            s = tactics(expr_raw).as_expr()
+            s = self._boolref_tactics(expr_raw).as_expr()
             #n = s.decl().name()
             #if n == 'true':
             #    s = True
