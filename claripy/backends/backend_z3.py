@@ -17,6 +17,27 @@ l = logging.getLogger("claripy.backends.backend_z3")
 
 #pylint:disable=unidiomatic-typecheck
 
+try:
+    import __pypy__
+    _is_pypy = True
+except ImportError:
+    _is_pypy = False
+
+
+def _add_memory_pressure(p):
+    """
+    PyPy's garbage collector is not aware of memory uses happening inside native code. When performing memory-intensive
+    tasks in native code, the memory pressure that PyPy observes can greatly deviate from the actual memory pressure.
+    We must manually add sufficient memory pressure to account for the "missing" portion.
+
+    This is not a problem for CPython since its GC is based on reference counting.
+    """
+
+    global _is_pypy
+    if _is_pypy:
+        __pypy__.add_memory_pressure(p)
+
+
 #
 # Some global variables
 #
@@ -504,6 +525,7 @@ class BackendZ3(Backend):
                 s.set('solver2_timeout', timeout)
             else:
                 s.set('timeout', timeout)
+        _add_memory_pressure(1024 * 1024 * 10)
         return s
 
     def _add(self, s, c, track=False):
