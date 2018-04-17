@@ -673,6 +673,9 @@ def extract_check(high, low, bv):
 
     return True, ""
 
+def concat_length_calc(*args):
+    return sum(arg.length for arg in args)
+
 def extract_length_calc(high, low, _):
     return high + 1 - low
 
@@ -702,7 +705,7 @@ def substr_length_calc(start_idx, count, strval):
 def ext_length_calc(ext, orig):
     return orig.length + ext
 
-def concat_length_calc(*args):
+def str_concat_length_calc(*args):
     return sum(arg.string_length for arg in args)
 
 def str_replace_length_calc(*args):
