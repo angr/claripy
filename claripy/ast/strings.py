@@ -35,8 +35,36 @@ class String(Bits):
         else:
             raise ValueError("Only slices allowed for string extraction")
 
+
     def replace(self, str_to_replace, replacement):
+        """
+        Replace the first occurence of str_to_replace with replacement
+
+        :param str_to_replace: pattern that has to be replaced
+        :type: String
+        :param replacement: replacement pattern
+        :type : String
+        """
         return StrReplace(self, str_to_replace, replacement)
+
+    def toInt(self, bitlength):
+        """
+        Convert the string to a bitvector holding the integer
+        representation of the string 
+
+        :param bitlength: size of the biitvector holding the result
+        """
+        return StrToInt(self, bitlength)
+
+    def indexOf(self, pattern, start_idx, bitlength):
+        """
+        Return the start index of the pattern inside the input string in a
+        Bitvector representation, otherwise it returns -1 (always using a BitVector)
+
+        :param bitlength: size of the biitvector holding the result
+        """
+        return StrIndexOf(self, pattern, start_idx, bitlength)
+
 
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
