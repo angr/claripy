@@ -101,7 +101,7 @@ def StringV(value, length=None, **kwargs):
     result = String("StringV", (value, len(value)), length=length, **kwargs)
     return result
 
-StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.concat_length_calc, bound=False)
+StrConcat = operations.op('StrConcat', (String, String), String, calc_length=operations.str_concat_length_calc, bound=False)
 StrSubstr = operations.op('StrSubstr', (BV, BV, String),
                         String, calc_length=operations.substr_length_calc, bound=False)
 StrExtract = operations.op('StrExtract', ((int, long), (int, long), String),
