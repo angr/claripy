@@ -6,7 +6,7 @@ from test_backend_smt_solver import SmtLibSolverTest
 
 class SmtLibSolverTest_CVC4(SmtLibSolverTest):
     def get_solver(self):
-        backend = SolverBackendCVC4(daggify=True)
+        backend = SolverBackendCVC4(daggify=True, smt_script_log_dir='/tmp/smtlib_str_scripts')
         solver = claripy.SolverStrings(backend=backend, timeout=300000)
         return solver
 
