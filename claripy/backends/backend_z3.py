@@ -631,7 +631,10 @@ class BackendZ3(Backend):
 
             # Construct the extra constraint so we don't get the same result anymore
             if i + 1 != n:
-                solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
+                if len(exprs) == 1:
+                    solver.add(exprs[0] != r[0])
+                else:
+                    solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
                 model = None
 
         if len(extra_constraints) > 0 or n != 1:
