@@ -220,7 +220,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
         s = self._claim(self._merged_solver_for(names=names))
-        added = s.add(constraints, **kwargs)
+        added = s.add(constraints, invalidate_cache=invalidate_cache, **kwargs)
         self._store_child(s)
         return added
 
