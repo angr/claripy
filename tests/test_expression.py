@@ -1,6 +1,6 @@
 import claripy
 import nose
-from functools import reduce
+
 
 def test_smudging():
     x = claripy.BVS('x', 32)
@@ -314,9 +314,9 @@ def test_get_byte():
 def test_extract_concat_simplify():
     a = claripy.BVS("a", 32)
     assert a[31:0] is a
-    assert a[31:8].concat(a[7:0]) is a
-    assert a[31:16].concat(a[15:8], a[7:0]) is a
-    assert a[31:24].concat(a[23:16], a[15:8], a[7:0]) is a
+    assert a[31:8].concat(a[7:0]) is a  # pylint:disable=no-member
+    assert a[31:16].concat(a[15:8], a[7:0]) is a  # pylint:disable=no-member
+    assert a[31:24].concat(a[23:16], a[15:8], a[7:0]) is a  # pylint:disable=no-member
 
     a = claripy.BVS("a", 32)
     b = a + 100
