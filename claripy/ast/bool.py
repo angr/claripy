@@ -159,13 +159,14 @@ def ite_cases(cases, default):
     return sofar
 
 def reverse_ite_cases(ast):
-    if ast.op == 'If':
-        for c, a in reverse_ite_cases(ast.args[1]):
-            yield And(c, ast.args[0]), a
-        for c, a in reverse_ite_cases(ast.args[2]):
-            yield And(c, Not(ast.args[0])), a
-    else:
-        yield true, ast
+    queue = [(true, ast)]
+    while queue:
+        condition, ast = queue.pop(0)
+        if ast.op == 'If':
+            queue.append((And(condition, ast.args[0]), ast.args[1]))
+            queue.append((And(condition, Not(ast.args[0])), ast.args[2]))
+        else:
+            yield condition, ast
 
 def constraint_to_si(expr):
     """
