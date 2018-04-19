@@ -1,5 +1,6 @@
 import claripy
 import nose
+from functools import reduce
 
 def test_smudging():
     x = claripy.BVS('x', 32)
@@ -269,6 +270,19 @@ def raw_ite(solver_type):
     nose.tools.assert_equal(ss.eval(y/x, 100), ( 2, ))
     nose.tools.assert_equal(sorted(ss.eval(x, 100)), [ 1, 10, 100 ])
     nose.tools.assert_equal(sorted(ss.eval(y, 100)), [ 2, 20, 200 ])
+
+def test_ite_reverse():
+    a = claripy.BVS('a', 32)
+    cases = [(a == i, claripy.BVV(i, 32)) for i in range(30)]
+    ast = claripy.ite_cases(cases, -1)
+    ext_cases = list(claripy.reverse_ite_cases(ast))
+
+    assert sum(1 if case.op == 'And' else 0 for case, _ in ext_cases)
+    for case, val in ext_cases:
+        if case.op == 'And':
+            assert claripy.is_true(val == -1)
+        else:
+            assert any(case is orig_case and val is orig_val for orig_case, orig_val in cases)
 
 def test_bool():
     bc = claripy.backends.concrete
