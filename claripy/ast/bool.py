@@ -158,6 +158,15 @@ def ite_cases(cases, default):
         sofar = If(c, v, sofar)
     return sofar
 
+def reverse_ite_cases(ast):
+    if ast.op == 'If':
+        for c, a in reverse_ite_cases(ast.args[1]):
+            yield And(c, ast.args[0]), a
+        for c, a in reverse_ite_cases(ast.args[2]):
+            yield And(c, Not(ast.args[0])), a
+    else:
+        yield true, ast
+
 def constraint_to_si(expr):
     """
     Convert a constraint to SI if possible.
