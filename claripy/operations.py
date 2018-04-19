@@ -361,6 +361,9 @@ def boolean_and_simplifier(*args):
         elif not a.is_true():
             new_args.append(a)
 
+    if not new_args:
+        return ast.bool.true
+
     if len(new_args) < len(args):
         return ast.all_operations.And(*new_args)
 
@@ -373,15 +376,22 @@ def boolean_and_simplifier(*args):
 
     if any(len(arg.args) != 2 for arg in fargs):
         return flattened
-    if   fargs[0].args[0] is fargs[0].args[0]:
-        target_var = fargs[0].args[0]
-    elif fargs[0].args[0] is fargs[1].args[0]:
-        target_var = fargs[0].args[0]
-    elif fargs[1].args[0] is fargs[0].args[0]:
-        target_var = fargs[0].args[1]
-    elif fargs[1].args[0] is fargs[1].args[0]:
-        target_var = fargs[0].args[1]
-    else:
+
+    target_var = None
+
+    # Determine the unknown variable
+    if fargs[0].args[0].symbolic:
+        if fargs[0].args[0] is fargs[1].args[0]:
+            target_var = fargs[0].args[0]
+        elif fargs[0].args[0] is fargs[1].args[1]:
+            target_var = fargs[0].args[0]
+    elif fargs[0].args[1].symbolic:
+        if fargs[0].args[1] is fargs[1].args[0]:
+            target_var = fargs[0].args[1]
+        elif fargs[0].args[1] is fargs[1].args[1]:
+            target_var = fargs[0].args[1]
+
+    if target_var is None:
         return flattened
 
     # we now know that the And is a series of binary conditions over a single variable.
