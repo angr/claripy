@@ -361,6 +361,9 @@ def boolean_and_simplifier(*args):
         elif not a.is_true():
             new_args.append(a)
 
+    if not new_args:
+        return ast.bool.true
+
     if len(new_args) < len(args):
         return ast.all_operations.And(*new_args)
 
@@ -368,7 +371,54 @@ def boolean_and_simplifier(*args):
         # a And a == a
         return tuple(OrderedSet(args))
 
-    return _flatten_simplifier('And', _flattening_filter, *args)
+    flattened = _flatten_simplifier('And', _flattening_filter, *args)
+    fargs = flattened.args if flattened is not None else args
+
+    if any(len(arg.args) != 2 for arg in fargs):
+        return flattened
+
+    target_var = None
+
+    # Determine the unknown variable
+    if fargs[0].args[0].symbolic:
+        if fargs[0].args[0] is fargs[1].args[0]:
+            target_var = fargs[0].args[0]
+        elif fargs[0].args[0] is fargs[1].args[1]:
+            target_var = fargs[0].args[0]
+    elif fargs[0].args[1].symbolic:
+        if fargs[0].args[1] is fargs[1].args[0]:
+            target_var = fargs[0].args[1]
+        elif fargs[0].args[1] is fargs[1].args[1]:
+            target_var = fargs[0].args[1]
+
+    if target_var is None:
+        return flattened
+
+    # we now know that the And is a series of binary conditions over a single variable.
+    # we can optimize accordingly.
+    # right now it's just check for eq/ne
+
+    eq_list = []
+    ne_list = []
+    for arg in fargs:
+        other = arg.args[1] if arg.args[0] is target_var else arg.args[0]
+        if arg.op == '__eq__':
+            eq_list.append(other)
+        elif arg.op == '__ne__':
+            ne_list.append(other)
+        else:
+            return flattened
+
+    if not eq_list:
+        return flattened
+    if any(any(ne is eq for eq in eq_list) for ne in ne_list):
+        return ast.all_operations.false
+    if all(v.op == 'BVV' for v in eq_list) and all(v.op == 'BVV' for v in ne_list):
+        mustbe = eq_list[0]
+        if any(eq.args[0] != mustbe.args[0] for eq in eq_list):
+            return ast.all_operations.false
+        return target_var == eq_list[0]
+    return flattened
 
 def boolean_or_simplifier(*args):
     if len(args) == 1:
