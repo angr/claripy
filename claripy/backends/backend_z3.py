@@ -684,7 +684,8 @@ class BackendZ3(Backend):
 
         #l.debug("final hi/lo: %d, %d", hi, lo)
 
-        if hi == lo: return lo
+        if hi == lo:
+            vals.add(lo)
         else:
             solver.push()
             solver.add(expr == lo)
