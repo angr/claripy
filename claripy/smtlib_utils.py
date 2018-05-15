@@ -22,12 +22,12 @@ class SMTParser(object):
 
     def expect_assignment_tuple(self):
         self.expect('(')
-        self.expect('define-fun')
-        vname = self.p.parse_atom(self.tokens, 'define-fun')
+        cmd = self.expect('define-fun')
+        vname = self.p.parse_atom(self.tokens, cmd)
         self.expect('(')
         self.expect(')')
-        t = self.p.parse_type(self.tokens, 'define-fun')
-        value_token = self.p.parse_atom(self.tokens, 'define-fun')
+        t = self.p.parse_type(self.tokens, cmd)
+        value_token = self.p.parse_atom(self.tokens, cmd)
         val_repr = self.p.atom(value_token, get_env().formula_manager)
         self.expect(')')
 
