@@ -7,7 +7,7 @@ from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
 from six.moves import cStringIO
 
 from pysmt.smtlib.parser import Tokenizer
-from pysmt.shortcuts import NotEquals, String
+from pysmt.shortcuts import NotEquals
 
 class AbstractSMTLibSolverProxy(object):
     def write(self, smt):
@@ -163,6 +163,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             e_c.append(NotEquals(make_pysmt_const_from_type(val, expr.get_type()), expr))
 
         return list(results)
+
 
 import cvc4_popen 
 import z3_popen 
