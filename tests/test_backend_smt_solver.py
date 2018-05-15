@@ -1,6 +1,5 @@
-import unittest
 from abc import abstractmethod
-import abc
+import nose
 
 import claripy
 from test_backend_smt import TestSMTLibBackend
@@ -10,7 +9,8 @@ KEEP_TEST_PERFORMANT = True
 class SmtLibSolverTest(TestSMTLibBackend):
     @abstractmethod
     def get_solver(self):
-        raise NotImplementedError
+        raise nose.SkipTest()
+        # raise NotImplementedError
 
     def test_concat(self):
         str_concrete = claripy.StringV("conc")
