@@ -1,11 +1,15 @@
 import unittest
 import claripy
+import nose
 from claripy.backends.backend_smtlib_solvers.z3_popen import SolverBackendZ3
 from test_backend_smt_solver import SmtLibSolverTest
 
 
 class SmtLibSolverTest_Z3(SmtLibSolverTest):
     def get_solver(self):
+        if 'smtlib_z3' not in claripy.backends._backends_by_name:
+            raise nose.SkipTest()
+
         backend = SolverBackendZ3(daggify=True)
         solver = claripy.SolverStrings(backend=backend)
         return solver
