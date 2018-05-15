@@ -608,12 +608,20 @@ class Base(ana.Storable):
                 new_args = [ ]
                 replaced = False
 
+                op_is_or = self.op == "Or"
+
                 for a in self.args:
                     if isinstance(a, Base):
                         new_a = a._replace(replacements=replacements, variable_set=variable_set, leaf_operation=leaf_operation)
                         replaced |= new_a is not a
                     else:
                         new_a = a
+
+                    # Optimization: if self.op is 'Or' and new_a is True, the entire AST should be evaluated to True
+                    # regardless of future replacements
+                    if op_is_or and is_true(new_a):
+                        new_args = [ new_a ]
+                        break
 
                     new_args.append(new_a)
 
@@ -985,5 +993,5 @@ from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError,
 from .. import operations
 from ..backend_object import BackendObject
 from ..backend_manager import backends
-from ..ast.bool import If, Not, BoolS
+from ..ast.bool import If, Not, BoolS, is_true
 from ..ast.bv import BV
