@@ -5,7 +5,7 @@ from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
     StrSubstr, Int, StrLength, StrReplace, \
     Bool, BV, Or, LT, LE, GT, GE, \
     StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-    StrToInt, BVAdd, BVSub, BVToNatural, Ite, EqualsOrIff
+    StrToInt, BVAdd, BVSub, BVToNatural, Ite, EqualsOrIff, Minus, Plus
 
 from pysmt.typing import STRING, BVType, INT, BOOL
 
@@ -178,10 +178,10 @@ class BackendSMTLibBase(Backend):
     '''
 
     def _op_raw_add(self, *args):
-        return BVAdd(*args)
+        return Plus(*args)
 
     def _op_raw_sub(self, *args):
-        return BVSub(*args)
+        return Minus(*args)
 
     # ------------------- GENERAL PURPOSE OPERATIONS -------------------
 
