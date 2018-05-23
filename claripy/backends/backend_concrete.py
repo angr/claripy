@@ -1,6 +1,7 @@
 import logging
 import numbers
 import operator
+import types
 from functools import reduce
 
 l = logging.getLogger("claripy.backends.backend_concrete")
@@ -15,6 +16,7 @@ class BackendConcrete(Backend):
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw['If'] = self._If
         self._op_raw['BVV'] = self.BVV
+        self._op_raw['BVS'] = self.BVS
         self._op_raw['FPV'] = self.FPV
 
         # reduceable
@@ -32,6 +34,10 @@ class BackendConcrete(Backend):
         if value is None:
             raise BackendError("can't handle empty BVVs")
         return bv.BVV(value, size)
+
+    @staticmethod
+    def BVS(name, *args, **kwargs):
+        raise BackendError("can't handle symbolic variables (BVSs)")
 
     @staticmethod
     def FPV(op, sort):
@@ -83,6 +89,9 @@ class BackendConcrete(Backend):
 
     def _convert(self, a):
         if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort)):
+            return a
+        # This case handles processing BVS args
+        elif isinstance(a, (basestring, types.NoneType)):
             return a
         raise BackendError("can't handle AST of type %s" % type(a))
 
