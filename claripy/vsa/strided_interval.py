@@ -416,12 +416,17 @@ class StridedInterval(BackendObject):
         :param signed: Treat this StridedInterval as signed or unsigned
         :return: A list of at most `n` concrete integers
         """
-        results = [ ]
+
         if self.is_empty:
             # no value is available
-            pass
+            return [ ]
 
-        elif self.stride == 0 and n > 0:
+        if self._reversed:
+            return self._reverse().eval(n, signed=signed)
+
+        results = [ ]
+
+        if self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
             if signed:
