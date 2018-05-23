@@ -53,7 +53,7 @@ def test_reversed_concat():
     nose.tools.assert_equal(a_concat_b._model_vsa._reversed, False)
 
     ra_concat_b = claripy.Concat(reversed_a, b)
-    nose.tools.assert_equal(ra_concat_b._model_vsa._reversed, True)
+    nose.tools.assert_equal(ra_concat_b._model_vsa._reversed, False)
 
     a_concat_rb = claripy.Concat(a, reversed_b)
     nose.tools.assert_equal(a_concat_rb._model_vsa._reversed, False)
@@ -1012,6 +1012,23 @@ def test_shifting():
     r = si.LShR(1)
     nose.tools.assert_true(identical(r, SI(bits=32, stride=1, lower_bound=0x7ffffffe, upper_bound=0x7fffffff)))
 
+
+def test_reverse():
+
+    x = claripy.SI(name="TOP", bits=64, lower_bound=0, upper_bound=0xffffffffffffffff, stride=1)  # TOP
+    y = claripy.SI(name="range", bits=64, lower_bound=0, upper_bound=1337, stride=1)  # [0, 1337]
+
+    r0 = x.intersection(y)
+    r1 = x.reversed.intersection(y)
+    r2 = x.intersection(y.reversed).reversed
+    r3 = x.reversed.intersection(y.reversed).reversed
+
+    nose.tools.assert_equal(r0._model_vsa.max, 1337)
+    nose.tools.assert_equal(r1._model_vsa.max, 1337)
+    nose.tools.assert_equal(r2._model_vsa.max, 1337)
+    nose.tools.assert_equal(r3._model_vsa.max, 1337)
+
+
 if __name__ == '__main__':
     test_reasonable_bounds()
     test_reversed_concat()
@@ -1024,3 +1041,4 @@ if __name__ == '__main__':
     test_vsa_discrete_value_set()
     test_solution()
     test_shifting()
+    test_reverse()

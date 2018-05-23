@@ -80,30 +80,54 @@ def normalize_types(f):
             if self.bits < common_bits:
                 self = self.agnostic_extend(common_bits)
 
-        self_reversed = False
+        #
+        # Handling cases where one or both operands are reversed
+        #
+        # Assumption: Other than a few operations ("Concat" is one of them), reverse only comes from endianness
+        #             conversion.
+        #
+        # if reverse(a) is lossless, reverse(a) op b -> a._reverse() op b
+        #                            a op reverse(b) -> reverse(a._reverse() op b)
+        # if reverse(b) is lossless, reverse(a) op b -> reverse(a op b._reverse())
+        #                            a op reverse(b) -> a op b._reverse()
+        # else:
+        #       Force reverse and bear the loss in precision
 
-        if self._reversed != o._reversed:
-            if self.uninitialized:
-                # we can arbitrarily reverse `self` without any penalty
-                self = self._reverse()
+        def _lossless_reverse(a):
+            return a.uninitialized or a.is_top or a.is_integer
 
-        if self._reversed != o._reversed:
-            # We are working on two instances that have different endianness!
-            # Make sure the `reversed` property of self is kept the same after operation
-            if self._reversed:
-                if o.is_integer:
-                    o = o._reverse()
-                else:
-                    self_reversed = True
-                    self = self._reverse()
+        reverse_back = False
+
+        if f.__name__ in { 'concat' }:
+            # TODO: Some optimizations can be applied to concat
+            if self._reversed: self = self._reverse()
+            if o._reversed: o = o._reverse()
+
+        else:
+            if not self._reversed and not o._reversed:
+                pass
+
+            elif self._reversed and o._reversed:
+                reverse_back = True
+                self = self.copy()
+                self._reversed = False
+                o = o.copy()
+                o._reversed = False
 
             else:
-                # If self is an integer, we wanna reverse self as well
-                if self.is_integer:
+                # one of the operands is reversed
+                if _lossless_reverse(self):
                     self = self._reverse()
-                    self_reversed = True
-                else:
+                    if o._reversed:
+                        reverse_back = True
+                elif _lossless_reverse(o):
                     o = o._reverse()
+                    if self._reversed:
+                        reverse_back = True
+                else:
+                    # Force reverse
+                    if self._reversed: self = self._reverse()
+                    if o._reversed: o = o._reverse()
 
         ret = f(self, o)
         if isinstance(ret, StridedInterval):
@@ -113,8 +137,8 @@ def normalize_types(f):
             if isinstance(o, StridedInterval) and \
                             o.uninitialized:
                 ret.uninitialized = True
-        if self_reversed and isinstance(ret, StridedInterval):
-            ret = ret._reverse()
+        if reverse_back and isinstance(ret, StridedInterval):
+            ret = ret.reverse()
         return ret
 
     return normalizer
@@ -392,12 +416,17 @@ class StridedInterval(BackendObject):
         :param signed: Treat this StridedInterval as signed or unsigned
         :return: A list of at most `n` concrete integers
         """
-        results = [ ]
+
         if self.is_empty:
             # no value is available
-            pass
+            return [ ]
 
-        elif self.stride == 0 and n > 0:
+        if self._reversed:
+            return self._reverse().eval(n, signed=signed)
+
+        results = [ ]
+
+        if self.stride == 0 and n > 0:
             results.append(self.lower_bound)
         else:
             if signed:
@@ -3330,7 +3359,7 @@ class StridedInterval(BackendObject):
         """
         if self.bits == 8:
             # We cannot reverse a one-byte value
-            return self.copy()
+            return self
 
         si = self.copy()
         si._reversed = not si._reversed
