@@ -985,7 +985,7 @@ def simplify(e):
     else:
         # Copy some parameters (that should really go to the Annotation backend)
         s._uninitialized = e.uninitialized
-        if s.op == 'BVS':
+        if s.op == 'BVS' and e.op == 'BVS':
             modifiable = list(s.args)
             modifiable[4] = e.args[4]
             s.args = tuple(modifiable)
