@@ -374,6 +374,10 @@ def boolean_and_simplifier(*args):
     flattened = _flatten_simplifier('And', _flattening_filter, *args)
     fargs = flattened.args if flattened is not None else args
 
+    # Check if we are left with one argument again
+    if len(fargs) == 1:
+        return fargs[0]
+
     if any(len(arg.args) != 2 for arg in fargs):
         return flattened
 
