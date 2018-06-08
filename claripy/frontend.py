@@ -124,35 +124,46 @@ class Frontend(ana.Storable):
 
         l.debug("... splitted of size %d", len(splitted))
 
-        concrete_constraints = [ ]
-        variable_connections = { }
-        constraint_connections = { }
-        for n,s in enumerate(splitted):
-            l.debug("... processing constraint with %d variables", len(s.variables))
+        tree = {} # union-find data structure
+        concrete_constraints = []
+        rooted_constraints = {} # map from union-find roots to constraint lists
 
-            connected_variables = set(s.variables)
-            connected_constraints = { n }
+        def find(var):
+            out = var
+            while out in tree:
+                out = tree[out]
+            if out != var: # cache result
+                tree[var] = out
+            return out
 
-            if len(connected_variables) == 0:
+        def union(var1, var2):
+            root1 = find(var1)
+            root2 = find(var2)
+            if root1 != root2:
+                tree[root1] = root2
+
+        for s in splitted:
+            if not s.symbolic:
+                continue
+
+            all_v = iter(s.variables)
+            v_0 = next(all_v)
+
+            for v in all_v:
+                union(v_0, v)
+
+        for s in splitted:
+            if not s.symbolic:
                 concrete_constraints.append(s)
+                continue
 
-            for v in s.variables:
-                if v in variable_connections:
-                    connected_variables |= variable_connections[v]
-                if v in constraint_connections:
-                    connected_constraints |= constraint_connections[v]
+            v = find(next(iter(s.variables)))
+            if v not in rooted_constraints:
+                rooted_constraints[v] = [s]
+            else:
+                rooted_constraints[v].append(s)
 
-            for v in connected_variables:
-                variable_connections[v] = connected_variables
-                constraint_connections[v] = connected_constraints
-
-        unique_constraint_sets = set()
-        for v in variable_connections:
-            unique_constraint_sets.add((frozenset(variable_connections[v]), frozenset(constraint_connections[v])))
-
-        results = [ ]
-        for v,c_indexes in unique_constraint_sets:
-            results.append((set(v), [ splitted[c] for c in c_indexes ]))
+        results = [(frozenset.union(*[s.variables for s in cset]), cset) for cset in rooted_constraints.itervalues()]
 
         if concrete and len(concrete_constraints) > 0:
             results.append(({ 'CONCRETE' }, concrete_constraints))
