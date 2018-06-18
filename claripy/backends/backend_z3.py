@@ -17,6 +17,27 @@ l = logging.getLogger("claripy.backends.backend_z3")
 
 #pylint:disable=unidiomatic-typecheck
 
+try:
+    import __pypy__
+    _is_pypy = True
+except ImportError:
+    _is_pypy = False
+
+
+def _add_memory_pressure(p):
+    """
+    PyPy's garbage collector is not aware of memory uses happening inside native code. When performing memory-intensive
+    tasks in native code, the memory pressure that PyPy observes can greatly deviate from the actual memory pressure.
+    We must manually add sufficient memory pressure to account for the "missing" portion.
+
+    This is not a problem for CPython since its GC is based on reference counting.
+    """
+
+    global _is_pypy
+    if _is_pypy:
+        __pypy__.add_memory_pressure(p)
+
+
 #
 # Some global variables
 #
@@ -119,6 +140,22 @@ class BackendZ3(Backend):
         except AttributeError:
             self._tls.context = z3.Context() if threading.current_thread().name != 'MainThread' else z3.main_ctx()
             return self._tls.context
+
+    @property
+    def _boolref_tactics(self):
+        try:
+            return self._tls.boolref_tactics
+        except AttributeError:
+            tactics = z3.Then(
+                z3.Tactic("simplify", ctx=self._context),
+                z3.Tactic("propagate-ineqs", ctx=self._context),
+                z3.Tactic("propagate-values", ctx=self._context),
+                z3.Tactic("unit-subsume-simplify", ctx=self._context),
+                z3.Tactic("aig", ctx=self._context),
+                ctx=self._context
+            )
+            self._tls.boolref_tactics = tactics
+            return self._tls.boolref_tactics
 
     @property
     def _ast_cache(self):
@@ -497,6 +534,7 @@ class BackendZ3(Backend):
                 s.set('solver2_timeout', timeout)
             else:
                 s.set('timeout', timeout)
+        _add_memory_pressure(1024 * 1024 * 10)
         return s
 
     def _add(self, s, c, track=False):
@@ -602,7 +640,10 @@ class BackendZ3(Backend):
 
             # Construct the extra constraint so we don't get the same result anymore
             if i + 1 != n:
-                solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
+                if len(exprs) == 1:
+                    solver.add(exprs[0] != r[0])
+                else:
+                    solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
                 model = None
 
         if len(extra_constraints) > 0 or n != 1:
@@ -652,7 +693,8 @@ class BackendZ3(Backend):
 
         #l.debug("final hi/lo: %d, %d", hi, lo)
 
-        if hi == lo: return lo
+        if hi == lo:
+            vals.add(lo)
         else:
             solver.push()
             solver.add(expr == lo)
@@ -766,15 +808,8 @@ class BackendZ3(Backend):
 
         #s = expr_raw
         if isinstance(expr_raw, z3.BoolRef):
-            tactics = z3.Then(
-                z3.Tactic("simplify", ctx=self._context),
-                z3.Tactic("propagate-ineqs", ctx=self._context),
-                z3.Tactic("propagate-values", ctx=self._context),
-                z3.Tactic("unit-subsume-simplify", ctx=self._context),
-                z3.Tactic("aig", ctx=self._context),
-                ctx=self._context
-            )
-            s = tactics(expr_raw).as_expr()
+            boolref_tactics = self._boolref_tactics
+            s = boolref_tactics(expr_raw).as_expr()
             #n = s.decl().name()
             #if n == 'true':
             #    s = True

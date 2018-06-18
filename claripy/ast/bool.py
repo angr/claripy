@@ -158,6 +158,16 @@ def ite_cases(cases, default):
         sofar = If(c, v, sofar)
     return sofar
 
+def reverse_ite_cases(ast):
+    queue = [(true, ast)]
+    while queue:
+        condition, ast = queue.pop(0)
+        if ast.op == 'If':
+            queue.append((And(condition, ast.args[0]), ast.args[1]))
+            queue.append((And(condition, Not(ast.args[0])), ast.args[2]))
+        else:
+            yield condition, ast
+
 def constraint_to_si(expr):
     """
     Convert a constraint to SI if possible.
