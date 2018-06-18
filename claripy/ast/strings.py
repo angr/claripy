@@ -35,6 +35,19 @@ class String(Bits):
         else:
             return Substr(int(rng+7), int(rng), self)
 
+    @staticmethod
+    # TODO: Figure out what to convert here
+    #
+    # The use case that i found useful here is during the concretization
+    # of a symbolic address in memory.
+    # When angr has to do this it creates a claripy.If constraints in this form
+    # If(condition, <value_read_if_condition_true>, <value_read_if_condition_false>).
+    # In some case <value_read_if_condition_false> can be MEM_UNINITIALIZED expressed as BVV
+    #
+    # What should we return in this case?
+    def _from_BV(like, value):
+        return value
+
 
     def replace(self, str_to_replace, replacement):
         """
