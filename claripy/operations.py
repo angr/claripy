@@ -646,7 +646,6 @@ def extract_simplifier(high, low, val):
     if val.op == 'If':
         val = ast.all_operations.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
         return val
-        #val = val.make_like('If', val.args[0].args[0]
 
     # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
     # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
