@@ -643,6 +643,9 @@ def extract_simplifier(high, low, val):
         if not val.symbolic:
             return val
 
+    if val.op == 'If':
+        return ast.all_operations.If(val.args[0], val.args[1][high:low], val.args[2][high:low])
+
     # if all else fails, convert Extract(Reverse(...)) to Reverse(Extract(...))
     # if val.op == 'Reverse' and (high + 1) % 8 == 0 and low % 8 == 0:
     #     print("saw reverse, converting")
