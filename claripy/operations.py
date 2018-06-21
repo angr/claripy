@@ -179,11 +179,6 @@ def str_concat_length_calc(*args):
 
 def str_replace_length_calc(*args):
     str_1, str_2, str_3 = args
-<<<<<<< 2a35379e3742622796f30a0c8776d0cdd1ceb0c0
-    # TODO: figure out how to deal with this
-    #       we need to know if the string has been replaced correctly
-    #       or not first in order to calculate the length...
-=======
     # Return the maximum length that the string can assume after the replace
     # operation
     #
@@ -193,7 +188,6 @@ def str_replace_length_calc(*args):
     if str_2.string_length >= str_3.string_length:
         return str_1.string_length
     # Otherwise We have the maximum length when teh replacement happens
->>>>>>> Fixed StrReplace length
     return str_1.string_length - str_2.string_length + str_3.string_length
 
 def strlen_bv_size_calc(s, bitlength):
