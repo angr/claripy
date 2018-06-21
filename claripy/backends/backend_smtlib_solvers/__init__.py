@@ -2,6 +2,8 @@ import hashlib
 
 import os
 
+from claripy.ast.bv import BV
+
 from .. import BackendError, BackendSMTLibBase
 from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
 from six.moves import cStringIO
@@ -105,6 +107,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         if self.smt_script_log_dir is not None:
             fname = 'check-sat_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
+
             with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
                 f.write(smt_script)
 
@@ -163,6 +166,36 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             e_c.append(NotEquals(make_pysmt_const_from_type(val, expr.get_type()), expr))
 
         return list(results)
+
+    def eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
+        """
+        This function returns up to `n` possible solutions for expression `expr`.
+
+        :param expr: expression (an AST) to evaluate
+        :param n: number of results to return
+        :param solver: a solver object, native to the backend, to assist in
+                       the evaluation (for example, a z3.Solver)
+        :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
+        :return:              A sequence of up to n results (backend objects)
+        """
+        if self._solver_required and solver is None:
+            raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
+
+        results = self._eval(
+            self.convert(expr), n, extra_constraints=self.convert_list(extra_constraints),
+            solver=solver, model_callback=model_callback
+        )
+
+        results = list(results)
+        if type(expr) is not BV:
+            return results
+
+        size = expr.length
+        for i in range(len(results)):
+            results[i] &= (1 << size) - 1 # convert it back to unsigned
+
+        return results
 
 
 import cvc4_popen 
