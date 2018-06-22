@@ -357,6 +357,9 @@ union = operations.op('union', (BV, BV), BV, extra_check=operations.length_same_
 widen = operations.op('widen', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
 intersection = operations.op('intersection', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc, bound=False)
 
+Atoi = operations.op('Atoi', (BV, int), BV, calc_length=operations.atoi_length_calc, bound=False)
+Itoa = operations.op('Itoa', (BV, int), BV, calc_length=operations.itoa_length_calc, bound=False)
+
 #
 # Bound operations
 #

@@ -11,7 +11,7 @@ from . import BackendError, Backend
 class BackendConcrete(Backend):
     def __init__(self):
         Backend.__init__(self)
-        self._make_raw_ops(set(backend_operations) - { 'If' }, op_module=bv)
+        self._make_raw_ops((set(backend_operations) - { 'If' }) | { 'Atoi', 'Itoa' }, op_module=bv)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw['If'] = self._If
         self._op_raw['BVV'] = self.BVV

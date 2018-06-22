@@ -444,3 +444,25 @@ def If(c, t, f):
 @compare_bits
 def LShR(a, b):
     return BVV(a.value >> b.signed, a.bits)
+
+def Atoi(string, size):
+    out = 0
+    i = 0
+    while i < string.size():
+        ch = (string.value >> (string.size() - (i + 8))) & 0xff
+        if ch >= 0x30 and ch <= 0x39:
+            out = out * 10 + ch - 0x30
+        else:
+            break
+        i += 8
+    return BVV(out, size)
+
+def Itoa(val, size):
+    out = 0
+    i = 0
+    cval = val.value
+    while i < size:
+        out |= (0x30 + cval % 10) << (i * 8)
+        cval = cval // 10
+        i += 1
+    return BVV(out, size * 8)

@@ -152,6 +152,12 @@ def ext_length_calc(ext, orig):
 def concat_length_calc(*args):
     return sum(arg.size() for arg in args)
 
+def atoi_length_calc(_, size):
+    return size
+
+def itoa_length_calc(_, size):
+    return 8 * size
+
 #
 # Operation lists
 #
