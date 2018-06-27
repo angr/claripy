@@ -27,11 +27,10 @@ class SMTParser(object):
         self.expect('(')
         self.expect(')')
         t = self.p.parse_type(self.tokens, cmd)
-        value_token = self.p.parse_atom(self.tokens, cmd)
-        val_repr = self.p.atom(value_token, get_env().formula_manager)
+        value = self.p.get_expression(self.tokens)
         self.expect(')')
 
-        return Symbol(vname, t), getattr(pysmt.shortcuts, t.name)(val_repr.constant_value())
+        return Symbol(vname, t), getattr(pysmt.shortcuts, t.name)(value.constant_value())
 
     def consume_assignment_list(self):
         self.expect('(')

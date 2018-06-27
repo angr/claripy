@@ -53,7 +53,7 @@ def _normalize_arguments(expr_left, expr_rigth):
 
 class BackendSMTLibBase(Backend):
     def __init__(self, *args, **kwargs):
-        self.daggify = kwargs.pop('daggify', False)
+        self.daggify = kwargs.pop('daggify', True)
         Backend.__init__(self, *args, **kwargs)
 
         # ------------------- LEAF OPERATIONS ------------------- 
