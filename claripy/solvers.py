@@ -128,9 +128,11 @@ class SolverComposite(
     frontend_mixins.CompositedCacheMixin,
     frontends.CompositeFrontend
 ):
-    def __init__(self, template_solver=None, track=False, **kwargs):
+    def __init__(self, template_solver=None, track=False, template_solver_string=None, **kwargs):
         template_solver = SolverCompositeChild(track=track) if template_solver is None else template_solver
-        super(SolverComposite, self).__init__(template_solver, track=track, **kwargs)
+        template_solver_string = SolverCompositeChild(track=track, backend=backends.z3) if \
+            template_solver_string is None else template_solver_string
+        super(SolverComposite, self).__init__(template_solver, template_solver_string, track=track, **kwargs)
 
     def __repr__(self):
         return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))

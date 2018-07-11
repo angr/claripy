@@ -3,6 +3,7 @@ import hashlib
 import os
 
 from claripy.ast.bv import BV
+from claripy.strings import StringV
 
 from .. import BackendError, BackendSMTLibBase
 from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
@@ -79,7 +80,6 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             raise BackendError(
                 "CVC4 backend currently only supports requests for symbols directly! This is a weird one that doesn't "
                 "turn constant after substitution??")
-
         return substituted.constant_value()
 
     def _simplify(self, e):
@@ -157,6 +157,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
                 break
 
             val = self._get_primitive_for_expr(model, expr)
+
             if val in results:
                 # import ipdb; ipdb.set_trace()
                 raise ValueError("Solver error, solver returned the same value twice incorrectly!")
@@ -165,7 +166,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             # e_c.append(And(*[NotEquals(s, val) for s, val in ass_list]))
             e_c.append(NotEquals(make_pysmt_const_from_type(val, expr.get_type()), expr))
 
-        return list(results)
+        return tuple(results)
 
     def eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         """
