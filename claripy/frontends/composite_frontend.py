@@ -6,13 +6,15 @@ import itertools
 symbolic_count = itertools.count()
 
 from .constrained_frontend import ConstrainedFrontend
+from claripy.ast.strings import String
 
 class CompositeFrontend(ConstrainedFrontend):
-    def __init__(self, template_frontend, track=False, **kwargs):
+    def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._owned_solvers = weakref.WeakKeyDictionary()
         self._template_frontend = template_frontend
+        self._template_frontend_string = template_frontend_string
         self._unsat = False
         self._track = track
 
@@ -21,6 +23,7 @@ class CompositeFrontend(ConstrainedFrontend):
         c._owned_solvers = weakref.WeakKeyDictionary()
         c._solvers = { }
         c._template_frontend = self._template_frontend
+        c._template_frontend_string = self._template_frontend_string
         c._unsat = False
         c._track = self._track
 
@@ -117,8 +120,12 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
-            l.debug("... creating new solver")
-            return self._template_frontend.blank_copy()
+            if any(var for var in names if var.startswith(String.STRING_TYPE_IDENTIFIER)):
+                l.debug("... creating new solver for strings")
+                return self._template_frontend_string.blank_copy()
+            else:
+                l.debug("... creating new solver")
+                return self._template_frontend.blank_copy()
         elif len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
