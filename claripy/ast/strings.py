@@ -13,6 +13,13 @@ class String(Bits):
     Do not instantiate this class directly, instead use StringS or StringV to construct a symbol or value, and then use
     operations to construct more complicated expressions.
     """
+
+    # Identifier used by composite solver in order to identify if a certain constraints contains
+    # variables of type string... In this case cvc4 would handle the solving part.
+    #
+    # TODO: Find a smarter way to do this!
+    STRING_TYPE_IDENTIFIER = "STRING_"
+
     def __init__(self, *args, **kwargs):
         str_len = kwargs['length']
         kwargs['length'] *= 8
@@ -92,7 +99,7 @@ def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
 
     :returns:                    The String object representing the symbolic string
     """
-    n = _make_name(name, size, False if explicit_name is None else explicit_name)
+    n = _make_name(String.STRING_TYPE_IDENTIFIER + name, size, False if explicit_name is None else explicit_name)
     result = String("StringS", (n, uninitialized), length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, variables={n}, **kwargs)
     return result
 
