@@ -95,6 +95,11 @@ class SolverStrings(
     def __init__(self, backend, *args, **kwargs):
         super(SolverStrings, self).__init__(backend, *args, **kwargs)
 
+class SolverPortfolio(
+    frontends.PortfolioFrontend
+):
+    def __init__(self, solvers, *args, **kwargs):
+        super(SolverPortfolio, self).__init__(solvers, *args, **kwargs)
 
 #
 # Composite solving
