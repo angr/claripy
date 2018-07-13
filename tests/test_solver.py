@@ -556,10 +556,20 @@ def test_zero_division_in_cache_mixin():
     s.add(denum == 3)
     assert not s.satisfiable()
 
-    a = claripy.BVS('a', 32)
-    b = claripy.BVS('b', 32)
-    s = claripy.Solver()
-    assert s.min(a/b) == 0
+def test_solver_portfolio():
+    solver = claripy.SolverPortfolio(
+        solvers=[
+            claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_cvc4),
+            claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_z3),
+            claripy.SolverStrings(backend=claripy.backend_manager.backends.smtlib_z3str),
+        ]
+    )
+    str_1 = claripy.StringS("input", 1024)
+    solver.add(claripy.StrIndexOf(str_1, claripy.StringV("caca"), 0, 64) >= 0)
+    # res = solver.satisfiable()
+    res2 = solver.eval(str_1, 10)
+    print res2
+
 
 if __name__ == '__main__':
 
@@ -586,3 +596,4 @@ if __name__ == '__main__':
     test_composite_solver()
     test_composite_solver_with_strings()
     test_zero_division_in_cache_mixin()
+    # test_solver_portfolio()

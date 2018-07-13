@@ -201,4 +201,5 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
 import cvc4_popen 
 import z3_popen 
-import abc_popen 
+import abc_popen
+import z3str_popen
