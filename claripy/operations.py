@@ -350,6 +350,11 @@ def boolean_reverse_simplifier(body):
         if all(a.length == 8 for a in body.args):
             return body.make_like(body.op, body.args[::-1])
 
+    if body.op == 'Concat':
+        if all(a.op == 'Reverse' for a in body.args):
+            if all(a.length % 8 == 0 for a in body.args):
+                return body.make_like(body.op,reversed([a.args[0] for a in body.args]))
+
 def boolean_and_simplifier(*args):
     if len(args) == 1:
         return args[0]
@@ -477,6 +482,56 @@ def bitwise_sub_simplifier(a, b):
     elif a is b or (a == b).is_true():
         return ast.all_operations.BVV(0, a.size())
 
+# recognize b-bit z=signedmax(q,r) from this idiom:
+# s=q-r;t=q^r;u=s^q;v=u&t;w=v^s;x=rshift(w,b-1);y=x&t;z=q^y
+# and recognize b-bit z=signedmin(q,r) from this idiom:
+# s=r-q;t=q^r;u=s^r;v=u&t;w=v^s;x=rshift(w,b-1);y=x&t;z=q^y
+def bitwise_xor_simplifier_minmax(a,b):
+    q,y = a,b
+    if y.op != '__and__':
+        q,y = b,a
+        if y.op != '__and__': return
+
+    x,t = y.args
+    if t.op != '__xor__':
+        t,x = y.args
+        if t.op != '__xor__': return
+
+    if x.op != '__rshift__': return
+    w,dist = x.args
+
+    bits = a.size()
+    if dist is not ast.all_operations.BVV(bits - 1,bits): return
+    if w.op != '__xor__': return
+
+    v,s = w.args
+    if s.op != '__sub__':
+        s,v = w.args
+        if s.op != '__sub__': return
+
+    if v.op != '__and__': return
+    u,t2 = v.args
+    if t2 is not t:
+        t2,u = v.args
+        if t2 is not t: return
+
+    if u.op != '__xor__': return
+
+    q2,r = t.args
+    if q2 is not q:
+        r,q2 = t.args
+        if q2 is not q: return
+
+    if (u.args[0] is s and u.args[1] is q) or (u.args[0] is q and u.args[1] is s):
+        if not (s.args[0] is q and s.args[1] is r): return
+        cond = ast.all_operations.SLE(q,r)
+        return ast.all_operations.If(cond,r,q)
+
+    if (u.args[0] is s and u.args[1] is r) or (u.args[0] is r and u.args[1] is s):
+        if not (s.args[0] is r and s.args[1] is q): return
+        cond = ast.all_operations.SLE(q,r)
+        return ast.all_operations.If(cond,q,r)
+
 def bitwise_xor_simplifier(a, b):
     if a is ast.all_operations.BVV(0, a.size()):
         return b
@@ -484,6 +539,9 @@ def bitwise_xor_simplifier(a, b):
         return a
     elif a is b or (a == b).is_true():
         return ast.all_operations.BVV(0, a.size())
+
+    result = bitwise_xor_simplifier_minmax(a,b)
+    if result is not None: return result
 
     def _flattening_filter(args):
         # since a ^ a == 0, we can safely remove those from args
