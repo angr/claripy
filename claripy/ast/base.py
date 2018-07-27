@@ -97,9 +97,6 @@ class Base(ana.Storable):
         :param variables:       The symbolic variables present in the AST (default: empty set)
         :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
         :param length:          An integer specifying the length of this AST (default: None)
-        :param collapsible:     A flag of whether or not Claripy can feel free to collapse this AST. This is mostly used
-                                to keep Claripy from collapsing Reverse operations, so that they can be undone with
-                                another Reverse.
         :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
                                 (basically, just undoing the Reverse op), and 2 means simplified through z3.
         :param errored:         A set of backends that are known to be unable to handle this AST.
@@ -194,7 +191,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
