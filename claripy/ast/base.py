@@ -984,9 +984,15 @@ def simplify(e):
         return e
     else:
         # Copy some parameters (that should really go to the Annotation backend)
-        s._uninitialized = e.uninitialized
-        s._uc_alloc_depth = e._uc_alloc_depth
 
+        # copy the uninitialized flag and its corresponding args[] entry
+        s._uninitialized = e.uninitialized
+        if s.op == 'BVS' and e.op == 'BVS':
+            modifiable = list(s.args)
+            modifiable[4] = e.args[4]
+            s.args = tuple(modifiable)
+
+        s._uc_alloc_depth = e._uc_alloc_depth
         s._simplified = Base.FULL_SIMPLIFY
 
         return s
