@@ -966,7 +966,7 @@ class Base(ana.Storable):
             return self
 
 def simplify(e):
-    if type(e) is BV and e.op == 'BVV':
+    if isinstance(e, Base) and e.op in operations.leaf_operations:
         return e
 
     s = e._first_backend('simplify')
