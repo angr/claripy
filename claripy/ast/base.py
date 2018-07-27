@@ -38,7 +38,7 @@ class ASTCacheKey(object):
         return hash(self.ast)
 
     def __eq__(self, other):
-        return hash(self.ast) == hash(other.ast)
+        return type(self) is type(other) and self.ast._hash == other.ast._hash
 
     def __repr__(self):
         return '<Key %s %s>' % (self.ast._type_name(), self.ast.__repr__(inner=True))
