@@ -230,11 +230,6 @@ class Base(ana.Storable):
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
 
-        #if self.op != 'I':
-        #    for a in args:
-        #        if not isinstance(a, Base) and type(a) not in (int, long, bool, str, unicode):
-        #            import ipdb; ipdb.set_trace()
-        #            l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
     def make_uuid(self, uuid=None):
@@ -713,8 +708,7 @@ class Base(ana.Storable):
                 else:
                     continue
 
-            if arg_a.op in ('I', 'BVS', 'FPS'):
-                # This is a leaf node in AST tree
+            if arg_a.op in operations.leaf_operations:
                 if arg_a is not arg_b:
                     return False
 
@@ -804,7 +798,7 @@ class Base(ana.Storable):
             # let's no go into this right now
             return self
 
-        if any(a.op in {'BVS', 'BVV', 'FPS', 'FPV', 'BoolS', 'BoolV'} for a in self.args):
+        if any(a.op in operations.leaf_operations for a in self.args):
             # burrowing through these is pretty funny
             return self
 
@@ -822,7 +816,7 @@ class Base(ana.Storable):
         return old_true.__class__(old_true.op, new_args, length=self.length)
 
     def _excavate_ite(self):
-        if self.op in { 'BVS', 'I', 'BVV' } or self.annotations:
+        if self.op in operations.leaf_operations or self.annotations:
             return self
 
         excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]
@@ -972,7 +966,7 @@ class Base(ana.Storable):
             return self
 
 def simplify(e):
-    if isinstance(e, Base) and e.op == 'I':
+    if type(e) is BV and e.op == 'BVV':
         return e
 
     s = e._first_backend('simplify')
