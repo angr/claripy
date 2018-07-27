@@ -85,7 +85,7 @@ class Base(ana.Storable):
     LITE_SIMPLIFY=2
     UNSIMPLIFIED=0
 
-    def __new__(cls, op, args, **kwargs):
+    def __new__(cls, op, args, add_variables=None, **kwargs):
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -120,8 +120,8 @@ class Base(ana.Storable):
         if 'errored' not in kwargs:
             kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
 
-        if 'add_variables' in kwargs:
-            kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
+        if add_variables:
+            kwargs['variables'] = kwargs['variables'] | add_variables
 
         eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
 
