@@ -79,7 +79,6 @@ class Backend(object):
                     self._op_raw[o] = getattr(op_module, o)
                 else:
                     l.debug("Operation %s not in op_module %s.", o, op_module)
-        self._op_raw['I'] = lambda thing: thing
 
     def _make_expr_ops(self, op_list, op_dict=None, op_class=None):
         """

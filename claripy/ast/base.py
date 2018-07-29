@@ -85,7 +85,7 @@ class Base(ana.Storable):
     LITE_SIMPLIFY=2
     UNSIMPLIFIED=0
 
-    def __new__(cls, op, args, **kwargs):
+    def __new__(cls, op, args, add_variables=None, **kwargs):
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -97,9 +97,6 @@ class Base(ana.Storable):
         :param variables:       The symbolic variables present in the AST (default: empty set)
         :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
         :param length:          An integer specifying the length of this AST (default: None)
-        :param collapsible:     A flag of whether or not Claripy can feel free to collapse this AST. This is mostly used
-                                to keep Claripy from collapsing Reverse operations, so that they can be undone with
-                                another Reverse.
         :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
                                 (basically, just undoing the Reverse op), and 2 means simplified through z3.
         :param errored:         A set of backends that are known to be unable to handle this AST.
@@ -123,8 +120,8 @@ class Base(ana.Storable):
         if 'errored' not in kwargs:
             kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
 
-        if 'add_variables' in kwargs:
-            kwargs['variables'] = kwargs['variables'] | kwargs['add_variables']
+        if add_variables:
+            kwargs['variables'] = kwargs['variables'] | add_variables
 
         eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
 
@@ -194,7 +191,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -233,11 +230,6 @@ class Base(ana.Storable):
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
 
-        #if self.op != 'I':
-        #    for a in args:
-        #        if not isinstance(a, Base) and type(a) not in (int, long, bool, str, unicode):
-        #            import ipdb; ipdb.set_trace()
-        #            l.warning(ClaripyOperationError("Un-wrapped native object of type %s!" % type(a)))
     #pylint:enable=attribute-defined-outside-init
 
     def make_uuid(self, uuid=None):
@@ -716,8 +708,7 @@ class Base(ana.Storable):
                 else:
                     continue
 
-            if arg_a.op in ('I', 'BVS', 'FPS'):
-                # This is a leaf node in AST tree
+            if arg_a.op in operations.leaf_operations:
                 if arg_a is not arg_b:
                     return False
 
@@ -807,7 +798,7 @@ class Base(ana.Storable):
             # let's no go into this right now
             return self
 
-        if any(a.op in {'BVS', 'BVV', 'FPS', 'FPV', 'BoolS', 'BoolV'} for a in self.args):
+        if any(a.op in operations.leaf_operations for a in self.args):
             # burrowing through these is pretty funny
             return self
 
@@ -825,7 +816,7 @@ class Base(ana.Storable):
         return old_true.__class__(old_true.op, new_args, length=self.length)
 
     def _excavate_ite(self):
-        if self.op in { 'BVS', 'I', 'BVV' } or self.annotations:
+        if self.op in operations.leaf_operations or self.annotations:
             return self
 
         excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]
@@ -975,7 +966,7 @@ class Base(ana.Storable):
             return self
 
 def simplify(e):
-    if isinstance(e, Base) and e.op == 'I':
+    if isinstance(e, Base) and e.op in operations.leaf_operations:
         return e
 
     s = e._first_backend('simplify')
