@@ -13,7 +13,7 @@ setup(
     packages=packages,
     install_requires=[
         'ana',
-        'z3-solver',
+        'z3-solver==4.5.1.0.post1',
         'future',
     ],
     description='An abstraction layer for constraint solvers',
