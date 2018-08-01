@@ -492,6 +492,7 @@ def bitwise_xor_simplifier_minmax(a,b):
         q,y = b,a
         if y.op != '__and__': return
 
+    if len(y.args) != 2: return
     x,t = y.args
     if t.op != '__xor__':
         t,x = y.args
@@ -504,12 +505,14 @@ def bitwise_xor_simplifier_minmax(a,b):
     if dist is not ast.all_operations.BVV(bits - 1,bits): return
     if w.op != '__xor__': return
 
+    if len(w.args) != 2: return
     v,s = w.args
     if s.op != '__sub__':
         s,v = w.args
         if s.op != '__sub__': return
 
     if v.op != '__and__': return
+    if len(v.args) != 2: return
     u,t2 = v.args
     if t2 is not t:
         t2,u = v.args
@@ -517,6 +520,7 @@ def bitwise_xor_simplifier_minmax(a,b):
 
     if u.op != '__xor__': return
 
+    if len(t.args) != 2: return
     q2,r = t.args
     if q2 is not q:
         r,q2 = t.args
