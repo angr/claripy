@@ -222,7 +222,7 @@ def BVV(value, size=None, **kwargs):
 
     if type(value) in (bytes, str, unicode):
         if type(value) is unicode:
-            l.warn("BVV value is a unicode string, encoding as utf-8")
+            l.warning("BVV value is a unicode string, encoding as utf-8")
             value = value.encode('utf-8')
 
         if size is None:

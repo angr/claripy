@@ -88,8 +88,8 @@ def test_type_errors():
     nose.tools.assert_raises(TypeError, lambda: claripy.BVV(None))
     nose.tools.assert_raises(TypeError, lambda: claripy.BVV(3))
     nose.tools.assert_raises(TypeError, lambda: claripy.BVV(1.2))
-    nose.tools.assert_raises(TypeError, lambda: claripy.BVV("asdf", "qwer"))
-    nose.tools.assert_raises(ClaripyValueError, lambda: claripy.BVV("asdf", 8))
+    nose.tools.assert_raises(TypeError, lambda: claripy.BVV(b"asdf", b"qwer"))
+    nose.tools.assert_raises(ClaripyValueError, lambda: claripy.BVV(b"asdf", 8))
 
     nose.tools.assert_raises(TypeError, lambda: claripy.BVS(None, None))
     nose.tools.assert_raises(TypeError, lambda: claripy.BVS(None, 3))

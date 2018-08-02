@@ -169,10 +169,10 @@ def test_expression():
     nose.tools.assert_is(rb, rb)
 
     # test some alternate bvv creation methods
-    nose.tools.assert_is(claripy.BVV('AAAA'), claripy.BVV(0x41414141, 32))
-    nose.tools.assert_is(claripy.BVV('AAAA', 32), claripy.BVV(0x41414141, 32))
-    nose.tools.assert_is(claripy.BVV('AB'), claripy.BVV(0x4142, 16))
-    nose.tools.assert_is(claripy.BVV('AB', 16), claripy.BVV(0x4142, 16))
+    nose.tools.assert_is(claripy.BVV(b'AAAA'), claripy.BVV(0x41414141, 32))
+    nose.tools.assert_is(claripy.BVV(b'AAAA', 32), claripy.BVV(0x41414141, 32))
+    nose.tools.assert_is(claripy.BVV(b'AB'), claripy.BVV(0x4142, 16))
+    nose.tools.assert_is(claripy.BVV(b'AB', 16), claripy.BVV(0x4142, 16))
     nose.tools.assert_raises(claripy.errors.ClaripyValueError, claripy.BVV, 'AB', 8)
 
 def test_cardinality():
@@ -308,8 +308,8 @@ def test_extract():
     assert a[-1:-8] is a[31:24]
 
 def test_get_byte():
-    a = claripy.BVV("ABCD")
-    assert a.get_byte(1) is claripy.BVV("B")
+    a = claripy.BVV(b"ABCD")
+    assert a.get_byte(1) is claripy.BVV(b"B")
 
 def test_extract_concat_simplify():
     a = claripy.BVS("a", 32)
