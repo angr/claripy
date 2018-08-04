@@ -769,7 +769,7 @@ class Base(ana.Storable):
 
         for v in self._recursive_leaf_asts():
             if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
-                new_name = 'canonical_%d' % next(counter)
+                new_name = b'canonical_%d' % next(counter)
                 var_map[v.cache_key] = v._rename(new_name)
 
         return var_map, counter, self.replace_dict(var_map)
