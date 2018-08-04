@@ -436,9 +436,9 @@ class Base(ana.Storable):
                 args = self.args
 
             if op == 'BVS' and inner:
-                value = args[0]
+                value = args[0].decode()
             elif op == 'BVS':
-                value = "%s" % args[0]
+                value = "%s" % args[0].decode()
                 extras = [ ]
                 if args[1] is not None:
                     extras.append("min=%s" % args[1])

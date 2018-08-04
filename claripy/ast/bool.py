@@ -154,7 +154,7 @@ def ite_dict(i, d, default):
 
 def ite_cases(cases, default):
     sofar = default
-    for c,v in reversed(cases):
+    for c,v in cases:
         sofar = If(c, v, sofar)
     return sofar
 

@@ -85,7 +85,8 @@ class BV(Bits):
         """
         Extracts several bytes from a bitvector, where the index refers to the byte in a big-endian order
 
-        :param index: the byte to extract
+        :param index: the byte index at which to start extracting
+        :param size: the number of bytes to extract
         :return: A BV of size ``size * 8``
         """
         pos = self.size() // 8 - 1 - index
@@ -196,12 +197,16 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pyli
     if stride == 0 and max != min:
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
-    if type(name) is unicode:
-        name = name.encode('utf-8')
-    if type(name) is not bytes:
-        raise TypeError("Name value for BVS must be a string, got %r" % type(name))
+    if type(name) is bytes:
+        name = name.decode()
+    if type(name) is not str:
+        raise TypeError("Name value for BVS must be a str, got %r" % type(name))
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
+
+    # as... an optimization, we store the name in the args actually as a bytestring
+    # since some people (primarily z3) will want to work with it as a bytestring
+    n = n.encode()
 
     if not discrete_set:
         discrete_set_max_card = None
@@ -232,7 +237,7 @@ def BVV(value, size=None, **kwargs):
         elif size != len(value)*8:
             raise ClaripyValueError('string/size mismatch for BVV creation')
 
-        value = int(binascii.hexlify(value), 16) if value != "" else 0
+        value = int(binascii.hexlify(value), 16) if value != b"" else 0
 
     elif size is None or (type(value) not in (int, long) and value is not None):
         raise TypeError('BVV() takes either an integer value and a size or a string of bytes')

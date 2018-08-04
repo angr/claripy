@@ -23,7 +23,6 @@ try:
 except ImportError:
     _is_pypy = False
 
-
 def _add_memory_pressure(p):
     """
     PyPy's garbage collector is not aware of memory uses happening inside native code. When performing memory-intensive
@@ -72,6 +71,21 @@ def _raw_caller(f):
     def raw_caller(*args, **kwargs):
         return f(*args, **kwargs)
     return raw_caller
+
+def _z3_decl_name_str(ctx, decl):
+    # reimplementation of Z3_get_symbol_string to not try to unicode-decode
+    lib = z3.lib()
+
+    decl_name = lib.Z3_get_decl_name(ctx, decl)
+    err = lib.Z3_get_error_code(ctx)
+    if err != z3.Z3_OK:
+        raise z3.Z3Exception(lib.Z3_get_error_msg(ctx, err))
+
+    symbol_name = lib.Z3_get_symbol_string(ctx, decl_name)
+    err = lib.Z3_get_error_code(ctx)
+    if err != z3.Z3_OK:
+        raise z3.Z3Exception(z3.lib().Z3_get_error_msg(ctx, err))
+    return symbol_name
 
 #
 # And the (ugh) magic
@@ -386,7 +400,7 @@ class BackendZ3(Backend):
             return FPV(val, sort)
 
         elif op_name == 'UNINTERPRETED' and num_args == 0: # symbolic value
-            symbol_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
+            symbol_name = _z3_decl_name_str(ctx, decl)
             symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
 
             if symbol_ty == z3.Z3_BV_SORT:
@@ -574,6 +588,7 @@ class BackendZ3(Backend):
         model = { }
         for m_f in z3_model:
             n = m_f.name()
+            n = _z3_decl_name_str(m_f.ctx.ctx, m_f.ast)
             m = m_f()
             me = z3_model.eval(m)
             model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
