@@ -9,7 +9,8 @@ from ..frontend import Frontend
 l = logging.getLogger("claripy.frontends.portfolio_frontend")
 
 
-def execute_solver_satisfiable(solver, extra_constraints, exact):
+def execute_solver_satisfiable(args):
+    solver, extra_constraints, exact = args
     try:
         return solver.satisfiable(
             extra_constraints=extra_constraints,
@@ -20,7 +21,8 @@ def execute_solver_satisfiable(solver, extra_constraints, exact):
         return False
 
 
-def execute_solver_eval(solver, e, n, extra_constraints, exact):
+def execute_solver_eval(args):
+    solver, e, n, extra_constraints, exact = args
     try:
         res = solver.eval(
             e, n, extra_constraints=extra_constraints, exact=exact
@@ -95,50 +97,45 @@ class PortfolioFrontend(Frontend):
 
     def satisfiable(self, extra_constraints=(), exact=None):
         pool = Pool()
-        res_list = []
         # execute in parallel all the solvers, each one in a separate process
-        for solver in self.solvers:
-            pool.apply_async(
-                execute_solver_satisfiable,
-                args=(solver, extra_constraints, exact),
-                # the call back put the result in the result list
-                callback=partial(store_async_result, res_list=res_list)
-            )
-        # wait until at least one result is True (sat) or until every solver returned False (unsat)
-        # The time out is managed internally by every solver
-        while True:
-            if not any(res_list) or len(res_list) != len(self.solvers):
+
+        args = [(solver, extra_constraints, exact) for solver in self.solvers]
+
+        result = None
+        for result in pool.imap_unordered(execute_solver_satisfiable, args):
+            # wait until at least one result is True (sat) or until every solver returned False (unsat)
+            # The time out is managed internally by every solver
+            if result:
                 break
-        # kill the process pool
-        # This is useful because as soon as a solver return true we can kill the other solver and speed up the process
+        assert result is not None
+        pool.close()
         pool.terminate()
-        return any(res_list)
+
+        return result
 
     def eval(self, e, n, extra_constraints=(), exact=None):
+        # TODO: This is super shitty slow because we don't cache anything between results so we have to solve the exact
+        # same thing twice! Think about how we can make this nicer.
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError('unsat')
+
         pool = Pool()
-        res_list = []
         # execute in parallel all the solvers, each one in a separate process
-        for solver in self.solvers:
-            pool.apply_async(
-                execute_solver_eval,
-                args=(solver, e, n, extra_constraints, exact),
-                # the call back put the result in the result list
-                callback=partial(store_async_result, res_list=res_list)
-            )
-        # wait until at least one result is meaningful (i.e. not None)
-        # The time out is managed internally by every solver
-        while True:
-            if not any(res_list) or len(res_list) != len(self.solvers):
+
+        args = [(solver, e, n, extra_constraints, exact) for solver in self.solvers]
+
+        result = None
+        for result in pool.imap_unordered(execute_solver_eval, args):
+            # wait until at least one result is not empty (sat) or until every solver returned no solutions (unsat)
+            # The time out is managed internally by every solver
+            if result:
                 break
-        # kill the process pool
-        # This is useful because as soon as a solver return true we can kill the other solver and speed up the process
+
+        assert result is not None
+        pool.close()
         pool.terminate()
-        try:
-            return [res for res in res_list if res][0]
-        except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during eval"), e)
+
+        return result
 
     #
     # def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
