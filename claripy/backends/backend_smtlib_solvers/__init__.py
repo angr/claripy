@@ -80,6 +80,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
             raise BackendError(
                 "CVC4 backend currently only supports requests for symbols directly! This is a weird one that doesn't "
                 "turn constant after substitution??")
+
         return substituted.constant_value()
 
     def _simplify(self, e):
@@ -199,7 +200,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         return results
 
 
-import cvc4_popen 
-import z3_popen 
+import cvc4_popen
+import z3_popen
 import abc_popen
 import z3str_popen
