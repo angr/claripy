@@ -12,13 +12,14 @@ l = logging.getLogger("claripy.frontends.portfolio_frontend")
 def execute_solver_satisfiable(args):
     solver, extra_constraints, exact = args
     try:
-        return solver.satisfiable(
+        isSat = solver.satisfiable(
             extra_constraints=extra_constraints,
             exact=exact
         )
+        return solver, isSat
     except Exception as e:
-        l.debug("Solver %r failed to check satisfiability because %r", solver._solver_backend, e)
-        return False
+        l.debug("Solver failed to check satisfiability because %r", e)
+        return solver, False
 
 
 def execute_solver_eval(args):
@@ -27,18 +28,10 @@ def execute_solver_eval(args):
         res = solver.eval(
             e, n, extra_constraints=extra_constraints, exact=exact
         )
-        print solver._solver_backend
-        print res
-        return res
+        return solver, res
     except Exception as e:
-        print solver._solver_backend
-        print e
-        l.debug("Solver %r failed to get solution because %r", solver._solver_backend, e)
-        return None
-
-
-def store_async_result(result, res_list):
-    res_list.append(result)
+        l.debug("Solver failed to get solution because %r", e)
+        return solver, None
 
 
 class PortfolioFrontend(Frontend):
@@ -82,8 +75,8 @@ class PortfolioFrontend(Frontend):
 
     def add(self, constraints):
         for solver in self.solvers:
-            solver.add(constraints)
-        return self.solvers[0]._to_add
+            added = solver.add(constraints)
+        return list(added)
 
     def simplify(self):
         for solver in self.solvers:
@@ -102,7 +95,7 @@ class PortfolioFrontend(Frontend):
         args = [(solver, extra_constraints, exact) for solver in self.solvers]
 
         result = None
-        for result in pool.imap_unordered(execute_solver_satisfiable, args):
+        for solver, result in pool.imap_unordered(execute_solver_satisfiable, args):
             # wait until at least one result is True (sat) or until every solver returned False (unsat)
             # The time out is managed internally by every solver
             if result:
@@ -125,10 +118,10 @@ class PortfolioFrontend(Frontend):
         args = [(solver, e, n, extra_constraints, exact) for solver in self.solvers]
 
         result = None
-        for result in pool.imap_unordered(execute_solver_eval, args):
+        for solver, result in pool.imap_unordered(execute_solver_eval, args):
             # wait until at least one result is not empty (sat) or until every solver returned no solutions (unsat)
             # The time out is managed internally by every solver
-            if result:
+            if result is not None:
                 break
 
         assert result is not None
