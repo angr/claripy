@@ -76,7 +76,7 @@ class Base(ana.Storable):
     :ivar args:         The arguments that are being used
     """
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
     _hash_cache = weakref.WeakValueDictionary()
@@ -191,7 +191,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -204,6 +204,7 @@ class Base(ana.Storable):
         self.variables = frozenset(variables)
         self.symbolic = symbolic
         self._eager_backends = eager_backends
+        self._cached_encoded_name = encoded_name
 
         self._errored = errored if errored is not None else set()
 
@@ -259,6 +260,12 @@ class Base(ana.Storable):
         A key that refers to this AST - this value is appropriate for usage as a key in dictionaries.
         """
         return self._cache_key
+
+    @property
+    def _encoded_name(self):
+        if self._cached_encoded_name is None:
+            self._cached_encoded_name = self.args[0].encode()
+        return self._cached_encoded_name
 
     #
     # Serialization support
@@ -436,9 +443,9 @@ class Base(ana.Storable):
                 args = self.args
 
             if op == 'BVS' and inner:
-                value = args[0].decode()
+                value = args[0]
             elif op == 'BVS':
-                value = "%s" % args[0].decode()
+                value = "%s" % args[0]
                 extras = [ ]
                 if args[1] is not None:
                     extras.append("min=%s" % args[1])
@@ -769,7 +776,7 @@ class Base(ana.Storable):
 
         for v in self._recursive_leaf_asts():
             if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
-                new_name = b'canonical_%d' % next(counter)
+                new_name = 'canonical_%d' % next(counter)
                 var_map[v.cache_key] = v._rename(new_name)
 
         return var_map, counter, self.replace_dict(var_map)

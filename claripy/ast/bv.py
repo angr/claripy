@@ -198,22 +198,21 @@ def BVS(name, size, min=None, max=None, stride=None, uninitialized=False,  #pyli
     if stride == 0 and max != min:
         raise ClaripyValueError("BVSes of stride 0 should have max == min")
 
+    encoded_name = None
     if type(name) is bytes:
+        encoded_name = name
         name = name.decode()
     if type(name) is not str:
         raise TypeError("Name value for BVS must be a str, got %r" % type(name))
 
     n = _make_name(name, size, False if explicit_name is None else explicit_name)
 
-    # as... an optimization, we store the name in the args actually as a bytestring
-    # since some people (primarily z3) will want to work with it as a bytestring
-    n = n.encode()
-
     if not discrete_set:
         discrete_set_max_card = None
 
     return BV('BVS', (n, min, max, stride, uninitialized, discrete_set, discrete_set_max_card), variables={n},
-              length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, **kwargs)
+              length=size, symbolic=True, eager_backends=None, uninitialized=uninitialized, encoded_name=encoded_name,
+              **kwargs)
 
 def BVV(value, size=None, **kwargs):
     """

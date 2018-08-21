@@ -45,7 +45,6 @@ def BoolS(name, explicit_name=None):
     :return:                A Bool object representing this symbol.
     """
     n = _make_name(name, -1, False if explicit_name is None else explicit_name)
-    n = n.encode()
     return Bool('BoolS', (n,), variables={n}, symbolic=True)
 
 def BoolV(val):
