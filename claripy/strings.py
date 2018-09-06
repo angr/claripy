@@ -136,3 +136,6 @@ def StrToInt(input_string, bitlength):
         return BVV(int(input_string.value), bitlength)
     except ValueError:
         return BVV(-1, bitlength)
+
+def StrReverse(*args):
+    pass
