@@ -736,6 +736,9 @@ def extract_length_calc(high, low, _):
     return high + 1 - low
 
 
+def str_basic_length_calc(str_1):
+    return str_1.string_length
+
 def str_extract_check(start_idx, count, str_val):
     if start_idx < 0:
         return False, "StrExtract start_idx must be nonnegative"

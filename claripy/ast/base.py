@@ -76,7 +76,7 @@ class Base(ana.Storable):
     :ivar args:         The arguments that are being used
     """
 
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified',
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', 'is_string',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
     _hash_cache = weakref.WeakValueDictionary()
@@ -191,7 +191,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, is_string=False, length=None, collapsible=None, simplified=0, errored=None, eager_backends=None, add_variables=None, uninitialized=None, uc_alloc_depth=None, annotations=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -201,6 +201,7 @@ class Base(ana.Storable):
         self.op = op
         self.args = args
         self.length = length
+        self.is_string = is_string
         self.variables = frozenset(variables)
         self.symbolic = symbolic
         self._eager_backends = eager_backends
