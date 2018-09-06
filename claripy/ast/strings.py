@@ -3,7 +3,7 @@ from ..ast.base import _make_name
 
 from .. import operations
 from .bool import Bool
-from .bv import BV
+from .bv import BV, BVS, BVV
 
 
 class String(Bits):
@@ -19,12 +19,14 @@ class String(Bits):
     #
     # TODO: Find a smarter way to do this!
     STRING_TYPE_IDENTIFIER = "STRING_"
+    GENERATED_BVS_IDENTIFIER = 'BVS_'
 
     def __init__(self, *args, **kwargs):
         str_len = kwargs['length']
         kwargs['length'] *= 8
         super(String, self).__init__(*args, **kwargs)
         self.string_length = str_len
+        self.is_string = True
 
     def __getitem__(self, rng):
         if type(rng) is slice:
@@ -85,6 +87,14 @@ class String(Bits):
         """
         return StrIndexOf(self, pattern, start_idx, bitlength)
 
+    def raw_to_bv(self):
+        """
+        A counterpart to FP.raw_to_bv - does nothing and returns itself.
+        """
+        if self.symbolic:
+            return BVS(list(self.variables)[0].replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER), 8)
+        else:
+            return BVV(ord(self.value), 8)
 
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
@@ -136,6 +146,7 @@ StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
 StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
 StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
+StrReverse = operations.op('StrReverse', (String,), String, calc_length=operations.str_basic_length_calc, bound=False)
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -153,3 +164,4 @@ String.StrPrefixOf = staticmethod(StrPrefixOf)
 String.StrSuffixOf = staticmethod(StrSuffixOf)
 String.StrIndexOf = staticmethod(StrIndexOf)
 String.StrToInt = staticmethod(StrToInt)
+String.reversed = property(StrReverse)
