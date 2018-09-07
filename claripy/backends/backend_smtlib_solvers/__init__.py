@@ -12,6 +12,7 @@ from six.moves import cStringIO
 from pysmt.smtlib.parser import Tokenizer
 from pysmt.shortcuts import NotEquals
 
+
 class AbstractSMTLibSolverProxy(object):
     def write(self, smt):
         raise NotImplementedError
@@ -64,7 +65,7 @@ class PopenSolverProxy(AbstractSMTLibSolverProxy):
 class SMTLibSolverBackend(BackendSMTLibBase):
     def __init__(self, *args, **kwargs):
         kwargs['solver_required'] = True
-        self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', None)
+        self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', '/media/angr_string_constraints')
         super(SMTLibSolverBackend, self).__init__(*args, **kwargs)
 
     def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
