@@ -10,7 +10,7 @@ class SmtLibSolverTest_CVC4(SmtLibSolverTest):
         if 'smtlib_cvc4' not in claripy.backends._backends_by_name:
             raise nose.SkipTest()
 
-        backend = SolverBackendCVC4(daggify=True, smt_script_log_dir=None)
+        backend = SolverBackendCVC4(daggify=True)
         solver = claripy.SolverStrings(backend=backend, timeout=300000)
         return solver
 
