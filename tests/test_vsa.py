@@ -867,6 +867,18 @@ def test_vsa_discrete_value_set():
     nose.tools.assert_equal(ints, [0, 1, 3])
 
     #
+    # Union 2
+    #
+
+    val_1 = BVV(0, 32)
+    val_2 = BVV(64, 32)
+    r = val_1.union(val_2)
+    nose.tools.assert_true(isinstance(vsa_model(r), DiscreteStridedIntervalSet))
+    nose.tools.assert_equal(vsa_model(r).lower_bound, 0)
+    nose.tools.assert_equal(vsa_model(r).upper_bound, 64)
+    nose.tools.assert_equal(vsa_model(r).stride, 64)
+
+    #
     # Intersection
     #
 
@@ -929,6 +941,16 @@ def test_vsa_discrete_value_set():
     r = r_2 - r_1
     nose.tools.assert_true(isinstance(vsa_model(r), DiscreteStridedIntervalSet))
     nose.tools.assert_true(vsa_model(r).collapse().identical(vsa_model(SI(bits=32, stride=1, lower_bound=0, upper_bound=35))))
+
+    # Reverse
+
+    val_1 = claripy.SI(bits=32, stride=0, lower_bound=1, upper_bound=1)
+    val_2 = claripy.SI(bits=32, stride=0, lower_bound=9, upper_bound=9)
+    val = val_1.union(val_2)
+    nose.tools.assert_true(isinstance(vsa_model(val), DiscreteStridedIntervalSet))
+    nose.tools.assert_equal(claripy.SolverVSA().eval(val, 3), (0x1, 0x9))
+    val_reversed = claripy.Reverse(val)
+    nose.tools.assert_equal(claripy.SolverVSA().eval(val_reversed, 3), (0x01000000, 0x09000000))
 
     # Disable it in the end
     claripy.vsa.strided_interval.allow_dsis = False
@@ -1038,6 +1060,9 @@ def test_reverse():
     nose.tools.assert_equal(set(solver.eval(dsis_r, 3)), {0xffff, 0x100ffff})
 
 if __name__ == '__main__':
+    test_vsa_discrete_value_set()
+    import sys; sys.exit(0)
+
     test_reasonable_bounds()
     test_reversed_concat()
     test_fucked_extract()

@@ -147,7 +147,7 @@ si_id_ctr = itertools.count()
 
 # Whether DiscreteStridedIntervalSet should be used or not. Sometimes we manually set it to False to allow easy
 # implementation of test cases.
-allow_dsis = False
+allow_dsis = True
 
 
 class WarrenMethods(object):
@@ -2619,6 +2619,8 @@ class StridedInterval(BackendObject):
         :return: A new DiscreteStridedIntervalSet, or a new StridedInterval.
         """
 
+        global allow_dsis
+
         if not allow_dsis:
             return StridedInterval.least_upper_bound(self, b)
 
@@ -3373,8 +3375,8 @@ class StridedInterval(BackendObject):
         :return: A new reversed StridedInterval instance
         """
         o = self.copy()
-        # Clear ok reversed flag
-        o._reversed = not o._reversed
+        # Clear the delayed reversed flag
+        o._reversed = False
 
         if o.bits == 8:
             # No need for reversing

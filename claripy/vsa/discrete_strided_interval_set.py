@@ -2,9 +2,9 @@ import functools
 import numbers
 import itertools
 
-from .strided_interval import StridedInterval
+from .strided_interval import StridedInterval, normalize_types
 
-DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256 # We don't collapse until there are more than this many SIs
+DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 4096 # We don't collapse until there are more than this many SIs
 
 
 def apply_on_each_si(f):
@@ -66,7 +66,9 @@ def collapse_operand(f):
 
     return collapser
 
+
 dsis_id_ctr = itertools.count()
+
 
 class DiscreteStridedIntervalSet(StridedInterval):
     """
@@ -76,7 +78,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
         if name is None:
             name = "DSIS_%d" % next(dsis_id_ctr)
 
-         # Initialize the set for strided intervals
+        # Initialize the set for strided intervals
         if si_set is not None and len(si_set):
             self._si_set = si_set
 
@@ -88,6 +90,9 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
         StridedInterval.__init__(self, name=name, bits=bits)
 
+        # Make sure to clear lower_bound and upper_bound so they can be updated
+        self.lower_bound = None
+        self.upper_bound = None
         # Update lower_bound and upper_bound
         for si in self._si_set:
             self._update_bounds(si)
@@ -163,8 +168,15 @@ class DiscreteStridedIntervalSet(StridedInterval):
                 self._update_bits(si)
             return self
 
-    def copy(self):
-        copied = DiscreteStridedIntervalSet(bits=self._bits, si_set=self._si_set.copy(),
+    def copy(self, reverse=False):
+
+        if not reverse:
+            si_set = self._si_set.copy()
+        else:
+            si_set = { si._reverse() for si in self._si_set }
+
+        copied = DiscreteStridedIntervalSet(bits=self._bits,
+                                            si_set=si_set,
                                             max_cardinality=self._max_cardinality)
 
         return copied
@@ -433,6 +445,11 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
         # FIXME: "signed" is silently ignored now
 
+        if self._reversed:
+            # apply the reverse operation first
+            s = self.copy(reverse=True)
+            return s.eval(n, signed=signed)
+
         ret = set()
 
         for si in self._si_set:
@@ -444,6 +461,7 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     # Set operations
 
+    @normalize_types
     def union(self, b):
         if isinstance(b, DiscreteStridedIntervalSet):
             return self._union_with_dsis(b)
