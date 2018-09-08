@@ -671,6 +671,9 @@ def str_extract_simplifier(start_idx, count, val):
         new_count = count
         return v_str.StrExtract(new_start, new_count, v_str)
 
+def str_reverse_simplifier(arg):
+    return arg
+
 # oh gods
 def fptobv_simplifier(the_fp):
     if the_fp.op == 'fpToFP' and len(the_fp.args) == 2:
@@ -691,6 +694,7 @@ simplifiers = {
     'Not': boolean_not_simplifier,
     'Extract': extract_simplifier,
     'StrExtract': str_extract_simplifier,
+    'StrReverse': str_reverse_simplifier,
     'Concat': concat_simplifier,
     'If': if_simplifier,
     '__lshift__': lshift_simplifier,
