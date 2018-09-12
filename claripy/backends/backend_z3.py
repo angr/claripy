@@ -120,10 +120,17 @@ class BackendZ3(Backend):
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
 
-        # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
-        # "proposed annotation backend" or wherever will prevent it from being part of the object
-        # identity. also whenever the VSA attributes get the fuck out of BVS as well
-        self._tls.extra_bvs_data = {}
+    # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
+    # "proposed annotation backend" or wherever will prevent it from being part of the object
+    # identity. also whenever the VSA attributes get the fuck out of BVS as well
+    @property
+    def extra_bvs_data(self):
+        try:
+            return self._tls.extra_bvs_data
+        except AttributeError:
+            # a pointer to get values out of Z3
+            self._tls.extra_bvs_data = {}
+            return self._tls.extra_bvs_data
 
 
     @property
@@ -227,7 +234,7 @@ class BackendZ3(Backend):
     @condom
     def BVS(self, ast):
         name, mn, mx, stride, uninit, discrete, discrete_max = ast.args
-        self._tls.extra_bvs_data[name] = (mn, mx, stride, uninit, discrete, discrete_max)
+        self.extra_bvs_data[name] = (mn, mx, stride, uninit, discrete, discrete_max)
         size = ast.size()
         expr = z3.BitVec(name, size, ctx=self._context)
         #if mn is not None:
@@ -384,7 +391,7 @@ class BackendZ3(Backend):
 
             if symbol_ty == z3.Z3_BV_SORT:
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-                extra_args = self._tls.extra_bvs_data.get(symbol_name, (None, None, None, False, False, None))
+                extra_args = self.extra_bvs_data.get(symbol_name, (None, None, None, False, False, None))
                 return BV('BVS',
                         (symbol_name,) + extra_args,
                         length=bv_size,
