@@ -124,6 +124,9 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     # Stuff that should be implemented by subclasses
     #
 
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        raise NotImplementedError("check_satisfiable() is not implemented")
+
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError("satisfiable() is not implemented")
 
