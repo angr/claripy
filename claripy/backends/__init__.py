@@ -600,6 +600,28 @@ class Backend(object):
         """
         raise BackendError("backend doesn't support max()")
 
+    def check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None):
+        """
+        This function does a constraint check and returns the solvers state
+
+        :param solver:              The backend solver object.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to s for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
+        :return:                    'SAT', 'UNSAT', or 'UNKNOWN'
+        """
+        return self._check_satisfiability(extra_constraints=self.convert_list(extra_constraints), solver=solver, model_callback=model_callback)
+
+    def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None):
+        """
+        This function does a constraint check and returns the solvers state
+
+        :param solver:              The backend solver object.
+        :param extra_constraints:   Extra constraints (as ASTs) to add to s for this solve
+        :param model_callback:      a function that will be executed with recovered models (if any)
+        :return:                    'SAT', 'UNSAT', or 'UNKNOWN'
+        """
+        return 'SAT' if self.satisfiable(extra_constraints, solver, model_callback) else 'UNSAT'
+
     def satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         """
         This function does a constraint check and checks if the solver is in a sat state.

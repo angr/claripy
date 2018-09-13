@@ -265,6 +265,34 @@ class CompositeFrontend(ConstrainedFrontend):
         if self._unsat or (len(extra_constraints) == 0 and not self.satisfiable()):
             raise UnsatError("CompositeSolver is already unsat")
 
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        if self._unsat:
+            return 'UNSAT'
+
+        l.debug("%r checking satisfiability...", self)
+
+        if len(extra_constraints) != 0:
+            extra_solver = self._merged_solver_for(lst=extra_constraints)
+            extra_solver_satness = extra_solver.check_satisfiability(extra_constraints=extra_constraints, exact=exact)
+            if extra_solver_satness in {'UNSAT', 'UNKNOWN'}:
+                return extra_solver_satness
+
+            satnesses = [
+                s.check_satisfiability(exact=exact) for s in
+                self._solver_list if s.variables.isdisjoint(extra_solver.variables)
+            ]
+            self._reabsorb_solver(extra_solver)
+            for satness in satnesses:
+                if satness in {'UNSAT', 'UNKNOWN'}:
+                    return satness
+            return 'SAT'
+        else:
+            for s in self._solver_list:
+                satness = s.check_satisfiability()
+                if satness in {'UNSAT', 'UNKNOWN'}:
+                    return satness
+            return 'SAT'
+
     def satisfiable(self, extra_constraints=(), exact=None):
         if self._unsat: return False
 

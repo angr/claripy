@@ -71,6 +71,9 @@ class Frontend(ana.Storable):
     def simplify(self):
         raise NotImplementedError()
 
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        raise NotImplementedError
+
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError()
 
