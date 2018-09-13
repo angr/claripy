@@ -103,7 +103,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
     def _add(self, s, c, track=False):
         s.add_constraints(c, track=track)
 
-    def _satisfiable(self, solver=None, extra_constraints=(), model_callback=None, extra_variables=()):
+    def _check_satness(self, solver=None, extra_constraints=(), model_callback=None, extra_variables=()):
         vars, csts = self._get_all_vars_and_constraints(solver=solver, e_c=extra_constraints, e_v=extra_variables)
         smt_script = self._get_satisfiability_smt_script(constraints=csts, variables=vars)
 
@@ -116,11 +116,18 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         solver.reset()
         solver.write(smt_script)
 
-        sat = solver.read_sat()
-        if sat not in {'sat', 'unsat'}:
-            # import ipdb; ipdb.set_trace()
+        sat = solver.read_sat().upper()
+        if sat not in {'SAT', 'UNSAT', 'UNKNOWN'}:
             raise ValueError("Solver error, don't understand (check-sat) response: {}".format(repr(sat)))
-        return sat == 'sat'
+        return sat.upper()
+
+    def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None, extra_variables=()):
+        satness = self._check_satness(solver, extra_constraints, model_callback, extra_variables)
+        return satness
+
+    def _satisfiable(self, solver=None, extra_constraints=(), model_callback=None, extra_variables=()):
+        satness = self._check_satness(solver, extra_constraints, model_callback, extra_variables)
+        return satness == 'SAT'
 
     def _get_model(self, solver=None, extra_constraints=(), extra_variables=()):
         vars, csts = self._get_all_vars_and_constraints(solver=solver, e_c=extra_constraints, e_v=extra_variables)
