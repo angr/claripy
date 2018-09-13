@@ -147,6 +147,9 @@ class BackendSMTLibBase(Backend):
         sorted_vars = sorted(free_variables, key=lambda s: s.symbol_name())
         return sorted_vars, all_csts
 
+    def _check_satisfiability(self, extra_constraints=(), solver=None, model_callback=None):
+        raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
+
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
 
