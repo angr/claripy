@@ -27,7 +27,7 @@ IS_INSTALLED, VERSION, ERROR = get_version()
 if IS_INSTALLED:
     class Z3StrProxy(PopenSolverProxy):
         def __init__(self, timeout=None):
-            cmd = ['/home/phate/repos/z3-update/build/z3', '-smt2', 'smt.string_solver=z3str3', '-in']
+            cmd = ['z3', '-smt2', 'smt.string_solver=z3str3', '-in']
             if timeout is not None:
                 cmd.append('-t:{}'.format(timeout/1000))  # our timeout is in milliseconds
 

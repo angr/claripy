@@ -6,20 +6,25 @@ from ..utils.transition import raise_from
 from .constrained_frontend import ConstrainedFrontend
 from ..frontend import Frontend
 
+import traceback
+
 l = logging.getLogger("claripy.frontends.portfolio_frontend")
 
 
 def execute_solver_satisfiable(args):
     solver, extra_constraints, exact = args
     try:
-        isSat = solver.satisfiable(
+        satness = solver.check_satisfiability(
             extra_constraints=extra_constraints,
             exact=exact
         )
-        return solver, isSat
+        if satness == 'UNKNOWN':
+            return solver, None
+        return solver, satness == 'SAT'
     except Exception as e:
-        l.debug("Solver failed to check satisfiability because %r", e)
-        return solver, False
+        traceback.print_exc()
+        l.error("Solver failed to check satisfiability because %r", e)
+        return solver, None
 
 
 def execute_solver_eval(args):
@@ -30,7 +35,8 @@ def execute_solver_eval(args):
         )
         return solver, res
     except Exception as e:
-        l.debug("Solver failed to get solution because %r", e)
+        traceback.print_exc()
+        l.error("Solver failed to get solution because %r", e)
         return solver, None
 
 
@@ -98,7 +104,7 @@ class PortfolioFrontend(Frontend):
         for solver, result in pool.imap_unordered(execute_solver_satisfiable, args):
             # wait until at least one result is True (sat) or until every solver returned False (unsat)
             # The time out is managed internally by every solver
-            if result:
+            if result is not None:
                 break
         assert result is not None
         pool.close()
