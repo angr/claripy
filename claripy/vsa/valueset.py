@@ -365,6 +365,29 @@ class ValueSet(BackendObject):
             return new_vs
 
     @normalize_types_one_arg
+    def __mod__(self, other):
+        """
+        Binary operation: modulo
+
+        :param other: The other operand
+        :return: A StridedInterval or a ValueSet.
+        """
+        if isinstance(other, ValueSet):
+            # TODO: Handle more cases
+            raise NotImplementedError()
+
+        else:
+            new_vs = self.copy()
+
+            # Call __mode__ on the base class
+            new_vs._si = self._si.__mod__(other)
+
+            for region, si in new_vs._regions.items():
+                new_vs._regions[region] = si % other
+
+            return new_vs
+
+    @normalize_types_one_arg
     def __and__(self, other):
         """
         Binary operation: and
