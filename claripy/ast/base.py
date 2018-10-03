@@ -946,19 +946,6 @@ class Base(ana.Storable):
     # Backwards compatibility crap
     #
 
-    @property
-    def model(self):
-        l.critical("DEPRECATION WARNING: do not use AST.model. It is deprecated, no longer does what is expected, and "
-                   "will soon be removed. If you *need* to access the model use AST._model_X where X is the backend "
-                   "that you are interested in.")
-        print("DEPRECATION WARNING: do not use AST.model. It is deprecated, no longer does what is expected, and will "
-              "soon be removed. If you *need* to access the model use AST._model_X where X is the backend that you are "
-              "interested in.")
-        return self._model_concrete if self._model_concrete is not self else \
-               self._model_vsa if self._model_vsa is not self else \
-               self._model_z3 if self._model_z3 is not self else \
-               self
-
     def __getattr__(self, a):
         if not a.startswith('_model_'):
             raise AttributeError(a)
