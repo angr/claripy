@@ -7,9 +7,13 @@ except ImportError:
     import os
     packages = [x.strip('./').replace('/','.') for x in os.popen('find -name "__init__.py" | xargs -n1 dirname').read().strip().split('\n')]
 
+if bytes is str:
+    raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
+
 setup(
     name='claripy',
     version='8.18.10.1',
+    python_requires='>=3.5',
     packages=packages,
     install_requires=[
         'ana',

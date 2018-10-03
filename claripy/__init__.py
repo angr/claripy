@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # pylint: disable=F0401,W0401,W0603,
 
+if bytes is str:
+    raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
+
 import os
 import sys
 import socket
