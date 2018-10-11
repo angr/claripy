@@ -1028,6 +1028,14 @@ def test_reverse():
     nose.tools.assert_equal(r2._model_vsa.max, 1337)
     nose.tools.assert_equal(r3._model_vsa.max, 1337)
 
+    # See claripy issue #95 for details.
+    si0 = StridedInterval(name='a', bits=32, stride=0, lower_bound=0xffff0000, upper_bound=0xffff0000)
+    si1 = StridedInterval(name='a', bits=32, stride=0, lower_bound=0xffff0001, upper_bound=0xffff0001)
+    dsis = DiscreteStridedIntervalSet(name='b', bits=32, si_set={si0, si1})
+
+    dsis_r = dsis.reverse()
+    solver = claripy.SolverVSA()
+    nose.tools.assert_equal(set(solver.eval(dsis_r, 3)), {0xffff, 0x100ffff})
 
 if __name__ == '__main__':
     test_reasonable_bounds()

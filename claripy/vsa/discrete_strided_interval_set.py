@@ -9,7 +9,17 @@ DEFAULT_MAX_CARDINALITY_WITHOUT_COLLAPSING = 256 # We don't collapse until there
 
 def apply_on_each_si(f):
     @functools.wraps(f)
-    def operator(self, o):
+    def operator(self, o=None):
+        if o is None:
+            # This is an unary operator.
+            new_si_set = set()
+
+            for a in self._si_set:
+                new_si_set.add(getattr(a, f.__name__)())
+
+            ret = DiscreteStridedIntervalSet(bits=self.bits, si_set=new_si_set)
+            return ret.normalize()
+
         if isinstance(o, DiscreteStridedIntervalSet):
             # We gotta apply the operation on each single object
             new_si_set = set()
@@ -461,6 +471,15 @@ class DiscreteStridedIntervalSet(StridedInterval):
             raise ClaripyVSAOperationError('Unsupported operand type %s for operation intersection.' % type(b))
 
     # Other operations
+
+    @apply_on_each_si
+    def reverse(self):
+        """
+        Operation Reverse
+
+        :return: None
+        """
+        pass
 
     @apply_on_each_si
     def sign_extend(self, new_length):
