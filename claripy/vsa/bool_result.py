@@ -118,6 +118,9 @@ class TrueResult(BoolResult):
     def __repr__(self):
         return '<True>'
 
+    def __bool__(self):
+        return True
+
 class FalseResult(BoolResult):
     cardinality = 1
 
@@ -158,6 +161,9 @@ class FalseResult(BoolResult):
         else:
             return NotImplemented
 
+    def __bool__(self):
+        return False
+
 class MaybeResult(BoolResult):
     cardinality = 2
 
@@ -194,6 +200,9 @@ class MaybeResult(BoolResult):
             return '<Maybe>'
         else:
             return '<Maybe(%s, %s)>' % (self._op, self._args)
+
+    def __bool__(self):
+        return False
 
 
 
