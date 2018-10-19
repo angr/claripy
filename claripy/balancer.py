@@ -450,7 +450,7 @@ class Balancer(object):
 
         if is_true(left_msb == 0) and is_true(right_msb == 0):
             # we can cut these guys off!
-            remaining_left = _all_operations.Concat(truism.args[0].args[1:])
+            remaining_left = _all_operations.Concat(*truism.args[0].args[1:])
             remaining_right = truism.args[1][size-len(left_msb)-1:0]
             return truism.make_like(truism.op, (remaining_left, remaining_right))
         else:
