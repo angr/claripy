@@ -597,64 +597,6 @@ class Base(ana.Storable):
     # Various AST modifications (replacements)
     #
 
-    def _replace(self, replacements, variable_set=None, leaf_operation=None):
-        """
-        A helper for replace().
-
-        :param variable_set: For optimization, ast's without these variables are not checked for replacing.
-        :param replacements: A dictionary of hashes to their replacements.
-        """
-        try:
-            if variable_set is None:
-                variable_set = set()
-
-            hash_key = self.cache_key
-
-            try:
-                r = replacements[hash_key]
-                return r
-            except KeyError:
-                pass
-
-            if not self.variables.issuperset(variable_set):
-                r = self
-            elif leaf_operation is not None and self.op in operations.leaf_operations:
-                r = leaf_operation(self)
-                if r is not self:
-                    replacements[hash_key] = r
-                return r
-            else:
-                new_args = [ ]
-                replaced = False
-
-                op_is_or = self.op == "Or"
-
-                for a in self.args:
-                    if isinstance(a, Base):
-                        new_a = a._replace(replacements=replacements, variable_set=variable_set, leaf_operation=leaf_operation)
-                        replaced |= new_a is not a
-                    else:
-                        new_a = a
-
-                    # Optimization: if self.op is 'Or' and new_a is True, the entire AST should be evaluated to True
-                    # regardless of future replacements
-                    if op_is_or and is_true(new_a):
-                        new_args = [ new_a ]
-                        break
-
-                    new_args.append(new_a)
-
-                if replaced:
-                    r = self.make_like(self.op, tuple(new_args))
-                    replacements[hash_key] = r
-                else:
-                    r = self
-
-            return r
-        except ClaripyReplacementError:
-            l.error("Replacement error:", exc_info=True)
-            return self
-
     def swap_args(self, new_args, new_length=None):
         """
         This returns the same AST, with the arguments swapped out for new_args.
@@ -742,31 +684,82 @@ class Base(ana.Storable):
 
         return True
 
-    def replace(self, old, new):
+    def replace_dict(self, replacements, variable_set=None, leaf_operation=None):
+        """
+        Returns this AST with subexpressions replaced by those that can be found in `replacements` dict.
+
+        :param variable_set:    For optimization, ast's without these variables are not checked for replacing.
+        :param replacements:    A dictionary of hashes to their replacements.
+        :param leaf_operation:  An operation that should be applied to the leaf nodes.
+        :return:                An AST with all instances of ast's in replacements.
+        """
+        if variable_set is None:
+            variable_set = set()
+
+        if leaf_operation is None:
+            leaf_operation = lambda x: x
+
+        arg_queue = [iter([self])]
+        rep_queue = []
+        ast_queue = []
+
+        while arg_queue:
+            try:
+                ast = next(arg_queue[-1])
+                repl = ast
+
+                if not isinstance(ast, Base):
+                    rep_queue.append(repl)
+                    continue
+
+                elif ast.cache_key in replacements:
+                    repl = replacements[ast.cache_key]
+
+                elif ast.variables >= variable_set:
+
+                    if ast.op in operations.leaf_operations:
+                        repl = leaf_operation(ast)
+                        if repl is not ast:
+                            replacements[ast.cache_key] = repl
+
+                    elif ast.depth > 1:
+                        arg_queue.append(iter(ast.args))
+                        ast_queue.append(ast)
+                        continue
+
+                rep_queue.append(repl)
+                continue
+
+            except StopIteration:
+                arg_queue.pop()
+
+                if ast_queue:
+                    ast = ast_queue.pop()
+                    repl = ast
+
+                    args = rep_queue[-len(ast.args):]
+                    del rep_queue[-len(ast.args):]
+
+                    # Check if replacement occurred.
+                    if any((a is not b for a, b in zip(ast.args, args))):
+                        repl = ast.make_like(ast.op, tuple(args))
+                        replacements[ast.cache_key] = repl
+
+                    rep_queue.append(repl)
+
+        assert len(arg_queue) == 0, "arg_queue is not empty"
+        assert len(ast_queue) == 0, "ast_queue is not empty"
+        assert len(rep_queue) == 1, ("rep_queue has unexpected length", len(rep_queue))
+
+        return rep_queue.pop()
+
+    def replace(self, old, new, variable_set=None, leaf_operation=None):   # pylint:disable=unused-argument
         """
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
         self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
-        return self._replace(replacements, variable_set=old.variables)
-
-    def replace_dict(self, replacements):
-        """
-        :param replacements:    A dictionary of asts to replace and their replacements.
-        :return:                An AST with all instances of ast's in replacements.
-        """
-        #for old, new in replacements.items():
-        #   old = old.ast
-        #   if not isinstance(old, Base) or not isinstance(new, Base):
-        #       raise ClaripyOperationError('replacements must be AST nodes')
-        #   if type(old) is not type(new):
-        #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
-        #   old._check_replaceability(new)
-
-        if replacements is None or len(replacements) == 0:  # pylint:disable=len-as-condition
-            return self
-
-        return self._replace(replacements, variable_set=set())
+        return self.replace_dict(replacements, variable_set=old.variables)
 
     @staticmethod
     def _check_replaceability(old, new):

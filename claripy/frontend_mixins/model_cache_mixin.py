@@ -54,7 +54,7 @@ class ModelCache(object):
         """
         # If there was no last value, it was not constrained, so we can use
         # anything.
-        new_ast = ast._replace(self.replacements, leaf_operation=self._leaf_op)
+        new_ast = ast.replace_dict(self.replacements, leaf_operation=self._leaf_op)
         return backends.concrete.eval(new_ast, 1)[0]
 
     def eval_constraints(self, constraints):
