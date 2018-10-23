@@ -10,7 +10,6 @@ from past.builtins import long
 from functools import reduce
 from decimal import Decimal
 
-from ..utils.transition import raise_from
 from ..errors import ClaripyZ3Error
 
 l = logging.getLogger("claripy.backends.backend_z3")
@@ -22,7 +21,6 @@ try:
     _is_pypy = True
 except ImportError:
     _is_pypy = False
-
 
 def _add_memory_pressure(p):
     """
@@ -57,13 +55,9 @@ def condom(f):
         The Z3 condom intercepts Z3Exceptions and throws a ClaripyZ3Error instead.
         """
         try:
-            if int is not long:
-                condom_args = tuple((int(a) if type(a) is long and a < sys.maxint else a) for a in args)
-            else:
-                condom_args = args
-            return f(*condom_args, **kwargs)
+            return f(*args, **kwargs)
         except z3.Z3Exception as ze:
-            raise_from(ClaripyZ3Error("Z3Exception: %s" % ze), ze)
+            raise ClaripyZ3Error() from ze
     return z3_condom
 
 def _raw_caller(f):
@@ -72,6 +66,21 @@ def _raw_caller(f):
     def raw_caller(*args, **kwargs):
         return f(*args, **kwargs)
     return raw_caller
+
+def _z3_decl_name_str(ctx, decl):
+    # reimplementation of Z3_get_symbol_string to not try to unicode-decode
+    lib = z3.lib()
+
+    decl_name = lib.Z3_get_decl_name(ctx, decl)
+    err = lib.Z3_get_error_code(ctx)
+    if err != z3.Z3_OK:
+        raise z3.Z3Exception(lib.Z3_get_error_msg(ctx, err))
+
+    symbol_name = lib.Z3_get_symbol_string(ctx, decl_name)
+    err = lib.Z3_get_error_code(ctx)
+    if err != z3.Z3_OK:
+        raise z3.Z3Exception(z3.lib().Z3_get_error_msg(ctx, err))
+    return symbol_name
 
 #
 # And the (ugh) magic
@@ -120,10 +129,17 @@ class BackendZ3(Backend):
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
 
-        # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
-        # "proposed annotation backend" or wherever will prevent it from being part of the object
-        # identity. also whenever the VSA attributes get the fuck out of BVS as well
-        self._tls.extra_bvs_data = {}
+    # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
+    # "proposed annotation backend" or wherever will prevent it from being part of the object
+    # identity. also whenever the VSA attributes get the fuck out of BVS as well
+    @property
+    def extra_bvs_data(self):
+        try:
+            return self._tls.extra_bvs_data
+        except AttributeError:
+            # a pointer to get values out of Z3
+            self._tls.extra_bvs_data = {}
+            return self._tls.extra_bvs_data
 
 
     @property
@@ -226,8 +242,8 @@ class BackendZ3(Backend):
 
     @condom
     def BVS(self, ast):
-        name, mn, mx, stride, uninit, discrete, discrete_max = ast.args
-        self._tls.extra_bvs_data[name] = (mn, mx, stride, uninit, discrete, discrete_max)
+        name = ast._encoded_name
+        self.extra_bvs_data[name] = ast.args
         size = ast.size()
         expr = z3.BitVec(name, size, ctx=self._context)
         #if mn is not None:
@@ -235,11 +251,11 @@ class BackendZ3(Backend):
         #if mx is not None:
         #    expr = z3.If(z3.UGT(expr, mx), mx, expr, ctx=self._context)
         #if stride is not None:
-        #    expr = (expr / stride) * stride
+        #    expr = (expr // stride) * stride
         return expr
 
     @condom
-    def BVV(self, ast): #pylint:disable=unused-argument
+    def BVV(self, ast):
         if ast.args[0] is None:
             raise BackendError("Z3 can't handle empty BVVs")
 
@@ -247,13 +263,12 @@ class BackendZ3(Backend):
         return z3.BitVecVal(ast.args[0], size, ctx=self._context)
 
     @condom
-    def FPS(self, ast): #pylint:disable=unused-argument
-        name, sort_claripy = ast.args
-        sort_z3 = self._convert(sort_claripy)
-        return z3.FP(name, sort_z3, ctx=self._context)
+    def FPS(self, ast):
+        sort_z3 = self._convert(ast.args[1])
+        return z3.FP(ast._encoded_name, sort_z3, ctx=self._context)
 
     @condom
-    def FPV(self, ast): #pylint:disable=unused-argument
+    def FPV(self, ast):
         val = str(ast.args[0])
         sort = self._convert(ast.args[1])
         if val == 'inf':
@@ -271,8 +286,8 @@ class BackendZ3(Backend):
             return z3.FPVal(better_val, sort, ctx=self._context)
 
     @condom
-    def BoolS(self, ast): #pylint:disable=unused-argument
-        return z3.Bool(ast.args[0], ctx=self._context)
+    def BoolS(self, ast):
+        return z3.Bool(ast._encoded_name, ctx=self._context)
 
     @condom
     def BoolV(self, ast): #pylint:disable=unused-argument
@@ -379,29 +394,34 @@ class BackendZ3(Backend):
             return FPV(val, sort)
 
         elif op_name == 'UNINTERPRETED' and num_args == 0: # symbolic value
-            symbol_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
+            symbol_name = _z3_decl_name_str(ctx, decl)
+            symbol_str = symbol_name.decode()
             symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
 
             if symbol_ty == z3.Z3_BV_SORT:
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-                extra_args = self._tls.extra_bvs_data.get(symbol_name, (None, None, None, False, False, None))
+                ast_args = self.extra_bvs_data.get(symbol_name, None)
+                if ast_args is None:
+                    ast_args = (symbol_str, None, None, None, False, False, None)
+
                 return BV('BVS',
-                        (symbol_name,) + extra_args,
+                        ast_args,
                         length=bv_size,
-                        variables={ symbol_name },
-                        symbolic=True)
+                        variables={ symbol_str },
+                        symbolic=True,
+                        encoded_name=symbol_name)
             elif symbol_ty == z3.Z3_BOOL_SORT:
                 return Bool('BoolS',
-                        (symbol_name,),
-                        variables={ symbol_name },
+                        (symbol_str,),
+                        variables={ symbol_str },
                         symbolic=True)
             elif symbol_ty == z3.Z3_FLOATING_POINT_SORT:
                 ebits = z3.Z3_fpa_get_ebits(ctx, z3_sort)
                 sbits = z3.Z3_fpa_get_sbits(ctx, z3_sort)
                 sort = FSort.from_params(ebits, sbits)
                 return FP('FPS',
-                        (symbol_name, sort),
-                        variables={ symbol_name },
+                        (symbol_str, sort),
+                        variables={ symbol_str },
                         symbolic=True,
                         length=sort.length)
             else:
@@ -566,7 +586,7 @@ class BackendZ3(Backend):
         """
         model = { }
         for m_f in z3_model:
-            n = m_f.name()
+            n = _z3_decl_name_str(m_f.ctx.ctx, m_f.ast).decode()
             m = m_f()
             me = z3_model.eval(m)
             model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
