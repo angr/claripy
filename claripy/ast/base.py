@@ -6,7 +6,6 @@ import numbers
 import os
 import struct
 import weakref
-from ..utils.transition import raise_from
 from past.builtins import long
 
 try:
@@ -410,7 +409,7 @@ class Base(ana.Storable):
             else:
                 return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
         except RuntimeError as e:
-            raise_from(ClaripyRecursionError("Recursion limit reached during display. Sorry about that."), e)
+            raise ClaripyRecursionError("Recursion limit reached during display. Sorry about that.") from e
 
     def _type_name(self):
         return self.__class__.__name__
@@ -498,7 +497,7 @@ class Base(ana.Storable):
 
             return value
         except RuntimeError as e:
-            raise_from(ClaripyRecursionError("Recursion limit reached during display. Sorry about that."), e)
+            raise ClaripyRecursionError("Recursion limit reached during display. Sorry about that.") from e
 
     @property
     def depth(self):

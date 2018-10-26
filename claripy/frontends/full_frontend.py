@@ -1,7 +1,5 @@
 import logging
-import sys
 import threading
-from ..utils.transition import raise_from
 
 from .constrained_frontend import ConstrainedFrontend
 
@@ -90,7 +88,7 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver(), model_callback=self._model_hook
             )
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during solve"), e)
+            raise ClaripyFrontendError("Backend error during solve") from e
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -102,7 +100,7 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver(), model_callback=self._model_hook
             ))
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during eval"), e)
+            raise ClaripyFrontendError("Backend error during eval") from e
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -117,7 +115,7 @@ class FullFrontend(ConstrainedFrontend):
                 model_callback=self._model_hook
             )
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during batch_eval"), e)
+            raise ClaripyFrontendError("Backend error during batch_eval") from e
 
     def max(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -137,7 +135,7 @@ class FullFrontend(ConstrainedFrontend):
                 model_callback=self._model_hook
             )
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during max"), e)
+            raise ClaripyFrontendError("Backend error during max") from e
 
     def min(self, e, extra_constraints=(), exact=None):
         if not self.satisfiable(extra_constraints=extra_constraints):
@@ -157,7 +155,7 @@ class FullFrontend(ConstrainedFrontend):
                 model_callback=self._model_hook
             )
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during min"), e)
+            raise ClaripyFrontendError("Backend error during min") from e
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         try:
@@ -166,7 +164,7 @@ class FullFrontend(ConstrainedFrontend):
                 solver=self._get_solver(), model_callback=self._model_hook
             )
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during solution"), e)
+            raise ClaripyFrontendError("Backend error during solution") from e
 
     def is_true(self, e, extra_constraints=(), exact=None):
         return e.is_true()

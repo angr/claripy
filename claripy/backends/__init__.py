@@ -2,7 +2,6 @@ import ctypes
 import weakref
 import operator
 import threading
-from ..utils.transition import raise_from
 
 import logging
 l = logging.getLogger('claripy.backend')
@@ -161,8 +160,7 @@ class Backend(object):
                     except BackendUnsupportedError:
                         r = self.default_op(expr)
             except (RuntimeError, ctypes.ArgumentError) as e:
-                raise_from(ClaripyRecursionError("Recursion limit reached. Sorry about that."), e)
-                raise # make static analysis happy
+                raise ClaripyRecursionError("Recursion limit reached. Sorry about that.") from e
             except BackendError:
                 expr._errored.add(self)
                 raise

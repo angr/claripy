@@ -95,3 +95,12 @@ from .frontend import Frontend as _Frontend
 from . import frontends
 from . import frontend_mixins
 from .solvers import *
+
+#
+# Convenient button
+#
+
+def reset():
+    downsize()
+    from .ast import bv
+    bv._bvv_cache.clear()
