@@ -74,6 +74,7 @@ class BackendVSA(Backend):
         self._op_raw['__or__'] = self._op_or
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
+        self._op_raw['__mod__'] = self._op_mod
 
     @staticmethod
     def _op_add(*args):
@@ -93,6 +94,9 @@ class BackendVSA(Backend):
     @staticmethod
     def _op_and(*args):
         return reduce(operator.__and__, args)
+    @staticmethod
+    def _op_mod(*args):
+        return reduce(operator.__mod__, args)
 
     def convert(self, expr):
         return Backend.convert(self, expr.ite_excavated if isinstance(expr, Base) else expr)

@@ -246,7 +246,7 @@ class ModelCacheMixin(object):
         if len(results) != 0:
             constraints = (all_operations.And(*[
                 all_operations.Or(*[a!=v for a,v in zip(asts, r)]) for r in results
-            ]),) + extra_constraints
+            ]),) + tuple(extra_constraints)
         else:
             constraints = extra_constraints
 

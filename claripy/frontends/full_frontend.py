@@ -129,7 +129,7 @@ class FullFrontend(ConstrainedFrontend):
         if len(two) == 0: raise UnsatError("unsat during max()")
         elif len(two) == 1: return two[0]
 
-        c = extra_constraints + (UGE(e, two[0]), UGE(e, two[1]))
+        c = tuple(extra_constraints) + (UGE(e, two[0]), UGE(e, two[1]))
         try:
             return self._solver_backend.max(
                 e, extra_constraints=c,
@@ -149,7 +149,7 @@ class FullFrontend(ConstrainedFrontend):
         if len(two) == 0: raise UnsatError("unsat during min()")
         elif len(two) == 1: return two[0]
 
-        c = extra_constraints + (ULE(e, two[0]), ULE(e, two[1]))
+        c = tuple(extra_constraints) + (ULE(e, two[0]), ULE(e, two[1]))
         try:
             return self._solver_backend.min(
                 e, extra_constraints=c,
