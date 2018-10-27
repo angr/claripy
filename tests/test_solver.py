@@ -216,20 +216,20 @@ def raw_solver(solver_type):
         x = claripy.BVS('x', 32)
         s.add(x == 10)
         nose.tools.assert_true(s.satisfiable())
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count
         nose.tools.assert_equal(s.eval(x, 1)[0], 10)
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count
         s.add(x == 10)
         s.add(x > 9)
         nose.tools.assert_equal(s.eval(x, 1)[0], 10)
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count
 
         y = claripy.BVS('y', 32)
         s.add(y < 999)
         assert s.satisfiable()
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count
         nose.tools.assert_equal(s.eval(y, 1)[0], 0)
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count
 
 def test_solver_branching():
     for s in solver_list:
@@ -328,16 +328,16 @@ def test_composite_solver():
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
     z = claripy.BVS("z", 32)
-    c = claripy.And(x == 1, y == 2, z == 3)
+    c = claripy.And(x == 1, y == 2, z > 3)
     s.add(c)
 
     if isinstance(s._template_frontend, claripy.frontend_mixins.ModelCacheMixin):
         assert len(s._solver_list) == 3
         count = claripy._backends_module.backend_z3.solve_count
         assert s.satisfiable()
-        assert claripy._backends_module.backend_z3.solve_count == count + 3
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
         assert list(s.eval(x+y, 1)) == [3]
-        assert claripy._backends_module.backend_z3.solve_count == count + 3
+        assert claripy._backends_module.backend_z3.solve_count == count + 1
 
 def test_minmax():
     s = claripy.Solver()

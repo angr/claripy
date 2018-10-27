@@ -129,6 +129,24 @@ class ModelCacheMixin(object):
             self._models.clear()
         return results
 
+    def _trivial_model_optimization(self):
+        c = self.constraints[0]
+        if not (
+            c.depth == 2 and
+            c.op == '__eq__' and
+            len(c.variables) == 1 and
+            c.args[0].symbolic and not c.args[1].symbolic and
+            c.args[0].op == 'BVS'
+        ):
+            return
+
+        self._models.add(ModelCache({
+            next(iter(c.args[0].variables)): backends.concrete.eval(c.args[1], 1)[0]
+        }))
+        self._eval_exhausted.add(c.args[0].cache_key)
+        self._max_exhausted.add(c.args[0].cache_key)
+        self._min_exhausted.add(c.args[0].cache_key)
+
     def add(self, constraints, invalidate_cache=True, **kwargs):
         if len(constraints) == 0:
             return constraints
@@ -137,6 +155,9 @@ class ModelCacheMixin(object):
         added = super(ModelCacheMixin, self).add(constraints, **kwargs)
         if len(added) == 0:
             return added
+
+        if len(self.constraints) == 1 and len(self._models) == 0:
+            self._trivial_model_optimization()
 
         new_vars = any(a.variables - old_vars for a in added)
         if new_vars or invalidate_cache:
