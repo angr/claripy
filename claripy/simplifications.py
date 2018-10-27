@@ -683,4 +683,4 @@ from . import fp
 
 
 # the actual instance
-manager = SimplificationManager()
+simpleton = SimplificationManager()
