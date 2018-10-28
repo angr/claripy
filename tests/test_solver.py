@@ -8,9 +8,19 @@ solver_list = (claripy.Solver, claripy.SolverReplacement, claripy.SolverHybrid, 
 
 def test_solver():
     for s in solver_list:
-        yield raw_solver, s
+        yield raw_solver, s, True
+        yield raw_solver, s, False
+
 
 def test_hybrid_solver():
+    yield raw_hybrid_solver, True
+    yield raw_hybrid_solver, False
+
+
+def raw_hybrid_solver(reuse_z3_solver):
+
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s = claripy.SolverHybrid()
 
     x = claripy.BVS('x', 32, min=0, max=10, stride=2)
@@ -49,7 +59,15 @@ def test_hybrid_solver():
     nose.tools.assert_equal(len(t.eval(x, 8, exact=False)), 8)
     nose.tools.assert_equal(len(t.eval(x, 99, exact=False)), 11)
 
+
 def test_replacement_solver():
+    yield raw_replacement_solver, True
+    yield raw_replacement_solver, False
+
+def raw_replacement_solver(reuse_z3_solver):
+
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     sr = claripy.SolverReplacement()
     x = claripy.BVS('x', 32)
     nose.tools.assert_equal(len(sr.eval(x, 10)), 10)
@@ -78,12 +96,13 @@ def test_replacement_solver():
     sr.add([x + 8 >= 0])
     assert sr._replacement(x) is not x
 
-def raw_solver(solver_type):
+def raw_solver(solver_type, reuse_z3_solver):
     #bc = claripy.backends.BackendConcrete(clrp)
     #bz = claripy.backends.BackendZ3(clrp)
     #claripy.expression_backends = [ bc, bz, ba ]
 
-    print("YOYO")
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s = solver_type()
 
     s.simplify()
@@ -233,9 +252,12 @@ def raw_solver(solver_type):
 
 def test_solver_branching():
     for s in solver_list:
-        yield raw_solver_branching, s
+        yield raw_solver_branching, s, True
+        yield raw_solver_branching, s, False
 
-def raw_solver_branching(solver_type):
+def raw_solver_branching(solver_type, reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s = solver_type()
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
@@ -266,9 +288,12 @@ def raw_solver_branching(solver_type):
 
 def test_combine():
     for s in solver_list:
-        yield raw_combine, s
+        yield raw_combine, s, True
+        yield raw_combine, s, False
 
-def raw_combine(solver_type):
+def raw_combine(solver_type, reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s10 = solver_type()
     s20 = solver_type()
     s30 = solver_type()
@@ -288,7 +313,15 @@ def raw_combine(solver_type):
     nose.tools.assert_equal(s30.combine([s10]).eval(x, 1), ( 30, ))
     nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
 
+
 def test_composite_solver():
+    yield raw_composite_solver, True
+    yield raw_composite_solver, False
+
+
+def raw_composite_solver(reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     #pylint:disable=no-member
     s = claripy.SolverComposite()
     x = claripy.BVS("x", 32)
@@ -339,7 +372,14 @@ def test_composite_solver():
         assert list(s.eval(x+y, 1)) == [3]
         assert claripy._backends_module.backend_z3.solve_count == count + 1
 
+
 def test_minmax():
+    yield raw_minmax, True
+    yield raw_minmax, False
+
+def raw_minmax(reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s = claripy.Solver()
     x = claripy.BVS("x", 32)
 
@@ -347,7 +387,15 @@ def test_minmax():
     nose.tools.assert_equal(s.min(x), 0)
     nose.tools.assert_true(s.satisfiable())
 
+
 def test_composite_discrepancy():
+    yield raw_composite_discrepancy, True
+    yield raw_composite_discrepancy, False
+
+
+def raw_composite_discrepancy(reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     a = claripy.BVS("a", 8)
     b = claripy.BVS("b", 8)
     x = claripy.BVS("x", 32)
@@ -411,7 +459,9 @@ def test_simplification_annotations():
     s.simplify()
     assert len(s.constraints) == 2
 
-def raw_ancestor_merge(solver):
+def raw_ancestor_merge(solver, reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s = solver()
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
@@ -437,10 +487,13 @@ def raw_ancestor_merge(solver):
 
 def test_ancestor_merge():
     for s in solver_list:
-        yield raw_ancestor_merge, s
+        yield raw_ancestor_merge, s, True
+        yield raw_ancestor_merge, s, False
 
 
-def raw_unsat_core(solver):
+def raw_unsat_core(solver, reuse_z3_solver):
+    claripy._backend_z3.reuse_z3_solver = reuse_z3_solver
+
     s = solver(track=True)
     x = claripy.BVS("x", 32)
     y = claripy.BVS("y", 32)
@@ -463,7 +516,8 @@ def raw_unsat_core(solver):
 
 def test_unsat_core():
     for s in (claripy.Solver, claripy.SolverComposite, claripy.SolverCacheless, claripy.SolverHybrid):
-        yield raw_unsat_core, s
+        yield raw_unsat_core, s, True
+        yield raw_unsat_core, s, False
 
 
 def test_zero_division_in_cache_mixin():
@@ -489,23 +543,24 @@ def test_zero_division_in_cache_mixin():
 
 if __name__ == '__main__':
 
-    for func, param in test_unsat_core():
-        func(param)
+    for fparams in test_unsat_core():
+        fparams[0](*fparams[1:])
 
-    for func,param in test_ancestor_merge():
-        func(param)
+    for fparams in test_ancestor_merge():
+        fparams[0](*fparams[1:])
     test_simplification_annotations()
     test_model()
-    test_composite_discrepancy()
-    for func, param in test_solver():
-        func(param)
+    for fparams in test_composite_discrepancy():
+        fparams[0](*fparams[1:])
+    for fparams in test_solver():
+        fparams[0](*fparams[1:])
     test_hybrid_solver()
     test_replacement_solver()
     test_minmax()
     test_solver_branching()
-    for func, param in test_solver_branching():
-        func(param)
-    for func, param in test_combine():
-        func(param)
+    for fparams in test_solver_branching():
+        fparams[0](*fparams[1:])
+    for fparams in test_combine():
+        fparams[0](*fparams[1:])
     test_composite_solver()
     test_zero_division_in_cache_mixin()
