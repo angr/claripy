@@ -1,4 +1,3 @@
-import collections
 import hashlib
 import itertools
 import logging
@@ -6,6 +5,7 @@ import numbers
 import os
 import struct
 import weakref
+from collections import OrderedDict, deque
 from past.builtins import long
 
 try:
@@ -77,7 +77,8 @@ class Base(ana.Storable):
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
+                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
+                  '_depth']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -211,6 +212,7 @@ class Base(ana.Storable):
         self._cache_key = ASTCacheKey(self)
         self._excavated = None
         self._burrowed = None
+        self._depth = None
 
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
@@ -222,7 +224,7 @@ class Base(ana.Storable):
             tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
         ))
 
-        self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
+        self._relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
             itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
             tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
         ))).keys()
@@ -504,53 +506,69 @@ class Base(ana.Storable):
         """
         The depth of this AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
         """
-        return self._depth()
+        if self._depth is None:
+            self._depth = 0
 
-    def _depth(self, memoized=None):
+            ast_queue = deque([(1, self)])
+            while ast_queue:
+
+                depth, ast = ast_queue.pop()
+                self._depth = max(self._depth, depth)
+
+                for arg in ast.args:
+                    if isinstance(arg, Base):
+                        ast_queue.append((depth + 1, arg))
+
+        return self._depth
+
+    def children_asts(self):
+        """children_asts
+
         """
-        :param memoized:    A dict of ast hashes to depths we've seen before
-        :return:            The depth of the AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
+        ast_queue = deque([iter(self.args)])
+        while ast_queue:
+
+            try:
+                ast = next(ast_queue[-1])
+            except StopIteration:
+                ast_queue.pop()
+                continue
+
+            if isinstance(ast, Base):
+                ast_queue.append(iter(ast.args))
+
+                l.debug("Yielding AST %s with hash %s with %d children", ast, hash(ast), len(ast.args))
+                yield ast
+
+    def leaf_asts(self):
+        """leaf_asts
+
         """
-        if memoized is None:
-            memoized = dict()
+        seen = set()
 
-        ast_args = [ a for a in self.args if isinstance(a, Base) ]
-        max_depth = 0
-        for a in ast_args:
-            if a.cache_key not in memoized:
-                memoized[a.cache_key] = a._depth(memoized)
-            max_depth = max(memoized[a.cache_key], max_depth)
+        ast_queue = deque([self])
+        while ast_queue:
 
-        return 1 + max_depth
+            ast = ast_queue.pop()
+            if isinstance(ast, Base) and id(ast.cache_key) not in seen:
+                seen.add(id(ast.cache_key))
 
+                if ast.depth == 1:
+                    yield ast
+                    continue
+
+                ast_queue.extend(ast.args)
+                continue
+
+    # TODO: Deprecate this property
     @property
     def recursive_children_asts(self):
-        for a in self.args:
-            if isinstance(a, Base):
-                l.debug("Yielding AST %s with hash %s with %d children", a, hash(a), len(a.args))
-                yield a
-                for b in a.recursive_children_asts:
-                    yield b
+        return self.children_asts()
 
+    # TODO: Deprecate this property
     @property
     def recursive_leaf_asts(self):
-        return self._recursive_leaf_asts()
-
-    def _recursive_leaf_asts(self, seen=None):
-        if self.depth == 1:
-            yield self
-            return
-
-        seen = set() if seen is None else seen
-        for a in self.args:
-            if isinstance(a, Base) and not a.cache_key in seen:
-                seen.add(a.cache_key)
-
-                if a.depth == 1:
-                    yield a
-                else:
-                    for b in a.recursive_leaf_asts:
-                        yield b
+        return self.leaf_asts()
 
     def dbg_is_looped(self, seen=None, checked=None):
         seen = set() if seen is None else seen
@@ -773,7 +791,7 @@ class Base(ana.Storable):
         counter = itertools.count() if counter is None else counter
         var_map = { } if var_map is None else var_map
 
-        for v in self._recursive_leaf_asts():
+        for v in self.leaf_asts():
             if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
                 new_name = 'canonical_%d' % next(counter)
                 var_map[v.cache_key] = v._rename(new_name)
