@@ -1,4 +1,5 @@
 import sys
+import os
 import z3
 import ctypes
 import logging
@@ -6,7 +7,6 @@ import numbers
 import operator
 import threading
 import weakref
-from past.builtins import long
 from functools import reduce
 from decimal import Decimal
 
@@ -44,6 +44,12 @@ def _add_memory_pressure(p):
 solve_count = 0
 
 supports_fp = hasattr(z3, 'fpEQ')
+
+#
+# Per-thread Z3 solver
+#
+
+reuse_z3_solver = True if os.environ.get('REUSE_Z3_SOLVER', "False").lower() in {"1", "true", "yes", "y"} else False
 
 #
 # Utility functions
@@ -545,14 +551,24 @@ class BackendZ3(Backend):
             raise BackendError("Called _abstract_fp_val with unknown type")
 
     def solver(self, timeout=None):
-        s = z3.Solver(ctx=self._context)
+        if not reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
+            s = z3.Solver(ctx=self._context)
+            _add_memory_pressure(1024 * 1024 * 10)
+            if reuse_z3_solver:
+                # Store the Z3 solver to a thread-local storage if the reuse-solver option is enabled
+                self._tls.solver = s
+        else:
+            # Load the existing Z3 solver for this thread
+            s = self._tls.solver
+            s.reset()
+
+        # Configure timeouts
         if timeout is not None:
             if 'soft_timeout' in str(s.param_descrs()):
                 s.set('soft_timeout', timeout)
                 s.set('solver2_timeout', timeout)
             else:
                 s.set('timeout', timeout)
-        _add_memory_pressure(1024 * 1024 * 10)
         return s
 
     def _add(self, s, c, track=False):
