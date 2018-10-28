@@ -51,10 +51,6 @@ supports_fp = hasattr(z3, 'fpEQ')
 
 reuse_z3_solver = True if os.environ.get('REUSE_Z3_SOLVER', "False").lower() in {"1", "true", "yes", "y"} else False
 
-
-class Z3ThreadSolvers:
-    tls = threading.local()
-
 #
 # Utility functions
 #
@@ -555,15 +551,15 @@ class BackendZ3(Backend):
             raise BackendError("Called _abstract_fp_val with unknown type")
 
     def solver(self, timeout=None):
-        if not reuse_z3_solver or getattr(Z3ThreadSolvers.tls, 'solver', None) is None:
+        if not reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
             s = z3.Solver(ctx=self._context)
             _add_memory_pressure(1024 * 1024 * 10)
             if reuse_z3_solver:
                 # Store the Z3 solver to a thread-local storage if the reuse-solver option is enabled
-                Z3ThreadSolvers.tls.solver = s
+                self._tls.solver = s
         else:
             # Load the existing Z3 solver for this thread
-            s = Z3ThreadSolvers.tls.solver
+            s = self._tls.solver
             s.reset()
 
         # Configure timeouts
