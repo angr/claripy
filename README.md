@@ -1,12 +1,12 @@
 # claripy
 
-Claripy is a abstracted constraint-solving wrapper.
+Claripy is an abstracted constraint-solving wrapper.
 
 ## Usage
 
 It is usable!
 
-General usage is similar to z3:
+General usage is similar to Z3:
 
 ```python
 >>> import claripy
