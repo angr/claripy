@@ -560,7 +560,7 @@ class BackendZ3(Backend):
             _add_memory_pressure(1024 * 1024 * 10)
             if reuse_z3_solver:
                 # Store the Z3 solver to a thread-local storage if the reuse-solver option is enabled
-                Z3ThreadSolvers.solver = s
+                Z3ThreadSolvers.tls.solver = s
         else:
             # Load the existing Z3 solver for this thread
             s = Z3ThreadSolvers.tls.solver
