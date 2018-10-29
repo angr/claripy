@@ -73,7 +73,7 @@ class Base(ana.Storable):
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
-                  '_depth']
+                  'depth']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
@@ -148,7 +148,8 @@ class Base(ana.Storable):
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls)
-            self.__a_init__(op, a_args, **kwargs)
+            depth = max(a.depth if isinstance(a, Base) else 0 for a in a_args) + 1
+            self.__a_init__(op, a_args, depth=depth, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -186,7 +187,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -198,6 +199,7 @@ class Base(ana.Storable):
         self.length = length
         self.variables = frozenset(variables)
         self.symbolic = symbolic
+        self.depth = depth if depth is not None else 1
         self._eager_backends = eager_backends
         self._cached_encoded_name = encoded_name
 
@@ -207,7 +209,6 @@ class Base(ana.Storable):
         self._cache_key = ASTCacheKey(self)
         self._excavated = None
         self._burrowed = None
-        self._depth = None
 
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
@@ -271,14 +272,14 @@ class Base(ana.Storable):
         """
         Support for ANA serialization.
         """
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations, self.depth
 
     def _ana_setstate(self, state):
         """
         Support for ANA deserialization.
         """
-        op, args, length, variables, symbolic, h, annotations = state
-        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
+        op, args, length, variables, symbolic, h, annotations, depth = state
+        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, depth=depth)
         self._hash = h
         Base._hash_cache[h] = self
 
@@ -389,24 +390,11 @@ class Base(ana.Storable):
     # Viewing and debugging
     #
 
-    def dbg_repr(self, prefix=None):
+    def dbg_repr(self, prefix=None):  # pylint:disable=unused-argument
         """
         Returns a debug representation of this AST.
         """
-        try:
-            if prefix is not None:
-                new_prefix = prefix + "    "
-                s = prefix + "<%s %s (\n" % (type(self).__name__, self.op)
-                for a in self.args:
-                    s += "%s,\n" % (a.dbg_repr(prefix=new_prefix) if hasattr(a, 'dbg_repr') else (new_prefix + repr(a)))
-                s = s[:-2] + '\n'
-                s += prefix + ")>"
-
-                return s
-            else:
-                return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
-        except RuntimeError as e:
-            raise ClaripyRecursionError("Recursion limit reached during display. Sorry about that.") from e
+        return self.shallow_repr(max_depth=None, details=2)
 
     def _type_name(self):
         return self.__class__.__name__
@@ -414,14 +402,17 @@ class Base(ana.Storable):
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):  # pylint:disable=unused-argument
         return '<AST something>' if WORKER else self.shallow_repr(max_depth=max_depth, explicit_length=False)
 
-    def shallow_repr(self, max_depth=8, explicit_length=False, shorten_ops=True):
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=0):
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
 
-        :param max_depth:           The maximum depth to print
+        :param max_depth:           The maximum depth to print.
         :param explicit_length:     Print lengths of BVV arguments.
-        :param shorten_ops:         Print shorten representation for certain operations.
+        :param details:             An integer value specifying how detailed the output should be:
+                                        0 - print short repr for both operations and BVs,
+                                        1 - print full repr for operations and short for BVs,
+                                        2 - print full repr of both operations and BVs.
         :return:                    A string representing the AST
         """
         ast_queue = [(0, iter([self]))]
@@ -460,7 +451,7 @@ class Base(ana.Storable):
                     del arg_queue[-num_args:]
 
                     length = length if explicit_length else None
-                    inner_repr = self._op_repr(op, args_repr, depth > 1, length, shorten_ops)
+                    inner_repr = self._op_repr(op, args_repr, depth > 1, length, details)
 
                     arg_queue.append(inner_repr)
 
@@ -471,7 +462,7 @@ class Base(ana.Storable):
         return "<{} {}>".format(self._type_name(), arg_queue.pop())
 
     @staticmethod
-    def _op_repr(op, args, inner, length, shorten_ops):
+    def _op_repr(op, args, inner, length, details):
         """_op_repr
 
         :param op:
@@ -480,32 +471,35 @@ class Base(ana.Storable):
         :param length:
         :return:
         """
-        if op == 'BVS':
-            extras = []
-            if args[1] is not None:
-                extras.append("min=%s" % args[1])
-            if args[2] is not None:
-                extras.append("max=%s" % args[2])
-            if args[3] is not None:
-                extras.append("stride=%s" % args[3])
-            if args[4] is True:
-                extras.append("UNINITIALIZED")
-            return "{}{}".format(args[0], '{%s}' % ', '.join(extras) if extras else '')
+        if details < 2:
+            if op == 'BVS':
+                extras = []
+                if args[1] is not None:
+                    fmt = '%#x' if type(args[1]) is int else '%s'
+                    extras.append("min=%s" % (fmt % args[1]))
+                if args[2] is not None:
+                    fmt = '%#x' if type(args[1]) is int else '%s'
+                    extras.append("max=%s" % (fmt % args[1]))
+                if args[3] is not None:
+                    fmt = '%#x' if type(args[1]) is int else '%s'
+                    extras.append("stride=%s" % (fmt % args[1]))
+                if args[4] is True:
+                    extras.append("UNINITIALIZED")
+                return "{}{}".format(args[0], '{%s}' % ', '.join(extras) if extras else '')
 
-        elif op == 'BoolV':
-            return str(args[0])
+            elif op == 'BoolV':
+                return str(args[0])
 
-        elif op == 'BVV':
-            if args[0] is None:
-                value = '!'
-            elif args[1] < 10:
-                value = format(args[0], '')
-            else:
-                value = format(args[0], '#x')
-            return value + '#%d' % length if length is not None else value
+            elif op == 'BVV':
+                if args[0] is None:
+                    value = '!'
+                elif args[1] < 10:
+                    value = format(args[0], '')
+                else:
+                    value = format(args[0], '#x')
+                return value + '#%d' % length if length is not None else value
 
-        elif shorten_ops:
-
+        if details < 1:
             if op == 'If':
                 value = 'if {} then {} else {}'.format(args[0], args[1], args[2])
                 return '({})'.format(value) if inner else value
@@ -528,26 +522,6 @@ class Base(ana.Storable):
                 return '({})'.format(value) if inner else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
-
-    @property
-    def depth(self):
-        """
-        The depth of this AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
-        """
-        if self._depth is None:
-            self._depth = 0
-
-            ast_queue = deque([(1, self)])
-            while ast_queue:
-
-                depth, ast = ast_queue.pop()
-                self._depth = max(self._depth, depth)
-
-                for arg in ast.args:
-                    if isinstance(arg, Base):
-                        ast_queue.append((depth + 1, arg))
-
-        return self._depth
 
     def children_asts(self):
         """children_asts
