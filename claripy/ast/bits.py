@@ -9,11 +9,9 @@ class Bits(Base):
     __slots__ = ['length']
 
     def __init__(self, *args, **kwargs):
-        length = kwargs.pop('length', None)
-        if length is None:
+        if 'length' not in kwargs:
             raise ClaripyOperationError("length of Bits must not be None")
-
-        self.length = length
+        super(Bits, self).__init__(*args, **kwargs)
 
     def make_like(self, *args, **kwargs):
         if 'length' not in kwargs: kwargs['length'] = self.length
