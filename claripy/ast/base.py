@@ -84,12 +84,26 @@ class BaseMeta(type):
         return self
 
     @staticmethod
-    def _calc_hash(op, args, kw):
+    def _calc_hash(op, args, keywords):
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
+
+        :param op:          The operation.
+        :param args:        The arguments to the operation.
+        :param keywords:    A dict including the 'symbolic', 'variables', and 'length' items.
+        :returns:           a hash.
+
+        We do it using md5 to avoid hash collisions.
+        (hash(-1) == hash(-2), for example)
         """
-        return hash((op, kw['symbolic'], kw['variables'], kw.get('length', None), kw.get('annotations', None),
-                    tuple((a, a // 2**31, a < 0) if type(a) in (int, float) else hash(a) for a in args)))
+        args_tup = tuple(long(a) if type(a) is int and int is not long else (a if type(a) in (long, float) else hash(a)) for a in args)
+        to_hash = (op, args_tup, keywords['symbolic'], hash(keywords['variables']), str(keywords.get('length', None)), hash(keywords.get('annotations', None)))
+
+        # Why do we use md5 when it's broken? Because speed is more important
+        # than cryptographic integrity here. Then again, look at all those
+        # allocations we're doing here... fast python is painful.
+        hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
+        return md5_unpacker.unpack(hd)[0]  # 64 bits
 
     @staticmethod
     def _finalize_args(args, **kwargs):
