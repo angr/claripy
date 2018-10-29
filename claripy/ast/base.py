@@ -23,11 +23,6 @@ md5_unpacker = struct.Struct('2Q')
 #pylint:enable=unused-argument
 #pylint:disable=unidiomatic-typecheck
 
-def _inner_repr(a, **kwargs):
-    if isinstance(a, Base):
-        return a.__repr__(inner=True, **kwargs)
-    else:
-        return repr(a)
 
 class ASTCacheKey(object):
     def __init__(self, a):
@@ -416,90 +411,123 @@ class Base(ana.Storable):
     def _type_name(self):
         return self.__class__.__name__
 
-    def shallow_repr(self, max_depth=8):
+    def __repr__(self, inner=False, max_depth=None, explicit_length=False):  # pylint:disable=unused-argument
+        return '<AST something>' if WORKER else self.shallow_repr(max_depth=max_depth, explicit_length=False)
+
+    def shallow_repr(self, max_depth=8, explicit_length=False, shorten_ops=True):
         """
-        Returns a string representation of this AST, but with a maximum depth to prevent floods of text being printed.
+        Returns a string representation of this AST, but with a maximum depth to
+        prevent floods of text being printed.
 
-        :param max_depth:   The maximum depth to print
-        :return:            A string representing the AST
+        :param max_depth:           The maximum depth to print
+        :param explicit_length:     Print lengths of BVV arguments.
+        :param shorten_ops:         Print shorten representation for certain operations.
+        :return:                    A string representing the AST
         """
-        return self.__repr__(max_depth=max_depth)
+        ast_queue = [(0, iter([self]))]
+        arg_queue = []
+        op_queue = []
 
-    def __repr__(self, inner=False, max_depth=None, explicit_length=False):
-        if max_depth is not None and max_depth <= 0:
-            return '<...>'
+        while ast_queue:
+            try:
+                depth, args_iter = ast_queue[-1]
+                arg = next(args_iter)
 
-        if max_depth is not None:
-            max_depth -= 1
+                if not isinstance(arg, Base):
+                    arg_queue.append(arg)
+                    continue
 
-        if WORKER:
-            return '<AST something>'
+                if max_depth is not None:
+                    if depth >= max_depth:
+                        arg_queue.append('<...>')
+                        continue
 
-        try:
-            if self.op in operations.reversed_ops:
-                op = operations.reversed_ops[self.op]
-                args = self.args[::-1]
-            else:
-                op = self.op
-                args = self.args
+                if arg.op in operations.reversed_ops:
+                    op_queue.append((depth + 1, operations.reversed_ops[arg.op], len(arg.args), arg.length))
+                    ast_queue.append((depth + 1, reversed(arg.args)))
 
-            if op == 'BVS' and inner:
-                value = args[0]
-            elif op == 'BVS':
-                value = "%s" % args[0]
-                extras = [ ]
-                if args[1] is not None:
-                    extras.append("min=%s" % args[1])
-                if args[2] is not None:
-                    extras.append("max=%s" % args[2])
-                if args[3] is not None:
-                    extras.append("stride=%s" % args[3])
-                if args[4] is True:
-                    extras.append("UNINITIALIZED")
-                if len(extras) != 0:
-                    value += "{" + ", ".join(extras) + "}"
-            elif op == 'BoolV':
-                value = str(args[0])
-            elif op == 'BVV':
-                if self.args[0] is None:
-                    value = '!'
-                elif self.args[1] < 10:
-                    value = format(self.args[0], '')
                 else:
-                    value = format(self.args[0], '#x')
-                value += ('#' + str(self.length)) if explicit_length else ''
-            elif op == 'If':
-                value = 'if {} then {} else {}'.format(_inner_repr(args[0], max_depth=max_depth),
-                                                       _inner_repr(args[1], max_depth=max_depth),
-                                                       _inner_repr(args[2], max_depth=max_depth))
-                if inner:
-                    value = '({})'.format(value)
-            elif op == 'Not':
-                value = '!{}'.format(_inner_repr(args[0], max_depth=max_depth))
-            elif op == 'Extract':
-                value = '{}[{}:{}]'.format(_inner_repr(args[2], max_depth=max_depth), args[0], args[1])
-            elif op == 'ZeroExt':
-                value = '0#{} .. {}'.format(args[0], _inner_repr(args[1], max_depth=max_depth))
-                if inner:
-                    value = '({})'.format(value)
-            elif op == 'Concat':
-                value = ' .. '.join(_inner_repr(a, explicit_length=True, max_depth=max_depth) for a in self.args)
-            elif len(args) == 2 and op in operations.infix:
-                value = '{} {} {}'.format(_inner_repr(args[0], max_depth=max_depth),
-                                          operations.infix[op],
-                                          _inner_repr(args[1], max_depth=max_depth))
-                if inner:
-                    value = '({})'.format(value)
+                    op_queue.append((depth + 1, arg.op, len(arg.args), arg.length))
+                    ast_queue.append((depth + 1, iter(arg.args)))
+
+            except StopIteration:
+                ast_queue.pop()
+
+                if op_queue:
+                    depth, op, num_args, length = op_queue.pop()
+
+                    args_repr = arg_queue[-num_args:]
+                    del arg_queue[-num_args:]
+
+                    length = length if explicit_length else None
+                    inner_repr = self._op_repr(op, args_repr, depth > 1, length, shorten_ops)
+
+                    arg_queue.append(inner_repr)
+
+        assert len(op_queue) == 0, "op_queue is not empty"
+        assert len(ast_queue) == 0, "arg_queue is not empty"
+        assert len(arg_queue) == 1, ("repr_queue has unexpected length", len(arg_queue))
+
+        return "<{} {}>".format(self._type_name(), arg_queue.pop())
+
+    @staticmethod
+    def _op_repr(op, args, inner, length, shorten_ops):
+        """_op_repr
+
+        :param op:
+        :param args:
+        :param inner:
+        :param length:
+        :return:
+        """
+        if op == 'BVS':
+            extras = []
+            if args[1] is not None:
+                extras.append("min=%s" % args[1])
+            if args[2] is not None:
+                extras.append("max=%s" % args[2])
+            if args[3] is not None:
+                extras.append("stride=%s" % args[3])
+            if args[4] is True:
+                extras.append("UNINITIALIZED")
+            return "{}{}".format(args[0], '{%s}' % ', '.join(extras) if extras else '')
+
+        elif op == 'BoolV':
+            return str(args[0])
+
+        elif op == 'BVV':
+            if args[0] is None:
+                value = '!'
+            elif args[1] < 10:
+                value = format(args[0], '')
             else:
-                value = "{}({})".format(op,
-                                        ', '.join(_inner_repr(a, max_depth=max_depth) for a in args))
+                value = format(args[0], '#x')
+            return value + '#%d' % length if length is not None else value
 
-            if not inner:
-                value = '<{} {}>'.format(self._type_name(), value)
+        elif shorten_ops:
 
-            return value
-        except RuntimeError as e:
-            raise ClaripyRecursionError("Recursion limit reached during display. Sorry about that.") from e
+            if op == 'If':
+                value = 'if {} then {} else {}'.format(args[0], args[1], args[2])
+                return '({})'.format(value) if inner else value
+
+            elif op == 'Not':
+                return '!{}'.format(args[0])
+
+            elif op == 'Extract':
+                return '{}[{}:{}]'.format(args[2], args[0], args[1])
+
+            elif op == 'ZeroExt':
+                value = '0#{} .. {}'.format(args[0], args[1])
+                return '({})'.format(value) if inner else value
+
+            elif op == 'Concat':
+                return ' .. '.join(map(str, args))
+
+            elif len(args) == 2 and op in operations.infix:
+                value = '{} {} {}'.format(args[0], operations.infix[op], args[1])
+                return '({})'.format(value) if inner else value
+
+        return '{}({})'.format(op, ', '.join(map(str, args)))
 
     @property
     def depth(self):
