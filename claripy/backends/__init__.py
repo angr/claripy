@@ -199,6 +199,9 @@ class Backend(object):
 
                         arg_queue.append(r)
 
+        except (RuntimeError, ctypes.ArgumentError) as e:
+            raise ClaripyRecursionError("Recursion limit reached. Sorry about that.") from e
+
         except BackendError:
             for ast in op_queue:
                 ast._errored.add(self)
