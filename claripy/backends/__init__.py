@@ -140,41 +140,77 @@ class Backend(object):
         :param save:    Save the result in the expression's object cache
         :return:        A backend object.
         """
-        if isinstance(expr, Base):
-            # if it's cached in the backend, use it
-            if self._cache_objects:
-                try: return self._object_cache[expr._cache_key]
-                except KeyError: pass
+        ast_queue = [iter([expr])]
+        arg_queue = []
+        op_queue = []
 
-            # if we've errroed on this in the past, give up
-            if self in expr._errored:
-                raise BackendError("%s can't handle operation %s (%s) due to a failed conversion on a child node" % (self, expr.op, expr.__class__.__name__))
+        try:
+            while ast_queue:
+                try:
+                    args_iter = ast_queue[-1]
+                    ast = next(args_iter)
 
-            # otherwise, resolve it!
-            try:
-                if expr.op in self._op_expr:
-                    r = self._op_expr[expr.op](expr)
-                else:
-                    try:
-                        r = self.call(expr.op, expr.args)
-                    except BackendUnsupportedError:
-                        r = self.default_op(expr)
-            except (RuntimeError, ctypes.ArgumentError) as e:
-                raise ClaripyRecursionError("Recursion limit reached. Sorry about that.") from e
-            except BackendError:
+                    if not isinstance(ast, Base):
+                        converted = self._convert(ast)
+                        arg_queue.append(converted)
+                        continue
+
+                    if self in ast._errored:
+                        raise BackendError("%s can't handle operation %s (%s) due to a failed "
+                                           "conversion on a child node" % (self, ast.op, ast.__class__.__name__))
+
+                    if self._cache_objects:
+                        if ast._cache_key in self._object_cache:
+                            cached_obj = self._object_cache[ast._cache_key]
+                            arg_queue.append(cached_obj)
+                            continue
+
+                    if ast.op in self._op_expr:
+                        op_queue.append(ast)
+                        ast_queue.append(iter([]))
+
+                    else:
+                        op_queue.append(ast)
+                        ast_queue.append(iter(ast.args))
+
+                except StopIteration:
+                    ast_queue.pop()
+
+                    if op_queue:
+                        ast = op_queue.pop()
+
+                        if ast.op in self._op_expr:
+                            r = self._op_expr[ast.op](ast)
+
+                        else:
+                            args = arg_queue[-len(ast.args):]
+                            del arg_queue[-len(ast.args):]
+
+                            try:
+                                r = self._call(ast.op, args)
+                            except BackendUnsupportedError:
+                                r = self.default_op(ast)
+
+                        for a in ast.annotations:
+                            r = self.apply_annotation(r, a)
+
+                        if self._cache_objects:
+                            self._object_cache[ast._cache_key] = r
+
+                        arg_queue.append(r)
+
+        except BackendError:
+            for ast in op_queue:
+                ast._errored.add(self)
+            if isinstance(expr, Base):
                 expr._errored.add(self)
-                raise
+            raise
 
-            # apply the annotations
-            for a in expr.annotations:
-                r = self.apply_annotation(r, a)
+        assert len(op_queue) == 0, "op_queue is not empty"
+        assert len(ast_queue) == 0, "ast_queue is not empty"
+        assert len(arg_queue) == 1, ("arg_queue has unexpected length", len(arg_queue))
 
-            if self._cache_objects:
-                self._object_cache[expr._cache_key] = r
-            return r
-        else:
-            #l.debug('converting non-expr')
-            return self._convert(expr)
+        return arg_queue.pop()
 
     def convert_list(self, args):
         return [ self.convert(a) for a in args ]
@@ -190,10 +226,18 @@ class Backend(object):
         :return:   A backend object representing the result.
         """
         converted = self.convert_list(args)
+        return self._call(op, converted)
 
+    def _call(self, op, args):
+        """_call
+
+        :param op:
+        :param args:
+        :return:
+        """
         if op in self._op_raw:
             # the raw ops don't get the model, cause, for example, Z3 stuff can't take it
-            obj = self._op_raw[op](*converted)
+            obj = self._op_raw[op](*args)
         elif not op.startswith("__"):
             l.debug("backend has no operation %s", op)
             raise BackendUnsupportedError
@@ -202,7 +246,7 @@ class Backend(object):
 
             # first, try the operation with the first guy
             try:
-                obj = getattr(operator, op)(*converted)
+                obj = getattr(operator, op)(*args)
             except (TypeError, ValueError):
                 pass
 
