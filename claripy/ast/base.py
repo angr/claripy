@@ -1,17 +1,9 @@
-import hashlib
 import itertools
 import logging
-import numbers
 import os
 import struct
 import weakref
 from collections import OrderedDict, deque
-from past.builtins import long
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 import ana
 
@@ -24,7 +16,7 @@ md5_unpacker = struct.Struct('2Q')
 #pylint:disable=unidiomatic-typecheck
 
 
-class ASTCacheKey(object):
+class ASTCacheKey:
     def __init__(self, a):
         self.ast = a
 
@@ -164,6 +156,10 @@ class Base(ana.Storable, metaclass=BaseMeta):
     LITE_SIMPLIFY=2
     UNSIMPLIFIED=0
 
+    LITE_REPR=0
+    MID_REPR=1
+    FULL_REPR=2
+
     def __init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, depth=None,
                  eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None):
         """
@@ -259,16 +255,16 @@ class Base(ana.Storable, metaclass=BaseMeta):
         """
         return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations, self.depth
 
-    def _ana_setstate(self, state):
+    def _ana_setstate(self, state):  # pylint:disable=arguments-differ
         """
         Support for ANA deserialization.
         """
         op, args, length, variables, symbolic, ast_hash, annotations, depth = state
-        Base.__init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
+        Base.__init__(self, op, args, depth=depth, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
 
         # TODO: This looks ugly.
         BaseMeta._hash_cache[ast_hash] = self
-        self._hash = ast_hash
+        self._hash = ast_hash  # pylint:disable=attribute-defined-outside-init
 
     #
     # Collapsing and simplification
@@ -381,15 +377,15 @@ class Base(ana.Storable, metaclass=BaseMeta):
         """
         Returns a debug representation of this AST.
         """
-        return self.shallow_repr(max_depth=None, details=2)
+        return self.shallow_repr(max_depth=None, details=Base.FULL_REPR)
 
     def _type_name(self):
         return self.__class__.__name__
 
     def __repr__(self, inner=False, max_depth=None, explicit_length=False):  # pylint:disable=unused-argument
-        return '<AST something>' if WORKER else self.shallow_repr(max_depth=max_depth, explicit_length=False)
+        return '<AST something>' if WORKER else self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length)
 
-    def shallow_repr(self, max_depth=8, explicit_length=False, details=0):
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR):
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
@@ -397,9 +393,9 @@ class Base(ana.Storable, metaclass=BaseMeta):
         :param max_depth:           The maximum depth to print.
         :param explicit_length:     Print lengths of BVV arguments.
         :param details:             An integer value specifying how detailed the output should be:
-                                        0 - print short repr for both operations and BVs,
-                                        1 - print full repr for operations and short for BVs,
-                                        2 - print full repr of both operations and BVs.
+                                        LITE_REPR - print short repr for both operations and BVs,
+                                        MID_REPR  - print full repr for operations and short for BVs,
+                                        FULL_REPR - print full repr of both operations and BVs.
         :return:                    A string representing the AST
         """
         ast_queue = [(0, iter([self]))]
@@ -450,15 +446,7 @@ class Base(ana.Storable, metaclass=BaseMeta):
 
     @staticmethod
     def _op_repr(op, args, inner, length, details):
-        """_op_repr
-
-        :param op:
-        :param args:
-        :param inner:
-        :param length:
-        :return:
-        """
-        if details < 2:
+        if details < Base.FULL_REPR:
             if op == 'BVS':
                 extras = []
                 if args[1] is not None:
@@ -486,7 +474,7 @@ class Base(ana.Storable, metaclass=BaseMeta):
                     value = format(args[0], '#x')
                 return value + '#%d' % length if length is not None else value
 
-        if details < 1:
+        if details < Base.MID_REPR:
             if op == 'If':
                 value = 'if {} then {} else {}'.format(args[0], args[1], args[2])
                 return '({})'.format(value) if inner else value
@@ -511,8 +499,8 @@ class Base(ana.Storable, metaclass=BaseMeta):
         return '{}({})'.format(op, ', '.join(map(str, args)))
 
     def children_asts(self):
-        """children_asts
-
+        """
+        Return an iterator over the nested children ASTs.
         """
         ast_queue = deque([iter(self.args)])
         while ast_queue:
@@ -530,8 +518,8 @@ class Base(ana.Storable, metaclass=BaseMeta):
                 yield ast
 
     def leaf_asts(self):
-        """leaf_asts
-
+        """
+        Return an iterator over the leaf ASTs.
         """
         seen = set()
 
@@ -552,11 +540,17 @@ class Base(ana.Storable, metaclass=BaseMeta):
     # TODO: Deprecate this property
     @property
     def recursive_children_asts(self):
+        """
+        DEPRECATED: Use children_asts() instead.
+        """
         return self.children_asts()
 
     # TODO: Deprecate this property
     @property
     def recursive_leaf_asts(self):
+        """
+        DEPRECATED: Use leaf_asts() instead.
+        """
         return self.leaf_asts()
 
     def dbg_is_looped(self, seen=None, checked=None):
@@ -974,9 +968,9 @@ def simplify(e):
 
         return s
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyReplacementError
+from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from .. import operations
 from ..backend_object import BackendObject
 from ..backend_manager import backends
-from ..ast.bool import If, Not, BoolS, is_true
+from ..ast.bool import If, Not, BoolS
 from ..ast.bv import BV

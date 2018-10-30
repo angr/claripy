@@ -95,5 +95,5 @@ from .solvers import *
 
 def reset():
     downsize()
-    from .ast import bv
+    from .ast import bv  # pylint:disable=redefined-outer-name
     bv._bvv_cache.clear()
