@@ -647,9 +647,34 @@ class Base(ana.Storable):
         :param o: the other claripy A object
         :return: True/False
         """
-        # AST objects have *hash identity*. This means that an AST that
-        # has the same hash as another AST will be the *same* object.
-        return type(self) is type(o) and hash(self) == hash(o)
+
+        # TODO: Convert a and b into canonical forms
+
+        if self.op != o.op:
+            return False
+
+        if len(self.args) != len(o.args):
+            return False
+
+        for arg_a, arg_b in zip(self.args, o.args):
+            if not isinstance(arg_a, Base):
+                if type(arg_a) != type(arg_b):
+                    return False
+                # They are not ASTs
+                if arg_a != arg_b:
+                    return False
+                else:
+                    continue
+
+            if arg_a.op in operations.leaf_operations:
+                if arg_a is not arg_b:
+                    return False
+
+            else:
+                if not arg_a.structurally_match(arg_b):
+                    return False
+
+        return True
 
     def replace_dict(self, replacements, variable_set=None, leaf_operation=None):
         """
