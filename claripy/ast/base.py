@@ -624,7 +624,7 @@ class Base(ana.Storable):
         """
         raise ClaripyOperationError("Please don't iterate over, or split, AST nodes!")
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         This prevents people from accidentally using an AST as a condition. For
         example, the following was previously common::
