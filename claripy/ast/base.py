@@ -265,7 +265,7 @@ class Base(ana.Storable):
     @property
     def _encoded_name(self):
         if self._cached_encoded_name is None:
-            self._cached_encoded_name = self.args[0].encode()
+            self._cached_encoded_name = self.args[0].encode()  # pylint: disable=attribute-defined-outside-init
         return self._cached_encoded_name
 
     #
@@ -284,7 +284,7 @@ class Base(ana.Storable):
         """
         op, args, length, variables, symbolic, h, annotations, depth = state
         Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, depth=depth)
-        self._hash = h
+        self._hash = h  # pylint: disable=attribute-defined-outside-init
         Base._hash_cache[h] = self
 
     #
@@ -885,7 +885,7 @@ class Base(ana.Storable):
         printing.
         """
         if self._burrowed is None:
-            self._burrowed = self._burrow_ite() #pylint:disable=attribute-defined-outside-init
+            self._burrowed = self._burrow_ite()  # pylint:disable=attribute-defined-outside-init
             self._burrowed._burrowed = self._burrowed
         return self._burrowed
 
@@ -896,7 +896,7 @@ class Base(ana.Storable):
         AST, for processing in static analyses.
         """
         if self._excavated is None:
-            self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
+            self._excavated = self._excavate_ite()  # pylint:disable=attribute-defined-outside-init
 
             # we set the flag for the children so that we avoid re-excavating during
             # VSA backend evaluation (since the backend evaluation recursively works on
