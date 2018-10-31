@@ -493,6 +493,27 @@ def test_arith_shift():
     solver.add(a == -4)
     assert list(solver.eval(a >> 1, 2)) == [2**32-2]
 
+def test_bool_conversion():
+    a = claripy.BVV(42, 32)
+    try:
+        assert a == 42
+        assert False, "`assert ast` should raise an exception"
+    except claripy.ClaripyOperationError:
+        pass
+
+    try:
+        bool(a == 42)
+        assert False, "bool(ast) should raise an exception"
+    except claripy.ClaripyOperationError:
+        pass
+
+    try:
+        if a == 42:
+            pass
+        assert False, "`if ast` should raise an exception"
+    except claripy.ClaripyOperationError:
+        pass
+
 if __name__ == '__main__':
     test_multiarg()
     test_depth()
@@ -512,3 +533,4 @@ if __name__ == '__main__':
     test_signed_concrete()
     test_signed_symbolic()
     test_arith_shift()
+    test_bool_conversion()
