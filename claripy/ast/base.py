@@ -1,4 +1,3 @@
-import collections
 import hashlib
 import itertools
 import logging
@@ -6,6 +5,7 @@ import numbers
 import os
 import struct
 import weakref
+from collections import OrderedDict, deque
 from past.builtins import long
 
 try:
@@ -23,13 +23,8 @@ md5_unpacker = struct.Struct('2Q')
 #pylint:enable=unused-argument
 #pylint:disable=unidiomatic-typecheck
 
-def _inner_repr(a, **kwargs):
-    if isinstance(a, Base):
-        return a.__repr__(inner=True, **kwargs)
-    else:
-        return repr(a)
 
-class ASTCacheKey(object):
+class ASTCacheKey:
     def __init__(self, a):
         self.ast = a
 
@@ -77,12 +72,17 @@ class Base(ana.Storable):
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations']
+                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
+                  'depth']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
     LITE_SIMPLIFY=2
     UNSIMPLIFIED=0
+
+    LITE_REPR=0
+    MID_REPR=1
+    FULL_REPR=2
 
     def __new__(cls, op, args, add_variables=None, **kwargs):
         """
@@ -152,7 +152,8 @@ class Base(ana.Storable):
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls)
-            self.__a_init__(op, a_args, **kwargs)
+            depth = max(a.depth if isinstance(a, Base) else 0 for a in a_args) + 1
+            self.__a_init__(op, a_args, depth=depth, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -190,7 +191,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None): #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -202,6 +203,7 @@ class Base(ana.Storable):
         self.length = length
         self.variables = frozenset(variables)
         self.symbolic = symbolic
+        self.depth = depth if depth is not None else 1
         self._eager_backends = eager_backends
         self._cached_encoded_name = encoded_name
 
@@ -222,7 +224,7 @@ class Base(ana.Storable):
             tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
         ))
 
-        self._relocatable_annotations = collections.OrderedDict((e, True) for e in tuple(itertools.chain(
+        self._relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
             itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
             tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
         ))).keys()
@@ -263,7 +265,7 @@ class Base(ana.Storable):
     @property
     def _encoded_name(self):
         if self._cached_encoded_name is None:
-            self._cached_encoded_name = self.args[0].encode()
+            self._cached_encoded_name = self.args[0].encode()  # pylint: disable=attribute-defined-outside-init
         return self._cached_encoded_name
 
     #
@@ -274,15 +276,15 @@ class Base(ana.Storable):
         """
         Support for ANA serialization.
         """
-        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations
+        return self.op, self.args, self.length, self.variables, self.symbolic, self._hash, self.annotations, self.depth
 
-    def _ana_setstate(self, state):
+    def _ana_setstate(self, state):  # pylint:disable=arguments-differ
         """
         Support for ANA deserialization.
         """
-        op, args, length, variables, symbolic, h, annotations = state
-        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
-        self._hash = h
+        op, args, length, variables, symbolic, h, annotations, depth = state
+        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, depth=depth)
+        self._hash = h  # pylint: disable=attribute-defined-outside-init
         Base._hash_cache[h] = self
 
     #
@@ -392,250 +394,200 @@ class Base(ana.Storable):
     # Viewing and debugging
     #
 
-    def dbg_repr(self, prefix=None):
+    def dbg_repr(self, prefix=None):  # pylint:disable=unused-argument
         """
         Returns a debug representation of this AST.
         """
-        try:
-            if prefix is not None:
-                new_prefix = prefix + "    "
-                s = prefix + "<%s %s (\n" % (type(self).__name__, self.op)
-                for a in self.args:
-                    s += "%s,\n" % (a.dbg_repr(prefix=new_prefix) if hasattr(a, 'dbg_repr') else (new_prefix + repr(a)))
-                s = s[:-2] + '\n'
-                s += prefix + ")>"
-
-                return s
-            else:
-                return "<%s %s (%s)>" % (type(self).__name__, self.op, ', '.join(a.dbg_repr() if hasattr(a, 'dbg_repr') else repr(a) for a in self.args))
-        except RuntimeError as e:
-            raise ClaripyRecursionError("Recursion limit reached during display. Sorry about that.") from e
+        return self.shallow_repr(max_depth=None, details=Base.FULL_REPR)
 
     def _type_name(self):
         return self.__class__.__name__
 
-    def shallow_repr(self, max_depth=8):
+    def __repr__(self, inner=False, max_depth=None, explicit_length=False):  # pylint:disable=unused-argument
+        return '<AST something>' if WORKER else self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length)
+
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR):
         """
-        Returns a string representation of this AST, but with a maximum depth to prevent floods of text being printed.
+        Returns a string representation of this AST, but with a maximum depth to
+        prevent floods of text being printed.
 
-        :param max_depth:   The maximum depth to print
-        :return:            A string representing the AST
+        :param max_depth:           The maximum depth to print.
+        :param explicit_length:     Print lengths of BVV arguments.
+        :param details:             An integer value specifying how detailed the output should be:
+                                        LITE_REPR - print short repr for both operations and BVs,
+                                        MID_REPR  - print full repr for operations and short for BVs,
+                                        FULL_REPR - print full repr of both operations and BVs.
+        :return:                    A string representing the AST
         """
-        return self.__repr__(max_depth=max_depth)
+        ast_queue = [(0, iter([self]))]
+        arg_queue = []
+        op_queue = []
 
-    def __repr__(self, inner=False, max_depth=None, explicit_length=False):
-        if max_depth is not None and max_depth <= 0:
-            return '<...>'
+        while ast_queue:
+            try:
+                depth, args_iter = ast_queue[-1]
+                arg = next(args_iter)
 
-        if max_depth is not None:
-            max_depth -= 1
-
-        if WORKER:
-            return '<AST something>'
-
-        try:
-            if self.op in operations.reversed_ops:
-                op = operations.reversed_ops[self.op]
-                args = self.args[::-1]
-            else:
-                op = self.op
-                args = self.args
-
-            if op == 'BVS' and inner:
-                value = args[0]
-            elif op == 'BVS':
-                value = "%s" % args[0]
-                extras = [ ]
-                if args[1] is not None:
-                    extras.append("min=%s" % args[1])
-                if args[2] is not None:
-                    extras.append("max=%s" % args[2])
-                if args[3] is not None:
-                    extras.append("stride=%s" % args[3])
-                if args[4] is True:
-                    extras.append("UNINITIALIZED")
-                if len(extras) != 0:
-                    value += "{" + ", ".join(extras) + "}"
-            elif op == 'BoolV':
-                value = str(args[0])
-            elif op == 'BVV':
-                if self.args[0] is None:
-                    value = '!'
-                elif self.args[1] < 10:
-                    value = format(self.args[0], '')
-                else:
-                    value = format(self.args[0], '#x')
-                value += ('#' + str(self.length)) if explicit_length else ''
-            elif op == 'If':
-                value = 'if {} then {} else {}'.format(_inner_repr(args[0], max_depth=max_depth),
-                                                       _inner_repr(args[1], max_depth=max_depth),
-                                                       _inner_repr(args[2], max_depth=max_depth))
-                if inner:
-                    value = '({})'.format(value)
-            elif op == 'Not':
-                value = '!{}'.format(_inner_repr(args[0], max_depth=max_depth))
-            elif op == 'Extract':
-                value = '{}[{}:{}]'.format(_inner_repr(args[2], max_depth=max_depth), args[0], args[1])
-            elif op == 'ZeroExt':
-                value = '0#{} .. {}'.format(args[0], _inner_repr(args[1], max_depth=max_depth))
-                if inner:
-                    value = '({})'.format(value)
-            elif op == 'Concat':
-                value = ' .. '.join(_inner_repr(a, explicit_length=True, max_depth=max_depth) for a in self.args)
-            elif len(args) == 2 and op in operations.infix:
-                value = '{} {} {}'.format(_inner_repr(args[0], max_depth=max_depth),
-                                          operations.infix[op],
-                                          _inner_repr(args[1], max_depth=max_depth))
-                if inner:
-                    value = '({})'.format(value)
-            else:
-                value = "{}({})".format(op,
-                                        ', '.join(_inner_repr(a, max_depth=max_depth) for a in args))
-
-            if not inner:
-                value = '<{} {}>'.format(self._type_name(), value)
-
-            return value
-        except RuntimeError as e:
-            raise ClaripyRecursionError("Recursion limit reached during display. Sorry about that.") from e
-
-    @property
-    def depth(self):
-        """
-        The depth of this AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
-        """
-        return self._depth()
-
-    def _depth(self, memoized=None):
-        """
-        :param memoized:    A dict of ast hashes to depths we've seen before
-        :return:            The depth of the AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
-        """
-        if memoized is None:
-            memoized = dict()
-
-        ast_args = [ a for a in self.args if isinstance(a, Base) ]
-        max_depth = 0
-        for a in ast_args:
-            if a.cache_key not in memoized:
-                memoized[a.cache_key] = a._depth(memoized)
-            max_depth = max(memoized[a.cache_key], max_depth)
-
-        return 1 + max_depth
-
-    @property
-    def recursive_children_asts(self):
-        for a in self.args:
-            if isinstance(a, Base):
-                l.debug("Yielding AST %s with hash %s with %d children", a, hash(a), len(a.args))
-                yield a
-                for b in a.recursive_children_asts:
-                    yield b
-
-    @property
-    def recursive_leaf_asts(self):
-        return self._recursive_leaf_asts()
-
-    def _recursive_leaf_asts(self, seen=None):
-        if self.depth == 1:
-            yield self
-            return
-
-        seen = set() if seen is None else seen
-        for a in self.args:
-            if isinstance(a, Base) and not a.cache_key in seen:
-                seen.add(a.cache_key)
-
-                if a.depth == 1:
-                    yield a
-                else:
-                    for b in a.recursive_leaf_asts:
-                        yield b
-
-    def dbg_is_looped(self, seen=None, checked=None):
-        seen = set() if seen is None else seen
-        checked = set() if checked is None else checked
-
-        l.debug("Checking AST with hash %s for looping", hash(self))
-        if hash(self) in seen:
-            return self
-        elif hash(self) in checked:
-            return False
-        else:
-            seen.add(hash(self))
-
-            for a in self.args:
-                if not isinstance(a, Base):
+                if not isinstance(arg, Base):
+                    arg_queue.append(arg)
                     continue
 
-                r = a.dbg_is_looped(seen=set(seen), checked=checked)
-                if r is not False:
-                    return r
+                if max_depth is not None:
+                    if depth >= max_depth:
+                        arg_queue.append('<...>')
+                        continue
 
-            checked.add(hash(self))
-            return False
+                if arg.op in operations.reversed_ops:
+                    op_queue.append((depth + 1, operations.reversed_ops[arg.op], len(arg.args), arg.length))
+                    ast_queue.append((depth + 1, reversed(arg.args)))
+
+                else:
+                    op_queue.append((depth + 1, arg.op, len(arg.args), arg.length))
+                    ast_queue.append((depth + 1, iter(arg.args)))
+
+            except StopIteration:
+                ast_queue.pop()
+
+                if op_queue:
+                    depth, op, num_args, length = op_queue.pop()
+
+                    args_repr = arg_queue[-num_args:]
+                    del arg_queue[-num_args:]
+
+                    length = length if explicit_length else None
+                    inner_repr = self._op_repr(op, args_repr, depth > 1, length, details)
+
+                    arg_queue.append(inner_repr)
+
+        assert len(op_queue) == 0, "op_queue is not empty"
+        assert len(ast_queue) == 0, "arg_queue is not empty"
+        assert len(arg_queue) == 1, ("repr_queue has unexpected length", len(arg_queue))
+
+        return "<{} {}>".format(self._type_name(), arg_queue.pop())
+
+    @staticmethod
+    def _op_repr(op, args, inner, length, details):
+        if details < Base.FULL_REPR:
+            if op == 'BVS':
+                extras = []
+                if args[1] is not None:
+                    fmt = '%#x' if type(args[1]) is int else '%s'
+                    extras.append("min=%s" % (fmt % args[1]))
+                if args[2] is not None:
+                    fmt = '%#x' if type(args[1]) is int else '%s'
+                    extras.append("max=%s" % (fmt % args[1]))
+                if args[3] is not None:
+                    fmt = '%#x' if type(args[1]) is int else '%s'
+                    extras.append("stride=%s" % (fmt % args[1]))
+                if args[4] is True:
+                    extras.append("UNINITIALIZED")
+                return "{}{}".format(args[0], '{%s}' % ', '.join(extras) if extras else '')
+
+            elif op == 'BoolV':
+                return str(args[0])
+
+            elif op == 'BVV':
+                if args[0] is None:
+                    value = '!'
+                elif args[1] < 10:
+                    value = format(args[0], '')
+                else:
+                    value = format(args[0], '#x')
+                return value + '#%d' % length if length is not None else value
+
+        if details < Base.MID_REPR:
+            if op == 'If':
+                value = 'if {} then {} else {}'.format(args[0], args[1], args[2])
+                return '({})'.format(value) if inner else value
+
+            elif op == 'Not':
+                return '!{}'.format(args[0])
+
+            elif op == 'Extract':
+                return '{}[{}:{}]'.format(args[2], args[0], args[1])
+
+            elif op == 'ZeroExt':
+                value = '0#{} .. {}'.format(args[0], args[1])
+                return '({})'.format(value) if inner else value
+
+            elif op == 'Concat':
+                return ' .. '.join(map(str, args))
+
+            elif len(args) == 2 and op in operations.infix:
+                value = '{} {} {}'.format(args[0], operations.infix[op], args[1])
+                return '({})'.format(value) if inner else value
+
+        return '{}({})'.format(op, ', '.join(map(str, args)))
+
+    def children_asts(self):
+        """
+        Return an iterator over the nested children ASTs.
+        """
+        ast_queue = deque([iter(self.args)])
+        while ast_queue:
+
+            try:
+                ast = next(ast_queue[-1])
+            except StopIteration:
+                ast_queue.pop()
+                continue
+
+            if isinstance(ast, Base):
+                ast_queue.append(iter(ast.args))
+
+                l.debug("Yielding AST %s with hash %s with %d children", ast, hash(ast), len(ast.args))
+                yield ast
+
+    def leaf_asts(self):
+        """
+        Return an iterator over the leaf ASTs.
+        """
+        seen = set()
+
+        ast_queue = deque([self])
+        while ast_queue:
+
+            ast = ast_queue.pop()
+            if isinstance(ast, Base) and id(ast.cache_key) not in seen:
+                seen.add(id(ast.cache_key))
+
+                if ast.depth == 1:
+                    yield ast
+                    continue
+
+                ast_queue.extend(ast.args)
+                continue
+
+    # TODO: Deprecate this property
+    @property
+    def recursive_children_asts(self):
+        """
+        DEPRECATED: Use children_asts() instead.
+        """
+        return self.children_asts()
+
+    # TODO: Deprecate this property
+    @property
+    def recursive_leaf_asts(self):
+        """
+        DEPRECATED: Use leaf_asts() instead.
+        """
+        return self.leaf_asts()
+
+    def dbg_is_looped(self):
+        l.debug("Checking AST with hash %s for looping", hash(self))
+
+        seen = set()
+        for child_ast in self.children_asts():
+            if hash(child_ast) in seen:
+                return child_ast
+            seen.add(hash(child_ast))
+
+        return False
 
     #
     # Various AST modifications (replacements)
     #
-
-    def _replace(self, replacements, variable_set=None, leaf_operation=None):
-        """
-        A helper for replace().
-
-        :param variable_set: For optimization, ast's without these variables are not checked for replacing.
-        :param replacements: A dictionary of hashes to their replacements.
-        """
-        try:
-            if variable_set is None:
-                variable_set = set()
-
-            hash_key = self.cache_key
-
-            try:
-                r = replacements[hash_key]
-                return r
-            except KeyError:
-                pass
-
-            if not self.variables.issuperset(variable_set):
-                r = self
-            elif leaf_operation is not None and self.op in operations.leaf_operations:
-                r = leaf_operation(self)
-                if r is not self:
-                    replacements[hash_key] = r
-                return r
-            else:
-                new_args = [ ]
-                replaced = False
-
-                op_is_or = self.op == "Or"
-
-                for a in self.args:
-                    if isinstance(a, Base):
-                        new_a = a._replace(replacements=replacements, variable_set=variable_set, leaf_operation=leaf_operation)
-                        replaced |= new_a is not a
-                    else:
-                        new_a = a
-
-                    # Optimization: if self.op is 'Or' and new_a is True, the entire AST should be evaluated to True
-                    # regardless of future replacements
-                    if op_is_or and is_true(new_a):
-                        new_args = [ new_a ]
-                        break
-
-                    new_args.append(new_a)
-
-                if replaced:
-                    r = self.make_like(self.op, tuple(new_args))
-                    replacements[hash_key] = r
-                else:
-                    r = self
-
-            return r
-        except ClaripyReplacementError:
-            l.error("Replacement error:", exc_info=True)
-            return self
 
     def swap_args(self, new_args, new_length=None):
         """
@@ -724,31 +676,82 @@ class Base(ana.Storable):
 
         return True
 
-    def replace(self, old, new):
+    def replace_dict(self, replacements, variable_set=None, leaf_operation=None):
+        """
+        Returns this AST with subexpressions replaced by those that can be found in `replacements` dict.
+
+        :param variable_set:    For optimization, ast's without these variables are not checked for replacing.
+        :param replacements:    A dictionary of hashes to their replacements.
+        :param leaf_operation:  An operation that should be applied to the leaf nodes.
+        :return:                An AST with all instances of ast's in replacements.
+        """
+        if variable_set is None:
+            variable_set = set()
+
+        if leaf_operation is None:
+            leaf_operation = lambda x: x
+
+        arg_queue = [iter([self])]
+        rep_queue = []
+        ast_queue = []
+
+        while arg_queue:
+            try:
+                ast = next(arg_queue[-1])
+                repl = ast
+
+                if not isinstance(ast, Base):
+                    rep_queue.append(repl)
+                    continue
+
+                elif ast.cache_key in replacements:
+                    repl = replacements[ast.cache_key]
+
+                elif ast.variables >= variable_set:
+
+                    if ast.op in operations.leaf_operations:
+                        repl = leaf_operation(ast)
+                        if repl is not ast:
+                            replacements[ast.cache_key] = repl
+
+                    elif ast.depth > 1:
+                        arg_queue.append(iter(ast.args))
+                        ast_queue.append(ast)
+                        continue
+
+                rep_queue.append(repl)
+                continue
+
+            except StopIteration:
+                arg_queue.pop()
+
+                if ast_queue:
+                    ast = ast_queue.pop()
+                    repl = ast
+
+                    args = rep_queue[-len(ast.args):]
+                    del rep_queue[-len(ast.args):]
+
+                    # Check if replacement occurred.
+                    if any((a is not b for a, b in zip(ast.args, args))):
+                        repl = ast.make_like(ast.op, tuple(args))
+                        replacements[ast.cache_key] = repl
+
+                    rep_queue.append(repl)
+
+        assert len(arg_queue) == 0, "arg_queue is not empty"
+        assert len(ast_queue) == 0, "ast_queue is not empty"
+        assert len(rep_queue) == 1, ("rep_queue has unexpected length", len(rep_queue))
+
+        return rep_queue.pop()
+
+    def replace(self, old, new, variable_set=None, leaf_operation=None):   # pylint:disable=unused-argument
         """
         Returns this AST but with the AST 'old' replaced with AST 'new' in its subexpressions.
         """
         self._check_replaceability(old, new)
         replacements = {old.cache_key: new}
-        return self._replace(replacements, variable_set=old.variables)
-
-    def replace_dict(self, replacements):
-        """
-        :param replacements:    A dictionary of asts to replace and their replacements.
-        :return:                An AST with all instances of ast's in replacements.
-        """
-        #for old, new in replacements.items():
-        #   old = old.ast
-        #   if not isinstance(old, Base) or not isinstance(new, Base):
-        #       raise ClaripyOperationError('replacements must be AST nodes')
-        #   if type(old) is not type(new):
-        #       raise ClaripyOperationError('cannot replace type %s ast with type %s ast' % (type(old), type(new)))
-        #   old._check_replaceability(new)
-
-        if replacements is None or len(replacements) == 0:  # pylint:disable=len-as-condition
-            return self
-
-        return self._replace(replacements, variable_set=set())
+        return self.replace_dict(replacements, variable_set=old.variables)
 
     @staticmethod
     def _check_replaceability(old, new):
@@ -773,7 +776,7 @@ class Base(ana.Storable):
         counter = itertools.count() if counter is None else counter
         var_map = { } if var_map is None else var_map
 
-        for v in self._recursive_leaf_asts():
+        for v in self.leaf_asts():
             if v.cache_key not in var_map and v.op in { 'BVS', 'BoolS', 'FPS' }:
                 new_name = 'canonical_%d' % next(counter)
                 var_map[v.cache_key] = v._rename(new_name)
@@ -870,7 +873,7 @@ class Base(ana.Storable):
         printing.
         """
         if self._burrowed is None:
-            self._burrowed = self._burrow_ite() #pylint:disable=attribute-defined-outside-init
+            self._burrowed = self._burrow_ite()  # pylint:disable=attribute-defined-outside-init
             self._burrowed._burrowed = self._burrowed
         return self._burrowed
 
@@ -881,7 +884,7 @@ class Base(ana.Storable):
         AST, for processing in static analyses.
         """
         if self._excavated is None:
-            self._excavated = self._excavate_ite() #pylint:disable=attribute-defined-outside-init
+            self._excavated = self._excavate_ite()  # pylint:disable=attribute-defined-outside-init
 
             # we set the flag for the children so that we avoid re-excavating during
             # VSA backend evaluation (since the backend evaluation recursively works on
@@ -974,9 +977,9 @@ def simplify(e):
 
         return s
 
-from ..errors import BackendError, ClaripyOperationError, ClaripyRecursionError, ClaripyReplacementError
+from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from .. import operations
 from ..backend_object import BackendObject
 from ..backend_manager import backends
-from ..ast.bool import If, Not, BoolS, is_true
+from ..ast.bool import If, Not, BoolS
 from ..ast.bv import BV

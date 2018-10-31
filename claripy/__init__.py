@@ -27,13 +27,6 @@ import ana
 if os.environ.get('REMOTE', False):
     ana.set_dl(ana.MongoDataLayer(()))
 
-#
-# Some other misguided setup
-#
-
-_recurse = 15000
-l.info("Claripy is setting the recursion limit to %d. If Python segfaults, I am sorry.", _recurse)
-sys.setrecursionlimit(_recurse)
 
 #
 # backend objects
@@ -102,5 +95,5 @@ from .solvers import *
 
 def reset():
     downsize()
-    from .ast import bv
+    from .ast import bv  # pylint:disable=redefined-outer-name
     bv._bvv_cache.clear()
