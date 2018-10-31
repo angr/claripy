@@ -574,28 +574,16 @@ class Base(ana.Storable):
         """
         return self.leaf_asts()
 
-    def dbg_is_looped(self, seen=None, checked=None):
-        seen = set() if seen is None else seen
-        checked = set() if checked is None else checked
-
+    def dbg_is_looped(self):
         l.debug("Checking AST with hash %s for looping", hash(self))
-        if hash(self) in seen:
-            return self
-        elif hash(self) in checked:
-            return False
-        else:
-            seen.add(hash(self))
 
-            for a in self.args:
-                if not isinstance(a, Base):
-                    continue
+        seen = set()
+        for child_ast in self.children_asts():
+            if hash(child_ast) in seen:
+                return child_ast
+            seen.add(hash(child_ast))
 
-                r = a.dbg_is_looped(seen=set(seen), checked=checked)
-                if r is not False:
-                    return r
-
-            checked.add(hash(self))
-            return False
+        return False
 
     #
     # Various AST modifications (replacements)
