@@ -8,9 +8,10 @@ from .utils import OrderedSet
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
         expected_num_args = len(arg_types)
-    else:
+    elif type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
         expected_num_args = None
-
+    else:
+        raise ClaripyOperationError("op {} got weird arg_types".format(name))
 
     def _type_fixer(args):
         num_args = len(args)
@@ -21,11 +22,10 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
                 raise ClaripyTypeError("Operation {} takes exactly "
                                        "{} arguments ({} given)".format(name, len(arg_types), len(args)))
 
-        if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
-            actual_arg_types = arg_types
-        else:
+        if type(arg_types) is type: #pylint:disable=unidiomatic-typecheck
             actual_arg_types = (arg_types,) * num_args
-
+        else:
+            actual_arg_types = arg_types
         matches = [ isinstance(arg, argty) for arg,argty in zip(args, actual_arg_types) ]
 
         # heuristically, this works!

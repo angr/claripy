@@ -1,9 +1,17 @@
+import hashlib
 import itertools
 import logging
+import numbers
 import os
 import struct
 import weakref
 from collections import OrderedDict, deque
+from past.builtins import long
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 import ana
 
@@ -43,45 +51,119 @@ def _make_name(name, size, explicit_name=False, prefix=""):
         return name
 
 
-class BaseMeta(type):
+class Base(ana.Storable):
     """
-    BaseMeta
+    This is the base class of all claripy ASTs. An AST tracks a tree of operations on arguments.
+
+    This class should not be instanciated directly - instead, use one of the constructor functions (BVS, BVV, FPS,
+    FPV...) to construct a leaf node and then build more complicated expressions using operations.
+
+    AST objects have *hash identity*. This means that an AST that has the same hash as another AST will be the *same*
+    object. This is critical for efficient memory usage. As an example, the following is true::
+
+        a, b = two different ASTs
+        c = b + a
+        d = b + a
+        assert c is d
+
+    :ivar op:           The operation that is being done on the arguments
+    :ivar args:         The arguments that are being used
     """
+
+    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
+                  '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
+                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
+                  'depth']
     _hash_cache = weakref.WeakValueDictionary()
 
-    def __call__(cls, op, args, **kwargs):
-        a_args, kwargs = cls._finalize_args(args, **kwargs)
+    FULL_SIMPLIFY=1
+    LITE_SIMPLIFY=2
+    UNSIMPLIFIED=0
 
-        # try eager backends first
-        symbolic, eager_backends = kwargs['symbolic'], kwargs['eager_backends']
-        if not symbolic and eager_backends and op not in operations.leaf_operations:
+    LITE_REPR=0
+    MID_REPR=1
+    FULL_REPR=2
 
+    def __new__(cls, op, args, add_variables=None, **kwargs):
+        """
+        This is called when you create a new Base object, whether directly or through an operation.
+        It finalizes the arguments (see the _finalize function, above) and then computes
+        a hash. If an AST of this hash already exists, it returns that AST. Otherwise,
+        it creates, initializes, and returns the AST.
+
+        :param op:              The AST operation ('__add__', 'Or', etc)
+        :param args:            The arguments to the AST operation (i.e., the objects to add)
+        :param variables:       The symbolic variables present in the AST (default: empty set)
+        :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
+        :param length:          An integer specifying the length of this AST (default: None)
+        :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
+                                (basically, just undoing the Reverse op), and 2 means simplified through z3.
+        :param errored:         A set of backends that are known to be unable to handle this AST.
+        :param eager_backends:  A list of backends with which to attempt eager evaluation
+        :param annotations:     A frozenset of annotations applied onto this AST.
+        """
+
+        #if any(isinstance(a, BackendObject) for a in args):
+        #   raise Exception('asdf')
+
+        # fix up args and kwargs
+        a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
+        if 'symbolic' not in kwargs:
+            kwargs['symbolic'] = any(a.symbolic for a in a_args if isinstance(a, Base))
+        if 'variables' not in kwargs:
+            kwargs['variables'] = frozenset.union(
+                frozenset(), *(a.variables for a in a_args if isinstance(a, Base))
+            )
+        elif type(kwargs['variables']) is not frozenset: #pylint:disable=unidiomatic-typecheck
+            kwargs['variables'] = frozenset(kwargs['variables'])
+        if 'errored' not in kwargs:
+            kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
+
+        if add_variables:
+            kwargs['variables'] = kwargs['variables'] | add_variables
+
+        eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
+
+        if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
                 try:
-                    simp = eb._abstract(eb.call(op, args))
-                    r = operations._handle_annotations(simp, args)
-                    if r is None:
-                        kwargs['eager_backends'].remove(eb)
-                        continue
-                    return r
+                    r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
+                    if r is not None:
+                        return r
+                    else:
+                        eager_backends.remove(eb)
                 except BackendError:
-                    kwargs['eager_backends'].remove(eb)
+                    eager_backends.remove(eb)
 
         # if we can't be eager anymore, null out the eagerness
         kwargs['eager_backends'] = None
 
-        # calculate ast hash
-        ast_hash = cls._calc_hash(op, args, kwargs)
+        # whether this guy is initialized or not
+        if 'uninitialized' not in kwargs:
+            kwargs['uninitialized'] = None
 
-        if ast_hash in cls._hash_cache:
-            return cls._hash_cache[ast_hash]
+        if 'uc_alloc_depth' not in kwargs:
+            kwargs['uc_alloc_depth'] = None
 
-        self = cls.__new__(cls, op, a_args, **kwargs)
-        self.__init__(op, a_args, **kwargs)
-        self._hash = ast_hash
+        if 'annotations' not in kwargs:
+            kwargs['annotations'] = ()
 
-        cls._hash_cache[ast_hash] = self
+        h = Base._calc_hash(op, a_args, kwargs)
+        self = cls._hash_cache.get(h, None)
+        if self is None:
+            self = super(Base, cls).__new__(cls)
+            depth = max(a.depth if isinstance(a, Base) else 0 for a in a_args) + 1
+            self.__a_init__(op, a_args, depth=depth, **kwargs)
+            self._hash = h
+            cls._hash_cache[h] = self
+        # else:
+        #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
+        #        raise Exception("CRAP -- hash collision")
+
         return self
+
+    def __init__(self, *args, **kwargs):
+        pass
 
     @staticmethod
     def _calc_hash(op, args, keywords):
@@ -103,98 +185,23 @@ class BaseMeta(type):
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
         hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
-        return md5_unpacker.unpack(hd)[0]  # 64 bits
+        return md5_unpacker.unpack(hd)[0] # 64 bits
 
-    @staticmethod
-    def _finalize_args(args, **kwargs):
-        """_finalize_args
+    def _get_hashables(self):
+        return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
-        :param args:
-        :param **kwargs:
+    #pylint:disable=attribute-defined-outside-init
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None): #pylint:disable=unused-argument
         """
-        a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
-        b_args = tuple(a for a in a_args if isinstance(a, Base))
+        Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
-        if 'symbolic' not in kwargs:
-            kwargs['symbolic'] = any(a.symbolic for a in b_args)
-
-        if 'variables' not in kwargs:
-            kwargs['variables'] = frozenset.union(
-                frozenset(), *(a.variables for a in b_args)
-            )
-        elif type(kwargs['variables']) is not frozenset:  # pylint:disable=unidiomatic-typecheck
-            kwargs['variables'] = frozenset(kwargs['variables'])
-
-        if 'errored' not in kwargs:
-            kwargs['errored'] = set.union(set(), *(a._errored for a in b_args))
-
-        if kwargs.get('add_variables', None):
-            kwargs['variables'] = kwargs['variables'] | kwargs.pop('add_variables')
-
-        if 'eager_backends' not in kwargs:
-            kwargs['eager_backends'] = list(backends._eager_backends)
-
-        if 'annotations' not in kwargs:
-            kwargs['annotations'] = ()
-
-        if 'depth' not in kwargs:
-            kwargs['depth'] = (max((a.depth for a in b_args)) if b_args else 0) + 1
-
-        return a_args, kwargs
-
-
-class Base(ana.Storable, metaclass=BaseMeta):
-    """
-    This is the base class of all claripy ASTs. An AST tracks a tree of operations on arguments.
-
-    This class should not be instanciated directly - instead, use one of the constructor functions (BVS, BVV, FPS,
-    FPV...) to construct a leaf node and then build more complicated expressions using operations.
-
-    AST objects have *hash identity*. This means that an AST that has the same hash as another AST will be the *same*
-    object. This is critical for efficient memory usage. As an example, the following is true::
-
-        a, b = two different ASTs
-        c = b + a
-        d = b + a
-        assert c is d
-
-    :ivar op:           The operation that is being done on the arguments
-    :ivar args:         The arguments that are being used
-    """
-    __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
-                  '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
-                  '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
-                  'depth']
-
-    FULL_SIMPLIFY=1
-    LITE_SIMPLIFY=2
-    UNSIMPLIFIED=0
-
-    LITE_REPR=0
-    MID_REPR=1
-    FULL_REPR=2
-
-    def __init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, depth=None,
-                 eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None):
-        """
-        Initializes an AST.
-
-        :param op:              The AST operation ('__add__', 'Or', etc)
-        :param args:            The arguments to the AST operation (i.e., the objects to add)
-        :param variables:       The symbolic variables present in the AST (default: empty set)
-        :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
-        :param length:          An integer specifying the length of this AST (default: None)
-        :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
-                                (basically, just undoing the Reverse op), and 2 means simplified through z3.
-        :param errored:         A set of backends that are known to be unable to handle this AST.
-        :param depth:           The depth of this AST. For example, an AST representing (a+(b+c)) would have a depth of 2.
-        :param eager_backends:  A list of backends with which to attempt eager evaluation
-        :param annotations:     A frozenset of annotations applied onto this AST.
+        We use this instead of ``__init__`` due to python's undesirable behavior w.r.t. automatically calling it on
+        return from ``__new__``.
         """
         self.op = op
         self.args = args
         self.length = length
-        self.variables = variables
+        self.variables = frozenset(variables)
         self.symbolic = symbolic
         self.depth = depth if depth is not None else 1
         self._eager_backends = eager_backends
@@ -209,7 +216,7 @@ class Base(ana.Storable, metaclass=BaseMeta):
 
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
-        self.annotations = annotations if annotations is not None else tuple()
+        self.annotations = annotations
 
         ast_args = tuple(a for a in self.args if isinstance(a, Base))
         self._uneliminatable_annotations = frozenset(itertools.chain(
@@ -224,6 +231,8 @@ class Base(ana.Storable, metaclass=BaseMeta):
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
+
+    #pylint:enable=attribute-defined-outside-init
 
     def make_uuid(self, uuid=None):
         """
@@ -273,12 +282,10 @@ class Base(ana.Storable, metaclass=BaseMeta):
         """
         Support for ANA deserialization.
         """
-        op, args, length, variables, symbolic, ast_hash, annotations, depth = state
-        Base.__init__(self, op, args, depth=depth, length=length, variables=variables, symbolic=symbolic, annotations=annotations)
-
-        # TODO: This looks ugly.
-        BaseMeta._hash_cache[ast_hash] = self
-        self._hash = ast_hash  # pylint:disable=attribute-defined-outside-init
+        op, args, length, variables, symbolic, h, annotations, depth = state
+        Base.__a_init__(self, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, depth=depth)
+        self._hash = h
+        Base._hash_cache[h] = self
 
     #
     # Collapsing and simplification
