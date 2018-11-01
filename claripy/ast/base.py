@@ -474,11 +474,11 @@ class Base(ana.Storable):
                     fmt = '%#x' if type(args[1]) is int else '%s'
                     extras.append("min=%s" % (fmt % args[1]))
                 if args[2] is not None:
-                    fmt = '%#x' if type(args[1]) is int else '%s'
-                    extras.append("max=%s" % (fmt % args[1]))
+                    fmt = '%#x' if type(args[2]) is int else '%s'
+                    extras.append("max=%s" % (fmt % args[2]))
                 if args[3] is not None:
-                    fmt = '%#x' if type(args[1]) is int else '%s'
-                    extras.append("stride=%s" % (fmt % args[1]))
+                    fmt = '%#x' if type(args[3]) is int else '%s'
+                    extras.append("stride=%s" % (fmt % args[3]))
                 if args[4] is True:
                     extras.append("UNINITIALIZED")
                 return "{}{}".format(args[0], '{%s}' % ', '.join(extras) if extras else '')
