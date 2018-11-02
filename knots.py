@@ -30,7 +30,7 @@ class KnotFrontend(object):
             special_computations.update(comp)
             special_constraints.extend(con)
 
-        special_computations = {k: self.naive_conversion(v) for k, v in special_computations.iteritems()}
+        special_computations = {k: self.naive_conversion(v) for k, v in special_computations.items()}
 
         solver = claripy.Solver()
         for con in self.constraints:
@@ -60,14 +60,14 @@ class KnotFrontend(object):
             # uh oh! gotta directly describe atoi
             chars = node.args[0].chop(8)
             size = node.args[1]
-            char_assertion_fails = [claripy.Not(claripy.And(char >= '0', char <= '9')) for char in chars]
+            char_assertion_fails = [claripy.Not(claripy.And(char >= b'0', char <= b'9')) for char in chars]
 
             cases = [self._atoi_success(chars[:i], size) for i, _ in enumerate(chars)]
             result = claripy.ite_cases(zip(char_assertion_fails, cases), self._atoi_success(chars, size))
             return result, {}, []
 
     def _handle_Itoa(self, node, allow_introspection=True):
-        return claripy.Concat(*[0x30 + ((node.args[0] // 10**(node.args[1] - 1 - i)) % 10)[7:0] for i in xrange(node.args[1])])
+        return claripy.Concat(*[0x30 + ((node.args[0] // 10**(node.args[1] - 1 - i)) % 10)[7:0] for i in range(node.args[1])])
 
     @staticmethod
     def _atoi_success(chars, size):
@@ -101,7 +101,7 @@ def constraints_to_graph(constraints):
     return graph
 
 def get_descendents_and_inlaws(graph, root):
-    seen = set([root])
+    seen = {root}
     unseen = set()
     queue = [root]
     while queue:
@@ -132,4 +132,4 @@ if __name__ == '__main__':
     s.add(atoi_of_that < 10000)
     #s.add(input_string.chop(8)[-2] == '1')
     for val in s.eval(input_string, 5):
-        print repr(hex(val)[2:].strip('L').rjust(len(input_string)//4, '0').decode('hex'))
+        print(val.to_bytes(len(input_string) // 8, 'big'))

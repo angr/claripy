@@ -14,7 +14,7 @@ class Inversion(object):
         is_temp(self.value)
 
     def apply(self, temp, value, replacement):
-        formulae = {k: v.replace(value, replacement) for k, v in self.formulae.iteritems()}
+        formulae = {k: v.replace(value, replacement) for k, v in self.formulae.items()}
         if not is_temp(value):
             formulae[value.cache_key] = replacement
         return Inversion(temp, formulae)
@@ -26,13 +26,13 @@ def is_temp(v):
     return v.op == 'BVS' and v.args[0].startswith('invertemp')
 
 def invert(ast):
-    if type(ast) in (int, long, bytes, unicode):
+    if type(ast) in (int, str, bytes):
         return Inversion(ast, {})
     if ast.op in ('BVV', 'BVS'):
         return Inversion(ast, {})
 
     sz = len(ast)
-    iargs = map(invert, ast.args)
+    iargs = list(map(invert, ast.args))
     result_formulae, wash = formulae_union(iargs)
 
     if wash:
