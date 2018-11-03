@@ -1,4 +1,4 @@
-import sys
+
 import os
 import z3
 import ctypes
@@ -251,13 +251,13 @@ class BackendZ3(Backend):
         self._simplification_cache_val.clear()
 
     @condom
-    def _size(self, e):
-        if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
-            l.debug("Unable to determine length of value of type %s", e.__class__)
-            raise BackendError("Unable to determine length of value of type %s" % e.__class__)
-        return e.size()
+    def _size(self, a):
+        if not isinstance(a, z3.BitVecRef) and not isinstance(a, z3.BitVecNumRef):
+            l.debug("Unable to determine length of value of type %s", a.__class__)
+            raise BackendError("Unable to determine length of value of type %s" % a.__class__)
+        return a.size()
 
-    def _name(self, e): #pylint:disable=unused-argument
+    def _name(self, o): #pylint:disable=unused-argument
         l.warning("BackendZ3.name() called. This is weird.")
         raise BackendError("name is not implemented yet")
 
@@ -327,7 +327,7 @@ class BackendZ3(Backend):
     #
 
     @condom
-    def _convert(self, obj):
+    def _convert(self, obj):  # pylint:disable=arguments-differ
         if isinstance(obj, FSort):
             return z3.FPSort(obj.exp, obj.mantissa, ctx=self._context)
         elif isinstance(obj, RM):
@@ -355,20 +355,19 @@ class BackendZ3(Backend):
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
             raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-    def call(self, *args, **kwargs):
+    def call(self, *args, **kwargs):  # pylint;disable=arguments-differ
         return Backend.call(self, *args, **kwargs)
 
     @condom
-    def _abstract(self, z):
+    def _abstract(self, e):
         #return self._abstract(z, split_on=split_on)[0]
-        return self._abstract_internal(z.ctx.ctx, z.ast)
+        return self._abstract_internal(e.ctx.ctx, e.ast)
 
     @staticmethod
-    def _z3_ast_hash(ctx, ast):
+    def _z3_ast_hash(ast):
         """
         This is a better hashing function for z3 Ast objects. Z3_get_ast_hash() creates too many hash collisions.
 
-        :param ctx: A z3 Context.
         :param ast: A z3 Ast object.
         :return:    An integer - the hash.
         """
@@ -376,7 +375,7 @@ class BackendZ3(Backend):
         return ast.value
 
     def _abstract_internal(self, ctx, ast, split_on=None):
-        h = self._z3_ast_hash(ctx, ast)
+        h = self._z3_ast_hash(ast)
         try:
             cached_ast, _ = self._ast_cache[h]
             return cached_ast
@@ -831,11 +830,11 @@ class BackendZ3(Backend):
 
         return max(vals)
 
-    def _simplify(self, expr): #pylint:disable=W0613,R0201
+    def _simplify(self, e): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
 
     @condom
-    def simplify(self, expr):
+    def simplify(self, expr):  #pylint:disable=arguments-differ
         if expr._simplified:
             return expr
 
