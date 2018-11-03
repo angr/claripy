@@ -1,4 +1,7 @@
+import networkx
+
 from .ast.bv import BVS, BVV, Concat, Itoa
+from .ast.base import Base
 
 class Inversion(object):
     def __init__(self, value, formulae):
@@ -8,10 +11,6 @@ class Inversion(object):
     @property
     def live(self):
         return self.value.op == 'BVS'
-
-    @property
-    def very_live(self):
-        is_temp(self.value)
 
     def apply(self, temp, value, replacement):
         formulae = {k: v.replace(value, replacement) for k, v in self.formulae.items()}
@@ -26,6 +25,14 @@ def is_temp(v):
     return v.op == 'BVS' and v.args[0].startswith('invertemp')
 
 def invert(ast):
+    """
+    "inversion" is a mechanism for describing how to compute the inputs of an expression given the outputs.
+
+    Given an AST, if possible, return a temporary BVS and a mapping from each of the leaf BVSs in the original AST to an AST computing a value with the temp at the leaves.
+
+    :param ast:     A claripy expression to invert
+    :return:        An "Inversion" object, which contains a ``.value`` of the same type as `ast` and ` ``.formulae`` mapping leaves of `ast` to computations from ``.value``.
+    """
     if type(ast) in (int, str, bytes):
         return Inversion(ast, {})
     if ast.op in ('BVV', 'BVS'):
@@ -88,3 +95,66 @@ def formulae_union(iargs):
                 else:
                     result_formulae[k] = iarg.formulae[k]
     return result_formulae, wash
+
+def constraints_to_graph(constraints):
+    """
+    Convert some constraints to a graph of edges between values.
+
+    :param constraints:     A list of constraints
+    :return:                A digraph, with each operation as a node and each argument as an edge from the op to the arg.
+                            All initial constraints will be linked to a root element which is just the string "ROOT".
+                            All non-AST elements will just appear in the graph directly.
+    """
+    ckeys = [ast.cache_key for ast in constraints]
+    seen = set(ckeys)
+    queue = list(ckeys)
+    graph = networkx.DiGraph()
+
+    for ast_key in ckeys:
+        graph.add_edge('ROOT', ast_key)
+
+    while queue:
+        ast_key = queue.pop(0)
+        for i, arg in enumerate(ast_key.ast.args):
+            if isinstance(arg, Base):
+                arg = arg.cache_key
+                graph.add_edge(ast_key, arg, arg_num=i)
+                if arg not in seen:
+                    seen.add(arg)
+                    queue.append(arg)
+            else:
+                graph.add_edge(ast_key, arg, arg_num=i)
+
+    return graph
+
+def get_descendents_and_inlaws(graph, root):
+    """
+    Find the elements of a constraint graph that are descendants of a root node, and the nodes that
+    connect to any of the descendants without being descendant themselves (inlaws).
+
+    :param graph:   A constraint graph, as per constraints_to_graph.
+    :param root:    A member of the constraint graph.
+    :return:        A tuple of (descendants, inlaws)
+    """
+    seen = {root}
+    unseen = set()
+    queue = [root]
+    while queue:
+        node = queue.pop(0)
+        for arg in node.ast.args:
+            if not isinstance(arg, Base):
+                continue
+            arg = arg.cache_key
+            if arg in seen:
+                continue
+            seen.add(arg)
+            queue.append(arg)
+
+            if arg in unseen:
+                unseen.remove(arg)
+            for parent in graph.pred[arg]:
+                if parent not in seen:
+                    unseen.add(parent)
+
+    return seen, unseen
+

@@ -118,3 +118,18 @@ class SolverComposite(
 
     def __repr__(self):
         return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))
+
+class SolverKnots(
+    frontend_mixins.ConstraintFixerMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.SatCacheMixin,
+    frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.SimplifyHelperMixin,
+    frontend_mixins.ConstraintExpansionMixin,
+    # model cache?
+    frontends.KnotsFrontend
+):
+    def __init__(self, backend=backends.z3, **kwargs):
+        super(SolverKnots, self).__init__(backend, **kwargs)
