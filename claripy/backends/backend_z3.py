@@ -353,14 +353,16 @@ class BackendZ3(Backend):
         """
 
         z3_hash = z3.Z3_get_ast_hash(ctx, ast)
-        z3_ast_ref = ast.value # this seems to be the memory address
         z3_sort = z3.Z3_get_sort(ctx, ast).value
-        return "%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref)
+        return "%d_%d" % (z3_hash, z3_sort)
 
     def _abstract_internal(self, ctx, ast, split_on=None):
         h = self._z3_ast_hash(ctx, ast)
         try:
-            return self._ast_cache[h]
+            cached_ast = self._ast_cache[h]
+            # are two ASTs equal?
+            if z3.Z3_is_eq_ast(ctx, ast, cached_ast._model_z3.ast):
+                return cached_ast
         except KeyError:
             pass
 
