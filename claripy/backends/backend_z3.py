@@ -1,4 +1,4 @@
-import sys
+
 import os
 import z3
 import ctypes
@@ -9,6 +9,8 @@ import threading
 import weakref
 from functools import reduce
 from decimal import Decimal
+
+from cachetools import LRUCache
 
 from ..errors import ClaripyZ3Error
 
@@ -82,6 +84,19 @@ def _z3_decl_name_str(ctx, decl):
         raise z3.Z3Exception(z3.lib().Z3_get_error_msg(ctx, err))
     return symbol_name
 
+
+class SmartLRUCache(LRUCache):
+    def __init__(self, maxsize, missing=None, getsizeof=None, evict=None):
+        LRUCache.__init__(self, maxsize, missing, getsizeof)
+        self._evict = evict
+
+    def popitem(self):
+        key, val = LRUCache.popitem(self)
+        if self._evict:
+            self._evict(key, val)
+        return key, val
+
+
 #
 # And the (ugh) magic
 #
@@ -90,7 +105,7 @@ from . import Backend
 class BackendZ3(Backend):
     _split_on = { 'And', 'Or' }
 
-    def __init__(self, reuse_z3_solver=None):
+    def __init__(self, reuse_z3_solver=None, ast_cache_size=10000):
         Backend.__init__(self, solver_required=True)
         self._enable_simplification_cache = False
         self._hash_to_constraint = weakref.WeakValueDictionary()
@@ -102,6 +117,8 @@ class BackendZ3(Backend):
             reuse_z3_solver = True if os.environ.get('REUSE_Z3_SOLVER', "False").lower() in {"1", "true", "yes", "y"} \
                 else False
         self.reuse_z3_solver = reuse_z3_solver
+
+        self._ast_cache_size = ast_cache_size
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
@@ -189,7 +206,7 @@ class BackendZ3(Backend):
         try:
             return self._tls.ast_cache
         except AttributeError:
-            self._tls.ast_cache = weakref.WeakValueDictionary()
+            self._tls.ast_cache = SmartLRUCache(self._ast_cache_size, evict=self._pop_from_ast_cache)
             return self._tls.ast_cache
 
     @property
@@ -234,15 +251,19 @@ class BackendZ3(Backend):
         self._simplification_cache_val.clear()
 
     @condom
-    def _size(self, e):
-        if not isinstance(e, z3.BitVecRef) and not isinstance(e, z3.BitVecNumRef):
-            l.debug("Unable to determine length of value of type %s", e.__class__)
-            raise BackendError("Unable to determine length of value of type %s" % e.__class__)
-        return e.size()
+    def _size(self, a):
+        if not isinstance(a, z3.BitVecRef) and not isinstance(a, z3.BitVecNumRef):
+            l.debug("Unable to determine length of value of type %s", a.__class__)
+            raise BackendError("Unable to determine length of value of type %s" % a.__class__)
+        return a.size()
 
-    def _name(self, e): #pylint:disable=unused-argument
+    def _name(self, o): #pylint:disable=unused-argument
         l.warning("BackendZ3.name() called. This is weird.")
         raise BackendError("name is not implemented yet")
+
+    def _pop_from_ast_cache(self, _, tpl):
+        _, raw_ast = tpl
+        z3.Z3_dec_ref(self._context.ctx, raw_ast)
 
     #
     # Core creation methods
@@ -306,7 +327,7 @@ class BackendZ3(Backend):
     #
 
     @condom
-    def _convert(self, obj):
+    def _convert(self, obj):  # pylint:disable=arguments-differ
         if isinstance(obj, FSort):
             return z3.FPSort(obj.exp, obj.mantissa, ctx=self._context)
         elif isinstance(obj, RM):
@@ -334,33 +355,30 @@ class BackendZ3(Backend):
             l.debug("BackendZ3 encountered unexpected type %s", type(obj))
             raise BackendError("unexpected type %s encountered in BackendZ3" % type(obj))
 
-    def call(self, *args, **kwargs):
+    def call(self, *args, **kwargs):  # pylint;disable=arguments-differ
         return Backend.call(self, *args, **kwargs)
 
     @condom
-    def _abstract(self, z):
+    def _abstract(self, e):
         #return self._abstract(z, split_on=split_on)[0]
-        return self._abstract_internal(z.ctx.ctx, z.ast)
+        return self._abstract_internal(e.ctx.ctx, e.ast)
 
     @staticmethod
-    def _z3_ast_hash(ctx, ast):
+    def _z3_ast_hash(ast):
         """
         This is a better hashing function for z3 Ast objects. Z3_get_ast_hash() creates too many hash collisions.
 
-        :param ctx: A z3 Context.
         :param ast: A z3 Ast object.
         :return:    An integer - the hash.
         """
 
-        z3_hash = z3.Z3_get_ast_hash(ctx, ast)
-        z3_ast_ref = ast.value # this seems to be the memory address
-        z3_sort = z3.Z3_get_sort(ctx, ast).value
-        return "%d_%d_%d" % (z3_hash, z3_sort, z3_ast_ref)
+        return ast.value
 
     def _abstract_internal(self, ctx, ast, split_on=None):
-        h = self._z3_ast_hash(ctx, ast)
+        h = self._z3_ast_hash(ast)
         try:
-            return self._ast_cache[h]
+            cached_ast, _ = self._ast_cache[h]
+            return cached_ast
         except KeyError:
             pass
 
@@ -501,7 +519,8 @@ class BackendZ3(Backend):
         else:
             a = result_ty(op_name, tuple(args))
 
-        self._ast_cache[h] = a
+        self._ast_cache[h] = (a, ast)
+        z3.Z3_inc_ref(ctx, ast)
         return a
 
     def _abstract_to_primitive(self, ctx, ast):
@@ -811,11 +830,11 @@ class BackendZ3(Backend):
 
         return max(vals)
 
-    def _simplify(self, expr): #pylint:disable=W0613,R0201
+    def _simplify(self, e): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
 
     @condom
-    def simplify(self, expr):
+    def simplify(self, expr):  #pylint:disable=arguments-differ
         if expr._simplified:
             return expr
 
