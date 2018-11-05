@@ -825,46 +825,82 @@ class Base(ana.Storable):
         return old_true.__class__(old_true.op, new_args, length=self.length)
 
     def _excavate_ite(self):
-        if self.op in operations.leaf_operations or self.annotations:
-            return self
+        ast_queue = [iter([self])]
+        arg_queue = []
+        op_queue = []
 
-        excavated_args = [ (a.ite_excavated if isinstance(a, Base) else a) for a in self.args ]
-        ite_args = [ isinstance(a, Base) and a.op == 'If' for a in excavated_args ]
+        while ast_queue:
+            try:
+                ast = next(ast_queue[-1])
 
-        if self.op == 'If':
-            # if we are an If, call the If handler so that we can take advantage of its simplifiers
-            return If(*excavated_args)
-        elif ite_args.count(True) == 0:
-            # if there are no ifs that came to the surface, there's nothing more to do
-            return self.swap_args(excavated_args)
-        else:
-            # this gets called when we're *not* in an If, but there are Ifs in the args.
-            # it pulls those Ifs out to the surface.
-            cond = excavated_args[ite_args.index(True)].args[0]
-            new_true_args = [ ]
-            new_false_args = [ ]
+                if not isinstance(ast, Base):
+                    arg_queue.append(ast)
+                    continue
 
-            for a in excavated_args:
-                # print("OC", cond.dbg_repr())
-                # print("NC", Not(cond).dbg_repr())
+                if ast.op in operations.leaf_operations:
+                    arg_queue.append(ast)
+                    continue
 
-                if not isinstance(a, Base) or a.op != 'If':
-                    new_true_args.append(a)
-                    new_false_args.append(a)
-                elif a.args[0] is cond:
-                    # print("AC", a.args[0].dbg_repr())
-                    new_true_args.append(a.args[1])
-                    new_false_args.append(a.args[2])
-                elif a.args[0] is Not(cond):
-                    # print("AN", a.args[0].dbg_repr())
-                    new_true_args.append(a.args[2])
-                    new_false_args.append(a.args[1])
-                else:
-                    # print("AB", a.args[0].dbg_repr())
-                    # weird conditions -- giving up!
-                    return self.swap_args(excavated_args)
+                if ast.annotations:
+                    arg_queue.append(ast)
+                    continue
 
-            return If(cond, self.swap_args(new_true_args), self.swap_args(new_false_args))
+                op_queue.append(ast)
+                ast_queue.append(iter(ast.args))
+
+            except StopIteration:
+                ast_queue.pop()
+
+                if op_queue:
+                    op = op_queue.pop()
+
+                    args = arg_queue[-len(op.args):]
+                    del arg_queue[-len(op.args):]
+
+                    ite_args = [isinstance(a, Base) and a.op == 'If' for a in args]
+
+                    if op.op == 'If':
+                        # if we are an If, call the If handler so that we can take advantage of its simplifiers
+                        excavated = If(*args)
+
+                    elif ite_args.count(True) == 0:
+                        # if there are no ifs that came to the surface, there's nothing more to do
+                        excavated = op.swap_args(args)
+
+                    else:
+                        # this gets called when we're *not* in an If, but there are Ifs in the args.
+                        # it pulls those Ifs out to the surface.
+                        cond = args[ite_args.index(True)].args[0]
+                        new_true_args = []
+                        new_false_args = []
+
+                        for a in args:
+                            if not isinstance(a, Base) or a.op != 'If':
+                                new_true_args.append(a)
+                                new_false_args.append(a)
+                            elif a.args[0] is cond:
+                                new_true_args.append(a.args[1])
+                                new_false_args.append(a.args[2])
+                            elif a.args[0] is Not(cond):
+                                new_true_args.append(a.args[2])
+                                new_false_args.append(a.args[1])
+                            else:
+                                # weird conditions -- giving up!
+                                excavated = op.swap_args(args)
+                                break
+
+                        else:
+                            excavated = If(cond, op.swap_args(new_true_args),
+                                           op.swap_args(new_false_args))
+
+                    # continue
+                    arg_queue.append(excavated)
+
+        assert len(op_queue) == 0, "op_queue is not empty"
+        assert len(ast_queue) == 0, "ast_queue is not empty"
+        assert len(arg_queue) == 1, ("arg_queue has unexpected length", len(arg_queue))
+
+        return arg_queue.pop()
 
     @property
     def ite_burrowed(self):
