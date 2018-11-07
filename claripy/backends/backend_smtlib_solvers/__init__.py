@@ -27,7 +27,8 @@ class AbstractSMTLibSolverProxy(object):
         self.write('(reset)\n')
 
     def readuntil(self, s):
-        buf = ''
+        buf = b''
+        s = s.encode()
         while s not in buf:
             buf += self.read(1)
         return buf
@@ -39,10 +40,10 @@ class AbstractSMTLibSolverProxy(object):
         return self.write(l + '\n')
 
     def read_sat(self):
-        return self.readline().strip()
+        return self.readline().strip().decode('utf-8')
 
     def read_model(self):
-        read_model = self.readuntil('\n)\n').strip()
+        read_model = self.readuntil('\n)\n').strip().decode('utf-8')
         return read_model
 
 class PopenSolverProxy(AbstractSMTLibSolverProxy):
@@ -55,7 +56,7 @@ class PopenSolverProxy(AbstractSMTLibSolverProxy):
         return self.p.stdout.read(n)
 
     def write(self, smt):
-        self.p.stdin.write(smt)
+        self.p.stdin.write(smt.encode())
         self.p.stdin.flush()
 
     def add_constraints(self, csts, track=False):
@@ -108,10 +109,10 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         smt_script = self._get_satisfiability_smt_script(constraints=csts, variables=vars)
 
         if self.smt_script_log_dir is not None:
-            fname = 'check-sat_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
+            fname = 'check-sat_{}.smt2'.format(hashlib.md5(smt_script.encode()).hexdigest())
 
             with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
-                f.write(smt_script)
+                f.write(smt_script.encode())
 
         solver.reset()
         solver.write(smt_script)
@@ -133,9 +134,9 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         vars, csts = self._get_all_vars_and_constraints(solver=solver, e_c=extra_constraints, e_v=extra_variables)
         smt_script = self._get_full_model_smt_script(constraints=csts, variables=vars)
         if self.smt_script_log_dir is not None:
-            fname = 'get-model_{}.smt2'.format(hashlib.md5(smt_script).hexdigest())
+            fname = 'get-model_{}.smt2'.format(hashlib.md5(smt_script.encode()).hexdigest())
             with open(os.path.join(self.smt_script_log_dir, fname), 'wb') as f:
-                f.write(smt_script)
+                f.write(smt_script.encode())
 
         solver.reset()
         solver.write(smt_script)
@@ -207,8 +208,7 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
         return results
 
-
-import cvc4_popen
-import z3_popen
-import abc_popen
-import z3str_popen
+from . import cvc4_popen
+from . import z3_popen
+from . import abc_popen
+from . import z3str_popen
