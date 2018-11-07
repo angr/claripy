@@ -9,10 +9,11 @@ from ..frontend import Frontend
 _VALIDATE_BALANCER=False
 
 class HybridFrontend(Frontend):
-    def __init__(self, exact_frontend, approximate_frontend, **kwargs):
+    def __init__(self, exact_frontend, approximate_frontend, approximate_first=False, **kwargs):
         Frontend.__init__(self, **kwargs)
         self._exact_frontend = exact_frontend
         self._approximate_frontend = approximate_frontend
+        self._approximate_first = approximate_first
 
         if _VALIDATE_BALANCER:
             approximate_frontend._validation_frontend = self._exact_frontend
@@ -20,6 +21,7 @@ class HybridFrontend(Frontend):
     def _blank_copy(self, c):
         c._exact_frontend = self._exact_frontend.blank_copy()
         c._approximate_frontend = self._approximate_frontend.blank_copy()
+        c._approximate_first = self._approximate_first
 
         if _VALIDATE_BALANCER:
             c._approximate_frontend._validation_frontend = self._exact_frontend
@@ -28,6 +30,7 @@ class HybridFrontend(Frontend):
     def _copy(self, c):
         self._exact_frontend._copy(c._exact_frontend)
         self._approximate_frontend._copy(c._approximate_frontend)
+        self._approximate_first = c._approximate_first
 
         if _VALIDATE_BALANCER:
             c._approximate_frontend._validation_frontend = self._exact_frontend
@@ -59,29 +62,49 @@ class HybridFrontend(Frontend):
     # Hybrid solving
     #
 
-    def _hybrid_call(self, f_name, *args, **kwargs):
+    def _do_call(self, f_name, *args, **kwargs):
         exact = kwargs.pop('exact', True)
 
         # if approximating, try the approximation backend
         if exact is False:
             try:
-                return getattr(self._approximate_frontend, f_name)(*args, **kwargs)
+                return False, getattr(self._approximate_frontend, f_name)(*args, **kwargs)
             except ClaripyFrontendError:
                 pass
 
         # if that fails, try the exact backend
-        return getattr(self._exact_frontend, f_name)(*args, **kwargs)
+        return True, getattr(self._exact_frontend, f_name)(*args, **kwargs)
+
+    def _hybrid_call(self, f_name, *args, **kwargs):
+        _, solution = self._do_call(f_name, *args, **kwargs)
+        return solution
+
+    def _approximate_first_call(self, f_name, e, n, *args, **kwargs):
+        exact_used, solutions = self._do_call(f_name, e, n + 1, exact=False, *args, **kwargs)
+
+        if exact_used is False and len(solutions) > n:
+            if any(getattr(c, 'variables', set()) & e.variables for c in self.constraints):
+                _, _solutions = self._do_call(f_name, e, n + 1, exact=True, *args, **kwargs)
+                return _solutions[:n] if len(_solutions) < len(solutions) else solutions[:n]
+
+        return solutions[:n]
 
     def satisfiable(self, extra_constraints=(), exact=None):
         return self._hybrid_call('satisfiable', extra_constraints=extra_constraints, exact=exact)
 
     def eval_to_ast(self, e, n, extra_constraints=(), exact=None):
+        if self._approximate_first and exact is None and n > 2:
+            return self._approximate_first_call('eval_to_ast', e, n, extra_constraints=extra_constraints)
         return self._hybrid_call('eval_to_ast', e, n, extra_constraints=extra_constraints, exact=exact)
 
     def eval(self, e, n, extra_constraints=(), exact=None):
+        if self._approximate_first and exact is None and n > 2:
+            return self._approximate_first_call('eval', e, n, extra_constraints=extra_constraints)
         return self._hybrid_call('eval', e, n, extra_constraints=extra_constraints, exact=exact)
 
     def batch_eval(self, e, n, extra_constraints=(), exact=None):
+        if self._approximate_first and exact is None and n > 2:
+            return self._approximate_first_call('batch_eval', e, n, extra_constraints=extra_constraints)
         return self._hybrid_call('batch_eval', e, n, extra_constraints=extra_constraints, exact=exact)
 
     def max(self, e, extra_constraints=(), exact=None):

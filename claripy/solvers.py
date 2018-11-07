@@ -53,7 +53,7 @@ class SolverHybrid(
     def __init__(
         self, exact_frontend=None, approximate_frontend=None,
         complex_auto_replace=True, replace_constraints=True,
-        track=False,
+        track=False, approximate_first=False,
         **kwargs
     ):
         exact_frontend = Solver(track=track) if exact_frontend is None else exact_frontend
@@ -61,7 +61,9 @@ class SolverHybrid(
             actual_frontend=SolverVSA(),
             complex_auto_replace=complex_auto_replace, replace_constraints=replace_constraints,
         ) if approximate_frontend is None else approximate_frontend
-        super(SolverHybrid, self).__init__(exact_frontend, approximate_frontend, **kwargs)
+        super(SolverHybrid, self).__init__(
+            exact_frontend, approximate_frontend, approximate_first=approximate_first, **kwargs
+        )
 
 class SolverVSA(
     frontend_mixins.ConstraintFixerMixin,

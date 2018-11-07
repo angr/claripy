@@ -40,6 +40,13 @@ def raw_hybrid_solver(reuse_z3_solver):
     nose.tools.assert_equal(sorted(s.eval(y, 20, exact=False)), [20, 25, 30])
     nose.tools.assert_equal(sorted(s.eval(y, 20)), [20, 25, 30])
 
+    # test approximate_first option
+    s._approximate_first = True
+    old_solve_count = claripy._backends_module.backend_z3.solve_count
+    nose.tools.assert_equal(sorted(s.eval(x, 20)), [0, 2, 4, 6, 8, 10])
+    nose.tools.assert_equal(claripy._backends_module.backend_z3.solve_count, old_solve_count)
+    s._approximate_firsrt = False
+
     # now constrain things further so that the VSA overapproximates
     s.add(x <= 4)
     nose.tools.assert_equal(sorted(s.eval(x, 20, exact=False)), [0, 2, 4])
@@ -554,7 +561,8 @@ if __name__ == '__main__':
         fparams[0](*fparams[1:])
     for fparams in test_solver():
         fparams[0](*fparams[1:])
-    test_hybrid_solver()
+    for fparams in test_hybrid_solver():
+        fparams[0](*fparams[1:])
     test_replacement_solver()
     test_minmax()
     test_solver_branching()
