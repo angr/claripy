@@ -158,7 +158,7 @@ class Frontend(ana.Storable):
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
 
         if concrete and len(concrete_constraints) > 0:
-            results.append(({ b'CONCRETE' }, concrete_constraints))
+            results.append(({ 'CONCRETE' }, concrete_constraints))
 
         return results
 

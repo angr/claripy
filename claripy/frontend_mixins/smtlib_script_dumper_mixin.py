@@ -1,7 +1,6 @@
 import logging
 import sys
 import threading
-from ..utils.transition import raise_from
 
 from ..frontends.constrained_frontend import ConstrainedFrontend
 
@@ -21,7 +20,7 @@ class SMTLibScriptDumperMixin(object):
             variables, csts = self._solver_backend._get_all_vars_and_constraints(e_c=e_csts, e_v=e_variables)
             return self._solver_backend._get_satisfiability_smt_script(csts, variables)
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during smtlib script generation"), e)
+            raise ClaripyFrontendError("Backend error during smtlib script generation") from e
 
     # def merge(self, others, merge_conditions, common_ancestor=None):
     #     return self._solver_backend.__class__.__name__ == 'BackendZ3', ConstrainedFrontend.merge(
