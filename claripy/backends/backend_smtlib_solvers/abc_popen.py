@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 def get_version():
     try:
-        version_string = subprocess.check_output(['abc', '--help'])
+        version_string = subprocess.check_output(['abc', '--help']).decode('utf-8')
         #version_match = re.match('This is CVC4 version (.*)\n', version_string)
 
         #if not version_match:

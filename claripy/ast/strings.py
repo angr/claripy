@@ -18,7 +18,7 @@ class String(Bits):
     # variables of type string... In this case cvc4 would handle the solving part.
     #
     # TODO: Find a smarter way to do this!
-    STRING_TYPE_IDENTIFIER = "STRING_"
+    STRING_TYPE_IDENTIFIER = 'STRING_'
     GENERATED_BVS_IDENTIFIER = 'BVS_'
 
     def __init__(self, *args, **kwargs):
@@ -42,7 +42,7 @@ class String(Bits):
             low_str_idx = self.string_length - 1 - high
             return StrExtract(low_str_idx, high_str_idx + 1 - low_str_idx, self)
         else:
-            return Substr(int(rng+7), int(rng), self)
+            raise ValueError("Only slices allowed for string extraction")
 
     @staticmethod
     # TODO: Figure out what to convert here
@@ -134,7 +134,7 @@ def StringV(value, length=None, **kwargs):
 StrConcat = operations.op('StrConcat', String, String, calc_length=operations.str_concat_length_calc, bound=False)
 StrSubstr = operations.op('StrSubstr', (BV, BV, String),
                         String, calc_length=operations.substr_length_calc, bound=False)
-StrExtract = operations.op('StrExtract', ((int, long), (int, long), String),
+StrExtract = operations.op('StrExtract', (int, int, String),
                               String, extra_check=operations.str_extract_check,
                               calc_length=operations.str_extract_length_calc, bound=False)
 StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)

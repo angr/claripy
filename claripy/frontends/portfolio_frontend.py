@@ -2,7 +2,6 @@ import logging
 from multiprocessing import Process, Pool
 from functools import partial
 
-from ..utils.transition import raise_from
 from .constrained_frontend import ConstrainedFrontend
 from ..frontend import Frontend
 

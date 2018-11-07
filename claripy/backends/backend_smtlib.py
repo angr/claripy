@@ -54,6 +54,7 @@ def _normalize_arguments(expr_left, expr_rigth):
 class BackendSMTLibBase(Backend):
     def __init__(self, *args, **kwargs):
         self.daggify = kwargs.pop('daggify', True)
+        self.reuse_z3_solver = False
         Backend.__init__(self, *args, **kwargs)
 
         # ------------------- LEAF OPERATIONS ------------------- 
@@ -189,7 +190,7 @@ class BackendSMTLibBase(Backend):
     # ------------------- GENERAL PURPOSE OPERATIONS -------------------
 
     def _op_raw_if(self, *args):
-        return Ited(*args)
+        return Ite(*args)
 
     def _op_raw_eq(self, *args):
         # We emulate the integer through a bitvector but
@@ -273,88 +274,13 @@ class BackendSMTLibBase(Backend):
         input_string, substring = args
         return StrContains(input_string, substring)
 
-    def _add(self, constraint):
-        self._assertions_stack.append(constraint)
+    def _op_raw_str_prefixof(self, *args):
+        prefix, input_string = args 
+        return StrPrefixOf(prefix, input_string)
 
-    # def _identical(self, a, b):
-    #     if type(a) is bv.BVV and type(b) is bv.BVV and a.size() != b.size():
-    #         return False
-    #     else:
-    #         return a == b
-
-    # def _convert(self, a):
-    #     if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV)):
-    #         return a
-    #     raise BackendError("can't handle AST of type %s" % type(a))
-
-    # def _simplify(self, e):
-    #     return e
-
-    # def _abstract(self, e): #pylint:disable=no-self-use
-    #     if isinstance(e, bv.BVV):
-    #         return BVV(e.value, e.size())
-    #     elif isinstance(e, bool):
-    #         return BoolV(e)
-    #     elif isinstance(e, fp.FPV):
-    #         return FPV(e.value, e.sort)
-    #     else:
-    #         raise BackendError("Couldn't abstract object of type {}".format(type(e)))
-
-    # def _cardinality(self, b):
-    #     # if we got here, it's a cardinality of 1
-    #     return 1
-
-    # #
-    # # Evaluation functions
-    # #
-
-    # @staticmethod
-    # def _to_primitive(expr):
-    #     if isinstance(expr, bv.BVV):
-    #         return expr.value
-    #     if isinstance(expr, fp.FPV):
-    #         return expr.value
-    #     if isinstance(expr, bool):
-    #         return expr
-    #     if isinstance(expr, numbers.Number):
-    #         return expr
-
-    # def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
-    #     if not all(extra_constraints):
-    #         raise UnsatError('concrete False constraint in extra_constraints')
-
-    #     return (self._to_primitive(expr),)
-
-    # def _batch_eval(self, exprs, n, extra_constraints=(), solver=None, model_callback=None):
-    #     if not all(extra_constraints):
-    #         raise UnsatError('concrete False constraint in extra_constraints')
-
-    #     return [ tuple(self._to_primitive(ex) for ex in exprs) ]
-
-    # def _max(self, expr, extra_constraints=(), solver=None, model_callback=None):
-    #     if not all(extra_constraints):
-    #         raise UnsatError('concrete False constraint in extra_constraints')
-    #     return self._to_primitive(expr)
-
-    # def _min(self, expr, extra_constraints=(), solver=None, model_callback=None):
-    #     if not all(extra_constraints):
-    #         raise UnsatError('concrete False constraint in extra_constraints')
-    #     return self._to_primitive(expr)
-
-    # def _solution(self, expr, v, extra_constraints=(), solver=None, model_callback=None):
-    #     if not all(extra_constraints):
-    #         raise UnsatError('concrete False constraint in extra_constraints')
-    #     return self.convert(expr) == v
-
-    # #pylint:disable=singleton-comparison
-    # def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-    #     return e == True
-    # def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-    #     return e == False
-    # def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-    #     return e == True
-    # def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-    #     return e == False
+    def _op_raw_str_suffixof(self, *args):
+        suffix, input_string = args
+        return StrSuffixOf(suffix, input_string)
 
     def _op_raw_str_indexof(self, *args):
         input_string, substring, start, bitlength = args

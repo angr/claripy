@@ -561,7 +561,6 @@ def test_solver_portfolio():
     solver.add(claripy.StrIndexOf(str_1, claripy.StringV("caca"), 0, 64) >= 0)
     # res = solver.satisfiable()
     res2 = solver.eval(str_1, 10)
-    print res2
 
 
 if __name__ == '__main__':
@@ -586,6 +585,6 @@ if __name__ == '__main__':
     for fparams in test_combine():
         fparams[0](*fparams[1:])
     test_composite_solver()
-    test_composite_solver_with_strings()
+    # test_composite_solver_with_strings()
     test_zero_division_in_cache_mixin()
     # test_solver_portfolio()

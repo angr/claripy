@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 def get_version():
     try:
-        version_string = subprocess.check_output(['z3', '-version'])
+        version_string = subprocess.check_output(['z3', '-version']).decode('utf-8')
         version_match = re.match('Z3 version (.*)\n', version_string)
 
         if not version_match:
@@ -27,9 +27,9 @@ IS_INSTALLED, VERSION, ERROR = get_version()
 if IS_INSTALLED:
     class Z3Proxy(PopenSolverProxy):
         def __init__(self, timeout=None):
-            cmd = ['z3', '-smt2', '-in']
+            cmd = ['/home/phate/repos/z3-update-2/build/z3', '-smt2', '-in']
             if timeout is not None:
-                cmd.append('-t:{}'.format(timeout/1000))  # our timeout is in milliseconds
+                cmd.append('-t:{}'.format(timeout//1000))  # our timeout is in milliseconds
 
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             super(Z3Proxy, self).__init__(p)
