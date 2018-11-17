@@ -93,6 +93,10 @@ class BackendSMTLibBase(Backend):
         self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
         self._op_raw["StrToInt"] = self._op_raw_str_strtoint
 
+    @property
+    def is_smt_backend(self):
+        return True
+
     def _smtlib_exprs(self, exprs):
         return _exprs_to_smtlib(*exprs, daggify=self.daggify)
 
