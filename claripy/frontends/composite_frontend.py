@@ -23,7 +23,11 @@ class CompositeFrontend(ConstrainedFrontend):
         c._owned_solvers = weakref.WeakKeyDictionary()
         c._solvers = { }
         c._template_frontend = self._template_frontend
-        c._template_frontend_string = self._template_frontend_string
+        # if hasattr(self, '__template_frontend_string'):
+        try:
+            c._template_frontend_string = self._template_frontend_string
+        except:
+            pass
         c._unsat = False
         c._track = self._track
 

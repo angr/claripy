@@ -940,7 +940,7 @@ class Base:
 
     def _first_backend(self, what):
         for b in backends._all_backends:
-            if b in self._errored:
+            if b in self._errored or b.is_smt_backend:
                 continue
 
             try: return getattr(b, what)(self)
