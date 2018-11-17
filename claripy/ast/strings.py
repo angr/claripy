@@ -94,7 +94,7 @@ class String(Bits):
         if self.symbolic:
             return BVS(list(self.variables)[0].replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER), 8)
         else:
-            return BVV(ord(self.value), 8)
+            return BVV(ord(self.args[0]), 8)
 
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):

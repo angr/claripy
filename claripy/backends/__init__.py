@@ -59,6 +59,10 @@ class Backend(object):
         self._false_cache = weakref.WeakKeyDictionary()
 
     @property
+    def is_smt_backend(self):
+        return False
+
+    @property
     def _object_cache(self):
         try:
             return self._tls.object_cache
