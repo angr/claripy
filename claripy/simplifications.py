@@ -17,6 +17,7 @@ class SimplificationManager:
             'If': self.if_simplifier,
             '__lshift__': self.lshift_simplifier,
             '__rshift__': self.rshift_simplifier,
+            'LShR': self.lshr_simplifier,
             '__eq__': self.eq_simplifier,
             '__ne__': self.ne_simplifier,
             '__or__': self.bitwise_or_simplifier,
@@ -135,6 +136,19 @@ class SimplificationManager:
     def rshift_simplifier(val, shift):
         if (shift == 0).is_true():
             return val
+        if val.op == "Concat" and (val.args[0] == 0).is_true() and (shift > val.size() - val.args[0].size()).is_true():
+            return ast.all_operations.BVV(0, val.size())
+        if val.op == "ZeroExt" and (shift > val.size() - val.args[0]).is_true():
+            return ast.all_operations.BVV(0, val.size())
+
+    @staticmethod
+    def lshr_simplifier(val, shift):
+        if (shift == 0).is_true():
+            return val
+        if val.op == "Concat" and (val.args[0] == 0).is_true() and (shift > val.size() - val.args[0].size()).is_true():
+            return ast.all_operations.BVV(0, val.size())
+        if val.op == "ZeroExt" and (shift > val.size() - val.args[0]).is_true():
+            return ast.all_operations.BVV(0, val.size())
 
     @staticmethod
     def lshift_simplifier(val, shift):
@@ -505,6 +519,12 @@ class SimplificationManager:
 
     @staticmethod
     def bitwise_and_simplifier(a, b):
+
+        # try to perform a rotate-shift-mask simplification
+        r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
+        if r is not None:
+            return r
+
         if (a == 2**a.size()-1).is_true():
             return b
         elif (b == 2**a.size()-1).is_true():
@@ -513,6 +533,11 @@ class SimplificationManager:
             return a
         elif a is b:
             return a
+        elif a.op == "Concat":
+            # maybe we can drop the second argument
+            if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
+                # yes!
+                return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
         def _flattening_filter(args):
             # a & a == a
@@ -673,6 +698,63 @@ class SimplificationManager:
                 return to_bv.args[0]
             elif sort == fp.FSORT_DOUBLE and to_bv.length == 64:
                 return to_bv.args[0]
+
+    @staticmethod
+    def rotate_shift_mask_simplifier(a, b):
+        """
+        Handles the following case:
+            ((A << a) | (A >> (_N - a))) & mask, where
+                A being a BVS,
+                a being a integer that is less than _N,
+                _N is either 32 or 64, and
+                mask can be evaluated to 0xffffffff (64-bit) or 0xffff (32-bit) after reversing the rotate-shift
+                operation.
+
+        It will be simplified to:
+            (A & (mask >>> a)) <<< a
+        """
+
+        # is the second argument a BVV?
+        if b.op != 'BVV':
+            return None
+
+        # is it a rotate-shift?
+        if a.op != '__or__' or len(a.args) != 2:
+            return None
+        a_0, a_1 = a.args
+
+        if a_0.op != '__lshift__':
+            return None
+        if a_1.op != 'LShR':
+            return None
+        a_00, a_01 = a_0.args
+        a_10, a_11 = a_1.args
+        if not a_00 is a_10:
+            return None
+        if a_01.op != 'BVV' or a_11.op != 'BVV':
+            return None
+        lshift_ = a_01.args[0]
+        rshift_ = a_11.args[0]
+        bitwidth = lshift_ + rshift_
+        if bitwidth not in (32, 64):
+            return None
+
+        # is the second argument a mask?
+        # Note: the following check can be further loosen if we want to support more masks.
+        if bitwidth == 32:
+            m = ((b.args[0] << rshift_) & 0xffffffff) | (b.args[0] >> lshift_)
+            if m != 0xffff:
+                return None
+        else: # bitwidth == 64
+            m = ((b.args[0] << rshift_) & 0xffffffffffffffff) | (b.args[0] >> lshift_)
+            if m != 0xffffffff:
+                return None
+
+        # Show our power!
+        masked_a = (a_00 & m)
+        expr = (masked_a << lshift_) | (masked_a >> rshift_)
+        return expr
+
 
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 
