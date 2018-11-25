@@ -195,8 +195,9 @@ class Base(ana.Storable):
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
         """
-        args_tup = tuple(int(a) if type(a) is int else (a if type(a) is float else hash(a)) for a in args)
-        to_hash = (op, args_tup, keywords['symbolic'], hash(keywords['variables']), str(keywords.get('length', None)), hash(keywords.get('annotations', None)))
+        args_tup = tuple(a if type(a) in (int, float) else hash(a) for a in args)
+        to_hash = (op, args_tup, keywords['symbolic'], hash(keywords['variables']), str(keywords.get('length', None)),
+                   hash(keywords.get('annotations', None)))
 
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
