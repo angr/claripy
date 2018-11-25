@@ -149,18 +149,22 @@ class BackendConcrete(Backend):
     def is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         if e in {True, 1, 1.}:
             return True
-        return type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is True
+        if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is True:
+            return True
+        return super().is_true(e, extra_constraints=extra_constraints, solver=solver,model_callback=model_callback)
     # Override Backend.is_false() for a better performance
-    def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
+    def ais_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         if e in {False, 0, 0.}:
             return True
-        return type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is False
+        if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is False:
+            return True
+        return super().is_false(e, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
 
     #pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
-        raise NotImplementedError("This method should never be called since we override is_true().")
+        return e == True
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
-        raise NotImplementedError("This method should never be called since we override is_false().")
+        return e == False
     def _has_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == True
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
