@@ -6,7 +6,6 @@ import os
 import struct
 import weakref
 from collections import OrderedDict, deque
-from past.builtins import long
 
 try:
     import cPickle as pickle
