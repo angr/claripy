@@ -105,7 +105,7 @@ class Base(ana.Storable):
         #if any(isinstance(a, BackendObject) for a in args):
         #   raise Exception('asdf')
 
-        a_args = args
+        a_args = args if type(args) is tuple else tuple(args)
 
         # initialize the following properties: symbolic, variables and errored
         need_symbolic = 'symbolic' not in kwargs
