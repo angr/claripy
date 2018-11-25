@@ -145,6 +145,21 @@ class BackendConcrete(Backend):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self.convert(expr) == v
 
+    # Override Backend.is_true() for a better performance
+    def is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
+        if e in {True, 1, 1.}:
+            return True
+        if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is True:
+            return True
+        return super().is_true(e, extra_constraints=extra_constraints, solver=solver,model_callback=model_callback)
+    # Override Backend.is_false() for a better performance
+    def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
+        if e in {False, 0, 0.}:
+            return True
+        if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is False:
+            return True
+        return super().is_false(e, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
+
     #pylint:disable=singleton-comparison
     def _is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == True
@@ -157,6 +172,7 @@ class BackendConcrete(Backend):
 
 from ..operations import backend_operations, backend_fp_operations
 from .. import bv, fp
+from ..ast import Base
 from ..ast.bv import BVV
 from ..ast.fp import FPV
 from ..ast.bool import BoolV
