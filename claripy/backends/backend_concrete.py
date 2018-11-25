@@ -153,7 +153,7 @@ class BackendConcrete(Backend):
             return True
         return super().is_true(e, extra_constraints=extra_constraints, solver=solver,model_callback=model_callback)
     # Override Backend.is_false() for a better performance
-    def ais_false(self, e, extra_constraints=(), solver=None, model_callback=None):
+    def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         if e in {False, 0, 0.}:
             return True
         if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is False:
