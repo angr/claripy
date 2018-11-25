@@ -105,11 +105,7 @@ class Base(ana.Storable):
         #if any(isinstance(a, BackendObject) for a in args):
         #   raise Exception('asdf')
 
-        # fix up args and kwargs
-        if __debug__:
-            a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
-        else:
-            a_args = args
+        a_args = args
 
         # initialize the following properties: symbolic, variables and errored
         need_symbolic = 'symbolic' not in kwargs
