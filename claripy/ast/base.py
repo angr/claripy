@@ -217,7 +217,7 @@ class Base(ana.Storable):
         return from ``__new__``.
         """
         self.op = op
-        self.args = args
+        self.args = args if type(args) is tuple else tuple(args)
         self.length = length
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
