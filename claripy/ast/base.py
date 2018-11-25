@@ -930,9 +930,9 @@ class Base(ana.Storable):
         Returns an equivalent AST that "burrows" the ITE expressions as deep as possible into the ast, for simpler
         printing.
         """
-        if self._burrowed is None:  # pylint:disable=attribute-defined-outside-init
-            self._burrowed = self._burrow_ite()
-            self._burrowed._burrowed = self._burrowed
+        if self._burrowed is None:
+            self._burrowed = self._burrow_ite()  # pylint:disable=attribute-defined-outside-init
+            self._burrowed._burrowed = self._burrowed  # pylint:disable=attribute-defined-outside-init
         return self._burrowed
 
     @property
