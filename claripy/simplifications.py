@@ -3,7 +3,6 @@ import itertools
 import operator
 
 from functools import reduce
-from .utils import OrderedSet
 
 
 class SimplificationManager:
@@ -277,12 +276,16 @@ class SimplificationManager:
         if len(args) == 1:
             return args[0]
 
-        new_args = []
+        new_args = [None] * len(args)
+        ctr = 0
         for a in args:
-            if a.is_false():
-                return ast.all_operations.false
-            elif not a.is_true():
-                new_args.append(a)
+            if a.op == 'BoolV':
+                if a.is_false():
+                    return ast.all_operations.false
+            else:
+                new_args[ctr] = a
+                ctr += 1
+        new_args = new_args[:ctr]
 
         if not new_args:
             return ast.bool.true
@@ -292,7 +295,7 @@ class SimplificationManager:
 
         def _flattening_filter(args):
             # a And a == a
-            return tuple(OrderedSet(args))
+            return tuple(set(args))
 
         flattened = SimplificationManager._flatten_simplifier('And', _flattening_filter, *args)
         fargs = flattened.args if flattened is not None else args
@@ -364,7 +367,7 @@ class SimplificationManager:
 
         def _flattening_filter(args):
             # a Or a == a
-            return tuple(OrderedSet(args))
+            return tuple(set(args))
 
         return SimplificationManager._flatten_simplifier('Or', _flattening_filter, *args)
 
@@ -380,10 +383,12 @@ class SimplificationManager:
         new_args = tuple(itertools.chain.from_iterable(
             (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
         ))
+        variables = frozenset(itertools.chain.from_iterable(a.variables for a in args if isinstance(a, ast.Base)))
         if filter_func: new_args = filter_func(new_args)
         if not new_args and 'initial_value' in kwargs:
             return kwargs['initial_value']
-        return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args)
+        return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args,
+                                                                          variables=variables)
 
     @staticmethod
     def bitwise_add_simplifier(a, b):
@@ -494,7 +499,7 @@ class SimplificationManager:
 
         def _flattening_filter(args):
             # a | a == a
-            return tuple(OrderedSet(args))
+            return tuple(set(args))
 
         return SimplificationManager._flatten_simplifier('__or__', _flattening_filter, a, b)
 
@@ -511,7 +516,7 @@ class SimplificationManager:
 
         def _flattening_filter(args):
             # a & a == a
-            return tuple(OrderedSet(args))
+            return tuple(set(args))
 
         return SimplificationManager._flatten_simplifier('__and__', _flattening_filter, a, b)
 

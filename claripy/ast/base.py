@@ -107,17 +107,35 @@ class Base(ana.Storable):
         #   raise Exception('asdf')
 
         # fix up args and kwargs
-        a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
-        if 'symbolic' not in kwargs:
-            kwargs['symbolic'] = any(a.symbolic for a in a_args if isinstance(a, Base))
-        if 'variables' not in kwargs:
-            kwargs['variables'] = frozenset.union(
-                frozenset(), *(a.variables for a in a_args if isinstance(a, Base))
-            )
-        elif type(kwargs['variables']) is not frozenset: #pylint:disable=unidiomatic-typecheck
+        if __debug__:
+            a_args = tuple((a.to_claripy() if isinstance(a, BackendObject) else a) for a in args)
+        else:
+            a_args = args
+
+        # initialize the following properties: symbolic, variables and errored
+        need_symbolic = 'symbolic' not in kwargs
+        need_variables = 'variables' not in kwargs
+        need_errored = 'errored' not in kwargs
+        has_annotations = False
+        arg_max_depth = 0
+        if need_symbolic or need_variables or need_errored:
+            symbolic_flag = False
+            variables_set = set()
+            errored_set = set()
+            for a in a_args:
+                if not isinstance(a, Base): continue
+                if need_symbolic and not symbolic_flag: symbolic_flag |= a.symbolic
+                if need_variables: variables_set |= a.variables
+                if need_errored: errored_set |= a._errored
+                has_annotations |= bool(a._relocatable_annotations) or bool(a._uneliminatable_annotations)
+                if arg_max_depth < a.depth: arg_max_depth = a.depth
+
+            if need_symbolic: kwargs['symbolic'] = symbolic_flag
+            if need_variables: kwargs['variables'] = frozenset(variables_set)
+            if need_errored: kwargs['errored'] = errored_set
+
+        if type(kwargs['variables']) is not frozenset:  #pylint:disable=unidiomatic-typecheck
             kwargs['variables'] = frozenset(kwargs['variables'])
-        if 'errored' not in kwargs:
-            kwargs['errored'] = set.union(set(), *(a._errored for a in a_args if isinstance(a, Base)))
 
         if add_variables:
             kwargs['variables'] = kwargs['variables'] | add_variables
@@ -152,8 +170,8 @@ class Base(ana.Storable):
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls)
-            depth = max(a.depth if isinstance(a, Base) else 0 for a in a_args) + 1
-            self.__a_init__(op, a_args, depth=depth, **kwargs)
+            depth = arg_max_depth + 1
+            self.__a_init__(op, a_args, depth=depth, has_annotations=has_annotations, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -178,7 +196,7 @@ class Base(ana.Storable):
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
         """
-        args_tup = tuple(long(a) if type(a) is int and int is not long else (a if type(a) in (long, float) else hash(a)) for a in args)
+        args_tup = tuple(int(a) if type(a) is int else (a if type(a) is float else hash(a)) for a in args)
         to_hash = (op, args_tup, keywords['symbolic'], hash(keywords['variables']), str(keywords.get('length', None)), hash(keywords.get('annotations', None)))
 
         # Why do we use md5 when it's broken? Because speed is more important
@@ -191,7 +209,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None): #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None, has_annotations=True):  #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -201,7 +219,7 @@ class Base(ana.Storable):
         self.op = op
         self.args = args
         self.length = length
-        self.variables = frozenset(variables)
+        self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
         self.depth = depth if depth is not None else 1
         self._eager_backends = eager_backends
@@ -218,16 +236,20 @@ class Base(ana.Storable):
         self._uc_alloc_depth = uc_alloc_depth
         self.annotations = annotations
 
-        ast_args = tuple(a for a in self.args if isinstance(a, Base))
-        self._uneliminatable_annotations = frozenset(itertools.chain(
-            itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
-            tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
-        ))
+        if not has_annotations:
+            self._uneliminatable_annotations = frozenset()
+            self._relocatable_annotations = frozenset()
+        else:
+            ast_args = tuple(a for a in self.args if isinstance(a, Base))
+            self._uneliminatable_annotations = frozenset(itertools.chain(
+                itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
+                tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
+            ))
 
-        self._relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
-            itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
-            tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
-        ))).keys()
+            self._relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
+            ))).keys()
 
         if len(args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
