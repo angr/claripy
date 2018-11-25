@@ -251,7 +251,7 @@ class Base(ana.Storable):
                 tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
             ))).keys()
 
-        if len(args) == 0:
+        if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
 
     #pylint:enable=attribute-defined-outside-init
