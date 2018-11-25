@@ -111,9 +111,10 @@ class Base(ana.Storable):
         need_symbolic = 'symbolic' not in kwargs
         need_variables = 'variables' not in kwargs
         need_errored = 'errored' not in kwargs
-        has_annotations = None
-        # Note that `has_annotations` may not be set if we don't need to set any of the above variables, in which case
-        # it will stay as None, and will be passed to __a_init__() "as is". __a_init__() will properly handle it there.
+        args_have_annotations = None
+        # Note that `args_have_annotations` may not be set if we don't need to set any of the above variables, in which
+        # case it will stay as None, and will be passed to __a_init__() "as is". __a_init__() will properly handle it
+        # there.
         arg_max_depth = 0
         if need_symbolic or need_variables or need_errored:
             symbolic_flag = False
@@ -124,8 +125,8 @@ class Base(ana.Storable):
                 if need_symbolic and not symbolic_flag: symbolic_flag |= a.symbolic
                 if need_variables: variables_set |= a.variables
                 if need_errored: errored_set |= a._errored
-                if has_annotations is not True:
-                    has_annotations = has_annotations or bool(a.annotations)
+                if args_have_annotations is not True:
+                    args_have_annotations = args_have_annotations or bool(a.annotations)
                 if arg_max_depth < a.depth: arg_max_depth = a.depth
 
             if need_symbolic: kwargs['symbolic'] = symbolic_flag
@@ -169,7 +170,7 @@ class Base(ana.Storable):
         if self is None:
             self = super(Base, cls).__new__(cls)
             depth = arg_max_depth + 1
-            self.__a_init__(op, a_args, depth=depth, has_annotations=has_annotations, **kwargs)
+            self.__a_init__(op, a_args, depth=depth, args_have_annotations=args_have_annotations, **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -207,7 +208,7 @@ class Base(ana.Storable):
         return self.op, tuple(str(a) if isinstance(a, numbers.Number) else hash(a) for a in self.args), self.symbolic, hash(self.variables), str(self.length)
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None, has_annotations=None):  #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None, args_have_annotations=None):  #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -234,7 +235,7 @@ class Base(ana.Storable):
         self._uc_alloc_depth = uc_alloc_depth
         self.annotations = annotations
 
-        if has_annotations is False:
+        if not annotations and args_have_annotations is False:
             self._uneliminatable_annotations = frozenset()
             self._relocatable_annotations = frozenset()
         else:
