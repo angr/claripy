@@ -238,12 +238,15 @@ class Balancer(object):
         """
         if len(t.args) < 2:
             l.debug("can't do anything with an unop bool")
-        elif t.args[1].cardinality > 1:
+            multivalued_guys_count = 0
+        for a in t.args:
+            if hasattr(a, 'cardinality') and a.cardinality > 1:
+                multivalued_guys_count += 1
+        if multivalued_guys_count > 1:
             l.debug("can't do anything because we have multiple multivalued guys")
             return False
         else:
             return True
-
 
     #
     # Assumptions management
