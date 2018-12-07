@@ -238,7 +238,7 @@ class Balancer(object):
         """
         if len(t.args) < 2:
             l.debug("can't do anything with an unop bool")
-            multivalued_guys_count = 0
+        multivalued_guys_count = 0
         for a in t.args:
             if hasattr(a, 'cardinality') and a.cardinality > 1:
                 multivalued_guys_count += 1
