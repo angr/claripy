@@ -20,6 +20,7 @@ class String(Bits):
     # TODO: Find a smarter way to do this!
     STRING_TYPE_IDENTIFIER = 'STRING_'
     GENERATED_BVS_IDENTIFIER = 'BVS_'
+    MAX_LENGTH = 10000
 
     def __init__(self, *args, **kwargs):
         str_len = kwargs['length']
@@ -146,6 +147,7 @@ StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
 StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
 StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
+IntToStr = operations.op("IntToStr", BV, String, calc_length=operations.int_to_str_length_calc, bound=False)
 StrIsDigit = operations.op("StrIsDigit", String, Bool, bound=False)
 
 # Equality / inequality check
@@ -165,3 +167,4 @@ String.StrSuffixOf = staticmethod(StrSuffixOf)
 String.StrIndexOf = staticmethod(StrIndexOf)
 String.StrToInt = staticmethod(StrToInt)
 String.StrIsDigit = staticmethod(StrIsDigit)
+String.IntToStr = staticmethod(IntToStr)
