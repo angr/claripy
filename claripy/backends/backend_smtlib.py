@@ -1,13 +1,12 @@
 import logging
 
-import pysmt
-from pysmt.shortcuts import Symbol, String, StrConcat, Equals, NotEquals, \
+from pysmt.shortcuts import Symbol, String, StrConcat, NotEquals, \
     StrSubstr, Int, StrLength, StrReplace, \
-    Bool, BV, Or, LT, LE, GT, GE, \
+    Bool, Or, LT, LE, GT, GE, \
     StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-    StrToInt, BVAdd, BVSub, BVToNatural, Ite, EqualsOrIff, Minus, Plus
+    StrToInt, Ite, EqualsOrIff, Minus, Plus
 
-from pysmt.typing import STRING, BVType, INT, BOOL
+from pysmt.typing import STRING, INT, BOOL
 
 
 l = logging.getLogger("claripy.backends.backend_smt")
@@ -104,6 +103,7 @@ class BackendSMTLibBase(Backend):
         self._op_raw["StrSuffixOf"] = self._op_raw_str_suffixof
         self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
         self._op_raw["StrToInt"] = self._op_raw_str_strtoint
+        self._op_raw["StrIsDigit"] = self._op_raw_is_digit
 
     @property
     def is_smt_backend(self):
@@ -306,7 +306,7 @@ class BackendSMTLibBase(Backend):
         input_string, _ = args
         return StrToInt(input_string)
 
+    def _op_raw_is_digit(self, input_string):
+        return NotEquals(StrToInt(input_string), Int(-1))
 
-from ..operations import backend_operations, backend_fp_operations
-from .. import bv, fp, strings
-from ..errors import UnsatError
+

@@ -430,16 +430,35 @@ class TestSMTLibBackend(unittest.TestCase):
         solver = self.get_solver()
         solver.add(res == claripy.StringV("abc"))
         script = solver.get_smtlib_script_satisfiability()
-        with open("dump_strextract.smt2", "w") as dump_f:
-            dump_f.write(script)
+        # with open("dump_strextract.smt2", "w") as dump_f:
+        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
-    # def test_methods(self):
-    #     str_symb = claripy.StringS("symb_strtoint", 4, explicit_name=True)
-    #     # res = str_symb.replace(claripy.StringV("a"), claripy.StringV("a"))
-    #     # res2 = claripy.StrReplace(str_symb, claripy.StringV("a"), claripy.StringV("a"))
-    #     res = len(str_symb, 32)
-    #     import ipdb; ipdb.set_trace()
+    def test_is_digit(self):
+        correct_script = '''(set-logic ALL)
+(declare-fun STRING_symb_str_is_digit () String)
+(assert (let ((.def_0 (= ( str.to.int STRING_symb_str_is_digit ) (- 1)))) (let ((.def_1 (not .def_0))) .def_1)))
+(check-sat)
+'''
+        str_symb = claripy.StringS("symb_str_is_digit", 12, explicit_name=True)
+        res = claripy.StrIsDigit(str_symb)
+        solver = self.get_solver()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
+    def test_is_digit_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+
+(check-sat)
+'''
+        str_symb = claripy.StringV("1")
+        res = claripy.StrIsDigit(str_symb)
+        solver = self.get_solver()
+        solver.add(res)
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
 
 
 if __name__ == "__main__":

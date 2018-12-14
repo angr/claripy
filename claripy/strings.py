@@ -138,5 +138,12 @@ def StrToInt(input_string, bitlength):
     except ValueError:
         return BVV(-1, bitlength)
 
-def StrReverse(*args):
-    pass
+def StrIsDigit(input_string):
+    """
+    Returns True if the concrete value of the input_string is a digit otherwise returns False
+
+    :param input_string: the string we want to check
+
+    :return: True if the string is a digit otherwise false
+    """
+    return input_string.value.isdigit()
