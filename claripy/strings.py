@@ -147,3 +147,13 @@ def StrIsDigit(input_string):
     :return: True if the string is a digit otherwise false
     """
     return input_string.value.isdigit()
+
+def IntToStr(input_bvv):
+    """
+    Returns the string representation of the integer expressed in the BitVector
+
+    :param input_bvv: the integer expressed as a BitVector we want to convert as a string
+
+    :return: the string representation of the integer
+    """
+    return StringV(str(input_bvv.value))
