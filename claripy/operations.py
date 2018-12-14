@@ -313,7 +313,7 @@ backend_fp_operations = {
 
 backend_strings_operations = {
     'StrSubstr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
-    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt'
+    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt', 'StrIsDigit'
 }
 
 opposites = {
