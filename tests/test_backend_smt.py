@@ -453,13 +453,38 @@ class TestSMTLibBackend(unittest.TestCase):
 
 (check-sat)
 '''
-        str_symb = claripy.StringV("1")
-        res = claripy.StrIsDigit(str_symb)
+        str_concrete = claripy.StringV("1")
+        res = claripy.StrIsDigit(str_concrete)
         solver = self.get_solver()
         solver.add(res)
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
+    def test_int_to_str(self):
+        correct_script = '''(set-logic ALL)
+(declare-fun symb_int () Int)
+(assert (let ((.def_0 (= ( int.to.str symb_int ) "12"))) .def_0))
+(check-sat)
+'''
+        int_symb = claripy.BVS("symb_int", 32, explicit_name=True)
+        res = claripy.IntToStr(int_symb)
+        solver = self.get_solver()
+        solver.add(res == claripy.StringV("12"))
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
+
+    def test_int_to_str_simplification(self):
+        correct_script = '''(set-logic ALL)
+
+
+(check-sat)
+'''
+        int_concrete = claripy.BVV(0xc, 32)
+        res = claripy.IntToStr(int_concrete)
+        solver = self.get_solver()
+        solver.add(res == claripy.StringV("12"))
+        script = solver.get_smtlib_script_satisfiability()
+        self.assertEqual(correct_script, script)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSMTLibBackend)

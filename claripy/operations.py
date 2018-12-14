@@ -165,6 +165,9 @@ def str_extract_check(start_idx, count, str_val):
 def str_extract_length_calc(start_idx, count, str_val):
     return count
 
+def int_to_str_length_calc(int_val):
+    return ast.String.MAX_LENGTH
+
 def str_replace_check(*args):
     str_1, str_2, _ = args
     if str_1.length < str_2.length:
@@ -313,7 +316,8 @@ backend_fp_operations = {
 
 backend_strings_operations = {
     'StrSubstr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
-    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt', 'StrIsDigit'
+    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt', 'StrIsDigit',
+    'IntToStr'
 }
 
 opposites = {

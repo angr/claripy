@@ -4,7 +4,7 @@ from pysmt.shortcuts import Symbol, String, StrConcat, NotEquals, \
     StrSubstr, Int, StrLength, StrReplace, \
     Bool, Or, LT, LE, GT, GE, \
     StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-    StrToInt, Ite, EqualsOrIff, Minus, Plus
+    StrToInt, Ite, EqualsOrIff, Minus, Plus, BVToNatural, IntToStr
 
 from pysmt.typing import STRING, INT, BOOL
 
@@ -91,7 +91,8 @@ class BackendSMTLibBase(Backend):
         self._op_raw["StrSuffixOf"] = self._op_raw_str_suffixof
         self._op_raw["StrIndexOf"] = self._op_raw_str_indexof
         self._op_raw["StrToInt"] = self._op_raw_str_strtoint
-        self._op_raw["StrIsDigit"] = self._op_raw_is_digit
+        self._op_raw["StrIsDigit"] = self._op_raw_isdigit
+        self._op_raw["IntToStr"] = self._op_raw_inttostr
 
     @property
     def is_smt_backend(self):
@@ -294,7 +295,8 @@ class BackendSMTLibBase(Backend):
         input_string, _ = args
         return StrToInt(input_string)
 
-    def _op_raw_is_digit(self, input_string):
+    def _op_raw_isdigit(self, input_string):
         return NotEquals(StrToInt(input_string), Int(-1))
 
-
+    def _op_raw_inttostr(self, input_bv):
+        return IntToStr(input_bv)
