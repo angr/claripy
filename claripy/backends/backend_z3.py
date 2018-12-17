@@ -37,7 +37,6 @@ def _add_memory_pressure(p):
     if _is_pypy:
         __pypy__.add_memory_pressure(p)
 
-
 #
 # Some global variables
 #
@@ -901,10 +900,10 @@ class BackendZ3(Backend):
 
     @staticmethod
     def _op_div(a, b):
-        return z3.UDiv(a, b)
+        return z3.BitVecRef(z3.Z3_mk_bvudiv(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
     @staticmethod
     def _op_mod(a, b):
-        return z3.URem(a, b)
+        return z3.BitVecRef(z3.Z3_mk_bvurem(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
     @staticmethod
     def _op_add(*args):
         return reduce(operator.__add__, args)
@@ -925,75 +924,77 @@ class BackendZ3(Backend):
         return reduce(operator.__and__, args)
 
     def _op_raw_And(self, *args):
-        return z3.And(*(tuple(args) + ( self._context, )))
+        _args, sz = z3._to_ast_array(args)
+        return z3.BoolRef(z3.Z3_mk_and(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Xor(self, *args):
-        return z3.Xor(*(tuple(args) + ( self._context, )))
+        return z3.BoolRef(z3.Z3_mk_xor(self._context, *(arg.as_ast() for arg in args)), self._context)
 
     def _op_raw_Or(self, *args):
-        return z3.Or(*(tuple(args) + ( self._context, )))
+        _args, sz = z3._to_ast_array(args)
+        return z3.BoolRef(z3.Z3_mk_or(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Not(self, a):
-        return z3.Not(a, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_not(self._context.ref(), a.as_ast()), self._context)
 
     def _op_raw_If(self, i, t, e):
-        return z3.If(i, t, e, ctx=self._context)
+        return z3._to_expr_ref(z3.Z3_mk_ite(self._context.ref(), i.as_ast(), t.as_ast(), e.as_ast()), self._context)
 
     @condom
     def _op_raw_fpAbs(self, a):
-        return z3.fpAbs(a, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_abs(self._context.ref(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpNeg(self, a):
-        return z3.fpNeg(a, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_neg(self._context.ref(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpAdd(self, rm, a, b):
-        return z3.fpAdd(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_add(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpSub(self, rm, a, b):
-        return z3.fpSub(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_sub(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpMul(self, rm, a, b):
-        return z3.fpMul(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_mul(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpDiv(self, rm, a, b):
-        return z3.fpDiv(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_div(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpLT(self, a, b):
-        return z3.fpLT(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_lt(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpLEQ(self, a, b):
-        return z3.fpLEQ(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_leq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpGT(self, a, b):
-        return z3.fpGT(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_gt(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpGEQ(self, a, b):
-        return z3.fpGEQ(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_geq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpEQ(self, a, b):
-        return z3.fpEQ(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_eq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpFP(self, sgn, exp, sig):
-        return z3.fpFP(sgn, exp, sig, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_fp(self._context.ref(), sgn.ast, exp.ast, sig.ast), self._context)
 
     @condom
     def _op_raw_fpToSBV(self, rm, fp, bv_len):
-        return z3.fpToSBV(rm, fp, z3.BitVecSort(bv_len, ctx=self._context))
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_sbv(self._context.ref(), rm.ast, fp.ast, bv_len.size()), self._context)
 
     @condom
     def _op_raw_fpToUBV(self, rm, fp, bv_len):
-        return z3.fpToUBV(rm, fp, z3.BitVecSort(bv_len, ctx=self._context))
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_ubv(self._context.ref(), rm.ast, fp.ast, bv_len.size()), self._context)
 
     @condom
     def _op_raw_fpToFP(self, a1, a2=None, a3=None):
@@ -1001,7 +1002,7 @@ class BackendZ3(Backend):
 
     @condom
     def _op_raw_fpToIEEEBV(self, x):
-        return z3.fpToIEEEBV(x, ctx=self._context)
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_ieee_bv(self._context.ref(), x.ast), self._context)
 
     # and these do not
     _op_raw_Concat = _raw_caller(z3.Concat)
