@@ -27,8 +27,11 @@ IS_INSTALLED, VERSION, ERROR = get_version()
 if IS_INSTALLED:
     class ABCProxy(PopenSolverProxy):
         def __init__(self):
-            p = subprocess.Popen(['abc'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p = None
             super(ABCProxy, self).__init__(p)
+
+        def create_process(self):
+            return subprocess.Popen(['abc'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     class SolverBackendABC(SMTLibSolverBackend):
         def solver(self, timeout=None):
