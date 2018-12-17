@@ -4,7 +4,7 @@ from pysmt.shortcuts import Symbol, String, StrConcat, NotEquals, \
     StrSubstr, Int, StrLength, StrReplace, \
     Bool, Or, LT, LE, GT, GE, \
     StrContains, StrPrefixOf, StrSuffixOf, StrIndexOf, \
-    StrToInt, Ite, EqualsOrIff, Minus, Plus, BVToNatural, IntToStr
+    StrToInt, Ite, EqualsOrIff, Minus, Plus, IntToStr, Not, And
 
 from pysmt.typing import STRING, INT, BOOL
 
@@ -91,6 +91,8 @@ class BackendSMTLibBase(Backend):
         self._op_raw['__ge__'] = self._op_raw_ge
         self._op_raw['Or'] = self._op_raw_or
         self._op_raw['If'] = self._op_raw_if
+        self._op_raw['Not'] = self._op_raw_not
+        self._op_raw['And'] = self._op_raw_and
 
         # ------------------- STRINGS OPERATIONS ------------------- 
         self._op_raw['StrConcat'] = self._op_raw_str_concat
@@ -206,9 +208,6 @@ class BackendSMTLibBase(Backend):
 
     # ------------------- GENERAL PURPOSE OPERATIONS -------------------
 
-    def _op_raw_if(self, *args):
-        return Ite(*args)
-
     def _op_raw_eq(self, *args):
         # We emulate the integer through a bitvector but
         # since a constraint with the form (assert (= (str.len Symb_str) bit_vect))
@@ -263,7 +262,13 @@ class BackendSMTLibBase(Backend):
     def _op_raw_if(self, *args):
         return Ite(*args)
 
-    # ------------------- STRINGS OPERATIONS ------------------- 
+    def _op_raw_not(self, *args):
+        return Not(*args)
+
+    def _op_raw_and(self, *args):
+        return And(*args)
+
+    # ------------------- STRINGS OPERATIONS -------------------
     
     def _op_raw_str_concat(self, *args):
         return StrConcat(*args)
