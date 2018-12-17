@@ -27,12 +27,18 @@ IS_INSTALLED, VERSION, ERROR = get_version()
 if IS_INSTALLED:
     class CVC4Proxy(PopenSolverProxy):
         def __init__(self, timeout=None):
-            cmd = ['cvc4', '--lang=smt', '-q', '--strings-exp']
-            if timeout is not None:
-                cmd += ['--tlimit-per={}'.format(timeout)]
-            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # lazy instantiation: Here we don't spawn the subprocess
+            self.timeout = timeout
+            p = None
             super(CVC4Proxy, self).__init__(p)
 
+        def create_process(self):
+            # spawn the subprocess
+            cmd = ['cvc4', '--lang=smt', '-q', '--strings-exp']
+            if self.timeout is not None:
+                cmd += ['--tlimit-per={}'.format(self.timeout)]
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return p
 
     class SolverBackendCVC4(SMTLibSolverBackend):
         def solver(self, timeout=None):

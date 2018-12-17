@@ -27,12 +27,17 @@ IS_INSTALLED, VERSION, ERROR = get_version()
 if IS_INSTALLED:
     class Z3StrProxy(PopenSolverProxy):
         def __init__(self, timeout=None):
-            cmd = ['/home/phate/repos/z3-update-2/build/z3', '-smt2', 'smt.string_solver=z3str3', '-in']
-            if timeout is not None:
-                cmd.append('-t:{}'.format(timeout//1000))  # our timeout is in milliseconds
+            self.timeout = timeout
+            p = None
+            super(Z3StrProxy, self).__init__(p)
+
+        def create_process(self):
+            cmd = ['z3', '-smt2', 'smt.string_solver=z3str3', '-in']
+            if self.timeout is not None:
+                cmd.append('-t:{}'.format(self.timeout//1000))  # our timeout is in milliseconds
 
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            super(Z3StrProxy, self).__init__(p)
+            return p
 
     class SolverBackendZ3Str(SMTLibSolverBackend):
         def solver(self, timeout=None):

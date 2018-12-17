@@ -46,6 +46,9 @@ class AbstractSMTLibSolverProxy(object):
         read_model = self.readuntil('\n)\n').strip().decode('utf-8')
         return read_model
 
+    def create_process(self):
+        raise NotImplementedError
+
 class PopenSolverProxy(AbstractSMTLibSolverProxy):
     def __init__(self, p):
         super(PopenSolverProxy, self).__init__()
@@ -53,14 +56,22 @@ class PopenSolverProxy(AbstractSMTLibSolverProxy):
         self.constraints = []
 
     def read(self, n):
+        if self.p is None:
+            self.p = self.create_process()
         return self.p.stdout.read(n)
 
     def write(self, smt):
+        if self.p is None:
+            self.p = self.create_process()
         self.p.stdin.write(smt.encode())
         self.p.stdin.flush()
 
     def add_constraints(self, csts, track=False):
         self.constraints.extend(csts)
+
+    def terminate(self):
+        self.p.terminate()
+        self.p = None
 
 
 class SMTLibSolverBackend(BackendSMTLibBase):
@@ -128,6 +139,9 @@ class SMTLibSolverBackend(BackendSMTLibBase):
 
     def _satisfiable(self, solver=None, extra_constraints=(), model_callback=None, extra_variables=()):
         satness = self._check_satness(solver, extra_constraints, model_callback, extra_variables)
+        # solver is done, terminate process
+        solver.terminate()
+
         return satness == 'SAT'
 
     def _get_model(self, solver=None, extra_constraints=(), extra_variables=()):
@@ -205,6 +219,9 @@ class SMTLibSolverBackend(BackendSMTLibBase):
         size = expr.length
         for i in range(len(results)):
             results[i] &= (1 << size) - 1 # convert it back to unsigned
+
+        # solver is done, terminate process
+        solver.terminate()
 
         return results
 
