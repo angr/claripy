@@ -726,6 +726,9 @@ class BackendZ3(Backend):
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
+            # TODO: is this assumption correct?
+            # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
+            # integer and not a BV
             solver.add(z3.UGE(expr, lo), z3.ULE(expr, middle))
             numpop += 1
 
@@ -788,6 +791,9 @@ class BackendZ3(Backend):
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
+            # TODO: is this assumption correct?
+            # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
+            # integer and not a BV
             solver.add(z3.UGT(expr, middle), z3.ULE(expr, hi))
             numpop += 1
 
@@ -924,21 +930,46 @@ class BackendZ3(Backend):
         return reduce(operator.__and__, args)
 
     def _op_raw_And(self, *args):
-        _args, sz = z3._to_ast_array(args)
+        # copied from z3._to_ast_array
+        sz = len(args)
+        _args = (z3.Ast * sz)()
+        for i in range(sz):
+            _args[i] = args[i].as_ast()
         return z3.BoolRef(z3.Z3_mk_and(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Xor(self, *args):
         return z3.BoolRef(z3.Z3_mk_xor(self._context, *(arg.as_ast() for arg in args)), self._context)
 
     def _op_raw_Or(self, *args):
-        _args, sz = z3._to_ast_array(args)
+        # copied from z3._to_ast_array
+        sz = len(args)
+        _args = (z3.Ast * sz)()
+        for i in range(sz):
+            _args[i] = args[i].as_ast()
         return z3.BoolRef(z3.Z3_mk_or(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Not(self, a):
         return z3.BoolRef(z3.Z3_mk_not(self._context.ref(), a.as_ast()), self._context)
 
     def _op_raw_If(self, i, t, e):
-        return z3._to_expr_ref(z3.Z3_mk_ite(self._context.ref(), i.as_ast(), t.as_ast(), e.as_ast()), self._context)
+        # partially copied from z3._to_expr_ref
+        ctx_ref = self._context.ref()
+        ast = z3.Z3_mk_ite(ctx_ref, i.as_ast(), t.as_ast(), e.as_ast())
+        k = z3.Z3_get_ast_kind(ctx_ref, ast)
+        sk = z3.Z3_get_sort_kind(ctx_ref, z3.Z3_get_sort(ctx_ref, ast))
+        if sk == z3.Z3_BOOL_SORT:
+            return z3.BoolRef(ast, self._context)
+        if sk == z3.Z3_BV_SORT:
+            if k == z3.Z3_NUMERAL_AST:
+                return z3.BitVecNumRef(ast, self._context)
+            else:
+                return z3.BitVecRef(ast, self._context)
+        if sk == z3.Z3_FLOATING_POINT_SORT:
+            if k == z3.Z3_APP_AST and z3.Z3_is_numeral_ast(ctx_ref, ast):
+                return z3.FPNumRef(ast, self._context)
+            else:
+                return z3.FPRef(ast, self._context)
+        return z3.ExprRef(ast, self._context)
 
     @condom
     def _op_raw_fpAbs(self, a):
@@ -1005,18 +1036,94 @@ class BackendZ3(Backend):
         return z3.BitVecRef(z3.Z3_mk_fpa_to_ieee_bv(self._context.ref(), x.ast), self._context)
 
     # and these do not
-    _op_raw_Concat = _raw_caller(z3.Concat)
-    _op_raw_Extract = _raw_caller(z3.Extract)
-    _op_raw_LShR = _raw_caller(z3.LShR)
-    _op_raw_RotateLeft = _raw_caller(z3.RotateLeft)
-    _op_raw_RotateRight = _raw_caller(z3.RotateRight)
-    _op_raw_SignExt = _raw_caller(z3.SignExt)
-    _op_raw_UGE = _raw_caller(z3.UGE)
-    _op_raw_UGT = _raw_caller(z3.UGT)
-    _op_raw_ULE = _raw_caller(z3.ULE)
-    _op_raw_ULT = _raw_caller(z3.ULT)
-    _op_raw_ZeroExt = _raw_caller(z3.ZeroExt)
-    _op_raw_SMod = _raw_caller(z3.SRem)
+    @staticmethod
+    @condom
+    def _op_raw_Concat(*args):
+        sz = len(args)
+        ctx = None
+        for a in args:
+            if z3.is_expr(a):
+                ctx = a.ctx
+                break
+        # TODO: I don't think this is needed for us, we don't deal with Seq or Regex
+        # if z3.is_seq(args[0]) or isinstance(args[0], str):
+        #     v = (z3.Ast * sz)()
+        #     for i in range(sz):
+        #         v[i] = args[i].as_ast()
+        #     return z3.SeqRef(z3.Z3_mk_seq_concat(ctx.ref(), sz, v), ctx)
+        #
+        # if z3.is_re(args[0]):
+        #     v = (z3.Ast * sz)()
+        #     for i in range(sz):
+        #         v[i] = args[i].as_ast()
+        #     return z3.ReRef(z3.Z3_mk_re_concat(ctx.ref(), sz, v), ctx)
+
+        r = args[0]
+        for i in range(sz - 1):
+            r = z3.BitVecRef(z3.Z3_mk_concat(ctx.ref(), r.as_ast(), args[i + 1].as_ast()), ctx)
+        return r
+
+    @staticmethod
+    @condom
+    def _op_raw_Extract(high, low, a):
+        # TODO: I don't think this is needed for us, we don't deal with Seq or Regex
+        # if isinstance(high, str):
+        #     high = z3.StringVal(high)
+        # if z3.is_seq(high):
+        #     s = high
+        #     offset, length = _coerce_exprs(low, a, s.ctx)
+        #     return z3.SeqRef(z3.Z3_mk_seq_extract(s.ctx_ref(), s.as_ast(), offset.as_ast(), length.as_ast()), s.ctx)
+        return z3.BitVecRef(z3.Z3_mk_extract(a.ctx_ref(), high, low, a.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_LShR(a, b):
+        return z3.BitVecRef(z3.Z3_mk_bvlshr(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_RotateLeft(a, b):
+        return z3.BitVecRef(z3.Z3_mk_ext_rotate_left(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_RotateRight(a, b):
+        return z3.BitVecRef(z3.Z3_mk_ext_rotate_right(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_SignExt(n, a):
+        return z3.BitVecRef(z3.Z3_mk_sign_ext(a.ctx_ref(), n, a.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_UGE(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvuge(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_UGT(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvugt(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_ULE(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvule(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_ULT(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvult(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_ZeroExt(n, a):
+        return z3.BitVecRef(z3.Z3_mk_zero_ext(a.ctx_ref(), n, a.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_SMod(a, b):
+        return z3.BitVecRef(z3.Z3_mk_bvsrem(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
 
     @staticmethod
     @condom
@@ -1026,7 +1133,7 @@ class BackendZ3(Backend):
         elif a.size() % 8 != 0:
             raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
         else:
-            return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+            return BackendZ3._op_raw_Concat(*[BackendZ3._op_raw_Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
     @staticmethod
     @condom
