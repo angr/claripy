@@ -181,6 +181,21 @@ def test_complex_case_1():
     assert r[0][0] is x
 
 
+def test_complex_case_2():
+    x = claripy.BVS('x', 32)
+    expr = claripy.ZeroExt(31,
+                           claripy.If(claripy.BVV(0xc, 32) < x,
+                                      claripy.BVV(1, 1),
+                                      claripy.BVV(0, 1)
+                                      )
+                           ) == claripy.BVV(0, 32)
+    s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+
+    assert s is True
+    assert len(r) == 1
+    assert r[0][0] is x
+
+
 if __name__ == '__main__':
     test_overflow()
     test_simple_guy()
@@ -188,3 +203,4 @@ if __name__ == '__main__':
     test_complex_guy()
     test_complex_case_0()
     test_complex_case_1()
+    test_complex_case_2()
