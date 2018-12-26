@@ -273,7 +273,11 @@ class BackendZ3(Backend):
         name = ast._encoded_name
         self.extra_bvs_data[name] = ast.args
         size = ast.size()
-        expr = z3.BitVec(name, size, ctx=self._context)
+        # TODO: Here we can use low level APIs because the check performed by the high level API always results in
+        #       the else branch of the check. This evidence although comes from the execution of the angr and claripy
+        #       test suite so I'm not sure if this assumption would hold on 100% of the cases
+        bv = z3.BitVecSortRef(z3.Z3_mk_bv_sort(self._context.ref(), size), self._context)
+        expr = z3.BitVecRef(z3.Z3_mk_const(self._context.ref(), z3.to_symbol(name, self._context), bv.ast), self._context)
         #if mn is not None:
         #    expr = z3.If(z3.ULT(expr, mn), mn, expr, ctx=self._context)
         #if mx is not None:
@@ -288,37 +292,49 @@ class BackendZ3(Backend):
             raise BackendError("Z3 can't handle empty BVVs")
 
         size = ast.size()
+        # TODO: Here there is no need to use low level API since teh high level API just perform some conversions which
+        #       are mandatory to fix the types of the arguments requested by the low level API
         return z3.BitVecVal(ast.args[0], size, ctx=self._context)
 
     @condom
     def FPS(self, ast):
         sort_z3 = self._convert(ast.args[1])
-        return z3.FP(ast._encoded_name, sort_z3, ctx=self._context)
+        # TODO: Here is safe to use low level API since the only condition the hig level API check is if the context is
+        #       None and this never happens here
+        return z3.FPRef(
+            z3.Z3_mk_const(self._context.ref(), z3.to_symbol(ast._encoded_name, self._context), sort_z3.ast),
+            self._context)
 
     @condom
     def FPV(self, ast):
         val = str(ast.args[0])
         sort = self._convert(ast.args[1])
-        if val == 'inf':
-            return z3.fpPlusInfinity(sort)
-        elif val == '-inf':
-            return z3.fpMinusInfinity(sort)
-        elif val == '0.0':
-            return z3.fpPlusZero(sort)
+        if val == "+oo" or val == "+inf" or val == "+Inf" or val == 'inf':
+            return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, False), sort.ctx)
+        elif val == "-oo" or val == "-inf" or val == "-Inf":
+            return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, True), sort.ctx)
+        elif val == "0.0" or val == "+0.0":
+            return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, False), sort.ctx)
         elif val == '-0.0':
-            return z3.fpMinusZero(sort)
-        elif val == 'nan':
-            return z3.fpNaN(sort)
+            return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, True), sort.ctx)
+        elif val == "NaN" or val == "nan":
+            return z3.FPNumRef(z3.Z3_mk_fpa_nan(sort.ctx_ref(), sort.ast), sort.ctx)
         else:
             better_val = str(Decimal(ast.args[0]))
-            return z3.FPVal(better_val, sort, ctx=self._context)
+            return z3.FPNumRef(z3.Z3_mk_numeral(self._context.ref(), better_val, sort.ast), self._context)
 
     @condom
     def BoolS(self, ast):
-        return z3.Bool(ast._encoded_name, ctx=self._context)
+        return z3.BoolRef(
+            z3.Z3_mk_const(
+                self._context.ref(), z3.to_symbol(ast._encoded_name, self._context), z3.BoolSort(self._context).ast
+            ),
+            self._context)
 
     @condom
     def BoolV(self, ast): #pylint:disable=unused-argument
+        # TODO: Here the checks performed by the high level API are mandatory before calling the low level API
+        #       So we can keep the high level API call here
         return z3.BoolVal(ast.args[0], ctx=self._context)
 
     #
@@ -328,24 +344,24 @@ class BackendZ3(Backend):
     @condom
     def _convert(self, obj):  # pylint:disable=arguments-differ
         if isinstance(obj, FSort):
-            return z3.FPSort(obj.exp, obj.mantissa, ctx=self._context)
+            return z3.FPSortRef(z3.Z3_mk_fpa_sort(self._context.ref(), obj.exp, obj.mantissa), self._context)
         elif isinstance(obj, RM):
             if obj == RM_RNE:
-                return z3.RNE(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_nearest_ties_to_even(self._context.ref()), self._context)
             elif obj == RM_RNA:
-                return z3.RNA(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_nearest_ties_to_away(self._context.ref()), self._context)
             elif obj == RM_RTP:
-                return z3.RTP(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_positive(self._context.ref()), self._context)
             elif obj == RM_RTN:
-                return z3.RTN(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_negative(self._context.ref()), self._context)
             elif obj == RM_RTZ:
-                return z3.RTZ(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_zero(self._context.ref()), self._context)
             else:
                 raise BackendError("unrecognized rounding mode")
         elif obj is True:
-            return z3.BoolVal(True, ctx=self._context)
+            return z3.BoolRef(z3.Z3_mk_true(self._context.ref()), self._context)
         elif obj is False:
-            return z3.BoolVal(False, ctx=self._context)
+            return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
         elif isinstance(obj, (numbers.Number, str)):
             return obj
         elif hasattr(obj, '__module__') and obj.__module__ in ('z3', 'z3.z3'):
@@ -1029,6 +1045,7 @@ class BackendZ3(Backend):
 
     @condom
     def _op_raw_fpToFP(self, a1, a2=None, a3=None):
+        # TODO: lots of mandatory checks are performed by the high level API here. we shouldn't use low level APIs here
         return z3.fpToFP(a1, a2=a2, a3=a3, ctx=self._context)
 
     @condom
