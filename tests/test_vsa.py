@@ -1060,9 +1060,6 @@ def test_reverse():
     nose.tools.assert_equal(set(solver.eval(dsis_r, 3)), {0xffff, 0x100ffff})
 
 if __name__ == '__main__':
-    test_vsa_discrete_value_set()
-    import sys; sys.exit(0)
-
     test_reasonable_bounds()
     test_reversed_concat()
     test_fucked_extract()
