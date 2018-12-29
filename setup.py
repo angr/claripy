@@ -17,7 +17,7 @@ setup(
     packages=packages,
     install_requires=[
         'ana',
-        'z3-solver==4.5.1.0.post2',
+        'z3-solver',
         'future',
         'cachetools'
     ],

@@ -1,7 +1,8 @@
 
 import os
-import z3
+import gc
 import ctypes
+import z3
 import logging
 import numbers
 import operator
@@ -17,6 +18,13 @@ from ..errors import ClaripyZ3Error
 l = logging.getLogger("claripy.backends.backend_z3")
 
 #pylint:disable=unidiomatic-typecheck
+
+# Hack to get a reference to z3libs. Thanks Rhelmot!
+libs = [lib for lib in gc.get_objects() if type(lib) is ctypes.CDLL and 'libz3.so' in lib._name]
+if not libs:
+    raise ClaripyZ3Error("Z3 library is not present!")
+
+lib = libs[0]
 
 try:
     import __pypy__
@@ -70,7 +78,7 @@ def _raw_caller(f):
 
 def _z3_decl_name_str(ctx, decl):
     # reimplementation of Z3_get_symbol_string to not try to unicode-decode
-    lib = z3.lib()
+    global lib
 
     decl_name = lib.Z3_get_decl_name(ctx, decl)
     err = lib.Z3_get_error_code(ctx)
@@ -80,7 +88,7 @@ def _z3_decl_name_str(ctx, decl):
     symbol_name = lib.Z3_get_symbol_string(ctx, decl_name)
     err = lib.Z3_get_error_code(ctx)
     if err != z3.Z3_OK:
-        raise z3.Z3Exception(z3.lib().Z3_get_error_msg(ctx, err))
+        raise z3.Z3Exception(lib.Z3_get_error_msg(ctx, err))
     return symbol_name
 
 
