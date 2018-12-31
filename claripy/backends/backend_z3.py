@@ -309,15 +309,15 @@ class BackendZ3(Backend):
     def FPV(self, ast):
         val = str(ast.args[0])
         sort = self._convert(ast.args[1])
-        if val == "+oo" or val == "+inf" or val == "+Inf" or val == 'inf':
+        if val in ("+oo", "+inf", "+Inf", 'inf'):
             return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, False), sort.ctx)
-        elif val == "-oo" or val == "-inf" or val == "-Inf":
+        elif val in ("-oo", "-inf", "-Inf"):
             return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, True), sort.ctx)
-        elif val == "0.0" or val == "+0.0":
+        elif val in ("0.0", "+0.0"):
             return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, False), sort.ctx)
         elif val == '-0.0':
             return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, True), sort.ctx)
-        elif val == "NaN" or val == "nan":
+        elif val in ("NaN", "nan"):
             return z3.FPNumRef(z3.Z3_mk_fpa_nan(sort.ctx_ref(), sort.ast), sort.ctx)
         else:
             better_val = str(Decimal(ast.args[0]))
