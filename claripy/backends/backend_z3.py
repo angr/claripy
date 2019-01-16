@@ -309,15 +309,15 @@ class BackendZ3(Backend):
     def FPV(self, ast):
         val = str(ast.args[0])
         sort = self._convert(ast.args[1])
-        if val in ("+oo", "+inf", "+Inf", 'inf'):
+        if val == "+oo" or val == "+inf" or val == "+Inf" or val == 'inf':
             return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, False), sort.ctx)
-        elif val in ("-oo", "-inf", "-Inf"):
+        elif val == "-oo" or val == "-inf" or val == "-Inf":
             return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, True), sort.ctx)
-        elif val in ("0.0", "+0.0"):
+        elif val == "0.0" or val == "+0.0":
             return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, False), sort.ctx)
         elif val == '-0.0':
             return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, True), sort.ctx)
-        elif val in ("NaN", "nan"):
+        elif val == "NaN" or val == "nan":
             return z3.FPNumRef(z3.Z3_mk_fpa_nan(sort.ctx_ref(), sort.ast), sort.ctx)
         else:
             better_val = str(Decimal(ast.args[0]))
@@ -612,8 +612,9 @@ class BackendZ3(Backend):
         if track:
             for constraint in c:
                 name = str(hash(constraint))
-                self._hash_to_constraint[name] = constraint
-                s.assert_and_track(constraint, name)
+                if name not in self._hash_to_constraint.keys():
+                    self._hash_to_constraint[name] = constraint
+                    s.assert_and_track(constraint, name)
         else:
             s.add(*c)
 
