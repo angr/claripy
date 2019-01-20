@@ -101,13 +101,13 @@ class CompositeFrontend(ConstrainedFrontend):
         if v is not None and isinstance(v, Base):
             names.update(v.variables)
         if lst is not None:
-            for e in lst:
-                if isinstance(e, Base):
-                    names.update(e.variables)
+            for ee in lst:
+                if isinstance(ee, Base):
+                    names.update(ee.variables)
         if lst2 is not None:
-            for e in lst2:
-                if isinstance(e, Base):
-                    names.update(e.variables)
+            for ee in lst2:
+                if isinstance(ee, Base):
+                    names.update(ee.variables)
         return names
 
     def _merged_solver_for(self, *args, **kwargs):
@@ -173,12 +173,12 @@ class CompositeFrontend(ConstrainedFrontend):
             old_solvers = self._solvers_for_variables(s.variables)
             if len(new_solvers) == len(old_solvers):
                 done = set()
-                for s in s.split():
-                    if s in done:
+                for ss in s.split():
+                    if ss in done:
                         continue
-                    done.add(s)
-                    v = min(iter(s.variables))
-                    self._solvers[v].update(s)
+                    done.add(ss)
+                    v = min(iter(ss.variables))
+                    self._solvers[v].update(ss)
             else:
                 for ns in new_solvers:
                     self._owned_solvers[ns] = True
