@@ -31,7 +31,7 @@ def _debug_iterator(i):
         yield v
     _log("FINISHED: " + str(i))
 
-class DebugMixin(object):
+class DebugMixin:
     def __init__(self, *args, **kwargs):
         super(DebugMixin, self).__init__(*args, **kwargs)
 

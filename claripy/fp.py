@@ -47,7 +47,7 @@ RM_RTP = RM('RTP')
 RM_RTN = RM('RTN')
 RM_RTZ = RM('RTZ')
 
-class FSort(object):
+class FSort:
     def __init__(self, name, exp, mantissa):
         self.name = name
         self.exp = exp

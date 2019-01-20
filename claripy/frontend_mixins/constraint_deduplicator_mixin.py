@@ -1,4 +1,4 @@
-class ConstraintDeduplicatorMixin(object):
+class ConstraintDeduplicatorMixin:
     def __init__(self, *args, **kwargs):
         super(ConstraintDeduplicatorMixin, self).__init__(*args, **kwargs)
         self._constraint_hashes = set()

@@ -6,7 +6,7 @@ import threading
 import logging
 l = logging.getLogger('claripy.backend')
 
-class Backend(object):
+class Backend:
     """
     Backends are Claripy's workhorses. Claripy exposes ASTs (claripy.ast.Base objects)
     to the world, but when actual computation has to be done, it pushes those

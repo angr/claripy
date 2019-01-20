@@ -1,4 +1,4 @@
-class SolveBlockMixin(object):
+class SolveBlockMixin:
     def __init__(self, *args, **kwargs):
         super(SolveBlockMixin, self).__init__(*args, **kwargs)
         self.can_solve = True

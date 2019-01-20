@@ -2,7 +2,7 @@
 #misses = 0
 #ejects = 0
 
-class CompositedCacheMixin(object):
+class CompositedCacheMixin:
     def __init__(self, *args, **kwargs):
         super(CompositedCacheMixin, self).__init__(*args, **kwargs)
         self._merged_solvers = { }

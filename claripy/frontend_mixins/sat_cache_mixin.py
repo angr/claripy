@@ -1,4 +1,4 @@
-class SatCacheMixin(object):
+class SatCacheMixin:
     def __init__(self, *args, **kwargs):
         super(SatCacheMixin, self).__init__(*args, **kwargs)
         self._cached_satness = None

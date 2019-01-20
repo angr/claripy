@@ -1,4 +1,4 @@
-class SimplifySkipperMixin(object):
+class SimplifySkipperMixin:
     def __init__(self, *args, **kwargs):
         super(SimplifySkipperMixin, self).__init__(*args, **kwargs)
         self._simplified = True
