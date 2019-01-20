@@ -7,7 +7,7 @@ try:
 except ImportError:
     remotetasks = None
 
-class TrackingSolver(object):
+class TrackingSolver:
     def __init__(self, sz3):
         self.sz3 = sz3
         self.constraints = []

@@ -3,7 +3,7 @@ import operator
 
 l = logging.getLogger('claripy.balancer')
 
-class Balancer(object):
+class Balancer:
     """
     The Balancer is an equation redistributor. The idea is to take an AST and rebalance it to, for example, isolate
     unknown terms on one side of an inequality.

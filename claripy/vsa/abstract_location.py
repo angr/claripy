@@ -1,6 +1,6 @@
 from ..backend_object import BackendObject
 
-class Segment(object):
+class Segment:
     def __init__(self, offset, size=0):
         self.offset = offset
         self.size = size

@@ -1,4 +1,4 @@
-class BackendObject(object):
+class BackendObject:
     """
     This is a base class for custom backend objects to implement.
 

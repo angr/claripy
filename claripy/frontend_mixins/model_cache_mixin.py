@@ -4,7 +4,7 @@ import itertools
 from claripy import errors
 
 
-class ModelCache(object):
+class ModelCache:
     _defaults = { 0, 0.0, True }
 
     def __init__(self, model):
@@ -70,7 +70,7 @@ class ModelCache(object):
     def eval_list(self, asts):
         return tuple(self.eval_ast(c) for c in asts)
 
-class ModelCacheMixin(object):
+class ModelCacheMixin:
     def __init__(self, *args, **kwargs):
         super(ModelCacheMixin, self).__init__(*args, **kwargs)
         self._models = set()

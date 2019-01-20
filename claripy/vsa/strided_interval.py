@@ -150,7 +150,7 @@ si_id_ctr = itertools.count()
 allow_dsis = False
 
 
-class WarrenMethods(object):
+class WarrenMethods:
     """
         Methods as suggested in book.
         Hackers Delight.

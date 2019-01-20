@@ -1,4 +1,4 @@
-class ConstraintFixerMixin(object):
+class ConstraintFixerMixin:
     def add(self, constraints, **kwargs):
         constraints = [ constraints ] if not isinstance(constraints, (list, tuple, set)) else constraints
 

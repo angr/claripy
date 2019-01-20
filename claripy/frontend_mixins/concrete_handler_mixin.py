@@ -1,4 +1,4 @@
-class ConcreteHandlerMixin(object):
+class ConcreteHandlerMixin:
     def eval(self, e, n, **kwargs): #pylint:disable=unused-argument
         c = self._concrete_value(e)
         if c is not None:
