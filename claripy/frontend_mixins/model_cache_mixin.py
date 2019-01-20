@@ -95,29 +95,13 @@ class ModelCacheMixin(object):
         c._max_exhausted = weakref.WeakSet(self._max_exhausted)
         c._min_exhausted = weakref.WeakSet(self._min_exhausted)
 
-    def _ana_getstate(self):
-        return (
-            self._models,
-            self._exhausted,
-            tuple(self._eval_exhausted),
-            tuple(self._max_exhausted),
-            tuple(self._min_exhausted),
-            super(ModelCacheMixin, self)._ana_getstate()
-        )
-
-    def _ana_setstate(self, s):
-        (
-            self._models,
-            self._exhausted,
-            _eval_exhausted,
-            _max_exhausted,
-            _min_exhausted,
-            base_state
-        ) = s
-        super(ModelCacheMixin, self)._ana_setstate(base_state)
-        self._eval_exhausted = weakref.WeakSet(_eval_exhausted)
-        self._max_exhausted = weakref.WeakSet(_max_exhausted)
-        self._min_exhausted = weakref.WeakSet(_min_exhausted)
+    def __setstate__(self, base_state):
+        super().__setstate__(base_state)
+        self._models = set()
+        self._exhausted = False
+        self._eval_exhausted = weakref.WeakSet()
+        self._max_exhausted = weakref.WeakSet()
+        self._min_exhausted = weakref.WeakSet()
 
     #
     # Model cleaning

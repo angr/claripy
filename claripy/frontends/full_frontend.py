@@ -31,19 +31,19 @@ class FullFrontend(ConstrainedFrontend):
         c._to_add = list(self._to_add)
 
     #
-    # Storable support
+    # Serialization support
     #
 
-    def _ana_getstate(self):
-        return self._solver_backend.__class__.__name__, self.timeout, self._track, ConstrainedFrontend._ana_getstate(self)
+    def __getstate__(self):
+        return self._solver_backend.__class__.__name__, self.timeout, self._track, super().__getstate__()
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         backend_name, self.timeout, self._track, base_state = s
         self._solver_backend = backends._backends_by_type[backend_name]
         #self._tls = None
         self._tls = threading.local()
         self._to_add = [ ]
-        ConstrainedFrontend._ana_setstate(self, base_state)
+        super().__setstate__(base_state)
 
     #
     # Frontend Creation

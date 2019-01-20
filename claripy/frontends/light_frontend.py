@@ -20,15 +20,15 @@ class LightFrontend(ConstrainedFrontend):
         super(LightFrontend, self)._copy(c)
 
     #
-    # Storable support
+    # Serialization support
     #
 
-    def _ana_getstate(self):
-        return self._solver_backend.__class__.__name__, ConstrainedFrontend._ana_getstate(self)
+    def __getstate__(self):
+        return self._solver_backend.__class__.__name__, super().__getstate__()
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         solver_backend_name, base_state = s
-        ConstrainedFrontend._ana_setstate(self, base_state)
+        super().__setstate__(base_state)
         self._solver_backend = backends._backends_by_type[solver_backend_name]
 
     #

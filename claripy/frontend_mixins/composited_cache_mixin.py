@@ -15,8 +15,8 @@ class CompositedCacheMixin(object):
         super(CompositedCacheMixin, self)._copy(c)
         c._merged_solvers = dict(self._merged_solvers)
 
-    def _ana_setstate(self, s):
-        super(CompositedCacheMixin, self)._ana_setstate(s)
+    def __setstate__(self, base_state):
+        super().__setstate__(base_state)
         self._merged_solvers = { }
 
     #
