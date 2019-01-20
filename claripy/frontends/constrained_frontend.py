@@ -125,7 +125,7 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError("satisfiable() is not implemented")
 
-    def batch_eval(self, e, n, extra_constraints=(), exact=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         raise NotImplementedError("batch_eval() is not implemented")
 
     def eval(self, e, n, extra_constraints=(), exact=None):
