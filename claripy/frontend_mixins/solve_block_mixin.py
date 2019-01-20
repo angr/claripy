@@ -11,6 +11,12 @@ class SolveBlockMixin(object):
         super(SolveBlockMixin, self)._copy(c)
         c.can_solve = self.can_solve
 
+    def __getstate__(self):
+        return self.can_solve, super().__getstate__()
+    def __setstate__(self, s):
+        self.can_solve, base_state = s
+        super().__setstate__(base_state)
+
     def eval(self, *args, **kwargs):
         assert self.can_solve
         return super(SolveBlockMixin, self).eval(*args, **kwargs)

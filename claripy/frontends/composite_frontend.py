@@ -38,13 +38,13 @@ class CompositeFrontend(ConstrainedFrontend):
     # Serialization stuff
     #
 
-    def _ana_getstate(self):
-        return self._solvers, self._template_frontend, self._unsat, self._track, super(CompositeFrontend, self)._ana_getstate()
+    def __getstate__(self):
+        return self._solvers, self._template_frontend, self._unsat, self._track, super().__getstate__()
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         self._solvers, self._template_frontend, self._unsat, self._track, base_state = s
         self._owned_solvers = weakref.WeakKeyDictionary({s:True for s in self._solver_list})
-        super(CompositeFrontend, self)._ana_setstate(base_state)
+        super().__setstate__(base_state)
 
     def downsize(self):
         for e in self._solver_list:
@@ -131,9 +131,9 @@ class CompositeFrontend(ConstrainedFrontend):
         Returns a sequence of the solvers that self and others share.
         """
 
-        solvers_by_id = { s.uuid: s for s in self._solver_list }
+        solvers_by_id = { id(s): s for s in self._solver_list }
         common_solvers = set(solvers_by_id.keys())
-        other_sets = [ { s.uuid for s in cs._solver_list } for cs in others ]
+        other_sets = [ { id(s) for s in cs._solver_list } for cs in others ]
         for o in other_sets: common_solvers &= o
 
         return [ solvers_by_id[s] for s in common_solvers ]
@@ -401,7 +401,7 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("Merging %s with %d other solvers.", self, len(others))
         merged = self.blank_copy()
         common_solvers = self._shared_solvers(others)
-        common_ids = { s.uuid for s in common_solvers }
+        common_ids = { id(s) for s in common_solvers }
         l.debug("... %s common solvers", len(common_solvers))
 
         for s in common_solvers:
@@ -412,7 +412,7 @@ class CompositeFrontend(ConstrainedFrontend):
             for v in s.variables:
                 merged._solvers[v] = s
 
-        noncommon_solvers = [ [ s for s in cs._solver_list if s.uuid not in common_ids ] for cs in [self]+others ]
+        noncommon_solvers = [ [ s for s in cs._solver_list if id(s) not in common_ids ] for cs in [self]+others ]
 
         l.debug("... merging noncommon solvers")
         combined_noncommons = [ ]

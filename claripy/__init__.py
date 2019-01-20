@@ -20,14 +20,6 @@ from . import backends as _backends_module
 from .backends import Backend
 from .backend_object import BackendObject
 
-#
-# connect to ANA
-#
-
-import ana
-if os.environ.get('REMOTE', False):
-    ana.set_dl(ana.MongoDataLayer(()))
-
 
 #
 # backend objects
