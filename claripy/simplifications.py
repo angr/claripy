@@ -758,21 +758,21 @@ class SimplificationManager:
         return expr
 
 
-	@staticmethod
-	def str_extract_simplifier(start_idx, count, val):
-		if start_idx == 0 and count == val.string_length:
-			return val
-		# if we are dealing with a chain of extractions on the same string we can
-		# simplify the chain in one single StrExtract
-		if val.op == 'StrExtract':
-			v_start_idx, _, v_str = val.args
-			new_start = v_start_idx + start_idx
-			new_count = count
-			return v_str.StrExtract(new_start, new_count, v_str)
+    @staticmethod
+    def str_extract_simplifier(start_idx, count, val):
+        if start_idx == 0 and count == val.string_length:
+            return val
+        # if we are dealing with a chain of extractions on the same string we can
+        # simplify the chain in one single StrExtract
+        if val.op == 'StrExtract':
+            v_start_idx, _, v_str = val.args
+            new_start = v_start_idx + start_idx
+            new_count = count
+            return v_str.StrExtract(new_start, new_count, v_str)
 
-	@staticmethod
-	def str_reverse_simplifier(arg):
-		return arg
+    @staticmethod
+    def str_reverse_simplifier(arg):
+        return arg
 
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')
 

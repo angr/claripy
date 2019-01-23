@@ -16,6 +16,6 @@ class SmtLibSolverTest_Z3(SmtLibSolverTest):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(SmtLibSolverTest_Z3)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(SmtLibSolverTest_Z3)
+    # unittest.TextTestRunner(verbosity=2).run(suite)
 
