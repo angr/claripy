@@ -43,6 +43,9 @@ from .annotation import *
 # Operations
 #
 
+import warnings
+warnings.simplefilter('ignore')
+
 from .ast.base import *
 from .ast.bv import *
 from .ast.fp import *
