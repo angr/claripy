@@ -15,6 +15,10 @@ from .errors import *
 from . import operations
 from . import ops as _all_operations
 
+# Add to PATH env varianble the folder containing solver binaries
+self_dir = os.path.dirname(os.path.realpath(__file__))
+os.environ['PATH'] = os.path.join(self_dir, "bin") +":" + os.environ["PATH"]
+
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
 from .backends import Backend
