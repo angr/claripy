@@ -77,7 +77,7 @@ class PopenSolverProxy(AbstractSMTLibSolverProxy):
 class SMTLibSolverBackend(BackendSMTLibBase):
     def __init__(self, *args, **kwargs):
         kwargs['solver_required'] = True
-        self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', '/media/angr_string_constraints')
+        self.smt_script_log_dir = kwargs.pop('smt_script_log_dir', None)
         super(SMTLibSolverBackend, self).__init__(*args, **kwargs)
 
     def solver(self, timeout=None): #pylint:disable=no-self-use,unused-argument
