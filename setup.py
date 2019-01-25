@@ -19,7 +19,8 @@ setup(
         'ana',
         'z3-solver==4.5.1.0.post2',
         'future',
-        'cachetools'
+        'cachetools',
+        'pysmt'
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
