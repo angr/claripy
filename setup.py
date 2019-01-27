@@ -19,7 +19,8 @@ setup(
         'z3-solver==4.5.1.0.post2',
         'future',
         'cachetools',
-        'pysmt'
+        'pysmt',
+        'cvc4-solver'
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
