@@ -27,7 +27,6 @@ class String(Bits):
         kwargs['length'] *= 8
         super(String, self).__init__(*args, **kwargs)
         self.string_length = str_len
-        self.is_string = True
 
     def __getitem__(self, rng):
         if type(rng) is slice:

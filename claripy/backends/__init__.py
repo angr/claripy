@@ -624,7 +624,7 @@ class Backend:
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return:                    'SAT', 'UNSAT', or 'UNKNOWN'
         """
-        return 'SAT' if self.satisfiable(extra_constraints, solver, model_callback) else 'UNSAT'
+        return 'SAT' if self.satisfiable(extra_constraints=extra_constraints, solver=solver, model_callback=model_callback) else 'UNSAT'
 
     def satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         """
