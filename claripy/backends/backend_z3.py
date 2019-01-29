@@ -612,7 +612,7 @@ class BackendZ3(Backend):
         if track:
             for constraint in c:
                 name = str(hash(constraint))
-                if name not in self._hash_to_constraint.keys():
+                if name not in self._hash_to_constraint:
                     self._hash_to_constraint[name] = constraint
                     s.assert_and_track(constraint, name)
         else:
