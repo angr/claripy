@@ -533,7 +533,7 @@ class SimplificationManager:
             return a
         elif a is b:
             return a
-        elif a.op == "Concat":
+        elif a.op == "Concat" and len(a.args) == 2:
             # maybe we can drop the second argument
             if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
                 # yes!
