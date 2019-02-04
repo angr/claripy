@@ -12,7 +12,7 @@ if bytes is str:
 
 setup(
     name='claripy',
-    version='8.18.10.25',
+    version='8.19.2.4',
     python_requires='>=3.5',
     packages=packages,
     install_requires=[
