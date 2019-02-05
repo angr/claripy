@@ -345,7 +345,9 @@ class SimplificationManager:
         eq_list = []
         ne_list = []
         for arg in fargs:
-            other = arg.args[1] if arg.args[0] is target_var else arg.args[0]
+            other = arg.args[1] if arg.args[0] is target_var else arg.args[0] if arg.args[1] is target_var else None
+            if other is None:
+                return flattened
             if arg.op == '__eq__':
                 eq_list.append(other)
             elif arg.op == '__ne__':
