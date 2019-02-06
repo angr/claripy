@@ -6,7 +6,7 @@ from ..frontends.constrained_frontend import ConstrainedFrontend
 
 l = logging.getLogger(__name__)
 
-class SMTLibScriptDumperMixin(object):
+class SMTLibScriptDumperMixin:
     def get_smtlib_script_satisfiability(self, extra_constraints=(), extra_variables=()):
         """
         Return an smt-lib script that check the satisfiability of the current constraints

@@ -30,8 +30,8 @@ class String(Bits):
 
     def __getitem__(self, rng):
         if type(rng) is slice:
-            high = rng.start / 8 if rng.start is not None else self.string_length - 1
-            low = rng.stop / 8 if rng.stop is not None else 0
+            high = rng.start // 8 if rng.start is not None else self.string_length - 1
+            low = rng.stop // 8 if rng.stop is not None else 0
             if high < 0:
                 high = self.string_length + high
             if low < 0:
@@ -92,9 +92,9 @@ class String(Bits):
         A counterpart to FP.raw_to_bv - does nothing and returns itself.
         """
         if self.symbolic:
-            return BVS(list(self.variables)[0].replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER), 8)
+            return BVS(next(iter(self.variables)).replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER), self.length)
         else:
-            return BVV(ord(self.args[0]), 8)
+            return BVV(ord(self.args[0]), self.length)
 
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):

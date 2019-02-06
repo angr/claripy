@@ -9,7 +9,7 @@ def make_pysmt_const_from_type(val, type):
     return getattr(pysmt.shortcuts, str(type))(val)
 
 
-class SMTParser(object):
+class SMTParser:
     def __init__(self, tokens):
         self.p = SmtLibParser()
         self.tokens = tokens

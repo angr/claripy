@@ -58,22 +58,6 @@ class PortfolioFrontend(Frontend):
         c.solvers = [solver.branch() for solver in self.solvers]
         return c
 
-    #
-    # #
-    # # Storable support
-    # #
-    #
-    # def _ana_getstate(self):
-    #     return self._solver_backend.__class__.__name__, self.timeout, self._track, ConstrainedFrontend._ana_getstate(self)
-    #
-    # def _ana_setstate(self, s):
-    #     backend_name, self.timeout, self._track, base_state = s
-    #     self._solver_backend = backends._backends_by_type[backend_name]
-    #     #self._tls = None
-    #     self._tls = threading.local()
-    #     self._to_add = [ ]
-    #     ConstrainedFrontend._ana_setstate(self, base_state)
-    #
     @property
     def constraints(self):
         return self.solvers[0].constraints

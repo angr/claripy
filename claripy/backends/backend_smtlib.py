@@ -29,6 +29,9 @@ def _expr_to_smtlib(e, daggify=True):
     Dump the symbol in its smt-format depending on its type
 
     :param e: symbol to dump
+    :param daggify: The daggify parameter can be used to switch from a linear-size representation that uses ‘let’
+                    operators to represent the formula as a dag or a simpler (but possibly exponential) representation
+                    that expands the formula as a tree
 
     :return string: smt-lib representation of the symbol
     """
@@ -59,7 +62,6 @@ def _normalize_arguments(expr_left, expr_rigth):
     elif expr_left.is_bv_constant() and expr_rigth.is_str_op():
         return expr_rigth, Int(expr_left.bv_signed_value())
     return expr_left, expr_rigth
-
 
 
 class BackendSMTLibBase(Backend):
@@ -116,7 +118,7 @@ class BackendSMTLibBase(Backend):
         return _exprs_to_smtlib(*exprs, daggify=self.daggify)
 
     def _get_satisfiability_smt_script(self, constraints=(), variables=()):
-        '''
+        """
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
 
@@ -124,7 +126,7 @@ class BackendSMTLibBase(Backend):
                                  in the scope of this call
                                 
         :return string: smt-lib representation of the script that checks the satisfiability
-        '''
+        """
         smt_script = '(set-logic ALL)\n'
         smt_script += self._smtlib_exprs(variables)
         smt_script += self._smtlib_exprs(constraints)
@@ -132,7 +134,7 @@ class BackendSMTLibBase(Backend):
         return smt_script
 
     def _get_full_model_smt_script(self, constraints=(), variables=()):
-        '''
+        """
         Returns a SMT script that declare all the symbols and constraint and checks
         their satisfiability (check-sat)
 
@@ -140,7 +142,7 @@ class BackendSMTLibBase(Backend):
                                  in the scope of this call
 
         :return string: smt-lib representation of the script that checks the satisfiability
-        '''
+        """
         smt_script = '(set-logic ALL)\n'
         smt_script += '(set-option :produce-models true)\n'
         smt_script += self._smtlib_exprs(variables)
@@ -190,16 +192,6 @@ class BackendSMTLibBase(Backend):
         return Symbol(ast.args[0], INT) #BVType(ast.length))
 
     # ------------------- BITVECTOR OPERATIONS -------------------
-    '''
-    def _op_raw_extract(self, high, low, val):
-        import ipdb; ipdb.set_trace()
-        return BVExtract(val, start=low, end=high)
-
-    def _op_raw_concat(self, left, right):
-        import ipdb; ipdb.set_trace()
-        return BVConcat(left, right)
-    '''
-
     def _op_raw_add(self, *args):
         return Plus(*args)
 
