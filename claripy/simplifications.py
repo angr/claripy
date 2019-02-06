@@ -31,7 +31,7 @@ class SimplificationManager:
             'fpToIEEEBV': self.fptobv_simplifier,
             'fpToFP': self.fptofp_simplifier,
             'StrExtract': self.str_extract_simplifier,
-    		'StrReverse': self.str_reverse_simplifier,
+            'StrReverse': self.str_reverse_simplifier,
         }
 
     def simplify(self, op, args):

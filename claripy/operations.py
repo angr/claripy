@@ -42,7 +42,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         for i in fixed_args:
             if i is NotImplemented:
                 return NotImplemented
-                
         if extra_check is not None:
             success, msg = extra_check(*fixed_args)
             if not success:
@@ -60,7 +59,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         kwargs['uninitialized'] = None
         if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
             kwargs['uninitialized'] = True
-         
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
@@ -175,7 +173,8 @@ def str_replace_check(*args):
     return True, ""
 
 def substr_length_calc(start_idx, count, strval):
-    return strval.string_length
+    # FIXME: How can I get the value of a concrete object without a solver
+    return strval.string_length if not count.concrete else count.args[0]
 
 def ext_length_calc(ext, orig):
     return orig.length + ext

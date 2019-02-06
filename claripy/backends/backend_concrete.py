@@ -37,7 +37,7 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def StringV(value, size):
-        if value is None:
+        if not value:
             raise BackendError("can't handle empty Strings")
         return strings.StringV(value)
 
