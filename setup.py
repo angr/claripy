@@ -20,7 +20,6 @@ setup(
         'future',
         'cachetools',
         'pysmt',
-        'cvc4-solver'
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
