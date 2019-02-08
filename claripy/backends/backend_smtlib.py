@@ -15,15 +15,6 @@ l = logging.getLogger("claripy.backends.backend_smt")
 from . import BackendError, Backend
 
 
-class DeclareConst():
-    def __init__(self, name, sort):
-        self.name = name
-        self.sort = sort
-
-    def __repr__(self):
-        return "(declare-const %s %r)" % (self.name, self.sort)
-
-
 def _expr_to_smtlib(e, daggify=True):
     """
     Dump the symbol in its smt-format depending on its type
