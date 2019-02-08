@@ -60,6 +60,9 @@ class Frontend:
     def simplify(self):
         raise NotImplementedError()
 
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        raise NotImplementedError
+
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError()
 
@@ -144,7 +147,7 @@ class Frontend:
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
 
         if concrete and len(concrete_constraints) > 0:
-            results.append(({ b'CONCRETE' }, concrete_constraints))
+            results.append(({ 'CONCRETE' }, concrete_constraints))
 
         return results
 

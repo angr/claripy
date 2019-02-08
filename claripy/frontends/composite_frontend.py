@@ -6,13 +6,15 @@ import itertools
 symbolic_count = itertools.count()
 
 from .constrained_frontend import ConstrainedFrontend
+from claripy.ast.strings import String
 
 class CompositeFrontend(ConstrainedFrontend):
-    def __init__(self, template_frontend, track=False, **kwargs):
+    def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._owned_solvers = weakref.WeakKeyDictionary()
         self._template_frontend = template_frontend
+        self._template_frontend_string = template_frontend_string
         self._unsat = False
         self._track = track
 
@@ -21,6 +23,8 @@ class CompositeFrontend(ConstrainedFrontend):
         c._owned_solvers = weakref.WeakKeyDictionary()
         c._solvers = { }
         c._template_frontend = self._template_frontend
+        if hasattr(self, '_template_frontend_string'):
+            c._template_frontend_string = self._template_frontend_string
         c._unsat = False
         c._track = self._track
 
@@ -117,8 +121,12 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
-            l.debug("... creating new solver")
-            return self._template_frontend.blank_copy()
+            if any(var for var in names if var.startswith(String.STRING_TYPE_IDENTIFIER)):
+                l.debug("... creating new solver for strings")
+                return self._template_frontend_string.blank_copy()
+            else:
+                l.debug("... creating new solver")
+                return self._template_frontend.blank_copy()
         elif len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
@@ -257,6 +265,34 @@ class CompositeFrontend(ConstrainedFrontend):
     def _ensure_sat(self, extra_constraints):
         if self._unsat or (len(extra_constraints) == 0 and not self.satisfiable()):
             raise UnsatError("CompositeSolver is already unsat")
+
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        if self._unsat:
+            return 'UNSAT'
+
+        l.debug("%r checking satisfiability...", self)
+
+        if len(extra_constraints) != 0:
+            extra_solver = self._merged_solver_for(lst=extra_constraints)
+            extra_solver_satness = extra_solver.check_satisfiability(extra_constraints=extra_constraints, exact=exact)
+            if extra_solver_satness in {'UNSAT', 'UNKNOWN'}:
+                return extra_solver_satness
+
+            satnesses = [
+                s.check_satisfiability(exact=exact) for s in
+                self._solver_list if s.variables.isdisjoint(extra_solver.variables)
+            ]
+            self._reabsorb_solver(extra_solver)
+            for satness in satnesses:
+                if satness in {'UNSAT', 'UNKNOWN'}:
+                    return satness
+            return 'SAT'
+        else:
+            for s in self._solver_list:
+                satness = s.check_satisfiability()
+                if satness in {'UNSAT', 'UNKNOWN'}:
+                    return satness
+            return 'SAT'
 
     def satisfiable(self, extra_constraints=(), exact=None):
         if self._unsat: return False

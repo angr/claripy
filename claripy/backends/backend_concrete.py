@@ -12,9 +12,11 @@ class BackendConcrete(Backend):
     def __init__(self):
         Backend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'If' }, op_module=bv)
+        self._make_raw_ops(backend_strings_operations, op_module=strings)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
         self._op_raw['If'] = self._If
         self._op_raw['BVV'] = self.BVV
+        self._op_raw['StringV'] = self.StringV
         self._op_raw['FPV'] = self.FPV
 
         # reduceable
@@ -32,6 +34,12 @@ class BackendConcrete(Backend):
         if value is None:
             raise BackendError("can't handle empty BVVs")
         return bv.BVV(value, size)
+
+    @staticmethod
+    def StringV(value, size):
+        if not value:
+            raise BackendError("can't handle empty Strings")
+        return strings.StringV(value)
 
     @staticmethod
     def FPV(op, sort):
@@ -82,7 +90,7 @@ class BackendConcrete(Backend):
             return a == b
 
     def _convert(self, a):
-        if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort)):
+        if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV, str, bytes)):
             return a
         raise BackendError("can't handle AST of type %s" % type(a))
 
@@ -96,6 +104,8 @@ class BackendConcrete(Backend):
             return BoolV(e)
         elif isinstance(e, fp.FPV):
             return FPV(e.value, e.sort)
+        elif isinstance(e, strings.StringV):
+            return StringV(e.value) 
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
@@ -170,10 +180,11 @@ class BackendConcrete(Backend):
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == False
 
-from ..operations import backend_operations, backend_fp_operations
-from .. import bv, fp
+from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
+from .. import bv, fp, strings
 from ..ast import Base
 from ..ast.bv import BVV
+from ..ast.strings import StringV
 from ..ast.fp import FPV
 from ..ast.bool import BoolV
 from ..errors import UnsatError

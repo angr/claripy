@@ -85,6 +85,16 @@ class FullFrontend(ConstrainedFrontend):
 
         return self.constraints
 
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        try:
+            return self._solver_backend.check_satisfiability(
+                extra_constraints=extra_constraints,
+                solver=self._get_solver(),
+                model_callback=self._model_hook
+            )
+        except BackendError as e:
+            raise_from(ClaripyFrontendError("Backend error during solve"), e)
+
     def satisfiable(self, extra_constraints=(), exact=None):
         try:
             return self._solver_backend.satisfiable(
