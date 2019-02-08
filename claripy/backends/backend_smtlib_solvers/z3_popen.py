@@ -24,33 +24,31 @@ def get_version():
 
 IS_INSTALLED, VERSION, ERROR = get_version()
 
-if IS_INSTALLED:
-    class Z3Proxy(PopenSolverProxy):
-        def __init__(self, timeout=None):
-            self.timeout = timeout
-            p = None
-            super(Z3Proxy, self).__init__(p)
+class Z3Proxy(PopenSolverProxy):
+    def __init__(self, timeout=None):
+        self.timeout = timeout
+        self.installed = False
+        p = None
+        super(Z3Proxy, self).__init__(p)
 
-        def create_process(self):
-            cmd = ['z3', '-smt2', '-in']
-            if self.timeout is not None:
-                cmd.append('-t:{}'.format(self.timeout//1000))  # our timeout is in milliseconds
+    def create_process(self):
+        if not IS_INSTALLED:
+            raise MissingSolverError('Z3 not found! Please install Z3 before using this backend')
+        cmd = ['z3', '-smt2', '-in']
+        if self.timeout is not None:
+            cmd.append('-t:{}'.format(self.timeout//1000))  # our timeout is in milliseconds
 
-            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            return p
+        p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.installed = True
+        return p
 
-    class SolverBackendZ3(SMTLibSolverBackend):
-        def solver(self, timeout=None):
-            """
-            This function should return an instance of whatever object handles
-            solving for this backend. For example, in Z3, this would be z3.Solver().
-            """
-            return Z3Proxy(timeout=timeout)
+class SolverBackendZ3(SMTLibSolverBackend):
+    def solver(self, timeout=None):
+        """
+        This function should return an instance of whatever object handles
+        solving for this backend. For example, in Z3, this would be z3.Solver().
+        """
+        return Z3Proxy(timeout=timeout)
 
-    from ... import backend_manager as backend_manager
-    backend_manager.backends._register_backend(SolverBackendZ3(), 'smtlib_z3', False, False)
-
-else:
-    # Z3 is not installed
-    log.debug('Z3 not found, corresponding SMTLib backend was disabled! Reason: {}'.format(ERROR))
-    pass
+from ... import backend_manager as backend_manager
+backend_manager.backends._register_backend(SolverBackendZ3(), 'smtlib_z3', False, False)
