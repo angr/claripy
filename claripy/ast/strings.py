@@ -58,7 +58,7 @@ class String(Bits):
         return value
 
 
-    def replace(self, str_to_replace, replacement): # pylint: disable=arguments-differ
+    def strReplace(self, str_to_replace, replacement):
         """
         Replace the first occurence of str_to_replace with replacement
 

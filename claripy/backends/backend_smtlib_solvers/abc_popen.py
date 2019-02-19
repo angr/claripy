@@ -3,6 +3,7 @@ import logging
 
 import re
 from . import SMTLibSolverBackend, PopenSolverProxy
+from ...errors import MissingSolverError
 
 log = logging.getLogger(__name__)
 
