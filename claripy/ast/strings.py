@@ -54,7 +54,7 @@ class String(Bits):
     # In some case <value_read_if_condition_false> can be MEM_UNINITIALIZED expressed as BVV
     #
     # What should we return in this case?
-    def _from_BV(like, value):
+    def _from_BV(like, value): # pylint: disable=unused-argument
         return value
 
 
@@ -62,17 +62,15 @@ class String(Bits):
         """
         Replace the first occurence of str_to_replace with replacement
 
-        :param str_to_replace: pattern that has to be replaced
-        :type: String
-        :param replacement: replacement pattern
-        :type : String
+        :param String str_to_replace: pattern that has to be replaced
+        :param String replacement: replacement pattern
         """
         return StrReplace(self, str_to_replace, replacement)
 
     def toInt(self, bitlength):
         """
         Convert the string to a bitvector holding the integer
-        representation of the string 
+        representation of the string
 
         :param bitlength: size of the biitvector holding the result
         """
@@ -95,6 +93,9 @@ class String(Bits):
             return BVS(next(iter(self.variables)).replace(self.STRING_TYPE_IDENTIFIER, self.GENERATED_BVS_IDENTIFIER), self.length)
         else:
             return BVV(ord(self.args[0]), self.length)
+
+    def raw_to_fp(self):
+        return self.raw_to_bv().raw_to_fp()
 
 
 def StringS(name, size, uninitialized=False, explicit_name=False, **kwargs):
