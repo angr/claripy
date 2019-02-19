@@ -37,7 +37,6 @@ def _add_memory_pressure(p):
     if _is_pypy:
         __pypy__.add_memory_pressure(p)
 
-
 #
 # Some global variables
 #
@@ -122,7 +121,7 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec'}:
+        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
 
@@ -142,6 +141,8 @@ class BackendZ3(Backend):
         self._op_expr['FPS'] = self.FPS
         self._op_expr['BoolV'] = self.BoolV
         self._op_expr['BoolS'] = self.BoolS
+        self._op_expr['StringV'] = self.StringV
+        self._op_expr['StringS'] = self.StringS
 
         self._op_raw['__floordiv__'] = self._op_div
         self._op_raw['__mod__'] = self._op_mod
@@ -274,7 +275,11 @@ class BackendZ3(Backend):
         name = ast._encoded_name
         self.extra_bvs_data[name] = ast.args
         size = ast.size()
-        expr = z3.BitVec(name, size, ctx=self._context)
+        # TODO: Here we can use low level APIs because the check performed by the high level API always results in
+        #       the else branch of the check. This evidence although comes from the execution of the angr and claripy
+        #       test suite so I'm not sure if this assumption would hold on 100% of the cases
+        bv = z3.BitVecSortRef(z3.Z3_mk_bv_sort(self._context.ref(), size), self._context)
+        expr = z3.BitVecRef(z3.Z3_mk_const(self._context.ref(), z3.to_symbol(name, self._context), bv.ast), self._context)
         #if mn is not None:
         #    expr = z3.If(z3.ULT(expr, mn), mn, expr, ctx=self._context)
         #if mx is not None:
@@ -289,39 +294,58 @@ class BackendZ3(Backend):
             raise BackendError("Z3 can't handle empty BVVs")
 
         size = ast.size()
+        # TODO: Here there is no need to use low level API since teh high level API just perform some conversions which
+        #       are mandatory to fix the types of the arguments requested by the low level API
         return z3.BitVecVal(ast.args[0], size, ctx=self._context)
 
     @condom
     def FPS(self, ast):
         sort_z3 = self._convert(ast.args[1])
-        return z3.FP(ast._encoded_name, sort_z3, ctx=self._context)
+        # TODO: Here is safe to use low level API since the only condition the hig level API check is if the context is
+        #       None and this never happens here
+        return z3.FPRef(
+            z3.Z3_mk_const(self._context.ref(), z3.to_symbol(ast._encoded_name, self._context), sort_z3.ast),
+            self._context)
 
     @condom
     def FPV(self, ast):
         val = str(ast.args[0])
         sort = self._convert(ast.args[1])
-        if val == 'inf':
-            return z3.fpPlusInfinity(sort)
-        elif val == '-inf':
-            return z3.fpMinusInfinity(sort)
-        elif val == '0.0':
-            return z3.fpPlusZero(sort)
+        if val in ("+oo", "+inf", "+Inf", 'inf'):
+            return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, False), sort.ctx)
+        elif val in ("-oo", "-inf", "-Inf"):
+            return z3.FPNumRef(z3.Z3_mk_fpa_inf(sort.ctx_ref(), sort.ast, True), sort.ctx)
+        elif val in ("0.0", "+0.0"):
+            return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, False), sort.ctx)
         elif val == '-0.0':
-            return z3.fpMinusZero(sort)
-        elif val == 'nan':
-            return z3.fpNaN(sort)
+            return z3.FPNumRef(z3.Z3_mk_fpa_zero(sort.ctx_ref(), sort.ast, True), sort.ctx)
+        elif val in ("NaN", "nan"):
+            return z3.FPNumRef(z3.Z3_mk_fpa_nan(sort.ctx_ref(), sort.ast), sort.ctx)
         else:
             better_val = str(Decimal(ast.args[0]))
-            return z3.FPVal(better_val, sort, ctx=self._context)
+            return z3.FPNumRef(z3.Z3_mk_numeral(self._context.ref(), better_val, sort.ast), self._context)
 
     @condom
     def BoolS(self, ast):
-        return z3.Bool(ast._encoded_name, ctx=self._context)
+        return z3.BoolRef(
+            z3.Z3_mk_const(
+                self._context.ref(), z3.to_symbol(ast._encoded_name, self._context), z3.BoolSort(self._context).ast
+            ),
+            self._context)
 
     @condom
     def BoolV(self, ast): #pylint:disable=unused-argument
+        # TODO: Here the checks performed by the high level API are mandatory before calling the low level API
+        #       So we can keep the high level API call here
         return z3.BoolVal(ast.args[0], ctx=self._context)
 
+    @condom
+    def StringV(self, ast):
+        return z3.StringVal(ast.args[0], ctx=self._context)
+
+    @condom
+    def StringS(self, ast):
+        return z3.String(ast.args[0], ctx=self._context)
     #
     # Conversions
     #
@@ -329,24 +353,24 @@ class BackendZ3(Backend):
     @condom
     def _convert(self, obj):  # pylint:disable=arguments-differ
         if isinstance(obj, FSort):
-            return z3.FPSort(obj.exp, obj.mantissa, ctx=self._context)
+            return z3.FPSortRef(z3.Z3_mk_fpa_sort(self._context.ref(), obj.exp, obj.mantissa), self._context)
         elif isinstance(obj, RM):
             if obj == RM_RNE:
-                return z3.RNE(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_nearest_ties_to_even(self._context.ref()), self._context)
             elif obj == RM_RNA:
-                return z3.RNA(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_nearest_ties_to_away(self._context.ref()), self._context)
             elif obj == RM_RTP:
-                return z3.RTP(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_positive(self._context.ref()), self._context)
             elif obj == RM_RTN:
-                return z3.RTN(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_negative(self._context.ref()), self._context)
             elif obj == RM_RTZ:
-                return z3.RTZ(ctx=self._context)
+                return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_zero(self._context.ref()), self._context)
             else:
                 raise BackendError("unrecognized rounding mode")
         elif obj is True:
-            return z3.BoolVal(True, ctx=self._context)
+            return z3.BoolRef(z3.Z3_mk_true(self._context.ref()), self._context)
         elif obj is False:
-            return z3.BoolVal(False, ctx=self._context)
+            return z3.BoolRef(z3.Z3_mk_false(self._context.ref()), self._context)
         elif isinstance(obj, (numbers.Number, str)):
             return obj
         elif hasattr(obj, '__module__') and obj.__module__ in ('z3', 'z3.z3'):
@@ -597,8 +621,9 @@ class BackendZ3(Backend):
         if track:
             for constraint in c:
                 name = str(hash(constraint))
-                self._hash_to_constraint[name] = constraint
-                s.assert_and_track(constraint, name)
+                if name not in self._hash_to_constraint:
+                    self._hash_to_constraint[name] = constraint
+                    s.assert_and_track(constraint, name)
         else:
             s.add(*c)
 
@@ -727,6 +752,9 @@ class BackendZ3(Backend):
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
+            # TODO: is this assumption correct?
+            # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
+            # integer and not a BV
             solver.add(z3.UGE(expr, lo), z3.ULE(expr, middle))
             numpop += 1
 
@@ -789,6 +817,9 @@ class BackendZ3(Backend):
             #l.debug("h/m/l/d: %d %d %d %d", hi, middle, lo, hi-lo)
 
             solver.push()
+            # TODO: is this assumption correct?
+            # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
+            # integer and not a BV
             solver.add(z3.UGT(expr, middle), z3.ULE(expr, hi))
             numpop += 1
 
@@ -901,10 +932,10 @@ class BackendZ3(Backend):
 
     @staticmethod
     def _op_div(a, b):
-        return z3.UDiv(a, b)
+        return z3.BitVecRef(z3.Z3_mk_bvudiv(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
     @staticmethod
     def _op_mod(a, b):
-        return z3.URem(a, b)
+        return z3.BitVecRef(z3.Z3_mk_bvurem(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
     @staticmethod
     def _op_add(*args):
         return reduce(operator.__add__, args)
@@ -925,97 +956,201 @@ class BackendZ3(Backend):
         return reduce(operator.__and__, args)
 
     def _op_raw_And(self, *args):
-        return z3.And(*(tuple(args) + ( self._context, )))
+        # copied from z3._to_ast_array
+        sz = len(args)
+        _args = (z3.Ast * sz)()
+        for i in range(sz):
+            _args[i] = args[i].as_ast()
+        return z3.BoolRef(z3.Z3_mk_and(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Xor(self, *args):
-        return z3.Xor(*(tuple(args) + ( self._context, )))
+        return z3.BoolRef(z3.Z3_mk_xor(self._context, *(arg.as_ast() for arg in args)), self._context)
 
     def _op_raw_Or(self, *args):
-        return z3.Or(*(tuple(args) + ( self._context, )))
+        # copied from z3._to_ast_array
+        sz = len(args)
+        _args = (z3.Ast * sz)()
+        for i in range(sz):
+            _args[i] = args[i].as_ast()
+        return z3.BoolRef(z3.Z3_mk_or(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Not(self, a):
-        return z3.Not(a, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_not(self._context.ref(), a.as_ast()), self._context)
 
     def _op_raw_If(self, i, t, e):
-        return z3.If(i, t, e, ctx=self._context)
+        # partially copied from z3._to_expr_ref
+        ctx_ref = self._context.ref()
+        ast = z3.Z3_mk_ite(ctx_ref, i.as_ast(), t.as_ast(), e.as_ast())
+        k = z3.Z3_get_ast_kind(ctx_ref, ast)
+        sk = z3.Z3_get_sort_kind(ctx_ref, z3.Z3_get_sort(ctx_ref, ast))
+        if sk == z3.Z3_BOOL_SORT:
+            return z3.BoolRef(ast, self._context)
+        if sk == z3.Z3_BV_SORT:
+            if k == z3.Z3_NUMERAL_AST:
+                return z3.BitVecNumRef(ast, self._context)
+            else:
+                return z3.BitVecRef(ast, self._context)
+        if sk == z3.Z3_FLOATING_POINT_SORT:
+            if k == z3.Z3_APP_AST and z3.Z3_is_numeral_ast(ctx_ref, ast):
+                return z3.FPNumRef(ast, self._context)
+            else:
+                return z3.FPRef(ast, self._context)
+        return z3.ExprRef(ast, self._context)
 
     @condom
     def _op_raw_fpAbs(self, a):
-        return z3.fpAbs(a, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_abs(self._context.ref(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpNeg(self, a):
-        return z3.fpNeg(a, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_neg(self._context.ref(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpAdd(self, rm, a, b):
-        return z3.fpAdd(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_add(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpSub(self, rm, a, b):
-        return z3.fpSub(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_sub(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpMul(self, rm, a, b):
-        return z3.fpMul(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_mul(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpDiv(self, rm, a, b):
-        return z3.fpDiv(rm, a, b, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_div(self._context.ref(), rm.as_ast(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpLT(self, a, b):
-        return z3.fpLT(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_lt(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpLEQ(self, a, b):
-        return z3.fpLEQ(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_leq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpGT(self, a, b):
-        return z3.fpGT(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_gt(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpGEQ(self, a, b):
-        return z3.fpGEQ(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_geq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpEQ(self, a, b):
-        return z3.fpEQ(a, b, ctx=self._context)
+        return z3.BoolRef(z3.Z3_mk_fpa_eq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
 
     @condom
     def _op_raw_fpFP(self, sgn, exp, sig):
-        return z3.fpFP(sgn, exp, sig, ctx=self._context)
+        return z3.FPRef(z3.Z3_mk_fpa_fp(self._context.ref(), sgn.ast, exp.ast, sig.ast), self._context)
 
     @condom
     def _op_raw_fpToSBV(self, rm, fp, bv_len):
-        return z3.fpToSBV(rm, fp, z3.BitVecSort(bv_len, ctx=self._context))
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_sbv(self._context.ref(), rm.ast, fp.ast, bv_len.size()), self._context)
 
     @condom
     def _op_raw_fpToUBV(self, rm, fp, bv_len):
-        return z3.fpToUBV(rm, fp, z3.BitVecSort(bv_len, ctx=self._context))
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_ubv(self._context.ref(), rm.ast, fp.ast, bv_len.size()), self._context)
 
     @condom
     def _op_raw_fpToFP(self, a1, a2=None, a3=None):
+        # TODO: lots of mandatory checks are performed by the high level API here. we shouldn't use low level APIs here
         return z3.fpToFP(a1, a2=a2, a3=a3, ctx=self._context)
 
     @condom
     def _op_raw_fpToIEEEBV(self, x):
-        return z3.fpToIEEEBV(x, ctx=self._context)
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_ieee_bv(self._context.ref(), x.ast), self._context)
 
     # and these do not
-    _op_raw_Concat = _raw_caller(z3.Concat)
-    _op_raw_Extract = _raw_caller(z3.Extract)
-    _op_raw_LShR = _raw_caller(z3.LShR)
-    _op_raw_RotateLeft = _raw_caller(z3.RotateLeft)
-    _op_raw_RotateRight = _raw_caller(z3.RotateRight)
-    _op_raw_SignExt = _raw_caller(z3.SignExt)
-    _op_raw_UGE = _raw_caller(z3.UGE)
-    _op_raw_UGT = _raw_caller(z3.UGT)
-    _op_raw_ULE = _raw_caller(z3.ULE)
-    _op_raw_ULT = _raw_caller(z3.ULT)
-    _op_raw_ZeroExt = _raw_caller(z3.ZeroExt)
-    _op_raw_SMod = _raw_caller(z3.SRem)
+    @staticmethod
+    @condom
+    def _op_raw_Concat(*args):
+        sz = len(args)
+        ctx = None
+        for a in args:
+            if z3.is_expr(a):
+                ctx = a.ctx
+                break
+        # TODO: I don't think this is needed for us, we don't deal with Seq or Regex
+        # if z3.is_seq(args[0]) or isinstance(args[0], str):
+        #     v = (z3.Ast * sz)()
+        #     for i in range(sz):
+        #         v[i] = args[i].as_ast()
+        #     return z3.SeqRef(z3.Z3_mk_seq_concat(ctx.ref(), sz, v), ctx)
+        #
+        # if z3.is_re(args[0]):
+        #     v = (z3.Ast * sz)()
+        #     for i in range(sz):
+        #         v[i] = args[i].as_ast()
+        #     return z3.ReRef(z3.Z3_mk_re_concat(ctx.ref(), sz, v), ctx)
+
+        r = args[0]
+        for i in range(sz - 1):
+            r = z3.BitVecRef(z3.Z3_mk_concat(ctx.ref(), r.as_ast(), args[i + 1].as_ast()), ctx)
+        return r
+
+    @staticmethod
+    @condom
+    def _op_raw_Extract(high, low, a):
+        # TODO: I don't think this is needed for us, we don't deal with Seq or Regex
+        # if isinstance(high, str):
+        #     high = z3.StringVal(high)
+        # if z3.is_seq(high):
+        #     s = high
+        #     offset, length = _coerce_exprs(low, a, s.ctx)
+        #     return z3.SeqRef(z3.Z3_mk_seq_extract(s.ctx_ref(), s.as_ast(), offset.as_ast(), length.as_ast()), s.ctx)
+        return z3.BitVecRef(z3.Z3_mk_extract(a.ctx_ref(), high, low, a.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_LShR(a, b):
+        return z3.BitVecRef(z3.Z3_mk_bvlshr(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_RotateLeft(a, b):
+        return z3.BitVecRef(z3.Z3_mk_ext_rotate_left(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_RotateRight(a, b):
+        return z3.BitVecRef(z3.Z3_mk_ext_rotate_right(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_SignExt(n, a):
+        return z3.BitVecRef(z3.Z3_mk_sign_ext(a.ctx_ref(), n, a.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_UGE(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvuge(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_UGT(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvugt(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_ULE(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvule(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_ULT(a, b):
+        return z3.BoolRef(z3.Z3_mk_bvult(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_ZeroExt(n, a):
+        return z3.BitVecRef(z3.Z3_mk_zero_ext(a.ctx_ref(), n, a.as_ast()), a.ctx)
+
+    @staticmethod
+    @condom
+    def _op_raw_SMod(a, b):
+        return z3.BitVecRef(z3.Z3_mk_bvsrem(a.ctx_ref(), a.as_ast(), b.as_ast()), a.ctx)
 
     @staticmethod
     @condom
@@ -1025,7 +1160,7 @@ class BackendZ3(Backend):
         elif a.size() % 8 != 0:
             raise ClaripyOperationError("can't reverse non-byte sized bitvectors")
         else:
-            return z3.Concat(*[z3.Extract(i+7, i, a) for i in range(0, a.size(), 8)])
+            return BackendZ3._op_raw_Concat(*[BackendZ3._op_raw_Extract(i+7, i, a) for i in range(0, a.size(), 8)])
 
     @staticmethod
     @condom
@@ -1213,6 +1348,7 @@ from ..ast.base import Base
 from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
+from ..ast.strings import StringV, StringS
 from ..operations import backend_operations, backend_fp_operations
 from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
 from ..errors import ClaripyError, BackendError, ClaripyOperationError

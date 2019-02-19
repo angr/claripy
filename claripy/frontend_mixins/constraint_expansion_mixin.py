@@ -3,7 +3,7 @@
 import logging
 l = logging.getLogger("claripy.frontends.cache_mixin")
 
-class ConstraintExpansionMixin(object):
+class ConstraintExpansionMixin:
     def eval(self, e, n, extra_constraints=(), exact=None, **kwargs):
         results = super(ConstraintExpansionMixin, self).eval(
             e, n,

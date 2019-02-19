@@ -3,7 +3,7 @@ import operator
 
 l = logging.getLogger('claripy.balancer')
 
-class Balancer(object):
+class Balancer:
     """
     The Balancer is an equation redistributor. The idea is to take an AST and rebalance it to, for example, isolate
     unknown terms on one side of an inequality.
@@ -208,6 +208,8 @@ class Balancer(object):
             if not self._handleable_truism(truism):
                 continue
 
+            truism = self._adjust_truism(truism)
+
             assumptions = self._get_assumptions(truism)
             if truism not in self._identified_assumptions and len(assumptions):
                 l.debug("Queued assumptions %s for truism %s.", assumptions, truism)
@@ -238,15 +240,23 @@ class Balancer(object):
         """
         if len(t.args) < 2:
             l.debug("can't do anything with an unop bool")
-        multivalued_guys_count = 0
-        for a in t.args:
-            if hasattr(a, 'cardinality') and a.cardinality > 1:
-                multivalued_guys_count += 1
-        if multivalued_guys_count > 1:
+        elif t.args[0].cardinality > 1 and t.args[1].cardinality > 1:
             l.debug("can't do anything because we have multiple multivalued guys")
             return False
         else:
             return True
+
+    @staticmethod
+    def _adjust_truism(t):
+        """
+        Swap the operands of the truism if the unknown variable is on the right side and the concrete value is on the
+        left side.
+        """
+        if t.args[0].cardinality == 1 and t.args[1].cardinality > 1:
+            swapped = Balancer._reverse_comparison(t)
+            return swapped
+        return t
+
 
     #
     # Assumptions management
@@ -255,7 +265,7 @@ class Balancer(object):
     @staticmethod
     def _get_assumptions(t):
         """
-        Given a consraint, _get_assumptions() returns a set of constraints that are implicitly
+        Given a constraint, _get_assumptions() returns a set of constraints that are implicitly
         assumed to be true. For example, `x <= 10` would return `x >= 0`.
         """
 

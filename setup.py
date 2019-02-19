@@ -12,14 +12,14 @@ if bytes is str:
 
 setup(
     name='claripy',
-    version='8.18.10.25',
+    version='8.19.2.4',
     python_requires='>=3.5',
     packages=packages,
     install_requires=[
-        'ana',
         'z3-solver==4.5.1.0.post2',
         'future',
-        'cachetools'
+        'cachetools',
+        'pysmt',
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',

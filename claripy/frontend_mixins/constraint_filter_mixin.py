@@ -1,4 +1,4 @@
-class ConstraintFilterMixin(object):
+class ConstraintFilterMixin:
     def _constraint_filter(self, constraints, **kwargs):
         if type(constraints) not in (tuple, list):
             raise ClaripyValueError("The extra_constraints argument should be a list of constraints.")
@@ -18,7 +18,7 @@ class ConstraintFilterMixin(object):
             ec = self._constraint_filter(constraints)
         except UnsatError:
             # filter out concrete False
-            ec = list(c for c in constraints if c is not False) + [ false ]
+            ec = list(c for c in constraints if c not in {False, false}) + [ false ]
 
         if len(constraints) == 0:
             return [ ]

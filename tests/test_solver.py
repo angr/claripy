@@ -320,6 +320,19 @@ def raw_combine(solver_type, reuse_z3_solver):
     nose.tools.assert_equal(s30.combine([s10]).eval(x, 1), ( 30, ))
     nose.tools.assert_equal(len(s30.combine([s10]).constraints), 2)
 
+def test_composite_solver_with_strings():
+    s = claripy.SolverComposite(
+        template_solver_string=claripy.SolverCompositeChild(backend=claripy.backend_manager.backends.smtlib_cvc4))
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+    str_1 = claripy.StringS("sym_str_1", 1024)
+    c = claripy.And(x == 1, y == 2, z == 3, str_1 == claripy.StringV("cavallo"))
+    s.add(c)
+    nose.tools.assert_equal(len(s._solver_list), 4)
+    nose.tools.assert_true(s.satisfiable())
+    nose.tools.assert_equal(list(s.eval(str_1, 1)), ["cavallo"])
+
 
 def test_composite_solver():
     yield raw_composite_solver, True
@@ -543,10 +556,6 @@ def test_zero_division_in_cache_mixin():
     s.add(denum == 3)
     assert not s.satisfiable()
 
-    a = claripy.BVS('a', 32)
-    b = claripy.BVS('b', 32)
-    s = claripy.Solver()
-    assert s.min(a/b) == 0
 
 if __name__ == '__main__':
 

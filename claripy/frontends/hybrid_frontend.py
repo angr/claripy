@@ -48,15 +48,15 @@ class HybridFrontend(Frontend):
         return self._exact_frontend.variables
 
     #
-    # Storable support
+    # Serialization support
     #
 
-    def _ana_getstate(self):
-        return (self._exact_frontend, self._approximate_frontend, Frontend._ana_getstate(self))
+    def __getstate__(self):
+        return (self._exact_frontend, self._approximate_frontend, super().__getstate__())
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         self._exact_frontend, self._approximate_frontend, base_state = s
-        Frontend._ana_setstate(self, base_state)
+        super().__setstate__(base_state)
 
     #
     # Hybrid solving

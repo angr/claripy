@@ -1,4 +1,4 @@
-class BackendManager(object):
+class BackendManager:
     def __init__(self):
         self._eager_backends = [ ]
         self._quick_backends = [ ]

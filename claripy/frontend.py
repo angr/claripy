@@ -3,14 +3,17 @@
 import logging
 import numbers
 
-import ana
-
 l = logging.getLogger("claripy.frontends.frontend")
 
 
-class Frontend(ana.Storable):
+class Frontend:
     def __init__(self):
         pass
+
+    def __getstate__(self):
+        return (True) # need to return something so that pickle calls setstate
+    def __setstate__(self, s): #pylint:disable=unused-argument
+        return
 
     def branch(self):
         c = self.blank_copy()
@@ -27,20 +30,6 @@ class Frontend(ana.Storable):
 
     def _copy(self, c): #pylint:disable=no-self-use,unused-argument
         return
-
-    #
-    # Storable support
-    #
-
-    @property
-    def uuid(self):
-        return self.ana_uuid
-
-    def _ana_getstate(self):
-        return None
-
-    def _ana_setstate(self, s):
-        pass
 
     #
     # Stuff that should be implemented by subclasses
@@ -70,6 +59,9 @@ class Frontend(ana.Storable):
 
     def simplify(self):
         raise NotImplementedError()
+
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        raise NotImplementedError
 
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError()
@@ -155,7 +147,7 @@ class Frontend(ana.Storable):
             results.append((set(v), [ splitted[c] for c in c_indexes ]))
 
         if concrete and len(concrete_constraints) > 0:
-            results.append(({ b'CONCRETE' }, concrete_constraints))
+            results.append(({ 'CONCRETE' }, concrete_constraints))
 
         return results
 

@@ -42,7 +42,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         for i in fixed_args:
             if i is NotImplemented:
                 return NotImplemented
-
         if extra_check is not None:
             success, msg = extra_check(*fixed_args)
             if not success:
@@ -60,7 +59,6 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
         kwargs['uninitialized'] = None
         if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
             kwargs['uninitialized'] = True
-
         if name in preprocessors:
             args, kwargs = preprocessors[name](*args, **kwargs)
 
@@ -74,7 +72,6 @@ def _handle_annotations(simp, args):
         return None
 
     ast_args = tuple(a for a in args if isinstance(a, ast.Base))
-
     preserved_relocatable = frozenset(simp._relocatable_annotations)
     relocated_annotations = set()
     bad_eliminated = 0
@@ -143,14 +140,69 @@ def extract_check(high, low, bv):
 
     return True, ""
 
+def concat_length_calc(*args):
+    return sum(arg.length for arg in args)
+
 def extract_length_calc(high, low, _):
-    return high - low + 1
+    return high + 1 - low
+
+
+def str_basic_length_calc(str_1):
+    return str_1.string_length
+
+def str_extract_check(start_idx, count, str_val):
+    if start_idx < 0:
+        return False, "StrExtract start_idx must be nonnegative"
+    elif count <= 0:
+        return False, "StrExtract count must be positive"
+    elif start_idx + count > str_val.string_length:
+        return False, "count must not exceed the length of the string."
+    else:
+        return True, ""
+
+def str_extract_length_calc(start_idx, count, str_val):
+    return count
+
+def int_to_str_length_calc(int_val):
+    return ast.String.MAX_LENGTH
+
+def str_replace_check(*args):
+    str_1, str_2, _ = args
+    if str_1.length < str_2.length:
+        return False, "The pattern that has to be replaced is longer than the string itself"
+    return True, ""
+
+def substr_length_calc(start_idx, count, strval):
+    # FIXME: How can I get the value of a concrete object without a solver
+    return strval.string_length if not count.concrete else count.args[0]
 
 def ext_length_calc(ext, orig):
     return orig.length + ext
 
-def concat_length_calc(*args):
-    return sum(arg.size() for arg in args)
+def str_concat_length_calc(*args):
+    return sum(arg.string_length for arg in args)
+
+def str_replace_length_calc(*args):
+    str_1, str_2, str_3 = args
+    # Return the maximum length that the string can assume after the replace
+    # operation
+    #
+    # If the part that has to be replaced if greater than
+    # the replacement than the we have the maximum length possible
+    # when the part that has to be replaced is not found inside the string
+    if str_2.string_length >= str_3.string_length:
+        return str_1.string_length
+    # Otherwise We have the maximum length when teh replacement happens
+    return str_1.string_length - str_2.string_length + str_3.string_length
+
+def strlen_bv_size_calc(s, bitlength):
+    return bitlength
+
+def strindexof_bv_size_calc(s1, s2, start_idx, bitlength):
+    return bitlength
+
+def strtoint_bv_size_calc(s, bitlength):
+    return bitlength
 
 #
 # Operation lists
@@ -232,11 +284,11 @@ backend_bitmod_operations = {
 }
 
 backend_creation_operations = {
-    'BoolV', 'BVV', 'FPV'
+    'BoolV', 'BVV', 'FPV', 'StringV'
 }
 
 backend_symbol_creation_operations = {
-    'BoolS', 'BVS', 'FPS'
+    'BoolS', 'BVS', 'FPS', 'StringS'
 }
 
 backend_vsa_creation_operations = {
@@ -260,6 +312,12 @@ backend_fp_operations = {
     'FPS', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
     'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
 } | backend_fp_cmp_operations
+
+backend_strings_operations = {
+    'StrSubstr', 'StrReplace', 'StrConcat', 'StrLen', 'StrContains',
+    'StrPrefixOf', 'StrSuffixOf', 'StrIndexOf', 'StrToInt', 'StrIsDigit',
+    'IntToStr'
+}
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',

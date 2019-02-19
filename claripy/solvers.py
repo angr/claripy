@@ -83,6 +83,19 @@ class SolverConcrete(
     def __init__(self, **kwargs):
         super(SolverConcrete, self).__init__(backends.concrete, **kwargs)
 
+class SolverStrings(
+    # TODO: Figure ot if we need to use all these mixins
+    frontend_mixins.ConstraintFixerMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.EvalStringsToASTsMixin,
+    frontend_mixins.SMTLibScriptDumperMixin,
+    frontends.FullFrontend,
+):
+    def __init__(self, backend, *args, **kwargs):
+        super(SolverStrings, self).__init__(backend, *args, **kwargs)
 
 #
 # Composite solving
@@ -114,9 +127,11 @@ class SolverComposite(
     frontend_mixins.CompositedCacheMixin,
     frontends.CompositeFrontend
 ):
-    def __init__(self, template_solver=None, track=False, **kwargs):
+    def __init__(self, template_solver=None, track=False, template_solver_string=None, **kwargs):
         template_solver = SolverCompositeChild(track=track) if template_solver is None else template_solver
-        super(SolverComposite, self).__init__(template_solver, track=track, **kwargs)
+        template_solver_string = SolverCompositeChild(track=track, backend=backends.z3) if \
+            template_solver_string is None else template_solver_string
+        super(SolverComposite, self).__init__(template_solver, template_solver_string, track=track, **kwargs)
 
     def __repr__(self):
         return "<SolverComposite %x, %d children>" % (id(self), len(self._solver_list))

@@ -129,9 +129,78 @@ def test_complex_case_0():
     assert r[0][0] is x
     assert set(claripy.backends.vsa.eval(r[0][1], 1000)) == set(range(0, 65 * 0x100, 0x100))
 
+
+def test_complex_case_1():
+
+    #
+
+    """
+    <Bool (0#31 .. (if (0x8 < (0#32 .. (0xfffffffe + reg_284_0_32{UNINITIALIZED}))) then 1 else 0)) == 0x0>
+
+    Created by VEX running on the following S390X assembly:
+    0x40062c:       ahik    %r2, %r11, -2
+    0x400632:       clijh   %r2, 8, 0x40065c
+
+    IRSB {
+       t0:Ity_I32 t1:Ity_I32 t2:Ity_I32 t3:Ity_I32 t4:Ity_I32 t5:Ity_I32 t6:Ity_I64 t7:Ity_I64 t8:Ity_I64 t9:Ity_I64 t10:Ity_I32 t11:Ity_I1 t12:Ity_I64 t13:Ity_I64 t14:Ity_I64 t15:Ity_I32 t16:Ity_I1
+
+       00 | ------ IMark(0x40062c, 6, 0) ------
+       01 | t0 = GET:I32(r11_32)
+       02 | t1 = Add32(0xfffffffe,t0)
+       03 | PUT(352) = 0x0000000000000003
+       04 | PUT(360) = 0xfffffffffffffffe
+       05 | t13 = 32Sto64(t0)
+       06 | t7 = t13
+       07 | PUT(368) = t7
+       08 | PUT(376) = 0x0000000000000000
+       09 | PUT(r2_32) = t1
+       10 | PUT(ia) = 0x0000000000400632
+       11 | ------ IMark(0x400632, 6, 0) ------
+       12 | t14 = 32Uto64(t1)
+       13 | t8 = t14
+       14 | t16 = CmpLT64U(0x0000000000000008,t8)
+       15 | t15 = 1Uto32(t16)
+       16 | t10 = t15
+       17 | t11 = CmpNE32(t10,0x00000000)
+       18 | if (t11) { PUT(ia) = 0x40065c; Ijk_Boring }
+       NEXT: PUT(ia) = 0x0000000000400638; Ijk_Boring
+    }
+    """
+
+    x = claripy.BVS('x', 32)
+    expr = claripy.ZeroExt(31,
+                           claripy.If(claripy.BVV(0x8, 32) < claripy.BVV(0xfffffffe, 32) + x,
+                                      claripy.BVV(1, 1),
+                                      claripy.BVV(0, 1)
+                                      )
+                           ) == claripy.BVV(0, 32)
+    s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+
+    assert s is True
+    assert len(r) == 1
+    assert r[0][0] is x
+
+
+def test_complex_case_2():
+    x = claripy.BVS('x', 32)
+    expr = claripy.ZeroExt(31,
+                           claripy.If(claripy.BVV(0xc, 32) < x,
+                                      claripy.BVV(1, 1),
+                                      claripy.BVV(0, 1)
+                                      )
+                           ) == claripy.BVV(0, 32)
+    s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+
+    assert s is True
+    assert len(r) == 1
+    assert r[0][0] is x
+
+
 if __name__ == '__main__':
     test_overflow()
     test_simple_guy()
     test_widened_guy()
     test_complex_guy()
     test_complex_case_0()
+    test_complex_case_1()
+    test_complex_case_2()

@@ -4,6 +4,7 @@ import numbers
 
 from .bits import Bits
 from ..ast.base import _make_name
+from .bool import If
 
 l = logging.getLogger("claripy.ast.bv")
 
@@ -121,6 +122,10 @@ class BV(Bits):
     @staticmethod
     def _from_int(like, value):
         return BVV(value, like.length)
+
+    @staticmethod
+    def _from_Bool(like, value):
+        return If(value, BVV(1, like.length), BVV(0, like.length))
 
     @staticmethod
     def _from_bytes(like, value): #pylint:disable=unused-argument

@@ -18,14 +18,7 @@ from . import ops as _all_operations
 # This is here for later, because we'll fuck the namespace in a few lines
 from . import backends as _backends_module
 from .backends import Backend
-
-#
-# connect to ANA
-#
-
-import ana
-if os.environ.get('REMOTE', False):
-    ana.set_dl(ana.MongoDataLayer(()))
+from .backend_object import BackendObject
 
 
 #
@@ -46,6 +39,7 @@ from .ast.base import *
 from .ast.bv import *
 from .ast.fp import *
 from .ast.bool import *
+from .ast.strings import *
 from . import ast
 del BV
 del Bool

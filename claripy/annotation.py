@@ -1,4 +1,4 @@
-class Annotation(object):
+class Annotation:
     """
     Annotations are used to achieve claripy's goal of being an arithmetic instrumentation engine.
     They provide a means to pass extra information to the claripy backends.

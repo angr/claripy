@@ -1,4 +1,4 @@
-class SatCacheMixin(object):
+class SatCacheMixin:
     def __init__(self, *args, **kwargs):
         super(SatCacheMixin, self).__init__(*args, **kwargs)
         self._cached_satness = None
@@ -11,12 +11,12 @@ class SatCacheMixin(object):
         super(SatCacheMixin, self)._copy(c)
         c._cached_satness = self._cached_satness
 
-    def _ana_getstate(self):
-        return self._cached_satness, super(SatCacheMixin, self)._ana_getstate()
+    def __getstate__(self):
+        return self._cached_satness, super().__getstate__()
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         self._cached_satness, base_state = s
-        super(SatCacheMixin, self)._ana_setstate(base_state)
+        super().__setstate__(base_state)
 
     #
     # SAT caching

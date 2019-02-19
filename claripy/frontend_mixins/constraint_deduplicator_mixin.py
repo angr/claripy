@@ -1,4 +1,4 @@
-class ConstraintDeduplicatorMixin(object):
+class ConstraintDeduplicatorMixin:
     def __init__(self, *args, **kwargs):
         super(ConstraintDeduplicatorMixin, self).__init__(*args, **kwargs)
         self._constraint_hashes = set()
@@ -11,16 +11,12 @@ class ConstraintDeduplicatorMixin(object):
         super(ConstraintDeduplicatorMixin, self)._copy(c)
         c._constraint_hashes = set(self._constraint_hashes)
 
-    #
-    # Serialization
-    #
+    def __getstate__(self):
+        return self._constraint_hashes, super().__getstate__()
 
-    def _ana_getstate(self):
-        return self._constraint_hashes, super(ConstraintDeduplicatorMixin, self)._ana_getstate()
-
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         self._constraint_hashes, base_state = s
-        super(ConstraintDeduplicatorMixin, self)._ana_setstate(base_state)
+        super().__setstate__(base_state)
 
     def simplify(self, **kwargs):
         added = super(ConstraintDeduplicatorMixin, self).simplify(**kwargs)

@@ -30,17 +30,15 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         c.finalize()
 
     #
-    # Storable support
+    # Serialization support
     #
 
-    def _ana_getstate(self):
-        self.finalize()
-        return self.constraints, self.variables, Frontend._ana_getstate(self)
+    def __getstate__(self):
+        return self.constraints, self.variables, super().__getstate__()
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         self.constraints, self.variables, base_state = s
-        Frontend._ana_setstate(self, base_state)
-        self._finalized = True
+        super().__setstate__(base_state)
 
     #
     # Constraint management
@@ -124,10 +122,13 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     # Stuff that should be implemented by subclasses
     #
 
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        raise NotImplementedError("check_satisfiable() is not implemented")
+
     def satisfiable(self, extra_constraints=(), exact=None):
         raise NotImplementedError("satisfiable() is not implemented")
 
-    def batch_eval(self, e, n, extra_constraints=(), exact=None):
+    def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
         raise NotImplementedError("batch_eval() is not implemented")
 
     def eval(self, e, n, extra_constraints=(), exact=None):

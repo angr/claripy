@@ -1,10 +1,10 @@
 import weakref
 import itertools
 
-from claripy import errors
+from .. import errors
 
 
-class ModelCache(object):
+class ModelCache:
     _defaults = { 0, 0.0, True }
 
     def __init__(self, model):
@@ -70,7 +70,7 @@ class ModelCache(object):
     def eval_list(self, asts):
         return tuple(self.eval_ast(c) for c in asts)
 
-class ModelCacheMixin(object):
+class ModelCacheMixin:
     def __init__(self, *args, **kwargs):
         super(ModelCacheMixin, self).__init__(*args, **kwargs)
         self._models = set()
@@ -95,29 +95,13 @@ class ModelCacheMixin(object):
         c._max_exhausted = weakref.WeakSet(self._max_exhausted)
         c._min_exhausted = weakref.WeakSet(self._min_exhausted)
 
-    def _ana_getstate(self):
-        return (
-            self._models,
-            self._exhausted,
-            tuple(self._eval_exhausted),
-            tuple(self._max_exhausted),
-            tuple(self._min_exhausted),
-            super(ModelCacheMixin, self)._ana_getstate()
-        )
-
-    def _ana_setstate(self, s):
-        (
-            self._models,
-            self._exhausted,
-            _eval_exhausted,
-            _max_exhausted,
-            _min_exhausted,
-            base_state
-        ) = s
-        super(ModelCacheMixin, self)._ana_setstate(base_state)
-        self._eval_exhausted = weakref.WeakSet(_eval_exhausted)
-        self._max_exhausted = weakref.WeakSet(_max_exhausted)
-        self._min_exhausted = weakref.WeakSet(_min_exhausted)
+    def __setstate__(self, base_state):
+        super().__setstate__(base_state)
+        self._models = set()
+        self._exhausted = False
+        self._eval_exhausted = weakref.WeakSet()
+        self._max_exhausted = weakref.WeakSet()
+        self._min_exhausted = weakref.WeakSet()
 
     #
     # Model cleaning

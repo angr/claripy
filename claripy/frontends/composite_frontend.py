@@ -6,13 +6,15 @@ import itertools
 symbolic_count = itertools.count()
 
 from .constrained_frontend import ConstrainedFrontend
+from claripy.ast.strings import String
 
 class CompositeFrontend(ConstrainedFrontend):
-    def __init__(self, template_frontend, track=False, **kwargs):
+    def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
         self._owned_solvers = weakref.WeakKeyDictionary()
         self._template_frontend = template_frontend
+        self._template_frontend_string = template_frontend_string
         self._unsat = False
         self._track = track
 
@@ -21,6 +23,8 @@ class CompositeFrontend(ConstrainedFrontend):
         c._owned_solvers = weakref.WeakKeyDictionary()
         c._solvers = { }
         c._template_frontend = self._template_frontend
+        if hasattr(self, '_template_frontend_string'):
+            c._template_frontend_string = self._template_frontend_string
         c._unsat = False
         c._track = self._track
 
@@ -38,13 +42,13 @@ class CompositeFrontend(ConstrainedFrontend):
     # Serialization stuff
     #
 
-    def _ana_getstate(self):
-        return self._solvers, self._template_frontend, self._unsat, self._track, super(CompositeFrontend, self)._ana_getstate()
+    def __getstate__(self):
+        return self._solvers, self._template_frontend, self._unsat, self._track, super().__getstate__()
 
-    def _ana_setstate(self, s):
+    def __setstate__(self, s):
         self._solvers, self._template_frontend, self._unsat, self._track, base_state = s
         self._owned_solvers = weakref.WeakKeyDictionary({s:True for s in self._solver_list})
-        super(CompositeFrontend, self)._ana_setstate(base_state)
+        super().__setstate__(base_state)
 
     def downsize(self):
         for e in self._solver_list:
@@ -101,13 +105,13 @@ class CompositeFrontend(ConstrainedFrontend):
         if v is not None and isinstance(v, Base):
             names.update(v.variables)
         if lst is not None:
-            for e in lst:
-                if isinstance(e, Base):
-                    names.update(e.variables)
+            for ee in lst:
+                if isinstance(ee, Base):
+                    names.update(ee.variables)
         if lst2 is not None:
-            for e in lst2:
-                if isinstance(e, Base):
-                    names.update(e.variables)
+            for ee in lst2:
+                if isinstance(ee, Base):
+                    names.update(ee.variables)
         return names
 
     def _merged_solver_for(self, *args, **kwargs):
@@ -117,8 +121,12 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("composite_solver._merged_solver_for() running with %d names", len(names))
         solvers = self._solvers_for_variables(names)
         if len(solvers) == 0:
-            l.debug("... creating new solver")
-            return self._template_frontend.blank_copy()
+            if any(var for var in names if var.startswith(String.STRING_TYPE_IDENTIFIER)):
+                l.debug("... creating new solver for strings")
+                return self._template_frontend_string.blank_copy()
+            else:
+                l.debug("... creating new solver")
+                return self._template_frontend.blank_copy()
         elif len(solvers) == 1:
             l.debug("... got one solver")
             return solvers[0]
@@ -131,9 +139,9 @@ class CompositeFrontend(ConstrainedFrontend):
         Returns a sequence of the solvers that self and others share.
         """
 
-        solvers_by_id = { s.uuid: s for s in self._solver_list }
+        solvers_by_id = { id(s): s for s in self._solver_list }
         common_solvers = set(solvers_by_id.keys())
-        other_sets = [ { s.uuid for s in cs._solver_list } for cs in others ]
+        other_sets = [ { id(s) for s in cs._solver_list } for cs in others ]
         for o in other_sets: common_solvers &= o
 
         return [ solvers_by_id[s] for s in common_solvers ]
@@ -173,12 +181,12 @@ class CompositeFrontend(ConstrainedFrontend):
             old_solvers = self._solvers_for_variables(s.variables)
             if len(new_solvers) == len(old_solvers):
                 done = set()
-                for s in s.split():
-                    if s in done:
+                for ss in s.split():
+                    if ss in done:
                         continue
-                    done.add(s)
-                    v = min(iter(s.variables))
-                    self._solvers[v].update(s)
+                    done.add(ss)
+                    v = min(iter(ss.variables))
+                    self._solvers[v].update(ss)
             else:
                 for ns in new_solvers:
                     self._owned_solvers[ns] = True
@@ -257,6 +265,34 @@ class CompositeFrontend(ConstrainedFrontend):
     def _ensure_sat(self, extra_constraints):
         if self._unsat or (len(extra_constraints) == 0 and not self.satisfiable()):
             raise UnsatError("CompositeSolver is already unsat")
+
+    def check_satisfiability(self, extra_constraints=(), exact=None):
+        if self._unsat:
+            return 'UNSAT'
+
+        l.debug("%r checking satisfiability...", self)
+
+        if len(extra_constraints) != 0:
+            extra_solver = self._merged_solver_for(lst=extra_constraints)
+            extra_solver_satness = extra_solver.check_satisfiability(extra_constraints=extra_constraints, exact=exact)
+            if extra_solver_satness in {'UNSAT', 'UNKNOWN'}:
+                return extra_solver_satness
+
+            satnesses = [
+                s.check_satisfiability(exact=exact) for s in
+                self._solver_list if s.variables.isdisjoint(extra_solver.variables)
+            ]
+            self._reabsorb_solver(extra_solver)
+            for satness in satnesses:
+                if satness in {'UNSAT', 'UNKNOWN'}:
+                    return satness
+            return 'SAT'
+        else:
+            for s in self._solver_list:
+                satness = s.check_satisfiability()
+                if satness in {'UNSAT', 'UNKNOWN'}:
+                    return satness
+            return 'SAT'
 
     def satisfiable(self, extra_constraints=(), exact=None):
         if self._unsat: return False
@@ -401,7 +437,7 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("Merging %s with %d other solvers.", self, len(others))
         merged = self.blank_copy()
         common_solvers = self._shared_solvers(others)
-        common_ids = { s.uuid for s in common_solvers }
+        common_ids = { id(s) for s in common_solvers }
         l.debug("... %s common solvers", len(common_solvers))
 
         for s in common_solvers:
@@ -412,7 +448,7 @@ class CompositeFrontend(ConstrainedFrontend):
             for v in s.variables:
                 merged._solvers[v] = s
 
-        noncommon_solvers = [ [ s for s in cs._solver_list if s.uuid not in common_ids ] for cs in [self]+others ]
+        noncommon_solvers = [ [ s for s in cs._solver_list if id(s) not in common_ids ] for cs in [self]+others ]
 
         l.debug("... merging noncommon solvers")
         combined_noncommons = [ ]

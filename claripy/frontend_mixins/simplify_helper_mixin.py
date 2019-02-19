@@ -1,4 +1,4 @@
-class SimplifyHelperMixin(object):
+class SimplifyHelperMixin:
     def max(self, *args, **kwargs):
         self.simplify()
         return super(SimplifyHelperMixin, self).max(*args, **kwargs)
