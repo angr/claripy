@@ -57,6 +57,18 @@ class String(Bits):
     def _from_BV(like, value):
         return value
 
+
+    def strReplace(self, str_to_replace, replacement):
+        """
+        Replace the first occurence of str_to_replace with replacement
+
+        :param str_to_replace: pattern that has to be replaced
+        :type: String
+        :param replacement: replacement pattern
+        :type : String
+        """
+        return StrReplace(self, str_to_replace, replacement)
+
     def toInt(self, bitlength):
         """
         Convert the string to a bitvector holding the integer
