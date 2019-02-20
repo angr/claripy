@@ -59,6 +59,22 @@ def test_rotate_shift_mask_simplification():
     nose.tools.assert_equal(model_vsa.cardinality, 12)
 
 
+def test_reverse_extract_reverse_simplification():
+
+    # without the reverse_extract_reverse simplifier, loading dx from rdx will result in the following complicated
+    # expression:
+    #   Reverse(Extract(63, 48, Reverse(BVS('rdx', 64))))
+
+    a = claripy.BVS('rdx', 64)
+    dx = claripy.Reverse(claripy.Extract(63, 48, claripy.Reverse(a)))
+
+    # simplification should have kicked in at this moment
+    nose.tools.assert_equal(dx.op, 'Extract')
+    nose.tools.assert_equal(dx.args[0], 15)
+    nose.tools.assert_equal(dx.args[1], 0)
+    nose.tools.assert_is(dx.args[2], a)
+
+
 def perf_boolean_and_simplification_0():
     # Create a gigantic And AST with many operands, one variable at a time
     bool_vars = [ claripy.BoolS("b%d" % i) for i in range(1500) ]
@@ -92,3 +108,4 @@ if __name__ == '__main__':
     test_simplification()
     test_bool_simplification()
     test_rotate_shift_mask_simplification()
+    test_reverse_extract_reverse_simplification()
