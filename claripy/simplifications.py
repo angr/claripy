@@ -8,7 +8,7 @@ from functools import reduce
 class SimplificationManager:
     def __init__(self):
         self._simplifiers = {
-            'Reverse': self.boolean_reverse_simplifier,
+            'Reverse': self.bv_reverse_simplifier,
             'And': self.boolean_and_simplifier,
             'Or': self.boolean_or_simplifier,
             'Not': self.boolean_not_simplifier,
@@ -258,11 +258,13 @@ class SimplificationManager:
                     return ast.all_operations.true
 
     @staticmethod
-    def boolean_reverse_simplifier(body):
+    def bv_reverse_simplifier(body):
         if body.op == 'Reverse':
+            # Reverse(Reverse(x)) ==> x
             return body.args[0]
 
         if body.length == 8:
+            # Reverse(byte) ==> byte
             return body
 
         if body.op == 'Concat':
@@ -286,6 +288,17 @@ class SimplificationManager:
             if all(a.op == 'Reverse' for a in body.args):
                 if all(a.length % 8 == 0 for a in body.args):
                     return body.make_like(body.op,reversed([a.args[0] for a in body.args]))
+
+        if body.op == 'Extract' and body.args[2].op == 'Reverse':
+            # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
+            # Holds only when (hi+1) and lo are multiples of 8 (or, multiples of bits_per_byte if we really want to
+            # suppport cLEMENCy)
+            hi, lo = body.args[0:2]
+            if (hi + 1) % 8 == 0 and lo % 8 == 0:
+                x = body.args[2].args[0]
+                new_hi = x.size() - lo - 1
+                new_lo = x.size() - hi - 1
+                return body.make_like(body.op, (new_hi, new_lo, x))
 
     @staticmethod
     def boolean_and_simplifier(*args):
