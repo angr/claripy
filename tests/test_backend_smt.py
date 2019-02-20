@@ -390,7 +390,7 @@ class TestSMTLibBackend(unittest.TestCase):
         # with open("dump_suffix.smt2", "w") as dump_f:
         #     dump_f.write(script)
         self.assertEqual(correct_script, script)
-    
+
     def test_str_to_int(self):
         correct_script = '''(set-logic ALL)
 (declare-fun {0}symb_strtoint () String)
