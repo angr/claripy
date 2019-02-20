@@ -282,12 +282,12 @@ class SimplificationManager:
                     else:
                         return first_ast[upper_bound:0]
             if all(a.length == 8 for a in body.args):
-                return body.make_like(body.op, body.args[::-1])
+                return body.make_like(body.op, body.args[::-1], simplify=True)
 
         if body.op == 'Concat':
             if all(a.op == 'Reverse' for a in body.args):
                 if all(a.length % 8 == 0 for a in body.args):
-                    return body.make_like(body.op,reversed([a.args[0] for a in body.args]))
+                    return body.make_like(body.op, reversed([a.args[0] for a in body.args]), simplify=True)
 
         if body.op == 'Extract' and body.args[2].op == 'Reverse':
             # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
@@ -298,7 +298,7 @@ class SimplificationManager:
                 x = body.args[2].args[0]
                 new_hi = x.size() - lo - 1
                 new_lo = x.size() - hi - 1
-                return body.make_like(body.op, (new_hi, new_lo, x))
+                return body.make_like(body.op, (new_hi, new_lo, x), simplify=True)
 
     @staticmethod
     def boolean_and_simplifier(*args):
@@ -419,7 +419,8 @@ class SimplificationManager:
         if not new_args and 'initial_value' in kwargs:
             return kwargs['initial_value']
         return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args,
-                                                                          variables=variables)
+                                                                          variables=variables,
+                                                                          simplify=False)
 
     @staticmethod
     def bitwise_add_simplifier(a, b):
@@ -607,6 +608,10 @@ class SimplificationManager:
         if n == 0:
             return e
 
+        if e.op == 'ZeroExt':
+            # ZeroExt(A, ZeroExt(B, x)) ==> ZeroExt(A + B, x)
+            return e.make_like(e.op, (n + e.args[0], e.args[1]), length=n + e.size(), simplify=True)
+
     @staticmethod
     def signext_simplifier(n, e):
         if n == 0:
@@ -684,6 +689,7 @@ class SimplificationManager:
         if val.op == 'Reverse' and val.args[0].op == 'Concat' and all(a.length % 8 == 0 for a in val.args[0].args):
             val = val.make_like('Concat',
                                 tuple(reversed([a.reversed for a in val.args[0].args])),
+                                simplify=True,
             )[high:low]
             if not val.symbolic:
                 return val
