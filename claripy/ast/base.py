@@ -303,12 +303,27 @@ class Base:
     #            yield backend.convert(a)
 
     def make_like(self, *args, **kwargs):
+        op, expr_args = args
+        if kwargs.pop("simplify", False) is True:
+            # Try to simplify the expression again
+            simplified = simplifications.simpleton.simplify(op, expr_args)
+        else:
+            simplified = None
+        if simplified is not None:
+            op = simplified.op
+
         all_operations = operations.leaf_operations_symbolic | {'union'}
         if 'annotations' not in kwargs: kwargs['annotations'] = self.annotations
-        if 'variables' not in kwargs and self.op in all_operations: kwargs['variables'] = self.variables
+        if 'variables' not in kwargs and op in all_operations: kwargs['variables'] = self.variables
         if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
-        if 'symbolic' not in kwargs and self.op in all_operations: kwargs['symbolic'] = self.symbolic
-        return type(self)(*args, **kwargs)
+        if 'symbolic' not in kwargs and op in all_operations: kwargs['symbolic'] = self.symbolic
+        if simplified is None:
+            # Cannot simplify the expression anymore
+            return type(self)(*args, **kwargs)
+        else:
+            # The expression is simplified
+            r = type(self)(*(op, simplified.args), **kwargs)
+            return r
 
     def _rename(self, new_name):
         if self.op not in { 'BVS', 'BoolS', 'FPS' }:
@@ -1024,3 +1039,4 @@ from .. import operations
 from ..backend_manager import backends
 from ..ast.bool import If, Not, BoolS
 from ..ast.bv import BV
+from .. import simplifications
