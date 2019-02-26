@@ -1047,11 +1047,11 @@ class BackendZ3(Backend):
 
     @condom
     def _op_raw_fpToSBV(self, rm, fp, bv_len):
-        return z3.BitVecRef(z3.Z3_mk_fpa_to_sbv(self._context.ref(), rm.ast, fp.ast, bv_len.size()), self._context)
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_sbv(self._context.ref(), rm.ast, fp.ast, bv_len), self._context)
 
     @condom
     def _op_raw_fpToUBV(self, rm, fp, bv_len):
-        return z3.BitVecRef(z3.Z3_mk_fpa_to_ubv(self._context.ref(), rm.ast, fp.ast, bv_len.size()), self._context)
+        return z3.BitVecRef(z3.Z3_mk_fpa_to_ubv(self._context.ref(), rm.ast, fp.ast, bv_len), self._context)
 
     @condom
     def _op_raw_fpToFP(self, a1, a2=None, a3=None):
