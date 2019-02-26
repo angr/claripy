@@ -90,7 +90,9 @@ class BackendConcrete(Backend):
             return a == b
 
     def _convert(self, a):
-        if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV, str, bytes)):
+        if type(a) in {int, str, bytes}:
+            return a
+        if isinstance(a, (numbers.Number, bv.BVV, fp.FPV, fp.RM, fp.FSort, strings.StringV)):
             return a
         raise BackendError("can't handle AST of type %s" % type(a))
 
