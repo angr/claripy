@@ -64,6 +64,21 @@ class BackendConcrete(Backend):
     def _op_and(*args):
         return reduce(operator.__and__, args)
 
+    def convert(self, expr):
+        """
+        Override Backend.convert() to add fast paths for BVVs and BoolVs.
+        """
+        if type(expr) is BV:
+            if expr.op == "BVV":
+                cached_obj = self._object_cache.get(expr._cache_key, None)
+                if cached_obj is None:
+                    cached_obj = self.BVV(*expr.args)
+                    self._object_cache[expr._cache_key] = cached_obj
+                return cached_obj
+        if type(expr) is Bool and expr.op == "BoolV":
+            return expr.args[0]
+        return super().convert(expr)
+
     def _If(self, b, t, f): #pylint:disable=no-self-use,unused-argument
         if not isinstance(b, bool):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
@@ -185,8 +200,8 @@ class BackendConcrete(Backend):
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from .. import bv, fp, strings
 from ..ast import Base
-from ..ast.bv import BVV
+from ..ast.bv import BV, BVV
 from ..ast.strings import StringV
 from ..ast.fp import FPV
-from ..ast.bool import BoolV
+from ..ast.bool import Bool, BoolV
 from ..errors import UnsatError
