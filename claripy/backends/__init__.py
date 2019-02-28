@@ -47,6 +47,7 @@ class Backend:
     _convert() to see if the backend can handle that type of object.
     """
 
+    __slots__ = ('_op_raw', '_op_expr', '_cache_objects', '_solver_required', '_tls', '_true_cache', '_false_cache', )
 
     def __init__(self, solver_required=None):
         self._op_raw = { }
@@ -144,17 +145,18 @@ class Backend:
         :param save:    Save the result in the expression's object cache
         :return:        A backend object.
         """
-        ast_queue = [iter([expr])]
+        ast_queue = [[expr]]
         arg_queue = []
         op_queue = []
 
         try:
             while ast_queue:
-                try:
-                    args_iter = ast_queue[-1]
-                    ast = next(args_iter)
+                args_list = ast_queue[-1]
 
-                    if not isinstance(ast, Base):
+                if args_list:
+                    ast = args_list.pop(0)
+
+                    if type(ast) in {bool, int, str, float} or not isinstance(ast, Base):
                         converted = self._convert(ast)
                         arg_queue.append(converted)
                         continue
@@ -164,27 +166,26 @@ class Backend:
                                            "conversion on a child node" % (self, ast.op, ast.__class__.__name__))
 
                     if self._cache_objects:
-                        if ast._cache_key in self._object_cache:
-                            cached_obj = self._object_cache[ast._cache_key]
+                        cached_obj = self._object_cache.get(ast._cache_key, None)
+                        if cached_obj is not None:
                             arg_queue.append(cached_obj)
                             continue
 
+                    op_queue.append(ast)
                     if ast.op in self._op_expr:
-                        op_queue.append(ast)
-                        ast_queue.append(iter([]))
-
+                        ast_queue.append(None)
                     else:
-                        op_queue.append(ast)
-                        ast_queue.append(iter(ast.args))
+                        ast_queue.append(list(ast.args))
 
-                except StopIteration:
+                else:
                     ast_queue.pop()
 
                     if op_queue:
                         ast = op_queue.pop()
 
-                        if ast.op in self._op_expr:
-                            r = self._op_expr[ast.op](ast)
+                        op = self._op_expr.get(ast.op, None)
+                        if op is not None:
+                            r = op(ast)
 
                         else:
                             args = arg_queue[-len(ast.args):]
@@ -213,9 +214,10 @@ class Backend:
                 expr._errored.add(self)
             raise
 
-        assert len(op_queue) == 0, "op_queue is not empty"
-        assert len(ast_queue) == 0, "ast_queue is not empty"
-        assert len(arg_queue) == 1, ("arg_queue has unexpected length", len(arg_queue))
+        # Note: Uncomment the following assertions if you are touching the above implementation
+        # assert len(op_queue) == 0, "op_queue is not empty"
+        # assert len(ast_queue) == 0, "ast_queue is not empty"
+        # assert len(arg_queue) == 1, ("arg_queue has unexpected length", len(arg_queue))
 
         return arg_queue.pop()
 
