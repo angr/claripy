@@ -47,6 +47,7 @@ class Backend:
     _convert() to see if the backend can handle that type of object.
     """
 
+    __slots__ = ('_op_raw', '_op_expr', '_cache_objects', '_solver_required', '_tls', '_true_cache', '_false_cache', )
 
     def __init__(self, solver_required=None):
         self._op_raw = { }

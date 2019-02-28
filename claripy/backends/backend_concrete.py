@@ -9,6 +9,9 @@ from . import BackendError, Backend
 
 
 class BackendConcrete(Backend):
+
+    __slots__ = tuple()
+
     def __init__(self):
         Backend.__init__(self)
         self._make_raw_ops(set(backend_operations) - { 'If' }, op_module=bv)
