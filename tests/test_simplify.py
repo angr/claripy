@@ -75,6 +75,19 @@ def test_reverse_extract_reverse_simplification():
     nose.tools.assert_is(dx.args[2], a)
 
 
+def test_reverse_concat_reverse_simplification():
+
+    # Reverse(Concat(Reverse(a), Reverse(b))) = Concat(b, a)
+
+    a = claripy.BVS('a', 32)
+    b = claripy.BVS('b', 32)
+    x = claripy.Reverse(claripy.Concat(claripy.Reverse(a), claripy.Reverse(b)))
+
+    nose.tools.assert_equal(x.op, 'Concat')
+    nose.tools.assert_is(x.args[0], b)
+    nose.tools.assert_is(x.args[1], a)
+
+
 def perf_boolean_and_simplification_0():
     # Create a gigantic And AST with many operands, one variable at a time
     bool_vars = [ claripy.BoolS("b%d" % i) for i in range(1500) ]
@@ -109,3 +122,4 @@ if __name__ == '__main__':
     test_bool_simplification()
     test_rotate_shift_mask_simplification()
     test_reverse_extract_reverse_simplification()
+    test_reverse_concat_reverse_simplification()

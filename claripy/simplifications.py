@@ -287,7 +287,7 @@ class SimplificationManager:
         if body.op == 'Concat':
             if all(a.op == 'Reverse' for a in body.args):
                 if all(a.length % 8 == 0 for a in body.args):
-                    return body.make_like(body.op, reversed([a.args[0] for a in body.args]), simplify=True)
+                    return body.make_like(body.op, [a.args[0] for a in reversed(body.args)], simplify=True)
 
         if body.op == 'Extract' and body.args[2].op == 'Reverse':
             # Reverse(Extract(hi, lo, Reverse(x))) ==> Extract(bits-lo-1, bits-hi-1, x)
