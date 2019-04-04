@@ -273,7 +273,10 @@ class BackendZ3(Backend):
     @condom
     def BVS(self, ast):
         name = ast._encoded_name
-        self.extra_bvs_data[name] = ast.args
+        if hasattr(ast, 'annotations'):
+            self.extra_bvs_data[name] = (ast.args, ast.annotations)
+        else:
+            self.extra_bvs_data[name] = (ast.args, None)
         size = ast.size()
         # TODO: Here we can use low level APIs because the check performed by the high level API always results in
         #       the else branch of the check. This evidence although comes from the execution of the angr and claripy
@@ -450,7 +453,7 @@ class BackendZ3(Backend):
 
             if symbol_ty == z3.Z3_BV_SORT:
                 bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
-                ast_args = self.extra_bvs_data.get(symbol_name, None)
+                (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None, None))
                 if ast_args is None:
                     ast_args = (symbol_str, None, None, None, False, False, None)
 
@@ -459,7 +462,8 @@ class BackendZ3(Backend):
                         length=bv_size,
                         variables={ symbol_str },
                         symbolic=True,
-                        encoded_name=symbol_name)
+                        encoded_name=symbol_name,
+                        annotations=annots)
             elif symbol_ty == z3.Z3_BOOL_SORT:
                 return Bool('BoolS',
                         (symbol_str,),
