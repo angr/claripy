@@ -358,15 +358,15 @@ class BackendZ3(Backend):
         if isinstance(obj, FSort):
             return z3.FPSortRef(z3.Z3_mk_fpa_sort(self._context.ref(), obj.exp, obj.mantissa), self._context)
         elif isinstance(obj, RM):
-            if obj == RM_RNE:
+            if obj == RM.RM_NearestTiesEven:
                 return z3.FPRMRef(z3.Z3_mk_fpa_round_nearest_ties_to_even(self._context.ref()), self._context)
-            elif obj == RM_RNA:
+            elif obj == RM.RM_NearestTiesAwayFromZero:
                 return z3.FPRMRef(z3.Z3_mk_fpa_round_nearest_ties_to_away(self._context.ref()), self._context)
-            elif obj == RM_RTP:
+            elif obj == RM.RM_TowardsPositiveInf:
                 return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_positive(self._context.ref()), self._context)
-            elif obj == RM_RTN:
+            elif obj == RM.RM_TowardsNegativeInf:
                 return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_negative(self._context.ref()), self._context)
-            elif obj == RM_RTZ:
+            elif obj == RM.RM_TowardsZero:
                 return z3.FPRMRef(z3.Z3_mk_fpa_round_toward_zero(self._context.ref()), self._context)
             else:
                 raise BackendError("unrecognized rounding mode")
@@ -431,7 +431,7 @@ class BackendZ3(Backend):
         elif op_name == 'False':
             return BoolV(False)
         elif op_name.startswith('RM_'):
-            return RM.from_name(op_name)
+            return RM(op_name)
         elif op_name == 'BitVecVal':
             bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
             if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
@@ -1354,7 +1354,7 @@ from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..ast.strings import StringV, StringS
 from ..operations import backend_operations, backend_fp_operations
-from ..fp import FSort, RM, RM_RNE, RM_RNA, RM_RTP, RM_RTN, RM_RTZ
+from ..fp import FSort, RM, RM_NearestTiesEven, RM_NearestTiesAwayFromZero, RM_TowardsPositiveInf, RM_TowardsNegativeInf, RM_TowardsZero
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
 

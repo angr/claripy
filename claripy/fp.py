@@ -1,5 +1,9 @@
+import decimal
 import functools
+import math
 import struct
+from decimal import Decimal
+from enum import Enum
 
 from .errors import ClaripyOperationError
 from .backend_object import BackendObject
@@ -26,26 +30,35 @@ def normalize_types(f):
 
     return normalize_helper
 
-class RM(str):
+
+class RM(Enum):
+    # see https://en.wikipedia.org/wiki/IEEE_754#Rounding_rules
+    RM_NearestTiesEven = 'RM_RNE'
+    RM_NearestTiesAwayFromZero = 'RM_RNA'
+    RM_TowardsZero = 'RM_RTZ'
+    RM_TowardsPositiveInf = 'RM_RTP'
+    RM_TowardsNegativeInf = 'RM_RTN'
+
     @staticmethod
     def default():
-        return RM_RNE
+        return RM.RM_NearestTiesEven
 
-    @staticmethod
-    def from_name(name):
+    def pydecimal_equivalent_rounding_mode(self):
         return {
-            'RM_RNE': RM_RNE,
-            'RM_RNA': RM_RNA,
-            'RM_RTP': RM_RTP,
-            'RM_RTN': RM_RTN,
-            'RM_RTZ': RM_RTZ,
-        }[name]
+            RM.RM_TowardsPositiveInf:      decimal.ROUND_CEILING,
+            RM.RM_TowardsNegativeInf:      decimal.ROUND_FLOOR,
+            RM.RM_TowardsZero:             decimal.ROUND_DOWN,
+            RM.RM_NearestTiesEven:         decimal.ROUND_HALF_EVEN,
+            RM.RM_NearestTiesAwayFromZero: decimal.ROUND_UP,
+        }[self]
 
-RM_RNE = RM('RNE')
-RM_RNA = RM('RNA')
-RM_RTP = RM('RTP')
-RM_RTN = RM('RTN')
-RM_RTZ = RM('RTZ')
+
+RM_NearestTiesEven          = RM.RM_NearestTiesEven
+RM_NearestTiesAwayFromZero  = RM.RM_NearestTiesAwayFromZero
+RM_TowardsZero              = RM.RM_TowardsZero
+RM_TowardsPositiveInf       = RM.RM_TowardsPositiveInf
+RM_TowardsNegativeInf       = RM.RM_TowardsNegativeInf
+
 
 class FSort:
     def __init__(self, name, exp, mantissa):
@@ -294,24 +307,27 @@ def fpFP(sgn, exp, mantissa):
 
 def fpToSBV(rm, fp, size):
     try:
-        if rm == RM_RTZ:
-            return BVV(int(fp.value), size)
-        elif rm == RM_RNE:
-            return BVV(int(round(fp.value)), size)
-        else:
-            raise ClaripyOperationError("todo")
+        rounding_mode = rm.pydecimal_equivalent_rounding_mode()
+        val = int(Decimal(fp.value).to_integral_value(rounding_mode))
+        return BVV(val, size)
+
     except (ValueError, OverflowError):
         return BVV(0, size)
+    except Exception as ex:
+        import ipdb; ipdb.set_trace()
+        print("Unhandled error during floating point rounding! {}".format(ex))
+        raise
 
 def fpToUBV(rm, fp, size):
     # todo: actually make unsigned
     try:
-        if rm == RM_RTZ:
-            return BVV(int(fp.value), size)
-        elif rm == RM_RNE:
-            return BVV(int(round(fp.value)), size)
-        else:
-            raise ClaripyOperationError("todo")
+        rounding_mode = rm.pydecimal_equivalent_rounding_mode()
+        val = int(Decimal(fp).to_integral_value(rounding_mode))
+        assert val & ((1 << size) - 1) == val, "Rounding produced values outside the BV range! rounding {} with rounding mode {} produced {}".format
+        if val < 0:
+            val = (1 << size) + val
+        return BVV(val, size)
+
     except (ValueError, OverflowError):
         return BVV(0, size)
 
