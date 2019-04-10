@@ -89,8 +89,10 @@ class BV(Bits):
         :param size: the number of bytes to extract
         :return: A BV of size ``size * 8``
         """
-        pos = self.size() // 8 - 1 - index
-        return self[pos * 8 + 7 : (pos - size + 1) * 8]
+        assert size > 0
+        hi = (index + size) * 8 - 1
+        lo = index * 8
+        return self[hi:lo]
 
     def zero_extend(self, n):
         """
