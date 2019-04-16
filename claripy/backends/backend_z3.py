@@ -611,6 +611,8 @@ class BackendZ3(Backend):
             s = self._tls.solver
             s.reset()
 
+        # for some reason we always reset the solver anyway, so always clear it. REUSE_SOLVER is fundamentally broken
+        self._hash_to_constraint.clear()
 
         # Configure timeouts
         if timeout is not None:
