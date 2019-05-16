@@ -5,7 +5,6 @@ import logging
 import math
 import numbers
 from functools import reduce
-from past.builtins import xrange
 
 logger = logging.getLogger('claripy.vsa.strided_interval')
 
@@ -2223,7 +2222,7 @@ class StridedInterval(BackendObject):
 
         ret = None
 
-        for amount in xrange(lower, upper + 1):
+        for amount in range(lower, upper + 1):
             si_ = self._rshift_logical(amount)
 
             ret = si_ if ret is None else ret.union(si_)
@@ -2247,7 +2246,7 @@ class StridedInterval(BackendObject):
 
         ret = None
 
-        for amount in xrange(lower, upper + 1):
+        for amount in range(lower, upper + 1):
             si_ = self._rshift_logical(amount)
 
             ret = si_ if ret is None else ret.union(si_)
@@ -2272,7 +2271,7 @@ class StridedInterval(BackendObject):
 
         ret = None
 
-        for amount in xrange(lower, upper + 1):
+        for amount in range(lower, upper + 1):
             si_ = self._rshift_arithmetic(amount)
 
             ret = si_ if ret is None else ret.union(si_)
@@ -2290,7 +2289,7 @@ class StridedInterval(BackendObject):
 
         new_lower_bound = None
         new_upper_bound = None
-        for shift_amount in xrange(lower, upper + 1):
+        for shift_amount in range(lower, upper + 1):
             l = self.lower_bound << shift_amount
             if new_lower_bound is None or l < new_lower_bound:
                 new_lower_bound = l
@@ -2706,7 +2705,7 @@ class StridedInterval(BackendObject):
 
         # we try all possible joins (linear with the number of SI to join)
         # and we return the one with the least number of values.
-        for i in xrange(len(sorted_intervals)):
+        for i in range(len(sorted_intervals)):
             # let's join all of them
             si = reduce(lambda x, y: StridedInterval.pseudo_join(x, y, False), sorted_intervals[i:] + sorted_intervals[0:i])
 
@@ -3395,7 +3394,7 @@ class StridedInterval(BackendObject):
             list_bytes = [ ]
             si = None
 
-            for i in xrange(0, rounded_bits, 8):
+            for i in range(0, rounded_bits, 8):
                 b = o._unrev_extract(min(i + 7, o.bits - 1), i)
                 list_bytes.append(b)
 
@@ -3440,7 +3439,7 @@ class StridedInterval(BackendObject):
             lb_r = []
             ub_r = []
 
-            for i in xrange(0, rounded_bits, 8):
+            for i in range(0, rounded_bits, 8):
                 if i != 0:
                     lb = lb >> 8
                     ub = ub >> 8
