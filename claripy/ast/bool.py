@@ -181,7 +181,7 @@ def constraint_to_si(expr):
     satisfiable, replace_list = backends.vsa.constraint_to_si(expr)
 
     # Make sure the replace_list are all ast.bvs
-    for i in range(len(replace_list)):
+    for i in range(len(replace_list)):  #pylint:disable=consider-using-enumerate
         ori, new = replace_list[i]
         if not isinstance(new, Base):
             new = BVS(new.name, new._bits, min=new._lower_bound, max=new._upper_bound, stride=new._stride, explicit_name=True)
