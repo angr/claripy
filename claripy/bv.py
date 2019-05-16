@@ -281,18 +281,59 @@ class BVV(BackendObject):
 #
 
 def BitVecVal(value, bits):
+    """
+    Creates a bitvector value (i.e., a concrete value).
+
+    :param value:   The value. Either an integer or a string. If it's a string,
+                    it will be interpreted as the bytes of a big-endian
+                    constant.
+    :param size:    The size (in bits) of the bitvector. Optional if you
+                    provide a string, required for an integer.
+
+    :returns:       A BV object representing this value.
+    """
     return BVV(value, bits)
 
 def ZeroExt(num, o):
+    """
+    Zero-extends the bitvector `o` by `num` bits. So:
+
+        a = BVV(0b1111, 4)
+        b = ZeroExt(4, a)
+        b is BVV(0b00001111, 8)
+    """
     return BVV(o.value, o.bits + num)
 
 def SignExt(num, o):
+    """
+    Sign-extends the bitvector `o` by `num` bits. So:
+
+        a = BVV(0b1111, 4)
+        b = SignExt(4, a)
+        b is BVV(0b11111111, 8)
+    """
     return BVV(o.signed, o.bits + num)
 
 def Extract(f, t, o):
+    """
+    Extracts the bits from `f` to `t` of the bitvector `o`.
+    `f` and `t` are zero-indexed from the right, inclusive. So:
+
+        a = BVV(0b00001111, 8)
+        b = Extract(5, 2, a)
+        b is BVV(0b0011, 4)
+    """
     return BVV((o.value >> t) & (2**(f+1) - 1), f-t+1)
 
 def Concat(*args):
+    """
+    Concatenates the provided bitvectors. So:
+
+        a = BVV(0b0001, 4)
+        b = BVV(0b0010, 4)
+        c = Concat(a, b)
+        c is BVV(0b00010010, 8)
+    """
     total_bits = 0
     total_value = 0
 
@@ -302,14 +343,35 @@ def Concat(*args):
     return BVV(total_value, total_bits)
 
 def RotateRight(self, bits):
+    """
+    Rotates right the bitvector by `bits` bits. So:
+
+        a = BVV(0b00001111, 8)
+        b = RotateRight(a, 2)
+        b is BVV(0b11000011, 8)
+    """
     bits_smaller = bits % self.size()
     return LShR(self, bits_smaller) | (self << (self.size()-bits_smaller))
 
 def RotateLeft(self, bits):
+    """
+    Rotates left the bitvector by `bits` bits. So:
+
+        a = BVV(0b00001111, 8)
+        b = RotateLeft(a, 2)
+        b is BVV(0b00111100, 8)
+    """
     bits_smaller = bits % self.size()
     return (self << bits_smaller) | (LShR(self, (self.size()-bits_smaller)))
 
 def Reverse(a):
+    """
+    Endian-reverses the bitvector `a`. So:
+
+        a = BVV('abcd')
+        b = Reverse(a)
+        b is BVV('dcba')
+    """
     size = a.size()
     if size == 8:
         return a
@@ -355,41 +417,65 @@ def _reverse_64(v):
 @normalize_types
 @compare_bits
 def ULT(self, o):
+    """
+    Checks if `self` is unsigned less than `o`.
+    """
     return self.value < o.value
 
 @normalize_types
 @compare_bits
 def UGT(self, o):
+    """
+    Checks if `self` is unsigned greater than `o`.
+    """
     return self.value > o.value
 
 @normalize_types
 @compare_bits
 def ULE(self, o):
+    """
+    Checks if `self` is unsigned less than or equal to `o`.
+    """
     return self.value <= o.value
 
 @normalize_types
 @compare_bits
 def UGE(self, o):
+    """
+    Checks if `self` is unsigned greater than or equal to `o`.
+    """
     return self.value >= o.value
 
 @normalize_types
 @compare_bits
 def SLT(self, o):
+    """
+    Checks if `self` is signed less than `o`.
+    """
     return self.signed < o.signed
 
 @normalize_types
 @compare_bits
 def SGT(self, o):
+    """
+    Checks if `self` is signed greater than `o`.
+    """
     return self.signed > o.signed
 
 @normalize_types
 @compare_bits
 def SLE(self, o):
+    """
+    Checks if `self` is less than or equal to `o`.
+    """
     return self.signed <= o.signed
 
 @normalize_types
 @compare_bits
 def SGE(self, o):
+    """
+    Checks if `self` is greater than or equal to `o`.
+    """
     return self.signed >= o.signed
 
 @normalize_types
@@ -443,4 +529,11 @@ def If(c, t, f):
 @normalize_types
 @compare_bits
 def LShR(a, b):
+    """
+    Logically shifts the bitvector `a` by `b`. So:
+
+        a = BVV(0b1111, 4)
+        b = LShR(a, 2)
+        b is BVV(0b0011, 4)
+    """
     return BVV(a.value >> b.signed, a.bits)
