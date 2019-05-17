@@ -240,6 +240,21 @@ class FPV(BackendObject):
         return 'FPV({:f}, {})'.format(self.value, self.sort)
 
 def fpToFP(a1, a2, a3=None):
+    """
+    Returns a FP AST and has three signatures:
+
+        fpToFP(ubvv, sort)
+            Returns a FP AST whose value is the same as the unsigned BVV `a1`
+            and whose sort is `a2`.
+
+        fpToFP(rm, fpv, sort)
+            Returns a FP AST whose value is the same as the floating point `a2`
+            and whose sort is `a3`.
+
+        fpToTP(rm, sbvv, sort)
+            Returns a FP AST whose value is the same as the signed BVV `a2` and
+            whose sort is `a3`.
+    """
     if isinstance(a1, BVV) and isinstance(a2, FSort):
         sort = a2
         if sort == FSORT_FLOAT:
@@ -265,10 +280,20 @@ def fpToFP(a1, a2, a3=None):
         raise ClaripyOperationError("unknown types passed to fpToFP")
 
 def fpToFPUnsigned(_rm, thing, sort):
+    """
+    Returns a FP AST whose value is the same as the unsigned BVV `thing` and
+    whose sort is `sort`.
+    """
     # thing is a BVV
     return FPV(float(thing.value), sort)
 
 def fpToIEEEBV(fpv):
+    """
+    Interprets the bit-pattern of the IEEE754 floating point number `fpv` as a
+    bitvector.
+
+    :return:    A BV AST whose bit-pattern is the same as `fpv`
+    """
     if fpv.sort == FSORT_FLOAT:
         pack, unpack = 'f', 'I'
     elif fpv.sort == FSORT_DOUBLE:
@@ -286,6 +311,13 @@ def fpToIEEEBV(fpv):
     return BVV(unpacked, fpv.sort.length)
 
 def fpFP(sgn, exp, mantissa):
+    """
+    Concatenates the bitvectors `sgn`, `exp` and `mantissa` and returns the
+    corresponding IEEE754 floating point number.
+
+    :return:    A FP AST whose bit-pattern is the same as the concatenated
+                bitvector
+    """
     concatted = Concat(sgn, exp, mantissa)
     sort = FSort.from_size(concatted.size())
 
