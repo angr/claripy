@@ -368,9 +368,23 @@ def fpLEQ(a, b):
     return a <= b
 
 def fpAbs(x):
+    """
+    Returns the absolute value of the floating point `x`. So:
+
+        a = FPV(-3.2, FSORT_DOUBLE)
+        b = fpAbs(a)
+        b is FPV(3.2, FSORT_DOUBLE)
+    """
     return abs(x)
 
 def fpNeg(x):
+    """
+    Returns the additive inverse of the floating point `x`. So:
+
+        a = FPV(3.2, FSORT_DOUBLE)
+        b = fpAbs(a)
+        b is FPV(-3.2, FSORT_DOUBLE)
+    """
     return -x
 
 def fpSub(_rm, a, b):
