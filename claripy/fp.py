@@ -332,21 +332,39 @@ def fpToUBV(rm, fp, size):
         return BVV(0, size)
 
 def fpEQ(a, b):
+    """
+    Checks if floating point `a` is equal to floating point `b`.
+    """
     return a == b
 
 def fpNE(a, b):
+    """
+    Checks if floating point `a` is not equal to floating point `b`.
+    """
     return a != b
 
 def fpGT(a, b):
+    """
+    Checks if floating point `a` is greater than floating point `b`.
+    """
     return a > b
 
 def fpGEQ(a, b):
+    """
+    Checks if floating point `a` is greater than or equal to floating point `b`.
+    """
     return a >= b
 
 def fpLT(a, b):
+    """
+    Checks if floating point `a` is less than floating point `b`.
+    """
     return a < b
 
 def fpLEQ(a, b):
+    """
+    Checks if floating point `a` is less than or equal to floating point `b`.
+    """
     return a <= b
 
 def fpAbs(x):
