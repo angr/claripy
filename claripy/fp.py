@@ -388,15 +388,27 @@ def fpNeg(x):
     return -x
 
 def fpSub(_rm, a, b):
+    """
+    Returns the subtraction of the floating point `a` by the floating point `b`.
+    """
     return a - b
 
 def fpAdd(_rm, a, b):
+    """
+    Returns the addition of two floating point numbers, `a` and `b`.
+    """
     return a + b
 
 def fpMul(_rm, a, b):
+    """
+    Returns the multiplication of two floating point numbers, `a` and `b`.
+    """
     return a * b
 
 def fpDiv(_rm, a, b):
+    """
+    Returns the division of the floating point `a` by the floating point `b`.
+    """
     return a / b
 
 from .bv import BVV, Concat
