@@ -481,6 +481,14 @@ def SGE(self, o):
 @normalize_types
 @compare_bits
 def SMod(self, o):
+    """
+    Returns the remainder from the signed division of `self` by `o`. So:
+
+        a = BVV(17, 8)
+        b = BVV(5, 8)
+        c = SMod(a, b)
+        c is BVV(2, 8)
+    """
     # compute the remainder like the % operator in C
     a = self.signed
     b = o.signed
@@ -493,6 +501,14 @@ def SMod(self, o):
 @normalize_types
 @compare_bits
 def SDiv(self, o):
+    """
+    Returns the quotient from the signed division of `self` by `o`. So:
+
+        a = BVV(17, 8)
+        b = BVV(5, 8)
+        c = SDiv(a, b)
+        c is BVV(3, 8)
+    """
     # compute the round towards 0 division
     a = self.signed
     b = o.signed
@@ -506,15 +522,27 @@ def SDiv(self, o):
 #
 
 def BoolV(b):
+    """
+    Returns the boolean value `b`.
+    """
     return b
 
 def And(*args):
+    """
+    Evaluates the logical AND on the boolean expressions.
+    """
     return all(args)
 
 def Or(*args):
+    """
+    Evaluates the logical OR on the boolean expressions.
+    """
     return any(args)
 
 def Not(b):
+    """
+    Evaluates the logical NOT on the boolean expression `b`.
+    """
     return not b
 
 @normalize_types
@@ -522,6 +550,9 @@ def normalizer(*args):
     return args
 
 def If(c, t, f):
+    """
+    If `c` evaluates to True, returns `t`. Otherwise, returns `f`.
+    """
     t,f = normalizer(t,f) #pylint:disable=unbalanced-tuple-unpacking
     if c: return t
     else: return f
