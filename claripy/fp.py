@@ -240,6 +240,21 @@ class FPV(BackendObject):
         return 'FPV({:f}, {})'.format(self.value, self.sort)
 
 def fpToFP(a1, a2, a3=None):
+    """
+    Returns a FP AST and has three signatures:
+
+        fpToFP(ubvv, sort)
+            Returns a FP AST whose value is the same as the unsigned BVV `a1`
+            and whose sort is `a2`.
+
+        fpToFP(rm, fpv, sort)
+            Returns a FP AST whose value is the same as the floating point `a2`
+            and whose sort is `a3`.
+
+        fpToTP(rm, sbvv, sort)
+            Returns a FP AST whose value is the same as the signed BVV `a2` and
+            whose sort is `a3`.
+    """
     if isinstance(a1, BVV) and isinstance(a2, FSort):
         sort = a2
         if sort == FSORT_FLOAT:
@@ -265,10 +280,20 @@ def fpToFP(a1, a2, a3=None):
         raise ClaripyOperationError("unknown types passed to fpToFP")
 
 def fpToFPUnsigned(_rm, thing, sort):
+    """
+    Returns a FP AST whose value is the same as the unsigned BVV `thing` and
+    whose sort is `sort`.
+    """
     # thing is a BVV
     return FPV(float(thing.value), sort)
 
 def fpToIEEEBV(fpv):
+    """
+    Interprets the bit-pattern of the IEEE754 floating point number `fpv` as a
+    bitvector.
+
+    :return:    A BV AST whose bit-pattern is the same as `fpv`
+    """
     if fpv.sort == FSORT_FLOAT:
         pack, unpack = 'f', 'I'
     elif fpv.sort == FSORT_DOUBLE:
@@ -286,6 +311,13 @@ def fpToIEEEBV(fpv):
     return BVV(unpacked, fpv.sort.length)
 
 def fpFP(sgn, exp, mantissa):
+    """
+    Concatenates the bitvectors `sgn`, `exp` and `mantissa` and returns the
+    corresponding IEEE754 floating point number.
+
+    :return:    A FP AST whose bit-pattern is the same as the concatenated
+                bitvector
+    """
     concatted = Concat(sgn, exp, mantissa)
     sort = FSort.from_size(concatted.size())
 
@@ -332,39 +364,83 @@ def fpToUBV(rm, fp, size):
         return BVV(0, size)
 
 def fpEQ(a, b):
+    """
+    Checks if floating point `a` is equal to floating point `b`.
+    """
     return a == b
 
 def fpNE(a, b):
+    """
+    Checks if floating point `a` is not equal to floating point `b`.
+    """
     return a != b
 
 def fpGT(a, b):
+    """
+    Checks if floating point `a` is greater than floating point `b`.
+    """
     return a > b
 
 def fpGEQ(a, b):
+    """
+    Checks if floating point `a` is greater than or equal to floating point `b`.
+    """
     return a >= b
 
 def fpLT(a, b):
+    """
+    Checks if floating point `a` is less than floating point `b`.
+    """
     return a < b
 
 def fpLEQ(a, b):
+    """
+    Checks if floating point `a` is less than or equal to floating point `b`.
+    """
     return a <= b
 
 def fpAbs(x):
+    """
+    Returns the absolute value of the floating point `x`. So:
+
+        a = FPV(-3.2, FSORT_DOUBLE)
+        b = fpAbs(a)
+        b is FPV(3.2, FSORT_DOUBLE)
+    """
     return abs(x)
 
 def fpNeg(x):
+    """
+    Returns the additive inverse of the floating point `x`. So:
+
+        a = FPV(3.2, FSORT_DOUBLE)
+        b = fpAbs(a)
+        b is FPV(-3.2, FSORT_DOUBLE)
+    """
     return -x
 
 def fpSub(_rm, a, b):
+    """
+    Returns the subtraction of the floating point `a` by the floating point `b`.
+    """
     return a - b
 
 def fpAdd(_rm, a, b):
+    """
+    Returns the addition of two floating point numbers, `a` and `b`.
+    """
     return a + b
 
 def fpMul(_rm, a, b):
+    """
+    Returns the multiplication of two floating point numbers, `a` and `b`.
+    """
     return a * b
 
 def fpDiv(_rm, a, b):
+    """
+    Returns the division of the floating point `a` by the floating point `b`.
+    """
     return a / b
 
 from .bv import BVV, Concat
