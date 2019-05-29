@@ -167,7 +167,7 @@ class Base:
         if 'uc_alloc_depth' not in kwargs:
             kwargs['uc_alloc_depth'] = None
 
-        if 'annotations' not in kwargs:
+        if 'annotations' not in kwargs or kwargs['annotations'] is None:
             kwargs['annotations'] = ()
 
         h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
@@ -256,7 +256,7 @@ class Base:
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
 
-        if not annotations and args_have_annotations is False:
+        if not annotations and not args_have_annotations:
             self._uneliminatable_annotations = frozenset()
             self._relocatable_annotations = frozenset()
         else:
