@@ -404,8 +404,18 @@ class SimplificationManager:
 
     @staticmethod
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
-        if not any(isinstance(a, ast.Base) and a.op == op_name for a in args):
-            return
+        # we can only do things here if there are multiple BVVs or if there's another of our op
+        bvv_count = 0
+        for a in args:
+            op = getattr(a, 'op', None)
+            if op == op_name:
+                break  # analysis ok
+            if op == 'BVV':
+                bvv_count += 1
+        else:
+            # no op_names found. are there enough bvvs to warrent analysis?
+            if bvv_count < 2:
+                return
 
         # we cannot further flatten if any top-level argument has non-relocatable annotaitons
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
@@ -414,6 +424,19 @@ class SimplificationManager:
         new_args = tuple(itertools.chain.from_iterable(
             (a.args if isinstance(a, ast.Base) and a.op == op_name else (a,)) for a in args
         ))
+
+        # try to collapse multiple concrete args
+        value_args = []
+        other_args = []
+        for arg in new_args:
+            if getattr(arg, 'op', None) == 'BVV':
+                value_args.append(arg)
+            else:
+                other_args.append(arg)
+        if other_args and len(value_args) > 1:
+            value_arg = value_args[0].make_like(op_name, tuple(value_args), simplify=False)
+            new_args = tuple(other_args) + (value_arg,)
+
         variables = frozenset(itertools.chain.from_iterable(a.variables for a in args if isinstance(a, ast.Base)))
         if filter_func: new_args = filter_func(new_args)
         if not new_args and 'initial_value' in kwargs:
@@ -423,17 +446,12 @@ class SimplificationManager:
                                                                           simplify=False)
 
     @staticmethod
-    def bitwise_add_simplifier(a, b):
-        if a is ast.all_operations.BVV(0, a.size()):
-            return b
-        elif b is ast.all_operations.BVV(0, a.size()):
-            return a
-
-        return SimplificationManager._flatten_simplifier('__add__', None, a, b)
+    def bitwise_add_simplifier(*args):
+        return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args)
 
     @staticmethod
-    def bitwise_mul_simplifier(a, b):
-        return SimplificationManager._flatten_simplifier('__mul__', None, a, b)
+    def bitwise_mul_simplifier(*args):
+        return SimplificationManager._flatten_simplifier('__mul__', None, *args)
 
     @staticmethod
     def bitwise_sub_simplifier(a, b):
@@ -498,16 +516,17 @@ class SimplificationManager:
             return ast.all_operations.If(cond,q,r)
 
     @staticmethod
-    def bitwise_xor_simplifier(a, b):
-        if a is ast.all_operations.BVV(0, a.size()):
-            return b
-        elif b is ast.all_operations.BVV(0, a.size()):
-            return a
-        elif a is b or (a == b).is_true():
-            return ast.all_operations.BVV(0, a.size())
+    def bitwise_xor_simplifier(a, b, *args):
+        if not args:
+            if a is ast.all_operations.BVV(0, a.size()):
+                return b
+            elif b is ast.all_operations.BVV(0, a.size()):
+                return a
+            elif a is b or (a == b).is_true():
+                return ast.all_operations.BVV(0, a.size())
 
-        result = SimplificationManager.bitwise_xor_simplifier_minmax(a,b)
-        if result is not None: return result
+            result = SimplificationManager.bitwise_xor_simplifier_minmax(a,b)
+            if result is not None: return result
 
         def _flattening_filter(args):
             # since a ^ a == 0, we can safely remove those from args
@@ -516,52 +535,53 @@ class SimplificationManager:
             unique_args = set(k for k in ctr if ctr[k] % 2 != 0)
             return tuple([ arg for arg in args if arg in unique_args ])
 
-        return SimplificationManager._flatten_simplifier('__xor__', _flattening_filter, a, b, initial_value=ast.all_operations.BVV(0, a.size()))
+        return SimplificationManager._flatten_simplifier('__xor__', _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size()))
 
     @staticmethod
-    def bitwise_or_simplifier(a, b):
-        if a is ast.all_operations.BVV(0, a.size()):
-            return b
-        elif b is ast.all_operations.BVV(0, a.size()):
-            return a
-        elif (a == b).is_true():
-            return a
-        elif a is b:
-            return a
+    def bitwise_or_simplifier(a, b, *args):
+        if not args:
+            if a is ast.all_operations.BVV(0, a.size()):
+                return b
+            elif b is ast.all_operations.BVV(0, a.size()):
+                return a
+            elif (a == b).is_true():
+                return a
+            elif a is b:
+                return a
 
         def _flattening_filter(args):
             # a | a == a
             return tuple(set(args))
 
-        return SimplificationManager._flatten_simplifier('__or__', _flattening_filter, a, b)
+        return SimplificationManager._flatten_simplifier('__or__', _flattening_filter, a, b, *args)
 
     @staticmethod
-    def bitwise_and_simplifier(a, b):
+    def bitwise_and_simplifier(a, b, *args):
+        if not args:
+            # try to perform a rotate-shift-mask simplification
+            r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
+            if r is not None:
+                return r
 
-        # try to perform a rotate-shift-mask simplification
-        r = SimplificationManager.rotate_shift_mask_simplifier(a, b)
-        if r is not None:
-            return r
-
-        if (a == 2**a.size()-1).is_true():
-            return b
-        elif (b == 2**a.size()-1).is_true():
-            return a
-        elif (a == b).is_true():
-            return a
-        elif a is b:
-            return a
-        elif a.op == "Concat" and len(a.args) == 2:
-            # maybe we can drop the second argument
-            if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
-                # yes!
-                return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
+            if (a == 2**a.size()-1).is_true():
+                return b
+            elif (b == 2**a.size()-1).is_true():
+                return a
+            elif (a == b).is_true():
+                return a
+            elif a is b:
+                return a
+            elif a.op == "Concat" and len(a.args) == 2:
+                # maybe we can drop the second argument
+                if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
+                    # yes!
+                    return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
         def _flattening_filter(args):
             # a & a == a
             return tuple(set(args))
 
-        return SimplificationManager._flatten_simplifier('__and__', _flattening_filter, a, b)
+        return SimplificationManager._flatten_simplifier('__and__', _flattening_filter, a, b, *args)
 
     @staticmethod
     def boolean_not_simplifier(body):
