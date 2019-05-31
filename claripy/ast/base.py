@@ -423,10 +423,13 @@ class Base:
     def _type_name(self):
         return self.__class__.__name__
 
-    def __repr__(self, inner=False, max_depth=None, explicit_length=False):  # pylint:disable=unused-argument
-        return '<AST something>' if WORKER else self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length)
+    def __repr__(self, inner=False, max_depth=None, explicit_length=False):
+        if WORKER:
+            return '<AST something>'
+        else:
+            return self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length, inner=inner)
 
-    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR):
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False):
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
@@ -483,7 +486,10 @@ class Base:
         assert len(ast_queue) == 0, "arg_queue is not empty"
         assert len(arg_queue) == 1, ("repr_queue has unexpected length", len(arg_queue))
 
-        return "<{} {}>".format(self._type_name(), arg_queue.pop())
+        if not inner:
+            return "<{} {}>".format(self._type_name(), arg_queue.pop())
+        else:
+            return arg_queue.pop()
 
     @staticmethod
     def _op_repr(op, args, inner, length, details):
