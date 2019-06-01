@@ -447,7 +447,7 @@ class SimplificationManager:
 
     @staticmethod
     def bitwise_add_simplifier(*args):
-        return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args)
+        return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
 
     @staticmethod
     def bitwise_mul_simplifier(*args):
