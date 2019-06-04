@@ -108,6 +108,19 @@ def test_overflow():
     #assert s
     #assert r[0][0] is x
 
+
+def test_extract_zeroext():
+    x = claripy.BVS('x', 8)
+    expr = claripy.Extract(31, 0,
+                           claripy.ZeroExt(56, x)
+                           ) <= claripy.BVV(0xe, 32)
+    s, r = claripy.balancer.Balancer(claripy.backends.vsa, expr).compat_ret
+
+    assert s is True
+    assert len(r) == 1
+    assert r[0][0] is x
+
+
 def test_complex_case_0():
 
     #
@@ -204,3 +217,4 @@ if __name__ == '__main__':
     test_complex_case_0()
     test_complex_case_1()
     test_complex_case_2()
+    test_extract_zeroext()
