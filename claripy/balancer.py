@@ -422,11 +422,11 @@ class Balancer:
 
     @staticmethod
     def _balance_Extract(truism):
-        size = len(truism.args[0])
         high, low, inner = truism.args[0].args
+        inner_size = len(inner)
 
-        if high < size-1:
-            left_msb = inner[size-1:high+1]
+        if high < inner_size-1:
+            left_msb = inner[inner_size-1:high+1]
             left_msb_zero = is_true(left_msb == 0)
         else:
             left_msb = None
@@ -441,15 +441,15 @@ class Balancer:
 
         if left_msb_zero and left_lsb_zero:
             new_left = inner
-            new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.arg[1], BVV(0, len(left_lsb)))
+            new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
         elif left_msb_zero:
-            new_left = inner[high:0]
-            new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.arg[1])
+            new_left = inner
+            new_right = _all_operations.Concat(BVV(0, len(left_msb)), truism.args[1])
             return truism.make_like(truism.op, (new_left, new_right))
         elif left_lsb_zero:
-            new_left = inner[size-1:low]
-            new_right = _all_operations.Concat(truism.arg[1], BVV(0, len(left_lsb)))
+            new_left = inner
+            new_right = _all_operations.Concat(truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
         else:
             #TODO: handle non-zero single-valued cases
