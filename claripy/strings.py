@@ -43,7 +43,7 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
 
     :param initial_string: string in which the pattern needs to be replaced
     :param pattern_to_be_replaced: substring that has to be replaced inside initial_string
-    :param replacement_poattern: pattern that has to be inserted in initial_string t replace
+    :param replacement_pattern: pattern that has to be inserted in initial_string to replace
                                  pattern_to_be_replaced
     :return: a concrete representation of the replaced string
     """

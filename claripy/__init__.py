@@ -74,6 +74,9 @@ _backend_manager.backends._register_backend(_backend_z3, 'z3', False, False)
 backends = _backend_manager.backends
 
 def downsize():
+    """
+    Clear all temporary data associated with any backend
+    """
     backends.downsize()
 
 #
@@ -90,6 +93,9 @@ from .solvers import *
 #
 
 def reset():
+    """
+    Attempt to refresh any caching state associated with the module
+    """
     downsize()
     from .ast import bv  # pylint:disable=redefined-outer-name
     bv._bvv_cache.clear()

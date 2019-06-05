@@ -62,8 +62,8 @@ class String(Bits):
         """
         Replace the first occurence of str_to_replace with replacement
 
-        :param String str_to_replace: pattern that has to be replaced
-        :param String replacement: replacement pattern
+        :param claripy.ast.String str_to_replace: pattern that has to be replaced
+        :param claripy.ast.String replacement: replacement pattern
         """
         return StrReplace(self, str_to_replace, replacement)
 
