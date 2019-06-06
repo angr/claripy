@@ -615,7 +615,7 @@ class Base:
     # Various AST modifications (replacements)
     #
 
-    def swap_args(self, new_args, new_length=None, simplify=False):
+    def swap_args(self, new_args, new_length=None, **kwargs):
         """
         This returns the same AST, with the arguments swapped out for new_args.
         """
@@ -626,7 +626,7 @@ class Base:
         #symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
         #variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
         length = self.length if new_length is None else new_length
-        a = self.make_like(self.op, new_args, length=length, simplify=simplify)
+        a = self.make_like(self.op, new_args, length=length, **kwargs)
         #if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
         #   raise ClaripyOperationError("major bug in swap_args()")
         return a
