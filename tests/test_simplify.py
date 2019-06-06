@@ -106,6 +106,12 @@ def perf_boolean_and_simplification_1():
         else:
             v = claripy.And(v, bool_vars[i])
 
+def test_concrete_flatten():
+    a = claripy.BVS('a', 32)
+    b = a + 10
+    c = 10 + b
+    nose.tools.assert_is(c, a + 20)
+
 
 def perf():
     import timeit
@@ -123,3 +129,4 @@ if __name__ == '__main__':
     test_rotate_shift_mask_simplification()
     test_reverse_extract_reverse_simplification()
     test_reverse_concat_reverse_simplification()
+    test_concrete_flatten()
