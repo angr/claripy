@@ -16,7 +16,7 @@ setup(
     python_requires='>=3.5',
     packages=packages,
     install_requires=[
-        'z3-solver==4.5.1.0.post2',
+        'z3-solver>=4.8.5.0',
         'future',
         'cachetools',
         'pysmt',

@@ -1,6 +1,7 @@
 
 import os
 import z3
+import gc
 import ctypes
 import logging
 import numbers
@@ -46,6 +47,14 @@ solve_count = 0
 
 supports_fp = hasattr(z3, 'fpEQ')
 
+# Hack to get a reference to z3libs. Thanks Rhelmot!
+libs = [lib for lib in gc.get_objects() if type(lib) is ctypes.CDLL and 'libz3.so' in lib._name]
+if not libs:
+    raise ClaripyZ3Error("Z3 library is not present!")
+
+lib = libs[0]
+
+
 #
 # Utility functions
 #
@@ -70,7 +79,7 @@ def _raw_caller(f):
 
 def _z3_decl_name_str(ctx, decl):
     # reimplementation of Z3_get_symbol_string to not try to unicode-decode
-    lib = z3.lib()
+    global lib
 
     decl_name = lib.Z3_get_decl_name(ctx, decl)
     err = lib.Z3_get_error_code(ctx)
@@ -80,7 +89,7 @@ def _z3_decl_name_str(ctx, decl):
     symbol_name = lib.Z3_get_symbol_string(ctx, decl_name)
     err = lib.Z3_get_error_code(ctx)
     if err != z3.Z3_OK:
-        raise z3.Z3Exception(z3.lib().Z3_get_error_msg(ctx, err))
+        raise z3.Z3Exception(lib.Z3_get_error_msg(ctx, err))
     return symbol_name
 
 
@@ -571,6 +580,14 @@ class BackendZ3(Backend):
             return True
         elif op_name == 'False':
             return False
+        # FIXME: Special case to "patch" the new model provided in the new z3 version.
+        # In the old version, z3 had a concept of FPToIEEE_unspecified function that was called anytime there was
+        # a call of the function FPToIEEE with a symbolic argument. This function, in my understanding was special cased
+        # by z3 to return 0.
+        # In the new version this function is not present anymore and the model returns an expression of type
+        # fptoieee(Nan). Here we special case that model and we return the same value returned by the old version (0)
+        elif op_name == 'fpToIEEEBV':
+            return 0
         elif op_name in ('FPVal', 'MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             return self._abstract_fp_val(ctx, ast, op_name)
         else:
