@@ -37,7 +37,15 @@ class Frontend:
 
     def eval_to_ast(self, e, n, extra_constraints=(), exact=None):
         """
-        Evaluates expression e, returning the results in the form of concrete ASTs.
+        Evaluates expression `e`, returning a list of `n` concrete ASTs.
+
+        :param e:                       the expression
+        :param n:                       the number of ASTs to return
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        list of concrete ASTs
         """
         return [ ast.bv.BVV(v, e.size()) for v in self.eval(e, n, extra_constraints=extra_constraints, exact=exact) ]
 
@@ -67,9 +75,31 @@ class Frontend:
         raise NotImplementedError()
 
     def eval(self, e, n, extra_constraints=(), exact=None):
+        """
+        Evaluates expression `e`, returning a tuple of `n` solutions.
+
+        :param e:                       the expression
+        :param n:                       the number of solutions to return
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        tuple of python primitives representing results
+        """
         raise NotImplementedError()
 
     def batch_eval(self, exprs, n, extra_constraints=(), exact=None):
+        """
+        Evaluates `exprs`, returning a list of tuples (one tuple of `n` solutions for expression).
+
+        :param exprs:                   expressions
+        :param n:                       the number of solutions to return
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        list of tuples of python primitives representing results
+        """
         raise NotImplementedError()
 
     def max(self, e, extra_constraints=(), exact=None):
