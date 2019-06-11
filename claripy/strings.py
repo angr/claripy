@@ -13,11 +13,11 @@ class StringV(BackendObject):
 
 def StrConcat(*args):
     """
-    Create a concrete version of the concatenated string.
+    Concatenate a sequence of strings.
 
     :param args:                    list of string that has to be concatenated
 
-    :return:                        a concrete version of the concatenated string
+    :return:                        the concatenated string
     """
     new_value = ''.join([arg.value for arg in args])
     return StringV(new_value)
@@ -25,13 +25,13 @@ def StrConcat(*args):
 
 def StrSubstr(start_idx, count, initial_string):
     """
-    Create a concrete version of the substring.
+    Return the substring of length `count` starting at `start_idx`.
 
     :param start_idx:               starting index of the substring
     :param count:                   length of the substring in bytes
     :param initial_string:          original string
 
-    :return:                        a concrete version of the substring
+    :return:                        the substring
     """
     new_value = initial_string.value[start_idx.value:start_idx.value + count.value]
     return StringV(new_value)
@@ -43,15 +43,15 @@ def StrExtract(high, low, str_val):
 
 def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
     """
-    Create a concrete version of the replaced string.
-    (replace ONLY the first occurrence of the pattern)
+    Return string where the first occurrence of `pattern_to_be_replaced` is replaced with
+    `replacement_pattern`.
 
     :param initial_string:          string in which the pattern needs to be replaced
     :param pattern_to_be_replaced:  substring that has to be replaced inside initial_string
     :param replacement_pattern:     pattern that has to be inserted in initial_string to replace
                                     pattern_to_be_replaced
 
-    :return:                        a concrete representation of the replaced string
+    :return:                        string with replacement
     """
     new_value = initial_string.value.replace(pattern_to_be_replaced.value,
                                              replacement_pattern.value,
@@ -61,7 +61,7 @@ def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
 
 def StrLen(input_string, bitlength):
     """
-    Return length of the string in bytes.
+    Return length of the `input_string` in bytes.
 
     :param input_string:            the string we want to calculate the length
     :param bitlength:               length of the bitvector representing the length of the string
@@ -73,7 +73,7 @@ def StrLen(input_string, bitlength):
 
 def StrContains(input_string, substring):
     """
-    Check if substring is contained in input_string.
+    Check if `substring` is contained in `input_string`.
 
     :param input_string:            the string we want to check
     :param substring:               the string we want to check if it's contained inside the
@@ -86,7 +86,7 @@ def StrContains(input_string, substring):
 
 def StrPrefixOf(prefix, input_string):
     """
-    Check if input_string starts with prefix.
+    Check if `input_string` starts with `prefix`.
 
     :param prefix:                  prefix we want to check
     :param input_string:            the string we want to check
@@ -98,7 +98,7 @@ def StrPrefixOf(prefix, input_string):
 
 def StrSuffixOf(suffix, input_string):
     """
-    Check if input_string ends with suffix.
+    Check if `input_string` ends with `suffix`.
 
     :param suffix:                  suffix we want to check
     :param input_string:            the string we want to check
@@ -110,8 +110,8 @@ def StrSuffixOf(suffix, input_string):
 
 def StrIndexOf(input_string, substring, startIndex, bitlength):
     """
-    Return the index of the first occurrence of substring at or after the startIndex, or -1 if it
-    is not found.
+    Return the index of the first occurrence of `substring` at or after the `startIndex`, or -1 if
+    it is not found.
 
     :param input_string:            the string we want to check
     :param substring:               the substring we want to find the index
@@ -131,7 +131,7 @@ def StrIndexOf(input_string, substring, startIndex, bitlength):
 
 def StrToInt(input_string, bitlength):
     """
-    Return the integer representation of the string.
+    Return the integer representation of `input_string`.
 
     :param input_string:            the string we want to transform in an integer
     :param bitlength:               length of the bitvector representing the index of the substring
@@ -147,7 +147,7 @@ def StrToInt(input_string, bitlength):
 
 def StrIsDigit(input_string):
     """
-    Determine whether the given string is entirely numeric.
+    Determine whether `input_string` is entirely numeric.
 
     :param input_string:            the string we want to check
 
@@ -158,9 +158,9 @@ def StrIsDigit(input_string):
 
 def IntToStr(input_bvv):
     """
-    Return the string representation of the integer.
+    Return the string representation of `input_bvv`.
 
-    :param input_bvv:               the integer expressed as a string
+    :param input_bvv:               the integer to be expressed as a string
 
     :return:                        the string representation of the integer
     """
