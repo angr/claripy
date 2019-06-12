@@ -63,15 +63,43 @@ class Frontend:
         raise NotImplementedError("split() is not implemented")
 
     def add(self, constraints):
+        """
+        Adds constraint(s) to constraints list.
+
+        :param constraints:             constraint(s) to add
+
+        :return:
+        """
         raise NotImplementedError()
 
     def simplify(self):
+        """
+        Simplifies the stored constraints conjunction.
+        """
         raise NotImplementedError()
 
     def check_satisfiability(self, extra_constraints=(), exact=None):
+        """
+        Checks the satisfiability of stored constraints conjunction.
+
+        :param extra_constraints:       extra constraints to consider when checking satisfiability
+        :param exact:                   whether or not to perform exact checking. Ignored by
+                                        non-approximating backends.
+
+        :return:                        'SAT' if the conjunction is satisfiable otherwise 'UNSAT'
+        """
         raise NotImplementedError
 
     def satisfiable(self, extra_constraints=(), exact=None):
+        """
+        Checks if stored constraints conjunction is satisfiable.
+
+        :param extra_constraints:       extra constraints to consider when checking satisfiability
+        :param exact:                   whether or not to perform exact checking. Ignored by
+                                        non-approximating backends.
+
+        :return:                        True if the conjunction is satisfiable otherwise False
+        """
         raise NotImplementedError()
 
     def eval(self, e, n, extra_constraints=(), exact=None):
@@ -103,18 +131,69 @@ class Frontend:
         raise NotImplementedError()
 
     def max(self, e, extra_constraints=(), exact=None):
+        """
+        Evaluates `e`, returning its max possible value.
+
+        :param e:                       the expression
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        max possible value
+        """
         raise NotImplementedError()
 
     def min(self, e, extra_constraints=(), exact=None):
+        """
+        Evaluates `e`, returning its min possible value.
+
+        :param e:                       the expression
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        min possible value
+        """
         raise NotImplementedError()
 
     def solution(self, e, v, extra_constraints=(), exact=None):
+        """
+        Checks if `v` is a possible solution to `e`.
+
+        :param e:                       the expression
+        :param v:                       the value
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        True if it is a possible solution otherwise False
+        """
         raise NotImplementedError()
 
     def is_true(self, e, extra_constraints=(), exact=None):
+        """
+        Checks if `e` can only evaluate to True.
+
+        :param e:                       the expression
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        True if it can only evaluate to True otherwise False
+        """
         raise NotImplementedError()
 
     def is_false(self, e, extra_constraints=(), exact=None):
+        """
+        Checks if `e` can only evaluate to False.
+
+        :param e:                       the expression
+        :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param exact:                   whether or not to perform an exact evaluation. Ignored by
+                                        non-approximating backends.
+
+        :return:                        True if it can only evaluate to False otherwise False
+        """
         raise NotImplementedError()
 
     def downsize(self): #pylint:disable=no-self-use
