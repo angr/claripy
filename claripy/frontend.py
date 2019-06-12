@@ -172,7 +172,12 @@ class Frontend:
 
     def is_true(self, e, extra_constraints=(), exact=None):
         """
-        Checks if `e` can only evaluate to True.
+        Checks if `e` can only (and TRIVIALLY) evaluate to True. If this function returns True,
+        then the expression cannot ever be False, regardless of constraints or anything else.
+        If the expression returns False, then the expression might STILL not ever be False; it's just
+        that we can't trivially prove it. In other words, a return value of False gives you no
+        information whatsoever.
+
 
         :param e:                       the expression
         :param extra_constraints:       extra constraints to consider when performing the evaluation
@@ -185,7 +190,11 @@ class Frontend:
 
     def is_false(self, e, extra_constraints=(), exact=None):
         """
-        Checks if `e` can only evaluate to False.
+        Checks if `e` can only (and TRIVIALLY) evaluate to False. If this function returns True,
+        then the expression cannot ever be True, regardless of constraints or anything else.
+        If the expression returns False, then the expression might STILL not ever be True; it's just
+        that we can't trivially prove it. In other words, a return value of False gives you no
+        information whatsoever.
 
         :param e:                       the expression
         :param extra_constraints:       extra constraints to consider when performing the evaluation
