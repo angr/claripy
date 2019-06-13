@@ -455,7 +455,7 @@ class Base:
 
         :return:                    A string representing the AST
         """
-        if max_depth is not None and 0 >= max_depth:
+        if max_depth is not None and max_depth <= 0:
                 return '<...>'
 
         elif self.op in operations.reversed_ops:
