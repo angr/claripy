@@ -80,7 +80,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._replacement_cache[old.cache_key] = new
 
     def remove_replacements(self, old_entries):
-        self._replacements = {k: v for k, v in self._replacements if k not in old_entries}
+        self._replacements = {k: v for k, v in self._replacements.items() if k not in old_entries}
         self._replacement_cache = weakref.WeakKeyDictionary(self._replacements)
 
     def clear_replacements(self):
