@@ -441,6 +441,66 @@ infix = {
     'Concat': '..',
 }
 
+op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_precedence
+    # precedence: 2
+    '__pow__': 2,
+
+    # precedence: 3
+    '__mul__': 3,
+    '__div__': 3,
+    '__floordiv__': 3,
+    '__truediv__': 3, # the raw / operator should use integral semantics on bitvectors
+    '__mod__': 3,
+    #'__divmod__': "don't think this is used either",
+    'SDiv': 3,
+    'SMod': 3,
+
+    # precedence: 4
+    '__add__': 4,
+    '__sub__': 4,
+
+    # precedence: 5
+    '__lshift__': 5,
+    '__rshift__': 5,
+
+    # precedence: 6
+    '__ge__': 6,
+    '__le__': 6,
+    '__gt__': 6,
+    '__lt__': 6,
+
+    'UGE': 6,
+    'ULE': 6,
+    'UGT': 6,
+    'ULT': 6,
+
+    'SGE': 6,
+    'SLE': 6,
+    'SGT': 6,
+    'SLT': 6,
+
+    # precedence: 7
+    '__eq__': 7,
+    '__ne__': 7,
+
+    # precedence: 8
+    '__and__': 8,
+
+    # precedence: 9
+    '__xor__': 9,
+
+    # precedence: 10
+    '__or__': 10,
+
+    # precedence: 11
+    'And': 11,
+
+    # precedence: 12
+    'Or': 12,
+
+    #'Concat': '..',
+}
+
 commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', 'And', 'Or', 'Xor', }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
