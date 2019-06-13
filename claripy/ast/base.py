@@ -440,56 +440,30 @@ class Base:
                                         LITE_REPR - print short repr for both operations and BVs,
                                         MID_REPR  - print full repr for operations and short for BVs,
                                         FULL_REPR - print full repr of both operations and BVs.
+        :param inner:               whether or not it is an inner AST
+
         :return:                    A string representing the AST
         """
-        ast_queue = [(0, iter([self]))]
-        arg_queue = []
-        op_queue = []
+        if max_depth is not None and 0 >= max_depth:
+                return '<...>'
 
-        while ast_queue:
-            try:
-                depth, args_iter = ast_queue[-1]
-                arg = next(args_iter)
+        elif self.op in operations.reversed_ops:
+            op = operations.reversed_ops[self.op]
+            args = reversed(self.args)
+        else:
+            op = self.op
+            args = self.args
 
-                if not isinstance(arg, Base):
-                    arg_queue.append(arg)
-                    continue
-
-                if max_depth is not None:
-                    if depth >= max_depth:
-                        arg_queue.append('<...>')
-                        continue
-
-                if arg.op in operations.reversed_ops:
-                    op_queue.append((depth + 1, operations.reversed_ops[arg.op], len(arg.args), arg.length))
-                    ast_queue.append((depth + 1, reversed(arg.args)))
-
-                else:
-                    op_queue.append((depth + 1, arg.op, len(arg.args), arg.length))
-                    ast_queue.append((depth + 1, iter(arg.args)))
-
-            except StopIteration:
-                ast_queue.pop()
-
-                if op_queue:
-                    depth, op, num_args, length = op_queue.pop()
-
-                    args_repr = arg_queue[-num_args:]
-                    del arg_queue[-num_args:]
-
-                    length = length if explicit_length else None
-                    inner_repr = self._op_repr(op, args_repr, depth > 1, length, details)
-
-                    arg_queue.append(inner_repr)
-
-        assert len(op_queue) == 0, "op_queue is not empty"
-        assert len(ast_queue) == 0, "arg_queue is not empty"
-        assert len(arg_queue) == 1, ("repr_queue has unexpected length", len(arg_queue))
+        next_max_depth = max_depth-1 if max_depth is not None else None
+        length = self.length if explicit_length else None
+        args = [arg.shallow_repr(next_max_depth, explicit_length, details, True) \
+                if isinstance(arg, Base) else arg for arg in args]
+        inner_repr = self._op_repr(op, args, inner, length, details)
 
         if not inner:
-            return "<{} {}>".format(self._type_name(), arg_queue.pop())
+            return "<{} {}>".format(self._type_name(), inner_repr)
         else:
-            return arg_queue.pop()
+            return inner_repr
 
     @staticmethod
     def _op_repr(op, args, inner, length, details):
