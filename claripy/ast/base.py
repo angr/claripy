@@ -70,8 +70,8 @@ class Base:
         d = b + a
         assert c is d
 
-    :ivar op:           The operation that is being done on the arguments
-    :ivar args:         The arguments that are being used
+    :ivar op:                       The operation that is being done on the arguments
+    :ivar args:                     The arguments that are being used
     """
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
@@ -95,16 +95,17 @@ class Base:
         a hash. If an AST of this hash already exists, it returns that AST. Otherwise,
         it creates, initializes, and returns the AST.
 
-        :param op:              The AST operation ('__add__', 'Or', etc)
-        :param args:            The arguments to the AST operation (i.e., the objects to add)
-        :param variables:       The symbolic variables present in the AST (default: empty set)
-        :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
-        :param length:          An integer specifying the length of this AST (default: None)
-        :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
-                                (basically, just undoing the Reverse op), and 2 means simplified through z3.
-        :param errored:         A set of backends that are known to be unable to handle this AST.
-        :param eager_backends:  A list of backends with which to attempt eager evaluation
-        :param annotations:     A frozenset of annotations applied onto this AST.
+        :param op:                  The AST operation ('__add__', 'Or', etc)
+        :param args:                The arguments to the AST operation (i.e., the objects to add)
+        :param variables:           The symbolic variables present in the AST (default: empty set)
+        :param symbolic:            A flag saying whether or not the AST is symbolic (default: False)
+        :param length:              An integer specifying the length of this AST (default: None)
+        :param simplified:          A measure of how simplified this AST is. 0 means unsimplified,
+                                        1 means fast-simplified (basically, just undoing the Reverse
+                                        op), and 2 means simplified through z3.
+        :param errored:             A set of backends that are known to be unable to handle this AST.
+        :param eager_backends:      A list of backends with which to attempt eager evaluation
+        :param annotations:         A frozenset of annotations applied onto this AST.
         """
 
         #if any(isinstance(a, BackendObject) for a in args):
@@ -197,10 +198,11 @@ class Base:
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
-        :param op:          The operation.
-        :param args:        The arguments to the operation.
-        :param keywords:    A dict including the 'symbolic', 'variables', and 'length' items.
-        :returns:           a hash.
+        :param op:                  The operation.
+        :param args:                The arguments to the operation.
+        :param keywords:            A dict including the 'symbolic', 'variables', and 'length' items.
+
+        :returns:                   a hash.
 
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
@@ -342,8 +344,9 @@ class Base:
         """
         Appends an annotation to this AST.
 
-        :param a: the annotation to append
-        :returns: a new AST, with the annotation added
+        :param a:                   the annotation to append
+
+        :returns:                   a new AST, with the annotation added
         """
         return self._apply_to_annotations(lambda alist: alist + (a,))
 
@@ -351,8 +354,9 @@ class Base:
         """
         Appends several annotations to this AST.
 
-        :param new_tuple: the tuple of annotations to append
-        :returns: a new AST, with the annotations added
+        :param new_tuple:           the tuple of annotations to append
+
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
@@ -360,8 +364,9 @@ class Base:
         """
         Appends annotations to this AST.
 
-        :param args: the tuple of annotations to append (variadic positional args)
-        :returns: a new AST, with the annotations added
+        :param args:                the tuple of annotations to append (variadic positional args)
+
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + args)
 
@@ -369,8 +374,9 @@ class Base:
         """
         Inserts an annotation to this AST.
 
-        :param a: the annotation to insert
-        :returns: a new AST, with the annotation added
+        :param a:                   the annotation to insert
+
+        :returns:                   a new AST, with the annotation added
         """
         return self._apply_to_annotations(lambda alist: (a,) + alist)
 
@@ -378,8 +384,9 @@ class Base:
         """
         Inserts several annotations to this AST.
 
-        :param new_tuple: the tuple of annotations to insert
-        :returns: a new AST, with the annotations added
+        :param new_tuple:           the tuple of annotations to insert
+
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
@@ -387,8 +394,9 @@ class Base:
         """
         Replaces annotations on this AST.
 
-        :param new_tuple: the tuple of annotations to replace the old annotations with
-        :returns: a new AST, with the annotations added
+        :param new_tuple:           the tuple of annotations to replace the old annotations with
+
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
 
@@ -396,8 +404,9 @@ class Base:
         """
         Removes an annotation from this AST.
 
-        :param a: the annotation to remove
-        :returns: a new AST, with the annotation removed
+        :param a:                   the annotation to remove
+
+        :returns:                   a new AST, with the annotation removed
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
 
@@ -405,8 +414,9 @@ class Base:
         """
         Removes several annotations from this AST.
 
-        :param remove_sequence: a sequence/set of the annotations to remove
-        :returns: a new AST, with the annotations removed
+        :param remove_sequence:     a sequence/set of the annotations to remove
+
+        :returns:                   a new AST, with the annotations removed
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa not in remove_sequence))
 
@@ -441,6 +451,7 @@ class Base:
                                         MID_REPR  - print full repr for operations and short for BVs,
                                         FULL_REPR - print full repr of both operations and BVs.
         :param inner:               whether or not it is an inner AST
+        :param parent_prec:         parent operation precedence level
 
         :return:                    A string representing the AST
         """
@@ -649,8 +660,9 @@ class Base:
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
         (name-wise or hash-identity wise).
 
-        :param o: the other claripy A object
-        :return: True/False
+        :param o:                   the other claripy A object
+
+        :return:                    True/False
         """
 
         # TODO: Convert a and b into canonical forms
@@ -683,12 +695,15 @@ class Base:
 
     def replace_dict(self, replacements, variable_set=None, leaf_operation=None):
         """
-        Returns this AST with subexpressions replaced by those that can be found in `replacements` dict.
+        Returns this AST with subexpressions replaced by those that can be found in `replacements`
+        dict.
 
-        :param variable_set:    For optimization, ast's without these variables are not checked for replacing.
-        :param replacements:    A dictionary of hashes to their replacements.
-        :param leaf_operation:  An operation that should be applied to the leaf nodes.
-        :return:                An AST with all instances of ast's in replacements.
+        :param variable_set:        For optimization, ast's without these variables are not checked
+                                        for replacing.
+        :param replacements:        A dictionary of hashes to their replacements.
+        :param leaf_operation:      An operation that should be applied to the leaf nodes.
+
+        :return:                    An AST with all instances of ast's in replacements.
         """
         if variable_set is None:
             variable_set = set()
