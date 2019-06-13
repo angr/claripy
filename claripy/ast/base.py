@@ -429,7 +429,7 @@ class Base:
         else:
             return self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length, inner=inner)
 
-    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False):
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False, parent_prec=15):
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
@@ -456,9 +456,14 @@ class Base:
 
         next_max_depth = max_depth-1 if max_depth is not None else None
         length = self.length if explicit_length else None
-        args = [arg.shallow_repr(next_max_depth, explicit_length, details, True) \
+        # if operation is not in op_precedence, assign the "least operation precedence"
+        op_prec = operations.op_precedence[op] if op in operations.op_precedence else 15
+
+        args = [arg.shallow_repr(next_max_depth, explicit_length, details, True, op_prec) \
                 if isinstance(arg, Base) else arg for arg in args]
-        inner_repr = self._op_repr(op, args, inner, length, details)
+
+        parent_higher_prec = parent_prec < op_prec
+        inner_repr = self._op_repr(op, args, inner, length, details, parent_higher_prec)
 
         if not inner:
             return "<{} {}>".format(self._type_name(), inner_repr)
@@ -466,7 +471,7 @@ class Base:
             return inner_repr
 
     @staticmethod
-    def _op_repr(op, args, inner, length, details):
+    def _op_repr(op, args, inner, length, details, parent_higher_prec):
         if details < Base.FULL_REPR:
             if op == 'BVS':
                 extras = []
@@ -515,7 +520,7 @@ class Base:
 
             elif len(args) == 2 and op in operations.infix:
                 value = '{} {} {}'.format(args[0], operations.infix[op], args[1])
-                return '({})'.format(value) if inner else value
+                return '({})'.format(value) if inner and parent_higher_prec else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
 

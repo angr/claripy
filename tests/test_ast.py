@@ -10,7 +10,7 @@ def test_lite_repr():
     b = claripy.BVS('b', 8)
 
     nose.tools.assert_regex((a + one * b + two).shallow_repr(),
-                            r'\<BV8 __add__\(a_\d+_8, \(1 \* b_\d+_8\), 2\)\>')
+                            r'\<BV8 __add__\(a_\d+_8, 1 \* b_\d+_8, 2\)\>')
     nose.tools.assert_regex(((a + one) * (b + two)).shallow_repr(),
                             r'\<BV8 \(a_\d+_8 \+ 1\) \* \(b_\d+_8 \+ 2\)\>')
     nose.tools.assert_regex((a * one + b * two).shallow_repr(),
