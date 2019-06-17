@@ -99,3 +99,5 @@ def reset():
     downsize()
     from .ast import bv  # pylint:disable=redefined-outer-name
     bv._bvv_cache.clear()
+
+from .debug import set_debug
