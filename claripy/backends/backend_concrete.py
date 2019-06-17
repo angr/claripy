@@ -179,6 +179,8 @@ class BackendConcrete(Backend):
     def is_true(self, e, extra_constraints=(), solver=None, model_callback=None):
         if e in {True, 1, 1.}:
             return True
+        if e in {False, 0, 0.}:
+            return False
         if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is True:
             return True
         return super().is_true(e, extra_constraints=extra_constraints, solver=solver,model_callback=model_callback)
@@ -186,6 +188,8 @@ class BackendConcrete(Backend):
     def is_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         if e in {False, 0, 0.}:
             return True
+        if e in {True, 1, 1.0}:
+            return False
         if type(e) is Base and e.op == "BoolV" and len(e.args) == 1 and e.args[0] is False:
             return True
         return super().is_false(e, extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
