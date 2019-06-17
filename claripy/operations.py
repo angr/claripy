@@ -72,6 +72,11 @@ def _handle_annotations(simp, args):
         return None
 
     ast_args = tuple(a for a in args if isinstance(a, ast.Base))
+
+    # fast path: return simp if no annotations exist
+    if not any(a.annotations for a in ast_args):
+        return simp
+
     preserved_relocatable = frozenset(simp._relocatable_annotations)
     relocated_annotations = set()
     bad_eliminated = 0
