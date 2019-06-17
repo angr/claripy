@@ -2,6 +2,7 @@ import ctypes
 import weakref
 import operator
 import threading
+import numbers
 
 import logging
 l = logging.getLogger('claripy.backend')
@@ -222,7 +223,7 @@ class Backend:
         return arg_queue.pop()
 
     def convert_list(self, args):
-        return [ self.convert(a) for a in args ]
+        return [ a if isinstance(a, numbers.Number) else self.convert(a) for a in args ]
 
     #
     # These functions provide support for applying operations to expressions.
