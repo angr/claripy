@@ -88,7 +88,7 @@ class Base:
     MID_REPR=1
     FULL_REPR=2
 
-    def __new__(cls, op, args, add_variables=None, hash=None, **kwargs): #pylint:disable=redefined-builtin
+    def __new__(cls, op, args, add_variables=None, hash_=None, **kwargs): #pylint:disable=redefined-builtin
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -112,8 +112,36 @@ class Base:
 
         a_args = args if type(args) is tuple else tuple(args)
 
-        # initialize the following properties: symbolic, variables and errored
+        # fast path: do not hash or cache BVV
+        if op == "BVV":
+            self = super(Base, cls).__new__(cls)
+            self.__a_init__(op, a_args, depth=1, args_have_annotations=False, symbolic=False, **kwargs)
+            self._hash = Base._calc_hash_core((op,) + a_args) if hash_ is None else hash_
+            return self
+
+        # fast path: eager-evaluate concrete operations
         need_symbolic = 'symbolic' not in kwargs
+        symbolic_flag = False
+        for a in a_args:
+            if not isinstance(a, Base): continue
+            if need_symbolic and not symbolic_flag: symbolic_flag |= a.symbolic
+
+        eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
+
+        if not symbolic_flag and eager_backends is not None and op not in operations.leaf_operations:
+            for eb in eager_backends:
+                try:
+                    r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
+                    if r is not None:
+                        return r
+                    else:
+                        eager_backends.remove(eb)
+                except BackendError:
+                    eager_backends.remove(eb)
+
+        # Normal path
+
+        # initialize the following properties: symbolic, variables and errored
         need_variables = 'variables' not in kwargs
         need_errored = 'errored' not in kwargs
         args_have_annotations = None
@@ -128,7 +156,7 @@ class Base:
             for a in a_args:
                 if not isinstance(a, Base): continue
                 if need_symbolic and not symbolic_flag: symbolic_flag |= a.symbolic
-                if need_variables: variables_set |= a.variables
+                if need_variables and a.variables: variables_set |= a.variables
                 if need_errored: errored_set |= a._errored
                 if args_have_annotations is not True:
                     args_have_annotations = args_have_annotations or bool(a.annotations)
@@ -143,8 +171,6 @@ class Base:
 
         if add_variables:
             kwargs['variables'] = kwargs['variables'] | add_variables
-
-        eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs['eager_backends']
 
         if not kwargs['symbolic'] and eager_backends is not None and op not in operations.leaf_operations:
             for eb in eager_backends:
@@ -170,7 +196,7 @@ class Base:
         if 'annotations' not in kwargs or kwargs['annotations'] is None:
             kwargs['annotations'] = ()
 
-        h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
+        h = Base._calc_hash(op, a_args, kwargs) if hash_ is None else hash_
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls)
@@ -216,6 +242,11 @@ class Base:
             hash(keywords.get('annotations', None)),
         )
 
+        return Base._calc_hash_core(to_hash)
+
+    @staticmethod
+    def _calc_hash_core(to_hash):
+
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
@@ -236,7 +267,10 @@ class Base:
         self.op = op
         self.args = args if type(args) is tuple else tuple(args)
         self.length = length
-        self.variables = frozenset(variables) if type(variables) is not frozenset else variables
+        if variables is None:
+            self.variables = None
+        else:
+            self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
         self.annotations = annotations
 
@@ -733,7 +767,7 @@ class Base:
                 elif ast.cache_key in replacements:
                     repl = replacements[ast.cache_key]
 
-                elif ast.variables >= variable_set:
+                elif ast.variables and ast.variables >= variable_set:
 
                     if ast.op in operations.leaf_operations:
                         repl = leaf_operation(ast)

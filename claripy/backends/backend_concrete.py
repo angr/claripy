@@ -73,11 +73,7 @@ class BackendConcrete(Backend):
         """
         if type(expr) is BV:
             if expr.op == "BVV":
-                cached_obj = self._object_cache.get(expr._cache_key, None)
-                if cached_obj is None:
-                    cached_obj = self.BVV(*expr.args)
-                    self._object_cache[expr._cache_key] = cached_obj
-                return cached_obj
+                return self.BVV(*expr.args)
         if type(expr) is Bool and expr.op == "BoolV":
             return expr.args[0]
         return super().convert(expr)
