@@ -3,7 +3,7 @@ import numbers
 
 from .errors import ClaripyOperationError, ClaripyTypeError, ClaripyZeroDivisionError
 from .backend_object import BackendObject
-from .debug import _DEBUG
+from . import debug as _d
 
 def compare_bits(f):
     @functools.wraps(f)
@@ -29,7 +29,7 @@ def compare_bits_0_length(f):
 def normalize_types(f):
     @functools.wraps(f)
     def normalize_helper(self, o):
-        if _DEBUG:
+        if _d._DEBUG:
             if hasattr(o, '__module__') and o.__module__ == 'z3':
                 raise ValueError("this should no longer happen")
         if isinstance(o, numbers.Number):
@@ -47,7 +47,7 @@ class BVV(BackendObject):
     __slots__ = [ 'bits', '_value', 'mod' ]
 
     def __init__(self, value, bits):
-        if _DEBUG:
+        if _d._DEBUG:
             if bits < 0 or not isinstance(bits, numbers.Number) or not isinstance(value, numbers.Number):
                 raise ClaripyOperationError("BVV needs a non-negative length and an int value")
 

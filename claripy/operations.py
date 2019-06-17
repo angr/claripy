@@ -1,5 +1,5 @@
 import itertools
-from .debug import _DEBUG
+from . import debug as _d
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
@@ -40,7 +40,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
     def _op(*args):
         fixed_args = tuple(_type_fixer(args))
-        if _DEBUG:
+        if _d._DEBUG:
             for i in fixed_args:
                 if i is NotImplemented:
                     return NotImplemented
