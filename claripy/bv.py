@@ -41,6 +41,7 @@ def normalize_types(f):
 
     return normalize_helper
 
+
 class BVV(BackendObject):
     __slots__ = [ 'bits', '_value', 'mod' ]
 
@@ -53,7 +54,7 @@ class BVV(BackendObject):
 
         self.bits = bits
         self._value = 0
-        self.mod = 2**bits
+        self.mod = 2<<bits
         self.value = value
 
     def __hash__(self):
@@ -64,7 +65,7 @@ class BVV(BackendObject):
 
     def __setstate__(self, s):
         self.bits = s[0]
-        self.mod = 2**self.bits
+        self.mod = 2<<self.bits
         self.value = s[1]
 
     @property
