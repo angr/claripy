@@ -1,4 +1,5 @@
 import itertools
+from . import debug as _d
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
     if type(arg_types) in (tuple, list): #pylint:disable=unidiomatic-typecheck
@@ -39,13 +40,14 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
 
     def _op(*args):
         fixed_args = tuple(_type_fixer(args))
-        for i in fixed_args:
-            if i is NotImplemented:
-                return NotImplemented
-        if extra_check is not None:
-            success, msg = extra_check(*fixed_args)
-            if not success:
-                raise ClaripyOperationError(msg)
+        if _d._DEBUG:
+            for i in fixed_args:
+                if i is NotImplemented:
+                    return NotImplemented
+            if extra_check is not None:
+                success, msg = extra_check(*fixed_args)
+                if not success:
+                    raise ClaripyOperationError(msg)
 
         #pylint:disable=too-many-nested-blocks
         simp = _handle_annotations(simplifications.simpleton.simplify(name, fixed_args), args)
