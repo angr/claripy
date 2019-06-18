@@ -4,6 +4,7 @@ import logging
 import os
 import struct
 import weakref
+from ..bv import BVVMixin
 from collections import OrderedDict, deque
 
 try:
@@ -55,24 +56,109 @@ def _d(h, cls, state):
     op, args, length, variables, symbolic, annotations = state
     return cls.__new__(cls, op, args, length=length, variables=variables, symbolic=symbolic, annotations=annotations, hash=h)
 
-class Base:
-    """
-    This is the base class of all claripy ASTs. An AST tracks a tree of operations on arguments.
 
-    This class should not be instanciated directly - instead, use one of the constructor functions (BVS, BVV, FPS,
-    FPV...) to construct a leaf node and then build more complicated expressions using operations.
+class SimpleBase:
 
-    AST objects have *hash identity*. This means that an AST that has the same hash as another AST will be the *same*
-    object. This is critical for efficient memory usage. As an example, the following is true::
+    __slots__ = tuple()
 
-        a, b = two different ASTs
-        c = b + a
-        d = b + a
-        assert c is d
+    @property
+    def cache_key(self):
+        raise NotImplementedError()
 
-    :ivar op:           The operation that is being done on the arguments
-    :ivar args:         The arguments that are being used
-    """
+
+class BVVFront(SimpleBase, BVVMixin):
+
+    __slots__ = ('_cache_key', )
+
+    def __init__(self, value, bits):
+        BVVMixin.__init__(self, value, bits)
+        self._cache_key = ASTCacheKey(self)
+
+    #
+    # Wrapped boolean operations
+    #
+
+    def __eq__(self, o): return true if BVVMixin.__eq__(self, o) else false
+    def __ne__(self, o): return true if BVVMixin.__ne__(self, o) else false
+    def __lt__(self, o): return true if BVVMixin.__lt__(self, o) else false
+    def __gt__(self, o): return true if BVVMixin.__gt__(self, o) else false
+    def __le__(self, o): return true if BVVMixin.__le__(self, o) else false
+    def __ge__(self, o): return true if BVVMixin.__ge__(self, o) else false
+
+    #
+    # Generic methods
+    #
+
+    def raw_to_bv(self):
+        return self
+
+    def replace(self, old, new, variable_set=None, leaf_operation=None):   # pylint:disable=unused-argument
+        return self
+
+    def __len__(self):
+        return self.bits
+
+    def __hash__(self):
+        return hash((self.value, self.bits))
+
+    @property
+    def _hash(self):
+        return hash(self)
+
+    @property
+    def op(self):
+        return "BVV"
+
+    @property
+    def args(self):
+        return self.value, self.bits
+
+    @property
+    def variables(self):
+        return tuple()
+
+    @property
+    def length(self):
+        return self.bits
+
+    @property
+    def depth(self):
+        return 1
+
+    @property
+    def symbolic(self):
+        return False
+
+    @property
+    def cache_key(self):
+        return self._cache_key
+
+    @property
+    def annotations(self):
+        return frozenset()
+
+    @property
+    def _relocatable_annotations(self):
+        return frozenset()
+
+    @property
+    def _uneliminatable_annotations(self):
+        return frozenset()
+
+    @property
+    def _errored(self):
+        return tuple()
+
+    @property
+    def _model_vsa(self):
+        return BVV(self.value, self.bits)._model_vsa
+
+    @property
+    def _model_concrete(self):
+        return bv.BVV(self.value, self.bits)
+
+
+class Base(SimpleBase):
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
@@ -88,7 +174,7 @@ class Base:
     MID_REPR=1
     FULL_REPR=2
 
-    def __new__(cls, op, args, add_variables=None, hash=None, **kwargs): #pylint:disable=redefined-builtin
+    def __new__(cls, op, args, add_variables=None, hash=None, bvv_fastpath=True, **kwargs): #pylint:disable=redefined-builtin
         """
         This is called when you create a new Base object, whether directly or through an operation.
         It finalizes the arguments (see the _finalize function, above) and then computes
@@ -112,8 +198,35 @@ class Base:
 
         a_args = args if type(args) is tuple else tuple(args)
 
-        # initialize the following properties: symbolic, variables and errored
+        # fast path: create a BVVFront instance for BVV
+        if bvv_fastpath and op == "BVV":
+            self = BVVFront(*args)
+            return self
+
+        # fast path: eager-evaluate concrete operations
         need_symbolic = 'symbolic' not in kwargs
+        symbolic_flag = False
+        for a in a_args:
+            if not isinstance(a, Base): continue
+            if need_symbolic and not symbolic_flag: symbolic_flag |= a.symbolic
+
+        eager_backends = list(backends._eager_backends) if 'eager_backends' not in kwargs else kwargs[
+            'eager_backends']
+
+        if not symbolic_flag and eager_backends is not None and op not in operations.leaf_operations:
+            for eb in eager_backends:
+                try:
+                    r = operations._handle_annotations(eb._abstract(eb.call(op, args)), args)
+                    if r is not None:
+                        return r
+                    else:
+                        eager_backends.remove(eb)
+                except BackendError:
+                    eager_backends.remove(eb)
+
+        # Normal path
+
+        # initialize the following properties: symbolic, variables and errored
         need_variables = 'variables' not in kwargs
         need_errored = 'errored' not in kwargs
         args_have_annotations = None
@@ -127,7 +240,6 @@ class Base:
             errored_set = set()
             for a in a_args:
                 if not isinstance(a, Base): continue
-                if need_symbolic and not symbolic_flag: symbolic_flag |= a.symbolic
                 if need_variables: variables_set |= a.variables
                 if need_errored: errored_set |= a._errored
                 if args_have_annotations is not True:
@@ -1043,6 +1155,8 @@ def simplify(e):
 from ..errors import BackendError, ClaripyOperationError, ClaripyReplacementError
 from .. import operations
 from ..backend_manager import backends
-from ..ast.bool import If, Not, BoolS
+from ..ast.bool import If, Not, BoolS, true, false
 from ..ast.bv import BV
+from ..ast import bv
 from .. import simplifications
+from .bv import BVV

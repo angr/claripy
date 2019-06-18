@@ -1,6 +1,6 @@
 import logging
 
-from ..ast.base import Base, _make_name
+from ..ast.base import SimpleBase, Base, _make_name
 
 l = logging.getLogger('claripy.ast.bool')
 
@@ -86,12 +86,15 @@ def If(*args):
         args[0] = BoolV(args[0])
 
     ty = None
-    if isinstance(args[1], Base):
+    if isinstance(args[1], SimpleBase):
         ty = type(args[1])
-    elif isinstance(args[2], Base):
+    elif isinstance(args[2], SimpleBase):
         ty = type(args[2])
     else:
         raise ClaripyTypeError("true/false clause of If must have bearable types")
+
+    if ty is BVVFront:
+        ty = BV
 
     if isinstance(args[1], Bits) and isinstance(args[2], Bits) and args[1].length != args[2].length:
         raise ClaripyTypeError("sized arguments to If must have the same length")
@@ -114,13 +117,13 @@ def If(*args):
     elif is_false(args[0]):
         return args[2]
 
-    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is args[0]:
+    if isinstance(args[1], SimpleBase) and args[1].op == 'If' and args[1].args[0] is args[0]:
         return If(args[0], args[1].args[1], args[2])
-    if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is Not(args[0]):
+    if isinstance(args[1], SimpleBase) and args[1].op == 'If' and args[1].args[0] is Not(args[0]):
         return If(args[0], args[1].args[2], args[2])
-    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is args[0]:
+    if isinstance(args[2], SimpleBase) and args[2].op == 'If' and args[2].args[0] is args[0]:
         return If(args[0], args[1], args[2].args[2])
-    if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is Not(args[0]):
+    if isinstance(args[2], SimpleBase) and args[2].op == 'If' and args[2].args[0] is Not(args[0]):
         return If(args[0], args[1], args[2].args[1])
 
     if issubclass(ty, Bits):
@@ -192,4 +195,5 @@ def constraint_to_si(expr):
 from ..backend_manager import backends
 from ..errors import ClaripyOperationError, ClaripyTypeError, BackendError
 from .bits import Bits
-from .bv import BVS
+from .bv import BVS, BV
+from .base import BVVFront

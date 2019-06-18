@@ -33,18 +33,18 @@ def normalize_types(f):
             if hasattr(o, '__module__') and o.__module__ == 'z3':
                 raise ValueError("this should no longer happen")
         if isinstance(o, numbers.Number):
-            o = BVV(o, self.bits)
+            o = self.__class__(o, self.bits)
         if isinstance(self, numbers.Number):
-            self = BVV(self, self.bits)
+            self = o.__class__(self, o.bits)
 
-        if not isinstance(self, BVV) or not isinstance(o, BVV):
+        if not isinstance(self, BVVMixin) or not isinstance(o, BVVMixin):
             return NotImplemented
         return f(self, o)
 
     return normalize_helper
 
 
-class BVV(BackendObject):
+class BVVMixin:
     __slots__ = [ 'bits', '_value', 'mod' ]
 
     def __init__(self, value, bits):
@@ -94,31 +94,31 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __add__(self, o):
-        return BVV(self.value + o.value, self.bits)
+        return self.__class__(self.value + o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __sub__(self, o):
-        return BVV(self.value - o.value, self.bits)
+        return self.__class__(self.value - o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __mul__(self, o):
-        return BVV(self.value * o.value, self.bits)
+        return self.__class__(self.value * o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __mod__(self, o):
         if o.value == 0:
             raise ClaripyZeroDivisionError()
-        return BVV(self.value % o.value, self.bits)
+        return self.__class__(self.value % o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __floordiv__(self, o):
         if o.value == 0:
             raise ClaripyZeroDivisionError()
-        return BVV(self.value // o.value, self.bits)
+        return self.__class__(self.value // o.value, self.bits)
 
     def __truediv__(self, other):
         return self // other # decline to implicitly have anything to do with floats
@@ -127,37 +127,49 @@ class BVV(BackendObject):
         return self // other
 
     #
+    # Byte-wise operations
+    #
+
+    def concat(self, *args):
+        return Concat(*args)
+
+    @property
+    def reversed(self):
+        # swap endianness
+        return Reverse(self)
+
+    #
     # Reverse arithmetic stuff
     #
 
     @normalize_types
     @compare_bits
     def __radd__(self, o):
-        return BVV(self.value + o.value, self.bits)
+        return self.__class__(self.value + o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rsub__(self, o):
-        return BVV(o.value - self.value, self.bits)
+        return self.__class__(o.value - self.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rmul__(self, o):
-        return BVV(self.value * o.value, self.bits)
+        return self.__class__(self.value * o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rmod__(self, o):
         if self.value == 0:
             raise ClaripyZeroDivisionError()
-        return BVV(o.value % self.value, self.bits)
+        return self.__class__(o.value % self.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rfloordiv__(self, o):
         if self.value == 0:
             raise ClaripyZeroDivisionError()
-        return BVV(o.value // self.value, self.bits)
+        return self.__class__(o.value // self.value, self.bits)
 
     def __rdiv__(self, o):
         return self.__rfloordiv__(o)
@@ -172,40 +184,58 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __and__(self, o):
-        return BVV(self.value & o.value, self.bits)
+        return self.__class__(self.value & o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __or__(self, o):
-        return BVV(self.value | o.value, self.bits)
+        return self.__class__(self.value | o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __xor__(self, o):
-        return BVV(self.value ^ o.value, self.bits)
+        return self.__class__(self.value ^ o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __lshift__(self, o):
         if o.signed < self.bits:
-            return BVV(self.value << o.signed, self.bits)
+            return self.__class__(self.value << o.signed, self.bits)
         else:
-            return BVV(0, self.bits)
+            return self.__class__(0, self.bits)
 
     @normalize_types
     @compare_bits
     def __rshift__(self, o):
         # arithmetic shift uses the signed version
         if o.signed < self.bits:
-            return BVV(self.signed >> o.signed, self.bits)
+            return self.__class__(self.signed >> o.signed, self.bits)
         else:
-            return BVV(0, self.bits)
+            return self.__class__(0, self.bits)
 
     def __invert__(self):
-        return BVV(self.value ^ self.mod-1, self.bits)
+        return self.__class__(self.value ^ self.mod-1, self.bits)
 
     def __neg__(self):
-        return BVV((-self.value) % self.mod, self.bits)
+        return self.__class__((-self.value) % self.mod, self.bits)
+
+    def __getitem__(self, rng):
+        if type(rng) is slice:
+            left = rng.start if rng.start is not None else self.bits-1
+            right = rng.stop if rng.stop is not None else 0
+            if left < 0:
+                left = self.bits + left
+            if right < 0:
+                right = self.bits + right
+            return Extract(left, right, self)
+        else:
+            return Extract(int(rng), int(rng), self)
+
+    def zero_extend(self, n):
+        return ZeroExt(n, self)
+
+    def sign_extend(self, n):
+        return SignExt(n, self)
 
     #
     # Reverse bit operations
@@ -214,27 +244,27 @@ class BVV(BackendObject):
     @normalize_types
     @compare_bits
     def __rand__(self, o):
-        return BVV(self.value & o.value, self.bits)
+        return self.__class__(self.value & o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __ror__(self, o):
-        return BVV(self.value | o.value, self.bits)
+        return self.__class__(self.value | o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rxor__(self, o):
-        return BVV(self.value ^ o.value, self.bits)
+        return self.__class__(self.value ^ o.value, self.bits)
 
     @normalize_types
     @compare_bits
     def __rlshift__(self, o):
-        return BVV(o.value << self.signed, self.bits)
+        return self.__class__(o.value << self.signed, self.bits)
 
     @normalize_types
     @compare_bits
     def __rrshift__(self, o):
-        return BVV(o.signed >> self.signed, self.bits)
+        return self.__class__(o.signed >> self.signed, self.bits)
 
     #
     # Boolean stuff
@@ -280,21 +310,32 @@ class BVV(BackendObject):
     def __repr__(self):
         return 'BVV(0x%x, %d)' % (self.value, self.bits)
 
+
+class BVV(BVVMixin, BackendObject):
+    pass
+
+
 #
 # External stuff
 #
+
+__add__ = BVVMixin.__add__
+__sub__ = BVVMixin.__sub__
+__eq__ = BVVMixin.__eq__
+__mul__ = BVVMixin.__mul__
+__div__ = BVVMixin.__div__
 
 def BitVecVal(value, bits):
     return BVV(value, bits)
 
 def ZeroExt(num, o):
-    return BVV(o.value, o.bits + num)
+    return o.__class__(o.value, o.bits + num)
 
 def SignExt(num, o):
-    return BVV(o.signed, o.bits + num)
+    return o.__class__(o.signed, o.bits + num)
 
 def Extract(f, t, o):
-    return BVV((o.value >> t) & (2**(f+1) - 1), f-t+1)
+    return o.__class__((o.value >> t) & (2**(f+1) - 1), f-t+1)
 
 def Concat(*args):
     total_bits = 0
@@ -303,7 +344,7 @@ def Concat(*args):
     for o in args:
         total_value = (total_value << o.bits) | o.value
         total_bits += o.bits
-    return BVV(total_value, total_bits)
+    return args[0].__class__(total_value, total_bits)
 
 def RotateRight(self, bits):
     bits_smaller = bits % self.size()
@@ -331,7 +372,7 @@ def Reverse(a):
         else:
             for i in range(0, size, 8):
                 out |= ((value & (0xff << i)) >> i) << (size - 8 - i)
-        return BVV(out, size)
+        return a.__class__(out, size)
 
         # the RIGHT way to do it:
         #return BVV(int(("%x" % a.value).rjust(size/4, '0').decode('hex')[::-1].encode('hex'), 16), size)
@@ -381,10 +422,14 @@ def UGE(self, o):
 def SLT(self, o):
     return self.signed < o.signed
 
+__lt__ = SLT
+
 @normalize_types
 @compare_bits
 def SGT(self, o):
     return self.signed > o.signed
+
+__gt__ = SGT
 
 @normalize_types
 @compare_bits

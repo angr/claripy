@@ -132,6 +132,10 @@ class BV(Bits):
         return BVV(value)
 
     @staticmethod
+    def _from_BVVFront(like, value):  # pylint:disable=unused-argument
+        return BVV(value.value, value.bits, bvv_fastpath=False)
+
+    @staticmethod
     def _from_str(like, value): #pylint:disable=unused-argument
         l.warning("BVV value is being coerced from a unicode string, encoding as utf-8")
         value = value.encode('utf-8')

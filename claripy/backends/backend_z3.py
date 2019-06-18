@@ -13,6 +13,8 @@ from decimal import Decimal
 from cachetools import LRUCache
 
 from ..errors import ClaripyZ3Error
+from ..ast.base import BVVFront
+from ..ast.bv import BV
 
 l = logging.getLogger("claripy.backends.backend_z3")
 
@@ -301,6 +303,8 @@ class BackendZ3(Backend):
         #       are mandatory to fix the types of the arguments requested by the low level API
         return z3.BitVecVal(ast.args[0], size, ctx=self._context)
 
+    BVVFront = BVV
+
     @condom
     def FPS(self, ast):
         sort_z3 = self._convert(ast.args[1])
@@ -531,6 +535,9 @@ class BackendZ3(Backend):
             err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
             l.error(err)
             raise BackendError(err)
+
+        if ty is BVVFront:
+            ty = BV
 
         if op_name == 'If':
             # If is polymorphic and thus must be handled specially

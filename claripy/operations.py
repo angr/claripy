@@ -1,4 +1,6 @@
 import itertools
+import numbers
+
 from . import debug as _d
 
 def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coerce=True, bound=True): #pylint:disable=unused-argument
@@ -22,7 +24,9 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             actual_arg_types = (arg_types,) * num_args
         else:
             actual_arg_types = arg_types
-        matches = [ isinstance(arg, argty) for arg,argty in zip(args, actual_arg_types) ]
+        # TODO: Fix me
+        matches = [ isinstance(arg, argty) or isinstance(arg, BVVFront)
+                    for arg,argty in zip(args, actual_arg_types) ]
 
         # heuristically, this works!
         thing = args[matches.index(True, 1 if actual_arg_types[0] is fp.RM else 0)] if True in matches else None
@@ -38,7 +42,34 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             else:
                 yield arg
 
+    def _handle_concrete_args(args):
+        """
+        Handle concrete operations without going through simplifications, checks, multiple backend conversions, etc.
+
+        :param args:    A list/tuple of arguments.
+        :return:        A new AST if we can handle it concretely, or None otherwise.
+        """
+
+        first_bvv_pos = None
+        for i, a in enumerate(args):
+            if isinstance(a, numbers.Number):
+                pass
+            elif isinstance(a, BVVFront):
+                if first_bvv_pos is None:
+                    first_bvv_pos = i
+            else:
+                # unsupported
+                return None
+
+        # yes we can do it!
+        return getattr(bv, name)(*args)
+
     def _op(*args):
+        if args:
+            r = _handle_concrete_args(args)
+            if r is not None:
+                return r
+
         fixed_args = tuple(_type_fixer(args))
         if _d._DEBUG:
             for i in fixed_args:
@@ -448,4 +479,6 @@ commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__',
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import simplifications
 from . import ast
+from . import bv
+from .ast.base import BVVFront
 from . import fp

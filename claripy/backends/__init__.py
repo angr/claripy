@@ -157,7 +157,7 @@ class Backend:
                 if args_list:
                     ast = args_list.pop(0)
 
-                    if type(ast) in {bool, int, str, float} or not isinstance(ast, Base):
+                    if type(ast) in {bool, int, str, float} or not isinstance(ast, SimpleBase):
                         converted = self._convert(ast)
                         arg_queue.append(converted)
                         continue
@@ -211,7 +211,7 @@ class Backend:
         except BackendError:
             for ast in op_queue:
                 ast._errored.add(self)
-            if isinstance(expr, Base):
+            if isinstance(expr, SimpleBase):
                 expr._errored.add(self)
             raise
 
@@ -308,7 +308,7 @@ class Backend:
 
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
-        if not isinstance(e, Base):
+        if not isinstance(e, SimpleBase):
             return self._is_true(self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
 
         try:
@@ -332,7 +332,7 @@ class Backend:
         """
         #if self._solver_required and solver is None:
         #   raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
-        if not isinstance(e, Base):
+        if not isinstance(e, SimpleBase):
             return self._is_false(self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
 
         try:
@@ -784,4 +784,4 @@ from .backend_concrete import BackendConcrete
 from .backend_vsa import BackendVSA
 from .backend_smtlib import BackendSMTLibBase
 from .backend_smtlib_solvers import *
-from ..ast.base import Base
+from ..ast.base import Base, SimpleBase
