@@ -615,7 +615,7 @@ class Base:
     # Various AST modifications (replacements)
     #
 
-    def swap_args(self, new_args, new_length=None):
+    def swap_args(self, new_args, new_length=None, **kwargs):
         """
         This returns the same AST, with the arguments swapped out for new_args.
         """
@@ -626,7 +626,7 @@ class Base:
         #symbolic = any(a.symbolic for a in new_args if isinstance(a, Base))
         #variables = frozenset.union(frozenset(), *(a.variables for a in new_args if isinstance(a, Base)))
         length = self.length if new_length is None else new_length
-        a = self.__class__(self.op, new_args, length=length)
+        a = self.make_like(self.op, new_args, length=length, **kwargs)
         #if a.op != self.op or a.symbolic != self.symbolic or a.variables != self.variables:
         #   raise ClaripyOperationError("major bug in swap_args()")
         return a
@@ -891,7 +891,7 @@ class Base:
 
                     elif ite_args.count(True) == 0:
                         # if there are no ifs that came to the surface, there's nothing more to do
-                        excavated = op.swap_args(args)
+                        excavated = op.swap_args(args, simplify=True)
 
                     else:
                         # this gets called when we're *not* in an If, but there are Ifs in the args.
@@ -912,12 +912,12 @@ class Base:
                                 new_false_args.append(a.args[1])
                             else:
                                 # weird conditions -- giving up!
-                                excavated = op.swap_args(args)
+                                excavated = op.swap_args(args, simplify=True)
                                 break
 
                         else:
-                            excavated = If(cond, op.swap_args(new_true_args),
-                                           op.swap_args(new_false_args))
+                            excavated = If(cond, op.swap_args(new_true_args, simplify=True),
+                                           op.swap_args(new_false_args, simplify=True))
 
                     # continue
                     arg_queue.append(excavated)
