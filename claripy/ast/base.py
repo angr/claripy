@@ -201,7 +201,6 @@ class Base:
         :param op:                  The operation.
         :param args:                The arguments to the operation.
         :param keywords:            A dict including the 'symbolic', 'variables', and 'length' items.
-
         :returns:                   a hash.
 
         We do it using md5 to avoid hash collisions.
@@ -345,7 +344,6 @@ class Base:
         Appends an annotation to this AST.
 
         :param a:                   the annotation to append
-
         :returns:                   a new AST, with the annotation added
         """
         return self._apply_to_annotations(lambda alist: alist + (a,))
@@ -355,7 +353,6 @@ class Base:
         Appends several annotations to this AST.
 
         :param new_tuple:           the tuple of annotations to append
-
         :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
@@ -365,7 +362,6 @@ class Base:
         Appends annotations to this AST.
 
         :param args:                the tuple of annotations to append (variadic positional args)
-
         :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + args)
@@ -375,7 +371,6 @@ class Base:
         Inserts an annotation to this AST.
 
         :param a:                   the annotation to insert
-
         :returns:                   a new AST, with the annotation added
         """
         return self._apply_to_annotations(lambda alist: (a,) + alist)
@@ -385,7 +380,6 @@ class Base:
         Inserts several annotations to this AST.
 
         :param new_tuple:           the tuple of annotations to insert
-
         :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
@@ -395,7 +389,6 @@ class Base:
         Replaces annotations on this AST.
 
         :param new_tuple:           the tuple of annotations to replace the old annotations with
-
         :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
@@ -405,7 +398,6 @@ class Base:
         Removes an annotation from this AST.
 
         :param a:                   the annotation to remove
-
         :returns:                   a new AST, with the annotation removed
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
@@ -415,7 +407,6 @@ class Base:
         Removes several annotations from this AST.
 
         :param remove_sequence:     a sequence/set of the annotations to remove
-
         :returns:                   a new AST, with the annotations removed
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa not in remove_sequence))
@@ -452,8 +443,7 @@ class Base:
                                         FULL_REPR - print full repr of both operations and BVs.
         :param inner:               whether or not it is an inner AST
         :param parent_prec:         parent operation precedence level
-
-        :return:                    A string representing the AST
+        :returns:                   A string representing the AST
         """
         if max_depth is not None and max_depth <= 0:
                 return '<...>'
@@ -661,8 +651,7 @@ class Base:
         (name-wise or hash-identity wise).
 
         :param o:                   the other claripy A object
-
-        :return:                    True/False
+        :returns:                   True/False
         """
 
         # TODO: Convert a and b into canonical forms
@@ -702,8 +691,7 @@ class Base:
                                         for replacing.
         :param replacements:        A dictionary of hashes to their replacements.
         :param leaf_operation:      An operation that should be applied to the leaf nodes.
-
-        :return:                    An AST with all instances of ast's in replacements.
+        :returns:                   An AST with all instances of ast's in replacements.
         """
         if variable_set is None:
             variable_set = set()
@@ -983,7 +971,7 @@ class Base:
         Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic
         execution mode.
 
-        :return: True/False/None (unspecified).
+        :returns:                   True/False/None (unspecified).
         """
 
         #TODO: It should definitely be moved to the proposed Annotation backend.
@@ -995,7 +983,7 @@ class Base:
         """
         The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
 
-        :return: An integer indicating the allocation depth, or None if it's not from lazy-initialization.
+        :returns:                   An integer indicating the allocation depth, or None if it's not from lazy-initialization.
         """
         # TODO: It should definitely be moved to the proposed Annotation backend.
 
