@@ -443,4 +443,16 @@ def fpDiv(_rm, a, b):
     """
     return a / b
 
+def fpIsNaN(x):
+    """
+    Checks whether the argument is a floating point NaN.
+    """
+    return math.isnan(x)
+
+def fpIsInf(x):
+    """
+    Checks whether the argument is a floating point infinity.
+    """
+    return math.isinf(x)
+
 from .bv import BVV, Concat

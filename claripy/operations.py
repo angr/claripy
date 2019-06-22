@@ -312,7 +312,7 @@ backend_fp_cmp_operations = {
 
 backend_fp_operations = {
     'FPS', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
-    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
+    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs', 'fpIsNaN', 'fpIsInf',
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {

@@ -24,6 +24,11 @@ try:
 except ImportError:
     _is_pypy = False
 
+def z3_expr_to_smt2(f, status="unknown", name="benchmark", logic=""):
+      # from https://stackoverflow.com/a/14629021/9719920
+      v = (z3.Ast * 0)()
+      return z3.Z3_benchmark_to_smtlib_string(f.ctx_ref(), name, logic, status, "", 0, v, f.as_ast())
+
 def _add_memory_pressure(p):
     """
     PyPy's garbage collector is not aware of memory uses happening inside native code. When performing memory-intensive
@@ -1045,6 +1050,14 @@ class BackendZ3(Backend):
     @condom
     def _op_raw_fpEQ(self, a, b):
         return z3.BoolRef(z3.Z3_mk_fpa_eq(self._context.ref(), a.as_ast(), b.as_ast()), self._context)
+
+    @condom
+    def _op_raw_fpIsNaN(self, a):
+        return z3.BoolRef(z3.Z3_mk_fpa_is_nan(self._context.ref(), a.as_ast()), self._context)
+
+    @condom
+    def _op_raw_fpIsInf(self, a):
+        return z3.BoolRef(z3.Z3_mk_fpa_is_inf(self._context.ref(), a.as_ast()), self._context)
 
     @condom
     def _op_raw_fpFP(self, sgn, exp, sig):
