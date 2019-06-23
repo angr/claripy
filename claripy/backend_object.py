@@ -15,4 +15,3 @@ class BackendObject:
         """
 
         return self
-
