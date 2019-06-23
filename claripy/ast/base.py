@@ -443,6 +443,7 @@ class Base:
                                         FULL_REPR - print full repr of both operations and BVs.
         :param inner:               whether or not it is an inner AST
         :param parent_prec:         parent operation precedence level
+        :param left:                whether or not it is a left AST
         :returns:                   A string representing the AST
         """
         if max_depth is not None and max_depth <= 0:
@@ -464,7 +465,8 @@ class Base:
                 if isinstance(arg, Base) else arg for idx, arg in enumerate(args)]
 
         prec_diff = parent_prec - op_prec
-        inner_repr = self._op_repr(op, args, inner, length, details, prec_diff, left)
+        inner_infix_use_par = prec_diff < 0 or prec_diff == 0 and not left
+        inner_repr = self._op_repr(op, args, inner, length, details, inner_infix_use_par)
 
         if not inner:
             return "<{} {}>".format(self._type_name(), inner_repr)
@@ -472,7 +474,7 @@ class Base:
             return inner_repr
 
     @staticmethod
-    def _op_repr(op, args, inner, length, details, prec_diff, left):
+    def _op_repr(op, args, inner, length, details, inner_infix_use_par):
         if details < Base.FULL_REPR:
             if op == 'BVS':
                 extras = []
@@ -521,7 +523,7 @@ class Base:
 
             elif op in operations.infix:
                 value = ' {} '.format(operations.infix[op]).join(args)
-                return '({})'.format(value) if inner and (prec_diff < 0 or prec_diff == 0 and not left) else value
+                return '({})'.format(value) if inner and inner_infix_use_par else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
 
