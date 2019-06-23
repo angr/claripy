@@ -10,7 +10,7 @@ def test_lite_repr():
     b = claripy.BVS('b', 8, explicit_name=True)
 
     nose.tools.assert_equal((a + one * b + two).shallow_repr(),
-                            '<BV8 __add__(a, 1 * b, 2)>')
+                            '<BV8 a + 1 * b + 2>')
     nose.tools.assert_equal(((a + one) * (b + two)).shallow_repr(),
                             '<BV8 (a + 1) * (b + 2)>')
     nose.tools.assert_equal((a * one + b * two).shallow_repr(),
@@ -25,22 +25,22 @@ def test_associativity():
     z = claripy.BVS('z', 8, explicit_name=True)
     w = claripy.BVS('w', 8, explicit_name=True)
 
-    nose.tools.assert_equal((x - y - z - w).shallow_repr(),
-                            (x - (y - (z - w))).shallow_repr())
+    nose.tools.assert_equal((x - (y - (z - w))).shallow_repr(),
+                            '<BV8 x - (y - (z - w))>')
     nose.tools.assert_equal((x - y - z - w).shallow_repr(),
                             '<BV8 x - y - z - w>')
     nose.tools.assert_equal((x * y * z * w).shallow_repr(),
                             (x * (y * (z * w))).shallow_repr())
     nose.tools.assert_equal((x * y * z * w).shallow_repr(),
-                            '<BV8 __mul__(x, y, z, w)>')
-    nose.tools.assert_equal((x + y - z + w).shallow_repr(),
-                            (x + (y - (z + w))).shallow_repr())
-    nose.tools.assert_equal((x + y - z + w).shallow_repr(),
-                            '<BV8 x + y - z + w>')
-    nose.tools.assert_equal((x * y / z % w).shallow_repr(),
-                            (x * (y / (z % w))).shallow_repr())
-    nose.tools.assert_equal((x * y / z % w).shallow_repr(),
-                            '<BV8 x * y / z % w>')
+                            '<BV8 x * y * z * w>')
+    nose.tools.assert_equal((x + (y - (z - w))).shallow_repr(),
+                            (x + y - (z + w)).shallow_repr())
+    nose.tools.assert_equal((x + y - (z + w)).shallow_repr(),
+                            '<BV8 x + y - (z + w)>')
+    nose.tools.assert_equal((x * (y / (z % w))).shallow_repr(),
+                            (x * y / (z % w)).shallow_repr())
+    nose.tools.assert_equal((x * y / (z % w)).shallow_repr(),
+                            '<BV8 x * y / (z % w)>')
 
 
 if __name__ == '__main__':

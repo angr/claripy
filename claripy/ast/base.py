@@ -519,8 +519,8 @@ class Base:
             elif op == 'Concat':
                 return ' .. '.join(map(str, args))
 
-            elif len(args) == 2 and op in operations.infix:
-                value = '{} {} {}'.format(args[0], operations.infix[op], args[1])
+            elif op in operations.infix:
+                value = ' {} '.format(operations.infix[op]).join(args)
                 return '({})'.format(value) if inner and parent_higher_prec else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
