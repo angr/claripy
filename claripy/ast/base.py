@@ -70,8 +70,8 @@ class Base:
         d = b + a
         assert c is d
 
-    :ivar op:           The operation that is being done on the arguments
-    :ivar args:         The arguments that are being used
+    :ivar op:                       The operation that is being done on the arguments
+    :ivar args:                     The arguments that are being used
     """
 
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
@@ -95,16 +95,17 @@ class Base:
         a hash. If an AST of this hash already exists, it returns that AST. Otherwise,
         it creates, initializes, and returns the AST.
 
-        :param op:              The AST operation ('__add__', 'Or', etc)
-        :param args:            The arguments to the AST operation (i.e., the objects to add)
-        :param variables:       The symbolic variables present in the AST (default: empty set)
-        :param symbolic:        A flag saying whether or not the AST is symbolic (default: False)
-        :param length:          An integer specifying the length of this AST (default: None)
-        :param simplified:      A measure of how simplified this AST is. 0 means unsimplified, 1 means fast-simplified
-                                (basically, just undoing the Reverse op), and 2 means simplified through z3.
-        :param errored:         A set of backends that are known to be unable to handle this AST.
-        :param eager_backends:  A list of backends with which to attempt eager evaluation
-        :param annotations:     A frozenset of annotations applied onto this AST.
+        :param op:                  The AST operation ('__add__', 'Or', etc)
+        :param args:                The arguments to the AST operation (i.e., the objects to add)
+        :param variables:           The symbolic variables present in the AST (default: empty set)
+        :param symbolic:            A flag saying whether or not the AST is symbolic (default: False)
+        :param length:              An integer specifying the length of this AST (default: None)
+        :param simplified:          A measure of how simplified this AST is. 0 means unsimplified,
+                                        1 means fast-simplified (basically, just undoing the Reverse
+                                        op), and 2 means simplified through z3.
+        :param errored:             A set of backends that are known to be unable to handle this AST.
+        :param eager_backends:      A list of backends with which to attempt eager evaluation
+        :param annotations:         A frozenset of annotations applied onto this AST.
         """
 
         #if any(isinstance(a, BackendObject) for a in args):
@@ -197,10 +198,10 @@ class Base:
         """
         Calculates the hash of an AST, given the operation, args, and kwargs.
 
-        :param op:          The operation.
-        :param args:        The arguments to the operation.
-        :param keywords:    A dict including the 'symbolic', 'variables', and 'length' items.
-        :returns:           a hash.
+        :param op:                  The operation.
+        :param args:                The arguments to the operation.
+        :param keywords:            A dict including the 'symbolic', 'variables', and 'length' items.
+        :returns:                   a hash.
 
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
@@ -342,8 +343,8 @@ class Base:
         """
         Appends an annotation to this AST.
 
-        :param a: the annotation to append
-        :returns: a new AST, with the annotation added
+        :param a:                   the annotation to append
+        :returns:                   a new AST, with the annotation added
         """
         return self._apply_to_annotations(lambda alist: alist + (a,))
 
@@ -351,8 +352,8 @@ class Base:
         """
         Appends several annotations to this AST.
 
-        :param new_tuple: the tuple of annotations to append
-        :returns: a new AST, with the annotations added
+        :param new_tuple:           the tuple of annotations to append
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + new_tuple)
 
@@ -360,8 +361,8 @@ class Base:
         """
         Appends annotations to this AST.
 
-        :param args: the tuple of annotations to append (variadic positional args)
-        :returns: a new AST, with the annotations added
+        :param args:                the tuple of annotations to append (variadic positional args)
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: alist + args)
 
@@ -369,8 +370,8 @@ class Base:
         """
         Inserts an annotation to this AST.
 
-        :param a: the annotation to insert
-        :returns: a new AST, with the annotation added
+        :param a:                   the annotation to insert
+        :returns:                   a new AST, with the annotation added
         """
         return self._apply_to_annotations(lambda alist: (a,) + alist)
 
@@ -378,8 +379,8 @@ class Base:
         """
         Inserts several annotations to this AST.
 
-        :param new_tuple: the tuple of annotations to insert
-        :returns: a new AST, with the annotations added
+        :param new_tuple:           the tuple of annotations to insert
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: new_tuple + alist)
 
@@ -387,8 +388,8 @@ class Base:
         """
         Replaces annotations on this AST.
 
-        :param new_tuple: the tuple of annotations to replace the old annotations with
-        :returns: a new AST, with the annotations added
+        :param new_tuple:           the tuple of annotations to replace the old annotations with
+        :returns:                   a new AST, with the annotations added
         """
         return self._apply_to_annotations(lambda alist: new_tuple)
 
@@ -396,8 +397,8 @@ class Base:
         """
         Removes an annotation from this AST.
 
-        :param a: the annotation to remove
-        :returns: a new AST, with the annotation removed
+        :param a:                   the annotation to remove
+        :returns:                   a new AST, with the annotation removed
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa != a))
 
@@ -405,8 +406,8 @@ class Base:
         """
         Removes several annotations from this AST.
 
-        :param remove_sequence: a sequence/set of the annotations to remove
-        :returns: a new AST, with the annotations removed
+        :param remove_sequence:     a sequence/set of the annotations to remove
+        :returns:                   a new AST, with the annotations removed
         """
         return self._apply_to_annotations(lambda alist: tuple(oa for oa in alist if oa not in remove_sequence))
 
@@ -429,7 +430,7 @@ class Base:
         else:
             return self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length, inner=inner)
 
-    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False):
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False, parent_prec=15, left=True):
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
@@ -440,59 +441,40 @@ class Base:
                                         LITE_REPR - print short repr for both operations and BVs,
                                         MID_REPR  - print full repr for operations and short for BVs,
                                         FULL_REPR - print full repr of both operations and BVs.
-        :return:                    A string representing the AST
+        :param inner:               whether or not it is an inner AST
+        :param parent_prec:         parent operation precedence level
+        :param left:                whether or not it is a left AST
+        :returns:                   A string representing the AST
         """
-        ast_queue = [(0, iter([self]))]
-        arg_queue = []
-        op_queue = []
+        if max_depth is not None and max_depth <= 0:
+                return '<...>'
 
-        while ast_queue:
-            try:
-                depth, args_iter = ast_queue[-1]
-                arg = next(args_iter)
+        elif self.op in operations.reversed_ops:
+            op = operations.reversed_ops[self.op]
+            args = reversed(self.args)
+        else:
+            op = self.op
+            args = self.args
 
-                if not isinstance(arg, Base):
-                    arg_queue.append(arg)
-                    continue
+        next_max_depth = max_depth-1 if max_depth is not None else None
+        length = self.length if explicit_length else None
+        # if operation is not in op_precedence, assign the "least operation precedence"
+        op_prec = operations.op_precedence[op] if op in operations.op_precedence else 15
 
-                if max_depth is not None:
-                    if depth >= max_depth:
-                        arg_queue.append('<...>')
-                        continue
+        args = [arg.shallow_repr(next_max_depth, explicit_length, details, True, op_prec, idx == 0) \
+                if isinstance(arg, Base) else arg for idx, arg in enumerate(args)]
 
-                if arg.op in operations.reversed_ops:
-                    op_queue.append((depth + 1, operations.reversed_ops[arg.op], len(arg.args), arg.length))
-                    ast_queue.append((depth + 1, reversed(arg.args)))
-
-                else:
-                    op_queue.append((depth + 1, arg.op, len(arg.args), arg.length))
-                    ast_queue.append((depth + 1, iter(arg.args)))
-
-            except StopIteration:
-                ast_queue.pop()
-
-                if op_queue:
-                    depth, op, num_args, length = op_queue.pop()
-
-                    args_repr = arg_queue[-num_args:]
-                    del arg_queue[-num_args:]
-
-                    length = length if explicit_length else None
-                    inner_repr = self._op_repr(op, args_repr, depth > 1, length, details)
-
-                    arg_queue.append(inner_repr)
-
-        assert len(op_queue) == 0, "op_queue is not empty"
-        assert len(ast_queue) == 0, "arg_queue is not empty"
-        assert len(arg_queue) == 1, ("repr_queue has unexpected length", len(arg_queue))
+        prec_diff = parent_prec - op_prec
+        inner_infix_use_par = prec_diff < 0 or prec_diff == 0 and not left
+        inner_repr = self._op_repr(op, args, inner, length, details, inner_infix_use_par)
 
         if not inner:
-            return "<{} {}>".format(self._type_name(), arg_queue.pop())
+            return "<{} {}>".format(self._type_name(), inner_repr)
         else:
-            return arg_queue.pop()
+            return inner_repr
 
     @staticmethod
-    def _op_repr(op, args, inner, length, details):
+    def _op_repr(op, args, inner, length, details, inner_infix_use_par):
         if details < Base.FULL_REPR:
             if op == 'BVS':
                 extras = []
@@ -539,9 +521,9 @@ class Base:
             elif op == 'Concat':
                 return ' .. '.join(map(str, args))
 
-            elif len(args) == 2 and op in operations.infix:
-                value = '{} {} {}'.format(args[0], operations.infix[op], args[1])
-                return '({})'.format(value) if inner else value
+            elif op in operations.infix:
+                value = ' {} '.format(operations.infix[op]).join(args)
+                return '({})'.format(value) if inner and inner_infix_use_par else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
 
@@ -670,8 +652,8 @@ class Base:
         Structurally compares two A objects, and check if their corresponding leaves are definitely the same A object
         (name-wise or hash-identity wise).
 
-        :param o: the other claripy A object
-        :return: True/False
+        :param o:                   the other claripy A object
+        :returns:                   True/False
         """
 
         # TODO: Convert a and b into canonical forms
@@ -704,12 +686,14 @@ class Base:
 
     def replace_dict(self, replacements, variable_set=None, leaf_operation=None):
         """
-        Returns this AST with subexpressions replaced by those that can be found in `replacements` dict.
+        Returns this AST with subexpressions replaced by those that can be found in `replacements`
+        dict.
 
-        :param variable_set:    For optimization, ast's without these variables are not checked for replacing.
-        :param replacements:    A dictionary of hashes to their replacements.
-        :param leaf_operation:  An operation that should be applied to the leaf nodes.
-        :return:                An AST with all instances of ast's in replacements.
+        :param variable_set:        For optimization, ast's without these variables are not checked
+                                        for replacing.
+        :param replacements:        A dictionary of hashes to their replacements.
+        :param leaf_operation:      An operation that should be applied to the leaf nodes.
+        :returns:                   An AST with all instances of ast's in replacements.
         """
         if variable_set is None:
             variable_set = set()
@@ -989,7 +973,7 @@ class Base:
         Whether this AST comes from an uninitialized dereference or not. It's only used in under-constrained symbolic
         execution mode.
 
-        :return: True/False/None (unspecified).
+        :returns:                   True/False/None (unspecified).
         """
 
         #TODO: It should definitely be moved to the proposed Annotation backend.
@@ -1001,7 +985,7 @@ class Base:
         """
         The depth of allocation by lazy-initialization. It's only used in under-constrained symbolic execution mode.
 
-        :return: An integer indicating the allocation depth, or None if it's not from lazy-initialization.
+        :returns:                   An integer indicating the allocation depth, or None if it's not from lazy-initialization.
         """
         # TODO: It should definitely be moved to the proposed Annotation backend.
 
