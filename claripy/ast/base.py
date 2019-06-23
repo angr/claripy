@@ -430,7 +430,7 @@ class Base:
         else:
             return self.shallow_repr(max_depth=max_depth, explicit_length=explicit_length, inner=inner)
 
-    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False, parent_prec=15):
+    def shallow_repr(self, max_depth=8, explicit_length=False, details=LITE_REPR, inner=False, parent_prec=15, left=True):
         """
         Returns a string representation of this AST, but with a maximum depth to
         prevent floods of text being printed.
@@ -460,11 +460,11 @@ class Base:
         # if operation is not in op_precedence, assign the "least operation precedence"
         op_prec = operations.op_precedence[op] if op in operations.op_precedence else 15
 
-        args = [arg.shallow_repr(next_max_depth, explicit_length, details, True, op_prec) \
-                if isinstance(arg, Base) else arg for arg in args]
+        args = [arg.shallow_repr(next_max_depth, explicit_length, details, True, op_prec, idx == 0) \
+                if isinstance(arg, Base) else arg for idx, arg in enumerate(args)]
 
-        parent_higher_prec = parent_prec < op_prec
-        inner_repr = self._op_repr(op, args, inner, length, details, parent_higher_prec)
+        prec_diff = parent_prec - op_prec
+        inner_repr = self._op_repr(op, args, inner, length, details, prec_diff, left)
 
         if not inner:
             return "<{} {}>".format(self._type_name(), inner_repr)
@@ -472,7 +472,7 @@ class Base:
             return inner_repr
 
     @staticmethod
-    def _op_repr(op, args, inner, length, details, parent_higher_prec):
+    def _op_repr(op, args, inner, length, details, prec_diff, left):
         if details < Base.FULL_REPR:
             if op == 'BVS':
                 extras = []
@@ -521,7 +521,7 @@ class Base:
 
             elif op in operations.infix:
                 value = ' {} '.format(operations.infix[op]).join(args)
-                return '({})'.format(value) if inner and parent_higher_prec else value
+                return '({})'.format(value) if inner and (prec_diff < 0 or prec_diff == 0 and not left) else value
 
         return '{}({})'.format(op, ', '.join(map(str, args)))
 

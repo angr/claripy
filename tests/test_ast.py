@@ -29,18 +29,18 @@ def test_associativity():
                             '<BV8 x - (y - (z - w))>')
     nose.tools.assert_equal((x - y - z - w).shallow_repr(),
                             '<BV8 x - y - z - w>')
-    nose.tools.assert_equal((x * y * z * w).shallow_repr(),
-                            (x * (y * (z * w))).shallow_repr())
+    nose.tools.assert_equal((x * (y * (z * w))).shallow_repr(),
+                            (x * y * z * w).shallow_repr())
     nose.tools.assert_equal((x * y * z * w).shallow_repr(),
                             '<BV8 x * y * z * w>')
+    nose.tools.assert_equal((x + y - z - w).shallow_repr(),
+                            '<BV8 x + y - z - w>')
     nose.tools.assert_equal((x + (y - (z - w))).shallow_repr(),
-                            (x + y - (z + w)).shallow_repr())
-    nose.tools.assert_equal((x + y - (z + w)).shallow_repr(),
-                            '<BV8 x + y - (z + w)>')
+                            '<BV8 x + (y - (z - w))>')
+    nose.tools.assert_equal((x * y / z % w).shallow_repr(),
+                            '<BV8 x * y / z % w>')
     nose.tools.assert_equal((x * (y / (z % w))).shallow_repr(),
-                            (x * y / (z % w)).shallow_repr())
-    nose.tools.assert_equal((x * y / (z % w)).shallow_repr(),
-                            '<BV8 x * y / (z % w)>')
+                            '<BV8 x * (y / (z % w))>')
 
 
 if __name__ == '__main__':
