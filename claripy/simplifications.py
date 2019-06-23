@@ -39,6 +39,18 @@ class SimplificationManager:
             return None
         return self._simplifiers[op](*args)
 
+    @staticmethod
+    def deduplicate_ast_list(asts):
+        res = []
+        seen = set()
+        for ast in asts:
+            l1 = len(seen)
+            seen.add(ast.cache_key)
+            l2 = len(seen)
+            if l1 != l2:
+                res.append(ast)
+        return tuple(res)
+
     #
     # The simplifiers.
     #
@@ -322,11 +334,7 @@ class SimplificationManager:
         if len(new_args) < len(args):
             return ast.all_operations.And(*new_args)
 
-        def _flattening_filter(args):
-            # a And a == a
-            return tuple(set(args))
-
-        flattened = SimplificationManager._flatten_simplifier('And', _flattening_filter, *args)
+        flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager.deduplicate_ast_list, *args)
         fargs = flattened.args if flattened is not None else args
 
         # Check if we are left with one argument again
@@ -396,11 +404,7 @@ class SimplificationManager:
         if len(new_args) < len(args):
             return ast.all_operations.Or(*new_args)
 
-        def _flattening_filter(args):
-            # a Or a == a
-            return tuple(set(args))
-
-        return SimplificationManager._flatten_simplifier('Or', _flattening_filter, *args)
+        return SimplificationManager._flatten_simplifier('Or', SimplificationManager.deduplicate_ast_list, *args)
 
     @staticmethod
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
@@ -531,9 +535,18 @@ class SimplificationManager:
         def _flattening_filter(args):
             # since a ^ a == 0, we can safely remove those from args
             # this procedure is done carefully in order to keep the ordering of arguments
-            ctr = collections.Counter(args)
-            unique_args = set(k for k in ctr if ctr[k] % 2 != 0)
-            return tuple([ arg for arg in args if arg in unique_args ])
+            ctr = collections.Counter(ast.cache_key for ast in args)
+            res = []
+            seen = set()
+            for ast in args:
+                if ctr[ast.cache_key] % 2 == 0:
+                    continue
+                l1 = len(seen)
+                seen.add(ast.cache_key)
+                l2 = len(seen)
+                if l1 != l2:
+                    res.append(ast)
+            return tuple(res)
 
         return SimplificationManager._flatten_simplifier('__xor__', _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size()))
 
@@ -549,11 +562,7 @@ class SimplificationManager:
             elif a is b:
                 return a
 
-        def _flattening_filter(args):
-            # a | a == a
-            return tuple(set(args))
-
-        return SimplificationManager._flatten_simplifier('__or__', _flattening_filter, a, b, *args)
+        return SimplificationManager._flatten_simplifier('__or__', SimplificationManager.deduplicate_ast_list, a, b, *args)
 
     @staticmethod
     def bitwise_and_simplifier(a, b, *args):
@@ -577,11 +586,21 @@ class SimplificationManager:
                     # yes!
                     return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
-        def _flattening_filter(args):
-            # a & a == a
-            return tuple(set(args))
+        if (a == 2**a.size()-1).is_true():
+            return b
+        elif (b == 2**a.size()-1).is_true():
+            return a
+        elif (a == b).is_true():
+            return a
+        elif a is b:
+            return a
+        elif a.op == "Concat" and len(a.args) == 2:
+            # maybe we can drop the second argument
+            if (b == 2 ** (a.size() - a.args[0].size()) - 1).is_true():
+                # yes!
+                return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
-        return SimplificationManager._flatten_simplifier('__and__', _flattening_filter, a, b, *args)
+        return SimplificationManager._flatten_simplifier('__and__', SimplificationManager.deduplicate_ast_list, a, b, *args)
 
     @staticmethod
     def boolean_not_simplifier(body):
