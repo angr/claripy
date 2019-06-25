@@ -561,16 +561,22 @@ def test_zero_division_in_cache_mixin():
     assert not s.satisfiable()
 
 def test_nan():
-    s1 = claripy.Solver()
     a = claripy.FPS('a', claripy.FSORT_FLOAT)
+    b = claripy.BVS('b', 32)
+
+    s1 = claripy.Solver()
     s1.add((a + 1).isNaN())
     res = s1.eval(a, 1)[0]
     assert math.isnan(res)
 
     s2 = claripy.Solver()
-    b = claripy.BVS('b', 32)
     s2.add(b.raw_to_fp().isNaN())
     res = s2.eval(b, 1)[0]
+    assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
+
+    s3 = claripy.Solver()
+    s3.add(a.isNaN())
+    res = s3.eval(a.raw_to_bv(), 1)[0]
     assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
 
 

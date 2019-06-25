@@ -51,6 +51,8 @@ solve_count = 0
 
 supports_fp = hasattr(z3, 'fpEQ')
 
+# you can toggle this flag if you want. I don't think it matters
+#z3.set_param('rewriter.hi_fp_unspecified', 'true')
 
 #
 # Utility functions
@@ -558,27 +560,53 @@ class BackendZ3(Backend):
         op_name = op_map[z3_op_nums[decl_num]]
 
         if op_name == 'BitVecVal':
-            if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
-                return self._c_uint64_p.contents.value
-            else:
-                bv_num = int(z3.Z3_get_numeral_string(ctx, ast))
-                return bv_num
+            return self._abstract_bv_val(ctx, ast)
         elif op_name == 'True':
             return True
         elif op_name == 'False':
             return False
-        # FIXME: Special case to "patch" the new model provided in the new z3 version.
-        # In the old version, z3 had a concept of FPToIEEE_unspecified function that was called anytime there was
-        # a call of the function FPToIEEE with a symbolic argument. This function, in my understanding was special cased
-        # by z3 to return 0.
-        # In the new version this function is not present anymore and the model returns an expression of type
-        # fptoieee(Nan). Here we special case that model and we return the same value returned by the old version (0)
-        elif op_name == 'fpToIEEEBV':
-            return 0
         elif op_name in ('FPVal', 'MinusZero', 'MinusInf', 'PlusZero', 'PlusInf', 'NaN'):
             return self._abstract_fp_val(ctx, ast, op_name)
+        elif op_name == 'Concat':
+            # Quirk in how z3 might handle NaN encodings - it will not give us a fully evaluated model
+            # https://github.com/Z3Prover/z3/issues/518
+            # this case will be triggered if the z3 rewriter.hi_fp_unspecified is set to true
+            nargs = z3.Z3_get_app_num_args(ctx, ast)
+            res = 0
+            for i in range(nargs):
+                arg_ast = z3.Z3_get_app_arg(ctx, ast, i)
+                arg_decl = z3.Z3_get_app_decl(ctx, arg_ast)
+                arg_decl_num = z3.Z3_get_decl_kind(ctx, arg_decl)
+                arg_size = z3.Z3_get_bv_sort_size(ctx, z3.Z3_get_sort(ctx, arg_ast))
+
+                neg = False
+                if arg_decl_num == z3.Z3_OP_BNEG:
+                    arg_ast = z3.Z3_get_app_arg(ctx, arg_ast, 0)
+                    arg_decl = z3.Z3_get_app_decl(ctx, arg_ast)
+                    arg_decl_num = z3.Z3_get_decl_kind(ctx, arg_decl)
+                    neg = True
+                if arg_decl_num != z3.Z3_OP_BNUM:
+                    raise BackendError("Weird z3 model")
+
+                arg_int = self._abstract_bv_val(ctx, arg_ast)
+                if neg:
+                    arg_int = (1<<arg_size)-arg_int
+                res <<= arg_size
+                res |= arg_int
+            return res
+        elif op_name == 'fpToIEEEBV':
+            # Another quirk in the way z3 might handle nan encodings. see above
+            # this case will be triggered if the z3 rewriter.hi_fp_unspecified is set to false
+            arg_ast = z3.Z3_get_app_arg(ctx, ast, 0)
+            return self._abstract_fp_encoded_val(ctx, arg_ast)
         else:
             raise BackendError("Unable to abstract Z3 object to primitive")
+
+    def _abstract_bv_val(self, ctx, ast):
+        if z3.Z3_get_numeral_uint64(ctx, ast, self._c_uint64_p):
+            return self._c_uint64_p.contents.value
+        else:
+            return int(z3.Z3_get_numeral_string(ctx, ast))
 
     def _abstract_fp_val(self, ctx, ast, op_name):
         if op_name == 'FPVal':
@@ -602,6 +630,47 @@ class BackendZ3(Backend):
             return float('nan')
         else:
             raise BackendError("Called _abstract_fp_val with unknown type")
+
+    def _abstract_fp_encoded_val(self, ctx, ast):
+        decl = z3.Z3_get_app_decl(ctx, ast)
+        decl_num = z3.Z3_get_decl_kind(ctx, decl)
+        op_name = op_map[z3_op_nums[decl_num]]
+        sort = z3.Z3_get_sort(ctx, ast)
+        ebits = z3.Z3_fpa_get_ebits(ctx, sort)
+        sbits = z3.Z3_fpa_get_sbits(ctx, sort) - 1  # includes sign bit
+
+        if op_name == 'FPVal':
+            # TODO: do better than this
+            fp_mantissa = int(z3.Z3_fpa_get_numeral_significand_string(ctx, ast))
+            fp_exp = int(z3.Z3_fpa_get_numeral_exponent_string(ctx, ast, True))
+            fp_sign_c = ctypes.c_int()
+            z3.Z3_fpa_get_numeral_sign(ctx, ast, ctypes.byref(fp_sign_c))
+            fp_sign = 1 if fp_sign_c.value != 0 else 0
+        elif op_name == 'MinusZero':
+            fp_sign = 1
+            fp_exp = 0
+            fp_mantissa = 0
+        elif op_name == 'MinusInf':
+            fp_sign = 1
+            fp_exp = (1<<ebits) - 1
+            fp_mantissa = 0
+        elif op_name == 'PlusZero':
+            fp_sign = 0
+            fp_exp = 0
+            fp_mantissa = 0
+        elif op_name == 'PlusInf':
+            fp_sign = 0
+            fp_exp = (1<<ebits) - 1
+            fp_mantissa = 0
+        elif op_name == 'NaN':
+            fp_sign = 0
+            fp_exp = (1<<ebits) - 1
+            fp_mantissa = 1
+        else:
+            raise BackendError("Called _abstract_fp_val with unknown type")
+
+        value = (fp_sign << (ebits + sbits)) | (fp_exp << sbits) | fp_mantissa
+        return value
 
     def solver(self, timeout=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
