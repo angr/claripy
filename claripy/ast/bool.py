@@ -15,6 +15,8 @@ import atexit
 atexit.register(cleanup)
 
 class Bool(Base):
+    __slots__ = ()
+
     @staticmethod
     def _from_bool(like, val): #pylint:disable=unused-argument
         return BoolV(val)

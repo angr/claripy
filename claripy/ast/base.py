@@ -77,7 +77,7 @@ class Base:
     __slots__ = [ 'op', 'args', 'variables', 'symbolic', '_hash', '_simplified', '_cached_encoded_name',
                   '_cache_key', '_errored', '_eager_backends', 'length', '_excavated', '_burrowed', '_uninitialized',
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
-                  'depth']
+                  'depth', '__weakref__']
     _hash_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1

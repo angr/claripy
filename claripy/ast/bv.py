@@ -44,6 +44,8 @@ class BV(Bits):
             11111111111111111111111111111100
     """
 
+    __slots__ = ()
+
     def chop(self, bits=1):
         """
         Chops a BV into consecutive sub-slices. Obviously, the length of this BV must be a multiple of bits.

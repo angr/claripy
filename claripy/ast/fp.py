@@ -13,6 +13,9 @@ class FP(Bits):
     :ivar length:   The length of this value
     :ivar sort:     The sort of this value, usually either FSORT_FLOAT or FSORT_DOUBLE
     """
+
+    __slots__ = ()
+
     def to_fp(self, sort, rm=None):
         """
         Convert this float to a different sort
