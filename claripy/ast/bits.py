@@ -15,9 +15,9 @@ class Bits(Base):
 
         self.length = length
 
-    def make_like(self, *args, **kwargs):
+    def make_like(self, op, args, **kwargs):
         if 'length' not in kwargs: kwargs['length'] = self.length
-        return Base.make_like(self, *args, **kwargs)
+        return Base.make_like(self, op, args, **kwargs)
 
     def size(self):
         return self.length

@@ -303,11 +303,10 @@ class Base:
     #        else:
     #            yield backend.convert(a)
 
-    def make_like(self, *args, **kwargs):
-        op, expr_args = args
+    def make_like(self, op, args, **kwargs):
         if kwargs.pop("simplify", False) is True:
             # Try to simplify the expression again
-            simplified = simplifications.simpleton.simplify(op, expr_args)
+            simplified = simplifications.simpleton.simplify(op, args)
         else:
             simplified = None
         if simplified is not None:
@@ -320,10 +319,10 @@ class Base:
         if 'symbolic' not in kwargs and op in all_operations: kwargs['symbolic'] = self.symbolic
         if simplified is None:
             # Cannot simplify the expression anymore
-            return type(self)(*args, **kwargs)
+            return type(self)(op, args, **kwargs)
         else:
             # The expression is simplified
-            r = type(self)(*(op, simplified.args), **kwargs)
+            r = type(self)(op, simplified.args, **kwargs)
             return r
 
     def _rename(self, new_name):
