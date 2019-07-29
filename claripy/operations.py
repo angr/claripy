@@ -162,10 +162,10 @@ def str_extract_check(start_idx, count, str_val):
     else:
         return True, ""
 
-def str_extract_length_calc(start_idx, count, str_val):
+def str_extract_length_calc(start_idx, count, str_val): # pylint: diable=unused-argument
     return count
 
-def int_to_str_length_calc(int_val):
+def int_to_str_length_calc(int_val): # pylint: disable=unused-argument
     return ast.String.MAX_LENGTH
 
 def str_replace_check(*args):
@@ -174,7 +174,7 @@ def str_replace_check(*args):
         return False, "The pattern that has to be replaced is longer than the string itself"
     return True, ""
 
-def substr_length_calc(start_idx, count, strval):
+def substr_length_calc(start_idx, count, strval): # pylint: disable=unused-argument
     # FIXME: How can I get the value of a concrete object without a solver
     return strval.string_length if not count.concrete else count.args[0]
 
@@ -200,10 +200,10 @@ def str_replace_length_calc(*args):
 def strlen_bv_size_calc(s, bitlength):
     return bitlength
 
-def strindexof_bv_size_calc(s1, s2, start_idx, bitlength):
+def strindexof_bv_size_calc(s1, s2, start_idx, bitlength): # pylint: disable=unused-argument
     return bitlength
 
-def strtoint_bv_size_calc(s, bitlength):
+def strtoint_bv_size_calc(s, bitlength): # pylint: disable=unused-argument
     return bitlength
 
 #
@@ -312,7 +312,7 @@ backend_fp_cmp_operations = {
 
 backend_fp_operations = {
     'FPS', 'fpToFP', 'fpToIEEEBV', 'fpFP', 'fpToSBV', 'fpToUBV',
-    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs'
+    'fpNeg', 'fpSub', 'fpAdd', 'fpMul', 'fpDiv', 'fpAbs', 'fpIsNaN', 'fpIsInf',
 } | backend_fp_cmp_operations
 
 backend_strings_operations = {

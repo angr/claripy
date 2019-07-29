@@ -542,9 +542,18 @@ class SimplificationManager:
         def _flattening_filter(args):
             # since a ^ a == 0, we can safely remove those from args
             # this procedure is done carefully in order to keep the ordering of arguments
-            ctr = collections.Counter(args)
-            unique_args = set(k.cache_key for k in ctr if ctr[k] % 2 != 0)
-            return tuple([ arg for arg in args if arg.cache_key in unique_args ])
+            ctr = collections.Counter(arg.cache_key for arg in args)
+            res = []
+            seen = set()
+            for arg in args:
+                if ctr[arg.cache_key] % 2 == 0:
+                    continue
+                l1 = len(seen)
+                seen.add(arg.cache_key)
+                l2 = len(seen)
+                if l1 != l2:
+                    res.append(arg)
+            return tuple(res)
 
         return SimplificationManager._flatten_simplifier('__xor__', _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size()))
 

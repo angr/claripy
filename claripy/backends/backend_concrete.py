@@ -39,7 +39,7 @@ class BackendConcrete(Backend):
         return bv.BVV(value, size)
 
     @staticmethod
-    def StringV(value, size):
+    def StringV(value, size): # pylint: disable=unused-argument
         if not value:
             raise BackendError("can't handle empty Strings")
         return strings.StringV(value)
@@ -85,8 +85,7 @@ class BackendConcrete(Backend):
     def _If(self, b, t, f): #pylint:disable=no-self-use,unused-argument
         if not isinstance(b, bool):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
-        else:
-            return t if b else f
+        return t if b else f
 
     def _size(self, e):
         if isinstance(e, (bool, numbers.Number)):
@@ -125,7 +124,7 @@ class BackendConcrete(Backend):
         elif isinstance(e, fp.FPV):
             return FPV(e.value, e.sort)
         elif isinstance(e, strings.StringV):
-            return StringV(e.value) 
+            return StringV(e.value)
         else:
             raise BackendError("Couldn't abstract object of type {}".format(type(e)))
 
@@ -141,12 +140,14 @@ class BackendConcrete(Backend):
     def _to_primitive(expr):
         if isinstance(expr, bv.BVV):
             return expr.value
-        if isinstance(expr, fp.FPV):
+        elif isinstance(expr, fp.FPV):
             return expr.value
-        if isinstance(expr, bool):
+        elif isinstance(expr, bool):
             return expr
-        if isinstance(expr, numbers.Number):
+        elif isinstance(expr, numbers.Number):
             return expr
+        else:
+            raise BackendError("idk how to turn this into a primitive")
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         if not all(extra_constraints):
