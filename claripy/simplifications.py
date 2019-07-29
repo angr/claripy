@@ -39,6 +39,18 @@ class SimplificationManager:
             return None
         return self._simplifiers[op](*args)
 
+    @staticmethod
+    def _deduplicate_filter(args):
+        seen = set()
+        new_args = []
+        for arg in args:
+            key = arg.cache_key
+            if key in seen:
+                continue
+            seen.add(key)
+            new_args.append(arg)
+        return new_args
+
     #
     # The simplifiers.
     #
@@ -317,16 +329,12 @@ class SimplificationManager:
         new_args = new_args[:ctr]
 
         if not new_args:
-            return ast.bool.true
+            return ast.true
 
         if len(new_args) < len(args):
             return ast.all_operations.And(*new_args)
 
-        def _flattening_filter(args):
-            # a And a == a
-            return tuple(set(args))
-
-        flattened = SimplificationManager._flatten_simplifier('And', _flattening_filter, *args)
+        flattened = SimplificationManager._flatten_simplifier('And', SimplificationManager._deduplicate_filter, *args)
         fargs = flattened.args if flattened is not None else args
 
         # Check if we are left with one argument again
@@ -393,31 +401,16 @@ class SimplificationManager:
             elif not a.is_false():
                 new_args.append(a)
 
+        if not new_args:
+            return ast.false
         if len(new_args) < len(args):
             return ast.all_operations.Or(*new_args)
 
-        def _flattening_filter(args):
-            # a Or a == a
-            return tuple(set(args))
-
-        return SimplificationManager._flatten_simplifier('Or', _flattening_filter, *args)
+        return SimplificationManager._flatten_simplifier('Or', SimplificationManager._deduplicate_filter, *args)
 
     @staticmethod
     def _flatten_simplifier(op_name, filter_func, *args, **kwargs):
-        # we can only do things here if there are multiple BVVs or if there's another of our op
-        bvv_count = 0
-        for a in args:
-            op = getattr(a, 'op', None)
-            if op == op_name:
-                break  # analysis ok
-            if op == 'BVV':
-                bvv_count += 1
-        else:
-            # no op_names found. are there enough bvvs to warrent analysis?
-            if bvv_count < 2:
-                return
-
-        # we cannot further flatten if any top-level argument has non-relocatable annotaitons
+        # we cannot further flatten if any top-level argument has non-relocatable annotations
         if any(not anno.relocatable for anno in itertools.chain.from_iterable(arg.annotations for arg in args)):
             return
 
@@ -532,8 +525,8 @@ class SimplificationManager:
             # since a ^ a == 0, we can safely remove those from args
             # this procedure is done carefully in order to keep the ordering of arguments
             ctr = collections.Counter(args)
-            unique_args = set(k for k in ctr if ctr[k] % 2 != 0)
-            return tuple([ arg for arg in args if arg in unique_args ])
+            unique_args = set(k.cache_key for k in ctr if ctr[k] % 2 != 0)
+            return tuple([ arg for arg in args if arg.cache_key in unique_args ])
 
         return SimplificationManager._flatten_simplifier('__xor__', _flattening_filter, a, b, *args, initial_value=ast.all_operations.BVV(0, a.size()))
 
@@ -549,11 +542,7 @@ class SimplificationManager:
             elif a is b:
                 return a
 
-        def _flattening_filter(args):
-            # a | a == a
-            return tuple(set(args))
-
-        return SimplificationManager._flatten_simplifier('__or__', _flattening_filter, a, b, *args)
+        return SimplificationManager._flatten_simplifier('__or__', SimplificationManager._deduplicate_filter, a, b, *args)
 
     @staticmethod
     def bitwise_and_simplifier(a, b, *args):
@@ -577,11 +566,7 @@ class SimplificationManager:
                     # yes!
                     return ast.all_operations.ZeroExt(a.args[0].size(), a.args[1])
 
-        def _flattening_filter(args):
-            # a & a == a
-            return tuple(set(args))
-
-        return SimplificationManager._flatten_simplifier('__and__', _flattening_filter, a, b, *args)
+        return SimplificationManager._flatten_simplifier('__and__', SimplificationManager._deduplicate_filter, a, b, *args)
 
     @staticmethod
     def boolean_not_simplifier(body):

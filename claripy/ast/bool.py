@@ -1,6 +1,6 @@
 import logging
 
-from ..ast.base import Base, _make_name
+from ..ast.base import Base, _make_name, ASTCacheKey
 
 l = logging.getLogger('claripy.ast.bool')
 
