@@ -110,8 +110,21 @@ def test_concrete_flatten():
     a = claripy.BVS('a', 32)
     b = a + 10
     c = 10 + b
-    nose.tools.assert_is(c, a + 20)
+    d = a + 20
+    nose.tools.assert_is(c, d)
 
+    # to future test writers or debuggers: whether the answer is b_neg or b is not particularly important
+    e = a - 10
+    f = e + 20
+    b_neg = a - -10
+    nose.tools.assert_is(f, b_neg)
+
+    g = e - 10
+    h = a - 20
+    nose.tools.assert_is(g, h)
+
+    i = d - 10
+    nose.tools.assert_is(i, b)
 
 def perf():
     import timeit

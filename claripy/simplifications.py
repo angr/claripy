@@ -440,6 +440,10 @@ class SimplificationManager:
 
     @staticmethod
     def bitwise_add_simplifier(*args):
+        if len(args) == 2 and args[1].op == 'BVV' and args[0].op == '__sub__' and args[0].args[1].op == 'BVV':
+            # flatten add over sub
+            # (x - y) + z ==> x - (y - z)
+            return args[0].args[0] - (args[0].args[1] - args[1])
         return SimplificationManager._flatten_simplifier('__add__', lambda new_args: tuple(a for a in new_args if a.op != 'BVV' or a.args[0] != 0), *args, initial_value=ast.all_operations.BVV(0, len(args[0])))
 
     @staticmethod
@@ -448,10 +452,24 @@ class SimplificationManager:
 
     @staticmethod
     def bitwise_sub_simplifier(a, b):
-        if b is ast.all_operations.BVV(0, a.size()):
-            return a
+        if b.op == 'BVV':
+            # many optimizations if b is concrete - effectively flattening
+            if b.args[0] == 0:
+                return a
+            elif a.op == '__sub__' and a.args[1].op == 'BVV':
+                # flatten right-heavy trees
+                # (x - y) - z ==> x - (y + z)
+                return a.args[0] - (a.args[1] + b)
+            elif a.op == '__add__' and a.args[-1].op == 'BVV':
+                # flatten sub over add
+                # (x + y) - z ==> x + (y - z)
+                if len(a.args) == 2:
+                    return a.args[0] + (a.args[-1] - b)
+                else:
+                    return a.swap_args(a.args[:-1] + (a.args[-1] - b,))
         elif a is b or (a == b).is_true():
             return ast.all_operations.BVV(0, a.size())
+        return None
 
     # recognize b-bit z=signedmax(q,r) from this idiom:
     # s=q-r;t=q^r;u=s^q;v=u&t;w=v^s;x=rshift(w,b-1);y=x&t;z=q^y
