@@ -86,7 +86,7 @@ def _z3_decl_name_str(ctx, decl):
 
 class SmartLRUCache(LRUCache):
     def __init__(self, maxsize, getsizeof=None, evict=None):
-        LRUCache.__init__(self, maxsize, getsizeof)
+        LRUCache.__init__(self, maxsize, getsizeof=getsizeof)
         self._evict = evict
 
     def popitem(self):
