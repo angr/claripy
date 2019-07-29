@@ -151,15 +151,35 @@ def is_false(e, exact=None): #pylint:disable=unused-argument
     return False
 
 def ite_dict(i, d, default):
-    return ite_cases([ (i == c, v) for c,v in d.items() ], default)
+    """
+    Return an expression of if-then-else trees which expresses a switch tree
+
+    :param i: The variable which may take on multiple values affecting the final result
+    :param d: A dict mapping possible values for i to values which the result could be
+    :param default: A default value that the expression should take on if `i` matches none of the keys of `d`
+    :return: An expression encoding the result of the above
+    """
+    return ite_cases([ ((i.ast if type(i) is ASTCacheKey else i) == c, v) for c,v in d.items() ], default)
 
 def ite_cases(cases, default):
+    """
+    Return an expression of if-then-else trees which expresses a series of alternatives
+
+    :param cases: A list of tuples (c, v). `c` is the condition under which `v` should be the result of the expression
+    :param default: A default value that the expression should take on if none of the `c` conditions are satisfied
+    :return: An expression encoding the result of the above
+    """
     sofar = default
     for c,v in reversed(list(cases)):
         sofar = If(c, v, sofar)
     return sofar
 
 def reverse_ite_cases(ast):
+    """
+    Given an expression created by `ite_cases`, produce the cases that generated it
+    :param ast:
+    :return:
+    """
     queue = [(true, ast)]
     while queue:
         condition, ast = queue.pop(0)
