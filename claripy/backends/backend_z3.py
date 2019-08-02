@@ -481,22 +481,7 @@ class BackendZ3(Backend):
 
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
-            args = [ ]
-
-            #
-            # TODO: DEPRECATED: remove the following after some reasonable amount of time.
-            #
-
-            if mystery_name == 'bvsmod_i':
-                l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
-                op_name = '__mod__'
-                decl_num = z3.Z3_OP_BSMOD
-            elif mystery_name == 'bvsdiv_i':
-                l.error("Your Z3 is out of date. Please update angr-only-z3-custom or future releases of claripy will fail.")
-                op_name = 'SDiv'
-                decl_num = z3.Z3_OP_BSDIV
-            else:
-                l.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
+            l.error("Mystery operation %s in BackendZ3._abstract_internal. Please report this.", mystery_name)
         elif op_name == 'Extract':
             hi = z3.Z3_get_decl_int_parameter(ctx, decl, 0)
             lo = z3.Z3_get_decl_int_parameter(ctx, decl, 1)
