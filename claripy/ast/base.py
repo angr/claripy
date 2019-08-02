@@ -517,8 +517,10 @@ class Base:
                 value = '0#{} .. {}'.format(args[0], args[1])
                 return '({})'.format(value) if inner else value
 
-            elif op == 'Concat':
-                return ' .. '.join(map(str, args))
+            elif op in operations.prefix:
+                assert len(args) == 1
+                value = '{}{}'.format(operations.prefix[op], args[0])
+                return '({})'.format(value) if inner and inner_infix_use_par else value
 
             elif op in operations.infix:
                 value = ' {} '.format(operations.infix[op]).join(args)

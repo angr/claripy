@@ -443,9 +443,18 @@ infix = {
     'Concat': '..',
 }
 
+prefix = {
+    'Not': '!',
+    '__neg__': '-',
+    '__invert__': '~',
+}
+
 op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_precedence
     # precedence: 2
     '__pow__': 2,
+    'Not': 2,
+    '__neg__': 2,
+    '__invert__': 2,
 
     # precedence: 3
     '__mul__': 3,
