@@ -29,6 +29,9 @@ def z3_expr_to_smt2(f, status="unknown", name="benchmark", logic=""):
       v = (z3.Ast * 0)()
       return z3.Z3_benchmark_to_smtlib_string(f.ctx_ref(), name, logic, status, "", 0, v, f.as_ast())
 
+def claripy_solver_to_smt2(s):
+    return s._get_solver().to_smt2()
+
 def _add_memory_pressure(p):
     """
     PyPy's garbage collector is not aware of memory uses happening inside native code. When performing memory-intensive
