@@ -694,6 +694,15 @@ class BackendZ3(Backend):
         else:
             s.add(*c)
 
+    def add(self, s, c, track=False):
+        converted = self.convert_list(c)
+        if track:
+            for a, nice_ast in zip(c, converted):
+                ast = nice_ast.ast
+                h = self._z3_ast_hash(ast)
+                self._ast_cache[h] = (a, ast)
+        return self._add(s, converted, track=track)
+
     def _unsat_core(self, s):
         cores = s.unsat_core()
         constraints = [ ]
