@@ -59,7 +59,10 @@ class String(Bits):
     def _from_BV(like, value): # pylint: disable=unused-argument
         return value
 
-
+    @staticmethod
+    def _from_str(like, value):
+        return StringV(value)
+    
     def strReplace(self, str_to_replace, replacement):
         """
         Replace the first occurence of str_to_replace with replacement

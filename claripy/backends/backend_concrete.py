@@ -142,6 +142,8 @@ class BackendConcrete(Backend):
             return expr.value
         elif isinstance(expr, fp.FPV):
             return expr.value
+        elif isinstance(expr, strings.StringV):
+            return expr.value
         elif isinstance(expr, bool):
             return expr
         elif isinstance(expr, numbers.Number):

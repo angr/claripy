@@ -46,6 +46,7 @@ class ModelCache:
             all_operations.BVV(self.model.get(a.args[0], 0), a.length) if a.op == 'BVS' else
             all_operations.BoolV(self.model.get(a.args[0], True)) if a.op == 'BoolS' else
             all_operations.FPV(self.model.get(a.args[0], 0.0), a.args[1]) if a.op == 'FPS' else
+            all_operations.StringV(self.model.get(a.args[0], "")) if a.op == 'StringS' else
             a
         )
 

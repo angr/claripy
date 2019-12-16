@@ -156,6 +156,9 @@ class BackendZ3(Backend):
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
 
+        # String operations
+        self._op_raw['StrIndexOf'] = self._op_raw_StrIndexOf
+
     # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
     # "proposed annotation backend" or wherever will prevent it from being part of the object
     # identity. also whenever the VSA attributes get the fuck out of BVS as well
@@ -587,6 +590,16 @@ class BackendZ3(Backend):
             # this case will be triggered if the z3 rewriter.hi_fp_unspecified is set to false
             arg_ast = z3.Z3_get_app_arg(ctx, ast, 0)
             return self._abstract_fp_encoded_val(ctx, arg_ast)
+        elif op_name == 'INTERNAL' and self._abstract_string_check(ctx, ast):
+            # Quirk in how z3 encodes string constants
+            try:
+                assert(z3.Z3_get_decl_num_parameters(ctx, decl) == 1)
+                assert(z3.Z3_get_decl_parameter_kind(ctx, decl, 0) == z3.Z3_PK_SYMBOL)
+                symb = z3.Z3_get_decl_symbol_parameter(ctx, decl, 0)
+                assert(z3.Z3_get_symbol_kind(ctx, symb) == z3.Z3_STRING_SYMBOL)
+                return z3.Z3_get_symbol_string(ctx, symb)
+            except AssertionError:
+                raise BackendError("Weird z3 model")
         else:
             raise BackendError("Unable to abstract Z3 object to primitive")
 
@@ -659,6 +672,23 @@ class BackendZ3(Backend):
 
         value = (fp_sign << (ebits + sbits)) | (fp_exp << sbits) | fp_mantissa
         return value
+
+    def _abstract_string_check(self, ctx, ast):
+        # Check whether ast encodes a string constant
+        ast_sort = z3.Z3_get_sort(ctx, ast)
+        ast_sort_kind = z3.Z3_get_sort_kind(ctx, ast_sort)
+        if ast_sort_kind == z3.Z3_SEQ_SORT:
+            # At this point we know ast encodes some kind of sequence
+            seq_basis_sort = z3.Z3_get_seq_sort_basis(ctx, ast_sort)
+            seq_basis_sort_kind = z3.Z3_get_sort_kind(ctx, seq_basis_sort)
+            if seq_basis_sort_kind == z3.Z3_BV_SORT:
+                # At this point we know ast encodes a sequence of BVs
+                seq_basis_width = z3.Z3_get_bv_sort_size(ctx, seq_basis_sort)
+                if seq_basis_width == 8:
+                    # At this point we know ast encodes a sequence of 8-bit BVs
+                    # so we have a string! (per z3's definition of a string)
+                    return True
+        return False
 
     def solver(self, timeout=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
@@ -1265,7 +1295,7 @@ class BackendZ3(Backend):
     @condom
     def _op_raw_SGE(a, b):
         return a >= b
-
+        
     @staticmethod
     @condom
     def _op_raw_SDiv(a, b):
@@ -1274,6 +1304,14 @@ class BackendZ3(Backend):
     def _identical(self, a, b):
         return a.eq(b)
 
+    @staticmethod
+    @condom
+    def _op_raw_StrIndexOf(string, pattern, start_idx, bitlength):
+        return z3.Int2BV(
+            z3.IndexOf(string, pattern, z3.BV2Int(start_idx)),
+            bitlength
+        )
+ 
 #
 # this is for the actual->abstract conversion above
 #
@@ -1425,6 +1463,7 @@ op_map = {
     'Z3_OP_FPA_RM_TOWARD_POSITIVE': 'RM_RTP',
     'Z3_OP_FPA_RM_TOWARD_NEGATIVE': 'RM_RTN',
 
+    'Z3_OP_INTERNAL': 'INTERNAL',
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
 
