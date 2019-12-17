@@ -597,7 +597,8 @@ class BackendZ3(Backend):
                 assert(z3.Z3_get_decl_parameter_kind(ctx, decl, 0) == z3.Z3_PK_SYMBOL)
                 symb = z3.Z3_get_decl_symbol_parameter(ctx, decl, 0)
                 assert(z3.Z3_get_symbol_kind(ctx, symb) == z3.Z3_STRING_SYMBOL)
-                return z3.Z3_get_symbol_string(ctx, symb)
+                return z3.Z3_get_symbol_string(ctx, symb).encode().decode('unicode_escape').encode()
+                # see https://stackoverflow.com/a/58829514/3154996
             except AssertionError:
                 raise BackendError("Weird z3 model")
         else:
@@ -1346,7 +1347,7 @@ op_map = {
     'Z3_OP_ADD': '__add__',
     'Z3_OP_SUB': '__sub__',
     'Z3_OP_UMINUS': '__neg__',
-    'Z3_OP_MUL': '__mul__',
+    'Z3_OP_MUL': '__mul__', # TODO: convert to python bytearray
     'Z3_OP_DIV': 'SDiv',
     'Z3_OP_IDIV': 'SDiv',
     'Z3_OP_REM': '__mod__',
