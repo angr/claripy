@@ -157,7 +157,18 @@ class BackendZ3(Backend):
         self._op_raw['__and__'] = self._op_and
 
         # String operations
+        self._op_raw['StrConcat'] = self._op_raw_StrConcat
+        self._op_raw['StrSubstr'] = self._op_raw_StrSubstr
+        self._op_raw['StrExtract'] = self._op_raw_StrExtract
+        self._op_raw['StrReplace'] = self._op_raw_StrReplace
+        self._op_raw['StrLen'] = self._op_raw_StrLen
+        self._op_raw['StrContains'] = self._op_Raw_StrContains
+        self._op_raw['StrPrefixOf'] = self._op_raw_StrPrefixOf
+        self._op_raw['StrSuffixOf'] = self._op_raw_StrSuffixOf
         self._op_raw['StrIndexOf'] = self._op_raw_StrIndexOf
+        self._op_raw['StrToInt'] = self._op_raw_StrToInt
+        self._op_raw['StrIsDigit'] = self._op_raw_StrIsDigit
+        self._op_raw['IntToStr'] = self._op_raw_IntToStr      
 
     # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
     # "proposed annotation backend" or wherever will prevent it from being part of the object
@@ -1305,6 +1316,47 @@ class BackendZ3(Backend):
     def _identical(self, a, b):
         return a.eq(b)
 
+    # String operations:
+
+    @staticmethod
+    @condom
+    def _op_raw_StrConcat(*args):
+        return z3.Concat(*args)
+
+    @staticmethod
+    @condom
+    def _op_raw_StrSubstr(start_idx, count, initial_string):
+        return z3.SubString(
+            initial_string,
+            z3.BV2Int(start_idx),
+            z3.BV2Int(count)
+        )
+
+    @staticmethod
+    @condom
+    def _op_raw_StrExtract(high, low, str_val):
+        return z3.SubString(str_val, low, high + 1 - low)
+
+    @staticmethod
+    @condom
+    def _op_raw_StrLen(input_string, bitlength):
+        return z3.Int2BV(z3.Length(input_string), bitlength)
+
+    @staticmethod
+    @condom
+    def _op_raw_StrContains(input_string, substring):
+        return z3.Contains(input_string, substring)
+
+    @staticmethod
+    @condom
+    def _op_raw_StrPrefixOf(prefix, input_string):
+        return z3.PrefixOf(prefix, input_string)
+
+    @staticmethod
+    @condom
+    def _op_raw_StrSuffixOf(suffix, input_string):
+        return z3.SuffixOf(suffix, input_string)
+
     @staticmethod
     @condom
     def _op_raw_StrIndexOf(string, pattern, start_idx, bitlength):
@@ -1312,7 +1364,21 @@ class BackendZ3(Backend):
             z3.IndexOf(string, pattern, z3.BV2Int(start_idx)),
             bitlength
         )
- 
+
+    @staticmethod
+    @condom
+    def _op_raw_StrToInt(input_string):
+        return z3.StrToInt(input_string)
+
+    @staticmethod
+    @condom
+    def _op_raw_IntToStr(input_bvv):
+        return z3.IntToStr(z3.BV2Int(input_bvv))
+
+    @staticmethod
+    @condom
+    def _op_raw_UnitStr(input_bvv):
+        return z3.Unit(input_bvv)
 #
 # this is for the actual->abstract conversion above
 #
