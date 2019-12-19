@@ -5,7 +5,7 @@ from .bv import BVV
 
 class StringV(BackendObject):
     def __init__(self, value):
-        self.value = bytes(value)
+        self.value = value 
 
     def __repr__(self):
         return 'StringV(%s)' % (self.value)
