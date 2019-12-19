@@ -1412,7 +1412,7 @@ op_map = {
     'Z3_OP_ADD': '__add__',
     'Z3_OP_SUB': '__sub__',
     'Z3_OP_UMINUS': '__neg__',
-    'Z3_OP_MUL': '__mul__', # TODO: convert to python bytearray
+    'Z3_OP_MUL': '__mul__',
     'Z3_OP_DIV': 'SDiv',
     'Z3_OP_IDIV': 'SDiv',
     'Z3_OP_REM': '__mod__',
