@@ -160,15 +160,14 @@ class BackendZ3(Backend):
         self._op_raw['StrConcat'] = self._op_raw_StrConcat
         self._op_raw['StrSubstr'] = self._op_raw_StrSubstr
         self._op_raw['StrExtract'] = self._op_raw_StrExtract
-        self._op_raw['StrReplace'] = self._op_raw_StrReplace
         self._op_raw['StrLen'] = self._op_raw_StrLen
-        self._op_raw['StrContains'] = self._op_Raw_StrContains
+        self._op_raw['StrContains'] = self._op_raw_StrContains
         self._op_raw['StrPrefixOf'] = self._op_raw_StrPrefixOf
         self._op_raw['StrSuffixOf'] = self._op_raw_StrSuffixOf
         self._op_raw['StrIndexOf'] = self._op_raw_StrIndexOf
         self._op_raw['StrToInt'] = self._op_raw_StrToInt
-        self._op_raw['StrIsDigit'] = self._op_raw_StrIsDigit
-        self._op_raw['IntToStr'] = self._op_raw_IntToStr      
+        self._op_raw['IntToStr'] = self._op_raw_IntToStr     
+        self._op_raw['UnitStr'] = self._op_raw_UnitStr 
 
     # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
     # "proposed annotation backend" or wherever will prevent it from being part of the object
