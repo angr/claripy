@@ -161,6 +161,7 @@ class BackendZ3(Backend):
         self._op_raw['StrSubstr'] = self._op_raw_StrSubstr
         self._op_raw['StrExtract'] = self._op_raw_StrExtract
         self._op_raw['StrLen'] = self._op_raw_StrLen
+        self._op_raw['StrReplace'] = self._op_raw_StrReplace
         self._op_raw['StrContains'] = self._op_raw_StrContains
         self._op_raw['StrPrefixOf'] = self._op_raw_StrPrefixOf
         self._op_raw['StrSuffixOf'] = self._op_raw_StrSuffixOf
@@ -1340,6 +1341,11 @@ class BackendZ3(Backend):
     @condom
     def _op_raw_StrLen(input_string, bitlength):
         return z3.Int2BV(z3.Length(input_string), bitlength)
+
+    @staticmethod
+    @condom
+    def _op_raw_StrReplace(input_string, target, replacement):
+        return z3.Replace(input_string, target, replacement)
 
     @staticmethod
     @condom
