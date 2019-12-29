@@ -152,9 +152,9 @@ StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
 StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
 StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
-IntToStr = operations.op("IntToStr", BV, String, calc_length=operations.int_to_str_length_calc, bound=False)
-StrIsDigit = operations.op("StrIsDigit", String, Bool, bound=False)
-UnitStr = operations.op("UnitStr", BV, String, bound=False) # convert BV to single-char string
+IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc, bound=False)
+StrIsDigit = operations.op("StrIsDigit", (String,), Bool, bound=False)
+UnitStr = operations.op("UnitStr", (BV,), String, bound=False) # convert BV to single-char string
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)

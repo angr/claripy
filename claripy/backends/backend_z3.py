@@ -122,6 +122,7 @@ class BackendZ3(Backend):
 
         # and the operations
         all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
+        all_ops |= backend_strings_operations - {'StrIsDigit'} 
         for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
@@ -155,20 +156,6 @@ class BackendZ3(Backend):
         self._op_raw['__or__'] = self._op_or
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
-
-        # String operations
-        self._op_raw['StrConcat'] = self._op_raw_StrConcat
-        self._op_raw['StrSubstr'] = self._op_raw_StrSubstr
-        self._op_raw['StrExtract'] = self._op_raw_StrExtract
-        self._op_raw['StrLen'] = self._op_raw_StrLen
-        self._op_raw['StrReplace'] = self._op_raw_StrReplace
-        self._op_raw['StrContains'] = self._op_raw_StrContains
-        self._op_raw['StrPrefixOf'] = self._op_raw_StrPrefixOf
-        self._op_raw['StrSuffixOf'] = self._op_raw_StrSuffixOf
-        self._op_raw['StrIndexOf'] = self._op_raw_StrIndexOf
-        self._op_raw['StrToInt'] = self._op_raw_StrToInt
-        self._op_raw['IntToStr'] = self._op_raw_IntToStr     
-        self._op_raw['UnitStr'] = self._op_raw_UnitStr 
 
     # XXX this is a HUGE HACK that should be removed whenever uninitialized gets moved to the
     # "proposed annotation backend" or wherever will prevent it from being part of the object
@@ -1372,8 +1359,8 @@ class BackendZ3(Backend):
 
     @staticmethod
     @condom
-    def _op_raw_StrToInt(input_string):
-        return z3.StrToInt(input_string)
+    def _op_raw_StrToInt(input_string, bitlength):
+        return z3.Int2BV(z3.StrToInt(input_string), bitlength)
 
     @staticmethod
     @condom
@@ -1544,7 +1531,7 @@ from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..ast.strings import StringV, StringS
-from ..operations import backend_operations, backend_fp_operations
+from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM, RM_NearestTiesEven, RM_NearestTiesAwayFromZero, RM_TowardsPositiveInf, RM_TowardsNegativeInf, RM_TowardsZero
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
 from .. import _all_operations
