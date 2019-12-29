@@ -1294,7 +1294,7 @@ class BackendZ3(Backend):
     @condom
     def _op_raw_SGE(a, b):
         return a >= b
-        
+
     @staticmethod
     @condom
     def _op_raw_SDiv(a, b):
