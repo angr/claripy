@@ -59,7 +59,10 @@ class String(Bits):
     def _from_BV(like, value): # pylint: disable=unused-argument
         return value
 
-
+    @staticmethod
+    def _from_str(like, value):
+        return StringV(value)
+    
     def strReplace(self, str_to_replace, replacement):
         """
         Replace the first occurence of str_to_replace with replacement
@@ -149,8 +152,9 @@ StrPrefixOf = operations.op("StrPrefixOf", (String, String), Bool, bound=False)
 StrSuffixOf = operations.op("StrSuffixOf", (String, String), Bool, bound=False)
 StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_length=operations.strindexof_bv_size_calc, bound=False)
 StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
-IntToStr = operations.op("IntToStr", BV, String, calc_length=operations.int_to_str_length_calc, bound=False)
-StrIsDigit = operations.op("StrIsDigit", String, Bool, bound=False)
+IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc, bound=False)
+StrIsDigit = operations.op("StrIsDigit", (String,), Bool, bound=False)
+UnitStr = operations.op("UnitStr", (BV,), String, bound=False) # convert BV to single-char string
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -170,3 +174,4 @@ String.StrIndexOf = staticmethod(StrIndexOf)
 String.StrToInt = staticmethod(StrToInt)
 String.StrIsDigit = staticmethod(StrIsDigit)
 String.IntToStr = staticmethod(IntToStr)
+String.UnitStr = staticmethod(UnitStr)
