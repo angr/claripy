@@ -2,10 +2,10 @@ import unittest
 import claripy
 import nose
 from claripy.backends.backend_smtlib_solvers.cvc4_popen import SolverBackendCVC4
-from test_backend_smt_solver import SmtLibSolverTest
+import common_backend_smt_solver
 
 
-class SmtLibSolverTest_CVC4(SmtLibSolverTest):
+class SmtLibSolverTest_CVC4(common_backend_smt_solver.SmtLibSolverTestBase):
     def get_solver(self):
         if 'smtlib_cvc4' not in claripy.backends._backends_by_name:
             raise nose.SkipTest()

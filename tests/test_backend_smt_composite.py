@@ -2,10 +2,10 @@ import unittest
 import claripy
 import nose
 from claripy.backends.backend_smtlib_solvers.z3_popen import SolverBackendZ3
-from test_backend_smt_solver import SmtLibSolverTest
+import common_backend_smt_solver
 
 
-class SmtLibSolverTest_Z3(SmtLibSolverTest):
+class SmtLibSolverTest_Z3(common_backend_smt_solver.SmtLibSolverTestBase):
     def get_solver(self):
         # Skip these test for now because of a problem with pysmt
         raise nose.SkipTest()

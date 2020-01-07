@@ -1,4 +1,3 @@
-from abc import abstractmethod
 import nose
 from functools import wraps
 
@@ -17,8 +16,7 @@ def if_installed(f):
 KEEP_TEST_PERFORMANT = True
 
 
-class SmtLibSolverTest(TestSMTLibBackend):
-    @abstractmethod
+class SmtLibSolverTestBase(TestSMTLibBackend):
     def get_solver(self):
         raise nose.SkipTest()
         # raise NotImplementedError

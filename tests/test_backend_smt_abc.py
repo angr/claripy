@@ -1,10 +1,10 @@
 import unittest
 import claripy
 import nose
-from test_backend_smt_solver import SmtLibSolverTest
+import common_backend_smt_solver
 
 
-class SmtLibSolverTest_ABC(SmtLibSolverTest):
+class SmtLibSolverTest_ABC(common_backend_smt_solver.SmtLibSolverTestBase):
     def get_solver(self):
         if 'smtlib_abc' not in claripy.backends._backends_by_name:
             raise nose.SkipTest()
