@@ -54,8 +54,8 @@ solve_count = 0
 
 supports_fp = hasattr(z3, 'fpEQ')
 
-# you can toggle this flag if you want. I don't think it matters
-#z3.set_param('rewriter.hi_fp_unspecified', 'true')
+# as of z3 4.8.7.0 this seems to matter
+z3.set_param('rewriter.hi_fp_unspecified', 'true')
 
 #
 # Utility functions
@@ -559,6 +559,7 @@ class BackendZ3(Backend):
             # Quirk in how z3 might handle NaN encodings - it will not give us a fully evaluated model
             # https://github.com/Z3Prover/z3/issues/518
             # this case will be triggered if the z3 rewriter.hi_fp_unspecified is set to true
+            # update 6 jan 2020: idk if this is true anymore
             nargs = z3.Z3_get_app_num_args(ctx, ast)
             res = 0
             for i in range(nargs):
@@ -585,6 +586,7 @@ class BackendZ3(Backend):
         elif op_name == 'fpToIEEEBV':
             # Another quirk in the way z3 might handle nan encodings. see above
             # this case will be triggered if the z3 rewriter.hi_fp_unspecified is set to false
+            # update 6 jan 2020: idk if this is true anymore
             arg_ast = z3.Z3_get_app_arg(ctx, ast, 0)
             return self._abstract_fp_encoded_val(ctx, arg_ast)
         else:
