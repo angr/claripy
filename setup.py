@@ -19,6 +19,7 @@ setup(
         'z3-solver>=4.8.5.0',
         'future',
         'cachetools',
+        'decorator',
         'pysmt',
     ],
     description='An abstraction layer for constraint solvers',

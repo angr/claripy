@@ -1,17 +1,17 @@
 import nose
-from functools import wraps
+from decorator import decorator
 
 import claripy
 from test_backend_smt import TestSMTLibBackend
 
-def if_installed(f):
-    @wraps(f)
-    def inner(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except claripy.errors.MissingSolverError:
-            raise nose.SkipTest()
-    return inner
+# use of decorator instead of the usual pattern is important because nose2 will check the argspec and wraps does not
+# preserve that!
+@decorator
+def if_installed(f, *args, **kwargs):
+    try:
+        return f(*args, **kwargs)
+    except claripy.errors.MissingSolverError:
+        raise nose.SkipTest()
 
 KEEP_TEST_PERFORMANT = True
 
