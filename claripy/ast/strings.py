@@ -14,7 +14,7 @@ class String(Bits):
     operations to construct more complicated expressions.
     """
 
-    __slots__ = ('string_length')
+    __slots__ = ('string_length',)
 
     # Identifier used by composite solver in order to identify if a certain constraints contains
     # variables of type string... In this case cvc4 would handle the solving part.
