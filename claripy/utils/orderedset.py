@@ -1,8 +1,8 @@
 
-import collections
+import collections.abc
 
 
-class OrderedSet(collections.MutableSet):
+class OrderedSet(collections.abc.MutableSet):
     """
     Adapted from http://code.activestate.com/recipes/576694/
     Originally created by Raymond Hettinger and licensed under MIT.
