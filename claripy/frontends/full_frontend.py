@@ -93,7 +93,7 @@ class FullFrontend(ConstrainedFrontend):
                 model_callback=self._model_hook
             )
         except BackendError as e:
-            raise_from(ClaripyFrontendError("Backend error during solve"), e)
+            raise ClaripyFrontendError("Backend error during solve") from e
 
     def satisfiable(self, extra_constraints=(), exact=None):
         try:
