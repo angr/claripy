@@ -992,13 +992,11 @@ class BackendZ3(Backend):
 
             #print "MISS CACHE"
 
-        l.debug("SIMPLIFYING EXPRESSION")
-
-        #print "SIMPLIFYING"
+        #l.debug("SIMPLIFYING EXPRESSION")
 
         expr_raw = self.convert(expr)
 
-        #l.debug("... before: %s (%s)", expr_raw, expr_raw.__class__.__name__)
+        #l.debug("... before:\n%s", z3_expr_to_smt2(expr_raw))
 
         #s = expr_raw
         if isinstance(expr_raw, z3.BoolRef):
@@ -1013,6 +1011,8 @@ class BackendZ3(Backend):
             s = z3.simplify(expr_raw)
         else:
             s = expr_raw
+
+        #l.debug("... after:\n%s", z3_expr_to_smt2(s))
 
         o = self._abstract(s)
         o._simplified = Base.FULL_SIMPLIFY
