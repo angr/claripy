@@ -12,7 +12,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
-        self._owned_solvers = weakref.WeakKeyDictionary()
+        self._owned_solvers = weakref.WeakSet()
         self._template_frontend = template_frontend
         self._template_frontend_string = template_frontend_string
         self._unsat = False
@@ -20,7 +20,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def _blank_copy(self, c):
         super(CompositeFrontend, self)._blank_copy(c)
-        c._owned_solvers = weakref.WeakKeyDictionary()
+        c._owned_solvers = weakref.WeakSet()
         c._solvers = { }
         c._template_frontend = self._template_frontend
         if hasattr(self, '_template_frontend_string'):
@@ -34,7 +34,7 @@ class CompositeFrontend(ConstrainedFrontend):
         c._track = self._track
 
         c._solvers = dict(self._solvers)
-        self._owned_solvers = weakref.WeakKeyDictionary() # for the COW
+        self._owned_solvers = weakref.WeakSet() # for the COW
         return c
 
 
@@ -47,7 +47,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def __setstate__(self, s):
         self._solvers, self._template_frontend, self._unsat, self._track, base_state = s
-        self._owned_solvers = weakref.WeakKeyDictionary({s:True for s in self._solver_list})
+        self._owned_solvers = weakref.WeakSet(self._solver_list)
         super().__setstate__(base_state)
 
     def downsize(self):
@@ -163,7 +163,7 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("... variable counts: %s", [ len(cs.variables) for cs in ss ])
 
         for ns in ss:
-            self._owned_solvers[ns] = True
+            self._owned_solvers.add(ns)
             self._store_child(ns)
 
         return ss
@@ -189,7 +189,7 @@ class CompositeFrontend(ConstrainedFrontend):
                     self._solvers[v].update(ss)
             else:
                 for ns in new_solvers:
-                    self._owned_solvers[ns] = True
+                    self._owned_solvers.add(ns)
                     self._store_child(ns)
 
     def _store_child(self, ns, extra_names=frozenset()):
@@ -216,7 +216,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def _claim(self, s):
         if s not in self._owned_solvers:
             sc = s.branch()
-            self._owned_solvers[sc] = True
+            self._owned_solvers.add(sc)
             return sc
         else:
             return s
@@ -441,9 +441,9 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("... %s common solvers", len(common_solvers))
 
         for s in common_solvers:
-            self._owned_solvers.pop(s, None)
+            self._owned_solvers.discard(s)
             for o in others:
-                o._owned_solvers.pop(s, None)
+                o._owned_solvers.discard(s)
 
             for v in s.variables:
                 merged._solvers[v] = s
@@ -466,7 +466,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 combined_noncommons[1:], merge_conditions
             )
 
-            merged._owned_solvers[merged_noncommon] = True
+            merged._owned_solvers.add(merged_noncommon)
             merged._store_child(merged_noncommon)
 
         merged.constraints = list(
