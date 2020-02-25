@@ -392,9 +392,9 @@ def raw_composite_solver(reuse_z3_solver):
         assert len(s._solver_list) == 3
         count = claripy._backends_module.backend_z3.solve_count
         assert s.satisfiable()
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count + 3
         assert list(s.eval(x+y, 1)) == [3]
-        assert claripy._backends_module.backend_z3.solve_count == count + 1
+        assert claripy._backends_module.backend_z3.solve_count == count + 3
 
 
 def test_minmax():
@@ -579,6 +579,34 @@ def test_nan():
     res = s3.eval(a.raw_to_bv(), 1)[0]
     assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
 
+def test_composite_solver_branching_optimizations():
+    s = claripy.SolverComposite()
+    w = claripy.BVS("w", 32)
+    x = claripy.BVS("x", 32)
+    y = claripy.BVS("y", 32)
+    z = claripy.BVS("z", 32)
+
+    s.add(w == 10)
+    assert len(s._unchecked_solvers) == 1
+    assert s.satisfiable()
+    s.add(x == 10)
+    assert len(s._unchecked_solvers) == 1
+
+    s2 = s.branch()
+    assert len(s2._unchecked_solvers) == 1
+    assert s.satisfiable()
+    assert len(s._unchecked_solvers) == 0
+    assert len(s2._unchecked_solvers) == 1
+    s.add(y == 10)
+    assert len(s._unchecked_solvers) == 1
+    assert len(s2._unchecked_solvers) == 1
+    s2.add(z == 10)
+    assert len(s._unchecked_solvers) == 1
+    assert len(s2._unchecked_solvers) == 2
+    assert s2.satisfiable()
+    assert len(s._unchecked_solvers) == 1
+    assert len(s2._unchecked_solvers) == 0
+
 
 if __name__ == '__main__':
     for fparams in test_unsat_core():
@@ -601,6 +629,8 @@ if __name__ == '__main__':
         fparams[0](*fparams[1:])
     for fparams in test_combine():
         fparams[0](*fparams[1:])
-    test_composite_solver()
+    for fparams in test_composite_solver():
+        fparams[0](*fparams[1:])
     test_zero_division_in_cache_mixin()
     test_nan()
+    test_composite_solver_branching_optimizations()

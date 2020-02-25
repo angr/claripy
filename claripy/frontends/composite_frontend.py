@@ -12,6 +12,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
         super(CompositeFrontend, self).__init__(**kwargs)
         self._solvers = { }
+        self._unchecked_solvers = weakref.WeakSet()
         self._owned_solvers = weakref.WeakSet()
         self._template_frontend = template_frontend
         self._template_frontend_string = template_frontend_string
@@ -20,6 +21,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     def _blank_copy(self, c):
         super(CompositeFrontend, self)._blank_copy(c)
+        c._unchecked_solvers = weakref.WeakSet()
         c._owned_solvers = weakref.WeakSet()
         c._solvers = { }
         c._template_frontend = self._template_frontend
@@ -34,6 +36,7 @@ class CompositeFrontend(ConstrainedFrontend):
         c._track = self._track
 
         c._solvers = dict(self._solvers)
+        c._unchecked_solvers = weakref.WeakSet(self._unchecked_solvers)
         self._owned_solvers = weakref.WeakSet() # for the COW
         return c
 
@@ -48,6 +51,7 @@ class CompositeFrontend(ConstrainedFrontend):
     def __setstate__(self, s):
         self._solvers, self._template_frontend, self._unsat, self._track, base_state = s
         self._owned_solvers = weakref.WeakSet(self._solver_list)
+        self._unchecked_solvers = weakref.WeakSet()
         super().__setstate__(base_state)
 
     def downsize(self):
@@ -70,10 +74,7 @@ class CompositeFrontend(ConstrainedFrontend):
 
     @property
     def variables(self):
-        if len(self._solver_list) == 0:
-            return set()
-        else:
-            return set.union(*[s.variables for s in self._solver_list])
+        return set(self._solvers.keys())
 
     # this is really hacky, but we want to avoid having our variables messed with
     @variables.setter
@@ -192,10 +193,12 @@ class CompositeFrontend(ConstrainedFrontend):
                     self._owned_solvers.add(ns)
                     self._store_child(ns)
 
-    def _store_child(self, ns, extra_names=frozenset()):
+    def _store_child(self, ns, extra_names=frozenset(), invalidate_cache=True):
         for v in ns.variables | extra_names:
             #os = self._solvers[v]
             self._solvers[v] = ns
+        if invalidate_cache:
+            self._unchecked_solvers.add(ns)
 
         #if isinstance(s, ModelCacheMixin):
         #   if len(os._models) < len(ns._models):
@@ -229,14 +232,14 @@ class CompositeFrontend(ConstrainedFrontend):
         l.debug("Adding %d constraints to %d names", len(constraints), len(names))
         s = self._claim(self._merged_solver_for(names=names))
         added = s.add(constraints, invalidate_cache=invalidate_cache, **kwargs)
-        self._store_child(s)
+        self._store_child(s, invalidate_cache=invalidate_cache)
         return added
 
     def add(self, constraints, **kwargs): #pylint:disable=arguments-differ
         split = self._split_constraints(constraints)
         child_added = [ ]
 
-        l.debug("%s, solvers before: %d", self, len(self._solvers))
+        #l.debug("%s, solvers before: %d", self, len(self._solvers))
         unsure = [ ]
         for names,set_constraints in split:
             if names == { 'CONCRETE' }:
@@ -248,7 +251,7 @@ class CompositeFrontend(ConstrainedFrontend):
             else:
                 child_added += self._add_dependent_constraints(names, set_constraints, **kwargs)
 
-        l.debug("... solvers after add: %d", len(self._solver_list))
+        #l.debug("... solvers after add: %d", len(self._solver_list))
 
         if len(unsure) > 0:
             for s in self._solver_list:
@@ -277,41 +280,27 @@ class CompositeFrontend(ConstrainedFrontend):
             extra_solver_satness = extra_solver.check_satisfiability(extra_constraints=extra_constraints, exact=exact)
             if extra_solver_satness in {'UNSAT', 'UNKNOWN'}:
                 return extra_solver_satness
-
-            satnesses = [
-                s.check_satisfiability(exact=exact) for s in
-                self._solver_list if s.variables.isdisjoint(extra_solver.variables)
-            ]
             self._reabsorb_solver(extra_solver)
-            for satness in satnesses:
-                if satness in {'UNSAT', 'UNKNOWN'}:
-                    return satness
-            return 'SAT'
-        else:
-            for s in self._solver_list:
-                satness = s.check_satisfiability()
-                if satness in {'UNSAT', 'UNKNOWN'}:
-                    return satness
-            return 'SAT'
+
+        for s in self._unchecked_solvers:
+            if extra_constraints and s.variables & extra_solver.variables:
+                # skip solvers covered by extra constraints (they were checked above)
+                continue
+
+            if self._solvers[min(iter(s.variables))] is not s:
+                # this happens when a parent solver didn't check all unchecked solvers, and we have stale
+                # child solvers in the unchecked list
+                continue
+
+            satness = s.check_satisfiability(exact=exact)
+            if satness in {'UNSAT', 'UNKNOWN'}:
+                return satness
+
+        self._unchecked_solvers.clear()
+        return 'SAT'
 
     def satisfiable(self, extra_constraints=(), exact=None):
-        if self._unsat: return False
-
-        l.debug("%r checking satisfiability...", self)
-
-        if len(extra_constraints) != 0:
-            extra_solver = self._merged_solver_for(lst=extra_constraints)
-            if not extra_solver.satisfiable(extra_constraints=extra_constraints, exact=exact):
-                return False
-
-            r = all(
-                s.satisfiable(exact=exact) for s in
-                self._solver_list if s.variables.isdisjoint(extra_solver.variables)
-            )
-            self._reabsorb_solver(extra_solver)
-            return r
-        else:
-            return all(s.satisfiable(exact=exact) for s in self._solver_list)
+        return self.check_satisfiability(extra_constraints=extra_constraints, exact=exact) == 'SAT'
 
     def eval(self, e, n, extra_constraints=(), exact=None):
         self._ensure_sat(extra_constraints=extra_constraints)
