@@ -607,6 +607,10 @@ def test_composite_solver_branching_optimizations():
     assert len(s._unchecked_solvers) == 1
     assert len(s2._unchecked_solvers) == 0
 
+    s2.add(z == 12)
+    assert not s2.satisfiable()
+    assert not s2.satisfiable()
+
 
 if __name__ == '__main__':
     for fparams in test_unsat_core():
