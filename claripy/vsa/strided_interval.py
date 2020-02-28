@@ -1,4 +1,3 @@
-import fractions
 import functools
 import itertools
 import logging
@@ -1202,7 +1201,7 @@ class StridedInterval(BackendObject):
         elif self._stride == 0:
             new_stride = 1
         else:
-            new_stride = fractions.gcd(self._stride, dist)
+            new_stride = math.gcd(self._stride, dist)
         return StridedInterval(lower_bound=y_plus_1,
                                upper_bound=x_minus_1,
                                bits=self.bits,
@@ -1351,7 +1350,7 @@ class StridedInterval(BackendObject):
         :param b: The second operand (integer)
         :return: Their LCM
         """
-        return a * b // fractions.gcd(a, b)
+        return a * b // math.gcd(a, b)
 
     @staticmethod
     def gcd(a, b):
@@ -1363,7 +1362,7 @@ class StridedInterval(BackendObject):
         :return: Their GCD
         """
 
-        return fractions.gcd(a, b)
+        return math.gcd(a, b)
 
     @staticmethod
     def highbit(k):
@@ -1616,7 +1615,7 @@ class StridedInterval(BackendObject):
             elif a.is_integer:
                 stride = abs(a.lower_bound * b.stride)
             else:
-                stride = fractions.gcd(a.stride, b.stride)
+                stride = math.gcd(a.stride, b.stride)
             return StridedInterval(bits=bits, stride=stride, lower_bound=lb, upper_bound=ub, uninitialized=uninit_flag)
         else:
             # Overflow occurred
@@ -1661,7 +1660,7 @@ class StridedInterval(BackendObject):
                 # if the number is negative we have to get its value first:
                 stride = abs(b.stride * StridedInterval._unsigned_to_signed(a.lower_bound, bits))
         else:
-            stride = fractions.gcd(a.stride, b.stride)
+            stride = math.gcd(a.stride, b.stride)
 
         if a_lb_positive and a_ub_positive and b_lb_positive and b_ub_positive:
             # [2, 5] * [10, 20] = [20, 100]
@@ -1924,7 +1923,7 @@ class StridedInterval(BackendObject):
         uninitialized = self.uninitialized or b.uninitialized
 
         # Take the GCD of two operands' strides
-        stride = fractions.gcd(self.stride, b.stride)
+        stride = math.gcd(self.stride, b.stride)
 
         return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
                                uninitialized=uninitialized).normalize()
@@ -1950,7 +1949,7 @@ class StridedInterval(BackendObject):
         uninitialized = self.uninitialized or b.uninitialized
 
         # Take the GCD of two operands' strides
-        stride = fractions.gcd(self.stride, b.stride)
+        stride = math.gcd(self.stride, b.stride)
 
         return StridedInterval(bits=new_bits, stride=stride, lower_bound=lb, upper_bound=ub,
                                uninitialized=uninitialized).normalize()
