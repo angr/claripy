@@ -34,10 +34,10 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     #
 
     def __getstate__(self):
-        return self.constraints, self.variables, super().__getstate__()
+        return self.constraints, self.variables, self._finalized, super().__getstate__()
 
     def __setstate__(self, s):
-        self.constraints, self.variables, base_state = s
+        self.constraints, self.variables, self._finalized, base_state = s
         super().__setstate__(base_state)
 
     #
