@@ -224,14 +224,14 @@ def BVV(value, size=None, **kwargs):
     """
     Creates a bit-vector value (i.e., a concrete value).
 
-    :param value:   The value. Either an integer or a string. If it's a string, it will be interpreted as the bytes of
-                    a big-endian constant.
+    :param value:   The value. Either an integer or a bytestring. If it's the latter, it will be interpreted as the
+                    bytes of a big-endian constant.
     :param size:    The size (in bits) of the bit-vector. Optional if you provide a string, required for an integer.
 
     :returns:       A BV object representing this value.
     """
 
-    if type(value) in (bytes, str):
+    if type(value) in (bytes, bytearray, memoryview, str):
         if type(value) is str:
             l.warning("BVV value is a unicode string, encoding as utf-8")
             value = value.encode('utf-8')
@@ -243,7 +243,7 @@ def BVV(value, size=None, **kwargs):
         elif size != len(value)*8:
             raise ClaripyValueError('string/size mismatch for BVV creation')
 
-        value = int(binascii.hexlify(value), 16) if value != b"" else 0
+        value = int.from_bytes(value, 'big')
 
     elif size is None or (type(value) is not int and value is not None):
         raise TypeError('BVV() takes either an integer value and a size or a string of bytes')
