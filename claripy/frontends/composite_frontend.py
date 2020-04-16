@@ -365,7 +365,7 @@ class CompositeFrontend(ConstrainedFrontend):
         cores = [ ]
 
         for solver in self._solver_list:
-            cores.extend(list(solver.unsat_core()))
+            cores.extend(list(solver.unsat_core(extra_constraints=extra_constraints)))
 
         return cores
 
