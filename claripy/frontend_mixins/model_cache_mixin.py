@@ -281,7 +281,8 @@ class ModelCacheMixin:
             return min(cached)
         else:
             m = super(ModelCacheMixin, self).min(e, extra_constraints=extra_constraints, **kwargs)
-            self._min_exhausted.add(e.cache_key)
+            if len(extra_constraints) == 0:
+                self._min_exhausted.add(e.cache_key)
             return m
 
     def max(self, e, extra_constraints=(), **kwargs):
@@ -293,7 +294,8 @@ class ModelCacheMixin:
             return max(cached)
         else:
             m = super(ModelCacheMixin, self).max(e, extra_constraints=extra_constraints, **kwargs)
-            self._max_exhausted.add(e.cache_key)
+            if len(extra_constraints) == 0:
+                self._max_exhausted.add(e.cache_key)
             return m
 
     def solution(self, e, v, extra_constraints=(), **kwargs):
