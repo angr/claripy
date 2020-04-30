@@ -182,7 +182,7 @@ class CompositeFrontend(ConstrainedFrontend):
             old_solvers = self._solvers_for_variables(s.variables)
             if len(new_solvers) == len(old_solvers):
                 done = set()
-                for ss in s.split():
+                for ss in new_solvers:
                     if ss in done:
                         continue
                     done.add(ss)
