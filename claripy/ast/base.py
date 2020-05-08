@@ -273,7 +273,7 @@ class Base:
             ))).keys()
 
             self.annotations = tuple(itertools.chain(
-                itertools.chain.from_iterable(a.annotations for a in ast_args),
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
                 tuple(a for a in self.annotations)
             ))
 
