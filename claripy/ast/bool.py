@@ -112,9 +112,9 @@ def If(*args):
             raise ClaripyTypeError("can't convert {} to {}".format(type(args[2]), ty))
 
     if is_true(args[0]):
-        return args[1]
+        return args[1].append_annotations(args[0].annotations)
     elif is_false(args[0]):
-        return args[2]
+        return args[2].append_annotations(args[0].annotations)
 
     if isinstance(args[1], Base) and args[1].op == 'If' and args[1].args[0] is args[0]:
         return If(args[0], args[1].args[1], args[2])
