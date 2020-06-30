@@ -30,6 +30,16 @@ class BackendConcrete(Backend):
         self._op_raw['__xor__'] = self._op_xor
         self._op_raw['__and__'] = self._op_and
 
+        # unary
+        self._op_raw['__invert__'] = self._op_not
+        self._op_raw['__neg__'] = self._op_neg
+
+        # boolean ops
+        self._op_raw['And'] = self._op_and
+        self._op_raw['Or'] = self._op_or
+        self._op_raw['Xor'] = self._op_xor
+        self._op_raw['Not'] = self._op_boolnot
+
         self._cache_objects = False
 
     @staticmethod
@@ -66,6 +76,16 @@ class BackendConcrete(Backend):
     @staticmethod
     def _op_and(*args):
         return reduce(operator.__and__, args)
+
+    @staticmethod
+    def _op_not(arg):
+        return ~arg
+    @staticmethod
+    def _op_neg(arg):
+        return -arg
+    @staticmethod
+    def _op_boolnot(arg):
+        return not arg
 
     def convert(self, expr):
         """

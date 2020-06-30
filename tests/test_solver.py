@@ -611,6 +611,18 @@ def test_composite_solver_branching_optimizations():
     assert not s2.satisfiable()
     assert not s2.satisfiable()
 
+def test_exhaustion():
+    s = claripy.Solver()
+    x = claripy.BVS('x', 32)
+    s.add(x >= 19)
+    print(s.min(x, extra_constraints=[x >= 20]))
+    assert s.min(x) == 19
+
+    s = claripy.Solver()
+    x = claripy.BVS('x', 32)
+    s.add(x <= 19)
+    print(s.max(x, extra_constraints=[x <= 18]))
+    assert s.max(x) == 19
 
 if __name__ == '__main__':
     for fparams in test_unsat_core():

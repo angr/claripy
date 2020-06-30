@@ -175,6 +175,8 @@ def ite_cases(cases, default):
     """
     sofar = default
     for c,v in reversed(list(cases)):
+        if is_true(v == sofar):
+            continue
         sofar = If(c, v, sofar)
     return sofar
 

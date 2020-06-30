@@ -94,6 +94,16 @@ def FPV(value, sort):
     :param sort:    The sort of the floating point.
     :return:        An FP AST.
     """
+    if type(value) is int:
+        value = float(value)
+    elif type(value) is float:
+        pass
+    else:
+        raise TypeError("Must instanciate FPV with a numerical value")
+
+    if type(sort) is not fp.FSort:
+        raise TypeError("Must instanciate FPV with a FSort")
+
     return FP('FPV', (value, sort), length=sort.length)
 
 #

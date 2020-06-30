@@ -204,7 +204,11 @@ class ModelCacheMixin:
     #
 
     def _model_hook(self, m):
-        self._models.add(ModelCache(m))
+        # Z3 might give us solutions for variables that we did not ask for. so we create a new dict with solutions for
+        # only the variables that are under the solver's control
+        m_ = dict((k, v) for k, v in m.items() if k in self.variables)
+        model = ModelCache(m_)
+        self._models.add(model)
 
     def _get_models(self, extra_constraints=()):
         for m in self._models:
@@ -281,7 +285,8 @@ class ModelCacheMixin:
             return min(cached)
         else:
             m = super(ModelCacheMixin, self).min(e, extra_constraints=extra_constraints, **kwargs)
-            self._min_exhausted.add(e.cache_key)
+            if len(extra_constraints) == 0:
+                self._min_exhausted.add(e.cache_key)
             return m
 
     def max(self, e, extra_constraints=(), **kwargs):
@@ -293,7 +298,8 @@ class ModelCacheMixin:
             return max(cached)
         else:
             m = super(ModelCacheMixin, self).max(e, extra_constraints=extra_constraints, **kwargs)
-            self._max_exhausted.add(e.cache_key)
+            if len(extra_constraints) == 0:
+                self._max_exhausted.add(e.cache_key)
             return m
 
     def solution(self, e, v, extra_constraints=(), **kwargs):
