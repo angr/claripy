@@ -40,8 +40,6 @@ class BackendConcrete(Backend):
 
     @staticmethod
     def StringV(value, size): # pylint: disable=unused-argument
-        if not value:
-            raise BackendError("can't handle empty Strings")
         return strings.StringV(value)
 
     @staticmethod
