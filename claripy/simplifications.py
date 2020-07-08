@@ -605,9 +605,6 @@ class SimplificationManager:
         if body.op == 'Not':
             return body.args[0]
 
-        if body.op == 'If':
-            return ast.all_operations.If(body.args[0], body.args[2], body.args[1])
-
         if body.op == 'SLT':
             return ast.all_operations.SGE(body.args[0], body.args[1])
         elif body.op == 'SLE':
