@@ -125,6 +125,13 @@ def If(*args):
     if isinstance(args[2], Base) and args[2].op == 'If' and args[2].args[0] is Not(args[0]):
         return If(args[0], args[1], args[2].args[1])
 
+    if args[1] is args[2]:
+        return args[1]
+    if args[1] is true and args[2] is false:
+        return args[0]
+    if args[1] is false and args[2] is true:
+        return ~args[0]
+
     if issubclass(ty, Bits):
         return ty('If', tuple(args), length=args[1].length)
     else:

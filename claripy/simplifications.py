@@ -59,6 +59,7 @@ class SimplificationManager:
 
     @staticmethod
     def if_simplifier(cond, if_true, if_false):
+        # NOTE: this is never called; simplifications are implemented inline in the If op. why?
         if cond.is_true():
             return if_true
 
