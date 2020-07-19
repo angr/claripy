@@ -20,7 +20,7 @@ setup(
         'future',
         'cachetools',
         'decorator',
-        'pysmt',
+        'pysmt==0.8.0', # https://github.com/pysmt/pysmt/issues/652
     ],
     description='An abstraction layer for constraint solvers',
     url='https://github.com/angr/claripy',
