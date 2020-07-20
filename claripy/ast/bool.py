@@ -165,7 +165,7 @@ def is_false(e, exact=None): #pylint:disable=unused-argument
 #This improves Z3 search capability (eliminating branches) and decreases recursion depth:
 #linear search trees make Z3 error out on tables larger than a couple hundred elements.)
 def ite_dict(i, d, default):
-    
+
     """
     Return an expression of if-then-else trees which expresses a switch tree
     :param i: The variable which may take on multiple values affecting the final result
@@ -174,21 +174,21 @@ def ite_dict(i, d, default):
     :return: An expression encoding the result of the above
     """
     i = i.ast if type(i) is ASTCacheKey else i
-    
+
     #for small dicts fall back to the linear implementation
     if len(d) < 4:
         return ite_cases([ (i == c, v) for c,v in d.items() ], default)
-    
+
     #otherwise, binary search.
     #Find the median:
     keys = list(d.keys())
     keys.sort()
     split_val = keys[len(keys)//2]
-    
+
     #split the dictionary
     dictLow = {c:v for c,v in d.items() if c <= split_val}
     dictHigh = {c:v for c,v in d.items() if c > split_val}
-    
+
     valLow = ite_dict(i, dictLow, default)
     valHigh = ite_dict(i, dictHigh, default)
     return If(i <= split_val, valLow, valHigh)
