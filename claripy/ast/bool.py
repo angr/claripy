@@ -161,16 +161,29 @@ def is_false(e, exact=None): #pylint:disable=unused-argument
     l.debug("Unable to tell the truth-value of this expression")
     return False
 
-def ite_dict(i, d, default):
-    """
-    Return an expression of if-then-else trees which expresses a switch tree
-
-    :param i: The variable which may take on multiple values affecting the final result
-    :param d: A dict mapping possible values for i to values which the result could be
-    :param default: A default value that the expression should take on if `i` matches none of the keys of `d`
-    :return: An expression encoding the result of the above
-    """
-    return ite_cases([ ((i.ast if type(i) is ASTCacheKey else i) == c, v) for c,v in d.items() ], default)
+#For large tables, ite_dict that uses a binary search tree instead of a "linear" search tree.
+#This improves Z3 search capability (eliminating branches) and decreases recursion depth:
+#linear search trees make Z3 error out on tables larger than a couple hundred elements.)
+def ite_dict(i, d, default):	
+	i = i.ast if type(i) is ASTCacheKey else i
+	
+	#for small dicts fall back to the linear implementation
+	if len(d) < 4:
+		return ite_cases([ (i == c, v) for c,v in d.items() ], default)
+	
+	#otherwise, binary search.
+	#Find the median:
+	keys = list(d.keys())
+	keys.sort()
+	split_val = keys[len(keys)//2]
+	
+	#split the dictionary
+	dictLow = {c:v for c,v in d.items() if c <= split_val}
+	dictHigh = {c:v for c,v in d.items() if c > split_val}
+	
+	valLow = ite_dict(i, dictLow, default)
+	valHigh = ite_dict(i, dictHigh, default)
+	return If(i <= split_val, valLow, valHigh)
 
 def ite_cases(cases, default):
     """
