@@ -1,3 +1,4 @@
+# pylint:disable=no-self-use
 import logging
 
 from pysmt.shortcuts import Symbol, String, StrConcat, NotEquals, \
@@ -38,7 +39,7 @@ def _exprs_to_smtlib(*exprs, **kwargs):
     :param exprs : List of variable declaration and constraints that have to be
              dumped in an smt-lib format
 
-    :return string: smt-lib representation of the list of expressions 
+    :return string: smt-lib representation of the list of expressions
     """
     return '\n'.join(_expr_to_smtlib(e, **kwargs) for e in exprs) + '\n'
 
@@ -51,7 +52,7 @@ def _normalize_arguments(expr_left, expr_right):
     if expr_left.is_str_op() and expr_right.is_bv_constant():
         return expr_left, Int(expr_right.bv_signed_value())
     elif expr_left.is_bv_constant() and expr_right.is_str_op():
-        return expr_rigth, Int(expr_left.bv_signed_value())
+        return expr_right, Int(expr_left.bv_signed_value())
     return expr_left, expr_right
 
 
@@ -61,7 +62,7 @@ class BackendSMTLibBase(Backend):
         self.reuse_z3_solver = False
         Backend.__init__(self, *args, **kwargs)
 
-        # ------------------- LEAF OPERATIONS ------------------- 
+        # ------------------- LEAF OPERATIONS -------------------
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
         self._op_expr['BoolV'] = self.BoolV
@@ -75,7 +76,7 @@ class BackendSMTLibBase(Backend):
         self._op_raw['__add__'] = self._op_raw_add
         self._op_raw['__sub__'] = self._op_raw_sub
 
-        # ------------------- GENERAL PURPOSE OPERATIONS ------------------- 
+        # ------------------- GENERAL PURPOSE OPERATIONS -------------------
         self._op_raw['__eq__'] = self._op_raw_eq
         self._op_raw['__ne__'] = self._op_raw_ne
         self._op_raw['__lt__'] = self._op_raw_lt
@@ -87,7 +88,7 @@ class BackendSMTLibBase(Backend):
         self._op_raw['Not'] = self._op_raw_not
         self._op_raw['And'] = self._op_raw_and
 
-        # ------------------- STRINGS OPERATIONS ------------------- 
+        # ------------------- STRINGS OPERATIONS -------------------
         self._op_raw['StrConcat'] = self._op_raw_str_concat
         self._op_raw['StrSubstr'] = self._op_raw_str_substr
         self._op_raw['StrExtract'] = self._op_raw_str_extract
@@ -115,7 +116,7 @@ class BackendSMTLibBase(Backend):
 
         :param extra-constraints: list of extra constraints that we want to evaluate only
                                  in the scope of this call
-                                
+
         :return string: smt-lib representation of the script that checks the satisfiability
         """
         smt_script = '(set-logic ALL)\n'
@@ -154,7 +155,7 @@ class BackendSMTLibBase(Backend):
     def _satisfiable(self, extra_constraints=(), solver=None, model_callback=None):
         raise BackendError('Use a specialized backend for solving SMTLIB formatted constraints!')
 
-    # ------------------- LEAF OPERATIONS ------------------- 
+    # ------------------- LEAF OPERATIONS -------------------
 
     def StringV(self, ast):
         content, _ = ast.args
@@ -252,7 +253,7 @@ class BackendSMTLibBase(Backend):
         return And(*args)
 
     # ------------------- STRINGS OPERATIONS -------------------
-    
+
     def _op_raw_str_concat(self, *args):
         return StrConcat(*args)
 
@@ -280,7 +281,7 @@ class BackendSMTLibBase(Backend):
         return StrContains(input_string, substring)
 
     def _op_raw_str_prefixof(self, *args):
-        prefix, input_string = args 
+        prefix, input_string = args
         return StrPrefixOf(prefix, input_string)
 
     def _op_raw_str_suffixof(self, *args):
@@ -288,7 +289,7 @@ class BackendSMTLibBase(Backend):
         return StrSuffixOf(suffix, input_string)
 
     def _op_raw_str_indexof(self, *args):
-        input_string, substring, start, bitlength = args
+        input_string, substring, start, bitlength = args  # pylint:disable=unused-variable
         return StrIndexOf(input_string, substring, start)
 
     def _op_raw_str_strtoint(self, *args):
