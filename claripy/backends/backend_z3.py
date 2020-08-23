@@ -510,29 +510,33 @@ class BackendZ3(Backend):
         if append_children:
             args.extend(children)
 
-        # hmm.... honestly not sure what to do here
-        result_ty = op_type_map[z3_op_nums[decl_num]]
-        ty = type(args[-1])
+        if z3_op_nums[decl_num] == 'Z3_OP_INTERNAL' and not args:
+            # special case for Z3 string constants
+            a = self._string_constant_from_ast(ctx, ast, decl)
+        else:
+            # hmm.... honestly not sure what to do here
+            result_ty = op_type_map[z3_op_nums[decl_num]]
+            ty = type(args[-1])
 
-        if type(result_ty) is str:
-            err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
-            l.error(err)
-            raise BackendError(err)
+            if type(result_ty) is str:
+                err = "Unknown Z3 error in abstraction (result_ty == '%s'). Update your version of Z3, and, if the problem persists, open a claripy issue." % result_ty
+                l.error(err)
+                raise BackendError(err)
 
-        if op_name == 'If':
-            # If is polymorphic and thus must be handled specially
-            ty = type(args[1])
+            if op_name == 'If':
+                # If is polymorphic and thus must be handled specially
+                ty = type(args[1])
 
-            a = ty('If', tuple(args), length=args[1].length)
-        elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
-            op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
-            if op.calc_length is not None:
-                length = op.calc_length(*args)
-                a = result_ty(op_name, tuple(args), length=length)
+                a = ty('If', tuple(args), length=args[1].length)
+            elif hasattr(ty, op_name) or hasattr(_all_operations, op_name):
+                op = getattr(ty if hasattr(ty, op_name) else _all_operations, op_name)
+                if op.calc_length is not None:
+                    length = op.calc_length(*args)
+                    a = result_ty(op_name, tuple(args), length=length)
+                else:
+                    a = result_ty(op_name, tuple(args))
             else:
                 a = result_ty(op_name, tuple(args))
-        else:
-            a = result_ty(op_name, tuple(args))
 
         self._ast_cache[h] = (a, ast)
         z3.Z3_inc_ref(ctx, ast)
@@ -592,15 +596,7 @@ class BackendZ3(Backend):
             return self._abstract_fp_encoded_val(ctx, arg_ast)
         elif op_name == 'INTERNAL' and self._abstract_string_check(ctx, ast):
             # Quirk in how z3 encodes string constants
-            try:
-                assert(z3.Z3_get_decl_num_parameters(ctx, decl) == 1)
-                assert(z3.Z3_get_decl_parameter_kind(ctx, decl, 0) == z3.Z3_PK_SYMBOL)
-                symb = z3.Z3_get_decl_symbol_parameter(ctx, decl, 0)
-                assert(z3.Z3_get_symbol_kind(ctx, symb) == z3.Z3_STRING_SYMBOL)
-                return z3.Z3_get_symbol_string(ctx, symb).encode().decode('unicode_escape')
-                # see https://stackoverflow.com/a/58829514/3154996
-            except AssertionError:
-                raise BackendError("Weird z3 model")
+            return self._string_constant_from_ast(ctx, ast, decl)
         else:
             raise BackendError("Unable to abstract Z3 object to primitive")
 
@@ -690,6 +686,19 @@ class BackendZ3(Backend):
                     # so we have a string! (per z3's definition of a string)
                     return True
         return False
+
+    @staticmethod
+    def _string_constant_from_ast(ctx, ast, decl):
+        # Get Z3-encoded string constants
+        # see https://stackoverflow.com/a/58829514/3154996
+        if z3.Z3_get_decl_num_parameters(ctx, decl) != 1:
+            raise BackendError("Weird Z3 model")
+        if z3.Z3_get_decl_parameter_kind(ctx, decl, 0) != z3.Z3_PK_SYMBOL:
+            raise BackendError("Weird Z3 model")
+        symb = z3.Z3_get_decl_symbol_parameter(ctx, decl, 0)
+        if z3.Z3_get_symbol_kind(ctx, symb) != z3.Z3_STRING_SYMBOL:
+            raise BackendError("Weird Z3 model")
+        return z3.Z3_get_symbol_string(ctx, symb).encode().decode('unicode_escape')
 
     def solver(self, timeout=None):
         if not self.reuse_z3_solver or getattr(self._tls, 'solver', None) is None:
@@ -1674,5 +1683,6 @@ op_type_map = {
     'Z3_OP_FPA_MUL': FP,
     'Z3_OP_FPA_DIV': FP,
 
+    'Z3_OP_INTERNAL': None,
     'Z3_OP_UNINTERPRETED': 'UNINTERPRETED'
 }
