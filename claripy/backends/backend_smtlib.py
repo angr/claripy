@@ -43,16 +43,16 @@ def _exprs_to_smtlib(*exprs, **kwargs):
     return '\n'.join(_expr_to_smtlib(e, **kwargs) for e in exprs) + '\n'
 
 
-def _normalize_arguments(expr_left, expr_rigth):
+def _normalize_arguments(expr_left, expr_right):
     """
     Since we decided to emulate integer with bitvector, this method transform their
     concrete value (if any) in the corresponding integer
     """
-    if expr_left.is_str_op() and expr_rigth.is_bv_constant():
-        return expr_left, Int(expr_rigth.bv_signed_value())
-    elif expr_left.is_bv_constant() and expr_rigth.is_str_op():
+    if expr_left.is_str_op() and expr_right.is_bv_constant():
+        return expr_left, Int(expr_right.bv_signed_value())
+    elif expr_left.is_bv_constant() and expr_right.is_str_op():
         return expr_rigth, Int(expr_left.bv_signed_value())
-    return expr_left, expr_rigth
+    return expr_left, expr_right
 
 
 class BackendSMTLibBase(Backend):
