@@ -187,6 +187,10 @@ class SimplificationManager:
         if a.op == 'Reverse' and b.op == 'Reverse':
             return a.args[0] == b.args[0]
 
+        # simple canonicalization
+        if a.op == 'BVV' and b.op != 'BVV':
+            return b == a
+
         # TODO: all these ==/!= might really slow things down...
         if a.op == 'If':
             if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
