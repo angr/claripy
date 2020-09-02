@@ -1080,7 +1080,7 @@ class BackendZ3(Backend):
         return z3.BoolRef(z3.Z3_mk_and(self._context.ref(), sz, _args), self._context)
 
     def _op_raw_Xor(self, *args):
-        return z3.BoolRef(z3.Z3_mk_xor(self._context, *(arg.as_ast() for arg in args)), self._context)
+        return z3.BoolRef(z3.Z3_mk_xor(self._context.ref(), *(arg.as_ast() for arg in args)), self._context)
 
     def _op_raw_Or(self, *args):
         # copied from z3._to_ast_array
