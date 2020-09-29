@@ -80,8 +80,15 @@ class BV(Bits):
         :param index: the byte to extract
         :return: An 8-bit BV
         """
-        pos = self.size() // 8 - 1 - index
-        return self[pos * 8 + 7 : pos * 8]
+        pos = (self.size() + 7) // 8 - 1 - index
+        if pos < 0:
+            raise ValueError("Incorrect index %d. Your index must be between %d and %d." % (
+                index, 0, self.size() // 8 - 1
+            ))
+        r = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
+        if r.size() % 8 != 0:
+            r = r.zero_extend(8 - r.size() % 8)
+        return r
 
     def get_bytes(self, index, size):
         """
@@ -91,8 +98,17 @@ class BV(Bits):
         :param size: the number of bytes to extract
         :return: A BV of size ``size * 8``
         """
-        pos = self.size() // 8 - 1 - index
-        return self[pos * 8 + 7 : (pos - size + 1) * 8]
+        pos = (self.size() + 7) // 8 - 1 - index
+        if pos < 0:
+            raise ValueError("Incorrect index %d. Your index must be between %d and %d." % (
+                index, 0, self.size() // 8 - 1
+            ))
+        if size == 0:
+            return BVV(0, 0)
+        r = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
+        if r.size() % 8 != 0:
+            r = r.zero_extend(8 - r.size() % 8)
+        return r
 
     def zero_extend(self, n):
         """
