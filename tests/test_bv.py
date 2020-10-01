@@ -44,6 +44,49 @@ def test_bv():
     assert ~zero == 255
 
 
+def test_get_byte():
+    a = claripy.BVV(0xabcdef12, 32)
+    assert a.get_byte(0).args[0] == 0xab
+    assert a.get_byte(1).args[0] == 0xcd
+
+    try:
+        assert a.get_byte(4).args[0]
+    except ValueError:
+        pass
+    else:
+        assert False, "get_byte(4) did not raise an exception"
+
+    b = claripy.BVV(0x1, 2)
+    assert b.get_byte(0).args[0] == 0x1
+    assert b.get_byte(0).args[1] == 8
+
+
+def test_get_bytes():
+    a = claripy.BVV(0xabcdef12, 32)
+    assert a.get_bytes(0, 1).args[0] == 0xab
+    assert a.get_bytes(0, 2).args[0] == 0xabcd
+
+    assert a.get_bytes(1, 1).args[0] == 0xcd
+
+    try:
+        assert a.get_bytes(4, 1).args[0]
+    except ValueError:
+        pass
+    else:
+        assert False, "get_bytes(4, 1) did not raise an exception"
+
+    assert a.get_bytes(0, 0).args[0] == 0
+    assert a.get_bytes(0, 0).args[1] == 0
+
+    b = claripy.BVV(0x3f0, 10)
+    assert b.get_bytes(0, 1).args[0] == 0x3
+    assert b.get_bytes(0, 1).args[1] == 8
+    assert b.get_bytes(0, 2).args[0] == 0x3f0
+    assert b.get_bytes(0, 2).args[1] == 16
+    assert b.get_bytes(1, 1).args[0] == 0xf0
+    assert b.get_bytes(1, 1).args[1] == 8
+
+
 def test_zero_length():
     a = BVV(1, 8)
     b = BVV(0, 0)
