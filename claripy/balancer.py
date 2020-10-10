@@ -451,9 +451,42 @@ class Balancer:
             new_left = inner
             new_right = _all_operations.Concat(truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
-        else:
-            #TODO: handle non-zero single-valued cases
-            return truism
+
+        if low == 0 and truism.args[1].op == 'BVV':
+            # single-valued rhs value
+            # Eliminate Extract on lhs and zero-extend the value on rhs
+            new_left = inner
+            new_right = _all_operations.ZeroExt(inner.size() - truism.args[1].size(), truism.args[1])
+            return truism.make_like(truism.op, (new_left, new_right))
+
+        return truism
+
+    @staticmethod
+    def _balance___and__(truism):
+        op0, op1 = truism.args[0].args
+
+        if op1.op == "BVV":
+            # if all low bits of right are 1 and all high bits of right are 0, then this is equivalent to Extract()
+            v = op1.args[0]
+            low_ones = 0
+            while v != 0:
+                if v & 1 == 0:
+                    # not all high bits are 0. abort
+                    return truism
+                low_ones += 1
+                v >>= 1
+            if low_ones == 0:
+                # this should probably never happen
+                new_left = truism.args[0].make_like('BVV', (0, truism.args[0].size()))
+                return truism.make_like(truism.op, (new_left, truism.args[1]))
+
+            if op0.op == 'ZeroExt' and op0.args[0] + low_ones == op0.size():
+                # ZeroExt(56, a) & 0xff == a  if a.size() == 8
+                # we can safely remove __and__
+                new_left = op0
+                return truism.make_like(truism.op, (new_left, truism.args[1]))
+
+        return truism
 
     @staticmethod
     def _balance_Concat(truism):
