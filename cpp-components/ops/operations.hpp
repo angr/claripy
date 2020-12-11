@@ -8,7 +8,6 @@
 namespace Ops {
 	using OpSet = std::set<Operations>;
 
-	// Classify Expression ops
 	namespace Expression {
 		extern const OpSet
 			arithmetic,
@@ -18,10 +17,8 @@ namespace Ops {
 			operations;
 	};
 
-	// Classify Binary ops
 	extern const OpSet bin_ops;
 
-	// Classify Backend ops
 	namespace Backend {
 		extern const OpSet
 			comparator,
@@ -40,6 +37,34 @@ namespace Ops {
 			fp,
 			strings;
 	}
+
+	namespace Length {
+		extern const OpSet
+			same,
+			none,
+			change,
+			new_;
+	}
+
+	namespace Leaf {
+		extern const OpSet
+			ops,
+			concrete,
+			symbolic;
+	}
+
+	extern const OpSet not_invertible;
+	extern const OpSet reverse_distributable;
+
+	/* namespace Maps { */
+/* opposites */
+/* reversed_ops */
+/* inverse_operations */
+/* infix */
+
+	/* } */
+
+	extern const OpSet commutative;
 }
 
 #endif

@@ -44,7 +44,7 @@ namespace Ops {
 		__rlshift__,
 		__rshift__,
 		__rrshift__,
-		Union,
+		union_,
 		intersection,
 		widen,
 		SGE,
@@ -105,7 +105,8 @@ namespace Ops {
 		StrIndexOf,
 		StrToInt,
 		StrIsDigit,
-		IntToStr
+		IntToStr,
+		Reversed
 	};
 }
 

@@ -60,7 +60,7 @@ const OpSet Ops::Expression::bitwise {
 };
 
 const OpSet Ops::Expression::set {
-	OP::Union,
+	OP::union_,
 	OP::intersection,
 	OP::widen,
 };
@@ -215,4 +215,61 @@ const OpSet Ops::Backend::strings = {
 	OP::StrToInt,
 	OP::StrIsDigit,
     OP::IntToStr
+};
+
+/********************************************************************/
+/*                           Length Ops                             */
+/********************************************************************/
+
+const OpSet Ops::Length::same = Utils::set_join<Operations>(
+	Ops::Expression::arithmetic,
+	Ops::Expression::bitwise,
+	Ops::Expression::set,
+	Ops::Backend::bitwise,
+	Ops::Backend::other,
+	OpSet{ OP::Reversed }
+);
+
+const OpSet Ops::Length::none = Utils::set_join<Operations>(
+	Ops::Backend::comparator,
+	Ops::Expression::comparator,
+	Ops::Backend::boolean,
+	Ops::Backend::fp_cmp
+);
+
+const OpSet Ops::Length::change = Ops::Backend::bitmod;
+
+const OpSet Ops::Length::new_ = Ops::Backend::creation;
+
+/********************************************************************/
+/*                            Leaf Ops                              */
+/********************************************************************/
+
+const OpSet Ops::Leaf::ops = Utils::set_join<Operations>(
+	Ops::Backend::symbol_creation,
+	Ops::Backend::creation,
+	Ops::Backend::vsa_creation
+);
+
+const OpSet Ops::Leaf::concrete = Ops::Backend::creation;
+
+const OpSet Ops::Leaf::symbolic = Ops::Backend::symbol_creation;
+
+/********************************************************************/
+/*                              Maps                                */
+/********************************************************************/
+// TODO
+
+/********************************************************************/
+/*                           Commutative                            */
+/********************************************************************/
+
+const OpSet Ops::commutative = {
+	OP::__and__,
+	OP::__or__,
+	OP::__xor__,
+	OP::__add__,
+	OP::__mul__,
+	OP::And,
+	OP::Or
 };
