@@ -2,10 +2,12 @@
 #define __OPERATIONS__
 
 #include "operations_enum.hpp"
+#include <map>
 #include <set>
 
 // Put everything in the Ops namespace
 namespace Ops {
+	using OpMap = std::map<Operations, Operations>;
 	using OpSet = std::set<Operations>;
 
 	namespace Expression {
@@ -16,8 +18,6 @@ namespace Ops {
 			set,
 			operations;
 	};
-
-	extern const OpSet bin_ops;
 
 	namespace Backend {
 		extern const OpSet
@@ -48,23 +48,25 @@ namespace Ops {
 
 	namespace Leaf {
 		extern const OpSet
-			ops,
+			operations,
 			concrete,
 			symbolic;
 	}
 
-	extern const OpSet not_invertible;
-	extern const OpSet reverse_distributable;
+	extern const OpSet
+		bin_ops,
+		not_invertible,
+		reverse_distributable,
+		commutative;
 
-	/* namespace Maps { */
-/* opposites */
-/* reversed_ops */
-/* inverse_operations */
-/* infix */
+	namespace Maps {
+		extern const OpMap
+			opposites,
+			reversed,
+			inverse;
+	}
 
-	/* } */
-
-	extern const OpSet commutative;
+	extern const std::map<Operations, const char * const> infix;
 }
 
 #endif

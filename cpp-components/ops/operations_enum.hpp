@@ -106,7 +106,8 @@ namespace Ops {
 		StrToInt,
 		StrIsDigit,
 		IntToStr,
-		Reversed
+		Identical,
+		Reversed // TODO: should this be Reverse ?
 	};
 }
 
