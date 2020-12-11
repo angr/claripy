@@ -7,7 +7,7 @@ using OpSet=Ops::OpSet;
 using OP=Ops::Operations;
 
 /********************************************************************/
-/*                           Expressions                            */
+/*                       Expressions                            */
 /********************************************************************/
 
 // Define expression operations classifications
@@ -74,7 +74,7 @@ const OpSet Ops::Expression::operations = Utils::set_join<Operations>(
 );
 
 /********************************************************************/
-/*                           Backend Ops                            */
+/*                       Backend Ops                            */
 /********************************************************************/
 
 const OpSet Ops::Backend::comparator {
@@ -162,7 +162,7 @@ const OpSet Ops::Backend::operations_all = Utils::set_join<Operations>(
 );
 
 const OpSet Ops::Backend::fp_cmp {
-    OP::fpLT,
+	OP::fpLT,
 	OP::fpLEQ,
 	OP::fpGT,
 	OP::fpGEQ,
@@ -188,21 +188,21 @@ const OpSet Ops::Backend::fp = Utils::set_join<Operations>(
 );
 
 const OpSet Ops::Backend::strings = {
-    OP::StrSubstr,
+	OP::StrSubstr,
 	OP::StrReplace,
 	OP::StrConcat,
 	OP::StrLen,
 	OP::StrContains,
-    OP::StrPrefixOf,
+	OP::StrPrefixOf,
 	OP::StrSuffixOf,
 	OP::StrIndexOf,
 	OP::StrToInt,
 	OP::StrIsDigit,
-    OP::IntToStr
+	OP::IntToStr
 };
 
 /********************************************************************/
-/*                           Length Ops                             */
+/*                       Length Ops                             */
 /********************************************************************/
 
 const OpSet Ops::Length::same = Utils::set_join<Operations>(
@@ -226,7 +226,7 @@ const OpSet Ops::Length::change = Ops::Backend::bitmod;
 const OpSet Ops::Length::new_ = Ops::Backend::creation;
 
 /********************************************************************/
-/*                            Leaf Ops                              */
+/*                        Leaf Ops                              */
 /********************************************************************/
 
 const OpSet Ops::Leaf::operations = Utils::set_join<Operations>(
@@ -240,7 +240,7 @@ const OpSet Ops::Leaf::concrete = Ops::Backend::creation;
 const OpSet Ops::Leaf::symbolic = Ops::Backend::symbol_creation;
 
 /********************************************************************/
-/*                              Other                               */
+/*                          Other                               */
 /********************************************************************/
 
 const OpSet Ops::bin_ops {
@@ -265,7 +265,7 @@ const OpSet Ops::reverse_distributable {
 	OP::widen,
 	OP::union_,
 	OP::intersection,
-    OP::__invert__,
+OP::__invert__,
 	OP::__or__,
 	OP::__ror__,
 	OP::__and__,
@@ -285,123 +285,123 @@ const OpSet Ops::commutative = {
 };
 
 /********************************************************************/
-/*                              Maps                                */
+/*                          Maps                                */
 /********************************************************************/
 
 const OpMap Ops::Maps::opposites = {
-    { OP::__add__, OP::__radd__ },
+	{ OP::__add__, OP::__radd__ },
 	{ OP::__radd__, OP::__add__ },
-    { OP::__div__, OP::__rdiv__ },
+	{ OP::__div__, OP::__rdiv__ },
 	{ OP::__rdiv__, OP::__div__ },
-    { OP::__truediv__, OP::__rtruediv__ },
+	{ OP::__truediv__, OP::__rtruediv__ },
 	{ OP::__rtruediv__, OP::__truediv__ },
-    { OP::__floordiv__, OP::__rfloordiv__ },
+	{ OP::__floordiv__, OP::__rfloordiv__ },
 	{ OP::__rfloordiv__, OP::__floordiv__ },
-    { OP::__mul__, OP::__rmul__ },
+	{ OP::__mul__, OP::__rmul__ },
 	{ OP::__rmul__, OP::__mul__ },
-    { OP::__sub__, OP::__rsub__ },
+	{ OP::__sub__, OP::__rsub__ },
 	{ OP::__rsub__, OP::__sub__ },
-    { OP::__pow__, OP::__rpow__ },
+	{ OP::__pow__, OP::__rpow__ },
 	{ OP::__rpow__, OP::__pow__ },
-    { OP::__mod__, OP::__rmod__ },
+	{ OP::__mod__, OP::__rmod__ },
 	{ OP::__rmod__, OP::__mod__ },
-    { OP::__divmod__, OP::__rdivmod__ },
+	{ OP::__divmod__, OP::__rdivmod__ },
 	{ OP::__rdivmod__, OP::__divmod__ },
-    { OP::__eq__, OP::__eq__ },
-    { OP::__ne__, OP::__ne__ },
-    { OP::__ge__, OP::__le__ },
+	{ OP::__eq__, OP::__eq__ },
+	{ OP::__ne__, OP::__ne__ },
+	{ OP::__ge__, OP::__le__ },
 	{ OP::__le__, OP::__ge__ },
-    { OP::__gt__, OP::__lt__ },
+	{ OP::__gt__, OP::__lt__ },
 	{ OP::__lt__, OP::__gt__ },
-    { OP::ULT, OP::UGT },
+	{ OP::ULT, OP::UGT },
 	{ OP::UGT, OP::ULT },
-    { OP::ULE, OP::UGE },
+	{ OP::ULE, OP::UGE },
 	{ OP::UGE, OP::ULE },
-    { OP::SLT, OP::SGT },
+	{ OP::SLT, OP::SGT },
 	{ OP::SGT, OP::SLT },
-    { OP::SLE, OP::SGE },
+	{ OP::SLE, OP::SGE },
 	{ OP::SGE, OP::SLE },
-    { OP::__or__, OP::__ror__ },
+	{ OP::__or__, OP::__ror__ },
 	{ OP::__ror__, OP::__or__ },
-    { OP::__and__, OP::__rand__ },
+	{ OP::__and__, OP::__rand__ },
 	{ OP::__rand__, OP::__and__ },
-    { OP::__xor__, OP::__rxor__ },
+	{ OP::__xor__, OP::__rxor__ },
 	{ OP::__rxor__, OP::__xor__ },
-    { OP::__lshift__, OP::__rlshift__ },
+	{ OP::__lshift__, OP::__rlshift__ },
 	{ OP::__rlshift__, OP::__lshift__ },
-    { OP::__rshift__, OP::__rrshift__ },
+	{ OP::__rshift__, OP::__rrshift__ },
 	{ OP::__rrshift__, OP::__rshift__ },
 };
 
 const OpMap Ops::Maps::reversed {
-    { OP::__radd__, OP::__add__ },
-    { OP::__rand__, OP::__and__ },
-    { OP::__rdiv__, OP::__div__ },
-    { OP::__rdivmod__, OP::__divmod__ },
-    { OP::__rfloordiv__, OP::__floordiv__ },
-    { OP::__rlshift__, OP::__lshift__ },
-    { OP::__rmod__, OP::__mod__ },
-    { OP::__rmul__, OP::__mul__ },
-    { OP::__ror__, OP::__or__ },
-    { OP::__rpow__, OP::__pow__ },
-    { OP::__rrshift__, OP::__rshift__ },
-    { OP::__rsub__, OP::__sub__ },
-    { OP::__rtruediv__, OP::__truediv__ },
-    { OP::__rxor__, OP::__xor__ },
+	{ OP::__radd__, OP::__add__ },
+	{ OP::__rand__, OP::__and__ },
+	{ OP::__rdiv__, OP::__div__ },
+	{ OP::__rdivmod__, OP::__divmod__ },
+	{ OP::__rfloordiv__, OP::__floordiv__ },
+	{ OP::__rlshift__, OP::__lshift__ },
+	{ OP::__rmod__, OP::__mod__ },
+	{ OP::__rmul__, OP::__mul__ },
+	{ OP::__ror__, OP::__or__ },
+	{ OP::__rpow__, OP::__pow__ },
+	{ OP::__rrshift__, OP::__rshift__ },
+	{ OP::__rsub__, OP::__sub__ },
+	{ OP::__rtruediv__, OP::__truediv__ },
+	{ OP::__rxor__, OP::__xor__ },
 };
 
 const OpMap Ops::Maps::inverse {
-    { OP::__eq__, OP::__ne__ },
-    { OP::__ne__, OP::__eq__ },
-    { OP::__gt__, OP::__le__ },
-    { OP::__lt__, OP::__ge__ },
-    { OP::__ge__, OP::__lt__ },
-    { OP::__le__, OP::__gt__ },
-    { OP::ULT, OP::UGE },
+	{ OP::__eq__, OP::__ne__ },
+	{ OP::__ne__, OP::__eq__ },
+	{ OP::__gt__, OP::__le__ },
+	{ OP::__lt__, OP::__ge__ },
+	{ OP::__ge__, OP::__lt__ },
+	{ OP::__le__, OP::__gt__ },
+	{ OP::ULT, OP::UGE },
 	{ OP::UGE, OP::ULT },
-    { OP::UGT, OP::ULE },
+	{ OP::UGT, OP::ULE },
 	{ OP::ULE, OP::UGT },
-    { OP::SLT, OP::SGE },
+	{ OP::SLT, OP::SGE },
 	{ OP::SGE, OP::SLT },
-    { OP::SLE, OP::SGT },
+	{ OP::SLE, OP::SGT },
 	{ OP::SGT, OP::SLE },
 };
 
 /********************************************************************/
-/*                              Infix                               */
+/*                          Infix                               */
 /********************************************************************/
 
 const std::map<OP, const char * const> Ops::infix {
 	{ OP::__add__, "+" },
-    { OP::__sub__, "-" },
-    { OP::__mul__, "*" },
-    { OP::__div__, "/" },
-    { OP::__floordiv__, "/" },
-    { OP::__truediv__, "/" }, // the raw / operator should use integral semantics on bitvectors
-    { OP::__pow__, "**" },
-    { OP::__mod__, "%" },
-    { OP::__eq__, "==" },
-    { OP::__ne__, "!=" },
-    { OP::__ge__, ">=" },
-    { OP::__le__, "<=" },
-    { OP::__gt__, ">" },
-    { OP::__lt__, "<" },
-    { OP::UGE, ">=" },
-    { OP::ULE, "<=" },
-    { OP::UGT, ">" },
-    { OP::ULT, "<" },
-    { OP::SGE, ">=s" },
-    { OP::SLE, "<=s" },
-    { OP::SGT, ">s" },
-    { OP::SLT, "<s" },
-    { OP::SDiv, "/s" },
-    { OP::SMod, "%s" },
-    { OP::__or__, "|" },
-    { OP::__and__, "&" },
-    { OP::__xor__, "^" },
-    { OP::__lshift__, "<<" },
-    { OP::__rshift__, ">>" },
-    { OP::And, "&&" },
-    { OP::Or, "||" },
-    { OP::Concat, ".." },
+	{ OP::__sub__, "-" },
+	{ OP::__mul__, "*" },
+	{ OP::__div__, "/" },
+	{ OP::__floordiv__, "/" },
+	{ OP::__truediv__, "/" }, // the raw / operator should use integral semantics on bitvectors
+	{ OP::__pow__, "**" },
+	{ OP::__mod__, "%" },
+	{ OP::__eq__, "==" },
+	{ OP::__ne__, "!=" },
+	{ OP::__ge__, ">=" },
+	{ OP::__le__, "<=" },
+	{ OP::__gt__, ">" },
+	{ OP::__lt__, "<" },
+	{ OP::UGE, ">=" },
+	{ OP::ULE, "<=" },
+	{ OP::UGT, ">" },
+	{ OP::ULT, "<" },
+	{ OP::SGE, ">=s" },
+	{ OP::SLE, "<=s" },
+	{ OP::SGT, ">s" },
+	{ OP::SLT, "<s" },
+	{ OP::SDiv, "/s" },
+	{ OP::SMod, "%s" },
+	{ OP::__or__, "|" },
+	{ OP::__and__, "&" },
+	{ OP::__xor__, "^" },
+	{ OP::__lshift__, "<<" },
+	{ OP::__rshift__, ">>" },
+	{ OP::And, "&&" },
+	{ OP::Or, "||" },
+	{ OP::Concat, ".." },
 };
