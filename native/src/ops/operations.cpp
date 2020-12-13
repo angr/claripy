@@ -1,5 +1,7 @@
 #include "operations.hpp"
+
 #include "../utils/set_join.hpp"
+
 
 // For brevity
 using OpMap = Ops::OpMap;

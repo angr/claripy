@@ -20,27 +20,27 @@ namespace Utils {
          *  A specialization of set_join_helper that handles the single argument case
          */
         template <typename T>
-        void set_join_helper( std::set<T> &ret, const std::set<T> &a ) {
-            ret.insert( a.begin(), a.end() );
+        void set_join_helper(std::set<T> &ret, const std::set<T> &a) {
+            ret.insert(a.begin(), a.end());
         }
 
         /** A helper function used to merge a set of set<T>'s into ret
          *  Merge the set a into ret then recurse
          */
         template <typename T, typename... Args>
-        void set_join_helper( std::set<T> &ret, const std::set<T> &a,
-                              const Args... args ) {
-            ret.insert( a.begin(), a.end() );
-            set_join_helper( ret, args... );
+        void set_join_helper(std::set<T> &ret, const std::set<T> &a, const Args... args) {
+            ret.insert(a.begin(), a.end());
+            set_join_helper(ret, args...);
         }
     } // namespace Private
 
     /** Joins a set of set<T>'s into one */
-    template <typename T, typename... Args> std::set<T> set_join( const Args... args ) {
+    template <typename T, typename... Args> std::set<T> set_join(const Args... args) {
         auto ret = std::set<T>();
-        Private::set_join_helper<T>( ret, args... );
+        Private::set_join_helper<T>(ret, args...);
         return ret;
     }
 
 } // namespace Utils
+
 #endif

@@ -24,8 +24,8 @@ RUN cppcheck "${SRC}"
 
 # clang-format
 WORKDIR "${NATIVE}"
-RUN find . -regex '.*\.\(cpp\|hpp\|c\|cxx\)' -exec \
-		clang-format -style=file -i {} \;
+RUN find . -name '*.cpp' -or -name '*.hpp' -exec \
+	clang-format -style=file -i {} \;
 
 # Build
 ARG BUILD='/build'
