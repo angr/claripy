@@ -39,12 +39,9 @@ namespace AST {
 	class Base {
 		public:
 
-			static factory();
-
 		protected:
 			/** A protected constructor to disallow public creation */
 			Base();
-
 
 			// Friends
 			/** Allow CacheKey friend-access */
