@@ -6,7 +6,7 @@ The native components of claripy, primarily written in C++.
 
 Provided via doxygen.
 Integrated with cmake.
-CMake create a make target used to build documentation.
+CMake custom configures `Doxyfile.in` then creates a make target used to build documentation.
 
 ## Static Analysis
 
