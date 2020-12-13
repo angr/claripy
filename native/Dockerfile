@@ -35,5 +35,4 @@ RUN cmake -Duse_libclang=ON "${NATIVE}"
 RUN make -j "$(nproc)"
 
 # Build documentation
-WORKDIR "${NATIVE}"
-RUN doxygen
+RUN make -j "$(nproc)" docs
