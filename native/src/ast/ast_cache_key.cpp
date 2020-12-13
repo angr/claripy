@@ -1,21 +1,24 @@
 #include <string>
 #include <stdio.h>
 
-#include "ast_cache_key.hpp"
-#include "ast_base.hpp"
+#include "cache_key.hpp"
+#include "base.hpp"
+
+
+using namespace AST;
 
 
 // Constructor
-ASTCacheKey::ASTCacheKey(const ASTBase & a) : ref(a) {}
+CacheKey::CacheKey(const Base & a) : ref(a) {}
 
 // __repr__
-char * ASTCacheKey::repr() const {
+char * CacheKey::repr() const {
 	char * ret;
-	asprintf(&ret, "<Key %s %s>", ref.type_name(), ref.rep(inner=True));
+	asprintf(&ret, "<Key %s %s>", this->ref.type_name(), this->ref.rep(inner=True));
 	return ret;
 }
 
-// ASTCacheKey comparison
-bool operator==(const ASTCacheKey & a, const ASTCacheKey & b) {
+// CacheKey comparison
+bool operator==(const CacheKey & a, const CacheKey & b) {
 	return a.ref.hash == b.ref.hash;
 }

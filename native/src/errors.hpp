@@ -1,10 +1,18 @@
+/**
+ * @file errors.hpp
+ * @brief This file contains the possible exceptions claricpp can raise
+ * These exceptions have python analogs and must be caught and set to python
+ * via a different method. \todo{document method when known}
+ */
 #ifndef __ERRORS_HPP__
 #define __ERRORS_HPP__
 
 #include <exception>
 
 
-// Base AST exception
+/** Base AST exception
+ *  All AST exceptions must derive from this
+ */
 class ClaripyASTError: public std::exception {};
 
 class ClaripyBalancerError: public ClaripyASTError {};

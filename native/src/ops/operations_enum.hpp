@@ -1,8 +1,13 @@
+/**
+ * @file operations_enum.hpp
+ * @brief A type-safe enumeration that enumerates every operation claricpp handles
+ */
 #ifndef __OPERATIONS_ENUM_HPP__
 #define __OPERATIONS_ENUM_HPP__
 
-// Define the operations enum in the ops namespace
+/** A namespace used for the ops directory */
 namespace Ops {
+	/** A type-safe enumeration that enumerates every operation claricpp handles */
 	enum class Operations {
 		__add__,
 		__radd__,
@@ -107,7 +112,7 @@ namespace Ops {
 		StrIsDigit,
 		IntToStr,
 		Identical,
-		Reversed // TODO: should this be Reverse ?
+		Reversed // \todo{TODO: should this be Reverse ?}
 	};
 }
 

@@ -1,19 +1,35 @@
+/**
+ * @file ast_cache_key.hpp
+ * @brief This file defines the ASTCacheKey class
+ * \todo{This class may not be needed in the C++ version}
+ */
 #include <string>
 #include <stdio.h>
 
-// Forward declarations
-class ASTBase;
+/** A namespace used for the ast directory */
+namespace AST {
+
+	// Forward declarations
+	class Base;
 
 
-// AST Cache Key class
-class ASTCacheKey {
-public:
-	ASTCacheKey(const ASTBase & a);
-	char * repr() const;
-private:
-	// Representation
-	const ASTBase & ref;
-};
+	/** CacheKey is a reference to an AST
+	 *  Two CacheKeys are considered equal when their hashes are equal
+	 */
+	class CacheKey {
+		public:
+			/** Constructor */
+			CacheKey(const Base & a);
+			/** Returns a string representation of this */
+			char * repr() const;
+		private:
+			// Representation
+			/** The AST this object refers to */
+			const Base & ref;
+	};
 
-// ASTCacheKey comparison
-bool operator==(const ASTCacheKey & a, const ASTCacheKey & b);
+	/** ASTCacheKey equality operator
+	 *  Two values are equal if their AST
+	 */
+	bool operator==(const CacheKey & a, const CacheKey & b);
+}
