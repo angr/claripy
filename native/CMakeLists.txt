@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.16)
 
 
 option(BUILD_DOC "Build documentation" ON)
-# TODO: cpplint, clang-format, and doxygen automated by cmake
+# TODO: automate cpplint, clang-format?
 
 # Run make <DOC_MAKE_TARGET> to build documentation
 set(DOC_MAKE_TARGET docs)
