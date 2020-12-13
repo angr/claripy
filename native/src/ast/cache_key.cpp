@@ -2,8 +2,9 @@
 
 #include "base.hpp"
 
-#include <stdio.h>
 #include <string>
+
+#include <stdio.h>
 
 
 // For clarity

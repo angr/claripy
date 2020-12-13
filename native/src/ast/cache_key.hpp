@@ -3,8 +3,9 @@
  * @brief This file defines the AST::CacheKey class
  * \todo{This class may not be needed in the C++ version}
  */
-#include <stdio.h>
 #include <string>
+
+#include <stdio.h>
 
 
 /** A namespace used for the ast directory */

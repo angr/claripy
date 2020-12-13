@@ -5,14 +5,21 @@ SHELL [ "/bin/bash", "-c" ]
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -yq \
-	clang-format \
+	software-properties-common \
 	cppcheck \
 	graphviz \
 	doxygen \
-	clang \
 	cmake \
 	make \
+	wget \
 	g++
+
+# Install clang-format-11
+RUN wget -O - 'https://apt.llvm.org/llvm-snapshot.gpg.key' | apt-key add -
+RUN apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main"
+RUN apt-get update
+RUN apt-get install -yq \
+	clang-format-11
 
 # Copy in source files
 ARG NATIVE='/native'
@@ -24,8 +31,8 @@ RUN cppcheck "${SRC}"
 
 # clang-format
 WORKDIR "${NATIVE}"
-RUN find . -name '*.cpp' -or -name '*.hpp' -exec \
-	clang-format -style=file -i {} \;
+RUN find . -regex '.*\.\(cpp\|hpp\)' -exec \
+	clang-format-11 -style=file -i {} \;
 
 # Build
 ARG BUILD='/build'
