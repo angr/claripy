@@ -1,7 +1,7 @@
 /**
  * @file cache_key.hpp
  * @brief This file defines the AST::CacheKey class
- * \todo{This class may not be needed in the C++ version}
+ * @todo This class may not be needed in the C++ version
  */
 #ifndef __AST_CACHE_KEY_HPP__
 #define __AST_CACHE_KEY_HPP__

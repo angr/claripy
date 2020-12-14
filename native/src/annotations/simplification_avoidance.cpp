@@ -1,3 +1,4 @@
+/** @file */
 #include "simplification_avoidance.hpp"
 
 

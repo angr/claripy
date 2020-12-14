@@ -7,7 +7,9 @@
 
 /** A namespace used for the ops directory */
 namespace Ops {
-    /** A type-safe enumeration that enumerates every operation claricpp handles */
+    /** A type-safe enumeration that enumerates every operation claricpp handles
+     *  @todo Should this be Reverse?
+     */
     enum class Operations {
         __add__,
         __radd__,
@@ -112,7 +114,7 @@ namespace Ops {
         StrIsDigit,
         IntToStr,
         Identical,
-        Reversed // \todo{TODO: should this be Reverse ?}
+        Reversed
     };
 } // namespace Ops
 

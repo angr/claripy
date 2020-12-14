@@ -2,7 +2,8 @@
  * @file errors.hpp
  * @brief This file contains the possible exceptions claricpp can raise
  * These exceptions have python analogs and must be caught and set to python
- * via a different method. \todo{document method when known}
+ * via a different method.
+ * @todo Document method when known
  */
 #ifndef __ERRORS_HPP__
 #define __ERRORS_HPP__
