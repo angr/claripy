@@ -81,10 +81,10 @@ if(BUILD_DOC)
 	find_package(Doxygen REQUIRED dot)
 
 	# Config
-	set(PROJECT_LOGO "${CMAKE_CURRENT_BINARY_DIR}/logo.png")
-	file(DOWNLOAD "https://angr.io/img/angry_face.png" "${PROJECT_LOGO}")
+	set(PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
 	set(DOXYGEN_IN "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in")
-	set(DOXYGEN_OUT "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
+	set(DOXYGEN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile")
+	set(DOXYGEN_OUTPUT_DIRECTORY "/docs")
 
 	# Copy DOXYGEN_IN -> DOXYGEN_OUT but replace all strings in DOXYGEN_IN
 	# surrounded with @ signs with the values of the variables they name
@@ -92,7 +92,12 @@ if(BUILD_DOC)
 	configure_file("${DOXYGEN_IN}" "${DOXYGEN_OUT}" @ONLY)
 
 	# Create a make target to generate documentation
-	doxygen_add_docs("${DOC_MAKE_TARGET}" "${CMAKE_SOURCE_DIR}")
+	add_custom_target("${DOC_MAKE_TARGET}"
+		COMMAND "${DOXYGEN_EXECUTABLE}" "${DOXYGEN_OUT}"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		COMMENT "Generating documentation via Doxygen"
+		VERBATIM
+	)
 
 endif(BUILD_DOC)
 

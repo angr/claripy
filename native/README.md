@@ -24,6 +24,6 @@ The build system is cmake / make.
 
 A dockerfile is provided which:
 1. Uses clang-format replacement
-1. Uses cppcheck for static analysis
-1. Builds the shared object
-1. Builds documentation
+2. Uses cppcheck for static analysis
+3. Builds the shared object
+4. Builds documentation

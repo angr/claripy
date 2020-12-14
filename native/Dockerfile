@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 SHELL [ "/bin/bash", "-c" ]
 
-# Install dependencies
+# Install dependencies for building, static analysis, and documentation
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -yq \

@@ -44,7 +44,7 @@ PROJECT_NUMBER         = @VERSION@
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIF          = "C++ components of claripy"
+PROJECT_BRIEF          = "C++ components of claripy"
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -58,7 +58,7 @@ PROJECT_LOGO           = @PROJECT_LOGO@
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = "docs/"
+OUTPUT_DIRECTORY       = @DOXYGEN_OUTPUT_DIRECTORY@
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and
