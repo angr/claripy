@@ -2,8 +2,8 @@
  * @file set_join.hpp
  * @brief This file defines a method to join a set of set<T>'s together
  */
-#ifndef __SET_JOIN_HPP__
-#define __SET_JOIN_HPP__
+#ifndef __UTILS_SET_JOIN_HPP__
+#define __UTILS_SET_JOIN_HPP__
 
 #include <set>
 
@@ -19,8 +19,7 @@ namespace Utils {
         /** A helper function used to merge a set of set<T>'s into ret
          *  A specialization of set_join_helper that handles the single argument case
          */
-        template <typename T>
-        void set_join_helper(std::set<T> &ret, const std::set<T> &a) {
+        template <typename T> void set_join_helper(std::set<T> &ret, const std::set<T> &a) {
             ret.insert(a.begin(), a.end());
         }
 
@@ -30,7 +29,7 @@ namespace Utils {
         template <typename T, typename... Args>
         void set_join_helper(std::set<T> &ret, const std::set<T> &a, const Args... args) {
             ret.insert(a.begin(), a.end());
-            set_join_helper(ret, args...);
+            set_join_helper(ret, std::forward<const Args>(args)...);
         }
     } // namespace Private
 
@@ -41,7 +40,8 @@ namespace Utils {
     template <typename T, typename... Args>
     std::set<T> set_join(const std::set<T> &s1, const Args... args) {
         auto ret = std::set<T>();
-        Private::set_join_helper<T>(ret, s1, args...);
+        Private::set_join_helper<T>(ret, std::forward<decltype(s1)>(s1),
+                                    std::forward<const Args>(args)...);
         return ret;
     }
 

@@ -105,5 +105,8 @@ endif(BUILD_DOC)
 
 # Create the .so
 add_library(${SS_SUPPORT_LIB} SHARED
-    src/ops/operations.cpp
-    )
+	./src/annotations/base.cpp
+	./src/annotations/simplification_avoidance.cpp
+	./src/ops/classifications.cpp
+	./src/ops/operations.cpp
+)

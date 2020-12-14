@@ -2,8 +2,8 @@
  * @file classifications.hpp
  * @brief Organizes our operations into sets
  */
-#ifndef __CLASSIFICATIONS_HPP__
-#define __CLASSIFICATIONS_HPP__
+#ifndef __OPS_CLASSIFICATIONS_HPP__
+#define __OPS_CLASSIFICATIONS_HPP__
 
 #include "operations_enum.hpp"
 
@@ -25,9 +25,9 @@ namespace Ops {
 
     /** These sets classify different Backend operations */
     namespace Backend {
-        extern const OpSet comparator, bitwise, boolean, bitmod, creation,
-            symbol_creation, vsa_creation, other, arithmetic, operations,
-            operations_vsa_compliant, operations_all, fp_cmp, fp, strings;
+        extern const OpSet comparator, bitwise, boolean, bitmod, creation, symbol_creation,
+            vsa_creation, other, arithmetic, operations, operations_vsa_compliant, operations_all,
+            fp_cmp, fp, strings;
     }
 
     /** These sets classify different Length operations */
