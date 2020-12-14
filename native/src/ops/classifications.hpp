@@ -1,9 +1,9 @@
 /**
- * @file operations.hpp
+ * @file classifications.hpp
  * @brief Organizes our operations into sets
  */
-#ifndef __OPERATIONS__
-#define __OPERATIONS__
+#ifndef __CLASSIFICATIONS_HPP__
+#define __CLASSIFICATIONS_HPP__
 
 #include "operations_enum.hpp"
 
