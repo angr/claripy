@@ -34,10 +34,14 @@ namespace Utils {
         }
     } // namespace Private
 
-    /** Joins a set of set<T>'s into one */
-    template <typename T, typename... Args> std::set<T> set_join(const Args... args) {
+    /** Joins a set of set<T>'s into one
+     *  Requires at least two arguments.
+     *  Can automatically deduce template types from arguments
+     */
+    template <typename T, typename... Args>
+    std::set<T> set_join(const std::set<T> &s1, const Args... args) {
         auto ret = std::set<T>();
-        Private::set_join_helper<T>(ret, args...);
+        Private::set_join_helper<T>(ret, s1, args...);
         return ret;
     }
 
