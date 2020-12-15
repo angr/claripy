@@ -12,7 +12,7 @@ if bytes is str:
 
 setup(
     name='claripy',
-    version='9.0.gitrolling',
+    version='9.0.5002',
     python_requires='>=3.6',
     packages=packages,
     install_requires=[
