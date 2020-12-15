@@ -6,4 +6,11 @@
 #define __OPS_OPERATIONS_HPP__
 
 
+/********************************************************************/
+/*                         Length Checkers                          */
+/********************************************************************/
+
+/** A namespace used for the ops directory */
+namespace Ops {};
+
 #endif

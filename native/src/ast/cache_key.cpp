@@ -3,9 +3,8 @@
 
 #include "base.hpp"
 
+#include <sstream>
 #include <string>
-
-#include <stdio.h>
 
 
 // For clarity
@@ -16,11 +15,13 @@ using namespace AST;
 CacheKey::CacheKey(const Base &a) : ref(a) {}
 
 // __repr__
-char *CacheKey::repr() const {
-    char *ret;
-    asprintf(&ret, "<Key %s %s>", this->ref.type_name(), this->ref.rep(inner = True));
-    return ret;
+std::string CacheKey::repr() const {
+    std::stringstream ret;
+    ret << "<Key " << this->ref.type_name() << ' ' << this->ref.repr(true) << '>';
+    return ret.str();
 }
 
 // CacheKey comparison
-bool operator==(const CacheKey &a, const CacheKey &b) { return a.ref.hash == b.ref.hash; }
+bool CacheKey::operator==(const CacheKey &b) const {
+    return this->ref.hash == b.ref.hash;
+}
