@@ -14,9 +14,11 @@ AST::Base if_simplifier(const AST::Base &original, const AST::Bool &cond, const 
                         const AST::Base &if_false) {
     if (cond->is_true()) {
         return if_true;
-    } else if (cond->is_false()) {
+    }
+    else if (cond->is_false()) {
         return if_false;
-    } else {
+    }
+    else {
         return original;
     }
 }

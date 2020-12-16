@@ -15,7 +15,8 @@ std::string Cached::Base::repr(const bool inner, const Int max_depth,
                                const bool explicit_length) const {
     if (std::getenv("WORKER") == nullptr) {
         return "<AST something>";
-    } else {
+    }
+    else {
         /* return this->shallow_repr(inner, max_depth, explicit_length); */
         return "TODO";
     }
