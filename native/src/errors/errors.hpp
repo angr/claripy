@@ -1,5 +1,5 @@
 /**
- * @file errors.hpp
+ * @file
  * @brief This file contains the possible exceptions claricpp can raise
  * These exceptions have python analogs and must be caught and set to python
  * via a different method.

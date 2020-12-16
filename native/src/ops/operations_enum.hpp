@@ -1,5 +1,5 @@
 /**
- * @file operations_enum.hpp
+ * @file
  * @brief A type-safe enumeration that enumerates every operation claricpp handles
  */
 #ifndef __OPS_OPERATIONS_ENUM_HPP__

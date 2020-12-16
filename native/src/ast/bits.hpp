@@ -1,5 +1,5 @@
 /**
- * @file bits.hpp
+ * @file
  * @brief This file defines the AST::Cached::Bits class and defines AST::Bits
  */
 #ifndef __AST_BITS_HPP__

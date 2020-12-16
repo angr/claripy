@@ -1,5 +1,5 @@
 /**
- * @file classifications.hpp
+ * @file
  * @brief Organizes our operations into sets
  */
 #ifndef __OPS_CLASSIFICATIONS_HPP__

@@ -1,5 +1,5 @@
 /**
- * @file constants.hpp
+ * @file
  * @brief This file contains constants used across claricpp
  */
 #ifndef __CONSTANTS_HPP__

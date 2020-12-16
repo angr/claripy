@@ -1,5 +1,5 @@
 /**
- * @file bv.hpp
+ * @file
  * @brief This file defines the AST::Cached::BV class and defines AST::BV
  */
 #ifndef __AST_BV_HPP__

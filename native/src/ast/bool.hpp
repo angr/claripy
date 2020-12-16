@@ -1,5 +1,5 @@
 /**
- * @file bool.hpp
+ * @file
  * @brief This file defines the AST::Cached::Bool class and defines AST::Bool
  */
 #ifndef __AST_BOOL_HPP__

@@ -1,5 +1,5 @@
 /**
- * @file set_join_helper.hpp
+ * @file
  * @brief This file defines helper methods for set_join
  */
 #ifndef __UTILS_SET_JOIN_HELPER_HPP__

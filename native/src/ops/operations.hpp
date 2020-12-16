@@ -1,5 +1,5 @@
 /**
- * @file operations.hpp
+ * @file
  * @brief A set of functions to be used on various operations
  */
 #ifndef __OPS_OPERATIONS_HPP__

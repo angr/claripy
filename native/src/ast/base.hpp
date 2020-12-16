@@ -1,5 +1,5 @@
 /**
- * @file base.hpp
+ * @file
  * @brief This file defines the AST::Cached::Base class and defines AST::Base
  */
 #ifndef __AST_BASE_HPP__

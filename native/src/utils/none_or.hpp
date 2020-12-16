@@ -1,5 +1,5 @@
 /**
- * @file none_or.hpp
+ * @file
    @brief This file defines the NoneOr class
  */
 #ifndef __UTILS_NONE_OR_HPP__

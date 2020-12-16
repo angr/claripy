@@ -1,5 +1,5 @@
 /**
- * @file simplification_avoidance.hpp
+ * @file
  * @brief This file defines the Annotation::SimplificationAvoidance class
  */
 #ifndef __ANNOTATION_SIMPLIFICATION_AVOIDANCE_HPP__

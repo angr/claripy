@@ -1,5 +1,5 @@
 /**
- * @file simplifiers.hpp
+ * @file
  * @brief Define simplifiers in Simplifications::Simplifiers
  */
 #ifndef __SIMPLIFICATIONS_SIMPLIFIERS_HPP__

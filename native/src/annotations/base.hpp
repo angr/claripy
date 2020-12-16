@@ -1,5 +1,5 @@
 /**
- * @file base.hpp
+ * @file
  * @brief This file defines the Annotation::Base class
  * @todo Modify to allow data representation dependent on what Fish wants
  */

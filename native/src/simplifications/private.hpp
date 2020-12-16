@@ -1,5 +1,5 @@
 /**
- * @file private.hpp
+ * @file
  * @brief Define private simplifiers used by those in Simplifications::Simplifiers
  */
 #ifndef __SIMPLIFICATIONS_PRIVATE_HPP__
