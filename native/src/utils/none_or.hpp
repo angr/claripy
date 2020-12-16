@@ -63,15 +63,15 @@ namespace Utils {
 
         /** Private copy constructor
          *  Named factories will clearly explain how input is accepted by name */
-        NoneOr(const T &val, const bool is_none) : is_none_v(is_none), val_v(val) {}
+        explicit NoneOr(const T &val, const bool is_none) : is_none_v(is_none), val_v(val) {}
 
         /** Private move constructor
          *  Named factories will clearly explain how input is accepted by name */
-        NoneOr(T &&val, const bool is_none) : is_none_v(is_none), val_v(val) {}
+        explicit NoneOr(T &&val, const bool is_none) : is_none_v(is_none), val_v(val) {}
 
         /** Private default constructor
          *  Named factories will clearly explain how input is accepted by name */
-        NoneOr(const bool is_none) : is_none_v(is_none), val_v(val) {}
+        explicit NoneOr(const bool is_none) : is_none_v(is_none), val_v(val) {}
 
         /************************************************/
         /*                Representation                */

@@ -11,7 +11,7 @@ Cached::Base::Base(const Ops::Operation o, const Hash h) : op(o), hash(h) {}
 
 // Returns a string representation of this
 /** @todo: implement rest of repr */
-std::string Cached::Base::repr(const bool inner, const Int max_depth,
+std::string Cached::Base::repr(const bool inner, const Constants::Int max_depth,
                                const bool explicit_length) const {
     if (std::getenv("WORKER") == nullptr) {
         return "<AST something>";

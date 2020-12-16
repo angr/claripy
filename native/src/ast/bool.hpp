@@ -1,6 +1,6 @@
 /**
  * @file bool.hpp
- * @brief This file defines the AST::Cached::Bool class and define AST::Bool
+ * @brief This file defines the AST::Cached::Bool class and defines AST::Bool
  */
 #ifndef __AST_BOOL_HPP__
 #define __AST_BOOL_HPP__
@@ -20,7 +20,7 @@ namespace AST {
     namespace Cached {
 
         /** This class represents an AST boolean */
-        class Bool {
+        class Bool : public Base {
           public:
             /** Return true if the AST evaluates to true */
             bool is_true() const;

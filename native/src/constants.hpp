@@ -8,14 +8,19 @@
 #include <cstdint>
 
 
-/** A signed integer type that is consistent across all of claricpp
- *  Note that python does not have an integer maximum, C++ is bounded by this restriction
- */
-using Int = int_fast64_t;
+/** A namespace that defines constants */
+namespace Constants {
 
-/** An unsigned integer type that is consistent across all of claricpp
- *  Note that python does not have an integer maximum, C++ is bounded by this restriction
- */
-using UInt = uint_fast64_t;
+    /** A signed integer type that is consistent across all of claricpp
+     *  Note that python does not have an integer maximum, C++ is bounded by this restriction
+     */
+    using Int = int_fast64_t;
+
+    /** An unsigned integer type that is consistent across all of claricpp
+     *  Note that python does not have an integer maximum, C++ is bounded by this restriction
+     */
+    using UInt = uint_fast64_t;
+
+} // namespace Constants
 
 #endif

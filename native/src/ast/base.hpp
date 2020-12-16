@@ -1,6 +1,6 @@
 /**
  * @file base.hpp
- * @brief This file defines the AST::Cached::Base class and define AST::Base
+ * @brief This file defines the AST::Cached::Base class and defines AST::Base
  */
 #ifndef __AST_BASE_HPP__
 #define __AST_BASE_HPP__
@@ -29,7 +29,7 @@ namespace AST {
     /** Define a type to store backend IDs
      * @todo: Change this to something else as needed
      */
-    using BackendID = Int;
+    using BackendID = Constants::Int;
 
 
     // Forward declarations
@@ -57,23 +57,13 @@ namespace AST {
          * following is true:: a, b = two different ASTs c = b + a d = b + a assert c is d
          */
         class Base {
-          protected:
-            /** A protected constructor to disallow public creation */
-            Base(const Ops::Operation o, const Hash);
-
+          public:
             /** Returns a string representation of this */
-            virtual std::string repr(const bool inner = false, const Int max_depth = -1,
+            virtual std::string repr(const bool inner = false, const Constants::Int max_depth = -1,
                                      const bool explicit_length = false) const;
 
             /** Return the name of the type this class represents */
             virtual std::string type_name() const;
-
-            /************************************************/
-            /*                   Statics                    */
-            /************************************************/
-
-            /** A static cache used to allow bases to */
-            static std::map<Hash, std::weak_ptr<Base>> hash_cache;
 
             /************************************************/
             /*                Representation                */
@@ -85,12 +75,16 @@ namespace AST {
             /** The hash of the AST */
             const Hash hash;
 
+          protected:
+            /** A protected constructor to disallow public creation */
+            Base(const Ops::Operation o, const Hash);
+
             /************************************************/
-            /*                   Friends                    */
+            /*                   Statics                    */
             /************************************************/
 
-            /** Allow CacheKey friend-access */
-            friend class AST::CacheKey;
+            /** A static cache used to allow bases to */
+            static std::map<Hash, std::weak_ptr<Base>> hash_cache;
         };
     } // namespace Cached
 

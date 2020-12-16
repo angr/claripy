@@ -53,13 +53,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror" )
 
 # If debug mode
-if(DEFINED DEBUG_MODE)
+if(DEBUG_MODE)
     message("Debug Mode ON!")
 
     # Compile the program for debugging
     set(CMAKE_BUILD_TYPE debug)
     add_definitions(-DDEBUG_MODE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -ggdb -Wno-unused-parameter")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -ggdb -Wno-unused-parameter")
 
 # Not debug mode
 else()

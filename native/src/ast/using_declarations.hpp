@@ -20,15 +20,23 @@ namespace AST {
         // Forward declare classes
         class Base;
         class Bool;
+        class Bits;
+        class BV;
     } // namespace Cached
 
     // Define shared pointer abbreviations
 
-    /** An abbreviation for a shared pointer to the cached base class */
+    /** An abbreviation for a shared pointer to the cached Base class */
     using Base = std::shared_ptr<Cached::Base>;
 
-    /** An abbreviation for a shared pointer to the cached base class */
+    /** An abbreviation for a shared pointer to the cached Bool class */
     using Bool = std::shared_ptr<Cached::Bool>;
+
+    /** An abbreviation for a shared pointer to the cached Bits class */
+    using Bits = std::shared_ptr<Cached::Bits>;
+
+    /** An abbreviation for a shared pointer to the cached BV class */
+    using BV = std::shared_ptr<Cached::BV>;
 
 } // namespace AST
 

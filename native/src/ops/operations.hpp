@@ -11,6 +11,6 @@
 /********************************************************************/
 
 /** A namespace used for the ops directory */
-namespace Ops {};
+namespace Ops {}
 
 #endif

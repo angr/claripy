@@ -1,5 +1,6 @@
 # Explicit
 ignore/*
+build/*
 
 # Prerequisites
 *.d
