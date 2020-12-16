@@ -17,7 +17,6 @@ namespace AST {
      * shared_ptr
      */
     namespace Cached {
-
         // Forward declare classes
         class Base;
         class Bool;

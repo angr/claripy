@@ -7,6 +7,7 @@
 
 /** A namespace used for the ops directory */
 namespace Ops {
+
     /** A type-safe enumeration that enumerates every operation claricpp handles
      *  @todo Should this be Reverse?
      */
@@ -116,6 +117,7 @@ namespace Ops {
         Identical,
         Reversed
     };
+
 } // namespace Ops
 
 #endif

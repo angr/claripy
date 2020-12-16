@@ -7,7 +7,7 @@
 using namespace AST;
 
 
-Cached::Base::Base() : hash("") {}
+Cached::Base::Base(const Ops::Operation o) : op(o), hash(Hash {}) {}
 
 // Returns a string representation of this
 /** @todo: implement rest of repr */

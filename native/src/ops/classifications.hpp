@@ -13,8 +13,10 @@
 
 /** A namespace used for the ops directory */
 namespace Ops {
+
     /** A map from operations to operations */
     using OpMap = std::map<Operation, Operation>;
+
     /** A set of operations */
     using OpSet = std::set<Operation>;
 
@@ -50,6 +52,7 @@ namespace Ops {
 
     // This maps operations to their infix notations
     extern const std::map<Operation, const char *const> infix;
+
 } // namespace Ops
 
 #endif

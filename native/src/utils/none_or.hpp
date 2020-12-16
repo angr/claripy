@@ -16,6 +16,10 @@ namespace Utils {
      */
     template <typename T> class NoneOr {
 
+        /************************************************/
+        /*                  Factories                   */
+        /************************************************/
+
         /** Construction factory that utilizes T's copy constructor */
         static NoneOr<T> from_copy(const T &v, const bool is_none = false) {
             return NoneOr<T>(v, is_none);
@@ -29,7 +33,9 @@ namespace Utils {
         /** Construction factory that utilizes T's default constructor */
         static NoneOr<T> from_default(const bool is_none = true) { return NoneOr<T>(is_none); }
 
-        // Getters
+        /************************************************/
+        /*                   Getters                    */
+        /************************************************/
 
         /** Return true if None */
         bool is_none() const { return is_none_v; }
@@ -37,7 +43,9 @@ namespace Utils {
         /** Return val */
         bool val() const { return val_v; }
 
-        // Setters
+        /************************************************/
+        /*                   Setters                    */
+        /************************************************/
 
         /** Set is_none_v */
         void set_none(const bool b) { this->is_none_v = b; }
@@ -49,6 +57,10 @@ namespace Utils {
         void set_val_by_move(T &&v) { this->val_v = v; }
 
       private:
+        /************************************************/
+        /*                 Constructors                 */
+        /************************************************/
+
         /** Private copy constructor
          *  Named factories will clearly explain how input is accepted by name */
         NoneOr(const T &val, const bool is_none) : is_none_v(is_none), val_v(val) {}
@@ -61,9 +73,14 @@ namespace Utils {
          *  Named factories will clearly explain how input is accepted by name */
         NoneOr(const bool is_none) : is_none_v(is_none), val_v(val) {}
 
-        // Representation
+        /************************************************/
+        /*                Representation                */
+        /************************************************/
+
         /** true if none, false otherwise */
-        const bool is_none_v;
+        bool is_none_v;
+
+        /** the value if this represents if is_none_v is false */
         T val_v;
     };
 

@@ -34,7 +34,10 @@ namespace AST {
         bool operator==(const CacheKey &) const;
 
       private:
-        // Representation
+        /************************************************/
+        /*                Representation                */
+        /************************************************/
+
         /** The AST this object refers to */
         const Cached::Base &ref;
     };

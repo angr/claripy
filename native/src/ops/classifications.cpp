@@ -13,7 +13,6 @@ using OP = Ops::Operation;
 /*                           Expressions                            */
 /********************************************************************/
 
-// Define expression operations classifications
 const OpSet Ops::Expression::arithmetic = {
     OP::__add__,      OP::__radd__,     OP::__div__,       OP::__rdiv__, OP::__truediv__,
     OP::__rtruediv__, OP::__floordiv__, OP::__rfloordiv__, OP::__mul__,  OP::__rmul__,

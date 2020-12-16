@@ -59,7 +59,7 @@ namespace AST {
         class Base {
           protected:
             /** A protected constructor to disallow public creation */
-            Base();
+            Base(const Ops::Operation o, const Hash);
 
             /** Returns a string representation of this */
             virtual std::string repr(const bool inner = false, const Int max_depth = -1,
@@ -68,17 +68,27 @@ namespace AST {
             /** Return the name of the type this class represents */
             virtual std::string type_name() const;
 
-            // Representation
-            /** The hash of the AST */
-            const Hash hash;
+            /************************************************/
+            /*                   Statics                    */
+            /************************************************/
 
             /** A static cache used to allow bases to */
             static std::map<Hash, std::weak_ptr<Base>> hash_cache;
 
-            // Representation
+            /************************************************/
+            /*                Representation                */
+            /************************************************/
+
+            /** The top level operation this AST represents */
             const Ops::Operation op;
 
-            // Friends
+            /** The hash of the AST */
+            const Hash hash;
+
+            /************************************************/
+            /*                   Friends                    */
+            /************************************************/
+
             /** Allow CacheKey friend-access */
             friend class AST::CacheKey;
         };
