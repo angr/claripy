@@ -7,7 +7,6 @@
 
 #include "../ast/using_declarations.hpp"
 #include "../ops/operations_enum.hpp"
-#include "../utils/none_or.hpp"
 
 #include <map>
 #include <memory>

@@ -24,6 +24,7 @@ namespace AST {
           public:
             /** Return true if the AST evaluates to true */
             bool is_true() const;
+
             /** Return true if the AST evaluates to false */
             bool is_false() const;
         };
