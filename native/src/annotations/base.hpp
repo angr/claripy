@@ -6,10 +6,11 @@
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__
 
-// Forward declarations
-namespace AST {
-    class Base;
-}
+#include "../ast/using_declarations.hpp"
+
+#include <memory>
+#include <utility>
+
 
 /** A namespace used for the annotations directory */
 namespace Annotation {

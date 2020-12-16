@@ -13,7 +13,9 @@
 namespace AST {
 
     // Forward declarations
-    class Base;
+    namespace Cached {
+        class Base;
+    }
 
     /** CacheKey is a reference to an AST
      *  Two CacheKeys are considered equal when their hashes are equal
@@ -21,7 +23,7 @@ namespace AST {
     class CacheKey {
       public:
         /** Constructor */
-        CacheKey(const Base &a);
+        CacheKey(const Cached::Base &a);
 
         /** Returns a string representation of this */
         std::string repr() const;
@@ -34,7 +36,7 @@ namespace AST {
       private:
         // Representation
         /** The AST this object refers to */
-        const Base &ref;
+        const Cached::Base &ref;
     };
 
 } // namespace AST

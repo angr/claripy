@@ -12,7 +12,7 @@ using namespace AST;
 
 
 // Constructor
-CacheKey::CacheKey(const Base &a) : ref(a) {}
+CacheKey::CacheKey(const Cached::Base &a) : ref(a) {}
 
 // __repr__
 std::string CacheKey::repr() const {

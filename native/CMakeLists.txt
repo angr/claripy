@@ -108,15 +108,5 @@ endif(BUILD_DOC)
 #################################################
 
 
-# Create the .so
-add_library(${SS_SUPPORT_LIB} SHARED
-	# AST
-	./src/ast/base.cpp
-	./src/ast/cache_key.cpp
-	# Annotations
-	./src/annotations/base.cpp
-	./src/annotations/simplification_avoidance.cpp
-	# Ops
-	./src/ops/classifications.cpp
-	./src/ops/operations.cpp
-)
+# src has its own cmake file
+add_subdirectory(./src)

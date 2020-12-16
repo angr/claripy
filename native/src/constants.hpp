@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+
 /** A signed integer type that is consistent across all of claricpp
  *  Note that python does not have an integer maximum, C++ is bounded by this restriction
  */

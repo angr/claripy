@@ -34,12 +34,12 @@ WORKDIR "${NATIVE}"
 RUN find . -regex '.*\.\(cpp\|hpp\)' -exec \
 	clang-format-11 -style=file -i {} \;
 
-# Build
+# Config
+ARG MAKE_TARGETS=all
 ARG BUILD='/build'
 RUN mkdir "${BUILD}"
 WORKDIR "${BUILD}"
-RUN cmake -Duse_libclang=ON "${NATIVE}"
-RUN make -j "$(nproc)"
+RUN cmake "${NATIVE}"
 
-# Build documentation
-RUN make -j "$(nproc)" docs
+# Make
+RUN make -j "$(nproc)" ${MAKE_TARGETS}
