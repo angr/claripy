@@ -5,18 +5,19 @@ SHELL [ "/bin/bash", "-c" ]
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -yq \
-	software-properties-common \
 	cppcheck \
 	graphviz \
 	doxygen \
+	gnupg2 \
 	cmake \
 	make \
 	wget \
 	g++
 
-# Install clang-format-11
+# Install clang-format 11
 RUN wget -O - 'https://apt.llvm.org/llvm-snapshot.gpg.key' | apt-key add -
-RUN apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main"
+RUN echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list
+RUN echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -yq \
 	clang-format-11
