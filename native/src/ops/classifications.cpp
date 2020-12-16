@@ -7,7 +7,7 @@
 // For brevity
 using OpMap = Ops::OpMap;
 using OpSet = Ops::OpSet;
-using OP = Ops::Operations;
+using OP = Ops::Operation;
 
 /********************************************************************/
 /*                           Expressions                            */

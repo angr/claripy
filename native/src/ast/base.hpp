@@ -57,7 +57,6 @@ namespace AST {
          * following is true:: a, b = two different ASTs c = b + a d = b + a assert c is d
          */
         class Base {
-          public:
           protected:
             /** A protected constructor to disallow public creation */
             Base();
@@ -76,7 +75,9 @@ namespace AST {
             /** A static cache used to allow bases to */
             static std::map<Hash, std::weak_ptr<Base>> hash_cache;
 
-          private:
+            // Representation
+            const Ops::Operation op;
+
             // Friends
             /** Allow CacheKey friend-access */
             friend class AST::CacheKey;

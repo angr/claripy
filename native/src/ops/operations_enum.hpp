@@ -10,7 +10,7 @@ namespace Ops {
     /** A type-safe enumeration that enumerates every operation claricpp handles
      *  @todo Should this be Reverse?
      */
-    enum class Operations {
+    enum class Operation {
         __add__,
         __radd__,
         __div__,
