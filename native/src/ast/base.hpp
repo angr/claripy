@@ -5,13 +5,12 @@
 #ifndef __AST_BASE_HPP__
 #define __AST_BASE_HPP__
 
-#include "../annotations/base.hpp"
-#include "../ops/operations_enum.hpp"
+#include "constants.hpp"
 #include "using_declarations.hpp"
 
+#include "../annotations/base.hpp"
 #include "../macros.hpp"
-
-#include "constants.hpp"
+#include "../ops/operations_enum.hpp"
 
 #include <list>
 #include <map>
@@ -84,7 +83,7 @@ namespace AST {
             const std::vector<const ::AST::Base> children;
 
             /** A set of backents that are known to be unable to handle this AST */
-            const std::set<const BackendID> errored_backends;
+            const std::set<BackendID> errored_backends;
 
             /** A set of annotations applied onto this AST */
             const std::set<const Annotation::Base> annotations;
@@ -116,7 +115,7 @@ namespace AST {
 
             /** Allow factories friend access */
             template <class T, typename... Args>
-            friend T factory(std::set<const BackendID> &&eager_backends, Args &&...args);
+            friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);
         };
 
     } // namespace Cached

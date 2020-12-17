@@ -22,7 +22,7 @@ AST::Hash CBits::hash(const Ops::Operation o, const Constants::Int l) {
 }
 
 std::string CBits::type_name() const {
-    auto s = std::set<const BackendID>();
+    auto s = std::set<BackendID>();
     std::stringstream ret;
     ret << this->fundamental_type_name() << this->length;
     return ret.str();

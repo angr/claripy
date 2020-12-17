@@ -5,8 +5,6 @@
 #ifndef __AST_STRING_HPP__
 #define __AST_STRING_HPP__
 
-#include "../macros.hpp"
-
 #include "bits.hpp"
 
 
@@ -48,7 +46,7 @@ namespace AST {
 
             /** Allow factories friend access */
             template <class T, typename... Args>
-            friend T factory(std::set<const BackendID> &&eager_backends, Args &&...args);
+            friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);
         };
 
     } // namespace Cached

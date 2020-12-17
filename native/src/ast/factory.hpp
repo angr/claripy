@@ -5,12 +5,10 @@
 #ifndef __AST_FACTORY_HPP__
 #define __AST_FACTORY_HPP__
 
-#include "../errors/unexpected.hpp"
+#include "base.hpp"
 #include "hash_cache.hpp"
 
-#include "../macros.hpp"
-
-#include "base.hpp"
+#include "../errors/unexpected.hpp"
 
 #include <memory>
 #include <utility>
@@ -26,7 +24,7 @@ namespace AST::Cached {
      *  @todo This will probably want to take in args via move
      */
     template <class T, typename... Args>
-    T factory(std::set<const BackendID> &&eager_backends, Args &&...args) {
+    T factory(std::set<BackendID> &&eager_backends, Args &&...args) {
 
         // Deduce the AST::Cached type the shared pointer type T contains
         using Internal = decltype(std::declval<T>().get());
@@ -77,8 +75,8 @@ namespace AST {
      *  @todo remove the need for this
      */
     template <class T, typename... Args>
-    inline T factory(std::set<const BackendID> &&eager_backends, Args &&...args) {
-        return Cached::factory<T, Args...>(std::forward<std::set<const BackendID>>(eager_backends),
+    inline T factory(std::set<BackendID> &&eager_backends, Args &&...args) {
+        return Cached::factory<T, Args...>(std::forward<std::set<BackendID>>(eager_backends),
                                            std::forward<Args>(args)...);
     }
 
