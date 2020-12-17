@@ -7,7 +7,7 @@
 
 #include "../macros.hpp"
 
-#include "base.hpp"
+#include "bits.hpp"
 
 
 /** A namespace used for the ast directory */
@@ -20,10 +20,10 @@ namespace AST {
     namespace Cached {
 
         /** An AST representing an integer */
-        class FP : public Base {
+        class FP : public Bits {
 
             /** Return the name of the type this class represents */
-            std::string type_name() const;
+            std::string fundamental_type_name() const;
 
             /** Delete all default constructors */
             DELETE_DEFAULTS(FP);
