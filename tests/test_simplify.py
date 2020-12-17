@@ -126,6 +126,27 @@ def test_concrete_flatten():
     i = d - 10
     nose.tools.assert_is(i, b)
 
+
+def test_mask_eq_constant():
+    # <Bool ((0#48 .. (0x0 .. sim_data_4_31_8[0:0])[15:0]) & 0xffff) == 0x0>
+
+    a = claripy.BVS("sim_data", 8)
+    expr = (claripy.ZeroExt(
+        48,
+        claripy.Extract(
+            15,
+            0,
+            claripy.Concat(
+                claripy.BVV(0, 63),
+                a[0:0]
+            )
+        )) & 0xffff) == 0x0
+
+    assert str(expr) == "<Bool sim_data_0_8[0:0] == 0>"
+    assert expr.op == "__eq__"
+    assert expr.args[0].op == "Extract"
+
+
 def perf():
     import timeit
     print(timeit.timeit("perf_boolean_and_simplification_0()",
