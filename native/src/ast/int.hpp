@@ -1,11 +1,9 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::Bool class and defines AST::Bool
+ * @brief This file defines the AST::Cached::Int class and defines AST::Int
  */
-#ifndef __AST_BOOL_HPP__
-#define __AST_BOOL_HPP__
-
-#include "using_declarations.hpp"
+#ifndef __AST_INT_HPP__
+#define __AST_INT_HPP__
 
 #include "../macros.hpp"
 
@@ -21,24 +19,16 @@ namespace AST {
      */
     namespace Cached {
 
-        /** This class represents an AST boolean */
-        class Bool : public Base {
-          public:
-            /** Return true if the AST evaluates to true */
-            bool is_true() const;
-
-            /** Return true if the AST evaluates to false */
-            bool is_false() const;
+        /** An AST representing an integer */
+        class Int : public Base {
 
             /** Return the name of the type this class represents */
             std::string type_name() const;
 
-          private:
             /** Delete all default constructors */
-            DELETE_DEFAULTS(Bool)
+            DELETE_DEFAULTS(Int);
         };
     } // namespace Cached
-
 } // namespace AST
 
 #endif

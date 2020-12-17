@@ -5,6 +5,8 @@
 #ifndef __UTILS_NONE_OR_HPP__
 #define __UTILS_NONE_OR_HPP__
 
+#include "../macros.hpp"
+
 #include <utility>
 
 
@@ -61,15 +63,18 @@ namespace Utils {
         /*                 Constructors                 */
         /************************************************/
 
-        /** Private copy constructor
+        /** Delete all default constructors */
+        DELETE_DEFAULTS(NoneOr)
+
+        /** Private 'copy constructor'
          *  Named factories will clearly explain how input is accepted by name */
         explicit NoneOr(const T &val, const bool is_none) : is_none_v(is_none), val_v(val) {}
 
-        /** Private move constructor
+        /** Private 'move constructor'
          *  Named factories will clearly explain how input is accepted by name */
         explicit NoneOr(T &&val, const bool is_none) : is_none_v(is_none), val_v(val) {}
 
-        /** Private default constructor
+        /** Private 'default constructor'
          *  Named factories will clearly explain how input is accepted by name */
         explicit NoneOr(const bool is_none) : is_none_v(is_none), val_v(val) {}
 

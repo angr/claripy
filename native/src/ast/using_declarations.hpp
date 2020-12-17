@@ -21,6 +21,9 @@ namespace AST {
         class Base;
         class Bool;
         class Bits;
+        class String;
+        class Int;
+        class VS;
         class BV;
     } // namespace Cached
 
@@ -37,6 +40,15 @@ namespace AST {
 
     /** An abbreviation for a shared pointer to the cached BV class */
     using BV = std::shared_ptr<Cached::BV>;
+
+    /** An abbreviation for a shared pointer to the cached VS class */
+    using VS = std::shared_ptr<Cached::VS>;
+
+    /** An abbreviation for a shared pointer to the cached String class */
+    using String = std::shared_ptr<Cached::String>;
+
+    /** An abbreviation for a shared pointer to the cached Int class */
+    using Int = std::shared_ptr<Cached::Int>;
 
 } // namespace AST
 

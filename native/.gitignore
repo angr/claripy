@@ -1,4 +1,5 @@
 # Explicit
+Doxyfile
 ignore/*
 build/*
 

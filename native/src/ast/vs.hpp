@@ -1,11 +1,9 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::BV class and defines AST::BV
+ * @brief This file defines the AST::Cached::VS class and defines AST::VS
  */
-#ifndef __AST_BV_HPP__
-#define __AST_BV_HPP__
-
-#include "using_declarations.hpp"
+#ifndef __AST_VS_HPP__
+#define __AST_VS_HPP__
 
 #include "../macros.hpp"
 
@@ -21,20 +19,16 @@ namespace AST {
      */
     namespace Cached {
 
-        /** This class represents an AST bit vector */
-        class BV : public Bits {
+        /** An AST representing a value set */
+        class VS : public Bits {
 
             /** Return the name of the type this class represents irrespective of length */
             std::string fundamental_type_name() const;
 
             /** Delete all default constructors */
-            DELETE_DEFAULTS(BV);
+            DELETE_DEFAULTS(VS);
         };
     } // namespace Cached
-
-    /** An abbreviation for a shared pointer to the cached bv class */
-    using BV = std::shared_ptr<Cached::BV>;
-
 } // namespace AST
 
 #endif

@@ -10,6 +10,7 @@
 #include "using_declarations.hpp"
 
 #include "../constants.hpp"
+#include "../macros.hpp"
 
 #include <map>
 #include <memory>
@@ -85,6 +86,10 @@ namespace AST {
 
             /** A static cache used to allow bases to */
             static std::map<Hash, std::weak_ptr<Base>> hash_cache;
+
+          private:
+            /** Delete all default constructors */
+            DELETE_DEFAULTS(Base)
         };
     } // namespace Cached
 

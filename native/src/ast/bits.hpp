@@ -6,6 +6,7 @@
 #define __AST_BITS_HPP__
 
 #include "../constants.hpp"
+#include "../macros.hpp"
 
 #include "base.hpp"
 
@@ -33,20 +34,23 @@ namespace AST {
             Constants::Int size() const;
 
             /** Return the name of the type this class represents */
-            virtual std::string type_name() const;
+            std::string type_name() const;
+
+            /** Return the name of the type this class represents irrespective of length */
+            virtual std::string fundamental_type_name() const;
 
           protected:
             /** The number of bits being represented */
             const Constants::Int length;
 
           private:
+            /** Delete all default constructors */
+            DELETE_DEFAULTS(Bits)
+
             /** Throw an exception if old and new_ are not of the same length @todo static */
             void check_replaceability(const ::AST::Bits &old, const ::AST::Bits &new_);
         };
     } // namespace Cached
-
-    /** An abbreviation for a shared pointer to the cached bits class */
-    using Bits = std::shared_ptr<Cached::Bits>;
 
 } // namespace AST
 

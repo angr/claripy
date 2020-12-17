@@ -14,3 +14,8 @@ bool Cached::Bool::is_true() const {
 bool Cached::Bool::is_false() const {
     return true;
 }
+
+// Return the name of the type this class represents
+std::string Cached::Bool::type_name() const {
+    return "AST::Bool";
+}

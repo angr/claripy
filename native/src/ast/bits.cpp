@@ -1,7 +1,7 @@
 /** @file */
 #include "bits.hpp"
 
-#include "../errors/errors.hpp"
+#include "../errors/ast.hpp"
 
 #include <sstream>
 #include <utility>
@@ -20,12 +20,16 @@ Constants::Int CBits::size() const {
 
 std::string CBits::type_name() const {
     std::stringstream ret;
-    ret << "Bits" << this->length;
+    ret << this->fundamental_type_name() << this->length;
     return ret.str();
+}
+
+std::string CBits::fundamental_type_name() const {
+    return "AST::Bits";
 }
 
 void CBits::check_replaceability(const AST::Bits &old, const AST::Bits &new_) {
     if (old->size() != new_->size()) {
-        throw Errors::AST("Replacements must have matching sizes");
+        throw Errors::factory<Errors::AST::Base>("Replacements must have matching sizes");
     }
 }

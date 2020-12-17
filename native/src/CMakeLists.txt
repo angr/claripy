@@ -4,6 +4,7 @@ add_library(${SS_SUPPORT_LIB} SHARED
 	./ast/bool.cpp
 	./ast/base.cpp
 	./ast/bits.cpp
+	./ast/string.cpp
 	./ast/cache_key.cpp
 	# Annotations
 	./annotations/base.cpp
@@ -15,5 +16,5 @@ add_library(${SS_SUPPORT_LIB} SHARED
 	./simplifications/private.cpp
 	./simplifications/simplifiers.cpp
 	# Errors
-	./errors/errors.cpp
+	./errors/claricpp.cpp
 )

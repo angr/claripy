@@ -6,6 +6,8 @@
 #ifndef __AST_CACHE_KEY_HPP__
 #define __AST_CACHE_KEY_HPP__
 
+#include "../macros.hpp"
+
 #include <string>
 
 
@@ -34,6 +36,9 @@ namespace AST {
         bool operator==(const CacheKey &) const;
 
       private:
+        /** Delete all default constructors */
+        DELETE_DEFAULTS(CacheKey);
+
         /************************************************/
         /*                Representation                */
         /************************************************/
