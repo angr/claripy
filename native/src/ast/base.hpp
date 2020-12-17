@@ -9,8 +9,9 @@
 #include "../ops/operations_enum.hpp"
 #include "using_declarations.hpp"
 
-#include "../constants.hpp"
 #include "../macros.hpp"
+
+#include "constants.hpp"
 
 #include <list>
 #include <map>
@@ -22,17 +23,6 @@
 
 /** A namespace used for the ast directory */
 namespace AST {
-
-    /** Define a type to store hashes
-     * @todo: Change this to something else as needed
-     */
-    using Hash = uint_fast64_t;
-
-    /** Define a type to store backend IDs
-     * @todo: Change this to something else as needed
-     */
-    using BackendID = Constants::Int;
-
 
     // Forward declarations
     class CacheKey;
@@ -60,8 +50,8 @@ namespace AST {
          */
         class Base {
           public:
-            /** The public factory used to create a Base */
-            virtual ::AST::Base factory(const Ops::Operation o);
+            /** Virtual destructor */
+            virtual ~Base();
 
             /** Returns a string representation of this */
             virtual std::string repr(const bool inner = false, const Constants::Int max_depth = -1,
@@ -74,12 +64,16 @@ namespace AST {
             /*                Representation                */
             /************************************************/
 
+            /** The hash of the AST
+             *  This variable is intentionally declared first as we want it to be the first
+             * argument passed to the Base() constructor; since it was declared first most
+             * compilers will issue a warning if it is not set before all other member variables */
+            const Hash id;
+
             /** The top level operation this AST represents */
             const Ops::Operation op;
 
-            /** The hash of the AST */
-            const Hash id;
-
+#if 0
             /** A flag saying whether or not this AST is symbolic */
             const bool symbolic;
 
@@ -94,25 +88,37 @@ namespace AST {
 
             /** A set of annotations applied onto this AST */
             const std::set<const Annotation::Base> annotations;
+#endif
 
           protected:
-            /** A protected constructor to disallow public creation */
-            Base(const Ops::Operation o, const Hash);
-
             /************************************************/
             /*                   Statics                    */
             /************************************************/
 
-            /** The hash function of this AST */
+            /** The hash function of this AST
+             *  This must have take in the same arguments as the constructor, minus the hash
+             */
             static Hash hash(const Ops::Operation o);
 
-            /** A static cache used to allow bases to */
-            static std::map<Hash, std::weak_ptr<Base>> hash_cache;
+            /************************************************/
+            /*                 Constructors                 */
+            /************************************************/
+
+            /** A protected constructor to disallow public creation
+             *  This must have take in the same arguments as the hash function, minus the hash
+             * which must be the first argument passed
+             */
+            Base(const Hash h, const Ops::Operation o);
 
           private:
             /** Delete all default constructors */
             DELETE_DEFAULTS(Base)
+
+            /** Allow factories friend access */
+            template <class T, typename... Args>
+            friend T factory(std::set<const BackendID> &&eager_backends, Args &&...args);
         };
+
     } // namespace Cached
 
 } // namespace AST

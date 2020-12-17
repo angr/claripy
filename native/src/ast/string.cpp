@@ -1,7 +1,6 @@
 /** @file */
 #include "string.hpp"
 
-#include "../errors/python.hpp"
 #include "../ops/operations_enum.hpp"
 
 
@@ -21,4 +20,9 @@ using Op = Ops::Operation;
 // Return the name of the type this class represents
 std::string Cached::String::fundamental_type_name() const {
     return "AST::String";
+}
+
+/** @todo make this actually work */
+Hash Cached::String::hash(const Ops::Operation o, const Constants::Int length) {
+    return Hash(o);
 }

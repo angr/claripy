@@ -11,14 +11,18 @@
 using CBits = AST::Cached::Bits;
 
 
-CBits::Bits(const Ops::Operation o, const Hash h, const Constants::Int l)
-    : Base(o, h), length(l) {}
+CBits::~Bits() {}
 
-Constants::Int CBits::size() const {
-    return this->length;
+CBits::Bits(const Hash h, const Ops::Operation o, const Constants::Int l)
+    : Base(h, o), length(l) {}
+
+/** @todo change this */
+AST::Hash CBits::hash(const Ops::Operation o, const Constants::Int l) {
+    return l;
 }
 
 std::string CBits::type_name() const {
+    auto s = std::set<const BackendID>();
     std::stringstream ret;
     ret << this->fundamental_type_name() << this->length;
     return ret.str();
@@ -29,7 +33,7 @@ std::string CBits::fundamental_type_name() const {
 }
 
 void CBits::check_replaceability(const AST::Bits &old, const AST::Bits &new_) {
-    if (old->size() != new_->size()) {
-        throw Errors::factory<Errors::AST::Base>("Replacements must have matching sizes");
+    if (old->length != new_->length) {
+        throw Errors::AST::Base("Replacements must have matching sizes");
     }
 }

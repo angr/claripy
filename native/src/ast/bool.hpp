@@ -34,9 +34,26 @@ namespace AST {
             std::string type_name() const;
 
           private:
+            /** A private constructor to disallow public creation
+             *  This must have take in the same arguments as the hash function, minus the hash
+             *  which must be the first argument passed
+             */
+            Bool(const Hash h, const Ops::Operation o);
+
             /** Delete all default constructors */
             DELETE_DEFAULTS(Bool)
+
+            /** The hash function of this AST
+             *  This must have take in the same arguments as the constructor, minus the hash
+             * @todo not exactly, args in the constructor can consume inputs
+             */
+            static Hash hash(const Ops::Operation o, const Constants::Int length);
+
+            /** Allow factories friend access */
+            template <class T, typename... Args>
+            friend T factory(std::set<const BackendID> &&eager_backends, Args &&...args);
         };
+
     } // namespace Cached
 
 } // namespace AST

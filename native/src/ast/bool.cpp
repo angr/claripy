@@ -5,6 +5,7 @@
 // For clarity
 using namespace AST;
 
+
 /** @todo this is a dummy */
 bool Cached::Bool::is_true() const {
     return true;
@@ -18,4 +19,9 @@ bool Cached::Bool::is_false() const {
 // Return the name of the type this class represents
 std::string Cached::Bool::type_name() const {
     return "AST::Bool";
+}
+
+/** @todo make this actually work */
+Hash Cached::Bool::hash(const Ops::Operation o, const Constants::Int length) {
+    return Hash(o);
 }
