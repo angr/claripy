@@ -1,6 +1,9 @@
 add_library(${SS_SUPPORT_LIB} SHARED
 	# AST
+	./ast/fp.cpp
+	./ast/vs.cpp
 	./ast/bv.cpp
+	./ast/int.cpp
 	./ast/bool.cpp
 	./ast/base.cpp
 	./ast/bits.cpp
