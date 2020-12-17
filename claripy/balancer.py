@@ -200,6 +200,9 @@ class Balancer:
                 continue
 
             unpacked_truisms = self._unpack_truisms(truism)
+            if is_false(truism):
+                raise ClaripyBalancerUnsatError()
+
             self._processed_truisms.add(truism)
             if len(unpacked_truisms):
                 self._queue_truisms(unpacked_truisms, check_true=True)
@@ -452,8 +455,8 @@ class Balancer:
             new_right = _all_operations.Concat(truism.args[1], BVV(0, len(left_lsb)))
             return truism.make_like(truism.op, (new_left, new_right))
 
-        if low == 0 and truism.args[1].op == 'BVV':
-            # single-valued rhs value
+        if low == 0 and truism.args[1].op == 'BVV' and truism.op not in {'SGE', 'SLE', 'SGT', 'SLT'}:
+            # single-valued rhs value with an unsigned operator
             # Eliminate Extract on lhs and zero-extend the value on rhs
             new_left = inner
             new_right = _all_operations.ZeroExt(inner.size() - truism.args[1].size(), truism.args[1])
