@@ -1,6 +1,7 @@
 import collections
 import itertools
 import operator
+from typing import Optional
 
 from functools import reduce
 
@@ -217,66 +218,19 @@ class SimplificationManager:
             #	  return b._claripy.false
 
         # Masking and comparing against a constant
-        if a.op == '__and__' and len(a.args) == 2 and b.op == "BVV":
-            a_arg0, a_arg1 = a.args
-            if a_arg1.op == "BVV":
-                # it's a constant mask
-                # check if the higher bits are 0
-                v = a_arg1.args[0]
-                zero_bits = a_arg1.args[1]
-                mask_allones = True
-                while v != 0:
-                    mask_allones = mask_allones and ((v & 1) == 0)
-                    v = v >> 1
-                    zero_bits -= 1
-                if zero_bits > 0:
-                    # the higher `zero_bits` bits are zero
-                    # check the constant
-                    b_higher = b[b.size() - 1 : b.size() - zero_bits]
-                    if (b_higher == 0).is_true():
-                        # extra check: can we get rid of the mask
-                        b_lower = b[b.size() - 1 - zero_bits: 0]
-                        if mask_allones:
-                            # yes!
-                            return a_arg0[b.size() - 1 - zero_bits : 0] == b_lower
-                        else:
-                            # nope
-                            return (a_arg0[b.size() - 1 - zero_bits: 0] & a_arg1.args[0]) == b_lower
-                    elif (b_higher == 0).is_false():
-                        return ast.all_operations.false
+        simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__eq__, a, b)
+        if simp is not None:
+            return simp
 
         # ZeroExt/Concat and Extract and comparing against a constant
-        if a.op == "Extract" and b.op == "BVV":
-            highbits_are_zeros = False
-            a_hi, a_lo, a_arg = a.args
-            if a_arg.op == "Concat" and len(a_arg.args) == 2:
-                a_concat_expr0 = a_arg.args[0]
-                if a_concat_expr0.op == "BVV" and a_concat_expr0.args[0] == 0:
-                    # equivalent to ZeroExt
-                    if a_concat_expr0.size() >= a.size() - a_hi:
-                        # high bits are all zeros
-                        highbits_are_zeros = True
-
-            # TODO: Support ZeroExt
-
-            if highbits_are_zeros:
-                to_extend = b.size() - a_arg.args[1].size()
-                if to_extend == 0:
-                    return a_arg.args[1] == b
-                else:
-                    return ast.all_operations.ZeroExt(to_extend, a_arg.args[1]) == b
+        simp = SimplificationManager.zeroext_extract_comparing_against_constant_simplifier(operator.__eq__, a, b)
+        if simp is not None:
+            return simp
 
         # ZeroExt/Concat and comparing against a constant
-        if a.op == "ZeroExt" and b.op == "BVV":
-            # check if the high bits of b are zeros
-            a_zeroext_bits = a.args[0]
-            b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
-            if (b_highbits == 0).is_true():
-                # we can get rid of ZeroExt
-                return a.args[1] == b[b.size() - a_zeroext_bits - 1 : 0]
-            elif (b_highbits == 0).is_false():
-                # unsat
-                return ast.all_operations.false
+        simp = SimplificationManager.zeroext_comparing_against_simplifier(operator.__eq__, a, b)
+        if simp is not None:
+            return simp
 
         if (a.op in SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and a.length == b.length:
             for i in range(a.length):
@@ -322,6 +276,21 @@ class SimplificationManager:
             #	  return b._claripy.true
             # elif b._claripy.is_true(b.args[1] == a) and b._claripy.is_true(b.args[2] == a):
             #	  return b._claripy.false
+
+        # Masking and comparing against a constant
+        simp = SimplificationManager.and_mask_comparing_against_constant_simplifier(operator.__ne__, a, b)
+        if simp is not None:
+            return simp
+
+        # ZeroExt/Concat and Extract and comparing against a constant
+        simp = SimplificationManager.zeroext_extract_comparing_against_constant_simplifier(operator.__ne__, a, b)
+        if simp is not None:
+            return simp
+
+        # ZeroExt/Concat and comparing against a constant
+        simp = SimplificationManager.zeroext_comparing_against_simplifier(operator.__ne__, a, b)
+        if simp is not None:
+            return simp
 
         if (a.op == SIMPLE_OPS or b.op in SIMPLE_OPS) and a.length > 1 and a.length == b.length:
             for i in range(a.length):
@@ -890,6 +859,120 @@ class SimplificationManager:
     @staticmethod
     def str_reverse_simplifier(arg):
         return arg
+
+    @staticmethod
+    def and_mask_comparing_against_constant_simplifier(op, a, b):
+        """
+        This simplifier handles the following case:
+
+            A & mask == b, and
+            A & mask != b
+
+        If the high bits of A are 0, `& mask` can be eliminated.
+        """
+        if op in (operator.__eq__, operator.__ne__) and a.op == '__and__' and len(a.args) == 2 and b.op == "BVV":
+            a_arg0, a_arg1 = a.args
+            if a_arg1.op == "BVV":
+                # it's a constant mask
+                # check if the higher bits are 0
+                v = a_arg1.args[0]
+                zero_bits = a_arg1.args[1]
+                mask_allones = True
+                while v != 0:
+                    mask_allones = mask_allones and ((v & 1) == 0)
+                    v = v >> 1
+                    zero_bits -= 1
+                if zero_bits > 0:
+                    # the higher `zero_bits` bits are zero
+                    # check the constant
+                    b_higher = b[b.size() - 1 : b.size() - zero_bits]
+                    b_higher_bits_are_0: Optional[bool] = None
+                    if (b_higher == 0).is_true():
+                        b_higher_bits_are_0 = True
+                    elif (b_higher == 0).is_false():
+                        b_higher_bits_are_0 = False
+
+                    if b_higher_bits_are_0 is True:
+                        # extra check: can we get rid of the mask
+                        b_lower = b[b.size() - 1 - zero_bits: 0]
+                        if mask_allones:
+                            # yes!
+                            return op(a_arg0[b.size() - 1 - zero_bits : 0], b_lower)
+                        else:
+                            # nope
+                            return op(a_arg0[b.size() - 1 - zero_bits: 0] & a_arg1.args[0], b_lower)
+                    elif b_higher_bits_are_0 is False:
+                        return ast.all_operations.false if op == operator.__eq__ else ast.all_operations.true
+
+        return None
+
+    @staticmethod
+    def zeroext_extract_comparing_against_constant_simplifier(op, a, b):
+        """
+        This simplifier handles the following cases:
+
+            Extract(hi, lo, Concat(0, A)) == b, and
+            Extract(hi, lo, Concat(0, A)) != b, and
+            Extract(hi, lo, ZeroExt(n, A)) == b, and
+            Extract(hi, lo, ZeroExt(n, A)) != b
+
+        If the high bits of b are 0, Extract and Concat/ZeroExt can be eliminated.
+        """
+        if op not in (operator.__eq__, operator.__ne__) or b.op != "BVV" or a.op != "Extract":
+            return None
+
+        highbits_are_zeros = False
+
+        a_hi, a_lo, a_arg = a.args
+        a_inner_expr = None
+        if a_arg.op == "Concat" and len(a_arg.args) == 2:
+            a_concat_expr0 = a_arg.args[0]
+            a_inner_expr = a_arg.args[1]
+            if a_concat_expr0.op == "BVV" and a_concat_expr0.args[0] == 0:
+                # equivalent to ZeroExt
+                if a_concat_expr0.size() >= a.size() - a_hi:
+                    # high bits are all zeros
+                    highbits_are_zeros = True
+
+        if a_arg.op == "ZeroExt":
+            a_zeroext_bits = a_arg.args[0]
+            a_inner_expr = a_arg.args[1]
+            if a_zeroext_bits >= a.size() - a_hi:
+                # high bits are all zeros
+                highbits_are_zeros = True
+
+        if highbits_are_zeros:
+            to_extend = b.size() - a_inner_expr.size()
+            if to_extend == 0:
+                return op(a_inner_expr, b)
+            else:
+                return op(ast.all_operations.ZeroExt(to_extend, a_inner_expr), b)
+
+        return None
+
+    @staticmethod
+    def zeroext_comparing_against_simplifier(op, a, b):
+        """
+        This simplifier handles the following cases:
+
+            ZeroExt(n, A) == b, and
+            ZeroExt(n, A) != b
+
+        If the high bits of b are all zeros (in case of __eq__) or have at least one ones (in case of __ne__), ZeroExt
+        can be eliminated.
+        """
+        if op in {operator.__eq__, operator.__ne__} and a.op == "ZeroExt" and b.op == "BVV":
+            # check if the high bits of b are zeros
+            a_zeroext_bits = a.args[0]
+            b_highbits = b[b.size() - 1 : b.size() - a_zeroext_bits]
+            if (b_highbits == 0).is_true():
+                # we can get rid of ZeroExt
+                return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
+            elif (b_highbits == 0).is_false():
+                # unsat
+                return ast.all_operations.false if op == operator.__eq__ else ast.all_operations.true
+
+        return None
 
 
 SIMPLE_OPS = ('Concat', 'SignExt', 'ZeroExt')

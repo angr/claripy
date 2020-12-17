@@ -130,7 +130,7 @@ def test_concrete_flatten():
 def test_mask_eq_constant():
     # <Bool ((0#48 .. (0x0 .. sim_data_4_31_8[0:0])[15:0]) & 0xffff) == 0x0>
 
-    a = claripy.BVS("sim_data", 8)
+    a = claripy.BVS("sim_data", 8, explicit_name=True)
     expr = (claripy.ZeroExt(
         48,
         claripy.Extract(
@@ -142,9 +142,50 @@ def test_mask_eq_constant():
             )
         )) & 0xffff) == 0x0
 
-    assert str(expr) == "<Bool sim_data_0_8[0:0] == 0>"
+    assert str(expr) == "<Bool sim_data[0:0] == 0>"
     assert expr.op == "__eq__"
     assert expr.args[0].op == "Extract"
+
+
+def test_and_mask_comparing_against_constant_simplifier():
+
+    # A & mask == b  ==>  Extract(_, _, A) == Extract(_, _, b) iff high bits of a and b are zeros
+    a = claripy.BVS('a', 8)
+    b = claripy.BVV(0x10, 32)
+
+    expr = claripy.ZeroExt(24, a) & 0xffff == b
+    assert expr is (a == 16)
+
+    expr = claripy.Concat(claripy.BVV(0, 24), a) & 0xffff == b
+    assert expr is (a == 16)
+
+    # A & mask != b ==> Extract(_, _, A) != Extract(_, _, b) iff high bits of a and b are zeros
+    a = claripy.BVS('a', 8)
+    b = claripy.BVV(0x102000aa, 32)
+
+    expr = claripy.ZeroExt(24, a) & 0xffff == b
+    assert expr.is_false()
+
+    expr = claripy.Concat(claripy.BVV(0, 24), a) & 0xffff == b
+    assert expr.is_false()
+
+
+def test_zeroext_extract_comparing_against_constant_simplifier():
+
+    a = claripy.BVS('a', 8, explicit_name=True)
+    b = claripy.BVV(0x28, 16)
+
+    expr = claripy.Extract(15, 0, claripy.ZeroExt(24, a)) == b
+    assert expr is (a == claripy.BVV(0x28, 8))
+
+    expr = claripy.Extract(7, 0, claripy.ZeroExt(24, a)) == claripy.BVV(0x28, 8)
+    assert expr is (a == claripy.BVV(0x28, 8))
+
+    expr = claripy.Extract(7, 0, claripy.ZeroExt(1, a)) == claripy.BVV(0x28, 8)
+    assert expr is (a == claripy.BVV(0x28, 8))
+
+    expr = claripy.Extract(6, 0, claripy.ZeroExt(24, a)) == claripy.BVV(0x28, 7)
+    assert str(expr) == "<Bool a[6:0] == 40>"
 
 
 def perf():
@@ -164,3 +205,6 @@ if __name__ == '__main__':
     test_reverse_extract_reverse_simplification()
     test_reverse_concat_reverse_simplification()
     test_concrete_flatten()
+    test_mask_eq_constant()
+    test_and_mask_comparing_against_constant_simplifier()
+    test_zeroext_extract_comparing_against_constant_simplifier()
