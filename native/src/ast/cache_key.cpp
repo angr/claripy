@@ -23,5 +23,5 @@ std::string CacheKey::repr() const {
 
 // CacheKey comparison
 bool CacheKey::operator==(const CacheKey &b) const {
-    return this->ref.hash == b.ref.hash;
+    return this->ref.id == b.ref.id;
 }

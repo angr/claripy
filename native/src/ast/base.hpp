@@ -12,6 +12,7 @@
 #include "../constants.hpp"
 #include "../macros.hpp"
 
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -25,7 +26,7 @@ namespace AST {
     /** Define a type to store hashes
      * @todo: Change this to something else as needed
      */
-    using Hash = std::string;
+    using Hash = uint_fast64_t;
 
     /** Define a type to store backend IDs
      * @todo: Change this to something else as needed
@@ -59,6 +60,9 @@ namespace AST {
          */
         class Base {
           public:
+            /** The public factory used to create a Base */
+            virtual ::AST::Base factory(const Ops::Operation o);
+
             /** Returns a string representation of this */
             virtual std::string repr(const bool inner = false, const Constants::Int max_depth = -1,
                                      const bool explicit_length = false) const;
@@ -74,7 +78,22 @@ namespace AST {
             const Ops::Operation op;
 
             /** The hash of the AST */
-            const Hash hash;
+            const Hash id;
+
+            /** A flag saying whether or not this AST is symbolic */
+            const bool symbolic;
+
+            /** A measure of how simplified this AST is */
+            const Simplify simplified;
+
+            /** Children ASTs */
+            const std::vector<const ::AST::Base> children;
+
+            /** A set of backents that are known to be unable to handle this AST */
+            const std::set<const BackendID> errored_backends;
+
+            /** A set of annotations applied onto this AST */
+            const std::set<const Annotation::Base> annotations;
 
           protected:
             /** A protected constructor to disallow public creation */
@@ -83,6 +102,9 @@ namespace AST {
             /************************************************/
             /*                   Statics                    */
             /************************************************/
+
+            /** The hash function of this AST */
+            static Hash hash(const Ops::Operation o);
 
             /** A static cache used to allow bases to */
             static std::map<Hash, std::weak_ptr<Base>> hash_cache;

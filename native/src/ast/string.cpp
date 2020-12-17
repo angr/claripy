@@ -11,8 +11,8 @@ using Op = Ops::Operation;
 
 /* String Cached::String::Concrete(const std::string & value, const Constants::Int length) { */
 /* 	if (value.length() > length) { */
-/* 		throw Errors::Python::ValueError("Can't make a concrete string value longer than the
- * specified length!"); */
+/* 		throw Errors::Python::ValueError("Can't make a concrete string value longer than
+ * the specified length!"); */
 /* 	} */
 /* 	return Cached::String::factory(Op::StringV, (value, len(value)), length=length, **kwargs)
  */
