@@ -16,29 +16,23 @@
 namespace Errors {
 
     class Claricpp : public std::exception {
+      public:
+        /** Public constructor */
+        template <class S> Claricpp(const S m) : msg(m) {}
 
         /** Message getter */
         const char *what() const throw();
 
       protected:
-        /** Protected constructor to disable public construction */
-        Claricpp();
-
-        /** Protected copy constructor to disable public construction */
-        Claricpp(const Claricpp &);
-
-        /** Protected move constructor Booldisable public construction */
-        Claricpp(Claricpp &&);
-
-        /** Message setter */
-        template <class S> void set(const S m) { msg = m; }
+        /** Delete default constructor */
+        Claricpp() = delete;
 
       private:
         /** The message */
-        std::string msg;
+        const std::string msg;
 
         /** Allow all error factories friend access */
-        template <class T, class S> friend Claricpp factory(const S msg);
+        template <class T, class S> friend T factory(const S msg);
     };
 
 } // namespace Errors

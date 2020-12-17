@@ -13,6 +13,10 @@ RUN apt-get install -yq \
 	make \
 	wget \
 	g++
+# Boost
+RUN apt-get install -yq \
+	libboost-all-dev
+
 
 # Install clang-format 11
 RUN wget -O - 'https://apt.llvm.org/llvm-snapshot.gpg.key' | apt-key add -

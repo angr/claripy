@@ -15,5 +15,24 @@
     /** Disable default move constructor */                                                       \
     X(X &&) = delete;
 
+/** A macro used to define a derived class that inherets its parent's constructors
+ *  The body of this class is otherwise empty
+ */
+#define DEFINE_SUBCLASS_WITH_CONSTRUCTOR(DERIVED, SUPER)                                          \
+    struct DERIVED : public SUPER {                                                               \
+        /** Inherit constructors */                                                               \
+        using SUPER::SUPER;                                                                       \
+    };
+
+/** A macro to convert a macro result into a string */
+#define MACRO_TO_STRING(X) MACRO_TO_STRING_HELPER(X)
+
+
+/************************************************/
+/*                   Helpers                    */
+/************************************************/
+
+/** A helper macro to help convert a macro result into a string */
+#define MACRO_TO_STRING_HELPER(X) #X
 
 #endif

@@ -8,8 +8,9 @@
 #ifndef __ERRORS_AST_HPP__
 #define __ERRORS_AST_HPP__
 
+#include "../macros.hpp"
+
 #include "claricpp.hpp"
-#include "factory.hpp"
 
 
 /** A namespace used for the errors directory */
@@ -21,26 +22,26 @@ namespace Errors {
         /** Base AST exception
          *  All AST exceptions must derive from this
          */
-        class Base : public Claricpp {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp)
 
         /** @todo document */
-        class Balancer : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Balancer, Base)
         /** @todo document */
-        class BalancerUnsat : public Balancer {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(BalancerUnsat, Balancer)
         /** @todo document */
-        class Type : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Type, Base)
         /** @todo document */
-        class Value : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Value, Base)
         /** @todo document */
-        class Size : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Size, Base)
         /** @todo document */
-        class Operation : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Operation, Base)
         /** @todo document */
-        class Replacement : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Replacement, Base)
         /** @todo document */
-        class Recursion : public Operation {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Recursion, Operation)
         /** @todo document */
-        class ZeroDivision : public Operation {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(ZeroDivision, Operation)
 
     } // namespace AST
 

@@ -9,7 +9,6 @@
 #define __ERRORS_PYTHON_HPP__
 
 #include "claricpp.hpp"
-#include "factory.hpp"
 
 
 /** A namespace used for the errors directory */
@@ -21,10 +20,10 @@ namespace Errors {
         /** Base Python exception
          *  All Python exceptions must derive from this
          */
-        class Base : public Claricpp {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp)
 
         /** Analogous to python's ValueError exception */
-        class ValueError : public Base {};
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(ValueError, Base)
     } // namespace Python
 
 } // namespace Errors

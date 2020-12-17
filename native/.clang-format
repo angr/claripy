@@ -73,6 +73,8 @@ ForEachMacros:
 IncludeBlocks:   Regroup
 IncludeCategories:
   - Regex:           '<[[:alnum:].]+\.h>'
+    Priority:        50
+  - Regex:           '<boost/[[:alnum:].]+>'
     Priority:        40
   - Regex:           '<[[:alnum:].]+>'
     Priority:        30
