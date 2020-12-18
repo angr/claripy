@@ -5,7 +5,7 @@
 #ifndef __SIMPLIFICATIONS_CONSTANTS_HPP__
 #define __SIMPLIFICATIONS_CONSTANTS_HPP__
 
-#include "../ast/using_declarations.hpp"
+#include "../ast/forward_declarations.hpp"
 
 
 /** A namespace used for the simplifications directory */

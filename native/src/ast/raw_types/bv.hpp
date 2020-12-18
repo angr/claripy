@@ -2,8 +2,8 @@
  * @file
  * Boolbrief This file defines the AST::RawTypes::BV class and defines AST::BV
  */
-#ifndef __AST_BV_HPP__
-#define __AST_BV_HPP__
+#ifndef __AST_RAWTYPES_BV_HPP__
+#define __AST_RAWTYPES_BV_HPP__
 
 #include "bits.hpp"
 

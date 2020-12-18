@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the AST::RawTypes::Bits class and defines AST::Bits
  */
-#ifndef __AST_BITS_HPP__
-#define __AST_BITS_HPP__
+#ifndef __AST_RAWTYPES_BITS_HPP__
+#define __AST_RAWTYPES_BITS_HPP__
 
 #include "base.hpp"
 

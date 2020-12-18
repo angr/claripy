@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the AST::RawTypes::VS class and defines AST::VS
  */
-#ifndef __AST_VS_HPP__
-#define __AST_VS_HPP__
+#ifndef __AST_RAWTYPES_VS_HPP__
+#define __AST_RAWTYPES_VS_HPP__
 
 #include "bits.hpp"
 

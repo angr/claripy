@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the AST::RawTypes::Bool class and defines AST::Bool
  */
-#ifndef __AST_BOOL_HPP__
-#define __AST_BOOL_HPP__
+#ifndef __AST_RAWTYPES_BOOL_HPP__
+#define __AST_RAWTYPES_BOOL_HPP__
 
 #include "base.hpp"
 

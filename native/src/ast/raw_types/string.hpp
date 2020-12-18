@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the AST::RawTypes::String class and defines AST::String
  */
-#ifndef __AST_STRING_HPP__
-#define __AST_STRING_HPP__
+#ifndef __AST_RAWTYPES_STRING_HPP__
+#define __AST_RAWTYPES_STRING_HPP__
 
 #include "bits.hpp"
 

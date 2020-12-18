@@ -6,7 +6,7 @@
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__
 
-#include "../ast/using_declarations.hpp"
+#include "../ast/forward_declarations.hpp"
 
 #include <memory>
 #include <utility>

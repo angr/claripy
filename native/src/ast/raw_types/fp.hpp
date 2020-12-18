@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the AST::RawTypes::FP class and defines AST::FP
  */
-#ifndef __AST_FP_HPP__
-#define __AST_FP_HPP__
+#ifndef __AST_RAWTYPES_FP_HPP__
+#define __AST_RAWTYPES_FP_HPP__
 
 #include "bits.hpp"
 

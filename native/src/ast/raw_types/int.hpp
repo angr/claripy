@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the AST::RawTypes::Int class and defines AST::Int
  */
-#ifndef __AST_INT_HPP__
-#define __AST_INT_HPP__
+#ifndef __AST_RAWTYPES_INT_HPP__
+#define __AST_RAWTYPES_INT_HPP__
 
 #include "base.hpp"
 

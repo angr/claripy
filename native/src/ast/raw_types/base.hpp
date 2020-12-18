@@ -2,14 +2,13 @@
  * @file
  * @brief This file defines the AST::RawTypes::Base class and defines AST::Base
  */
-#ifndef __AST_BASE_HPP__
-#define __AST_BASE_HPP__
+#ifndef __AST_RAWTYPES_BASE_HPP__
+#define __AST_RAWTYPES_BASE_HPP__
 
 #include "../../annotations/base.hpp"
 #include "../../macros.hpp"
 #include "../../ops/operations_enum.hpp"
 #include "../constants.hpp"
-#include "../using_declarations.hpp"
 
 #include <list>
 #include <map>

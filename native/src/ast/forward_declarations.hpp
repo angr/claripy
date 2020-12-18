@@ -3,8 +3,8 @@
  * @brief This file defines many useful using statements within AST
  * For example, AST::Base is defined as std::shared_ptr<AST::RawTypes::Base>
  */
-#ifndef __AST_USING_DECLARATIONS_HPP__
-#define __AST_USING_DECLARATIONS_HPP__
+#ifndef __AST_FORWARD_DECLARATIONS_HPP__
+#define __AST_FORWARD_DECLARATIONS_HPP__
 
 #include <memory>
 
