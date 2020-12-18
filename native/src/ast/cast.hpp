@@ -51,11 +51,9 @@ namespace AST {
     inline std::shared_ptr<To> cast_throw_on_fail(std::shared_ptr<From> &f) {
         To ret = cast<To>(std::forward<From>(f));
         Utils::affirm<Errors::Unexpected::BadCast>(
-            ret, "dynamic_pointer_cast within AST::factory failed.");
-#if 0
-            ret, __FILE__
-            ": " MACRO_TO_STRING(__LINE__)
-#endif
+            "dynamic_pointer_cast within AST::factory failed.\n"
+            "\tFile: " __FILE__ "\n\tLine: " __LINE__ "\n\t",
+            __func__);
         return ret;
     }
 

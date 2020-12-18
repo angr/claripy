@@ -8,6 +8,8 @@
 #ifndef __ERRORS_CLARICPP_HPP__
 #define __ERRORS_CLARICPP_HPP__
 
+#include "../utils/to_str.hpp"
+
 #include <exception>
 #include <string>
 
@@ -17,8 +19,11 @@ namespace Errors {
 
     class Claricpp : public std::exception {
       public:
-        /** Public constructor */
-        template <typename S> Claricpp(const S m) : msg(m) {}
+        /** Public constructor
+         *  This constructor consumes its arguments via move semantics
+         */
+        template <typename... Args>
+        Claricpp(Args &&...args) : msg(Utils::to_str(std::forward<Args>(args)...)) {}
 
         /** Message getter */
         const char *what() const throw();

@@ -61,6 +61,7 @@ namespace AST {
              */
             friend class ::AST::Private::Cache<Hash, Base>;
         };
+
     } // namespace RawTypes
 
 } // namespace AST
