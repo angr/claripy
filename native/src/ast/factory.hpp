@@ -6,6 +6,7 @@
 #define __AST_FACTORY_HPP__
 
 #include "base.hpp"
+#include "cast.hpp"
 #include "hash_cache.hpp"
 
 #include "../errors/unexpected.hpp"
@@ -14,7 +15,7 @@
 #include <utility>
 
 
-/** A namespace used for the ast directory */
+// We are defining factory in the Cached namespace of AST
 namespace AST::Cached {
 
     /** A factory used to construct subclasses of AST::Cached::Base. This consumes its arguments
@@ -31,7 +32,7 @@ namespace AST::Cached {
         using CachedT = typename std::remove_pointer<Internal>::type;
 
         // Compile time error checking
-        static_assert(std::is_convertible<CachedT *, AST::Cached::Base *>::value,
+        static_assert(std::is_base_of<AST::Cached::Base, CachedT>::value,
                       "T must derive from AST::Cached::Base");
 
         // Check to see if the object to be constructed exists in the hash cache
@@ -43,15 +44,7 @@ namespace AST::Cached {
             ::AST::Base locked = lookup->second.lock();
             // If the weak_ptr is valid, return it
             if (locked) {
-                T possible_ret = std::dynamic_pointer_cast<CachedT>(locked);
-                if (possible_ret) {
-                    return possible_ret;
-                }
-                // This should never happen unless we have a hash collision or a coding error
-                else {
-                    Errors::Unexpected::BadCast(__FILE__ ": " MACRO_TO_STRING(
-                        __LINE__) ": dynamic_pointer_cast within AST::factory failed.");
-                }
+                return AST::cast_throw_on_fail<T>(locked);
             }
             // Otherwise remove it from the cache
             else {

@@ -25,6 +25,10 @@ namespace Errors {
             /** Inherit constructors */
             using Base::Base;
         };
+
+        /** Raised when a function is given invalid arguments */
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(IncorrectUsage, Claricpp)
+
     } // namespace Unexpected
 
 } // namespace Errors
