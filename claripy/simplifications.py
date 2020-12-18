@@ -1,3 +1,4 @@
+# pylint:disable=isinstance-second-argument-not-valid-type
 import collections
 import itertools
 import operator
@@ -902,7 +903,7 @@ class SimplificationManager:
                             # nope
                             return op(a_arg0[b.size() - 1 - zero_bits: 0] & a_arg1.args[0], b_lower)
                     elif b_higher_bits_are_0 is False:
-                        return ast.all_operations.false if op == operator.__eq__ else ast.all_operations.true
+                        return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
         return None
 
@@ -923,7 +924,7 @@ class SimplificationManager:
 
         highbits_are_zeros = False
 
-        a_hi, a_lo, a_arg = a.args
+        a_hi, _, a_arg = a.args
         a_inner_expr = None
         if a_arg.op == "Concat" and len(a_arg.args) == 2:
             a_concat_expr0 = a_arg.args[0]
@@ -970,7 +971,7 @@ class SimplificationManager:
                 return op(a.args[1], b[b.size() - a_zeroext_bits - 1 : 0])
             elif (b_highbits == 0).is_false():
                 # unsat
-                return ast.all_operations.false if op == operator.__eq__ else ast.all_operations.true
+                return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 
         return None
 
