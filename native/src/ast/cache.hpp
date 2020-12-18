@@ -136,6 +136,10 @@ namespace AST {
                 this->gc_resize = 2 * this->cache.size();
             }
 
+            /************************************************/
+            /*                Representation                */
+            /************************************************/
+
             /** The cache representation */
             CacheMap cache;
 

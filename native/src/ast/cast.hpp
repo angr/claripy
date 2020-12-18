@@ -5,8 +5,6 @@
 #ifndef __AST_CAST_HPP__
 #define __AST_CAST_HPP__
 
-/* #include "base.hpp" */
-
 #include "../errors/unexpected.hpp"
 #include "../utils/affirm.hpp"
 
