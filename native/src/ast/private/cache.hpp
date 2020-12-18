@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the AST hash cache
+ * @brief This file defines a generic hash cache type
  */
 #ifndef __AST_PRIVATE_CACHE_HPP__
 #define __AST_PRIVATE_CACHE_HPP__

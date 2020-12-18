@@ -13,6 +13,9 @@ option(BUILD_DOC "Build documentation" ON)
 # Run make <DOC_MAKE_TARGET> to build documentation
 set(DOC_MAKE_TARGET docs)
 
+# Shared library name
+set(SHARED_LIB_NAME claricpp.so)
+
 ### Developer options below ###
 
 # Version

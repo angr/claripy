@@ -9,9 +9,6 @@
 
 #include "../ops/operations_enum.hpp"
 
-#include <memory>
-#include <vector>
-
 
 /** A namespace used for the simplifications directory */
 namespace Simplifications {
@@ -29,8 +26,11 @@ namespace Simplifications {
         /** @todo document */
         Simplifier concat;
 
-        /** @todo document */
-        Simplifier bv_reverse;
+        /** A namespace for bv simplifiers */
+        namespace BV {
+            /** @todo document */
+            Simplifier reverse;
+        } // namespace BV
 
         /************************************************/
         /*                    Shift                     */

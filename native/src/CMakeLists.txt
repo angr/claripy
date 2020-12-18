@@ -1,4 +1,4 @@
-add_library(${SS_SUPPORT_LIB} SHARED
+add_library(${SHARED_LIB_NAME} SHARED
 	# AST
 	./ast/raw_types/fp.cpp
 	./ast/raw_types/vs.cpp
@@ -16,8 +16,9 @@ add_library(${SS_SUPPORT_LIB} SHARED
 	./ops/classifications.cpp
 	./ops/operations.cpp
 	# Simplifications
-	./simplifications/private.cpp
+	./simplifications/private/op_map.cpp
 	./simplifications/simplifiers.cpp
+	./simplifications/simplify.cpp
 	# Errors
 	./errors/claricpp.cpp
 )

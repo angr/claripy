@@ -7,11 +7,11 @@
 
 
 // For clarity
-using namespace Simplifications::Simplifiers;
+using namespace Simplifications;
 using Op = Ops::Operation;
 
 /** @todo */
-AST::Base if_(const AST::Base &original) {
+AST::Base Simplifiers::if_(const AST::Base &original) {
     /* AST::Bool = AST::cast_throw_on_fail<AST::Bool>(original->args[0]); */
 
     /* if (cond->is_true()) { */
@@ -27,12 +27,12 @@ AST::Base if_(const AST::Base &original) {
 }
 
 /** @todo */
-AST::Base concat(const AST::Base &original) {
+AST::Base Simplifiers::concat(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base bv_reverse(const AST::Base &original) {
+AST::Base Simplifiers::BV::reverse(const AST::Base &original) {
     return original; // todo
 }
 
@@ -41,17 +41,17 @@ AST::Base bv_reverse(const AST::Base &original) {
 /************************************************/
 
 /** @todo */
-AST::Base Shift::r(const AST::Base &original) {
+AST::Base Simplifiers::Shift::r(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Shift::l(const AST::Base &original) {
+AST::Base Simplifiers::Shift::l(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Shift::lshr(const AST::Base &original) {
+AST::Base Simplifiers::Shift::lshr(const AST::Base &original) {
     return original; // todo
 }
 
@@ -60,12 +60,12 @@ AST::Base Shift::lshr(const AST::Base &original) {
 /************************************************/
 
 /** @todo */
-AST::Base eq(const AST::Base &original) {
+AST::Base Simplifiers::eq(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base ne(const AST::Base &original) {
+AST::Base Simplifiers::ne(const AST::Base &original) {
     return original; // todo
 }
 
@@ -74,17 +74,17 @@ AST::Base ne(const AST::Base &original) {
 /************************************************/
 
 /** @todo */
-AST::Base Boolean::and_(const AST::Base &original) {
+AST::Base Simplifiers::Boolean::and_(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Boolean::or_(const AST::Base &original) {
+AST::Base Simplifiers::Boolean::or_(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Boolean::not_(const AST::Base &original) {
+AST::Base Simplifiers::Boolean::not_(const AST::Base &original) {
     return original; // todo
 }
 
@@ -93,36 +93,36 @@ AST::Base Boolean::not_(const AST::Base &original) {
 /************************************************/
 
 /** @todo */
-AST::Base Bitwise::add(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::add(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Bitwise::mul(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::mul(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Bitwise::sub(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::sub(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Bitwise::xor_minmax(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::xor_minmax(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Bitwise::or_(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::or_(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Bitwise::and_(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::and_(const AST::Base &original) {
     return original; // todo
 }
 
 /** @todo */
-AST::Base Bitwise::xor_(const AST::Base &original) {
+AST::Base Simplifiers::Bitwise::xor_(const AST::Base &original) {
     return original; // todo
 }

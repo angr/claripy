@@ -25,7 +25,7 @@ namespace AST {
     namespace Private {
 
         /** Define a cache the AST factory can use */
-        Private::Cache<Hash, RawTypes::Base> cache;
+        extern Private::Cache<Hash, RawTypes::Base> cache;
 
     } // namespace Private
 
