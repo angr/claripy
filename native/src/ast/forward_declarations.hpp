@@ -6,6 +6,8 @@
 #ifndef __AST_FORWARD_DECLARATIONS_HPP__
 #define __AST_FORWARD_DECLARATIONS_HPP__
 
+#include "macros.hpp"
+
 #include <memory>
 
 
@@ -28,27 +30,13 @@ namespace AST {
     } // namespace RawTypes
 
     // Define shared pointer abbreviations
-
-    /** An abbreviation for a shared pointer to the cached Base class */
-    using Base = std::shared_ptr<RawTypes::Base>;
-
-    /** An abbreviation for a shared pointer to the cached Bool class */
-    using Bool = std::shared_ptr<RawTypes::Bool>;
-
-    /** An abbreviation for a shared pointer to the cached Bits class */
-    using Bits = std::shared_ptr<RawTypes::Bits>;
-
-    /** An abbreviation for a shared pointer to the cached BV class */
-    using BV = std::shared_ptr<RawTypes::BV>;
-
-    /** An abbreviation for a shared pointer to the cached VS class */
-    using VS = std::shared_ptr<RawTypes::VS>;
-
-    /** An abbreviation for a shared pointer to the cached String class */
-    using String = std::shared_ptr<RawTypes::String>;
-
-    /** An abbreviation for a shared pointer to the cached Int class */
-    using Int = std::shared_ptr<RawTypes::Int>;
+    DEFINE_NON_RAW_TYPE(Base)
+    DEFINE_NON_RAW_TYPE(Bool)
+    DEFINE_NON_RAW_TYPE(Bits)
+    DEFINE_NON_RAW_TYPE(BV)
+    DEFINE_NON_RAW_TYPE(VS)
+    DEFINE_NON_RAW_TYPE(String)
+    DEFINE_NON_RAW_TYPE(Int)
 
 } // namespace AST
 

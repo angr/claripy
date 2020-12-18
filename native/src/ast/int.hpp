@@ -5,14 +5,10 @@
 #ifndef __AST_Int_HPP__
 #define __AST_Int_HPP__
 
+#include "macros.hpp"
 #include "raw_types/int.hpp"
 
 
-/** A namespace used for the ast directory */
-namespace AST {
-
-    /** An abbreviation for a shared pointer to the cached Int class */
-    using Int = std::shared_ptr<RawTypes::Int>;
-} // namespace AST
+DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Int)
 
 #endif

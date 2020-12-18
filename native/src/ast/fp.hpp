@@ -5,14 +5,10 @@
 #ifndef __AST_FP_HPP__
 #define __AST_FP_HPP__
 
+#include "macros.hpp"
 #include "raw_types/fp.hpp"
 
 
-/** A namespace used for the ast directory */
-namespace AST {
-
-    /** An abbreviation for a shared pointer to the cached FP class */
-    using FP = std::shared_ptr<RawTypes::FP>;
-} // namespace AST
+DEFINE_NON_RAW_TYPE_FROM_GLOBAL(FP)
 
 #endif
