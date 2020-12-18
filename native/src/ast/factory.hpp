@@ -5,8 +5,8 @@
 #ifndef __AST_FACTORY_HPP__
 #define __AST_FACTORY_HPP__
 
-#include "cache.hpp"
 #include "cast.hpp"
+#include "private/cache.hpp"
 #include "raw_types/base.hpp"
 
 #include "../errors/unexpected.hpp"

@@ -5,7 +5,7 @@
 #ifndef __UTILS_SET_JOIN_HPP__
 #define __UTILS_SET_JOIN_HPP__
 
-#include "set_join_helper.hpp"
+#include "private/set_join.hpp"
 
 #include <set>
 
@@ -20,8 +20,8 @@ namespace Utils {
     template <typename T, typename... Args>
     std::set<T> set_join(const std::set<T> &s1, const Args... args) {
         auto ret = std::set<T>();
-        Private::set_join_helper<T>(ret, std::forward<decltype(s1)>(s1),
-                                    std::forward<const Args>(args)...);
+        Private::set_join<T>(ret, std::forward<decltype(s1)>(s1),
+                             std::forward<const Args>(args)...);
         return ret;
     }
 

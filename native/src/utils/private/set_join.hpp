@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief This file defines helper methods for set_join
+ * @brief This file defines helper methods for Utils::set_join
  */
-#ifndef __UTILS_SET_JOIN_HELPER_HPP__
-#define __UTILS_SET_JOIN_HELPER_HPP__
+#ifndef __UTILS_PRIVATE_SETJOIN_HPP__
+#define __UTILS_PRIVATE_SETJOIN_HPP__
 
 #include <set>
 
@@ -18,9 +18,9 @@ namespace Utils {
     namespace Private {
 
         /** A helper function used to merge a set of set<T>'s into ret
-         *  A specialization of set_join_helper that handles the single argument case
+         *  A specialization of set_join that handles the single argument case
          */
-        template <typename T> void set_join_helper(std::set<T> &ret, const std::set<T> &a) {
+        template <typename T> void set_join(std::set<T> &ret, const std::set<T> &a) {
             ret.insert(a.begin(), a.end());
         }
 
@@ -28,9 +28,9 @@ namespace Utils {
          *  Merge the set a into ret then recurse
          */
         template <typename T, typename... Args>
-        void set_join_helper(std::set<T> &ret, const std::set<T> &a, const Args... args) {
+        void set_join(std::set<T> &ret, const std::set<T> &a, const Args... args) {
             ret.insert(a.begin(), a.end());
-            set_join_helper(ret, std::forward<const Args>(args)...);
+            set_join(ret, std::forward<const Args>(args)...);
         }
 
     } // namespace Private

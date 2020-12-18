@@ -5,7 +5,7 @@
 #ifndef __UTILS_TOSTR_HPP__
 #define __UTILS_TOSTR_HPP__
 
-#include "to_str_helper.hpp"
+#include "private/to_str.hpp"
 
 #include <sstream>
 
@@ -18,7 +18,7 @@ namespace Utils {
      */
     template <typename... Args> std::string to_str(const Args... args) {
         std::stringstream s;
-        Private::to_str_helper(s, std::forward<const Args>(args)...);
+        Private::to_str(s, std::forward<const Args>(args)...);
         return s.str();
     }
 

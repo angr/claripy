@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief This file defines Utils::Private::to_str_helper
+ * @brief This file define helpers to Utils::to_str
  */
-#ifndef __UTILS_TOSTR_HELPER_HPP__
-#define __UTILS_TOSTR_HELPER_HPP__
+#ifndef __UTILS_PRIVATE_TOSTR_HPP__
+#define __UTILS_PRIVATE_TOSTR_HPP__
 
 #include <sstream>
 
@@ -21,18 +21,16 @@ namespace Utils {
          *  Each argument must have the << stream operator defined
          */
         template <typename T, typename... Args>
-        void to_str_helper(std::stringstream &s, const T &next, const Args &...args) {
+        void to_str(std::stringstream &s, const T &next, const Args &...args) {
             s << next;
-            to_str_helper(std::forward<const Args &>(args)...);
+            to_str(std::forward<const Args &>(args)...);
         }
 
         /** This function takes in a set of arguments, and returns a string that comprises them
          *  Each argument must have the << stream operator defined
          *  This specialization takes has only one thing to add to the string
          */
-        template <typename T> void to_str_helper(std::stringstream &s, const T &next) {
-            s << next;
-        }
+        template <typename T> void to_str(std::stringstream &s, const T &next) { s << next; }
 
     } // namespace Private
 

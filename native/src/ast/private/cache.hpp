@@ -2,10 +2,10 @@
  * @file
  * @brief This file defines the AST hash cache
  */
-#ifndef __AST_CACHE_HPP__
-#define __AST_CACHE_HPP__
+#ifndef __AST_PRIVATE_CACHE_HPP__
+#define __AST_PRIVATE_CACHE_HPP__
 
-#include "../utils/log.hpp"
+#include "../../utils/log.hpp"
 
 #include <algorithm>
 #include <map>
