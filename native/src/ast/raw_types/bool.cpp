@@ -7,21 +7,21 @@ using namespace AST;
 
 
 /** @todo this is a dummy */
-bool Cached::Bool::is_true() const {
+bool RawTypes::Bool::is_true() const {
     return true;
 }
 
 /** @todo this is a dummy */
-bool Cached::Bool::is_false() const {
+bool RawTypes::Bool::is_false() const {
     return true;
 }
 
 // Return the name of the type this class represents
-std::string Cached::Bool::type_name() const {
+std::string RawTypes::Bool::type_name() const {
     return "AST::Bool";
 }
 
 /** @todo make this actually work */
-Hash Cached::Bool::hash(const Ops::Operation o, const Constants::Int length) {
+Hash RawTypes::Bool::hash(const Ops::Operation o, const Constants::Int length) {
     return Hash(o);
 }

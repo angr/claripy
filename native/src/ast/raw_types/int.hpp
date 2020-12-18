@@ -1,11 +1,11 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::String class and defines AST::String
+ * @brief This file defines the AST::RawTypes::Int class and defines AST::Int
  */
-#ifndef __AST_STRING_HPP__
-#define __AST_STRING_HPP__
+#ifndef __AST_INT_HPP__
+#define __AST_INT_HPP__
 
-#include "bits.hpp"
+#include "base.hpp"
 
 
 /** A namespace used for the ast directory */
@@ -15,28 +15,22 @@ namespace AST {
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
-    namespace Cached {
+    namespace RawTypes {
 
-        /** An AST representing a string */
-        class String : public Bits {
+        /** An AST representing an integer */
+        class Int : public Base {
 
-            /** Create a concrete String
-             *  @todo kwargs
-             */
-            /* static ::AST::String Concrete(const std::string & value, const Constants::Int
-             * length); */
-
-            /** Return the name of the type this class represents irrespective of length */
-            std::string fundamental_type_name() const;
+            /** Return the name of the type this class represents */
+            std::string type_name() const;
 
             /** A private constructor to disallow public creation
              *  This must have take in the same arguments as the hash function, minus the hash
              *  which must be the first argument passed
              */
-            String(const Hash h, const Ops::Operation o);
+            Int(const Hash h, const Ops::Operation o);
 
             /** Delete all default constructors */
-            DELETE_DEFAULTS(String)
+            DELETE_DEFAULTS(Int)
 
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
@@ -55,7 +49,7 @@ namespace AST {
             friend class ::AST::Private::Cache<Hash, Base>;
         };
 
-    } // namespace Cached
+    } // namespace RawTypes
 
 } // namespace AST
 

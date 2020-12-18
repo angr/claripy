@@ -15,7 +15,7 @@
 namespace AST {
 
     // Forward declarations
-    namespace Cached {
+    namespace RawTypes {
         class Base;
     }
 
@@ -25,7 +25,7 @@ namespace AST {
     class CacheKey {
       public:
         /** Constructor */
-        CacheKey(const Cached::Base &a);
+        CacheKey(const RawTypes::Base &a);
 
         /** Returns a string representation of this */
         std::string repr() const;
@@ -44,7 +44,7 @@ namespace AST {
         /************************************************/
 
         /** The AST this object refers to */
-        const Cached::Base &ref;
+        const RawTypes::Base &ref;
     };
 
 } // namespace AST

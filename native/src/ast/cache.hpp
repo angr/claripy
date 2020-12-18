@@ -32,7 +32,7 @@ namespace AST {
           public:
             template <typename T>
             /** This maps an shared_ptr T, to the type it is pointing to */
-            using Internal = typename std::remove_pointer<decltype(std::declval<T>().get())>::type;
+            using Raw = typename std::remove_pointer<decltype(std::declval<T>().get())>::type;
 
             /** The type of the cache used internally */
             using CacheMap = std::map<Hash, std::weak_ptr<Cached>>;

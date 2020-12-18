@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::BV class and defines AST::BV
+ * @brief This file defines the AST::RawTypes::String class and defines AST::String
  */
-#ifndef __AST_BV_HPP__
-#define __AST_BV_HPP__
+#ifndef __AST_STRING_HPP__
+#define __AST_STRING_HPP__
 
 #include "bits.hpp"
 
@@ -15,10 +15,16 @@ namespace AST {
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
-    namespace Cached {
+    namespace RawTypes {
 
-        /** This class represents an AST bit vector */
-        class BV : public Bits {
+        /** An AST representing a string */
+        class String : public Bits {
+
+            /** Create a concrete String
+             *  @todo kwargs
+             */
+            /* static ::AST::String Concrete(const std::string & value, const Constants::Int
+             * length); */
 
             /** Return the name of the type this class represents irrespective of length */
             std::string fundamental_type_name() const;
@@ -27,10 +33,10 @@ namespace AST {
              *  This must have take in the same arguments as the hash function, minus the hash
              *  which must be the first argument passed
              */
-            BV(const Hash h, const Ops::Operation o);
+            String(const Hash h, const Ops::Operation o);
 
             /** Delete all default constructors */
-            DELETE_DEFAULTS(BV)
+            DELETE_DEFAULTS(String)
 
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
@@ -49,7 +55,7 @@ namespace AST {
             friend class ::AST::Private::Cache<Hash, Base>;
         };
 
-    } // namespace Cached
+    } // namespace RawTypes
 
 } // namespace AST
 

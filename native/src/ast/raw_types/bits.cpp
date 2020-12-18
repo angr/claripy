@@ -1,14 +1,14 @@
 /** @file */
 #include "bits.hpp"
 
-#include "../errors/ast.hpp"
+#include "../../errors/ast.hpp"
 
 #include <sstream>
 #include <utility>
 
 
 // For brevity
-using CBits = AST::Cached::Bits;
+using CBits = AST::RawTypes::Bits;
 
 
 CBits::~Bits() {}
@@ -28,7 +28,7 @@ std::string CBits::type_name() const {
     return ret.str();
 }
 
-#include "factory.hpp"
+#include "../factory.hpp"
 std::string CBits::fundamental_type_name() const {
     std::set<BackendID> s;
     AST::Base b1 = AST::factory<AST::Base>(std::move(s), std::move((Ops::Operation) 0));

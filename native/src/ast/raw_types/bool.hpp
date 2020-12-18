@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::Bool class and defines AST::Bool
+ * @brief This file defines the AST::RawTypes::Bool class and defines AST::Bool
  */
 #ifndef __AST_BOOL_HPP__
 #define __AST_BOOL_HPP__
@@ -15,7 +15,7 @@ namespace AST {
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
-    namespace Cached {
+    namespace RawTypes {
 
         /** This class represents an AST boolean */
         class Bool : public Base {
@@ -56,7 +56,7 @@ namespace AST {
             friend class ::AST::Private::Cache<Hash, Base>;
         };
 
-    } // namespace Cached
+    } // namespace RawTypes
 
 } // namespace AST
 

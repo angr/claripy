@@ -1,16 +1,15 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::Base class and defines AST::Base
+ * @brief This file defines the AST::RawTypes::Base class and defines AST::Base
  */
 #ifndef __AST_BASE_HPP__
 #define __AST_BASE_HPP__
 
-#include "constants.hpp"
-#include "using_declarations.hpp"
-
-#include "../annotations/base.hpp"
-#include "../macros.hpp"
-#include "../ops/operations_enum.hpp"
+#include "../../annotations/base.hpp"
+#include "../../macros.hpp"
+#include "../../ops/operations_enum.hpp"
+#include "../constants.hpp"
+#include "../using_declarations.hpp"
 
 #include <list>
 #include <map>
@@ -39,7 +38,7 @@ namespace AST {
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
-    namespace Cached {
+    namespace RawTypes {
 
         /** This is the base class of all claripy ASTs.
          * An AST tracks a tree of operations on arguments.
@@ -127,7 +126,7 @@ namespace AST {
             friend class ::AST::Private::Cache<Hash, Base>;
         };
 
-    } // namespace Cached
+    } // namespace RawTypes
 
 } // namespace AST
 

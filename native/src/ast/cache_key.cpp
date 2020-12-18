@@ -1,7 +1,7 @@
 /** @file */
 #include "cache_key.hpp"
 
-#include "base.hpp"
+#include "raw_types/base.hpp"
 
 #include <sstream>
 #include <string>
@@ -12,7 +12,7 @@ using namespace AST;
 
 
 // Constructor
-CacheKey::CacheKey(const Cached::Base &a) : ref(a) {}
+CacheKey::CacheKey(const RawTypes::Base &a) : ref(a) {}
 
 // __repr__
 std::string CacheKey::repr() const {

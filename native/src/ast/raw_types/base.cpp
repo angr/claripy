@@ -7,18 +7,18 @@
 using namespace AST;
 
 /** @todo : maybe delete from hash cache if unique */
-Cached::Base::~Base() {}
+RawTypes::Base::~Base() {}
 
-Hash Cached::Base::hash(const Ops::Operation o) {
+Hash RawTypes::Base::hash(const Ops::Operation o) {
     return Hash(o);
 }
 
-Cached::Base::Base(const Hash h, const Ops::Operation o) : id(h), op(o) {}
+RawTypes::Base::Base(const Hash h, const Ops::Operation o) : id(h), op(o) {}
 
 // Returns a string representation of this
 /** @todo: implement rest of repr */
-std::string Cached::Base::repr(const bool inner, const Constants::Int max_depth,
-                               const bool explicit_length) const {
+std::string RawTypes::Base::repr(const bool inner, const Constants::Int max_depth,
+                                 const bool explicit_length) const {
     if (std::getenv("WORKER") == nullptr) {
         return "<AST something>";
     }
@@ -29,6 +29,6 @@ std::string Cached::Base::repr(const bool inner, const Constants::Int max_depth,
 }
 
 // Return the name of the type this class represents
-std::string Cached::Base::type_name() const {
+std::string RawTypes::Base::type_name() const {
     return "AST::Base";
 }

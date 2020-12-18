@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the AST::Cached::FP class and defines AST::FP
+ * @brief This file defines the AST::RawTypes::FP class and defines AST::FP
  */
 #ifndef __AST_FP_HPP__
 #define __AST_FP_HPP__
@@ -15,7 +15,7 @@ namespace AST {
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
-    namespace Cached {
+    namespace RawTypes {
 
         /** An AST representing an integer */
         class FP : public Bits {
@@ -49,7 +49,7 @@ namespace AST {
             friend class ::AST::Private::Cache<Hash, Base>;
         };
 
-    } // namespace Cached
+    } // namespace RawTypes
 
 } // namespace AST
 

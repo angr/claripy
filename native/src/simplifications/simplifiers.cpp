@@ -1,8 +1,8 @@
 /** @file */
 #include "simplifiers.hpp"
 
-#include "../ast/base.hpp"
-#include "../ast/bool.hpp"
+#include "../ast/raw_types/base.hpp"
+#include "../ast/raw_types/bool.hpp"
 #include "../ops/operations_enum.hpp"
 
 
