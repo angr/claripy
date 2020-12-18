@@ -25,6 +25,9 @@ namespace AST {
 
     // Forward declarations
     class CacheKey;
+    namespace Private {
+        template <typename A, typename B> class Cache;
+    }
 
     /** A type-safe simplify-level enumeration */
     enum class Simplify { UN, FULL, LITE };
@@ -32,7 +35,7 @@ namespace AST {
     /** A type-safe repr-level enumeration */
     enum class Repr { LITE, MID, FULL };
 
-    /** A namespace to denote self-caching classes
+    /** A namespace which contains self-caching classes and things related to AST caching
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
@@ -114,8 +117,14 @@ namespace AST {
             DELETE_DEFAULTS(Base)
 
             /** Allow factories friend access */
-            template <class T, typename... Args>
+            template <typename T, typename... Args>
             friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);
+
+            /** Allow cache friend access
+             *  We expose the constructor so that the cache may emplace new objects, which is
+             *  faster than copying them in
+             */
+            friend class ::AST::Private::Cache<Hash, Base>;
         };
 
     } // namespace Cached

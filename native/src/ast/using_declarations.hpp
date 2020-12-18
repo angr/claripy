@@ -12,7 +12,7 @@
 /** A namespace used for the ast directory */
 namespace AST {
 
-    /** A namespace to denote self-caching classes
+    /** A namespace which contains self-caching classes and things related to AST caching
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */

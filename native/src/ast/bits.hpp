@@ -11,7 +11,7 @@
 /** A namespace used for the ast directory */
 namespace AST {
 
-    /** A namespace to denote self-caching classes
+    /** A namespace which contains self-caching classes and things related to AST caching
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
@@ -22,10 +22,6 @@ namespace AST {
           public:
             /** Virtual destructor */
             virtual ~Bits();
-
-            /* def make_like(self, op, args, **kwargs): */
-            /*     if 'length' not in kwargs: kwargs['length'] = self.length */
-            /*     return Base.make_like(self, op, args, **kwargs) */
 
             /** Return the name of the type this class represents */
             std::string type_name() const;
@@ -39,7 +35,7 @@ namespace AST {
           protected:
             /** A protected constructor to disallow public creation
              *  This must have take in the same arguments as the hash function, minus the hash
-             * which must be the first argument passed
+             *  which must be the first argument passed
              */
             Bits(const Hash h, const Ops::Operation o, const Constants::Int length);
 
@@ -49,7 +45,7 @@ namespace AST {
 
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
-             * @todo not exactly, args in the constructor can consume inputs
+             *  @todo not exactly, args in the constructor can consume inputs
              */
             static Hash hash(const Ops::Operation o, const Constants::Int length);
 
@@ -57,8 +53,14 @@ namespace AST {
             void check_replaceability(const ::AST::Bits &old, const ::AST::Bits &new_);
 
             /** Allow factories friend access */
-            template <class T, typename... Args>
+            template <typename T, typename... Args>
             friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);
+
+            /** Allow cache friend access
+             *  We expose the constructor so that the cache may emplace new objects, which is
+             *  faster than copying them in
+             */
+            friend class ::AST::Private::Cache<Hash, Base>;
         };
     } // namespace Cached
 

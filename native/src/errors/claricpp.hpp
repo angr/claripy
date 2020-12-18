@@ -18,7 +18,7 @@ namespace Errors {
     class Claricpp : public std::exception {
       public:
         /** Public constructor */
-        template <class S> Claricpp(const S m) : msg(m) {}
+        template <typename S> Claricpp(const S m) : msg(m) {}
 
         /** Message getter */
         const char *what() const throw();
@@ -32,7 +32,7 @@ namespace Errors {
         const std::string msg;
 
         /** Allow all error factories friend access */
-        template <class T, class S> friend T factory(const S msg);
+        template <typename T, typename S> friend T factory(const S msg);
     };
 
 } // namespace Errors

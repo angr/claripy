@@ -10,6 +10,7 @@
 #include "../errors/unexpected.hpp"
 #include "../utils/affirm.hpp"
 
+#include <memory>
 #include <type_traits>
 
 
@@ -18,29 +19,40 @@ namespace AST {
 
     /** This function is used to cast between AST types
      *  Normal dynamic casting will not work on because shared pointers are not subclasses of each
-     * other like their template arguments are
+     *  other like their template arguments are.
+     *  std::bad_cast should never be thrown due to our static_assert and the fact that these are
+     * pointers
      */
-    template <typename To, typename From> To cast(From &f) {
+    template <typename To, typename From>
+    inline std::shared_ptr<To> cast(std::shared_ptr<From> &f) {
+
+        // Static verification
+        static_assert(std::is_base_of<Cached::Base, To>::value, "To must derive from Base");
+        static_assert(std::is_base_of<Cached::Base, From>::value, "From must derive from Base");
         static_assert(std::is_base_of<To, From>::value || std::is_base_of<From, To>::value,
                       "From and To must be ancestors and kin of each other");
 
-        // Deduce the AST::Cached type the shared pointer type T contains
-        using Internal = decltype(std::declval<To>().get());
-        using Cached = typename std::remove_pointer<Internal>::type;
-
-        // Cast
-        To ret = std::dynamic_pointer_cast<To>(f);
-
-        // Return on success
-        return ret;
+#if DEBUG
+        return std::dynamic_pointer_cast<To>(std::forward<From>(f));
+#else
+        return std::static_pointer_cast<To>(std::forward<std::shared_ptr<From>>(f));
+#endif
     }
 
-    /** This function extends AST::cast by throwing a BadCast exception on failure */
-    template <typename To, typename From> To cast_throw_on_fail(From &f) {
-        To ret = cast<To>(f);
+    /** This function extends AST::cast by throwing a BadCast exception on failure
+     *  std::bad_cast should never be thrown due to our static_assert and the fact that these are
+     *pointers
+     *	@todo Improve error message
+     */
+    template <typename To, typename From>
+    inline std::shared_ptr<To> cast_throw_on_fail(std::shared_ptr<From> &f) {
+        To ret = cast<To>(std::forward<From>(f));
         Utils::affirm<Errors::Unexpected::BadCast>(
+            ret, "dynamic_pointer_cast within AST::factory failed.");
+#if 0
             ret, __FILE__
-            ": " MACRO_TO_STRING(__LINE__) ": dynamic_pointer_cast within AST::factory failed.");
+            ": " MACRO_TO_STRING(__LINE__)
+#endif
         return ret;
     }
 
