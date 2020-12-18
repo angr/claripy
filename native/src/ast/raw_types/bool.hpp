@@ -11,9 +11,8 @@
 /** A namespace used for the ast directory */
 namespace AST {
 
-    /** A namespace which contains self-caching classes and things related to AST caching
-     *  These classes are unlikely to be accessed directly, but rather should be accessed via a
-     * shared_ptr
+    /** A namespace which contains the raw AST types that are constructed via AST::factory
+     *  These classes are unlikely to be accessed directly, but rather should be via a shared_ptr
      */
     namespace RawTypes {
 

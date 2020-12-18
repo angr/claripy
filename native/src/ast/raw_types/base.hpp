@@ -38,6 +38,9 @@ namespace AST {
      *  These classes are unlikely to be accessed directly, but rather should be accessed via a
      * shared_ptr
      */
+    /** A namespace which contains the raw AST types that are constructed via AST::factory
+     *  These classes are unlikely to be accessed directly, but rather should be via a shared_ptr
+     */
     namespace RawTypes {
 
         /** This is the base class of all claripy ASTs.

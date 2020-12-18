@@ -29,9 +29,8 @@ namespace AST {
 
     } // namespace Private
 
-    /** A namespace which contains self-caching classes and things related to AST caching
-     *  These classes are unlikely to be accessed directly, but rather should be accessed via a
-     * shared_ptr
+    /** A namespace which contains the raw AST types that are constructed via AST::factory
+     *  These classes are unlikely to be accessed directly, but rather should be via a shared_ptr
      */
     namespace RawTypes {
         /** A factory used to construct subclasses of AST::RawTypes::Base. This consumes its
@@ -69,7 +68,6 @@ namespace AST {
         return RawTypes::factory<T, Args...>(std::forward<std::set<BackendID>>(eager_backends),
                                              std::forward<Args>(args)...);
     }
-
 
 } // namespace AST
 
