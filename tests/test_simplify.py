@@ -142,7 +142,11 @@ def test_mask_eq_constant():
             )
         )) & 0xffff) == 0x0
 
-    assert str(expr) == "<Bool sim_data[0:0] == 0>", "Unexpected string representation %s" % str(expr)
+    assert expr.op == "__eq__"
+    assert expr.args[0].op == "Extract"
+    assert expr.args[0].args[0] == 0 and expr.args[0].args[1] == 0
+    assert expr.args[0].args[2] is a
+    assert expr.args[1].op == "BVV" and expr.args[1].args == (0, 1)
     assert expr.op == "__eq__"
     assert expr.args[0].op == "Extract"
 
@@ -185,7 +189,10 @@ def test_zeroext_extract_comparing_against_constant_simplifier():
     assert expr is (a == claripy.BVV(0x28, 8))
 
     expr = claripy.Extract(6, 0, claripy.ZeroExt(24, a)) == claripy.BVV(0x28, 7)
-    assert str(expr) == "<Bool a[6:0] == 40>", "Unexpected string representation %s" % str(expr)
+    assert expr.op == "__eq__"
+    assert expr.args[0].op == "Extract" and expr.args[0].args[0] == 6 and expr.args[0].args[1] == 0
+    assert expr.args[0].args[2] is a
+    assert expr.args[1].args == (0x28, 7)
 
 
 def perf():
