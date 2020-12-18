@@ -5,7 +5,8 @@
 #ifndef __SIMPLIFICATIONS_SIMPLIFIERS_HPP__
 #define __SIMPLIFICATIONS_SIMPLIFIERS_HPP__
 
-#include "../ast/using_declarations.hpp"
+#include "constants.hpp"
+
 #include "../ops/operations_enum.hpp"
 
 #include <memory>
@@ -23,14 +24,13 @@ namespace Simplifications {
         /************************************************/
 
         /** Return if_true, if_false, or original depending on what cond evaluates to */
-        AST::Base if_(const AST::Base &original, const AST::Bool &cond, const AST::Base &if_true,
-                      const AST::Base &if_false);
+        Simplifier if_;
 
         /** @todo document */
-        AST::Base concat(const AST::Base &original, const std::vector<AST::Bool> args);
+        Simplifier concat;
 
         /** @todo document */
-        AST::Base bv_reverse(const AST::Base &original, const AST::Base &body);
+        Simplifier bv_reverse;
 
         /************************************************/
         /*                    Shift                     */
@@ -40,14 +40,14 @@ namespace Simplifications {
         namespace Shift {
 
             /** @todo document */
-            AST::Base r(const AST::Base &original, const AST::Base &val, const AST::Base &shift);
+            Simplifier r;
 
             /** @todo document */
-            AST::Base l(const AST::Base &original, const AST::Base &val, const AST::Base &shift);
+            Simplifier l;
 
             /** @todo document */
-            AST::Base lshr(const AST::Base &original, const AST::Base &val,
-                           const AST::Base &shift);
+            Simplifier lshr;
+
         } // namespace Shift
 
         /************************************************/
@@ -55,10 +55,10 @@ namespace Simplifications {
         /************************************************/
 
         /** @todo document */
-        AST::Base eq(const AST::Base &original, const AST::Base &a, const AST::Base &b);
+        Simplifier eq;
 
         /** @todo document */
-        AST::Base ne(const AST::Base &original, const AST::Base &a, const AST::Base &b);
+        Simplifier ne;
 
         /************************************************/
         /*                   Boolean                    */
@@ -68,13 +68,14 @@ namespace Simplifications {
         namespace Boolean {
 
             /** @todo document */
-            AST::Base and_(const AST::Base &original, const std::vector<AST::Base> &args);
+            Simplifier and_;
 
             /** @todo document */
-            AST::Base or_(const AST::Base &original, const std::vector<AST::Base> &args);
+            Simplifier or_;
 
             /** @todo document */
-            AST::Base not_(const AST::Base &original, const std::vector<AST::Base> &);
+            Simplifier not_;
+
         } // namespace Boolean
 
         /************************************************/
@@ -85,29 +86,26 @@ namespace Simplifications {
         namespace Bitwise {
 
             /** @todo document */
-            AST::Base add(const AST::Base &original, const std::vector<AST::Base> &args);
+            Simplifier add;
 
             /** @todo document */
-            AST::Base mul(const AST::Base &original, const std::vector<AST::Base> &args);
+            Simplifier mul;
 
             /** @todo document */
-            AST::Base sub(const AST::Base &original, const AST::Base &a, const AST::Base &b);
+            Simplifier sub;
 
             /** @todo document */
-            AST::Base xor_minmax(const AST::Base &original, const AST::Base &a,
-                                 const AST::Base &b);
+            Simplifier xor_minmax;
 
             /** @todo document */
-            AST::Base or_(const AST::Base &original, const AST::Base &a, const AST::Base &b,
-                          const std::vector<AST::Base> &args);
+            Simplifier or_;
 
             /** @todo document */
-            AST::Base and_(const AST::Base &original, const AST::Base &a, const AST::Base &b,
-                           const std::vector<AST::Base> &args);
+            Simplifier and_;
 
             /** @todo document */
-            AST::Base xor_(const AST::Base &original, const AST::Base &a, const AST::Base &b,
-                           const std::vector<AST::Base> &args);
+            Simplifier xor_;
+
         } // namespace Bitwise
 
     } // namespace Simplifiers
