@@ -61,7 +61,7 @@ if(DEBUG_MODE)
 
     # Compile the program for debugging
     set(CMAKE_BUILD_TYPE debug)
-    add_definitions(-DDEBUG_MODE)
+    add_definitions(-DDEBUG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -ggdb -Wno-unused-parameter")
 
 # Not debug mode
