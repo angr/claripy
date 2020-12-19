@@ -10,6 +10,8 @@
 
 #include "claricpp.hpp"
 
+#include "../macros.hpp"
+
 
 /** A namespace used for the errors directory */
 namespace Errors {

@@ -20,40 +20,50 @@ namespace AST {
         class Base;
     }
 
-    /** This function is used to cast between AST types
+    /** This function is used to statically up-cast between AST types
+     *  Normal dynamic casting will not work on because shared pointers are not subclasses of each
+     *  other like their template arguments are.
+     *  Since we are up-casting, this is staticlly typesafe
+     */
+    template <typename To, typename From>
+    inline std::shared_ptr<To> static_up_cast(std::shared_ptr<From> &f) noexcept {
+        static_assert(std::is_base_of<RawTypes::Base, To>::value, "To must derive from Base");
+        static_assert(std::is_base_of<To, From>::value, "From must derive from To");
+        return std::static_pointer_cast<To>(std::forward<std::shared_ptr<From>>(f));
+    }
+
+    /** This function is used to dynamically down-cast between AST types
      *  Normal dynamic casting will not work on because shared pointers are not subclasses of each
      *  other like their template arguments are.
      *  std::bad_cast should never be thrown due to our static_assert and the fact that these are
      * pointers
+     *  Note: Since we are down-casting, we dynamic_cast
      */
     template <typename To, typename From>
-    inline std::shared_ptr<To> cast(std::shared_ptr<From> &f) {
-
-        // Static verification
-        static_assert(std::is_base_of<RawTypes::Base, To>::value, "To must derive from Base");
+    inline std::shared_ptr<To> down_cast(std::shared_ptr<From> &f) noexcept {
         static_assert(std::is_base_of<RawTypes::Base, From>::value, "From must derive from Base");
-        static_assert(std::is_base_of<To, From>::value || std::is_base_of<From, To>::value,
-                      "From and To must be ancestors and kin of each other");
-
-#if DEBUG
-        return std::dynamic_pointer_cast<To>(std::forward<From>(f));
-#else
-        return std::static_pointer_cast<To>(std::forward<std::shared_ptr<From>>(f));
-#endif
+        static_assert(std::is_base_of<From, To>::value, "To must derive from From");
+        return std::dynamic_pointer_cast<To>(std::forward<std::shared_ptr<From>>(f));
     }
 
     /** This function extends AST::cast by throwing a BadCast exception on failure
      *  std::bad_cast should never be thrown due to our static_assert and the fact that these are
      *pointers
+     *  This function demands that f != nullptr
+     *  Note: Since we are down-casting, we dynamic_cast
      *	@todo Improve error message
      */
     template <typename To, typename From>
-    inline std::shared_ptr<To> cast_throw_on_fail(std::shared_ptr<From> &f) {
-        To ret = cast<To>(std::forward<From>(f));
+    inline std::shared_ptr<To> down_cast_throw_on_fail(std::shared_ptr<From> &f) {
+        Utils::affirm<Errors::Unexpected::IncorrectUsage>(
+            f != nullptr, __func__, " called with incorrect usage: f == nullptr",
+            "\tFile: " __FILE__ "\n\tLine: ", __LINE__);
+        std::shared_ptr<To> ret = down_cast<To>(f);
         Utils::affirm<Errors::Unexpected::BadCast>(
+            ret,
             "dynamic_pointer_cast within AST::factory failed.\n"
-            "\tFile: " __FILE__ "\n\tLine: " __LINE__ "\n\t",
-            __func__);
+            "\tFile: " __FILE__ "\n\tLine: ",
+            __LINE__, "\n\t", __func__);
         return ret;
     }
 

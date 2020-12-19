@@ -54,7 +54,7 @@ namespace AST {
             // Check to see if the object to be constructed exists in the hash cache
             const Hash h = RawT::hash(args...);
             auto base_ptr = Private::cache.lookup_or_emplace<RawT>(h, std::forward<Args>(args)...);
-            return ::AST::cast<RawT>(base_ptr);
+            return ::AST::down_cast_throw_on_fail<RawT>(base_ptr);
         }
 
     } // namespace RawTypes

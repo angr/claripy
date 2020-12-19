@@ -13,10 +13,11 @@
 /** A namespace used for the utils directory */
 namespace Utils {
 
-    /** If not b, throw T(msg); */
-    template <typename B, typename T, typename S> void affirm(const B b, const S msg) {
+    /** If not b, throw T(args...); */
+    template <typename T, typename B, typename... Args>
+    void affirm(const B b, const Args... args) {
         if (!b) {
-            throw T(msg);
+            throw T(args...);
         }
     }
 
