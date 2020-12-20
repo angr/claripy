@@ -38,9 +38,11 @@ namespace AST {
          * promises, it may consume anything that is passed to it. This factory handles hashing and
          * returns an AST::Base (a shared pointer to the constructed object)
          *  @todo This will probably want to take in args via move
+		 *  @todo update eager_backends functionality
          */
         template <typename T, typename... Args>
         T factory(std::set<BackendID> &&eager_backends, Args &&...args) {
+			(void) eager_backends;
 
             // Deduce the AST::RawTypes type the shared pointer type T contains
             using RawT = decltype(Private::cache)::Raw<T>;

@@ -5,14 +5,19 @@
 #ifndef __UTILS_LOG_HPP__
 #define __UTILS_LOG_HPP__
 
+#include "sink.hpp"
+
 
 /** A namespace used for the utils directory */
 namespace Utils {
 
-    /** A function used to log anything with the << stream operator defined */
+    /** A function used to log anything with the << stream operator defined
+	 *  @todo create a logging system; probably via boost log? */
     template <typename... Args> void log(Args... args) {
 #if DEBUG
-
+	Sink(args...); // todo
+#else
+	Sink(args...);
 #endif
     }
 

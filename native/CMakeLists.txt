@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.16)
 
 # Config options
 option(BUILD_DOC "Build documentation" ON)
-option(STATIC_ANALYSIS "Enable static analysis" ON)
+option(STATIC_ANALYSIS "Enable static analysis" OFF)
 option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc" ON)
 
 # Run make <DOC_MAKE_TARGET> to build documentation
@@ -91,7 +91,7 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     message("Debug Mode ON!")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O0 -g -ggdb -Wno-unused-parameter")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -ggdb -Wno-unused-parameter")
-else if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+elseif(CMAKE_BUILD_TYPE MATCHES RELEASE)
     message("Release Build ON!")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O3")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")

@@ -23,5 +23,6 @@ std::string RawTypes::Bool::type_name() const {
 
 /** @todo make this actually work */
 Hash RawTypes::Bool::hash(const Ops::Operation o, const Constants::Int length) {
+	(void) length;
     return Hash(o);
 }
