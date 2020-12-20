@@ -9,8 +9,13 @@ cmake_minimum_required(VERSION 3.16)
 
 # Config options
 option(BUILD_DOC "Build documentation" ON)
-option(STATIC_ANALYSIS "Enable static analysis" OFF)
 option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc" ON)
+
+# Static Analysis Options
+option(CPP_CHECK "Enable cppcheck" ON)
+option(IWYU "Enable iwyu" OFF)
+option(LWYU "Enable lwyu" ON)
+option(CLANG_TIDY "Enable clang-tidy" ON)
 
 # Run make <DOC_MAKE_TARGET> to build documentation
 set(DOC_MAKE_TARGET docs)
@@ -71,16 +76,23 @@ if(OPTIMIZE_FOR_NATIVE)
 endif()
 
 # Static Analysis
-if(STATIC_ANALYSIS)
-	# cppcheck
+if(CPP_CHECK)
 	set(CMAKE_C_CPPCHECK "cppcheck")
 	set(CMAKE_CXX_CPPCHECK "cppcheck")
-	# iwyu
-	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "iwyu")
-	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "iwyu")
-	# lwyu
+endif()
+if(IWYU)
+	if(APPLE)
+		set(IWYU_PATH "include-what-you-use")
+	else()
+		set(IWYU_PATH "iwyu")
+	endif()
+	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
+	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
+endif()
+if(LWYU)
 	set(CMAKE_LINK_WHAT_YOU_USE TRUE)
-	# clang-tyidy
+endif()
+if(CLANG_TIDY)
 	# TODO: enable other checks as desired
 	set(CMAKE_C_CLANG_TIDY clang-tidy -checks=*,readability=*,boost=*,clang-analyzer=*)
 endif()
@@ -89,8 +101,8 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     add_definitions(-DDEBUG)
     message("Debug Mode ON!")
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O0 -g -ggdb -Wno-unused-parameter")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -ggdb -Wno-unused-parameter")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O0 -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
 elseif(CMAKE_BUILD_TYPE MATCHES RELEASE)
     message("Release Build ON!")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O3")
