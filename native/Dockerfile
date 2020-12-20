@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-SHELL [ "/bin/bash", "-c" ]
+SHELL [ "/bin/bash", "-ecux" ]
 
 # Prep apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -30,9 +30,12 @@ RUN apt-get install -yq \
 	clang-tidy-11 \
 	cppcheck \
 	iwyu
+# Dynamic analysis
+RUN apt-get install -yq \
+	valgrind
 
 # Copy in source files
-ARG NATIVE='/native'
+ARG NATIVE="/native/"
 ARG SRC="${NATIVE}/src/"
 COPY . "${NATIVE}"
 
@@ -55,6 +58,6 @@ RUN make -j "$(nproc)" ${MAKE_TARGETS}
 # Test if make targets request it
 ARG TEST=True
 WORKDIR "${BUILD}"
-RUN if [[ "${Test}" == True ]]; then \
+RUN if [[ "${TEST}" == True ]]; then \
 		ctest . ; \
 	fi

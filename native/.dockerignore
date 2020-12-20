@@ -1,0 +1,17 @@
+# Docker
+Dockerfile
+.dockerignore
+*.docker
+
+# Vim
+*.swp
+*.swo
+*.swn
+
+# Ignore
+Ignore/*
+ignore/*
+
+# Build
+Build/*
+build/*

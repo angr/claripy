@@ -1,4 +1,4 @@
-add_library(${SHARED_LIB_NAME} SHARED
+add_library("${SHARED_LIB_NAME}" SHARED
 	# AST
 	./ast/raw_types/fp.cpp
 	./ast/raw_types/vs.cpp
@@ -22,4 +22,7 @@ add_library(${SHARED_LIB_NAME} SHARED
 	./simplifications/simplify.cpp
 	# Errors
 	./errors/claricpp.cpp
+)
+set_target_properties("${SHARED_LIB_NAME}" PROPERTIES
+            CXX_STANDARD 17
 )

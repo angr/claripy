@@ -26,8 +26,13 @@ set(SHARED_LIB_NAME claricpp.so)
 
 ### Developer options below ###
 
+# Config options
+option(ENABLE_MEMCHECK "Enable memcheck on test target" ON)
+option(CMAKE_EXPORT_COMPILE_COMMANDS "Useful for development" ON)
+
 # Version
 set(VERSION 0.1)
+
 # API Version
 set(SOVERSION 1)
 
@@ -37,10 +42,6 @@ set(SOVERSION 1)
 if( NOT CMAKE_BUILD_TYPE )
 	set( CMAKE_BUILD_TYPE Debug )
 endif()
-
-# For YouCompleteMe vim plugin
-# Disable for non-developers
-option(CMAKE_EXPORT_COMPILE_COMMANDS "Useful for development" ON)
 
 
 #################################################
@@ -52,7 +53,7 @@ option(CMAKE_EXPORT_COMPILE_COMMANDS "Useful for development" ON)
 
 # Define the project
 set(PROJECT_NAME Claricpp)
-project(${PROJECT_NAME} C CXX)
+project("${PROJECT_NAME}" C CXX)
 
 
 #################################################
@@ -62,8 +63,12 @@ project(${PROJECT_NAME} C CXX)
 #################################################
 
 
-# Require C++ 17
+# Define standards
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_EXTENSIONS ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Required complication flags
@@ -161,6 +166,7 @@ add_subdirectory(./src)
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
+	include(CTest)
 	enable_testing()
 	add_subdirectory(./tests)
 endif()

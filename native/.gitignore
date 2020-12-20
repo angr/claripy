@@ -1,7 +1,9 @@
 # Explicit
 Doxyfile
+Ignore/*
 ignore/*
 build/*
+Build/*
 compile_commands.json
 
 # Prerequisites
