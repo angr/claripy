@@ -15,9 +15,9 @@ namespace Utils {
      *  @todo create a logging system; probably via boost log? */
     template <typename... Args> void log(Args... args) {
 #if DEBUG
-        Sink(args...); // todo
+        sink(args...); // todo
 #else
-        Sink(args...);
+        sink(args...);
 #endif
     }
 
