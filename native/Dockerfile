@@ -16,19 +16,20 @@ RUN apt-get update
 # Install dependencies
 # Build
 RUN apt-get install -yq \
+	libboost-all-dev \
 	cmake \
 	make \
 	g++
+# Documentation
+RUN apt-get install -yq \
+	graphviz \
+	doxygen
 # Static Analysis
 RUN apt-get install -yq \
 	clang-format-11 \
 	clang-tidy-11 \
 	cppcheck \
 	iwyu
-# Documentation
-RUN apt-get install -yq \
-	graphviz \
-	doxygen
 
 # Copy in source files
 ARG NATIVE='/native'
@@ -41,11 +42,19 @@ RUN find . -regex '.*\.\(cpp\|hpp\)' -exec \
 	clang-format-11 -style=file -i {} \;
 
 # CMake
-ARG MAKE_TARGETS=all
 ARG BUILD='/build'
 RUN mkdir "${BUILD}"
 WORKDIR "${BUILD}"
 RUN cmake "${NATIVE}"
 
 # Make
+ARG MAKE_TARGETS
+WORKDIR "${BUILD}"
 RUN make -j "$(nproc)" ${MAKE_TARGETS}
+
+# Test if make targets request it
+ARG TEST=True
+WORKDIR "${BUILD}"
+RUN if [[ "${Test}" == True ]]; then \
+		ctest . ; \
+	fi

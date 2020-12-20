@@ -8,7 +8,8 @@ cmake_minimum_required(VERSION 3.16)
 
 
 # Config options
-option(BUILD_DOC "Build documentation" ON)
+option(BUILD_DOC "Create a make target for documentation" ON)
+option(ENABLE_TESTING "Create a make target for test cases" ON)
 option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc" ON)
 
 # Static Analysis Options
@@ -17,7 +18,7 @@ option(IWYU "Enable iwyu" OFF)
 option(LWYU "Enable lwyu" ON)
 option(CLANG_TIDY "Enable clang-tidy" ON)
 
-# Run make <DOC_MAKE_TARGET> to build documentation
+# Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
 set(DOC_MAKE_TARGET docs)
 
 # Shared library name
@@ -91,7 +92,7 @@ if(IWYU)
 endif()
 if(LWYU)
 	if(APPLE)
-		message(WARNING "Link what you use is not supported by Apple's linker")
+		message(WARNING "Link what you use is not supported by Apple's linker. Skipping.")
 	else()
 		set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 	endif()
@@ -150,10 +151,16 @@ endif(BUILD_DOC)
 
 #################################################
 #                                               #
-#            Creating the support lib           #
+#          Generate library and tests           #
 #                                               #
 #################################################
 
 
-# src has its own cmake file
+# Create a make target for the library
 add_subdirectory(./src)
+
+# Create a make target for test cases
+if(ENABLE_TESTING)
+	enable_testing()
+	add_subdirectory(./tests)
+endif()
