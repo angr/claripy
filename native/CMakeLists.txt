@@ -7,8 +7,10 @@ cmake_minimum_required(VERSION 3.16)
 #################################################
 
 
+# Config options
 option(BUILD_DOC "Build documentation" ON)
-# TODO: automate cpplint, clang-format?
+option(STATIC_ANALYSIS "Enable static analysis" ON)
+option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc" ON)
 
 # Run make <DOC_MAKE_TARGET> to build documentation
 set(DOC_MAKE_TARGET docs)
@@ -19,10 +21,16 @@ set(SHARED_LIB_NAME claricpp.so)
 ### Developer options below ###
 
 # Version
-set(VERSION 0.1) # TODO:
+set(VERSION 0.1)
+# API Version
+set(SOVERSION 1)
 
-# Debug mode options. Comment out to disable
-option(DEBUG_MODE "Enable debug mode" ON)
+# Default build type
+# Default to debug mode
+# Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
+if( NOT CMAKE_BUILD_TYPE )
+	set( CMAKE_BUILD_TYPE Debug )
+endif()
 
 # For YouCompleteMe vim plugin
 # Disable for non-developers
@@ -53,20 +61,39 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Required complication flags
-set (CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror" )
+set (CMAKE_C_FLAGS   "-Wall -Wextra -Werror" )
+set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror" )
 
-# If debug mode
-if(DEBUG_MODE)
-    message("Debug Mode ON!")
+# Optimize for native code
+if(OPTIMIZE_FOR_NATIVE)
+	set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -march=native -mtune=native" )
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native" )
+endif()
 
-    # Compile the program for debugging
-    set(CMAKE_BUILD_TYPE debug)
+# Static Analysis
+if(STATIC_ANALYSIS)
+	# cppcheck
+	set(CMAKE_C_CPPCHECK "cppcheck")
+	set(CMAKE_CXX_CPPCHECK "cppcheck")
+	# iwyu
+	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "iwyu")
+	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "iwyu")
+	# lwyu
+	set(CMAKE_LINK_WHAT_YOU_USE TRUE)
+	# clang-tyidy
+	# TODO: enable other checks as desired
+	set(CMAKE_C_CLANG_TIDY clang-tidy -checks=*,readability=*,boost=*,clang-analyzer=*)
+endif()
+
+# Build type
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     add_definitions(-DDEBUG)
+    message("Debug Mode ON!")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O0 -g -ggdb -Wno-unused-parameter")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -ggdb -Wno-unused-parameter")
-
-# Not debug mode
-else()
-    message("Debug Mode OFF!")
+else if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+    message("Release Build ON!")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O3")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif()
 
@@ -103,6 +130,7 @@ if(BUILD_DOC)
 	)
 
 endif(BUILD_DOC)
+
 
 #################################################
 #                                               #
