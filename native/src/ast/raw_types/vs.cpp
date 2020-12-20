@@ -9,6 +9,6 @@ std::string AST::RawTypes::VS::fundamental_type_name() const {
 
 /** @todo make this actually work */
 AST::Hash AST::RawTypes::VS::hash(const Ops::Operation o, const Constants::Int length) {
-	(void) length;
+    (void) length;
     return Hash(o);
 }

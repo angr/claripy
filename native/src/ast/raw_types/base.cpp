@@ -19,9 +19,9 @@ RawTypes::Base::Base(const Hash h, const Ops::Operation o) : id(h), op(o) {}
 /** @todo: implement rest of repr */
 std::string RawTypes::Base::repr(const bool inner, const Constants::Int max_depth,
                                  const bool explicit_length) const {
-	(void) inner;
-	(void) max_depth;
-	(void) explicit_length;
+    (void) inner;
+    (void) max_depth;
+    (void) explicit_length;
     if (std::getenv("WORKER") == nullptr) {
         return "<AST something>";
     }

@@ -12,12 +12,12 @@
 namespace Utils {
 
     /** A function used to log anything with the << stream operator defined
-	 *  @todo create a logging system; probably via boost log? */
+     *  @todo create a logging system; probably via boost log? */
     template <typename... Args> void log(Args... args) {
 #if DEBUG
-	Sink(args...); // todo
+        Sink(args...); // todo
 #else
-	Sink(args...);
+        Sink(args...);
 #endif
     }
 

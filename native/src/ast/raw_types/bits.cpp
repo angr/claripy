@@ -18,7 +18,7 @@ CBits::Bits(const Hash h, const Ops::Operation o, const Constants::Int l)
 
 /** @todo change this */
 AST::Hash CBits::hash(const Ops::Operation o, const Constants::Int l) {
-	(void) o;
+    (void) o;
     return l;
 }
 
