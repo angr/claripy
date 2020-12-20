@@ -1,0 +1,20 @@
+#include "constants.hpp"
+
+
+// For simplicity
+using Test = Tests::Native::Test;
+
+// Forward declare tests
+Test @FNAME@;
+
+// Main function
+int main() {
+	Test & f = @FNAME@;
+	const bool result = f();
+	if (result) {
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}

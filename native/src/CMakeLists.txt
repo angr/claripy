@@ -23,6 +23,11 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	# Errors
 	./errors/claricpp.cpp
 )
-set_target_properties("${SHARED_LIB_NAME}" PROPERTIES
-            CXX_STANDARD 17
+
+
+set_property(TARGET "${SHARED_LIB_NAME}" PROPERTY
+	CXX_STANDARD 17
 )
+if(CMAKE_BUILD_TYPE MATCHES Release)
+	set_property(TARGET "${SHARED_LIB_NAME}" PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()

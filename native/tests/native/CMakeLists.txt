@@ -1,19 +1,22 @@
-# Use boost
-find_package(Boost 1.71 REQUIRED COMPONENTS unit_test_framework)
-include_directories("${Boost_INCLUDE_DIRS}")
-
-
 # Create a function to add test cases
-function(boost_test TNAME)
-	message(STATUS "Adding test cases for ${TNAME} with files ${ARGN}")
+# This file generates a test case from a cpp file: ./<FPATH>
+# <FPATH> must contain a function with the same name as the filename of type Tests::Native::Test
+# This is the function that will be tested, it should return true if the test case passed
+# Additional required cpp files can be passed in as extra arguments
+function(simple_test TEST_NAME FPATH)
+	message(STATUS "Adding test case for ${FPATH}")
 
-	# Generate test and add it
-	add_executable("${TNAME}.test" ${ARGN})
-	target_link_libraries("${TNAME}.test"
-		"${SHARED_LIB_NAME}"
-		Boost::unit_test_framework
-	)
-	add_test("${TNAME}" "./${TNAME}.test")
+	# Configure test case
+	set(MAIN_IN  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp.in")
+	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}-main.cpp")
+	get_filename_component(FNAME "${FPATH}" NAME_WE)
+	configure_file("${MAIN_IN}" "${MAIN_OUT}" @ONLY)
+
+	# Generate the and add test
+	set(BINARY "${TEST_NAME}.test")
+	add_executable("${BINARY}" "${MAIN_OUT}" "${FPATH}" ${ARGN})
+	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}")
+	add_test("${TEST_NAME}" "./${BINARY}")
 
 	# Add memcheck
 	if(RUN_MEMCHECK_TESTS)
@@ -22,11 +25,11 @@ function(boost_test TNAME)
 			"${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}"
 		)
 		separate_arguments(MEMCHECK)
-		add_test("${TNAME}-memcheck" ${MEMCHECK} "./${TNAME}.test")
+		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
 	endif()
 
 endfunction()
 
 
-# Test modules
-boost_test("ast" "ast.cpp")
+# Test cases
+simple_test("ast-dummy" "./ast/dummy.cpp")

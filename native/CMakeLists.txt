@@ -39,9 +39,7 @@ set(SOVERSION 1)
 # Default build type
 # Default to debug mode
 # Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
-if( NOT CMAKE_BUILD_TYPE )
-	set( CMAKE_BUILD_TYPE Debug )
-endif()
+set( CMAKE_BUILD_TYPE Debug CACHE STRING "Cmake build type" FORCE)
 
 
 #################################################
@@ -108,15 +106,24 @@ if(CLANG_TIDY)
 endif()
 
 # Build type
-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DDEBUG)
-    message("Debug Mode ON!")
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O0 -g -fsanitize=all")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -fsanitize=all")
-elseif(CMAKE_BUILD_TYPE MATCHES RELEASE)
-    message("Release Build ON!")
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O3")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    message(STATUS "Debug Mode enabled!")
+	set(DEBUG_FLAGS
+		"-O0"
+		"-g"
+		"-fasynchronous-unwind-tables"
+		"-grecord-gcc-switches"
+		"-D_GLIBCXX_ASSERTIONS"
+	)
+	string(REPLACE ";" " " DEBUG_FLAGS "${DEBUG_FLAGS}")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
+	set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${DEBUG_FLAGS}")
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
+    message(STATUS "Release Build enabled!")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -O3")
+	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -flto -O3")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
 endif()
 
 
