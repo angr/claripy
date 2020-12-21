@@ -12,6 +12,7 @@
 #include "src/ast/vs.hpp"
 #include "src/ops/operations_enum.hpp"
 
+#include <iostream>
 #include <set>
 
 
@@ -20,7 +21,7 @@ using namespace AST;
 
 
 /** Test creating an Base */
-int base_int() {
+int all_diff_class_id() {
 
     std::set<BackendID> s;
     const auto a1 = factory<AST::FP>(std::move(s), std::move((Ops::Operation) 0));
@@ -39,6 +40,14 @@ int base_int() {
     ids.insert(a5->class_id());
     ids.insert(a6->class_id());
     ids.insert(a7->class_id());
+
+    std::cout << (a1->class_id()) << std::endl;
+    std::cout << (a2->class_id()) << std::endl;
+    std::cout << (a3->class_id()) << std::endl;
+    std::cout << (a4->class_id()) << std::endl;
+    std::cout << (a5->class_id()) << std::endl;
+    std::cout << (a6->class_id()) << std::endl;
+    std::cout << (a7->class_id()) << std::endl;
 
     if (ids.size() == 7) {
         return 0;

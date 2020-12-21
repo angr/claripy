@@ -24,8 +24,7 @@ CBits::Bits(const Hash h, const Ops::Operation o, const Constants::Int l)
 
 /** @todo change this */
 AST::Hash CBits::hash(const Ops::Operation o, const Constants::Int l) {
-    (void) o;
-    return l;
+    return Hash(CBits::static_class_id()) * Hash(o) + l;
 }
 
 // A special definition of type_name

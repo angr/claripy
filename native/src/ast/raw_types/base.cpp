@@ -17,7 +17,7 @@ using namespace AST;
 RawTypes::Base::~Base() {}
 
 Hash RawTypes::Base::hash(const Ops::Operation o) {
-    return Hash(o);
+    return Hash(Base::static_class_id()) * Hash(o);
 }
 
 RawTypes::Base::Base(const Hash h, const Ops::Operation o) : id(h), op(o) {}

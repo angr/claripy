@@ -29,5 +29,5 @@ RawTypes::String::String(const Hash h, const Ops::Operation o) : RawTypes::Bits(
 
 /** @todo make this actually work */
 Hash RawTypes::String::hash(const Ops::Operation o) {
-    return Hash(o);
+    return Hash(String::static_class_id()) * Hash(o);
 }

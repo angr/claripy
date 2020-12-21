@@ -1,4 +1,2 @@
 # Add tests
-add_subdirectory("same")
-add_subdirectory("diff")
-add_subdirectory("inter")
+simple_test("all_diff_class_id")

@@ -17,5 +17,5 @@ RawTypes::FP::FP(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0)
 
 /** @todo make this actually work */
 Hash RawTypes::FP::hash(const Ops::Operation o) {
-    return Hash(o);
+    return Hash(FP::static_class_id()) * Hash(o);
 }
