@@ -30,6 +30,7 @@ set(SHARED_LIB_NAME claricpp.so)
 # The memcheck and security options are mutually exclusive
 # Note that ENABLE_SECURITY overrides the flags of every other option
 option(ENABLE_MEMCHECK "Enable memcheck on test target" ON)
+option(ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON)
 option(ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF)
 option(CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON)
 
@@ -71,6 +72,15 @@ set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Option verification
+if(ENABLE_MEMCHECK)
+	if(APPLE)
+		if(NOT ALLOW_NO_MEMCHECK_APPLE)
+			message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
+		endif()
+	endif()
+endif()
 
 # Required complication flags
 set (CMAKE_C_FLAGS   "-Wall -Wextra -Werror" )
