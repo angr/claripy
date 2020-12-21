@@ -1,6 +1,4 @@
 # Add tests
-simple_test("identical_base_int")
-
-# Other tests
 add_subdirectory("same")
 add_subdirectory("diff")
+add_subdirectory("inter")

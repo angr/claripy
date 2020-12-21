@@ -2,9 +2,14 @@
 #include "bits.hpp"
 
 #include "../../errors/ast.hpp"
+#include "../../utils/inc.hpp"
 
 #include <sstream>
 #include <utility>
+
+
+// Define required AST functions
+DEFINE_AST_SUBBITS_ID_FUNCTIONS(Bits)
 
 
 // For brevity
@@ -23,15 +28,12 @@ AST::Hash CBits::hash(const Ops::Operation o, const Constants::Int l) {
     return l;
 }
 
+// A special definition of type_name
 std::string CBits::type_name() const {
     auto s = std::set<BackendID>();
     std::stringstream ret;
     ret << this->fundamental_type_name() << this->length;
     return ret.str();
-}
-
-std::string CBits::fundamental_type_name() const {
-    return "AST::Bits";
 }
 
 void CBits::check_replaceability(const AST::Bits &old, const AST::Bits &new_) {

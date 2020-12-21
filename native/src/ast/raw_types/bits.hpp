@@ -18,15 +18,11 @@ namespace AST {
 
         /** This class represents an AST of bits */
         class Bits : public Base {
+            INIT_AST_BASE_SUBCLASS(Bits)
+            DECLARE_AST_SUBBITS_TYPENAME
           public:
             /** Virtual destructor */
             virtual ~Bits();
-
-            /** Return the name of the type this class represents */
-            std::string type_name() const;
-
-            /** Return the name of the type this class represents irrespective of length */
-            virtual std::string fundamental_type_name() const;
 
             /** The number of bits being represented */
             const Constants::Int length;
@@ -39,9 +35,6 @@ namespace AST {
             Bits(const Hash h, const Ops::Operation o, const Constants::Int length);
 
           private:
-            /** Delete all default constructors */
-            DELETE_DEFAULTS(Bits)
-
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
              *  @todo not exactly, args in the constructor can consume inputs
@@ -50,16 +43,6 @@ namespace AST {
 
             /** Throw an exception if old and new_ are not of the same length @todo static */
             void check_replaceability(const ::AST::Bits &old, const ::AST::Bits &new_);
-
-            /** Allow factories friend access */
-            template <typename T, typename... Args>
-            friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);
-
-            /** Allow cache friend access
-             *  We expose the constructor so that the cache may emplace new objects, which is
-             *  faster than copying them in
-             */
-            friend class ::AST::Private::Cache<Hash, Base>;
         };
 
     } // namespace RawTypes

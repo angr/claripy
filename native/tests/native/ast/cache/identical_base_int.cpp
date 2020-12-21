@@ -20,7 +20,7 @@ template <typename T> T construct() {
 }
 
 /** Test creating an Base */
-int base_int() {
+int identical_base_int() {
     Base a = construct<Base>();
     Int b = construct<Int>();
     Base b2 = up_cast<Base>(b);

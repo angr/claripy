@@ -1,7 +1,14 @@
 /** @file */
 #include "base.hpp"
 
+#include "../../utils/inc.hpp"
+
 #include <cstdlib>
+
+
+// Define required AST functions
+DEFINE_AST_SUBBASE_ID_FUNCTIONS(Base)
+
 
 // For clarity
 using namespace AST;
@@ -29,9 +36,4 @@ std::string RawTypes::Base::repr(const bool inner, const Constants::Int max_dept
         /* return this->shallow_repr(inner, max_depth, explicit_length); */
         return "TODO";
     }
-}
-
-// Return the name of the type this class represents
-std::string RawTypes::Base::type_name() const {
-    return "AST::Base";
 }

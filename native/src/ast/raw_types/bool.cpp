@@ -1,6 +1,12 @@
 /** @file */
 #include "bool.hpp"
 
+#include "../../utils/inc.hpp"
+
+
+// Define required AST functions
+DEFINE_AST_SUBBASE_ID_FUNCTIONS(Bool)
+
 
 // For clarity
 using namespace AST;
@@ -17,11 +23,6 @@ bool RawTypes::Bool::is_true() const {
 /** @todo this is a dummy */
 bool RawTypes::Bool::is_false() const {
     return true;
-}
-
-// Return the name of the type this class represents
-std::string RawTypes::Bool::type_name() const {
-    return "AST::Bool";
 }
 
 /** @todo make this actually work */

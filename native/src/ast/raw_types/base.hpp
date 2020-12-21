@@ -5,6 +5,8 @@
 #ifndef __AST_RAWTYPES_BASE_HPP__
 #define __AST_RAWTYPES_BASE_HPP__
 
+#include "macros.hpp"
+
 #include "../../annotations/base.hpp"
 #include "../../macros.hpp"
 #include "../../ops/operations_enum.hpp"
@@ -52,6 +54,7 @@ namespace AST {
          * following is true:: a, b = two different ASTs c = b + a d = b + a assert c is d
          */
         class Base {
+            INIT_AST_BASE_SUBCLASS(Base)
           public:
             /** Virtual destructor */
             virtual ~Base();
@@ -59,9 +62,6 @@ namespace AST {
             /** Returns a string representation of this */
             virtual std::string repr(const bool inner = false, const Constants::Int max_depth = -1,
                                      const bool explicit_length = false) const;
-
-            /** Return the name of the type this class represents */
-            virtual std::string type_name() const;
 
             /************************************************/
             /*                Representation                */
@@ -114,18 +114,8 @@ namespace AST {
             Base(const Hash h, const Ops::Operation o);
 
           private:
-            /** Delete all default constructors */
-            DELETE_DEFAULTS(Base)
-
-            /** Allow factories friend access */
-            template <typename T, typename... Args>
-            friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);
-
-            /** Allow cache friend access
-             *  We expose the constructor so that the cache may emplace new objects, which is
-             *  faster than copying them in
-             */
-            friend class ::AST::Private::Cache<Hash, Base>;
+            /** Declare CacheKey a friend */
+            friend class ::AST::CacheKey;
         };
 
     } // namespace RawTypes

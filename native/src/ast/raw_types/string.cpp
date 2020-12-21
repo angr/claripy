@@ -2,6 +2,11 @@
 #include "string.hpp"
 
 #include "../../ops/operations_enum.hpp"
+#include "../../utils/inc.hpp"
+
+
+// Define required AST functions
+DEFINE_AST_SUBBASE_ID_FUNCTIONS(String)
 
 
 // For clarity
@@ -21,11 +26,6 @@ RawTypes::String::String(const Hash h, const Ops::Operation o) : RawTypes::Bits(
 /* 	return RawTypes::String::factory(Op::StringV, (value, len(value)), length=length, **kwargs)
  */
 /* } */
-
-// Return the name of the type this class represents
-std::string RawTypes::String::fundamental_type_name() const {
-    return "AST::String";
-}
 
 /** @todo make this actually work */
 Hash RawTypes::String::hash(const Ops::Operation o) {
