@@ -27,8 +27,11 @@ set(SHARED_LIB_NAME claricpp.so)
 ### Developer options below ###
 
 # Config options
+# The memcheck and security options are mutually exclusive
+# Note that ENABLE_SECURITY overrides the flags of every other option
 option(ENABLE_MEMCHECK "Enable memcheck on test target" ON)
-option(CMAKE_EXPORT_COMPILE_COMMANDS "Useful for development" ON)
+option(ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF)
+option(CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON)
 
 # Version
 set(VERSION 0.1)
@@ -65,7 +68,7 @@ project("${PROJECT_NAME}" C CXX)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_EXTENSIONS ON)
-set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -121,9 +124,53 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${DEBUG_FLAGS}")
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message(STATUS "Release Build enabled!")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -O3")
-	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -flto -O3")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -flto -O3")
+	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -pipe -flto -O3")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
+endif()
+
+# Optimize for native code
+# These come after build type as they may override the given flags
+if(ENABLE_SECURITY)
+	message(WARNING "Security mode enabled. Overriding other options!")
+	if(ENABLE_MEMCHECK)
+		message(FATAL_ERROR "ENABLE_SECURITY and ENABLE_MEMCHECK are mutually exclusive")
+	endif()
+
+	# Security flags
+	set(SECURITY_FLAGS
+		"-m64"
+		"-fsanitize=address"
+		"-D_GLIBCXX_ASSERTIONS"
+		"-fstack-protector-all"
+		"-Wstack-protector"
+		"--param ssp-buffer-size=4"
+		"-pie"
+		"-fPIE"
+		"-ftrapv"
+		"-D_FORTIFY_SOURCE=2"
+		"-O2"
+		"-Wl,-z,relro,-z,now"
+		"-Wl,-z,noexecstack"
+		"-Wformat -Wformat-security"
+		# "-fvtable-verify=std" # Requires custom gcc compilation with this flag enabled.
+	)
+	string(REPLACE ";" " " SECURITY_FLAGS "${SECURITY_FLAGS}")
+
+	# Since we are overriding already set flags, we must set them depending on build type
+	# Build type flags are appended to the default flags, so if they are used we append to them
+	# directly instead of appending to the default flags, to ensure these overrides work
+	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SECURITY_FLAGS}")
+		set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${SECURITY_FLAGS}")
+	elseif(CMAKE_BUILD_TYPE MATCHES Release)
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${SECURITY_FLAGS}")
+		set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${SECURITY_FLAGS}")
+	else()
+		set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${SECURITY_FLAGS}")
+		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SECURITY_FLAGS}")
+	endif()
+
 endif()
 
 

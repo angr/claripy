@@ -57,7 +57,13 @@ RUN make -j "$(nproc)" ${MAKE_TARGETS}
 
 # Test if make targets request it
 ARG TEST=False
+ARG VERBOSE=False
 WORKDIR "${BUILD}"
 RUN if [[ "${TEST}" == True ]]; then \
-		make all && ctest . ; \
+		make all && \
+		if [[ "${VERBOSE}" == True ]]; then \
+			ctest --verbose . ; \
+		else \
+			ctest . ; \
+		fi \
 	fi
