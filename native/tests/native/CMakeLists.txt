@@ -25,7 +25,6 @@ function(simple_test FUNC_NAME)
 	# Configure test case
 	set(MAIN_IN  "${SIMPLE_TEST_DIR}/main.cpp.in")
 	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${FUNC_NAME}-main.cpp")
-	list(APPEND ADDITIONAL_CLEAN_FILES "${MAIN_OUT}")
 	configure_file("${MAIN_IN}" "${MAIN_OUT}" @ONLY)
 
 	# Generate the and add test
@@ -45,6 +44,12 @@ function(simple_test FUNC_NAME)
 		separate_arguments(MEMCHECK)
 		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
 	endif()
+
+	# For make clean
+	set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+		"${MAIN_OUT}"
+	)
 
 endfunction()
 
