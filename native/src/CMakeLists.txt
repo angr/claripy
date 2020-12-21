@@ -30,8 +30,6 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./simplifications/simplify.cpp
 	# Errors
 	./errors/claricpp.cpp
-	# Utils
-	./utils/inc.cpp
 )
 
 # Link additional libraries

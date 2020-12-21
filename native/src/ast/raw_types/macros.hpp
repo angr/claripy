@@ -24,7 +24,7 @@
 
 /** Define class ID function */
 #define DEFINE_CLASS_IDS(CLASS)                                                                   \
-    const Constants::Int AST::RawTypes::CLASS::static_class_id = Utils::inc();                    \
+    const Constants::Int AST::RawTypes::CLASS::static_class_id = Utils::inc<Base>();              \
     Constants::Int AST::RawTypes::CLASS::class_id() const {                                       \
         return AST::RawTypes::CLASS::static_class_id;                                             \
     }
