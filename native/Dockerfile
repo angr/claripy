@@ -60,10 +60,10 @@ ARG TEST=False
 ARG VERBOSE=False
 WORKDIR "${BUILD}"
 RUN if [[ "${TEST}" == True ]]; then \
-		make all && \
+		make -j "$(nproc)" all && \
 		if [[ "${VERBOSE}" == True ]]; then \
-			ctest --verbose . ; \
+			ctest --verbose -j "$(nproc)" . ; \
 		else \
-			ctest . ; \
+			ctest -j "$(nproc)" . ; \
 		fi \
 	fi
