@@ -24,7 +24,7 @@ function(simple_test FUNC_NAME)
 
 	# Configure test case
 	set(MAIN_IN  "${SIMPLE_TEST_DIR}/main.cpp.in")
-	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${FUNC_NAME}-main.cpp")
+	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${FUNC_NAME}-testmain.out.cpp")
 	configure_file("${MAIN_IN}" "${MAIN_OUT}" @ONLY)
 
 	# Generate the and add test
