@@ -27,5 +27,5 @@ bool RawTypes::Bool::is_false() const {
 
 /** @todo make this actually work */
 Hash RawTypes::Bool::hash(const Ops::Operation o) {
-    return Hash(Bool::static_class_id()) * Hash(o);
+    return Hash(Bool::static_class_id) * (1 + Hash(o));
 }

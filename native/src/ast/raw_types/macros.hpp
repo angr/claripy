@@ -6,9 +6,9 @@
 #define __AST_RAWTYPES_MACROS_HPP__
 
 /** Declare the class_id function */
-#define DECLARE_AST_CLASS_ID_FUNCTIONS                                                            \
-    /** Return the unique AST ID of this class */                                                 \
-    static inline Constants::Int static_class_id();                                               \
+#define DECLARE_AST_CLASS_IDS                                                                     \
+    /** The unique AST ID of this class */                                                        \
+    static const Constants::Int static_class_id;                                                  \
     /** Return the unique AST ID of this class */                                                 \
     virtual Constants::Int class_id() const;
 
@@ -23,24 +23,21 @@
     std::string fundamental_type_name() const;
 
 /** Define class ID function */
-#define DEFINE_CLASS_ID_FUNCTIONS(CLASS)                                                          \
-    Constants::Int AST::RawTypes::CLASS::static_class_id() {                                      \
-        const static auto ret = Utils::inc();                                                     \
-        return ret;                                                                               \
-    }                                                                                             \
+#define DEFINE_CLASS_IDS(CLASS)                                                                   \
+    const Constants::Int AST::RawTypes::CLASS::static_class_id = Utils::inc();                    \
     Constants::Int AST::RawTypes::CLASS::class_id() const {                                       \
-        return AST::RawTypes::CLASS::static_class_id();                                           \
+        return AST::RawTypes::CLASS::static_class_id;                                             \
     }
 
 /** Define AST ID functions for AST::Base subtypes, inclusive */
 #define DEFINE_AST_SUBBASE_ID_FUNCTIONS(CLASS)                                                    \
     std::string AST::RawTypes::CLASS::type_name() const { return "AST::" #CLASS; }                \
-    DEFINE_CLASS_ID_FUNCTIONS(CLASS)
+    DEFINE_CLASS_IDS(CLASS)
 
 /** Define AST ID functions for AST::Bits subtypes, inclusive */
 #define DEFINE_AST_SUBBITS_ID_FUNCTIONS(CLASS)                                                    \
     std::string AST::RawTypes::CLASS::fundamental_type_name() const { return "AST::" #CLASS; }    \
-    DEFINE_CLASS_ID_FUNCTIONS(CLASS)
+    DEFINE_CLASS_IDS(CLASS)
 
 /** Grant friend access as needed to permit factory construction of this AST type */
 #define GRANT_FACTORY_AND_CACHE_FRIEND_ACCESS                                                     \
@@ -59,7 +56,7 @@
 #define INIT_AST_BASE_SUBCLASS(CLASS)                                                             \
   public:                                                                                         \
     DECLARE_AST_SUBBASE_TYPENAME                                                                  \
-    DECLARE_AST_CLASS_ID_FUNCTIONS                                                                \
+    DECLARE_AST_CLASS_IDS                                                                         \
   private:                                                                                        \
     GRANT_FACTORY_AND_CACHE_FRIEND_ACCESS                                                         \
     DELETE_DEFAULTS(CLASS)
@@ -70,7 +67,7 @@
 #define INIT_AST_BITS_SUBCLASS(CLASS)                                                             \
   public:                                                                                         \
     DECLARE_AST_SUBBITS_TYPENAME                                                                  \
-    DECLARE_AST_CLASS_ID_FUNCTIONS                                                                \
+    DECLARE_AST_CLASS_IDS                                                                         \
   private:                                                                                        \
     GRANT_FACTORY_AND_CACHE_FRIEND_ACCESS                                                         \
     DELETE_DEFAULTS(CLASS)

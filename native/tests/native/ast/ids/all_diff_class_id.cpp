@@ -12,7 +12,6 @@
 #include "src/ast/vs.hpp"
 #include "src/ops/operations_enum.hpp"
 
-#include <iostream>
 #include <set>
 
 
@@ -40,14 +39,6 @@ int all_diff_class_id() {
     ids.insert(a5->class_id());
     ids.insert(a6->class_id());
     ids.insert(a7->class_id());
-
-    std::cout << (a1->class_id()) << std::endl;
-    std::cout << (a2->class_id()) << std::endl;
-    std::cout << (a3->class_id()) << std::endl;
-    std::cout << (a4->class_id()) << std::endl;
-    std::cout << (a5->class_id()) << std::endl;
-    std::cout << (a6->class_id()) << std::endl;
-    std::cout << (a7->class_id()) << std::endl;
 
     if (ids.size() == 7) {
         return 0;

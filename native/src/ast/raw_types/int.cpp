@@ -17,5 +17,5 @@ RawTypes::Int::Int(const AST::Hash h, const Ops::Operation o) : RawTypes::Base(h
 
 /** @todo make this actually work */
 AST::Hash RawTypes::Int::hash(const Ops::Operation o) {
-    return Hash(Int::static_class_id()) * Hash(o);
+    return Hash(Int::static_class_id) * (1 + Hash(o));
 }
