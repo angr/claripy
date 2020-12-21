@@ -11,6 +11,6 @@
 /** Test creating an AST::Bits */
 int bits() {
     std::set<AST::BackendID> s;
-    (void) AST::factory<AST::Bits>(std::move(s), std::move((Ops::Operation) 0));
+    (void) AST::factory<AST::Bits>(std::move(s), std::move((Ops::Operation) 0), std::move(0));
     return 0;
 }

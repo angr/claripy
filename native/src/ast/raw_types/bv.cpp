@@ -2,13 +2,19 @@
 #include "bv.hpp"
 
 
+// For clarity
+using namespace AST;
+
+
+/** @todo */
+RawTypes::BV::BV(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0) {}
+
 // Return the name of the type this class represents
-std::string AST::RawTypes::BV::fundamental_type_name() const {
+std::string RawTypes::BV::fundamental_type_name() const {
     return "AST::BV";
 }
 
 /** @todo make this actually work */
-AST::Hash AST::RawTypes::BV::hash(const Ops::Operation o, const Constants::Int length) {
-    (void) length;
+Hash RawTypes::BV::hash(const Ops::Operation o) {
     return Hash(o);
 }

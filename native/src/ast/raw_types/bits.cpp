@@ -13,6 +13,7 @@ using CBits = AST::RawTypes::Bits;
 
 CBits::~Bits() {}
 
+/** @todo */
 CBits::Bits(const Hash h, const Ops::Operation o, const Constants::Int l)
     : Base(h, o), length(l) {}
 

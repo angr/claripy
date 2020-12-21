@@ -8,6 +8,11 @@
 using namespace AST;
 using Op = Ops::Operation;
 
+
+/** @todo */
+RawTypes::String::String(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0) {}
+
+
 /* String RawTypes::String::Concrete(const std::string & value, const Constants::Int length) { */
 /* 	if (value.length() > length) { */
 /* 		throw Errors::Python::ValueError("Can't make a concrete string value longer than
@@ -23,7 +28,6 @@ std::string RawTypes::String::fundamental_type_name() const {
 }
 
 /** @todo make this actually work */
-Hash RawTypes::String::hash(const Ops::Operation o, const Constants::Int length) {
-    (void) length;
+Hash RawTypes::String::hash(const Ops::Operation o) {
     return Hash(o);
 }
