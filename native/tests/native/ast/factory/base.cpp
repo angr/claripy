@@ -7,9 +7,8 @@
 
 #include <set>
 
-/** A place holder test
- *  @todo make this a real test
- */
+
+/** Test creating an AST::Base */
 int base() {
     std::set<AST::BackendID> s;
     (void) AST::factory<AST::Base>(std::move(s), std::move((Ops::Operation) 0));
