@@ -12,6 +12,7 @@
 
 /** Setup a normal subclass of AST::Base, inclusive
  *  Warning: this macro declares what is below it as private
+ *  This macro uses a function from the top level macros.hpp, so it must be included to use this!
  */
 #define AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(CLASS)                                                \
   public:                                                                                         \
@@ -23,6 +24,7 @@
 
 /** Setup a normal subclass of AST::Bits, inclusive
  *  Warning: this macro declares what is below it as private
+ *  This macro uses a function from the top level macros.hpp, so it must be included to use this!
  */
 #define AST_RAWTYPES_INIT_AST_BITS_SUBCLASS(CLASS)                                                \
   public:                                                                                         \
