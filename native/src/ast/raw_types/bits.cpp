@@ -29,11 +29,7 @@ std::string CBits::type_name() const {
     return ret.str();
 }
 
-#include "../factory.hpp"
 std::string CBits::fundamental_type_name() const {
-    std::set<BackendID> s;
-    AST::Bits b =
-        AST::factory<AST::Bits>(std::move(s), std::move((Ops::Operation) 0), std::move(0));
     return "AST::Bits";
 }
 

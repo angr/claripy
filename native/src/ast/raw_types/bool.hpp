@@ -42,7 +42,7 @@ namespace AST {
              *  This must have take in the same arguments as the constructor, minus the hash
              * @todo not exactly, args in the constructor can consume inputs
              */
-            static Hash hash(const Ops::Operation o, const Constants::Int length);
+            static Hash hash(const Ops::Operation o);
 
             /** Allow factories friend access */
             template <typename T, typename... Args>

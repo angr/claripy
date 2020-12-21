@@ -56,7 +56,7 @@ ARG MAKE_TARGETS=""
 RUN make -j "$(nproc)" ${MAKE_TARGETS}
 
 # Test if make targets request it
-ARG TEST=True
+ARG TEST=False
 WORKDIR "${BUILD}"
 RUN if [[ "${TEST}" == True ]]; then \
 		make all && ctest . ; \
