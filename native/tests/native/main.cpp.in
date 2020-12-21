@@ -1,9 +1,25 @@
 /** @file */
+#include <iostream>
+#include <exception>
+
 
 // Forward declare tests
 int @FUNC_NAME@();
 
+
 // Main function
+#include "src/errors/claricpp.hpp"
+
 int main() {
-	return @FUNC_NAME@();
+	try {
+		return @FUNC_NAME@();
+	}
+	catch(const Errors::Claricpp & e) {
+		std::cout << e.what() << std::endl;
+		return -1;
+	}
+	catch(const std::exception & e) {
+		std::cout << "Non-claricppy exception: " << e.what() << std::endl;
+		return -1;
+	}
 }

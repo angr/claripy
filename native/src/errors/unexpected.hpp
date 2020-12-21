@@ -23,10 +23,7 @@ namespace Errors {
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp)
 
         /** Bad cast exception */
-        struct BadCast : public Base, virtual public std::bad_cast {
-            /** Inherit constructors */
-            using Base::Base;
-        };
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(BadCast, Base)
 
         /** Raised when a function is given invalid arguments */
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(IncorrectUsage, Claricpp)

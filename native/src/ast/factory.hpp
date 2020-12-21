@@ -7,6 +7,7 @@
 
 #include "cast.hpp"
 #include "private/cache.hpp"
+#include "private/raw.hpp"
 #include "raw_types/base.hpp"
 
 #include "../errors/unexpected.hpp"
@@ -45,7 +46,7 @@ namespace AST {
             (void) eager_backends;
 
             // Deduce the AST::RawTypes type the shared pointer type T contains
-            using RawT = decltype(Private::cache)::Raw<T>;
+            using RawT = Private::Raw<T>;
 
             // Compile time error checking
             static_assert(std::is_same<std::shared_ptr<RawT>, T>::value,
@@ -56,7 +57,7 @@ namespace AST {
             // Check to see if the object to be constructed exists in the hash cache
             const Hash h = RawT::hash(args...);
             auto base_ptr = Private::cache.lookup_or_emplace<RawT>(h, std::forward<Args>(args)...);
-            return ::AST::down_cast_throw_on_fail<RawT>(base_ptr);
+            return ::AST::down_cast_throw_on_fail<T>(base_ptr);
         }
 
     } // namespace RawTypes

@@ -148,6 +148,7 @@ if(BUILD_DOC)
 	# Copy DOXYGEN_IN -> DOXYGEN_OUT but replace all strings in DOXYGEN_IN
 	# surrounded with @ signs with the values of the variables they name
 	# For example: @PROJECT_LOGO@ is replaced with the value of PROJECT_LOGO
+	list(APPEND ADDITIONAL_CLEAN_FILES "${DOXYGEN_OUT}")
 	configure_file("${DOXYGEN_IN}" "${DOXYGEN_OUT}" @ONLY)
 
 	# Create a make target to generate documentation

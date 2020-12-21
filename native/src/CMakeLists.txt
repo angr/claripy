@@ -1,3 +1,11 @@
+# Find required packages
+# find_package(Boost 1.7 REQUIRED COMPONENTS
+# )
+
+# Include additional header files
+# include_directories(${Boost_INCLUDE_DIRS})
+
+# Create the shared object target
 add_library("${SHARED_LIB_NAME}" SHARED
 	# AST
 	./ast/raw_types/fp.cpp
@@ -24,10 +32,12 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./errors/claricpp.cpp
 )
 
+# Link additional libraries
+# We do not want their functions exposed by our shared object so we designate them private
+# target_link_libraries("${SHARED_LIB_NAME}"
+# )
 
-set_property(TARGET "${SHARED_LIB_NAME}" PROPERTY
-	CXX_STANDARD 17
-)
+# Configure library compilation and linking
 if(CMAKE_BUILD_TYPE MATCHES Release)
 	set_property(TARGET "${SHARED_LIB_NAME}" PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
