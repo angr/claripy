@@ -6,16 +6,10 @@
 using Test = Tests::Native::Test;
 
 // Forward declare tests
-Test @FNAME@;
+Test @FUNC_NAME@;
 
 // Main function
 int main() {
-	Test & f = @FNAME@;
-	const bool result = f();
-	if (result) {
-		return 0;
-	}
-	else {
-		return 1;
-	}
+	Test & f = @FUNC_NAME@;
+	return f();
 }

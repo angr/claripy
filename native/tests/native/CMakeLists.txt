@@ -1,21 +1,38 @@
 # Create a function to add test cases
-# This file generates a test case from a cpp file: ./<FPATH>
-# <FPATH> must contain a function with the same name as the filename of type Tests::Native::Test
-# This is the function that will be tested, it should return true if the test case passed
+# This file generates a test case from a cpp file: ./<FNAME>.cpp
+# <FNAME>.cpp must contain a function named <FNAME> of type Tests::Native::Test
+# This is the function that will be tested, it's return value will be the test return code
 # Additional required cpp files can be passed in as extra arguments
-function(simple_test TEST_NAME FPATH)
-	message(STATUS "Adding test case for ${FPATH}")
+function(simple_test FUNC_NAME)
+	message(STATUS "Adding test case for ${FUNC_NAME}")
+
+	# Usage check
+	if ("${FUNC_NAME}" MATCHES "[/\.]")
+		message(FATAL_ERROR
+			"simple_test does not allow '.' or '/' in its input."
+			"\tIt was given: ${FUNC_NAME}"
+		)
+	endif()
+
+	# Determine the test prefix from the path
+	string(LENGTH "${SIMPLE_TEST_DIR}/" ST_LEN)
+	string(SUBSTRING "${CMAKE_CURRENT_SOURCE_DIR}" "${ST_LEN}" -1 SUBPATH)
+	string(REPLACE "/" "-" TEST_PREFIX "${SUBPATH}")
+	string(LENGTH "${TEST_PREFIX}" TEST_PREFIX_LEN)
+	if(NOT "${TEST_PREFIX_LEN}" EQUAL 0)
+		set(TEST_PREFIX "${TEST_PREFIX}-")
+	endif()
 
 	# Configure test case
-	set(MAIN_IN  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp.in")
-	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}-main.cpp")
-	get_filename_component(FNAME "${FPATH}" NAME_WE)
+	set(MAIN_IN  "${SIMPLE_TEST_DIR}/main.cpp.in")
+	set(MAIN_OUT "${SIMPLE_TEST_DIR}/${FUNC_NAME}-main.cpp")
 	configure_file("${MAIN_IN}" "${MAIN_OUT}" @ONLY)
 
 	# Generate the and add test
-	set(BINARY "${TEST_NAME}.test")
-	add_executable("${BINARY}" "${MAIN_OUT}" "${FPATH}" ${ARGN})
+	set(BINARY "${FUNC_NAME}.test")
+	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}")
+	set(TEST_NAME "${TEST_PREFIX}${FUNC_NAME}")
 	add_test("${TEST_NAME}" "./${BINARY}")
 
 	# Add memcheck
@@ -30,6 +47,8 @@ function(simple_test TEST_NAME FPATH)
 
 endfunction()
 
+# Define variables used by simple_test
+set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Test cases
-simple_test("ast-dummy" "./ast/dummy.cpp")
+# Add test cases
+add_subdirectory(./ast)

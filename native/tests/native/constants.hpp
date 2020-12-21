@@ -5,7 +5,7 @@
 namespace Tests::Native {
 
     /** The test function type */
-    using Test = bool();
+    using Test = int();
 
 } // namespace Tests::Native
 

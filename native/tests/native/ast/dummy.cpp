@@ -3,6 +3,6 @@
 /** A place holder test
  *  @todo make this a real test
  */
-bool dummy() {
-    return true;
+int dummy() {
+    return 0;
 }
