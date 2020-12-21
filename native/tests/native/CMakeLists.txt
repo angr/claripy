@@ -1,6 +1,6 @@
 # Create a function to add test cases
 # This file generates a test case from a cpp file: ./<FNAME>.cpp
-# <FNAME>.cpp must contain a function named <FNAME> of type Tests::Native::Test
+# <FNAME>.cpp must contain a function named <FNAME> of type int();
 # This is the function that will be tested, it's return value will be the test return code
 # Additional required cpp files can be passed in as extra arguments
 function(simple_test FUNC_NAME)
@@ -25,7 +25,7 @@ function(simple_test FUNC_NAME)
 
 	# Configure test case
 	set(MAIN_IN  "${SIMPLE_TEST_DIR}/main.cpp.in")
-	set(MAIN_OUT "${SIMPLE_TEST_DIR}/${FUNC_NAME}-main.cpp")
+	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${FUNC_NAME}-main.cpp")
 	configure_file("${MAIN_IN}" "${MAIN_OUT}" @ONLY)
 
 	# Generate the and add test

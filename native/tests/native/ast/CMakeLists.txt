@@ -1,2 +1,1 @@
-# Test cases
-simple_test("dummy")
+add_subdirectory("factory")

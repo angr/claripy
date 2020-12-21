@@ -1,15 +1,9 @@
 /** @file */
-#include "constants.hpp"
-
-
-// For simplicity
-using Test = Tests::Native::Test;
 
 // Forward declare tests
-Test @FUNC_NAME@;
+int @FUNC_NAME@();
 
 // Main function
 int main() {
-	Test & f = @FUNC_NAME@;
-	return f();
+	return @FUNC_NAME@();
 }
