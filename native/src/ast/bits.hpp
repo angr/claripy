@@ -9,6 +9,6 @@
 #include "raw_types/bits.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Bits)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Bits)
 
 #endif

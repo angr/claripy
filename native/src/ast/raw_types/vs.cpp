@@ -5,7 +5,7 @@
 
 
 // Define required AST functions
-DEFINE_AST_SUBBITS_ID_FUNCTIONS(VS)
+AST_RAWTYPES_DEFINE_AST_SUBBITS_ID_FUNCTIONS(VS)
 
 
 // For clarity

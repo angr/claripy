@@ -18,9 +18,9 @@ namespace AST {
 
         /** This class represents an AST of bits */
         class Bits : public Base {
-            INIT_AST_BASE_SUBCLASS(Bits)
+            AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(Bits)
           public:
-            DECLARE_AST_SUBBITS_TYPENAME
+            AST_RAWTYPES_DECLARE_AST_SUBBITS_TYPENAME
 
             /** Virtual destructor */
             virtual ~Bits();

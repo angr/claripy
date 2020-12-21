@@ -9,6 +9,6 @@
 #include "raw_types/base.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Base)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Base)
 
 #endif

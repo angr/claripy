@@ -9,7 +9,7 @@
 
 
 // Define required AST functions
-DEFINE_AST_SUBBITS_ID_FUNCTIONS(Bits)
+AST_RAWTYPES_DEFINE_AST_SUBBITS_ID_FUNCTIONS(Bits)
 
 
 // For brevity

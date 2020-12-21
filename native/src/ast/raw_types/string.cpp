@@ -6,7 +6,7 @@
 
 
 // Define required AST functions
-DEFINE_AST_SUBBASE_ID_FUNCTIONS(String)
+AST_RAWTYPES_DEFINE_AST_SUBBASE_ID_FUNCTIONS(String)
 
 
 // For clarity

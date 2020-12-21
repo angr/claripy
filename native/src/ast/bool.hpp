@@ -9,6 +9,6 @@
 #include "raw_types/bool.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Bool)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(Bool)
 
 #endif

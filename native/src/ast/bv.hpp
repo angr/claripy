@@ -9,6 +9,6 @@
 #include "raw_types/bv.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(BV)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(BV)
 
 #endif

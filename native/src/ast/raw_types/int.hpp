@@ -18,7 +18,7 @@ namespace AST {
 
         /** An AST representing an integer */
         class Int : public Base {
-            INIT_AST_BASE_SUBCLASS(Int)
+            AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(Int)
 
             /** A private constructor to disallow public creation
              *  This must have take in the same arguments as the hash function, minus the hash

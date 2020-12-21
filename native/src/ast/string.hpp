@@ -9,6 +9,6 @@
 #include "raw_types/string.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(String)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(String)
 
 #endif

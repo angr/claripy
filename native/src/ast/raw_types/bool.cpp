@@ -5,7 +5,7 @@
 
 
 // Define required AST functions
-DEFINE_AST_SUBBASE_ID_FUNCTIONS(Bool)
+AST_RAWTYPES_DEFINE_AST_SUBBASE_ID_FUNCTIONS(Bool)
 
 
 // For clarity

@@ -9,6 +9,6 @@
 #include "raw_types/fp.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(FP)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(FP)
 
 #endif

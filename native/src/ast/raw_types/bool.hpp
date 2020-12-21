@@ -18,7 +18,7 @@ namespace AST {
 
         /** This class represents an AST boolean */
         class Bool : public Base {
-            INIT_AST_BASE_SUBCLASS(Bool)
+            AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(Bool)
           public:
             /** Return true if the AST evaluates to true */
             bool is_true() const;

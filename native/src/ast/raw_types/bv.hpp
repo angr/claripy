@@ -18,7 +18,7 @@ namespace AST {
 
         /** This class represents an AST bit vector */
         class BV : public Bits {
-            INIT_AST_BITS_SUBCLASS(BV)
+            AST_RAWTYPES_INIT_AST_BITS_SUBCLASS(BV)
 
             /** A private constructor to disallow public creation
              *  This must have take in the same arguments as the hash function, minus the hash

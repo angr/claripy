@@ -54,7 +54,7 @@ namespace AST {
          * following is true:: a, b = two different ASTs c = b + a d = b + a assert c is d
          */
         class Base {
-            INIT_AST_BASE_SUBCLASS(Base)
+            AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(Base)
           public:
             /** Virtual destructor */
             virtual ~Base();

@@ -9,6 +9,6 @@
 #include "raw_types/vs.hpp"
 
 
-DEFINE_NON_RAW_TYPE_FROM_GLOBAL(VS)
+AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(VS)
 
 #endif

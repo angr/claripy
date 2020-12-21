@@ -18,7 +18,7 @@ namespace AST {
 
         /** An AST representing a string */
         class String : public Bits {
-            INIT_AST_BASE_SUBCLASS(String)
+            AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(String)
 
             /** Create a concrete String
              *  @todo kwargs
