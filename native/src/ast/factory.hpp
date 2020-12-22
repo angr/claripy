@@ -39,7 +39,7 @@ namespace AST {
         // Check to see if the object to be constructed exists in the hash cache
         const Hash h = RawT::hash(args...);
         auto base_ptr =
-            Private::factory_cache.lookup_or_emplace<RawT>(h, std::forward<Args>(args)...);
+            Private::factory_cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...);
         return down_cast_throw_on_fail<T>(base_ptr);
     }
 

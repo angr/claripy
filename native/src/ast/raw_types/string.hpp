@@ -26,14 +26,15 @@ namespace AST {
             /* static ::AST::String Concrete(const std::string & value, const Constants::Int
              * length); */
 
-            /** A private constructor to disallow public creation
-             *  This must have take in the same arguments as the hash function, minus the hash
-             *  which must be the first argument passed
+            /** A protected constructor to disallow public creation
+             *  This must have take in the same arguments types as the hash function, minus the
+             * hash These arguments may be taken in via copy, reference or move; ownership is given
              */
             String(const Hash h, const Ops::Operation o);
+
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
-             * @todo not exactly, args in the constructor can consume inputs
+             *  These arguments args must be const values or references; this function must be pure
              */
             static Hash hash(const Ops::Operation o);
         };

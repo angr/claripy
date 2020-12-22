@@ -46,7 +46,7 @@ namespace AST {
              * @param args: The arguments given to Cached's constructor
              */
             template <typename Derived, typename... Args>
-            std::shared_ptr<Cached> lookup_or_emplace(const Hash &h, Args &&...args) {
+            std::shared_ptr<Cached> find_or_emplace(const Hash &h, Args &&...args) {
                 // Static check
                 static_assert(std::is_base_of<Cached, Derived>::value,
                               "Derived must derive from Base");

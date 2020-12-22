@@ -88,25 +88,26 @@ namespace AST {
 
           protected:
             /************************************************/
+            /*                 Constructors                 */
+            /************************************************/
+
+            /** A protected constructor to disallow public creation
+             *  This must have take in the same arguments types as the hash function, minus the
+             * hash These arguments may be taken in via copy, reference or move; ownership is given
+             */
+            Base(const Hash h, const Ops::Operation o);
+
+          private:
+            /************************************************/
             /*                   Statics                    */
             /************************************************/
 
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
+             *  These arguments args must be const values or references; this function must be pure
              */
             static Hash hash(const Ops::Operation o);
 
-            /************************************************/
-            /*                 Constructors                 */
-            /************************************************/
-
-            /** A protected constructor to disallow public creation
-             *  This must have take in the same arguments as the hash function, minus the hash
-             * which must be the first argument passed
-             */
-            Base(const Hash h, const Ops::Operation o);
-
-          private:
             /** Declare CacheKey a friend */
             friend class ::AST::CacheKey;
         };
