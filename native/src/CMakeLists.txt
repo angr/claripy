@@ -17,7 +17,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./ast/raw_types/bits.cpp
 	./ast/raw_types/string.cpp
 	./ast/cache_key.cpp
-	./ast/factory.cpp
+	./ast/private/factory_cache.cpp
 	# Annotations
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp

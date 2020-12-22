@@ -26,6 +26,8 @@ namespace AST {
 
     // Forward declarations
     class CacheKey;
+    template <typename T, typename... Args>
+    T factory(std::set<BackendID> &&eager_backends, Args &&...args);
     namespace Private {
         template <typename A, typename B> class Cache;
     }

@@ -59,7 +59,7 @@
 #define AST_RAWTYPES_GRANT_FACTORY_AND_CACHE_FRIEND_ACCESS                                        \
     /** Allow factories friend access */                                                          \
     template <typename T, typename... Args>                                                       \
-    friend T factory(std::set<BackendID> &&eager_backends, Args &&...args);                       \
+    friend T AST::factory(std::set<BackendID> &&eager_backends, Args &&...args);                  \
     /** Allow cache friend access                                                                 \
      *  We expose the constructor so that the cache may emplace new objects, which is             \
      *  faster than copying them in                                                               \
