@@ -18,11 +18,10 @@
 /** A namespace used for the ast directory */
 namespace AST {
 
-    /** A factory used to construct subclasses of AST::RawTypes::Base. This consumes its
-     * arguments This function takes in move references for everything; it has no const
-     * promises, it may consume anything that is passed to it. This factory handles hashing and
-     * returns an AST::Base (a shared pointer to the constructed object)
-     *  @todo This will probably want to take in args via move
+    /** A factory used to construct subclasses of AST::RawTypes::Base. Arguments are consumed.
+     *  This function takes in move references for everything; it has no const promises,
+     *  it may consume anything that is passed to it. This factory handles hashing and
+     *  returns an AST::Base (a shared pointer to the constructed object)
      *  @todo update eager_backends functionality
      */
     template <typename T, typename... Args>
