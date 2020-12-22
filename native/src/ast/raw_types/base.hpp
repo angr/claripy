@@ -11,6 +11,7 @@
 #include "../../macros.hpp"
 #include "../../ops/operations_enum.hpp"
 #include "../constants.hpp"
+#include "../simplified_level.hpp"
 
 #include <list>
 #include <map>
@@ -29,16 +30,6 @@ namespace AST {
         template <typename A, typename B> class Cache;
     }
 
-    /** A type-safe simplify-level enumeration */
-    enum class Simplify { UN, FULL, LITE };
-
-    /** A type-safe repr-level enumeration */
-    enum class Repr { LITE, MID, FULL };
-
-    /** A namespace which contains self-caching classes and things related to AST caching
-     *  These classes are unlikely to be accessed directly, but rather should be accessed via a
-     * shared_ptr
-     */
     /** A namespace which contains the raw AST types that are constructed via AST::factory
      *  These classes are unlikely to be accessed directly, but rather should be via a shared_ptr
      */
@@ -81,7 +72,7 @@ namespace AST {
             const bool symbolic;
 
             /** A measure of how simplified this AST is */
-            const Simplify simplified;
+            const SimplifiedLevel simplified;
 
             /** Children ASTs */
             const std::vector<const ::AST::Base> children;
