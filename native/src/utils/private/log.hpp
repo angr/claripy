@@ -7,6 +7,7 @@
 
 #include "log_level.hpp"
 
+#include "../../constants.hpp"
 #include "../sink.hpp" // todo
 
 
@@ -22,9 +23,11 @@ namespace Utils {
         /** Log the arguments given
          * @todo implement
          */
-        template <typename... Args> void log(const LogLevel lvl, Args... args) {
+        template <typename... Args>
+        void log(const Constants::Int id, const LogLevel lvl, Args &&...args) {
             ::Utils::sink(args...); // todo
             (void) lvl;
+            (void) id;
         }
 
     } // namespace Private

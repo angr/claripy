@@ -29,6 +29,9 @@ namespace AST {
          *  @todo We could have a TLS deletion queue if we want to increase efficiency
          */
         template <typename Hash, typename Cached> class Cache {
+            /** Abbreviate the type this is */
+            using Self = Cache<Hash, Cached>;
+
           public:
             /** The type of the cache used internally */
             using CacheMap = std::map<Hash, std::weak_ptr<Cached>>;
@@ -104,6 +107,7 @@ namespace AST {
                     // Otherwise remove it from the cache
                     else {
                         cache.erase(lookup);
+                        Utils::Log::verbose<Self>(__func__, ": Cache invalidation");
                         return std::shared_ptr<Cached>(nullptr);
                     }
                 }
@@ -118,7 +122,7 @@ namespace AST {
              */
             void unsafe_gc() {
                 std::vector<Hash> del;
-                Utils::Log::log("Garbage collecting cache");
+                Utils::Log::log<Self>("Garbage collecting cache");
                 // Find all expired weak_ptrs
                 for (auto i = this->cache.begin(); i != this->cache.end(); ++i) {
                     if (i->second.expired()) {
@@ -127,10 +131,12 @@ namespace AST {
                 }
                 // Delete them
                 for (typename CacheMap::size_type i = 0; i < del.size(); ++i) {
+                    Utils::Log::verbose<Self>(__func__, ": Cache invalidation");
                     this->cache.erase(del[i]);
                 }
-                // Resize gc_size
-                this->gc_resize = 2 * this->cache.size();
+                // Resize gc_size to a reasonable size
+                this->gc_resize = 127 | this->cache.size() << 1;
+                Utils::Log::verbose<Self>("Garbage collection complete.");
             }
 
             /************************************************/

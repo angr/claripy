@@ -1,9 +1,12 @@
 /**
  * @file
-   @brief This file defines the Utils::Private::LogLevel typesafe enum
+   @brief This file defines Utils::LogID
  */
-#ifndef __UTILS_PRIVATE_LOGLEVEL_HPP__
-#define __UTILS_PRIVATE_LOGLEVEL_HPP__
+#ifndef __UTILS_PRIVATE_LOGID_HPP__
+#define __UTILS_PRIVATE_LOGID_HPP__
+
+#include "../../macros.hpp"
+#include "../inc.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -15,8 +18,11 @@ namespace Utils {
      */
     namespace Private {
 
-        /** A typesafe enum denoting different log levels */
-        enum class LogLevel { Status, Debug, Verbose, Warning, Error, Critical };
+        /** Assign a different value to each log type */
+        template <typename T> Constants::Int LogID() {
+            const static Constants::Int id = inc<T>();
+            return id;
+        }
 
     } // namespace Private
 

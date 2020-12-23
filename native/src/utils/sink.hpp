@@ -14,7 +14,7 @@ namespace Utils {
      *  during a relase build is not; in this case we could have an unused parameter warning; this
      *  struct exists to mitigate that. Normal variables can just be voided out via (void) x;, but
      *  this is not true for argument packs; Utils::sink can handle these. */
-    template <typename... Args> [[gnu::always_inline]] inline void sink(const Args &...) {}
+    template <typename... Args> void sink(const Args &...) {}
 
 } // namespace Utils
 
