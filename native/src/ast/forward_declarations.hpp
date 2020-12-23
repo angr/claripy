@@ -2,6 +2,7 @@
  * @file
  * @brief This file defines many useful using statements within AST
  * For example, AST::Base is defined as std::shared_ptr<AST::RawTypes::Base>
+ * @todo disable shared_ptr.get() ?
  */
 #ifndef __AST_FORWARD_DECLARATIONS_HPP__
 #define __AST_FORWARD_DECLARATIONS_HPP__
