@@ -5,7 +5,8 @@
 #ifndef __UTILS_TOSTR_HPP__
 #define __UTILS_TOSTR_HPP__
 
-#include "private/to_str.hpp"
+#include "apply.hpp"
+#include "private/ostream.hpp"
 
 #include <sstream>
 
@@ -18,7 +19,7 @@ namespace Utils {
      */
     template <typename... Args> std::string to_str(const Args... args) {
         std::stringstream s;
-        Private::to_str(s, std::forward<const Args>(args)...);
+        apply<Private::OStreamConst>(s, std::forward<const Args>(args)...);
         return s.str();
     }
 
