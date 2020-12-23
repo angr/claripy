@@ -5,6 +5,8 @@
 #ifndef __UTILS_POW_HPP__
 #define __UTILS_POW_HPP__
 
+#include "../errors/unexpected.hpp"
+
 #include <type_traits>
 
 
@@ -16,8 +18,11 @@ namespace Utils {
     constexpr Base pow(const Base base, const Power power) {
         static_assert(std::is_arithmetic<Base>::value, "Utils::pow Base must be a number");
         static_assert(std::is_integral<Power>::value, "Utils::pow Power must be integral");
-        static_assert(power >= 0, "Power must be positive");
-        if (power == 0) {
+        if (power < 0) {
+            // This should actually fail compilation here since this is not constexpr
+            throw Errors::Unexpected::IncorrectUsage("power must be non-negative");
+        }
+        else if (power == 0) {
             return 1;
         }
         return base * pow(base, power - 1);

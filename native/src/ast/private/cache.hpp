@@ -6,14 +6,14 @@
 #define __AST_PRIVATE_CACHE_HPP__
 
 #include "../../utils/log.hpp"
+#include "../../utils/pow.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <shared_mutex>
 #include <type_traits>
-
-
 /** A namespace used for the ast directory */
 namespace AST {
 
@@ -88,12 +88,16 @@ namespace AST {
                 return ret;
             }
 
+            /** The default value of gc_resize: 2^10 - 1 */
+            static constexpr typename CacheMap::size_type gc_resize_default =
+                Utils::pow(2, 10) - 1;
+
           private:
             /** A non-threadsafe find function for the cache
              *  On success returns a shared pointer to the value
              *  On failure, returns a null shared pointer
              */
-            auto unsafe_find(const Hash &h) {
+            std::shared_ptr<Cached> unsafe_find(const Hash &h) {
                 auto lookup = this->cache.find(h);
                 if (lookup != this->cache.end()) {
                     std::shared_ptr<Cached> locked = lookup->second.lock();
@@ -104,6 +108,7 @@ namespace AST {
                     // Otherwise remove it from the cache
                     else {
                         cache.erase(lookup);
+                        return std::shared_ptr<Cached>(nullptr);
                     }
                 }
 
@@ -117,7 +122,7 @@ namespace AST {
              */
             void unsafe_gc() {
                 std::vector<Hash> del;
-                Utils::log("Garbage collecting cache");
+                Utils::Log::log("Garbage collecting cache");
                 // Find all expired weak_ptrs
                 for (auto i = this->cache.begin(); i != this->cache.end(); ++i) {
                     if (i->second.expired()) {
@@ -139,10 +144,8 @@ namespace AST {
             /** The cache representation */
             CacheMap cache;
 
-            /** The size the cache should have weak_ptr's gc'd when it is larger than
-             *  Default 1000
-             */
-            typename CacheMap::size_type gc_resize = 1000;
+            /** The size the cache should have weak_ptr's gc'd when it is larger than */
+            typename CacheMap::size_type gc_resize = gc_resize_default;
 
             /** A mutex used to protect the internal representation */
             std::shared_mutex lock;
