@@ -13,7 +13,8 @@ namespace Utils {
      *  Func must be a class with the static method f defined
      *  This is special definition of apply where only one argument is given.
      */
-    template <typename Func, typename Base, typename T> void apply(Base &base, const T &next) {
+    template <typename Func, typename Base, typename T>
+    constexpr void apply(Base &base, const T &next) {
         (void) Func::f(base, next);
     }
 
@@ -21,7 +22,7 @@ namespace Utils {
      *  Func must be a class with the static method f defined
      */
     template <typename Func, typename Base, typename T, typename... Args>
-    void apply(Base &base, const T &next, const Args &...args) {
+    constexpr void apply(Base &base, const T &next, const Args &...args) {
         (void) Func::f(base, next);
         apply<Func>(base, args...);
     }

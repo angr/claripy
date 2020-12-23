@@ -20,7 +20,7 @@ namespace Utils {
         /** A helper function used to merge a set of set<T>'s into ret
          *  A specialization of set_join that handles the single argument case
          */
-        template <typename T> void set_join(std::set<T> &ret, const std::set<T> &a) {
+        template <typename T> constexpr void set_join(std::set<T> &ret, const std::set<T> &a) {
             ret.insert(a.begin(), a.end());
         }
 
@@ -28,7 +28,7 @@ namespace Utils {
          *  Merge the set a into ret then recurse
          */
         template <typename T, typename... Args>
-        void set_join(std::set<T> &ret, const std::set<T> &a, const Args... args) {
+        constexpr void set_join(std::set<T> &ret, const std::set<T> &a, const Args... args) {
             ret.insert(a.begin(), a.end());
             set_join(ret, std::forward<const Args>(args)...);
         }

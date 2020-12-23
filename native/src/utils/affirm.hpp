@@ -15,7 +15,7 @@ namespace Utils {
 
     /** If not b, throw T(args...); */
     template <typename T, typename B, typename... Args>
-    void affirm(const B b, const Args... args) {
+    constexpr void affirm(const B b, const Args... args) {
         if (!b) {
             throw T(args...);
         }

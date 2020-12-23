@@ -18,7 +18,7 @@ namespace Utils {
      *  Can automatically deduce template types from arguments
      */
     template <typename T, typename... Args>
-    std::set<T> set_join(const std::set<T> &s1, const Args... args) {
+    std::set<T> constexpr set_join(const std::set<T> &s1, const Args... args) {
         auto ret = std::set<T>();
         Private::set_join<T>(ret, std::forward<decltype(s1)>(s1),
                              std::forward<const Args>(args)...);
