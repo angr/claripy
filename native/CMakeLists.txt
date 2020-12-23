@@ -83,7 +83,7 @@ if(ENABLE_MEMCHECK)
 endif()
 
 # Required complication flags
-set (CMAKE_C_FLAGS   "-Wall -Wextra -Werror" )
+set (CMAKE_C_FLAGS   "-Wall -Wextra -Wpedantic -Werror" )
 set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror" )
 
 # Optimize for native code
