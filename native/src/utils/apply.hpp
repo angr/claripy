@@ -23,7 +23,7 @@ namespace Utils {
     template <typename Func, typename Base, typename T, typename... Args>
     void apply(Base &base, const T &next, const Args &...args) {
         (void) Func::f(base, next);
-        apply(base, args...);
+        apply<Func>(base, args...);
     }
 
 } // namespace Utils

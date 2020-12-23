@@ -25,7 +25,7 @@ namespace Utils {
         /** Normal logging */
         template <typename... Args> void log(Args... args) {
 #if DEBUG
-            Private::log(std::forward<Args>(args)..., Private::LogLevel::Status);
+            Private::log(Private::LogLevel::Status, std::forward<Args>(args)...);
 #else
             sink(args...);
 #endif
@@ -34,7 +34,7 @@ namespace Utils {
         /** A function used to log anything with the << stream operator defined */
         template <typename... Args> void verbose(Args... args) {
 #if defined DEBUG && defined VERBOSE
-            Private::log(std::forward<Args>(args)..., Private::LogLevel::Verbose);
+            Private::log(Private::LogLevel::Verbose, std::forward<Args>(args)...);
 #else
             sink(args...);
 #endif

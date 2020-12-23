@@ -20,10 +20,11 @@ namespace Utils {
     namespace Private {
 
         /** Log the arguments given
-         * @todo implement */
-        template <typename... Args> void log(Args... args, const LogLevel lvl) {
-            (void) lvl;
+         * @todo implement
+         */
+        template <typename... Args> void log(const LogLevel lvl, Args... args) {
             ::Utils::sink(args...); // todo
+            (void) lvl;
         }
 
     } // namespace Private

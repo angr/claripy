@@ -88,10 +88,6 @@ namespace AST {
                 return ret;
             }
 
-            /** The default value of gc_resize: 2^10 - 1 */
-            static constexpr typename CacheMap::size_type gc_resize_default =
-                Utils::pow(2, 10) - 1;
-
           private:
             /** A non-threadsafe find function for the cache
              *  On success returns a shared pointer to the value
@@ -144,8 +140,10 @@ namespace AST {
             /** The cache representation */
             CacheMap cache;
 
-            /** The size the cache should have weak_ptr's gc'd when it is larger than */
-            typename CacheMap::size_type gc_resize = gc_resize_default;
+            /** The size the cache should have weak_ptr's gc'd when it is larger than
+             *  Default: 2^10 - 1
+             */
+            typename CacheMap::size_type gc_resize = Utils::pow(2, 10) - 1;
 
             /** A mutex used to protect the internal representation */
             std::shared_mutex lock;
