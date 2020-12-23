@@ -19,7 +19,7 @@ template <typename T> T construct() {
     return factory<T>(std::move(s), std::move((Ops::Operation) 0));
 }
 
-/** Test creating an Base */
+/* Down casting should succeed */
 int down_cast_throw() {
     Int a = construct<Int>();
     Base b = up_cast<Base>(a);

@@ -19,7 +19,7 @@
 using namespace AST;
 
 
-/** Test creating an Base */
+/** Each construction should have a unique pointer */
 int all_diff_class_id() {
 
     std::set<BackendID> s;

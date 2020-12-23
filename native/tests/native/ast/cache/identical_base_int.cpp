@@ -19,7 +19,7 @@ template <typename T> T construct() {
     return factory<T>(std::move(s), std::move((Ops::Operation) 0));
 }
 
-/** Test creating an Base */
+/** Test creating a Base */
 int identical_base_int() {
     Base a = construct<Base>();
     Int b = construct<Int>();

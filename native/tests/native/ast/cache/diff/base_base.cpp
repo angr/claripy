@@ -13,7 +13,7 @@ AST::Base construct(Ops::Operation o) {
     return AST::factory<AST::Base>(std::move(s), std::move(o));
 }
 
-/** Test creating an AST::Base */
+/** Two bases should be different */
 int base_base() {
     AST::Base a = construct((Ops::Operation) 0);
     AST::Base b = construct((Ops::Operation) 1);
