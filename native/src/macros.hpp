@@ -27,7 +27,6 @@
 /** A macro to convert a macro result into a string */
 #define MACRO_TO_STRING(X) MACRO_TO_STRING_HELPER(X)
 
-
 /************************************************/
 /*                   Helpers                    */
 /************************************************/
