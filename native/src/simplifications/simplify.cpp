@@ -12,7 +12,9 @@ namespace Log = Utils::Log;
 namespace Pvt = Simplifications::Private;
 
 // Define the simplifications log
-class SimpLog {};
+class SimpLog {
+    constexpr static auto log_id = "Simplify";
+};
 
 AST::Base Simplifications::simplify(const AST::Base &old) {
     auto lookup = Pvt::op_map.find(old->op);
