@@ -1,11 +1,11 @@
 /**
  * @file
- * @brief This file defines the default log style
+ * @brief This file defines the LevelTimestameMessage style
  */
-#ifndef __UTILS_LOG_STYLE_DEFAULT_HPP__
-#define __UTILS_LOG_STYLE_DEFAULT_HPP__
+#ifndef __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
+#define __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
 
-#include "level_timestamp_message.hpp"
+#include "abstract_base.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -25,8 +25,12 @@ namespace Utils {
         /** A namespace used for log styles */
         namespace Style {
 
-            /** Define the default log style */
-            using Default = LevelTimestampMessage;
+            /** The default log style class */
+            struct LevelTimestampMessage : public AbstractBase {
+                /** Format the log message */
+                std::string operator()(const Level &lvl,
+                                       std::ostringstream &raw) const override final;
+            };
 
         } // namespace Style
 

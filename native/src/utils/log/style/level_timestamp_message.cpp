@@ -1,5 +1,5 @@
 /** @file */
-#include "default.hpp"
+#include "level_timestamp_message.hpp"
 
 #include "../../../errors/unexpected.hpp"
 #include "../../affirm.hpp"
@@ -24,7 +24,7 @@ inline const char *name(const Level &lvl, const char *const fname) {
 }
 
 // Return "<level>: <timestamp>: <raw>"
-std::string Default::operator()(const Level &lvl, std::ostringstream &raw) const {
+std::string LevelTimestampMessage::operator()(const Level &lvl, std::ostringstream &raw) const {
     // Get time
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);

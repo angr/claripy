@@ -21,7 +21,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	# Utils
 	./utils/log/style/abstract_base.cpp
 	./utils/log/level_map.cpp
-	./utils/log/style/default.cpp
+	./utils/log/style/level_timestamp_message.cpp
 	./utils/log/style/access.cpp
 	# Annotations
 	./annotations/base.cpp
