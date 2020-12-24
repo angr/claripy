@@ -15,11 +15,12 @@
 namespace Utils {
 
     /** This function takes in a set of arguments, and returns a string that comprises them
+     *  Arguments are taken in by constant reference
      *  Each argument must have the << stream operator defined
      */
-    template <typename... Args> std::string to_str(const Args... args) {
+    template <typename... Args> std::string to_str(const Args &...args) {
         std::stringstream s;
-        apply<Private::OStreamConst>(s, std::forward<const Args>(args)...);
+        apply<Private::OStreamConst>(s, args...);
         return s.str();
     }
 

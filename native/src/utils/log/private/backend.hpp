@@ -9,7 +9,7 @@
 #include "level.hpp"
 
 #include "../../../constants.hpp"
-#include "../../sink.hpp" // todo
+#include "../../to_str.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -36,7 +36,7 @@ namespace Utils {
              */
             template <typename... Args>
             void backend(const char *const id, const Level lvl, const Args &...args) {
-                ::Utils::sink(args...); // todo
+                (void) to_str(args...);
                 (void) lvl;
                 (void) id;
             }

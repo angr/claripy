@@ -20,10 +20,9 @@ namespace Errors {
     class Claricpp : public std::exception {
       public:
         /** Public constructor
-         *  This constructor consumes its arguments via move semantics
+         *  This constructor consumes its arguments via const reference
          */
-        template <typename... Args>
-        Claricpp(Args &&...args) : msg(Utils::to_str(std::forward<Args>(args)...)) {}
+        template <typename... Args> Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
         /** Message getter */
         const char *what() const throw();
