@@ -1,13 +1,11 @@
 /**
  * @file
- * @brief This file defines the default log style class
+ * @brief This file methods for accessing the log style
  */
-#ifndef __UTILS_LOG_STYLE_STYLE_HPP__
-#define __UTILS_LOG_STYLE_STYLE_HPP__
+#ifndef __UTILS_LOG_STYLE_ACCESS_HPP__
+#define __UTILS_LOG_STYLE_ACCESS_HPP__
 
-#include "../level.hpp"
-
-#include <sstream>
+#include "style.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -27,23 +25,11 @@ namespace Utils {
         /** A namespace used for log styles */
         namespace Style {
 
-            /** The base log style class
-             *  All log styles must subclass this
-             *  Log functions must implement
-             */
-            struct Style {
-                /** Format the log message
-                 *  Ownership of raw is transferred
-                 */
-                virtual std::string operator()(const Level &lvl, std::ostringstream &raw) const;
+            /** Set the logging style by copy */
+            void set(Style s);
 
-              protected:
-                /** Force this class to be purely abstract
-                 *  We do not declare the operator()=0 because we want to use this class
-                 * as if it were instantiatable
-                 */
-                Style();
-            };
+            /** Return a copy of the style */
+            Style get();
 
         } // namespace Style
 

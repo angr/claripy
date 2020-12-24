@@ -6,5 +6,6 @@
 #define __UTILS_LOG_HPP__
 
 #include "log/log.hpp"
+#include "log/style/access.hpp"
 
 #endif

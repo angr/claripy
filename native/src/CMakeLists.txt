@@ -22,6 +22,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./utils/log/style/style.cpp
 	./utils/log/level_map.cpp
 	./utils/log/style/default.cpp
+	./utils/log/style/access.cpp
 	# Annotations
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp

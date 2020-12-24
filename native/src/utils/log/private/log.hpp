@@ -10,7 +10,7 @@
 #include "../../private/ostream.hpp"
 #include "../../to_str.hpp"
 #include "../level.hpp"
-#include "../style/default.hpp"
+#include "../style/access.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -32,15 +32,12 @@ namespace Utils {
          */
         namespace Private {
 
-            /** Log function that passes
-             * @todo implement
-             */
+            /** Prep the arguments then call the logging backend */
             template <typename... Args>
             void backend(const char *const id, const Level lvl, const Args &...args) {
                 std::ostringstream s;
                 apply<::Utils::Private::OStreamConst>(s, args...);
-                Style::Default style;
-                const std::string msg = style(lvl, s);
+                const std::string msg = Style::get()(lvl, s);
                 (void) msg;
                 (void) id;
             }
