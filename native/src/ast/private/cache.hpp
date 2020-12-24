@@ -128,7 +128,7 @@ namespace AST {
              */
             void unsafe_gc() {
                 std::vector<Hash> del;
-                Utils::Log::log<Self>("Garbage collecting cache");
+                Utils::Log::debug<Self>("Garbage collecting cache");
                 // Find all expired weak_ptrs
                 for (auto i = this->cache.begin(); i != this->cache.end(); ++i) {
                     if (i->second.expired()) {
