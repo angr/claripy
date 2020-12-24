@@ -18,6 +18,10 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./ast/raw_types/string.cpp
 	./ast/cache_key.cpp
 	./ast/private/factory_cache.cpp
+	# Utils
+	./utils/log/style/style.cpp
+	./utils/log/level_map.cpp
+	./utils/log/style/default.cpp
 	# Annotations
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp

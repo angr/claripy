@@ -19,7 +19,7 @@ namespace Utils {
      *  Each argument must have the << stream operator defined
      */
     template <typename... Args> std::string to_str(const Args &...args) {
-        std::stringstream s;
+        std::ostringstream s;
         apply<Private::OStreamConst>(s, args...);
         return s.str();
     }

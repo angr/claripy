@@ -1,10 +1,11 @@
 /**
  * @file
- * @brief This file defines the Utils::Log::Private::Level typesafe enum
- * Also uses macros to determine which logs are enabled or not
+ * @brief This file defines the Utils::Log::Level typesafe enum
  */
-#ifndef __UTILS_LOG_PRIVATE_LEVEL_HPP__
-#define __UTILS_LOG_PRIVATE_LEVEL_HPP__
+#ifndef __UTILS_LOG_LEVEL_HPP__
+#define __UTILS_LOG_LEVEL_HPP__
+
+#include <map>
 
 
 /** A namespace used for the utils directory */
@@ -20,15 +21,8 @@ namespace Utils {
      */
     namespace Log {
 
-        /** A namespace used to designate certain items in Utils::Log as private
-         *  These functions should not be called outside of Utils::Log members
-         */
-        namespace Private {
-
-            /** A typesafe enum denoting different log levels */
-            enum class Level { Debug, Verbose, Info, Warning, Error, Critical };
-
-        } // namespace Private
+        /** A typesafe enum denoting different log levels */
+        enum class Level { Debug, Verbose, Info, Warning, Error, Critical };
 
     } // namespace Log
 

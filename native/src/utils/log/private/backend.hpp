@@ -6,10 +6,9 @@
 #ifndef __UTILS_LOG_PRIVATE_BACKEND_HPP__
 #define __UTILS_LOG_PRIVATE_BACKEND_HPP__
 
-#include "level.hpp"
-
 #include "../../../constants.hpp"
 #include "../../to_str.hpp"
+#include "../level.hpp"
 
 
 /** A namespace used for the utils directory */

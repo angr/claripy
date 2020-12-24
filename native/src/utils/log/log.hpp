@@ -1,10 +1,11 @@
 /**
  * @file
- @brief This file defines public logging functions
+ * @brief This file defines public logging functions
  */
 #ifndef __UTILS_LOG_LOG_HPP__
 #define __UTILS_LOG_LOG_HPP__
 
+#include "level.hpp"
 #include "macros.hpp"
 #include "private/backend.hpp"
 #include "private/level_config.hpp"
@@ -20,7 +21,7 @@
     template <typename... Args> void NAME(Args... args) {                                         \
         if constexpr (Private::Enabled::NAME) {                                                   \
             static constexpr auto id = Default::log_id;                                           \
-            Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);             \
+            Private::backend(id, Level::LEVEL, std::forward<Args>(args)...);                      \
         }                                                                                         \
         else {                                                                                    \
             sink(args...);                                                                        \
@@ -30,7 +31,7 @@
     template <typename Log, typename... Args> void NAME(Args... args) {                           \
         if constexpr (Private::Enabled::NAME) {                                                   \
             static constexpr auto id = Log::log_id;                                               \
-            Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);             \
+            Private::backend(id, Level::LEVEL, std::forward<Args>(args)...);                      \
         }                                                                                         \
         else {                                                                                    \
             sink(args...);                                                                        \
