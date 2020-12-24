@@ -32,50 +32,50 @@
 namespace Utils {
 
     /** A namespace used for logging functions
-     *  Unless otherwise specified, each function in this namespace takes in whatever arguments it
-     *  is given by copy, and returns void. There are no restrictions on what types of arguments,
-     * or how many arguments are given, other than that the '<<' stream operator must be defined
-     * for the type. Optionally, a class can be provided as an extra template argument to log. If
-     * it is provided the log written to will be a custom log related to that particular class. If
-     * no custom log is specified a default log is used.
+     *  Unless otherwise specified, each function in this namespace takes in const reference
+     *  arguments and returns void. There are no restrictions on what types of arguments,
+     *  or how many arguments are given, other than that the '<<' stream operator must be defined
+     *  for the type. Optionally, a class can be provided as an extra template argument to log. If
+     *  it is provided the log written to will be a custom log related to that particular class.
+     *  If no custom log is specified a default log is used.
      */
     namespace Log {
 
         /** Log to default log */
-        template <typename... Args> void debug(Args... args) {
+        template <typename... Args> void debug(const Args &...args) {
 #if DEBUG
             static const auto id = Private::ID<Private::Default>();
-            Private::backend(id, Private::Level::Debug, std::forward<Args>(args)...);
+            Private::backend(id, Private::Level::Debug, args...);
 #else
             sink(args...);
 #endif
         }
 
         /** Log to custom log */
-        template <typename Log, typename... Args> void debug(Args... args) {
+        template <typename Log, typename... Args> void debug(const Args &...args) {
 #if DEBUG
             static const auto id = Private::ID<Log>();
-            Private::backend(id, Private::Level::Debug, std::forward<Args>(args)...);
+            Private::backend(id, Private::Level::Debug, args...);
 #else
             sink(args...);
 #endif
         }
 
         /** Verbose log to default log */
-        template <typename... Args> void verbose(Args... args) {
+        template <typename... Args> void verbose(const Args &...args) {
 #if defined DEBUG && defined VERBOSE
             static const auto id = Private::ID<Private::Default>();
-            Private::backend(id, Private::Level::Verbose, std::forward<Args>(args)...);
+            Private::backend(id, Private::Level::Verbose, args...);
 #else
             sink(args...);
 #endif
         }
 
         /** Verbose log to custom log */
-        template <typename Log, typename... Args> void verbose(Args... args) {
+        template <typename Log, typename... Args> void verbose(const Args &...args) {
 #if defined DEBUG && defined VERBOSE
             static const auto id = Private::ID<Log>();
-            Private::backend(id, Private::Level::Verbose, std::forward<Args>(args)...);
+            Private::backend(id, Private::Level::Verbose, args...);
 #else
             sink(args...);
 #endif

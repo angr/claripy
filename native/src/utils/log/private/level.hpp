@@ -25,7 +25,7 @@ namespace Utils {
         namespace Private {
 
             /** A typesafe enum denoting different log levels */
-            enum class Level { Info, Debug, Verbose, Warning, Error, Critical };
+            enum class Level { Debug, Verbose, Info, Warning, Error, Critical };
 
         } // namespace Private
 

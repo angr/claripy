@@ -8,14 +8,14 @@ cmake_minimum_required(VERSION 3.16)
 
 
 # Config options
-option(BUILD_DOC "Create a make target for documentation" ON)
+option(BUILD_DOC "Create a make target for documentation"   ON)
 option(ENABLE_TESTING "Create a make target for test cases" ON)
-option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc" ON)
+option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   ON)
 
 # Static Analysis Options
-option(CPP_CHECK "Enable cppcheck" ON)
 option(IWYU "Enable iwyu" OFF)
 option(LWYU "Enable lwyu" ON)
+option(CPP_CHECK "Enable cppcheck" ON)
 option(CLANG_TIDY "Enable clang-tidy" ON)
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
@@ -26,6 +26,15 @@ set(SHARED_LIB_NAME claricpp.so)
 
 ### Developer options below ###
 
+# Version / API Version
+set(VERSION 0.1)
+set(SOVERSION 1)
+
+# Default build type
+# Default to debug mode
+# Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
+set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" FORCE)
+
 # Config options
 # The memcheck and security options are mutually exclusive
 # Note that ENABLE_SECURITY overrides the flags of every other option
@@ -34,16 +43,16 @@ option(ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON)
 option(ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF)
 option(CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON)
 
-# Version
-set(VERSION 0.1)
-
-# API Version
-set(SOVERSION 1)
-
-# Default build type
-# Default to debug mode
-# Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
-set( CMAKE_BUILD_TYPE Debug CACHE STRING "Cmake build type" FORCE)
+# Log Config Options
+# Note: verbose implies debug, and debug implies everything except verbose
+# These may be overriden based on build type
+option( DEBUG_LOG    "Enable debug logging"    ON)
+option( VERBOSE_LOG  "Enable verbose logging"  OFF)
+# These may be overridden by debug_log and verbose_log
+option( INFO_LOG     "Enable info logging"     ON)
+option( WARNING_LOG  "Enable warning logging"  ON)
+option( ERROR_LOG    "Enable error logging"    ON)
+option( CRITICAL_LOG "Enable critical logging" ON)
 
 
 #################################################
@@ -120,8 +129,10 @@ endif()
 
 # Build type
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions(-DDEBUG)
     message(STATUS "Debug Mode enabled!")
+	# Add debug macro
+    add_definitions(-DDEBUG)
+	# Debug flags
 	set(DEBUG_FLAGS
 		"-O0"
 		"-g"
@@ -132,14 +143,32 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	string(REPLACE ";" " " DEBUG_FLAGS "${DEBUG_FLAGS}")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
 	set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${DEBUG_FLAGS}")
+	# Enable logging
+	set(DEBUG_LOG ON)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message(STATUS "Release Build enabled!")
+	# Release flags
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -flto -O3")
 	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -pipe -flto -O3")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
+	# Disable most logging
+	set(VERBOSE_LOG OFF)
+	set(DEBUG_LOG OFF)
+	set(INFO_LOG OFF)
 endif()
 
-# Optimize for native code
+# Log config
+if (VERBOSE_LOG)
+	set(DEBUG_LOG ON)
+endif()
+if (DEBUG_LOG)
+	set(INFO_LOG ON)
+	set(ERROR_LOG ON)
+	set(WARNING_LOG ON)
+	set(CRITICAL_LOG ON)
+endif()
+
+# Enable security flags
 # These come after build type as they may override the given flags
 if(ENABLE_SECURITY)
 	message(WARNING "Security mode enabled. Overriding other options!")
