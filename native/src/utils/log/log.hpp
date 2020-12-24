@@ -7,8 +7,8 @@
 
 #include "level.hpp"
 #include "macros.hpp"
-#include "private/backend.hpp"
 #include "private/level_config.hpp"
+#include "private/log.hpp"
 
 #include "../sink.hpp"
 

@@ -28,7 +28,8 @@ namespace Utils {
             /** The default log style class */
             struct Default : public Style {
                 /** Format the log message */
-                std::string format(const Level &lvl, std::ostringstream &raw) const override final;
+                std::string operator()(const Level &lvl,
+                                       std::ostringstream &raw) const override final;
             };
 
         } // namespace Style

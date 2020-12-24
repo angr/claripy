@@ -24,12 +24,12 @@ inline const char *name(const Level &lvl, const char *const fname) {
 }
 
 // Return "<level>: <timestamp>: <raw>"
-std::string Default::format(const Level &lvl, std::ostringstream &raw) const {
+std::string Default::operator()(const Level &lvl, std::ostringstream &raw) const {
     // Get time
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);
     // Output
     std::ostringstream ret;
-    ret << name(lvl, __func__) << ": " << std::put_time(&tm, "%c %Z") << std::move(raw.str());
+    ret << name(lvl, __func__) << ": " << std::put_time(&tm, "%c %Z") << " -- " << raw.str();
     return ret.str();
 }

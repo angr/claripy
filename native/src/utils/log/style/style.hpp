@@ -35,7 +35,8 @@ namespace Utils {
                 /** Format the log message
                  *  Ownership of raw is transferred
                  */
-                virtual std::string format(const Level &lvl, std::ostringstream &raw) const = 0;
+                virtual std::string operator()(const Level &lvl,
+                                               std::ostringstream &raw) const = 0;
                 /** Allow inheretence */
                 virtual ~Style();
             };
