@@ -5,8 +5,8 @@
 #ifndef __UTILS_LOG_LOG_HPP__
 #define __UTILS_LOG_LOG_HPP__
 
+#include "macros.hpp"
 #include "private/backend.hpp"
-#include "private/default.hpp"
 
 #include "../sink.hpp"
 
@@ -17,7 +17,7 @@
 #define UTILS_PRIVATE_DEFINE_LOG_LEVEL(LEVEL, NAME)                                               \
     /** Log to default log with given log level */                                                \
     template <typename... Args> void NAME(Args... args) {                                         \
-        static constexpr auto id = Private::Default::log_id;                                      \
+        static constexpr auto id = Default::log_id;                                               \
         Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);                 \
     }                                                                                             \
     /** Log to custom log with given log level */                                                 \
@@ -29,6 +29,9 @@
 
 /** A namespace used for the utils directory */
 namespace Utils {
+
+    /** Define the default log class */
+    UTILS_LOG_DEFINE_LOG_CLASS(Default)
 
     /** A namespace used for logging functions
      *  Unless otherwise specified, each function in this namespace takes in const reference
@@ -44,7 +47,7 @@ namespace Utils {
         /** Log to default log */
         template <typename... Args> void debug(const Args &...args) {
 #if DEBUG
-            static constexpr auto id = Private::Default::log_id;
+            static constexpr auto id = Default::log_id;
             Private::backend(id, Private::Level::Debug, args...);
 #else
             sink(args...);
@@ -64,7 +67,7 @@ namespace Utils {
         /** Verbose log to default log */
         template <typename... Args> void verbose(const Args &...args) {
 #if defined DEBUG && defined VERBOSE
-            static constexpr auto id = Private::Default > ::log_id;
+            static constexpr auto id = Default::log_id;
             Private::backend(id, Private::Level::Verbose, args...);
 #else
             sink(args...);

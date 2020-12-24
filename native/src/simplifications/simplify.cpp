@@ -11,10 +11,10 @@
 namespace Log = Utils::Log;
 namespace Pvt = Simplifications::Private;
 
+
 // Define the simplifications log
-class SimpLog {
-    constexpr static auto log_id = "Simplify";
-};
+UTILS_LOG_DEFINE_LOG_CLASS(Simplify)
+
 
 AST::Base Simplifications::simplify(const AST::Base &old) {
     auto lookup = Pvt::op_map.find(old->op);
@@ -22,7 +22,7 @@ AST::Base Simplifications::simplify(const AST::Base &old) {
         return lookup->second(old);
     }
     else {
-        Log::verbose<SimpLog>("No simplifier for operation: ", old->op);
+        Log::verbose<Simplify>("No simplifier for operation: ", old->op);
         return old;
     }
 }

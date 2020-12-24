@@ -1,6 +1,7 @@
 /**
  * @file
- @brief This file defines the Utils::Log::Private::backend function
+ * @brief This file defines the Utils::Log::Private::backend function
+ * @todo Maybe have a C++ backend and a python backend that hooks into python's logger?
  */
 #ifndef __UTILS_LOG_PRIVATE_BACKEND_HPP__
 #define __UTILS_LOG_PRIVATE_BACKEND_HPP__
