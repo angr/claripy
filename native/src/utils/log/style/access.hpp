@@ -5,7 +5,7 @@
 #ifndef __UTILS_LOG_STYLE_ACCESS_HPP__
 #define __UTILS_LOG_STYLE_ACCESS_HPP__
 
-#include "style.hpp"
+#include "abstract_base.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -26,10 +26,10 @@ namespace Utils {
         namespace Style {
 
             /** Set the logging style by copy */
-            void set(Style s);
+            void set(AbstractBase s);
 
             /** Return a copy of the style */
-            Style get();
+            AbstractBase get();
 
         } // namespace Style
 

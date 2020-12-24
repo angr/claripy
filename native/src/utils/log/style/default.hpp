@@ -5,7 +5,7 @@
 #ifndef __UTILS_LOG_STYLE_DEFAULT_HPP__
 #define __UTILS_LOG_STYLE_DEFAULT_HPP__
 
-#include "style.hpp"
+#include "abstract_base.hpp"
 
 
 /** A namespace used for the utils directory */
@@ -26,7 +26,7 @@ namespace Utils {
         namespace Style {
 
             /** The default log style class */
-            struct Default : public Style {
+            struct Default : public AbstractBase {
                 /** Format the log message */
                 std::string operator()(const Level &lvl,
                                        std::ostringstream &raw) const override final;

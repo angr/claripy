@@ -19,7 +19,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./ast/cache_key.cpp
 	./ast/private/factory_cache.cpp
 	# Utils
-	./utils/log/style/style.cpp
+	./utils/log/style/abstract_base.cpp
 	./utils/log/level_map.cpp
 	./utils/log/style/default.cpp
 	./utils/log/style/access.cpp

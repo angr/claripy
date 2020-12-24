@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the default log style class
  */
-#ifndef __UTILS_LOG_STYLE_STYLE_HPP__
-#define __UTILS_LOG_STYLE_STYLE_HPP__
+#ifndef __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
+#define __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
 
 #include "../level.hpp"
 
@@ -31,7 +31,7 @@ namespace Utils {
              *  All log styles must subclass this
              *  Log functions must implement
              */
-            struct Style {
+            struct AbstractBase {
                 /** Format the log message
                  *  Ownership of raw is transferred
                  */
@@ -42,7 +42,7 @@ namespace Utils {
                  *  We do not declare the operator()=0 because we want to use this class
                  * as if it were instantiatable
                  */
-                Style();
+                AbstractBase();
             };
 
         } // namespace Style
