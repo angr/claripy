@@ -1,6 +1,7 @@
 /**
  * @file
- @brief This file defines the Utils::Log::Private::Level typesafe enum
+ * @brief This file defines the Utils::Log::Private::Level typesafe enum
+ * Also uses macros to determine which logs are enabled or not
  */
 #ifndef __UTILS_LOG_PRIVATE_LEVEL_HPP__
 #define __UTILS_LOG_PRIVATE_LEVEL_HPP__

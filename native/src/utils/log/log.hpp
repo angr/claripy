@@ -7,6 +7,7 @@
 
 #include "macros.hpp"
 #include "private/backend.hpp"
+#include "private/level_config.hpp"
 
 #include "../sink.hpp"
 
@@ -17,13 +18,23 @@
 #define UTILS_PRIVATE_DEFINE_LOG_LEVEL(LEVEL, NAME)                                               \
     /** Log to default log with given log level */                                                \
     template <typename... Args> void NAME(Args... args) {                                         \
-        static constexpr auto id = Default::log_id;                                               \
-        Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);                 \
+        if constexpr (Private::Enabled::NAME) {                                                   \
+            static constexpr auto id = Default::log_id;                                           \
+            Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);             \
+        }                                                                                         \
+        else {                                                                                    \
+            sink(args...);                                                                        \
+        }                                                                                         \
     }                                                                                             \
     /** Log to custom log with given log level */                                                 \
     template <typename Log, typename... Args> void NAME(Args... args) {                           \
-        static constexpr auto id = Log::log_id;                                                   \
-        Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);                 \
+        if constexpr (Private::Enabled::NAME) {                                                   \
+            static constexpr auto id = Log::log_id;                                               \
+            Private::backend(id, Private::Level::LEVEL, std::forward<Args>(args)...);             \
+        }                                                                                         \
+        else {                                                                                    \
+            sink(args...);                                                                        \
+        }                                                                                         \
     }
 
 
@@ -44,51 +55,13 @@ namespace Utils {
      */
     namespace Log {
 
-        /** Log to default log */
-        template <typename... Args> void debug(const Args &...args) {
-#if DEBUG
-            static constexpr auto id = Default::log_id;
-            Private::backend(id, Private::Level::Debug, args...);
-#else
-            sink(args...);
-#endif
-        }
-
-        /** Log to custom log */
-        template <typename Log, typename... Args> void debug(const Args &...args) {
-#if DEBUG
-            static constexpr auto id = Log::log_id;
-            Private::backend(id, Private::Level::Debug, args...);
-#else
-            sink(args...);
-#endif
-        }
-
-        /** Verbose log to default log */
-        template <typename... Args> void verbose(const Args &...args) {
-#if defined DEBUG && defined VERBOSE
-            static constexpr auto id = Default::log_id;
-            Private::backend(id, Private::Level::Verbose, args...);
-#else
-            sink(args...);
-#endif
-        }
-
-        /** Verbose log to custom log */
-        template <typename Log, typename... Args> void verbose(const Args &...args) {
-#if defined DEBUG && defined VERBOSE
-            static constexpr auto id = Log::log_id;
-            Private::backend(id, Private::Level::Verbose, args...);
-#else
-            sink(args...);
-#endif
-        }
-
-        // Define other logs
-        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Warning, warning)
-        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Critical, critical)
-        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Error, error)
+        // Define all log functions
+        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Verbose, verbose)
+        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Debug, debug)
         UTILS_PRIVATE_DEFINE_LOG_LEVEL(Info, info)
+        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Warning, warning)
+        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Error, error)
+        UTILS_PRIVATE_DEFINE_LOG_LEVEL(Critical, critical)
 
     } // namespace Log
 

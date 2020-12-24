@@ -1,6 +1,6 @@
 /**
  * @file
-   @brief This file defines Utils::sink
+ * @brief This file defines Utils::sink
  */
 #ifndef __UTILS_SINK_HPP__
 #define __UTILS_SINK_HPP__
