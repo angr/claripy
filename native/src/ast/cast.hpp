@@ -14,7 +14,6 @@
 #include <type_traits>
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     // Forward declarations

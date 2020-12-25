@@ -11,7 +11,6 @@
 #include <sstream>
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** This function takes in a set of arguments, and returns a string that comprises them

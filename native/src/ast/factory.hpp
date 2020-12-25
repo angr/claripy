@@ -15,7 +15,6 @@
 #include <utility>
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     /** A factory used to construct subclasses of AST::RawTypes::Base. Arguments are consumed.

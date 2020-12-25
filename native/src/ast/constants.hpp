@@ -8,7 +8,6 @@
 #include "../constants.hpp"
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     /** Define a type to store hashes */

@@ -12,7 +12,6 @@
 #include <utility>
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** Joins a set of set<T>'s into one

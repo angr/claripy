@@ -13,7 +13,6 @@
 #include <set>
 
 
-/** A namespace used for the ops directory */
 namespace Ops {
 
     /** A map from operations to operations */
@@ -22,24 +21,24 @@ namespace Ops {
     /** A set of operations */
     using OpSet = std::set<Operation>;
 
-    /** These sets classify different Expression operations */
+    // These sets classify different Expression operations
     namespace Expression {
         extern const OpSet arithmetic, comparator, bitwise, set, operations;
     }
 
-    /** These sets classify different Backend operations */
+    // These sets classify different Backend operations
     namespace Backend {
         extern const OpSet comparator, bitwise, boolean, bitmod, creation, symbol_creation,
             vsa_creation, other, arithmetic, operations, operations_vsa_compliant, operations_all,
             fp_cmp, fp, strings;
     }
 
-    /** These sets classify different Length operations */
+    // These sets classify different Length operations
     namespace Length {
         extern const OpSet same, none, change, new_;
     }
 
-    /** These sets classify different Leaf operations */
+    // These sets classify different Leaf operations
     namespace Leaf {
         extern const OpSet operations, concrete, symbolic;
     }
@@ -47,7 +46,7 @@ namespace Ops {
     // Miscellaneous classification sets
     extern const OpSet bin_ops, not_invertible, reverse_distributable, commutative;
 
-    /** These maps operations to related operations */
+    // These maps operations to related operations
     namespace Maps {
         extern const OpMap opposites, reversed, inverse;
     }

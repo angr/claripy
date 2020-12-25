@@ -5,7 +5,6 @@
 #ifndef __OPS_OPERATIONS_ENUM_HPP__
 #define __OPS_OPERATIONS_ENUM_HPP__
 
-/** A namespace used for the ops directory */
 namespace Ops {
 
     /** A type-safe enumeration that enumerates every operation claricpp handles

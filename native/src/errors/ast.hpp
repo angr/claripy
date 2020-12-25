@@ -13,10 +13,9 @@
 #include "../macros.hpp"
 
 
-/** A namespace used for the errors directory */
 namespace Errors {
 
-    /** A namespace used for AST errors */
+    // AST errors
     namespace AST {
 
         /** Base AST exception

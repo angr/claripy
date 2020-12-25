@@ -21,7 +21,6 @@
 #include <vector>
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     // Forward declarations
@@ -32,9 +31,8 @@ namespace AST {
         template <typename A, typename B> class Cache;
     }
 
-    /** A namespace which contains the raw AST types that are constructed via AST::factory
-     *  These classes are unlikely to be accessed directly, but rather should be via a shared_ptr
-     */
+    // These types should be wrapped by a shared pointer when used
+    // A factory is used to construct them and handle hash caching
     namespace RawTypes {
 
         /** This is the base class of all claripy ASTs.

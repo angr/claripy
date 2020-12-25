@@ -14,7 +14,6 @@
 #include <string>
 
 
-/** A namespace used for the errors directory */
 namespace Errors {
 
     class Claricpp : public std::exception {

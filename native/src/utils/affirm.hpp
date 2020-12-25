@@ -10,7 +10,6 @@
 #include <type_traits>
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** If not b, throw T(args...); */

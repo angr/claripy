@@ -10,7 +10,6 @@
 #include <mutex>
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** Thread-safe-ly increment a static number and return the result

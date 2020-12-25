@@ -6,7 +6,6 @@
 #define __UTILS_SINK_HPP__
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** A function that does nothing with it's arguments

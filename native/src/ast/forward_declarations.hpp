@@ -12,7 +12,6 @@
 #include <memory>
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     /** A namespace which contains self-caching classes and things related to AST caching

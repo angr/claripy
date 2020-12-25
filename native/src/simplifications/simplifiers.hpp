@@ -10,108 +10,98 @@
 #include "../ops/operations_enum.hpp"
 
 
-/** A namespace used for the simplifications directory */
-namespace Simplifications {
+namespace Simplifications::Simplifiers {
 
-    /** A namespace which contains the simplifiers */
-    namespace Simplifiers {
+    /************************************************/
+    /*                 Miscellaneous                */
+    /************************************************/
 
-        /************************************************/
-        /*                 Miscellaneous                */
-        /************************************************/
+    /** Return if_true, if_false, or original depending on what cond evaluates to */
+    Simplifier if_;
 
-        /** Return if_true, if_false, or original depending on what cond evaluates to */
-        Simplifier if_;
+    /** @todo document */
+    Simplifier concat;
 
-        /** @todo document */
-        Simplifier concat;
-
-        /** A namespace for bv simplifiers */
-        namespace BV {
-
-            /** @todo document */
-            Simplifier reverse;
-
-        } // namespace BV
-
-        /************************************************/
-        /*                    Shift                     */
-        /************************************************/
-
-        /** A namespace for shift simplifiers */
-        namespace Shift {
-
-            /** @todo document */
-            Simplifier r;
-
-            /** @todo document */
-            Simplifier l;
-
-            /** @todo document */
-            Simplifier lshr;
-
-        } // namespace Shift
-
-        /************************************************/
-        /*                   Equality                   */
-        /************************************************/
+    namespace BV {
 
         /** @todo document */
-        Simplifier eq;
+        Simplifier reverse;
+
+    } // namespace BV
+
+    /************************************************/
+    /*                    Shift                     */
+    /************************************************/
+
+    namespace Shift {
 
         /** @todo document */
-        Simplifier ne;
+        Simplifier r;
 
-        /************************************************/
-        /*                   Boolean                    */
-        /************************************************/
+        /** @todo document */
+        Simplifier l;
 
-        /** A namespace for boolean simplifiers */
-        namespace Boolean {
+        /** @todo document */
+        Simplifier lshr;
 
-            /** @todo document */
-            Simplifier and_;
+    } // namespace Shift
 
-            /** @todo document */
-            Simplifier or_;
+    /************************************************/
+    /*                   Equality                   */
+    /************************************************/
 
-            /** @todo document */
-            Simplifier not_;
+    /** @todo document */
+    Simplifier eq;
 
-        } // namespace Boolean
+    /** @todo document */
+    Simplifier ne;
 
-        /************************************************/
-        /*                   Bitwise                    */
-        /************************************************/
+    /************************************************/
+    /*                   Boolean                    */
+    /************************************************/
 
-        /** A namespace for bitwise simplifiers */
-        namespace Bitwise {
+    namespace Boolean {
 
-            /** @todo document */
-            Simplifier add;
+        /** @todo document */
+        Simplifier and_;
 
-            /** @todo document */
-            Simplifier mul;
+        /** @todo document */
+        Simplifier or_;
 
-            /** @todo document */
-            Simplifier sub;
+        /** @todo document */
+        Simplifier not_;
 
-            /** @todo document */
-            Simplifier xor_minmax;
+    } // namespace Boolean
 
-            /** @todo document */
-            Simplifier or_;
+    /************************************************/
+    /*                   Bitwise                    */
+    /************************************************/
 
-            /** @todo document */
-            Simplifier and_;
+    namespace Bitwise {
 
-            /** @todo document */
-            Simplifier xor_;
+        /** @todo document */
+        Simplifier add;
 
-        } // namespace Bitwise
+        /** @todo document */
+        Simplifier mul;
 
-    } // namespace Simplifiers
+        /** @todo document */
+        Simplifier sub;
 
-} // namespace Simplifications
+        /** @todo document */
+        Simplifier xor_minmax;
+
+        /** @todo document */
+        Simplifier or_;
+
+        /** @todo document */
+        Simplifier and_;
+
+        /** @todo document */
+        Simplifier xor_;
+
+    } // namespace Bitwise
+
+} // namespace Simplifications::Simplifiers
 
 #endif

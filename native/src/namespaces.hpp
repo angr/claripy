@@ -14,7 +14,8 @@ namespace Utils {
     /** A namespace that contains the max functions */
     namespace Max {}
 
-    /** @brief A namespace used for logging functions
+    /** A namespace used for logging functions
+     *
      *  Unless otherwise specified, each public logging function in this namespace takes in
      *  whatever arguments it is given by copy, and returns void. There are no restrictions on
      *  what types of arguments, or how many arguments are given, other than that the '<<'
@@ -25,6 +26,7 @@ namespace Utils {
     namespace Log {
 
         /** A namespace used to designate certain items in Utils::Log as private
+         *
          *  These functions should not be called outside of Utils::Log members
          */
         namespace Private {}
@@ -35,27 +37,29 @@ namespace Utils {
         /** A namespace used for log styles */
         namespace Style {}
 
-    }
+    } // namespace Log
 
-}
+} // namespace Utils
 
 
 /** A namespace used for the ast directory */
 namespace AST {
 
-    /** @brief A namespace used to designate certain items in ast as private
+    /** A namespace used to designate certain items in ast as private
+     *
      *  These functions should not be called outside of the ast directory
      *  This is useful for helper functions templated functions call
      */
     namespace Private {}
 
-    /** @breif A namespace which contains the raw AST types that are factory constructed
+    /** A namespace which contains the raw AST types that are factory constructed
+     *
      *  These classes are unlikely to be accessed directly, but rather should be via a
      *  shared_ptr
      */
     namespace RawTypes {}
 
-}
+} // namespace AST
 
 
 /** A namespace used for the errors directory */
@@ -67,63 +71,71 @@ namespace Errors {
     /** A namespace used exceptions to be passed back to python */
     namespace Python {}
 
-    /** @brief A namespace used for unexpected errors
+    /** A namespace used for unexpected errors
+     *
      *  These should never be thrown; they indicate an error with the code
      */
     namespace Unexpected {}
 
-
-    /** A namespace used for the ops directory */
-    namespace Ops {
-
-        /** These sets classify different Expression operations */
-        namespace Expression {}
-
-        /** These sets classify different Backend operations */
-        namespace Backend {}
-
-        /** These sets classify different Length operations */
-        namespace Length {}
-
-        /** These sets classify different Leaf operations */
-        namespace Leaf {}
-
-        /** These maps operations to related operations */
-        namespace Maps {}
-
-    } // namespace Ops
+} // namespace Errors
 
 
-    /** A namespace used for the simplifications directory */
-    namespace Simplifications {
+/** A namespace used for the ops directory */
+namespace Ops {
 
-        /** A namespace used to designate certain items in simplifications as private
-         *  These functions should not be called outside of the simplifications directory
-         */
-        namespace Private {}
+    /** These sets classify different Expression operations */
+    namespace Expression {}
 
-        /** A namespace which contains the simplifiers */
-        namespace Simplifiers {
+    /** These sets classify different Backend operations */
+    namespace Backend {}
 
-            /** A namespace for bv simplifiers */
-            namespace BV {}
+    /** These sets classify different Length operations */
+    namespace Length {}
 
-            /** A namespace for shift simplifiers */
-            namespace Shift {}
+    /** These sets classify different Leaf operations */
+    namespace Leaf {}
 
-            /** A namespace for boolean simplifiers */
-            namespace Boolean {}
+    /** These maps operations to related operations */
+    namespace Maps {}
 
-            /** A namespace for bitwise simplifiers */
-            namespace Bitwise {}
-
-        } // namespace Simplifiers
-
-    } // namespace Simplifications
+} // namespace Ops
 
 
-    /** A namespace used for the annotations directory */
-    namespace Annotation {}
+/** A namespace used for the simplifications directory */
+namespace Simplifications {
+
+    /** A namespace used to designate certain items in simplifications as private
+     *
+     *  These functions should not be called outside of the simplifications directory
+     */
+    namespace Private {}
+
+    /** A namespace which contains the simplifiers */
+    namespace Simplifiers {
+
+        /** A namespace for bv simplifiers */
+        namespace BV {}
+
+        /** A namespace for shift simplifiers */
+        namespace Shift {}
+
+        /** A namespace for boolean simplifiers */
+        namespace Boolean {}
+
+        /** A namespace for bitwise simplifiers */
+        namespace Bitwise {}
+
+    } // namespace Simplifiers
+
+} // namespace Simplifications
+
+
+/** A namespace used for the annotations directory */
+namespace Annotation {}
+
+
+/** A namespace used for unittesting instrumentation used in src */
+namespace Unittest {}
 
 
 /** Disable compilation */

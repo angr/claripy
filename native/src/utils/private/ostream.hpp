@@ -10,34 +10,23 @@
 #include <set>
 
 
-/** A namespace used for the utils directory */
-namespace Utils {
+namespace Utils::Private {
 
-    /** A namespace used to designate certain items in utils as private
-     *  These functions should not be called outside of the utils directory
-     *  This is useful for helper functions templated functions call
+    /** An ostream wrapper that can be passed to Utils::apply
+     *  This allows passing around a class rather than templated functions directly
      */
-    namespace Private {
+    struct OStreamConst {
 
-        /** An ostream wrapper that can be passed to Utils::apply
-         *  This allows passing around a class rather than templated functions directly
-         */
-        struct OStreamConst {
+        /** A function which wraps the ostream operator but returns nothing */
+        template <typename T, typename U> static void f(T &left, const U &right) { left << right; }
 
-            /** A function which wraps the ostream operator but returns nothing */
-            template <typename T, typename U> static void f(T &left, const U &right) {
-                left << right;
-            }
+      private:
+        /** Disable construction */
+        DELETE_DEFAULTS(OStreamConst)
+        /** Disable destruction */
+        ~OStreamConst() = delete;
+    };
 
-          private:
-            /** Disable construction */
-            DELETE_DEFAULTS(OStreamConst)
-            /** Disable destruction */
-            ~OStreamConst() = delete;
-        };
-
-    } // namespace Private
-
-} // namespace Utils
+} // namespace Utils::Private
 
 #endif

@@ -12,7 +12,6 @@
 #include <utility>
 
 
-/** A namespace used for the annotations directory */
 namespace Annotation {
 
     /** Annotations are used to achieve claripy's goal of being an arithmetic instrumentation

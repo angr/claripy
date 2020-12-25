@@ -8,7 +8,6 @@
 #include "../ast/forward_declarations.hpp"
 
 
-/** A namespace used for the simplifications directory */
 namespace Simplifications {
 
     /** Simplify old and return the result */

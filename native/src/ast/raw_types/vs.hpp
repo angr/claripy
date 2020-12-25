@@ -8,12 +8,10 @@
 #include "bits.hpp"
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
-    /** A namespace which contains the raw AST types that are constructed via AST::factory
-     *  These classes are unlikely to be accessed directly, but rather should be via a shared_ptr
-     */
+    // These types should be wrapped by a shared pointer when used
+    // A factory is used to construct them and handle hash caching
     namespace RawTypes {
 
         /** An AST representing a value set */

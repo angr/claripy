@@ -11,19 +11,11 @@
 #include <map>
 
 
-/** A namespace used for the simplifications directory */
-namespace Simplifications {
+namespace Simplifications::Private {
 
-    /** A namespace used to designate certain items in simplifications as private
-     *  These functions should not be called outside of the simplifications directory
-     */
-    namespace Private {
+    /** A map which maps operations to a simplifiers that can handle it */
+    extern const std::map<Ops::Operation, Simplifier &> op_map;
 
-        /** A map which maps operations to a simplifiers that can handle it */
-        extern const std::map<Ops::Operation, Simplifier &> op_map;
-
-    } // namespace Private
-
-} // namespace Simplifications
+} // namespace Simplifications::Private
 
 #endif

@@ -11,7 +11,7 @@
 using namespace AST;
 
 
-namespace Tests::Native {
+namespace UnitTest {
     /** A struct used to give friend access to unittests */
     struct ClaricppUnitTest {
         /** size_type abbreviation */
@@ -21,7 +21,7 @@ namespace Tests::Native {
         /** Get the cache size */
         SizeType size() { return AST::Private::factory_cache.cache.size(); }
     };
-} // namespace Tests::Native
+} // namespace UnitTest
 
 /** Construct a Base */
 template <typename T> T construct(const int n, std::set<BackendID> s = std::set<BackendID>()) {
@@ -42,8 +42,8 @@ std::vector<T> construct_range(const unsigned int lb, const unsigned int ub) {
 
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
 int cache_gc() {
-    Tests::Native::ClaricppUnitTest cache;
-    const Tests::Native::ClaricppUnitTest::SizeType init = cache.gc_resize;
+    UnitTest::ClaricppUnitTest cache;
+    const UnitTest::ClaricppUnitTest::SizeType init = cache.gc_resize;
     int n = 0;
 
     // Sanity check

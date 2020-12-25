@@ -11,44 +11,26 @@
 
 
 /** A namespace used for the utils directory */
-namespace Utils {
+namespace Utils::Log::Style {
 
-    /** A namespace used for logging functions
-     *  Unless otherwise specified, each function in this namespace takes in const reference
-     *  arguments and returns void. There are no restrictions on what types of arguments,
-     *  or how many arguments are given, other than that the '<<' stream operator must be defined
-     *  for the type. Optionally, a class can be provided as an extra template argument to log. If
-     *  it is provided the log written to will be a custom log related to that particular class.
-     *  The Log class must have a static constexpr const char * const log_id definded.
-     *  If no custom log is specified a default log is used.
+    /** The base log style class
+     *  All log styles must subclass this
+     *  Log functions must implement
      */
-    namespace Log {
+    struct AbstractBase {
+        /** Format the log message
+         *  Ownership of raw is transferred
+         */
+        virtual std::string operator()(const Level &lvl, std::ostringstream &raw) const;
 
-        /** A namespace used for log styles */
-        namespace Style {
+      protected:
+        /** Force this class to be purely abstract
+         *  We do not declare the operator()=0 because we want to use this class
+         * as if it were instantiatable
+         */
+        AbstractBase();
+    };
 
-            /** The base log style class
-             *  All log styles must subclass this
-             *  Log functions must implement
-             */
-            struct AbstractBase {
-                /** Format the log message
-                 *  Ownership of raw is transferred
-                 */
-                virtual std::string operator()(const Level &lvl, std::ostringstream &raw) const;
-
-              protected:
-                /** Force this class to be purely abstract
-                 *  We do not declare the operator()=0 because we want to use this class
-                 * as if it were instantiatable
-                 */
-                AbstractBase();
-            };
-
-        } // namespace Style
-
-    } // namespace Log
-
-} // namespace Utils
+} // namespace Utils::Log::Style
 
 #endif

@@ -8,7 +8,6 @@
 #include "../macros.hpp"
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** An unconstructable class */

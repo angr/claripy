@@ -8,7 +8,6 @@
 #include "base.hpp"
 
 
-/** A namespace used for the annotations directory */
 namespace Annotation {
 
     /** A built-in annotation */

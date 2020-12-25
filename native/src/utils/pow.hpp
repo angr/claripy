@@ -12,7 +12,6 @@
 #include <type_traits>
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** A compile-time pow function that only allows integral powers

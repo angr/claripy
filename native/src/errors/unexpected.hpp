@@ -11,10 +11,10 @@
 #include "../macros.hpp"
 
 
-/** A namespace used for the errors directory */
 namespace Errors {
 
-    /** A namespace used for unexpected errors */
+    // Errors that indicate a code issue
+    // These should never be thrown unless a claricpp bug occurs
     namespace Unexpected {
 
         /** Base unexpected exception

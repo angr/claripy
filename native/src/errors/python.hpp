@@ -13,10 +13,9 @@
 #include "../macros.hpp"
 
 
-/** A namespace used for the errors directory */
 namespace Errors {
 
-    /** A namespace used for python errors */
+    // Exceptions that should be passed back to python
     namespace Python {
 
         /** Base Python exception

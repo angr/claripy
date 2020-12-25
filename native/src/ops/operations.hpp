@@ -10,7 +10,5 @@
 /*                         Length Checkers                          */
 /********************************************************************/
 
-/** A namespace used for the ops directory */
-namespace Ops {}
 
 #endif

@@ -6,7 +6,6 @@
 #define __UTILS_APPLYSTREAM_HPP__
 
 
-/** A namespace used for the utils directory */
 namespace Utils {
 
     /** For each arg, do f(base, arg[i]) starting with i = 0

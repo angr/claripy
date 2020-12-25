@@ -8,7 +8,6 @@
 #include <cstdint>
 
 
-/** A namespace that defines constants */
 namespace Constants {
 
     /** A signed integer type that is consistent across all of claricpp

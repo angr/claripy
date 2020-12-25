@@ -10,7 +10,6 @@
 #include "../constants.hpp"
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     // Forward declarations
@@ -18,10 +17,7 @@ namespace AST {
         class Base;
     }
 
-    /** A namespace used to designate certain items in ast as private
-     *  These functions should not be called outside of the ast directory
-     *  This is useful for helper functions templated functions call
-     */
+    // The following should not be used outside of the ast directory
     namespace Private {
 
         /** Define a cache the AST factory can use */

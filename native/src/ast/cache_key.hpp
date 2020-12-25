@@ -11,7 +11,6 @@
 #include <string>
 
 
-/** A namespace used for the ast directory */
 namespace AST {
 
     // Forward declarations
