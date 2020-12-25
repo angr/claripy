@@ -20,7 +20,7 @@ namespace Utils::Log::Backend {
     } // namespace Private
 
     /** Set the Log backend to a new T constructed with arguments: args */
-    template <typename T, typename... Args> void set(const Args &...args) {
+    template <typename T, typename... Args> void set(Args &...args) {
         Private::set(std::shared_ptr<AbstractBase>(new T(args...)));
     }
 

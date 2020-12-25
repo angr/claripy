@@ -21,7 +21,7 @@ namespace Utils::Log::Style {
 
     /** Set the logging style to a new T constructed with arguments: args */
     template <typename T, typename... Args> void set(const Args &...args) {
-        Private::set(new T(args...));
+        Private::set(std::shared_ptr<AbstractBase>(new T(args...)));
     }
 
     /** Return a copy of the style */
