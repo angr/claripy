@@ -157,7 +157,7 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
 	set(INFO_LOG OFF)
 endif()
 
-# Log config
+# Log overrides
 if (VERBOSE_LOG)
 	set(DEBUG_LOG ON)
 endif()
@@ -167,6 +167,19 @@ if (DEBUG_LOG)
 	set(WARNING_LOG ON)
 	set(CRITICAL_LOG ON)
 endif()
+
+# Log config
+function(LOG_DEFINE LG)
+	if("${${LG}}")
+		add_definitions("-D${LG}")
+	endif()
+endfunction()
+LOG_DEFINE(VERBOSE_LOG)
+LOG_DEFINE(DEBUG_LOG)
+LOG_DEFINE(INFO_LOG)
+LOG_DEFINE(WARNING_LOG)
+LOG_DEFINE(ERROR_LOG)
+LOG_DEFINE(CRITICAL_LOG)
 
 # Enable testing
 if(ENABLE_TESTING)
