@@ -6,8 +6,7 @@
 #define __UTILS_POW_HPP__
 
 #include "affirm.hpp"
-
-#include "../errors/unexpected.hpp"
+#include "error.hpp"
 
 #include <type_traits>
 
@@ -21,8 +20,8 @@ namespace Utils {
     constexpr Base pow(const Base base, const Power power) {
         static_assert(std::is_arithmetic<Base>::value, "Utils::pow Base must be a number");
         static_assert(std::is_integral<Power>::value, "Utils::pow Power must be integral");
-        affirm<Errors::Unexpected::IncorrectUsage>(power >= 0,
-                                                   "Utils::pow: power must be non-negative");
+        affirm<Error::Unexpected::IncorrectUsage>(power >= 0,
+                                                  "Utils::pow: power must be non-negative");
         if (power == 0) {
             return 1;
         }

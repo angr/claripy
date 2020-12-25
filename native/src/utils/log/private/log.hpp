@@ -8,10 +8,11 @@
 #include "../../../constants.hpp"
 #include "../../apply.hpp"
 #include "../../private/ostream.hpp"
-#include "../../to_str.hpp"
-#include "../backend/access.hpp"
+#include "../backend.hpp"
 #include "../level.hpp"
-#include "../style/access.hpp"
+#include "../style.hpp"
+
+#include <sstream>
 
 
 namespace Utils::Log::Private {

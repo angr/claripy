@@ -9,8 +9,6 @@
 #include "private/factory_cache.hpp"
 #include "private/raw.hpp"
 
-#include "../errors/unexpected.hpp"
-
 #include <memory>
 #include <utility>
 

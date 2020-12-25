@@ -6,9 +6,7 @@
 #define __AST_PRIVATE_CACHE_HPP__
 
 #include "../../unittest.hpp"
-#include "../../utils/log.hpp"
-#include "../../utils/max.hpp"
-#include "../../utils/pow.hpp"
+#include "../../utils.hpp"
 
 #include <algorithm>
 #include <map>

@@ -41,6 +41,20 @@ namespace Utils {
 
     } // namespace ANSIColorCodes
 
+    /** A namespace used for the util's errors directory */
+    namespace Error {
+
+        /** A namespace used exceptions to be passed back to python */
+        namespace Python {}
+
+        /** A namespace used for unexpected errors
+         *
+         *  These should never be thrown; they indicate an error with the code
+         */
+        namespace Unexpected {}
+
+    } // namespace Error
+
     /** A namespace used for logging functions
      *
      *  Unless otherwise specified, each public logging function in this namespace takes in
@@ -109,15 +123,6 @@ namespace Errors {
 
     /** A namespace used for AST errors */
     namespace AST {}
-
-    /** A namespace used exceptions to be passed back to python */
-    namespace Python {}
-
-    /** A namespace used for unexpected errors
-     *
-     *  These should never be thrown; they indicate an error with the code
-     */
-    namespace Unexpected {}
 
 } // namespace Errors
 

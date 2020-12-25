@@ -20,15 +20,16 @@ add_library("${SHARED_LIB_NAME}" SHARED
 		./ast/raw_types/bits.cpp
 		./ast/raw_types/string.cpp
 	# Utils
+		./utils/errors/claricpp.cpp
 		# Log
 		./utils/log/level_map.cpp
 			# Style
-			./utils/log/style/level_timestamp_message.cpp
-			./utils/log/style/access.cpp
+			./utils/log/styles/level_timestamp_message.cpp
+			./utils/log/styles/access.cpp
 			# Backend
-			./utils/log/backend/access.cpp
-			./utils/log/backend/ostream.cpp
-			./utils/log/backend/clog.cpp
+			./utils/log/backends/access.cpp
+			./utils/log/backends/ostream.cpp
+			./utils/log/backends/clog.cpp
 	# Annotations
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp
@@ -39,8 +40,6 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./simplifications/private/op_map.cpp
 	./simplifications/simplifiers.cpp
 	./simplifications/simplify.cpp
-	# Errors
-	./errors/claricpp.cpp
 )
 
 # Link additional libraries

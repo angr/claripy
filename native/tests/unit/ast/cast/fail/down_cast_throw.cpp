@@ -4,7 +4,6 @@
 #include "src/ast/cast.hpp"
 #include "src/ast/factory.hpp"
 #include "src/ast/int.hpp"
-#include "src/errors/unexpected.hpp"
 #include "src/ops/operations_enum.hpp"
 
 #include <set>
@@ -26,7 +25,7 @@ int down_cast_throw() {
     try {
         Int b = down_cast_throw_on_fail<Int>(a);
     }
-    catch (Errors::Unexpected::BadCast &e) {
+    catch (Utils::Error::Unexpected::BadCast &e) {
         return 0;
     }
     return 1;

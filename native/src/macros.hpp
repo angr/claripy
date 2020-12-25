@@ -17,11 +17,22 @@
 
 /** A macro used to define a derived class that inherets its parent's constructors
  *  The body of this class is otherwise empty
+ *  This macro requires SUPER be in the same namespace
  */
 #define DEFINE_SUBCLASS_WITH_CONSTRUCTOR(DERIVED, SUPER)                                          \
     struct DERIVED : public SUPER {                                                               \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
+    };
+
+/** A macro used to define a derived class that inherets its parent's constructors
+ *  The body of this class is otherwise empty
+ *  This macro does not require SUPER be in the same namespace
+ */
+#define DEFINE_NAMESPACED_SUBCLASS_WITH_CONSTRUCTOR(DERIVED, SUPER, NS)                           \
+    struct DERIVED : public NS::SUPER {                                                           \
+        /** Inherit constructors */                                                               \
+        using NS::SUPER::SUPER;                                                                   \
     };
 
 /** A macro to convert a macro result into a string */

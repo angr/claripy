@@ -20,7 +20,7 @@ RawTypes::String::String(const Hash h, const Ops::Operation o) : RawTypes::Bits(
 
 /* String RawTypes::String::Concrete(const std::string & value, const Constants::Int length) { */
 /* 	if (value.length() > length) { */
-/* 		throw Errors::Python::ValueError("Can't make a concrete string value longer than
+/* 		throw Error::Python::ValueError("Can't make a concrete string value longer than
  * the specified length!"); */
 /* 	} */
 /* 	return RawTypes::String::factory(Op::StringV, (value, len(value)), length=length, **kwargs)

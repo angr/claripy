@@ -5,16 +5,16 @@
  * via a different method.
  * @todo Document method when known
  */
-#ifndef __ERRORS_CLARICPP_HPP__
-#define __ERRORS_CLARICPP_HPP__
+#ifndef __UTILS_ERRORS_CLARICPP_HPP__
+#define __UTILS_ERRORS_CLARICPP_HPP__
 
-#include "../utils/to_str.hpp"
+#include "../to_str.hpp"
 
 #include <exception>
 #include <string>
 
 
-namespace Errors {
+namespace Utils::Error {
 
     class Claricpp : public std::exception {
       public:
@@ -38,6 +38,6 @@ namespace Errors {
         template <typename T, typename S> friend T factory(const S msg);
     };
 
-} // namespace Errors
+} // namespace Utils::Error
 
 #endif

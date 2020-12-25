@@ -8,9 +8,8 @@
 #ifndef __ERRORS_AST_HPP__
 #define __ERRORS_AST_HPP__
 
-#include "claricpp.hpp"
-
 #include "../macros.hpp"
+#include "../utils.hpp"
 
 
 namespace Errors {
@@ -21,7 +20,7 @@ namespace Errors {
         /** Base AST exception
          *  All AST exceptions must derive from this
          */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp)
+        DEFINE_NAMESPACED_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp, Utils::Error)
 
         /** @todo document */
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Balancer, Base)

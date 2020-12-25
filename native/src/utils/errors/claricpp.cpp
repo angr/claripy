@@ -5,7 +5,7 @@
 
 
 // For clarity
-using namespace Errors;
+using namespace Utils::Error;
 
 
 const char *Claricpp::what() const throw() {

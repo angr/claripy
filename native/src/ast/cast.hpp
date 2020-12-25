@@ -7,8 +7,7 @@
 
 #include "private/raw.hpp"
 
-#include "../errors/unexpected.hpp"
-#include "../utils/affirm.hpp"
+#include "../utils.hpp"
 
 #include <memory>
 #include <type_traits>
@@ -58,11 +57,11 @@ namespace AST {
      *	@todo Improve error message
      */
     template <typename To, typename From> To down_cast_throw_on_fail(const From &f) {
-        Utils::affirm<Errors::Unexpected::IncorrectUsage>(
+        Utils::affirm<Utils::Error::Unexpected::IncorrectUsage>(
             f != nullptr, __func__, " called with incorrect usage: f == nullptr",
             "\tFile: " __FILE__ "\n\tLine: " MACRO_TO_STRING(__LINE__));
         To ret = down_cast<To>(f);
-        Utils::affirm<Errors::Unexpected::BadCast>(
+        Utils::affirm<Utils::Error::Unexpected::BadCast>(
             ret,
             "dynamic_pointer_cast within AST::factory failed.\n"
             "\tFile: " __FILE__ "\n\tLine: ",

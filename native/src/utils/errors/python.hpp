@@ -10,10 +10,10 @@
 
 #include "claricpp.hpp"
 
-#include "../macros.hpp"
+#include "../../macros.hpp"
 
 
-namespace Errors {
+namespace Utils::Error {
 
     // Exceptions that should be passed back to python
     namespace Python {
@@ -27,6 +27,6 @@ namespace Errors {
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(ValueError, Base)
     } // namespace Python
 
-} // namespace Errors
+} // namespace Utils::Error
 
 #endif

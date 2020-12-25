@@ -1,9 +1,9 @@
 /** @file */
 #include "level_timestamp_message.hpp"
 
-#include "../../../errors/unexpected.hpp"
 #include "../../affirm.hpp"
 #include "../../ansi_color_codes.hpp"
+#include "../../error.hpp"
 #include "../level_map.hpp"
 
 #include <ctime>
@@ -15,7 +15,7 @@
 using namespace Utils;
 using namespace Log;
 using namespace Style;
-using namespace Errors::Unexpected;
+using namespace Error::Unexpected;
 
 
 inline const char *name(const Level &lvl, Constants::CCSC fname) {

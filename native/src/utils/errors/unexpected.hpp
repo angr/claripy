@@ -8,10 +8,10 @@
 
 #include "claricpp.hpp"
 
-#include "../macros.hpp"
+#include "../../macros.hpp"
 
 
-namespace Errors {
+namespace Utils::Error {
 
     // Errors that indicate a code issue
     // These should never be thrown unless a claricpp bug occurs
@@ -30,6 +30,6 @@ namespace Errors {
 
     } // namespace Unexpected
 
-} // namespace Errors
+} // namespace Utils::Error
 
 #endif
