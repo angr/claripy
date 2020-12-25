@@ -8,6 +8,8 @@
 #include "../../../constants.hpp"
 #include "../level.hpp"
 
+#include <string>
+
 
 namespace Utils::Log::Backend {
 

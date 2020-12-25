@@ -8,7 +8,6 @@
 #ifndef __ERRORS_AST_HPP__
 #define __ERRORS_AST_HPP__
 
-#include "../macros.hpp"
 #include "../utils.hpp"
 
 

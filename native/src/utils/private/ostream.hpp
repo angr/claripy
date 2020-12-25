@@ -7,8 +7,6 @@
 
 #include "../../macros.hpp"
 
-#include <set>
-
 
 namespace Utils::Private {
 

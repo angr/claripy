@@ -5,7 +5,6 @@
 #ifndef __UTILS_LOG_LOG_HPP__
 #define __UTILS_LOG_LOG_HPP__
 
-#include "level.hpp"
 #include "macros.hpp"
 #include "private/level_config.hpp"
 #include "private/send_to_backend.hpp"

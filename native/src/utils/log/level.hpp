@@ -5,8 +5,6 @@
 #ifndef __UTILS_LOG_LEVEL_HPP__
 #define __UTILS_LOG_LEVEL_HPP__
 
-#include <map>
-
 
 namespace Utils::Log {
 

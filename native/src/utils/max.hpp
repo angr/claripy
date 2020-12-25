@@ -5,9 +5,6 @@
 #ifndef __UTILS_MAX_HPP__
 #define __UTILS_MAX_HPP__
 
-#include <set>
-#include <type_traits>
-
 
 namespace Utils::Max {
 

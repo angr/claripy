@@ -6,9 +6,6 @@
 #ifndef __UTILS_AFFIRM_HPP__
 #define __UTILS_AFFIRM_HPP__
 
-#include <set>
-#include <type_traits>
-
 
 namespace Utils {
 

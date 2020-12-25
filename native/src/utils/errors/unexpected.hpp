@@ -8,8 +8,6 @@
 
 #include "claricpp.hpp"
 
-#include "../../macros.hpp"
-
 
 namespace Utils::Error {
 
