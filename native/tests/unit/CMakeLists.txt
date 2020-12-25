@@ -62,4 +62,5 @@ endfunction()
 set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Add test cases
+add_subdirectory(./log)
 add_subdirectory(./ast)
