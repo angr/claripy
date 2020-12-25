@@ -13,7 +13,8 @@ namespace Utils::Log::Style {
     /** The default log style class */
     struct LevelTimestampMessage : public AbstractBase {
         /** Format the log message */
-        std::string operator()(const Level &lvl, std::ostringstream &raw) const override final;
+        std::string operator()(Constants::CCSC, const Level &lvl,
+                               std::ostringstream &raw) const override final;
     };
 
 } // namespace Utils::Log::Style

@@ -5,6 +5,7 @@
 #ifndef __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
 #define __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
 
+#include "../../../constants.hpp"
 #include "../level.hpp"
 
 
@@ -18,7 +19,8 @@ namespace Utils::Log::Style {
         /** Format the log message
          *  Ownership of raw is transferred
          */
-        virtual std::string operator()(const Level &lvl, std::ostringstream &raw) const;
+        virtual std::string operator()(Constants::CCSC log_id, const Level &lvl,
+                                       std::ostringstream &raw) const;
 
       protected:
         /** Force this class to be purely abstract
