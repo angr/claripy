@@ -8,8 +8,6 @@
 #include "affirm.hpp"
 #include "error.hpp"
 
-#include <type_traits>
-
 
 namespace Utils {
 
