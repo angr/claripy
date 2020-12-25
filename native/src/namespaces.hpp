@@ -28,14 +28,14 @@ namespace Utils {
         namespace Bold {}
         /** Underlined color codes */
         namespace Underline {}
-        /** High Boolcolor codes */
+        /** High Bool color codes */
         namespace HighIntensity {
-            /** High Intensity Bold */
+            /** HighIntensity Bold */
             namespace Bold {}
         } // namespace HighIntensity
         /** Background color codes */
         namespace Background {
-            /** High Intensity Background color codes */
+            /** HighIntensity Background color codes */
             namespace HighIntensity {}
         } // namespace Background
 

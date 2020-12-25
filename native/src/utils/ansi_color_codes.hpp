@@ -8,7 +8,7 @@
 #include "../constants.hpp"
 
 
-namespace Private::ANSIColorCodes {
+namespace Utils::ANSIColorCodes {
 
     // Clear color codes
     constexpr Constants::CCSC reset = "\e[0m";
@@ -95,6 +95,6 @@ namespace Private::ANSIColorCodes {
 
     } // namespace Background
 
-} // namespace Private::ANSIColorCodes
+} // namespace Utils::ANSIColorCodes
 
 #endif
