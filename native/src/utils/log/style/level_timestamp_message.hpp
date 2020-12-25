@@ -10,11 +10,11 @@
 
 namespace Utils::Log::Style {
 
-    /** The default log style class */
+    /** A Log Style whcih prints out the log level, a timestamp, and the message */
     struct LevelTimestampMessage : public AbstractBase {
+
         /** Format the log message */
-        std::string operator()(Constants::CCSC, const Level &lvl,
-                               std::ostringstream &raw) const override final;
+        std::string str(Constants::CCSC, const Level &lvl, const std::ostringstream &raw);
     };
 
 } // namespace Utils::Log::Style

@@ -24,10 +24,8 @@ add_library("${SHARED_LIB_NAME}" SHARED
 		./utils/log/level_map.cpp
 			# Style
 			./utils/log/style/level_timestamp_message.cpp
-			./utils/log/style/abstract_base.cpp
 			./utils/log/style/access.cpp
 			# Backend
-			./utils/log/backend/abstract_base.cpp
 			./utils/log/backend/access.cpp
 			./utils/log/backend/ostream.cpp
 			./utils/log/backend/cout.cpp

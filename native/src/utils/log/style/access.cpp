@@ -13,15 +13,15 @@ using Sty = Style::AbstractBase;
 
 // File local variables
 static std::shared_mutex style_lock;
-static Style::AbstractBase style = Style::Default();
-;
+static std::shared_ptr<Sty> style(new Style::Default());
 
-void Style::set(Sty s) {
+
+void Style::Private::set(std::shared_ptr<Sty> &&s) {
     std::unique_lock<decltype(style_lock)> l(style_lock);
     style = s;
 }
 
-Sty Style::get() {
+std::shared_ptr<Sty> Style::get() {
     std::shared_lock<decltype(style_lock)> l(style_lock);
     return style;
 }

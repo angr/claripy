@@ -7,14 +7,25 @@
 
 #include "abstract_base.hpp"
 
+#include <memory>
+
 
 namespace Utils::Log::Backend {
 
-    /** Set the Log backend by copy */
-    void set(AbstractBase b);
+    namespace Private {
+
+        /** Set the Log backend */
+        void set(std::shared_ptr<AbstractBase> &&b);
+
+    } // namespace Private
+
+    /** Set the Log backend to a new T constructed with arguments: args */
+    template <typename T, typename... Args> void set(const Args &...args) {
+        Private::set(std::shared_ptr<AbstractBase>(new T(args...)));
+    }
 
     /** Return a copy of the backend */
-    AbstractBase get();
+    std::shared_ptr<AbstractBase> get();
 
 } // namespace Utils::Log::Backend
 

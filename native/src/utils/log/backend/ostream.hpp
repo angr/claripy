@@ -17,17 +17,20 @@ namespace Utils::Log::Backend {
      */
     struct OStream : public AbstractBase {
 
-        /** Log the message */
-        void operator()(Constants::CCSC id, const Level &lvl,
-                        const std::string &msg) const override final;
-
-      protected:
-        /** Require subclass to construct */
+        /** Constructor */
         OStream(const std::ostream &s);
 
+        /** Default pure virtual destructor */
+        ~OStream() = default;
+
+        /** Log the message */
+        void log(Constants::CCSC id, const Level &lvl, const std::string &msg) override final;
+
       private:
-        /** The stream we write to */
-        const std::ostream stream;
+        /** The stream we write to
+         *  Declared as mutable to allow writing to the stream from const methods
+         */
+        std::ostream stream;
 
         /** Delete default constructor */
         OStream() = delete;

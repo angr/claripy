@@ -44,10 +44,20 @@ namespace Utils {
         } // namespace Private
 
         /** A namespace used for log styles */
-        namespace Style {}
+        namespace Style {
+
+            /** A namespace used for private members of style */
+            namespace Private {}
+
+        } // namespace Style
 
         /** A namespace used for log backends */
-        namespace Backend {}
+        namespace Backend {
+
+            /** A namespace used for private members of backend */
+            namespace Private {}
+
+        } // namespace Backend
 
     } // namespace Log
 

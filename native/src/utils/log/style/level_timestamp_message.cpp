@@ -24,8 +24,8 @@ inline const char *name(const Level &lvl, Constants::CCSC fname) {
 }
 
 // Return "<level>: <timestamp>: <raw>"
-std::string LevelTimestampMessage::operator()(Constants::CCSC, const Level &lvl,
-                                              std::ostringstream &raw) const {
+std::string LevelTimestampMessage::str(Constants::CCSC, const Level &lvl,
+                                       const std::ostringstream &raw) {
     // Get time
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);

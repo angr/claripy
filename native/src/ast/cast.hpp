@@ -60,7 +60,7 @@ namespace AST {
     template <typename To, typename From> To down_cast_throw_on_fail(const From &f) {
         Utils::affirm<Errors::Unexpected::IncorrectUsage>(
             f != nullptr, __func__, " called with incorrect usage: f == nullptr",
-            "\tFile: " __FILE__ "\n\tLine: ", __LINE__);
+            "\tFile: " __FILE__ "\n\tLine: " MACRO_TO_STRING(__LINE__));
         To ret = down_cast<To>(f);
         Utils::affirm<Errors::Unexpected::BadCast>(
             ret,

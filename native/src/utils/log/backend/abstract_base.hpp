@@ -13,19 +13,15 @@ namespace Utils::Log::Backend {
 
     /** The base backend class
      *  All Log backend must subclass this
-     *  The subclass must implement the () operator defined below
+     *  The subclass must implement the log function defined below
      */
     struct AbstractBase {
-        /** Log the given message, level, to the correct log given by log_id */
-        virtual void operator()(Constants::CCSC id, const Level &lvl,
-                                const std::string &msg) const;
 
-      protected:
-        /** Force this class to be purely abstract
-         *  We do not declare the operator()=0 because we want to use this class
-         *  as if it were instantiatable
-         */
-        AbstractBase();
+        /** Default virtual destructor */
+        virtual ~AbstractBase() = default;
+
+        /** Log the given message, level, to the correct log given by log_id */
+        virtual void log(Constants::CCSC id, const Level &lvl, const std::string &msg) = 0;
     };
 
 } // namespace Utils::Log::Backend
