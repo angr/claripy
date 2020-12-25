@@ -25,7 +25,7 @@ namespace Ops {
     /** These sets classify different Expression operations */
     namespace Expression {
         extern const OpSet arithmetic, comparator, bitwise, set, operations;
-    };
+    }
 
     /** These sets classify different Backend operations */
     namespace Backend {

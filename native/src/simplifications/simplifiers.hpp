@@ -28,8 +28,10 @@ namespace Simplifications {
 
         /** A namespace for bv simplifiers */
         namespace BV {
+
             /** @todo document */
             Simplifier reverse;
+
         } // namespace BV
 
         /************************************************/
