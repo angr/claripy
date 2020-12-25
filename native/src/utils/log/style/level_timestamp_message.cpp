@@ -35,16 +35,22 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Level &lvl,
     switch (lvl) {
     case Level::Verbose:
         color = ANSIColorCodes::wht;
+        break;
     case Level::Info:
         color = ANSIColorCodes::blu;
+        break;
     case Level::Warning:
         color = ANSIColorCodes::yel;
+        break;
     case Level::Error:
         color = ANSIColorCodes::Bold::mag;
+        break;
     case Level::Critical:
         color = ANSIColorCodes::HighIntensity::Bold::red;
+        break;
     default:
         color = ANSIColorCodes::blk;
+        break;
     }
 
     // Output
