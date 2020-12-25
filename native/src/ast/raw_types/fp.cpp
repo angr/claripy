@@ -15,9 +15,7 @@ using namespace AST;
 /** @todo */
 RawTypes::FP::FP(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0) {}
 
-#include <iostream>
 /** @todo make this actually work */
 Hash RawTypes::FP::hash(const Ops::Operation o) {
-    std::cout << "fp: " << Hash(FP::static_class_id) * Hash(o) << std::endl;
     return Hash(FP::static_class_id) * (1 + Hash(o));
 }

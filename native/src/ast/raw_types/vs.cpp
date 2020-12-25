@@ -16,8 +16,6 @@ using namespace AST;
 RawTypes::VS::VS(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0) {}
 
 /** @todo make this actually work */
-#include <iostream>
 Hash RawTypes::VS::hash(const Ops::Operation o) {
-    std::cout << "vs: " << Hash(VS::static_class_id) * Hash(o) << std::endl;
     return Hash(VS::static_class_id) * (1 + Hash(o));
 }
