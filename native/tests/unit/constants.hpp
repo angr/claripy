@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief Define constants used across unit tests
+ */
 #ifndef __TESTS_NATIVE_CONSTANTS_HPP__
 #define __TESTS_NATIVE_CONSTANTS_HPP__
 

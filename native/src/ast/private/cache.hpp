@@ -118,7 +118,7 @@ namespace AST::Private {
             return std::shared_ptr<Cached>(nullptr);
         }
 
-        /** Remove all weak_ptr's in cache that no longer point to a valid object
+        /** Remove all std::weak_ptr's in cache that no longer point to a valid object
          *  This function is not thread-safe
          * 	@todo improve logging message
          */
@@ -152,7 +152,7 @@ namespace AST::Private {
         static const constexpr typename CacheMap::size_type gc_resize_default =
             Utils::pow(2, 10) - 1;
 
-        /** The size the cache should have weak_ptr's gc'd when it is larger than */
+        /** The size the cache should have std::weak_ptr's gc'd when it is larger than */
         typename CacheMap::size_type gc_resize = gc_resize_default;
 
         /** A mutex used to protect the internal representation */

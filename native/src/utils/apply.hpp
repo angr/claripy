@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines Utils::apply_stream
+ * @brief This file defines Utils::apply
  */
 #ifndef __UTILS_APPLYSTREAM_HPP__
 #define __UTILS_APPLYSTREAM_HPP__

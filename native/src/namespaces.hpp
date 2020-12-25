@@ -14,6 +14,13 @@ namespace Utils {
     /** A namespace that contains the max functions */
     namespace Max {}
 
+    /** A namespace that contains private members of Utils
+     *
+     *  These members should not be called outside of the utils directory
+     *  This is useful for helper functions templated functions call
+     */
+    namespace Private {}
+
     /** A namespace used for logging functions
      *
      *  Unless otherwise specified, each public logging function in this namespace takes in
@@ -27,12 +34,14 @@ namespace Utils {
 
         /** A namespace used to designate certain items in Utils::Log as private
          *
-         *  These functions should not be called outside of Utils::Log members
+         *  These members should not be called outside of Utils::Log members
          */
-        namespace Private {}
+        namespace Private {
 
-        /** A namespace used to hold boolean which determine which logs are enabled */
-        namespace Enabled {}
+            /** A namespace used to hold boolean which determine which logs are enabled */
+            namespace Enabled {}
+
+        } // namespace Private
 
         /** A namespace used for log styles */
         namespace Style {}
@@ -47,15 +56,15 @@ namespace AST {
 
     /** A namespace used to designate certain items in ast as private
      *
-     *  These functions should not be called outside of the ast directory
+     *  These members should not be called outside of the ast directory
      *  This is useful for helper functions templated functions call
      */
     namespace Private {}
 
     /** A namespace which contains the raw AST types that are factory constructed
      *
-     *  These classes are unlikely to be accessed directly, but rather should be via a
-     *  shared_ptr
+     *  These classes are unlikely to be accessed directly, but rather should be via an
+     *  std::shared_ptr
      */
     namespace RawTypes {}
 
@@ -104,25 +113,25 @@ namespace Ops {
 /** A namespace used for the simplifications directory */
 namespace Simplifications {
 
-    /** A namespace used to designate certain items in simplifications as private
+    /** A namespace used to designate certain items in Simplifications as private
      *
-     *  These functions should not be called outside of the simplifications directory
+     *  These members should not be called outside of the simplifications directory
      */
     namespace Private {}
 
     /** A namespace which contains the simplifiers */
     namespace Simplifiers {
 
-        /** A namespace for bv simplifiers */
+        /** A namespace for bv Simplifiers */
         namespace BV {}
 
-        /** A namespace for shift simplifiers */
+        /** A namespace for shift Simplifiers */
         namespace Shift {}
 
-        /** A namespace for boolean simplifiers */
+        /** A namespace for boolean Simplifiers */
         namespace Boolean {}
 
-        /** A namespace for bitwise simplifiers */
+        /** A namespace for bitwise Simplifiers */
         namespace Bitwise {}
 
     } // namespace Simplifiers
@@ -134,7 +143,7 @@ namespace Simplifications {
 namespace Annotation {}
 
 
-/** A namespace used for unittesting instrumentation used in src */
+/** A namespace used for unittesting instrumentation */
 namespace UnitTest {}
 
 
