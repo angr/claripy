@@ -3,6 +3,7 @@
 
 #include "../../../errors/unexpected.hpp"
 #include "../../affirm.hpp"
+#include "../../ansi_color_codes.hpp"
 #include "../level_map.hpp"
 
 #include <ctime>
@@ -29,8 +30,26 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Level &lvl,
     // Get time
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);
+    // Color label
+    const char *color;
+    switch (lvl) {
+    case Level::Verbose:
+        color = ANSIColorCodes::wht;
+    case Level::Info:
+        color = ANSIColorCodes::blu;
+    case Level::Warning:
+        color = ANSIColorCodes::yel;
+    case Level::Error:
+        color = ANSIColorCodes::Bold::mag;
+    case Level::Critical:
+        color = ANSIColorCodes::HighIntensity::Bold::red;
+    default:
+        color = ANSIColorCodes::blk;
+    }
+
     // Output
     std::ostringstream ret;
-    ret << name(lvl, __func__) << ": " << std::put_time(&tm, "%c %Z") << " -- " << raw.str();
+    ret << color << name(lvl, __func__) << ANSIColorCodes::blk << ": "
+        << std::put_time(&tm, "%c %Z") << " -- " << raw.str();
     return ret.str();
 }

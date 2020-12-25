@@ -21,6 +21,9 @@ namespace Utils {
      */
     namespace Private {}
 
+    /** A namespace used to contain color terminal codes */
+    namespace ANSIColorCodes {}
+
     /** A namespace used for logging functions
      *
      *  Unless otherwise specified, each public logging function in this namespace takes in
