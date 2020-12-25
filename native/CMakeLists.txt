@@ -33,7 +33,7 @@ set(SOVERSION 1)
 # Default build type
 # Default to debug mode
 # Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
-set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" FORCE)
+set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
 # Config options
 # The memcheck and security options are mutually exclusive
@@ -168,6 +168,16 @@ if (DEBUG_LOG)
 	set(CRITICAL_LOG ON)
 endif()
 
+# Enable testing
+if(ENABLE_TESTING)
+    message(STATUS "Testing enabled!")
+	include(CTest)
+	enable_testing()
+    add_definitions(-DTEST)
+else()
+    message(STATUS "Testing disabled!")
+endif()
+
 # Enable security flags
 # These come after build type as they may override the given flags
 if(ENABLE_SECURITY)
@@ -266,7 +276,5 @@ add_subdirectory(./src)
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
-	include(CTest)
-	enable_testing()
 	add_subdirectory(./tests)
 endif()

@@ -5,10 +5,12 @@
 #ifndef __UNITTEST_HPP__
 #define __UNITTEST_HPP__
 
-/** Allows the friend access for unittests */
-#define ENABLE_UNITTEST_FRIEND_ACCESS                                                             \
-    /** Allows the friend access for unittests */                                                 \
-    friend struct Tests::Native::ClaricppUnitTest;
+#ifdef TEST
+
+    /** Allows the friend access for unittests */
+    #define ENABLE_UNITTEST_FRIEND_ACCESS                                                         \
+        /** Allows the friend access for unittests */                                             \
+        friend struct Tests::Native::ClaricppUnitTest;
 
 
 /** A namespace used for tests */
@@ -23,5 +25,12 @@ namespace Tests {
     } // namespace Native
 
 } // namespace Tests
+
+#else
+
+    // No-op if not debug
+    #define ENABLE_UNITTEST_FRIEND_ACCESS
+
+#endif
 
 #endif
