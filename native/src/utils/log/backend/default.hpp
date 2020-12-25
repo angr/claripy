@@ -5,13 +5,13 @@
 #ifndef __UTILS_LOG_BACKEND_DEFAULT_HPP__
 #define __UTILS_LOG_BACKEND_DEFAULT_HPP__
 
-#include "cout.hpp"
+#include "clog.hpp"
 
 
 namespace Utils::Log::Backend {
 
     /** Define the default Log backend */
-    using Default = Cout;
+    using Default = Clog;
 
 } // namespace Utils::Log::Backend
 

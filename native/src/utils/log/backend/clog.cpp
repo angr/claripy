@@ -1,5 +1,5 @@
 /** @file */
-#include "cout.hpp"
+#include "clog.hpp"
 
 #include <iostream>
 
@@ -7,4 +7,4 @@
 // For brevity
 using namespace Utils::Log::Backend;
 
-Cout::Cout() : OStream(std::cout) {}
+Clog::Clog() : OStream(std::clog) {}

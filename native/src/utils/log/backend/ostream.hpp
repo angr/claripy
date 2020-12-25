@@ -17,8 +17,11 @@ namespace Utils::Log::Backend {
      */
     struct OStream : public AbstractBase {
 
-        /** Constructor */
-        OStream(const std::ostream &s);
+        /** Constructor: Keeps a reference to the passed stream; do not destroy s!
+         *  Warning: the passes ostream may not be closed or destroyed !
+         *  Note: Because copying an ostream doesn't really make sense we use references
+         */
+        OStream(std::ostream &s);
 
         /** Default pure virtual destructor */
         ~OStream() = default;
@@ -30,7 +33,7 @@ namespace Utils::Log::Backend {
         /** The stream we write to
          *  Declared as mutable to allow writing to the stream from const methods
          */
-        std::ostream stream;
+        std::ostream &stream;
 
         /** Delete default constructor */
         OStream() = delete;

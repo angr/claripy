@@ -28,7 +28,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 			# Backend
 			./utils/log/backend/access.cpp
 			./utils/log/backend/ostream.cpp
-			./utils/log/backend/cout.cpp
+			./utils/log/backend/clog.cpp
 	# Annotations
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp

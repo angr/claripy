@@ -6,7 +6,7 @@
 using namespace Utils::Log::Backend;
 
 
-OStream::OStream(const std::ostream &s) : stream(s.rdbuf()) {}
+OStream::OStream(std::ostream &s) : stream(s) {}
 
 
 void OStream::log(Constants::CCSC id, const Level &lvl, const std::string &msg) {
