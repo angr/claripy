@@ -135,7 +135,7 @@ namespace Annotation {}
 
 
 /** A namespace used for unittesting instrumentation used in src */
-namespace Unittest {}
+namespace UnitTest {}
 
 
 /** Disable compilation */
