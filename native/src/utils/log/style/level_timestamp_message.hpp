@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the LevelTimestameMessage style
+ * @brief This file defines the LevelTimestameMessage Log Style class
  */
 #ifndef __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
 #define __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__

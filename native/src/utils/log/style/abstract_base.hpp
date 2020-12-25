@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the default log style class
+ * @brief This file defines the AbstractBase Log Style class
  */
 #ifndef __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
 #define __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__

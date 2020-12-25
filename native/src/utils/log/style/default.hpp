@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the default log style
+ * @brief This file defines the default Log Style
  */
 #ifndef __UTILS_LOG_STYLE_DEFAULT_HPP__
 #define __UTILS_LOG_STYLE_DEFAULT_HPP__

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file methods for accessing the log style
+ * @brief This file methods for accessing the Log Style
  */
 #ifndef __UTILS_LOG_STYLE_ACCESS_HPP__
 #define __UTILS_LOG_STYLE_ACCESS_HPP__
