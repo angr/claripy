@@ -7,8 +7,6 @@
 
 #include "ostream.hpp"
 
-#include <ostream>
-
 
 namespace Utils::Log::Backend {
 

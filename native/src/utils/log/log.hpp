@@ -8,34 +8,26 @@
 #include "level.hpp"
 #include "macros.hpp"
 #include "private/level_config.hpp"
-#include "private/log.hpp"
+#include "private/send_to_backend.hpp"
 
 #include "../sink.hpp"
-
-#include <utility>
 
 
 /** A local macro used to define standard log functions */
 #define DEFINE_LOG_LEVEL(LEVEL, NAME)                                                             \
-    /** Log to default log with given log level */                                                \
-    template <typename... Args> void NAME(Args... args) {                                         \
+    /** Log to a given log with given log level */                                                \
+    template <typename Log, typename... Args> void NAME(Args... args) {                           \
         if constexpr (Private::Enabled::NAME) {                                                   \
-            static constexpr LogID id = Default::log_id;                                          \
-            Private::backend(id, Level::LEVEL, std::forward<Args>(args)...);                      \
+            static constexpr LogID id = Log::log_id;                                              \
+            Private::send_to_backend(id, Level::LEVEL, std::forward<Args>(args)...);              \
         }                                                                                         \
         else {                                                                                    \
             sink(args...);                                                                        \
         }                                                                                         \
     }                                                                                             \
-    /** Log to custom log with given log level */                                                 \
-    template <typename Log, typename... Args> void NAME(Args... args) {                           \
-        if constexpr (Private::Enabled::NAME) {                                                   \
-            static constexpr LogID id = Log::log_id;                                              \
-            Private::backend(id, Level::LEVEL, std::forward<Args>(args)...);                      \
-        }                                                                                         \
-        else {                                                                                    \
-            sink(args...);                                                                        \
-        }                                                                                         \
+    /** Log to default log with given log level */                                                \
+    template <typename... Args> void NAME(Args... args) {                                         \
+        NAME<Default>(std::forward<Args>(args)...);                                               \
     }
 
 

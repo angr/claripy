@@ -5,7 +5,6 @@
 #ifndef __UTILS_LOG_STYLE_HPP__
 #define __UTILS_LOG_STYLE_HPP__
 
-#include "styles/abstract_base.hpp"
 #include "styles/access.hpp"
 #include "styles/default.hpp"
 
