@@ -17,15 +17,14 @@ namespace Utils::Log::Backend {
      */
     struct AbstractBase {
         /** Log the given message, level, to the correct log given by log_id */
-        virtual std::string operator()(Constants::CCSC id, const Level &lvl,
-                                       const std::string &msg) const;
+        virtual void operator()(Constants::CCSC id, const Level &lvl,
+                                const std::string &msg) const;
 
       protected:
         /** Force this class to be purely abstract
          *  We do not declare the operator()=0 because we want to use this class
          *  as if it were instantiatable
          */
-      public: // todo
         AbstractBase();
     };
 
