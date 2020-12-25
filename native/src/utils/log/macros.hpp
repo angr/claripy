@@ -5,6 +5,8 @@
 #ifndef __UTILS_LOG_MACROS_HPP__
 #define __UTILS_LOG_MACROS_HPP__
 
+#include "constants.hpp"
+
 #include "../unconstructable.hpp"
 
 
@@ -23,7 +25,7 @@
  */
 #define UTILS_LOG_ENABLE_CUSTOM_LOGGING(NAME)                                                     \
     /** Create a custom log for this class */                                                     \
-    static constexpr auto log_id = NAME;
+    static constexpr LogID log_id = NAME;
 
 
 #endif

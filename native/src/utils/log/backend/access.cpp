@@ -8,20 +8,20 @@
 
 // For brevity
 using namespace Utils::Log;
-using Sty = Style::AbstractBase;
+using Bk = Backend::AbstractBase;
 
 
 // File local variables
 static std::shared_mutex style_lock;
-static Style::AbstractBase style = Style::Default();
+static Backend::AbstractBase backend = Backend::Default();
 ;
 
-void Style::set(Sty s) {
+void Backend::set(Bk b) {
     std::unique_lock<decltype(style_lock)> l(style_lock);
-    style = s;
+    backend = b;
 }
 
-Sty Style::get() {
+Bk Backend::get() {
     std::shared_lock<decltype(style_lock)> l(style_lock);
-    return style;
+    return backend;
 }

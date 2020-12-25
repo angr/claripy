@@ -7,15 +7,12 @@
 
 #include "../level.hpp"
 
-#include <sstream>
 
-
-/** A namespace used for the utils directory */
 namespace Utils::Log::Style {
 
-    /** The base log style class
+    /** The base Log Style class
      *  All log styles must subclass this
-     *  Log functions must implement
+     *  The subclass must implement the () operator defined below
      */
     struct AbstractBase {
         /** Format the log message

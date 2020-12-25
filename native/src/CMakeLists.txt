@@ -8,21 +8,27 @@
 # Create the shared object target
 add_library("${SHARED_LIB_NAME}" SHARED
 	# AST
-	./ast/raw_types/fp.cpp
-	./ast/raw_types/vs.cpp
-	./ast/raw_types/bv.cpp
-	./ast/raw_types/int.cpp
-	./ast/raw_types/bool.cpp
-	./ast/raw_types/base.cpp
-	./ast/raw_types/bits.cpp
-	./ast/raw_types/string.cpp
 	./ast/cache_key.cpp
 	./ast/private/factory_cache.cpp
+		# RawTypes
+		./ast/raw_types/fp.cpp
+		./ast/raw_types/vs.cpp
+		./ast/raw_types/bv.cpp
+		./ast/raw_types/int.cpp
+		./ast/raw_types/bool.cpp
+		./ast/raw_types/base.cpp
+		./ast/raw_types/bits.cpp
+		./ast/raw_types/string.cpp
 	# Utils
-	./utils/log/style/abstract_base.cpp
-	./utils/log/level_map.cpp
-	./utils/log/style/level_timestamp_message.cpp
-	./utils/log/style/access.cpp
+		# Log
+		./utils/log/level_map.cpp
+			# Style
+			./utils/log/style/abstract_base.cpp
+			./utils/log/style/level_timestamp_message.cpp
+			./utils/log/style/access.cpp
+			# Backend
+			./utils/log/backend/abstract_base.cpp
+			./utils/log/backend/access.cpp
 	# Annotations
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp

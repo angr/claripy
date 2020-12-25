@@ -17,7 +17,6 @@
  *  This should be called only when not in any namespace
  */
 #define AST_DECLARE_AND_DEFINE_NON_RAW_TYPE_FROM_GLOBAL(RAW)                                      \
-    /** A namespace used for the ast directory */                                                 \
     namespace AST {                                                                               \
         AST_DECLARE_AND_DEFINE_NON_RAW_TYPE(RAW)                                                  \
     }

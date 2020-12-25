@@ -8,7 +8,6 @@
 #include "abstract_base.hpp"
 
 
-/** A namespace used for the utils directory */
 namespace Utils::Log::Style {
 
     /** Set the logging style by copy */

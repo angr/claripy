@@ -14,10 +14,6 @@
 
 namespace AST {
 
-    /** A namespace which contains self-caching classes and things related to AST caching
-     *  These classes are unlikely to be accessed directly, but rather should be accessed via a
-     * shared_ptr
-     */
     namespace RawTypes {
         // Forward declare classes
         class Base;

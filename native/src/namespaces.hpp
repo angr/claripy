@@ -46,6 +46,9 @@ namespace Utils {
         /** A namespace used for log styles */
         namespace Style {}
 
+        /** A namespace used for log backends */
+        namespace Backend {}
+
     } // namespace Log
 
 } // namespace Utils
