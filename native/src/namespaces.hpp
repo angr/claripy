@@ -22,7 +22,24 @@ namespace Utils {
     namespace Private {}
 
     /** A namespace used to contain color terminal codes */
-    namespace ANSIColorCodes {}
+    namespace ANSIColorCodes {
+
+        /** Bold color codes */
+        namespace Bold {}
+        /** Underlined color codes */
+        namespace Underline {}
+        /** High Boolcolor codes */
+        namespace HighIntensity {
+            /** High Intensity Bold */
+            namespace Bold {}
+        } // namespace HighIntensity
+        /** Background color codes */
+        namespace Background {
+            /** High Intensity Background color codes */
+            namespace HighIntensity {}
+        } // namespace Background
+
+    } // namespace ANSIColorCodes
 
     /** A namespace used for logging functions
      *
@@ -110,16 +127,12 @@ namespace Ops {
 
     /** These sets classify different Expression operations */
     namespace Expression {}
-
     /** These sets classify different Backend operations */
     namespace Backend {}
-
     /** These sets classify different Length operations */
     namespace Length {}
-
     /** These sets classify different Leaf operations */
     namespace Leaf {}
-
     /** These maps operations to related operations */
     namespace Maps {}
 
@@ -140,13 +153,10 @@ namespace Simplifications {
 
         /** A namespace for bv Simplifiers */
         namespace BV {}
-
         /** A namespace for shift Simplifiers */
         namespace Shift {}
-
         /** A namespace for boolean Simplifiers */
         namespace Boolean {}
-
         /** A namespace for bitwise Simplifiers */
         namespace Bitwise {}
 

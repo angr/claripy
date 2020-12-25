@@ -8,10 +8,12 @@
 #include "../constants.hpp"
 
 
-namespace ANSIColorCodes {
+namespace Private::ANSIColorCodes {
 
+    // Clear color codes
     constexpr Constants::CCSC reset = "\e[0m";
 
+    // Regular
     constexpr Constants::CCSC blk = "\e[0;30m";
     constexpr Constants::CCSC red = "\e[0;31m";
     constexpr Constants::CCSC grn = "\e[0;32m";
@@ -43,34 +45,9 @@ namespace ANSIColorCodes {
         constexpr Constants::CCSC wht = "\e[4;37m";
     } // namespace Underline
 
-    namespace Background {
-
-        namespace Regular {
-            constexpr Constants::CCSC blk = "\e[40m";
-            constexpr Constants::CCSC red = "\e[41m";
-            constexpr Constants::CCSC grn = "\e[42m";
-            constexpr Constants::CCSC yel = "\e[43m";
-            constexpr Constants::CCSC blu = "\e[44m";
-            constexpr Constants::CCSC mag = "\e[45m";
-            constexpr Constants::CCSC cyn = "\e[46m";
-            constexpr Constants::CCSC wht = "\e[47m";
-        } // namespace Regular
-
-        namespace HighIntensity {
-            constexpr Constants::CCSC blk = "\e[0;100m";
-            constexpr Constants::CCSC red = "\e[0;101m";
-            constexpr Constants::CCSC grn = "\e[0;102m";
-            constexpr Constants::CCSC yel = "\e[0;103m";
-            constexpr Constants::CCSC blu = "\e[0;104m";
-            constexpr Constants::CCSC mag = "\e[0;105m";
-            constexpr Constants::CCSC cyn = "\e[0;106m";
-            constexpr Constants::CCSC wht = "\e[0;107m";
-        } // namespace HighIntensity
-
-    } // namespace Background
-
     namespace HighIntensity {
 
+        // Regular
         constexpr Constants::CCSC blk = "\e[0;90m";
         constexpr Constants::CCSC red = "\e[0;91m";
         constexpr Constants::CCSC grn = "\e[0;92m";
@@ -92,6 +69,32 @@ namespace ANSIColorCodes {
         } // namespace Bold
 
     } // namespace HighIntensity
-} // namespace ANSIColorCodes
+
+    namespace Background {
+
+        // Regular
+        constexpr Constants::CCSC blk = "\e[40m";
+        constexpr Constants::CCSC red = "\e[41m";
+        constexpr Constants::CCSC grn = "\e[42m";
+        constexpr Constants::CCSC yel = "\e[43m";
+        constexpr Constants::CCSC blu = "\e[44m";
+        constexpr Constants::CCSC mag = "\e[45m";
+        constexpr Constants::CCSC cyn = "\e[46m";
+        constexpr Constants::CCSC wht = "\e[47m";
+
+        namespace HighIntensity {
+            constexpr Constants::CCSC blk = "\e[0;100m";
+            constexpr Constants::CCSC red = "\e[0;101m";
+            constexpr Constants::CCSC grn = "\e[0;102m";
+            constexpr Constants::CCSC yel = "\e[0;103m";
+            constexpr Constants::CCSC blu = "\e[0;104m";
+            constexpr Constants::CCSC mag = "\e[0;105m";
+            constexpr Constants::CCSC cyn = "\e[0;106m";
+            constexpr Constants::CCSC wht = "\e[0;107m";
+        } // namespace HighIntensity
+
+    } // namespace Background
+
+} // namespace Private::ANSIColorCodes
 
 #endif
