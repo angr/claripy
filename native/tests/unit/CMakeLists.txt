@@ -3,6 +3,7 @@
 # <FNAME>.cpp must contain a function named <FNAME> of type int();
 # This is the function that will be tested, it's return value will be the test return code
 # Additional required cpp files can be passed in as extra arguments
+# Test cases must have a local link, src, to /claripy/native/src
 function(simple_test FUNC_NAME)
 
 	# Usage check
@@ -15,7 +16,11 @@ function(simple_test FUNC_NAME)
 
 	# Determine the test prefix from the path
 	string(LENGTH "${SIMPLE_TEST_DIR}/" ST_LEN)
-	string(SUBSTRING "${CMAKE_CURRENT_SOURCE_DIR}" "${ST_LEN}" -1 SUBPATH)
+	if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL SIMPLE_TEST_DIR)
+		string(SUBSTRING "${CMAKE_CURRENT_SOURCE_DIR}" "${ST_LEN}" -1 SUBPATH)
+	else()
+		set(SUBPATH "")
+	endif()
 	string(REPLACE "/" "-" TEST_PREFIX "${SUBPATH}")
 	string(LENGTH "${TEST_PREFIX}" TEST_PREFIX_LEN)
 	if(NOT "${TEST_PREFIX_LEN}" EQUAL 0)

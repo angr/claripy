@@ -41,7 +41,7 @@ std::vector<T> construct_range(const unsigned int lb, const unsigned int ub) {
 
 
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
-int cache_gc() {
+int gc() {
     UnitTest::ClaricppUnitTest cache;
     const UnitTest::ClaricppUnitTest::SizeType init = cache.gc_resize;
     int n = 0;
