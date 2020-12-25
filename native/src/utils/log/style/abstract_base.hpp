@@ -23,7 +23,7 @@ namespace Utils::Log::Style {
       protected:
         /** Force this class to be purely abstract
          *  We do not declare the operator()=0 because we want to use this class
-         * as if it were instantiatable
+         *  as if it were instantiatable
          */
         AbstractBase();
     };

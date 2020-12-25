@@ -9,6 +9,7 @@
 #include "../../apply.hpp"
 #include "../../private/ostream.hpp"
 #include "../../to_str.hpp"
+#include "../backend/access.hpp"
 #include "../level.hpp"
 #include "../style/access.hpp"
 
@@ -21,8 +22,7 @@ namespace Utils::Log::Private {
         std::ostringstream s;
         apply<::Utils::Private::OStreamConst>(s, args...);
         const std::string msg = Style::get()(lvl, s);
-        (void) msg;
-        (void) id;
+        Backend::get()(id, lvl, msg);
     }
 
 } // namespace Utils::Log::Private

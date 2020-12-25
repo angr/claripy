@@ -10,6 +10,6 @@ using namespace Utils::Log::Backend;
 AbstractBase::AbstractBase() {}
 
 // Disallow usage
-std::string AbstractBase::operator()(const Level &, std::ostringstream &) const {
+std::string AbstractBase::operator()(Constants::CCSC, const Level &, const std::string &) const {
     throw Errors::Unexpected::IncorrectUsage("This function should not be possible to call");
 }
