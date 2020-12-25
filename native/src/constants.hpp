@@ -21,6 +21,9 @@ namespace Constants {
      */
     using UInt = uint_fast64_t;
 
+    /** An abreviation for const char * const */
+    using CCSC = const char *const;
+
 } // namespace Constants
 
 #endif

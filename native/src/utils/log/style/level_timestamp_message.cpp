@@ -17,7 +17,7 @@ using namespace Style;
 using namespace Errors::Unexpected;
 
 
-inline const char *name(const Level &lvl, const char *const fname) {
+inline const char *name(const Level &lvl, Constants::CCSC fname) {
     const auto it = level_map.find(lvl);
     affirm<IncorrectUsage>(it != level_map.end(), __FILE__ ": ", fname, " given unknown level.");
     return it->second;

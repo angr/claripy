@@ -7,6 +7,8 @@
 
 #include "operations_enum.hpp"
 
+#include "../constants.hpp"
+
 #include <map>
 #include <set>
 
@@ -51,7 +53,7 @@ namespace Ops {
     }
 
     // This maps operations to their infix notations
-    extern const std::map<Operation, const char *const> infix;
+    extern const std::map<Operation, Constants::CCSC> infix;
 
 } // namespace Ops
 

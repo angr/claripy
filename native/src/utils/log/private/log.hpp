@@ -34,7 +34,7 @@ namespace Utils {
 
             /** Prep the arguments then call the logging backend */
             template <typename... Args>
-            void backend(const char *const id, const Level lvl, const Args &...args) {
+            void backend(Constants::CCSC id, const Level lvl, const Args &...args) {
                 std::ostringstream s;
                 apply<::Utils::Private::OStreamConst>(s, args...);
                 const std::string msg = Style::get()(lvl, s);

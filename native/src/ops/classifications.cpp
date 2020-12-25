@@ -221,7 +221,7 @@ const OpMap Ops::Maps::inverse {
 /*                              Infix                               */
 /********************************************************************/
 
-const std::map<OP, const char *const> Ops::infix {
+const std::map<OP, Constants::CCSC> Ops::infix {
     { OP::__add__, "+" },
     { OP::__sub__, "-" },
     { OP::__mul__, "*" },
