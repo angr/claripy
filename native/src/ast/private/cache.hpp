@@ -29,8 +29,8 @@ namespace AST::Private {
         using Self = Cache<Hash, Cached>;
 
       public:
-        /** Enable custom logging */
-        static constexpr auto log_id = "HashCache";
+        // Enable custom logging
+        UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
 
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<Cached>>;
