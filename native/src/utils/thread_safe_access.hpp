@@ -19,15 +19,15 @@ namespace Utils {
      *  Warning: This does not protect T internally; it only protects setting and getting
      */
     template <typename T> class ThreadSafeAccess {
-      public:
         /** The get-able type */
-        using Type = std::shared_ptr<T>;
+        using Ptr = std::shared_ptr<T>;
 
+      public:
         /** Construct and point to nothing by default */
         ThreadSafeAccess() : obj(nullptr) {}
 
         /** A getter */
-        Type get() const {
+        Ptr get() const {
             std::shared_lock<decltype(this->m)>(this->m);
             return this->obj;
         }
@@ -37,35 +37,66 @@ namespace Utils {
         /************************************************/
 
         /** A setter that takes in a shared pointer of type type */
-        void set_shared_ptr(Type ptr) { this->set(ptr); }
+        void set_shared_ptr(Ptr &ptr) { this->set(ptr); }
+
 
         /** A setter by default constructor */
-        void set_default() { this->set(new T); }
+        template <typename U = T> void set_default() { this->set(new U); }
 
         /** A setter by copy constructor */
-        template <typename U> void set_copy(const U &t) { this->set(new U(t)); }
+        template <typename U = T> void set_copy(const U &t) { this->set(new U(t)); }
 
         /** A setter by move constructor */
-        template <typename U> void set_copy(U &&t) { this->set(new U(t)); }
+        template <typename U = T> void set_copy(U &&t) { this->set(new U(t)); }
 
-        /** A setter by emplacement with args passed by copy */
+
+        /** A setter by emplacement with args passed by copy
+         *  A specialization that requires no U parameter
+         */
+        template <typename... Args> void set_emplace_ref_copy(Args... args) {
+            this->set(new T(std::forward<Args>(args)...));
+        }
+
+        /** A setter by emplacement with args passed by copy
+         *  The general definition
+         */
         template <typename U, typename... Args> void set_emplace_ref_copy(Args... args) {
             this->set(new U(std::forward<Args>(args)...));
         }
 
-        /** A setter by emplacement with args passed by reference */
+
+        /** A setter by emplacement with args passed by reference
+         *  A specialization that requires no U parameter
+         */
+        template <typename... Args> void set_emplace_ref_args(Args &...args) {
+            this->set(new T(args...));
+        }
+
+        /** A setter by emplacement with args passed by reference
+         *  The general definition
+         */
         template <typename U, typename... Args> void set_emplace_ref_args(Args &...args) {
             this->set(new U(args...));
         }
 
-        /** A setter by emplacement with args passed by move */
+
+        /** A setter by emplacement with args passed by move
+         *  A specialization that requires no U parameter
+         */
+        template <typename... Args> void set_emplace_move_args(Args &&...args) {
+            this->set(new T(std::forward<Args>(args)...));
+        }
+
+        /** A setter by emplacement with args passed by move
+         *  The general definition
+         */
         template <typename U, typename... Args> void set_emplace_move_args(Args &&...args) {
             this->set(new U(std::forward<Args>(args)...));
         }
 
       private:
         /** A private member used to set m safely */
-        void set(Type ptr) {
+        void set(Ptr ptr) {
             std::unique_lock<decltype(this->m)>(this->m);
             this->obj = ptr;
         }
@@ -81,7 +112,7 @@ namespace Utils {
         std::shared_mutex m;
 
         /** The object protected by this class */
-        Type obj;
+        Ptr obj;
     };
 
 } // namespace Utils
