@@ -14,6 +14,7 @@
 #include "utils/pow.hpp"
 #include "utils/set_join.hpp"
 #include "utils/sink.hpp"
+#include "utils/thread_safe_access.hpp"
 #include "utils/to_str.hpp"
 #include "utils/unconstructable.hpp"
 
