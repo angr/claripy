@@ -15,19 +15,17 @@
 /** A local macro used to define standard log functions */
 #define DEFINE_LOG_LEVEL(LEVEL, NAME)                                                             \
     /** Log to a given log with given log level */                                                \
-    template <typename Log, typename... Args> void NAME(Args... args) {                           \
+    template <typename Log, typename... Args> void NAME(const Args &...args) {                    \
         if RUNTIME_LOG_CONSTEXPR (Private::Enabled::NAME) {                                       \
             static RUNTIME_LOG_CONSTEXPR const LogID id = Log::log_id;                            \
-            Private::send_to_backend(id, Level::LEVEL, std::forward<Args>(args)...);              \
+            Private::send_to_backend(id, Level::LEVEL, args...);                                  \
         }                                                                                         \
         else {                                                                                    \
             sink(args...);                                                                        \
         }                                                                                         \
     }                                                                                             \
     /** Log to default log with given log level */                                                \
-    template <typename... Args> void NAME(Args... args) {                                         \
-        NAME<Default>(std::forward<Args>(args)...);                                               \
-    }
+    template <typename... Args> void NAME(const Args &...args) { NAME<Default>(args...); }
 
 
 namespace Utils::Log {
