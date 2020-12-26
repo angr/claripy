@@ -16,8 +16,8 @@
 #define DEFINE_LOG_LEVEL(LEVEL, NAME)                                                             \
     /** Log to a given log with given log level */                                                \
     template <typename Log, typename... Args> void NAME(Args... args) {                           \
-        if constexpr (Private::Enabled::NAME) {                                                   \
-            static constexpr LogID id = Log::log_id;                                              \
+        if RUNTIME_LOG_CONSTEXPR (Private::Enabled::NAME) {                                       \
+            static RUNTIME_LOG_CONSTEXPR const LogID id = Log::log_id;                            \
             Private::send_to_backend(id, Level::LEVEL, std::forward<Args>(args)...);              \
         }                                                                                         \
         else {                                                                                    \
