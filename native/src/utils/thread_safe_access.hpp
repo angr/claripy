@@ -44,10 +44,10 @@ namespace Utils {
         template <typename U = T> void set_default() { this->set(new U); }
 
         /** A setter by copy constructor */
-        template <typename U = T> void set_copy(const U &t) { this->set(new U(t)); }
+        template <typename U> void set_copy(const U &t) { this->set(new U(t)); }
 
         /** A setter by move constructor */
-        template <typename U = T> void set_copy(U &&t) { this->set(new U(t)); }
+        template <typename U> void set_copy(U &&t) { this->set(new U(t)); }
 
 
         /** A setter by emplacement with args passed by copy
