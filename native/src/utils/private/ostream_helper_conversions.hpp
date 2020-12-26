@@ -30,7 +30,7 @@ namespace Utils::Private {
 
     /** A struct used to determine if T has the << operator defined */
     template <typename T> struct HasStreamOp {
-        /** A type that doesn't exist anywhere else */
+        /** A forward declaration of a type that doesn't exist anywhere else */
         class Unique;
         /** If U has the << operator defined the return type is resolvable
          *  Note: we do not use declval for the ostream because some compilers are buggy with it
