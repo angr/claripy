@@ -7,22 +7,13 @@ cmake_minimum_required(VERSION 3.16)
 #################################################
 
 
+# Shared library name
+set(SHARED_LIB_NAME "claricpp.so")
+
 # Config options
 option(BUILD_DOC "Create a make target for documentation"   ON)
 option(ENABLE_TESTING "Create a make target for test cases" ON)
 option(OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   ON)
-
-# Static Analysis Options
-option(IWYU "Enable iwyu" OFF)
-option(LWYU "Enable lwyu" ON)
-option(CPP_CHECK "Enable cppcheck" ON)
-option(CLANG_TIDY "Enable clang-tidy" ON)
-
-# Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
-set(DOC_MAKE_TARGET docs)
-
-# Shared library name
-set(SHARED_LIB_NAME claricpp.so)
 
 ### Developer options below ###
 
@@ -30,10 +21,19 @@ set(SHARED_LIB_NAME claricpp.so)
 set(VERSION 0.1)
 set(SOVERSION 1)
 
+# Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
+set(DOC_MAKE_TARGET docs)
+
+# Static Analysis Options
+option(IWYU "Enable iwyu" OFF)
+option(LWYU "Enable lwyu" ON)
+option(CPP_CHECK "Enable cppcheck" ON)
+option(CLANG_TIDY "Enable clang-tidy" ON)
+
 # Default build type
 # Default to debug mode
 # Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
-set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
+set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type")
 
 # Config options
 # The memcheck and security options are mutually exclusive
@@ -42,10 +42,14 @@ option(ENABLE_MEMCHECK "Enable memcheck on test target" ON)
 option(ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON)
 option(ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF)
 option(CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON)
+# If enabled, disabled log calls will still have a performance penalty
+option(RELEASE_RUNTIME_LOGLEVEL "Allow log level to be set at runtime for release builds" OFF)
 
 # Log Config Options
 # Note: verbose implies debug, and debug implies everything except verbose
 # These may be overriden based on build type
+# When runtime loglevel configuration is enabled, these define the variable defaults
+# When runtime loglevel configuration is disabled, these are constants
 option( DEBUG_LOG    "Enable debug logging"    ON)
 option( VERBOSE_LOG  "Enable verbose logging"  OFF)
 # These may be overridden by debug_log and verbose_log
@@ -66,14 +70,6 @@ option( CRITICAL_LOG "Enable critical logging" ON)
 set(PROJECT_NAME Claricpp)
 project("${PROJECT_NAME}" C CXX)
 
-
-#################################################
-#                                               #
-#              Automated - General              #
-#                                               #
-#################################################
-
-
 # Define standards
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -82,26 +78,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Option verification
-if(ENABLE_MEMCHECK)
-	if(APPLE)
-		if(NOT ALLOW_NO_MEMCHECK_APPLE)
-			message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
-		endif()
-	endif()
-endif()
-
 # Required complication flags
 set (CMAKE_C_FLAGS   "-Wall -Wextra -Wpedantic -Werror" )
 set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror" )
 
-# Optimize for native code
-if(OPTIMIZE_FOR_NATIVE)
-	set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -march=native -mtune=native" )
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native" )
-endif()
 
-# Static Analysis
+#################################################
+#                                               #
+#                Static Analysis                #
+#                                               #
+#################################################
+
+
 if(CPP_CHECK)
 	set(CMAKE_C_CPPCHECK "cppcheck")
 	set(CMAKE_CXX_CPPCHECK "cppcheck")
@@ -123,13 +111,33 @@ if(LWYU)
 	endif()
 endif()
 if(CLANG_TIDY)
-	# TODO: enable other checks as desired
-	set(CMAKE_C_CLANG_TIDY clang-tidy -checks=*,readability=*,boost=*,clang-analyzer=*)
+	set(CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=*,readability=*,boost=*,clang-analyzer=*")
+endif()
+
+
+#################################################
+#                                               #
+#              Automated - General              #
+#                                               #
+#################################################
+
+
+# Option verification
+if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
+	message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
+endif()
+
+# Optimize for native code
+if(OPTIMIZE_FOR_NATIVE)
+	set(NATIVE_FLAGS "-march=native -mtune=native")
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${NATIVE_FLAGS}")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NATIVE_FLAGS}")
 endif()
 
 # Build type
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-    message(STATUS "Debug Mode enabled!")
+    message("*** Debug Mode enabled! ***")
+    message("*** Debug Mode enabled! ***")
 	# Add debug macro
     add_definitions(-DDEBUG)
 	# Debug flags
@@ -146,15 +154,24 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	# Enable logging
 	set(DEBUG_LOG ON)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
-    message(STATUS "Release Build enabled!")
+    message("*** Release Build enabled! ***")
 	# Release flags
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -flto -O3")
-	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -pipe -flto -O3")
+	set(RELEASE_FLAGS "-pipe -flto -O3")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
+	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${RELEASE_FLAGS}")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
 	# Disable most logging
 	set(VERBOSE_LOG OFF)
 	set(DEBUG_LOG OFF)
 	set(INFO_LOG OFF)
+endif()
+
+# Runtime logging
+if((NOT CMAKE_BUILD_TYPE MATCHES Release) OR RELEASE_RUNTIME_LOGLEVEL)
+    message("*** Runtime logging enabled! ***")
+	add_definitions(-DRUNTIME_LOGLEVEL)
+else()
+    message("*** Runtime logging disabled! ***")
 endif()
 
 # Log overrides
@@ -183,12 +200,12 @@ LOG_DEFINE(CRITICAL_LOG)
 
 # Enable testing
 if(ENABLE_TESTING)
-    message(STATUS "Testing enabled!")
+    message("*** Testing enabled! ***")
 	include(CTest)
 	enable_testing()
     add_definitions(-DTEST)
 else()
-    message(STATUS "Testing disabled!")
+    message("*** Testing disabled! ***")
 endif()
 
 # Enable security flags
