@@ -31,37 +31,37 @@ int levels() {
     Backend::set<Backend::OStream>(s);
 
     // Test each level
-    if constexpr (Private::Enabled::critical) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::critical) {
         critical(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::error) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::error) {
         error(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::warning) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::warning) {
         warning(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::info) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::info) {
         info(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::debug) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::debug) {
         debug(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::verbose) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::verbose) {
         verbose(STR);
         if (test(s) == 1) {
             return 1;

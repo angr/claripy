@@ -37,7 +37,7 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}")
-	message(STATUS "Adding test case for ${TEST_NAME}")
+	message(STATUS "\t${TEST_NAME}")
 	add_test("${TEST_NAME}" "./${BINARY}")
 
 	# Add memcheck
@@ -62,5 +62,6 @@ endfunction()
 set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Add test cases
+message(STATUS "Adding unit tests:")
 add_subdirectory(./log)
 add_subdirectory(./ast)

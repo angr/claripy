@@ -43,37 +43,37 @@ int custom() {
     Backend::set<Backend::OStream>(s);
 
     // Test each level
-    if constexpr (Private::Enabled::critical) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::critical) {
         critical<Custom>(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::error) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::error) {
         error<Custom>(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::warning) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::warning) {
         warning<Custom>(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::info) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::info) {
         info<Custom>(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::debug) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::debug) {
         debug<Custom>(STR);
         if (test(s) == 1) {
             return 1;
         }
     }
-    if constexpr (Private::Enabled::verbose) {
+    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::verbose) {
         verbose<Custom>(STR);
         if (test(s) == 1) {
             return 1;
