@@ -77,7 +77,7 @@ set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror" )
 
 # Library source
 # Used for compilation and header lookup for tests
-set(LIBRARY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 
 #################################################
@@ -240,7 +240,7 @@ endif(BUILD_DOC)
 
 
 # Create a make target for the library
-add_subdirectory("${LIBRARY_SRC}")
+add_subdirectory("${CLARICPP_SRC}")
 
 # Create a make target for test cases
 if(ENABLE_TESTING)

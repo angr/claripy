@@ -37,8 +37,8 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
-	target_include_directories("${BINARY}" PUBLIC "${LIBRARY_SRC}" )
-	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}")
+	target_include_directories("${BINARY}" PRIVATE "${CLARICPP_SRC}" "${TESTLIB_SRC}")
+	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}" "${TEST_LIB}")
 
 	## Add the test
 	message(STATUS "\t${TEST_NAME}")
@@ -62,8 +62,15 @@ function(simple_test FUNC_NAME)
 
 endfunction()
 
-# Define variables used by simple_test
+# Define constants used by simple_test
 set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(TESTLIB_SRC "./testlib")
+
+# Create the test library that test cases use
+set(TESTLIB "testlib.so")
+add_library("${TESTLIB}" SHARED)
+# Add sources to the test library
+add_subdirectory("${TESTLIB_SRC}")
 
 # Add test cases
 message(STATUS "Adding unit tests:")
