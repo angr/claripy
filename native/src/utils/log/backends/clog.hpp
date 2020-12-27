@@ -12,6 +12,7 @@ namespace Utils::Log::Backend {
 
     /** The stream backend
      *  This takes in an ostream and logs to it
+     *  When the buffer is flushed is deffered to std::clog
      */
     struct Clog : public OStream {
 

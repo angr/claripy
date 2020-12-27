@@ -7,6 +7,7 @@
 
 #include "abstract_base.hpp"
 
+#include <mutex>
 #include <ostream>
 
 
@@ -14,14 +15,16 @@ namespace Utils::Log::Backend {
 
     /** The stream backend
      *  This takes in an ostream and logs to it
+     *  Note, we do logging in a threadsafe context
      */
     struct OStream : public AbstractBase {
 
         /** Constructor: Keeps a reference to the passed stream; do not destroy s!
+         *  If flush, every time s is written to the contents are flushed; by default flush = true
          *  Warning: the passes ostream may not be closed or destroyed !
          *  Note: Because copying an ostream doesn't really make sense we use references
          */
-        OStream(std::ostream &s);
+        OStream(std::ostream &s, const bool flush = true);
 
         /** Default pure virtual destructor */
         ~OStream() = default;
@@ -35,6 +38,12 @@ namespace Utils::Log::Backend {
          *  Declared as mutable to allow writing to the stream from const methods
          */
         std::ostream &stream;
+
+        /** If true, every time stream is written to the contents are flushed */
+        const bool flush;
+
+        /** A mutex to ensure logging is threadsafe */
+        mutable std::mutex m;
 
         /** Delete default constructor */
         OStream() = delete;

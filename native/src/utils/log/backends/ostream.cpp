@@ -6,11 +6,15 @@
 using namespace Utils::Log::Backend;
 
 
-OStream::OStream(std::ostream &s) : stream(s) {}
+OStream::OStream(std::ostream &s, const bool f) : stream(s), flush(f) {}
 
 
 void OStream::log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg) {
-    this->stream << msg << std::endl;
+    std::unique_lock<decltype(this->m)> lock(m);
+    this->stream << msg << "\n";
+    if (this->flush) {
+        std::flush(stream);
+    }
     (void) id;
     (void) lvl;
 }

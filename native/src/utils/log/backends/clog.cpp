@@ -7,4 +7,4 @@
 // For brevity
 using namespace Utils::Log::Backend;
 
-Clog::Clog() : OStream(std::clog) {}
+Clog::Clog() : OStream(std::clog, false) {}
