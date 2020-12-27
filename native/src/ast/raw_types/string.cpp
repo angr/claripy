@@ -1,7 +1,7 @@
 /** @file */
 #include "string.hpp"
 
-#include "../../ops/operations_enum.hpp"
+#include "../../ops/operations.hpp"
 #include "../../utils/inc.hpp"
 
 

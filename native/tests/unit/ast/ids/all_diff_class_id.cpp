@@ -10,7 +10,7 @@
 #include "src/ast/int.hpp"
 #include "src/ast/string.hpp"
 #include "src/ast/vs.hpp"
-#include "src/ops/operations_enum.hpp"
+#include "src/ops/operations.hpp"
 
 #include <set>
 

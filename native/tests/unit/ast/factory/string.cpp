@@ -3,7 +3,7 @@
 #include "src/ast/string.hpp"
 
 #include "src/ast/factory.hpp"
-#include "src/ops/operations_enum.hpp"
+#include "src/ops/operations.hpp"
 
 #include <set>
 

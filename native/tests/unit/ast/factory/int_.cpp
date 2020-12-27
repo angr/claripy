@@ -2,7 +2,7 @@
 
 #include "src/ast/factory.hpp"
 #include "src/ast/int.hpp"
-#include "src/ops/operations_enum.hpp"
+#include "src/ops/operations.hpp"
 
 #include <set>
 

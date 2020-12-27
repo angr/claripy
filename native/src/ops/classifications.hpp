@@ -5,7 +5,7 @@
 #ifndef __OPS_CLASSIFICATIONS_HPP__
 #define __OPS_CLASSIFICATIONS_HPP__
 
-#include "operations_enum.hpp"
+#include "operations.hpp"
 
 #include "../constants.hpp"
 

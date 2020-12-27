@@ -36,7 +36,6 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./annotations/simplification_avoidance.cpp
 	# Ops
 	./ops/classifications.cpp
-	./ops/operations.cpp
 	# Simplifications
 	./simplifications/private/op_map.cpp
 	./simplifications/simplifiers.cpp
