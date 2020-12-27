@@ -36,12 +36,14 @@ option( CLANG_TIDY "Enable clang-tidy" ON )
 set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
 # Config options
+option( CMAKE_VERBOSE_MAKEFILE "Enable make VERBOSE=1 by default" OFF )
+option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
 # The memcheck and security options are mutually exclusive
-# Note that ENABLE_SECURITY overrides the flags of every other option
+# Memcheck cannot run with security enabled
 option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
 option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
+# Note that ENABLE_SECURITY overrides the flags of every other option
 option( ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF )
-option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
 # If enabled: log calls to log levels lower than defined will have no performance penalty
 option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
 

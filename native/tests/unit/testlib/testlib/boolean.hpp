@@ -1,11 +1,11 @@
 /**
  * @file
- * @brief This defins the boolean function
+ * @brief This defines the boolean function
  */
-#ifndef __TESTS_UNIT_TESTLIB_BOOLEAN_HPP__
-#define __TESTS_UNIT_TESTLIB_BOOLEAN_HPP__
+#ifndef __TESTS_UNIT_TESTLIB_TESTLIB_BOOLEAN_HPP__
+#define __TESTS_UNIT_TESTLIB_TESTLIB_BOOLEAN_HPP__
 
-namespace UnitTest {
+namespace UnitTest::TestLib {
 
     /** Convert T into a boolean */
     template <typename T> bool boolean(T t) {
@@ -17,7 +17,7 @@ namespace UnitTest {
         }
     }
 
-} // namespace UnitTest
+} // namespace UnitTest::TestLib
 
 
 #endif
