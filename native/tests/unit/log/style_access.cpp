@@ -1,9 +1,11 @@
 /** @file */
 
+#include "testlib.hpp"
 #include "utils.hpp"
 
 
 using namespace Utils::Log;
+using namespace UnitTest::TestLib;
 
 
 /** Create a style class */
@@ -17,10 +19,6 @@ struct Plain : Style::AbstractBase {
 /** Verify our set style was indeed set */
 int style_access() {
     Style::set<Plain>();
-    if (dynamic_cast<Plain *>(Style::get().get()) != nullptr) {
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    UNITTEST_ASSERT(dynamic_cast<Plain *>(Style::get().get()) != nullptr)
+    return 0;
 }

@@ -11,13 +11,13 @@
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT(B)                                                                        \
     if (!(B)) {                                                                                   \
-        throw UnitTest::TestLib::Error(__LINE__);                                                 \
+        throw UnitTest::TestLib::Error("");                                                       \
     }
 
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT_MSG(B, ...)                                                               \
     if (!(B)) {                                                                                   \
-        throw UnitTest::TestLib::Error(__LINE__, __VA_ARGS__);                                    \
+        throw UnitTest::TestLib::Error(__VA_ARGS__);                                              \
     }
 
 namespace UnitTest::TestLib {

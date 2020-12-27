@@ -4,13 +4,17 @@
 
 #include "ast/factory.hpp"
 #include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
 
+// For brevity
+using namespace UnitTest::TestLib;
+
+
 /** Test creating an AST::Base */
 int base() {
-    std::set<AST::BackendID> s;
-    (void) AST::factory<AST::Base>(std::move(s), std::move((Ops::Operation) 0));
+    (void) construct_ast<AST::Base>();
     return 0;
 }

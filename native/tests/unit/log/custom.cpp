@@ -1,5 +1,7 @@
 /** @file */
 
+#include "test_each_level.hpp"
+#include "testlib.hpp"
 #include "utils.hpp"
 
 #include <iostream>
@@ -8,22 +10,18 @@
 
 using namespace Utils::Log;
 using Lvl = Level::Level;
+using namespace UnitTest::TestLib;
 
 
 const std::string cst("Custom");
 
 
 /** Test the given logging function */
-int test(std::ostringstream &s) {
+void test(std::ostringstream &s) {
     auto str = s.str();
     str.pop_back(); // newline
-    if (str == cst) {
-        s.str("");
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    UNITTEST_ASSERT(str == cst)
+    s.str(""); // clear the log for the next test
 }
 
 /** Create a style class */
@@ -34,10 +32,9 @@ struct CustomSty : Style::AbstractBase {
     }
 };
 
-//  A custom log type
+/** A custom log type */
 UTILS_LOG_DEFINE_LOG_CLASS(Custom)
 
-#define STR ""
 
 /** Each construction should have a unique pointer */
 int custom() {
@@ -46,51 +43,7 @@ int custom() {
     Style::set<CustomSty>();
     Backend::set<Backend::OStream>(s);
 
-    const UTILS_LOG_LEVEL_CONSTANT auto lvl = Level::get();
-
     // Test each level
-    if UTILS_LOG_LEVEL_CONSTANT
-        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Critical) {
-            critical(STR);
-            if (test(s) == 1) {
-                return 1;
-            }
-        }
-    if UTILS_LOG_LEVEL_CONSTANT
-        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Error) {
-            error(STR);
-            if (test(s) == 1) {
-                return 1;
-            }
-        }
-    if UTILS_LOG_LEVEL_CONSTANT
-        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Warning) {
-            warning(STR);
-            if (test(s) == 1) {
-                return 1;
-            }
-        }
-    if UTILS_LOG_LEVEL_CONSTANT
-        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Info) {
-            info(STR);
-            if (test(s) == 1) {
-                return 1;
-            }
-        }
-    if UTILS_LOG_LEVEL_CONSTANT
-        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Debug) {
-            debug(STR);
-            if (test(s) == 1) {
-                return 1;
-            }
-        }
-    if UTILS_LOG_LEVEL_CONSTANT
-        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Verbose) {
-            verbose(STR);
-            if (test(s) == 1) {
-                return 1;
-            }
-        }
-
+    UnitTest::test_each_level(s, test, "");
     return 0;
 }

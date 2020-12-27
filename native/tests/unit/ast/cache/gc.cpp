@@ -3,12 +3,14 @@
 #include "ast/base.hpp"
 #include "ast/factory.hpp"
 #include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
 
 // For brevity
 using namespace AST;
+using namespace UnitTest::TestLib;
 
 
 namespace UnitTest {
@@ -47,9 +49,7 @@ int gc() {
     int n = 0;
 
     // Sanity check
-    if (init < 100) {
-        return 1;
-    }
+    UNITTEST_ASSERT(init > 100);
 
     // Construct gc_resize more than half of init's bases
     const auto num = (3 * init) / 4 - 1;
@@ -58,9 +58,7 @@ int gc() {
     n += num;
 
     // Sanity check
-    if (init != cache.gc_resize) {
-        return 1;
-    }
+    UNITTEST_ASSERT(init == cache.gc_resize);
 
     // Create and destroy Bases until we have gc_resize bases
     {
@@ -69,26 +67,16 @@ int gc() {
         n += remaining;
     }
 
-    // Sanity check
-    if (init != cache.gc_resize) {
-        return 1;
-    }
-
-    // Check cache size
-    if (cache.size() != init) {
-        return 1;
-    }
+    // Sanity check then check cache size
+    UNITTEST_ASSERT(init == cache.gc_resize);
+    UNITTEST_ASSERT(cache.size() == init);
 
     // Construct another base to trigger a garbage collection
     (void) construct<Base>(n++);
 
     // Verify cache size and gc_size
-    if (cache.size() != hold.size() + 1) {
-        return 1;
-    }
-    if (cache.gc_resize <= init) {
-        return 1;
-    }
+    UNITTEST_ASSERT(cache.size() == hold.size() + 1);
+    UNITTEST_ASSERT(cache.gc_resize > init);
 
     // Success
     return 0;

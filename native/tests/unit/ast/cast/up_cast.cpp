@@ -5,29 +5,21 @@
 #include "ast/factory.hpp"
 #include "ast/int.hpp"
 #include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
 
 // For brevity
 using namespace AST;
+using namespace UnitTest::TestLib;
 
-
-/** Construct a Base */
-template <typename T> T construct() {
-    std::set<BackendID> s;
-    return factory<T>(std::move(s), std::move((Ops::Operation) 0));
-}
 
 /* up_casting should succeed */
 int up_cast() {
-    Int a = construct<Int>();
+    Int a = construct_ast<Int>();
     Base b = up_cast<Base>(a);
-    if (b != nullptr) {
-        return 0;
-    }
-    // This *should* be impossible
-    else {
-        return 1;
-    }
+    UNITTEST_ASSERT_MSG(b != nullptr, "This condition should be impossible to trigger"
+                                      "If you see this message, something is very very wrong.");
+    return 0;
 }

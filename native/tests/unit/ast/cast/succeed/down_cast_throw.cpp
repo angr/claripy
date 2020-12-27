@@ -5,29 +5,21 @@
 #include "ast/factory.hpp"
 #include "ast/int.hpp"
 #include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
 
 // For brevity
 using namespace AST;
+using namespace UnitTest::TestLib;
 
-
-/** Construct a Base */
-template <typename T> T construct() {
-    std::set<BackendID> s;
-    return factory<T>(std::move(s), std::move((Ops::Operation) 0));
-}
 
 /* Down casting should succeed */
 int down_cast_throw() {
-    Int a = construct<Int>();
+    Int a = construct_ast<Int>();
     Base b = up_cast<Base>(a);
     Int c = down_cast_throw_on_fail<Int>(a);
-    if (c == a) {
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    UNITTEST_ASSERT(c == a)
+    return 0;
 }

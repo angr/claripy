@@ -3,12 +3,14 @@
 #include "ast/base.hpp"
 #include "ast/factory.hpp"
 #include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
 
 // For brevity
 using namespace AST;
+using namespace UnitTest::TestLib;
 
 
 namespace UnitTest {
@@ -24,13 +26,6 @@ namespace UnitTest {
 } // namespace UnitTest
 
 
-/** Construct a Base */
-template <typename T> T construct() {
-    std::set<BackendID> s;
-    return factory<T>(std::move(s), std::move((Ops::Operation) 0));
-}
-
-
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
 int weak_ptr_invalidation_find() {
     UnitTest::ClaricppUnitTest cache;
@@ -38,18 +33,12 @@ int weak_ptr_invalidation_find() {
     // Create and destroy a base, but record its hash
     Hash id;
     {
-        Base a = construct<Base>();
+        Base a = construct_ast<Base>();
         id = a->id;
     }
 
-    // Check cache size
-    if (cache.size() != 1) {
-        return 1;
-    }
-
-    // Find then verify size
-    if (cache.unsafe_find(id) != nullptr) {
-        return 1;
-    }
+    // Check cache and cache size
+    UNITTEST_ASSERT(cache.size() == 1)
+    UNITTEST_ASSERT(cache.unsafe_find(id) == nullptr);
     return cache.size();
 }

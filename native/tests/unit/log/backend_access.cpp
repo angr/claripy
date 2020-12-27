@@ -1,12 +1,14 @@
 
 /** @file */
 
+#include "testlib.hpp"
 #include "utils.hpp"
 
 #include <iostream>
 
 
 using namespace Utils::Log;
+using namespace UnitTest::TestLib;
 
 
 /** Create a backend class */
@@ -17,10 +19,6 @@ struct Cout : Backend::OStream {
 /** Verify our set backend was indeed set */
 int backend_access() {
     Backend::set<Cout>();
-    if (dynamic_cast<Cout *>(Backend::get().get()) != nullptr) {
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    UNITTEST_ASSERT(dynamic_cast<Cout *>(Backend::get().get()) != nullptr)
+    return 0;
 }

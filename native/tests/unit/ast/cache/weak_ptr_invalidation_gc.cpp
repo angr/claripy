@@ -29,7 +29,7 @@ int weak_ptr_invalidation_gc() {
     UnitTest::ClaricppUnitTest cache;
 
     // Create and destroy a base
-    { Base a = construct_ast_op<Base>(); }
+    { Base a = construct_ast<Base>(); }
 
     // Check cache size
     UNITTEST_ASSERT(cache.size() == 1)

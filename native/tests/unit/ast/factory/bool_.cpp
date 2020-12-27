@@ -3,13 +3,17 @@
 #include "ast/bool.hpp"
 #include "ast/factory.hpp"
 #include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
 
+// For brevity
+using namespace UnitTest::TestLib;
+
+
 /** Test creating an AST::Bool */
 int bool_() {
-    std::set<AST::BackendID> s;
-    (void) AST::factory<AST::Bool>(std::move(s), std::move((Ops::Operation) 0));
+    (void) construct_ast<AST::Bool>();
     return 0;
 }
