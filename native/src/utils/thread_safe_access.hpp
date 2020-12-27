@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <type_traits>
 
 
@@ -25,7 +25,7 @@ namespace Utils {
 
         /** A getter */
         Ptr get() const {
-            std::shared_lock<decltype(this->m)>(this->m);
+            std::shared_lock<std::shared_mutex>(this->m);
             return this->obj;
         }
 
@@ -130,7 +130,7 @@ namespace Utils {
         }
 
         /** A mutex to protect obj */
-        std::shared_mutex m;
+        mutable std::shared_mutex m;
 
         /** The object protected by this class */
         Ptr obj;
