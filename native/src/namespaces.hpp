@@ -70,12 +70,10 @@ namespace Utils {
          *
          *  These members should not be called outside of Utils::Log members
          */
-        namespace Private {
+        namespace Private {}
 
-            /** A namespace used to hold boolean which determine which logs are enabled */
-            namespace Enabled {}
-
-        } // namespace Private
+        /** A namespace used for log level members */
+        namespace Level {}
 
         /** A namespace used for log styles */
         namespace Style {
