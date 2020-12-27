@@ -37,7 +37,7 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
-	target_include_directories("${BINARY}" PRIVATE "${LIBRARY_SRC}" )
+	target_include_directories("${BINARY}" PUBLIC "${LIBRARY_SRC}" )
 	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}")
 
 	## Add the test

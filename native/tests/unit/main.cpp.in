@@ -2,14 +2,14 @@
 #include <iostream>
 #include <exception>
 
+#include "utils.hpp"
+
 
 // Forward declare tests
 int @FUNC_NAME@();
 
 
 // Main function
-#include "src/utils.hpp"
-
 int main() {
 	try {
 		return @FUNC_NAME@();

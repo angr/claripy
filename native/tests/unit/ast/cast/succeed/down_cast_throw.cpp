@@ -1,10 +1,10 @@
 /** @file */
 
-#include "src/ast/base.hpp"
-#include "src/ast/cast.hpp"
-#include "src/ast/factory.hpp"
-#include "src/ast/int.hpp"
-#include "src/ops/operations.hpp"
+#include "ast/base.hpp"
+#include "ast/cast.hpp"
+#include "ast/factory.hpp"
+#include "ast/int.hpp"
+#include "ops/operations.hpp"
 
 #include <set>
 

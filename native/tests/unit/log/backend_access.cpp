@@ -1,7 +1,7 @@
 
 /** @file */
 
-#include "src/utils.hpp"
+#include "utils.hpp"
 
 #include <iostream>
 

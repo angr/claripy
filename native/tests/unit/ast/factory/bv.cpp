@@ -1,9 +1,9 @@
 /** @file */
 
-#include "src/ast/bv.hpp"
+#include "ast/bv.hpp"
 
-#include "src/ast/factory.hpp"
-#include "src/ops/operations.hpp"
+#include "ast/factory.hpp"
+#include "ops/operations.hpp"
 
 #include <set>
 

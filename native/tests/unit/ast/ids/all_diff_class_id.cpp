@@ -1,16 +1,16 @@
 /** @file */
 
-#include "src/ast/base.hpp"
-#include "src/ast/bits.hpp"
-#include "src/ast/bool.hpp"
-#include "src/ast/bv.hpp"
-#include "src/ast/cast.hpp"
-#include "src/ast/factory.hpp"
-#include "src/ast/fp.hpp"
-#include "src/ast/int.hpp"
-#include "src/ast/string.hpp"
-#include "src/ast/vs.hpp"
-#include "src/ops/operations.hpp"
+#include "ast/base.hpp"
+#include "ast/bits.hpp"
+#include "ast/bool.hpp"
+#include "ast/bv.hpp"
+#include "ast/cast.hpp"
+#include "ast/factory.hpp"
+#include "ast/fp.hpp"
+#include "ast/int.hpp"
+#include "ast/string.hpp"
+#include "ast/vs.hpp"
+#include "ops/operations.hpp"
 
 #include <set>
 

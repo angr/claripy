@@ -5,6 +5,46 @@
 # Include additional header files
 # include_directories(${Boost_INCLUDE_DIRS})
 
+
+#################################################
+#                                               #
+#                Static Analysis                #
+#                                               #
+#################################################
+
+
+if(CPP_CHECK)
+	set(CMAKE_C_CPPCHECK "cppcheck")
+	set(CMAKE_CXX_CPPCHECK "cppcheck")
+endif()
+if(IWYU)
+	if(APPLE)
+		set(IWYU_PATH "include-what-you-use")
+	else()
+		set(IWYU_PATH "iwyu")
+	endif()
+	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
+	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
+endif()
+if(LWYU)
+	if(APPLE)
+		message(WARNING "Link what you use is not supported by Apple's linker. Skipping.")
+	else()
+		set(CMAKE_LINK_WHAT_YOU_USE TRUE)
+	endif()
+endif()
+if(CLANG_TIDY)
+	set(CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=*,readability=*,boost=*,clang-analyzer=*")
+endif()
+
+
+#################################################
+#                                               #
+#             Create Library Target             #
+#                                               #
+#################################################
+
+
 # Create the shared object target
 add_library("${SHARED_LIB_NAME}" SHARED
 	# AST

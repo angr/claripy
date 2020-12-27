@@ -1,8 +1,8 @@
 /** @file */
 
-#include "src/ast/bool.hpp"
-#include "src/ast/factory.hpp"
-#include "src/ops/operations.hpp"
+#include "ast/bool.hpp"
+#include "ast/factory.hpp"
+#include "ops/operations.hpp"
 
 #include <set>
 
