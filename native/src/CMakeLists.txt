@@ -46,6 +46,7 @@ endif()
 
 
 # Create the shared object target
+# TODO: break apart
 add_library("${SHARED_LIB_NAME}" SHARED
 	# AST
 	./ast/cache_key.cpp
@@ -63,7 +64,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 		./utils/errors/claricpp.cpp
 		# Log
 			# Level
-			./utils/log/level/level.cpp
+			./utils/log/level/ostream.cpp
 			./utils/log/level/access.cpp
 			# Style
 			./utils/log/styles/level_timestamp_message.cpp

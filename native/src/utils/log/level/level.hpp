@@ -7,8 +7,6 @@
 #ifndef __UTILS_LOG_LEVEL_LEVEL_HPP__
 #define __UTILS_LOG_LEVEL_LEVEL_HPP__
 
-#include <ostream>
-
 
 #ifdef CONSTANT_LOG_LEVEL
     /** Constexpr if and only if the log level is immutable */
@@ -31,7 +29,5 @@ namespace Utils::Log::Level {
 
 } // namespace Utils::Log::Level
 
-/** Define the stream operator for Utils::Log::Level */
-std::ostream &operator<<(std::ostream &os, const Utils::Log::Level::Level &l);
 
 #endif

@@ -1,5 +1,5 @@
 /** @file */
-#include "level.hpp"
+#include "ostream.hpp"
 
 #include "../../affirm.hpp"
 #include "../../errors/unexpected.hpp"
