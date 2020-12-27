@@ -4,24 +4,24 @@
 #include "abstract_base.hpp"
 #include "default.hpp"
 
-#include <shared_mutex>
+#include "../../thread_safe_access.hpp"
+
 
 // For brevity
-using namespace Utils::Log;
+using namespace Utils;
+using namespace Log;
 using Sty = Style::AbstractBase;
 
 
 // File local variables
-static std::shared_mutex style_lock;
-static std::shared_ptr<Sty> style(new Style::Default());
+static ThreadSafeAccess<Sty> access(std::make_shared<Style::Default>());
+using Ptr = decltype(access)::Ptr;
 
 
-void Style::Private::set(std::shared_ptr<Sty> &&s) {
-    std::unique_lock<decltype(style_lock)> l(style_lock);
-    style = s;
+void Style::Private::set(Ptr &ptr) {
+    access.set_shared_ptr(ptr);
 }
 
-std::shared_ptr<Sty> Style::get() {
-    std::shared_lock<decltype(style_lock)> l(style_lock);
-    return style;
+Ptr Style::get() {
+    return access.get();
 }

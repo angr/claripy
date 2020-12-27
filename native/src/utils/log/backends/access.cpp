@@ -4,25 +4,27 @@
 #include "abstract_base.hpp"
 #include "default.hpp"
 
+#include "../../thread_safe_access.hpp"
+
 #include <memory>
 #include <shared_mutex>
 
 // For brevity
-using namespace Utils::Log;
+using namespace Utils;
+using namespace Log;
 using Bk = Backend::AbstractBase;
 
+// Create a thread safe backend wrapper
+static ThreadSafeAccess<Bk> access(std::make_shared<Backend::Default>());
+using Ptr = decltype(access)::Ptr;
 
-// File local variables
-static std::shared_mutex style_lock;
-static std::shared_ptr<Bk> backend(new Backend::Default());
+// Default the backend
 
 
-void Backend::Private::set(std::shared_ptr<Bk> &&b) {
-    std::unique_lock<decltype(style_lock)> l(style_lock);
-    backend = b;
+void Backend::Private::set(Ptr &ptr) {
+    access.set_shared_ptr(ptr);
 }
 
-std::shared_ptr<Bk> Backend::get() {
-    std::shared_lock<decltype(style_lock)> l(style_lock);
-    return backend;
+Ptr Backend::get() {
+    return access.get();
 }

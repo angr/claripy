@@ -10,7 +10,9 @@
 
 namespace Utils::Log::Style {
 
-    /** Define the default log style */
+    /** Define the default log style
+     *  This must be default constructable
+     */
     using Default = LevelTimestampMessage;
 
 } // namespace Utils::Log::Style

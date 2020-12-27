@@ -10,7 +10,9 @@
 
 namespace Utils::Log::Backend {
 
-    /** Define the default Log backend */
+    /** Define the default Log backend
+     *  This must be default constructable
+     */
     using Default = Clog;
 
 } // namespace Utils::Log::Backend

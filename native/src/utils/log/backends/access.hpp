@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This file methods for accessing the Log Backend
+ * The methods within this file are threadsafe
  */
 #ifndef __UTILS_LOG_BACKEND_ACCESS_HPP__
 #define __UTILS_LOG_BACKEND_ACCESS_HPP__
@@ -14,17 +15,18 @@ namespace Utils::Log::Backend {
 
     namespace Private {
 
-        /** Set the Log backend */
-        void set(std::shared_ptr<AbstractBase> &&b);
+        /** Define a private set method */
+        void set(std::shared_ptr<AbstractBase> &ptr);
 
     } // namespace Private
 
-    /** Set the Log backend to a new T constructed with arguments: args */
+    /** Set the Log Backend to a new T constructed with arguments: args	*/
     template <typename T, typename... Args> void set(Args &...args) {
-        Private::set(std::shared_ptr<AbstractBase>(new T(args...)));
+        std::shared_ptr<AbstractBase> ptr(new T(args...));
+        Private::set(ptr);
     }
 
-    /** Return a copy of the backend */
+    /** Return a copy of the Backend */
     std::shared_ptr<AbstractBase> get();
 
 } // namespace Utils::Log::Backend
