@@ -1,6 +1,6 @@
 /**
  * @file
- @brief This file defines macros used acorss Utils::Log
+ * @brief This file defines macros used acorss Utils::Log
  */
 #ifndef __UTILS_LOG_MACROS_HPP__
 #define __UTILS_LOG_MACROS_HPP__

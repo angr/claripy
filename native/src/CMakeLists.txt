@@ -22,8 +22,9 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	# Utils
 		./utils/errors/claricpp.cpp
 		# Log
-		./utils/log/level.cpp
-		./utils/log/private/runtime_level_config.cpp
+			# Level
+			./utils/log/level/level.cpp
+			./utils/log/level/access.cpp
 			# Style
 			./utils/log/styles/level_timestamp_message.cpp
 			./utils/log/styles/access.cpp
