@@ -32,9 +32,7 @@ int weak_ptr_invalidation_gc() {
     { Base a = construct_ast_op<Base>(); }
 
     // Check cache size
-    if (cache.size() != 1) {
-        return 1;
-    }
+    UNITTEST_ASSERT(cache.size() == 1)
 
     // Garbage collect then verify size
     cache.unsafe_gc();

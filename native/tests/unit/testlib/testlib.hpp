@@ -7,5 +7,6 @@
 
 #include "testlib/boolean.hpp"
 #include "testlib/construct_ast_op.hpp"
+#include "testlib/error.hpp"
 
 #endif
