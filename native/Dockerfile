@@ -48,7 +48,8 @@ RUN find . -regex '.*\.\(cpp\|hpp\)' -exec \
 ARG BUILD='/build'
 RUN mkdir "${BUILD}"
 WORKDIR "${BUILD}"
-RUN cmake "${NATIVE}"
+ARG MODE="Debug"
+RUN cmake -DCMAKE_BUILD_TYPE="${MODE}" "${NATIVE}"
 
 # Make
 WORKDIR "${BUILD}"
