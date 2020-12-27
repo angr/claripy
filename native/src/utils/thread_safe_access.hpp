@@ -19,18 +19,39 @@ namespace Utils {
      *  Warning: This does not protect T internally; it only protects setting and getting
      */
     template <typename T> class ThreadSafeAccess {
+      public:
         /** The get-able type */
         using Ptr = std::shared_ptr<T>;
-
-      public:
-        /** Construct and point to nothing by default */
-        ThreadSafeAccess() : obj(nullptr) {}
 
         /** A getter */
         Ptr get() const {
             std::shared_lock<decltype(this->m)>(this->m);
             return this->obj;
         }
+
+        /** Clear the internals */
+        void clear() {
+            std::unique_lock<decltype(this->m)>(this->m);
+            this->obj.reset(nullptr);
+        }
+
+        /************************************************/
+        /*                 Constructors                 */
+        /************************************************/
+
+        /** Construct and point to nothing by default */
+        ThreadSafeAccess() : obj(nullptr) {}
+
+        /** shared_ptr constructor
+         *  This is by value to allow temporary shared pointers to be used
+         */
+        ThreadSafeAccess(Ptr ptr) : obj(ptr) {}
+
+        /** Disable copy constructor */
+        ThreadSafeAccess(const ThreadSafeAccess &) = delete;
+
+        /** Disable move constructor */
+        ThreadSafeAccess(ThreadSafeAccess &&) = delete;
 
         /************************************************/
         /*                   Setters                    */
