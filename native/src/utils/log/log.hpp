@@ -5,8 +5,8 @@
 #ifndef __UTILS_LOG_LOG_HPP__
 #define __UTILS_LOG_LOG_HPP__
 
+#include "level.hpp"
 #include "macros.hpp"
-#include "private/level_config.hpp"
 #include "private/send_to_backend.hpp"
 
 #include "../sink.hpp"
@@ -16,10 +16,11 @@
 #define DEFINE_LOG_LEVEL(LEVEL, NAME)                                                             \
     /** Log to a given log with given log level */                                                \
     template <typename Log, typename... Args> void NAME(const Args &...args) {                    \
-        if RUNTIME_LOG_CONSTEXPR (Private::Enabled::NAME) {                                       \
-            static RUNTIME_LOG_CONSTEXPR const LogID id = Log::log_id;                            \
-            Private::send_to_backend(id, Level::LEVEL, args...);                                  \
-        }                                                                                         \
+        if UTILS_LOG_LEVEL_CONSTANT                                                               \
+            UTILS_LOG_LEVEL_IMPLIES(Level::get(), Level::Level::LEVEL) {                          \
+                static UTILS_LOG_LEVEL_CONSTANT const LogID id = Log::log_id;                     \
+                Private::send_to_backend(id, Level::Level::LEVEL, args...);                       \
+            }                                                                                     \
         else {                                                                                    \
             sink(args...);                                                                        \
         }                                                                                         \

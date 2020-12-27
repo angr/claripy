@@ -12,7 +12,15 @@ using namespace Log;
 using Lvl = Level::Level;
 
 
-#if RUNTIME_LOGLEVEL
+#ifdef CONSTANT_LOG_LEVEL
+
+static constexpr Lvl lvl = Level::default_;
+
+constexpr Lvl Level::get() {
+    return lvl;
+}
+
+#else
 
 static std::atomic<Lvl> lvl(Level::default_);
 
@@ -21,14 +29,6 @@ void Level::set(Level l) {
 }
 Lvl Level::get() {
     return lvl.load();
-}
-
-#else
-
-static constexpr Lvl lvl = Level::default_;
-
-Lvl Level::get() {
-    return lvl;
 }
 
 #endif

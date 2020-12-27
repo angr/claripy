@@ -14,7 +14,7 @@ namespace Utils::Log::Style {
     struct LevelTimestampMessage : public AbstractBase {
 
         /** Format the log message */
-        std::string str(Constants::CCSC, const Level &lvl,
+        std::string str(Constants::CCSC, const Level::Level &lvl,
                         const std::ostringstream &raw) override final;
     };
 

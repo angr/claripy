@@ -23,7 +23,7 @@ namespace Utils::Log::Style {
         virtual ~AbstractBase() = default;
 
         /** Format the log message */
-        virtual std::string str(Constants::CCSC log_id, const Level &lvl,
+        virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,
                                 const std::ostringstream &raw) = 0;
     };
 

@@ -23,7 +23,7 @@ namespace Utils::Log::Backend {
         virtual ~AbstractBase() = default;
 
         /** Log the given message, level, to the correct log given by log_id */
-        virtual void log(Constants::CCSC id, const Level &lvl, const std::string &msg) = 0;
+        virtual void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg) = 0;
     };
 
 } // namespace Utils::Log::Backend

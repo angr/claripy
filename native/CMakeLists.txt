@@ -43,7 +43,7 @@ option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
 option( ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF )
 option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
 # If enabled: log calls to log levels lower than defined will have no performance penalty
-option( FIX_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
+option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
 # Note: Lower log levels implier higher levels (i.e. verbose implies critical)
@@ -130,7 +130,7 @@ endif()
 # Build type
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("*** Debug Mode enabled! ***")
-	add_definitions(-DDEFAULT_LOG_LEVEL="${DEFAULT_DEBUG_LOG_LEVEL}")
+	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}) # no quotes because it is a C-macro
 	# Add debug macro
     add_definitions(-DDEBUG)
 	# Debug flags
@@ -146,22 +146,22 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${DEBUG_FLAGS}")
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("*** Release Build enabled! ***")
-	add_definitions(-DDEFAULT_LOG_LEVEL="${DEFAULT_RELEASE_LOG_LEVEL}")
+	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}) # no quotes because it is a C-macro
 	# Release flags
 	set(RELEASE_FLAGS "-pipe -flto -O3")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
 	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${RELEASE_FLAGS}")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
 else()
-	add_definitions(-DDEFAULT_LOG_LEVEL="${DEFAULT_LOG_LEVEL}")
+	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_LOG_LEVEL}) # no quotes because it is a C-macro
 endif()
 
 # Fix compile time logging
-if(CMAKE_BUILD_TYPE MATCHES Release AND FIX_LOG_LEVEL)
+if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
     message("*** Runtime logging disabled! ***")
+	add_definitions(-DCONSTANT_LOG_LEVEL)
 else()
     message("*** Runtime logging enabled! ***")
-	add_definitions(-DRUNTIME_LOGLEVEL)
 endif()
 
 # Enable testing

@@ -11,13 +11,20 @@
 
 namespace Utils::Log::Level {
 
-#ifdef RUNTIME_LOGLEVEL
+#ifdef CONSTANT_LOG_LEVEL
+
+    /** Return the log level */
+    constexpr Level get();
+
+#else
+
     /** Set the log level */
     void set(Level l);
-#endif
 
     /** Return the log level */
     Level get();
+
+#endif
 
 } // namespace Utils::Log::Level
 

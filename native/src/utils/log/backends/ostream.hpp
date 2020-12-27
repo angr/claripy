@@ -27,7 +27,8 @@ namespace Utils::Log::Backend {
         ~OStream() = default;
 
         /** Log the message */
-        void log(Constants::CCSC id, const Level &lvl, const std::string &msg) override final;
+        void log(Constants::CCSC id, const Level::Level &lvl,
+                 const std::string &msg) override final;
 
       private:
         /** The stream we write to

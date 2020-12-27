@@ -9,7 +9,7 @@ using namespace Utils::Log;
 /** Create a style class */
 struct Plain : Style::AbstractBase {
     /** The style function */
-    std::string str(Constants::CCSC, const Level &, const std::ostringstream &s) override {
+    std::string str(Constants::CCSC, const Level::Level &, const std::ostringstream &s) override {
         return s.str();
     }
 };

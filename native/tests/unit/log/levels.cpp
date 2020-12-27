@@ -7,6 +7,7 @@
 
 
 using namespace Utils::Log;
+using Lvl = Level::Level;
 
 
 /** Test the given logging function */
@@ -17,7 +18,7 @@ int test(std::ostringstream &s) {
         return 1;
     }
     else {
-        s.clear();
+        s.str("");
         return 0;
     }
 }
@@ -30,43 +31,51 @@ int levels() {
     Style::set<Style::LevelTimestampMessage>();
     Backend::set<Backend::OStream>(s);
 
+    const UTILS_LOG_LEVEL_CONSTANT auto lvl = Level::get();
+
     // Test each level
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::critical) {
-        critical(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Critical) {
+            critical(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::error) {
-        error(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Error) {
+            error(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::warning) {
-        warning(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Warning) {
+            warning(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::info) {
-        info(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Info) {
+            info(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::debug) {
-        debug(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Debug) {
+            debug(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::verbose) {
-        verbose(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Verbose) {
+            verbose(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
 
     return 0;
 }

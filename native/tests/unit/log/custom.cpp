@@ -7,26 +7,30 @@
 
 
 using namespace Utils::Log;
+using Lvl = Level::Level;
+
+
+const std::string cst("Custom");
 
 
 /** Test the given logging function */
 int test(std::ostringstream &s) {
     auto str = s.str();
-    std::cout << str;
-    if (str.find("Custom") == std::string::npos) {
-        return 1;
+    str.pop_back(); // newline
+    if (str == cst) {
+        s.str("");
+        return 0;
     }
     else {
-        s.clear();
-        return 0;
+        return 1;
     }
 }
 
 /** Create a style class */
 struct CustomSty : Style::AbstractBase {
     /** The style function */
-    std::string str(Constants::CCSC custom, const Level &, const std::ostringstream &) override {
-        return custom;
+    std::string str(Constants::CCSC, const Lvl &, const std::ostringstream &) override {
+        return cst;
     }
 };
 
@@ -42,43 +46,51 @@ int custom() {
     Style::set<CustomSty>();
     Backend::set<Backend::OStream>(s);
 
+    const UTILS_LOG_LEVEL_CONSTANT auto lvl = Level::get();
+
     // Test each level
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::critical) {
-        critical<Custom>(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Critical) {
+            critical(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::error) {
-        error<Custom>(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Error) {
+            error(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::warning) {
-        warning<Custom>(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Warning) {
+            warning(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::info) {
-        info<Custom>(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Info) {
+            info(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::debug) {
-        debug<Custom>(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Debug) {
+            debug(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
-    if RUNTIME_LOG_CONSTEXPR (Private::Enabled::verbose) {
-        verbose<Custom>(STR);
-        if (test(s) == 1) {
-            return 1;
+    if UTILS_LOG_LEVEL_CONSTANT
+        UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Verbose) {
+            verbose(STR);
+            if (test(s) == 1) {
+                return 1;
+            }
         }
-    }
 
     return 0;
 }
