@@ -73,13 +73,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Required complication flags
-set (CMAKE_C_FLAGS   "-Wall -Wextra -Wpedantic -Werror" )
-set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror" )
-
 # Library source
 # Used for compilation and header lookup for tests
 set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+# Required complication flags
+set(REQUIRED_FLAGS "-Wall -Wextra -Werror" )
+set(CMAKE_C_FLAGS   "${REQUIRED_FLAGS}")
+set(CMAKE_CXX_FLAGS "${REQUIRED_FLAGS}")
 
 
 #################################################
@@ -94,11 +95,34 @@ if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
 	message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
 endif()
 
+# Remap file prefixes to make source location irrelevant to build constants like __FILE__
+set(REMAP_FLAGS "-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${REMAP_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REMAP_FLAGS}")
+
 # Optimize for native code
 if(OPTIMIZE_FOR_NATIVE)
 	set(NATIVE_FLAGS "-march=native -mtune=native")
 	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${NATIVE_FLAGS}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NATIVE_FLAGS}")
+endif()
+
+# Fix compile time logging
+if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
+    message("*** Runtime logging disabled! ***")
+	add_definitions(-DCONSTANT_LOG_LEVEL)
+else()
+    message("*** Runtime logging enabled! ***")
+endif()
+
+# Enable testing
+if(ENABLE_TESTING)
+    message("*** Testing enabled! ***")
+	include(CTest)
+	enable_testing()
+    add_definitions(-DTEST)
+else()
+    message("*** Testing disabled! ***")
 endif()
 
 # Build type
@@ -128,24 +152,6 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
 else()
 	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_LOG_LEVEL}) # no quotes because it is a C-macro
-endif()
-
-# Fix compile time logging
-if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
-    message("*** Runtime logging disabled! ***")
-	add_definitions(-DCONSTANT_LOG_LEVEL)
-else()
-    message("*** Runtime logging enabled! ***")
-endif()
-
-# Enable testing
-if(ENABLE_TESTING)
-    message("*** Testing enabled! ***")
-	include(CTest)
-	enable_testing()
-    add_definitions(-DTEST)
-else()
-    message("*** Testing disabled! ***")
 endif()
 
 # Enable security flags
