@@ -6,6 +6,17 @@
 #define __MACROS_HPP__
 
 
+/** A macro that contains the information about the current line
+ *  Useful for debugging
+ */
+#define WHOAMI __FILE__ ":", __LINE__, " (", __func__, "): "
+
+/** A macro that contains the information about the current line
+ *  Useful for debugging
+ */
+#define WHOAMI_WITH_SOURCE                                                                        \
+    __FILE_FILE__ " via " __BASE_FILE__ ": ", __LINE__, " (", __func__, "): "
+
 /** A macro used to disable all default constructors of a class */
 #define DELETE_DEFAULTS(X)                                                                        \
     /** Disable default constructor */                                                            \

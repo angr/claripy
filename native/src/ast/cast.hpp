@@ -62,10 +62,7 @@ namespace AST {
             "\tFile: " __FILE__ "\n\tLine: " MACRO_TO_STRING(__LINE__));
         To ret = down_cast<To>(f);
         Utils::affirm<Utils::Error::Unexpected::BadCast>(
-            ret,
-            "dynamic_pointer_cast within AST::factory failed.\n"
-            "\tFile: " __FILE__ "\n\tLine: ",
-            __LINE__, "\n\t", __func__);
+            ret, WHOAMI " -- dynamic_pointer_cast within AST::factory failed.");
         return ret;
     }
 
