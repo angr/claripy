@@ -1,4 +1,3 @@
-
 /** @file */
 
 #include "testlib.hpp"

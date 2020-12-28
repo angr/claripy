@@ -1,12 +1,10 @@
 /** @file */
 
-#include "test_each_level.hpp"
 #include "testlib.hpp"
 #include "utils.hpp"
 
 #include <iostream>
 #include <sstream>
-
 
 using namespace Utils::Log;
 using Lvl = Level::Level;
@@ -17,7 +15,7 @@ const std::string cst("Custom");
 
 
 /** Test the given logging function */
-void test(std::ostringstream &s) {
+void test(std::ostringstream &s, Lvl) {
     auto str = s.str();
     str.pop_back(); // newline
     UNITTEST_ASSERT(str == cst)
@@ -34,6 +32,9 @@ struct CustomSty : Style::AbstractBase {
 
 /** A custom log type */
 UTILS_LOG_DEFINE_LOG_CLASS(Custom)
+
+#define TEMPLATE_MACRO <Custom>
+#include "test_each_level.hpp"
 
 
 /** Each construction should have a unique pointer */

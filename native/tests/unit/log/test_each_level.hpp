@@ -6,49 +6,57 @@
 
 #include <sstream>
 
+
+// For brevity
 using namespace Utils::Log;
 using Lvl = Level::Level;
 
 
+/** Default TEMPLATE_MACRO to empty */
+#ifndef TEMPLATE_MACRO
+    #define TEMPLATE_MACRO
+#endif
+
+
 namespace UnitTest {
 
-    /** Calls the log function on (args...) for each enabled log level
-     *  Then calls test(s)
+    /** Calls <Log function>TEMPLATE_MACRO(args...) for each enabled log level
+     *  Then calls test(s, <level>)
      */
     template <typename F, typename... Args>
     void test_each_level(std::ostringstream &s, F &test, const Args &...args) {
-        const UTILS_LOG_LEVEL_CONSTANT auto lvl = Level::get();
+        UTILS_LOG_LEVEL_CONSTEXPR const auto lvl = Level::get();
 
         // Test each level
-        if UTILS_LOG_LEVEL_CONSTANT
+        if UTILS_LOG_LEVEL_CONSTEXPR
             UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Critical) {
-                critical(args...);
-                test(s);
+                critical TEMPLATE_MACRO(args...);
+                test(s, Lvl::Critical);
             }
-        if UTILS_LOG_LEVEL_CONSTANT
+        if UTILS_LOG_LEVEL_CONSTEXPR
             UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Error) {
-                error(args...);
-                test(s);
+                error TEMPLATE_MACRO(args...);
+                test(s, Lvl::Error);
             }
-        if UTILS_LOG_LEVEL_CONSTANT
+        if UTILS_LOG_LEVEL_CONSTEXPR
             UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Warning) {
-                warning(args...);
-                test(s);
+                warning TEMPLATE_MACRO(args...);
+                test(s, Lvl::Warning);
             }
-        if UTILS_LOG_LEVEL_CONSTANT
+        if UTILS_LOG_LEVEL_CONSTEXPR
             UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Info) {
-                info(args...);
-                test(s);
+                info TEMPLATE_MACRO(args...);
+                test(s, Lvl::Info);
             }
-        if UTILS_LOG_LEVEL_CONSTANT
+        if UTILS_LOG_LEVEL_CONSTEXPR
             UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Debug) {
-                debug(args...);
-                test(s);
+                debug TEMPLATE_MACRO(args...);
+                test(s, Lvl::Debug);
             }
-        if UTILS_LOG_LEVEL_CONSTANT
+        if UTILS_LOG_LEVEL_CONSTEXPR
             UTILS_LOG_LEVEL_IMPLIES(lvl, Lvl::Verbose) {
-                verbose(args...);
-                test(s);
+                verbose TEMPLATE_MACRO(args...);
+                test(s, Lvl::Verbose);
             }
     }
 

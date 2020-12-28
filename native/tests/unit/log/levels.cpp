@@ -17,7 +17,7 @@ using namespace UnitTest::TestLib;
 #define STR "log test"
 
 /** Test the given logging function */
-void test(std::ostringstream &s) {
+void test(std::ostringstream &s, Lvl) {
     UNITTEST_ASSERT(s.str().find(STR) != std::string::npos)
     s.str(""); // clear the log for the next test
 }
