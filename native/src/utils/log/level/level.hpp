@@ -10,10 +10,10 @@
 
 #ifdef CONSTANT_LOG_LEVEL
     /** Constexpr if and only if the log level is immutable */
-    #define UTILS_LOG_LEVEL_CONSTANT constexpr
+    #define UTILS_LOG_LEVEL_CONSTEXPR constexpr
 #else
     /** Constexpr if and only if the log level is immutable */
-    #define UTILS_LOG_LEVEL_CONSTANT
+    #define UTILS_LOG_LEVEL_CONSTEXPR
 #endif
 
 /** Used to determine if log level A implies log level B */
