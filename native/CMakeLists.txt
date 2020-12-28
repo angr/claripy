@@ -13,7 +13,7 @@ set( SHARED_LIB_NAME "claricpp.so" )
 # Config options
 option( BUILD_DOC "Create a make target for documentation"   ON )
 option( ENABLE_TESTING "Create a make target for test cases" ON )
-option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   ON )
+option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
 
 ### Developer options below ###
 
