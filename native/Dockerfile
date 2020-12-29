@@ -4,6 +4,7 @@
 
 
 FROM ubuntu:20.04 AS base
+LABEL claricpp=base
 SHELL [ "/bin/bash", "-ecux" ]
 
 # Prep apt
@@ -46,6 +47,7 @@ RUN apt-get install -yq \
 
 
 FROM base AS config
+LABEL claricpp=config
 
 # Required build args
 ARG VERSION=""
@@ -83,6 +85,7 @@ RUN if [[ "${FORMAT}" == True ]]; then \
 
 
 FROM config as build
+LABEL claricpp=build
 
 # Optional build args
 ARG CMAKE_BUILD_TYPE="Debug"
@@ -105,6 +108,7 @@ RUN make -j "$(nproc)" ${MAKE_TARGETS}
 
 
 FROM build as test
+LABEL claricpp=test
 
 # Optional build args
 ARG VERBOSE="False"

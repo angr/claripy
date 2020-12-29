@@ -1,17 +1,22 @@
-# Docker
+# Build system
 Dockerfile
-.dockerignore
 *.docker
+build.sh
+
+# Build artifacts
+Doxyfile
+build/*
+
+# Config files
+.dockerignore
+.editorconfig
+.gitignore
 
 # Vim
 *.swp
 *.swo
 *.swn
 
-# Ignore
+# Explicit
 Ignore/*
 ignore/*
-
-# Build
-Build/*
-build/*
