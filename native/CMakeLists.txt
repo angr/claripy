@@ -17,8 +17,8 @@ option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
 
 ### Developer options below ###
 
-# Version / API Version
-set( VERSION 0.1 )
+# API Version
+# This is different from version which is read from /VERSION
 set( SOVERSION 1 )
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
@@ -94,6 +94,10 @@ set(CMAKE_CXX_FLAGS "${REQUIRED_FLAGS}")
 if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
 	message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
 endif()
+
+# Define the version
+file(READ "../VERSION" VERSION)
+string(STRIP "${VERSION}" VERSION)
 
 # Remap file prefixes to make source location irrelevant to build constants like __FILE__
 set(REMAP_FLAGS "-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
