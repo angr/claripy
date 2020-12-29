@@ -10,9 +10,12 @@ except ImportError:
 if bytes is str:
     raise Exception("This module is designed for python 3 only. Please install an older version to use python 2.")
 
+with open('VERSION') as f:
+    version = f.read().strip()
+
 setup(
     name='claripy',
-    version='9.0.gitrolling',
+    version=version,
     python_requires='>=3.6',
     packages=packages,
     install_requires=[
