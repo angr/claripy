@@ -8,7 +8,7 @@ cmake_minimum_required( VERSION 3.16 )
 
 
 # Shared library name
-set( SHARED_LIB_NAME "claricpp.so" )
+set( SHARED_LIB_NAME "claricpp" )
 
 # Config options
 option( BUILD_DOC "Create a make target for documentation"   ON )

@@ -80,16 +80,15 @@ RUN if [[ "${FORMAT}" == True ]]; then \
 
 
 ##################################################
-#                  Build Stage                   #
+#                  CMake Stage                   #
 ##################################################
 
 
-FROM config as build
-LABEL claricpp=build
+FROM config as cmake
+LABEL claricpp=cmake
 
 # Optional build args
 ARG CMAKE_BUILD_TYPE="Debug"
-ARG MAKE_TARGETS=""
 
 # cd build
 RUN mkdir "${BUILD}"
@@ -98,8 +97,21 @@ WORKDIR "${BUILD}"
 # CMake
 RUN cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${NATIVE}"
 
+
+##################################################
+#                  Build Stage                   #
+##################################################
+
+
+FROM cmake as build
+LABEL claricpp=build
+
+# Optional build args
+ARG MAKE_TARGET="claricpp"
+
 # Make
-RUN make -j "$(nproc)" ${MAKE_TARGETS}
+RUN echo ${MAKE_TARGET}
+RUN make -j "$(nproc)" "${MAKE_TARGET}"
 
 
 ##################################################
@@ -111,14 +123,11 @@ FROM build as test
 LABEL claricpp=test
 
 # Optional build args
-ARG VERBOSE="False"
-
-# cd build
-WORKDIR "${BUILD}"
+ARG VERBOSE_TEST="False"
 
 # Test if make targets request it
-RUN make -j "$(nproc)" tests
-RUN if [[ "${VERBOSE}" == True ]]; then \
+RUN make -j "$(nproc)"
+RUN if [[ "${VERBOSE_TEST}" == True ]]; then \
 		ctest --verbose -j "$(nproc)" . ; \
 	else \
 		ctest -j "$(nproc)" . ; \

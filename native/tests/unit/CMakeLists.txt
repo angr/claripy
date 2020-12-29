@@ -1,6 +1,6 @@
 # Define testlib
 set(TESTLIB_SRC "${CMAKE_CURRENT_SOURCE_DIR}/testlib")
-set(TESTLIB "testlib.so")
+set(TESTLIB "testlib")
 
 # Create the test library target that test cases link to
 # Then add headers and sources to the test library
