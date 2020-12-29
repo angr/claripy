@@ -41,8 +41,11 @@ COPY . "${NATIVE}"
 
 # clang-format
 WORKDIR "${NATIVE}"
-RUN find . -regex '.*\.\(cpp\|hpp\)' -exec \
-	clang-format-11 -style=file -i {} \;
+ARG FORMAT=False
+RUN if [[ "${FORMAT}" == True ]]; then \
+		find . -regex '.*\.\(cpp\|hpp\)' -exec \
+			clang-format-11 -style=file -i {} ';' ; \
+	fi
 
 # CMake
 ARG BUILD='/build'
