@@ -13,9 +13,9 @@ using namespace AST;
 
 
 /** @todo */
-RawTypes::VS::VS(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0) {}
+RawTypes::VS::VS(const Hash h, const Op::Operation o) : RawTypes::Bits(h, o, 0) {}
 
 /** @todo make this actually work */
-Hash RawTypes::VS::hash(const Ops::Operation o) {
+Hash RawTypes::VS::hash(const Op::Operation o) {
     return Hash(VS::static_class_id) * (1 + Hash(o));
 }

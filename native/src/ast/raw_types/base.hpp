@@ -9,7 +9,7 @@
 
 #include "../../annotations/base.hpp"
 #include "../../macros.hpp"
-#include "../../ops/operations.hpp"
+#include "../../op/operations.hpp"
 #include "../constants.hpp"
 #include "../simplified_level.hpp"
 
@@ -70,7 +70,7 @@ namespace AST {
             const Hash id;
 
             /** The top level operation this AST represents */
-            const Ops::Operation op;
+            const Op::Operation op;
 
 #if 0
             /** A flag saying whether or not this AST is symbolic */
@@ -98,7 +98,7 @@ namespace AST {
              *  This must have take in the same arguments types as the hash function, minus the
              * hash These arguments may be taken in via copy, reference or move; ownership is given
              */
-            Base(const Hash h, const Ops::Operation o);
+            Base(const Hash h, const Op::Operation o);
 
           private:
             /************************************************/
@@ -109,7 +109,7 @@ namespace AST {
              *  This must have take in the same arguments as the constructor, minus the hash
              *  These arguments args must be const values or references; this function must be pure
              */
-            static Hash hash(const Ops::Operation o);
+            static Hash hash(const Op::Operation o);
 
             /** Declare CacheKey a friend */
             friend class ::AST::CacheKey;

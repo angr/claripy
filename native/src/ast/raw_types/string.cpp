@@ -1,7 +1,7 @@
 /** @file */
 #include "string.hpp"
 
-#include "../../ops/operations.hpp"
+#include "../../op/operations.hpp"
 #include "../../utils/inc.hpp"
 
 
@@ -11,11 +11,10 @@ AST_RAWTYPES_DEFINE_AST_SUBBASE_ID_FUNCTIONS(String)
 
 // For clarity
 using namespace AST;
-using Op = Ops::Operation;
 
 
 /** @todo */
-RawTypes::String::String(const Hash h, const Ops::Operation o) : RawTypes::Bits(h, o, 0) {}
+RawTypes::String::String(const Hash h, const Op::Operation o) : RawTypes::Bits(h, o, 0) {}
 
 
 /* String RawTypes::String::Concrete(const std::string & value, const Constants::Int length) { */
@@ -28,6 +27,6 @@ RawTypes::String::String(const Hash h, const Ops::Operation o) : RawTypes::Bits(
 /* } */
 
 /** @todo make this actually work */
-Hash RawTypes::String::hash(const Ops::Operation o) {
+Hash RawTypes::String::hash(const Op::Operation o) {
     return Hash(String::static_class_id) * (1 + Hash(o));
 }

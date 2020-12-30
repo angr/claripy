@@ -2,7 +2,7 @@
 
 #include "ast/base.hpp"
 #include "ast/factory.hpp"
-#include "ops/operations.hpp"
+#include "op/operations.hpp"
 #include "testlib.hpp"
 
 #include <set>
@@ -27,7 +27,7 @@ namespace UnitTest {
 
 /** Construct a Base */
 template <typename T> T construct(const int n, std::set<BackendID> s = std::set<BackendID>()) {
-    return factory<T>(std::move(s), std::move((Ops::Operation) n));
+    return factory<T>(std::move(s), std::move((Op::Operation) n));
 }
 
 /** Construct a range of Bases */

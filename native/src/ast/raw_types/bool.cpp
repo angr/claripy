@@ -13,7 +13,7 @@ using namespace AST;
 
 
 /** @todo finish */
-RawTypes::Bool::Bool(const AST::Hash h, const Ops::Operation o) : RawTypes::Base(h, o) {}
+RawTypes::Bool::Bool(const AST::Hash h, const Op::Operation o) : RawTypes::Base(h, o) {}
 
 /** @todo this is a dummy */
 bool RawTypes::Bool::is_true() const {
@@ -26,6 +26,6 @@ bool RawTypes::Bool::is_false() const {
 }
 
 /** @todo make this actually work */
-Hash RawTypes::Bool::hash(const Ops::Operation o) {
+Hash RawTypes::Bool::hash(const Op::Operation o) {
     return Hash(Bool::static_class_id) * (1 + Hash(o));
 }

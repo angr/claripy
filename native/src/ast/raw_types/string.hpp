@@ -28,13 +28,13 @@ namespace AST {
              *  This must have take in the same arguments types as the hash function, minus the
              * hash These arguments may be taken in via copy, reference or move; ownership is given
              */
-            String(const Hash h, const Ops::Operation o);
+            String(const Hash h, const Op::Operation o);
 
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
              *  These arguments args must be const values or references; this function must be pure
              */
-            static Hash hash(const Ops::Operation o);
+            static Hash hash(const Op::Operation o);
         };
 
     } // namespace RawTypes

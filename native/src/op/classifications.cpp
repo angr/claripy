@@ -5,15 +5,15 @@
 
 
 // For brevity
-using OpMap = Ops::OpMap;
-using OpSet = Ops::OpSet;
-using OP = Ops::Operation;
+using OpMap = Op::OpMap;
+using OpSet = Op::OpSet;
+using OP = Op::Operation;
 
 /********************************************************************/
 /*                           Expressions                            */
 /********************************************************************/
 
-const OpSet Ops::Expression::arithmetic = {
+const OpSet Op::Expression::arithmetic = {
     OP::__add__,      OP::__radd__,     OP::__div__,       OP::__rdiv__, OP::__truediv__,
     OP::__rtruediv__, OP::__floordiv__, OP::__rfloordiv__, OP::__mul__,  OP::__rmul__,
     OP::__sub__,      OP::__rsub__,     OP::__pow__,       OP::__rpow__, OP::__mod__,
@@ -21,133 +21,133 @@ const OpSet Ops::Expression::arithmetic = {
     OP::__neg__,      OP::__pos__,      OP::__abs__,
 };
 
-const OpSet Ops::Expression::comparator {
+const OpSet Op::Expression::comparator {
     OP::__eq__, OP::__ne__, OP::__ge__, OP::__le__, OP::__gt__, OP::__lt__,
 };
 
-const OpSet Ops::Expression::bitwise {
+const OpSet Op::Expression::bitwise {
     OP::__invert__, OP::__or__,     OP::__ror__,     OP::__and__,    OP::__rand__,    OP::__xor__,
     OP::__rxor__,   OP::__lshift__, OP::__rlshift__, OP::__rshift__, OP::__rrshift__,
 };
 
-const OpSet Ops::Expression::set {
+const OpSet Op::Expression::set {
     OP::union_,
     OP::intersection,
     OP::widen,
 };
 
-const OpSet Ops::Expression::operations =
-    Utils::set_join(Ops::Expression::arithmetic, Ops::Expression::comparator,
-                    Ops::Expression::bitwise, Ops::Expression::set);
+const OpSet Op::Expression::operations =
+    Utils::set_join(Op::Expression::arithmetic, Op::Expression::comparator,
+                    Op::Expression::bitwise, Op::Expression::set);
 
 /********************************************************************/
-/*                           Backend Ops                            */
+/*                           Backend Op                            */
 /********************************************************************/
 
-const OpSet Ops::Backend::comparator {
+const OpSet Op::Backend::comparator {
     OP::SGE, OP::SLE, OP::SGT, OP::SLT, OP::UGE, OP::ULE, OP::UGT, OP::ULT,
 };
 
-const OpSet Ops::Backend::bitwise {
+const OpSet Op::Backend::bitwise {
     OP::RotateLeft,
     OP::RotateRight,
     OP::LShR,
     OP::Reverse,
 };
 
-const OpSet Ops::Backend::boolean { OP::And, OP::Or, OP::Not };
+const OpSet Op::Backend::boolean { OP::And, OP::Or, OP::Not };
 
-const OpSet Ops::Backend::bitmod { OP::Concat, OP::Extract, OP::SignExt, OP::ZeroExt };
+const OpSet Op::Backend::bitmod { OP::Concat, OP::Extract, OP::SignExt, OP::ZeroExt };
 
-const OpSet Ops::Backend::creation { OP::BoolV, OP::BVV, OP::FPV, OP::StringV };
+const OpSet Op::Backend::creation { OP::BoolV, OP::BVV, OP::FPV, OP::StringV };
 
-const OpSet Ops::Backend::symbol_creation { OP::BoolS, OP::BVS, OP::FPS, OP::StringS };
+const OpSet Op::Backend::symbol_creation { OP::BoolS, OP::BVS, OP::FPS, OP::StringS };
 
-const OpSet Ops::Backend::vsa_creation { OP::TopStridedInterval, OP::StridedInterval, OP::ValueSet,
+const OpSet Op::Backend::vsa_creation { OP::TopStridedInterval, OP::StridedInterval, OP::ValueSet,
                                          OP::AbstractLocation };
 
-const OpSet Ops::Backend::other { OP::If };
+const OpSet Op::Backend::other { OP::If };
 
-const OpSet Ops::Backend::arithmetic { OP::SDiv, OP::SMod };
+const OpSet Op::Backend::arithmetic { OP::SDiv, OP::SMod };
 
-const OpSet Ops::Backend::operations = Utils::set_join(
-    Ops::Backend::comparator, Ops::Backend::bitwise, Ops::Backend::boolean, Ops::Backend::bitmod,
-    Ops::Backend::creation, Ops::Backend::other, Ops::Backend::arithmetic);
+const OpSet Op::Backend::operations = Utils::set_join(
+    Op::Backend::comparator, Op::Backend::bitwise, Op::Backend::boolean, Op::Backend::bitmod,
+    Op::Backend::creation, Op::Backend::other, Op::Backend::arithmetic);
 
-const OpSet Ops::Backend::operations_vsa_compliant = Utils::set_join(
-    Ops::Backend::bitwise, Ops::Backend::comparator, Ops::Backend::boolean, Ops::Backend::bitmod);
+const OpSet Op::Backend::operations_vsa_compliant = Utils::set_join(
+    Op::Backend::bitwise, Op::Backend::comparator, Op::Backend::boolean, Op::Backend::bitmod);
 
-const OpSet Ops::Backend::operations_all = Utils::set_join(
-    Ops::Backend::operations, Ops::Backend::operations_vsa_compliant, Ops::Backend::vsa_creation);
+const OpSet Op::Backend::operations_all = Utils::set_join(
+    Op::Backend::operations, Op::Backend::operations_vsa_compliant, Op::Backend::vsa_creation);
 
-const OpSet Ops::Backend::fp_cmp {
+const OpSet Op::Backend::fp_cmp {
     OP::fpLT, OP::fpLEQ, OP::fpGT, OP::fpGEQ, OP::fpEQ,
 };
 
-const OpSet Ops::Backend::fp = Utils::set_join(
+const OpSet Op::Backend::fp = Utils::set_join(
     OpSet { OP::FPS, OP::fpToFP, OP::fpToIEEEBV, OP::fpFP, OP::fpToSBV, OP::fpToUBV, OP::fpNeg,
             OP::fpSub, OP::fpAdd, OP::fpMul, OP::fpDiv, OP::fpAbs },
-    Ops::Backend::fp_cmp);
+    Op::Backend::fp_cmp);
 
-const OpSet Ops::Backend::strings = { OP::StrSubstr,   OP::StrReplace,  OP::StrConcat,
+const OpSet Op::Backend::strings = { OP::StrSubstr,   OP::StrReplace,  OP::StrConcat,
                                       OP::StrLen,      OP::StrContains, OP::StrPrefixOf,
                                       OP::StrSuffixOf, OP::StrIndexOf,  OP::StrToInt,
                                       OP::StrIsDigit,  OP::IntToStr };
 
 /********************************************************************/
-/*                           Length Ops                             */
+/*                           Length Op                             */
 /********************************************************************/
 
-const OpSet Ops::Length::same =
-    Utils::set_join(Ops::Expression::arithmetic, Ops::Expression::bitwise, Ops::Expression::set,
-                    Ops::Backend::bitwise, Ops::Backend::other, OpSet { OP::Reversed });
+const OpSet Op::Length::same =
+    Utils::set_join(Op::Expression::arithmetic, Op::Expression::bitwise, Op::Expression::set,
+                    Op::Backend::bitwise, Op::Backend::other, OpSet { OP::Reversed });
 
-const OpSet Ops::Length::none =
-    Utils::set_join(Ops::Backend::comparator, Ops::Expression::comparator, Ops::Backend::boolean,
-                    Ops::Backend::fp_cmp);
+const OpSet Op::Length::none =
+    Utils::set_join(Op::Backend::comparator, Op::Expression::comparator, Op::Backend::boolean,
+                    Op::Backend::fp_cmp);
 
-const OpSet Ops::Length::change = Ops::Backend::bitmod;
+const OpSet Op::Length::change = Op::Backend::bitmod;
 
-const OpSet Ops::Length::new_ = Ops::Backend::creation;
+const OpSet Op::Length::new_ = Op::Backend::creation;
 
 /********************************************************************/
-/*                            Leaf Ops                              */
+/*                            Leaf Op                              */
 /********************************************************************/
 
-const OpSet Ops::Leaf::operations = Utils::set_join(
-    Ops::Backend::symbol_creation, Ops::Backend::creation, Ops::Backend::vsa_creation);
+const OpSet Op::Leaf::operations = Utils::set_join(
+    Op::Backend::symbol_creation, Op::Backend::creation, Op::Backend::vsa_creation);
 
-const OpSet Ops::Leaf::concrete = Ops::Backend::creation;
+const OpSet Op::Leaf::concrete = Op::Backend::creation;
 
-const OpSet Ops::Leaf::symbolic = Ops::Backend::symbol_creation;
+const OpSet Op::Leaf::symbolic = Op::Backend::symbol_creation;
 
 /********************************************************************/
 /*                              Other                               */
 /********************************************************************/
 
-const OpSet Ops::bin_ops {
+const OpSet Op::bin_ops {
     OP::__add__, OP::__radd__, OP::__mul__,  OP::__rmul__, OP::__or__,
     OP::__ror__, OP::__and__,  OP::__rand__, OP::__xor__,  OP::__rxor__,
 };
 
-const OpSet Ops::not_invertible {
+const OpSet Op::not_invertible {
     OP::Identical,
     OP::union_,
 };
 
-const OpSet Ops::reverse_distributable {
+const OpSet Op::reverse_distributable {
     OP::widen,   OP::union_,  OP::intersection, OP::__invert__, OP::__or__,
     OP::__ror__, OP::__and__, OP::__rand__,     OP::__xor__,    OP::__rxor__,
 };
 
-const OpSet Ops::commutative = { OP::__and__, OP::__or__, OP::__xor__, OP::__add__,
+const OpSet Op::commutative = { OP::__and__, OP::__or__, OP::__xor__, OP::__add__,
                                  OP::__mul__, OP::And,    OP::Or };
 
 /********************************************************************/
 /*                              Maps                                */
 /********************************************************************/
 
-const OpMap Ops::Maps::opposites = {
+const OpMap Op::Maps::opposites = {
     { OP::__add__, OP::__radd__ },
     { OP::__radd__, OP::__add__ },
     { OP::__div__, OP::__rdiv__ },
@@ -192,7 +192,7 @@ const OpMap Ops::Maps::opposites = {
     { OP::__rrshift__, OP::__rshift__ },
 };
 
-const OpMap Ops::Maps::reversed {
+const OpMap Op::Maps::reversed {
     { OP::__radd__, OP::__add__ },
     { OP::__rand__, OP::__and__ },
     { OP::__rdiv__, OP::__div__ },
@@ -209,7 +209,7 @@ const OpMap Ops::Maps::reversed {
     { OP::__rxor__, OP::__xor__ },
 };
 
-const OpMap Ops::Maps::inverse {
+const OpMap Op::Maps::inverse {
     { OP::__eq__, OP::__ne__ }, { OP::__ne__, OP::__eq__ }, { OP::__gt__, OP::__le__ },
     { OP::__lt__, OP::__ge__ }, { OP::__ge__, OP::__lt__ }, { OP::__le__, OP::__gt__ },
     { OP::ULT, OP::UGE },       { OP::UGE, OP::ULT },       { OP::UGT, OP::ULE },
@@ -221,7 +221,7 @@ const OpMap Ops::Maps::inverse {
 /*                              Infix                               */
 /********************************************************************/
 
-const std::map<OP, Constants::CCSC> Ops::infix {
+const std::map<OP, Constants::CCSC> Op::infix {
     { OP::__add__, "+" },
     { OP::__sub__, "-" },
     { OP::__mul__, "*" },

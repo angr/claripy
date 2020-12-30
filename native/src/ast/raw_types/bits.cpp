@@ -19,10 +19,10 @@ using namespace AST::RawTypes;
 Bits::~Bits() {}
 
 /** @todo */
-Bits::Bits(const Hash h, const Ops::Operation o, const Constants::Int l) : Base(h, o), length(l) {}
+Bits::Bits(const Hash h, const Op::Operation o, const Constants::Int l) : Base(h, o), length(l) {}
 
 /** @todo change this */
-AST::Hash Bits::hash(const Ops::Operation o, const Constants::Int l) {
+AST::Hash Bits::hash(const Op::Operation o, const Constants::Int l) {
     return Hash(Bits::static_class_id) * (1 + Hash(o)) + l;
 }
 

@@ -3,12 +3,12 @@
 
 #include "../ast/raw_types/base.hpp"
 #include "../ast/raw_types/bool.hpp"
-#include "../ops/operations.hpp"
+#include "../op/operations.hpp"
 
 
 // For clarity
 using namespace Simplification;
-using Op = Ops::Operation;
+using OP = Op::Operation;
 
 /** @todo */
 AST::Base Simplifier::if_(const AST::Base &original) {

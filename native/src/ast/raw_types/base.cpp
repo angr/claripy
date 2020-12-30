@@ -16,11 +16,11 @@ using namespace AST;
 /** @todo : maybe delete from hash cache if unique */
 RawTypes::Base::~Base() {}
 
-Hash RawTypes::Base::hash(const Ops::Operation o) {
+Hash RawTypes::Base::hash(const Op::Operation o) {
     return Hash(Base::static_class_id) * (1 + Hash(o));
 }
 
-RawTypes::Base::Base(const Hash h, const Ops::Operation o) : id(h), op(o) {}
+RawTypes::Base::Base(const Hash h, const Op::Operation o) : id(h), op(o) {}
 
 // Returns a string representation of this
 /** @todo: implement rest of repr */

@@ -73,11 +73,11 @@ add_library("${SHARED_LIB_NAME}" SHARED
 			./utils/log/backends/access.cpp
 			./utils/log/backends/ostream.cpp
 			./utils/log/backends/clog.cpp
-	# Annotations
+	# Annotation
 	./annotations/base.cpp
 	./annotations/simplification_avoidance.cpp
-	# Ops
-	./ops/classifications.cpp
+	# Op
+	./op/classifications.cpp
 	# Interface
 	./interface/base.cpp
 	./interface/op/op.cpp

@@ -2,8 +2,8 @@
  * @file
  * @brief Organizes our operations into sets
  */
-#ifndef __OPS_CLASSIFICATIONS_HPP__
-#define __OPS_CLASSIFICATIONS_HPP__
+#ifndef __OP_CLASSIFICATIONS_HPP__
+#define __OP_CLASSIFICATIONS_HPP__
 
 #include "operations.hpp"
 
@@ -13,7 +13,7 @@
 #include <set>
 
 
-namespace Ops {
+namespace Op {
 
     /** A map from operations to operations */
     using OpMap = std::map<Operation, Operation>;
@@ -54,6 +54,6 @@ namespace Ops {
     // This maps operations to their infix notations
     extern const std::map<Operation, Constants::CCSC> infix;
 
-} // namespace Ops
+} // namespace Op
 
 #endif

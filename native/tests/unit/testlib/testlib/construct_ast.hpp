@@ -6,7 +6,7 @@
 #define __TESTS_UNIT_TESTLIB_TESTLIB_CONSTRUCTAST_HPP__
 
 #include "ast/factory.hpp"
-#include "ops/operations.hpp"
+#include "op/operations.hpp"
 
 
 namespace UnitTest::TestLib {
@@ -14,7 +14,7 @@ namespace UnitTest::TestLib {
     /** Construct a T with Op op
      *  Op defaulted to Or
      */
-    template <typename T> T construct_ast(Ops::Operation o = Ops::Operation::Or) {
+    template <typename T> T construct_ast(Op::Operation o = Op::Operation::Or) {
         std::set<AST::BackendID> s;
         return AST::factory<T>(std::move(s), std::move(o));
     }
@@ -25,14 +25,14 @@ namespace UnitTest::TestLib {
      */
     template <typename T, typename... Args> T construct_ast(Args &&...args) {
         std::set<AST::BackendID> s;
-        Ops::Operation o = Ops::Operation::Or;
+        Op::Operation o = Op::Operation::Or;
         return AST::factory<T>(std::move(s), std::move(o), std::forward<Args>(args)...);
     }
 
     /** Construct a T with Op op
      *  Passes args through to factory, which consumes them
      */
-    template <typename T, typename... Args> T construct_ast(Ops::Operation o, Args &&...args) {
+    template <typename T, typename... Args> T construct_ast(Op::Operation o, Args &&...args) {
         std::set<AST::BackendID> s;
         return AST::factory<T>(std::move(s), std::move(o), std::forward<Args>(args)...);
     }

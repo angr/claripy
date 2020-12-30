@@ -137,8 +137,8 @@ namespace Interface {
 
 }
 
-/** A namespace used for the ops directory */
-namespace Ops {
+/** A namespace used for the op directory */
+namespace Op {
 
     /** These sets classify different Expression operations */
     namespace Expression {}
@@ -151,7 +151,7 @@ namespace Ops {
     /** These maps operations to related operations */
     namespace Maps {}
 
-} // namespace Ops
+} // namespace Op
 
 
 /** A namespace used for the simplifications directory */

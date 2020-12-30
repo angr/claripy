@@ -7,7 +7,7 @@
 
 #include "constants.hpp"
 
-#include "../ops/operations.hpp"
+#include "../op/operations.hpp"
 
 
 namespace Simplification::Simplifier {

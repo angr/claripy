@@ -2,7 +2,6 @@
 
 #include "ast/factory.hpp"
 #include "ast/int.hpp"
-#include "ops/operations.hpp"
 #include "testlib.hpp"
 
 #include <set>

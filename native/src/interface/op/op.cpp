@@ -2,7 +2,4 @@
 #include "op.hpp"
 
 
-// For brevity
-using namespace Interface;
-
-Op::Op::Op(const AST::Base & b, const Ops::Operation o) : Base(b), op(o) {}
+Interface::Op::Op::Op(const AST::Base & b, const ::Op::Operation o) : Base(b), op(o) {}

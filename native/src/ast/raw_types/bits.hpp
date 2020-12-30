@@ -31,14 +31,14 @@ namespace AST {
              *  This must have take in the same arguments types as the hash function, minus the
              * hash These arguments may be taken in via copy, reference or move; ownership is given
              */
-            Bits(const Hash h, const Ops::Operation o, const Constants::Int length);
+            Bits(const Hash h, const Op::Operation o, const Constants::Int length);
 
           private:
             /** The hash function of this AST
              *  This must have take in the same arguments as the constructor, minus the hash
              *  These arguments args must be const values or references; this function must be pure
              */
-            static Hash hash(const Ops::Operation o, const Constants::Int length);
+            static Hash hash(const Op::Operation o, const Constants::Int length);
 
             /** Throw an exception if old and new_ are not of the same length @todo static */
             void check_replaceability(const ::AST::Bits &old, const ::AST::Bits &new_);

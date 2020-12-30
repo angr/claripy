@@ -3,14 +3,14 @@
 #include "ast/base.hpp"
 
 #include "ast/factory.hpp"
-#include "ops/operations.hpp"
+#include "op/operations.hpp"
 
 #include <set>
 
 /** Construct a Base */
 AST::Base construct() {
     std::set<AST::BackendID> s;
-    return AST::factory<AST::Base>(std::move(s), std::move((Ops::Operation) 0));
+    return AST::factory<AST::Base>(std::move(s), std::move((Op::Operation) 0));
 }
 
 /** Two bases should be the same */

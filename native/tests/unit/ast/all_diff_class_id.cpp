@@ -10,7 +10,7 @@
 #include "ast/int.hpp"
 #include "ast/string.hpp"
 #include "ast/vs.hpp"
-#include "ops/operations.hpp"
+#include "op/operations.hpp"
 #include "testlib.hpp"
 
 #include <set>

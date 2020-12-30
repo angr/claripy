@@ -2,10 +2,10 @@
  * @file
  * @brief A type-safe enumeration that enumerates every operation claricpp handles
  */
-#ifndef __OPS_OPERATIONS_ENUM_HPP__
-#define __OPS_OPERATIONS_ENUM_HPP__
+#ifndef __OP_OPERATIONS_ENUM_HPP__
+#define __OP_OPERATIONS_ENUM_HPP__
 
-namespace Ops {
+namespace Op {
 
     /** A type-safe enumeration that enumerates every operation claricpp handles
      *  @todo Should this be Reverse?
@@ -117,6 +117,6 @@ namespace Ops {
         Reversed
     };
 
-} // namespace Ops
+} // namespace Op
 
 #endif

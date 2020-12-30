@@ -1,22 +1,20 @@
 /** @file */
 
 #include "ast/int.hpp"
-
-#include "ast/factory.hpp"
-#include "ops/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
-/** Construct an Int */
-AST::Int construct(Ops::Operation o) {
-    std::set<AST::BackendID> s;
-    return AST::factory<AST::Int>(std::move(s), std::move(o));
-}
+
+// For brevity
+using namespace AST;
+using namespace UnitTest::TestLib;
+
 
 /** Test creating an AST::Int */
 int int_int() {
-    AST::Int a = construct((Ops::Operation) 0);
-    AST::Int b = construct((Ops::Operation) 1);
+    Int a = construct_ast<Int>((Op::Operation) 0);
+    Int b = construct_ast<Int>((Op::Operation) 1);
     if (a != b) {
         return 0;
     }

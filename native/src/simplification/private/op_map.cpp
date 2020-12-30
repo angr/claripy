@@ -3,7 +3,7 @@
 
 
 // For clarity
-using OP = Ops::Operation;
+using OP = Op::Operation;
 using namespace Simplification;
 using namespace Simplification::Simplifier;
 
