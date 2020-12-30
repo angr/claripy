@@ -21,6 +21,13 @@ namespace Interface {
         /** Declare this class as abstract */
         virtual ~Base() = 0;
 
+      protected:
+        /** Use to get the number of children of ast */
+        Constants::UInt size() const;
+
+        /** Used to access the children of ast */
+        AST::Base child(const Constants::UInt index) const;
+
       private:
         /** Delete the default constructor */
         Base() = delete;
