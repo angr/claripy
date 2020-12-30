@@ -12,7 +12,7 @@ using namespace Utils::Log;
 using Lvl = Level::Level;
 
 
-/** Default TEMPLATE_MACRO to empty */
+// Default TEMPLATE_MACRO to empty
 #ifndef TEMPLATE_MACRO
     #define TEMPLATE_MACRO
 #endif
