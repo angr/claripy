@@ -124,13 +124,18 @@ namespace AST {
 
 } // namespace AST
 
-/** A namespace used for AST Op Interfaces
+/** A namespace used for AST Interfaces
  *
  *  These allow public access to an AST's children, by different names
  *  For example, and interface corresponding to + may expose .left() and right()
  *  as opposed to .children[0] and .children[1]
  */
-namespace Interface {}
+namespace Interface {
+
+	/** A namespace used for AST Op Interfaces */
+	namespace Op {}
+
+}
 
 /** A namespace used for the ops directory */
 namespace Ops {

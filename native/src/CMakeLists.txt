@@ -80,7 +80,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./ops/classifications.cpp
 	# Interface
 	./interface/base.cpp
-	./interface/op.cpp
+	./interface/op/op.cpp
 	# Simplification
 	./simplification/private/op_map.cpp
 	./simplification/simplifiers.cpp

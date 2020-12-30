@@ -2,14 +2,14 @@
  * @file
  * @brief This file defines the abstract Op AST Interface
  */
-#ifndef __INTERFACE_OP_HPP__
-#define __INTERFACE_OP_HPP__
+#ifndef __INTERFACE_OP_OP_HPP__
+#define __INTERFACE_OP_OP_HPP__
 
-#include "base.hpp"
-#include "../ops/operations.hpp"
+#include "../base.hpp"
+#include "../../ops/operations.hpp"
 
 
-namespace Interface {
+namespace Interface::Op {
 
 	/** The abstract Op AST Interface
 	 *  All Op interfaces must subclass this class
