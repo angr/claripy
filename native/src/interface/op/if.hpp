@@ -19,7 +19,7 @@ namespace Interface::Op {
         If(const AST::Base &b);
 
         /** If condition */
-        AST::Base cond() const;
+        AST::Bool cond() const;
 
         /** The if true clause */
         AST::Base if_true() const;

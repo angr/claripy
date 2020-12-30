@@ -1,6 +1,8 @@
 /** @file */
 #include "if.hpp"
 
+#include "../../ast/bool.hpp"
+#include "../../ast/cast.hpp"
 #include "../../op/operations.hpp"
 #include "../../utils.hpp"
 
@@ -17,8 +19,8 @@ IOp::If::If(const AST::Base &b) : IOp::Op(b, ::Op::Operation::If) {
                                          "If interface AST must have exactly 3 children");
 }
 
-AST::Base IOp::If::cond() const {
-    return this->child(0);
+AST::Bool IOp::If::cond() const {
+    return AST::down_cast_throw_on_fail<AST::Bool>(this->child(0));
 }
 
 AST::Base IOp::If::if_true() const {
