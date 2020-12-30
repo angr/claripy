@@ -87,7 +87,7 @@ namespace AST {
 #endif
           protected:
             /** Children ASTs */
-            const std::vector<const ::AST::Base> children;
+            const std::vector<::AST::Base> children;
 
             /************************************************/
             /*                 Constructors                 */
