@@ -5,13 +5,13 @@
  * via a different method.
  * @todo Document method when known
  */
-#ifndef __ERRORS_AST_HPP__
-#define __ERRORS_AST_HPP__
+#ifndef __ERROR_AST_HPP__
+#define __ERROR_AST_HPP__
 
 #include "../utils.hpp"
 
 
-namespace Errors {
+namespace Error {
 
     // AST errors
     namespace AST {
@@ -42,6 +42,6 @@ namespace Errors {
 
     } // namespace AST
 
-} // namespace Errors
+} // namespace Error
 
 #endif

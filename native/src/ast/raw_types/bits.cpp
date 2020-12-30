@@ -1,8 +1,8 @@
 /** @file */
 #include "bits.hpp"
 
-#include "../../errors/ast.hpp"
-#include "../../utils/inc.hpp"
+#include "../../error.hpp"
+#include "../../utils.hpp"
 
 #include <sstream>
 #include <utility>
@@ -36,6 +36,6 @@ std::string Bits::type_name() const {
 
 void Bits::check_replaceability(const ::AST::Bits &old, const ::AST::Bits &new_) {
     if (old->length != new_->length) {
-        throw Errors::AST::Base("Replacements must have matching sizes");
+        throw Error::AST::Base("Replacements must have matching sizes");
     }
 }

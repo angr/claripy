@@ -4,7 +4,7 @@
 #include "private/op_map.hpp"
 
 #include "../ast/base.hpp"
-#include "../utils/log.hpp"
+#include "../utils.hpp"
 
 
 // For brevity

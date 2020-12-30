@@ -1,7 +1,7 @@
 /** @file */
 #include "classifications.hpp"
 
-#include "../utils/set_join.hpp"
+#include "../utils.hpp"
 
 
 // For brevity

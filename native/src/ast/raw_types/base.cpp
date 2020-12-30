@@ -1,7 +1,7 @@
 /** @file */
 #include "base.hpp"
 
-#include "../../utils/inc.hpp"
+#include "../../utils.hpp"
 
 #include <cstdlib>
 

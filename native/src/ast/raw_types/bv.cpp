@@ -1,7 +1,7 @@
 /** @file */
 #include "bv.hpp"
 
-#include "../../utils/inc.hpp"
+#include "../../utils.hpp"
 
 
 // Define required AST functions

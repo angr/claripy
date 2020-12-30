@@ -97,12 +97,12 @@ namespace Utils {
 
 
 /** A namespace used for the errors directory */
-namespace Errors {
+namespace Error {
 
     /** A namespace used for AST errors */
     namespace AST {}
 
-} // namespace Errors
+} // namespace Error
 
 
 /** A namespace used for the ast directory */
