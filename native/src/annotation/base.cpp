@@ -6,6 +6,8 @@
 using namespace Annotation;
 
 
+Base::~Base() {}
+
 bool Base::eliminatable() const {
     return true;
 }

@@ -14,10 +14,10 @@ namespace Annotation {
     class SimplificationAvoidance : public Base {
 
         /** Returns whether this annotation can be eliminated in a simplification. */
-        bool eliminatable() const;
+        bool eliminatable() const final override;
 
         /** Returns whether this annotation can be relocated in a simplification. */
-        bool relocatable() const;
+        bool relocatable() const final override;
     };
 
 } // namespace Annotation

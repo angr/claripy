@@ -19,6 +19,9 @@ namespace Annotation {
      */
     struct Base {
 
+        /** Virtual destructor */
+        virtual ~Base();
+
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise
          */

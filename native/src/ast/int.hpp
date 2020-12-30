@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines AST::Int
  */
-#ifndef __AST_Int_HPP__
-#define __AST_Int_HPP__
+#ifndef __AST_INT_HPP__
+#define __AST_INT_HPP__
 
 #include "macros.hpp"
 #include "raw_types/int.hpp"
