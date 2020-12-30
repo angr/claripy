@@ -53,7 +53,7 @@ namespace AST {
             AST_RAWTYPES_INIT_AST_BASE_SUBCLASS(Base)
           public:
             /** Virtual destructor */
-            virtual ~Base();
+            virtual ~Base() = 0;
 
             /** Returns a string representation of this */
             virtual std::string repr(const bool inner = false, const Constants::Int max_depth = -1,

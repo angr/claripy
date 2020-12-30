@@ -21,7 +21,7 @@ namespace AST {
             AST_RAWTYPES_DECLARE_AST_SUBBITS_TYPENAME
 
             /** Virtual destructor */
-            virtual ~Bits();
+            virtual ~Bits() = 0;
 
             /** The number of bits being represented */
             const Constants::Int length;
