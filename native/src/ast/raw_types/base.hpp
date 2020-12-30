@@ -21,6 +21,11 @@
 #include <vector>
 
 
+// Forward declarations
+namespace Interface {
+	class Base;
+}
+
 namespace AST {
 
     // Forward declarations
@@ -108,6 +113,9 @@ namespace AST {
 
             /** Declare CacheKey a friend */
             friend class ::AST::CacheKey;
+
+			/** Allow interfaces friend access */
+			friend class Interface::Base;
         };
 
     } // namespace RawTypes

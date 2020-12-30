@@ -78,10 +78,13 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./annotations/simplification_avoidance.cpp
 	# Ops
 	./ops/classifications.cpp
-	# Simplifications
-	./simplifications/private/op_map.cpp
-	./simplifications/simplifiers.cpp
-	./simplifications/simplify.cpp
+	# Interface
+	./interface/base.cpp
+	./interface/op.cpp
+	# Simplification
+	./simplification/private/op_map.cpp
+	./simplification/simplifiers.cpp
+	./simplification/simplify.cpp
 )
 
 # Link additional libraries
