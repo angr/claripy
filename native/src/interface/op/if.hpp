@@ -27,7 +27,6 @@ namespace Interface::Op {
         /** The if false clause */
         AST::Base if_false() const;
 
-
       private:
         /** Delete the default constructor */
         If() = delete;
