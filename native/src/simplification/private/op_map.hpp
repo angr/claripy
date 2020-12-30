@@ -5,7 +5,7 @@
 #ifndef __SIMPLIFICATION_PRIVATE_OPMAP_HPP__
 #define __SIMPLIFICATION_PRIVATE_OPMAP_HPP__
 
-#include "../../op/operations.hpp"
+#include "../../op.hpp"
 #include "../simplifiers.hpp"
 
 #include <map>

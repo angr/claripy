@@ -3,7 +3,7 @@
 
 #include "../../ast/bool.hpp"
 #include "../../ast/cast.hpp"
-#include "../../op/operations.hpp"
+#include "../../op.hpp"
 #include "../../utils.hpp"
 
 

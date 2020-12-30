@@ -3,7 +3,7 @@
 
 #include "../ast/raw_types/base.hpp"
 #include "../ast/raw_types/bool.hpp"
-#include "../op/operations.hpp"
+#include "../op.hpp"
 
 
 // For clarity

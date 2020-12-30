@@ -74,8 +74,8 @@ add_library("${SHARED_LIB_NAME}" SHARED
 			./utils/log/backends/ostream.cpp
 			./utils/log/backends/clog.cpp
 	# Annotation
-	./annotations/base.cpp
-	./annotations/simplification_avoidance.cpp
+	./annotation/base.cpp
+	./annotation/simplification_avoidance.cpp
 	# Op
 	./op/classifications.cpp
 	# Interface

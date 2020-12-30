@@ -6,7 +6,7 @@
 #define __TESTS_UNIT_TESTLIB_TESTLIB_CONSTRUCTAST_HPP__
 
 #include "ast/factory.hpp"
-#include "op/operations.hpp"
+#include "op.hpp"
 
 
 namespace UnitTest::TestLib {

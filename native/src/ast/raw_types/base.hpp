@@ -7,9 +7,9 @@
 
 #include "macros.hpp"
 
-#include "../../annotations/base.hpp"
+#include "../../annotation.hpp"
 #include "../../macros.hpp"
-#include "../../op/operations.hpp"
+#include "../../op.hpp"
 #include "../constants.hpp"
 #include "../simplified_level.hpp"
 
@@ -81,10 +81,11 @@ namespace AST {
 
             /** A set of backents that are known to be unable to handle this AST */
             const std::set<BackendID> errored_backends;
+#endif
 
             /** A set of annotations applied onto this AST */
-            const std::set<const Annotation::Base> annotations;
-#endif
+            const std::set<Annotation::Base> annotations;
+
           protected:
             /** Children ASTs */
             const std::vector<::AST::Base> children;

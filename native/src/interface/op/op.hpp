@@ -5,7 +5,7 @@
 #ifndef __INTERFACE_OP_OP_HPP__
 #define __INTERFACE_OP_OP_HPP__
 
-#include "../../op/operations.hpp"
+#include "../../op.hpp"
 #include "../base.hpp"
 
 
