@@ -30,7 +30,7 @@ int weak_ptr_invalidation_find() {
     // Create and destroy a base, but record its hash
     Hash id;
     {
-        Base a = construct_ast<Base>();
+        Bool a = construct_ast<Bool>();
         id = a->id;
     }
 

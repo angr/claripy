@@ -4,15 +4,16 @@
 
 #include <set>
 
+
 // For brevity
 using namespace AST;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::Bits */
-int bits_bits() {
-    Bits a = construct_ast<Bits>((Op::Operation) 0, 0);
-    Bits b = construct_ast<Bits>((Op::Operation) 1, 0);
+/** Two bools should be different */
+int bool_bool() {
+    Bool a = construct_ast<Bool>((Op::Operation) 0);
+    Bool b = construct_ast<Bool>((Op::Operation) 1);
     if (a != b) {
         return 0;
     }

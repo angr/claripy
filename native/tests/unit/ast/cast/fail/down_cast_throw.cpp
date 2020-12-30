@@ -12,9 +12,10 @@ using namespace UnitTest::TestLib;
 
 /** Down casting should fail with an exception */
 int down_cast_throw() {
-    Base a = construct_ast<Base>();
+    Bool a = construct_ast<Bool>();
+    Base b = up_cast<Base>(a);
     try {
-        Int b = down_cast_throw_on_fail<Int>(a);
+        Int c = down_cast_throw_on_fail<Int>(b);
     }
     catch (Utils::Error::Unexpected::BadCast &e) {
         return 0;

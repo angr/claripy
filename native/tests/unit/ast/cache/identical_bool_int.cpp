@@ -11,10 +11,11 @@ using namespace UnitTest::TestLib;
 
 
 /** Hashing must take into account type differences */
-int identical_base_int() {
-    Base a = construct_ast<Base>();
+int identical_bool_int() {
+    Bool a = construct_ast<Bool>();
     Int b = construct_ast<Int>();
+    Base a2 = up_cast<Base>(a);
     Base b2 = up_cast<Base>(b);
-    UNITTEST_ASSERT(a != b2);
+    UNITTEST_ASSERT(a2 != b2);
     return 0;
 }

@@ -12,8 +12,9 @@ using namespace UnitTest::TestLib;
 
 /** Down casting should fail */
 int down_cast() {
-    Base a = construct_ast<Base>();
-    Int b = down_cast<Int>(a);
-    UNITTEST_ASSERT(b == nullptr)
+    Bool a = construct_ast<Bool>();
+    Base b = up_cast<Base>(a);
+    Int c = down_cast<Int>(b);
+    UNITTEST_ASSERT(c == nullptr)
     return 0;
 }

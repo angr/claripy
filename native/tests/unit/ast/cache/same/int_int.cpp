@@ -10,10 +10,10 @@ using namespace AST;
 using namespace UnitTest::TestLib;
 
 
-/** Two bases should be the same */
-int base_base() {
-    Base a = construct_ast<Base>();
-    Base b = construct_ast<Base>();
+/** Two ints should be the same */
+int int_int() {
+    Int a = construct_ast<Int>();
+    Int b = construct_ast<Int>();
     if (a == b) {
         return 0;
     }

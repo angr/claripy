@@ -1,4 +1,4 @@
 # Add tests
-simple_test("base_base")
-simple_test("bits_bits")
+simple_test("bool_bool")
 simple_test("int_int")
+simple_test("bv_bv")

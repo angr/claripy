@@ -51,16 +51,16 @@ int gc() {
     // Construct gc_resize more than half of init's bases
     const auto num = (3 * init) / 4 - 1;
 
-    auto hold = construct_range<Base>(n, num);
+    auto hold = construct_range<Bool>(n, num);
     n += num;
 
     // Sanity check
     UNITTEST_ASSERT(init == cache.gc_resize);
 
-    // Create and destroy Bases until we have gc_resize bases
+    // Create and destroy Bools until we have gc_resize bases
     {
         const auto remaining = init - num;
-        (void) construct_range<Base>(n, n + remaining);
+        (void) construct_range<Bool>(n, n + remaining);
         n += remaining;
     }
 
@@ -69,7 +69,7 @@ int gc() {
     UNITTEST_ASSERT(cache.size() == init);
 
     // Construct another base to trigger a garbage collection
-    (void) construct<Base>(n++);
+    (void) construct<Bool>(n++);
 
     // Verify cache size and gc_size
     UNITTEST_ASSERT(cache.size() == hold.size() + 1);
