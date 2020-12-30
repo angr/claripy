@@ -1,7 +1,5 @@
 /** @file */
 
-#include "ast/bits.hpp"
-
 #include "testlib.hpp"
 
 #include <set>

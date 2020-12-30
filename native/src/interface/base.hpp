@@ -5,7 +5,7 @@
 #ifndef __INTERFACE_BASE_HPP__
 #define __INTERFACE_BASE_HPP__
 
-#include "../ast/base.hpp"
+#include "../ast.hpp"
 
 
 namespace Interface {

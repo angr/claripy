@@ -1,7 +1,5 @@
 /** @file */
 
-#include "ast/vs.hpp"
-
 #include "testlib.hpp"
 
 #include <set>

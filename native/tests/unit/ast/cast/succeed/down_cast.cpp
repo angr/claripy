@@ -1,8 +1,5 @@
 /** @file */
 
-#include "ast/base.hpp"
-#include "ast/cast.hpp"
-#include "ast/int.hpp"
 #include "testlib.hpp"
 
 #include <set>

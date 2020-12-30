@@ -1,13 +1,5 @@
 /** @file */
 
-#include "ast/base.hpp"
-#include "ast/bits.hpp"
-#include "ast/bool.hpp"
-#include "ast/bv.hpp"
-#include "ast/fp.hpp"
-#include "ast/int.hpp"
-#include "ast/string.hpp"
-#include "ast/vs.hpp"
 #include "testlib.hpp"
 
 #include <set>

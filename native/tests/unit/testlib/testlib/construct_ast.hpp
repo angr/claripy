@@ -5,7 +5,7 @@
 #ifndef __TESTS_UNIT_TESTLIB_TESTLIB_CONSTRUCTAST_HPP__
 #define __TESTS_UNIT_TESTLIB_TESTLIB_CONSTRUCTAST_HPP__
 
-#include "ast/factory.hpp"
+#include "ast.hpp"
 #include "op.hpp"
 
 

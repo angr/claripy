@@ -1,6 +1,5 @@
 /** @file */
 
-#include "ast/bool.hpp"
 #include "testlib.hpp"
 
 #include <set>

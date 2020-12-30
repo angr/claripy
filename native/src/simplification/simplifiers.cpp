@@ -1,8 +1,7 @@
 /** @file */
 #include "simplifiers.hpp"
 
-#include "../ast/raw_types/base.hpp"
-#include "../ast/raw_types/bool.hpp"
+#include "../ast.hpp"
 #include "../op.hpp"
 
 
