@@ -79,17 +79,16 @@ namespace AST {
             /** A measure of how simplified this AST is */
             const SimplifiedLevel simplified;
 
-            /** Children ASTs */
-            const std::vector<const ::AST::Base> children;
-
             /** A set of backents that are known to be unable to handle this AST */
             const std::set<BackendID> errored_backends;
 
             /** A set of annotations applied onto this AST */
             const std::set<const Annotation::Base> annotations;
 #endif
-
           protected:
+            /** Children ASTs */
+            const std::vector<const ::AST::Base> children;
+
             /************************************************/
             /*                 Constructors                 */
             /************************************************/
