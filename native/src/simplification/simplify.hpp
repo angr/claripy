@@ -13,6 +13,6 @@ namespace Simplification {
     /** Simplify old and return the result */
     AST::Base simplify(const AST::Base &old);
 
-} // namespace Simplifications
+} // namespace Simplification
 
 #endif

@@ -16,6 +16,6 @@ namespace Simplification::Private {
     /** A map which maps operations to a simplifiers that can handle it */
     extern const std::map<Op::Operation, SimplifierFunc &> op_map;
 
-} // namespace Simplifications::Private
+} // namespace Simplification::Private
 
 #endif

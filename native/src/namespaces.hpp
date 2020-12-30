@@ -132,10 +132,10 @@ namespace AST {
  */
 namespace Interface {
 
-	/** A namespace used for AST Op Interfaces */
-	namespace Op {}
+    /** A namespace used for AST Op Interfaces */
+    namespace Op {}
 
-}
+} // namespace Interface
 
 /** A namespace used for the op directory */
 namespace Op {
@@ -175,9 +175,9 @@ namespace Simplification {
         /** A namespace for bitwise Simplifiers */
         namespace Bitwise {}
 
-    } // namespace Simplifiers
+    } // namespace Simplifier
 
-} // namespace Simplifications
+} // namespace Simplification
 
 
 /** A namespace used for the annotations directory */

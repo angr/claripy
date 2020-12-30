@@ -102,6 +102,6 @@ namespace Simplification::Simplifier {
 
     } // namespace Bitwise
 
-} // namespace Simplifications::SimplifierFuncs
+} // namespace Simplification::Simplifier
 
 #endif

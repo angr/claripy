@@ -23,7 +23,7 @@
 
 // Forward declarations
 namespace Interface {
-	class Base;
+    class Base;
 }
 
 namespace AST {
@@ -114,8 +114,8 @@ namespace AST {
             /** Declare CacheKey a friend */
             friend class ::AST::CacheKey;
 
-			/** Allow interfaces friend access */
-			friend class Interface::Base;
+            /** Allow interfaces friend access */
+            friend class Interface::Base;
         };
 
     } // namespace RawTypes

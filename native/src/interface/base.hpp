@@ -10,25 +10,25 @@
 
 namespace Interface {
 
-	/** The abstract base AST Interface
+    /** The abstract base AST Interface
      *  All AST Interfaces must subclass this
      */
-	class Base {
-	public:
-		/** Constructor */
-		Base(const AST::Base & b);
+    class Base {
+      public:
+        /** Constructor */
+        Base(const AST::Base &b);
 
-		/** Declare this class as abstract */
-		virtual ~Base()=0;
+        /** Declare this class as abstract */
+        virtual ~Base() = 0;
 
-private:
-		/** Delete the default constructor */
-		Base() = delete;
+      private:
+        /** Delete the default constructor */
+        Base() = delete;
 
-		/** The AST being interfaced */
-		AST::Base ast;
-	};
+        /** The AST being interfaced */
+        AST::Base ast;
+    };
 
-}
+} // namespace Interface
 
 #endif

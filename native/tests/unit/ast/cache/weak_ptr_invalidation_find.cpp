@@ -1,7 +1,7 @@
 /** @file */
 
-#include "testlib.hpp"
 #include "ast/base.hpp"
+#include "testlib.hpp"
 
 #include <set>
 

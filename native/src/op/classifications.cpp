@@ -64,7 +64,7 @@ const OpSet Op::Backend::creation { OP::BoolV, OP::BVV, OP::FPV, OP::StringV };
 const OpSet Op::Backend::symbol_creation { OP::BoolS, OP::BVS, OP::FPS, OP::StringS };
 
 const OpSet Op::Backend::vsa_creation { OP::TopStridedInterval, OP::StridedInterval, OP::ValueSet,
-                                         OP::AbstractLocation };
+                                        OP::AbstractLocation };
 
 const OpSet Op::Backend::other { OP::If };
 
@@ -90,9 +90,9 @@ const OpSet Op::Backend::fp = Utils::set_join(
     Op::Backend::fp_cmp);
 
 const OpSet Op::Backend::strings = { OP::StrSubstr,   OP::StrReplace,  OP::StrConcat,
-                                      OP::StrLen,      OP::StrContains, OP::StrPrefixOf,
-                                      OP::StrSuffixOf, OP::StrIndexOf,  OP::StrToInt,
-                                      OP::StrIsDigit,  OP::IntToStr };
+                                     OP::StrLen,      OP::StrContains, OP::StrPrefixOf,
+                                     OP::StrSuffixOf, OP::StrIndexOf,  OP::StrToInt,
+                                     OP::StrIsDigit,  OP::IntToStr };
 
 /********************************************************************/
 /*                           Length Op                             */
@@ -102,9 +102,8 @@ const OpSet Op::Length::same =
     Utils::set_join(Op::Expression::arithmetic, Op::Expression::bitwise, Op::Expression::set,
                     Op::Backend::bitwise, Op::Backend::other, OpSet { OP::Reversed });
 
-const OpSet Op::Length::none =
-    Utils::set_join(Op::Backend::comparator, Op::Expression::comparator, Op::Backend::boolean,
-                    Op::Backend::fp_cmp);
+const OpSet Op::Length::none = Utils::set_join(Op::Backend::comparator, Op::Expression::comparator,
+                                               Op::Backend::boolean, Op::Backend::fp_cmp);
 
 const OpSet Op::Length::change = Op::Backend::bitmod;
 
@@ -141,7 +140,7 @@ const OpSet Op::reverse_distributable {
 };
 
 const OpSet Op::commutative = { OP::__and__, OP::__or__, OP::__xor__, OP::__add__,
-                                 OP::__mul__, OP::And,    OP::Or };
+                                OP::__mul__, OP::And,    OP::Or };
 
 /********************************************************************/
 /*                              Maps                                */

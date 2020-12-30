@@ -2,4 +2,4 @@
 #include "base.hpp"
 
 
-Interface::Base::Base(const AST::Base & b) : ast(b) {}
+Interface::Base::Base(const AST::Base &b) : ast(b) {}
