@@ -26,6 +26,9 @@ namespace Utils::Error {
         /** Raised when a function is given invalid arguments */
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(IncorrectUsage, Claricpp)
 
+        /** Raised when an interface finds that the AST is formed in an unexpected way */
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Interface, Claricpp)
+
     } // namespace Unexpected
 
 } // namespace Utils::Error
