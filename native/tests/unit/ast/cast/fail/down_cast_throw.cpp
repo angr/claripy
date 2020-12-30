@@ -2,7 +2,6 @@
 
 #include "ast/base.hpp"
 #include "ast/cast.hpp"
-#include "ast/factory.hpp"
 #include "ast/int.hpp"
 #include "testlib.hpp"
 

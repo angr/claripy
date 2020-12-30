@@ -2,7 +2,6 @@
 
 #include "ast/bits.hpp"
 
-#include "ast/factory.hpp"
 #include "testlib.hpp"
 
 #include <set>

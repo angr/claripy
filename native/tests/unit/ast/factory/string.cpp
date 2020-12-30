@@ -2,7 +2,6 @@
 
 #include "ast/string.hpp"
 
-#include "ast/factory.hpp"
 #include "testlib.hpp"
 
 #include <set>

@@ -2,21 +2,20 @@
 
 #include "ast/base.hpp"
 
-#include "ast/factory.hpp"
-#include "op/operations.hpp"
+#include "testlib.hpp"
 
 #include <set>
 
-/** Construct a Base */
-AST::Base construct() {
-    std::set<AST::BackendID> s;
-    return AST::factory<AST::Base>(std::move(s), std::move((Op::Operation) 0));
-}
+
+// For brevity
+using namespace AST;
+using namespace UnitTest::TestLib;
+
 
 /** Two bases should be the same */
 int base_base() {
-    AST::Base a = construct();
-    AST::Base b = construct();
+    Base a = construct_ast<Base>();
+    Base b = construct_ast<Base>();
     if (a == b) {
         return 0;
     }

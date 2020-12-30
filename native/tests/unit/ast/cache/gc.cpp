@@ -1,8 +1,6 @@
 /** @file */
 
 #include "ast/base.hpp"
-#include "ast/factory.hpp"
-#include "op/operations.hpp"
 #include "testlib.hpp"
 
 #include <set>

@@ -1,6 +1,5 @@
 /** @file */
 
-#include "ast/factory.hpp"
 #include "ast/int.hpp"
 #include "testlib.hpp"
 
