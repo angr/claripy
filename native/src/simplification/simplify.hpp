@@ -2,13 +2,13 @@
  * @file
  * @brief Define the simplify method
  */
-#ifndef __SIMPLIFICATIONS_SIMPLIFY_HPP__
-#define __SIMPLIFICATIONS_SIMPLIFY_HPP__
+#ifndef __SIMPLIFICATION_SIMPLIFY_HPP__
+#define __SIMPLIFICATION_SIMPLIFY_HPP__
 
 #include "../ast/forward_declarations.hpp"
 
 
-namespace Simplifications {
+namespace Simplification {
 
     /** Simplify old and return the result */
     AST::Base simplify(const AST::Base &old);

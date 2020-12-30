@@ -4,8 +4,8 @@
 
 // For clarity
 using OP = Ops::Operation;
-using namespace Simplifications;
-using namespace Simplifications::Simplifiers;
+using namespace Simplification;
+using namespace Simplification::Simplifier;
 
 
 /** @todo implement the rest of the simplifiers */

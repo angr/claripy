@@ -2,15 +2,15 @@
  * @file
  * @brief Define simplifiers in Simplifications::Simplifiers
  */
-#ifndef __SIMPLIFICATIONS_SIMPLIFIERS_HPP__
-#define __SIMPLIFICATIONS_SIMPLIFIERS_HPP__
+#ifndef __SIMPLIFICATION_SIMPLIFIERS_HPP__
+#define __SIMPLIFICATION_SIMPLIFIERS_HPP__
 
 #include "constants.hpp"
 
 #include "../ops/operations.hpp"
 
 
-namespace Simplifications::Simplifiers {
+namespace Simplification::Simplifier {
 
     /************************************************/
     /*                 Miscellaneous                */

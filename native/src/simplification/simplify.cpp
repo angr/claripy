@@ -9,7 +9,7 @@
 
 // For brevity
 namespace Log = Utils::Log;
-namespace Pvt = Simplifications::Private;
+namespace Pvt = Simplification::Private;
 
 
 // Define the simplifications log

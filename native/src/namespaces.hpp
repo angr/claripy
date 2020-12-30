@@ -96,6 +96,15 @@ namespace Utils {
 } // namespace Utils
 
 
+/** A namespace used for the errors directory */
+namespace Errors {
+
+    /** A namespace used for AST errors */
+    namespace AST {}
+
+} // namespace Errors
+
+
 /** A namespace used for the ast directory */
 namespace AST {
 
@@ -115,15 +124,13 @@ namespace AST {
 
 } // namespace AST
 
-
-/** A namespace used for the errors directory */
-namespace Errors {
-
-    /** A namespace used for AST errors */
-    namespace AST {}
-
-} // namespace Errors
-
+/** A namespace used for AST Op Interfaces
+ *
+ *  These allow public access to an AST's children, by different names
+ *  For example, and interface corresponding to + may expose .left() and right()
+ *  as opposed to .children[0] and .children[1]
+ */
+namespace Interface {}
 
 /** A namespace used for the ops directory */
 namespace Ops {
@@ -143,7 +150,7 @@ namespace Ops {
 
 
 /** A namespace used for the simplifications directory */
-namespace Simplifications {
+namespace Simplification {
 
     /** A namespace used to designate certain items in Simplifications as private
      *
@@ -152,7 +159,7 @@ namespace Simplifications {
     namespace Private {}
 
     /** A namespace which contains the simplifiers */
-    namespace Simplifiers {
+    namespace Simplifier {
 
         /** A namespace for bv Simplifiers */
         namespace BV {}

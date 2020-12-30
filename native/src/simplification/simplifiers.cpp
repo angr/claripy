@@ -7,7 +7,7 @@
 
 
 // For clarity
-using namespace Simplifications;
+using namespace Simplification;
 using Op = Ops::Operation;
 
 /** @todo */
