@@ -11,7 +11,7 @@
 namespace Simplification {
 
     /** The type each top level simplifier must have */
-    using Simplifier = AST::Base(const AST::Base &);
+    using SimplifierFunc = AST::Base(const AST::Base &);
 
 } // namespace Simplifications
 

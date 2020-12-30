@@ -16,7 +16,7 @@ namespace Pvt = Simplification::Private;
 UTILS_LOG_DEFINE_LOG_CLASS(Simplify)
 
 
-AST::Base Simplifications::simplify(const AST::Base &old) {
+AST::Base Simplification::simplify(const AST::Base &old) {
     auto lookup = Pvt::op_map.find(old->op);
     if (lookup != Pvt::op_map.end()) {
         return lookup->second(old);

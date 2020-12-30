@@ -9,7 +9,7 @@ using namespace Simplification::Simplifier;
 
 
 /** @todo implement the rest of the simplifiers */
-const std::map<OP, Simplifier &> Private::op_map {
+const std::map<OP, SimplifierFunc &> Private::op_map {
     { OP::Reverse, BV::reverse },
     { OP::And, Boolean::and_ },
     { OP::Or, Boolean::or_ },

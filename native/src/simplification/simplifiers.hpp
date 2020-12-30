@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Define simplifiers in Simplifications::Simplifiers
+ * @brief Define simplifiers in Simplifications::Simplifier
  */
 #ifndef __SIMPLIFICATION_SIMPLIFIERS_HPP__
 #define __SIMPLIFICATION_SIMPLIFIERS_HPP__
@@ -17,15 +17,15 @@ namespace Simplification::Simplifier {
     /************************************************/
 
     /** Return if_true, if_false, or original depending on what cond evaluates to */
-    Simplifier if_;
+    SimplifierFunc if_;
 
     /** @todo document */
-    Simplifier concat;
+    SimplifierFunc concat;
 
     namespace BV {
 
         /** @todo document */
-        Simplifier reverse;
+        SimplifierFunc reverse;
 
     } // namespace BV
 
@@ -36,13 +36,13 @@ namespace Simplification::Simplifier {
     namespace Shift {
 
         /** @todo document */
-        Simplifier r;
+        SimplifierFunc r;
 
         /** @todo document */
-        Simplifier l;
+        SimplifierFunc l;
 
         /** @todo document */
-        Simplifier lshr;
+        SimplifierFunc lshr;
 
     } // namespace Shift
 
@@ -51,10 +51,10 @@ namespace Simplification::Simplifier {
     /************************************************/
 
     /** @todo document */
-    Simplifier eq;
+    SimplifierFunc eq;
 
     /** @todo document */
-    Simplifier ne;
+    SimplifierFunc ne;
 
     /************************************************/
     /*                   Boolean                    */
@@ -63,13 +63,13 @@ namespace Simplification::Simplifier {
     namespace Boolean {
 
         /** @todo document */
-        Simplifier and_;
+        SimplifierFunc and_;
 
         /** @todo document */
-        Simplifier or_;
+        SimplifierFunc or_;
 
         /** @todo document */
-        Simplifier not_;
+        SimplifierFunc not_;
 
     } // namespace Boolean
 
@@ -80,28 +80,28 @@ namespace Simplification::Simplifier {
     namespace Bitwise {
 
         /** @todo document */
-        Simplifier add;
+        SimplifierFunc add;
 
         /** @todo document */
-        Simplifier mul;
+        SimplifierFunc mul;
 
         /** @todo document */
-        Simplifier sub;
+        SimplifierFunc sub;
 
         /** @todo document */
-        Simplifier xor_minmax;
+        SimplifierFunc xor_minmax;
 
         /** @todo document */
-        Simplifier or_;
+        SimplifierFunc or_;
 
         /** @todo document */
-        Simplifier and_;
+        SimplifierFunc and_;
 
         /** @todo document */
-        Simplifier xor_;
+        SimplifierFunc xor_;
 
     } // namespace Bitwise
 
-} // namespace Simplifications::Simplifiers
+} // namespace Simplifications::SimplifierFuncs
 
 #endif
