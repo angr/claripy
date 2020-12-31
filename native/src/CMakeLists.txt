@@ -61,7 +61,7 @@ add_library("${SHARED_LIB_NAME}" SHARED
 		./ast/raw_types/bits.cpp
 		./ast/raw_types/string.cpp
 	# Utils
-		./utils/errors/claricpp.cpp
+		./utils/error/claricpp.cpp
 		# Log
 			# Level
 			./utils/log/level/ostream.cpp
