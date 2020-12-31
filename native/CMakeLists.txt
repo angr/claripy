@@ -22,6 +22,7 @@ option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
 set( SOVERSION 1 )
 
 # Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
+# Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
 set( DOC_MAKE_TARGET docs )
 
 # Static Analysis Options
