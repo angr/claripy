@@ -1,5 +1,6 @@
 /**
  * @file
+ * \defgroup utils Claricpp Utilities
  * @brief This file includes all public pieces of utils
  */
 #ifndef __UTILS_HPP__

@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup utils
+ */
 #include "access.hpp"
 
 #include "abstract_base.hpp"

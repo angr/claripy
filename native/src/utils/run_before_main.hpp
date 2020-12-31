@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines a class that will run the function it is passed before main
  */
 #ifndef __UTILS_RUNBEFOREMAIN_HPP__

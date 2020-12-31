@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the ThreadSafeAccess class
  */
 #ifndef __UTILS_THREADSAFEACCESS_HPP__

@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the default Log Backend
  */
 #ifndef __UTILS_LOG_BACKEND_DEFAULT_HPP__

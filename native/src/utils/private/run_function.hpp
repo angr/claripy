@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines a function run_function(f, args) that returns f(args)
  */
 #ifndef __UTILS_PRIVATE_RUNFUNCTION_HPP__

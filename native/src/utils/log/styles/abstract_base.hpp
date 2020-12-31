@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the AbstractBase Log Style class
  */
 #ifndef __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__

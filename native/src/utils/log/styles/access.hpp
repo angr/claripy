@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file methods for accessing the Log Style
  * The methods within this file are threadsafe
  */

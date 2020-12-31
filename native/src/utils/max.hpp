@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines various max functions
  */
 #ifndef __UTILS_MAX_HPP__

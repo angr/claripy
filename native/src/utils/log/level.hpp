@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file exposes all relevant public log level members
  */
 #ifndef __UTILS_LOG_LEVEL_HPP__

@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the default Log Style
  */
 #ifndef __UTILS_LOG_STYLE_DEFAULT_HPP__

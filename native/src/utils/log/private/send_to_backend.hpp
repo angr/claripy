@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines a function which preps its args then sends them to the Log Backend
  */
 #ifndef __UTILS_LOG_LOG_SENDTOBACKEND_HPP__

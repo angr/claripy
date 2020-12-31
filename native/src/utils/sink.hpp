@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines Utils::sink
  */
 #ifndef __UTILS_SINK_HPP__

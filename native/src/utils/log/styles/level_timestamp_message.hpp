@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the LevelTimestameMessage Log Style class
  */
 #ifndef __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__

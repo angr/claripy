@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines a few terminal colors for pretty printing
  */
 #ifndef __UTILS_ANSICOLORCODES_HPP__

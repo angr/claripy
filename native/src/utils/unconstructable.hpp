@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines an unconstructable class
  */
 #ifndef __UTILS_UNCONSTRUCTABLE_HPP__

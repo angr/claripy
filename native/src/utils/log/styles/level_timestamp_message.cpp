@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup utils
+ */
 #include "level_timestamp_message.hpp"
 
 #include "../../affirm.hpp"

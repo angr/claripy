@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the clog logging backend
  */
 #ifndef __UTILS_LOG_BACKEND_CLOG_HPP__

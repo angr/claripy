@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines helper methods for Utils::set_join
  */
 #ifndef __UTILS_PRIVATE_SETINSERT_HPP__

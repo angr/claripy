@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file contains the possible standard python exceptions claricpp can raise
  * These exceptions have python analogs and must be caught and set to python
  * via a different method.

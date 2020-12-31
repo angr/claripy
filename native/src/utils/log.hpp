@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file includes all relevant public log members
  */
 #ifndef __UTILS_LOG_HPP__

@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This default log level
  */
 #ifndef __UTILS_LOG_LEVEL_DEFAULT_HPP__

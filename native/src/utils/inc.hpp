@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file contains declares the Utils:inc() function
  */
 #ifndef __UTILS_INC_HPP__

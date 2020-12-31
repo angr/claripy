@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines a function that allows Utils::to_ostringstream handle strong enums
  * It does not affect strong enums with the << stream operator defined
  * Fundamentally this function is just a fancy static_cast

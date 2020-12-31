@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the ostream logging backend
  */
 #ifndef __UTILS_LOG_BACKEND_OSTREAM_HPP__

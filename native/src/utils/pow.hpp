@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines Utils::pow
  */
 #ifndef __UTILS_POW_HPP__

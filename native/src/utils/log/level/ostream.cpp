@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup utils
+ */
 #include "ostream.hpp"
 
 #include "../../affirm.hpp"

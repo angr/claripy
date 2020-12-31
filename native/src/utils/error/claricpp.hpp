@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file contains the base claricpp exception
  * These exceptions have python analogs and must be caught and sent to python
  * via a different method.

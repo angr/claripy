@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file contains the possible exceptions that indicate an internal claricpp failur
  * These exceptions are not expected to be raised if claricpp is operating as intended
  */

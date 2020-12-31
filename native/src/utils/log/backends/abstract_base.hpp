@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the base logging backend class
  */
 #ifndef __UTILS_LOG_BACKEND_ABSTRACTBASE_HPP__

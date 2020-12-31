@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines constants used across the utils/log directory
  */
 #ifndef __UTILS_LOG_CONSTANTS_HPP__

@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the Utils::Log::Level typesafe enum
  * Also defines the << stream operator for this class
  * Also defines useful related macros

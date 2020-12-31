@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines Utils::apply
  */
 #ifndef __UTILS_APPLYSTREAM_HPP__

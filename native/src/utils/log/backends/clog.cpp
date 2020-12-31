@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup utils
+ */
 #include "clog.hpp"
 
 #include <iostream>

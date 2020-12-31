@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup utils
+ */
 #include "claricpp.hpp"
 
 #include <cstring>

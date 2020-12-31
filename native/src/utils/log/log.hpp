@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines public logging functions
  */
 #ifndef __UTILS_LOG_LOG_HPP__

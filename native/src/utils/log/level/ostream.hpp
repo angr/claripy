@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines the << stream operator for Level::Level
  */
 #ifndef __UTILS_LOG_LEVEL_OSTREAM_HPP__

@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file includes all relevant public style members
  */
 #ifndef __UTILS_LOG_STYLE_HPP__

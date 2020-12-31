@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines macros used acorss Utils::Log
  */
 #ifndef __UTILS_LOG_MACROS_HPP__
