@@ -12,7 +12,7 @@
 namespace Utils::Log::Level {
 
     /** Determine if log level l is enabled */
-    [[gnu::always_inline]] bool enabled(const Level l);
+    [[gnu::always_inline]] UTILS_LOG_LEVEL_CONSTEXPR bool enabled(const Level l);
 
 } // namespace Utils::Log::Level
 
