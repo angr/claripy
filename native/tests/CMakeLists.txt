@@ -11,4 +11,4 @@ if(ENABLE_MEMCHECK)
 endif()
 
 # Enable native testing
-add_subdirectory(./unit)
+add_subdirectory(unit)

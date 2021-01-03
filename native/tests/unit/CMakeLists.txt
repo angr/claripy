@@ -80,5 +80,5 @@ endfunction()
 
 # Add test cases
 message(STATUS "Adding unit tests:")
-add_subdirectory(./log)
-add_subdirectory(./ast)
+add_subdirectory(utils)
+add_subdirectory(ast)

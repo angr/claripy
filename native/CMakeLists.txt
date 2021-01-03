@@ -263,5 +263,5 @@ add_subdirectory("${CLARICPP_SRC}")
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
-	add_subdirectory(./tests)
+	add_subdirectory(tests)
 endif()
