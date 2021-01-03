@@ -6,7 +6,8 @@
 #ifndef __UTILS_LOG_STYLE_HPP__
 #define __UTILS_LOG_STYLE_HPP__
 
-#include "styles/access.hpp"
-#include "styles/default.hpp"
+#include "style/access.hpp"
+#include "style/default.hpp"
+#include "style/level_timestamp_message.hpp"
 
 #endif

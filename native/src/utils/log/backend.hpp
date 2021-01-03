@@ -6,9 +6,10 @@
 #ifndef __UTILS_LOG_BACKEND_HPP__
 #define __UTILS_LOG_BACKEND_HPP__
 
-#include "backends/access.hpp"
-#include "backends/cerr.hpp"
-#include "backends/default.hpp"
-#include "backends/multiplex.hpp"
+#include "backend/access.hpp"
+#include "backend/cerr.hpp"
+#include "backend/clog.hpp"
+#include "backend/default.hpp"
+#include "backend/multiplex.hpp"
 
 #endif

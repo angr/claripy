@@ -67,14 +67,14 @@ add_library("${SHARED_LIB_NAME}" SHARED
 			./utils/log/level/ostream.cpp
 			./utils/log/level/access.cpp
 			# Style
-			./utils/log/styles/level_timestamp_message.cpp
-			./utils/log/styles/access.cpp
+			./utils/log/style/level_timestamp_message.cpp
+			./utils/log/style/access.cpp
 			# Backend
-			./utils/log/backends/access.cpp
-			./utils/log/backends/multiplex.cpp
-			./utils/log/backends/ostream.cpp
-			./utils/log/backends/clog.cpp
-			./utils/log/backends/cerr.cpp
+			./utils/log/backend/access.cpp
+			./utils/log/backend/multiplex.cpp
+			./utils/log/backend/ostream.cpp
+			./utils/log/backend/clog.cpp
+			./utils/log/backend/cerr.cpp
 	# Annotation
 	./annotation/base.cpp
 	./annotation/simplification_avoidance.cpp
