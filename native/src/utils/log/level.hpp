@@ -7,6 +7,7 @@
 #define __UTILS_LOG_LEVEL_HPP__
 
 #include "level/access.hpp"
+#include "level/enabled.hpp"
 #include "level/ostream.hpp"
 
 #endif

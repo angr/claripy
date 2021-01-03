@@ -20,7 +20,7 @@ const std::string cst("Custom");
 /** Test the given logging function */
 void test(std::ostringstream &s, const Lvl l) {
     const auto str = s.str();
-    if (UTILS_LOG_LEVEL_IMPLIES(Level::get(), l)) {
+    if (Level::enabled(l)) {
         UNITTEST_ASSERT(str.find(STR) != std::string::npos)
     }
     else {

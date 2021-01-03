@@ -25,7 +25,7 @@ namespace UnitTest {
 
 /** Test the given logging function */
 void test(std::vector<std::ostringstream> &s, Lvl l) {
-    if (UTILS_LOG_LEVEL_IMPLIES(Level::get(), l)) {
+    if (Level::enabled(l)) {
         UNITTEST_ASSERT(s.size() == 2)
         for (unsigned i = 0; i < s.size(); ++i) {
             const auto str = s[i].str();
