@@ -49,7 +49,7 @@ int multiplex() {
 
     // Emplace the second backend
     const bool true_ = true;
-    multi.emplace<OStream>(s[1], true_);
+    multi.emplace_back<OStream>(s[1], true_);
 
     // Install the multi backend
     copy<Multiplex>(multi);
