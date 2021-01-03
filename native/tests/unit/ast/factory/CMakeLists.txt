@@ -1,7 +1,7 @@
 # Test cases
-simple_test("bool_")
-simple_test("bv")
-simple_test("fp")
-simple_test("int_")
-simple_test("string")
-simple_test("vs")
+simple_test(bool_)
+simple_test(bv)
+simple_test(fp)
+simple_test(int_)
+simple_test(string)
+simple_test(vs)

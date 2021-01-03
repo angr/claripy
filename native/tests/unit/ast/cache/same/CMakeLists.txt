@@ -1,1 +1,1 @@
-simple_test("int_int")
+simple_test(int_int)
