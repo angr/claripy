@@ -69,7 +69,7 @@ namespace Utils {
         template <typename U> void set_copy(const U &t) { this->set(new U(t)); }
 
         /** A setter by move constructor */
-        template <typename U> void set_copy(U &&t) { this->set(new U(t)); }
+        template <typename U> void set_copy(U &&t) { this->set(new U(std::forward<U>(t))); }
 
 
         /** A setter by emplacement with args passed by copy

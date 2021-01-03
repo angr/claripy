@@ -34,7 +34,7 @@ namespace Utils::Log::Backend {
             static_assert(
                 std::is_base_of_v<AbstractBase, T>,
                 "Multiplex will only emplace subclasses of the log backend AbstractBase");
-            return Parent::emplace_back(new T(args...));
+            return Parent::emplace_back(new T(std::forward<Args>(args)...));
         }
 
         /** Log the given message, level, to the correct log given by log_id with each backend */

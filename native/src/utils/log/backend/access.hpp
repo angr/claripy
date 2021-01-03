@@ -25,7 +25,7 @@ namespace Utils::Log::Backend {
     template <typename T, typename... Args> inline void set(Args &&...args) {
         static_assert(std::is_base_of_v<AbstractBase, T>,
                       "T must subclass log backend AbstractBase");
-        std::shared_ptr<AbstractBase> ptr(new T(args...));
+        std::shared_ptr<AbstractBase> ptr(new T(std::forward<Args>(args)...));
         Private::set(ptr);
     }
 
