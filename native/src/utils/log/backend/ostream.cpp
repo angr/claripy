@@ -18,6 +18,6 @@ void OStream::log(Constants::CCSC id, const Level::Level &lvl, const std::string
     if (this->flush) {
         std::flush(stream);
     }
-    (void) id;
     (void) lvl;
+    (void) id;
 }

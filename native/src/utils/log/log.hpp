@@ -26,7 +26,7 @@
         }                                                                                         \
     }                                                                                             \
     /** Log to default log with given log level */                                                \
-    template <typename... Args> void NAME(const Args &...args) { NAME<Default>(args...); }
+    template <typename... Args> inline void NAME(const Args &...args) { NAME<Default>(args...); }
 
 
 namespace Utils::Log {
