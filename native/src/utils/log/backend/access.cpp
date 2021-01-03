@@ -17,11 +17,14 @@ using namespace Utils;
 using namespace Log;
 using Bk = Backend::AbstractBase;
 
+
 // Create a thread safe backend wrapper
 static ThreadSafeAccess<Bk> access(std::make_shared<Backend::Default>());
-using Ptr = decltype(access)::Ptr;
+using Ptr = std::shared_ptr<Backend::AbstractBase>;
 
-// Default the backend
+
+// Error checking
+static_assert(std::is_same_v<Ptr, decltype(access)::Ptr>, "Inconsistiency between pointer types");
 
 
 void Backend::Private::set(Ptr &ptr) {
