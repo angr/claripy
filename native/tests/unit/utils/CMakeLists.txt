@@ -2,4 +2,5 @@
 add_subdirectory(log)
 
 # Add tests
-# simple_test(all_diff_class_id)
+simple_test(run_function_before_main)
+simple_test(run_statement_before_main)
