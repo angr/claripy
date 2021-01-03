@@ -8,7 +8,7 @@
 
 // For brevity
 using namespace Utils;
-using namespace Error;
+namespace Unexpected = Error::Unexpected;
 namespace IOp = Interface::Op;
 
 

@@ -6,7 +6,7 @@
 
 // For brevity
 using namespace Utils;
-using namespace Error;
+namespace Unexpected = Error::Unexpected;
 
 
 Interface::Base::Base(const AST::Base &b) : ast(b) {}
