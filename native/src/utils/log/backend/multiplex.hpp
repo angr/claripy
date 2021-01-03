@@ -23,7 +23,9 @@ namespace Utils::Log::Backend {
         /** The superclass */
         using Parent = std::set<std::shared_ptr<AbstractBase>>;
 
-        /** Use parent constructors */
+        /** Use parent constructors
+         *  This also statically asserts that Parent is Multiplex's parent
+         */
         using Parent::Parent;
 
         /** Used to emplace T */
@@ -38,8 +40,6 @@ namespace Utils::Log::Backend {
         /** Log the given message, level, to the correct log given by log_id with each backend */
         void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg);
     };
-
-    /* static_assert(std::is_base_of_v<Multiplex::Parent, Multiplex>, ""); */
 
 } // namespace Utils::Log::Backend
 
