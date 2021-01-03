@@ -8,6 +8,8 @@
 
 #include "abstract_base.hpp"
 
+#include "../../../unittest.hpp"
+
 #include <mutex>
 #include <ostream>
 
@@ -48,6 +50,9 @@ namespace Utils::Log::Backend {
 
         /** Delete default constructor */
         OStream() = delete;
+
+        /** Allow unittesting */
+        ENABLE_UNITTEST_FRIEND_ACCESS
     };
 
 } // namespace Utils::Log::Backend

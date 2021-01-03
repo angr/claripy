@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <set>
+#include <type_traits>
 
 
 namespace Utils::Log::Backend {
@@ -17,7 +18,13 @@ namespace Utils::Log::Backend {
     /** The multiplex backend
      *  This backend logs to multiple backends
      */
-    struct Multiplex : public std::set<std::shared_ptr<AbstractBase>> {
+    struct Multiplex : public AbstractBase, public std::set<std::shared_ptr<AbstractBase>> {
+
+        /** The superclass */
+        using Parent = std::set<std::shared_ptr<AbstractBase>>;
+
+        /** Use parent constructors */
+        using Parent::Parent;
 
         /** Used to emplace T */
         template <typename T, typename... Args> auto emplace(Args &...args) {
@@ -31,6 +38,8 @@ namespace Utils::Log::Backend {
         /** Log the given message, level, to the correct log given by log_id with each backend */
         void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg);
     };
+
+    /* static_assert(std::is_base_of_v<Multiplex::Parent, Multiplex>, ""); */
 
 } // namespace Utils::Log::Backend
 
