@@ -15,10 +15,11 @@ namespace Utils {
 
     /** Thread-safe-ly increment a static number and return the result
      *  The template Args are used as a map key to allow this function to be reused as needed
+     *  This function is primarily meant to run before main to help configure things
      */
-    template <typename... Args> Constants::Int inc() {
+    template <typename... Args> Constants::UInt inc() {
         static std::mutex m;
-        static Constants::Int ret = 0;
+        static Constants::UInt ret = 0;
         std::unique_lock<decltype(m)> lock(m);
         return ++ret;
     }

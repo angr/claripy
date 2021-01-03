@@ -12,7 +12,7 @@
 namespace Utils::Private {
 
     /** Copy right into left */
-    template <typename T> void set_insert(std::set<T> &left, const std::set<T> &right) {
+    template <typename T> inline void set_insert(std::set<T> &left, const std::set<T> &right) {
         left.insert(right.cbegin(), right.cend());
     }
 

@@ -10,12 +10,13 @@
 namespace Utils::Private {
 
     /** Return f(args...) */
-    template <typename F, typename... Args> auto run_function(const F &f, const Args &...args) {
+    template <typename F, typename... Args>
+    inline auto run_function(const F &f, const Args &...args) {
         return f(args...);
     };
 
     /** Return f() */
-    template <typename F> auto run_function(const F &f) { return f(); };
+    template <typename F> inline auto run_function(const F &f) { return f(); };
 
 } // namespace Utils::Private
 
