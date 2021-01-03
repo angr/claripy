@@ -6,6 +6,7 @@
 #ifndef __UTILS_ERROR_HPP__
 #define __UTILS_ERROR_HPP__
 
+#include "error/claricpp.hpp"
 #include "error/python.hpp"
 #include "error/unexpected.hpp"
 
