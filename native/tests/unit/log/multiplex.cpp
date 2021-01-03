@@ -48,8 +48,7 @@ int multiplex() {
     Multiplex multi = { ptr1 };
 
     // Emplace the second backend
-    const bool true_ = true;
-    multi.emplace_back<OStream>(s[1], true_);
+    multi.emplace_back<OStream>(s[1], Utils::ref<bool, true>);
 
     // Install the multi backend
     copy<Multiplex>(multi);

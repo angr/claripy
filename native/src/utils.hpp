@@ -13,6 +13,7 @@
 #include "utils/log.hpp"
 #include "utils/max.hpp"
 #include "utils/pow.hpp"
+#include "utils/ref.hpp"
 #include "utils/run_before_main.hpp"
 #include "utils/set_join.hpp"
 #include "utils/sink.hpp"
