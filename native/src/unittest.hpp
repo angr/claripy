@@ -17,7 +17,7 @@
 namespace UnitTest {
 
     /** A struct used to give friend access to unittests */
-    struct ClaricppUnitTest;
+    struct [[maybe_unused]] ClaricppUnitTest;
 
 } // namespace UnitTest
 
