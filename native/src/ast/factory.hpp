@@ -9,6 +9,8 @@
 #include "private/factory_cache.hpp"
 #include "private/raw.hpp"
 
+#include "../utils.hpp"
+
 
 namespace AST {
 
@@ -31,7 +33,8 @@ namespace AST {
                       "T must derive from AST::Cached::Base");
 
         // Check to see if the object to be constructed exists in the hash cache
-        const Hash h = RawT::hash(args...);
+        // We run hash vis run_cr_function to ensure args are passed by const reference
+        const Hash h = Utils::run_cr_function(RawT::hash, args...);
         auto base_ptr =
             Private::factory_cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...);
         return down_cast_throw_on_fail<T>(base_ptr);
