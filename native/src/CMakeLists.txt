@@ -71,8 +71,10 @@ add_library("${SHARED_LIB_NAME}" SHARED
 			./utils/log/styles/access.cpp
 			# Backend
 			./utils/log/backends/access.cpp
+			./utils/log/backends/multiplex.cpp
 			./utils/log/backends/ostream.cpp
 			./utils/log/backends/clog.cpp
+			./utils/log/backends/cerr.cpp
 	# Annotation
 	./annotation/base.cpp
 	./annotation/simplification_avoidance.cpp
