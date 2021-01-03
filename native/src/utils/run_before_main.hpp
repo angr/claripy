@@ -6,7 +6,7 @@
 #ifndef __UTILS_RUNBEFOREMAIN_HPP__
 #define __UTILS_RUNBEFOREMAIN_HPP__
 
-#include "private/run_function.hpp"
+#include "run_cr_function.hpp"
 
 
 /** Define a macro to allow running a literal statement
@@ -31,7 +31,7 @@
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
         struct RunBeforeMain {                                                                    \
-            RunBeforeMain() { (void) Utils::Private::run_function(F, __VA_ARGS__); }              \
+            RunBeforeMain() { (void) Utils::Private::run_cf_function(F, __VA_ARGS__); }           \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \
