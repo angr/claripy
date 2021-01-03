@@ -29,8 +29,8 @@ namespace Utils::Log::Backend {
         Private::set(ptr);
     }
 
-    /** Set the Log Backend to a new T constructed with arguments: args	*/
-    template <typename T, typename... Args> void copy(T &c) {
+    /** Set the Log Backend to a new T copy constructed from c */
+    template <typename T, typename... Args> void copy(const T &c) {
         static_assert(std::is_base_of_v<AbstractBase, T>,
                       "T must subclass log backend AbstractBase");
         std::shared_ptr<AbstractBase> ptr(new T(c));
