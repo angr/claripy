@@ -65,7 +65,6 @@ add_library("${SHARED_LIB_NAME}" SHARED
 		# Log
 			# Level
 			./utils/log/level/ostream.cpp
-			./utils/log/level/enabled.cpp
 			./utils/log/level/access.cpp
 			# Style
 			./utils/log/style/level_timestamp_message.cpp

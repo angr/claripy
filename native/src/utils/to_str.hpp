@@ -20,7 +20,7 @@ namespace Utils {
      * undefined Every other argument must have the << stream operator defined
      */
     template <typename... Args>
-    void apply_to_ostringstream(std::ostringstream &s, const Args &...args) {
+    inline void apply_to_ostringstream(std::ostringstream &s, const Args &...args) {
         apply<Private::OStreamConst>(s, args...);
     }
 
@@ -29,7 +29,7 @@ namespace Utils {
      *  Strong enums are statically cast to their underlying types if their << operator is
      * undefined Every other argument must have the << stream operator defined
      */
-    template <typename... Args> std::string to_str(const Args &...args) {
+    template <typename... Args> inline std::string to_str(const Args &...args) {
         std::ostringstream s;
         apply_to_ostringstream(s, args...);
         return s.str();

@@ -13,7 +13,7 @@ namespace Utils::Max {
      *  Unlike std::max, this will not return a dangling reference
      *  If equal, returns the first value
      */
-    template <typename T> T value(const T a, const T b) { return a >= b ? a : b; }
+    template <typename T> constexpr T value(const T a, const T b) { return a >= b ? a : b; }
 
 } // namespace Utils::Max
 
