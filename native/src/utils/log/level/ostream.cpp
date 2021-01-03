@@ -5,7 +5,7 @@
 #include "ostream.hpp"
 
 #include "../../affirm.hpp"
-#include "../../errors/unexpected.hpp"
+#include "../../error/unexpected.hpp"
 
 #include <map>
 #include <string>
