@@ -38,6 +38,7 @@ set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
 # Config options
 option( CMAKE_VERBOSE_MAKEFILE "Enable make VERBOSE=1 by default" OFF )
+# This is useful for IDEs, developer tools, and for doxygen documentation generation
 option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
 # The memcheck and security options are mutually exclusive
 # Memcheck cannot run with security enabled
@@ -217,6 +218,11 @@ if(BUILD_DOC)
 	find_package(Doxygen REQUIRED dot)
 
 	# Config
+	if (CMAKE_CXX_EXTENSIONS)
+		set(CXX_LIB "gnu")
+	else()
+		set(CXX_LIB "c")
+	endif()
 	set(PROJECT_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
 	set(DOXYGEN_IN "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in")
 	set(DOXYGEN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile")
