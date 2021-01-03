@@ -87,32 +87,32 @@ namespace Utils {
         }
 
 
-        /** A setter by emplacement with args passed by reference
+        /** A setter by emplacement with args passed by const reference
          *  A specialization that requires no U parameter
          */
-        template <typename... Args> void set_emplace_ref_args(Args &...args) {
+        template <typename... Args> void set_emplace_ref_args(const Args &...args) {
             this->set(new T(args...));
         }
 
-        /** A setter by emplacement with args passed by reference
+        /** A setter by emplacement with args passed by const reference
          *  The general definition
          */
-        template <typename U, typename... Args> void set_emplace_ref_args(Args &...args) {
+        template <typename U, typename... Args> void set_emplace_ref_args(const Args &...args) {
             this->set(new U(args...));
         }
 
 
-        /** A setter by emplacement with args passed by move
+        /** A setter by emplacement with args passed by forward reference
          *  A specialization that requires no U parameter
          */
-        template <typename... Args> void set_emplace_move_args(Args &&...args) {
+        template <typename... Args> void set_emplace_foward_args(Args &&...args) {
             this->set(new T(std::forward<Args>(args)...));
         }
 
-        /** A setter by emplacement with args passed by move
+        /** A setter by emplacement with args passed by forward reference
          *  The general definition
          */
-        template <typename U, typename... Args> void set_emplace_move_args(Args &&...args) {
+        template <typename U, typename... Args> void set_emplace_forward_args(Args &&...args) {
             this->set(new U(std::forward<Args>(args)...));
         }
 

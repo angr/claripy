@@ -22,7 +22,7 @@ namespace Utils::Log::Style {
     } // namespace Private
 
     /** Set the Log Style to a new T constructed with arguments: args */
-    template <typename T, typename... Args> inline void set(Args &...args) {
+    template <typename T, typename... Args> inline void set(Args &&...args) {
         static_assert(std::is_base_of_v<AbstractBase, T>,
                       "T must subclass log style AbstractBase");
         std::shared_ptr<AbstractBase> ptr(new T(args...));

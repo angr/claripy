@@ -30,7 +30,7 @@ namespace Utils::Log::Backend {
         using Parent::Parent;
 
         /** Used to emplace T */
-        template <typename T, typename... Args> auto emplace_back(Args &...args) {
+        template <typename T, typename... Args> auto emplace_back(Args &&...args) {
             static_assert(
                 std::is_base_of_v<AbstractBase, T>,
                 "Multiplex will only emplace subclasses of the log backend AbstractBase");
