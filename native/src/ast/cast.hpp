@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the AST::cast function and related functions
+ * @brief This file defines the AST cast functions
  */
 #ifndef __AST_CAST_HPP__
 #define __AST_CAST_HPP__
