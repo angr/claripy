@@ -15,7 +15,12 @@
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
         struct RunBeforeMain {                                                                    \
+            /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
+            /** Delete copy constructor */                                                        \
+            RunBeforeMain(const RunBeforeMain &) = delete;                                        \
+            /** Delete move constructor */                                                        \
+            RunBeforeMain(RunBeforeMain &&) = delete;                                             \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \
@@ -29,7 +34,12 @@
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
         struct RunBeforeMain {                                                                    \
+            /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
+            /** Delete copy constructor */                                                        \
+            RunBeforeMain(const RunBeforeMain &) = delete;                                        \
+            /** Delete move constructor */                                                        \
+            RunBeforeMain(RunBeforeMain &&) = delete;                                             \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \
