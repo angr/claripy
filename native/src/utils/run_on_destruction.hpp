@@ -18,9 +18,10 @@ namespace Utils {
       public:
         /** Constructor
          *  Consumes args via move semantics
+         *  enabled defaults to true
          */
         RunOnDestruction(const F &f, Args &&...args)
-            : f(std::bind(f, std::forward<Args>(args)...)) {}
+            : enabled(true), f(std::bind(f, std::forward<Args>(args)...)) {}
 
         /** Destructor */
         ~RunOnDestruction() {

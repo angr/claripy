@@ -25,6 +25,18 @@ int run_on_destruction() {
 
     } // End scope
 
+    // Verify f(f) ran
+    UNITTEST_ASSERT(f() == 4)
+
+    // Create a scope
+    {
+        // Set f(1) to run on destruction then disable it
+        Utils::RunOnDestruction rod(f, 4);
+        rod.disable();
+
+    } // End scope
+
+    // Verify f(1) did not run
     UNITTEST_ASSERT(f() == 4)
     return 0;
 }
