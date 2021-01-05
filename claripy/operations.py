@@ -382,7 +382,6 @@ inverse_operations = {
     'SLE': 'SGT', 'SGT': 'SLE',
 }
 
-length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
 length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
 length_change_operations = backend_bitmod_operations
 length_new_operations = backend_creation_operations
