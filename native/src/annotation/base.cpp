@@ -16,7 +16,7 @@ bool Base::relocatable() const {
     return false;
 }
 
-const Base *Base::relocate(const AST::Base &src, const AST::Base &dst) const {
+const Base *Base::relocate(const Expression::Base &src, const Expression::Base &dst) const {
     (void) src;
     (void) dst;
     return this;

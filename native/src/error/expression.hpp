@@ -1,23 +1,23 @@
 /**
  * @file
- * @brief This file contains the possible AST exceptions claricpp can raise
+ * @brief This file contains the possible Expression exceptions claricpp can raise
  * These exceptions have python analogs and must be caught and set to python
  * via a different method.
  * @todo Document method when known
  */
-#ifndef __ERROR_AST_HPP__
-#define __ERROR_AST_HPP__
+#ifndef __ERROR_EXPRESSION_HPP__
+#define __ERROR_EXPRESSION_HPP__
 
 #include "../utils.hpp"
 
 
 namespace Error {
 
-    // AST errors
-    namespace AST {
+    // Expression errors
+    namespace Expression {
 
-        /** Base AST exception
-         *  All AST exceptions must derive from this
+        /** Base Expression exception
+         *  All Expression exceptions must derive from this
          */
         DEFINE_NAMESPACED_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp, Utils::Error)
 
@@ -40,7 +40,7 @@ namespace Error {
         /** @todo document */
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(ZeroDivision, Operation)
 
-    } // namespace AST
+    } // namespace Expression
 
 } // namespace Error
 

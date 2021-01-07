@@ -5,6 +5,6 @@
 #ifndef __ERROR_HPP__
 #define __ERROR_HPP__
 
-#include "error/ast.hpp"
+#include "error/expression.hpp"
 
 #endif

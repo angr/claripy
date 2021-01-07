@@ -3,7 +3,7 @@
 
 #include "private/op_map.hpp"
 
-#include "../ast.hpp"
+#include "../expression/.hpp"
 #include "../utils.hpp"
 
 
@@ -16,7 +16,7 @@ namespace Pvt = Simplification::Private;
 UTILS_LOG_DEFINE_LOG_CLASS(Simplify)
 
 
-AST::Base Simplification::simplify(const AST::Base &old) {
+Expression::Base Simplification::simplify(const Expression::Base &old) {
     auto lookup = Pvt::op_map.find(old->op);
     if (lookup != Pvt::op_map.end()) {
         return lookup->second(old);

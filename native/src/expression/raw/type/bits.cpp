@@ -8,7 +8,7 @@
 
 
 // Define class id functions
-EXPRESSION_RAW_TYPE_DEFINE_CLASS_IDS(Bits)
+EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBITS_ID_FUNCTIONS(Bits)
 
 
 // For brevity

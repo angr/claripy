@@ -6,7 +6,7 @@
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__
 
-#include "../ast/forward_declarations.hpp"
+#include "../expression/forward_declarations.hpp"
 
 #include <memory>
 #include <utility>
@@ -45,12 +45,13 @@ namespace Annotation {
          *      3. elif your_annotation.relocatable is True, the simplifier will run,
          *         determine that the simplified result of `x + zero` will be `x`. It
          *         will then call your_annotation.relocate(zero, x) to move the annotation
-         *         away from the AST that is about to be eliminated.
-         *  src: the old AST that was eliminated in the simplification
-         *  dst: the new AST (the result of a simplification)
+         *         away from the Expression that is about to be eliminated.
+         *  src: the old Expression that was eliminated in the simplification
+         *  dst: the new Expression (the result of a simplification)
          *  return: a pointer to the annotation that will be applied to `dst`
          */
-        virtual const Base *relocate(const AST::Base &src, const AST::Base &dst) const;
+        virtual const Base *relocate(const Expression::Base &src,
+                                     const Expression::Base &dst) const;
     };
 
 } // namespace Annotation
