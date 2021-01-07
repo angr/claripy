@@ -1,0 +1,34 @@
+/** @file */
+#include "@OP@.hpp"
+
+
+/** Disable direct compilation if not autogen'd */
+#if @EXPRESSION_OP@
+#endif
+
+/** Used to define an empty op destructor */
+#define EMPTY_OP_DESTRUCTOR(X) Expression::Raw::X ## OP::~X ## OP() {}
+
+/** Used to define an empty op destructor for each type, with a prefix */
+#define EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(PREFIX) \
+	EMPTY_DESTRUCTOR(PREFIX ## Base) \
+	EMPTY_DESTRUCTOR(PREFIX ## Int) \
+	EMPTY_DESTRUCTOR(PREFIX ## Bool) \
+	EMPTY_DESTRUCTOR(PREFIX ## Bits) \
+	EMPTY_DESTRUCTOR(PREFIX ## String) \
+	EMPTY_DESTRUCTOR(PREFIX ## VS) \
+	EMPTY_DESTRUCTOR(PREFIX ## FP)\
+	EMPTY_DESTRUCTOR(PREFIX ## BV)
+
+/** A macro that expands to nothing */
+#define EMPTY
+
+/** Used to define an empty op destructor for each type */
+#define EACH_TYPE_EMPTY_OP_DESTRUCTOR() \
+	EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(EMPTY)
+
+
+// Destructors
+EACH_TYP_EMPTY_OP_DESTRUCTOR
+EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(Symbolic)
+EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(Concrete)

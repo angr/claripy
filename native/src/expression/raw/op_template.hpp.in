@@ -1,0 +1,88 @@
+/**
+ * @file
+ * @brief The header file for all @OP@ expressions
+ */
+#ifndef __EXPRESSION_RAW_AUTOGEN_@OP@_HPP__
+#define __EXPRESSION_RAW_AUTOGEN_@OP@_HPP__
+
+#include <type_traits>
+#include "symbolic.hpp"
+#include "concrete.hpp"
+#include "type.hpp"
+#include "op.hpp"
+
+
+/** Local: Passthrough the expression op */
+#define OP @EXPRESSION_OP@
+
+/** Disable direct compilation if not autogen'd */
+#if @EXPRESSION_OP@
+#endif
+
+
+/** Local: Create SUBTYPE ## OP */
+#define DEFINE_TYPE_OP_EXPRESSION(SUBTYPE, SUPER) \
+	/** Static verification of type */ \
+	static_assert(std::is_base_of_v<Type::Base, Type::TYPE>, #TYPE " is not a subclass of Op::Type"); \
+	/** Create the SUBTYPE op type */ \
+	class SUBTYPE ## OP : public Type::SUBTYPE, public SUPER { \
+		/** Define a pure virtual destructor */ \
+		~SUBTYPE ## OP() = 0; \
+	};
+
+/** Local: Create SYM ## SUBTYPE ## OP */
+#define DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER(SUBTYPE, SUPER1, SUPER2, PURE_VIRT_OPT) \
+	/** Define Symbolic Base Op */ \
+	class Symbolic ## SUBTYPE ## OP : public SUBTYPE ## OP, public SUPER1 { \
+		/** Define the destructor */ \
+		~ Symbolic ## SUBTYPE ## OP() PURE_VIRT_OPT \
+	}; \
+	/** Define Concrete Base Op */ \
+	class Concrete ## SUBTYPE ## OP : public SUBTYPE ## OP, public SUPER2 { \
+		/** Define the destructor */ \
+		~ Concrete ## SUBTYPE ## OP() PURE_VIRT_OPT \
+	};
+
+/** Local: Create SYM ## SUBTYPE ## OP with SUPER1 = SUPER2 */
+#define DEFINE_SYM_TYPE_OP_EXPRESSION(SUBTYPE, SUPER, PURE_VIRT_OPT) \
+	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER(SUBTYPE, SUPER, SUPER, PURE_VIRT_OPT)
+
+
+namespace Expression::Raw {
+
+	/** Static verification of op */
+	static_assert(std::is_base_of_v<Op::Base, Op::OP>, #OP " is not a subclass of Op::Base");
+
+	/** Define Base Op */
+	DEFINE_TYPE_OP_EXPRESSION(Base, Op::OP)
+	/** Define Type Op, for each immdiate subclass of Base */
+	DEFINE_TYPE_OP_EXPRESSION(Int, Base ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(Bool, Base ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(Bits, Base ## OP)
+	/** Define Type Op, for each immdiate subclass of Bits */
+	DEFINE_TYPE_OP_EXPRESSION(String, Bits ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(VS, Bits ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(FP, Bits ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(BV, Bits ## OP)
+
+	/** Define the Sym Base Op classes */
+	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER(Base, Symbolic, Concrete, =0;)
+	/** Define Sym Type Op, for each immdiate subclass of Base */
+	DEFINE_SYM_TYPE_OP_EXPRESSION(Int, SYM ## Base ## OP, ;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION(Bool, SYM ## Base ## OP, ;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION(Bits, SYM ## Base ## OP, =0;)
+	/** Define Sym Type Op, for each immdiate subclass of Bits */
+	DEFINE_SYM_TYPE_OP_EXPRESSION(String, SYM ## Bits ## OP, ;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION(VS, SYM ## Bits ## OP, ;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION(FP, SYM ## Bits ## OP, ;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION(BV, SYM ## Bits ## OP, ;)
+
+}
+
+// Cleanup local macros
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION
+#undef DEFINE_TYPE_OP_EXPRESSION
+#undef OP
+
+#endif
