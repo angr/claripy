@@ -1,222 +1,33 @@
-cmake_minimum_required( VERSION 3.16 )
-
-#################################################
-#                                               #
-#                  Set by user                  #
-#                                               #
-#################################################
-
-
-# Shared library name
-set( SHARED_LIB_NAME "claricpp" )
-
-# Config options
-option( BUILD_DOC "Create a make target for documentation"   ON )
-option( ENABLE_TESTING "Create a make target for test cases" ON )
-option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
-
-### Developer options below ###
-
-# API Version
-# This is different from version which is read from /VERSION
-set( SOVERSION 1 )
-
-# Run make <DOC_MAKE_TARGET> to build documentation if BUILD_DOC is ON
-# Running make <DOC_MAKE_TARGET> generates html, latex, and man pages
-set( DOC_MAKE_TARGET docs )
-
-# Static Analysis Options
-option( IWYU "Enable iwyu" OFF )
-option( LWYU "Enable lwyu" ON )
-option( CPP_CHECK "Enable cppcheck" ON )
-option( CLANG_TIDY "Enable clang-tidy" ON )
-
-# Default build type
-# Default to debug mode
-# Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
-set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
-
-# Config options
-option( CMAKE_VERBOSE_MAKEFILE "Enable make VERBOSE=1 by default" OFF )
-# This is useful for IDEs, developer tools, and for doxygen documentation generation
-option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
-# The memcheck and security options are mutually exclusive
-# Memcheck cannot run with security enabled
-option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
-option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
-# Note that ENABLE_SECURITY overrides the flags of every other option
-option( ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF )
-# If enabled: log calls to log levels lower than defined will have no performance penalty
-option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
-
-# Log levels are defined in ./src/utils/log/level/level/hpp
-# Note: Lower log levels implier higher levels (i.e. verbose implies critical)
-set( DEFAULT_RELEASE_LOG_LEVEL "Warning" )
-set( DEFAULT_DEBUG_LOG_LEVEL "Debug" )
-set( DEFAULT_LOG_LEVEL "Info" )
-
-
-#################################################
-#                                               #
-#               Program Constants               #
-#                                               #
-#################################################
-
-
-# Define the project
-set(PROJECT_NAME Claricpp)
-project("${PROJECT_NAME}" C CXX)
-
-# Define standards
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_C_EXTENSIONS ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Library source
-# Used for compilation and header lookup for tests
-set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-# Required complication flags
-set(REQUIRED_FLAGS "-Wall -Wextra -Werror" )
-set(CMAKE_C_FLAGS   "${REQUIRED_FLAGS}")
-set(CMAKE_CXX_FLAGS "${REQUIRED_FLAGS}")
-
-
-#################################################
-#                                               #
-#              Automated - General              #
-#                                               #
-#################################################
-
-
-
-# Remap file prefixes to make source location irrelevant to build constants like __FILE__
-set(REMAP_FLAGS "-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${REMAP_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REMAP_FLAGS}")
-
-# Optimize for native code
-if(OPTIMIZE_FOR_NATIVE)
-	set(NATIVE_FLAGS "-march=native -mtune=native")
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${NATIVE_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NATIVE_FLAGS}")
-endif()
-
-# Fix compile time logging
-if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
-    message("*** Runtime logging disabled! ***")
-	add_definitions(-DCONSTANT_LOG_LEVEL)
-else()
-    message("*** Runtime logging enabled! ***")
-endif()
-
-# Build type
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-    message("*** Debug Mode enabled! ***")
-	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}) # no quotes because it is a C-macro
-	# Add debug macro
-    add_definitions(-DDEBUG)
-	# Debug flags
-	set(DEBUG_FLAGS
-		"-O0"
-		"-g"
-		"-fasynchronous-unwind-tables"
-		"-grecord-gcc-switches"
-		"-D_GLIBCXX_ASSERTIONS"
-	)
-	string(REPLACE ";" " " DEBUG_FLAGS "${DEBUG_FLAGS}")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
-	set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${DEBUG_FLAGS}")
-elseif(CMAKE_BUILD_TYPE MATCHES Release)
-    message("*** Release Build enabled! ***")
-	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}) # no quotes because it is a C-macro
-	# Release flags
-	set(RELEASE_FLAGS "-pipe -flto -O3")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
-	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${RELEASE_FLAGS}")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
-else()
-	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_LOG_LEVEL}) # no quotes because it is a C-macro
-endif()
-
-# Enable security flags
-# These come after build type as they may override the given flags
-if(ENABLE_SECURITY)
-	message(WARNING "Security mode enabled. Overriding other options!")
-	if(ENABLE_MEMCHECK)
-		message(FATAL_ERROR "ENABLE_SECURITY and ENABLE_MEMCHECK are mutually exclusive")
-	endif()
-
-	# Security flags
-	set(SECURITY_FLAGS
-		"-m64"
-		"-fsanitize=address"
-		"-D_GLIBCXX_ASSERTIONS"
-		"-fstack-protector-all"
-		"-Wstack-protector"
-		"--param ssp-buffer-size=4"
-		"-pie"
-		"-fPIE"
-		"-ftrapv"
-		"-D_FORTIFY_SOURCE=2"
-		"-O2"
-		"-Wl,-z,relro,-z,now"
-		"-Wl,-z,noexecstack"
-		"-Wformat -Wformat-security"
-		# "-fvtable-verify=std" # Requires custom gcc compilation with this flag enabled.
-	)
-	string(REPLACE ";" " " SECURITY_FLAGS "${SECURITY_FLAGS}")
-
-	# Since we are overriding already set flags, we must set them depending on build type
-	# Build type flags are appended to the default flags, so if they are used we append to them
-	# directly instead of appending to the default flags, to ensure these overrides work
-	if(CMAKE_BUILD_TYPE MATCHES Debug)
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SECURITY_FLAGS}")
-		set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${SECURITY_FLAGS}")
-	elseif(CMAKE_BUILD_TYPE MATCHES Release)
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${SECURITY_FLAGS}")
-		set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${SECURITY_FLAGS}")
-	else()
-		set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${SECURITY_FLAGS}")
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SECURITY_FLAGS}")
-	endif()
-
-endif()
-
-#################################################
-#                                               #
-#          Generate Library and Tests           #
-#                                               #
-#################################################
-
-
-set(EXPRESSION_OP If)
-set(EXPRESSION_OP_LOWER if)
-set(P "${CMAKE_CURRENT_SOURCE_DIR}")
-configure_file("${P}/op_template.hpp.in" "${P}/autogen/if.hpp" @ONLY)
-configure_file("${P}/op_template.cpp.in" "${P}/autogen/if.cpp" @ONLY)
-
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-add_library("${SHARED_LIB_NAME}" SHARED
+# Add current directory's source files
+target_sources("${SHARED_LIB_NAME}" PRIVATE
 	symbolic.cpp
 	concrete.cpp
 	base.cpp
-
-	op/base.cpp
-	op/if.cpp
-
-	type/base.cpp
-	type/bits.cpp
-	type/int.cpp
-	type/bool.cpp
-	type/string.cpp
-	type/fp.cpp
-	type/bv.cpp
-	type/vs.cpp
-
-	autogen/if.cpp
 )
+
+# Add type sources
+add_subdirectory(type)
+
+# Define all Ops that should have their subclasses autogenerated
+# We set this list to empty and expect the ops subdirectory to edit it
+set(OPS "")
+
+# Add op sources
+# Additionally, OPS should be edited
+add_subdirectory(op)
+
+# Configure each autogen'd file
+foreach(OP ${OPS})
+	set(EXPRESSION_OP "${OP}")
+	string(TOLOWER "${OP}" EXPRESSION_OP_LOWER)
+	# Configure header
+	set(IN_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/op_template.hpp.in")
+	set(OUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${EXPRESSION_OP_LOWER}.hpp")
+	configure_file("${IN_HEADER}" "${OUT_HEADER}" @ONLY)
+	# Configure source
+	set(IN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/op_template.cpp.in")
+	set(OUT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${EXPRESSION_OP_LOWER}.cpp")
+	configure_file("${IN_SOURCE}" "${OUT_SOURCE}" @ONLY)
+	# Add out the souce to the shared library
+	target_sources("${SHARED_LIB_NAME}" PRIVATE "${OUT_SOURCE}")
+endforeach()

@@ -91,6 +91,8 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./simplification/simplify.cpp
 )
 
+add_subdirectory(expression)
+
 # Link additional libraries
 # We do not want their functions exposed by our shared object so we designate them private
 # target_link_libraries("${SHARED_LIB_NAME}"
