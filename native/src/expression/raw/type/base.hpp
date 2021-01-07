@@ -11,7 +11,8 @@
 namespace Expression::Raw::Type {
 
     class Base : public ::Expression::Raw::Base {
-        ~Base() = 0;
+      public:
+        virtual ~Base() = 0;
     };
 
 } // namespace Expression::Raw::Type

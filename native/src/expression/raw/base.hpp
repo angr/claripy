@@ -8,8 +8,8 @@
 
 namespace Expression::Raw {
 
-    class Base {
-        ~Base() = 0;
+    struct Base {
+        virtual ~Base() = 0;
     };
 
 } // namespace Expression::Raw

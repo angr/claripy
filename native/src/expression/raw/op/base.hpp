@@ -10,8 +10,8 @@
 
 namespace Expression::Raw::Op {
 
-    class Base : virtual public ::Expression::Raw::Base {
-        ~Base() = 0;
+    struct Base : virtual public ::Expression::Raw::Base {
+        virtual ~Base() = 0;
     };
 
 } // namespace Expression::Raw::Op

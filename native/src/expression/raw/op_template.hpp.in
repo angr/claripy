@@ -2,87 +2,155 @@
  * @file
  * @brief The header file for all @OP@ expressions
  */
+
+/************************************************/
+/*                 CMake Config                 */
+/************************************************/
+
 #ifndef __EXPRESSION_RAW_AUTOGEN_@OP@_HPP__
 #define __EXPRESSION_RAW_AUTOGEN_@OP@_HPP__
 
-#include <type_traits>
-#include "symbolic.hpp"
-#include "concrete.hpp"
-#include "type.hpp"
-#include "op.hpp"
-
+// Disable direct compilation
+#if @EXPRESSION_OP@1 == 1
+#error This file must be configured by cmake to be compiled
+#endif
 
 /** Local: Passthrough the expression op */
 #define OP @EXPRESSION_OP@
 
-/** Disable direct compilation if not autogen'd */
-#if @EXPRESSION_OP@
-#endif
+/************************************************/
+/*                   Includes                   */
+/************************************************/
 
+#include <type_traits>
+#include "../../../macros.hpp"
+#include "../symbolic.hpp"
+#include "../concrete.hpp"
+#include "../type.hpp"
+#include "../op.hpp"
+
+/************************************************/
+/*             Local Helper Macros              */
+/************************************************/
+
+/** Local: A macro used to join two macros */
+#define JOIN2(X, Y) X ## Y
+/** Local: A macro used to join three macros */
+#define JOIN3(X, Y, Z) X ## Y ## Z
+
+/** Local: A macro used to create the name of a type op struct */
+#define TYPEOP(T, O) JOIN2(T, O)
+/** Local: A macro used to create the name of a sym type op struct */
+#define SYMTYPEOP(S, T, O) JOIN3(S, T, O)
+
+/************************************************/
+/*                 Local Macros                 */
+/************************************************/
 
 /** Local: Create SUBTYPE ## OP */
 #define DEFINE_TYPE_OP_EXPRESSION(SUBTYPE, SUPER) \
 	/** Static verification of type */ \
-	static_assert(std::is_base_of_v<Type::Base, Type::TYPE>, #TYPE " is not a subclass of Op::Type"); \
+	static_assert(std::is_base_of_v<Type::Base, Type::SUBTYPE>, \
+		MACRO_VALUE_TO_STRING(SUBTYPE) " is not a subclass of Op::Type"); \
 	/** Create the SUBTYPE op type */ \
-	class SUBTYPE ## OP : public Type::SUBTYPE, public SUPER { \
+	struct TYPEOP(SUBTYPE, OP) : virtual public Type::SUBTYPE, virtual public SUPER { \
 		/** Define a pure virtual destructor */ \
-		~SUBTYPE ## OP() = 0; \
+		virtual ~TYPEOP(SUBTYPE , OP)() = 0; \
 	};
 
-/** Local: Create SYM ## SUBTYPE ## OP */
-#define DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER(SUBTYPE, SUPER1, SUPER2, PURE_VIRT_OPT) \
+/** Local: Create abstract SYM ## SUBTYPE ## OP */
+#define DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_ABSTRACT(SUBTYPE, SUPER1, SUPER2) \
 	/** Define Symbolic Base Op */ \
-	class Symbolic ## SUBTYPE ## OP : public SUBTYPE ## OP, public SUPER1 { \
+	struct SYMTYPEOP(Symbolic, SUBTYPE, OP) : \
+		virtual public TYPEOP(SUBTYPE, OP), virtual public SUPER1 { \
 		/** Define the destructor */ \
-		~ Symbolic ## SUBTYPE ## OP() PURE_VIRT_OPT \
+		virtual ~SYMTYPEOP(Symbolic, SUBTYPE, OP)() = 0; \
 	}; \
 	/** Define Concrete Base Op */ \
-	class Concrete ## SUBTYPE ## OP : public SUBTYPE ## OP, public SUPER2 { \
+	struct SYMTYPEOP(Concrete, SUBTYPE, OP) : \
+		virtual public TYPEOP(SUBTYPE, OP), virtual public SUPER2 { \
 		/** Define the destructor */ \
-		~ Concrete ## SUBTYPE ## OP() PURE_VIRT_OPT \
+		virtual ~SYMTYPEOP(Concrete, SUBTYPE, OP)() = 0; \
 	};
 
-/** Local: Create SYM ## SUBTYPE ## OP with SUPER1 = SUPER2 */
-#define DEFINE_SYM_TYPE_OP_EXPRESSION(SUBTYPE, SUPER, PURE_VIRT_OPT) \
-	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER(SUBTYPE, SUPER, SUPER, PURE_VIRT_OPT)
+/** Local: Create final SYM ## SUBTYPE ## OP */
+#define DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_FINAL(SUBTYPE, SUPER1, SUPER2) \
+	/** Define Symbolic Base Op */ \
+	struct SYMTYPEOP(Symbolic, SUBTYPE, OP) final : \
+		virtual public TYPEOP(SUBTYPE, OP), virtual public JOIN2(Symbolic, SUPER1) { \
+		/** Define the destructor */ \
+		~SYMTYPEOP(Symbolic, SUBTYPE, OP)() override final; \
+	}; \
+	/** Define Concrete Base Op */ \
+	struct SYMTYPEOP(Concrete, SUBTYPE, OP) final : \
+		virtual public TYPEOP(SUBTYPE, OP), virtual public JOIN2(Concrete, SUPER2) { \
+		/** Define the destructor */ \
+		~SYMTYPEOP(Concrete, SUBTYPE, OP)() override final; \
+	};
 
+/** Local: Create an abstract SYM ## SUBTYPE ## OP with SUPER1 = SUPER2 */
+#define DEFINE_SYM_TYPE_OP_EXPRESSION_ABSTRACT(SUBTYPE, SUPER) \
+	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_ABSTRACT(SUBTYPE, SUPER, SUPER)
+
+/** Local: Create a final SYM ## SUBTYPE ## OP with SUPER1 = SUPER2 */
+#define DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(SUBTYPE, SUPER) \
+	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_FINAL(SUBTYPE, SUPER, SUPER)
+
+/************************************************/
+/*                 Declarations                 */
+/************************************************/
 
 namespace Expression::Raw {
 
 	/** Static verification of op */
-	static_assert(std::is_base_of_v<Op::Base, Op::OP>, #OP " is not a subclass of Op::Base");
+	static_assert(std::is_base_of_v<Op::Base, Op::OP>,
+		MACRO_VALUE_TO_STRING(OP) " is not a subclass of Op::Base");
 
 	/** Define Base Op */
 	DEFINE_TYPE_OP_EXPRESSION(Base, Op::OP)
 	/** Define Type Op, for each immdiate subclass of Base */
-	DEFINE_TYPE_OP_EXPRESSION(Int, Base ## OP)
-	DEFINE_TYPE_OP_EXPRESSION(Bool, Base ## OP)
-	DEFINE_TYPE_OP_EXPRESSION(Bits, Base ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(Int, TYPEOP(Base, OP))
+	DEFINE_TYPE_OP_EXPRESSION(Bool, TYPEOP(Base, OP))
+	DEFINE_TYPE_OP_EXPRESSION(Bits, TYPEOP(Base, OP))
 	/** Define Type Op, for each immdiate subclass of Bits */
-	DEFINE_TYPE_OP_EXPRESSION(String, Bits ## OP)
-	DEFINE_TYPE_OP_EXPRESSION(VS, Bits ## OP)
-	DEFINE_TYPE_OP_EXPRESSION(FP, Bits ## OP)
-	DEFINE_TYPE_OP_EXPRESSION(BV, Bits ## OP)
+	DEFINE_TYPE_OP_EXPRESSION(String, TYPEOP(Bits, OP))
+	DEFINE_TYPE_OP_EXPRESSION(VS, TYPEOP(Bits, OP))
+	DEFINE_TYPE_OP_EXPRESSION(FP, TYPEOP(Bits, OP))
+	DEFINE_TYPE_OP_EXPRESSION(BV, TYPEOP(Bits, OP))
 
 	/** Define the Sym Base Op classes */
-	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER(Base, Symbolic, Concrete, =0;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_ABSTRACT(Base, Symbolic, Concrete)
 	/** Define Sym Type Op, for each immdiate subclass of Base */
-	DEFINE_SYM_TYPE_OP_EXPRESSION(Int, SYM ## Base ## OP, ;)
-	DEFINE_SYM_TYPE_OP_EXPRESSION(Bool, SYM ## Base ## OP, ;)
-	DEFINE_SYM_TYPE_OP_EXPRESSION(Bits, SYM ## Base ## OP, =0;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(Int, TYPEOP(Base, OP))
+	DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(Bool, TYPEOP(Base, OP))
+	DEFINE_SYM_TYPE_OP_EXPRESSION_ABSTRACT(Bits, TYPEOP(Base, OP))
 	/** Define Sym Type Op, for each immdiate subclass of Bits */
-	DEFINE_SYM_TYPE_OP_EXPRESSION(String, SYM ## Bits ## OP, ;)
-	DEFINE_SYM_TYPE_OP_EXPRESSION(VS, SYM ## Bits ## OP, ;)
-	DEFINE_SYM_TYPE_OP_EXPRESSION(FP, SYM ## Bits ## OP, ;)
-	DEFINE_SYM_TYPE_OP_EXPRESSION(BV, SYM ## Bits ## OP, ;)
+	DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(String, TYPEOP(Bits, OP))
+	DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(VS, TYPEOP(Bits, OP))
+	DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(FP, TYPEOP(Bits, OP))
+	DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL(BV, TYPEOP(Bits, OP))
 
 }
 
-// Cleanup local macros
-#undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER
-#undef DEFINE_SYM_TYPE_OP_EXPRESSION
-#undef DEFINE_TYPE_OP_EXPRESSION
+/************************************************/
+/*                   Cleanup                    */
+/************************************************/
+
+// Cleanup cmake passthroughs
 #undef OP
+
+// Cleanup local helper macros
+#undef JOIN2
+#undef JOIN3
+#undef TYPEOP
+#undef SYMTYPEOP
+
+// Cleanup local macros
+#undef DEFINE_TYPE_OP_EXPRESSION
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_ABSTRACT
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_FINAL
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION_ABSTRACT
+#undef DEFINE_SYM_TYPE_OP_EXPRESSION_FINAL
 
 #endif

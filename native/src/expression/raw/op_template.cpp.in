@@ -1,34 +1,61 @@
 /** @file */
-#include "@OP@.hpp"
 
+/************************************************/
+/*                 CMake Config                 */
+/************************************************/
 
-/** Disable direct compilation if not autogen'd */
-#if @EXPRESSION_OP@
+// Disable direct compilation
+#if @EXPRESSION_OP@1 == 1
+#error This file must be configured by cmake to be compiled
 #endif
 
-/** Used to define an empty op destructor */
-#define EMPTY_OP_DESTRUCTOR(X) Expression::Raw::X ## OP::~X ## OP() {}
+// Disable direct compilation
+#if @EXPRESSION_OP_LOWER@1 == 1
+#error This file must be configured by cmake to be compiled
+#endif
 
-/** Used to define an empty op destructor for each type, with a prefix */
-#define EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(PREFIX) \
-	EMPTY_DESTRUCTOR(PREFIX ## Base) \
-	EMPTY_DESTRUCTOR(PREFIX ## Int) \
-	EMPTY_DESTRUCTOR(PREFIX ## Bool) \
-	EMPTY_DESTRUCTOR(PREFIX ## Bits) \
-	EMPTY_DESTRUCTOR(PREFIX ## String) \
-	EMPTY_DESTRUCTOR(PREFIX ## VS) \
-	EMPTY_DESTRUCTOR(PREFIX ## FP)\
-	EMPTY_DESTRUCTOR(PREFIX ## BV)
+/** Passthrough the file name to include */
+#include "@EXPRESSION_OP_LOWER@.hpp"
+
+/** Passthrough the expression op */
+#define OP @EXPRESSION_OP@
+
+/************************************************/
+/*                Helper Macros                 */
+/************************************************/
 
 /** A macro that expands to nothing */
 #define EMPTY
 
-/** Used to define an empty op destructor for each type */
-#define EACH_TYPE_EMPTY_OP_DESTRUCTOR() \
-	EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(EMPTY)
+/** Local: A macro used to join two macros */
+#define JOIN2(X, Y) X ## Y
 
+/** Local: A macro used to create the name of a type op struct */
+#define TYPEOP(T, O) JOIN2(T, O)
+
+/************************************************/
+/*                    Macros                    */
+/************************************************/
+
+/** Used to define an empty op destructor */
+#define EMPTY_OP_DESTRUCTOR(X) Expression::Raw::TYPEOP(X, OP)::~TYPEOP(X, OP)() {}
+
+/** Used to define an empty op destructor for each type, with a prefix */
+#define EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(PREFIX) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, Base)) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, Int)) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, Bool)) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, Bits)) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, String)) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, VS)) \
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, FP))\
+	EMPTY_OP_DESTRUCTOR(JOIN2(PREFIX, BV))
+
+/************************************************/
+/*              Define Destructors              */
+/************************************************/
 
 // Destructors
-EACH_TYP_EMPTY_OP_DESTRUCTOR
+EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(EMPTY)
 EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(Symbolic)
 EACH_TYPE_EMPTY_OP_DESTRUCTOR_WITH_PREFIX(Concrete)

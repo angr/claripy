@@ -45,14 +45,10 @@
         using NS::SUPER::SUPER;                                                                   \
     };
 
-/** A macro to convert a macro result into a string */
-#define MACRO_TO_STRING(X) MACRO_TO_STRING_HELPER(X)
+/** A macro to convert the value of a macro into a string */
+#define MACRO_VALUE_TO_STRING(X) #X
 
-/************************************************/
-/*                   Helpers                    */
-/************************************************/
-
-/** A helper macro to help convert a macro result into a string */
-#define MACRO_TO_STRING_HELPER(X) #X
+/** A macro to convert a macro name into a string */
+#define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
 
 #endif
