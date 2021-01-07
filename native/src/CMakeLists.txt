@@ -48,18 +48,18 @@ endif()
 # Create the shared object target
 # TODO: break apart
 add_library("${SHARED_LIB_NAME}" SHARED
-	# AST
-	./ast/cache_key.cpp
-	./ast/private/factory_cache.cpp
+	# expression
+	./expression/cache_key.cpp
+	./expression/private/factory_cache.cpp
 		# RawTypes
-		./ast/raw_types/fp.cpp
-		./ast/raw_types/vs.cpp
-		./ast/raw_types/bv.cpp
-		./ast/raw_types/int.cpp
-		./ast/raw_types/bool.cpp
-		./ast/raw_types/base.cpp
-		./ast/raw_types/bits.cpp
-		./ast/raw_types/string.cpp
+		./expression/raw/type/fp.cpp
+		./expression/raw/type/vs.cpp
+		./expression/raw/type/bv.cpp
+		./expression/raw/type/int.cpp
+		./expression/raw/type/bool.cpp
+		./expression/raw/type/base.cpp
+		./expression/raw/type/bits.cpp
+		./expression/raw/type/string.cpp
 	# Utils
 		./utils/error/claricpp.cpp
 		# Log

@@ -1,36 +1,36 @@
 /**
  * @file
- * @brief This file defines the AST::CacheKey class
+ * @brief This file defines the Expression::CacheKey class
  * @todo This class may not be needed in the C++ version
  */
-#ifndef __AST_CACHE_KEY_HPP__
-#define __AST_CACHE_KEY_HPP__
+#ifndef __EXPRESSION_CACHE_KEY_HPP__
+#define __EXPRESSION_CACHE_KEY_HPP__
 
 #include "../macros.hpp"
 
 #include <string>
 
 
-namespace AST {
+namespace Expression {
 
     // Forward declarations
-    namespace RawTypes {
+    namespace Raw::Type {
         class Base;
     }
 
-    /** CacheKey is a reference to an AST
+    /** CacheKey is a reference to an Expression
      *  Two CacheKeys are considered equal when their hashes are equal
      */
     class CacheKey {
       public:
         /** Constructor */
-        CacheKey(const RawTypes::Base &a);
+        CacheKey(const Raw::Type::Base &a);
 
         /** Returns a string representation of this */
         std::string repr() const;
 
-        /** ASTCacheKey equality operator
-         *  Two values are equal if their AST's hashes are
+        /** ExpressionCacheKey equality operator
+         *  Two values are equal if their Expression's hashes are
          */
         bool operator==(const CacheKey &) const;
 
@@ -42,10 +42,10 @@ namespace AST {
         /*                Representation                */
         /************************************************/
 
-        /** The AST this object refers to */
-        const RawTypes::Base &ref;
+        /** The Expression this object refers to */
+        const Raw::Type::Base &ref;
     };
 
-} // namespace AST
+} // namespace Expression
 
 #endif

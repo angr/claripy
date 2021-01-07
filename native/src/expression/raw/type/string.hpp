@@ -1,7 +1,6 @@
-
 /**
  * @file
- * @brief
+ * @brief This file defines the Expression::Raw::Type::String class
  */
 #ifndef __EXPRESSION_RAW_TYPE_STRING_HPP__
 #define __EXPRESSION_RAW_TYPE_STRING_HPP__
@@ -11,9 +10,29 @@
 
 namespace Expression::Raw::Type {
 
+    /** An Expression representing a string */
     class String : public Bits {
+        EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(String)
       public:
-        virtual ~String() = 0;
+        /** Create a concrete String
+         *  @todo kwargs
+         */
+        /* static ::Expression::String Concrete(const std::string & value, const Constants::Int
+         * length); */
+
+      protected:
+        /** A protected constructor to disallow public creation
+         *  This must have take in the same arguments types as the hash function, minus the
+         * hash These arguments may be taken in via copy, reference or move; ownership is given
+         */
+        String(const Hash h);
+
+      private:
+        /** The hash function of this Expression
+         *  This must have take in the same arguments as the constructor, minus the hash
+         *  These arguments args must be const values or references; this function must be pure
+         */
+        static Hash hash();
     };
 
 } // namespace Expression::Raw::Type

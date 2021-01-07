@@ -1,18 +1,18 @@
 /** @file */
 #include "cache_key.hpp"
 
-#include "raw_types/base.hpp"
+#include "raw/type/base.hpp"
 
 #include <sstream>
 #include <string>
 
 
 // For clarity
-using namespace AST;
+using namespace Expression;
 
 
 // Constructor
-CacheKey::CacheKey(const RawTypes::Base &a) : ref(a) {}
+CacheKey::CacheKey(const Raw::Type::Base &a) : ref(a) {}
 
 // __repr__
 std::string CacheKey::repr() const {

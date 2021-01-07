@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a generic hash cache type
  */
-#ifndef __AST_PRIVATE_CACHE_HPP__
-#define __AST_PRIVATE_CACHE_HPP__
+#ifndef __EXPRESSION_PRIVATE_CACHE_HPP__
+#define __EXPRESSION_PRIVATE_CACHE_HPP__
 
 #include "../../unittest.hpp"
 #include "../../utils.hpp"
@@ -15,7 +15,7 @@
 #include <type_traits>
 
 
-namespace AST::Private {
+namespace Expression::Private {
 
     /** A generic cache class that
      *  This maps a Key to std::weak_ptr<Value>
@@ -156,6 +156,6 @@ namespace AST::Private {
         std::shared_mutex lock;
     };
 
-} // namespace AST::Private
+} // namespace Expression::Private
 
 #endif

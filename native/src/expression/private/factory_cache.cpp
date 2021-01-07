@@ -3,7 +3,7 @@
 
 
 // For clarity
-using namespace AST;
+using namespace Expression;
 
 
-Private::Cache<Hash, RawTypes::Base> Private::factory_cache {};
+Private::Cache<Hash, Raw::Type::Base> Private::factory_cache {};
