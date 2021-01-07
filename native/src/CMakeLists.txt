@@ -46,35 +46,7 @@ endif()
 
 
 # Create the shared object target
-# TODO: break apart
 add_library("${SHARED_LIB_NAME}" SHARED
-	# Expression
-	./expression/cache_key.cpp
-	./expression/private/factory_cache.cpp
-		# RawTypes
-		./expression/raw/type/fp.cpp
-		./expression/raw/type/vs.cpp
-		./expression/raw/type/bv.cpp
-		./expression/raw/type/int.cpp
-		./expression/raw/type/bool.cpp
-		./expression/raw/type/base.cpp
-		./expression/raw/type/bits.cpp
-		./expression/raw/type/string.cpp
-	# Utils
-		./utils/error/claricpp.cpp
-		# Log
-			# Level
-			./utils/log/level/ostream.cpp
-			./utils/log/level/access.cpp
-			# Style
-			./utils/log/style/level_timestamp_message.cpp
-			./utils/log/style/access.cpp
-			# Backend
-			./utils/log/backend/access.cpp
-			./utils/log/backend/multiplex.cpp
-			./utils/log/backend/ostream.cpp
-			./utils/log/backend/clog.cpp
-			./utils/log/backend/cerr.cpp
 	# Annotation
 	./annotation/base.cpp
 	./annotation/simplification_avoidance.cpp
@@ -87,6 +59,8 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	# ./simplification/simplify.cpp
 )
 
+# Add sub directories
+add_subdirectory(utils)
 add_subdirectory(expression)
 
 # Link additional libraries
