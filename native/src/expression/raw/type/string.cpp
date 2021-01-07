@@ -1,8 +1,7 @@
 /** @file */
 #include "string.hpp"
 
-#include "../../op.hpp"
-#include "../../utils.hpp"
+#include "../../../utils.hpp"
 
 
 // Define required Expression functions
@@ -16,7 +15,7 @@ using namespace Expression;
 Raw::Type::String::~String() {}
 
 /** @todo */
-Raw::Type::String::String(const Hash h, const Op::Operation o) : Raw::Type::Bits(h, o, 0) {}
+Raw::Type::String::String(const Hash h) : Raw::Type::Bits(h, 0) {}
 
 
 /* String Raw::Type::String::Concrete(const std::string & value, const Constants::Int length) { */
@@ -30,6 +29,6 @@ Raw::Type::String::String(const Hash h, const Op::Operation o) : Raw::Type::Bits
 /* } */
 
 /** @todo make this actually work */
-Hash Raw::Type::String::hash(const Op::Operation o) {
-    return Hash(String::static_class_id) * (1 + Hash(o));
+Hash Raw::Type::String::hash() {
+    return Hash(String::static_class_id);
 }

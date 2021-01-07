@@ -1,7 +1,7 @@
 /** @file */
 #include "bool.hpp"
 
-#include "../../utils.hpp"
+#include "../../../utils.hpp"
 
 
 // Define required Expression functions
@@ -29,5 +29,5 @@ bool Raw::Type::Bool::is_false() const {
 
 /** @todo make this actually work */
 Hash Raw::Type::Bool::hash() {
-    return Hash(Bool::static_class_id)
+    return Hash(Bool::static_class_id);
 }

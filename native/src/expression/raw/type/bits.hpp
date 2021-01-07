@@ -8,7 +8,7 @@
 #include "base.hpp"
 
 
-namespace Expression::Raw::Types {
+namespace Expression::Raw::Type {
 
     /** This class represents an Expression of bits */
     class Bits : public Base {
@@ -33,10 +33,12 @@ namespace Expression::Raw::Types {
          */
         static Hash hash(const Constants::Int length);
 
+#if 0
         /** Throw an exception if old and new_ are not of the same length @todo static */
         void check_replaceability(const ::Expression::Bits &old, const ::Expression::Bits &new_);
+#endif
     };
 
-} // namespace Expression::Raw::Types
+} // namespace Expression::Raw::Type
 
 #endif

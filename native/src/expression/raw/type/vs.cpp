@@ -1,7 +1,7 @@
 /** @file */
 #include "vs.hpp"
 
-#include "../../utils.hpp"
+#include "../../../utils.hpp"
 
 
 // Define required Expression functions
@@ -15,7 +15,7 @@ using namespace Expression;
 Raw::Type::VS::~VS() {}
 
 /** @todo */
-Raw::Type::VS::VS(const Hash h) : Raw::Type::Bits(h, o, 0) {}
+Raw::Type::VS::VS(const Hash h) : Raw::Type::Bits(h, 0) {}
 
 /** @todo make this actually work */
 Hash Raw::Type::VS::hash() {

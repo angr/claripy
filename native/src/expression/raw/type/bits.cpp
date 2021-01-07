@@ -1,15 +1,14 @@
 /** @file */
 #include "bits.hpp"
 
-#include "../../error.hpp"
-#include "../../utils.hpp"
+#include "../../../utils.hpp"
 
 #include <sstream>
 #include <utility>
 
 
-// Define required Expression functions
-EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBASE_ID_FUNCTIONS(Bits)
+// Define class id functions
+EXPRESSION_RAW_TYPE_DEFINE_CLASS_IDS(Bits)
 
 
 // For brevity
@@ -34,8 +33,10 @@ std::string Bits::type_name() const {
     return ret.str();
 }
 
+#if 0
 void Bits::check_replaceability(const ::Expression::Bits &old, const ::Expression::Bits &new_) {
     if (old->length != new_->length) {
         throw Error::Expression::Base("Replacements must have matching sizes");
     }
 }
+#endif

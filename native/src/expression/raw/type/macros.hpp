@@ -41,7 +41,7 @@
 /************************************************/
 
 /** Declare a pure virtual destructor */
-#define PURE_VIRT_DESTRUCTOR(CLASS) ~CLASS() = 0;
+#define PURE_VIRT_DESTRUCTOR(CLASS) virtual ~CLASS() = 0;
 
 /** Declare the class_id function */
 #define EXPRESSION_RAW_TYPE_DECLARE_EXPRESSION_CLASS_IDS                                          \
