@@ -16,8 +16,12 @@ namespace Expression {
          *  All symbolic expressions must subclass this
          */
         struct Symbolic : virtual public Base {
+
             /** Pure virtual destructor */
             virtual ~Symbolic() = 0;
+
+            /** Return true if and only if this expression is symbolic */
+            bool symbolic() const override final;
         };
 
     } // namespace Raw

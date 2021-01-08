@@ -9,25 +9,26 @@ EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBASE_ID_FUNCTIONS(Bool)
 
 
 // For clarity
-using namespace Expression;
+using namespace Expression::Raw;
+using namespace Type;
 
 
-Raw::Type::Bool::~Bool() {}
+Bool::~Bool() {}
 
 /** @todo finish */
-Raw::Type::Bool::Bool(const Expression::Hash h) : Raw::Type::Base(h) {}
+Bool::Bool(const Hash h) : Base(h) {}
 
 /** @todo this is a dummy */
-bool Raw::Type::Bool::is_true() const {
+bool Bool::is_true() const {
     return true;
 }
 
 /** @todo this is a dummy */
-bool Raw::Type::Bool::is_false() const {
+bool Bool::is_false() const {
     return true;
 }
 
-/** @todo make this actually work */
-Hash Raw::Type::Bool::hash() {
-    return Hash(Bool::static_class_id);
+/** Get the type of the expression */
+Constants::CCSC Bool::type() const {
+    return "Bool";
 }

@@ -14,8 +14,10 @@ namespace Expression::Raw::Op {
      *  All op expressions must subclass this
      */
     struct Base : virtual public ::Expression::Raw::Base {
-        /** Pure virtual destructor */
-        virtual ~Base() = 0;
+        EXPRESSION_RAW_INIT(Base)
+      protected:
+        /** Protected constructor */
+        Base();
     };
 
 } // namespace Expression::Raw::Op

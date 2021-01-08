@@ -9,15 +9,16 @@ EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBASE_ID_FUNCTIONS(Int)
 
 
 // For clarity
-using namespace Expression;
+using namespace Expression::Raw;
+using namespace Type;
 
 
-Raw::Type::Int::~Int() {}
+Type::Int::~Int() {}
 
 /** @todo finish */
-Raw::Type::Int::Int(const Expression::Hash h) : Raw::Type::Base(h) {}
+Type::Int::Int(const Hash h) : Base(h) {}
 
-/** @todo make this actually work */
-Expression::Hash Raw::Type::Int::hash() {
-    return Hash(Int::static_class_id);
+/** Get the type of the expression */
+Constants::CCSC Int::type() const {
+    return "Int";
 }

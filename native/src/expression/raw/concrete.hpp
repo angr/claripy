@@ -16,8 +16,12 @@ namespace Expression {
          *  All concrete expressions must subclass this
          */
         struct Concrete : virtual public Base {
+
             /** Pure virtual destructor */
             virtual ~Concrete() = 0;
+
+            /** Return true if and only if this expression is symbolic */
+            bool symbolic() const override final;
         };
 
     } // namespace Raw

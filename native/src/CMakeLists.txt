@@ -53,7 +53,6 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	# Op
 	./op/classifications.cpp
 	# Simplification
-	# TODO
 	./simplification/private/op_map.cpp
 	./simplification/simplifiers.cpp
 	./simplification/simplify.cpp

@@ -13,6 +13,9 @@ namespace Expression::Raw::Type {
     /** An Expression representing an integer */
     class FP : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BITS_SUBCLASS(FP)
+      public:
+        /** Get the type of the expression */
+        Constants::CCSC type() const override final;
 
       protected:
         /** A protected constructor to disallow public creation

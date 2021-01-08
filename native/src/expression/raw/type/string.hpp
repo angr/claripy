@@ -14,11 +14,8 @@ namespace Expression::Raw::Type {
     class String : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(String)
       public:
-        /** Create a concrete String
-         *  @todo kwargs
-         */
-        /* static ::Expression::String Concrete(const std::string & value, const Constants::Int
-         * length); */
+        /** Get the type of the expression */
+        Constants::CCSC type() const override final;
 
       protected:
         /** A protected constructor to disallow public creation

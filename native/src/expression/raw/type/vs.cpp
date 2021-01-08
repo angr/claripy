@@ -9,15 +9,16 @@ EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBITS_ID_FUNCTIONS(VS)
 
 
 // For clarity
-using namespace Expression;
+using namespace Expression::Raw;
+using namespace Type;
 
 
-Raw::Type::VS::~VS() {}
+VS::~VS() {}
 
 /** @todo */
-Raw::Type::VS::VS(const Hash h) : Raw::Type::Bits(h, 0) {}
+VS::VS(const Hash h) : Bits(h, 0) {}
 
-/** @todo make this actually work */
-Hash Raw::Type::VS::hash() {
-    return Hash(VS::static_class_id);
+/** Get the type of the expression */
+Constants::CCSC VS::type() const {
+    return "VS";
 }

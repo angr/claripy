@@ -10,9 +10,17 @@
 
 namespace Expression::Raw::Op {
 
+    /** The op class If */
     class If : virtual public Base {
       public:
+        /** Pure virtual destructor */
         virtual ~If() = 0;
+
+        /** Return the op */
+        Constants::CCSC op() const override final;
+
+      protected:
+        If(const Hash h);
     };
 
 } // namespace Expression::Raw::Op

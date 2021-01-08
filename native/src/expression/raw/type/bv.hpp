@@ -13,6 +13,9 @@ namespace Expression::Raw::Type {
     /** This class represents an Expression bit vector */
     class BV : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BITS_SUBCLASS(BV)
+      public:
+        /** Get the type of the expression */
+        Constants::CCSC type() const override final;
 
       protected:
         /** A protected constructor to disallow public creation

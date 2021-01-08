@@ -2,4 +2,11 @@
 #include "concrete.hpp"
 
 
-Expression::Raw::Concrete::~Concrete() {}
+// For brevity
+using namespace Expression::Raw;
+
+Concrete::~Concrete() {}
+
+bool Concrete::symbolic() const {
+    return false;
+}

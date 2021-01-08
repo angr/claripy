@@ -9,13 +9,14 @@ EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBASE_ID_FUNCTIONS(String)
 
 
 // For clarity
-using namespace Expression;
+using namespace Expression::Raw;
+using namespace Type;
 
 
-Raw::Type::String::~String() {}
+String::~String() {}
 
 /** @todo */
-Raw::Type::String::String(const Hash h) : Raw::Type::Bits(h, 0) {}
+String::String(const Hash h) : Bits(h, 0) {}
 
 
 /* String Raw::Type::String::Concrete(const std::string & value, const Constants::Int length) { */
@@ -28,7 +29,7 @@ Raw::Type::String::String(const Hash h) : Raw::Type::Bits(h, 0) {}
  */
 /* } */
 
-/** @todo make this actually work */
-Hash Raw::Type::String::hash() {
-    return Hash(String::static_class_id);
+/** Get the type of the expression */
+Constants::CCSC String::type() const {
+    return "String";
 }

@@ -54,12 +54,6 @@ namespace Expression {
             /*                Representation                */
             /************************************************/
 
-            /** The hash of the Expression
-             *  This variable is intentionally declared first as we want it to be the first
-             * argument passed to the Base() constructor; since it was declared first most
-             * compilers will issue a warning if it is not set before all other member variables */
-            const Hash id;
-
 #if 0
             /** A measure of how simplified this Expression is */
             const SimplifiedLevel simplified;

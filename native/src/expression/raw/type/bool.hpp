@@ -20,6 +20,9 @@ namespace Expression::Raw::Type {
         /** Return true if the Expression evaluates to false */
         bool is_false() const;
 
+        /** Get the type of the expression */
+        Constants::CCSC type() const override final;
+
       protected:
         /** A protected constructor to disallow public creation
          *  This must have take in the same arguments types as the hash function, minus the
