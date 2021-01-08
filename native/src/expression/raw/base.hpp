@@ -8,12 +8,13 @@
 #include "macros.hpp"
 
 #include "../../annotation.hpp"
-#include "../constants.hpp"
+#include "../hash.hpp"
 
 #include <set>
 
 
 namespace Expression {
+
     namespace Raw {
 
         /** The base Expression type
@@ -40,7 +41,7 @@ namespace Expression {
             /************************************************/
 
             /** The hash of the Expression */
-            const Hash id;
+            const ::Expression::Hash::Hash id;
 
             /** A set of annotations applied onto this Expression */
             const std::set<Annotation::Base> annotations;
