@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** An Expression representing an integer */
-    class Int : public Base {
+    class Int : virtual public Base {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Int)
 
       protected:

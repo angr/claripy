@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** An Expression representing an integer */
-    class FP : public Bits {
+    class FP : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BITS_SUBCLASS(FP)
 
       protected:

@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** An Expression representing a value set */
-    class VS : public Bits {
+    class VS : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BITS_SUBCLASS(VS)
 
       protected:

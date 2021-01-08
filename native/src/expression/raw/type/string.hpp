@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** An Expression representing a string */
-    class String : public Bits {
+    class String : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(String)
       public:
         /** Create a concrete String

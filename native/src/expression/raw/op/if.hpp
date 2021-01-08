@@ -10,7 +10,7 @@
 
 namespace Expression::Raw::Op {
 
-    class If : public Base {
+    class If : virtual public Base {
       public:
         virtual ~If() = 0;
     };

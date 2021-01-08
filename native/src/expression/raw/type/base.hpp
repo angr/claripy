@@ -43,7 +43,7 @@ namespace Expression {
          *  the following is true:: a, b = two different Expressions c = b + a d = b + a assert c
          *  is d
          */
-        class Base : public ::Expression::Raw::Base {
+        class Base : virtual public ::Expression::Raw::Base {
             EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Base)
           public:
             /** Returns a string representation of this */

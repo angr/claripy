@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** This class represents an Expression bit vector */
-    class BV : public Bits {
+    class BV : virtual public Bits {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BITS_SUBCLASS(BV)
 
       protected:

@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** This class represents an Expression boolean */
-    class Bool : public Base {
+    class Bool : virtual public Base {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Bool)
       public:
         /** Return true if the Expression evaluates to true */

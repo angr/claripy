@@ -11,7 +11,7 @@
 namespace Expression::Raw::Type {
 
     /** This class represents an Expression of bits */
-    class Bits : public Base {
+    class Bits : virtual public Base {
         EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Bits)
       public:
         EXPRESSION_RAW_TYPE_DECLARE_EXPRESSION_SUBBITS_TYPENAME
