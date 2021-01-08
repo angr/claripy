@@ -12,24 +12,14 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression bit vector */
     class BV : virtual public Bits {
-        EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BITS_SUBCLASS(BV)
+        EXPRESSION_RAW_INIT(BV)
       public:
         /** Get the type of the expression */
         Constants::CCSC type() const override final;
 
       protected:
-        /** A protected constructor to disallow public creation
-         *  This must have take in the same arguments types as the hash function, minus the
-         * hash These arguments may be taken in via copy, reference or move; ownership is given
-         */
-        BV(const Hash h);
-
-      private:
-        /** The hash function of this Expression
-         *  This must have take in the same arguments as the constructor, minus the hash
-         *  These arguments args must be const values or references; this function must be pure
-         */
-        static Hash hash();
+        /** A protected constructor to disallow public creation */
+        BV() = default;
     };
 
 } // namespace Expression::Raw::Type

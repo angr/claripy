@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression boolean */
     class Bool : virtual public Base {
-        EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Bool)
+        EXPRESSION_RAW_INIT(Bool)
       public:
         /** Return true if the Expression evaluates to true */
         bool is_true() const;
@@ -24,18 +24,8 @@ namespace Expression::Raw::Type {
         Constants::CCSC type() const override final;
 
       protected:
-        /** A protected constructor to disallow public creation
-         *  This must have take in the same arguments types as the hash function, minus the
-         * hash These arguments may be taken in via copy, reference or move; ownership is given
-         */
-        Bool(const Hash h);
-
-      private:
-        /** The hash function of this Expression
-         *  This must have take in the same arguments as the constructor, minus the hash
-         *  These arguments args must be const values or references; this function must be pure
-         */
-        static Hash hash();
+        /** A protected constructor to disallow public creation */
+        Bool() = default;
     };
 
 } // namespace Expression::Raw::Type

@@ -12,31 +12,22 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression of bits */
     class Bits : virtual public Base {
-        EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Bits)
+        EXPRESSION_RAW_INIT(Bits)
       public:
-        EXPRESSION_RAW_TYPE_DECLARE_EXPRESSION_SUBBITS_TYPENAME
-
         /** The number of bits being represented */
         const Constants::Int length;
 
       protected:
-        /** A protected constructor to disallow public creation
-         *  This must have take in the same arguments types as the hash function, minus the
-         * hash These arguments may be taken in via copy, reference or move; ownership is given
+        /** This constructor must exist for compilations reasons
+         *  It should never be explicitly called, however, and will throw and error
+         *  This exists because the diamond problem mandates non-most-derived nodes within a
+         * diamond to be capable of invoking a constructor even though only the diamond bottom
+         * class will be able to invoke the diamond top base constructor
          */
-        Bits(const Hash h, const Constants::Int length);
+        Bits();
 
-      private:
-        /** The hash function of this Expression
-         *  This must have take in the same arguments as the constructor, minus the hash
-         *  These arguments args must be const values or references; this function must be pure
-         */
-        static Hash hash(const Constants::Int length);
-
-#if 0
-        /** Throw an exception if old and new_ are not of the same length @todo static */
-        void check_replaceability(const ::Expression::Bits &old, const ::Expression::Bits &new_);
-#endif
+        /** A protected constructor to disallow public creation */
+        Bits(const Constants::Int length);
     };
 
 } // namespace Expression::Raw::Type

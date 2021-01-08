@@ -18,18 +18,26 @@
 #define EXPRESSION_RAW_INIT(CLASS)                                                                \
   public:                                                                                         \
     /** Pure virtual destructor */                                                                \
-    virtual ~Base() = 0;                                                                          \
+    virtual ~CLASS() = 0;                                                                         \
                                                                                                   \
   private:                                                                                        \
     /** Delete copy constructor */                                                                \
     CLASS(const CLASS &) = delete;                                                                \
     /** Delete move constructor */                                                                \
-    CLASS(CLASS &&) = delete;
+    CLASS(CLASS &&) = delete;                                                                     \
+    /** Allow factories friend access */                                                          \
+    template <typename T, typename... Args> friend T Expression::factory(Args &&...args);         \
+    /** Allow cache friend access                                                                 \
+     *  We expose the constructor so that the cache may emplace new objects, which is             \
+     *  faster than copying them in                                                               \
+     */                                                                                           \
+    friend class ::Expression::Private::Cache<Hash, Base>;
 
 /** Used to declare calling a ctor illegal
  *  Throws an error
  */
-#define EXPRESSION_RAW_ILLEGAL_CTOR(CLASS) throw Illegal(CLASS "() should never be called.");
+#define EXPRESSION_RAW_ILLEGAL_CTOR(CLASS)                                                        \
+    throw Utils::Error::Unexpected::Illegal(CLASS "() should never be called.");
 
 
 #endif

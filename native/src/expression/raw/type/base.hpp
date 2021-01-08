@@ -5,10 +5,7 @@
 #ifndef __EXPRESSION_RAW_TYPE_BASE_HPP__
 #define __EXPRESSION_RAW_TYPE_BASE_HPP__
 
-#include "macros.hpp"
-
 #include "../../../macros.hpp"
-#include "../../constants.hpp"
 #include "../../simplified_level.hpp"
 #include "../base.hpp"
 
@@ -23,8 +20,7 @@ namespace Expression {
 
     // Forward declarations
     class CacheKey;
-    template <typename T, typename... Args>
-    T factory(std::set<BackendID> &&eager_backends, Args &&...args);
+    template <typename T, typename... Args> T factory(Args &&...args);
     namespace Private {
         template <typename A, typename B> class Cache;
     }
@@ -44,46 +40,16 @@ namespace Expression {
          *  is d
          */
         class Base : virtual public ::Expression::Raw::Base {
-            EXPRESSION_RAW_TYPE_INIT_EXPRESSION_BASE_SUBCLASS(Base)
-          public:
-            /** Returns a string representation of this */
-            virtual std::string repr(const bool inner = false, const Constants::Int max_depth = -1,
-                                     const bool explicit_length = false) const;
-
-            /************************************************/
-            /*                Representation                */
-            /************************************************/
-
-#if 0
-            /** A measure of how simplified this Expression is */
-            const SimplifiedLevel simplified;
-
-            /** A set of backents that are known to be unable to handle this Expression */
-            const std::set<BackendID> errored_backends;
-#endif
-
+            EXPRESSION_RAW_INIT(Base)
           protected:
             /************************************************/
             /*                 Constructors                 */
             /************************************************/
 
-            /** A protected constructor to disallow public creation
-             *  This must have take in the same arguments types as the hash function, minus the
-             * hash These arguments may be taken in via copy, reference or move; ownership is given
-             */
-            Base(const Hash h);
+            /** A protected constructor to disallow public creation */
+            Base() = default;
 
           private:
-            /************************************************/
-            /*                   Statics                    */
-            /************************************************/
-
-            /** The hash function of this Expression
-             *  This must have take in the same arguments as the constructor, minus the hash
-             *  These arguments args must be const values or references; this function must be pure
-             */
-            static Hash hash();
-
             /** Declare CacheKey a friend */
             friend class ::Expression::CacheKey;
         };

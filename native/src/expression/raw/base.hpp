@@ -5,10 +5,10 @@
 #ifndef __EXPRESSION_RAW_BASE_HPP__
 #define __EXPRESSION_RAW_BASE_HPP__
 
-#include "constants.hpp"
 #include "macros.hpp"
 
 #include "../../annotation.hpp"
+#include "../constants.hpp"
 
 #include <set>
 

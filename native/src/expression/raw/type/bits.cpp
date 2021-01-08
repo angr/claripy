@@ -7,10 +7,6 @@
 #include <utility>
 
 
-// Define class id functions
-EXPRESSION_RAW_TYPE_DEFINE_EXPRESSION_SUBBITS_ID_FUNCTIONS(Bits)
-
-
 // For brevity
 using namespace Expression::Raw;
 using namespace Type;
@@ -18,5 +14,9 @@ using namespace Type;
 
 Bits::~Bits() {}
 
-/** @todo */
-Bits::Bits(const Hash h, const Constants::Int l) : Base(h), length(l) {}
+Bits::Bits()
+    : length(0) { EXPRESSION_RAW_ILLEGAL_CTOR("Expression::Raw::Type::Bits") }
+
+      /** @todo */
+      Bits::Bits(const Constants::Int l)
+    : length(l) {}
