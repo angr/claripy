@@ -17,7 +17,7 @@ namespace Expression {
         class Base;
     }
 
-    // The following should not be used outside of the ast directory
+    // The following should not be used outside of the expression directory
     namespace Private {
 
         /** Define a cache the Expression factory can use */

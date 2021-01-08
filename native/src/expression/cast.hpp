@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Expression cast functions
  */
-#ifndef __EXPRESSION_CExpression_HPP__
-#define __EXPRESSION_CExpression_HPP__
+#ifndef __EXPRESSION_CAST_HPP__
+#define __EXPRESSION_CAST_HPP__
 
 #include "private/raw.hpp"
 

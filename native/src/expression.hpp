@@ -5,16 +5,10 @@
 #ifndef __EXPRESSION_HPP__
 #define __EXPRESSION_HPP__
 
-#include "expression/base.hpp"
-#include "expression/bits.hpp"
-#include "expression/bool.hpp"
-#include "expression/bv.hpp"
+#include "expression/autogen_shared_pointers.hpp"
 #include "expression/cast.hpp"
 #include "expression/constants.hpp"
 #include "expression/factory.hpp"
-#include "expression/fp.hpp"
-#include "expression/int.hpp"
-#include "expression/string.hpp"
-#include "expression/vs.hpp"
+#include "expression/raw.hpp"
 
 #endif

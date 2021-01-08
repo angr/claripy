@@ -18,6 +18,7 @@ add_subdirectory(op)
 
 # Used to configure op.hpp
 set(OP_INCLUDES "")
+set(OP_SHARED_PTRS "")
 
 # Configure each autogen'd file
 foreach(OP ${OPS})
@@ -30,7 +31,9 @@ foreach(OP ${OPS})
 	set(OUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${OUT_HEADER_BASENAME}")
 	configure_file("${IN_HEADER}" "${OUT_HEADER}" @ONLY)
 	# Add the header to op_includes
+	# Cmake lists disallow semicolons so we use '|' and replace it later
 	list(APPEND OP_INCLUDES "#include \"op/${OUT_HEADER_BASENAME}\"")
+	list(APPEND OP_SHARED_PTRS "using ${OP} = std::shared_ptr<Raw::Op::${OP}>|")
 
 	# Configure source
 	set(IN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/op_template.cpp.in")
@@ -43,4 +46,6 @@ endforeach()
 
 # Configure op.hpp
 string(REPLACE ";" "\n" OP_INCLUDES "${OP_INCLUDES}")
+string(REPLACE ";" "\n" OP_SHARED_PTRS "${OP_SHARED_PTRS}")
+string(REPLACE "|" ";" OP_SHARED_PTRS "${OP_SHARED_PTRS}")
 configure_file("op.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/op.hpp" @ONLY)

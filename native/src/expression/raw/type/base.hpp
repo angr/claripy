@@ -21,11 +21,6 @@
 #include <vector>
 
 
-// Forward declarations
-namespace Interface {
-    class Base;
-}
-
 namespace Expression {
 
     // Forward declarations
@@ -102,9 +97,6 @@ namespace Expression {
 
             /** Declare CacheKey a friend */
             friend class ::Expression::CacheKey;
-
-            /** Allow interfaces friend access */
-            friend class Interface::Base;
         };
 
     } // namespace Raw::Type

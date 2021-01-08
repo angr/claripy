@@ -8,4 +8,12 @@
 
 @OP_INCLUDES@
 
+
+namespace Expression {
+
+	// Create shared pointer aliases
+	@OP_SHARED_PTRS@
+
+}
+
 #endif
