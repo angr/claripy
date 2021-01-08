@@ -6,12 +6,14 @@
 #ifndef __EXPRESSION_RAW_OP_HPP__
 #define __EXPRESSION_RAW_OP_HPP__
 
+#include "op/base.hpp"
 @OP_INCLUDES@
 
 
 namespace Expression {
 
 	// Create shared pointer aliases
+	EXPRESSION_RAW_DECLARE_SHARED(Base, Raw::Op)
 	@OP_SHARED_PTRS@
 
 }

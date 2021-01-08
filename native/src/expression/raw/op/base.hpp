@@ -10,7 +10,11 @@
 
 namespace Expression::Raw::Op {
 
+    /** Base operation expression
+     *  All op expressions must subclass this
+     */
     struct Base : virtual public ::Expression::Raw::Base {
+        /** Pure virtual destructor */
         virtual ~Base() = 0;
     };
 

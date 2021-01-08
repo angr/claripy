@@ -6,11 +6,11 @@
 #ifndef __EXPRESSION_RAW_HPP__
 #define __EXPRESSION_RAW_HPP__
 
-#include "base.hpp"
-#include "concrete.hpp"
-#include "macros.hpp"
-#include "op.hpp"
-#include "symbolic.hpp"
-#include "type.hpp"
+#include "raw/base.hpp"
+#include "raw/concrete.hpp"
+#include "raw/macros.hpp"
+#include "raw/op.hpp"
+#include "raw/symbolic.hpp"
+#include "raw/type.hpp"
 
 #endif

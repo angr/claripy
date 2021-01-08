@@ -8,12 +8,23 @@
 #include "base.hpp"
 
 
-namespace Expression::Raw {
+namespace Expression {
 
-    struct Concrete : virtual public Base {
-        virtual ~Concrete() = 0;
-    };
+    namespace Raw {
 
-} // namespace Expression::Raw
+        /** A concrete expression
+         *  All concrete expressions must subclass this
+         */
+        struct Concrete : virtual public Base {
+            /** Pure virtual destructor */
+            virtual ~Concrete() = 0;
+        };
+
+    } // namespace Raw
+
+    // Create a shared pointer alias
+    EXPRESSION_RAW_DECLARE_SHARED(Concrete, Raw)
+
+} // namespace Expression
 
 #endif

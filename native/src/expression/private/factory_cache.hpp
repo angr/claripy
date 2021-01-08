@@ -13,7 +13,7 @@
 namespace Expression {
 
     // Forward declarations
-    namespace Raw::Type {
+    namespace Raw {
         class Base;
     }
 
@@ -21,7 +21,7 @@ namespace Expression {
     namespace Private {
 
         /** Define a cache the Expression factory can use */
-        extern Private::Cache<::Expression::Hash, Raw::Type::Base> factory_cache;
+        extern Private::Cache<::Expression::Hash, ::Expression::Raw::Base> factory_cache;
 
     } // namespace Private
 

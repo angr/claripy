@@ -8,12 +8,23 @@
 #include "macros.hpp"
 
 
-namespace Expression::Raw {
+namespace Expression {
 
-    struct Base {
-        virtual ~Base() = 0;
-    };
+    namespace Raw {
 
-} // namespace Expression::Raw
+        /** The base Expression type
+         *  All expressions must subclass this
+         */
+        struct Base {
+            /** Pure virtual destructor */
+            virtual ~Base() = 0;
+        };
+
+    } // namespace Raw
+
+    // Create a shared pointer alias
+    EXPRESSION_RAW_DECLARE_SHARED(Base, Raw)
+
+} // namespace Expression
 
 #endif

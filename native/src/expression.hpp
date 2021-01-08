@@ -5,7 +5,6 @@
 #ifndef __EXPRESSION_HPP__
 #define __EXPRESSION_HPP__
 
-#include "expression/autogen_shared_pointers.hpp"
 #include "expression/cast.hpp"
 #include "expression/constants.hpp"
 #include "expression/factory.hpp"

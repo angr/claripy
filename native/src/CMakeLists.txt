@@ -54,9 +54,9 @@ add_library("${SHARED_LIB_NAME}" SHARED
 	./op/classifications.cpp
 	# Simplification
 	# TODO
-	# ./simplification/private/op_map.cpp
-	# ./simplification/simplifiers.cpp
-	# ./simplification/simplify.cpp
+	./simplification/private/op_map.cpp
+	./simplification/simplifiers.cpp
+	./simplification/simplify.cpp
 )
 
 # Add sub directories
