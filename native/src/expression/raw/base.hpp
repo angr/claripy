@@ -9,6 +9,7 @@
 
 #include "../../annotation.hpp"
 #include "../hash.hpp"
+#include "../private/factory_cache.hpp"
 
 #include <set>
 
@@ -35,6 +36,12 @@ namespace Expression {
 
             /** Get the type of the expression */
             virtual Constants::CCSC type() const = 0;
+
+            /************************************************/
+            /*                 Non-Virtuals                 */
+            /************************************************/
+
+            std::string full_type_name() const;
 
             /************************************************/
             /*                Representation                */
