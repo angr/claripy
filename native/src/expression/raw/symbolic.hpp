@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief This file defines a symbolic expression
  */
 #ifndef __EXPRESSION_RAW_SYMBOLIC_HPP__
 #define __EXPRESSION_RAW_SYMBOLIC_HPP__

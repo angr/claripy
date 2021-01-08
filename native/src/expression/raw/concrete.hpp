@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief This file defines a concrete expression
  */
 #ifndef __EXPRESSION_RAW_CONCRETE_HPP__
 #define __EXPRESSION_RAW_CONCRETE_HPP__

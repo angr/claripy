@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief This file defines the base op expression
  */
 #ifndef __EXPRESSION_RAW_OP_BASE_HPP__
 #define __EXPRESSION_RAW_OP_BASE_HPP__
