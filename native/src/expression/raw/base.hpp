@@ -7,6 +7,10 @@
 
 #include "macros.hpp"
 
+#include "../../annotation.hpp"
+
+#include <set>
+
 
 namespace Expression {
 
@@ -18,6 +22,9 @@ namespace Expression {
         struct Base {
             /** Pure virtual destructor */
             virtual ~Base() = 0;
+
+            /** A set of annotations applied onto this Expression */
+            const std::set<Annotation::Base> annotations;
         };
 
     } // namespace Raw

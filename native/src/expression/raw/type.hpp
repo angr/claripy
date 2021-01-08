@@ -19,8 +19,8 @@
 
 namespace Expression {
 
-    // Declare shared pointers types
-    EXPRESSION_RAW_DECLARE_SHARED(Base, Raw::Type)
+    /** Declare a special alias for base */
+    using AbstractType = std::shared_ptr<Raw::Type::Base>;
     EXPRESSION_RAW_DECLARE_SHARED(Bits, Raw::Type)
     EXPRESSION_RAW_DECLARE_SHARED(Bool, Raw::Type)
     EXPRESSION_RAW_DECLARE_SHARED(Int, Raw::Type)

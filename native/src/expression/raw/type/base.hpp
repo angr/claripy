@@ -7,7 +7,6 @@
 
 #include "macros.hpp"
 
-#include "../../../annotation.hpp"
 #include "../../../macros.hpp"
 #include "../../constants.hpp"
 #include "../../simplified_level.hpp"
@@ -16,7 +15,6 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -69,9 +67,6 @@ namespace Expression {
             /** A set of backents that are known to be unable to handle this Expression */
             const std::set<BackendID> errored_backends;
 #endif
-
-            /** A set of annotations applied onto this Expression */
-            const std::set<Annotation::Base> annotations;
 
           protected:
             /************************************************/

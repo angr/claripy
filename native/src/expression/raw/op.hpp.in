@@ -12,8 +12,9 @@
 
 namespace Expression {
 
+	/** Declare a special alias for base */
+	using AbstractOp = std::shared_ptr<Raw::Op::Base>;
 	// Create shared pointer aliases
-	EXPRESSION_RAW_DECLARE_SHARED(Base, Raw::Op)
 	@OP_SHARED_PTRS@
 
 }

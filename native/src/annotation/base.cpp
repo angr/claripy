@@ -1,6 +1,8 @@
 /** @file */
 #include "base.hpp"
 
+#include "../expression.hpp"
+
 
 // For clarity
 using namespace Annotation;

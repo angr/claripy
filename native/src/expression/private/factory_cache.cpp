@@ -6,4 +6,4 @@
 using namespace Expression;
 
 
-Private::Cache<Hash, Raw::Type::Base> Private::factory_cache {};
+Private::Cache<Hash, ::Expression::Raw::Base> Private::factory_cache {};

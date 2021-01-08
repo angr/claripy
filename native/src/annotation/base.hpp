@@ -6,11 +6,17 @@
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__
 
-#include "../expression/forward_declarations.hpp"
-
 #include <memory>
 #include <utility>
 
+
+// Forward declarations
+namespace Expression {
+    namespace Raw {
+        struct Base;
+    }
+    using Base = std::shared_ptr<Raw::Base>;
+} // namespace Expression
 
 namespace Annotation {
 

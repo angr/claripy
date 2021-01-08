@@ -3,7 +3,6 @@
 
 #include "private/op_map.hpp"
 
-#include "../expression/.hpp"
 #include "../utils.hpp"
 
 
@@ -17,6 +16,7 @@ UTILS_LOG_DEFINE_LOG_CLASS(Simplify)
 
 
 Expression::Base Simplification::simplify(const Expression::Base &old) {
+#if 0
     auto lookup = Pvt::op_map.find(old->op);
     if (lookup != Pvt::op_map.end()) {
         return lookup->second(old);
@@ -25,4 +25,7 @@ Expression::Base Simplification::simplify(const Expression::Base &old) {
         Log::verbose<Simplify>("No simplifier for operation: ", old->op);
         return old;
     }
+#else
+    return old;
+#endif
 }

@@ -5,7 +5,7 @@
 #ifndef __SIMPLIFICATION_SIMPLIFY_HPP__
 #define __SIMPLIFICATION_SIMPLIFY_HPP__
 
-#include "../expression/forward_declarations.hpp"
+#include "../expression.hpp"
 
 
 namespace Simplification {
