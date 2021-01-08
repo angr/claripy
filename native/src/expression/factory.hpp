@@ -6,6 +6,7 @@
 #define __EXPRESSION_FACTORY_HPP__
 
 #include "cast.hpp"
+#include "hash.hpp"
 #include "private/factory_cache.hpp"
 #include "private/raw.hpp"
 
@@ -32,7 +33,7 @@ namespace Expression {
 
         // Check to see if the object to be constructed exists in the hash cache
         // We run hash vis run_cr_function to ensure args are passed by const reference
-        const Hash h = Utils::run_cr_function(hash<RawT>, args...);
+        const auto h = Utils::run_cr_function(Hash::hash<RawT>, args...);
         auto base_ptr =
             Private::factory_cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...);
         return down_cast_throw_on_fail<T>(base_ptr);

@@ -41,7 +41,7 @@ namespace Expression {
             /************************************************/
 
             /** The hash of the Expression */
-            const ::Expression::Hash::Hash id;
+            const Hash::Hash id;
 
             /** A set of annotations applied onto this Expression */
             const std::set<Annotation::Base> annotations;
@@ -60,7 +60,7 @@ namespace Expression {
             Base();
 
             /** A protected constructor to disallow public creation */
-            explicit Base(const Hash h, std::set<Annotation::Base> &&ans = {});
+            explicit Base(const Hash::Hash h, std::set<Annotation::Base> &&ans = {});
         };
 
     } // namespace Raw

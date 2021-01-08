@@ -30,7 +30,7 @@ namespace Expression::Hash {
     /** A specialization for T = char * */
     template <> struct SingularRetMap<char *> { using RetType = Constants::CCSC; };
     /** A specialization for T = char * */
-    template <> SRet<char *> singular(const char *c) { return c; }
+    template <> SRet<char *> singular<char *>(char *const &c) { return c; }
 
 } // namespace Expression::Hash
 

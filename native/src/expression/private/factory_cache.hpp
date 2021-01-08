@@ -14,7 +14,7 @@ namespace Expression {
 
     // Forward declarations
     namespace Raw {
-        struct Base;
+        class Base;
     }
 
     // The following should not be used outside of the expression directory

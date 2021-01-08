@@ -13,7 +13,7 @@
 // Forward declarations
 namespace Expression {
     namespace Raw {
-        struct Base;
+        class Base;
     }
     using Base = std::shared_ptr<Raw::Base>;
 } // namespace Expression

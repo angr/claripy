@@ -20,7 +20,8 @@ namespace Expression::Raw::Op {
         Constants::CCSC op() const override final;
 
       protected:
-        If(const Hash h);
+        /** A protected constructor to disallow public creation */
+        If() = default;
     };
 
 } // namespace Expression::Raw::Op

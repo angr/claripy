@@ -16,7 +16,10 @@
 namespace Expression {
 
     // Forward declaration
-    class Base;
+    namespace Raw {
+        class Base;
+    }
+    using Base = std::shared_ptr<Raw::Base>;
 
     namespace Hash {
 

@@ -6,7 +6,6 @@
 #define __EXPRESSION_HPP__
 
 #include "expression/cast.hpp"
-#include "expression/constants.hpp"
 #include "expression/factory.hpp"
 #include "expression/raw.hpp"
 
