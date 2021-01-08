@@ -40,7 +40,8 @@ foreach(OP ${OPS})
 	set(OUT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${EXPRESSION_OP_LOWER}.cpp")
 	configure_file("${IN_SOURCE}" "${OUT_SOURCE}" @ONLY)
 	# Add out the souce to the shared library
-	target_sources("${SHARED_LIB_NAME}" PRIVATE "${OUT_SOURCE}")
+	# TODO: uncomment
+	# target_sources("${SHARED_LIB_NAME}" PRIVATE "${OUT_SOURCE}")
 
 endforeach()
 

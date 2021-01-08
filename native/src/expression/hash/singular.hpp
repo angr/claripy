@@ -17,20 +17,15 @@ namespace Expression::Hash {
      */
     template <typename> struct SingularRetMap;
 
-    /** A using declaration to shortcut usage of SingularRetMap */
-    template <typename T> using SRet = typename SingularRetMap<T>::RetType;
-
     /** Determines how hash handles the type passed
      *  This hash does not need to be a real hash, it just has to represent T as an SRet<T>
      *  which will be appened to a stringstream that will be properly hashed
      *  The general case is undefined, specializations must be defined
      */
-    template <typename T> SRet<T> singular(const T &);
+    template <typename T> typename SingularRetMap<T>::RetType singular(const T &);
 
     /** A specialization for T = char * */
     template <> struct SingularRetMap<char *> { using RetType = Constants::CCSC; };
-    /** A specialization for T = char * */
-    template <> SRet<char *> singular<char *>(char *const &c) { return c; }
 
 } // namespace Expression::Hash
 
