@@ -11,10 +11,13 @@
 #include "../hash.hpp"
 #include "../private/factory_cache.hpp"
 
-#include <set>
+#include <vector>
 
 
 namespace Expression {
+
+    // Forward declarations
+    template <typename T, typename... Args> T factory(Args &&...args);
 
     namespace Raw {
 
@@ -51,7 +54,7 @@ namespace Expression {
             const Hash::Hash id;
 
             /** A set of annotations applied onto this Expression */
-            const std::set<Annotation::Base> annotations;
+            const std::vector<Annotation::Base> annotations;
 
           protected:
             /************************************************/
@@ -67,7 +70,7 @@ namespace Expression {
             Base();
 
             /** A protected constructor to disallow public creation */
-            explicit Base(const Hash::Hash h, std::set<Annotation::Base> &&ans = {});
+            explicit Base(const Hash::Hash h, std::vector<Annotation::Base> &&ans = {});
         };
 
     } // namespace Raw
