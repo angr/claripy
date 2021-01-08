@@ -16,18 +16,31 @@ set(OPS "")
 # Additionally, OPS should be edited
 add_subdirectory(op)
 
+# Used to configure op.hpp
+set(OP_INCLUDES "")
+
 # Configure each autogen'd file
 foreach(OP ${OPS})
 	set(EXPRESSION_OP "${OP}")
 	string(TOLOWER "${OP}" EXPRESSION_OP_LOWER)
+
 	# Configure header
 	set(IN_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/op_template.hpp.in")
-	set(OUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${EXPRESSION_OP_LOWER}.hpp")
+	set(OUT_HEADER_BASENAME "${EXPRESSION_OP_LOWER}.hpp")
+	set(OUT_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${OUT_HEADER_BASENAME}")
 	configure_file("${IN_HEADER}" "${OUT_HEADER}" @ONLY)
+	# Add the header to op_includes
+	list(APPEND OP_INCLUDES "#include \"op/${OUT_HEADER_BASENAME}\"")
+
 	# Configure source
 	set(IN_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/op_template.cpp.in")
 	set(OUT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${EXPRESSION_OP_LOWER}.cpp")
 	configure_file("${IN_SOURCE}" "${OUT_SOURCE}" @ONLY)
 	# Add out the souce to the shared library
 	target_sources("${SHARED_LIB_NAME}" PRIVATE "${OUT_SOURCE}")
+
 endforeach()
+
+# Configure op.hpp
+string(REPLACE ";" "\n" OP_INCLUDES "${OP_INCLUDES}")
+configure_file("op.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/op.hpp" @ONLY)

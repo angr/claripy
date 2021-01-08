@@ -47,46 +47,60 @@
 /*                 Local Macros                 */
 /************************************************/
 
+/** A macro to declare a shared pointer to X in Expression */
+#define DECLARE_SHARED(X) EXPRESSION_RAW_DECLARE_SHARED(X, Raw)
+
 /** Local: Create SUBTYPE ## OP */
 #define DEFINE_TYPE_OP_EXPRESSION(SUBTYPE, SUPER) \
-	/** Static verification of type */ \
-	static_assert(std::is_base_of_v<Type::Base, Type::SUBTYPE>, \
-		MACRO_VALUE_TO_STRING(SUBTYPE) " is not a subclass of Op::Type"); \
-	/** Create the SUBTYPE op type */ \
-	struct TYPEOP(SUBTYPE, OP) : virtual public Type::SUBTYPE, virtual public SUPER { \
-		/** Define a pure virtual destructor */ \
-		virtual ~TYPEOP(SUBTYPE , OP)() = 0; \
-	};
+	namespace Raw { \
+		/** Static verification of type */ \
+		static_assert(std::is_base_of_v<Type::Base, Type::SUBTYPE>, \
+			MACRO_VALUE_TO_STRING(SUBTYPE) " is not a subclass of Op::Type"); \
+		/** Create the SUBTYPE op type */ \
+		struct TYPEOP(SUBTYPE, OP) : virtual public Type::SUBTYPE, virtual public SUPER { \
+			/** Define a pure virtual destructor */ \
+			virtual ~TYPEOP(SUBTYPE , OP)() = 0; \
+		}; \
+	} \
+	DECLARE_SHARED(TYPEOP(SUBTYPE, OP))
 
 /** Local: Create abstract SYM ## SUBTYPE ## OP */
 #define DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_ABSTRACT(SUBTYPE, SUPER1, SUPER2) \
-	/** Define Symbolic Base Op */ \
-	struct SYMTYPEOP(Symbolic, SUBTYPE, OP) : \
-		virtual public TYPEOP(SUBTYPE, OP), virtual public SUPER1 { \
-		/** Define the destructor */ \
-		virtual ~SYMTYPEOP(Symbolic, SUBTYPE, OP)() = 0; \
-	}; \
-	/** Define Concrete Base Op */ \
-	struct SYMTYPEOP(Concrete, SUBTYPE, OP) : \
-		virtual public TYPEOP(SUBTYPE, OP), virtual public SUPER2 { \
-		/** Define the destructor */ \
-		virtual ~SYMTYPEOP(Concrete, SUBTYPE, OP)() = 0; \
-	};
+	namespace Raw { \
+		/** Define Symbolic Base Op */ \
+		struct SYMTYPEOP(Symbolic, SUBTYPE, OP) : \
+			virtual public TYPEOP(SUBTYPE, OP), virtual public SUPER1 { \
+			/** Define the destructor */ \
+			virtual ~SYMTYPEOP(Symbolic, SUBTYPE, OP)() = 0; \
+		}; \
+		/** Define Concrete Base Op */ \
+		struct SYMTYPEOP(Concrete, SUBTYPE, OP) : \
+			virtual public TYPEOP(SUBTYPE, OP), virtual public SUPER2 { \
+			/** Define the destructor */ \
+			virtual ~SYMTYPEOP(Concrete, SUBTYPE, OP)() = 0; \
+		}; \
+	} \
+	DECLARE_SHARED(SYMTYPEOP(Symbolic, SUBTYPE, OP)) \
+	DECLARE_SHARED(SYMTYPEOP(Concrete, SUBTYPE, OP))
 
 /** Local: Create final SYM ## SUBTYPE ## OP */
 #define DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_FINAL(SUBTYPE, SUPER1, SUPER2) \
-	/** Define Symbolic Base Op */ \
-	struct SYMTYPEOP(Symbolic, SUBTYPE, OP) final : \
-		virtual public TYPEOP(SUBTYPE, OP), virtual public JOIN2(Symbolic, SUPER1) { \
-		/** Define the destructor */ \
-		~SYMTYPEOP(Symbolic, SUBTYPE, OP)() override final; \
-	}; \
-	/** Define Concrete Base Op */ \
-	struct SYMTYPEOP(Concrete, SUBTYPE, OP) final : \
-		virtual public TYPEOP(SUBTYPE, OP), virtual public JOIN2(Concrete, SUPER2) { \
-		/** Define the destructor */ \
-		~SYMTYPEOP(Concrete, SUBTYPE, OP)() override final; \
-	};
+	namespace Raw { \
+		/** Define Symbolic Base Op */ \
+		struct SYMTYPEOP(Symbolic, SUBTYPE, OP) final : \
+			virtual public TYPEOP(SUBTYPE, OP), virtual public JOIN2(Symbolic, SUPER1) { \
+			/** Define the destructor */ \
+			~SYMTYPEOP(Symbolic, SUBTYPE, OP)() override final; \
+		}; \
+		/** Define Concrete Base Op */ \
+		struct SYMTYPEOP(Concrete, SUBTYPE, OP) final : \
+			virtual public TYPEOP(SUBTYPE, OP), virtual public JOIN2(Concrete, SUPER2) { \
+			/** Define the destructor */ \
+			~SYMTYPEOP(Concrete, SUBTYPE, OP)() override final; \
+		}; \
+	} \
+	DECLARE_SHARED(SYMTYPEOP(Symbolic, SUBTYPE, OP)) \
+	DECLARE_SHARED(SYMTYPEOP(Concrete, SUBTYPE, OP))
 
 /** Local: Create an abstract SYM ## SUBTYPE ## OP with SUPER1 = SUPER2 */
 #define DEFINE_SYM_TYPE_OP_EXPRESSION_ABSTRACT(SUBTYPE, SUPER) \
@@ -100,10 +114,10 @@
 /*                 Declarations                 */
 /************************************************/
 
-namespace Expression::Raw {
+namespace Expression {
 
 	/** Static verification of op */
-	static_assert(std::is_base_of_v<Op::Base, Op::OP>,
+	static_assert(std::is_base_of_v<Raw::Op::Base, Raw::Op::OP>,
 		MACRO_VALUE_TO_STRING(OP) " is not a subclass of Op::Base");
 
 	/** Define Base Op */
@@ -146,6 +160,7 @@ namespace Expression::Raw {
 #undef SYMTYPEOP
 
 // Cleanup local macros
+#undef DECLARE_SHARED
 #undef DEFINE_TYPE_OP_EXPRESSION
 #undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER
 #undef DEFINE_SYM_TYPE_OP_EXPRESSION_DIFF_SUPER_ABSTRACT
