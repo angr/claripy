@@ -19,7 +19,7 @@
 #define EXPRESSION_RAW_INSTANTIABLE_INIT(CLASS)                                                   \
   public:                                                                                         \
     /** Non-virtual destructor */                                                                 \
-    ~CLASS();                                                                                     \
+    ~CLASS() override final;                                                                      \
     /** Allow factories friend access */                                                          \
     template <typename T, typename... Args> friend T Expression::factory(Args &&...args);         \
     /** Allow cache friend access                                                                 \
