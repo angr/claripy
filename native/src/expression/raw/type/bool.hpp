@@ -21,7 +21,7 @@ namespace Expression::Raw::Type {
         bool is_false() const;
 
         /** Get the type of the expression */
-        Constants::CCSC type() const override final;
+        Constants::CCS type() const override final;
 
       protected:
         /** A protected constructor to disallow public creation */

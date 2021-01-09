@@ -25,7 +25,7 @@ namespace Expression::Hash {
     template <typename T> typename SingularRetMap<T>::RetType singular(const T &);
 
     /** A specialization for T = char * */
-    template <> struct SingularRetMap<char *> { using RetType = Constants::CCSC; };
+    template <> struct SingularRetMap<char *> { using RetType = Constants::CCS; };
 
 } // namespace Expression::Hash
 

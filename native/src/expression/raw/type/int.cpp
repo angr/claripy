@@ -11,6 +11,6 @@ using namespace Type;
 
 Int::~Int() {}
 
-Constants::CCSC Int::type() const {
+Constants::CCS Int::type() const {
     return "Int";
 }

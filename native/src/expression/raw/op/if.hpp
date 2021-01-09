@@ -17,7 +17,7 @@ namespace Expression::Raw::Op {
         virtual ~If() = 0;
 
         /** Return the op */
-        Constants::CCSC op() const override final;
+        Constants::CCS op() const override final;
 
       protected:
         /** A protected constructor to disallow public creation */

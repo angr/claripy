@@ -9,6 +9,6 @@ using namespace Op;
 
 If::~If() {}
 
-Constants::CCSC If::op() const {
+Constants::CCS If::op() const {
     return "If";
 }

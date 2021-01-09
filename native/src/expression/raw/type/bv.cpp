@@ -11,6 +11,6 @@ using namespace Type;
 
 BV::~BV() {}
 
-Constants::CCSC BV::type() const {
+Constants::CCS BV::type() const {
     return "BV";
 }

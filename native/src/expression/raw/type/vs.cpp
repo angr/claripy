@@ -11,6 +11,6 @@ using namespace Type;
 
 VS::~VS() {}
 
-Constants::CCSC VS::type() const {
+Constants::CCS VS::type() const {
     return "VS";
 }

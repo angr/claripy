@@ -11,6 +11,6 @@ using namespace Type;
 
 String::~String() {}
 
-Constants::CCSC String::type() const {
+Constants::CCS String::type() const {
     return "String";
 }

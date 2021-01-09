@@ -35,10 +35,10 @@ namespace Expression {
             virtual bool symbolic() const = 0;
 
             /** Get the op of the expression */
-            virtual Constants::CCSC op() const = 0;
+            virtual Constants::CCS op() const = 0;
 
             /** Get the type of the expression */
-            virtual Constants::CCSC type() const = 0;
+            virtual Constants::CCS type() const = 0;
 
             /************************************************/
             /*                 Non-Virtuals                 */

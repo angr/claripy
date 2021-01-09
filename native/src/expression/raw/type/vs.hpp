@@ -15,7 +15,7 @@ namespace Expression::Raw::Type {
         EXPRESSION_RAW_INIT(VS)
       public:
         /** Get the type of the expression */
-        Constants::CCSC type() const override final;
+        Constants::CCS type() const override final;
 
       protected:
         /** A protected constructor to disallow public creation */

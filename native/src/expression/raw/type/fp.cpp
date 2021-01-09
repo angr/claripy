@@ -10,6 +10,6 @@ using namespace Expression::Raw::Type;
 
 FP::~FP() {}
 
-Constants::CCSC FP::type() const {
+Constants::CCS FP::type() const {
     return "FP";
 }

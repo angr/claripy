@@ -21,6 +21,6 @@ bool Bool::is_false() const {
     return true;
 }
 
-Constants::CCSC Bool::type() const {
+Constants::CCS Bool::type() const {
     return "Bool";
 }
