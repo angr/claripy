@@ -22,6 +22,10 @@ namespace Expression {
 
             /** Return true if and only if this expression is symbolic */
             bool symbolic() const override final;
+
+          protected:
+            /** Disallow public construction */
+            Concrete() = default;
         };
 
     } // namespace Raw

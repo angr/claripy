@@ -10,5 +10,6 @@
 using namespace Expression;
 using namespace Raw;
 
+
 /** @todo : maybe delete from hash cache if unique */
 Type::Base::~Base() {}
