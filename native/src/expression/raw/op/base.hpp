@@ -8,18 +8,24 @@
 #include "../base.hpp"
 
 
-namespace Expression::Raw::Op {
+namespace Expression {
+    namespace Raw::Op {
 
-    /** Base operation expression
-     *  All op expressions must subclass this
-     */
-    struct Base : virtual public ::Expression::Raw::Base {
-        EXPRESSION_RAW_INIT(Base)
-      protected:
-        /** Protected constructor */
-        Base();
-    };
+        /** Base operation expression
+         *  All op expressions must subclass this
+         */
+        struct Base : virtual public ::Expression::Raw::Base {
+            EXPRESSION_RAW_INIT(Base)
+          protected:
+            /** Protected constructor */
+            Base();
+        };
 
-} // namespace Expression::Raw::Op
+    } // namespace Raw::Op
+
+    /** Declare a special alias for base */
+    using AbstractOp = std::shared_ptr<Raw::Op::Base>;
+
+} // namespace Expression
 
 #endif
