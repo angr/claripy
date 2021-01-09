@@ -21,6 +21,7 @@ set(OP_INCLUDES "")
 set(OP_SHARED_PTRS "")
 
 # Configure each autogen'd file
+# TODO: add make clean
 foreach(OP ${OPS})
 	set(EXPRESSION_OP "${OP}")
 	string(TOLOWER "${OP}" EXPRESSION_OP_LOWER)
@@ -40,12 +41,12 @@ foreach(OP ${OPS})
 	set(OUT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/autogen/${EXPRESSION_OP_LOWER}.cpp")
 	configure_file("${IN_SOURCE}" "${OUT_SOURCE}" @ONLY)
 	# Add out the souce to the shared library
-	# TODO: uncomment
-	# target_sources("${SHARED_LIB_NAME}" PRIVATE "${OUT_SOURCE}")
+	target_sources("${SHARED_LIB_NAME}" PRIVATE "${OUT_SOURCE}")
 
 endforeach()
 
 # Configure op.hpp
+# TODO: make clean
 string(REPLACE ";" "\n" OP_INCLUDES "${OP_INCLUDES}")
 string(REPLACE ";" "\n" OP_SHARED_PTRS "${OP_SHARED_PTRS}")
 string(REPLACE "|" ";" OP_SHARED_PTRS "${OP_SHARED_PTRS}")
