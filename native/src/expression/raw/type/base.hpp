@@ -40,7 +40,7 @@ namespace Expression {
          *  is d
          */
         class Base : virtual public ::Expression::Raw::Base {
-            EXPRESSION_RAW_INIT(Base)
+            EXPRESSION_RAW_ABSTRACT_INIT(Base)
           protected:
             /************************************************/
             /*                 Constructors                 */

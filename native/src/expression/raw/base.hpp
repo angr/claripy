@@ -25,7 +25,7 @@ namespace Expression {
          *  All expressions must subclass this
          */
         class Base {
-            EXPRESSION_RAW_INIT(Base)
+            EXPRESSION_RAW_ABSTRACT_INIT(Base)
           public:
             /************************************************/
             /*                Pure Virtuals                 */

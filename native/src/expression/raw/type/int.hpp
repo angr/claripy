@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** An Expression representing an integer */
     class Int : virtual public Base {
-        EXPRESSION_RAW_INIT(Int)
+        EXPRESSION_RAW_ABSTRACT_INIT(Int)
       public:
         /** Get the type of the expression */
         Constants::CCS type() const override final;

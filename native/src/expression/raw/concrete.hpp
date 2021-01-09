@@ -16,7 +16,8 @@ namespace Expression {
          *  All concrete expressions must subclass this
          */
         struct Concrete : virtual public Base {
-
+            EXPRESSION_RAW_ABSTRACT_INIT(Concrete)
+          public:
             /** Pure virtual destructor */
             virtual ~Concrete() = 0;
 

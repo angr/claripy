@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** An Expression representing a value set */
     class VS : virtual public Bits {
-        EXPRESSION_RAW_INIT(VS)
+        EXPRESSION_RAW_ABSTRACT_INIT(VS)
       public:
         /** Get the type of the expression */
         Constants::CCS type() const override final;

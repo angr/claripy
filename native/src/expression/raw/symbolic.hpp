@@ -16,7 +16,8 @@ namespace Expression {
          *  All symbolic expressions must subclass this
          */
         struct Symbolic : virtual public Base {
-
+            EXPRESSION_RAW_ABSTRACT_INIT(Symbolic)
+          public:
             /** Pure virtual destructor */
             virtual ~Symbolic() = 0;
 

@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression boolean */
     class Bool : virtual public Base {
-        EXPRESSION_RAW_INIT(Bool)
+        EXPRESSION_RAW_ABSTRACT_INIT(Bool)
       public:
         /** Return true if the Expression evaluates to true */
         bool is_true() const;

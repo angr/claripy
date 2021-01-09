@@ -15,10 +15,10 @@ namespace Expression {
          *  All op expressions must subclass this
          */
         struct Base : virtual public ::Expression::Raw::Base {
-            EXPRESSION_RAW_INIT(Base)
+            EXPRESSION_RAW_ABSTRACT_INIT(Base)
           protected:
-            /** Protected constructor */
-            Base();
+            /** Disallow public construction */
+            Base() = default;
         };
 
     } // namespace Raw::Op

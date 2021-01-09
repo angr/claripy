@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression bit vector */
     class BV : virtual public Bits {
-        EXPRESSION_RAW_INIT(BV)
+        EXPRESSION_RAW_ABSTRACT_INIT(BV)
       public:
         /** Get the type of the expression */
         Constants::CCS type() const override final;

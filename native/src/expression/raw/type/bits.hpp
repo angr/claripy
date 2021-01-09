@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression of bits */
     class Bits : virtual public Base {
-        EXPRESSION_RAW_INIT(Bits)
+        EXPRESSION_RAW_ABSTRACT_INIT(Bits)
       public:
         /** The number of bits being represented */
         const Constants::Int length;
