@@ -1,10 +1,10 @@
 /** @file */
 
 // Strings autogen.py will replace:
-// @OPERATION@ will become the operation name
-// @AUTOGEN_INCLUDE@ will become the op file to include
+// $OPERATION will become the operation name
+// $AUTOGEN_INCLUDE will become the op file to include
 
-#include "@AUTOGEN_INCLUDE@"
+#include "$AUTOGEN_INCLUDE"
 
 /************************************************/
 /*                Helper Macros                 */
