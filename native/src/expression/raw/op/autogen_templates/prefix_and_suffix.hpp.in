@@ -1,0 +1,29 @@
+// This file determines how a TypeOp class defined
+// Variables matching @\s*[A-Z][A-Z0-9]*\s*@ will be replaced if the
+// whitespace stripped version of the regex matches one of the following:
+// @BODY@ will be the replaced with the desired body of the file
+// @OP@ will be replaced with the op in TypeOp (no namespace allowed)
+// @OPINCLUDE@ will be the replaced with the op header file
+
+/**
+ * @file
+ * @brief The header file for all @OP@ Expression subclasses
+ */
+
+#ifndef @HEADERGUARD @
+    #define @HEADERGUARD @
+
+    #include "@OPINCLUDE@"
+
+    #include "../../../macros.hpp"
+    #include "../concrete.hpp"
+    #include "../symbolic.hpp"
+    #include "../type.hpp"
+
+    #include <type_traits>
+
+
+@BODY @
+
+
+#endif

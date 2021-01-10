@@ -1,0 +1,23 @@
+// This file determines how a TypeOp class defined
+// Variables matching @\s*[A-Z][A-Z0-9]*\s*@ will be replaced if the
+// whitespace stripped version of the regex matches one of the following:
+// @SUPER1@ will be the first super of TypeOp (namespace relative to raw required)
+// @SUPER2@ will be the second super of TypeOp (namespace relative to raw required)
+// @TYPE@ will be replaced with the type in TypeOp (no namespace allowed)
+// @OP@ will be replaced with the op in TypeOp (no namespace allowed)
+
+namespace Expression {
+    namespace Raw::AutoGen {
+        /** Static verification of type */
+        static_assert(std::is_base_of_v<Type::Base, Type::@TYPE @>,
+                      "@TYPE@ is not a subclass of Type::Base");
+        /** Define the @TYPE@ @OP@ type */
+        struct @TYPE @ @OP @ :
+            virtual public @SUPER1 @,
+            virtual public @SUPER2 @{ EXPRESSION_RAW_ABSTRACT_INIT(@TYPE @ @OP @) protected :
+                                          /** Disable public construction */
+                                          @TYPE @ @OP @() = default;
+    }; // namespace Raw::AutoGen
+} // namespace Expression
+EXPRESSION_RAW_DECLARE_SHARED(X, Raw::AutoGen)
+}

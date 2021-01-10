@@ -1,0 +1,9 @@
+// This file determines how a SymTypeOp class defined
+// Variables matching @\s*[A-Z][A-Z0-9]*\s*@ will be replaced if the
+// whitespace stripped version of the regex matches one of the following:
+// @TYPE@ will be replaced with the type in SymTypeOp (no namespace allowed)
+// @SYM@ will be replaced with the sym in SymTypeOp (no namespace allowed)
+// @OP@ will be replaced with the op in SymTypeOp (no namespace allowed)
+
+
+Raw::AutoGen::@SYM @ @TYPE @ @OP @ ::~@SYM @ @TYPE @ @OP @{}
