@@ -12,4 +12,5 @@ file(READ sources.txt AUTOGEN_SOURCES)
 target_sources("${SHARED_LIB_NAME}" PRIVATE
 	${AUTOGEN_SOURCES}
 	base.cpp
+	if.cpp
 )

@@ -41,7 +41,7 @@ sources_out = os.path.join(io_dir, 'sources.txt')
 # Globals
 templates = {}
 ctor_args = {
-    'Base' : [ 'const Hash::Hash', 'std::vector<Annotation::Base> &&' ],
+    'Base' : [ 'const Hash::Hash', 'std::vector<Annotation::Base> &' ],
     'Symbolic' : [],
     'Concrete' : [],
     'Op' : {

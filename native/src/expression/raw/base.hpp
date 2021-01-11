@@ -64,7 +64,10 @@ namespace Expression {
             /** Delete default constructor */
             Base() = delete;
 
-            /** A protected constructor to disallow public creation */
+            /** A protected constructor to disallow public creation
+             *  ans is consumed via move semantics in the constructor source file
+             *  It is not passed as a forwarding reference due to limitations with autogen
+             */
             explicit Base(const Hash::Hash h, std::vector<Annotation::Base> &ans);
         };
 
