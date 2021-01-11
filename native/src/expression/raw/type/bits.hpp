@@ -22,7 +22,7 @@ namespace Expression::Raw::Type {
         Bits() = delete;
 
         /** A protected constructor to disallow public creation */
-        Bits(const Constants::Int length);
+        Bits(const Constants::UInt length);
     };
 
 } // namespace Expression::Raw::Type
