@@ -28,7 +28,7 @@
      *  We expose the constructor so that the cache may emplace new objects, which is             \
      *  faster than copying them in                                                               \
      */                                                                                           \
-    friend class ::Expression::Private::Cache<Hash::Hash, Base>;
+    friend class ::Expression::Private::Cache<Hash::Hash, ::Expression::Base>;
 
 
 /** Used to initalize an abstract expression

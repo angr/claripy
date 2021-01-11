@@ -18,9 +18,6 @@ namespace Expression {
         struct Symbolic : virtual public Base {
             EXPRESSION_RAW_ABSTRACT_INIT(Symbolic)
           public:
-            /** Pure virtual destructor */
-            virtual ~Symbolic() = 0;
-
             /** Return true if and only if this expression is symbolic */
             bool symbolic() const override final;
 

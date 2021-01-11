@@ -16,10 +16,10 @@
 
 #include "__OPINCLUDE"
 
-#include "../../../macros.hpp"
-#include "../concrete.hpp"
-#include "../symbolic.hpp"
-#include "../type.hpp"
+#include "../../../../macros.hpp"
+#include "../../concrete.hpp"
+#include "../../symbolic.hpp"
+#include "../../type.hpp"
 
 #include <type_traits>
 
