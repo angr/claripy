@@ -1,5 +1,21 @@
 [
 	{
+		"file" : "literal.hpp",
+		"op" : "Literal",
+		"args" : [
+			"const Constants::Int"
+		],
+		"disable_sac" : true
+	},
+	{
+		"file" : "symbol.hpp",
+		"op" : "Symbol",
+		"args" : [
+			"const std::string &"
+		],
+		"disable_sac" : true
+	},
+	{
 		"file" : "if.hpp",
 		"op" : "If",
 		"args" : [

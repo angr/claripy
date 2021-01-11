@@ -10,6 +10,12 @@ The config file will contain a list of dicts, each containing three things:
     'op' : <op name>,
     'args' : <a list of unnamed argument types>
 }
+Optionally, the json entry may contain any or all of the following:
+{
+    'disable_sac' : <bool> # False by default,
+    # If false Symbolic and Concrete subclasses will not be generated
+}
+
 These entries will be used to autogenerate, in the autogen_dir,
 a set of files that contain the necessary subclasses of op,
 along with shared pointer aliases to each as needed.
@@ -61,6 +67,7 @@ ctor_args = {
 # Below are shortcuts, these classifications are not defined just by these
 instantiable_types = [ 'Int', 'Bool', 'String', 'BV', 'FP', 'VS' ]
 abstract_types = [ 'Base', 'Bits' ]
+symbolic_concrete = [ 'Symbolic', 'Concrete' ]
 me = os.path.basename(sys.argv[0])
 
 
@@ -176,7 +183,7 @@ def isto_cpp(sym, typ, op, op_args):
 # Generation functions
 
 
-def generate_header(header_files, *, file, op, args):
+def generate_header(header_files, *, file, op, args, disable_sac):
     output_fname = os.path.join(autogen_dir, file)
     header_files.append(output_fname)
     # Create TypeOps
@@ -193,33 +200,35 @@ def generate_header(header_files, *, file, op, args):
         typeop('VS', op, 'Type::VS', 'Bits' + op),
         typeop('BV', op, 'Type::BV', 'Bits' + op)
     ])
-    # For both symbolic and concrete
-    for sym in ['Symbolic', 'Concrete']:
-        # Create Abstract SymTypeOps
-        abstract_sto = '\n\n'.join([
-            big_cpp_comment('Abstract ' + sym + ' Type Ops'),
-            asto(sym, 'Base', op, sym),
-            asto(sym, 'Bits', op, sym + 'Base' + op),
-        ])
-        # Create Instantiable SymTypeOps
-        instantiable_sto = '\n\n'.join([
-            big_cpp_comment('Instantiable ' + sym + ' Type Ops'),
-            small_cpp_comment('Base Subclasses'),
-            isto(sym, 'Int', op, sym + 'Base' + op, args),
-            isto(sym, 'Bool', op, sym + 'Base' + op, args),
-            small_cpp_comment('Bits Subclasses'),
-            isto(sym, 'String', op, sym + 'Bits' + op, args),
-            isto(sym, 'FP', op, sym + 'Bits' + op, args),
-            isto(sym, 'VS', op, sym + 'Bits' + op, args),
-            isto(sym, 'BV', op, sym + 'Bits' + op, args)
-        ])
-        body = '\n\n'.join([body, abstract_sto, instantiable_sto])
+    # For both symbolic and concrete as needed
+    if not disable_sac:
+        for sym in symbolic_concrete:
+            # Create Abstract SymTypeOps
+            abstract_sto = '\n\n'.join([
+                big_cpp_comment('Abstract ' + sym + ' Type Ops'),
+                asto(sym, 'Base', op, sym),
+                asto(sym, 'Bits', op, sym + 'Base' + op),
+            ])
+            # Create Instantiable SymTypeOps
+            instantiable_sto = '\n\n'.join([
+                big_cpp_comment('Instantiable ' + sym + ' Type Ops'),
+                small_cpp_comment('Base Subclasses'),
+                isto(sym, 'Int', op, sym + 'Base' + op, args),
+                isto(sym, 'Bool', op, sym + 'Base' + op, args),
+                small_cpp_comment('Bits Subclasses'),
+                isto(sym, 'String', op, sym + 'Bits' + op, args),
+                isto(sym, 'FP', op, sym + 'Bits' + op, args),
+                isto(sym, 'VS', op, sym + 'Bits' + op, args),
+                isto(sym, 'BV', op, sym + 'Bits' + op, args)
+            ])
+            body = '\n\n'.join([body, abstract_sto, instantiable_sto])
     # Aliases
     aliases = [ big_cpp_comment('Create aliases for each raw type') + '\n' ]
     for typ in ctor_args['Type'].keys():
         aliases.append(from_template('alias.hpp', {'name' : typ + op }))
-        for sym in ['Symbolic', 'Concrete']:
-            aliases.append(from_template('alias.hpp', {'name' : sym + typ + op }))
+        if not disable_sac:
+            for sym in symbolic_concrete:
+                aliases.append(from_template('alias.hpp', {'name' : sym + typ + op }))
     # Prefix and suffix
     opinclude = os.path.relpath(os.path.join(io_dir, file), autogen_dir)
     output = from_template('prefix_and_suffix.hpp', {
@@ -232,7 +241,7 @@ def generate_header(header_files, *, file, op, args):
     # Write out
     write_file(output_fname, output)
 
-def generate_source(header, source_files, *, file, op, args):
+def generate_source(header, source_files, *, file, op, args, disable_sac):
     output_fname = os.path.join(autogen_dir, file[:-4] + '.cpp')
     source_files.append(output_fname)
     # Create TypeOps
@@ -241,20 +250,21 @@ def generate_source(header, source_files, *, file, op, args):
         for typ in ctor_args['Type'].keys()
     ]
     body = big_cpp_comment('TypeOp') + '\n\n' + '\n\n'.join(typeops)
-    # For both symbolic and concrete
-    for sym in ['Symbolic', 'Concrete']:
-        # Abstract SymTypeOps
-        abstract_sto = '\n\n'.join([
-            big_cpp_comment('Abstract Sym Type Ops'),
-            *[ from_template('abstract_sym_type_op.cpp', { 'sym' : sym, 'type' : typ, 'op' : op }) \
-            for typ in abstract_types ]
-        ])
-        # Instantiable SymTypeOps
-        instantiable_sto = '\n\n'.join([
-            big_cpp_comment('Instantiable Sym Type Ops'),
-            *[ isto_cpp(sym, typ, op, args) for typ in instantiable_types ]
-        ])
-        body = '\n\n'.join([body, abstract_sto, instantiable_sto])
+    # For both symbolic and concrete as needed
+    if not disable_sac:
+        for sym in symbolic_concrete:
+            # Abstract SymTypeOps
+            abstract_sto = '\n\n'.join([
+                big_cpp_comment('Abstract Sym Type Ops'),
+                *[ from_template('abstract_sym_type_op.cpp', { 'sym' : sym, 'type' : typ, 'op' : op }) \
+                for typ in abstract_types ]
+            ])
+            # Instantiable SymTypeOps
+            instantiable_sto = '\n\n'.join([
+                big_cpp_comment('Instantiable Sym Type Ops'),
+                *[ isto_cpp(sym, typ, op, args) for typ in instantiable_types ]
+            ])
+            body = '\n\n'.join([body, abstract_sto, instantiable_sto])
     # Prefix and suffix
     output = from_template('prefix_and_suffix.cpp', {
         'autogeninclude' : os.path.basename(header),
@@ -282,7 +292,8 @@ def verify_config(config):
     # Entry verification
     for entry in config:
         assert type(entry) == dict, 'Config entry of improper type'
-        assert set(entry.keys()) == set(['file', 'op', 'args']), 'Config entry has improper keys'
+        assert set(['file', 'op', 'args']).issubset(entry.keys()), 'Config entry requires file, op, and args'
+        assert set(entry.keys()).issubset(['file', 'op', 'args', 'disable_sac']), 'Config entry has unknown keys'
         # File verification
         assert type(entry['file']) == str, 'Config entry["file"] should be of type str'
         assert entry['file'].endswith('.hpp'), 'Config entry["file"] must be an hpp file'
@@ -295,7 +306,10 @@ def verify_config(config):
         # Args verification
         assert type(entry['args']) == list, 'Config entry["file"] should be of type list'
         for i in entry['args']:
-            assert type(i) == str, 'Config entry["file"] entry should be of type str'
+            assert type(i) == str, 'Config entry["file"] should be of type str'
+        # Allow concrete or symbolic
+        if 'disable_sac' in entry:
+            assert type(entry['disable_sac']) == bool, 'Config entry["disable_sac"] must be a bool'
 
 def load_templates():
     global templates
@@ -337,6 +351,9 @@ def main():
         config = f.read()
     config = json.loads(config)
     verify_config(config)
+    # Add extra config
+    for entry in config:
+        entry['disable_sac'] = False
     # Load templates
     load_templates()
     print('-- Loading files - done')
