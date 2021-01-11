@@ -146,7 +146,6 @@ def isto(s, t, o, s2, op_args):
 def isto_cpp(sym, typ, op, op_args):
     # Derive ctor args from arguments
     args = determinte_ctor_args(sym, typ, op, op_args, hpp=False)
-    print(args)
     # Constructor decl
     name = sym + typ + op
     declargs = [ i[0] for i in args ]
@@ -256,13 +255,13 @@ def generate_source(header, source_files, *, file, op, args):
     write_file(output_fname, output)
 
 def generate_autogen(files):
+    files = [ os.path.relpath(i, io_dir) for i in files ]
     body = '\n'.join([ '#include "' + i + '"' for i in files ])
     output = from_template('autogen.hpp', {'body' : body})
     write_file(autogenhpp, output)
 
 def generate_sources_out(files):
-    prefix = os.path.relpath(autogen_dir, io_dir)
-    output = '\n'.join([os.path.join(i, prefix) for i in files])
+    output = '\n'.join([os.path.relpath(i, io_dir) for i in files])
     write_file(sources_out, output)
 
 
