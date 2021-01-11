@@ -3,4 +3,4 @@
 // __NAME will be replaced with the name of the class to create an alias for
 
 
-EXPRESSION_RAW_DECLARE_SHARED(__NAME, Raw::AutoGen)
+EXPRESSION_RAW_DECLARE_SHARED(__NAME, Raw::Op::AutoGen)

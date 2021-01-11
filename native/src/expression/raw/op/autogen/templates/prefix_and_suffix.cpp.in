@@ -9,9 +9,7 @@
 
 // For brevity
 using namespace Expression;
+namespace AutoGen = Raw::Op::AutoGen;
 
 
 __BODY
-
-
-#endif

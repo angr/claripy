@@ -4,4 +4,4 @@
 // __OP will be replaced with the op in TypeOp (no namespace allowed)
 
 
-Raw::AutoGen::__TYPE__OP::~__TYPE__OP {}
+AutoGen::__TYPE__OP::~__TYPE__OP() {}

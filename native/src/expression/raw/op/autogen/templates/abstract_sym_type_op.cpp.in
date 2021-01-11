@@ -5,4 +5,4 @@
 // __OP will be replaced with the op in SymTypeOp (no namespace allowed)
 
 
-Raw::AutoGen::__SYM__TYPE__OP::~__SYM __TYPE__OP {}
+AutoGen::__SYM__TYPE__OP::~__SYM__TYPE__OP() {}

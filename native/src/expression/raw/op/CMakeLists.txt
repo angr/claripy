@@ -1,4 +1,5 @@
 # Autogenerate files as needed
+message("Autogenerating op class code files...")
 execute_process(COMMAND
 	python3 ./autogen.py
 	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"

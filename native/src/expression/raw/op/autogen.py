@@ -1,5 +1,6 @@
 '''@file
 @brief This file is used to autogenerate op subclasses
+@todo Handle std::forwarding for speed up
 This file *will* overwrite existing files
 
 Within the defined io directory there must exist a config json file.
@@ -40,7 +41,7 @@ sources_out = os.path.join(io_dir, 'sources.txt')
 # Globals
 templates = {}
 ctor_args = {
-    'Base' : [ 'const Hash::Hash, std::vector<Annotation::Base> &&' ],
+    'Base' : [ 'const Hash::Hash', 'std::vector<Annotation::Base> &&' ],
     'Symbolic' : [],
     'Concrete' : [],
     'Op' : {
@@ -64,6 +65,7 @@ ctor_args = {
 
 def write_file(fname, output):
     print('Writing out ' + fname + '...')
+    output = '\n'.join(i.rstrip() for i in output.split('\n')).strip()
     with open(fname, 'w') as f:
         f.write(output)
 
@@ -87,7 +89,7 @@ def determinte_ctor_args(sym, typ, op, op_args, *, hpp):
     def helper(lst, x):
         return [ (i, x) for i in lst ]
     args = [
-        *helper(ctor_args['Base'], 'Base'),
+        *helper(ctor_args['Base'], 'Raw::Base'),
         *helper(ctor_args[sym], sym),
         *helper(ctor_args['Type']['Base'], 'Type::Base'),
     ]
@@ -153,7 +155,7 @@ def isto_cpp(sym, typ, op, op_args):
     # Supers
     required_args = defaultdict(lambda : [])
     for a, who in args:
-        required_args[who].append(a)
+        required_args[who].append(a.split(' ')[-1])
     raw_base_args = args[:len(ctor_args['Base'])]
     supers = [ who + '(' + ', '.join(a) + ')' for who, a in required_args.items() ]
     # Return ctor code
@@ -213,10 +215,10 @@ def generate_header(header_files, *, file, op, args):
     # Prefix and suffix
     opinclude = os.path.relpath(os.path.join(io_dir, file), autogen_dir)
     output = from_template('prefix_and_suffix.hpp', {
-        'aliases' : '\t' + '\n\t'.join(aliases),
+        'aliases' : '\n\t'.join(aliases),
         'opinclude' : opinclude,
         'upperop' : op.upper(),
-        'body' : '\t\t' + body.replace('\n', '\n\t'),
+        'body' : body.replace('\n', '\n\t\t\t'),
         'op' : op
     })
     # Write out
@@ -249,7 +251,7 @@ def generate_source(header, source_files, *, file, op, args):
     # Prefix and suffix
     output = from_template('prefix_and_suffix.cpp', {
         'autogeninclude' : os.path.basename(header),
-        'body' : '\t' + body.replace('\n', '\n\t')
+        'body' : body
     })
     # Write out
     write_file(output_fname, output)

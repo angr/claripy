@@ -65,7 +65,7 @@ namespace Expression {
             Base() = delete;
 
             /** A protected constructor to disallow public creation */
-            explicit Base(const Hash::Hash h, std::vector<Annotation::Base> &&ans = {});
+            explicit Base(const Hash::Hash h, std::vector<Annotation::Base> &ans);
         };
 
     } // namespace Raw
