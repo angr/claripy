@@ -14,11 +14,14 @@ endif()
 # Load autogen'd source paths
 set(SOURCES_TXT "${CMAKE_CURRENT_SOURCE_DIR}/sources.txt")
 file(READ "${SOURCES_TXT}" AUTOGEN_SOURCES)
+STRING(REPLACE "\n" ";" AUTOGEN_SOURCES "${AUTOGEN_SOURCES}")
 list(TRANSFORM AUTOGEN_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
 
 # Add source files
 target_sources("${SHARED_LIB_NAME}" PRIVATE
 	${AUTOGEN_SOURCES}
+	literal.cpp
+	symbol.cpp
 	base.cpp
 	if.cpp
 )

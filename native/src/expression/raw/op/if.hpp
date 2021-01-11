@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief The expression representing if
+ * @brief The expression representing an If expression
  */
 #ifndef __EXPRESSION_RAW_OP_IF_HPP__
 #define __EXPRESSION_RAW_OP_IF_HPP__
@@ -16,10 +16,6 @@ namespace Expression::Raw::Op {
     class If : virtual public Base {
         EXPRESSION_RAW_ABSTRACT_INIT(If)
       public:
-        /** Constructor */
-        If(const Expression::Bool &cond, const Expression::Base &if_true,
-           const Expression::Base &if_false);
-
         /** Return the op */
         Constants::CCS op() const override final;
 
@@ -31,8 +27,12 @@ namespace Expression::Raw::Op {
         const Expression::Base if_false;
 
       protected:
-        /** A protected constructor to disallow public creation */
-        If() = default;
+        /** Constructor */
+        If(const Expression::Bool &cond, const Expression::Base &if_true,
+           const Expression::Base &if_false);
+
+        /** Delete default constructor */
+        If() = delete;
     };
 
 } // namespace Expression::Raw::Op
