@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief The expression representing if
  */
 #ifndef __EXPRESSION_RAW_OP_IF_HPP__
 #define __EXPRESSION_RAW_OP_IF_HPP__

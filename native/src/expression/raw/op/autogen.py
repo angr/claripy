@@ -58,13 +58,17 @@ ctor_args = {
         'BV' : []
     }
 }
+# Below are shortcuts, these classifications are not defined just by these
+instantiable_types = [ 'Int', 'Bool', 'String', 'BV', 'FP', 'VS' ]
+abstract_types = [ 'Base', 'Bits' ]
+me = os.path.basename(sys.argv[0])
 
 
 # Helper functions
 
 
 def write_file(fname, output):
-    print('Writing out ' + fname + '...')
+    print('-- \t' + fname)
     output = '\n'.join(i.rstrip() for i in output.split('\n')).strip()
     with open(fname, 'w') as f:
         f.write(output)
@@ -113,6 +117,7 @@ def big_cpp_comment(what):
     line = '/' + (length-2)*'*' + '/'
     mid = '/*' +  what.center(length-4, ' ') + '*/'
     return '\n' + '\n'.join([line, mid, line]) + '\n'
+
 
 # Helper Generation Functions
 
@@ -167,6 +172,7 @@ def isto_cpp(sym, typ, op, op_args):
         'op' : op
     })
 
+
 # Generation functions
 
 
@@ -198,8 +204,10 @@ def generate_header(header_files, *, file, op, args):
         # Create Instantiable SymTypeOps
         instantiable_sto = '\n\n'.join([
             big_cpp_comment('Instantiable ' + sym + ' Type Ops'),
+            small_cpp_comment('Base Subclasses'),
             isto(sym, 'Int', op, sym + 'Base' + op, args),
             isto(sym, 'Bool', op, sym + 'Base' + op, args),
+            small_cpp_comment('Bits Subclasses'),
             isto(sym, 'String', op, sym + 'Bits' + op, args),
             isto(sym, 'FP', op, sym + 'Bits' + op, args),
             isto(sym, 'VS', op, sym + 'Bits' + op, args),
@@ -239,13 +247,12 @@ def generate_source(header, source_files, *, file, op, args):
         abstract_sto = '\n\n'.join([
             big_cpp_comment('Abstract Sym Type Ops'),
             *[ from_template('abstract_sym_type_op.cpp', { 'sym' : sym, 'type' : typ, 'op' : op }) \
-            for typ in ['Base', 'Bits'] ]
+            for typ in abstract_types ]
         ])
         # Instantiable SymTypeOps
         instantiable_sto = '\n\n'.join([
             big_cpp_comment('Instantiable Sym Type Ops'),
-            *[ isto_cpp(sym, typ, op, args) \
-            for typ in [ 'Int', 'Bool', 'String', 'FP', 'VS', 'BV' ] ]
+            *[ isto_cpp(sym, typ, op, args) for typ in instantiable_types ]
         ])
         body = '\n\n'.join([body, abstract_sto, instantiable_sto])
     # Prefix and suffix
@@ -319,27 +326,37 @@ def load_templates():
 
 def main():
     # Error checking
+    print('-- Starting ' + me)
     assert_exists(io_dir, 'io_dir')
     assert_exists(autogen_dir, 'autogen_dir')
     assert_exists(config_f, 'autogen.json config file')
     assert_exists(templates_dir, 'templates_dir')
     # Verify config file
+    print('-- Loading files')
     with open(config_f) as f:
         config = f.read()
     config = json.loads(config)
     verify_config(config)
     # Load templates
     load_templates()
+    print('-- Loading files - done')
     # Init
     source_files = []
     header_files = []
     # Generate each file
+    print('-- Generating autogen files')
     for entry in config:
         generate_header(header_files, **entry)
         generate_source(header_files[-1], source_files, **entry)
+    print('-- Generating autogen files - done')
     # Generate op.hpp
+    print('-- Generating aggregation files')
     generate_autogen(header_files)
     generate_sources_out(source_files)
+    print('-- Generating aggregation files - done')
+    # Exit
+    print('-- Completed ' + me)
+    sys.exit(0)
 
 
 # Don't run on import
