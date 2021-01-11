@@ -38,6 +38,24 @@ sources_out = os.path.join(io_dir, 'sources.txt')
 
 # Globals
 templates = {}
+ctor_args = {
+    'Base' : [ 'const Hash::Hash, std::vector<Annotation::Base> &&' ],
+    'Symbolic' : [],
+    'Concrete' : [],
+    'Op' : {
+        'Base' : []
+    },
+    'Type' : {
+        'Base' : [],
+        'Int' : [],
+        'Bool' : [],
+        'Bits' : [ 'const Constants::UInt' ],
+        'String' : [],
+        'FP' : [],
+        'VS' : [],
+        'BV' : []
+    }
+}
 
 
 # Helper functions
@@ -59,12 +77,38 @@ def template_replace(inp, cmd, replace_with):
     return inp.replace(cmd, replace_with)
 
 def from_template(name, dct):
-    ret = templates['type_op.hpp']
+    ret = templates[name]
     for i,k in dct.items():
         ret = template_replace(ret, i, k)
     return ret
 
+def determinte_ctor_args(sym, typ, op, op_args, *, include_names):
+    args = [
+        *ctor_args['Base'],
+        *ctor_args[sym],
+        *ctor_args['Type']['Base'],
+    ]
+    if typ in ['String', 'FP', 'VS', 'BV']:
+        args += ctor_args['Type'][typ]
+    args += ctor_args['Op']['Base'] + op_args
+    if not include_names:
+        return args
+    ret = []
+    for n,i in enumerate(args):
+        ret.append(i + ' a' + str(n))
+    return ret
+
+def small_cpp_comment(what):
+    return '\n// ' + what + '\n'
+
+def big_cpp_comment(what):
+    length = 70
+    line = '/' + (length-2)*'*' + '/'
+    mid = '/*' +  what.center(length-4, ' ') + '*/'
+    return '\n' + '\n'.join([line, mid, line]) + '\n'
+
 # Helper Generation Functions
+
 
 def typeop(t, o, s1, s2):
     return from_template('type_op.hpp', {
@@ -74,13 +118,26 @@ def typeop(t, o, s1, s2):
         'super2' : s2
     })
 
-def asto(s, t, o, sup):
+def asto(s, t, o, s2):
     return from_template('abstract_sym_type_op.hpp', {
-        'super2' : sup,
+        'super2' : s2,
         'sym' : s,
         'type' : t,
         'op' : o
     })
+
+def isto(s, t, o, s2, op_args):
+    # Derive ctor args from argumetns
+    args = ', '.join(determinte_ctor_args(s, t, o, op_args, include_names=False))
+    # Return the constructed code
+    return from_template('instantiable_sym_type_op.hpp', {
+        'super2' : s2,
+        'sym' : s,
+        'type' : t,
+        'op' : o,
+        'ctorargs' : args
+    })
+
 
 # Generation functions
 
@@ -89,43 +146,53 @@ def generate_header(header_files, *, file, op, args):
     output_fname = os.path.join(autogen_dir, file)
     header_files.append(output_fname)
     # Create TypeOps
-    typeops = '\n'.join([
-        '// Base' + op,
+    body = '\n\n'.join([
+        big_cpp_comment('Base' + op),
         typeop('Base', op, 'Type::Base', 'Op::' + op),
-        '// Base op direct subclasses',
+        small_cpp_comment('Base' + op + ' direct subclasses'),
         typeop('Int', op, 'Type::Int', 'Base' + op),
         typeop('Bool', op, 'Type::Bool', 'Base' + op),
         typeop('Bits', op, 'Type::Bits', 'Base' + op),
-        '// Bits op direct subclasses',
+        small_cpp_comment('Bits' + op + ' direct subclasses'),
         typeop('String', op, 'Type::String', 'Bits' + op),
         typeop('FP', op, 'Type::FP', 'Bits' + op),
         typeop('VS', op, 'Type::VS', 'Bits' + op),
         typeop('BV', op, 'Type::BV', 'Bits' + op)
     ])
-    # Create Abstract SymTypeOps
-    abstract_sto = '\n'.join([
-        '// Abstract Sym Type Ops',
-        asto('Symbolic', 'Base', op, 'Symbolic'),
-        asto('Concrete', 'Base', op, 'Concrete'),
-        asto('Symbolic', 'Bits', op, 'SymbolicBase' + op),
-        asto('Concrete', 'Bits', op, 'ConcreteBase' + op)
-    ])
-    # Create Instantiable SymTypeOps
-    instantiable_sto = '\n'.join([
-
-#TODO
-
-    ])
-    # Create body
-    body = '\n\n'.join([typeops, abstract_sto, instantiable_sto])
+    # For both symbolic and concrete
+    for sym in ['Symbolic', 'Concrete']:
+        # Create Abstract SymTypeOps
+        abstract_sto = '\n\n'.join([
+            big_cpp_comment('Abstract ' + sym + ' Type Ops'),
+            asto(sym, 'Base', op, sym),
+            asto(sym, 'Bits', op, sym + 'Base' + op),
+        ])
+        # Create Instantiable SymTypeOps
+        instantiable_sto = '\n\n'.join([
+            big_cpp_comment('Instantiable ' + sym + ' Type Ops'),
+            isto(sym, 'Int', op, sym + 'Base' + op, args),
+            isto(sym, 'Bool', op, sym + 'Base' + op, args),
+            isto(sym, 'String', op, sym + 'Bits' + op, args),
+            isto(sym, 'FP', op, sym + 'Bits' + op, args),
+            isto(sym, 'VS', op, sym + 'Bits' + op, args),
+            isto(sym, 'BV', op, sym + 'Bits' + op, args)
+        ])
+        body = '\n\n'.join([body, abstract_sto, instantiable_sto])
+    # Aliases
+    aliases = [ big_cpp_comment('Create aliases for each raw type') + '\n' ]
+    for typ in ctor_args['Type'].keys():
+        aliases.append(from_template('alias.hpp', {'name' : typ + op }))
+        for sym in ['Symbolic', 'Concrete']:
+            aliases.append(from_template('alias.hpp', {'name' : sym + typ + op }))
     # Prefix and suffix
     opinclude = os.path.relpath(os.path.join(io_dir, file), autogen_dir)
-    output = from_templates('prefix_and_suffix.hpp',
+    output = from_template('prefix_and_suffix.hpp', {
+        'aliases' : '\t' + '\n\t'.join(aliases),
         'opinclude' : opinclude,
-        'upperop', op.upper(),
-        'body' : body,
-        'op', op
-    }
+        'upperop' : op.upper(),
+        'body' : '\t' + body.replace('\n', '\n\t'),
+        'op' : op
+    })
     # Write out
     write_file(output_fname, output)
 
@@ -177,14 +244,16 @@ def load_templates():
     global templates
     # The template files to load
     tempalte_files = [
-        'abstract_sym_type_op.cpp.in',
-        'instantiable_sym_type_op.hpp.in',
-        'type_op.cpp.in',
-        'abstract_sym_type_op.hpp.in',
         'prefix_and_suffix.cpp.in',
+        'prefix_and_suffix.hpp.in',
         'type_op.hpp.in',
+        'type_op.cpp.in',
+        'abstract_sym_type_op.cpp.in',
+        'abstract_sym_type_op.hpp.in',
+        'instantiable_sym_type_op.hpp.in',
+        'instantiable_sym_type_op.cpp.in',
         'autogen.hpp.in',
-        'prefix_and_suffix.hpp.in'
+        'alias.hpp.in'
     ]
     # Load each template file
     for i in tempalte_files:
@@ -194,7 +263,7 @@ def load_templates():
         with open(path) as f:
             data = f.readlines()
         # Ignore // comments
-        data = ''.join([ i for i in data if not i.startswith('//') ])
+        data = ''.join([ i for i in data if not i.startswith('//') ]).strip()
         # Save template
         templates[i.split('.in')[0]] = data
 

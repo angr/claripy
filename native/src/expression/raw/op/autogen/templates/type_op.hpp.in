@@ -5,23 +5,14 @@
 // __TYPE will be replaced with the type in TypeOp (no namespace allowed)
 // __OP will be replaced with the op in TypeOp (no namespace allowed)
 
-namespace Expression {
-    namespace Raw::AutoGen {
 
-        /** Static verification of type */
-        static_assert(std::is_base_of_v<Type::Base, Type::__TYPE>,
-                      "__TYPE is not a subclass of Type::Base");
-
-        /** Define the __TYPE__OP type */
-        struct __TYPE__OP : virtual public __SUPER1, virtual public __SUPER2 {
-            EXPRESSION_RAW_ABSTRACT_INIT(__TYPE__OP)
-          protected:
-            /** Disable public construction */
-            __TYPE__OP() = default;
-        };
-
-    } // namespace Raw::AutoGen
-
-    EXPRESSION_RAW_DECLARE_SHARED(X, Raw::AutoGen)
-
-} // namespace Expression
+/** Static verification of type */
+static_assert(std::is_base_of_v<Type::Base, Type::__TYPE>,
+              "__TYPE is not a subclass of Type::Base");
+/** Define the __TYPE__OP type */
+struct __TYPE__OP : virtual public __SUPER1, virtual public __SUPER2 {
+    EXPRESSION_RAW_ABSTRACT_INIT(__TYPE__OP)
+  protected:
+    /** Disable public construction */
+    __TYPE__OP() = default;
+};

@@ -6,23 +6,14 @@
 // __OP will be replaced with the op in SymTypeOp (no namespace allowed)
 // __CTORARGS will be replaced with the arguments that must be passed to the constructor
 
-namespace Expression {
-    namespace Raw::AutoGen {
 
-        /** Static verification of sym */
-        static_assert(std::is_same_v<Symbolic, __SYM> || std::is_same_v<Concrete, __SYM>,
-                      "__SYM is neither Symbolic or Concrete");
-
-        /** Define the __SYM__TYPE__OP type */
-        struct __SYM__TYPE__OP : virtual public __TYPE__OP, virtual public __SUPER2 {
-            EXPRESSION_RAW_INSTANTIABLE_INIT(__SYM__TYPE__OP)
-          private:
-            /** Disable public construction */
-            __SYM__TYPE__OP(__CTORARGS);
-        };
-
-    } // namespace Raw::AutoGen
-
-    EXPRESSION_RAW_DECLARE_SHARED(__SYM__TYPE__OP, Raw::AutoGen)
-
-} // namespace Expression
+/** Static verification of sym */
+static_assert(std::is_same_v<Symbolic, __SYM> || std::is_same_v<Concrete, __SYM>,
+              "__SYM is neither Symbolic or Concrete");
+/** Define the __SYM__TYPE__OP type */
+struct __SYM__TYPE__OP : virtual public __TYPE__OP, virtual public __SUPER2 {
+    EXPRESSION_RAW_INSTANTIABLE_INIT(__SYM__TYPE__OP)
+  private:
+    /** Disable public construction */
+    __SYM__TYPE__OP(__CTORARGS);
+};
