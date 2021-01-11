@@ -18,6 +18,7 @@ Additionally generates autogen.hpp in io_dir
 Finally prints out a relative path to each new source to sources_out in io_dir
 '''
 
+from collections import defaultdict
 import argparse
 import json
 import sys
@@ -82,20 +83,24 @@ def from_template(name, dct):
         ret = template_replace(ret, i, k)
     return ret
 
-def determinte_ctor_args(sym, typ, op, op_args, *, include_names):
+def determinte_ctor_args(sym, typ, op, op_args, *, hpp):
+    def helper(lst, x):
+        return [ (i, x) for i in lst ]
     args = [
-        *ctor_args['Base'],
-        *ctor_args[sym],
-        *ctor_args['Type']['Base'],
+        *helper(ctor_args['Base'], 'Base'),
+        *helper(ctor_args[sym], sym),
+        *helper(ctor_args['Type']['Base'], 'Type::Base'),
     ]
     if typ in ['String', 'FP', 'VS', 'BV']:
-        args += ctor_args['Type'][typ]
-    args += ctor_args['Op']['Base'] + op_args
-    if not include_names:
-        return args
+        args += helper(ctor_args['Type']['Bits'], 'Type::Bits')
+    args += helper(ctor_args['Type'][typ], 'Type::' + typ)
+    args += helper(ctor_args['Op']['Base'], 'Op::Base')
+    args += helper(op_args, 'Op::' + op)
+    if hpp:
+        return [ i[0] for i in args ]
     ret = []
     for n,i in enumerate(args):
-        ret.append(i + ' a' + str(n))
+        ret.append(( i[0] + ' a' + str(n), i[1] ))
     return ret
 
 def small_cpp_comment(what):
@@ -127,8 +132,8 @@ def asto(s, t, o, s2):
     })
 
 def isto(s, t, o, s2, op_args):
-    # Derive ctor args from argumetns
-    args = ', '.join(determinte_ctor_args(s, t, o, op_args, include_names=False))
+    # Derive ctor args from arguments
+    args = '\n\t' + ',\n\t'.join(determinte_ctor_args(s, t, o, op_args, hpp=True))
     # Return the constructed code
     return from_template('instantiable_sym_type_op.hpp', {
         'super2' : s2,
@@ -138,6 +143,28 @@ def isto(s, t, o, s2, op_args):
         'ctorargs' : args
     })
 
+def isto_cpp(sym, typ, op, op_args):
+    # Derive ctor args from arguments
+    args = determinte_ctor_args(sym, typ, op, op_args, hpp=False)
+    print(args)
+    # Constructor decl
+    name = sym + typ + op
+    declargs = [ i[0] for i in args ]
+    decl = name + '::' + name + '(\n\t' + ',\n\t'.join(declargs) + ')'
+    # Supers
+    required_args = defaultdict(lambda : [])
+    for a, who in args:
+        required_args[who].append(a)
+    raw_base_args = args[:len(ctor_args['Base'])]
+    supers = [ who + '(' + ', '.join(a) + ')' for who, a in required_args.items() ]
+    # Return ctor code
+    ctor = decl + '\n\t:\n\t' + ',\n\t'.join(supers) + '\n'
+    return from_template('instantiable_sym_type_op.cpp', {
+        'ctor' : ctor,
+        'sym' : sym,
+        'type' : typ,
+        'op' : op
+    })
 
 # Generation functions
 
@@ -190,21 +217,43 @@ def generate_header(header_files, *, file, op, args):
         'aliases' : '\t' + '\n\t'.join(aliases),
         'opinclude' : opinclude,
         'upperop' : op.upper(),
-        'body' : '\t' + body.replace('\n', '\n\t'),
+        'body' : '\t\t' + body.replace('\n', '\n\t'),
         'op' : op
     })
     # Write out
     write_file(output_fname, output)
 
-def generate_source(source_files, *, file, op, args):
+def generate_source(header, source_files, *, file, op, args):
     output_fname = os.path.join(autogen_dir, file[:-4] + '.cpp')
     source_files.append(output_fname)
-    # Create prefix
-
-    # TODO:
-
+    # Create TypeOps
+    typeops = [
+        from_template('type_op.cpp', { 'type' : typ, 'op' : op }) \
+        for typ in ctor_args['Type'].keys()
+    ]
+    body = big_cpp_comment('TypeOp') + '\n\n' + '\n\n'.join(typeops)
+    # For both symbolic and concrete
+    for sym in ['Symbolic', 'Concrete']:
+        # Abstract SymTypeOps
+        abstract_sto = '\n\n'.join([
+            big_cpp_comment('Abstract Sym Type Ops'),
+            *[ from_template('abstract_sym_type_op.cpp', { 'sym' : sym, 'type' : typ, 'op' : op }) \
+            for typ in ['Base', 'Bits'] ]
+        ])
+        # Instantiable SymTypeOps
+        instantiable_sto = '\n\n'.join([
+            big_cpp_comment('Instantiable Sym Type Ops'),
+            *[ isto_cpp(sym, typ, op, args) \
+            for typ in [ 'Int', 'Bool', 'String', 'FP', 'VS', 'BV' ] ]
+        ])
+        body = '\n\n'.join([body, abstract_sto, instantiable_sto])
+    # Prefix and suffix
+    output = from_template('prefix_and_suffix.cpp', {
+        'autogeninclude' : os.path.basename(header),
+        'body' : '\t' + body.replace('\n', '\n\t')
+    })
     # Write out
-    # write_file(output_fname, output)
+    write_file(output_fname, output)
 
 def generate_autogen(files):
     body = '\n'.join([ '#include "' + i + '"' for i in files ])
@@ -286,7 +335,7 @@ def main():
     # Generate each file
     for entry in config:
         generate_header(header_files, **entry)
-        generate_source(source_files, **entry)
+        generate_source(header_files[-1], source_files, **entry)
     # Generate op.hpp
     generate_autogen(header_files)
     generate_sources_out(source_files)
