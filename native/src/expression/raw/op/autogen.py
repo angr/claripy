@@ -52,28 +52,35 @@ def assert_exists(f, what):
     assert os.path.exists(f), what + ' does not exist'
 
 def template_replace(inp, cmd, replace_with):
+    # Replace '__' + cmd.upper() with replace_with in inp (plus error checking)
     assert '_' not in cmd, 'No underscores allowed in cmd'
     cmd = '__' + cmd.upper()
     assert cmd in inp, 'template_replace replace failed given cmd: ' + cmd
     return inp.replace(cmd, replace_with)
 
+def from_template(name, dct):
+    ret = templates['type_op.hpp']
+    for i,k in dct.items():
+        ret = template_replace(ret, i, k)
+    return ret
+
 # Helper Generation Functions
 
 def typeop(t, o, s1, s2):
-    ret = templates['type_op.hpp']
-    ret = template_replace(ret, 'type', t)
-    ret = template_replace(ret, 'op', o)
-    ret = template_replace(ret, 'super1', s1)
-    ret = template_replace(ret, 'super2', s2)
-    return ret
+    return from_template('type_op.hpp', {
+        'type' : t,
+        'op' : o,
+        'super1' : s1,
+        'super2' : s2
+    })
 
 def asto(s, t, o, sup):
-    ret = templates['abstract_sym_type_op.hpp']
-    ret = template_replace(ret, 'super2', sup)
-    ret = template_replace(ret, 'sym', s)
-    ret = template_replace(ret, 'type', t)
-    ret = template_replace(ret, 'op', o)
-    return ret
+    return from_template('abstract_sym_type_op.hpp', {
+        'super2' : sup,
+        'sym' : s,
+        'type' : t,
+        'op' : o
+    })
 
 # Generation functions
 
@@ -105,17 +112,20 @@ def generate_header(header_files, *, file, op, args):
     ])
     # Create Instantiable SymTypeOps
     instantiable_sto = '\n'.join([
+
 #TODO
+
     ])
     # Create body
     body = '\n\n'.join([typeops, abstract_sto, instantiable_sto])
     # Prefix and suffix
-    output = templates['prefix_and_suffix.hpp']
-    output = template_replace(output, 'body', body)
-    output = template_replace(output, 'op', op)
-    output = template_replace(output, 'upperop', op.upper())
     opinclude = os.path.relpath(os.path.join(io_dir, file), autogen_dir)
-    output = template_replace(output, 'opinclude', opinclude)
+    output = from_templates('prefix_and_suffix.hpp',
+        'opinclude' : opinclude,
+        'upperop', op.upper(),
+        'body' : body,
+        'op', op
+    }
     # Write out
     write_file(output_fname, output)
 
@@ -131,7 +141,7 @@ def generate_source(source_files, *, file, op, args):
 
 def generate_autogen(files):
     body = '\n'.join([ '#include "' + i + '"' for i in files ])
-    output = template_replace(templates['autogen.hpp'], 'body', body)
+    output = from_template('autogen.hpp', {'body' : body})
     write_file(autogenhpp, output)
 
 def generate_sources_out(files):
@@ -165,6 +175,7 @@ def verify_config(config):
 
 def load_templates():
     global templates
+    # The template files to load
     tempalte_files = [
         'abstract_sym_type_op.cpp.in',
         'instantiable_sym_type_op.hpp.in',
@@ -175,11 +186,16 @@ def load_templates():
         'autogen.hpp.in',
         'prefix_and_suffix.hpp.in'
     ]
+    # Load each template file
     for i in tempalte_files:
-        with open(os.path.join(templates_dir, i)) as f:
+        # Read file
+        path = os.path.join(templates_dir, i)
+        assert_exists(path, 'template file: ' + i)
+        with open(path) as f:
             data = f.readlines()
         # Ignore // comments
         data = ''.join([ i for i in data if not i.startswith('//') ])
+        # Save template
         templates[i.split('.in')[0]] = data
 
 def main():
