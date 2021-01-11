@@ -7,6 +7,8 @@
 
 #include "base.hpp"
 
+#include "../type.hpp"
+
 
 namespace Expression::Raw::Op {
 
@@ -14,11 +16,19 @@ namespace Expression::Raw::Op {
     class If : virtual public Base {
         EXPRESSION_RAW_ABSTRACT_INIT(If)
       public:
-        /** Pure virtual destructor */
-        virtual ~If() = 0;
+        /** Constructor */
+        If(const Expression::Bool &cond, const Expression::Base &if_true,
+           const Expression::Base &if_false);
 
         /** Return the op */
         Constants::CCS op() const override final;
+
+        /** If condition */
+        const Expression::Bool cond;
+        /** If true expression */
+        const Expression::Base if_true;
+        /** If false expression */
+        const Expression::Base if_false;
 
       protected:
         /** A protected constructor to disallow public creation */

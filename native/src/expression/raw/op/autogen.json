@@ -1,0 +1,11 @@
+[
+	{
+		"file" : "if.hpp",
+		"op" : "If",
+		"args" : [
+			"const Expression::Bool &",
+			"const Expression::Base &",
+			"const Expression::Base &"
+		]
+	}
+]

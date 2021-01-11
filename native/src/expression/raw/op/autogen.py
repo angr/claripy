@@ -25,7 +25,7 @@ import os
 
 
 # Constants
-io_dir = os.path.realpath('op')
+io_dir = os.path.realpath('.')
 autogen_dir_name = 'autogen'
 namespace = 'Expresson::Raw'
 autogen_dir = os.path.join(io_dir, autogen_dir_name)
