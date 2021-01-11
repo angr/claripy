@@ -5,7 +5,7 @@ This file *will* overwrite existing files
 Within the defined io directory there must exist a config json file.
 The config file will contain a list of dicts, each containing three things:
 {
-    'file' : <file_path>,
+    'file' : <filename>, # Must be a file in io_dir
     'op' : <op name>,
     'args' : <a list of unnamed argument types>
 }
@@ -25,9 +25,8 @@ import os
 
 
 # Filesystem Constants
-autogen_dir = os.path.join(io_dir, 'autogen')
 io_dir = os.path.realpath('.')
-op_dir = os.path.realpath('.')
+autogen_dir = os.path.join(io_dir, 'autogen')
 
 # Input Constants
 config_f =    os.path.join(io_dir, 'autogen.json')
@@ -50,42 +49,85 @@ def write_file(fname, output):
         f.write(output)
 
 def assert_exists(f, what):
-    assert(os.path.exists(f), what + ' does not exist')
+    assert os.path.exists(f), what + ' does not exist'
 
 def template_replace(inp, cmd, replace_with):
-    assert('_' not in cmd, 'No underscores allowed in cmd')
+    assert '_' not in cmd, 'No underscores allowed in cmd'
     cmd = '__' + cmd.upper()
-    assert(cmd in inp, 'template_replace replace failed given cmd: ' + cmd)
+    assert cmd in inp, 'template_replace replace failed given cmd: ' + cmd
     return inp.replace(cmd, replace_with)
+
+# Helper Generation Functions
+
+def typeop(t, o, s1, s2):
+    ret = templates['type_op.hpp']
+    ret = template_replace(ret, 'type', t)
+    ret = template_replace(ret, 'op', o)
+    ret = template_replace(ret, 'super1', s1)
+    ret = template_replace(ret, 'super2', s2)
+    return ret
+
+def asto(s, t, o, sup):
+    ret = templates['abstract_sym_type_op.hpp']
+    ret = template_replace(ret, 'super2', sup)
+    ret = template_replace(ret, 'sym', s)
+    ret = template_replace(ret, 'type', t)
+    ret = template_replace(ret, 'op', o)
+    return ret
 
 # Generation functions
 
 
-def generate_header(file, op, args, header_files):
-    output_fname = os.path.join(output_dir, file)
+def generate_header(header_files, *, file, op, args):
+    output_fname = os.path.join(autogen_dir, file)
     header_files.append(output_fname)
-    # Construct prefix and suffix
+    # Create TypeOps
+    typeops = '\n'.join([
+        '// Base' + op,
+        typeop('Base', op, 'Type::Base', 'Op::' + op),
+        '// Base op direct subclasses',
+        typeop('Int', op, 'Type::Int', 'Base' + op),
+        typeop('Bool', op, 'Type::Bool', 'Base' + op),
+        typeop('Bits', op, 'Type::Bits', 'Base' + op),
+        '// Bits op direct subclasses',
+        typeop('String', op, 'Type::String', 'Bits' + op),
+        typeop('FP', op, 'Type::FP', 'Bits' + op),
+        typeop('VS', op, 'Type::VS', 'Bits' + op),
+        typeop('BV', op, 'Type::BV', 'Bits' + op)
+    ])
+    # Create Abstract SymTypeOps
+    abstract_sto = '\n'.join([
+        '// Abstract Sym Type Ops',
+        asto('Symbolic', 'Base', op, 'Symbolic'),
+        asto('Concrete', 'Base', op, 'Concrete'),
+        asto('Symbolic', 'Bits', op, 'SymbolicBase' + op),
+        asto('Concrete', 'Bits', op, 'ConcreteBase' + op)
+    ])
+    # Create Instantiable SymTypeOps
+    instantiable_sto = '\n'.join([
+#TODO
+    ])
     # Create body
-    # TODO: also have to handle op namespace etc
-
-    # Write out
+    body = '\n\n'.join([typeops, abstract_sto, instantiable_sto])
+    # Prefix and suffix
     output = templates['prefix_and_suffix.hpp']
     output = template_replace(output, 'body', body)
+    output = template_replace(output, 'op', op)
     output = template_replace(output, 'upperop', op.upper())
-    opinclude = os.path.relpath(os.path.join(op_dir, file), autogen_dir)
+    opinclude = os.path.relpath(os.path.join(io_dir, file), autogen_dir)
     output = template_replace(output, 'opinclude', opinclude)
+    # Write out
     write_file(output_fname, output)
 
-def generate_source(file, op, args, source_files):
-    file = file[:-4] + '.cpp'
-    source_files.append(file)
+def generate_source(source_files, *, file, op, args):
+    output_fname = os.path.join(autogen_dir, file[:-4] + '.cpp')
+    source_files.append(output_fname)
     # Create prefix
 
     # TODO:
 
     # Write out
-    output = prefix + '\n\n' + body
-    write_file(output_fname, output)
+    # write_file(output_fname, output)
 
 def generate_autogen(files):
     body = '\n'.join([ '#include "' + i + '"' for i in files ])
@@ -94,7 +136,7 @@ def generate_autogen(files):
 
 def generate_sources_out(files):
     prefix = os.path.relpath(autogen_dir, io_dir)
-    output = '\n'.join([os.path.join(prefix, i) for i in files])
+    output = '\n'.join([os.path.join(i, prefix) for i in files])
     write_file(sources_out, output)
 
 
@@ -102,24 +144,24 @@ def generate_sources_out(files):
 
 
 def verify_config(config):
-    assert(type(config) == list, 'Config must have a list type')
+    assert type(config) == list, 'Config must have a list type'
     # Entry verification
     for entry in config:
-        assert(type(entry) == dict, 'Config entry of improper type')
-        assert(set(entry.keys()) == ['file', 'op', 'args'], 'Config entry has improper keys')
+        assert type(entry) == dict, 'Config entry of improper type'
+        assert set(entry.keys()) == set(['file', 'op', 'args']), 'Config entry has improper keys'
         # File verification
-        assert(type(config['file']) == str, 'Config entry["file"] should be of type str')
-        assert(config['file'].endswith('.hpp'), 'Config entry["file"] must be an hpp file')
-        assert(os.path.basename(config['file']) == config['file']),
-            'Config entry["file"] must be the file basename')
-        assert(os.path.exists(os.path.exists(os.path.join(input_dir, config['file'])),
-            'Config entry["file"] does not exist');
+        assert type(entry['file']) == str, 'Config entry["file"] should be of type str'
+        assert entry['file'].endswith('.hpp'), 'Config entry["file"] must be an hpp file'
+        assert os.path.basename(entry['file']) == entry['file'], \
+            'Config entry["file"] must be the file basename'
+        assert os.path.exists(os.path.join(io_dir, entry['file'])), \
+            'Config entry["file"] does not exist'
         # Op verification
-        assert(type(config['op']) == str, 'Config entry["op"] should be of type str')
+        assert type(entry['op']) == str, 'Config entry["op"] should be of type str'
         # Args verification
-        assert(type(config['args']) == list, 'Config entry["file"] should be of type list')
-        for i in config['args']:
-            assert(type(i) == str, 'Config entry["file"] entry should be of type str')
+        assert type(entry['args']) == list, 'Config entry["file"] should be of type list'
+        for i in entry['args']:
+            assert type(i) == str, 'Config entry["file"] entry should be of type str'
 
 def load_templates():
     global templates
@@ -135,13 +177,14 @@ def load_templates():
     ]
     for i in tempalte_files:
         with open(os.path.join(templates_dir, i)) as f:
-            data = f.read()
+            data = f.readlines()
+        # Ignore // comments
+        data = ''.join([ i for i in data if not i.startswith('//') ])
         templates[i.split('.in')[0]] = data
 
 def main():
     # Error checking
     assert_exists(io_dir, 'io_dir')
-    assert_exists(op_dir, 'op_dir')
     assert_exists(autogen_dir, 'autogen_dir')
     assert_exists(config_f, 'autogen.json config file')
     assert_exists(templates_dir, 'templates_dir')
@@ -157,8 +200,8 @@ def main():
     header_files = []
     # Generate each file
     for entry in config:
-        generate_header(**entry, header_files)
-        generate_source(**entry, source_files)
+        generate_header(header_files, **entry)
+        generate_source(source_files, **entry)
     # Generate op.hpp
     generate_autogen(header_files)
     generate_sources_out(source_files)

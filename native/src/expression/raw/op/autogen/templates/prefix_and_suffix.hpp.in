@@ -1,6 +1,7 @@
 // This file determines how a TypeOp class defined
 // Strings matching __[A-Z][A-Z0-9] will be replaced if they are:
 // __BODY will be the replaced with the desired body of the file
+// __OP will be replaced with the op in TypeOp (no namespace allowed)
 // __UPPEROP will be replaced with the upper form of the op in TypeOp (no namespace allowed)
 // __OPINCLUDE will be the replaced with the op header file
 
@@ -20,6 +21,12 @@
 #include "../type.hpp"
 
 #include <type_traits>
+
+
+namespace Expression::Raw::Op {
+    /** Static verification of op */
+    static_assert(std::is_base_of_v<Base, __OP>, "__OP is not a subclass of Op::Base");
+} // namespace Expression::Raw::Op
 
 
 __BODY
