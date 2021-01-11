@@ -1,8 +1,7 @@
 // This file determines how a TypeOp class defined
-// Variables matching @\s*[A-Z][A-Z0-9]*\s*@ will be replaced if the
-// whitespace stripped version of the regex matches one of the following:
-// @TYPE@ will be replaced with the type in TypeOp (no namespace allowed)
-// @OP@ will be replaced with the op in TypeOp (no namespace allowed)
+// Strings matching __[A-Z][A-Z0-9] will be replaced if they are:
+// __TYPE will be replaced with the type in TypeOp (no namespace allowed)
+// __OP will be replaced with the op in TypeOp (no namespace allowed)
 
 
-Raw::AutoGen::@TYPE @ @OP @ ::~@TYPE @ @OP @{}
+Raw::AutoGen::__TYPE__OP::~__TYPE__OP {}

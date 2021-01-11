@@ -1,17 +1,17 @@
 // This file determines how a TypeOp class defined
-// Variables matching @\s*[A-Z][A-Z0-9]*\s*@ will be replaced if the
-// whitespace stripped version of the regex matches one of the following:
-// @BODY@ will be the replaced with the desired body of the file
-// @AUTOGENINCLUDE@ will be the replaced with the autogen op header file
+// Strings matching __[A-Z][A-Z0-9] will be replaced if they are:
+// __BODY will be the replaced with the desired body of the file
+// __AUTOGENINCLUDE will be the replaced with the autogen op header file
 
 /** @file */
-#include "@AUTOGENINCLUDE@"
+#include "__AUTOGENINCLUDE"
 
 
 // For brevity
 using namespace Expression;
 
-@BODY @
+
+__BODY
 
 
 #endif

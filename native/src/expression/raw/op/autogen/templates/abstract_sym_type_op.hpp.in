@@ -1,22 +1,27 @@
 // This file determines how a SymTypeOp class defined
-// Variables matching @\s*[A-Z][A-Z0-9]*\s*@ will be replaced if the
-// whitespace stripped version of the regex matches one of the following:
-// @SUPER2@ will be the second super of SymTypeOp (namespace relative to raw required)
-// @TYPE@ will be replaced with the type in SymTypeOp (no namespace allowed)
-// @SYM@ will be replaced with the sym in SymTypeOp (no namespace allowed)
-// @OP@ will be replaced with the op in SymTypeOp (no namespace allowed)
+// Strings matching __[A-Z][A-Z0-9] will be replaced if they are:
+// __SUPER2 will be the second super of SymTypeOp (namespace relative to raw required)
+// __TYPE will be replaced with the type in SymTypeOp (no namespace allowed)
+// __SYM will be replaced with the sym in SymTypeOp (no namespace allowed)
+// __OP will be replaced with the op in SymTypeOp (no namespace allowed)
 
 namespace Expression {
     namespace Raw::AutoGen {
+
         /** Static verification of sym */
-        static_assert(std::is_same_v<Symbolic, @SYM @> || std::is_same_v<Concrete, @SYM @>,
-                      "@SYM@ is neither Symbolic or Concrete");
-        /** Define the @SYM@ @TYPE@ @OP@ type */
-        struct @SYM @ @TYPE @ @OP @ : virtual public @TYPE @ @OP @, virtual public @SUPER2 @{
-            EXPRESSION_RAW_ABSTRACT_INIT(@SYM @ @TYPE @ @OP @) protected :
-                /** Disable public construction */
-                @SYM @ @TYPE @ @OP @() = default;
-    }; // namespace Raw::AutoGen
+        static_assert(std::is_same_v<Symbolic, __SYM> || std::is_same_v<Concrete, __SYM>,
+                      "__SYM is neither Symbolic or Concrete");
+
+        /** Define the __SYM__TYPE__OP type */
+        struct __SYM__TYPE__OP : virtual public __TYPE__OP, virtual public __SUPER2 {
+            EXPRESSION_RAW_ABSTRACT_INIT(__SYM__TYPE__OP)
+          protected:
+            /** Disable public construction */
+            __SYM__TYPE__OP() = default;
+        }; // namespace Raw::AutoGen
+
+    } // namespace Raw::AutoGen
+
+    EXPRESSION_RAW_DECLARE_SHARED(__SYM__TYPE__OP, Raw::AutoGen)
+
 } // namespace Expression
-EXPRESSION_RAW_DECLARE_SHARED(@SYM @ @TYPE @ @OP @, Raw::AutoGen)
-}
