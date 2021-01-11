@@ -14,7 +14,7 @@
 namespace Expression::Raw::Op {
 
     /** The op class Symbol */
-    class Symbol : virtual public Base {
+    class Symbol : virtual public Base, virtual public Symbolic {
         EXPRESSION_RAW_ABSTRACT_INIT(Symbol)
       public:
         /** Return the op */

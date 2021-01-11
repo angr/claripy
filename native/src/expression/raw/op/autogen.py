@@ -353,7 +353,8 @@ def main():
     verify_config(config)
     # Add extra config
     for entry in config:
-        entry['disable_sac'] = False
+        if 'disable_sac' not in entry:
+            entry['disable_sac'] = False
     # Load templates
     load_templates()
     print('-- Loading files - done')

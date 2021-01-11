@@ -7,14 +7,14 @@
 
 #include "base.hpp"
 
-#include "../symbolic.hpp"
+#include "../concrete.hpp"
 #include "../type.hpp"
 
 
 namespace Expression::Raw::Op {
 
     /** The op class Literal */
-    class Literal : virtual public Base {
+    class Literal : virtual public Base, virtual public Concrete {
         EXPRESSION_RAW_ABSTRACT_INIT(Literal)
       public:
         /** Return the op */
