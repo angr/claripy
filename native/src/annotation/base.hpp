@@ -33,7 +33,7 @@ namespace Annotation {
         /** Virtual hash function
          *  Every subclass must implement this
          */
-        virtual Constants::CCS hash() const;
+        virtual Constants::UInt hash() const;
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise

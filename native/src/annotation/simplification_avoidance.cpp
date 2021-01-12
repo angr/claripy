@@ -1,12 +1,14 @@
 /** @file */
 #include "simplification_avoidance.hpp"
 
+#include "../utils.hpp"
+
 
 // For clarity
 using namespace Annotation;
 
-Constants::CCS SimplificationAvoidance::hash() const {
-    return "SimplificationAvoidance";
+Constants::UInt SimplificationAvoidance::hash() const {
+    return Utils::type_id<SimplificationAvoidance>();
 }
 
 bool SimplificationAvoidance::eliminatable() const {

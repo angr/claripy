@@ -2,6 +2,7 @@
 #include "base.hpp"
 
 #include "../expression.hpp"
+#include "../utils.hpp"
 
 
 // For clarity
@@ -10,8 +11,8 @@ using namespace Annotation;
 
 Base::~Base() {}
 
-Constants::CCS Base::hash() const {
-    return "Annotation::Base";
+Constants::UInt Base::hash() const {
+    return Utils::type_id<Base>();
 }
 
 bool Base::eliminatable() const {
