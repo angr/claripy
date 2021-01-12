@@ -6,6 +6,8 @@
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__
 
+#include "../constants.hpp"
+
 #include <memory>
 #include <utility>
 
@@ -27,6 +29,11 @@ namespace Annotation {
 
         /** Virtual destructor */
         virtual ~Base();
+
+        /** Virtual hash function
+         *  Every subclass must implement this
+         */
+        virtual Constants::CCS hash() const;
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise

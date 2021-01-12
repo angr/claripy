@@ -10,6 +10,10 @@ using namespace Annotation;
 
 Base::~Base() {}
 
+Constants::CCS Base::hash() const {
+    return typeid(Base).name();
+}
+
 bool Base::eliminatable() const {
     return true;
 }

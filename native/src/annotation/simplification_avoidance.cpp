@@ -5,6 +5,9 @@
 // For clarity
 using namespace Annotation;
 
+Constants::CCS SimplificationAvoidance::hash() const {
+    return typeid(SimplificationAvoidance).name();
+}
 
 bool SimplificationAvoidance::eliminatable() const {
     return false;

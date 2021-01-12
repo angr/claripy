@@ -13,6 +13,11 @@ namespace Annotation {
     /** A built-in annotation */
     class SimplificationAvoidance : public Base {
 
+        /** Virtual hash function
+         *  Every subclass must implement this
+         */
+        virtual Constants::CCS hash() const;
+
         /** Returns whether this annotation can be eliminated in a simplification. */
         bool eliminatable() const final override;
 
