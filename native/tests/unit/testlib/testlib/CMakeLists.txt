@@ -1,3 +1,3 @@
 target_sources("${TESTLIB}" PRIVATE
-	dummy.cpp
+	factory.cpp
 )

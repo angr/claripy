@@ -5,6 +5,7 @@ set(TESTLIB "testlib")
 # Create the test library target that test cases link to
 # Then add headers and sources to the test library
 add_library("${TESTLIB}" SHARED)
+target_link_libraries("${TESTLIB}" PRIVATE "${SHARED_LIB_NAME}")
 target_include_directories("${TESTLIB}" PRIVATE "${CLARICPP_SRC}")
 add_subdirectory("${TESTLIB_SRC}")
 
@@ -51,9 +52,9 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
-	target_include_directories("${BINARY}" PUBLIC "${CLARICPP_SRC}" "${TESTLIB_SRC}")
+	target_include_directories("${BINARY}" PRIVATE "${CLARICPP_SRC}" "${TESTLIB_SRC}")
 	# target_include_directories("${BINARY}" PRIVATE "${CLARICPP_SRC}" "${TESTLIB_SRC}")
-	target_link_libraries("${BINARY}" "${SHARED_LIB_NAME}" "${TESTLIB}")
+	target_link_libraries("${BINARY}" PRIVATE "${SHARED_LIB_NAME}" "${TESTLIB}")
 
 	## Add the test
 	message(STATUS "\t${TEST_NAME}")
