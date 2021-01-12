@@ -6,9 +6,11 @@
 #ifndef __UTILS_LOG_LOG_SENDTOBACKEND_HPP__
 #define __UTILS_LOG_LOG_SENDTOBACKEND_HPP__
 
-#include "../../to_str.hpp"
+#include "../../ostream.hpp"
 #include "../backend.hpp"
 #include "../style.hpp"
+
+#include <sstream>
 
 
 namespace Utils::Log::Private {
@@ -17,7 +19,7 @@ namespace Utils::Log::Private {
     template <typename... Args>
     void send_to_backend(Constants::CCSC id, const Level::Level lvl, const Args &...args) {
         std::ostringstream s;
-        apply_to_ostringstream(s, args...);
+        (OStream(s, args), ...);
         const std::string msg = Style::get()->str(id, lvl, s);
         Backend::get()->log(id, lvl, msg);
     }

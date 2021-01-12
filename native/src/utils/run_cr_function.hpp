@@ -11,12 +11,10 @@
 namespace Utils {
 
     /** Return f(args...) */
-    template <typename F, typename... Args> inline auto run_cr_function(const Args &...args) {
-        return F(args...);
+    template <typename F, typename... Args>
+    inline auto run_cr_function(const F &f, const Args &...args) {
+        return f(args...);
     };
-
-    /** Return f() */
-    template <typename F> inline auto run_cr_function(const F &f) { return f(); };
 
 } // namespace Utils
 

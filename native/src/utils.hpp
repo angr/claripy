@@ -8,10 +8,10 @@
 
 #include "utils/affirm.hpp"
 #include "utils/ansi_color_codes.hpp"
-#include "utils/apply.hpp"
 #include "utils/inc.hpp"
 #include "utils/log.hpp"
 #include "utils/max.hpp"
+#include "utils/ostream.hpp"
 #include "utils/pow.hpp"
 #include "utils/ref.hpp"
 #include "utils/run_before_main.hpp"
