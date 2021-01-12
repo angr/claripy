@@ -15,7 +15,7 @@ Raw::Base::Base(const Hash::Hash h, std::vector<std::shared_ptr<Annotation::Base
     : id(h), annotations(std::move(ans)) {}
 
 std::string Raw::Base::full_type_name() const {
-    std::stringstream s;
+    std::ostringstream s;
     s << (this->symbolic() ? "Symbolic" : "Concrete") << this->type() << this->op();
     return s.str();
 }

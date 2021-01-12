@@ -17,7 +17,7 @@ CacheKey::CacheKey(const Raw::Type::Base &a) : ref(a) {}
 // __repr__
 /** @todo implement */
 std::string CacheKey::repr() const {
-    std::stringstream ret;
+    std::ostringstream ret;
     /* ret << "<Key " << this->ref.full_type_name() << ' ' << this->ref.repr(true) << '>'; */
     return ret.str();
 }
