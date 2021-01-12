@@ -57,8 +57,7 @@ namespace Expression::Private {
             {
                 std::unique_lock<decltype(lock)> rw(lock);
                 // Initial find
-                auto lookup = this->unsafe_find(h);
-                if (lookup != nullptr) {
+                if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
                     return lookup;
                 }
 
@@ -72,8 +71,7 @@ namespace Expression::Private {
             {
                 std::unique_lock<decltype(lock)> rw(lock);
                 // Second lookup
-                auto lookup = this->unsafe_find(h);
-                if (lookup != nullptr) {
+                if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
                     ret.reset();
                     return lookup;
                 }
@@ -96,8 +94,7 @@ namespace Expression::Private {
          *  On failure, returns a null shared pointer
          */
         std::shared_ptr<Cached> unsafe_find(const Hash &h) {
-            auto lookup = this->cache.find(h);
-            if (lookup != this->cache.end()) {
+            if (auto lookup = this->cache.find(h); lookup != this->cache.end()) {
                 std::shared_ptr<Cached> locked = lookup->second.lock();
                 // If the weak_ptr is valid, return it
                 if (locked) {
