@@ -24,8 +24,8 @@
 #include <type_traits>
 
 
-namespace Expression::Raw {
-    namespace Op {
+namespace Expression {
+    namespace Raw::Op {
 
         /** Static verification of op */
         static_assert(std::is_base_of_v<Base, __OP>, "__OP is not a subclass of Op::Base");
@@ -36,10 +36,10 @@ namespace Expression::Raw {
 
         }
 
-    } // namespace Op
+    } // namespace Raw::Op
 
     __ALIASES
 
-} // namespace Expression::Raw
+} // namespace Expression
 
 #endif
