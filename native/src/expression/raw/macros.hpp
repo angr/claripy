@@ -22,13 +22,13 @@
   public:                                                                                         \
     /** Non-virtual destructor */                                                                 \
     ~CLASS() override final;                                                                      \
-    /** Allow factories friend access */                                                          \
-    template <typename T, typename... Args> friend T Expression::factory(Args &&...args);         \
+                                                                                                  \
+  private:                                                                                        \
     /** Allow cache friend access                                                                 \
      *  We expose the constructor so that the cache may emplace new objects, which is             \
      *  faster than copying them in                                                               \
      */                                                                                           \
-    friend class ::Expression::Private::Cache<Hash::Hash, ::Expression::Base>;
+    friend class ::Expression::Private::Cache<Hash::Hash, ::Expression::Raw::Base>;
 
 
 /** Used to initalize an abstract expression
