@@ -64,7 +64,7 @@ add_subdirectory(expression)
 
 # Link additional libraries
 # We do not want their functions exposed by our shared object so we designate them private
-# target_link_libraries("${SHARED_LIB_NAME}"
+# target_link_libraries("${SHARED_LIB_NAME}" PRIVATE
 # )
 
 # Configure library compilation and linking
