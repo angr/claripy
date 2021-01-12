@@ -8,7 +8,12 @@
 #include "../../constants.hpp"
 
 #include <string>
+#include <vector>
 
+// Forward declarations
+namespace Annotation {
+    struct Base;
+}
 
 namespace Expression::Hash {
 
@@ -24,8 +29,16 @@ namespace Expression::Hash {
      */
     template <typename T> typename SingularRetMap<T>::RetType singular(const T &);
 
+    /** A specialization for T = Constants::Int */
+    template <> struct SingularRetMap<Constants::Int> { using RetType = Constants::Int; };
+
     /** A specialization for T = char * */
     template <> struct SingularRetMap<char *> { using RetType = Constants::CCS; };
+
+    /** A specialization for T = std::vector<std::shared_ptr<Annotation>> */
+    template <> struct SingularRetMap<std::vector<std::shared_ptr<Annotation::Base>>> {
+        using RetType = std::string;
+    };
 
 } // namespace Expression::Hash
 

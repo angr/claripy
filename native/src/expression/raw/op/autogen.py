@@ -48,7 +48,7 @@ sources_out = os.path.join(io_dir, 'sources.txt')
 # Globals
 templates = {}
 ctor_args = {
-    'Base' : [ 'const Hash::Hash', 'std::vector<Annotation::Base> &' ],
+    'Base' : [ 'const Hash::Hash', 'std::vector<std::shared_ptr<Annotation::Base>> &' ],
     'Symbolic' : [],
     'Concrete' : [],
     'Op' : {
@@ -148,7 +148,7 @@ def asto(s, t, o, s2):
 
 def isto(s, t, o, s2, op_args):
     # Derive ctor args from arguments
-    args = '\n\t' + ',\n\t'.join(determinte_ctor_args(s, t, o, op_args, hpp=True))
+    args = '\n\t\t' + ',\n\t\t'.join(determinte_ctor_args(s, t, o, op_args, hpp=True))
     # Return the constructed code
     return from_template('instantiable_sym_type_op.hpp', {
         'super2' : s2,
@@ -164,7 +164,7 @@ def isto_cpp(sym, typ, op, op_args):
     # Constructor decl
     name = sym + typ + op
     declargs = [ i[0] for i in args ]
-    decl = name + '::' + name + '(\n\t' + ',\n\t'.join(declargs) + ')'
+    decl = name + '::' + name + '(\n\t\t' + ',\n\t\t'.join(declargs) + ')'
     # Supers
     required_args = defaultdict(lambda : [])
     for a, who in args:
