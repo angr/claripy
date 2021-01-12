@@ -7,8 +7,10 @@
 
 #include "../../constants.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
+
 
 // Forward declarations
 namespace Annotation {
