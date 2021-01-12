@@ -16,7 +16,7 @@
 namespace Expression {
 
     // Forward declarations
-    namespace Raw::Type {
+    namespace Raw {
         class Base;
     }
 
@@ -28,7 +28,7 @@ namespace Expression {
     template <typename To, typename From> To up_cast(const From &f) noexcept {
         using RawTo = Private::Raw<To>;
         using RawFrom = Private::Raw<From>;
-        static_assert(std::is_base_of<Raw::Type::Base, RawTo>::value, "To must derive from Base");
+        static_assert(std::is_base_of<Raw::Base, RawTo>::value, "To must derive from Base");
         static_assert(std::is_base_of<RawTo, RawFrom>::value, "From must derive from To");
         return std::static_pointer_cast<RawTo>(f);
     }
@@ -43,8 +43,7 @@ namespace Expression {
     template <typename To, typename From> To down_cast(const From &f) noexcept {
         using RawTo = Private::Raw<To>;
         using RawFrom = Private::Raw<From>;
-        static_assert(std::is_base_of<Raw::Type::Base, RawFrom>::value,
-                      "From must derive from Base");
+        static_assert(std::is_base_of<Raw::Base, RawFrom>::value, "From must derive from Base");
         static_assert(std::is_base_of<RawFrom, RawTo>::value, "To must derive from From");
         return std::dynamic_pointer_cast<RawTo>(f);
     }
@@ -79,8 +78,7 @@ namespace Expression {
 #else
         using RawTo = Private::Raw<To>;
         using RawFrom = Private::Raw<From>;
-        static_assert(std::is_base_of<Raw::Type::Base, RawFrom>::value,
-                      "From must derive from Base");
+        static_assert(std::is_base_of<Raw::Base, RawFrom>::value, "From must derive from Base");
         static_assert(std::is_base_of<RawFrom, RawTo>::value, "To must derive from From");
         return std::static_pointer_cast<RawTo>(f);
 #endif

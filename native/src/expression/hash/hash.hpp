@@ -28,7 +28,7 @@ namespace Expression {
 
         /** This function hashes it's arguments */
         template <typename T, typename... Args> Hash hash(const Args &...args) {
-            static_assert(std::is_base_of_v<Base, T>, "T must be an Expression");
+            static_assert(std::is_base_of_v<Raw::Base, T>, "T must be an Expression");
             std::ostringstream input(typeid(T).name());
             (input << ... << singular(args));
             return hasher(input.str());

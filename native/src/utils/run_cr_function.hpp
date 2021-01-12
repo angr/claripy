@@ -11,9 +11,8 @@
 namespace Utils {
 
     /** Return f(args...) */
-    template <typename F, typename... Args>
-    inline auto run_cr_function(const F &f, const Args &...args) {
-        return f(args...);
+    template <typename F, typename... Args> inline auto run_cr_function(const Args &...args) {
+        return F(args...);
     };
 
     /** Return f() */
