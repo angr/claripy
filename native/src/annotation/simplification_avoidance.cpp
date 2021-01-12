@@ -6,7 +6,7 @@
 using namespace Annotation;
 
 Constants::CCS SimplificationAvoidance::hash() const {
-    return typeid(SimplificationAvoidance).name();
+    return "SimplificationAvoidance";
 }
 
 bool SimplificationAvoidance::eliminatable() const {

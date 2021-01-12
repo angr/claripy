@@ -11,7 +11,7 @@ using namespace Annotation;
 Base::~Base() {}
 
 Constants::CCS Base::hash() const {
-    return typeid(Base).name();
+    return "Annotation::Base";
 }
 
 bool Base::eliminatable() const {

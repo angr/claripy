@@ -5,8 +5,8 @@
  * It does not affect strong enums with the << stream operator defined
  * Fundamentally this function is just a fancy static_cast
  */
-#ifndef __UTILS_PRIVATE_OSTREAM_HELPER_CONVERSIONS_HPP__
-#define __UTILS_PRIVATE_OSTREAM_HELPER_CONVERSIONS_HPP__
+#ifndef __UTILS_PRIVATE_OSTREAMHELPERCONVERSIONS_HPP__
+#define __UTILS_PRIVATE_OSTREAMHELPERCONVERSIONS_HPP__
 
 #include "../../macros.hpp"
 
