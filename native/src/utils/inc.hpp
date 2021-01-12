@@ -32,4 +32,8 @@ namespace Utils {
 } // namespace Utils
 
 
+// Cleanup
+#undef ATOM_T
+
+
 #endif
