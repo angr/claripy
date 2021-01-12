@@ -30,6 +30,7 @@ static std::atomic<Lvl> lvl(Level::default_);
 void Level::set(Level l) {
     lvl.store(l);
 }
+
 Lvl Level::get() {
     return lvl.load();
 }

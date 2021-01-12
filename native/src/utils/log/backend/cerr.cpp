@@ -10,4 +10,5 @@
 // For brevity
 using namespace Utils::Log::Backend;
 
+
 Cerr::Cerr() : OStream(std::cerr, true) {}
