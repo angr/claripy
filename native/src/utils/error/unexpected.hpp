@@ -19,7 +19,12 @@ namespace Utils::Error {
         /** Base unexpected exception
          *  All unexpected exceptions must derive from this
          */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp)
+        struct Base : public Claricpp {
+            /** Inherit constructors */
+            using Claricpp::Claricpp;
+            /** Virtual destructor */
+            virtual ~Base();
+        };
 
         /** Bad cast exception */
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(BadCast, Base)
