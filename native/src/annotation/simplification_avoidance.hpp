@@ -16,7 +16,7 @@ namespace Annotation {
         /** Virtual hash function
          *  Every subclass must implement this
          */
-        virtual Constants::CCS hash() const;
+        virtual Constants::CCS hash() const override;
 
         /** Returns whether this annotation can be eliminated in a simplification. */
         bool eliminatable() const final override;
