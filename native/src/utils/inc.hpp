@@ -23,7 +23,7 @@ namespace Utils {
      *  The template Args are used as a map key to allow this function to be reused as needed
      *  This function is primarily meant to run before main to help configure things
      */
-    template <typename... Args, std::enable_if_t<has_pre_inc_op<ATOM_T>, int> = 0>
+    template <typename... Args, std::enable_if_t<Private::has_pre_inc_op<ATOM_T>, int> = 0>
     inline Constants::UInt inc() {
         static ATOM_T ret(0);
         return ++ret;
