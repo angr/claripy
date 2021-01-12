@@ -26,7 +26,7 @@ namespace Expression::Hash {
 
     /** Determines how hash handles the type passed
      *  This hash does not need to be a real hash, it just has to represent T as an SRet<T>
-     *  which will be appened to a stringstream that will be properly hashed
+     *  which will be appened to an ostringstream that will be properly hashed
      *  The general case is undefined, specializations must be defined
      */
     template <typename T> typename SingularRetMap<T>::RetType singular(const T &);
