@@ -18,7 +18,6 @@ namespace Utils::Private {
         class Unique;
         /** If U has the << operator defined the return type is resolvable
          *  Note: we do not use declval for the ostream because some compilers are buggy with it
-         *  @todo Update to use declval when possible
          */
         template <typename U> static constexpr decltype(++std::declval<U>()) test(U *);
         /** If the first declaration had an unresolvable return type, we return a Unique */

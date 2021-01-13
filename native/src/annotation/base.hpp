@@ -1,7 +1,6 @@
 /**
  * @file
  * @brief This file defines the Annotation::Base class
- * @todo Modify to allow data representation dependent on what Fish wants
  */
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__

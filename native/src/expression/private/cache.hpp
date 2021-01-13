@@ -114,7 +114,6 @@ namespace Expression::Private {
 
         /** Remove all std::weak_ptr's in cache that no longer point to a valid object
          *  This function is not thread-safe
-         * 	@todo improve logging message
          */
         void unsafe_gc() {
             std::vector<Hash> del;

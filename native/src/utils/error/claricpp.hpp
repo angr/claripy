@@ -4,7 +4,6 @@
  * @brief This file contains the base claricpp exception
  * These exceptions have python analogs and must be caught and sent to python
  * via a different method.
- * @todo Document method when known
  */
 #ifndef __UTILS_ERRORS_CLARICPP_HPP__
 #define __UTILS_ERRORS_CLARICPP_HPP__
@@ -17,6 +16,9 @@
 
 namespace Utils::Error {
 
+	/** The base claricpp exception class
+     *  Any exception thrown intentioanlly must subclass this
+	 */
     class Claricpp : public std::exception {
       public:
         /** Public constructor
