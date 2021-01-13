@@ -6,11 +6,12 @@
 
 
 // For brevity
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::Bool */
+/** Test creating an Expression Bool */
 int bool_() {
-    (void) construct_ast<AST::Bool>();
+    (void) literal_factory<ConcreteBoolLiteral>((Constants::Int) 0);
     return 0;
 }

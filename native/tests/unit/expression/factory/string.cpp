@@ -6,11 +6,13 @@
 
 
 // For brevity
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::String */
+/** Test creating an Expression String */
 int string() {
-    (void) construct_ast<AST::String>();
+    Constants::Int z = 0;
+    (void) literal_factory<ConcreteStringLiteral>(z, z);
     return 0;
 }

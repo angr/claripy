@@ -6,11 +6,13 @@
 
 
 // For brevity
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::FP */
+/** Test creating an Expression FP */
 int fp() {
-    (void) construct_ast<AST::FP>();
+    Constants::Int z = 0;
+    (void) literal_factory<ConcreteFPLiteral>(z, z);
     return 0;
 }

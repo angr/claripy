@@ -6,11 +6,13 @@
 
 
 // For brevity
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::VS */
+/** Test creating an Expression VS */
 int vs() {
-    (void) construct_ast<AST::VS>();
+    Constants::Int z = 0;
+    (void) literal_factory<ConcreteVSLiteral>(z, z);
     return 0;
 }
