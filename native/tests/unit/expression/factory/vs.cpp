@@ -14,7 +14,6 @@ using namespace UnitTest::TestLib;
 
 /** Test creating an Expression VS */
 int vs() {
-    Constants::Int z = 0;
-    (void) literal_factory<ConcreteVSLiteral>(z, z);
+    (void) literal_factory<ConcreteVSLiteral>(0_i, 0_i);
     return 0;
 }

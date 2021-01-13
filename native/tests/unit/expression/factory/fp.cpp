@@ -14,7 +14,6 @@ using namespace UnitTest::TestLib;
 
 /** Test creating an Expression FP */
 int fp() {
-    Constants::Int z = 0;
-    (void) literal_factory<ConcreteFPLiteral>(z, z);
+    (void) literal_factory<ConcreteFPLiteral>(0_i, 0_i);
     return 0;
 }
