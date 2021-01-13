@@ -106,12 +106,20 @@ RUN cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${NATIVE}"
 FROM cmake as build
 LABEL claricpp=build
 
-# Optional build args
-ARG MAKE_TARGET="claricpp"
-
 # Make
-RUN echo ${MAKE_TARGET}
-RUN make -j "$(nproc)" "${MAKE_TARGET}"
+RUN make -j "$(nproc)" claricpp
+
+
+##################################################
+#                Test Build Stage                #
+##################################################
+
+
+FROM build as test_build
+LABEL claricpp=test_build
+
+# Build the test cases
+RUN make -j "$(nproc)" test
 
 
 ##################################################
@@ -119,16 +127,27 @@ RUN make -j "$(nproc)" "${MAKE_TARGET}"
 ##################################################
 
 
-FROM build as test
+FROM test_build as test
 LABEL claricpp=test
 
 # Optional build args
 ARG VERBOSE_TEST="False"
 
 # Test if make targets request it
-RUN make -j "$(nproc)"
 RUN if [[ "${VERBOSE_TEST}" == True ]]; then \
 		ctest --verbose -j "$(nproc)" . ; \
 	else \
 		ctest -j "$(nproc)" . ; \
 	fi
+
+
+##################################################
+#                   Docs Stage                   #
+##################################################
+
+
+FROM test_build as docs
+LABEL claricpp=docs
+
+# Make docs
+RUN make docs
