@@ -10,7 +10,7 @@
 
 
 // Forward declare tests
-int @FUNC_NAME @();
+int $ { FUNC_NAME }();
 
 /** Catch and print an error before exiting */
 #define CATCH_ERROR(ERROR)                                                                        \
@@ -22,7 +22,7 @@ int @FUNC_NAME @();
 /** main */
 int main() {
     try {
-        return @FUNC_NAME @();
+        return $ { FUNC_NAME }();
     }
     CATCH_ERROR(UnitTest::TestLib::Error)
     CATCH_ERROR(Utils::Error::Unexpected::Base)
