@@ -74,7 +74,7 @@ RUN echo "${VERSION}" > "${CLARIPY}/VERSION"
 # Optional clang-format
 WORKDIR "${NATIVE}"
 RUN if [[ "${FORMAT}" == True ]]; then \
-		find . -regex '.*\.\(cpp\|hpp\|cpp\.in\|hpp\.in\)' -exec \
+		find . -regex '.*\.\(cpp\|hpp\|\)' -exec \
 			clang-format-11 -style=file -i {} ';' ; \
 	fi
 
