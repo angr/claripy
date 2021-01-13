@@ -1,18 +1,29 @@
-# Autogenerate files as needed
-message("Autogenerating op class code files")
-# Older versions of cmake to not support COMMAND_ERROR_IS_FATAL
-# so instead we utilize RESULT_VARIABLE (singula)
-execute_process(COMMAND
-	python3 ./autogen.py
-	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-	RESULT_VARIABLE RET
-)
-if(NOT RET EQUAL 0)
-	message(FATAL_ERROR "Autogen.py failed")
+# Check if the required files exist
+set(AUTOGEN_HPP "${CMAKE_CURRENT_SOURCE_DIR}/autogen.hpp")
+set(SOURCES_TXT "${CMAKE_CURRENT_SOURCE_DIR}/sources.txt")
+if (EXISTS "${AUTOGEN_HPP}" AND EXISTS "${SOURCES_TXT}")
+	set(GEN_AUTOGEN OFF)
+else()
+	set(GEN_AUTOGEN ON)
+endif()
+
+# If needed autogenerate files
+if ( GEN_AUTOGEN OR REGEN_AUTOGEN )
+	message("Autogenerating op class code files")
+	# Older versions of cmake to not support COMMAND_ERROR_IS_FATAL
+	# so instead we utilize RESULT_VARIABLE (singular)
+	execute_process(COMMAND
+		python3 ./autogen.py
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+		RESULT_VARIABLE RET
+	)
+	# Check the exit code
+	if(NOT RET EQUAL 0)
+		message(FATAL_ERROR "Autogen.py failed")
+	endif()
 endif()
 
 # Load autogen'd source paths
-set(SOURCES_TXT "${CMAKE_CURRENT_SOURCE_DIR}/sources.txt")
 file(READ "${SOURCES_TXT}" AUTOGEN_SOURCES)
 STRING(REPLACE "\n" ";" AUTOGEN_SOURCES "${AUTOGEN_SOURCES}")
 list(TRANSFORM AUTOGEN_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
@@ -30,7 +41,7 @@ target_sources("${SHARED_LIB_NAME}" PRIVATE
 # For make clean
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 	APPEND PROPERTY ADDITIONAL_CLEAN_FILES
-	"${CMAKE_CURRENT_SOURCE_DIR}/autogen.hpp"
 	${AUTOGEN_SOURCES}
+	"${AUTOGEN_HPP}"
 	"${SOURCES_TXT}"
 )
