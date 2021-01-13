@@ -384,10 +384,6 @@ inverse_operations = {
     'SLE': 'SGT', 'SGT': 'SLE',
 }
 
-length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
-length_change_operations = backend_bitmod_operations
-length_new_operations = backend_creation_operations
-
 leaf_operations = backend_symbol_creation_operations | backend_creation_operations | backend_vsa_creation_operations
 leaf_operations_concrete = backend_creation_operations
 leaf_operations_symbolic = backend_symbol_creation_operations
