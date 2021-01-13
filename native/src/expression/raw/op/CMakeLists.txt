@@ -21,6 +21,8 @@ if ( GEN_AUTOGEN OR REGEN_AUTOGEN )
 	if(NOT RET EQUAL 0)
 		message(FATAL_ERROR "Autogen.py failed")
 	endif()
+else()
+	message("Using existing autogen'd files")
 endif()
 
 # Load autogen'd source paths
