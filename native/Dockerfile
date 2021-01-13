@@ -119,7 +119,7 @@ FROM build as test_build
 LABEL claricpp=test_build
 
 # Build the test cases
-RUN make -j "$(nproc)" test
+RUN make -j "$(nproc)" all
 
 
 ##################################################
