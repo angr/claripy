@@ -59,6 +59,7 @@ def op(name, arg_types, return_type, extra_check=None, calc_length=None, do_coer
             kwargs['length'] = calc_length(*fixed_args)
 
         kwargs['uninitialized'] = None
+        #pylint:disable=isinstance-second-argument-not-valid-type
         if any(a.uninitialized is True for a in args if isinstance(a, ast.Base)):
             kwargs['uninitialized'] = True
         if name in preprocessors:
@@ -73,6 +74,7 @@ def _handle_annotations(simp, args):
     if simp is None:
         return None
 
+    #pylint:disable=isinstance-second-argument-not-valid-type
     ast_args = tuple(a for a in args if isinstance(a, ast.Base))
     preserved_relocatable = frozenset(simp._relocatable_annotations)
     relocated_annotations = set()
@@ -162,7 +164,7 @@ def str_extract_check(start_idx, count, str_val):
     else:
         return True, ""
 
-def str_extract_length_calc(start_idx, count, str_val): # pylint: diable=unused-argument
+def str_extract_length_calc(start_idx, count, str_val): # pylint: disable=unused-argument
     return count
 
 def int_to_str_length_calc(int_val): # pylint: disable=unused-argument
@@ -197,7 +199,7 @@ def str_replace_length_calc(*args):
     # Otherwise We have the maximum length when teh replacement happens
     return str_1.string_length - str_2.string_length + str_3.string_length
 
-def strlen_bv_size_calc(s, bitlength):
+def strlen_bv_size_calc(s, bitlength): # pylint: disable=unused-argument
     return bitlength
 
 def strindexof_bv_size_calc(s1, s2, start_idx, bitlength): # pylint: disable=unused-argument
@@ -381,11 +383,6 @@ inverse_operations = {
     'SLT': 'SGE', 'SGE': 'SLT',
     'SLE': 'SGT', 'SGT': 'SLE',
 }
-
-length_same_operations = expression_arithmetic_operations | backend_bitwise_operations | expression_bitwise_operations | backend_other_operations | expression_set_operations | {'Reversed'}
-length_none_operations = backend_comparator_operations | expression_comparator_operations | backend_boolean_operations | backend_fp_cmp_operations
-length_change_operations = backend_bitmod_operations
-length_new_operations = backend_creation_operations
 
 leaf_operations = backend_symbol_creation_operations | backend_creation_operations | backend_vsa_creation_operations
 leaf_operations_concrete = backend_creation_operations
