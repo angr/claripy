@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup unittest
+ */
 #include "expression.hpp"
 #include "testlib.hpp"
 

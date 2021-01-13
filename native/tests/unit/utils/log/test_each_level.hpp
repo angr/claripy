@@ -1,7 +1,8 @@
 /**
  * @file
- * @brief Defines the test_each_level function */
-
+ * \ingroup unittest
+ * @brief Defines the test_each_level function
+ */
 #include "utils.hpp"
 
 #include <sstream>

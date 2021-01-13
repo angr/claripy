@@ -1,5 +1,7 @@
-/** @file */
-
+/**
+ * @file
+ * \ingroup unittest
+ */
 #include "test_each_level.hpp"
 #include "testlib.hpp"
 #include "utils.hpp"

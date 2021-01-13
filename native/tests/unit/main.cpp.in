@@ -1,29 +1,32 @@
-/** @file */
-#include <iostream>
-#include <exception>
-
-#include "utils.hpp"
+/**
+ * @file
+ * \ingroup test_autogen
+ */
 #include "testlib.hpp"
+#include "utils.hpp"
+
+#include <exception>
+#include <iostream>
 
 
 // Forward declare tests
-int @FUNC_NAME@();
+int @FUNC_NAME @();
 
 /** Catch and print an error before exiting */
-#define CATCH_ERROR(ERROR) \
-	catch(const ERROR & e) { \
-		std::cout << #ERROR ": " << e.what() << std::endl; \
-		return -1; \
-	}
+#define CATCH_ERROR(ERROR)                                                                        \
+    catch (const ERROR &e) {                                                                      \
+        std::cout << #ERROR ": " << e.what() << std::endl;                                        \
+        return -1;                                                                                \
+    }
 
 /** main */
 int main() {
-	try {
-		return @FUNC_NAME@();
-	}
-	CATCH_ERROR(UnitTest::TestLib::Error)
-	CATCH_ERROR(Utils::Error::Unexpected::Base)
-	CATCH_ERROR(Utils::Error::Python::Base)
-	CATCH_ERROR(Utils::Error::Claricpp)
-	CATCH_ERROR(std::exception)
+    try {
+        return @FUNC_NAME @();
+    }
+    CATCH_ERROR(UnitTest::TestLib::Error)
+    CATCH_ERROR(Utils::Error::Unexpected::Base)
+    CATCH_ERROR(Utils::Error::Python::Base)
+    CATCH_ERROR(Utils::Error::Claricpp)
+    CATCH_ERROR(std::exception)
 }
