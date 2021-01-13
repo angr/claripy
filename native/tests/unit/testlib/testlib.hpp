@@ -6,5 +6,6 @@
 #define __TESTS_UNIT_TESTLIB_TESTLIB_HPP__
 
 #include "testlib/error.hpp"
+#include "testlib/factory.hpp"
 
 #endif

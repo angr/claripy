@@ -11,7 +11,14 @@
 
 namespace UnitTest::TestLib {
 
-    Expression::ConcreteIntLiteral literal_factory(Constants::Int i);
+    /** Make it easier to create expressions */
+    template <typename T, typename... Args> T literal_factory(Args... args) {
+        std::vector<std::shared_ptr<Annotation::Base>> a;
+        return Expression::factory<T>(a, args...);
+    }
+
+    /** Make a concrete literal int */
+    Expression::ConcreteIntLiteral literal_int(const Constants::Int i = 0);
 
 } // namespace UnitTest::TestLib
 

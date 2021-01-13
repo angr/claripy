@@ -53,7 +53,6 @@ function(simple_test FUNC_NAME)
 	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
 	target_include_directories("${BINARY}" PRIVATE "${CLARICPP_SRC}" "${TESTLIB_SRC}")
-	# target_include_directories("${BINARY}" PRIVATE "${CLARICPP_SRC}" "${TESTLIB_SRC}")
 	target_link_libraries("${BINARY}" PRIVATE "${SHARED_LIB_NAME}" "${TESTLIB}")
 
 	## Add the test
@@ -83,4 +82,4 @@ endfunction()
 # Add test cases
 message(STATUS "Adding unit tests:")
 add_subdirectory(utils)
-# add_subdirectory(ast)
+add_subdirectory(expression)
