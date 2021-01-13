@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup testlib
+ */
 #include "factory.hpp"
 
 

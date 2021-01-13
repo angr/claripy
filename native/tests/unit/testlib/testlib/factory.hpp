@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup testlib
  * @brief This defines a UnitTest error and wrapping macros
  */
 #ifndef __TESTS_UNIT_TESTLIB_TESTLIB_FACTORY_HPP__

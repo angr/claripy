@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup testlib
  * @brief This file defines the namespaces for documentation purposes
  * This file should not be included in any C++ code and will not compile intentionally
  */
