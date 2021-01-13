@@ -1,6 +1,6 @@
 /**
  * @file
- * \defgroup unittest A group of unit tests for Claricpp
+ * \ingroup unittest
  */
 
 
