@@ -28,4 +28,17 @@ namespace Constants {
 
 } // namespace Constants
 
+
+/** Create a literal prefix for Constants::Int */
+constexpr Constants::Int operator"" _i(const unsigned long long i) {
+    return Constants::Int(i);
+}
+
+
+/** Create a literal prefix for Constants::UInt */
+constexpr Constants::UInt operator"" _ui(const unsigned long long u) {
+    return Constants::UInt(u);
+}
+
+
 #endif
