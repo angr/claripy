@@ -81,5 +81,6 @@ endfunction()
 
 # Add test cases
 message(STATUS "Adding unit tests:")
+simple_test(simple_test)
 add_subdirectory(utils)
 add_subdirectory(expression)
