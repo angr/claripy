@@ -8,7 +8,7 @@
 
 
 // For brevity
-using namespace AST;
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
@@ -16,26 +16,20 @@ namespace UnitTest {
     /** A struct used to give friend access to unittests */
     struct ClaricppUnitTest {
         /** size_type abbreviation */
-        using SizeType = decltype(AST::Private::factory_cache)::CacheMap::size_type;
+        using SizeType = decltype(Expression::Private::factory_cache)::CacheMap::size_type;
         /** Get the cache gc_resize */
-        SizeType &gc_resize = AST::Private::factory_cache.gc_resize;
+        SizeType &gc_resize = Expression::Private::factory_cache.gc_resize;
         /** Get the cache size */
-        SizeType size() { return AST::Private::factory_cache.cache.size(); }
+        SizeType size() { return Expression::Private::factory_cache.cache.size(); }
     };
 } // namespace UnitTest
 
-/** Construct a Base */
-template <typename T> T construct(const int n, std::set<BackendID> s = std::set<BackendID>()) {
-    return factory<T>(std::move(s), std::move((Op::Operation) n));
-}
-
-/** Construct a range of Bases */
-template <typename T>
-std::vector<T> construct_range(const unsigned int lb, const unsigned int ub) {
-    std::vector<T> ret;
+/** Construct a range of different expressions */
+auto construct_range(const unsigned int lb, const unsigned int ub) {
+    std::vector<ConcreteIntLiteral> ret;
     ret.reserve(ub - lb);
-    for (unsigned int i = lb; i < ub; ++i) {
-        ret.push_back(construct<T>(i));
+    for (Constants::Int i = lb; i < ub; ++i) {
+        ret.push_back(literal_int(i));
     }
     return ret;
 }
@@ -53,7 +47,7 @@ int gc() {
     // Construct gc_resize more than half of init's bases
     const auto num = (3 * init) / 4 - 1;
 
-    auto hold = construct_range<Bool>(n, num);
+    auto hold = construct_range(n, num);
     n += num;
 
     // Sanity check
@@ -62,7 +56,7 @@ int gc() {
     // Create and destroy Bools until we have gc_resize bases
     {
         const auto remaining = init - num;
-        (void) construct_range<Bool>(n, n + remaining);
+        (void) construct_range(n, n + remaining);
         n += remaining;
     }
 
@@ -71,7 +65,7 @@ int gc() {
     UNITTEST_ASSERT(cache.size() == init);
 
     // Construct another base to trigger a garbage collection
-    (void) construct<Bool>(n++);
+    (void) literal_int(n++);
 
     // Verify cache size and gc_size
     UNITTEST_ASSERT(cache.size() == hold.size() + 1);

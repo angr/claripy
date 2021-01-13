@@ -1,6 +1,6 @@
 # Add other tests
 add_subdirectory(factory)
-# add_subdirectory(cache)
+add_subdirectory(cache)
 add_subdirectory(cast)
 
 # Add tests
