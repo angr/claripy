@@ -4,4 +4,4 @@ add_subdirectory(factory)
 add_subdirectory(cast)
 
 # Add tests
-# simple_test(all_diff_class_id)
+simple_test(all_diff_class_hash)
