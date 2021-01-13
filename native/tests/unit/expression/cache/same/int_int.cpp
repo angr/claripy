@@ -8,14 +8,14 @@
 
 
 // For brevity
-using namespace AST;
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
 /** Two ints should be the same */
 int int_int() {
-    Int a = construct_ast<Int>();
-    Int b = construct_ast<Int>();
+    Int a = literal_int();
+    Int b = literal_int();
     if (a == b) {
         return 0;
     }

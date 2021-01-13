@@ -8,14 +8,14 @@
 
 
 // For brevity
-using namespace AST;
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::Int */
+/** Test creating an Expression::Int */
 int int_int() {
-    Int a = construct_ast<Int>((Op::Operation) 0);
-    Int b = construct_ast<Int>((Op::Operation) 1);
+    Int a = literal_int(0_i);
+    Int b = literal_int(1_i);
     if (a != b) {
         return 0;
     }

@@ -7,14 +7,14 @@
 #include <set>
 
 // For brevity
-using namespace AST;
+using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
-/** Test creating an AST::BV */
+/** Test creating an Expression::BV */
 int bv_bv() {
-    BV a = construct_ast<BV>((Op::Operation) 0);
-    BV b = construct_ast<BV>((Op::Operation) 1);
+    BV a = literal_factory<ConcreteBVLiteral>(1_i, 1_i);
+    BV b = literal_factory<ConcreteBVLiteral>(1_i, 0_i);
     if (a != b) {
         return 0;
     }
