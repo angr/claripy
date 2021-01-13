@@ -70,9 +70,7 @@ function(simple_test FUNC_NAME)
 	endif()
 
 	# For make clean
-	# TODO: make this a target property
-	set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-	# set_property(TARGET "test"
+	set_property(TARGET "${BINARY}"
 		APPEND PROPERTY ADDITIONAL_CLEAN_FILES
 		"${MAIN_OUT}"
 	)
