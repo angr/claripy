@@ -22,7 +22,6 @@ RUN apt-get update
 # Install dependencies
 # Build
 RUN apt-get install -yq \
-	libboost-all-dev \
 	cmake \
 	make \
 	g++
@@ -36,7 +35,7 @@ RUN apt-get install -yq \
 	clang-tidy-11 \
 	cppcheck \
 	iwyu
-# Dynamic analysis
+# Dynamic Analysis
 RUN apt-get install -yq \
 	valgrind
 

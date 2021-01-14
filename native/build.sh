@@ -14,6 +14,8 @@ VERBOSE_TEST="${VERBOSE_TEST:-False}"
 # Get the version
 VERSION="$(cat ../VERSION)"
 
+# Use docker build kit (only builds dependent stages among other benefits)
+export DOCKER_BUILDKIT=1
 
 # Build claricpp:<VERSION>
 docker build --target "${DOCKER_TARGET}" -t claricpp:"${VERSION}" \
