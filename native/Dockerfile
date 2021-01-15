@@ -13,28 +13,39 @@ RUN apt-get update
 RUN apt-get install -yq \
 	gnupg2 \
 	wget
+
 # Add extra repos as needed
 RUN wget -O - 'https://apt.llvm.org/llvm-snapshot.gpg.key' | apt-key add -
 RUN echo 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list
 RUN echo 'deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' >> /etc/apt/sources.list
 RUN apt-get update
 
-# Install dependencies
+# Install required dependencies
+
 # Build
 RUN apt-get install -yq \
 	cmake \
 	make \
 	g++
+# Boost multiprecision with gmp backend for mpz frontend
+RUN apt-get install -yq \
+	libboost-dev \
+	libgmp-dev
+
+# Optional depending on use build config
+
 # Documentation
 RUN apt-get install -yq \
 	graphviz \
 	doxygen
+
 # Static Analysis
 RUN apt-get install -yq \
 	clang-format-11 \
 	clang-tidy-11 \
 	cppcheck \
 	iwyu
+
 # Dynamic Analysis
 RUN apt-get install -yq \
 	valgrind

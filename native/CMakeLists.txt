@@ -101,6 +101,22 @@ set(CMAKE_CXX_FLAGS "${REQUIRED_FLAGS}")
 
 #################################################
 #                                               #
+#            Find Required Packages             #
+#                                               #
+#################################################
+
+
+# Allow custom find commands
+# This is required for certain libraries that do not have first party cmake find support
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Find required packages
+find_package(Boost 1.7 REQUIRED)
+find_package(GMP REQUIRED)
+
+
+#################################################
+#                                               #
 #              Automated - General              #
 #                                               #
 #################################################

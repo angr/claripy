@@ -1,3 +1,33 @@
+#################################################
+#                                               #
+#      Include And Link External Libraries      #
+#                                               #
+#################################################
+
+
+# Include additional header files
+message("Including boost headers for target: ${SHARED_LIB_NAME}")
+target_include_directories(
+	"${SHARED_LIB_NAME}"
+	PRIVATE
+	${Boost_INCLUDE_DIRS}
+)
+
+# Link additional libraries
+# We do not want their functions exposed by our shared object so we designate them private
+message("Linking gmp to target: ${SHARED_LIB_NAME}")
+target_link_libraries("${SHARED_LIB_NAME}" PRIVATE
+	gmp
+)
+
+
+#################################################
+#                                               #
+#                 Autogen Code                  #
+#                                               #
+#################################################
+
+
 # Check if the required files exist
 set(AUTOGEN_HPP "${CMAKE_CURRENT_SOURCE_DIR}/autogen.hpp")
 set(SOURCES_TXT "${CMAKE_CURRENT_SOURCE_DIR}/sources.txt")

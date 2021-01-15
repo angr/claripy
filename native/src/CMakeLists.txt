@@ -1,11 +1,3 @@
-# Find required packages
-# find_package(Boost 1.7 REQUIRED COMPONENTS
-# )
-
-# Include additional header files
-# include_directories(${Boost_INCLUDE_DIRS})
-
-
 #################################################
 #                                               #
 #                Static Analysis                #
@@ -61,11 +53,6 @@ add_library("${SHARED_LIB_NAME}" SHARED
 # Add sub directories
 add_subdirectory(utils)
 add_subdirectory(expression)
-
-# Link additional libraries
-# We do not want their functions exposed by our shared object so we designate them private
-# target_link_libraries("${SHARED_LIB_NAME}" PRIVATE
-# )
 
 # Configure library compilation and linking
 if(CMAKE_BUILD_TYPE MATCHES Release)
