@@ -17,7 +17,7 @@ target_include_directories(
 # We do not want their functions exposed by our shared object so we designate them private
 message("Linking gmp to target: ${SHARED_LIB_NAME}")
 target_link_libraries("${SHARED_LIB_NAME}" PRIVATE
-	gmp
+	${GMP_LIBRARIES}
 )
 
 
