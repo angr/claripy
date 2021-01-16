@@ -2,6 +2,7 @@
 target_sources("${SHARED_LIB_NAME}" PRIVATE
 	symbolic.cpp
 	concrete.cpp
+	cusized.cpp
 	base.cpp
 )
 
