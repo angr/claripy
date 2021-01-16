@@ -6,6 +6,9 @@
 #define __EXPRESSION_RAW_OP_LITERAL_HPP__
 
 #include "base.hpp"
+#include <variant>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/gmp.hpp>
 
 #include "../type.hpp"
 
@@ -25,7 +28,6 @@ namespace Expression::Raw::Op {
 		 */
 		Literal(Constants::CCSC data);
 
-#if 0
 		/** Value type */
 		using ValueT = std::variant<
 			int_fast64_t,
@@ -35,7 +37,6 @@ namespace Expression::Raw::Op {
 
 		/** Representation */
 		const ValueT value;
-#endif
 
         /** Delete default constructor */
         Literal() = delete;
