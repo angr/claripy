@@ -8,13 +8,18 @@ The config file will contain a list of dicts, each containing three things:
 {
     'file' : <filename>, # Must be a file in io_dir
     'op' : <op name>,
-    'args' : <a list of unnamed argument types>
+    'ctor_args' : <a list of unnamed argument types given to the constructor>
+    'parents' : [] # A list of immediate superclasses, order should be the same as in the code
 }
+While it is not required, 'parents' will likely start with 'Op::Base'.
+
 Optionally, the json entry may contain any or all of the following:
 {
-    'soc' : <list> # Default to [ 'Symbolic', 'Concrete' ]
-    # Can contain only 'Symbolic', 'Concrete', or both
-    # Allows the user to declare a class only Symbolic, Concrete, or both
+    # Default to [ 'Symbolic', 'Concrete' ]
+    # Allows the user to declare a class only Symbolic, Concrete, or both, or none
+    # Can contain only 'Symbolic', 'Concrete', both, or none
+    # Warning, if none, no code is generated for this class, but super information is used for other classes!
+    'soc' : <list>
 }
 
 These entries will be used to autogenerate, in the autogen_dir,
@@ -27,6 +32,7 @@ Finally prints out a relative path to each new source to sources_out in io_dir
 '''
 
 from collections import defaultdict
+import itertools
 import argparse
 import json
 import sys
@@ -49,25 +55,43 @@ sources_out = os.path.join(io_dir, 'sources.txt')
 templates = {}
 ctor_args = {
     'Base' : [ 'const Hash::Hash', 'std::vector<std::shared_ptr<Annotation::Base>> &' ],
+    'CUSized' : [ 'Constants::UInt' ],
     'Symbolic' : [],
     'Concrete' : [],
-    'Op' : {
-        'Base' : []
-    },
-    'Type' : {
-        'Base' : [],
-        'Int' : [],
-        'Bool' : [],
-        'Bits' : [ 'const Constants::UInt' ],
-        'String' : [],
-        'FP' : [],
-        'VS' : [],
-        'BV' : []
-    }
+    # Types
+    'Type::Base' : [],
+    'Type::Int' : [],
+    'Type::Bool' : [],
+    'Type::Bits' : [],
+    'Type::String' : [],
+    'Type::FP' : [],
+    'Type::VS' : [],
+    'Type::BV' : [],
+    # Op
+    'Op::Base' : []
+}
+parents = {
+    # Only lists direct superclasses, list order should be the same as in the C++ code
+    'Base' : [],
+    'CUSized' : [],
+    'Symbolic' : [ 'Base' ],
+    'Concrete' : [ 'Base' ],
+    # Types
+    'Type::Base' : [ 'Base' ],
+    'Type::Bool' : [ 'Type::Base' ],
+    'Type::Int' :  [ 'Type::Base' ],
+    'Type::Bits' : [ 'Type::Base', 'CUSized' ],
+    'Type::String' : [ 'Type::Bits' ],
+    'Type::BV' : [ 'Type::Bits' ],
+    'Type::FP' : [ 'Type::Bits' ],
+    'Type::VS' : [ 'Type::Bits' ],
+    # Ops
+    'Op::Base' : [ 'Base' ]
 }
 # Below are shortcuts, these classifications are not defined just by these
 instantiable_types = [ 'Int', 'Bool', 'String', 'BV', 'FP', 'VS' ]
 abstract_types = [ 'Base', 'Bits' ]
+all_types = abstract_types + instantiable_types
 symbolic_concrete = [ 'Symbolic', 'Concrete' ]
 me = os.path.basename(sys.argv[0])
 
@@ -97,25 +121,31 @@ def from_template(name, dct):
         ret = template_replace(ret, i, k)
     return ret
 
-def determinte_ctor_args(sym, typ, op, op_args, *, hpp):
-    def helper(lst, x):
-        return [ (i, x) for i in lst ]
-    args = [
-        *helper(ctor_args['Base'], 'Raw::Base'),
-        *helper(ctor_args[sym], sym),
-        *helper(ctor_args['Type']['Base'], 'Type::Base'),
-    ]
-    if typ in ['String', 'FP', 'VS', 'BV']:
-        args += helper(ctor_args['Type']['Bits'], 'Type::Bits')
-    args += helper(ctor_args['Type'][typ], 'Type::' + typ)
-    args += helper(ctor_args['Op']['Base'], 'Op::Base')
-    args += helper(op_args, 'Op::' + op)
+def determinte_ctor_args_helper(me, pars, skip):
+    global parents
+    raw = []
+    who = []
+    for p in pars:
+        if p not in skip:
+            a, b = determinte_ctor_args_helper(p, parents[p], skip)
+            if p not in skip:
+                skip.add(p)
+                raw.extend(a)
+                who.extend(b)
+    if me not in skip:
+        my_args = ctor_args[me]
+        raw.extend(my_args)
+        qme = me if '::' in me else ('Raw::' + me)
+        who.extend(itertools.repeat(qme, len(my_args)))
+    return raw, who
+
+def determinte_ctor_args(sym, typ, op, *, hpp):
+    skip = sym + typ + op
+    raw, who = determinte_ctor_args_helper(me, [sym, 'Type::' + typ, 'Op::' + op], set([me]))
     if hpp:
-        return [ i[0] for i in args ]
-    ret = []
-    for n,i in enumerate(args):
-        ret.append(( i[0] + ' a' + str(n), i[1] ))
-    return ret
+        return raw
+    args = [ i + ' a' + str(n) for n,i in enumerate(raw) ]
+    return list(zip(args, who))
 
 def small_cpp_comment(what):
     return '\n// ' + what + '\n'
@@ -146,9 +176,9 @@ def asto(s, t, o, s2):
         'op' : o
     })
 
-def isto(s, t, o, s2, op_args):
+def isto(s, t, o, s2):
     # Derive ctor args from arguments
-    args = '\n\t\t' + ',\n\t\t'.join(determinte_ctor_args(s, t, o, op_args, hpp=True))
+    args = '\n\t\t' + ',\n\t\t'.join(determinte_ctor_args(s, t, o, hpp=True))
     # Return the constructed code
     return from_template('instantiable_sym_type_op.hpp', {
         'super2' : s2,
@@ -158,21 +188,21 @@ def isto(s, t, o, s2, op_args):
         'ctorargs' : args
     })
 
-def isto_cpp(sym, typ, op, op_args):
+def isto_cpp(sym, typ, op):
     # Derive ctor args from arguments
-    args = determinte_ctor_args(sym, typ, op, op_args, hpp=False)
+    args = determinte_ctor_args(sym, typ, op, hpp=False)
     # Constructor decl
     name = sym + typ + op
     declargs = [ i[0] for i in args ]
     decl = name + '::' + name + '(\n\t\t' + ',\n\t\t'.join(declargs) + ')'
-    # Supers
+    # Parents
     required_args = defaultdict(lambda : [])
     for a, who in args:
         required_args[who].append(a.split(' ')[-1])
     raw_base_args = args[:len(ctor_args['Base'])]
-    supers = [ who + '(' + ', '.join(a) + ')' for who, a in required_args.items() ]
+    parents = [ who + '(' + ', '.join(a) + ')' for who, a in required_args.items() ]
     # Return ctor code
-    ctor = decl + '\n\t:\n\t' + ',\n\t'.join(supers) + '\n'
+    ctor = decl + '\n\t:\n\t' + ',\n\t'.join(parents) + '\n'
     return from_template('instantiable_sym_type_op.cpp', {
         'ctor' : ctor,
         'sym' : sym,
@@ -184,7 +214,7 @@ def isto_cpp(sym, typ, op, op_args):
 # Generation functions
 
 
-def generate_header(header_files, *, file, op, args, soc):
+def generate_header(header_files, *, file, op, soc):
     output_fname = os.path.join(autogen_dir, file)
     header_files.append(output_fname)
     # Create TypeOps
@@ -213,18 +243,18 @@ def generate_header(header_files, *, file, op, args, soc):
         instantiable_sto = '\n\n'.join([
             big_cpp_comment('Instantiable ' + sym + ' Type Ops'),
             small_cpp_comment('Base Subclasses'),
-            isto(sym, 'Int', op, sym + 'Base' + op, args),
-            isto(sym, 'Bool', op, sym + 'Base' + op, args),
+            isto(sym, 'Int', op, sym + 'Base' + op),
+            isto(sym, 'Bool', op, sym + 'Base' + op),
             small_cpp_comment('Bits Subclasses'),
-            isto(sym, 'String', op, sym + 'Bits' + op, args),
-            isto(sym, 'FP', op, sym + 'Bits' + op, args),
-            isto(sym, 'VS', op, sym + 'Bits' + op, args),
-            isto(sym, 'BV', op, sym + 'Bits' + op, args)
+            isto(sym, 'String', op, sym + 'Bits' + op),
+            isto(sym, 'FP', op, sym + 'Bits' + op),
+            isto(sym, 'VS', op, sym + 'Bits' + op),
+            isto(sym, 'BV', op, sym + 'Bits' + op)
         ])
         body = '\n\n'.join([body, abstract_sto, instantiable_sto])
     # Aliases
     aliases = [ big_cpp_comment('Create aliases for each raw type') + '\n' ]
-    for typ in ctor_args['Type'].keys():
+    for typ in all_types:
         aliases.append(from_template('alias.hpp', {'name' : typ + op }))
         for sym in soc:
             aliases.append(from_template('alias.hpp', {'name' : sym + typ + op }))
@@ -240,13 +270,13 @@ def generate_header(header_files, *, file, op, args, soc):
     # Write out
     write_file(output_fname, output)
 
-def generate_source(header, source_files, *, file, op, args, soc):
+def generate_source(header, source_files, *, file, op, soc):
     output_fname = os.path.join(autogen_dir, file[:-4] + '.cpp')
     source_files.append(output_fname)
     # Create TypeOps
     typeops = [
         from_template('type_op.cpp', { 'type' : typ, 'op' : op }) \
-        for typ in ctor_args['Type'].keys()
+        for typ in all_types
     ]
     body = big_cpp_comment('TypeOp') + '\n\n' + '\n\n'.join(typeops)
     # For both symbolic and concrete as needed
@@ -260,7 +290,7 @@ def generate_source(header, source_files, *, file, op, args, soc):
         # Instantiable SymTypeOps
         instantiable_sto = '\n\n'.join([
             big_cpp_comment('Instantiable Sym Type Ops'),
-            *[ isto_cpp(sym, typ, op, args) for typ in instantiable_types ]
+            *[ isto_cpp(sym, typ, op) for typ in instantiable_types ]
         ])
         body = '\n\n'.join([body, abstract_sto, instantiable_sto])
     # Prefix and suffix
@@ -290,8 +320,10 @@ def verify_config(config):
     # Entry verification
     for entry in config:
         assert type(entry) == dict, 'Config entry of improper type'
-        assert set(['file', 'op', 'args']).issubset(entry.keys()), 'Config entry requires file, op, and args'
-        assert set(entry.keys()).issubset(['file', 'op', 'args', 'soc']), 'Config entry has unknown keys'
+        assert set(['file', 'op', 'ctor_args']).issubset(entry.keys()), \
+            'Config entry requires file, op, and ctor_args'
+        assert set(entry.keys()).issubset(['file', 'op', 'ctor_args', 'soc', 'parents']), \
+            'Config entry has unknown keys'
         # File verification
         assert type(entry['file']) == str, 'Config entry["file"] should be of type str'
         assert entry['file'].endswith('.hpp'), 'Config entry["file"] must be an hpp file'
@@ -302,9 +334,14 @@ def verify_config(config):
         # Op verification
         assert type(entry['op']) == str, 'Config entry["op"] should be of type str'
         # Args verification
-        assert type(entry['args']) == list, 'Config entry["file"] should be of type list'
-        for i in entry['args']:
-            assert type(i) == str, 'Config entry["file"] should be of type str'
+        assert type(entry['ctor_args']) == list, 'Config entry["ctor_args"] should be of type list'
+        for i in entry['ctor_args']:
+            assert type(i) == str, 'Config entry["ctor_args"] item should be of type str'
+        # Parents verification
+        assert type(entry['parents']) == list, \
+            'Config entry["parents"] should be of type list'
+        for i in entry['parents']:
+            assert type(i) == str, 'Config entry["parents"] item should be of type str'
         # Allow concrete or symbolic
         if 'soc' in entry:
             assert type(entry['soc']) == list, 'Config entry["soc"] must be a list'
@@ -312,6 +349,35 @@ def verify_config(config):
             con = set(['Concrete'])
             assert set(entry['soc']) in [ sym, con, sym | con ], \
                 'Config entry["soc"] may only contain "Symbolic", "Concrete", or both.'
+
+def verify_parents(queue=None):
+    # This does not check for cycles !
+    global parents
+    if queue is None:
+        queue = list(parents.keys())
+    while len(queue) > 0:
+        key = queue.pop()
+        assert key in parents, 'Immediate superclass ' + key + ' is unknown'
+        value = parents[key]
+        if len(value) > 0:
+            queue.extend(value)
+
+def import_parents(config):
+    global parents
+    for entry in config:
+        name = entry['op']
+        assert name not in parents, name + ' exists in config more than once, or is reserved by autogen.py'
+        parents['Op::' + name] = entry['parents']
+        del entry['parents']
+    verify_parents()
+
+def import_ctor_args(config):
+    global ctor_args
+    for entry in config:
+        name = entry['op']
+        assert name not in ctor_args, name + ' exists in config more than once, or is reserved by autogen.py'
+        ctor_args['Op::' + name] = entry['ctor_args']
+        del entry['ctor_args']
 
 def load_templates():
     global templates
@@ -347,12 +413,14 @@ def main():
     assert_exists(autogen_dir, 'autogen_dir')
     assert_exists(config_f, 'autogen.json config file')
     assert_exists(templates_dir, 'templates_dir')
-    # Verify config file
+    # Load and verify config file
     print('-- Loading files')
     with open(config_f) as f:
         config = f.read()
     config = json.loads(config)
     verify_config(config)
+    import_parents(config)
+    import_ctor_args(config)
     # Add extra config
     for entry in config:
         if 'soc' not in entry:
