@@ -13,5 +13,3 @@ using namespace Type;
 
 
 Bits::~Bits() {}
-
-Bits::Bits(const Constants::UInt l) : length(l) {}

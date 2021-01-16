@@ -6,23 +6,17 @@
 #define __EXPRESSION_RAW_TYPE_BITS_HPP__
 
 #include "base.hpp"
+#include "../cusized.hpp"
 
 
 namespace Expression::Raw::Type {
 
     /** This class represents an Expression of bits */
-    class Bits : virtual public Base {
+    class Bits : virtual public Base, virtual public CUSized {
         EXPRESSION_RAW_ABSTRACT_INIT(Bits)
-      public:
-        /** The number of bits being represented */
-        const Constants::Int length;
-
-      protected:
-        /* Delete default constructor */
-        Bits() = delete;
-
+	protected:
         /** A protected constructor to disallow public creation */
-        Bits(const Constants::UInt length);
+        Bits() = default;
     };
 
 } // namespace Expression::Raw::Type

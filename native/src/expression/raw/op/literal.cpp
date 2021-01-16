@@ -9,7 +9,7 @@ using namespace Op;
 
 Literal::~Literal() {}
 
-Literal::Literal(const Constants::Int v) : value(v) {}
+Literal::Literal(Constants::CCSC) {}
 
 Constants::CCS Literal::op() const {
     return "Literal";
