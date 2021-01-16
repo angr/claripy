@@ -14,7 +14,7 @@ using Val = Literal::ValueT;
  */
 static inline Val create_value(Constants::CCSC data, const CUSized::SizeT size) {
 	if (size <= 64) {
-		return Val( *((uint_fast64_t*) data) );
+		return Val( *((int_fast64_t*) data) );
 	}
 	else if (size <= 128) {
 		return Val( MP::int128_t(data) );
