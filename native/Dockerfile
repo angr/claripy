@@ -7,6 +7,9 @@ FROM ubuntu:20.04 AS base
 LABEL claricpp=base
 SHELL [ "/bin/bash", "-ecux" ]
 
+# Required build args
+ARG CXX_COMPILER
+
 # Prep apt
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
@@ -24,9 +27,9 @@ RUN apt-get update
 
 # Build
 RUN apt-get install -yq \
+	"${CXX_COMPILER}" \
 	cmake \
-	make \
-	g++
+	make
 # Boost multiprecision with gmp backend for mpz frontend
 RUN apt-get install -yq \
 	libboost-dev \
@@ -97,6 +100,9 @@ RUN if [[ "${FORMAT}" == True ]]; then \
 FROM config as cmake
 LABEL claricpp=cmake
 
+# Required build args
+ARG CXX_COMPILER
+
 # Optional build args
 ARG CMAKE_BUILD_TYPE="Debug"
 
@@ -105,7 +111,10 @@ RUN mkdir "${BUILD}"
 WORKDIR "${BUILD}"
 
 # CMake
-RUN cmake -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" "${NATIVE}"
+RUN cmake \
+	-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
+	-DCMAKE_CXX_COMPILER="${CXX_COMPILER}" \
+	"${NATIVE}"
 
 
 ##################################################

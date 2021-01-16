@@ -6,6 +6,7 @@ set -o pipefail
 DOCKER_TARGET="${DOCKER_TARGET:-test}"
 
 # Optional env arguments passed as --build-args to docker
+CXX_COMPILER="${CXX_COMPILER:-g++}"
 FORMAT="${FORMAT:-False}"
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
 VERBOSE_TEST="${VERBOSE_TEST:-False}"
@@ -19,6 +20,8 @@ export DOCKER_BUILDKIT=1
 
 # Build claricpp:<VERSION>
 docker build --target "${DOCKER_TARGET}" -t claricpp:"${VERSION}" \
+	`# Base ` \
+	--build-arg CXX_COMPILER="${CXX_COMPILER}" \
 	`# Config ` \
 	--build-arg VERSION="${VERSION}" \
 	--build-arg FORMAT="${FORMAT}" \
