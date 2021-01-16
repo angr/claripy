@@ -22,18 +22,18 @@ namespace Expression::Raw::Op {
         /** Return the op */
         Constants::CCS op() const override final;
 
-      protected:
-		/** Constructor
-		 *  @todo figure out how this will work
-		 */
-		Literal(Constants::CCSC data);
-
 		/** Value type */
 		using ValueT = std::variant<
 			int_fast64_t,
 			boost::multiprecision::int128_t,
 			boost::multiprecision::mpz_int
 		>;
+
+      protected:
+		/** Constructor
+		 *  @todo figure out how this will work
+		 */
+		Literal(Constants::CCSC data);
 
 		/** Representation */
 		const ValueT value;
