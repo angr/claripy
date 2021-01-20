@@ -6,8 +6,8 @@
 
 
 if(CPP_CHECK)
-	set(CMAKE_C_CPPCHECK "cppcheck")
-	set(CMAKE_CXX_CPPCHECK "cppcheck")
+	set(CMAKE_C_CPPCHECK "cppcheck" "--error-exitcode=1" "--inline-suppr")
+	set(CMAKE_CXX_CPPCHECK "cppcheck" "--error-exitcode=1" "--inline-suppr")
 endif()
 if(IWYU)
 	if(APPLE)
