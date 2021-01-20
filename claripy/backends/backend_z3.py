@@ -782,8 +782,7 @@ class BackendZ3(Backend):
 
         try:
 
-            l.debug("Doing a check!")
-            #print "CHECKING"
+            l.debug("Doing a check! (satisfiable)")
             if solver.check() != z3.sat:
                 return False
 
@@ -816,7 +815,7 @@ class BackendZ3(Backend):
 
         for i in range(n):
             solve_count += 1
-            l.debug("Doing a check!")
+            l.debug("Doing a check! (batch_eval)")
             if solver.check() != z3.sat:
                 break
             model = solver.model()
@@ -875,7 +874,7 @@ class BackendZ3(Backend):
             numpop += 1
 
             solve_count += 1
-            l.debug("Doing a check!")
+            l.debug("Doing a check! (min)")
             if solver.check() == z3.sat:
                 l.debug("... still sat")
                 if model_callback is not None:
@@ -898,7 +897,7 @@ class BackendZ3(Backend):
         else:
             solver.push()
             solver.add(expr == lo)
-            l.debug("Doing a check!")
+            l.debug("Doing a check! (min)")
             if solver.check() == z3.sat:
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
@@ -940,7 +939,7 @@ class BackendZ3(Backend):
             numpop += 1
 
             solve_count += 1
-            l.debug("Doing a check!")
+            l.debug("Doing a check! (max)")
             if solver.check() == z3.sat:
                 l.debug("... still sat")
                 lo = middle
@@ -962,7 +961,7 @@ class BackendZ3(Backend):
         else:
             solver.push()
             solver.add(expr == hi)
-            l.debug("Doing a check!")
+            l.debug("Doing a check! (max)")
             if solver.check() == z3.sat:
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
