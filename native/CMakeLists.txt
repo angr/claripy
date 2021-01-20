@@ -59,10 +59,10 @@ option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other t
 # Memcheck cannot run with security enabled
 option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
 option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
-# Note that ENABLE_SECURITY overrides the flags of every other option
-option( ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF )
 # If enabled: log calls to log levels lower than defined will have no performance penalty
 option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
+# Note that ENABLE_SECURITY overrides the flags of every other option
+option( ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
 # Note: Lower log levels implier higher levels (i.e. verbose implies critical)
@@ -95,9 +95,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Required complication flags
-set(REQUIRED_FLAGS "-Wall -Wextra -Weffc++ -Werror" )
-set(CMAKE_C_FLAGS   "${REQUIRED_FLAGS}")
-set(CMAKE_CXX_FLAGS "${REQUIRED_FLAGS}")
+add_compile_options(
+	"-Wall"
+	"-Wextra"
+	"-Weffc++"
+	"-Werror"
+)
 
 
 #################################################
@@ -133,15 +136,14 @@ file(READ "../VERSION" VERSION)
 string(STRIP "${VERSION}" VERSION)
 
 # Remap file prefixes to make source location irrelevant to build constants like __FILE__
-set(REMAP_FLAGS "-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${REMAP_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REMAP_FLAGS}")
+add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
 
 # Optimize for native code
 if(OPTIMIZE_FOR_NATIVE)
-	set(NATIVE_FLAGS "-march=native -mtune=native")
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${NATIVE_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${NATIVE_FLAGS}")
+	add_compile_options(
+		"-march=native"
+		"-mtune=native"
+	)
 endif()
 
 # Fix compile time logging
@@ -229,8 +231,7 @@ if(ENABLE_SECURITY)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${SECURITY_FLAGS}")
 		set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${SECURITY_FLAGS}")
 	else()
-		set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${SECURITY_FLAGS}")
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SECURITY_FLAGS}")
+		add_compile_options(${SECURITY_FLAGS})
 	endif()
 
 endif()
