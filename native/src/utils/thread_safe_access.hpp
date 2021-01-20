@@ -46,7 +46,8 @@ namespace Utils {
         /** shared_ptr constructor
          *  This is by value to allow temporary shared pointers to be used
          */
-        ThreadSafeAccess(Ptr ptr) : m(), obj(ptr) {}
+		// cppcheck-suppress nullPointer
+        ThreadSafeAccess(const Ptr ptr) : m(), obj(ptr) {}
 
         /** Disable copy constructor */
         ThreadSafeAccess(const ThreadSafeAccess &) = delete;
