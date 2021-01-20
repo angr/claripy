@@ -32,6 +32,9 @@ namespace Expression::Private {
         // Enable custom logging
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
 
+		/** Default constructor */
+		Cache() : lock(), cache() {}
+
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<Cached>>;
 
@@ -138,18 +141,18 @@ namespace Expression::Private {
         /*                Representation                */
         /************************************************/
 
+        /** A mutex used to protect the internal representation */
+        std::shared_mutex lock;
+
         /** The cache representation */
         CacheMap cache;
-
-        /** The default value for gc_resize */
-        static const constexpr typename CacheMap::size_type gc_resize_default =
-            Utils::pow(2, 10) - 1;
 
         /** The size the cache should have std::weak_ptr's gc'd when it is larger than */
         typename CacheMap::size_type gc_resize = gc_resize_default;
 
-        /** A mutex used to protect the internal representation */
-        std::shared_mutex lock;
+        /** The default value for gc_resize */
+        static const constexpr typename CacheMap::size_type gc_resize_default =
+            Utils::pow(2, 10) - 1;
     };
 
 } // namespace Expression::Private

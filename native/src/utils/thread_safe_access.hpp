@@ -33,7 +33,7 @@ namespace Utils {
         /** Clear the internals */
         void clear() {
             std::unique_lock<decltype(this->m)>(this->m);
-            this->obj.reset(nullptr);
+            this->obj.reset();
         }
 
         /************************************************/
@@ -41,12 +41,12 @@ namespace Utils {
         /************************************************/
 
         /** Construct and point to nothing by default */
-        ThreadSafeAccess() : obj(nullptr) {}
+        ThreadSafeAccess()  = default;
 
         /** shared_ptr constructor
          *  This is by value to allow temporary shared pointers to be used
          */
-        ThreadSafeAccess(Ptr ptr) : obj(ptr) {}
+        ThreadSafeAccess(Ptr ptr) : m(), obj(ptr) {}
 
         /** Disable copy constructor */
         ThreadSafeAccess(const ThreadSafeAccess &) = delete;
