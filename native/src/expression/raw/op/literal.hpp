@@ -6,11 +6,13 @@
 #define __EXPRESSION_RAW_OP_LITERAL_HPP__
 
 #include "base.hpp"
-#include <variant>
-#include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/gmp.hpp>
 
 #include "../type.hpp"
+
+#include <variant>
+
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/gmp.hpp>
 
 
 namespace Expression::Raw::Op {
@@ -22,21 +24,18 @@ namespace Expression::Raw::Op {
         /** Return the op */
         Constants::CCS op() const override final;
 
-		/** Value type */
-		using ValueT = std::variant<
-			int_fast64_t,
-			boost::multiprecision::int128_t,
-			boost::multiprecision::mpz_int
-		>;
+        /** Value type */
+        using ValueT = std::variant<int_fast64_t, boost::multiprecision::int128_t,
+                                    boost::multiprecision::mpz_int>;
 
       protected:
-		/** Constructor
-		 *  @todo figure out how this will work
-		 */
-		Literal(Constants::CCSC data);
+        /** Constructor
+         *  @todo figure out how this will work
+         */
+        Literal(Constants::CCSC data);
 
-		/** Representation */
-		const ValueT value;
+        /** Representation */
+        const ValueT value;
 
         /** Delete default constructor */
         Literal() = delete;

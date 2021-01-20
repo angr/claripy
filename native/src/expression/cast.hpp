@@ -59,8 +59,8 @@ namespace Expression {
             f != nullptr, __func__, " called with incorrect usage: f == nullptr",
             "\tFile: " __FILE__ "\n\tLine: " MACRO_TO_STRING(__LINE__));
         To ret = down_cast<To>(f);
-        Utils::affirm<Utils::Error::Unexpected::BadCast>(
-            ret, WHOAMI " -- dynamic_pointer_cast failed.");
+        Utils::affirm<Utils::Error::Unexpected::BadCast>(ret, WHOAMI
+                                                         " -- dynamic_pointer_cast failed.");
         return ret;
     }
 

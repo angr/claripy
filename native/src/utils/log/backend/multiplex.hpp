@@ -7,6 +7,7 @@
 #define __UTILS_LOG_BACKEND_MULTIPLEX_HPP__
 
 #include "abstract_base.hpp"
+
 #include "../../thread_safe_access.hpp"
 
 #include <memory>
@@ -25,11 +26,11 @@ namespace Utils::Log::Backend {
         /** Log the given message, level, to the correct log given by log_id with each backend */
         void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg);
 
-		/** Backend container type */
-		using BackendContainer = std::vector<std::shared_ptr<AbstractBase>>;
+        /** Backend container type */
+        using BackendContainer = std::vector<std::shared_ptr<AbstractBase>>;
 
-		/** Store each backend */
-		ThreadSafeAccess<const BackendContainer> backends;
+        /** Store each backend */
+        ThreadSafeAccess<const BackendContainer> backends;
     };
 
 } // namespace Utils::Log::Backend

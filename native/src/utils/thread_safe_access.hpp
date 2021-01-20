@@ -41,12 +41,12 @@ namespace Utils {
         /************************************************/
 
         /** Construct and point to nothing by default */
-        ThreadSafeAccess()  = default;
+        ThreadSafeAccess() = default;
 
         /** shared_ptr constructor
          *  This is by value to allow temporary shared pointers to be used
          */
-		// cppcheck-suppress nullPointer
+        // cppcheck-suppress nullPointer
         ThreadSafeAccess(const Ptr ptr) : m(), obj(ptr) {}
 
         /** Disable copy constructor */

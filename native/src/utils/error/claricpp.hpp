@@ -16,9 +16,9 @@
 
 namespace Utils::Error {
 
-	/** The base claricpp exception class
+    /** The base claricpp exception class
      *  Any exception thrown intentioanlly must subclass this
-	 */
+     */
     class Claricpp : public std::exception {
       public:
         /** Public constructor
