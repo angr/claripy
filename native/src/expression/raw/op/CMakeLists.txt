@@ -7,18 +7,12 @@
 
 # Include additional header files
 message("Including boost headers for target: ${SHARED_LIB_NAME}")
-target_include_directories(
-	"${SHARED_LIB_NAME}"
-	PRIVATE
-	${Boost_INCLUDE_DIRS}
-)
+target_include_directories("${SHARED_LIB_NAME}" PRIVATE ${Boost_INCLUDE_DIRS})
 
 # Link additional libraries
 # We do not want their functions exposed by our shared object so we designate them private
 message("Linking gmp to target: ${SHARED_LIB_NAME}")
-target_link_libraries("${SHARED_LIB_NAME}" PRIVATE
-	${GMP_LIBRARIES}
-)
+target_link_libraries("${SHARED_LIB_NAME}" PRIVATE ${GMP_LIBRARIES})
 
 
 #################################################

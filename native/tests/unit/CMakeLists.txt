@@ -1,4 +1,4 @@
-# Define testlib
+# Define testlib constants
 set(TESTLIB_SRC "${CMAKE_CURRENT_SOURCE_DIR}/testlib")
 set(TESTLIB "testlib")
 
@@ -9,6 +9,9 @@ target_link_libraries("${TESTLIB}" PRIVATE "${SHARED_LIB_NAME}")
 target_include_directories("${TESTLIB}" PRIVATE "${CLARICPP_SRC}")
 add_subdirectory("${TESTLIB_SRC}")
 
+# Include additional header files
+message("Including boost headers for target: ${SHARED_LIB_NAME}")
+target_include_directories("${TESTLIB}" PRIVATE ${Boost_INCLUDE_DIRS})
 
 # Define constants used by simple_test
 set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
