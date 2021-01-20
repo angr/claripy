@@ -26,11 +26,8 @@ if(LWYU)
 	endif()
 endif()
 if(CLANG_TIDY)
-	set(CMAKE_C_CLANG_TIDY "clang-tidy-11"
-		            "-checks=-*,readability-*,boost-*,clang-analyzer-*,-readability-named-parameter,-readability-redundant-member-init,-readability-else-after-return"
-		"-warnings-as-errors=-*,readability-*,boost-*,clang-analyzer-*"
-	)
-	set(CMAKE_CXX_CLANG_TIDY "${CMAKE_C_CLANG_TIDY}")
+	set(CMAKE_C_CLANG_TIDY "clang-tidy-11")
+	set(CMAKE_CXX_CLANG_TIDY "clang-tidy-11")
 endif()
 
 
