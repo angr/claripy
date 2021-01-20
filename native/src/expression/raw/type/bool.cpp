@@ -12,12 +12,12 @@ using namespace Type;
 Bool::~Bool() {}
 
 /** @todo this is a dummy */
-bool Bool::is_true() const {
+bool Bool::is_true() const { // NOLINT
     return true;
 }
 
 /** @todo this is a dummy */
-bool Bool::is_false() const {
+bool Bool::is_false() const { // NOLINT
     return true;
 }
 
