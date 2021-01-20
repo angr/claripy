@@ -14,8 +14,8 @@ using namespace UnitTest::TestLib;
 
 /** Hashing must take into account type differences */
 int identical_bool_int() {
-	auto a = literal_factory<ConcreteIntLiteral>(0_i);
-	auto b = literal_factory<ConcreteBoolLiteral>(0_i);
+    auto a = literal_factory<ConcreteIntLiteral>(0_i);
+    auto b = literal_factory<ConcreteBoolLiteral>(0_i);
     Base a2 = up_cast<Base>(a);
     Base b2 = up_cast<Base>(b);
     UNITTEST_ASSERT(a2 != b2);

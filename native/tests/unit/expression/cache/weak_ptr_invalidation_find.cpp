@@ -21,8 +21,8 @@ namespace UnitTest {
         }
         /** Passthrough unsafe_find */
         Base unsafe_find(const Hash::Hash &h) {
-			return Expression::Private::factory_cache.unsafe_find(h);
-		}
+            return Expression::Private::factory_cache.unsafe_find(h);
+        }
     };
 } // namespace UnitTest
 
