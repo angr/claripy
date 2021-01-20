@@ -6,24 +6,13 @@
 #define __EXPRESSION_RAW_TYPE_BASE_HPP__
 
 #include "../../../macros.hpp"
-#include "../../simplified_level.hpp"
 #include "../base.hpp"
-
-#include <list>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 
 namespace Expression {
 
     // Forward declarations
     class CacheKey;
-    template <typename T, typename... Args> T factory(Args &&...args);
-    namespace Private {
-        template <typename A, typename B> class Cache;
-    }
 
     // These types should be wrapped by a shared pointer when used
     // A factory is used to construct them and handle hash caching

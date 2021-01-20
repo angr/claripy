@@ -7,12 +7,13 @@
 #ifndef __UTILS_LOG_BACKEND_ACCESS_HPP__
 #define __UTILS_LOG_BACKEND_ACCESS_HPP__
 
-#include "abstract_base.hpp"
-
 #include <memory>
 
 
 namespace Utils::Log::Backend {
+
+    // Forward declarations
+    struct AbstractBase;
 
     namespace Private {
 

@@ -9,8 +9,6 @@
 
 #include "../../thread_safe_access.hpp"
 
-#include <memory>
-#include <shared_mutex>
 
 // For brevity
 using namespace Utils;

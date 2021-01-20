@@ -12,5 +12,5 @@ using namespace UnitTest;
 
 ConcreteIntLiteral TestLib::literal_int(const Constants::Int i) {
     std::vector<std::shared_ptr<Annotation::Base>> a;
-    return factory<ConcreteIntLiteral>(a, i);
+    return factory<ConcreteIntLiteral>(64, a, i);
 }

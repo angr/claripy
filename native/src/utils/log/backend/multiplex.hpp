@@ -11,7 +11,6 @@
 #include "../../thread_safe_access.hpp"
 
 #include <memory>
-#include <type_traits>
 #include <vector>
 
 

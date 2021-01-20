@@ -17,6 +17,7 @@
 #include "__OPINCLUDE"
 
 #include "../../../../macros.hpp"
+#include "../../../hash.hpp"
 #include "../../concrete.hpp"
 #include "../../symbolic.hpp"
 #include "../../type.hpp"
@@ -25,6 +26,12 @@
 
 
 namespace Expression {
+
+    // Forward declarations
+    namespace Private {
+        template <typename, typename> class Cache;
+    }
+
     namespace Raw::Op {
 
         /** Static verification of op */

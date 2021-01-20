@@ -4,9 +4,7 @@
  */
 #include "level_timestamp_message.hpp"
 
-#include "../../affirm.hpp"
 #include "../../ansi_color_codes.hpp"
-#include "../../error.hpp"
 
 #include <ctime>
 #include <iomanip>
@@ -17,16 +15,17 @@
 using namespace Utils;
 using namespace Log;
 using namespace Style;
-using namespace Error::Unexpected;
 using Lvl = Level::Level;
 
 
 // Return "<level>: <timestamp>: <raw>"
 std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
                                        const std::ostringstream &raw) {
+
     // Get time
     const auto t = std::time(nullptr);
     const auto tm = *std::localtime(&t);
+
     // Color label
     const char *color;
     switch (lvl) {

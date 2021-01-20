@@ -4,8 +4,6 @@
  */
 #include "claricpp.hpp"
 
-#include <cstring>
-
 
 // For clarity
 using namespace Utils::Error;

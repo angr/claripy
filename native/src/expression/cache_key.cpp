@@ -4,7 +4,6 @@
 #include "raw/type/base.hpp"
 
 #include <sstream>
-#include <string>
 
 
 // For clarity

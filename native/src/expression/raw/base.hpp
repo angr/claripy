@@ -7,13 +7,16 @@
 
 #include "macros.hpp"
 
-#include "../../annotation.hpp"
 #include "../hash.hpp"
-#include "../private/factory_cache.hpp"
 
 #include <memory>
 #include <vector>
 
+
+// Forward declarations
+namespace Annotation {
+    struct Base;
+}
 
 namespace Expression {
 

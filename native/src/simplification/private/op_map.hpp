@@ -6,7 +6,7 @@
 #define __SIMPLIFICATION_PRIVATE_OPMAP_HPP__
 
 #include "../../op.hpp"
-#include "../simplifiers.hpp"
+#include "../constants.hpp"
 
 #include <map>
 

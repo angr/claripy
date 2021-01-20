@@ -1,6 +1,8 @@
 /** @file */
 #include "op_map.hpp"
 
+#include "../simplifiers.hpp"
+
 
 // For clarity
 using OP = Op::Operation;

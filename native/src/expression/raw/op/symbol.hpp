@@ -7,8 +7,6 @@
 
 #include "base.hpp"
 
-#include "../type.hpp"
-
 
 namespace Expression::Raw::Op {
 

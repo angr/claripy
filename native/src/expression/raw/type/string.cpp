@@ -1,8 +1,6 @@
 /** @file */
 #include "string.hpp"
 
-#include "../../../utils.hpp"
-
 
 // For clarity
 using namespace Expression::Raw;

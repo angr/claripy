@@ -3,7 +3,6 @@
 
 #include "../../annotation.hpp"
 
-#include <memory>
 #include <sstream>
 
 

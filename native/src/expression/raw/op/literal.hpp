@@ -7,7 +7,7 @@
 
 #include "base.hpp"
 
-#include "../type.hpp"
+#include "../cusized.hpp"
 
 #include <variant>
 
