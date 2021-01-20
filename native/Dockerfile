@@ -7,8 +7,12 @@ FROM ubuntu:20.04 AS base
 LABEL claricpp=base
 SHELL [ "/bin/bash", "-ecux" ]
 
-# Required build args
-ARG CXX_COMPILER
+# Optional build args
+ARG CXX_COMPILER=g++
+RUN test -n "${CXX_COMPILER}"
+
+# Move args into env
+ENV CXX_COMPILER="${CXX_COMPILER}"
 
 # Prep apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -64,6 +68,7 @@ LABEL claricpp=config
 
 # Required build args
 ARG VERSION=""
+RUN test -n "${VERSION}"
 
 # Optional build args
 ARG FORMAT="False"
@@ -73,12 +78,6 @@ ENV CLARIPY="/claripy/"
 ENV NATIVE="${CLARIPY}/native/"
 ENV SRC="${NATIVE}/src/"
 ENV BUILD="/build/"
-
-# Require Version argument
-RUN if [[ -z "${VERSION}" ]]; then \
-		echo "Error: VERSION is a required build argument!" \
-		exit 1; \
-	fi
 
 # Copy in source files
 COPY . "${NATIVE}"
@@ -99,9 +98,6 @@ RUN if [[ "${FORMAT}" == True ]]; then \
 
 FROM config as cmake
 LABEL claricpp=cmake
-
-# Required build args
-ARG CXX_COMPILER
 
 # Optional build args
 ARG CMAKE_BUILD_TYPE="Debug"
@@ -125,8 +121,15 @@ RUN cmake \
 FROM cmake as build
 LABEL claricpp=build
 
+# Optional build arg
+ARG NUM_CORES=1
+RUN test -n "${NUM_CORES}"
+
+# Move build args into env
+ENV NUM_CORES="${NUM_CORES}"
+
 # Make
-RUN make -j "$(nproc)" claricpp
+RUN make -j "${NUM_CORES}" claricpp
 
 
 ##################################################
@@ -138,7 +141,7 @@ FROM build as test_build
 LABEL claricpp=test_build
 
 # Build the test cases
-RUN make -j "$(nproc)" all
+RUN make -j "${NUM_CORES}" all
 
 
 ##################################################
@@ -154,9 +157,9 @@ ARG VERBOSE_TEST="False"
 
 # Test if make targets request it
 RUN if [[ "${VERBOSE_TEST}" == True ]]; then \
-		ctest --verbose -j "$(nproc)" . ; \
+		ctest --verbose -j "${NUM_CORES}" . ; \
 	else \
-		ctest -j "$(nproc)" . ; \
+		ctest -j "${NUM_CORES}" . ; \
 	fi
 
 
