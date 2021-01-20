@@ -94,7 +94,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Required complication flags
-set(REQUIRED_FLAGS "-Wall -Wextra -Werror" )
+set(REQUIRED_FLAGS "-Wall -Wextra -Weffc++ -Werror" )
 set(CMAKE_C_FLAGS   "${REQUIRED_FLAGS}")
 set(CMAKE_CXX_FLAGS "${REQUIRED_FLAGS}")
 
