@@ -33,6 +33,7 @@ option( CLANG_TIDY "Enable clang-tidy" ON )
 
 # Default build type
 # Default to debug mode
+# Use cache to override defaults
 # Can override this by running cmake with "-DCMAKE_BUILD_TYPE=Release"
 set( CMAKE_BUILD_TYPE "Debug" CACHE STRING "Cmake build type" )
 
