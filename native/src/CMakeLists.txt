@@ -21,13 +21,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	)
 endif()
 
-# Configure library compilation and linking
-if(CMAKE_BUILD_TYPE MATCHES Release)
-	set_property(TARGET "${SHARED_LIB_NAME}"
-		PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
-	)
-endif()
-
 # Add sub directories
 add_subdirectory(utils)
 add_subdirectory(expression)

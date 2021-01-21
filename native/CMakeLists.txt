@@ -29,7 +29,7 @@ set( DOC_MAKE_TARGET docs )
 option( IWYU "Enable iwyu" OFF )
 option( LWYU "Enable lwyu" ON )
 option( CPP_CHECK "Enable cppcheck" ON )
-option( CLANG_TIDY "Enable clang-tidy" ON )
+option( CLANG_TIDY "Enable clang-tidy" ON ) # TODO
 
 # Default build type
 # Default to debug mode
@@ -57,12 +57,13 @@ option( CMAKE_VERBOSE_MAKEFILE "Enable make VERBOSE=1 by default" OFF )
 option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
 # The memcheck and security options are mutually exclusive
 # Memcheck cannot run with security enabled
-option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
+option( ENABLE_MEMCHECK "Enable memcheck on test target" OFF )
 option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
 # If enabled: log calls to log levels lower than defined will have no performance penalty
 option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
-# Note that ENABLE_SECURITY overrides the flags of every other option
-option( ENABLE_SECURITY "Build security flags at the cost of runtime performance" OFF )
+# Note that ENABLE_SECURITY and ENABLE_CET override the flags of every other option
+option( ENABLE_SECURITY "Build with security flags at the cost of runtime performance" ON ) # TODO
+option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OFF )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
 # Note: Lower log levels implier higher levels (i.e. verbose implies critical)
@@ -149,7 +150,7 @@ endif()
 # Fix compile time logging
 if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
     message("*** Runtime logging disabled! ***")
-	add_definitions(-DCONSTANT_LOG_LEVEL)
+	add_definitions("-DCONSTANT_LOG_LEVEL")
 else()
     message("*** Runtime logging enabled! ***")
 endif()
@@ -159,7 +160,7 @@ if(ENABLE_TESTING)
     message("*** Testing enabled! ***")
 	include(CTest)
 	enable_testing()
-    add_definitions(-DTEST)
+    add_definitions("-DTEST")
 else()
     message("*** Testing disabled! ***")
 endif()
@@ -167,30 +168,25 @@ endif()
 # Build type
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("*** Debug Mode enabled! ***")
-	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}) # no quotes because it is a C-macro
-	# Add debug macro
-    add_definitions(-DDEBUG)
-	# Debug flags
-	set(DEBUG_FLAGS
+	add_definitions("-DDEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}")
+    add_definitions("-DDEBUG")
+	# Compile flags
+	add_compile_options(
 		"-O0"
 		"-g"
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
 		"-D_GLIBCXX_ASSERTIONS"
 	)
-	string(REPLACE ";" " " DEBUG_FLAGS "${DEBUG_FLAGS}")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
-	set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${DEBUG_FLAGS}")
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("*** Release Build enabled! ***")
-	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}) # no quotes because it is a C-macro
-	# Release flags
-	set(RELEASE_FLAGS "-pipe -flto -O3")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
-	set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${RELEASE_FLAGS}")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
+	add_definitions("-DDEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}")
+	# Compilation and linker flags
+	add_compile_options("-pipe" "-O3")
+	add_link_options("-flto")
 else()
-	add_definitions(-DDEFAULT_LOG_LEVEL=${DEFAULT_LOG_LEVEL}) # no quotes because it is a C-macro
+	message(WARNING "Build level: ${CMAKE_BUILD_TYPE}")
+	add_definitions("-DDEFAULT_LOG_LEVEL=${DEFAULT_LOG_LEVEL}")
 endif()
 
 # Enable security flags
@@ -201,38 +197,58 @@ if(ENABLE_SECURITY)
 		message(FATAL_ERROR "ENABLE_SECURITY and ENABLE_MEMCHECK are mutually exclusive")
 	endif()
 
-	# Security flags
-	set(SECURITY_FLAGS
+	# Update GCC's default macros
+	add_definitions("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2")
+
+	# Basic Security flags
+	add_compile_options(
 		"-m64"
+		# "-mmitigate-rop" # Deprecated
 		"-fsanitize=address"
 		"-D_GLIBCXX_ASSERTIONS"
 		"-fstack-protector-all"
 		"-Wstack-protector"
-		"--param ssp-buffer-size=4"
-		"-pie"
-		"-fPIE"
+		"--param" "ssp-buffer-size=4"
+		"-Wformat"
+		"-Wformat-security"
+		"-fpic"
 		"-ftrapv"
-		"-D_FORTIFY_SOURCE=2"
-		"-O2"
-		"-Wl,-z,relro,-z,now"
-		"-Wl,-z,noexecstack"
-		"-Wformat -Wformat-security"
+		"-O2" # Enable source hardening, avoid the dangers of O3
 		# "-fvtable-verify=std" # Requires custom gcc compilation with this flag enabled.
 	)
-	string(REPLACE ";" " " SECURITY_FLAGS "${SECURITY_FLAGS}")
 
-	# Since we are overriding already set flags, we must set them depending on build type
-	# Build type flags are appended to the default flags, so if they are used we append to them
-	# directly instead of appending to the default flags, to ensure these overrides work
-	if(CMAKE_BUILD_TYPE MATCHES Debug)
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SECURITY_FLAGS}")
-		set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   ${SECURITY_FLAGS}")
-	elseif(CMAKE_BUILD_TYPE MATCHES Release)
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${SECURITY_FLAGS}")
-		set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   ${SECURITY_FLAGS}")
-	else()
-		add_compile_options(${SECURITY_FLAGS})
+	# GCC only
+	if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		add_compile_options(
+			"-fstack-clash-protection" # Exists in newer versions of llvm
+		)
 	endif()
+
+	# Hardware security
+	if (ENABLE_CET)
+		add_compile_options("-fcf-protection=full")
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		add_compile_options(
+			"-mindirect-branch=thunk"
+			"-mfunction-return=thunk"
+			"-fcf-protection=none" # Disable CET
+		)
+	endif()
+
+	# Linker flags
+	if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") # Apple Clang doesn't like these
+		add_link_options(
+			"LINKER:-z,relro,-z,now"
+			"LINKER:-z,noexecstack"
+			"LINKER:-dynamicbase" # Just in case
+		)
+	else()
+		message(WARNING "AppleClang does not support important security based linker flags")
+	endif()
+	add_link_options(
+		"-fsanitize=address" # Link relevant sanitization functions
+		"-O2" # Enable source hardening, avoid the dangers of O3
+	)
 
 endif()
 
@@ -330,6 +346,14 @@ endif()
 
 # Create a make target for the library
 add_subdirectory("${CLARICPP_SRC}")
+
+# Configure library compilation and linking
+# This is just in case we missed any flags above
+if(CMAKE_BUILD_TYPE MATCHES Release)
+	set_property(TARGET "${SHARED_LIB_NAME}"
+		PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
+	)
+endif()
 
 # Create a make target for test cases
 if(ENABLE_TESTING)
