@@ -29,7 +29,7 @@ set( DOC_MAKE_TARGET docs )
 option( IWYU "Enable iwyu" OFF )
 option( LWYU "Enable lwyu" ON )
 option( CPP_CHECK "Enable cppcheck" ON )
-option( CLANG_TIDY "Enable clang-tidy" ON ) # TODO
+option( CLANG_TIDY "Enable clang-tidy" ON )
 
 # Default build type
 # Default to debug mode
@@ -57,12 +57,14 @@ option( CMAKE_VERBOSE_MAKEFILE "Enable make VERBOSE=1 by default" OFF )
 option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
 # The memcheck and security options are mutually exclusive
 # Memcheck cannot run with security enabled
-option( ENABLE_MEMCHECK "Enable memcheck on test target" OFF )
+option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
 option( ALLOW_NO_MEMCHECK_APPLE "Allow not using memcheck on apple" ON )
 # If enabled: log calls to log levels lower than defined will have no performance penalty
 option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release builds" OFF )
-# Note that ENABLE_SECURITY and ENABLE_CET override the flags of every other option
-option( ENABLE_SECURITY "Build with security flags at the cost of runtime performance" ON ) # TODO
+
+# Security Options
+# These options will overide any previously set option if enabled
+option( ENABLE_SECURITY "Build with security flags at the cost of runtime performance" OFF )
 option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OFF )
 
 # Log levels are defined in ./src/utils/log/level/level/hpp
@@ -195,6 +197,8 @@ if(ENABLE_SECURITY)
 	message(WARNING "Security mode enabled. Overriding other options!")
 	if(ENABLE_MEMCHECK)
 		message(FATAL_ERROR "ENABLE_SECURITY and ENABLE_MEMCHECK are mutually exclusive")
+	elseif(CLANG_TIDY AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		message(FATAL_ERROR "ENABLE_SECURITY and CLANG_TIDY are mutually exclusive when not using clang")
 	endif()
 
 	# Update GCC's default macros
