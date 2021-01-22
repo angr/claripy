@@ -200,13 +200,14 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 		PUBLIC  "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}"
 		PRIVATE "DEBUG"
 	)
+	# Macros
+	target_compile_definitions("${CLARICPP}" PRIVATE "_GLIBCXX_ASSERTIONS")
 	# Compile flags
 	target_compile_options("${CLARICPP}" PRIVATE
 		"-O0"
 		"-g"
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
-		"-D_GLIBCXX_ASSERTIONS"
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("*** Release Build enabled! ***")

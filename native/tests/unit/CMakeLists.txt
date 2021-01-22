@@ -66,6 +66,15 @@ function(simple_test FUNC_NAME)
 	message(STATUS "\t${TEST_NAME}")
 	add_test("${TEST_NAME}" "./${BINARY}")
 
+	# Add compile options
+	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
+	target_compile_options("${BINARY}" PRIVATE
+		"-O0"
+		"-g"
+		"-fasynchronous-unwind-tables"
+		"-grecord-gcc-switches"
+	)
+
 	# Add memcheck test
 	if(RUN_MEMCHECK_TESTS)
 		set(MEMCHECK
