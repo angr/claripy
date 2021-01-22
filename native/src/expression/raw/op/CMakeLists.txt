@@ -7,7 +7,7 @@
 
 # Include additional header files
 message("Including boost headers for target: ${CLARICPP}")
-target_include_directories("${CLARICPP}" PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories("${CLARICPP}" SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}) # TODO
 
 # Link additional libraries
 # We do not want their functions exposed by our shared object so we designate them private
