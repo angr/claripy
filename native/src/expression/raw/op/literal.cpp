@@ -22,7 +22,7 @@ using Val = Literal::ValueT;
  */
 static inline Val create_value(const std::string &rdata, const CUSized::SizeT size) {
     if (size <= SIXTY_FOUR) {
-        Utils::affirm<IncorrectUsage>(rdata.size() == SIXTY_FOUR / 8,
+        Utils::affirm<IncorrectUsage>(rdata.size() == SIXTY_FOUR / CHAR_BIT,
                                       "Literal constructor with size ", size,
                                       " given a string with less than 8 bytes in it");
         Constants::CCSC data = rdata.data();
