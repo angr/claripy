@@ -14,6 +14,6 @@ using namespace UnitTest::TestLib;
 
 /** Test creating an Expression BV */
 int bv() {
-    (void) literal_factory<ConcreteBVLiteral>(0_i, 0_i);
+    (void) literal_factory<ConcreteBVLiteral>(0_i);
     return 0;
 }
