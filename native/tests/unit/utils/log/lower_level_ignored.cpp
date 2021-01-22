@@ -26,7 +26,7 @@ void test(std::ostringstream &s, const Lvl l) {
         UNITTEST_ASSERT(str.find(STR) != std::string::npos)
     }
     else {
-        UNITTEST_ASSERT_MSG(str.size() == 0, WHOAMI)
+        UNITTEST_ASSERT_MSG(str.empty(), WHOAMI)
     }
     s.str(""); // clear the log for the next test
 }
@@ -52,7 +52,7 @@ int lower_level_ignored() {
     std::ostringstream s;
     Backend::set<Backend::OStream>(s);
     s.str("");
-    UNITTEST_ASSERT_MSG(s.str().size() == 0, "Sanity check")
+    UNITTEST_ASSERT_MSG(s.str().empty(), "Sanity check")
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL

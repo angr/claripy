@@ -12,10 +12,13 @@
 #include <sstream>
 #include <vector>
 
+
+// For brevity
 using namespace Utils::Log;
 using namespace Backend;
 using Lvl = Level::Level;
 using namespace UnitTest::TestLib;
+
 
 namespace UnitTest {
     /** Allow accessing of OStream's private stream */
@@ -31,7 +34,7 @@ void test(std::vector<std::ostringstream> &s, Lvl l) {
         UNITTEST_ASSERT(s.size() == 2)
         for (unsigned i = 0; i < s.size(); ++i) {
             const auto str = s[i].str();
-            UNITTEST_ASSERT(str.size() > 0)
+            UNITTEST_ASSERT(!str.empty())
             UNITTEST_ASSERT(str.back() == '\n')
             s[i].str(""); // clear the log for the next test
         }
