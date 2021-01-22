@@ -49,8 +49,8 @@ namespace Utils {
         // cppcheck-suppress nullPointer
         ThreadSafeAccess(const Ptr ptr) : m(), obj(ptr) {}
 
-        /** Disable copy constructor */
-        ThreadSafeAccess(const ThreadSafeAccess &) = delete;
+        /** Copy constructor */
+        ThreadSafeAccess(const ThreadSafeAccess &old) { this->set(old.get()); }
 
         /** Disable move constructor */
         ThreadSafeAccess(ThreadSafeAccess &&) = delete;

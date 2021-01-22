@@ -44,13 +44,16 @@ int multiplex() {
     // The streams to be logged to
     std::vector<std::ostringstream> s(2);
 
-    // Construct the first backend
-    OStream *o1 = new OStream(s[0], true);
-    std::shared_ptr<AbstractBase> ptr1(o1);
-    Multiplex multi = { ptr1 };
+    // Create the real backend
+    Multiplex multi;
 
-    // Emplace the second backend
-    multi.emplace_back<OStream>(s[1], Utils::ref<bool, true>);
+    // Create the backends to be multiplex to
+    Multiplex::BackendContainer c;
+    c.emplace_back(new OStream(s[0], true));
+    c.emplace_back(new OStream(s[1], true));
+
+    // Install the backends
+    multi.backends.set_copy<Multiplex::BackendContainer>(c);
 
     // Install the multi backend
     copy<Multiplex>(multi);

@@ -22,6 +22,9 @@ namespace Utils::Log::Backend {
      */
     struct Multiplex : public AbstractBase {
 
+        /** Default constructor */
+        Multiplex() = default;
+
         /** Log the given message, level, to the correct log given by log_id with each backend */
         void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg);
 
