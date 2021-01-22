@@ -15,11 +15,11 @@ using namespace UnitTest::TestLib;
 /** A struct used to give friend access to unittests */
 struct UnitTest::ClaricppUnitTest {
     /** Get the cache size */
-    decltype(Expression::Private::factory_cache)::CacheMap::size_type size() {
-        return Expression::Private::factory_cache.cache.size();
+    decltype(Expression::Private::cache)::CacheMap::size_type size() {
+        return Expression::Private::cache.cache.size();
     }
     /** Passthrough unsafe_gc */
-    void unsafe_gc() { return Expression::Private::factory_cache.unsafe_gc(); }
+    void unsafe_gc() { return Expression::Private::cache.unsafe_gc(); }
 };
 
 

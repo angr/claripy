@@ -16,11 +16,11 @@ namespace UnitTest {
     /** A struct used to give friend access to unittests */
     struct ClaricppUnitTest {
         /** size_type abbreviation */
-        using SizeType = decltype(Expression::Private::factory_cache)::CacheMap::size_type;
+        using SizeType = decltype(Expression::Private::cache)::CacheMap::size_type;
         /** Get the cache gc_resize */
-        SizeType &gc_resize = Expression::Private::factory_cache.gc_resize;
+        SizeType &gc_resize = Expression::Private::cache.gc_resize;
         /** Get the cache size */
-        SizeType size() { return Expression::Private::factory_cache.cache.size(); }
+        SizeType size() { return Expression::Private::cache.cache.size(); }
     };
 } // namespace UnitTest
 
