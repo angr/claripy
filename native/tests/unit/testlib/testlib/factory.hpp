@@ -15,7 +15,8 @@ namespace UnitTest::TestLib {
     /** Make it easier to create expressions */
     template <typename T> T literal_factory(const Constants::Int i) {
         std::vector<std::shared_ptr<Annotation::Base>> a;
-        std::string s((Constants::CCSC) &i);
+        Constants::CCSC cs = (Constants::CCSC) &i;
+        const std::string s(cs, 8);
         return Expression::factory<T>(a, 64_i, s);
     }
 
