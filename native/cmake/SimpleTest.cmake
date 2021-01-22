@@ -2,7 +2,7 @@
 
 # Inform user about static analysis
 if(CLANG_TIDY)
-	message("Turning off some static analysis for test cases")
+	message("Turning off some static analysis for test cases.")
 endif()
 
 # Create a function to add test cases
@@ -24,10 +24,8 @@ function(simple_test FUNC_NAME)
 	# Disable some static analysis for test cases
 	# We don't need it on test cases and it causes some issues
 	# Note: By default unset only unsets within local scope
-	unset(CMAKE_C_CLANG_TIDY)
 	unset(CMAKE_CXX_CLANG_TIDY)
-	unset(CMAKE_C_CPPCHECK)
-	unset(CMAKE_CXX_CPPCHECK)
+	unset(CMAKE_C_CLANG_TIDY)
 
 	# Determine the test prefix from the path
 	string(LENGTH "${SIMPLE_TEST_DIR}/" ST_LEN)

@@ -33,7 +33,6 @@ if(NOT GMP_FIND_VERSION)
 	)
 endif()
 
-message("GMP_INCLUDES=${GMP_INCLUDES}")
 if(GMP_INCLUDES)
 	# Since the GMP version macros may be in a file included by gmp.h of the form
 	# gmp-.*[_]?.*.h (e.g., gmp-x86_64.h), we search each of them.

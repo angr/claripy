@@ -177,25 +177,25 @@ endif()
 
 # Fix compile time logging
 if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
-    message("*** Runtime logging disabled! ***")
+    message("Runtime logging disabled!")
 	target_compile_definitions("${CLARICPP}" PUBLIC "CONSTANT_LOG_LEVEL") # Export this macro
 else()
-    message("*** Runtime logging enabled! ***")
+    message("Runtime logging enabled!")
 endif()
 
 # Enable testing
 if(ENABLE_TESTING)
-    message("*** Testing enabled! ***")
+    message("Testing enabled!")
 	include(CTest)
 	enable_testing()
 	target_compile_definitions("${CLARICPP}" PUBLIC "ENABLE_TESTING") # Export this macro
 else()
-    message("*** Testing disabled! ***")
+    message("Testing disabled!")
 endif()
 
 # Build type
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-    message("*** Debug Mode enabled! ***")
+    message("Debug Mode enabled!")
 	target_compile_definitions("${CLARICPP}"
 		PUBLIC  "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}" # Export this macro
 		PRIVATE "DEBUG"
@@ -210,7 +210,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 		"-grecord-gcc-switches"
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
-    message("*** Release Build enabled! ***")
+    message("Release Build enabled!")
 	target_compile_definitions("${CLARICPP}" PUBLIC  # Export this macro
 		"DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}"
 	)
