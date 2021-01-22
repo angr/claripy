@@ -178,7 +178,7 @@ endif()
 # Fix compile time logging
 if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
     message("*** Runtime logging disabled! ***")
-	target_compile_definitions("${CLARICPP}" PUBLIC "CONSTANT_LOG_LEVEL")
+	target_compile_definitions("${CLARICPP}" PUBLIC "CONSTANT_LOG_LEVEL") # Export this macro
 else()
     message("*** Runtime logging enabled! ***")
 endif()
@@ -188,7 +188,7 @@ if(ENABLE_TESTING)
     message("*** Testing enabled! ***")
 	include(CTest)
 	enable_testing()
-	target_compile_definitions("${CLARICPP}" PRIVATE "TEST")
+	target_compile_definitions("${CLARICPP}" PUBLIC "ENABLE_TESTING") # Export this macro
 else()
     message("*** Testing disabled! ***")
 endif()
@@ -197,7 +197,7 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("*** Debug Mode enabled! ***")
 	target_compile_definitions("${CLARICPP}"
-		PUBLIC  "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}"
+		PUBLIC  "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}" # Export this macro
 		PRIVATE "DEBUG"
 	)
 	# Macros
@@ -211,13 +211,17 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("*** Release Build enabled! ***")
-	target_compile_definitions("${CLARICPP}" PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}")
+	target_compile_definitions("${CLARICPP}" PUBLIC  # Export this macro
+		"DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}"
+	)
 	# Compilation and linker flags
 	target_compile_options("${CLARICPP}" PRIVATE "-pipe" "-O3")
 	target_link_options("${CLARICPP}" PRIVATE "-flto")
 else()
 	message(WARNING "Build level: ${CMAKE_BUILD_TYPE}")
-	target_compile_definitions("${CLARICPP}" PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_OTHER_LOG_LEVEL}")
+	target_compile_definitions("${CLARICPP}" PUBLIC # Export this macro
+		"DEFAULT_LOG_LEVEL=${DEFAULT_OTHER_LOG_LEVEL}"
+	)
 endif()
 
 # Enable security flags

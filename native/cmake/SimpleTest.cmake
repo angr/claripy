@@ -1,5 +1,10 @@
 # Requires: SIMPLE_TEST_DIR set to the desired test directory
 
+# Inform user about static analysis
+if(CLANG_TIDY)
+	message("Turning off some static analysis for test cases")
+endif()
+
 # Create a function to add test cases
 # This file generates a test case from a cpp file: ./<FNAME>.cpp
 # <FNAME>.cpp must contain a function named <FNAME> of type int();
@@ -15,6 +20,14 @@ function(simple_test FUNC_NAME)
 			"\tIt was given: ${FUNC_NAME}"
 		)
 	endif()
+
+	# Disable some static analysis for test cases
+	# We don't need it on test cases and it causes some issues
+	# Note: By default unset only unsets within local scope
+	unset(CMAKE_C_CLANG_TIDY)
+	unset(CMAKE_CXX_CLANG_TIDY)
+	unset(CMAKE_C_CPPCHECK)
+	unset(CMAKE_CXX_CPPCHECK)
 
 	# Determine the test prefix from the path
 	string(LENGTH "${SIMPLE_TEST_DIR}/" ST_LEN)
@@ -39,8 +52,10 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
-	target_include_directories("${BINARY}" PRIVATE
+	target_include_directories("${BINARY}" SYSTEM PRIVATE
 		${Boost_INCLUDE_DIRS}
+	)
+	target_include_directories("${BINARY}" PRIVATE
 		"${CLARICPP_SRC}"
 		"${TESTLIB_SRC}"
 	)
