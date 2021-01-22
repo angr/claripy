@@ -32,6 +32,12 @@ namespace Utils::Error {
         /** Raised when a function is given invalid arguments */
         DEFINE_SUBCLASS_WITH_CONSTRUCTOR(IncorrectUsage, Claricpp)
 
+        /** Raised when a recurrence gaurded function recurrses too many times */
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(RecurrenceLimit, Claricpp)
+
+        /** Raised when something unknown occurs */
+        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Unknown, Claricpp)
+
     } // namespace Unexpected
 
 } // namespace Utils::Error
