@@ -5,7 +5,7 @@
 #ifndef __UNITTEST_HPP__
 #define __UNITTEST_HPP__
 
-#ifndef TEST
+#ifndef ENABLE_TESTING
     #define ENABLE_UNITTEST_FRIEND_ACCESS
 #else
 
