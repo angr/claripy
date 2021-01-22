@@ -10,8 +10,8 @@ target_include_directories("${TESTLIB}" PRIVATE "${CLARICPP_SRC}")
 add_subdirectory("${TESTLIB_SRC}")
 
 # Include additional header files
-message("Including boost headers for target: ${CLARICPP}")
-target_include_directories("${TESTLIB}" PRIVATE ${Boost_INCLUDE_DIRS})
+message(STATUS "Including boost headers for target: ${TESTLIB}")
+target_include_directories("${TESTLIB}" SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 
 # SimpleTest
 set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
