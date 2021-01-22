@@ -4,6 +4,5 @@ target_sources("${SHARED_LIB_NAME}" PRIVATE
 )
 
 # Add subdirectories
-add_subdirectory(private)
 add_subdirectory(hash)
 add_subdirectory(raw)

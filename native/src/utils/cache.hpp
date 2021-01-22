@@ -2,11 +2,14 @@
  * @file
  * @brief This file defines a generic hash cache type
  */
-#ifndef __EXPRESSION_PRIVATE_CACHE_HPP__
-#define __EXPRESSION_PRIVATE_CACHE_HPP__
+#ifndef __UTILS_CACHE_HPP__
+#define __UTILS_CACHE_HPP__
 
-#include "../../unittest.hpp"
-#include "../../utils.hpp"
+#include "log.hpp"
+#include "max.hpp"
+#include "pow.hpp"
+
+#include "../unittest.hpp"
 
 #include <algorithm>
 #include <map>
@@ -15,7 +18,7 @@
 #include <type_traits>
 
 
-namespace Expression::Private {
+namespace Utils {
 
     /** A generic cache class that
      *  This maps a Key to std::weak_ptr<Value>
@@ -106,7 +109,7 @@ namespace Expression::Private {
                 // Otherwise remove it from the cache
                 else {
                     cache.erase(lookup);
-                    Utils::Log::verbose<Self>(__func__, ": Cache invalidation");
+                    Log::verbose<Self>(__func__, ": Cache invalidation");
                     return std::shared_ptr<Cached>(nullptr);
                 }
             }
@@ -120,7 +123,7 @@ namespace Expression::Private {
          */
         void unsafe_gc() {
             std::vector<Hash> del;
-            Utils::Log::debug<Self>("Garbage collecting cache");
+            Log::debug<Self>("Garbage collecting cache");
             // Find all expired weak_ptrs
             for (auto i = this->cache.begin(); i != this->cache.end(); ++i) {
                 if (i->second.expired()) {
@@ -129,12 +132,12 @@ namespace Expression::Private {
             }
             // Delete them
             for (typename CacheMap::size_type i = 0; i < del.size(); ++i) {
-                Utils::Log::verbose<Self>(__func__, ": Cache invalidation");
+                Log::verbose<Self>(__func__, ": Cache invalidation");
                 this->cache.erase(del[i]);
             }
             // Resize gc_size to a reasonable size
-            this->gc_resize = Utils::Max::value(Self::gc_resize_default, this->cache.size() << 1);
-            Utils::Log::verbose<Self>("Garbage collection complete.");
+            this->gc_resize = Max::value(Self::gc_resize_default, this->cache.size() << 1);
+            Log::verbose<Self>("Garbage collection complete.");
         }
 
         /************************************************/
@@ -151,10 +154,9 @@ namespace Expression::Private {
         typename CacheMap::size_type gc_resize = gc_resize_default;
 
         /** The default value for gc_resize */
-        static const constexpr typename CacheMap::size_type gc_resize_default =
-            Utils::pow(2, 10) - 1;
+        static const constexpr typename CacheMap::size_type gc_resize_default = pow(2, 10) - 1;
     };
 
-} // namespace Expression::Private
+} // namespace Utils
 
 #endif

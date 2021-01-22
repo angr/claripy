@@ -7,13 +7,17 @@
 
 #include "cast.hpp"
 #include "hash.hpp"
-#include "private/factory_cache.hpp"
 #include "private/raw.hpp"
 
 #include "../utils.hpp"
 
 
 namespace Expression {
+
+    namespace Private {
+        /** The factory cache */
+        inline Utils::Cache<Hash::Hash, ::Expression::Raw::Base> cache = {};
+    } // namespace Private
 
     /** A factory used to construct subclasses of Expression::Raw::Base. Arguments are
      *  consumed. This function takes in move references for everything; it has no const
@@ -34,8 +38,7 @@ namespace Expression {
         // Check to see if the object to be constructed exists in the hash cache
         // We run hash vis run_cr_function to ensure args are passed by const reference
         const auto h = Hash::hash<RawT>((const Args) args...);
-        auto base_ptr =
-            Private::factory_cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...);
+        auto base_ptr = Private::cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...);
         return down_cast_throw_on_fail<T>(base_ptr);
     }
 
