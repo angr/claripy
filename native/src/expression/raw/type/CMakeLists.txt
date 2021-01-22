@@ -1,5 +1,5 @@
 # Add current directory's source files
-target_sources("${SHARED_LIB_NAME}" PRIVATE
+target_sources("${CLARICPP}" PRIVATE
 	base.cpp
 	bits.cpp
 	bool.cpp
