@@ -5,12 +5,12 @@ set(TESTLIB "testlib")
 # Create the test library target that test cases link to
 # Then add headers and sources to the test library
 add_library("${TESTLIB}" SHARED)
-target_link_libraries("${TESTLIB}" PRIVATE "${SHARED_LIB_NAME}")
+target_link_libraries("${TESTLIB}" PRIVATE "${CLARICPP}")
 target_include_directories("${TESTLIB}" PRIVATE "${CLARICPP_SRC}")
 add_subdirectory("${TESTLIB_SRC}")
 
 # Include additional header files
-message("Including boost headers for target: ${SHARED_LIB_NAME}")
+message("Including boost headers for target: ${CLARICPP}")
 target_include_directories("${TESTLIB}" PRIVATE ${Boost_INCLUDE_DIRS})
 
 # Define constants used by simple_test
@@ -60,7 +60,7 @@ function(simple_test FUNC_NAME)
 		"${CLARICPP_SRC}"
 		"${TESTLIB_SRC}"
 	)
-	target_link_libraries("${BINARY}" PRIVATE "${SHARED_LIB_NAME}" "${TESTLIB}")
+	target_link_libraries("${BINARY}" PRIVATE "${CLARICPP}" "${TESTLIB}")
 
 	## Add the test
 	message(STATUS "\t${TEST_NAME}")
