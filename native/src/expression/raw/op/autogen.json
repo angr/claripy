@@ -3,7 +3,7 @@
 		"file" : "literal.hpp",
 		"op" : "Literal",
 		"ctor_args" : [
-			"Constants::CCSC"
+			"const std::string &"
 		],
 		"parents" : [
 			"Op::Base",

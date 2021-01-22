@@ -20,6 +20,11 @@ SINGULAR(char *, c) {
     return c;
 }
 
+/** A specialization for T = std::string */
+SINGULAR(std::string, s) {
+    return s;
+}
+
 /** A specialization for T = Constants::Int */
 SINGULAR(Constants::Int, c) {
     return c;

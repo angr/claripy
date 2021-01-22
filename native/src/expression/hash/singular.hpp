@@ -37,6 +37,9 @@ namespace Expression::Hash {
     /** A specialization for T = char * */
     template <> struct SingularRetMap<char *> { using RetType = Constants::CCS; };
 
+    /** A specialization for T = std::string */
+    template <> struct SingularRetMap<std::string> { using RetType = std::string; };
+
     /** A specialization for T = std::vector<std::shared_ptr<Annotation>> */
     template <> struct SingularRetMap<std::vector<std::shared_ptr<Annotation::Base>>> {
         using RetType = std::string;

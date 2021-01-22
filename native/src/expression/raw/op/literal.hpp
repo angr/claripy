@@ -31,8 +31,9 @@ namespace Expression::Raw::Op {
       protected:
         /** Constructor
          *  @todo figure out how this will work
+         *  @todo Intern strings
          */
-        Literal(Constants::CCSC data);
+        Literal(const std::string &data);
 
         /** Representation */
         const ValueT value;
