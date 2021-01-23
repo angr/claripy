@@ -194,6 +194,23 @@ def test_zeroext_extract_comparing_against_constant_simplifier():
     assert expr.args[0].args[2] is a
     assert expr.args[1].args == (0x28, 7)
 
+    expr = claripy.Extract(15, 0, claripy.Concat(claripy.BVV(0, 48), a)) == b
+    assert expr is (a == claripy.BVV(0x28, 8))
+
+    bb = claripy.BVV(0x28, 24)
+    d = claripy.BVS('d', 8, explicit_name=True)
+    expr = claripy.Extract(23, 0, claripy.Concat(claripy.BVV(0, 24), d)) == bb
+    assert expr is (d == claripy.BVV(0x28, 8))
+
+    dd = claripy.BVS('dd', 23, explicit_name=True)
+    expr = claripy.Extract(23, 0, claripy.Concat(claripy.BVV(0, 2), dd)) == bb
+    assert expr is (dd == claripy.BVV(0x28, 23))
+
+    # this was incorrect before
+    # claripy issue #201
+    expr = claripy.Extract(31, 8, claripy.Concat(claripy.BVV(0, 24), dd)) == claripy.BVV(0xffff, 24)
+    assert expr is not (dd == claripy.BVV(0xffff, 23))
+
 
 def perf():
     import timeit
