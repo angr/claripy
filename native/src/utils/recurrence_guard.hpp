@@ -36,7 +36,7 @@ namespace Utils {
 
       private:
         /** The name of the function */
-        Constants::CCSC func;
+        const std::string func;
     };
 
 } // namespace Utils

@@ -136,7 +136,7 @@ endif()
 add_compile_options(
 	"-Wall"
 	"-Wextra"
-	# "-Weffc++" # TODO
+	"-Weffc++"
 	"-Werror"
 	# Remap file prefixes to make source location irrelevant to build constants like __FILE__
 	"-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/"
