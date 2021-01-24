@@ -912,14 +912,16 @@ class SimplificationManager:
         """
         This simplifier handles the following cases:
 
-            Extract(hi, lo, Concat(0, A)) == b, and
-            Extract(hi, lo, Concat(0, A)) != b, and
-            Extract(hi, lo, ZeroExt(n, A)) == b, and
-            Extract(hi, lo, ZeroExt(n, A)) != b
+            Extract(hi, 0, Concat(0, A)) op b, and
+            Extract(hi, 0, ZeroExt(n, A)) op b
 
-        If the high bits of b are 0, Extract and Concat/ZeroExt can be eliminated.
+        Extract can be eliminated if the high bits of Concat(0, A) or ZeroExt(n, A) are all zeros.
         """
-        if op not in (operator.__eq__, operator.__ne__) or b.op != "BVV" or a.op != "Extract":
+
+        # TODO: This method is only used when op is __eq__ or __ne__. We need more experiment to see if it is necessary
+        # TODO: to apply this optimization to other comparison operators.
+
+        if a.op != "Extract" or a.args[1] != 0:
             return None
 
         highbits_are_zeros = False
@@ -931,14 +933,14 @@ class SimplificationManager:
             a_inner_expr = a_arg.args[1]
             if a_concat_expr0.op == "BVV" and a_concat_expr0.args[0] == 0:
                 # equivalent to ZeroExt
-                if a_concat_expr0.size() >= a.size() - a_hi:
+                if a_concat_expr0.size() >= a_arg.size() - a_hi:
                     # high bits are all zeros
                     highbits_are_zeros = True
 
-        if a_arg.op == "ZeroExt":
+        elif a_arg.op == "ZeroExt":
             a_zeroext_bits = a_arg.args[0]
             a_inner_expr = a_arg.args[1]
-            if a_zeroext_bits >= a.size() - a_hi:
+            if a_zeroext_bits >= a_arg.size() - a_hi:
                 # high bits are all zeros
                 highbits_are_zeros = True
 
