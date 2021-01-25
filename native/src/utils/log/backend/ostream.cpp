@@ -9,7 +9,7 @@
 using namespace Utils::Log::Backend;
 
 
-OStream::OStream(std::ostream &s, const bool f) : stream(s), flush(f), m() {}
+OStream::OStream(std::ostream &s, const bool f) : stream(s), flush(f) {}
 
 
 void OStream::log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg) {

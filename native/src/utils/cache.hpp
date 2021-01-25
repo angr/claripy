@@ -36,7 +36,7 @@ namespace Utils {
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
 
         /** Default constructor */
-        Cache() : lock(), cache() {}
+        Cache() = default;
 
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<Cached>>;

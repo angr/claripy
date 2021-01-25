@@ -9,6 +9,7 @@
 #include "../constants.hpp"
 
 #include <map>
+#include <string>
 
 
 /** A macro to make creating a recurrence guard easier */

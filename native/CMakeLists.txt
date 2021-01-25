@@ -56,6 +56,8 @@ option( CLANG_TIDY "Enable clang-tidy" ON )
 option( CMAKE_VERBOSE_MAKEFILE "Enable make VERBOSE=1 by default" OFF )
 # This is useful for IDEs, developer tools, and for doxygen documentation generation
 option( CMAKE_EXPORT_COMPILE_COMMANDS "Exports a json useful to IDEs and other tools" ON )
+# These warnings will not cause errors; as we do not strictly adhere to them all
+option( EFFECTIVE_CPP_STYLE_CHECK "Enable effective C++ style checks as warnings" ON )
 # The memcheck and security options are mutually exclusive
 # Memcheck cannot run with security enabled
 option( ENABLE_MEMCHECK "Enable memcheck on test target" ON )
@@ -136,8 +138,7 @@ endif()
 add_compile_options(
 	"-Wall"
 	"-Wextra"
-	"-Weffc++" # Enforces a few generally good C++ coding practices
-	"-Werror"
+	"-Werror" # Convert warnings to errors
 	# Remap file prefixes to make source location irrelevant to build constants like __FILE__
 	"-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/"
 )
@@ -166,6 +167,15 @@ add_library("${CLARICPP}" SHARED)
 if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
 	message(FATAL_ERROR "Memcheck is not compatible with the lastest versions of MacOS")
 endif()
+
+# Enable good coding checks as actual warnings
+if(EFFECTIVE_CPP_STYLE_CHECK)
+	target_compile_options("${CLARICPP}" PRIVATE
+		"-Weffc++" # Enforces a few generally good C++ coding practices
+		"-Wno-error=effc++" # Allow effc++ warnings to remain warnings
+	)
+endif()
+
 
 # Optimize for native code
 if(OPTIMIZE_FOR_NATIVE)
@@ -245,6 +255,7 @@ add_subdirectory("${CLARICPP_SRC}")
 
 # Clang is overly cautious and gives warnings that do not apply here
 # So for the specific source file, we reduce them back to warnings
+# Note: This must not be defined in a lower scope than where the shared object is
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(FNAME "${CLARICPP_SRC}/expression/raw/op/literal.cpp")
 	message(WARNING "Reducing uninitialized errors to warnings for ${FNAME}")
