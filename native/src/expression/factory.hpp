@@ -37,7 +37,7 @@ namespace Expression {
 
         // Check to see if the object to be constructed exists in the hash cache
         // We run hash vis run_cr_function to ensure args are passed by const reference
-        const auto h = Hash::hash<RawT>((const Args) args...);
+        const auto h = Hash::hash<RawT>(static_cast<const Args>(args)...);
         auto base_ptr = Private::cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...);
         return down_cast_throw_on_fail<T>(base_ptr);
     }

@@ -5,6 +5,7 @@
 #include "level_timestamp_message.hpp"
 
 #include "../../ansi_color_codes.hpp"
+#include "../../error/unexpected.hpp"
 
 #include <ctime>
 #include <iomanip>
@@ -44,9 +45,14 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
     case Lvl::Critical:
         color = ANSIColorCodes::HighIntensity::Bold::red;
         break;
-    default:
+    case Lvl::Disabled: // Can happen because of other threads
+        color = ANSIColorCodes::grn;
+        break;
+    case Lvl::Debug:
         color = ANSIColorCodes::blk;
         break;
+    default: // Just in case
+        throw Error::Unexpected::Unknown("Logger was given unknown level");
     }
 
     // Output

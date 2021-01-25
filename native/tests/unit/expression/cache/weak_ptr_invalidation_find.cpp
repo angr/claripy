@@ -36,8 +36,14 @@ int weak_ptr_invalidation_find() {
         id = a->id;
     }
 
-    // Check cache and cache size
+    // Check cache size
     UNITTEST_ASSERT(cache.size() == 1)
-    UNITTEST_ASSERT(cache.unsafe_find(id) == nullptr);
-    return cache.size();
+
+    // Verify inablity to find: side effect removes from cache
+    const auto nll = cache.unsafe_find(id);
+    UNITTEST_ASSERT(nll == nullptr);
+
+    // Check cache size
+    UNITTEST_ASSERT(cache.size() == 0)
+    return 0;
 }

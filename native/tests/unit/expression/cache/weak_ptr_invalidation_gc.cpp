@@ -35,5 +35,6 @@ int weak_ptr_invalidation_gc() {
 
     // Garbage collect then verify size
     cache.unsafe_gc();
-    return cache.size();
+    UNITTEST_ASSERT(cache.size() == 0)
+    return 0;
 }

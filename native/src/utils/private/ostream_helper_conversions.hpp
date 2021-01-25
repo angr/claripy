@@ -38,7 +38,8 @@ namespace Utils::Private {
          *  @todo Update to use declval when possible
          */
         template <typename U>
-        static constexpr decltype((*(std::ostream *) nullptr) << std::declval<U>()) test(U *);
+        static constexpr decltype(*static_cast<std::ostream *>(nullptr) << std::declval<U>())
+        test(U *);
         /** If the first declaration had an unresolvable return type, we return a Unique */
         template <typename U> static constexpr Unique test(...);
         /** Determine the return type of test<T>(nullptr) */
