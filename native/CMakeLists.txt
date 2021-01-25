@@ -141,7 +141,57 @@ add_compile_options(
 	"-Werror" # Convert warnings to errors
 	# Remap file prefixes to make source location irrelevant to build constants like __FILE__
 	"-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/"
+	# A bunch of useful warnings to have
+	"-Wcast-align"
+	"-Wcast-qual"
+	"-Wconversion"
+	"-Wdisabled-optimization"
+	"-Wfloat-equal"
+	"-Wformat-nonliteral"
+	"-Wformat-security"
+	"-Wformat-y2k"
+	"-Wformat=2"
+	"-Wimport"
+	"-Winit-self"
+	"-Winline"
+	"-Winvalid-pch"
+	"-Wmissing-field-initializers"
+	"-Wmissing-format-attribute"
+	"-Wmissing-include-dirs"
+	"-Wmissing-noreturn"
+	"-Wold-style-cast"
+	"-Woverloaded-virtual"
+	"-Wpacked"
+	"-Wpointer-arith"
+	"-Wredundant-decls"
+	"-Wshadow"
+	"-Wsign-conversion"
+	"-Wsign-promo"
+	"-Wstrict-aliasing=2" # Improves upon Wall's level 3
+	"-Wstrict-overflow=5" # Improves upon Wall's level 1
+	"-Wswitch-default"
+	"-Wswitch-enum"
+	"-Wundef"
+	"-Wunreachable-code"
+	"-Wunused"
+	"-Wunused-parameter"
+	"-Wvariadic-macros"
+	"-Wwrite-strings"
 )
+
+# Compile options that cannot be used with clang
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	if(CLANG_TIDY)
+		message(WARNING "Clang (from clang-tidy) cannot handle gcc specific warning options."
+			"\nDisabling them to allow clang-tidy to function.")
+	else()
+		add_compile_options(
+			"-Wstrict-null-sentinel"
+			"-Wlogical-op"
+			"-Wnoexcept"
+		)
+	endif()
+endif()
 
 
 #################################################
@@ -169,7 +219,7 @@ if(ENABLE_MEMCHECK AND APPLE AND NOT ALLOW_NO_MEMCHECK_APPLE)
 endif()
 
 # Enable good coding checks as actual warnings
-if(EFFECTIVE_CPP_STYLE_CHECK)
+if(NOT EFFECTIVE_CPP_STYLE_CHECK) # TODO
 	target_compile_options("${CLARICPP}" PRIVATE
 		"-Weffc++" # Enforces a few generally good C++ coding practices
 		"-Wno-error=effc++" # Allow effc++ warnings to remain warnings
@@ -263,6 +313,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 		PROPERTY COMPILE_FLAGS "-Wno-error=uninitialized"
 	)
 endif()
+	set_source_files_properties("${FNAME}"
+		PROPERTY COMPILE_FLAGS "-Wno-error=uninitialized"
+	)
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above
