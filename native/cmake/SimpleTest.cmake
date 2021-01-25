@@ -1,7 +1,7 @@
 # Requires: SIMPLE_TEST_DIR set to the desired test directory
 
 # Inform user about static analysis
-if(CLANG_TIDY)
+if(CLANG_TIDY OR LWYU)
 	message("Turning off some static analysis for test cases.")
 endif()
 
@@ -24,6 +24,7 @@ function(simple_test FUNC_NAME)
 	# Disable some static analysis for test cases
 	# We don't need it on test cases and it causes some issues
 	# Note: By default unset only unsets within local scope
+	unset(CMAKE_LINK_WHAT_YOU_USE)
 	unset(CMAKE_CXX_CLANG_TIDY)
 	unset(CMAKE_C_CLANG_TIDY)
 

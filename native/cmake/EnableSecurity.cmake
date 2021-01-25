@@ -17,6 +17,7 @@ target_compile_definitions("${CLARICPP}" PRIVATE "_GLIBCXX_ASSERTIONS")
 target_compile_options("${CLARICPP}" PRIVATE
 	"-U_FORTIFY_SOURCE"   # Undefine compiler built-in fortification default
 	"-D_FORTIFY_SOURCE=2" # Update fortify source to level 2
+	"-Wformat-nonliteral"
 	"-m64"
 	# "-mmitigate-rop" # Deprecated
 	"-fsanitize=address"
