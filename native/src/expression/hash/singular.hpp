@@ -34,6 +34,9 @@ namespace Expression::Hash {
     /** A specialization for T = Constants::Int */
     template <> struct SingularRetMap<Constants::Int> { using RetType = Constants::Int; };
 
+    /** A specialization for T = Constants::UInt */
+    template <> struct SingularRetMap<Constants::UInt> { using RetType = Constants::UInt; };
+
     /** A specialization for T = char * */
     template <> struct SingularRetMap<char *> { using RetType = Constants::CCS; };
 

@@ -30,6 +30,11 @@ SINGULAR(Constants::Int, c) {
     return c;
 }
 
+/** A specialization for T = Constants::UInt */
+SINGULAR(Constants::UInt, c) {
+    return c;
+}
+
 /** A specialization for T = std::vector<std::shared_ptr<Annotation::Base>> */
 SINGULAR(std::vector<std::shared_ptr<Annotation::Base>>, v) {
     std::ostringstream s;
