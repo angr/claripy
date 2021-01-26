@@ -5,6 +5,7 @@
 #include "test_func.hpp"
 
 #include "error.hpp"
+#include "private/verify.hpp"
 #include "utils.hpp"
 
 #include <exception>
@@ -18,10 +19,14 @@
 
 
 void UnitTest::TestLib::test_func(TestFN &f) {
+    // Notify verify that test_func has started running
+    Private::verify();
+    // Test f
     try {
         f();
         return;
     }
+    // If there was an error, note so and fail
     CATCH_ERROR(UnitTest::TestLib::Error)
     CATCH_ERROR(Utils::Error::Unexpected::Base)
     CATCH_ERROR(Utils::Error::Python::Base)
