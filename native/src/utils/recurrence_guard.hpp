@@ -16,7 +16,8 @@
 #define UTILS_RECURRENCE_GUARD ::Utils::RecurrenceGuard __recurrence_guard(__func__);
 
 /** A macro to make creating a recurrence guard with a custom limit easier */
-#define UTILS_RECURRENCE_GUARD_LIM(LIM) ::Utils::RecurrenceGuard __recurrence_guard(__func__, LIM);
+#define UTILS_RECURRENCE_GUARD_LIM(LIM)                                                           \
+    ::Utils::RecurrenceGuard __recurrence_guard(__func__, (LIM));
 
 
 namespace Utils {
