@@ -10,12 +10,12 @@
 #include "test_func.hpp"
 
 
-// TODO: UNITTEST_DEFINE_MAIN_TEST
 /** Define the main function and use it to test a given function */
-#define UNITTEST_DEFINE_MAIN_TEST(F)                                                              \
-    /** Main function: test F */                                                                  \
+#define UNITTEST_DEFINE_MAIN_TEST(TFUNC)                                                          \
+    /** Main function: test TFUNC */                                                              \
     int main() {                                                                                  \
-        UnitTest::TestLib::test_func(F);                                                          \
+        using namespace UnitTest::TestLib;                                                        \
+        test_func(TFUNC);                                                                         \
         return 0;                                                                                 \
     }
 
