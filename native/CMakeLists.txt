@@ -143,7 +143,6 @@ add_compile_options(
 	# Remap file prefixes to make source location irrelevant to build constants like __FILE__
 	"-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/"
 	# A bunch of useful warnings to have
-	"-Wsuggest-override"
 	"-Wcast-align"
 	"-Wcast-qual"
 	"-Wconversion"
@@ -169,7 +168,7 @@ add_compile_options(
 	"-Wshadow"
 	"-Wsign-conversion"
 	"-Wsign-promo"
-	"-Wstrict-aliasing=2" # Improves upon Wall's level 3
+	"-Wstrict-aliasing=1" # Improves upon Wall's level 3
 	"-Wstrict-overflow=5" # Improves upon Wall's level 1
 	"-Wswitch-default"
 	"-Wswitch-enum"
@@ -188,6 +187,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			"\nDisabling them to allow clang-tidy to function.")
 	else()
 		add_compile_options(
+			"-Wsuggest-override"
 			"-Wsuggest-final-types"
 			"-Wsuggest-final-methods"
 			"-Wstrict-null-sentinel"
