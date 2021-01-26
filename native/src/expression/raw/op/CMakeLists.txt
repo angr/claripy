@@ -22,8 +22,10 @@ target_link_libraries("${CLARICPP}" PRIVATE ${GMP_LIBRARIES})
 #################################################
 
 
-# Check if the required files exist
+# Define where autogen files should be put
 set(AUTOGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/autogen")
+
+# Check if the required files exist
 set(AUTOGEN_HPP "${AUTOGEN_DIR}/autogen.hpp")
 set(SOURCES_TXT "${AUTOGEN_DIR}/sources.txt")
 if (EXISTS "${AUTOGEN_HPP}" AND EXISTS "${SOURCES_TXT}" AND EXISTS "${HEADERS_TXT}")
@@ -38,7 +40,7 @@ if ( GEN_AUTOGEN OR REGEN_AUTOGEN )
 	# Older versions of cmake to not support COMMAND_ERROR_IS_FATAL
 	# so instead we utilize RESULT_VARIABLE (singular)
 	execute_process(COMMAND
-		python3 ./autogen.py
+		python3 ./autogen.py "${CMAKE_CURRENT_SOURCE_DIR}" "${AUTOGEN_DIR}"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 		RESULT_VARIABLE RET
 	)

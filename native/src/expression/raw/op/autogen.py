@@ -3,10 +3,10 @@
 @todo Handle std::forwarding for speed up
 This file *will* overwrite existing files
 
-Within the defined io directory there must exist a config json file.
+Within the defined input directory there must exist a config json file.
 The config file will contain a list of dicts, each containing three things:
 {
-    'file' : <filename>, # Must be a file in io_dir
+    'file' : <filename>, # Must be a file in in_dir
     'op' : <op name>,
     'ctor_args' : <a list of unnamed argument types given to the constructor>
     'parents' : [] # A list of immediate superclasses, order should be the same as in the code
@@ -22,17 +22,18 @@ Optionally, the json entry may contain any or all of the following:
     'soc' : <list>
 }
 
-These entries will be used to autogenerate, in the autogen_dir,
+These entries will be used to autogenerate, in the out_dir,
 a set of files that contain the necessary subclasses of op,
 along with shared pointer aliases to each as needed.
 
-Additionally generates autogen.hpp in autogen_dir
+Additionally generates autogen.hpp in out_dir
 
 Finally prints outputs a file containing a relative path to each new source,
-and does the same for each new header, both in autogen_dir
+and does the same for each new header, both in out_dir
 '''
 
 from collections import defaultdict
+from os import path
 import itertools
 import argparse
 import shutil
@@ -41,27 +42,10 @@ import sys
 import os
 
 
-# Filesystem Constants
-io_dir = os.path.realpath('.')
-autogen_dir = os.path.join(io_dir, 'autogen')
+# Path globals defined and configured in configure_paths
 
-# Input Constants
-config_f =    os.path.join(io_dir, 'autogen.json')
-templates_dir = os.path.join(io_dir, 'autogen_templates')
 
-# Output Constants
-autogenhpp =  os.path.join(autogen_dir, 'autogen.hpp')
-sources_out = os.path.join(autogen_dir, 'sources.txt')
-
-# Normalize paths
-io_dir = os.path.normpath(io_dir)
-autogen_dir = os.path.normpath(autogen_dir)
-config_f = os.path.normpath(config_f)
-templates_dir = os.path.normpath(templates_dir)
-autogenhpp = os.path.normpath(autogenhpp)
-sources_out = os.path.normpath(sources_out)
-
-# Globals
+# Non-path Globals
 templates = {}
 ctor_args = {
     'Base' : [ 'const Hash::Hash', 'std::vector<std::shared_ptr<Annotation::Base>> &' ],
@@ -103,7 +87,6 @@ instantiable_types = [ 'Int', 'Bool', 'String', 'BV', 'FP', 'VS' ]
 abstract_types = [ 'Base', 'Bits' ]
 all_types = abstract_types + instantiable_types
 symbolic_concrete = [ 'Symbolic', 'Concrete' ]
-me = os.path.basename(sys.argv[0])
 
 
 # Helper functions
@@ -116,7 +99,7 @@ def write_file(fname, output):
         f.write(output)
 
 def assert_exists(f, what):
-    assert os.path.exists(f), what + ' does not exist'
+    assert path.exists(f), what + ' does not exist'
 
 def template_replace(inp, cmd, replace_with):
     # Replace '__' + cmd.upper() with replace_with in inp (plus error checking)
@@ -225,7 +208,7 @@ def isto_cpp(sym, typ, op):
 
 
 def generate_header(header_files, *, file, op, soc):
-    output_fname = os.path.join(autogen_dir, file)
+    output_fname = path.join(out_dir, file)
     header_files.append(output_fname)
     # Create TypeOps
     body = '\n\n'.join([
@@ -269,7 +252,7 @@ def generate_header(header_files, *, file, op, soc):
         for sym in soc:
             aliases.append(from_template('alias.hpp', {'name' : sym + typ + op }))
     # Prefix and suffix
-    opinclude = os.path.relpath(os.path.join(io_dir, file), autogen_dir)
+    opinclude = path.relpath(path.join(in_dir, file), out_dir)
     output = from_template('prefix_and_suffix.hpp', {
         'aliases' : '\n\t'.join(aliases),
         'opinclude' : opinclude,
@@ -281,7 +264,7 @@ def generate_header(header_files, *, file, op, soc):
     write_file(output_fname, output)
 
 def generate_source(header, source_files, *, file, op, soc):
-    output_fname = os.path.join(autogen_dir, file[:-4] + '.cpp')
+    output_fname = path.join(out_dir, file[:-4] + '.cpp')
     source_files.append(output_fname)
     # Create TypeOps
     typeops = [
@@ -305,7 +288,7 @@ def generate_source(header, source_files, *, file, op, soc):
         body = '\n\n'.join([body, abstract_sto, instantiable_sto])
     # Prefix and suffix
     output = from_template('prefix_and_suffix.cpp', {
-        'autogeninclude' : os.path.basename(header),
+        'autogeninclude' : path.basename(header),
         'body' : body
     })
     # Write out
@@ -313,14 +296,14 @@ def generate_source(header, source_files, *, file, op, soc):
 
 def generate_autogen(files):
     # The sources should be relative to autogenhpp
-    files = [ os.path.relpath(i, os.path.dirname(autogenhpp)) for i in files ]
+    files = [ path.relpath(i, path.dirname(autogenhpp)) for i in files ]
     body = '\n'.join([ '#include "' + i + '"' for i in files ])
     output = from_template('autogen.hpp', {'body' : body})
     write_file(autogenhpp, output)
 
 def generate_sources_out(files):
-    # The paths should be relative to io_dir, regardless of where sources_out is
-    output = '\n'.join([os.path.relpath(i, io_dir) for i in files])
+    # The paths should be relative to in_dir, regardless of where sources_out is
+    output = '\n'.join([path.relpath(i, in_dir) for i in files])
     write_file(sources_out, output)
 
 
@@ -339,9 +322,9 @@ def verify_config(config):
         # File verification
         assert type(entry['file']) == str, 'Config entry["file"] should be of type str'
         assert entry['file'].endswith('.hpp'), 'Config entry["file"] must be an hpp file'
-        assert os.path.basename(entry['file']) == entry['file'], \
+        assert path.basename(entry['file']) == entry['file'], \
             'Config entry["file"] must be the file basename'
-        assert os.path.exists(os.path.join(io_dir, entry['file'])), \
+        assert path.exists(path.join(in_dir, entry['file'])), \
             'Config entry["file"] does not exist'
         # Op verification
         assert type(entry['op']) == str, 'Config entry["op"] should be of type str'
@@ -409,20 +392,59 @@ def load_templates():
     # Load each template file
     for i in tempalte_files:
         # Read file
-        path = os.path.join(templates_dir, i)
-        assert_exists(path, 'template file: ' + i)
-        with open(path) as f:
+        template_f = path.join(templates_dir, i)
+        assert_exists(template_f, 'template file: ' + i)
+        with open(template_f) as f:
             data = f.readlines()
         # Ignore // comments
         data = ''.join([ i for i in data if not i.startswith('//') ]).strip()
         # Save template
         templates[i.split('.in')[0]] = data
 
-def main():
+
+# Argument functions
+
+
+def parse_args(prog, *args):
+    parser = argparse.ArgumentParser(prog=path.basename(prog))
+    parser.add_argument('input_dir', help='The input directory')
+    parser.add_argument('output_dir', help='The output directory')
+    parser.add_argument('--overwrite_odir', default=False,
+        help='If the output directory exists, delete and recreate it')
+    return parser.parse_args(args)
+
+def configure_globals(input_dir, output_dir, **_):
+    nreal = lambda x: path.normpath(path.realpath(x))
+    njoin = lambda a, b: path.normpath(path.join(a, b))
+    global me
+    me = path.basename(sys.argv[0])
+    # Input Constants
+    global in_dir
+    global config_f
+    global templates_dir
+    in_dir = nreal(input_dir)
+    config_f = njoin(in_dir, 'autogen.json')
+    templates_dir = njoin(in_dir, 'autogen_templates')
+    # Output Constants
+    global out_dir
+    global autogenhpp
+    global sources_out
+    out_dir = nreal(output_dir)
+    autogenhpp = njoin(out_dir, 'autogen.hpp')
+    sources_out = njoin(out_dir, 'sources.txt')
+
+
+# Main function
+
+
+def main(args):
+    # Global init via args
+    ns = parse_args(*args)
+    configure_globals(**vars(ns))
     # Error checking
     print('-- Starting ' + me)
-    assert_exists(io_dir, 'io_dir')
-    assert_exists(os.path.dirname(autogen_dir), "autogen_dir's parent")
+    assert_exists(in_dir, 'io_dir')
+    assert_exists(path.dirname(out_dir), "out_dir's parent")
     assert_exists(config_f, 'autogen.json config file')
     assert_exists(templates_dir, 'templates_dir')
     # Load and verify config file
@@ -443,11 +465,12 @@ def main():
     # Init
     source_files = []
     header_files = []
-    # Create autogen_dir
-    if os.path.exists(autogen_dir):
+    # Create out_dir
+    if path.exists(out_dir) and ns.overwrite_odir:
         print('-- Removing existing autogen directory')
-        shutil.rmtree(autogen_dir)
-    os.mkdir(autogen_dir)
+        shutil.rmtree(out_dir)
+    if not path.exists(out_dir):
+        os.mkdir(out_dir)
     # Generate each file
     print('-- Generating autogen files')
     for entry in config:
@@ -466,4 +489,4 @@ def main():
 
 # Don't run on import
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
