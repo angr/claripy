@@ -41,15 +41,11 @@ function(simple_test FUNC_NAME)
 		set(TEST_PREFIX "${TEST_PREFIX}-")
 	endif()
 
-	# Configure test case
-	set(MAIN_IN  "${SIMPLE_TEST_DIR}/main.cpp.in")
-	set(MAIN_OUT "${CMAKE_CURRENT_SOURCE_DIR}/${FUNC_NAME}-testmain.out.cpp")
-	configure_file("${MAIN_IN}" "${MAIN_OUT}" @ONLY)
-
-	# Define the binary target and link the headers and shared library
+	# Create the test
 	set(TEST_NAME "${TEST_PREFIX}${FUNC_NAME}")
 	set(BINARY "${TEST_NAME}.test")
-	add_executable("${BINARY}" "${MAIN_OUT}" "${FUNC_NAME}.cpp" ${ARGN})
+	set(MAIN "${SIMPLE_TEST_DIR}/main.cpp")
+	add_executable("${BINARY}" "${MAIN}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
 	target_include_directories("${BINARY}" SYSTEM PRIVATE
 		${Boost_INCLUDE_DIRS}
@@ -58,6 +54,7 @@ function(simple_test FUNC_NAME)
 		"${CLARICPP_SRC}"
 		"${TESTLIB_SRC}"
 	)
+	# Link the test
 	target_link_libraries("${BINARY}" PRIVATE "${CLARICPP}" "${TESTLIB}")
 
 	## Add the test
@@ -82,11 +79,5 @@ function(simple_test FUNC_NAME)
 		separate_arguments(MEMCHECK)
 		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
 	endif()
-
-	# For make clean
-	set_property(TARGET "${BINARY}"
-		APPEND PROPERTY ADDITIONAL_CLEAN_FILES
-		"${MAIN_OUT}"
-	)
 
 endfunction()

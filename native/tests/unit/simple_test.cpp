@@ -2,9 +2,11 @@
  * @file
  * \ingroup unittest
  */
+#include "testlib.hpp"
 
 
 /** Verify that the simple_test function works */
-int simple_test() {
-    return 0;
-}
+void simple_test() {}
+
+// Define the test
+DEFINE_TEST(simple_test)

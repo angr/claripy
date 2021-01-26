@@ -5,24 +5,24 @@
 #include <iostream>
 
 
-// Used for consistency
-#define TEST_NAME @FUNC_NAME@
+// For brevity
+using namespace UnitTest::TestLib;
 
-
-// Forward declare tests
-int TEST_NAME();
 
 /** Catch and print an error before exiting */
 #define CATCH_ERROR(ERROR)                                                                        \
     catch (const ERROR &e) {                                                                      \
-        std::cout << #ERROR ": " << e.what() << std::endl;                                        \
+        std::cout << #ERROR << ": " << e.what() << std::endl;                                     \
         return -1;                                                                                \
     }
+
 
 /** main */
 int main() {
     try {
-        return TEST_NAME();
+        UNITTEST_ASSERT_MSG(test_func, "Test function may not be nullptr")
+        test_func();
+        return 0;
     }
     CATCH_ERROR(UnitTest::TestLib::Error)
     CATCH_ERROR(Utils::Error::Unexpected::Base)
