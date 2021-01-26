@@ -26,7 +26,7 @@ static inline Val create_value(const std::string &rdata, const CUSized::SizeT si
                                       "Literal constructor with size ", size,
                                       " given a string with less than 8 bytes in it");
         Constants::CCSC data = rdata.data();
-        return Val(*reinterpret_cast<const int_fast64_t *>(data));
+        return Val(Utils::type_pun<int_fast64_t>(data));
     }
     else if (size <= ONE_TWENTY_EIGHT) {
         Constants::CCSC data = rdata.data();
