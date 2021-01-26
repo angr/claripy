@@ -45,8 +45,6 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
     case Lvl::Critical:
         color = ANSIColorCodes::HighIntensity::Bold::red;
         break;
-        color = ANSIColorCodes::grn;
-        break;
     case Lvl::Debug:
         color = ANSIColorCodes::blk;
         break;
