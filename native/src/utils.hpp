@@ -26,6 +26,7 @@
 #include "utils/thread_safe_access.hpp"
 #include "utils/to_str.hpp"
 #include "utils/type_id.hpp"
+#include "utils/type_pun.hpp"
 #include "utils/unconstructable.hpp"
 
 #endif
