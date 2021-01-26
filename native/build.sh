@@ -38,5 +38,9 @@ docker build --target "${DOCKER_TARGET}" -t claricpp:"${VERSION}" \
 	--build-arg VERBOSE_TEST="${VERBOSE_TEST}" \
 	.
 
+# Tag with compiler
+CTAG="$(echo "${CXX_COMPILER}" | tr -cd '[:alnum:]')"
+docker tag claricpp:"${VERSION}" claricpp:"${CTAG}"
+
 # Tag the build as latest
 docker tag claricpp:"${VERSION}" claricpp
