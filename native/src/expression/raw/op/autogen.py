@@ -26,14 +26,16 @@ These entries will be used to autogenerate, in the autogen_dir,
 a set of files that contain the necessary subclasses of op,
 along with shared pointer aliases to each as needed.
 
-Additionally generates autogen.hpp in io_dir
+Additionally generates autogen.hpp in autogen_dir
 
-Finally prints out a relative path to each new source to sources_out in io_dir
+Finally prints outputs a file containing a relative path to each new source,
+and does the same for each new header, both in autogen_dir
 '''
 
 from collections import defaultdict
 import itertools
 import argparse
+import shutil
 import json
 import sys
 import os
@@ -45,11 +47,19 @@ autogen_dir = os.path.join(io_dir, 'autogen')
 
 # Input Constants
 config_f =    os.path.join(io_dir, 'autogen.json')
-templates_dir = os.path.join(autogen_dir, 'templates')
+templates_dir = os.path.join(io_dir, 'autogen_templates')
 
 # Output Constants
-autogenhpp =  os.path.join(io_dir, 'autogen.hpp')
-sources_out = os.path.join(io_dir, 'sources.txt')
+autogenhpp =  os.path.join(autogen_dir, 'autogen.hpp')
+sources_out = os.path.join(autogen_dir, 'sources.txt')
+
+# Normalize paths
+io_dir = os.path.normpath(io_dir)
+autogen_dir = os.path.normpath(autogen_dir)
+config_f = os.path.normpath(config_f)
+templates_dir = os.path.normpath(templates_dir)
+autogenhpp = os.path.normpath(autogenhpp)
+sources_out = os.path.normpath(sources_out)
 
 # Globals
 templates = {}
@@ -302,12 +312,14 @@ def generate_source(header, source_files, *, file, op, soc):
     write_file(output_fname, output)
 
 def generate_autogen(files):
-    files = [ os.path.relpath(i, io_dir) for i in files ]
+    # The sources should be relative to autogenhpp
+    files = [ os.path.relpath(i, os.path.dirname(autogenhpp)) for i in files ]
     body = '\n'.join([ '#include "' + i + '"' for i in files ])
     output = from_template('autogen.hpp', {'body' : body})
     write_file(autogenhpp, output)
 
 def generate_sources_out(files):
+    # The paths should be relative to io_dir, regardless of where sources_out is
     output = '\n'.join([os.path.relpath(i, io_dir) for i in files])
     write_file(sources_out, output)
 
@@ -410,7 +422,7 @@ def main():
     # Error checking
     print('-- Starting ' + me)
     assert_exists(io_dir, 'io_dir')
-    assert_exists(autogen_dir, 'autogen_dir')
+    assert_exists(os.path.dirname(autogen_dir), "autogen_dir's parent")
     assert_exists(config_f, 'autogen.json config file')
     assert_exists(templates_dir, 'templates_dir')
     # Load and verify config file
@@ -431,6 +443,11 @@ def main():
     # Init
     source_files = []
     header_files = []
+    # Create autogen_dir
+    if os.path.exists(autogen_dir):
+        print('-- Removing existing autogen directory')
+        shutil.rmtree(autogen_dir)
+    os.mkdir(autogen_dir)
     # Generate each file
     print('-- Generating autogen files')
     for entry in config:
