@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <mutex>
 #include <shared_mutex>
 #include <type_traits>
 
@@ -32,7 +33,7 @@ namespace Utils {
 
         /** Clear the internals */
         void clear() {
-            std::unique_lock<decltype(this->m)>(this->m);
+            std::lock_guard<decltype(this->m)>(this->m);
             this->obj.reset();
         }
 
@@ -120,14 +121,14 @@ namespace Utils {
       private:
         /** A private member used to set m safely */
         void set(Ptr ptr) {
-            std::unique_lock<decltype(this->m)>(this->m);
+            std::lock_guard<decltype(this->m)>(this->m);
             this->obj = ptr;
         }
 
         /** A private member used to set m safely */
         template <typename U> void set(U *const o) {
             static_assert(std::is_base_of_v<T, U>, "ThreadSafeAccess.set requires U subclass T");
-            std::unique_lock<decltype(this->m)>(this->m);
+            std::lock_guard<decltype(this->m)>(this->m);
             this->obj.reset(o);
         }
 

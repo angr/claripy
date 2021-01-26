@@ -61,7 +61,7 @@ namespace Utils {
 
             // Create locked scope
             {
-                std::unique_lock<decltype(lock)> rw(lock);
+                std::lock_guard<decltype(lock)> rw(lock);
                 // Initial find
                 if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
                     return lookup;
@@ -75,7 +75,7 @@ namespace Utils {
 
             // Create locked scope
             {
-                std::unique_lock<decltype(lock)> rw(lock);
+                std::lock_guard<decltype(lock)> rw(lock);
                 // Second lookup
                 if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
                     ret.reset();
