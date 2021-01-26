@@ -26,7 +26,7 @@ void test(std::ostringstream &s, Lvl) {
 
 
 /** Each construction should have a unique pointer */
-int levels() {
+void levels() {
     // Configure backend and style to output to with all relevant info
     std::ostringstream s;
     Style::set<Style::LevelTimestampMessage>();
@@ -34,5 +34,7 @@ int levels() {
 
     // Test each level
     UnitTest::test_each_level(s, test, STR);
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(levels)

@@ -12,7 +12,9 @@ using namespace UnitTest::TestLib;
 
 
 /** Test creating an Expression::Int */
-int int_() {
+void int_() {
     (void) UnitTest::TestLib::literal_int();
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(int_)

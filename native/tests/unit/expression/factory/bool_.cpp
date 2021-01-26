@@ -13,7 +13,9 @@ using namespace UnitTest::TestLib;
 
 
 /** Test creating an Expression Bool */
-int bool_() {
+void bool_() {
     (void) literal_factory<ConcreteBoolLiteral>(static_cast<Constants::Int>(0));
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(bool_)

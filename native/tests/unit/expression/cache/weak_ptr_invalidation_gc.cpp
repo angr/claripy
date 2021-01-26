@@ -24,7 +24,7 @@ struct UnitTest::ClaricppUnitTest {
 
 
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
-int weak_ptr_invalidation_gc() {
+void weak_ptr_invalidation_gc() {
     UnitTest::ClaricppUnitTest cache;
 
     // Create and destroy a base
@@ -36,5 +36,7 @@ int weak_ptr_invalidation_gc() {
     // Garbage collect then verify size
     cache.unsafe_gc();
     UNITTEST_ASSERT(cache.size() == 0)
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(weak_ptr_invalidation_gc)

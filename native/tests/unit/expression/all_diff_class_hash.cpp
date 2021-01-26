@@ -13,7 +13,7 @@ using namespace UnitTest::TestLib;
 
 
 /** Each construction should have a unique pointer and hash */
-int all_diff_class_hash() {
+void all_diff_class_hash() {
 
     const auto a1 = literal_factory<ConcreteIntLiteral>(0_i);
     const auto a2 = literal_factory<ConcreteBoolLiteral>(0_i);
@@ -43,5 +43,7 @@ int all_diff_class_hash() {
     ids.insert(a5.get());
 
     UNITTEST_ASSERT(ids.size() == 5)
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(all_diff_class_hash)

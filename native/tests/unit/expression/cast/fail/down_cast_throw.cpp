@@ -14,14 +14,17 @@ using namespace UnitTest::TestLib;
 
 
 /** Down casting should fail with an exception */
-int down_cast_throw() {
+void down_cast_throw() {
     ConcreteIntLiteral a = literal_int();
     Base b = up_cast<Base>(a);
     try {
         Bool c = down_cast_throw_on_fail<Bool>(b);
     }
     catch (Utils::Error::Unexpected::BadCast &e) {
-        return 0;
+        return;
     }
-    return 1;
+    UNITTEST_ERR("No bad cast exception caught")
 }
+
+// Define the test
+DEFINE_TEST(down_cast_throw)

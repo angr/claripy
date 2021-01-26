@@ -9,6 +9,9 @@
 #include "utils.hpp"
 
 
+/** A unittest macro used to throw an error */
+#define UNITTEST_ERR(...) throw UnitTest::TestLib::Error(__VA_ARGS__);
+
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT(B)                                                                        \
     if (!(B)) {                                                                                   \

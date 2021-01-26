@@ -18,8 +18,10 @@ struct Cout : Backend::OStream {
 };
 
 /** Verify our set backend was indeed set */
-int backend_access() {
+void backend_access() {
     Backend::set<Cout>();
     UNITTEST_ASSERT(dynamic_cast<Cout *>(Backend::get().get()) != nullptr)
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(backend_access)

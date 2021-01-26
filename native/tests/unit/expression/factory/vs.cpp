@@ -13,7 +13,9 @@ using namespace UnitTest::TestLib;
 
 
 /** Test creating an Expression VS */
-int vs() {
+void vs() {
     (void) literal_factory<ConcreteVSLiteral>(0_i);
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(vs)

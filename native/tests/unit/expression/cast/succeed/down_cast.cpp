@@ -14,10 +14,12 @@ using namespace UnitTest::TestLib;
 
 
 /* Down casting should succeed */
-int down_cast() {
+void down_cast() {
     ConcreteIntLiteral a = literal_int();
     Base b = up_cast<Base>(a);
     IntLiteral c = down_cast<IntLiteral>(b);
     UNITTEST_ASSERT(c == a)
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(down_cast)

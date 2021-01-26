@@ -42,7 +42,7 @@ void test(std::vector<std::ostringstream> &s, Lvl l) {
 }
 
 /** Test the multiplex backend */
-int multiplex() {
+void multiplex() {
 
     // The streams to be logged to
     std::vector<std::ostringstream> s(2);
@@ -63,5 +63,7 @@ int multiplex() {
 
     // Test each level
     UnitTest::test_each_level(s, test, "");
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(multiplex)

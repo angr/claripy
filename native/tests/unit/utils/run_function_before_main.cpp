@@ -23,7 +23,7 @@ UTILS_RUN_FUNCTION_BEFORE_MAIN(f, 4);
 
 
 /** Ensure f(4) was run before main */
-int run_function_before_main() {
-    UNITTEST_ASSERT(f() == 4)
-    return 0;
-}
+void run_function_before_main() { UNITTEST_ASSERT(f() == 4) }
+
+// Define the test
+DEFINE_TEST(run_function_before_main)

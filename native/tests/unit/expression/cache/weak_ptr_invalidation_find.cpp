@@ -26,7 +26,7 @@ namespace UnitTest {
 
 
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
-int weak_ptr_invalidation_find() {
+void weak_ptr_invalidation_find() {
     UnitTest::ClaricppUnitTest cache;
 
     // Create and destroy a base, but record its hash
@@ -45,5 +45,7 @@ int weak_ptr_invalidation_find() {
 
     // Check cache size
     UNITTEST_ASSERT(cache.size() == 0)
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(weak_ptr_invalidation_find)

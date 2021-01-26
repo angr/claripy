@@ -13,13 +13,11 @@ using namespace UnitTest::TestLib;
 
 
 /** Two ints should be the same */
-int int_int() {
+void int_int() {
     Int a = literal_int();
     Int b = literal_int();
-    if (a == b) {
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    UNITTEST_ASSERT(a == b)
 }
+
+// Define the test
+DEFINE_TEST(int_int)

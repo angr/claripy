@@ -40,7 +40,7 @@ UTILS_LOG_DEFINE_LOG_CLASS(Custom)
 
 
 /** Each construction should have a unique pointer */
-int custom() {
+void custom() {
     // Configure backend and style to output to with all relevant info
     std::ostringstream s;
     Style::set<CustomSty>();
@@ -48,5 +48,7 @@ int custom() {
 
     // Test each level
     UnitTest::test_each_level(s, test, "");
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(custom)

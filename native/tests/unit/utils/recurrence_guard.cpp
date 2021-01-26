@@ -29,7 +29,7 @@ void loop(unsigned n) {
 }
 
 /** Ensure the recourrence guard works */
-int recurrence_guard() {
+void recurrence_guard() {
 
     // Test recurrence guard
     bool caught = false;
@@ -43,6 +43,7 @@ int recurrence_guard() {
     // Verify recurrence gaurd worked
     UNITTEST_ASSERT(caught)
     UNITTEST_ASSERT(count == LIMIT)
-
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(recurrence_guard)

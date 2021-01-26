@@ -13,7 +13,9 @@ using namespace UnitTest::TestLib;
 
 
 /** Test creating an Expression String */
-int string() {
+void string() {
     (void) literal_factory<ConcreteStringLiteral>(0_i);
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(string)

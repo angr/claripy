@@ -41,7 +41,7 @@ auto construct_range(const ST lb, const ST ub) {
 
 
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
-int gc() {
+void gc() {
     UnitTest::ClaricppUnitTest cache;
     const ST init = cache.gc_resize;
     ST n = 0;
@@ -75,7 +75,7 @@ int gc() {
     // Verify cache size and gc_size
     UNITTEST_ASSERT(cache.size() == hold.size() + 1);
     UNITTEST_ASSERT(cache.gc_resize > init);
-
-    // Success
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(gc)

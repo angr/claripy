@@ -36,7 +36,7 @@ UTILS_LOG_DEFINE_LOG_CLASS(Custom)
 
 
 /** Log levels lower than the set level should be no-op's */
-int lower_level_ignored() {
+void lower_level_ignored() {
 
     // Determine if this test case is possible
 #ifdef CONSTANT_LOG_LEVEL
@@ -44,7 +44,7 @@ int lower_level_ignored() {
     if constexpr (lvl == Lvl::Verbose) {
         Utils::Log::warning(
             "Log level is constant and at level Verbose. Unable to test lower levels");
-        return 0;
+        return;
     }
 #endif
 
@@ -64,5 +64,7 @@ int lower_level_ignored() {
 
     // Run tests
     UnitTest::test_each_level(s, test, STR);
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(lower_level_ignored)

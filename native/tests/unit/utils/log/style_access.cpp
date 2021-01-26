@@ -19,8 +19,10 @@ struct Plain : Style::AbstractBase {
 };
 
 /** Verify our set style was indeed set */
-int style_access() {
+void style_access() {
     Style::set<Plain>();
     UNITTEST_ASSERT(dynamic_cast<Plain *>(Style::get().get()) != nullptr)
-    return 0;
 }
+
+// Define the test
+DEFINE_TEST(style_access)
