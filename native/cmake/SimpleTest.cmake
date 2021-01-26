@@ -1,5 +1,12 @@
 # Requires: SIMPLE_TEST_DIR set to the desired test directory
 
+# Error checking
+if (NOT DEFINED SIMPLE_TEST_DIR)
+	message(FATAL_ERROR "SimpleTest requires the SIMPLE_TEST_DIR variable be defined."
+			"This must be defined before including the SimpleTest.cmake file"
+	)
+endif()
+
 # Inform user about static analysis
 if(CLANG_TIDY OR LWYU)
 	message("Turning off some static analysis for test cases.")
