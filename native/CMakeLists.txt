@@ -136,12 +136,16 @@ endif()
 
 # Global required complication flags
 add_compile_options(
+	# Warning globs
 	"-Wall"
 	"-Wextra"
 	"-Werror" # Convert warnings to errors
 	# Remap file prefixes to make source location irrelevant to build constants like __FILE__
 	"-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/"
 	# A bunch of useful warnings to have
+	"-Wsuggest-final-types"
+	"-Wsuggest-final-methods"
+	"-Wsuggest-override"
 	"-Wcast-align"
 	"-Wcast-qual"
 	"-Wconversion"

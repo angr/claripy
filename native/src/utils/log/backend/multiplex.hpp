@@ -26,7 +26,8 @@ namespace Utils::Log::Backend {
         Multiplex() = default;
 
         /** Log the given message, level, to the correct log given by log_id with each backend */
-        void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg);
+        void log(Constants::CCSC id, const Level::Level &lvl,
+                 const std::string &msg) override final;
 
         /** Backend container type */
         using BackendContainer = std::vector<std::shared_ptr<AbstractBase>>;
