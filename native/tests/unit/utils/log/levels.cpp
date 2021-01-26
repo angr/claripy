@@ -37,4 +37,4 @@ void levels() {
 }
 
 // Define the test
-DEFINE_TEST(levels)
+UNITTEST_DEFINE_MAIN_TEST(levels)

@@ -18,4 +18,4 @@ void fp() {
 }
 
 // Define the test
-DEFINE_TEST(fp)
+UNITTEST_DEFINE_MAIN_TEST(fp)

@@ -12,7 +12,7 @@
 
 // TODO: UNITTEST_DEFINE_MAIN_TEST
 /** Define the main function and use it to test a given function */
-#define DEFINE_TEST(F)                                                                            \
+#define UNITTEST_DEFINE_MAIN_TEST(F)                                                              \
     /** Main function: test F */                                                                  \
     int main() {                                                                                  \
         UnitTest::TestLib::test_func(F);                                                          \

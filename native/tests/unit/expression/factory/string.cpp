@@ -18,4 +18,4 @@ void string() {
 }
 
 // Define the test
-DEFINE_TEST(string)
+UNITTEST_DEFINE_MAIN_TEST(string)

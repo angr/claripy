@@ -25,4 +25,4 @@ void style_access() {
 }
 
 // Define the test
-DEFINE_TEST(style_access)
+UNITTEST_DEFINE_MAIN_TEST(style_access)

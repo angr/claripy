@@ -66,4 +66,4 @@ void multiplex() {
 }
 
 // Define the test
-DEFINE_TEST(multiplex)
+UNITTEST_DEFINE_MAIN_TEST(multiplex)

@@ -26,4 +26,4 @@ UTILS_RUN_FUNCTION_BEFORE_MAIN(f, 4);
 void run_function_before_main() { UNITTEST_ASSERT(f() == 4) }
 
 // Define the test
-DEFINE_TEST(run_function_before_main)
+UNITTEST_DEFINE_MAIN_TEST(run_function_before_main)

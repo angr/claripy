@@ -22,4 +22,4 @@ void identical_bool_int() {
 }
 
 // Define the test
-DEFINE_TEST(identical_bool_int)
+UNITTEST_DEFINE_MAIN_TEST(identical_bool_int)

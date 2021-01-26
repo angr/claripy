@@ -46,4 +46,4 @@ void all_diff_class_hash() {
 }
 
 // Define the test
-DEFINE_TEST(all_diff_class_hash)
+UNITTEST_DEFINE_MAIN_TEST(all_diff_class_hash)

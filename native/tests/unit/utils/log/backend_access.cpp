@@ -24,4 +24,4 @@ void backend_access() {
 }
 
 // Define the test
-DEFINE_TEST(backend_access)
+UNITTEST_DEFINE_MAIN_TEST(backend_access)

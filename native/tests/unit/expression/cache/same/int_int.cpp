@@ -20,4 +20,4 @@ void int_int() {
 }
 
 // Define the test
-DEFINE_TEST(int_int)
+UNITTEST_DEFINE_MAIN_TEST(int_int)

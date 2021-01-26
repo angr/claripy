@@ -48,4 +48,4 @@ void weak_ptr_invalidation_find() {
 }
 
 // Define the test
-DEFINE_TEST(weak_ptr_invalidation_find)
+UNITTEST_DEFINE_MAIN_TEST(weak_ptr_invalidation_find)

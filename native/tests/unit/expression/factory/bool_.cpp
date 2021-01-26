@@ -18,4 +18,4 @@ void bool_() {
 }
 
 // Define the test
-DEFINE_TEST(bool_)
+UNITTEST_DEFINE_MAIN_TEST(bool_)

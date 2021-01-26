@@ -21,4 +21,4 @@ void up_cast() {
 }
 
 // Define the test
-DEFINE_TEST(up_cast)
+UNITTEST_DEFINE_MAIN_TEST(up_cast)

@@ -28,4 +28,4 @@ void level_access() {
 }
 
 // Define the test
-DEFINE_TEST(level_access)
+UNITTEST_DEFINE_MAIN_TEST(level_access)

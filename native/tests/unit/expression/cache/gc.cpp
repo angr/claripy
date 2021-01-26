@@ -78,4 +78,4 @@ void gc() {
 }
 
 // Define the test
-DEFINE_TEST(gc)
+UNITTEST_DEFINE_MAIN_TEST(gc)

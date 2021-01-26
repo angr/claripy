@@ -19,4 +19,4 @@ void bv_bv() {
 }
 
 // Define the test
-DEFINE_TEST(bv_bv)
+UNITTEST_DEFINE_MAIN_TEST(bv_bv)

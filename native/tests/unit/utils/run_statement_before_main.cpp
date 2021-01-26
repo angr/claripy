@@ -17,4 +17,4 @@ UTILS_RUN_STATEMENT_BEFORE_MAIN(i = 4);
 void run_statement_before_main() { UNITTEST_ASSERT(i == 4) }
 
 // Define the test
-DEFINE_TEST(run_statement_before_main)
+UNITTEST_DEFINE_MAIN_TEST(run_statement_before_main)

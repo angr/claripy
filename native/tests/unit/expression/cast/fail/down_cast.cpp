@@ -22,4 +22,4 @@ void down_cast() {
 }
 
 // Define the test
-DEFINE_TEST(down_cast)
+UNITTEST_DEFINE_MAIN_TEST(down_cast)

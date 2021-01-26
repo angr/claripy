@@ -27,4 +27,4 @@ void down_cast_throw() {
 }
 
 // Define the test
-DEFINE_TEST(down_cast_throw)
+UNITTEST_DEFINE_MAIN_TEST(down_cast_throw)

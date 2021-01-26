@@ -39,4 +39,4 @@ void weak_ptr_invalidation_gc() {
 }
 
 // Define the test
-DEFINE_TEST(weak_ptr_invalidation_gc)
+UNITTEST_DEFINE_MAIN_TEST(weak_ptr_invalidation_gc)

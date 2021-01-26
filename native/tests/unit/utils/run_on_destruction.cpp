@@ -42,4 +42,4 @@ UNITTEST_ASSERT(f() == 4)
 }
 
 // Define the test
-DEFINE_TEST(run_on_destruction)
+UNITTEST_DEFINE_MAIN_TEST(run_on_destruction)

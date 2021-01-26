@@ -51,4 +51,4 @@ void custom() {
 }
 
 // Define the test
-DEFINE_TEST(custom)
+UNITTEST_DEFINE_MAIN_TEST(custom)

@@ -46,4 +46,4 @@ void recurrence_guard() {
 }
 
 // Define the test
-DEFINE_TEST(recurrence_guard)
+UNITTEST_DEFINE_MAIN_TEST(recurrence_guard)

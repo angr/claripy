@@ -18,4 +18,4 @@ void bv() {
 }
 
 // Define the test
-DEFINE_TEST(bv)
+UNITTEST_DEFINE_MAIN_TEST(bv)

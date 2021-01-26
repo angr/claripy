@@ -18,4 +18,4 @@ void vs() {
 }
 
 // Define the test
-DEFINE_TEST(vs)
+UNITTEST_DEFINE_MAIN_TEST(vs)

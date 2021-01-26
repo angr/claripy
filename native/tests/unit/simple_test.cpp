@@ -9,4 +9,4 @@
 void simple_test() {}
 
 // Define the test
-DEFINE_TEST(simple_test)
+UNITTEST_DEFINE_MAIN_TEST(simple_test)

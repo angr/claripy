@@ -67,4 +67,4 @@ void lower_level_ignored() {
 }
 
 // Define the test
-DEFINE_TEST(lower_level_ignored)
+UNITTEST_DEFINE_MAIN_TEST(lower_level_ignored)
