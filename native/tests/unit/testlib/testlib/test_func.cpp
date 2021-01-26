@@ -1,28 +1,26 @@
-#include "testlib.hpp"
+/**
+ * @file
+ * \ingroup testlib
+ */
+#include "test_func.hpp"
+
+#include "error.hpp"
 #include "utils.hpp"
 
 #include <exception>
-#include <iostream>
-
-
-// For brevity
-using namespace UnitTest::TestLib;
 
 
 /** Catch and print an error before exiting */
 #define CATCH_ERROR(ERROR)                                                                        \
     catch (const ERROR &e) {                                                                      \
-        std::cout << #ERROR << ": " << e.what() << std::endl;                                     \
-        return -1;                                                                                \
+        UNITTEST_ERR(#ERROR, ": ", e.what())                                                      \
     }
 
 
-/** main */
-int main() {
+void UnitTest::TestLib::test_func(TestFN &f) {
     try {
-        UNITTEST_ASSERT_MSG(test_func, "Test function may not be nullptr")
-        test_func();
-        return 0;
+        f();
+        return;
     }
     CATCH_ERROR(UnitTest::TestLib::Error)
     CATCH_ERROR(Utils::Error::Unexpected::Base)

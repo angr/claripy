@@ -51,8 +51,7 @@ function(simple_test FUNC_NAME)
 	# Create the test
 	set(TEST_NAME "${TEST_PREFIX}${FUNC_NAME}")
 	set(BINARY "${TEST_NAME}.test")
-	set(MAIN "${SIMPLE_TEST_DIR}/main.cpp")
-	add_executable("${BINARY}" "${MAIN}" "${FUNC_NAME}.cpp" ${ARGN})
+	add_executable("${BINARY}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
 	target_include_directories("${BINARY}" SYSTEM PRIVATE
 		${Boost_INCLUDE_DIRS}

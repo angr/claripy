@@ -7,8 +7,9 @@
 #ifndef __TESTS_UNIT_TESTLIB_TESTLIB_HPP__
 #define __TESTS_UNIT_TESTLIB_TESTLIB_HPP__
 
-#include "testlib/define_test.hpp"
 #include "testlib/error.hpp"
 #include "testlib/factory.hpp"
+#include "testlib/main.hpp"
+#include "testlib/test_func.hpp"
 
 #endif
