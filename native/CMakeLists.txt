@@ -154,7 +154,6 @@ add_compile_options(
 	"-Wformat=2"
 	"-Wimport"
 	"-Winit-self"
-	"-Winline"
 	"-Winvalid-pch"
 	"-Wmissing-field-initializers"
 	"-Wmissing-format-attribute"
