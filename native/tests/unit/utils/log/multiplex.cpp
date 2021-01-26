@@ -20,13 +20,11 @@ using Lvl = Level::Level;
 using namespace UnitTest::TestLib;
 
 
-namespace UnitTest {
-    /** Allow accessing of OStream's private stream */
-    struct ClaricppUnitTest {
-        /** Extraction function */
-        static std::ostream &extract(OStream *o) { return o->stream; }
-    };
-} // namespace UnitTest
+/** Allow accessing of OStream's private stream */
+struct UnitTest::ClaricppUnitTest {
+    /** Extraction function */
+    static std::ostream &extract(OStream *o) { return o->stream; }
+};
 
 /** Test the given logging function */
 void test(std::vector<std::ostringstream> &s, Lvl l) {
