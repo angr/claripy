@@ -17,6 +17,7 @@
 #include "utils/pow.hpp"
 #include "utils/recurrence_guard.hpp"
 #include "utils/ref.hpp"
+#include "utils/run_after_main.hpp"
 #include "utils/run_before_main.hpp"
 #include "utils/run_cr_function.hpp"
 #include "utils/run_on_destruction.hpp"
