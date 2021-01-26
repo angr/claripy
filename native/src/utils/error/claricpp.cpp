@@ -11,6 +11,6 @@ using namespace Utils::Error;
 
 Claricpp::~Claricpp() {}
 
-const char *Claricpp::what() const throw() {
+const char *Claricpp::what() const noexcept {
     return msg.c_str();
 }

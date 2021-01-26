@@ -30,7 +30,7 @@ namespace Utils::Error {
         virtual ~Claricpp();
 
         /** Message getter */
-        const char *what() const throw() override final;
+        const char *what() const noexcept override final;
 
       protected:
         /** Delete default constructor */
