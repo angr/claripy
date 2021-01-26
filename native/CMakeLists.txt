@@ -145,6 +145,7 @@ add_compile_options(
 	# A bunch of useful warnings to have
 	"-Wcast-align"
 	"-Wcast-qual"
+	"-Wdeprecated"
 	"-Wconversion"
 	"-Wdisabled-optimization"
 	"-Wfloat-equal"
