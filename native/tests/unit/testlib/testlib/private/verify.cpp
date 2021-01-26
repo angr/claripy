@@ -12,6 +12,7 @@ static bool ran = false;
 
 
 void UnitTest::TestLib::Private::verify() {
+    UNITTEST_ASSERT_MSG(!ran, "UnitTest::TestLib::Private::verify() ran more than once")
     ran = true;
 }
 
