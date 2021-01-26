@@ -125,15 +125,15 @@ namespace Utils {
             std::vector<Hash> del;
             Log::debug<Self>("Garbage collecting cache");
             // Find all expired weak_ptrs
-            for (auto i = this->cache.begin(); i != this->cache.end(); ++i) {
-                if (i->second.expired()) {
-                    del.push_back(i->first);
+            for (const auto &[hash, ptr] : this->cache) {
+                if (ptr.expired()) {
+                    del.push_back(hash);
                 }
             }
             // Delete them
-            for (typename CacheMap::size_type i = 0; i < del.size(); ++i) {
+            for (const typename CacheMap::size_type i : del) {
                 Log::verbose<Self>(__func__, ": Cache invalidation");
-                this->cache.erase(del[i]);
+                this->cache.erase(i);
             }
             // Resize gc_size to a reasonable size
             this->gc_resize = Max::value(Self::gc_resize_default, this->cache.size() << 1);
