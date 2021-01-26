@@ -45,14 +45,17 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
     case Lvl::Critical:
         color = ANSIColorCodes::HighIntensity::Bold::red;
         break;
-    case Lvl::Disabled: // Can happen because of other threads
         color = ANSIColorCodes::grn;
         break;
     case Lvl::Debug:
         color = ANSIColorCodes::blk;
         break;
+    case Lvl::Disabled: // Should not be possible
+        throw Error::Unexpected::IncorrectUsage("Log backend given disabled level");
+        break;
     default: // Just in case
         throw Error::Unexpected::Unknown("Logger was given unknown level");
+        break;
     }
 
     // Output
