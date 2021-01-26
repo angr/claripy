@@ -18,13 +18,15 @@
         struct RunAfterMain {                                                                     \
             /** Destructor */                                                                     \
             ~RunAfterMain() { (void) (STATEMENT); }                                               \
+            /** Constructor */                                                                    \
+            RunAfterMain() = default;                                                             \
             /** Delete copy constructor */                                                        \
             RunAfterMain(const RunAfterMain &) = delete;                                          \
             /** Delete move constructor */                                                        \
             RunAfterMain(RunAfterMain &&) = delete;                                               \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
-        RunAfterMain rbm;                                                                         \
+        RunAfterMain ram;                                                                         \
     }
 
 /** Define a macro to allow running a function before main
@@ -37,13 +39,15 @@
         struct RunAfterMain {                                                                     \
             /** Destructor */                                                                     \
             ~RunAfterMain() { (void) F(__VA_ARGS__); }                                            \
+            /** Constructor */                                                                    \
+            RunAfterMain() = default;                                                             \
             /** Delete copy constructor */                                                        \
             RunAfterMain(const RunAfterMain &) = delete;                                          \
             /** Delete move constructor */                                                        \
             RunAfterMain(RunAfterMain &&) = delete;                                               \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
-        RunAfterMain rbm;                                                                         \
+        RunAfterMain ram;                                                                         \
     }
 
 
