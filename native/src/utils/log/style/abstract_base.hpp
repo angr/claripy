@@ -1,10 +1,10 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines the AbstractBase Log Style class
+ * @brief This file defines the Base Log Style class
  */
-#ifndef __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
-#define __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
+#ifndef __UTILS_LOG_STYLE_BASE_HPP__
+#define __UTILS_LOG_STYLE_BASE_HPP__
 
 #include "../../../constants.hpp"
 #include "../../../macros.hpp"
@@ -19,13 +19,13 @@ namespace Utils::Log::Style {
      *  All log styles must subclass this
      *  The subclass must implement the str function defined below
      */
-    struct AbstractBase {
+    struct Base {
 
         /** Default virtual destructor */
-        virtual ~AbstractBase() = 0;
+        virtual ~Base() = 0;
 
         // Rule of 5
-        SET_IMPLICITS(AbstractBase, default)
+        SET_IMPLICITS(Base, default)
 
         /** Format the log message */
         virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,

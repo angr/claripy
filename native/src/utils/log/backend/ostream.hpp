@@ -19,7 +19,7 @@ namespace Utils::Log::Backend {
      *  This takes in an ostream and logs to it
      *  Note, we do logging in a threadsafe context
      */
-    struct OStream : public AbstractBase {
+    struct OStream : public Base {
 
         /** Constructor: Use default with initalizer list
          *  If flush, every time s is written to the contents are flushed; by default flush = true

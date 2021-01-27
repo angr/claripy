@@ -13,33 +13,31 @@
 namespace Utils::Log::Backend {
 
     // Forward declarations
-    struct AbstractBase;
+    struct Base;
 
     namespace Private {
 
         /** Define a private set method */
-        void set(std::shared_ptr<AbstractBase> &ptr);
+        void set(std::shared_ptr<Base> &ptr);
 
     } // namespace Private
 
     /** Set the Log Backend to a new T constructed with arguments: args	*/
     template <typename T, typename... Args> inline void set(Args &&...args) {
-        static_assert(std::is_base_of_v<AbstractBase, T>,
-                      "T must subclass log backend AbstractBase");
-        std::shared_ptr<AbstractBase> ptr(new T(std::forward<Args>(args)...));
+        static_assert(std::is_base_of_v<Base, T>, "T must subclass log backend Base");
+        std::shared_ptr<Base> ptr(new T(std::forward<Args>(args)...));
         Private::set(ptr);
     }
 
     /** Set the Log Backend to a new T copy constructed from c */
     template <typename T, typename... Args> inline void copy(const T &c) {
-        static_assert(std::is_base_of_v<AbstractBase, T>,
-                      "T must subclass log backend AbstractBase");
-        std::shared_ptr<AbstractBase> ptr(new T(c));
+        static_assert(std::is_base_of_v<Base, T>, "T must subclass log backend Base");
+        std::shared_ptr<Base> ptr(new T(c));
         Private::set(ptr);
     }
 
     /** Return a copy of the Backend */
-    std::shared_ptr<AbstractBase> get();
+    std::shared_ptr<Base> get();
 
 } // namespace Utils::Log::Backend
 

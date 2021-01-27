@@ -9,4 +9,4 @@
 using namespace Utils::Log::Style;
 
 
-AbstractBase::~AbstractBase() = default;
+Base::~Base() = default;

@@ -13,12 +13,12 @@
 // For brevity
 using namespace Utils;
 using namespace Log;
-using Bk = Backend::AbstractBase;
+using Bk = Backend::Base;
 
 
 // Create a thread safe backend wrapper
 static ThreadSafeAccess<Bk> access(std::make_shared<Backend::Default>());
-using Ptr = std::shared_ptr<Backend::AbstractBase>;
+using Ptr = std::shared_ptr<Backend::Base>;
 
 
 // Error checking

@@ -9,4 +9,4 @@
 using namespace Utils::Log::Backend;
 
 
-AbstractBase::~AbstractBase() = default;
+Base::~Base() = default;

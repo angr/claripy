@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the base logging backend class
  */
-#ifndef __UTILS_LOG_BACKEND_ABSTRACTBASE_HPP__
-#define __UTILS_LOG_BACKEND_ABSTRACTBASE_HPP__
+#ifndef __UTILS_LOG_BACKEND_BASE_HPP__
+#define __UTILS_LOG_BACKEND_BASE_HPP__
 
 #include "../../../constants.hpp"
 #include "../../../macros.hpp"
@@ -19,13 +19,13 @@ namespace Utils::Log::Backend {
      *  All Log backend must subclass this
      *  The subclass must implement the log function defined below
      */
-    struct AbstractBase {
+    struct Base {
 
         /** Default virtual destructor */
-        virtual ~AbstractBase() = 0;
+        virtual ~Base() = 0;
 
         // Rule of 5
-        SET_IMPLICITS(AbstractBase, default)
+        SET_IMPLICITS(Base, default)
 
         /** Log the given message, level, to the correct log given by log_id */
         virtual void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg) = 0;

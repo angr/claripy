@@ -13,12 +13,12 @@
 // For brevity
 using namespace Utils;
 using namespace Log;
-using Sty = Style::AbstractBase;
+using Sty = Style::Base;
 
 
 // File local variables
 static ThreadSafeAccess<Sty> access(std::make_shared<Style::Default>());
-using Ptr = std::shared_ptr<Style::AbstractBase>;
+using Ptr = std::shared_ptr<Style::Base>;
 
 
 // Error checking
