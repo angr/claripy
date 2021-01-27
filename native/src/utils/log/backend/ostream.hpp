@@ -8,8 +8,7 @@
 
 #include "abstract_base.hpp"
 
-#include "../../../unittest.hpp"
-
+#include <memory>
 #include <mutex>
 #include <ostream>
 
@@ -24,10 +23,12 @@ namespace Utils::Log::Backend {
 
         /** Constructor: Keeps a reference to the passed stream; do not destroy s!
          *  If flush, every time s is written to the contents are flushed; by default flush = true
-         *  Warning: the passes ostream may not be closed or destroyed !
-         *  Note: Because copying an ostream doesn't really make sense we use references
+         *  Note: if the ostream is constructed by sharing a buffer with a static like std::cout
+         *  or something, flush_on_exit should be false as static destruction is done without
+         *  a defined order.
          */
-        OStream(std::ostream &s, const bool flush = true);
+        OStream(std::shared_ptr<std::ostream> s, const bool flush,
+                const bool flush_on_exit = true);
 
         /** A virtual destructor */
         virtual ~OStream();
@@ -40,19 +41,17 @@ namespace Utils::Log::Backend {
                  const std::string &msg) override final;
 
       private:
-        /** The stream we write to
-         *  Declared as mutable to allow writing to the stream from const methods
-         */
-        std::ostream &stream;
+        /** The stream we log to */
+        std::shared_ptr<std::ostream> stream;
 
         /** If true, every time stream is written to the contents are flushed */
         const bool flush;
 
+        /** True if the stream should be flushed at exit */
+        const bool flush_on_exit;
+
         /** A mutex to ensure logging is threadsafe */
         mutable std::mutex m;
-
-        /** Allow unittesting */
-        ENABLE_UNITTEST_FRIEND_ACCESS
     };
 
 } // namespace Utils::Log::Backend
