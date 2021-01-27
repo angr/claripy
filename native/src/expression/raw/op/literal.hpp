@@ -19,7 +19,7 @@ namespace Expression::Raw::Op {
 
     /** The op class Literal */
     class Literal : virtual public Base, virtual public CUSized {
-        EXPRESSION_RAW_ABSTRACT_INIT(Literal)
+        EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(Literal)
       public:
         /** Return the op */
         Constants::CCS op() const override final;
@@ -29,7 +29,7 @@ namespace Expression::Raw::Op {
                                     boost::multiprecision::mpz_int>;
 
       protected:
-        /** Constructor
+        /** Protected constructor
          *  @todo figure out how this will work
          *  @todo Intern strings
          */
@@ -37,9 +37,6 @@ namespace Expression::Raw::Op {
 
         /** Representation */
         const ValueT value;
-
-        /** Delete default constructor */
-        Literal() = delete;
     };
 
 } // namespace Expression::Raw::Op

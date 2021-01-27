@@ -14,7 +14,7 @@ namespace Expression::Raw::Op {
 
     /** The op class If */
     class If : virtual public Base {
-        EXPRESSION_RAW_ABSTRACT_INIT(If)
+        EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(If)
       public:
         /** Return the op */
         Constants::CCS op() const override final;
@@ -27,12 +27,9 @@ namespace Expression::Raw::Op {
         const Expression::Base if_false;
 
       protected:
-        /** Constructor */
+        /** Protected constructor */
         If(const Expression::Bool &cond, const Expression::Base &if_true,
            const Expression::Base &if_false);
-
-        /** Delete default constructor */
-        If() = delete;
     };
 
 } // namespace Expression::Raw::Op

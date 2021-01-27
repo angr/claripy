@@ -13,7 +13,8 @@ namespace Utils {
 
     /** An unconstructable class */
     class Unconstructable {
-        DELETE_DEFAULTS(Unconstructable);
+        // Disable construction
+        SET_IMPLICITS(Unconstructable, delete);
         /** Disable Destruction */
         ~Unconstructable() = delete;
     };

@@ -7,6 +7,7 @@
 #define __UTILS_LOG_STYLE_ABSTRACTBASE_HPP__
 
 #include "../../../constants.hpp"
+#include "../../../macros.hpp"
 #include "../level.hpp"
 
 #include <string>
@@ -21,7 +22,10 @@ namespace Utils::Log::Style {
     struct AbstractBase {
 
         /** Default virtual destructor */
-        virtual ~AbstractBase() = default;
+        virtual ~AbstractBase() = 0;
+
+        // Rule of 5
+        SET_IMPLICITS(AbstractBase, default)
 
         /** Format the log message */
         virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,

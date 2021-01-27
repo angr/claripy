@@ -14,6 +14,6 @@ static_assert(std::is_same_v<Symbolic, __SYM> || std::is_same_v<Concrete, __SYM>
 struct __SYM__TYPE__OP final : virtual public __TYPE__OP, virtual public __SUPER2 {
     EXPRESSION_RAW_INSTANTIABLE_INIT(__SYM__TYPE__OP)
   private:
-    /** Disable public construction */
+    /** Protected constructor */
     __SYM__TYPE__OP(__CTORARGS);
 };

@@ -4,6 +4,7 @@
  * @brief This file contains the possible standard python exceptions claricpp can raise
  * These exceptions have python analogs and must be caught and set to python
  * via a different method.
+ * Note: these exceptions ignore the rule of 5 (see claricpp.hpp)
  * @todo Document method when known
  */
 #ifndef __ERRORS_PYTHON_HPP__
@@ -21,8 +22,10 @@ namespace Utils::Error {
          *  All Python exceptions must derive from this
          */
         struct Base : public Claricpp {
+
             /** Inherit constructors */
             using Claricpp::Claricpp;
+
             /** Virtual destructor */
             virtual ~Base();
         };

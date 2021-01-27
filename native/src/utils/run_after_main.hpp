@@ -16,14 +16,12 @@
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
         struct RunAfterMain {                                                                     \
+            /** Default constructor */                                                            \
+            RunAfterMain() = default;                                                             \
             /** Destructor */                                                                     \
             ~RunAfterMain() { (void) (STATEMENT); }                                               \
-            /** Constructor */                                                                    \
-            RunAfterMain() = default;                                                             \
-            /** Delete copy constructor */                                                        \
-            RunAfterMain(const RunAfterMain &) = delete;                                          \
-            /** Delete move constructor */                                                        \
-            RunAfterMain(RunAfterMain &&) = delete;                                               \
+            /* Disable non-default creation methods */                                            \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunAfterMain, delete)                       \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunAfterMain ram;                                                                         \
@@ -37,14 +35,12 @@
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
         struct RunAfterMain {                                                                     \
+            /** Default constructor */                                                            \
+            RunAfterMain() = default;                                                             \
             /** Destructor */                                                                     \
             ~RunAfterMain() { (void) F(__VA_ARGS__); }                                            \
-            /** Constructor */                                                                    \
-            RunAfterMain() = default;                                                             \
-            /** Delete copy constructor */                                                        \
-            RunAfterMain(const RunAfterMain &) = delete;                                          \
-            /** Delete move constructor */                                                        \
-            RunAfterMain(RunAfterMain &&) = delete;                                               \
+            /* Disable non-default creation methods */                                            \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunAfterMain, delete)                       \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunAfterMain ram;                                                                         \

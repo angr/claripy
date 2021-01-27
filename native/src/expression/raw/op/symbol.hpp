@@ -12,7 +12,7 @@ namespace Expression::Raw::Op {
 
     /** The op class Symbol */
     class Symbol : virtual public Base {
-        EXPRESSION_RAW_ABSTRACT_INIT(Symbol)
+        EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(Symbol)
       public:
         /** Return the op */
         Constants::CCS op() const override final;
@@ -23,9 +23,6 @@ namespace Expression::Raw::Op {
       protected:
         /** A protected constructor to disallow public creation */
         Symbol(const std::string &name);
-
-        /** Delete default constructor */
-        Symbol() = delete;
     };
 
 } // namespace Expression::Raw::Op

@@ -14,10 +14,7 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression of bits */
     class Bits : virtual public Base, virtual public CUSized {
-        EXPRESSION_RAW_ABSTRACT_INIT(Bits)
-      protected:
-        /** A protected constructor to disallow public creation */
-        Bits() = default;
+        EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(Bits)
     };
 
 } // namespace Expression::Raw::Type

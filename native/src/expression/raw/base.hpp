@@ -29,7 +29,7 @@ namespace Expression {
          *  All expressions must subclass this
          */
         class Base {
-            EXPRESSION_RAW_ABSTRACT_INIT(Base)
+            EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(Base)
           public:
             /************************************************/
             /*                Pure Virtuals                 */
@@ -64,9 +64,6 @@ namespace Expression {
             /************************************************/
             /*                 Constructors                 */
             /************************************************/
-
-            /** Delete default constructor */
-            Base() = delete;
 
             /** A protected constructor to disallow public creation
              *  ans is consumed via move semantics in the constructor source file

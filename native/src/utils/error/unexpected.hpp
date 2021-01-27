@@ -3,6 +3,7 @@
  * \ingroup utils
  * @brief This file contains the possible exceptions that indicate an internal claricpp failur
  * These exceptions are not expected to be raised if claricpp is operating as intended
+ * Note: these exceptions ignore the rule of 5 (see claricpp.hpp)
  */
 #ifndef __ERRORS_UNEXPECTED_HPP__
 #define __ERRORS_UNEXPECTED_HPP__
@@ -20,8 +21,10 @@ namespace Utils::Error {
          *  All unexpected exceptions must derive from this
          */
         struct Base : public Claricpp {
+
             /** Inherit constructors */
             using Claricpp::Claricpp;
+
             /** Virtual destructor */
             virtual ~Base();
         };

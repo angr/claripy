@@ -12,7 +12,7 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression boolean */
     class Bool : virtual public Base {
-        EXPRESSION_RAW_ABSTRACT_INIT(Bool)
+        EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(Bool)
       public:
         /** Return true if the Expression evaluates to true */
         bool is_true() const;
@@ -22,10 +22,6 @@ namespace Expression::Raw::Type {
 
         /** Get the type of the expression */
         Constants::CCS type() const override final;
-
-      protected:
-        /** A protected constructor to disallow public creation */
-        Bool() = default;
     };
 
 } // namespace Expression::Raw::Type

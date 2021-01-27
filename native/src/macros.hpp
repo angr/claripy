@@ -16,14 +16,34 @@
  */
 #define WHOAMI_WITH_SOURCE __FILE__ " via " __BASE_FILE__ ": ", __LINE__, " (", __func__, "): "
 
-/** A macro used to disable all default constructors of a class */
-#define DELETE_DEFAULTS(X)                                                                        \
-    /** Disable default constructor */                                                            \
-    X() = delete;                                                                                 \
+
+/** A macro used to enable/disable the implict operators of a class */
+#define SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                     \
+    /** Disable copy operator */                                                                  \
+    CLASS &operator=(const CLASS &) = VALUE;                                                      \
+    /** Disable move operator */                                                                  \
+    CLASS &operator=(CLASS &&) = VALUE;
+
+/** A macro used to enable/disable the implicit non-default constructors of a class */
+#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                              \
     /** Disable default copy constructor */                                                       \
-    X(const X &) = delete;                                                                        \
+    CLASS(const CLASS &) = VALUE;                                                                 \
     /** Disable default move constructor */                                                       \
-    X(X &&) = delete;
+    CLASS(CLASS &&) = VALUE;
+
+/** A macro used to enable/disable all implict constructors and operators of a class
+ *  except for the default constructor
+ */
+#define SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, VALUE)                                   \
+    SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                         \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)
+
+/** A macro used to enable/disable all implicit constructors and operators of a class */
+#define SET_IMPLICITS(CLASS, VALUE)                                                               \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, VALUE)                                       \
+    /** Disable default constructor */                                                            \
+    CLASS() = VALUE;
+
 
 /** A macro used to define a derived class that inherets its parent's constructors
  *  The body of this class is otherwise empty

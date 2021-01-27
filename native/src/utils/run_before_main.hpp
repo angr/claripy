@@ -17,10 +17,8 @@
         struct RunBeforeMain {                                                                    \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
-            /** Delete copy constructor */                                                        \
-            RunBeforeMain(const RunBeforeMain &) = delete;                                        \
-            /** Delete move constructor */                                                        \
-            RunBeforeMain(RunBeforeMain &&) = delete;                                             \
+            /* Disable other creation methods */                                                  \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunBeforeMain, delete)                      \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \
@@ -36,10 +34,8 @@
         struct RunBeforeMain {                                                                    \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
-            /** Delete copy constructor */                                                        \
-            RunBeforeMain(const RunBeforeMain &) = delete;                                        \
-            /** Delete move constructor */                                                        \
-            RunBeforeMain(RunBeforeMain &&) = delete;                                             \
+            /* Disable other creation methods */                                                  \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunBeforeMain, delete)                      \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \

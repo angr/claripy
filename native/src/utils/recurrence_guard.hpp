@@ -7,6 +7,7 @@
 #define __UTILS_RECURRENCEGUARD_HPP__
 
 #include "../constants.hpp"
+#include "../macros.hpp"
 
 #include <map>
 #include <string>
@@ -39,6 +40,9 @@ namespace Utils {
       private:
         /** The name of the function */
         const std::string func;
+
+        // Disable other creation methods
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RecurrenceGuard, delete)
     };
 
 } // namespace Utils

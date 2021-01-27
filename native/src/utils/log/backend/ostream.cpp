@@ -5,6 +5,7 @@
 #include "ostream.hpp"
 
 #include <mutex>
+#include <ostream>
 
 
 // For brevity
@@ -13,6 +14,9 @@ using namespace Utils::Log::Backend;
 
 OStream::OStream(std::ostream &s, const bool f) : stream(s), flush(f) {}
 
+OStream::~OStream() {
+    /* stream.flush(); */
+}
 
 void OStream::log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg) {
     std::lock_guard<decltype(this->m)> lock(m);

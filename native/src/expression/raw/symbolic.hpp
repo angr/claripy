@@ -16,14 +16,10 @@ namespace Expression {
          *  All symbolic expressions must subclass this
          */
         struct Symbolic : virtual public Base {
-            EXPRESSION_RAW_ABSTRACT_INIT(Symbolic)
+            EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(Symbolic)
           public:
             /** Return true if and only if this expression is symbolic */
             bool symbolic() const override final;
-
-          protected:
-            /** Disallow public construction */
-            Symbolic() = default;
         };
 
     } // namespace Raw

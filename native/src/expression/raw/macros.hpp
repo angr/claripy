@@ -5,6 +5,8 @@
 #ifndef __EXPRESSION_RAW_MACROS_HPP__
 #define __EXPRESSION_RAW_MACROS_HPP__
 
+#include "../../macros.hpp"
+
 #include <memory>
 
 
@@ -18,7 +20,8 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_INSTANTIABLE_INIT(CLASS)                                                   \
-    DELETE_DEFAULTS(CLASS)                                                                        \
+    /* Disallow construction without using the one specified constructor */                       \
+    SET_IMPLICITS(CLASS, delete)                                                                  \
   public:                                                                                         \
     /** Non-virtual destructor */                                                                 \
     ~CLASS() override final;                                                                      \
@@ -31,19 +34,34 @@
     friend class ::Utils::Cache<Hash::Hash, ::Expression::Raw::Base>;
 
 
-/** Used to initalize an abstract expression
+/** Used to initalize an abstract expression that uses the implict constructors
  *  This macro will end in a 'private' state
  */
-#define EXPRESSION_RAW_ABSTRACT_INIT(CLASS)                                                       \
+#define EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(CLASS)                                         \
+  public:                                                                                         \
+    /** Pure virtual destructor */                                                                \
+    virtual ~CLASS() = 0;                                                                         \
+                                                                                                  \
+  protected:                                                                                      \
+    /** Use the default constructor */                                                            \
+    CLASS() = default;                                                                            \
+                                                                                                  \
+  private:                                                                                        \
+    /* Disallow construction without using the specified constructors */                          \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, delete)
+
+
+/** Used to initalize an abstract expression that has a custom constructor
+ *  This macro will end in a 'private' state
+ */
+#define EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(CLASS)                                           \
   public:                                                                                         \
     /** Pure virtual destructor */                                                                \
     virtual ~CLASS() = 0;                                                                         \
                                                                                                   \
   private:                                                                                        \
-    /** Delete copy constructor */                                                                \
-    CLASS(const CLASS &) = delete;                                                                \
-    /** Delete move constructor */                                                                \
-    CLASS(CLASS &&) = delete;
+    /* Disallow construction without using the specified constructors */                          \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, delete)
 
 
 #endif

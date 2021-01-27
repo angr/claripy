@@ -6,6 +6,7 @@
 #define __ANNOTATION_BASE_HPP__
 
 #include "../constants.hpp"
+#include "../macros.hpp"
 
 #include <memory>
 #include <utility>
@@ -28,6 +29,9 @@ namespace Annotation {
 
         /** Virtual destructor */
         virtual ~Base();
+
+        // Rule of 5
+        SET_IMPLICITS(Base, default)
 
         /** Virtual hash function
          *  Every subclass must implement this

@@ -15,10 +15,7 @@ namespace Expression {
          *  All op expressions must subclass this
          */
         struct Base : virtual public ::Expression::Raw::Base {
-            EXPRESSION_RAW_ABSTRACT_INIT(Base)
-          protected:
-            /** Disallow public construction */
-            Base() = default;
+            EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(Base)
         };
 
     } // namespace Raw::Op

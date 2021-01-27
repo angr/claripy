@@ -37,7 +37,8 @@ namespace Utils {
         void disable() { this->enabled = false; }
 
       private:
-        DELETE_DEFAULTS(RunOnDestruction)
+        // Disable all other methods of construction
+        SET_IMPLICITS(RunOnDestruction, delete)
 
         /** Determine if f should be run on destruction or not */
         bool enabled;

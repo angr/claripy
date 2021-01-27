@@ -29,16 +29,7 @@ namespace Expression {
          *  is d
          */
         class Base : virtual public ::Expression::Raw::Base {
-            EXPRESSION_RAW_ABSTRACT_INIT(Base)
-          protected:
-            /************************************************/
-            /*                 Constructors                 */
-            /************************************************/
-
-            /** A protected constructor to disallow public creation */
-            Base() = default;
-
-          private:
+            EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(Base)
             /** Declare CacheKey a friend */
             friend class ::Expression::CacheKey;
         };

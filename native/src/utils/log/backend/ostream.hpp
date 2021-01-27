@@ -29,8 +29,11 @@ namespace Utils::Log::Backend {
          */
         OStream(std::ostream &s, const bool flush = true);
 
-        /** Default pure virtual destructor */
-        ~OStream() = default;
+        /** A virtual destructor */
+        virtual ~OStream();
+
+        // We don't want to mess with the shared ostream
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(OStream, delete)
 
         /** Log the message */
         void log(Constants::CCSC id, const Level::Level &lvl,
@@ -47,9 +50,6 @@ namespace Utils::Log::Backend {
 
         /** A mutex to ensure logging is threadsafe */
         mutable std::mutex m;
-
-        /** Delete default constructor */
-        OStream() = delete;
 
         /** Allow unittesting */
         ENABLE_UNITTEST_FRIEND_ACCESS

@@ -12,14 +12,10 @@ namespace Expression::Raw::Type {
 
     /** An Expression representing an integer */
     class FP : virtual public Bits {
-        EXPRESSION_RAW_ABSTRACT_INIT(FP)
+        EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(FP)
       public:
         /** Get the type of the expression */
         Constants::CCS type() const override final;
-
-      protected:
-        /** A protected constructor to disallow public creation */
-        FP() = default;
     };
 
 } // namespace Expression::Raw::Type

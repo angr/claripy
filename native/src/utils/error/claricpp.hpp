@@ -18,12 +18,13 @@ namespace Utils::Error {
 
     /** The base claricpp exception class
      *  Any exception thrown intentioanlly must subclass this
+     *  Note: Since exceptions do not need to be super fast and since we have const date members:
+     *  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses
+     *  of Claricpp should feel free to do the same unless they have non-const data members
      */
     class Claricpp : public std::exception {
       public:
-        /** Public constructor
-         *  This constructor consumes its arguments via const reference
-         */
+        /** Constructor: This constructor consumes its arguments via const reference */
         template <typename... Args> Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
         /** Virtual destructor */
@@ -31,10 +32,6 @@ namespace Utils::Error {
 
         /** Message getter */
         const char *what() const noexcept override final;
-
-      protected:
-        /** Delete default constructor */
-        Claricpp() = delete;
 
       private:
         /** The message */

@@ -21,7 +21,7 @@ namespace Expression {
     /** CacheKey is a reference to an Expression
      *  Two CacheKeys are considered equal when their hashes are equal
      */
-    class CacheKey {
+    class CacheKey final {
       public:
         /** Constructor */
         CacheKey(const Raw::Type::Base &a);
@@ -35,9 +35,6 @@ namespace Expression {
         bool operator==(const CacheKey &) const;
 
       private:
-        /** Delete all default constructors */
-        DELETE_DEFAULTS(CacheKey);
-
         /************************************************/
         /*                Representation                */
         /************************************************/

@@ -51,10 +51,19 @@ namespace Utils {
         ThreadSafeAccess(const Ptr ptr) : obj(ptr) {}
 
         /** Copy constructor */
-        ThreadSafeAccess(const ThreadSafeAccess &old) { this->set(old.get()); }
+        ThreadSafeAccess(const ThreadSafeAccess &old) : obj(old.get()) {}
 
-        /** Disable move constructor */
-        ThreadSafeAccess(ThreadSafeAccess &&) = delete;
+        /** Move constructor is just a copy */
+        ThreadSafeAccess(ThreadSafeAccess &&old) : obj(old.get()) {}
+
+        /** Copy assignment */
+        ThreadSafeAccess &operator=(const ThreadSafeAccess &old) {
+            this->set(old.get());
+            return *this;
+        }
+
+        /** Move assignment is copy assignment */
+        ThreadSafeAccess &operator=(ThreadSafeAccess &&old) { return (*this = old); }
 
         /************************************************/
         /*                   Setters                    */

@@ -12,14 +12,10 @@ namespace Expression::Raw::Type {
 
     /** This class represents an Expression bit vector */
     class BV : virtual public Bits {
-        EXPRESSION_RAW_ABSTRACT_INIT(BV)
+        EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(BV)
       public:
         /** Get the type of the expression */
         Constants::CCS type() const override final;
-
-      protected:
-        /** A protected constructor to disallow public creation */
-        BV() = default;
     };
 
 } // namespace Expression::Raw::Type
