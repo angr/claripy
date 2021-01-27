@@ -9,4 +9,4 @@
 using namespace Utils::Log::Style;
 
 
-Base::~Base() noexcept = default;
+Base::~Base() = default;

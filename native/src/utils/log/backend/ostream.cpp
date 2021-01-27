@@ -13,7 +13,7 @@
 using namespace Utils::Log::Backend;
 
 
-OStream::OStream(std::shared_ptr<std::ostream> s, const bool f, const bool f_exit)
+OStream::OStream(std::shared_ptr<std::ostream> s, const bool f, const bool f_exit) noexcept
     : stream(std::move(s)), flush(f), flush_on_exit(f_exit) {}
 
 OStream::~OStream() {

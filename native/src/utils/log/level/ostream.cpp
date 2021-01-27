@@ -18,12 +18,15 @@ using Lvl = Level::Level;
 
 
 /** Create a map entry for a log level */
-#define MAP_ENTRY(X) { Lvl::X, std::string(#X) },
+#define MAP_ENTRY(X)                                                                              \
+    { Lvl::X, std::string(#X) }
 
 
 /** Map Levels to their names */
-static const std::map<Lvl, std::string> names = { MAP_ENTRY(Verbose) MAP_ENTRY(Debug) MAP_ENTRY(
-    Info) MAP_ENTRY(Warning) MAP_ENTRY(Error) MAP_ENTRY(Critical) MAP_ENTRY(Disabled) };
+static const std::map<Lvl, std::string> names = { MAP_ENTRY(Verbose), MAP_ENTRY(Debug),
+                                                  MAP_ENTRY(Info),    MAP_ENTRY(Warning),
+                                                  MAP_ENTRY(Error),   MAP_ENTRY(Critical),
+                                                  MAP_ENTRY(Disabled) };
 
 
 std::ostream &operator<<(std::ostream &os, const Lvl &l) {

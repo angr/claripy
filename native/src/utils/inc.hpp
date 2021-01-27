@@ -24,7 +24,8 @@ namespace Utils {
      *  This function is primarily meant to run before main to help configure things
      */
     template <typename... Args, std::enable_if_t<Private::has_pre_inc_op<ATOM_T>, int> = 0>
-    inline Constants::UInt inc() {
+    inline Constants::UInt inc() noexcept {
+        // If an exception is thrown, we *should* crash
         static ATOM_T ret(0);
         return ++ret;
     }

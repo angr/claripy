@@ -16,13 +16,13 @@
 namespace Utils {
 
     /** An improved version of C++'s typeid function */
-    template <typename T> inline Constants::UInt type_id() {
-        const static auto id = inc();
+    template <typename T> inline Constants::UInt type_id() noexcept {
+        const static Constants::UInt id = inc();
         return id;
     }
 
     /** An improved version of C++'s typeid function */
-    template <typename T> inline Constants::UInt type_id(T &&) { return type_id<T>(); }
+    template <typename T> inline Constants::UInt type_id(T &&) noexcept { return type_id<T>(); }
 
 } // namespace Utils
 

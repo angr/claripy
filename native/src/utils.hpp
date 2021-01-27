@@ -10,6 +10,7 @@
 #include "utils/affirm.hpp"
 #include "utils/ansi_color_codes.hpp"
 #include "utils/cache.hpp"
+#include "utils/error.hpp"
 #include "utils/inc.hpp"
 #include "utils/log.hpp"
 #include "utils/max.hpp"

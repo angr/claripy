@@ -39,7 +39,7 @@ static inline Val create_value(const std::string &rdata, const CUSized::SizeT si
 
 Literal::Literal(const std::string &data) : value(create_value(data, this->size)) {}
 
-Literal::~Literal() noexcept = default;
+Literal::~Literal() = default;
 
 Constants::CCS Literal::op() const {
     return "Literal";

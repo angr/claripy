@@ -26,7 +26,7 @@ namespace Utils::Error {
             using Claricpp::Claricpp;
 
             /** Virtual destructor */
-            virtual ~Base() noexcept;
+            virtual ~Base();
         };
 
         /** Bad cast exception */

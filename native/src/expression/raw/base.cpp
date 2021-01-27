@@ -9,7 +9,7 @@ using namespace Expression;
 using namespace Utils::Error::Unexpected;
 
 
-Raw::Base::~Base() noexcept = default;
+Raw::Base::~Base() = default;
 
 Raw::Base::Base(const Hash::Hash h, std::vector<std::shared_ptr<Annotation::Base>> &ans)
     : id(h), annotations(std::move(ans)) {}

@@ -19,7 +19,7 @@ using Lvl = Level::Level;
 
 static constexpr Lvl lvl = Level::default_;
 
-constexpr Lvl Level::get() {
+constexpr Lvl Level::get() noexcept {
     return lvl;
 }
 
@@ -27,11 +27,11 @@ constexpr Lvl Level::get() {
 
 static std::atomic<Lvl> lvl(Level::default_);
 
-void Level::set(Level l) {
+void Level::set(Level l) noexcept {
     lvl.store(l);
 }
 
-Lvl Level::get() {
+Lvl Level::get() noexcept {
     return lvl.load();
 }
 

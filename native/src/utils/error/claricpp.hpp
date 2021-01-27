@@ -29,7 +29,7 @@ namespace Utils::Error {
         explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
         /** Virtual destructor */
-        virtual ~Claricpp() noexcept;
+        virtual ~Claricpp();
 
         /** Message getter */
         const char *what() const noexcept override final;

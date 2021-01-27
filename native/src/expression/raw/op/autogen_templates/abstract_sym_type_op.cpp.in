@@ -5,4 +5,4 @@
 // __OP will be replaced with the op in SymTypeOp (no namespace allowed)
 
 
-AutoGen::__SYM__TYPE__OP::~__SYM__TYPE__OP() noexcept = default;
+AutoGen::__SYM__TYPE__OP::~__SYM__TYPE__OP() = default;

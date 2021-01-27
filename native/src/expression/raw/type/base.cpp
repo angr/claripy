@@ -7,4 +7,4 @@ using namespace Expression;
 using namespace Raw;
 
 
-Type::Base::~Base() noexcept = default;
+Type::Base::~Base() = default;

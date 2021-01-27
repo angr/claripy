@@ -151,7 +151,7 @@ namespace Utils {
         typename CacheMap::size_type gc_resize = gc_resize_default;
 
         /** The default value for gc_resize */
-        static const constexpr typename CacheMap::size_type gc_resize_default = pow(2, 10) - 1;
+        static const constexpr typename CacheMap::size_type gc_resize_default = pow(2, 10u) - 1;
     };
 
 } // namespace Utils

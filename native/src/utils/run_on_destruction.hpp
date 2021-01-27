@@ -31,10 +31,10 @@ namespace Utils {
         }
 
         /** Enable f on destruction */
-        void enable() { this->enabled = true; }
+        void enable() noexcept { this->enabled = true; }
 
         /** Disable f on destruction */
-        void disable() { this->enabled = false; }
+        void disable() noexcept { this->enabled = false; }
 
       private:
         // Disable all other methods of construction

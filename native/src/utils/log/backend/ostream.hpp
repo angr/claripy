@@ -28,7 +28,7 @@ namespace Utils::Log::Backend {
          *  a defined order.
          */
         explicit OStream(std::shared_ptr<std::ostream> s, const bool flush,
-                         const bool flush_on_exit = true);
+                         const bool flush_on_exit = true) noexcept;
 
         /** A virtual destructor */
         virtual ~OStream();

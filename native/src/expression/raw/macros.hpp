@@ -24,7 +24,7 @@
     SET_IMPLICITS(CLASS, delete)                                                                  \
   public:                                                                                         \
     /** Non-virtual destructor */                                                                 \
-    ~CLASS() noexcept override final;                                                             \
+    ~CLASS() override final;                                                                      \
                                                                                                   \
   private:                                                                                        \
     /** Allow cache friend access                                                                 \
@@ -40,7 +40,7 @@
 #define EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(CLASS)                                         \
   public:                                                                                         \
     /** Pure virtual destructor */                                                                \
-    virtual ~CLASS() noexcept = 0;                                                                \
+    virtual ~CLASS() = 0;                                                                         \
                                                                                                   \
   protected:                                                                                      \
     /** Use the default constructor */                                                            \
@@ -57,7 +57,7 @@
 #define EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(CLASS)                                           \
   public:                                                                                         \
     /** Pure virtual destructor */                                                                \
-    virtual ~CLASS() noexcept = 0;                                                                \
+    virtual ~CLASS() = 0;                                                                         \
                                                                                                   \
   private:                                                                                        \
     /* Disallow construction without using the specified constructors */                          \

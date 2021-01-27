@@ -15,15 +15,15 @@ namespace Utils::Log::Level {
 #ifdef CONSTANT_LOG_LEVEL
 
     /** Return the log level */
-    constexpr Level get();
+    constexpr Level get() noexcept;
 
 #else
 
     /** Set the log level */
-    void set(Level l);
+    void set(Level l) noexcept;
 
     /** Return the log level */
-    Level get();
+    Level get() noexcept;
 
 #endif
 

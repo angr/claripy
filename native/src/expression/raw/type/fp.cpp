@@ -7,7 +7,7 @@ using namespace Expression::Raw;
 using namespace Type;
 
 
-FP::~FP() noexcept = default;
+FP::~FP() = default;
 
 Constants::CCS FP::type() const {
     return "FP";

@@ -22,7 +22,7 @@ namespace Utils::Log::Style {
     struct Base {
 
         /** Default virtual destructor */
-        virtual ~Base() noexcept = 0;
+        virtual ~Base() = 0;
 
         // Rule of 5
         SET_IMPLICITS(Base, default)

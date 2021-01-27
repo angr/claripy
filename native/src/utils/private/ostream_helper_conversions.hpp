@@ -57,13 +57,14 @@ namespace Utils::Private {
     /** If T is a strong enum with no stream operator defined, static cast to its underlying type
      */
     template <typename T, std::enable_if_t<needs_ostream_conversion<T>, int> = 0>
-    inline std::underlying_type_t<T> ostream_helper_conversions(const T &v) {
+    [[gnu::always_inline]] constexpr std::underlying_type_t<T>
+    ostream_helper_conversions(const T &v) noexcept {
         return static_cast<std::underlying_type_t<T>>(v);
     }
 
     /** This specalization is a no-op */
     template <typename T, std::enable_if_t<!needs_ostream_conversion<T>, int> = 0>
-    inline T &ostream_helper_conversions(T &t) {
+    [[gnu::always_inline]] constexpr T &ostream_helper_conversions(T &t) noexcept {
         return t;
     }
 
