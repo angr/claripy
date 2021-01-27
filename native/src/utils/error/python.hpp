@@ -27,7 +27,7 @@ namespace Utils::Error {
             using Claricpp::Claricpp;
 
             /** Virtual destructor */
-            virtual ~Base();
+            virtual ~Base() noexcept;
         };
 
         /** Analogous to python's ValueError exception */

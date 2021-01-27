@@ -28,7 +28,7 @@ namespace Annotation {
     struct Base {
 
         /** Virtual destructor */
-        virtual ~Base();
+        virtual ~Base() noexcept;
 
         // Rule of 5
         SET_IMPLICITS(Base, default)

@@ -28,7 +28,7 @@ namespace Utils::Error {
         template <typename... Args> Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
         /** Virtual destructor */
-        virtual ~Claricpp();
+        virtual ~Claricpp() noexcept;
 
         /** Message getter */
         const char *what() const noexcept override final;
