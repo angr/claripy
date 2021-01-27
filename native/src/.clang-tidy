@@ -1,6 +1,6 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,readability-*,boost-*,clang-analyzer-*,-readability-named-parameter,-readability-redundant-member-init,-readability-else-after-return,cppcoreguidelines-special-member-functions'
-WarningsAsErrors: '-*,readability-*,boost-*,clang-analyzer-*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,readability-*,boost-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-named-parameter,-readability-redundant-member-init,-readability-else-after-return,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-readability-named-parameter,-cppcoreguidelines-init-variables,-readability-inconsistent-declaration-parameter-name,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-use-trailing-return-type,-readability-avoid-const-params-in-decls,-modernize-pass-by-value'
+WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
@@ -10,11 +10,11 @@ CheckOptions:
   - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
     value:           '0'
   - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
-    value:           '0'
+    value:           '1'
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
-    value:           '1'
+    value:           '0'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value:           '1'
+    value:           '0'
   - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
   - key:             google-readability-function-size.StatementThreshold
@@ -28,7 +28,7 @@ CheckOptions:
   - key:             llvm-else-after-return.WarnOnUnfixable
     value:           '0'
   - key:             llvm-qualified-auto.AddConstToQualified
-    value:           '0'
+    value:           '1'
   - key:             modernize-loop-convert.MaxCopySize
     value:           '16'
   - key:             modernize-loop-convert.MinConfidence
