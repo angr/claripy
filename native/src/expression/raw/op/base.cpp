@@ -7,4 +7,4 @@ using namespace Expression;
 using namespace Raw;
 
 
-Op::Base::~Base() {}
+Op::Base::~Base() = default;

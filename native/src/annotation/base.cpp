@@ -9,7 +9,7 @@
 using namespace Annotation;
 
 
-Base::~Base() {}
+Base::~Base() = default;
 
 Constants::UInt Base::hash() const {
     return Utils::type_id<Base>();

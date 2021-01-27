@@ -7,7 +7,7 @@ using namespace Expression::Raw;
 using namespace Type;
 
 
-Int::~Int() {}
+Int::~Int() = default;
 
 Constants::CCS Int::type() const {
     return "Int";

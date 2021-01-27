@@ -38,8 +38,8 @@ SINGULAR(Constants::UInt, c) {
 /** A specialization for T = std::vector<std::shared_ptr<Annotation::Base>> */
 SINGULAR(std::vector<std::shared_ptr<Annotation::Base>>, v) {
     std::ostringstream s;
-    for (Constants::UInt i = 0; i < v.size(); ++i) {
-        s << v[i]->hash();
+    for (const auto &ptr : v) {
+        s << ptr->hash();
     }
     return s.str();
 }

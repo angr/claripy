@@ -7,7 +7,7 @@ using namespace Expression::Raw;
 using namespace Op;
 
 
-Symbol::~Symbol() {}
+Symbol::~Symbol() = default;
 
 Symbol::Symbol(const std::string &n) : name(n) {}
 

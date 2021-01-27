@@ -9,7 +9,7 @@
 using namespace Utils::Error;
 
 
-Claricpp::~Claricpp() {}
+Claricpp::~Claricpp() = default;
 
 const char *Claricpp::what() const noexcept {
     return msg.c_str();

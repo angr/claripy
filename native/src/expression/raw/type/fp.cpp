@@ -6,7 +6,7 @@
 using namespace Expression::Raw::Type;
 
 
-FP::~FP() {}
+FP::~FP() = default;
 
 Constants::CCS FP::type() const {
     return "FP";

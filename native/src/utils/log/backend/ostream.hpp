@@ -21,7 +21,7 @@ namespace Utils::Log::Backend {
      */
     struct OStream : public AbstractBase {
 
-        /** Constructor: Keeps a reference to the passed stream; do not destroy s!
+        /** Constructor: Use default with initalizer list
          *  If flush, every time s is written to the contents are flushed; by default flush = true
          *  Note: if the ostream is constructed by sharing a buffer with a static like std::cout
          *  or something, flush_on_exit should be false as static destruction is done without
