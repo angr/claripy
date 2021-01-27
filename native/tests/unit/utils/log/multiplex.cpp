@@ -20,21 +20,15 @@ using Lvl = Level::Level;
 using namespace UnitTest::TestLib;
 
 
-/** Allow accessing of OStream's private stream */
-struct UnitTest::ClaricppUnitTest {
-    /** Extraction function */
-    static std::ostream &extract(OStream *o) { return o->stream; }
-};
-
 /** Test the given logging function */
-void test(std::vector<std::ostringstream> &s, Lvl l) {
+void test(std::vector<std::shared_ptr<std::ostringstream>> &s, Lvl l) {
     if (Level::enabled(l)) {
         UNITTEST_ASSERT(s.size() == 2)
         for (unsigned i = 0; i < s.size(); ++i) {
-            const auto str = s[i].str();
+            const auto str = s[i]->str();
             UNITTEST_ASSERT(!str.empty())
             UNITTEST_ASSERT(str.back() == '\n')
-            s[i].str(""); // clear the log for the next test
+            s[i]->str(""); // clear the log for the next test
         }
     }
 }
@@ -43,15 +37,17 @@ void test(std::vector<std::ostringstream> &s, Lvl l) {
 void multiplex() {
 
     // The streams to be logged to
-    std::vector<std::ostringstream> s(2);
+    std::vector<std::shared_ptr<std::ostringstream>> s;
+    s.push_back(std::make_shared<std::ostringstream>());
+    s.push_back(std::make_shared<std::ostringstream>());
 
     // Create the real backend
     Multiplex multi;
 
     // Create the backends to be multiplex to
     Multiplex::BackendContainer c;
-    c.emplace_back(new OStream(s[0], true));
-    c.emplace_back(new OStream(s[1], true));
+    c.emplace_back(new OStream(std::static_pointer_cast<std::ostream>(s[0]), true));
+    c.emplace_back(new OStream(std::static_pointer_cast<std::ostream>(s[1]), true));
 
     // Install the backends
     multi.backends.set_copy<Multiplex::BackendContainer>(c);

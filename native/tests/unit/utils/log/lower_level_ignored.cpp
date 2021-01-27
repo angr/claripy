@@ -20,15 +20,15 @@ const std::string cst("Custom");
 
 
 /** Test the given logging function */
-void test(std::ostringstream &s, const Lvl l) {
-    const auto str = s.str();
+void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
+    const auto str = s->str();
     if (Level::enabled(l)) {
         UNITTEST_ASSERT(str.find(STR) != std::string::npos)
     }
     else {
         UNITTEST_ASSERT_MSG(str.empty(), WHOAMI)
     }
-    s.str(""); // clear the log for the next test
+    s->str(""); // clear the log for the next test
 }
 
 /** A custom log type */
@@ -49,10 +49,10 @@ void lower_level_ignored() {
 #endif
 
     // Configure backend and style to output to with all relevant info
-    std::ostringstream s;
-    Backend::set<Backend::OStream>(s);
-    s.str("");
-    UNITTEST_ASSERT_MSG(s.str().empty(), "Sanity check")
+    auto s = std::make_shared<std::ostringstream>();
+    Backend::set<Backend::OStream>(std::static_pointer_cast<std::ostream>(s), true, false);
+    s->str("");
+    UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check")
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL

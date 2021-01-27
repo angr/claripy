@@ -17,11 +17,11 @@ const std::string cst("Custom");
 
 
 /** Test the given logging function */
-void test(std::ostringstream &s, Lvl) {
-    auto str = s.str();
+void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
+    auto str = s->str();
     str.pop_back(); // newline
     UNITTEST_ASSERT(str == cst)
-    s.str(""); // clear the log for the next test
+    s->str(""); // clear the log for the next test
 }
 
 /** Create a style class */
@@ -42,9 +42,9 @@ UTILS_LOG_DEFINE_LOG_CLASS(Custom)
 /** Each construction should have a unique pointer */
 void custom() {
     // Configure backend and style to output to with all relevant info
-    std::ostringstream s;
+    auto s = std::make_shared<std::ostringstream>();
     Style::set<CustomSty>();
-    Backend::set<Backend::OStream>(s);
+    Backend::set<Backend::OStream>(std::static_pointer_cast<std::ostream>(s), true);
 
     // Test each level
     UnitTest::test_each_level(s, test, "");
