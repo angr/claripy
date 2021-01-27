@@ -28,7 +28,7 @@ set(AUTOGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/autogen")
 # Check if the required files exist
 set(AUTOGEN_HPP "${AUTOGEN_DIR}/autogen.hpp")
 set(SOURCES_TXT "${AUTOGEN_DIR}/sources.txt")
-if (EXISTS "${AUTOGEN_HPP}" AND EXISTS "${SOURCES_TXT}" AND EXISTS "${HEADERS_TXT}")
+if (EXISTS "${AUTOGEN_HPP}" AND EXISTS "${SOURCES_TXT}")
 	set(GEN_AUTOGEN OFF)
 else()
 	set(GEN_AUTOGEN ON)
