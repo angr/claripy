@@ -22,7 +22,7 @@ namespace Expression::Raw::Op {
 
       protected:
         /** A protected constructor to disallow public creation */
-        Symbol(const std::string &name);
+        explicit Symbol(const std::string &name);
     };
 
 } // namespace Expression::Raw::Op

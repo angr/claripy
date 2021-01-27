@@ -27,8 +27,8 @@ namespace Utils::Log::Backend {
          *  or something, flush_on_exit should be false as static destruction is done without
          *  a defined order.
          */
-        OStream(std::shared_ptr<std::ostream> s, const bool flush,
-                const bool flush_on_exit = true);
+        explicit OStream(std::shared_ptr<std::ostream> s, const bool flush,
+                         const bool flush_on_exit = true);
 
         /** A virtual destructor */
         virtual ~OStream();

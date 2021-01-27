@@ -7,7 +7,7 @@ using namespace Expression::Raw;
 using namespace Type;
 
 
-Bool::~Bool() = default;
+Bool::~Bool() noexcept = default;
 
 /** @todo this is a dummy */
 bool Bool::is_true() const { // NOLINT

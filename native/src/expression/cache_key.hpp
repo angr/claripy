@@ -24,7 +24,7 @@ namespace Expression {
     class CacheKey final {
       public:
         /** Constructor */
-        CacheKey(const Raw::Type::Base &a);
+        explicit CacheKey(const Raw::Type::Base &a);
 
         /** Returns a string representation of this */
         std::string repr() const;

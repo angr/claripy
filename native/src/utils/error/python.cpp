@@ -9,4 +9,4 @@
 using namespace Utils::Error::Python;
 
 
-Base::~Base() = default;
+Base::~Base() noexcept = default;

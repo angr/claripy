@@ -25,7 +25,8 @@ namespace Utils::Error {
     class Claricpp : public std::exception {
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
-        template <typename... Args> Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
+        template <typename... Args>
+        explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
         /** Virtual destructor */
         virtual ~Claricpp() noexcept;

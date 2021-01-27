@@ -33,7 +33,7 @@ namespace Expression::Raw::Op {
          *  @todo figure out how this will work
          *  @todo Intern strings
          */
-        Literal(const std::string &data);
+        explicit Literal(const std::string &data);
 
         /** Representation */
         const ValueT value;

@@ -8,4 +8,4 @@
 
 AutoGen::__CTOR {}
 
-AutoGen::__SYM__TYPE__OP::~__SYM__TYPE__OP() = default;
+AutoGen::__SYM__TYPE__OP::~__SYM__TYPE__OP() noexcept = default;

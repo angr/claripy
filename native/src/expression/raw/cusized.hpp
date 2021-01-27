@@ -24,7 +24,7 @@ namespace Expression::Raw {
 
       protected:
         /** Protected constructor */
-        CUSized(const SizeT size);
+        explicit CUSized(const SizeT size);
     };
 
 } // namespace Expression::Raw

@@ -7,7 +7,7 @@ using namespace Expression::Raw;
 using namespace Type;
 
 
-BV::~BV() = default;
+BV::~BV() noexcept = default;
 
 Constants::CCS BV::type() const {
     return "BV";

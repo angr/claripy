@@ -9,4 +9,4 @@
 using namespace Utils::Error::Unexpected;
 
 
-Base::~Base() = default;
+Base::~Base() noexcept = default;

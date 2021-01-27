@@ -32,7 +32,7 @@ namespace Utils {
          *  Takes in optional recurrence limit argument
          *  Default argument value: 1000
          */
-        RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim = 1000);
+        explicit RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim = 1000);
 
         /** Destructor */
         ~RecurrenceGuard();

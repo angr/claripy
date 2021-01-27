@@ -7,4 +7,4 @@ using namespace Expression::Raw;
 using namespace Type;
 
 
-Bits::~Bits() = default;
+Bits::~Bits() noexcept = default;

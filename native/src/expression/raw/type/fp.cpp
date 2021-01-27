@@ -3,10 +3,11 @@
 
 
 // For brevity
-using namespace Expression::Raw::Type;
+using namespace Expression::Raw;
+using namespace Type;
 
 
-FP::~FP() = default;
+FP::~FP() noexcept = default;
 
 Constants::CCS FP::type() const {
     return "FP";

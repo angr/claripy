@@ -20,7 +20,7 @@ namespace Utils {
          *  Consumes args via move semantics
          *  enabled defaults to true
          */
-        RunOnDestruction(const F &func, Args &&...args)
+        explicit RunOnDestruction(const F &func, Args &&...args)
             : enabled(true), f(std::bind(func, std::forward<Args>(args)...)) {}
 
         /** Destructor */

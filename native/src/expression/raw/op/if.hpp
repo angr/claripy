@@ -28,8 +28,8 @@ namespace Expression::Raw::Op {
 
       protected:
         /** Protected constructor */
-        If(const Expression::Bool &cond, const Expression::Base &if_true,
-           const Expression::Base &if_false);
+        explicit If(const Expression::Bool &cond, const Expression::Base &if_true,
+                    const Expression::Base &if_false);
     };
 
 } // namespace Expression::Raw::Op

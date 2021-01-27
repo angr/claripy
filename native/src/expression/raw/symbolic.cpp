@@ -5,7 +5,7 @@
 using namespace Expression::Raw;
 
 
-Symbolic::~Symbolic() = default;
+Symbolic::~Symbolic() noexcept = default;
 
 bool Symbolic::symbolic() const {
     return true;

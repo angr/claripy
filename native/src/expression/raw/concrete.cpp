@@ -6,7 +6,7 @@
 using namespace Expression::Raw;
 
 
-Concrete::~Concrete() = default;
+Concrete::~Concrete() noexcept = default;
 
 bool Concrete::symbolic() const {
     return false;
