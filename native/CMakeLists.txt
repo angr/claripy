@@ -11,6 +11,7 @@ cmake_minimum_required( VERSION 3.16 )
 option( BUILD_DOC "Create a make target for documentation"   ON )
 option( ENABLE_TESTING "Create a make target for test cases" ON )
 option( OPTIMIZE_FOR_NATIVE "Build with -march=native etc"   OFF )
+option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"    ON )
 
 
 #################################################
@@ -132,6 +133,11 @@ include(StaticAnalsis)
 # Documentation
 if(BUILD_DOC)
 	include(Doxygen)
+endif()
+
+# Global definitions
+if (ENABLE_ANSI_COLOR_CODES)
+	add_definitions("-DENABLE_ANSI_COLOR_CODES")
 endif()
 
 # Global required complication flags
