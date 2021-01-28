@@ -21,7 +21,7 @@
             /** Destructor */                                                                     \
             ~RunAfterMain() { (void) (STATEMENT); }                                               \
             /* Disable non-default creation methods */                                            \
-            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunAfterMain, delete)                       \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunAfterMain ram;                                                                         \
@@ -40,7 +40,7 @@
             /** Destructor */                                                                     \
             ~RunAfterMain() { (void) F(__VA_ARGS__); }                                            \
             /* Disable non-default creation methods */                                            \
-            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunAfterMain, delete)                       \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunAfterMain ram;                                                                         \

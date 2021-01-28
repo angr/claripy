@@ -34,7 +34,7 @@ namespace Utils::Log::Backend {
         virtual ~OStream();
 
         // We don't want to mess with the shared ostream
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(OStream, delete)
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(OStream, delete)
 
         /** Log the message */
         void log(Constants::CCSC id, const Level::Level &lvl,

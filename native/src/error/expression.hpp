@@ -19,26 +19,26 @@ namespace Error {
         /** Base Expression exception
          *  All Expression exceptions must derive from this
          */
-        DEFINE_NAMESPACED_SUBCLASS_WITH_CONSTRUCTOR(Base, Claricpp, Utils::Error)
+        DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(Base, Claricpp, Utils::Error)
 
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Balancer, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(Balancer, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(BalancerUnsat, Balancer)
+        DEFINE_SUBCLASS_WITH_CTOR(BalancerUnsat, Balancer)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Type, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(Type, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Value, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(Value, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Size, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(Size, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Operation, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(Operation, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Replacement, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(Replacement, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Recursion, Operation)
+        DEFINE_SUBCLASS_WITH_CTOR(Recursion, Operation)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(ZeroDivision, Operation)
+        DEFINE_SUBCLASS_WITH_CTOR(ZeroDivision, Operation)
 
     } // namespace Expression
 

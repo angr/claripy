@@ -31,7 +31,7 @@ namespace Utils::Error {
         };
 
         /** Analogous to python's ValueError exception */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(ValueError, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(ValueError, Base)
 
     } // namespace Python
 

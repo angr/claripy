@@ -34,13 +34,13 @@
 /** A macro used to enable/disable all implict constructors and operators of a class
  *  except for the default constructor
  */
-#define SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, VALUE)                                   \
+#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                          \
     SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                         \
     SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)
 
 /** A macro used to enable/disable all implicit constructors and operators of a class */
 #define SET_IMPLICITS(CLASS, VALUE)                                                               \
-    SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, VALUE)                                       \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                              \
     /** Disable default constructor */                                                            \
     CLASS() = VALUE;
 
@@ -49,7 +49,7 @@
  *  The body of this class is otherwise empty
  *  This macro requires SUPER be in the same namespace
  */
-#define DEFINE_SUBCLASS_WITH_CONSTRUCTOR(DERIVED, SUPER)                                          \
+#define DEFINE_SUBCLASS_WITH_CTOR(DERIVED, SUPER)                                                 \
     struct DERIVED : public SUPER {                                                               \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
@@ -59,7 +59,7 @@
  *  The body of this class is otherwise empty
  *  This macro does not require SUPER be in the same namespace
  */
-#define DEFINE_NAMESPACED_SUBCLASS_WITH_CONSTRUCTOR(DERIVED, SUPER, NS)                           \
+#define DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(DERIVED, SUPER, NS)                                  \
     struct DERIVED : public NS::SUPER {                                                           \
         /** Inherit constructors */                                                               \
         using NS::SUPER::SUPER;                                                                   \

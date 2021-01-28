@@ -48,7 +48,7 @@
                                                                                                   \
   private:                                                                                        \
     /* Disallow construction without using the specified constructors */                          \
-    SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, delete)
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, delete)
 
 
 /** Used to initalize an abstract expression that has a custom constructor
@@ -61,7 +61,7 @@
                                                                                                   \
   private:                                                                                        \
     /* Disallow construction without using the specified constructors */                          \
-    SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(CLASS, delete)
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, delete)
 
 
 #endif

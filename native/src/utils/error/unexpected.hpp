@@ -30,16 +30,16 @@ namespace Utils::Error {
         };
 
         /** Bad cast exception */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(BadCast, Base)
+        DEFINE_SUBCLASS_WITH_CTOR(BadCast, Base)
 
         /** Raised when a function is given invalid arguments */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(IncorrectUsage, Claricpp)
+        DEFINE_SUBCLASS_WITH_CTOR(IncorrectUsage, Claricpp)
 
         /** Raised when a recurrence gaurded function recurrses too many times */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(RecurrenceLimit, Claricpp)
+        DEFINE_SUBCLASS_WITH_CTOR(RecurrenceLimit, Claricpp)
 
         /** Raised when something unknown occurs */
-        DEFINE_SUBCLASS_WITH_CONSTRUCTOR(Unknown, Claricpp)
+        DEFINE_SUBCLASS_WITH_CTOR(Unknown, Claricpp)
 
     } // namespace Unexpected
 

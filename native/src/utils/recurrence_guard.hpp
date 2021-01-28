@@ -42,7 +42,7 @@ namespace Utils {
         const std::string func;
 
         // Disable other creation methods
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RecurrenceGuard, delete)
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RecurrenceGuard, delete)
     };
 
 } // namespace Utils

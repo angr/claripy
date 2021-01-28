@@ -18,7 +18,7 @@
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
             /* Disable other creation methods */                                                  \
-            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunBeforeMain, delete)                      \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \
@@ -35,7 +35,7 @@
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
             /* Disable other creation methods */                                                  \
-            SET_IMPLICITS_EXCLUDE_DEFAULT_CONSTRUCTOR(RunBeforeMain, delete)                      \
+            SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
         RunBeforeMain rbm;                                                                        \

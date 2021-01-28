@@ -27,7 +27,7 @@
 namespace UnitTest::TestLib {
 
     /** The UnitTest error struct */
-    DEFINE_NAMESPACED_SUBCLASS_WITH_CONSTRUCTOR(Error, Claricpp, Utils::Error)
+    DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(Error, Claricpp, Utils::Error)
 
 } // namespace UnitTest::TestLib
 
