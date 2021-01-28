@@ -25,9 +25,6 @@ namespace Expression {
 
     namespace Hash {
 
-        /** The hash type */
-        using Hash = decltype(std::hash<int> {}(0));
-
         /** This function hashes it's arguments */
         template <typename T, typename... Args> Hash hash(const Args &...args) {
             static_assert(std::is_base_of_v<Raw::Base, T>, "T must be an Expression");

@@ -10,7 +10,7 @@
 namespace Utils {
 
     /** This allows passing compile-time literals by reference */
-    template <typename T, T N> static constexpr const T ref = N;
+    template <typename T, T N> static constexpr const T ref { N };
 
 } // namespace Utils
 

@@ -20,7 +20,7 @@ namespace Utils::Log::Private {
     inline void send_to_backend(Constants::CCSC id, const Level::Level lvl, const Args &...args) {
         std::ostringstream s;
         (OStream(s, args), ...);
-        const std::string msg = Style::get()->str(id, lvl, s);
+        const std::string msg { Style::get()->str(id, lvl, s) };
         Backend::get()->log(id, lvl, msg);
     }
 

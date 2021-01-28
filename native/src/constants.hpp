@@ -47,8 +47,8 @@ static_assert(std::is_arithmetic_v<Constants::UInt>,
  */
 constexpr inline Constants::Int operator"" _i(const unsigned long long i) {
     // If it is safe, cast
-    const constexpr auto max = std::numeric_limits<Constants::Int>::max();
-    const constexpr auto lim = static_cast<unsigned long long>(max);
+    const constexpr auto max { std::numeric_limits<Constants::Int>::max() };
+    const constexpr auto lim { static_cast<unsigned long long>(max) };
     if ((i <= lim) && (static_cast<Constants::Int>(i) <= max)) {
         return static_cast<Constants::Int>(i);
     }

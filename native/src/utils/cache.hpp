@@ -60,7 +60,7 @@ namespace Utils {
             {
                 std::lock_guard<decltype(lock)> rw(lock);
                 // Initial find
-                if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
+                if (auto lookup { this->unsafe_find(h) }; lookup != nullptr) {
                     return lookup;
                 }
 
@@ -74,7 +74,7 @@ namespace Utils {
             {
                 std::lock_guard<decltype(lock)> rw(lock);
                 // Second lookup
-                if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
+                if (auto lookup { this->unsafe_find(h) }; lookup != nullptr) {
                     return lookup;
                 }
                 // Add to cache
@@ -96,10 +96,9 @@ namespace Utils {
          *  On failure, returns a null shared pointer
          */
         std::shared_ptr<Cached> unsafe_find(const Hash &h) {
-            if (auto lookup = this->cache.find(h); lookup != this->cache.end()) {
-                std::shared_ptr<Cached> locked = lookup->second.lock();
+            if (auto lookup { this->cache.find(h) }; lookup != this->cache.end()) {
                 // If the weak_ptr is valid, return it
-                if (locked) {
+                if (auto locked { lookup->second.lock() }; locked) {
                     return locked;
                 }
                 // Otherwise remove it from the cache
@@ -146,10 +145,10 @@ namespace Utils {
         CacheMap cache;
 
         /** The size the cache should have std::weak_ptr's gc'd when it is larger than */
-        typename CacheMap::size_type gc_resize = gc_resize_default;
+        typename CacheMap::size_type gc_resize { gc_resize_default };
 
         /** The default value for gc_resize */
-        static const constexpr typename CacheMap::size_type gc_resize_default = pow(2, 10u) - 1;
+        static const constexpr typename CacheMap::size_type gc_resize_default { pow(2, 10u) - 1 };
     };
 
 } // namespace Utils

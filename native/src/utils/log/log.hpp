@@ -18,7 +18,7 @@
     /** Log to a given log with given log level */                                                \
     template <typename Log, typename... Args> void NAME(const Args &...args) {                    \
         if UTILS_LOG_LEVEL_CONSTEXPR (Level::enabled(Level::Level::LEVEL)) {                      \
-            static UTILS_LOG_LEVEL_CONSTEXPR const LogID id = Log::log_id;                        \
+            static UTILS_LOG_LEVEL_CONSTEXPR const LogID id { Log::log_id };                      \
             Private::send_to_backend(id, Level::Level::LEVEL, args...);                           \
         }                                                                                         \
         else {                                                                                    \

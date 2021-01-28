@@ -24,8 +24,8 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
                                        const std::ostringstream &raw) {
 
     // Get time
-    const auto t = std::time(nullptr);
-    const auto tm = *std::localtime(&t);
+    const auto t { std::time(nullptr) };
+    const auto tm { *std::localtime(&t) };
 
     // Color label
     const char *color;

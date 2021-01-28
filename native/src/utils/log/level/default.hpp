@@ -16,7 +16,7 @@
 namespace Utils::Log::Level {
 
     /** The default log level */
-    constexpr Level default_ = Level::DEFAULT_LOG_LEVEL;
+    constexpr Level default_ { Level::DEFAULT_LOG_LEVEL };
 
 } // namespace Utils::Log::Level
 
