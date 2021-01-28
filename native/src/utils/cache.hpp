@@ -66,8 +66,8 @@ namespace Utils {
 
             } // Unlock
 
-            // Construct our cached
-            // We don't know how long this will take so we do it un an unlocked context
+            // Construct our object to be cached
+            // We don't know how long the constructor will take so we do it in an unlocked context
             std::shared_ptr<Cached> ret(new Derived(h, std::forward<Args>(args)...));
 
             // Create locked scope
@@ -75,7 +75,6 @@ namespace Utils {
                 std::lock_guard<decltype(lock)> rw(lock);
                 // Second lookup
                 if (auto lookup = this->unsafe_find(h); lookup != nullptr) {
-                    ret.reset();
                     return lookup;
                 }
                 // Add to cache

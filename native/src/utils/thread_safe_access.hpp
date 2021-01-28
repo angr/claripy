@@ -53,8 +53,10 @@ namespace Utils {
         /** Copy constructor */
         ThreadSafeAccess(const ThreadSafeAccess &old) : obj(old.get()) {}
 
-        /** Move constructor is just a copy */
-        ThreadSafeAccess(ThreadSafeAccess &&old) : obj(old.get()) {}
+        /** Move constructor is just a copy
+         *  Because of our lock, we cannot specify noexcept
+         */
+        ThreadSafeAccess(ThreadSafeAccess &&old) : obj(old.get()) {} // NOLINT
 
         /** Copy assignment */
         ThreadSafeAccess &operator=(const ThreadSafeAccess &old) {
@@ -62,8 +64,10 @@ namespace Utils {
             return *this;
         }
 
-        /** Move assignment is copy assignment */
-        ThreadSafeAccess &operator=(ThreadSafeAccess &&old) { return (*this = old); }
+        /** Move assignment is copy assignment
+         *  Because of our lock, we cannot specify noexcept
+         */
+        ThreadSafeAccess &operator=(ThreadSafeAccess &&old) { return (*this = old); } // NOLINT
 
         /************************************************/
         /*                   Setters                    */
@@ -145,7 +149,7 @@ namespace Utils {
         mutable std::shared_mutex m;
 
         /** The object protected by this class */
-        Ptr obj;
+        Ptr obj { nullptr };
     };
 
 } // namespace Utils

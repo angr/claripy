@@ -20,11 +20,8 @@ namespace Utils {
      */
     template <typename F> class [[nodiscard]] RunOnDestruction {
       public:
-        /** Constructor
-         *  Consumes args via move semantics
-         *  enabled defaults to true
-         */
-        explicit RunOnDestruction(const F &func) : enabled(true), f(func) {}
+        /** Constructor */
+        explicit RunOnDestruction(const F &func) : f(func) {}
 
         /** Destructor */
         ~RunOnDestruction() {
@@ -43,8 +40,10 @@ namespace Utils {
         // Disable all other methods of construction
         SET_IMPLICITS(RunOnDestruction, delete)
 
-        /** Determine if f should be run on destruction or not */
-        bool enabled;
+        /** Determine if f should be run on destruction or not
+         *  Default: enabled
+         */
+        bool enabled { true };
 
         /** The function to be invoked on destruction */
         const std::function<void()> f;
