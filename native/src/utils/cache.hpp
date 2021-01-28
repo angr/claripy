@@ -105,7 +105,6 @@ namespace Utils {
                 // Otherwise remove it from the cache
                 else {
                     cache.erase(lookup);
-                    Log::verbose<Self>(__func__, ": Cache invalidation");
                     return { nullptr };
                 }
             }
@@ -127,13 +126,13 @@ namespace Utils {
                 }
             }
             // Delete them
+            Log::verbose<Self>(__func__, ": Cache invalidation of ", del.size(), " items.");
             for (const typename CacheMap::size_type i : del) {
-                Log::verbose<Self>(__func__, ": Cache invalidation");
                 this->cache.erase(i);
             }
             // Resize gc_size to a reasonable size
             this->gc_resize = Max::value(Self::gc_resize_default, this->cache.size() << 1);
-            Log::verbose<Self>("Garbage collection complete.");
+            Log::debug<Self>("Garbage collection complete.");
         }
 
         /************************************************/

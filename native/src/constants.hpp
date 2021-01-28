@@ -66,7 +66,7 @@ constexpr inline Constants::UInt operator"" _ui(const unsigned long long u) noex
 }
 
 /** A way to get a char * from a char[]
- *  char[]'s cannot be forwarded, this alleviates this
+ *  char[]'s may not be forwardable, _c alleviates this
  */
 constexpr inline Constants::CCS operator"" _c(Constants::CCS s, unsigned long) noexcept {
     return s;

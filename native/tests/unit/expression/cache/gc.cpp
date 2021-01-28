@@ -47,8 +47,9 @@ void gc() {
     // Sanity check
     UNITTEST_ASSERT(init > 100);
 
-    // Construct gc_resize more than half of init's bases
+    // Construct gc_resize more than half of init's Ints
     const ST num = (3 * init) / 4 - 1;
+    Utils::Log::debug("Constructing ", num, " expressions");
 
     auto hold = construct_range(n, num);
     n += num;
@@ -56,9 +57,10 @@ void gc() {
     // Sanity check
     UNITTEST_ASSERT(init == cache.gc_resize);
 
-    // Create and destroy Bools until we have gc_resize bases
+    // Create and destroy Ints until we have gc_resize bases
     {
         const ST remaining = init - num;
+        Utils::Log::debug("Constructing ", remaining, " ref-count=0 expressions");
         (void) construct_range(n, n + remaining);
         n += remaining;
     }
@@ -68,6 +70,7 @@ void gc() {
     UNITTEST_ASSERT(cache.size() == init);
 
     // Construct another base to trigger a garbage collection
+    Utils::Log::debug("Constructing one more expression");
     (void) literal_int(static_cast<Constants::Int>(n++));
 
     // Verify cache size and gc_size
