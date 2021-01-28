@@ -16,7 +16,7 @@ namespace Expression {
 
     namespace Private {
         /** The factory cache */
-        inline Utils::Cache<Hash::Hash, ::Expression::Raw::Base> cache = {};
+        inline Utils::Cache<Hash::Hash, ::Expression::Raw::Base> cache {};
     } // namespace Private
 
     /** A factory used to construct subclasses of Expression::Raw::Base. Arguments are

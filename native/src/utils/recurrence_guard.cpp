@@ -13,7 +13,7 @@ using namespace Utils;
 
 
 /** Static map to keep track of recurrences */
-static thread_local std::map<std::string, Constants::UInt> count = {};
+static thread_local std::map<std::string, Constants::UInt> count {};
 
 
 RecurrenceGuard::RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim) : func(f) {
