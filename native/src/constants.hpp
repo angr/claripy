@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 
 namespace Constants {
@@ -32,6 +33,12 @@ namespace Constants {
 
 } // namespace Constants
 
+/** Verify Constants::Int is a primitive */
+static_assert(std::is_arithmetic_v<Constants::Int>,
+              "Constants::Int must be an arithmetic primitive");
+/** Verify Constants::UInt is a primitive */
+static_assert(std::is_arithmetic_v<Constants::UInt>,
+              "Constants::UInt must be an arithmetic primitive");
 
 /** Create a literal prefix for Constants::Int
  *  This assumes the max of
@@ -53,7 +60,7 @@ constexpr inline Constants::Int operator"" _i(const unsigned long long i) {
 
 /** Create a literal prefix for Constants::UInt */
 constexpr inline Constants::UInt operator"" _ui(const unsigned long long u) noexcept {
-    return { u }; // The compiler will error if this is narrowing
+    return u; // The compiler will error if this is narrowing
 }
 
 
