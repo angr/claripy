@@ -15,6 +15,10 @@ using Lvl = Level::Level;
 
 // Default TEMPLATE_MACRO to empty
 #ifndef TEMPLATE_MACRO
+/** The template arguments to pass to the log functions, including the <>'s
+ *  Note: We use a macro here instead of a real template to allow testing of
+ *  the non-templated version of the log functions
+ */
     #define TEMPLATE_MACRO
 #endif
 
