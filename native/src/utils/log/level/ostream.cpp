@@ -29,7 +29,7 @@ static const std::map<Lvl, std::string> names = { MAP_ENTRY(Verbose), MAP_ENTRY(
                                                   MAP_ENTRY(Disabled) };
 
 
-std::ostream &operator<<(std::ostream &os, const Lvl &l) {
+std::ostream &Level::operator<<(std::ostream &os, const Lvl &l) {
     const auto it = names.find(l);
     Utils::affirm<IncorrectUsage>(it != names.end(), "Unknown level passed to << operator");
     os << it->second;

@@ -29,11 +29,6 @@ namespace Expression {
         /** Returns a string representation of this */
         std::string repr() const;
 
-        /** ExpressionCacheKey equality operator
-         *  Two values are equal if their Expression's hashes are
-         */
-        bool operator==(const CacheKey &) const;
-
       private:
         /************************************************/
         /*                Representation                */
@@ -41,7 +36,15 @@ namespace Expression {
 
         /** The Expression this object refers to */
         const Raw::Type::Base &ref;
+
+        /** Permit equality operator friend access */
+        friend bool operator==(const CacheKey &, const CacheKey &);
     };
+
+    /** ExpressionCacheKey equality operator
+     *  Two values are equal if their Expression's hashes are
+     */
+    bool operator==(const CacheKey &, const CacheKey &);
 
 } // namespace Expression
 

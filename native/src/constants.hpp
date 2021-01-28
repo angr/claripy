@@ -33,12 +33,14 @@ namespace Constants {
 
 } // namespace Constants
 
+
 /** Verify Constants::Int is a primitive */
 static_assert(std::is_arithmetic_v<Constants::Int>,
               "Constants::Int must be an arithmetic primitive");
 /** Verify Constants::UInt is a primitive */
 static_assert(std::is_arithmetic_v<Constants::UInt>,
               "Constants::UInt must be an arithmetic primitive");
+
 
 /** Create a literal prefix for Constants::Int
  *  This assumes the max of

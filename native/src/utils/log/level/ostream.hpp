@@ -11,8 +11,11 @@
 #include <ostream>
 
 
-/** Define the stream operator for Utils::Log::Level */
-std::ostream &operator<<(std::ostream &os, const Utils::Log::Level::Level &l);
+namespace Utils::Log::Level {
 
+    /** Define the stream operator for Utils::Log::Level */
+    std::ostream &operator<<(std::ostream &os, const Utils::Log::Level::Level &l);
+
+} // namespace Utils::Log::Level
 
 #endif
