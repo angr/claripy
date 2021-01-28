@@ -1,5 +1,5 @@
 ---
-Checks:          '-*,clang-diagnostic-*,clang-analyzer-*,clang-diagnostic-*,clang-analyzer-*,readability-*,boost-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-named-parameter,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-init-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-pass-by-value',-modernize-use-trailing-return-type,-readability-avoid-const-params-in-decls,-readability-else-after-return,-readability-inconsistent-declaration-parameter-name,-readability-named-parameter,-readability-redundant-member-init'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,clang-diagnostic-*,clang-analyzer-*,readability-*,boost-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-named-parameter,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-init-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-pass-by-value',-modernize-use-trailing-return-type,-readability-avoid-const-params-in-decls,-readability-else-after-return,-readability-inconsistent-declaration-parameter-name,-readability-named-parameter,-readability-redundant-member-init'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
