@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,readability-*,boost-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-named-parameter,-readability-redundant-member-init,-readability-else-after-return,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-readability-named-parameter,-cppcoreguidelines-init-variables,-readability-inconsistent-declaration-parameter-name,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-use-trailing-return-type,-readability-avoid-const-params-in-decls,-modernize-pass-by-value'
+Checks:          '-*,clang-diagnostic-*,clang-analyzer-*,clang-diagnostic-*,clang-analyzer-*,readability-*,boost-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,readability-named-parameter,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-init-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-pass-by-value',-modernize-use-trailing-return-type,-readability-avoid-const-params-in-decls,-readability-else-after-return,-readability-inconsistent-declaration-parameter-name,-readability-named-parameter,-readability-redundant-member-init'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -10,11 +10,57 @@ CheckOptions:
   - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
     value:           '0'
   - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
-    value:           '1'
+    value:           'true'
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value:           'false'
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value:           'true'
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value:           'false'
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoredFloatingPointValues
+    value:           '1.0;100.0;'
+  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues
+    value:           '1;2;3;4;'
+  - key:             cppcoreguidelines-explicit-virtual-functions.AllowOverrideAndFinal
+    value:           'true'
+  - key:             cppcoreguidelines-explicit-virtual-functions.FinalSpelling
+    value:           final
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
-    value:           '0'
+    value:           'false'
+  - key:             cppcoreguidelines-explicit-virtual-functions.OverrideSpelling
+    value:           override
+  - key:             cppcoreguidelines-narrowing-conversions.PedanticMode
+    value:           'false'
+  - key:             cppcoreguidelines-narrowing-conversions.WarnOnFloatingPointNarrowingConversion
+    value:           'true'
+  - key:             cppcoreguidelines-no-malloc.Allocations
+    value:           '::malloc;::calloc'
+  - key:             cppcoreguidelines-no-malloc.Deallocations
+    value:           '::free'
+  - key:             cppcoreguidelines-no-malloc.Reallocations
+    value:           '::realloc'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value:           '0'
+    value:           'true'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnorePublicMemberVariables
+    value:           'false'
+  - key:             cppcoreguidelines-owning-memory.LegacyResourceConsumers
+    value:           '::free;::realloc;::freopen;::fclose'
+  - key:             cppcoreguidelines-owning-memory.LegacyResourceProducers
+    value:           '::malloc;::aligned_alloc;::realloc;::calloc;::fopen;::freopen;::tmpfile'
+  - key:             cppcoreguidelines-pro-bounds-constant-array-index.GslHeader
+    value:           ''
+  - key:             cppcoreguidelines-pro-bounds-constant-array-index.IncludeStyle
+    value:           llvm
+  - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
+    value:           'false'
+  - key:             cppcoreguidelines-pro-type-member-init.UseAssignment
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:           'false'
   - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
   - key:             google-readability-function-size.StatementThreshold
@@ -28,19 +74,87 @@ CheckOptions:
   - key:             llvm-else-after-return.WarnOnUnfixable
     value:           '0'
   - key:             llvm-qualified-auto.AddConstToQualified
-    value:           '1'
+    value:           'true'
+  - key:             modernize-avoid-bind.PermissiveParameterList
+    value:           'false'
   - key:             modernize-loop-convert.MaxCopySize
     value:           '16'
   - key:             modernize-loop-convert.MinConfidence
     value:           reasonable
   - key:             modernize-loop-convert.NamingStyle
     value:           CamelCase
+  - key:             modernize-make-shared.IgnoreMacros
+    value:           'true'
+  - key:             modernize-make-shared.IncludeStyle
+    value:           llvm
+  - key:             modernize-make-shared.MakeSmartPtrFunction
+    value:           'std::make_shared'
+  - key:             modernize-make-shared.MakeSmartPtrFunctionHeader
+    value:           memory
+  - key:             modernize-make-unique.IgnoreMacros
+    value:           'true'
+  - key:             modernize-make-unique.IncludeStyle
+    value:           llvm
+  - key:             modernize-make-unique.MakeSmartPtrFunction
+    value:           'std::make_unique'
+  - key:             modernize-make-unique.MakeSmartPtrFunctionHeader
+    value:           memory
   - key:             modernize-pass-by-value.IncludeStyle
     value:           llvm
+  - key:             modernize-raw-string-literal.DelimiterStem
+    value:           lit
+  - key:             modernize-raw-string-literal.ReplaceShorterLiterals
+    value:           'false'
   - key:             modernize-replace-auto-ptr.IncludeStyle
     value:           llvm
+  - key:             modernize-replace-disallow-copy-and-assign-macro.MacroName
+    value:           DISALLOW_COPY_AND_ASSIGN
+  - key:             modernize-replace-random-shuffle.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-auto.MinTypeNameLength
+    value:           '5'
+  - key:             modernize-use-auto.RemoveStars
+    value:           'false'
+  - key:             modernize-use-bool-literals.IgnoreMacros
+    value:           'true'
+  - key:             modernize-use-default-member-init.IgnoreMacros
+    value:           'true'
+  - key:             modernize-use-default-member-init.UseAssignment
+    value:           'false'
+  - key:             modernize-use-emplace.ContainersWithPushBack
+    value:           '::std::vector;::std::list;::std::deque'
+  - key:             modernize-use-emplace.IgnoreImplicitConstructors
+    value:           'false'
+  - key:             modernize-use-emplace.SmartPointers
+    value:           '::std::shared_ptr;::std::unique_ptr;::std::auto_ptr;::std::weak_ptr'
+  - key:             modernize-use-emplace.TupleMakeFunctions
+    value:           '::std::make_pair;::std::make_tuple'
+  - key:             modernize-use-emplace.TupleTypes
+    value:           '::std::pair;::std::tuple'
+  - key:             modernize-use-equals-default.IgnoreMacros
+    value:           'true'
+  - key:             modernize-use-equals-delete.IgnoreMacros
+    value:           'true'
+  - key:             modernize-use-nodiscard.ReplacementString
+    value:           '[[nodiscard]]'
+  - key:             modernize-use-noexcept.ReplacementString
+    value:           ''
+  - key:             modernize-use-noexcept.UseNoexceptFalse
+    value:           'true'
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
+  - key:             modernize-use-override.AllowOverrideAndFinal
+    value:           'false'
+  - key:             modernize-use-override.FinalSpelling
+    value:           final
+  - key:             modernize-use-override.IgnoreDestructors
+    value:           'false'
+  - key:             modernize-use-override.OverrideSpelling
+    value:           override
+  - key:             modernize-use-transparent-functors.SafeMode
+    value:           'false'
+  - key:             modernize-use-using.IgnoreMacros
+    value:           'true'
   - key:             readability-braces-around-statements.ShortStatementLines
     value:           '0'
   - key:             readability-function-size.BranchThreshold
@@ -65,10 +179,6 @@ CheckOptions:
     value:           'false'
   - key:             readability-implicit-bool-conversion.AllowPointerConditions
     value:           'false'
-  - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
-    value:           'true'
-  - key:             readability-inconsistent-declaration-parameter-name.Strict
-    value:           'false'
   - key:             readability-magic-numbers.IgnoreAllFloatingPointValues
     value:           'false'
   - key:             readability-magic-numbers.IgnoreBitFieldsWidths
@@ -83,8 +193,6 @@ CheckOptions:
     value:           'true'
   - key:             readability-redundant-declaration.IgnoreMacros
     value:           'true'
-  - key:             readability-redundant-member-init.IgnoreBaseInCopyConstructors
-    value:           'false'
   - key:             readability-redundant-smartptr-get.IgnoreMacros
     value:           'true'
   - key:             readability-redundant-string-init.StringNames
@@ -102,3 +210,4 @@ CheckOptions:
   - key:             readability-uppercase-literal-suffix.NewSuffixes
     value:           ''
 ...
+
