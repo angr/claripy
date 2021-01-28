@@ -13,7 +13,7 @@ using namespace Utils::Error::Unexpected;
 #define LIMIT 10
 
 /** A static count variable */
-static unsigned count = 0;
+static unsigned count { 0 };
 
 /** A recurrence guarded function that will recurr N times
  *  Increments count each time
@@ -32,7 +32,7 @@ void loop(unsigned n) {
 void recurrence_guard() {
 
     // Test recurrence guard
-    bool caught = false;
+    bool caught { false };
     try {
         loop(20);
     }

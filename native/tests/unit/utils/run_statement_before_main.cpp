@@ -7,7 +7,7 @@
 
 
 /** A global variable */
-int i = 0;
+int i { 0 };
 
 // Run i = 4 before main
 UTILS_RUN_STATEMENT_BEFORE_MAIN(i = 4);

@@ -29,16 +29,13 @@ void weak_ptr_invalidation_find() {
 
     // Create and destroy a base, but record its hash
     Hash::Hash id;
-    {
-        auto a = literal_int();
-        id = a->id;
-    }
+    { id = literal_int()->id; }
 
     // Check cache size
     UNITTEST_ASSERT(cache.size() == 1)
 
     // Verify inablity to find: side effect removes from cache
-    const auto nll = cache.unsafe_find(id);
+    const auto nll { cache.unsafe_find(id) };
     UNITTEST_ASSERT(nll == nullptr);
 
     // Check cache size

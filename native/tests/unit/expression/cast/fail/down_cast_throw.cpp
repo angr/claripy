@@ -15,10 +15,11 @@ using namespace UnitTest::TestLib;
 
 /** Down casting should fail with an exception */
 void down_cast_throw() {
-    ConcreteIntLiteral a = literal_int();
-    Base b = up_cast<Base>(a);
+    ConcreteIntLiteral a { literal_int() };
+    Base b { up_cast<Base>(a) };
     try {
-        Bool c = down_cast_throw_on_fail<Bool>(b);
+        Bool c { down_cast_throw_on_fail<Bool>(b) };
+        (void) c;
     }
     catch (Utils::Error::Unexpected::BadCast &e) {
         return;

@@ -15,12 +15,12 @@ using namespace UnitTest::TestLib;
 /** Each construction should have a unique pointer and hash */
 void all_diff_class_hash() {
 
-    const auto a1 = literal_factory<ConcreteIntLiteral>(0_i);
-    const auto a2 = literal_factory<ConcreteBoolLiteral>(0_i);
-    const auto a3 = literal_factory<ConcreteStringLiteral>(0_i);
-    const auto a4 = literal_factory<ConcreteFPLiteral>(0_i);
-    const auto a5 = literal_factory<ConcreteBVLiteral>(0_i);
-    const auto a6 = literal_factory<ConcreteVSLiteral>(0_i);
+    const auto a1 { literal_factory<ConcreteIntLiteral>(0_i) };
+    const auto a2 { literal_factory<ConcreteBoolLiteral>(0_i) };
+    const auto a3 { literal_factory<ConcreteStringLiteral>(0_i) };
+    const auto a4 { literal_factory<ConcreteFPLiteral>(0_i) };
+    const auto a5 { literal_factory<ConcreteBVLiteral>(0_i) };
+    const auto a6 { literal_factory<ConcreteVSLiteral>(0_i) };
 
     // Verify unique hashes
 

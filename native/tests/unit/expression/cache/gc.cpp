@@ -31,7 +31,7 @@ using ST = UnitTest::ClaricppUnitTest::SizeType;
 auto construct_range(const ST lb, const ST ub) {
     std::vector<ConcreteIntLiteral> ret;
     ret.reserve(ub - lb);
-    for (ST i = lb; i < ub; ++i) {
+    for (ST i { lb }; i < ub; ++i) {
         ret.push_back(literal_int(static_cast<Constants::Int>(i)));
     }
     return ret;
@@ -41,17 +41,17 @@ auto construct_range(const ST lb, const ST ub) {
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
 void gc() {
     UnitTest::ClaricppUnitTest cache;
-    const ST init = cache.gc_resize;
-    ST n = 0;
+    const ST init { cache.gc_resize };
+    ST n { 0 };
 
     // Sanity check
     UNITTEST_ASSERT(init > 100);
 
     // Construct gc_resize more than half of init's Ints
-    const ST num = (3 * init) / 4 - 1;
+    const ST num { (3 * init) / 4 - 1 };
     Utils::Log::debug("Constructing ", num, " expressions");
 
-    auto hold = construct_range(n, num);
+    const auto hold { construct_range(n, num) };
     n += num;
 
     // Sanity check
@@ -59,7 +59,7 @@ void gc() {
 
     // Create and destroy Ints until we have gc_resize bases
     {
-        const ST remaining = init - num;
+        const ST remaining { init - num };
         Utils::Log::debug("Constructing ", remaining, " ref-count=0 expressions");
         (void) construct_range(n, n + remaining);
         n += remaining;

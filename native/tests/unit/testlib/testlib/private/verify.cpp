@@ -8,7 +8,7 @@
 
 
 /** True if and only if test_func ran once */
-static bool ran = false;
+static bool ran { false };
 
 
 void UnitTest::TestLib::Private::verify() {

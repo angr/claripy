@@ -14,8 +14,8 @@ using namespace UnitTest::TestLib;
 
 /** Test creating an Expression::Int */
 void int_int() {
-    Int a = literal_int(0_i);
-    Int b = literal_int(1_i);
+    Int a { literal_int(0_i) };
+    Int b { literal_int(1_i) };
     UNITTEST_ASSERT(a != b)
 }
 

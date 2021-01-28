@@ -15,11 +15,11 @@ using namespace UnitTest::TestLib;
 void level_access() {
 
     // Get the current level
-    const auto init = Level::get();
+    const auto init { Level::get() };
 
 #ifndef CONSTANT_LOG_LEVEL
     // Select a different level
-    const auto different = (init == Lvl::Info) ? Lvl::Debug : Lvl::Info;
+    const auto different { (init == Lvl::Info) ? Lvl::Debug : Lvl::Info };
     Level::set(different);
 
     // Error checking

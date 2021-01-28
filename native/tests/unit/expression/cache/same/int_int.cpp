@@ -14,8 +14,8 @@ using namespace UnitTest::TestLib;
 
 /** Two ints should be the same */
 void int_int() {
-    Int a = literal_int();
-    Int b = literal_int();
+    Int a { literal_int() };
+    Int b { literal_int() };
     UNITTEST_ASSERT(a == b)
 }
 

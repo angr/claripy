@@ -21,14 +21,14 @@ using namespace UnitTest::TestLib;
 
 
 /** Test the given logging function */
-void test(std::vector<std::shared_ptr<std::ostringstream>> &s, Lvl l) {
+void test(std::vector<std::shared_ptr<std::ostringstream>> &v, Lvl l) {
     if (Level::enabled(l)) {
-        UNITTEST_ASSERT(s.size() == 2)
-        for (unsigned i = 0; i < s.size(); ++i) {
-            const auto str = s[i]->str();
+        UNITTEST_ASSERT(v.size() == 2)
+        for (auto &s : v) {
+            const auto str { s->str() };
             UNITTEST_ASSERT(!str.empty())
             UNITTEST_ASSERT(str.back() == '\n')
-            s[i]->str(""); // clear the log for the next test
+            s->str(""); // clear the log for the next test
         }
     }
 }
@@ -46,8 +46,8 @@ void multiplex() {
 
     // Create the backends to be multiplex to
     Multiplex::BackendContainer c;
-    c.emplace_back(new OStream(std::static_pointer_cast<std::ostream>(s[0]), true));
-    c.emplace_back(new OStream(std::static_pointer_cast<std::ostream>(s[1]), true));
+    c.emplace_back(new OStream { std::static_pointer_cast<std::ostream>(s[0]), true });
+    c.emplace_back(new OStream { std::static_pointer_cast<std::ostream>(s[1]), true });
 
     // Install the backends
     multi.backends.set_copy<Multiplex::BackendContainer>(c);

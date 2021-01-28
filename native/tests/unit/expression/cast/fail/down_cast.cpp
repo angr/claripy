@@ -15,9 +15,9 @@ using namespace UnitTest::TestLib;
 
 /** Down casting should fail */
 void down_cast() {
-    ConcreteIntLiteral a = literal_int();
-    Base b = up_cast<Base>(a);
-    Bool c = down_cast<Bool>(b);
+    ConcreteIntLiteral a { literal_int() };
+    Base b { up_cast<Base>(a) };
+    Bool c { down_cast<Bool>(b) };
     UNITTEST_ASSERT(c == nullptr)
 }
 

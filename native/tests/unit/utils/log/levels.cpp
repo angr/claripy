@@ -20,6 +20,7 @@ using namespace UnitTest::TestLib;
 /** The message each log call uses */
 #define STR "log test"
 
+
 /** Test the given logging function */
 void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
     UNITTEST_ASSERT(s->str().find(STR) != std::string::npos)
@@ -30,8 +31,8 @@ void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
 /** Each construction should have a unique pointer */
 void levels() {
     // Configure backend and style to output to with all relevant info
-    auto s = std::make_shared<std::ostringstream>();
     Style::set<Style::LevelTimestampMessage>();
+    auto s { std::make_shared<std::ostringstream>() };
     Backend::set<Backend::OStream>(std::static_pointer_cast<std::ostream>(s), true);
 
     // Test each level

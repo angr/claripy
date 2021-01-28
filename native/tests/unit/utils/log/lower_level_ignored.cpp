@@ -16,12 +16,12 @@ using namespace UnitTest::TestLib;
 
 
 #define STR "logged data"
-const std::string cst("Custom");
+const std::string cst { "Custom" };
 
 
 /** Test the given logging function */
 void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
-    const auto str = s->str();
+    const auto str { s->str() };
     if (Level::enabled(l)) {
         UNITTEST_ASSERT(str.find(STR) != std::string::npos)
     }
@@ -40,8 +40,7 @@ void lower_level_ignored() {
 
     // Determine if this test case is possible
 #ifdef CONSTANT_LOG_LEVEL
-    constexpr auto lvl = Level::get();
-    if constexpr (lvl == Lvl::Verbose) {
+    if constexpr (constexpr auto lvl { Level::get() }; lvl == Lvl::Verbose) {
         Utils::Log::warning(
             "Log level is constant and at level Verbose. Unable to test lower levels");
         return;
@@ -49,15 +48,14 @@ void lower_level_ignored() {
 #endif
 
     // Configure backend and style to output to with all relevant info
-    auto s = std::make_shared<std::ostringstream>();
+    auto s { std::make_shared<std::ostringstream>() };
     Backend::set<Backend::OStream>(std::static_pointer_cast<std::ostream>(s), true, false);
     s->str("");
     UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check")
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL
-    auto lvl = Level::get();
-    if (lvl == Lvl::Verbose) {
+    if (const auto lvl { Level::get() }; lvl == Lvl::Verbose) {
         Level::set(Lvl::Warning);
     }
 #endif

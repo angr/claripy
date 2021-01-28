@@ -13,8 +13,8 @@ using namespace UnitTest::TestLib;
 
 /** Test creating an Expression::BV */
 void bv_bv() {
-    BV a = literal_factory<ConcreteBVLiteral>(1_i);
-    BV b = literal_factory<ConcreteBVLiteral>(0_i);
+    BV a { literal_factory<ConcreteBVLiteral>(1_i) };
+    BV b { literal_factory<ConcreteBVLiteral>(0_i) };
     UNITTEST_ASSERT(a != b)
 }
 

@@ -13,7 +13,7 @@ using namespace UnitTest::TestLib;
 
 
 /** Create a backend class */
-struct Cout : Backend::OStream {
+struct Cout final : Backend::OStream {
     Cout() : Backend::OStream(std::make_shared<std::ostream>(std::cout.rdbuf()), true, false) {}
 };
 
