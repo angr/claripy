@@ -38,8 +38,8 @@ void multiplex() {
 
     // The streams to be logged to
     std::vector<std::shared_ptr<std::ostringstream>> s;
-    s.push_back(std::make_shared<std::ostringstream>());
-    s.push_back(std::make_shared<std::ostringstream>());
+    s.emplace_back(new std::ostringstream);
+    s.emplace_back(new std::ostringstream);
 
     // Create the real backend
     Multiplex multi;

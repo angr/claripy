@@ -107,12 +107,12 @@ namespace Utils {
                 else {
                     cache.erase(lookup);
                     Log::verbose<Self>(__func__, ": Cache invalidation");
-                    return std::shared_ptr<Cached>(nullptr);
+                    return {nullptr};
                 }
             }
 
             // If it does not exist, return a pointer to null
-            return std::shared_ptr<Cached>(nullptr);
+            return {nullptr};
         }
 
         /** Remove all std::weak_ptr's in cache that no longer point to a valid object
