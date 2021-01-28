@@ -1,14 +1,8 @@
 /** @file */
 #include "simplify.hpp"
 
-#include "private/op_map.hpp"
-
+#include "../expression.hpp"
 #include "../utils.hpp"
-
-
-// For brevity
-namespace Log = Utils::Log;
-namespace Pvt = Simplification::Private;
 
 
 // Define the simplifications log
