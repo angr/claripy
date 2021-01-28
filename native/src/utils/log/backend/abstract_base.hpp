@@ -20,10 +20,11 @@ namespace Utils::Log::Backend {
      *  The subclass must implement the log function defined below
      */
     struct Base {
-
+      protected:
         /** Default virtual destructor */
         virtual ~Base() = 0;
 
+      public:
         // Rule of 5
         SET_IMPLICITS(Base, default)
 

@@ -38,13 +38,12 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(CLASS)                                         \
-  public:                                                                                         \
-    /** Pure virtual destructor */                                                                \
-    virtual ~CLASS() = 0;                                                                         \
-                                                                                                  \
   protected:                                                                                      \
     /** Use the default constructor */                                                            \
     CLASS() = default;                                                                            \
+                                                                                                  \
+    /** Pure virtual destructor */                                                                \
+    virtual ~CLASS() = 0;                                                                         \
                                                                                                   \
   private:                                                                                        \
     /* Disallow construction without using the specified constructors */                          \
@@ -55,7 +54,7 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(CLASS)                                           \
-  public:                                                                                         \
+  protected:                                                                                      \
     /** Pure virtual destructor */                                                                \
     virtual ~CLASS() = 0;                                                                         \
                                                                                                   \
