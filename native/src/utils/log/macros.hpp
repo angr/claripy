@@ -16,7 +16,7 @@
  */
 #define UTILS_LOG_ENABLE_CUSTOM_LOGGING(NAME)                                                     \
     /** Create a custom log for this class */                                                     \
-    static constexpr Utils::Log::LogID log_id = NAME;
+    static constexpr Utils::Log::LogID log_id { NAME };
 
 /** Define a custom logging class
  *  This class can be passed to a log function as a template parameter to log to a custom log

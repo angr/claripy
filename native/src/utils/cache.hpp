@@ -42,13 +42,13 @@ namespace Utils {
          *  Return a shared pointer to the newly constructed Cached, and cache it
          *  This function is thread-safe
          *  Note: For performance reasons, we do not lock our cache between checking if the
-         * Hash h is in our cache and constructing our Cached, thus there is a chance the
-         * Cached may be constructed and during its construction another thread may have added
-         * h to our cache. In this case, we delete our newly constructed object and return a
-         * shared_pointer to the Cached that the other thread emplaced. Note that the given
-         * arguments are passed via move operations and may be consumed.
-         * @param h: The hash our cache uses as a key
-         * @param args: The arguments given to Cached's constructor
+         *  Hash h is in our cache and constructing our Cached, thus there is a chance the
+         *  Cached may be constructed and during its construction another thread may have added
+         *  h to our cache. In this case, we delete our newly constructed object and return a
+         *  shared_pointer to the Cached that the other thread emplaced. Note that the given
+         *  arguments are passed via move operations and may be consumed.
+         *  @param h: The hash our cache uses as a key
+         *  @param args: The arguments given to Cached's constructor
          */
         template <typename Derived, typename... Args>
         std::shared_ptr<Cached> find_or_emplace(const Hash &h, Args &&...args) {
