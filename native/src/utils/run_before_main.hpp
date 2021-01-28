@@ -14,7 +14,7 @@
     /** Declare an anonomyous namespace to obsure internals  */                                   \
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
-        struct RunBeforeMain {                                                                    \
+        struct [[nodiscard]] RunBeforeMain {                                                      \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
             /* Disable other creation methods */                                                  \
@@ -31,7 +31,7 @@
     /** Declare an anonomyous namespace to obscure internals */                                   \
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
-        struct RunBeforeMain {                                                                    \
+        struct [[nodiscard]] RunBeforeMain {                                                      \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
             /* Disable other creation methods */                                                  \

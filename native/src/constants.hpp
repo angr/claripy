@@ -63,5 +63,11 @@ constexpr inline Constants::UInt operator"" _ui(const unsigned long long u) noex
     return u; // The compiler will error if this is narrowing
 }
 
+/** A way to get a char * from a char[]
+ *  char[]'s cannot be forwarded, this alleviates this
+ */
+constexpr inline Constants::CCS operator"" _c(Constants::CCS s, unsigned long) noexcept {
+    return s;
+}
 
 #endif
