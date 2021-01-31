@@ -23,7 +23,8 @@ if [[ -z "${DOCKER_BUILDKIT:-}" ]]; then
 fi
 
 # Build claricpp:<VERSION>
-docker build --target "${DOCKER_TARGET}" -t claricpp:"${VERSION}" \
+CTAG="${DOCKER_TARGET}-$(echo "${CXX_COMPILER}" | tr -cd '[:alnum:]')-${VERSION}"
+docker build --target "${DOCKER_TARGET}" -t claricpp:"${CTAG}" \
 	`# Base ` \
 	--build-arg CXX_COMPILER="${CXX_COMPILER}" \
 	`# Config ` \
@@ -38,9 +39,5 @@ docker build --target "${DOCKER_TARGET}" -t claricpp:"${VERSION}" \
 	--build-arg VERBOSE_TEST="${VERBOSE_TEST}" \
 	.
 
-# Tag with compiler
-CTAG="$(echo "${CXX_COMPILER}" | tr -cd '[:alnum:]')"
-docker tag claricpp:"${VERSION}" claricpp:"${CTAG}"
-
 # Tag the build as latest
-docker tag claricpp:"${VERSION}" claricpp
+docker tag claricpp:"${CTAG}" claricpp
