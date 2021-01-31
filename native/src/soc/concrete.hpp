@@ -3,9 +3,9 @@
  * @brief This defines SOC::Concrete
  */
 #ifndef __SOC_CONCRETE_HPP__
-    #define __SOC_CONCRETE_HPP__
+#define __SOC_CONCRETE_HPP__
 
-    #include "base.hpp"
+#include "base.hpp"
 
 
 namespace SOC {
@@ -21,3 +21,5 @@ namespace SOC {
     };
 
 } // namespace SOC
+
+#endif

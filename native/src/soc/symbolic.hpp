@@ -3,11 +3,11 @@
  * @brief This defines SOC::Symbolic
  */
 #ifndef __SOC_SYMBOLIC_HPP__
-    #define __SOC_SYMBOLIC_HPP__
+#define __SOC_SYMBOLIC_HPP__
 
-    #include "base.hpp"
+#include "base.hpp"
 
-    #include <string>
+#include <string>
 
 
 namespace SOC {
@@ -26,3 +26,5 @@ namespace SOC {
     };
 
 } // namespace SOC
+
+#endif
