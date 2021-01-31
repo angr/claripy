@@ -13,11 +13,18 @@ namespace SOC {
     /** A concrete variable */
     struct Concrete : public Base {
 
-        /** Constructor */
-        Concrete();
-
         /** Returns false */
         bool symbolic() const noexcept override final;
+
+      private:
+        /** Private constructor */
+        Concrete();
+
+        /** Allow cache friend access
+         *  We expose the constructor so that the cache may emplace new objects, which is
+         *  faster than copying them in
+         */
+        friend class ::Utils::Cache<std::size_t, Base>;
     };
 
 } // namespace SOC
