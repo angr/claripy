@@ -11,7 +11,10 @@
 
 namespace SOC {
 
-    /** A class representing either a symbolic or concrete variable */
+    /** A class representing either a symbolic or concrete variable
+     *  Note: the factory demands a static hash function that takes the
+     *  same arguments as the constructor except by const reference
+     */
     struct Base {
       protected:
         /** Constructor */

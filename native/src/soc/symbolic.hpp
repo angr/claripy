@@ -18,12 +18,15 @@ namespace SOC {
         /** Returns true */
         bool symbolic() const noexcept override final;
 
+        /** Static hash function */
+        static std::size_t hash(std::string &s);
+
         /** The name of the symbol */
         const std::string name;
 
       private:
         /** Private constructor */
-        Symbolic(const std::string &name);
+        Symbolic(std::string &&name);
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is

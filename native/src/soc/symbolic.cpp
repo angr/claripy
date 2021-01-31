@@ -9,7 +9,11 @@ using namespace SOC;
 static std::hash<std::string> hasher;
 
 
-Symbolic::Symbolic(const std::string &n) : Base { hasher(n) }, name { n } {}
+Symbolic::Symbolic(std::string &&n) : Base { hash(n) }, name { n } {}
+
+Symbolic::hash(const std::string &s) {
+    return hasher(s);
+}
 
 bool Symbolic::symbolic() const noexcept {
     return true;

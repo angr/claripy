@@ -16,6 +16,9 @@ namespace SOC {
         /** Returns false */
         bool symbolic() const noexcept override final;
 
+        /** Static hash function to satisfy factory */
+        static std::size_t hash();
+
       private:
         /** Private constructor */
         Concrete();
