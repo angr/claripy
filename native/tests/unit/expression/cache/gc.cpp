@@ -19,7 +19,7 @@ struct UnitTest::ClaricppUnitTest {
     /** Get the cache gc_resize */
     SizeType &gc_resize = Expression::Private::cache.gc_resize;
     /** Get the cache size */
-    SizeType size() { return Expression::Private::cache.cache.size(); }
+    static SizeType size() { return Expression::Private::cache.cache.size(); }
 };
 
 

@@ -17,6 +17,8 @@
         struct [[nodiscard]] RunBeforeMain {                                                      \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
+            /** Rule of 5: Destructor */                                                          \
+            ~RunBeforeMain() = default;                                                           \
             /* Disable other creation methods */                                                  \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
@@ -34,6 +36,8 @@
         struct [[nodiscard]] RunBeforeMain {                                                      \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
+            /** Rule of 5: Destructor */                                                          \
+            ~RunBeforeMain() = default;                                                           \
             /* Disable other creation methods */                                                  \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
