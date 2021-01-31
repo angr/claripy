@@ -12,5 +12,6 @@ target_sources("${CLARICPP}" PRIVATE
 )
 
 # Add sub directories
+add_subdirectory(soc)
 add_subdirectory(utils)
 add_subdirectory(expression)
