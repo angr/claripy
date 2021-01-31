@@ -31,9 +31,21 @@ function(simple_test FUNC_NAME)
 	# Disable some static analysis for test cases
 	# We don't need it on test cases and it causes some issues
 	# Note: By default unset only unsets within local scope
-	unset(CMAKE_LINK_WHAT_YOU_USE)
-	unset(CMAKE_CXX_CLANG_TIDY)
-	unset(CMAKE_C_CLANG_TIDY)
+	if(LWYU)
+		unset(CMAKE_LINK_WHAT_YOU_USE)
+		set(LWYU OFF)
+	endif()
+	if(CLANG_TIDY)
+		set(OVERRIDE_CHECKS
+			"-readability-convert-member-functions-to-static"
+			"-cppcoreguidelines-avoid-magic-numbers"
+			"-readability-magic-numbers"
+		)
+		string(REPLACE ";" "," OVERRIDE_CHECKS "${OVERRIDE_CHECKS}")
+		set(OVERRIDE_CHECKS "-checks=${OVERRIDE_CHECKS}")
+		list(APPEND CMAKE_CXX_CLANG_TIDY "${OVERRIDE_CHECKS}")
+		list(APPEND CMAKE_C_CLANG_TIDY "${OVERRIDE_CHECKS}")
+	endif()
 
 	# Determine the test prefix from the path
 	string(LENGTH "${SIMPLE_TEST_DIR}/" ST_LEN)
