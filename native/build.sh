@@ -4,6 +4,7 @@ set -o pipefail
 
 # Optional env arguments for build.sh
 DOCKER_TARGET="${DOCKER_TARGET:-test}"
+PROGRESS="${PROGRESS:-tty}"
 
 # Optional env arguments passed as --build-args to docker
 CXX_COMPILER="${CXX_COMPILER:-g++}"
@@ -24,7 +25,9 @@ fi
 
 # Build claricpp:<VERSION>
 CTAG="${DOCKER_TARGET}-$(echo "${CXX_COMPILER}" | tr -cd '[:alnum:]')-${VERSION}"
-docker build --target "${DOCKER_TARGET}" -t claricpp:"${CTAG}" \
+docker build -t claricpp:"${CTAG}" \
+	--target "${DOCKER_TARGET}" \
+	--progress="${PROGRESS}" \
 	`# Base ` \
 	--build-arg CXX_COMPILER="${CXX_COMPILER}" \
 	`# Config ` \
