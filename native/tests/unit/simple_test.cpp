@@ -1,6 +1,8 @@
 /**
  * @file
- * \ingroup unittest
+ * \defgroup unittest Claricpp Unit Tests
+ * @brief Claricpp Unit Tests
+ * \ingroup
  */
 #include "testlib.hpp"
 

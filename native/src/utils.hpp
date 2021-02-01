@@ -3,6 +3,7 @@
  * @brief This file includes all public pieces of utils
  * \defgroup utils Claricpp Utilities
  * @brief A group of useful classes and methods which all parts of claricpp can utilize
+ * \ingroup
  */
 #ifndef __UTILS_HPP__
 #define __UTILS_HPP__
@@ -23,7 +24,6 @@
 #include "utils/ref.hpp"
 #include "utils/run_after_main.hpp"
 #include "utils/run_before_main.hpp"
-#include "utils/run_cr_function.hpp"
 #include "utils/run_on_destruction.hpp"
 #include "utils/set_join.hpp"
 #include "utils/sink.hpp"

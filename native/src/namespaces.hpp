@@ -78,7 +78,7 @@ namespace Utils {
         /** A namespace used for log styles */
         namespace Style {
 
-            /** A namespace used for private members of style */
+            /** A namespace used for private members of Style */
             namespace Private {}
 
         } // namespace Style
@@ -86,15 +86,25 @@ namespace Utils {
         /** A namespace used for log backends */
         namespace Backend {
 
-            /** A namespace used for private members of backend */
+            /** A namespace used for private members of Backend */
             namespace Private {}
 
         } // namespace Backend
 
     } // namespace Log
 
+    /** A namespace used for type dependent constants */
+    namespace TD {}
+
 } // namespace Utils
 
+/** A namespace used for Symbolic and Concrete interfaces */
+namespace SOC {
+
+    /** A namespace used for private members of SOC */
+    namespace Private {}
+
+} // namespace SOC
 
 /** A namespace used for the errors directory */
 namespace Error {
