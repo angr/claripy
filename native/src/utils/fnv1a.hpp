@@ -32,11 +32,18 @@ namespace Utils {
     /** FNV-1a hash given an unspecified size */
     template <typename Size, Size Prime, Size Offset>
     constexpr Size fnv1a_raw(Constants::CCSC s, const Size len, const Size pre_hash = Offset) {
-        if (len > 0) {
+        if (len == 0) { // It is unsafe to dereference s here
             return pre_hash;
         }
         else {
-            return fnv1a_raw<Size, Prime, Offset>(&s[1], len - 1, Prime * (pre_hash ^ Size(s[0])));
+            return fnv1a_raw<Size, Prime, Offset>(
+                // Passes an invalid pointer of len == 1 (this is ok because we do not use it when
+                // len = 0
+                &s[1],
+                // len >= 1, so this is safe
+                len - 1,
+                // s[0] is safe since len != 0
+                Prime * (pre_hash ^ Size(s[0])));
         }
     }
 
