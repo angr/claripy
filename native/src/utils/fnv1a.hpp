@@ -41,8 +41,7 @@ namespace Utils {
     }
 
     /** 32 bit FNV-1a */
-    template <>
-    constexpr uint_fast32_t fnv1a<uint_fast32_t>(Constants::CCSC s, const uint_fast32_t len) {
+    template <> constexpr uint_fast32_t fnv1a(Constants::CCSC s, const uint_fast32_t len) {
         using Size = uint_fast32_t;
         const constexpr Size prime { pow<Size>(2, 24) + pow<Size>(2, 8) + 0x93U };
         const constexpr Size offset { 2166136261UL };
@@ -50,8 +49,7 @@ namespace Utils {
     }
 
     /** 64 bit FNV-1a */
-    template <>
-    constexpr uint_fast64_t fnv1a<uint_fast64_t>(Constants::CCSC s, const uint_fast64_t len) {
+    template <> constexpr uint_fast64_t fnv1a(Constants::CCSC s, const uint_fast64_t len) {
         using Size = uint_fast64_t;
         const constexpr Size prime { pow<Size>(2, 40) + pow<Size>(2, 8) + 0xb3U };
         const constexpr Size offset { 14695981039346656037ULL };
