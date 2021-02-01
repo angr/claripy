@@ -59,4 +59,6 @@ namespace Utils {
         return fnv1a_raw<Size, prime, offset>(s, len);
     }
 
+} // namespace Utils
+
 #endif
