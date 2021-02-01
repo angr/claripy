@@ -22,7 +22,7 @@ void run_on_destruction() {
 
     // Create a scope
     { // Set f(4) to run on destruction
-      Utils::RunOnDestruction rod { [&] { f(4); } };
+      Utils::RunOnDestruction rod { [&]() noexcept { f(4); } };
 
 } // End scope
 
@@ -32,7 +32,7 @@ UNITTEST_ASSERT(f() == 4)
 // Create a scope
 {
     // Set f(1) to run on destruction then disable it
-    Utils::RunOnDestruction rod { [&] { f(4); } };
+    Utils::RunOnDestruction rod { [&]() noexcept { f(4); } };
     rod.disable();
 
 } // End scope
