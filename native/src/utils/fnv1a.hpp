@@ -18,12 +18,12 @@ namespace Utils {
 
     /** FNV-1a hash given an unspecified size */
     template <typename Size, Size Prime, Size Offset>
-    constexpr Size fnv1a_raw(Constants::CCSC s, const Size len) {
-        if (len > 0) {
-            return (fnv1a_raw<Size, Prime, Offset>(s, len - 1) ^ s[len]) * Prime;
+    constexpr Size fnv1a_raw(Constants::CCSC s, const Size len, const Size pre_hash = Offset) {
+        if (s[0] == '\0') {
+            return pre_hash;
         }
         else {
-            return (Offset ^ s[len]) * Prime;
+            return fnv1a_raw<Size, Prime, Offset>(&s[1], Prime * (pre_hash ^ Size(s[0])));
         }
     }
 
