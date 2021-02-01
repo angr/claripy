@@ -8,6 +8,11 @@
 #include "base.hpp"
 
 
+// Forward declarations
+namespace Utils {
+    template <typename, typename> class Cache;
+}
+
 namespace SOC {
 
     /** A concrete variable */

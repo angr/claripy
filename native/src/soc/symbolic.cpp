@@ -11,7 +11,7 @@ static std::hash<std::string> hasher;
 
 Symbolic::Symbolic(std::string &&n) : Base { hash(n) }, name { n } {}
 
-Symbolic::hash(const std::string &s) {
+std::size_t Symbolic::hash(const std::string &s) {
     return hasher(s);
 }
 

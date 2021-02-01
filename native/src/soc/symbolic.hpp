@@ -10,6 +10,11 @@
 #include <string>
 
 
+// Forward declarations
+namespace Utils {
+    template <typename, typename> class Cache;
+}
+
 namespace SOC {
 
     /** A symbolic variable */
@@ -19,7 +24,7 @@ namespace SOC {
         bool symbolic() const noexcept override final;
 
         /** Static hash function */
-        static std::size_t hash(std::string &s);
+        static std::size_t hash(const std::string &s);
 
         /** The name of the symbol */
         const std::string name;
