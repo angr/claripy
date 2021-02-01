@@ -9,6 +9,8 @@
 
 #include "../utils.hpp"
 
+#include <memory>
+
 
 namespace SOC {
 
@@ -23,7 +25,7 @@ namespace SOC {
      *  and returns an Expression::Base (a shared pointer to the constructed object)
      *  @todo update eager_backends functionality
      */
-    template <typename T, typename... Args> inline T factory(Args &&...args) {
+    template <typename T, typename... Args> inline std::shared_ptr<T> factory(Args &&...args) {
         static_assert(std::is_base_of_v<Base, T>, "T must derive from SOC::Base");
 
         // Check to see if the object to be constructed exists in the hash cache
