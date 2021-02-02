@@ -2,13 +2,13 @@
  * @file
  * @brief This file defines a method used to determine if a class has a static cuid defined
  */
-#ifndef __FACTORY_HASSTATICCUID_HPP__
-#define __FACTORY_HASSTATICCUID_HPP__
+#ifndef __FACTORY_PRIVATE_HASSTATICCUID_HPP__
+#define __FACTORY_PRIVATE_HASSTATICCUID_HPP__
 
 #include <type_traits>
 
 
-namespace Factory {
+namespace Factory::Private {
 
     /** Used to determine if T has a static member called static_cuid
      *  False case
@@ -25,6 +25,6 @@ namespace Factory {
     /** Used to determien of T has a static_cuid variable */
     template <typename T> constexpr bool has_static_cuid_v = HasStaticCUID<T>::value;
 
-} // namespace Factory
+} // namespace Factory::Private
 
 #endif

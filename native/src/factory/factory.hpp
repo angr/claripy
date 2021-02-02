@@ -5,17 +5,12 @@
 #ifndef __FACTORY_FACTORY_HPP__
 #define __FACTORY_FACTORY_HPP__
 
-#include "has_static_cuid.hpp"
-
+#include "../cuid.hpp"
 #include "../hash.hpp"
 #include "../utils.hpp"
 
-#include <memory>
-#include <type_traits>
-
 
 namespace Factory {
-
 
     namespace Private {
         /** The factory cache */
@@ -23,17 +18,21 @@ namespace Factory {
     } // namespace Private
 
     /** A factory used to construct subclasses of Base.
-     *  T must have a static_cuid and be instantiable
-     *  Arguments are consumed.
+     *  Base must subclass CUID, T's constructor's first argument must be passed to its super CUID
+     *  T must have a Constants::UInt static_cuid and be instantiable
+     *  Arguments are passed by non-const forwarding reference
      *  @todo update eager_backends functionality
      */
     template <typename Base, typename T, typename... Args>
     inline Constants::SConstPtr<T> factory(Args &&...args) {
-        static_assert(has_static_cuid_v<T>,
+        // Verify inheretence
+        static_assert(std::is_base_of_v<CUID::CUID, Base>, "Base must derive from CUID");
+        static_assert(std::is_base_of_v<Base, T>, "T must derive from Base");
+        // Verify static_cuid
+        static_assert(Private::has_static_cuid_v<T>,
                       "Factory cannot construct anything without a static_cuid");
         static_assert(std::is_same_u<Constants::UInt, T::static_cuid>,
                       "T::static_cuid must be of type Constants::UInt");
-        static_assert(std::is_base_of_v<Base, T>, "T must derive from Base");
 
         // Check to see if the object to be constructed exists in the hash cache
         const Hash::Hash hash { Hash::hash(T::static_cuid, static_cast<const Args>(args)...) };
