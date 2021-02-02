@@ -28,7 +28,13 @@ namespace SOC {
 
       private:
         /** Private constructor */
-        inline Concrete() : Base { hash() } {}
+        inline Concrete() noexcept : Base { hash() } {}
+
+        /** Destructor */
+        ~Concrete() noexcept override final = default;
+
+        // Disable other methods of construction
+        SET_IMPLICITS_CONST_MEMBERS(Base, delete, noexcept)
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is

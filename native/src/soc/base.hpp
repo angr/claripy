@@ -18,14 +18,23 @@ namespace SOC {
      *  same arguments as the constructor except by const reference
      */
     struct Base : public Hash::Hashed {
-      protected:
-        /** Passthrough constructor */
-        explicit inline Base(const Hash::Hash &h) : Hash::Hashed { h } {}
 
-      public:
         /** Returns true if this is symbolic */
         virtual bool symbolic() const noexcept = 0;
+
+      protected:
+        /** Passthrough constructor */
+        explicit inline Base(const Hash::Hash &h) noexcept : Hash::Hashed { h } {}
+
+        /** Virtual destructor */
+        virtual inline ~Base() noexcept override = 0;
+
+        // Rule of 5
+        SET_IMPLICITS_CONST_MEMBERS(Base, default, noexcept)
     };
+
+    /** Default virtual destructor */
+    Base::~Base() noexcept = default;
 
 } // namespace SOC
 

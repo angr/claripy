@@ -38,8 +38,17 @@ namespace SOC {
         /** Private constructor
          *  Note: const ref is preferrable here as then we don't have to worry about
          *  when name is moved when trying to hash(name) for the Hashed superclass
+         *  Note: String copy can throw, but if it does we are out of memory and should crash
          */
-        explicit Symbolic(const std::string &name);
+        explicit inline Symbolic(const std::string &n) noexcept : Base { hash(n) } name { n } {}
+
+        /** Destructor */
+        ~Symbolic() noexcept override final = default;
+
+        // Disable other methods of construction
+        // Technically std::string can throw, but if we are out of memory that is an ok time to
+        // crash
+        SET_IMPLICITS_CONST_MEMBERS(Base, delete, noexcept)
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is
