@@ -74,7 +74,7 @@ namespace Utils {
         /************************************************/
 
         /** A setter that takes in a shared pointer of type type */
-        void set_shared_ptr(Ptr &ptr) { this->set(ptr); }
+        void set_shared_ptr(const Ptr &ptr) { this->set(ptr); }
 
 
         /** A setter by default constructor */

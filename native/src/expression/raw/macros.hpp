@@ -17,7 +17,9 @@
     using X = std::shared_ptr<NAMESPACE::X>;
 
 /** Define a unique type id for each type */
-#define DEFINE_TYPEID static const constexpr Constants::UInt id = UTILS_FILE_LINE_HASH;
+#define DEFINE_TYPEID                                                                             \
+    /** Define a unique type id for each type */                                                  \
+    static const constexpr Constants::UInt id = UTILS_FILE_LINE_HASH;
 
 /** Used to initalize an instantiable expression
  *  This macro will end in a 'private' state

@@ -20,7 +20,7 @@ namespace Hash {
 
       protected:
         /** Default constructor */
-        inline Hashed(const Hash &h) : hash(h) {}
+        explicit inline Hashed(const Hash &h) : hash(h) {}
 
         // Rule of 5
         // This shouldn't be necessary, but better safe than sorry

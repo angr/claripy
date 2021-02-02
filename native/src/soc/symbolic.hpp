@@ -34,7 +34,7 @@ namespace SOC {
          *  Note: const ref is preferrable here as then we don't have to worry about
          *  when name is moved when trying to hash(name) for the Hashed superclass
          */
-        Symbolic(const std::string &name);
+        explicit Symbolic(const std::string &name);
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is
