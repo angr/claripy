@@ -10,6 +10,7 @@
 
 #include "../utils.hpp"
 
+#include <exception>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -34,7 +35,12 @@ namespace Hash {
      * specializations Note: Otherwise full specializations are put in a cpp file and linked later.
      *  Every type requries a specialization or is not supported!
      */
-    template <typename T> constexpr Hash singular(const T &) noexcept;
+    template <typename T> constexpr Hash singular(const T &) noexcept {
+        /* static_assert(false, "Given value of T is not supported for Hash::singular"); */
+        static_assert(Utils::TD::false_<T>,
+                      "Given value of T is not supported for Hash::singular");
+        return std::declval<Hash>(); // Satisfy the compiler
+    }
 
     /** The FNV1a hash function to be invoked for for size sizeof(Hash) */
     template <typename Type> const auto &fnv1a = Utils::FNV1a<Type>::template hash<Hash>;
@@ -69,8 +75,7 @@ namespace Hash {
     /** A specialization for T = std::vector<std::shared_ptr<Annotation::Base>>
      *  Not constexpr
      */
-    template <>
-    inline Hash singular(const std::vector<std::shared_ptr<Annotation::Base>> &v) noexcept {
+    template <typename T> inline Hash singular(const std::vector<std::shared_ptr<T>> &v) noexcept {
         Constants::UInt hashes[v.size()]; // NOLINT
         Constants::UInt i = -1ULL;
         for (const auto &p : v) {
