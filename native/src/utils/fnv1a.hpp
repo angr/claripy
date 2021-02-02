@@ -8,63 +8,78 @@
 
 #include "pow.hpp"
 #include "type_dependent_constant.hpp"
+#include "unconstructable.hpp"
 
 #include "../constants.hpp"
 
 #include <cstdint>
+#include <type_traits>
 
 
 namespace Utils {
 
-    /** FNV-1a class of hashes
-     *  @param s: The input string (may have null terminated characters)
-     *  @param len: The length of the input string (the number of characters to be hashed)
-     *  Only types with specializations are allowed
-     */
-    template <typename Size> constexpr Size fnv1a(Constants::CCSC s, const Size len) {
-        // Static assert false (this is not a specialization)
-        // We use TD::false_ to ensure we only fail to compile if this branch is taken
-        static_assert(TD::false_<Size>, "fnv1 algorithms not implemented for type T");
-        (void) len;
-        (void) s;
-    }
+    /** FNV-1a class of hashes */
+    template <typename Type> struct FNV1a final : public Unconstructable {
 
-    /** FNV-1a hash given an unspecified size */
-    template <typename Size, Size Prime, Size Offset>
-    constexpr Size fnv1a_raw(Constants::CCSC s, const Size len, const Size pre_hash = Offset) {
-        if (len == 0) { // It is unsafe to dereference s here
-            return pre_hash;
+        /** 32-bit type */
+        using u32T = uint32_t;
+        /** 64-bit type */
+        using u64T = uint64_t;
+
+        /** const Input type */
+        using CInput = Constants::CTSC<Type>;
+
+      private:
+        /** FNV-1a hash body */
+        template <typename Size, Size Prime, Size Offset>
+        static constexpr Size internal_hash(CInput s, const Size len,
+                                            const Size pre_hash = Offset) {
+            if (len == 0) { // It is unsafe to dereference s here
+                return pre_hash;
+            }
+            else {
+                return internal_hash<Size, Prime, Offset>(
+                    // Passes an invalid pointer of len == 1 (this is ok because we do not use it
+                    // when len = 0
+                    &s[1],
+                    // len >= 1, so this is safe
+                    len - 1,
+                    // s[0] is safe since len != 0
+                    Prime * (pre_hash ^ Size(s[0])));
+            }
         }
-        else {
-            return fnv1a_raw<Size, Prime, Offset>(
-                // Passes an invalid pointer of len == 1 (this is ok because we do not use it when
-                // len = 0
-                &s[1],
-                // len >= 1, so this is safe
-                len - 1,
-                // s[0] is safe since len != 0
-                Prime * (pre_hash ^ Size(s[0])));
+
+      public:
+        /** 32 bit hash */
+        static constexpr u32T u32(CInput s, const u32T len) {
+            const constexpr u32T prime { pow<u32T>(2, 24) + pow<u32T>(2, 8) + 0x93U };
+            const constexpr u32T offset { 2166136261UL };
+            return internal_hash<u32T, prime, offset>(s, len);
         }
-    }
 
-    /** 32 bit FNV-1a
-     *  We do not use int_fast32_t because that could be 64 bits
-     *  We let the 64 bit specialization handle such a case
-     */
-    template <> constexpr uint32_t fnv1a(Constants::CCSC s, const uint32_t len) {
-        using Size = uint32_t;
-        const constexpr Size prime { pow<Size>(2, 24) + pow<Size>(2, 8) + 0x93U };
-        const constexpr Size offset { 2166136261UL };
-        return fnv1a_raw<Size, prime, offset>(s, len);
-    }
+        /** 64-bit hash */
+        static constexpr u64T u64(CInput s, const u64T len) {
+            const constexpr u64T prime { pow<u64T>(2, 40) + pow<u64T>(2, 8) + 0xb3U };
+            const constexpr u64T offset { 14695981039346656037ULL };
+            return internal_hash<u64T, prime, offset>(s, len);
+        }
 
-    /** 64 bit FNV-1a */
-    template <> constexpr uint_fast64_t fnv1a(Constants::CCSC s, const uint_fast64_t len) {
-        using Size = uint_fast64_t;
-        const constexpr Size prime { pow<Size>(2, 40) + pow<Size>(2, 8) + 0xb3U };
-        const constexpr Size offset { 14695981039346656037ULL };
-        return fnv1a_raw<Size, prime, offset>(s, len);
-    }
+        /** Contants::UInt version */
+        static constexpr Constants::UInt hash(CInput s, const Constants::UInt len) {
+            if constexpr (std::is_same_v<Constants::UInt, u64T>) {
+                return u64(s, len);
+            }
+            else if constexpr (std::is_same_v<Constants::UInt, u32T>) {
+                return u32(s, len);
+            }
+            else {
+                // Static assert false
+                // Use TD::false_ to ensure we only fail if this branch is taken
+                static_assert(TD::false_<Type>,
+                              "Hash::FNV1a::hash not implemented for choice of Constants::UInt");
+            }
+        }
+    };
 
 } // namespace Utils
 
