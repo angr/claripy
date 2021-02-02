@@ -20,13 +20,17 @@ namespace Hash {
 
       protected:
         /** Default constructor */
-        explicit inline Hashed(const Hash &h) : hash(h) {}
+        explicit inline Hashed(const Hash &h) noexcept : hash(h) {}
+
+        /** Virtual destructor */
+        virtual inline ~Hashed() noexcept;
 
         // Rule of 5
-        // This shouldn't be necessary, but better safe than sorry
-        SET_IMPLICITS_NONDEFAULT_CTORS(Hashed, default)
-        SET_IMPLICITS_OPERATORS(Hashed, delete)
+        SET_IMPLICITS_CONST_MEMBERS(Hashed, default, noexcept)
     };
+
+    /** Default virtual destructor */
+    Hashed::~Hashed() noexcept = default;
 
 } // namespace Hash
 

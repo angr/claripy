@@ -17,32 +17,11 @@
 #define WHOAMI_WITH_SOURCE __FILE__ " via " __BASE_FILE__ ": ", __LINE__, " (", __func__, "): "
 
 
-/** A macro used to enable/disable the implict operators of a class */
-#define SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                     \
-    /** Define the copy operator */                                                               \
-    CLASS &operator=(const CLASS &) = VALUE;                                                      \
-    /** Define the move operator */                                                               \
-    CLASS &operator=(CLASS &&) = VALUE;
+/** A macro to convert the value of a macro into a string */
+#define MACRO_VALUE_TO_STRING(X) #X
 
-/** A macro used to enable/disable the implicit non-default constructors of a class */
-#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                              \
-    /** Define the default copy constructor */                                                    \
-    CLASS(const CLASS &) = VALUE;                                                                 \
-    /** Define the default move constructor */                                                    \
-    CLASS(CLASS &&) = VALUE;
-
-/** A macro used to enable/disable all implict constructors and operators of a class
- *  except for the default constructor
- */
-#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                          \
-    SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                         \
-    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)
-
-/** A macro used to enable/disable all implicit constructors and operators of a class */
-#define SET_IMPLICITS(CLASS, VALUE)                                                               \
-    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                              \
-    /** Define the default constructor */                                                         \
-    CLASS() = VALUE;
+/** A macro to convert a macro name into a string */
+#define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
 
 
 /** A macro used to define a derived class that inherets its parent's constructors
@@ -65,10 +44,43 @@
         using NS::SUPER::SUPER;                                                                   \
     };
 
-/** A macro to convert the value of a macro into a string */
-#define MACRO_VALUE_TO_STRING(X) #X
 
-/** A macro to convert a macro name into a string */
-#define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
+/********************************************************************/
+/*                   Setters of implicit methods                    */
+/********************************************************************/
+
+
+/** A macro used to enable/disable the implict operators of a class */
+#define SET_IMPLICITS_OPERATORS(CLASS, VALUE, ...)                                                \
+    /** Define the copy operator */                                                               \
+    CLASS &operator=(const CLASS &) __VA_ARGS__ = VALUE;                                          \
+    /** Define the move operator */                                                               \
+    CLASS &operator=(CLASS &&) __VA_ARGS__ = VALUE;
+
+/** A macro used to enable/disable the implicit non-default constructors of a class */
+#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, ...)                                         \
+    /** Define the default copy constructor */                                                    \
+    CLASS(const CLASS &) __VA_ARGS__ = VALUE;                                                     \
+    /** Define the default move constructor */                                                    \
+    CLASS(CLASS &&) __VA_ARGS__ = VALUE;
+
+/** A macro used to enable/disable all implict constructors and operators of a class
+ *  except for the default constructor
+ */
+#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE, ...)                                     \
+    SET_IMPLICITS_OPERATORS(CLASS, VALUE, __VA_ARGS__)                                            \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)
+
+/** A macro used to enable/disable all implicit constructors and operators of a class */
+#define SET_IMPLICITS(CLASS, VALUE, ...)                                                          \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE, __VA_ARGS__)                                 \
+    /** Define the default constructor */                                                         \
+    CLASS() __VA_ARGS__ = VALUE;
+
+/** Set the implicits of a class with const members */
+#define SET_IMPLICITS_CONST_MEMBERS(CLASS, VALUE, ...)                                            \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)                                     \
+    SET_IMPLICITS_OPERATORS(CLASS, delete)
+
 
 #endif
