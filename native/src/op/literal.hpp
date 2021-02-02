@@ -41,7 +41,7 @@ namespace Op {
         /** Used by the constructor to initalize value */
         static inline ValueT create_value(const std::string &rdata, Constants::UInt size) {
             using Usage = Utils::Error::Unexpected::IncorrectUsage;
-            using MP = boost::multiprecision;
+            namespace MP = boost::multiprecision;
             // Constants
             static const constexpr Constants::UInt max64 = sizeof(int_fast64_t);
             static const constexpr Constants::UInt max128 = 128;
