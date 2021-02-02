@@ -1,14 +1,22 @@
+# cppcheck
 if(CPP_CHECK)
 	if (APPLE)
 		message(WARNING "cppcheck's internal AST can break because of control block initalizers on mac."
 				"Until this bug is fixed we cannot use cppcheck on mac. Skipping.")
 		set(CPP_CHECK OFF)
 	else()
-# --enable=all
-		set(CMAKE_C_CPPCHECK "cppcheck" "--std=c++17" "--error-exitcode=1" "--inline-suppr")
-		set(CMAKE_CXX_CPPCHECK "cppcheck" "--std=c++17" "--error-exitcode=1" "--inline-suppr")
+		set(CPPCHECK_FLAGS "cppcheck"
+			"--enable=all"
+			"--std=c++17"
+			"--error-exitcode=1"
+			"--inline-suppr"
+		)
+		set(CMAKE_C_CPPCHECK ${CPPCHECK_FLAGS})
+		set(CMAKE_CXX_CPPCHECK ${CPPCHECK_FLAGS})
 	endif()
 endif()
+
+# Include What You Use
 if(IWYU)
 	if(APPLE)
 		set(IWYU_PATH "include-what-you-use")
@@ -18,6 +26,8 @@ if(IWYU)
 	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
 endif()
+
+# Link What You Use
 if(LWYU)
 	if(APPLE)
 		message(WARNING "Link what you use is not supported by Apple's linker. Skipping.")
@@ -26,6 +36,8 @@ if(LWYU)
 		set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 	endif()
 endif()
+
+# Clang Tidy
 if(CLANG_TIDY)
 	if(APPLE)
 		message(WARNING "Clang Tidy might not behave well with boost headers")
