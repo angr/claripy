@@ -15,12 +15,18 @@
 #define OP_FINAL_INIT(CLASS)                                                                      \
   public:                                                                                         \
     DEFINE_STATIC_CUID                                                                            \
+                                                                                                  \
     /* Delete implicits */                                                                        \
     SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                    \
     /** Default destructor */                                                                     \
     ~CLASS() noexcept override final = default;                                                   \
                                                                                                   \
-  private:
+  private:                                                                                        \
+    /** Allow cache friend access                                                                 \
+     *  We expose the constructor so that the cache may emplace new objects, which is             \
+     *  faster than copying them in                                                               \
+     */                                                                                           \
+    friend class ::Utils::Cache<Hash::Hash, Base>;
 
 
 #endif

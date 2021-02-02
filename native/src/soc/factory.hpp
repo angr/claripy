@@ -11,7 +11,7 @@
 namespace SOC {
 
     // Forward declarations
-    class Base;
+    struct Base;
 
     /** A factory used to construct subclasses of SOC.
      *  Arguments are passed by non-const forwarding reference

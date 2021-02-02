@@ -29,7 +29,7 @@ namespace Op {
         /** If false expression */
         const Constants::SConstPtr<Expression::Base> if_false;
 
-      protected:
+      private:
         /** Protected constructor */
         explicit inline If(const Hash::Hash &h, const Constants::SConstPtr<Expression::Bool> &c,
                            const Constants::SConstPtr<Expression::Base> &if_tru,

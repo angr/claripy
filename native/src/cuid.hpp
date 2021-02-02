@@ -11,8 +11,11 @@
 #include "utils.hpp"
 
 
-/** Used to define a static_cuid in a class */
+/** Used to define a static_cuid in a class
+ *  Leaves the class in a public state
+ */
 #define DEFINE_STATIC_CUID                                                                        \
+  public:                                                                                         \
     /** Define a static_cuid */                                                                   \
     static const constexpr Constants::UInt static_cuid = UTILS_FILE_LINE_HASH;
 

@@ -18,27 +18,21 @@ namespace Utils {
 namespace SOC {
 
     /** A concrete variable */
-    struct Concrete : public Base {
-        DEFINE_STATIC_CUID
-
+    struct Concrete final : public Base {
+        SOC_FINAL_INIT
+      public:
         /** Returns false */
         inline bool symbolic() const noexcept override final { return false; }
-
-      private:
-        /** Private constructor */
-        explicit inline Concrete(const Hash::Hash &h) noexcept : Base { h } {}
 
         /** Destructor */
         ~Concrete() noexcept override final = default;
 
+      private:
+        /** Private constructor */
+        explicit inline Concrete(const Hash::Hash &h) noexcept : Base { h, static_cuid } {}
+
         // Disable other methods of construction
         SET_IMPLICITS_CONST_MEMBERS(Concrete, delete, noexcept)
-
-        /** Allow cache friend access
-         *  We expose the constructor so that the cache may emplace new objects, which is
-         *  faster than copying them in
-         */
-        friend class ::Utils::Cache<Hash::Hash, Base>;
     };
 
 } // namespace SOC

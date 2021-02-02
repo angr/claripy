@@ -20,35 +20,29 @@ namespace Utils {
 namespace SOC {
 
     /** A symbolic variable */
-    struct Symbolic : public Base {
-        DEFINE_STATIC_CUID
-
+    struct Symbolic final : public Base {
+        SOC_FINAL_INIT
+      public:
         /** Returns true */
         inline bool symbolic() const noexcept override final { return true; }
 
         /** The name of the symbol */
         const std::string name;
 
+        /** Destructor */
+        ~Symbolic() noexcept override final = default;
+
       private:
         /** Private constructor
          *  Note: String copy can throw, but if it does we are out of memory and should crash
          */
         explicit inline Symbolic(const Hash::Hash &h, std::string &&n) noexcept
-            : Base { h }, name { n } {}
-
-        /** Destructor */
-        ~Symbolic() noexcept override final = default;
+            : Base { h, static_cuid }, name { n } {}
 
         // Disable other methods of construction
         // Technically std::string can throw, but if we are out of memory that is an ok time to
         // crash
         SET_IMPLICITS_CONST_MEMBERS(Symbolic, delete, noexcept)
-
-        /** Allow cache friend access
-         *  We expose the constructor so that the cache may emplace new objects, which is
-         *  faster than copying them in
-         */
-        friend class ::Utils::Cache<Hash::Hash, Base>;
     };
 
 } // namespace SOC

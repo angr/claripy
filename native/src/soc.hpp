@@ -7,6 +7,7 @@
 
 #include "soc/base.hpp"
 #include "soc/concrete.hpp"
+#include "soc/factory.hpp"
 #include "soc/symbolic.hpp"
 
 #endif

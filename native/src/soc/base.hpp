@@ -5,7 +5,9 @@
 #ifndef __SOC_BASE_HPP__
 #define __SOC_BASE_HPP__
 
-#include "../cuid.hpp" // For subclasses
+#include "macros.hpp" // For subclasses
+
+#include "../cuid.hpp"
 #include "../hash.hpp"
 
 #include <cstddef>
@@ -18,14 +20,15 @@ namespace SOC {
      *  Note: the factory demands a static hash function that takes the
      *  same arguments as the constructor except by const reference
      */
-    struct Base : public Hash::Hashed {
+    struct Base : public Hash::Hashed, public CUID {
 
         /** Returns true if this is symbolic */
         virtual bool symbolic() const noexcept = 0;
 
       protected:
         /** Passthrough constructor */
-        explicit inline Base(const Hash::Hash &h) noexcept : Hash::Hashed { h } {}
+        explicit inline Base(const Hash::Hash &h, const Constants::UInt c) noexcept
+            : Hash::Hashed { h }, CUID { c } {}
 
         /** Virtual destructor */
         virtual inline ~Base() noexcept override = 0;

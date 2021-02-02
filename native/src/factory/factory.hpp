@@ -35,7 +35,7 @@ namespace Factory {
         // Verify static_cuid
         static_assert(Private::has_static_cuid_v<T>,
                       "Factory cannot construct anything without a static_cuid");
-        static_assert(std::is_same_v<Constants::UInt, T::static_cuid>,
+        static_assert(std::is_same_v<const Constants::UInt, decltype(T::static_cuid)>,
                       "T::static_cuid must be of type Constants::UInt");
 
         // Check to see if the object to be constructed exists in the hash cache
