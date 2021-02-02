@@ -19,16 +19,16 @@
 
 /** A macro used to enable/disable the implict operators of a class */
 #define SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                     \
-    /** Disable copy operator */                                                                  \
+    /** Define the copy operator */                                                               \
     CLASS &operator=(const CLASS &) = VALUE;                                                      \
-    /** Disable move operator */                                                                  \
+    /** Define the move operator */                                                               \
     CLASS &operator=(CLASS &&) = VALUE;
 
 /** A macro used to enable/disable the implicit non-default constructors of a class */
 #define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                              \
-    /** Disable default copy constructor */                                                       \
+    /** Define the default copy constructor */                                                    \
     CLASS(const CLASS &) = VALUE;                                                                 \
-    /** Disable default move constructor */                                                       \
+    /** Define the default move constructor */                                                    \
     CLASS(CLASS &&) = VALUE;
 
 /** A macro used to enable/disable all implict constructors and operators of a class
@@ -41,7 +41,7 @@
 /** A macro used to enable/disable all implicit constructors and operators of a class */
 #define SET_IMPLICITS(CLASS, VALUE)                                                               \
     SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                              \
-    /** Disable default constructor */                                                            \
+    /** Define the default constructor */                                                         \
     CLASS() = VALUE;
 
 

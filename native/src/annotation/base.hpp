@@ -35,7 +35,8 @@ namespace Annotation {
         virtual ~Base();
 
         // Rule of 5
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Base, default)
+        SET_IMPLICITS_NONDEFAULT_CTORS(Base, default)
+        SET_IMPLICITS_OPERATORS(Base, delete)
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise
