@@ -21,9 +21,8 @@ namespace Utils::Log::Style {
      */
     struct Base {
       protected:
-        /** Default virtual destructor */
-        virtual ~Base() = 0;
-        /* inline virtual ~Base() = 0; */
+        /** Protected pure virtual destructor */
+        inline virtual ~Base() = 0;
 
       public:
         // Rule of 5
@@ -34,8 +33,8 @@ namespace Utils::Log::Style {
                                 const std::ostringstream &raw) = 0;
     };
 
-    // For compilation reasons
-    /* Base::~Base() = default; */
+    /** Default virtual destructor */
+    Base::~Base() = default;
 
 } // namespace Utils::Log::Style
 

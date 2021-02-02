@@ -23,8 +23,12 @@ namespace Utils::Log::Backend {
     struct Multiplex : public Base {
 
         /** Log the given message, level, to the correct log given by log_id with each backend */
-        void log(Constants::CCSC id, const Level::Level &lvl,
-                 const std::string &msg) override final;
+        inline void log(Constants::CCSC id, const Level::Level &lvl,
+                        const std::string &msg) override final {
+            for (const auto &i : *backends.get()) {
+                i->log(id, lvl, msg);
+            }
+        }
 
         /** Backend container type */
         using BackendContainer = std::vector<std::shared_ptr<Base>>;

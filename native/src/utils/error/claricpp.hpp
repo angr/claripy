@@ -32,7 +32,7 @@ namespace Utils::Error {
         virtual ~Claricpp();
 
         /** Message getter */
-        const char *what() const noexcept override final;
+        inline const char *what() const noexcept override final { return msg.c_str(); }
 
       private:
         /** The message */
@@ -41,6 +41,9 @@ namespace Utils::Error {
         /** Allow all error factories friend access */
         template <typename T, typename S> friend T factory(const S msg);
     };
+
+    /** Default virtual destructor */
+    Claricpp::~Claricpp() = default;
 
 } // namespace Utils::Error
 

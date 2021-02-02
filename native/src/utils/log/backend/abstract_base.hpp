@@ -21,8 +21,8 @@ namespace Utils::Log::Backend {
      */
     struct Base {
       protected:
-        /** Default virtual destructor */
-        virtual ~Base() = 0;
+        /** Protected pure virtual destructor */
+        virtual inline ~Base() = 0;
 
       public:
         // Rule of 5
@@ -31,6 +31,9 @@ namespace Utils::Log::Backend {
         /** Log the given message, level, to the correct log given by log_id */
         virtual void log(Constants::CCSC id, const Level::Level &lvl, const std::string &msg) = 0;
     };
+
+    /** Default virtual destructor */
+    Base::~Base() = default;
 
 } // namespace Utils::Log::Backend
 

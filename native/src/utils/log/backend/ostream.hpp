@@ -27,18 +27,29 @@ namespace Utils::Log::Backend {
          *  or something, flush_on_exit should be false as static destruction is done without
          *  a defined order.
          */
-        explicit OStream(std::shared_ptr<std::ostream> s, const bool flush,
-                         const bool flush_on_exit = true) noexcept;
+        explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool flush_,
+                                const bool flush_on_exit_ = true) noexcept
+            : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {}
 
         /** A virtual destructor */
-        virtual ~OStream();
+        virtual inline ~OStream() {
+            if (this->flush_on_exit) {
+                this->stream->flush();
+            }
+        }
 
         // We don't want to mess with the shared ostream
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(OStream, delete)
 
         /** Log the message */
-        void log(Constants::CCSC id, const Level::Level &lvl,
-                 const std::string &msg) override final;
+        inline void log(Constants::CCSC, const Level::Level &,
+                        const std::string &msg) override final {
+            std::lock_guard<decltype(this->m)> lock(m);
+            *stream << msg << "\n";
+            if (this->flush) {
+                this->stream->flush();
+            }
+        }
 
       private:
         /** The stream we log to */

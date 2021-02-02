@@ -8,6 +8,8 @@
 
 #include "ostream.hpp"
 
+#include <iostream>
+
 
 namespace Utils::Log::Backend {
 
@@ -18,7 +20,7 @@ namespace Utils::Log::Backend {
     struct Clog : public OStream {
 
         /** Constructor */
-        Clog();
+        inline Clog() : OStream(std::make_shared<std::ostream>(std::clog.rdbuf()), false, false) {}
     };
 
 } // namespace Utils::Log::Backend

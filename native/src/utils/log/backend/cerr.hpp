@@ -8,6 +8,8 @@
 
 #include "ostream.hpp"
 
+#include <iostream>
+
 
 namespace Utils::Log::Backend {
 
@@ -18,7 +20,7 @@ namespace Utils::Log::Backend {
     struct Cerr : public OStream {
 
         /** Constructor */
-        Cerr();
+        inline Cerr() : OStream(std::make_shared<std::ostream>(std::cerr.rdbuf()), true, false) {}
     };
 
 } // namespace Utils::Log::Backend
