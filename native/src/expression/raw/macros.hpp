@@ -6,6 +6,7 @@
 #define __EXPRESSION_RAW_MACROS_HPP__
 
 #include "../../macros.hpp"
+#include "../../utils.hpp"
 
 #include <memory>
 
@@ -15,6 +16,8 @@
     /** Declare a shared pointer to X in Expression */                                            \
     using X = std::shared_ptr<NAMESPACE::X>;
 
+/** Define a unique type id for each type */
+#define DEFINE_TYPEID static const constexpr Constants::UInt id = UTILS_FILE_LINE_HASH;
 
 /** Used to initalize an instantiable expression
  *  This macro will end in a 'private' state
@@ -23,6 +26,7 @@
     /* Disallow construction without using the one specified constructor */                       \
     SET_IMPLICITS(CLASS, delete)                                                                  \
   public:                                                                                         \
+    DEFINE_TYPEID                                                                                 \
     /** Non-virtual destructor */                                                                 \
     ~CLASS() override final;                                                                      \
                                                                                                   \
@@ -38,6 +42,8 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(CLASS)                                         \
+  public:                                                                                         \
+    DEFINE_TYPEID                                                                                 \
   protected:                                                                                      \
     /** Use the default constructor */                                                            \
     CLASS() = default;                                                                            \
@@ -54,6 +60,8 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(CLASS)                                           \
+  public:                                                                                         \
+    DEFINE_TYPEID                                                                                 \
   protected:                                                                                      \
     /** Pure virtual destructor */                                                                \
     virtual ~CLASS() = 0;                                                                         \
