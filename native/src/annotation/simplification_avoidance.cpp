@@ -8,9 +8,8 @@
 using namespace Annotation;
 
 
-Constants::UInt SimplificationAvoidance::hash() const {
-    return Utils::type_id<SimplificationAvoidance>();
-}
+SimplificationAvoidance::SimplificationAvoidance() : Base(UTILS_FILE_LINE_HASH) {}
+
 
 bool SimplificationAvoidance::eliminatable() const {
     return false;

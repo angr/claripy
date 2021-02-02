@@ -6,6 +6,7 @@
 #define __ANNOTATION_BASE_HPP__
 
 #include "../constants.hpp"
+#include "../hash.hpp"
 #include "../macros.hpp"
 
 #include <memory>
@@ -25,18 +26,16 @@ namespace Annotation {
     /** Annotations are used to achieve claripy's goal of being an arithmetic instrumentation
      * engine. They provide a means to pass extra information to the claripy backends.
      */
-    struct Base {
+    struct Base : public Hash::Hashed {
+
+        /** Constructor */
+        Base(const Hash::Hash &h = default_hash);
 
         /** Virtual destructor */
         virtual ~Base();
 
         // Rule of 5
-        SET_IMPLICITS(Base, default)
-
-        /** Virtual hash function
-         *  Every subclass must implement this
-         */
-        virtual Constants::UInt hash() const;
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Base, default)
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise
@@ -68,6 +67,9 @@ namespace Annotation {
          */
         virtual const Base *relocate(const Expression::Base &src,
                                      const Expression::Base &dst) const;
+
+        /** The default hash of an Annotation::Base */
+        static const constexpr Constants::UInt default_hash { UTILS_FILE_LINE_HASH };
     };
 
 } // namespace Annotation

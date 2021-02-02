@@ -64,19 +64,24 @@ namespace Utils {
             return internal_hash<u64T, prime, offset>(s, len);
         }
 
-        /** Contants::UInt version */
+        /** Any Size version
+         *  Default: Contants::UInt
+         */
+        template <typename Size = Constants::UInt>
         static constexpr Constants::UInt hash(CInput s, const Constants::UInt len) {
-            if constexpr (std::is_same_v<Constants::UInt, u64T>) {
+            static_assert(sizeof(Size) >= sizeof(Type),
+                          "FNV1a::hash given a size too small for the given Type");
+            if constexpr (std::is_same_v<Size, u64T>) {
                 return u64(s, len);
             }
-            else if constexpr (std::is_same_v<Constants::UInt, u32T>) {
+            else if constexpr (std::is_same_v<Size, u32T>) {
                 return u32(s, len);
             }
             else {
                 // Static assert false
                 // Use TD::false_ to ensure we only fail if this branch is taken
                 static_assert(TD::false_<Type>,
-                              "Hash::FNV1a::hash not implemented for choice of Constants::UInt");
+                              "Hash::FNV1a::hash not implemented for choice of Size");
             }
         }
     };

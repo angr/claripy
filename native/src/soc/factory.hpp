@@ -7,6 +7,7 @@
 
 #include "base.hpp"
 
+#include "../hash.hpp"
 #include "../utils.hpp"
 
 #include <memory>
@@ -16,7 +17,7 @@ namespace SOC {
 
     namespace Private {
         /** The factory cache */
-        inline Utils::Cache<std::size_t, Base> cache {};
+        inline Utils::Cache<Hash::Hash, Base> cache {};
     } // namespace Private
 
     /** A factory used to construct subclasses of Expression::Raw::Base. Arguments are
@@ -29,7 +30,7 @@ namespace SOC {
         static_assert(std::is_base_of_v<Base, T>, "T must derive from SOC::Base");
 
         // Check to see if the object to be constructed exists in the hash cache
-        const std::size_t hash { T::hash(static_cast<const Args>(args)...) };
+        const Hash::Hash hash { T::hash(static_cast<const Args>(args)...) };
 
         // Note: we have these two as distinct statements to ensure hash is done first
         // As the std::forward may move args

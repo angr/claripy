@@ -4,11 +4,11 @@ target_sources("${CLARICPP}" PRIVATE
 	./annotation/base.cpp
 	./annotation/simplification_avoidance.cpp
 	# Op
-	./op/classifications.cpp
+	# ./op/classifications.cpp
 	# Simplification
-	./simplification/private/op_map.cpp
-	./simplification/simplifiers.cpp
-	./simplification/simplify.cpp
+	# ./simplification/private/op_map.cpp
+	# ./simplification/simplifiers.cpp
+	# ./simplification/simplify.cpp
 )
 
 # Add sub directories

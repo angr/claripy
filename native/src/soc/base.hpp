@@ -5,6 +5,8 @@
 #ifndef __SOC_BASE_HPP__
 #define __SOC_BASE_HPP__
 
+#include "../hash.hpp"
+
 #include <cstddef>
 #include <functional>
 
@@ -15,32 +17,16 @@ namespace SOC {
      *  Note: the factory demands a static hash function that takes the
      *  same arguments as the constructor except by const reference
      */
-    struct Base {
+    struct Base : public Hash::Hashed {
       protected:
-        /** Constructor */
-        Base(const std::size_t h);
+        /** Passthrough constructor */
+        inline Base(const Hash::Hash &hash) : Hash::Hashed { hash } {}
 
       public:
         /** Returns true if this is symbolic */
         virtual bool symbolic() const noexcept = 0;
-
-        /** A hash for this object */
-        const std::size_t hash;
     };
 
 } // namespace SOC
-
-// Allow std::hash to work with our object
-// Note: This is the recommended way of doing this
-namespace std {
-
-    /** Explicit template specialization of std::hash */
-    template <> struct hash<SOC::Base> {
-
-        /** Define the hash functor */
-        std::size_t operator()(const SOC::Base &b) const noexcept;
-    };
-
-} // namespace std
 
 #endif

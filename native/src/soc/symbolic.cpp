@@ -1,18 +1,20 @@
 /** @file */
 #include "symbolic.hpp"
 
+#include "../utils.hpp"
+
 
 // For brevity
 using namespace SOC;
 
 /** The hash functor */
-static std::hash<std::string> hasher;
+static const std::hash<std::string> hasher;
 
 
-Symbolic::Symbolic(std::string &&n) : Base { hash(n) }, name { n } {}
+Symbolic::Symbolic(const std::string &n) : Base { hash(n) }, name { n } {}
 
-std::size_t Symbolic::hash(const std::string &s) {
-    return hasher(s);
+Hash::Hash Symbolic::hash(const std::string &s) {
+    return UTILS_FILE_LINE_HASH + hasher(s);
 }
 
 bool Symbolic::symbolic() const noexcept {

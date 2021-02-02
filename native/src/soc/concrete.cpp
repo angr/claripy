@@ -1,15 +1,17 @@
 /** @file */
 #include "concrete.hpp"
 
+#include "../utils.hpp"
+
 
 // For brevity
 using namespace SOC;
 
 
-Concrete::Concrete() : Base(hash()) {}
+Concrete::Concrete() : Base { hash() } {}
 
-std::size_t Concrete::hash() {
-    return 0;
+Hash::Hash Concrete::hash() {
+    return UTILS_FILE_LINE_HASH;
 }
 
 bool Concrete::symbolic() const noexcept {

@@ -9,11 +9,10 @@
 using namespace Annotation;
 
 
+Base::Base(const Hash::Hash &h) : Hashed { h } {}
+
 Base::~Base() = default;
 
-Constants::UInt Base::hash() const {
-    return Utils::type_id<Base>();
-}
 
 bool Base::eliminatable() const {
     return true;

@@ -11,12 +11,10 @@
 namespace Annotation {
 
     /** A built-in annotation */
-    class SimplificationAvoidance : public Base {
+    class SimplificationAvoidance final : public Base {
 
-        /** Virtual hash function
-         *  Every subclass must implement this
-         */
-        virtual Constants::UInt hash() const override;
+        /** Constructor */
+        SimplificationAvoidance();
 
         /** Returns whether this annotation can be eliminated in a simplification. */
         bool eliminatable() const final override;

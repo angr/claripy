@@ -22,7 +22,7 @@ namespace SOC {
         bool symbolic() const noexcept override final;
 
         /** Static hash function to satisfy factory */
-        static std::size_t hash();
+        static Hash::Hash hash();
 
       private:
         /** Private constructor */
@@ -32,7 +32,7 @@ namespace SOC {
          *  We expose the constructor so that the cache may emplace new objects, which is
          *  faster than copying them in
          */
-        friend class ::Utils::Cache<std::size_t, Base>;
+        friend class ::Utils::Cache<Hash::Hash, Base>;
     };
 
 } // namespace SOC
