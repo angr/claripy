@@ -8,6 +8,7 @@
 
 #include "../macros.hpp"
 
+#include <exception>
 #include <functional>
 
 
@@ -17,16 +18,27 @@ namespace Utils {
      *  f() must have the type signature: void()
      *  Note: We use the template to permit passing callable objects as well
      *  As such, F can be the return of a lambda, or a callable object, for example
+     *  If NoExcept is set to false, the destructor may throw; by default it is true
      */
-    template <typename F> class [[nodiscard]] RunOnDestruction {
+    template <typename F, bool NoExcept = true> class [[nodiscard]] RunOnDestruction {
       public:
         /** Constructor */
         explicit RunOnDestruction(const F &func) : f(func) {}
 
         /** Destructor */
-        ~RunOnDestruction() {
+        ~RunOnDestruction() noexcept(NoExcept) {
             if (this->enabled) {
-                f();
+                if constexpr (NoExcept) {
+                    try {
+                        f();
+                    }
+                    // Prevent the program from crashing
+                    catch (std::exception &) {
+                    }
+                }
+                else {
+                    f();
+                }
             }
         }
 

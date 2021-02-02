@@ -17,9 +17,9 @@
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunAfterMain {                                                       \
             /** Default constructor */                                                            \
-            RunAfterMain() = default;                                                             \
+            RunAfterMain() noexcept = default;                                                    \
             /** Destructor */                                                                     \
-            ~RunAfterMain() { (void) (STATEMENT); }                                               \
+            ~RunAfterMain() noexcept(false) { (void) (STATEMENT); }                               \
             /* Disable non-default creation methods */                                            \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \
@@ -36,9 +36,9 @@
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunAfterMain {                                                       \
             /** Default constructor */                                                            \
-            RunAfterMain() = default;                                                             \
+            RunAfterMain() noexcept = default;                                                    \
             /** Destructor */                                                                     \
-            ~RunAfterMain() { (void) F(__VA_ARGS__); }                                            \
+            ~RunAfterMain() noexcept(false) { (void) F(__VA_ARGS__); }                            \
             /* Disable non-default creation methods */                                            \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \

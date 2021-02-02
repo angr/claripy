@@ -27,11 +27,11 @@ namespace Utils::Error {
             using Claricpp::Claricpp;
 
             /** Virtual destructor */
-            inline virtual ~Base();
+            inline virtual ~Base() noexcept;
         };
 
         /** Default virtual destructor */
-        Base::~Base() = default;
+        Base::~Base() noexcept = default;
 
         /** Analogous to python's ValueError exception */
         DEFINE_SUBCLASS_WITH_CTOR(ValueError, Base)

@@ -26,11 +26,11 @@ namespace Utils::Error {
             using Claricpp::Claricpp;
 
             /** Virtual destructor */
-            inline virtual ~Base();
+            inline virtual ~Base() noexcept;
         };
 
         /** Default virtual destructor */
-        Base::~Base() = default;
+        Base::~Base() noexcept = default;
 
         /** Bad cast exception */
         DEFINE_SUBCLASS_WITH_CTOR(BadCast, Base)

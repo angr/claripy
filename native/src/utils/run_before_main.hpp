@@ -18,7 +18,7 @@
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
             /** Rule of 5: Destructor */                                                          \
-            ~RunBeforeMain() = default;                                                           \
+            ~RunBeforeMain() noexcept = default;                                                  \
             /* Disable other creation methods */                                                  \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
@@ -37,7 +37,7 @@
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
             /** Rule of 5: Destructor */                                                          \
-            ~RunBeforeMain() = default;                                                           \
+            ~RunBeforeMain() noexcept = default;                                                  \
             /* Disable other creation methods */                                                  \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \

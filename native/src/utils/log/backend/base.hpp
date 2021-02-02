@@ -22,7 +22,7 @@ namespace Utils::Log::Backend {
     struct Base {
       protected:
         /** Protected pure virtual destructor */
-        virtual inline ~Base() = 0;
+        virtual inline ~Base() noexcept = 0;
 
       public:
         // Rule of 5

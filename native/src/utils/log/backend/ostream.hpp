@@ -8,6 +8,7 @@
 
 #include "base.hpp"
 
+#include <exception>
 #include <memory>
 #include <mutex>
 #include <ostream>
@@ -32,9 +33,14 @@ namespace Utils::Log::Backend {
             : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {}
 
         /** A virtual destructor */
-        virtual inline ~OStream() {
+        virtual inline ~OStream() noexcept override {
             if (this->flush_on_exit) {
-                this->stream->flush();
+                try {
+                    this->stream->flush();
+                }
+                // We are in a destructor, do not propogate exceptions
+                catch (std::exception &) {
+                }
             }
         }
 

@@ -48,9 +48,10 @@ namespace Utils {
         /** Destructor
          *  Warning: This destructor may throw!
          */
-        inline ~RecurrenceGuard() {
-            auto &num = count[func];
+        inline ~RecurrenceGuard()
 #ifdef DEBUG
+            noexcept(false) {
+            auto &num = count[func];
             // Check for stack unwinding
             if (n_except == std::uncaught_exceptions()) {
                 // Error checking
@@ -61,9 +62,13 @@ namespace Utils {
                     "\nFor example, an exception was thrown in a guarded function but nothing was "
                     "cleaned up.");
             }
-#endif
-            num -= 1; // Could be more efficient, but it would be less readable
+            num -= 1;
         }
+#else
+        {
+            count[func] -= 1;
+        }
+#endif
 
       private:
         /** The name of the function */
