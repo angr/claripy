@@ -17,14 +17,15 @@ namespace Utils {
 
     /** An up cast */
     template <typename Out, typename In>
-    constexpr inline Out up_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr inline Constants::SPtr<Out> up_cast(const Constants::SPtr<In> &in) noexcept {
         static_assert(std::is_base_of_v<Out, In>, "up_cast passed invalid <In, Out> type pair");
         return std::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** A dynamic down cast */
     template <typename Out, typename In>
-    constexpr inline Out dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr inline Constants::SPtr<Out>
+    dynamic_down_cast(const Constants::SPtr<In> &in) noexcept {
         static_assert(std::is_base_of_v<In, Out>,
                       "dynamic_down_cast passed invalid <In, Out> type pair");
         return std::dynamic_pointer_cast<Out>(in); // Does its own checks as well
@@ -34,13 +35,15 @@ namespace Utils {
      *  Warning: No static checks used
      */
     template <typename Out, typename In>
-    constexpr inline Out dynamic_side_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr inline Constants::SPtr<Out>
+    dynamic_side_cast(const Constants::SPtr<In> &in) noexcept {
         return std::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** Dynamic down-cast that throws on failure */
     template <typename Out, typename In>
-    constexpr inline Out dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
+    constexpr inline Constants::SPtr<Out>
+    dynamic_down_cast_throw_on_fail(const Constants::SPtr<In> &in) noexcept {
         const auto ret = dynamic_down_cast<Out>(in);
         affirm<Error::Unexpected::BadCast>(ret != nullptr, "Dynamic down-cast failed");
         return ret;
@@ -48,7 +51,8 @@ namespace Utils {
 
     /** A dynamic side cast that throws on failure */
     template <typename Out, typename In>
-    constexpr inline Out dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
+    constexpr inline Constants::SPtr<Out>
+    dynamic_side_cast_throw_on_fail(const Constants::SPtr<In> &in) noexcept {
         const auto ret = dynamic_side_cast<Out>(in);
         affirm<Error::Unexpected::BadCast>(ret != nullptr, "Dynamic down-cast failed");
         return ret;
@@ -60,7 +64,7 @@ namespace Utils {
      *  Is dynamic and throws on failure during debugging
      */
     template <typename Out, typename In>
-    constexpr inline Out static_down_cast(const std::shared_ptr<In> &in)
+    constexpr inline Constants::SPtr<Out> static_down_cast(const Constants::SPtr<In> &in)
 #ifdef DEBUG
     {
         return dynamic_down_cast<Out>(in);
@@ -77,7 +81,7 @@ namespace Utils {
      *  Is dynamic and throws on failure during debugging
      */
     template <typename Out, typename In>
-    constexpr inline Out static_side_cast(const std::shared_ptr<In> &in)
+    constexpr inline Constants::SPtr<Out> static_side_cast(const Constants::SPtr<In> &in)
 #ifdef DEBUG
     {
         return dynamic_side_cast<Out>(in);
