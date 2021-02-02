@@ -13,7 +13,7 @@
 namespace Utils {
 
 /** Return a file specific hash */
-#define UTILS_FILE_HASH Utils::fnv1a<Constants::UInt>(__FILE__, Utils::strlen(__FILE__))
+#define UTILS_FILE_HASH Utils::FNV1a<char>::hash(__FILE__, Utils::strlen(__FILE__))
 
 /** Return a file line specific hash
  */
