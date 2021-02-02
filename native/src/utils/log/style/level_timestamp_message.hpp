@@ -6,7 +6,7 @@
 #ifndef __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
 #define __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
 
-#include "abstract_base.hpp"
+#include "base.hpp"
 
 
 namespace Utils::Log::Style {

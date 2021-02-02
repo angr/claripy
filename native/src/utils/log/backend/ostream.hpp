@@ -6,7 +6,7 @@
 #ifndef __UTILS_LOG_BACKEND_OSTREAM_HPP__
 #define __UTILS_LOG_BACKEND_OSTREAM_HPP__
 
-#include "abstract_base.hpp"
+#include "base.hpp"
 
 #include <memory>
 #include <mutex>

@@ -4,7 +4,7 @@
  */
 #include "access.hpp"
 
-#include "abstract_base.hpp"
+#include "base.hpp"
 #include "default.hpp"
 
 #include "../../thread_safe_access.hpp"

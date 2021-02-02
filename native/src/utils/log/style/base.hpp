@@ -22,11 +22,11 @@ namespace Utils::Log::Style {
     struct Base {
       protected:
         /** Protected pure virtual destructor */
-        inline virtual ~Base() = 0;
+        inline virtual ~Base() noexcept = 0;
 
       public:
         // Rule of 5
-        SET_IMPLICITS(Base, default)
+        SET_IMPLICITS(Base, default, noexcept)
 
         /** Format the log message */
         virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,
@@ -34,7 +34,7 @@ namespace Utils::Log::Style {
     };
 
     /** Default virtual destructor */
-    Base::~Base() = default;
+    Base::~Base() noexcept = default;
 
 } // namespace Utils::Log::Style
 

@@ -6,7 +6,7 @@
 #ifndef __UTILS_LOG_BACKEND_MULTIPLEX_HPP__
 #define __UTILS_LOG_BACKEND_MULTIPLEX_HPP__
 
-#include "abstract_base.hpp"
+#include "base.hpp"
 
 #include "../../thread_safe_access.hpp"
 

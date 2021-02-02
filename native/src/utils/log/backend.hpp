@@ -7,6 +7,7 @@
 #define __UTILS_LOG_BACKEND_HPP__
 
 #include "backend/access.hpp"
+#include "backend/base.hpp"
 #include "backend/cerr.hpp"
 #include "backend/clog.hpp"
 #include "backend/default.hpp"
