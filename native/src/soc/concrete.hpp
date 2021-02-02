@@ -7,6 +7,8 @@
 
 #include "base.hpp"
 
+#include "../utils.hpp"
+
 
 // Forward declarations
 namespace Utils {
@@ -19,14 +21,14 @@ namespace SOC {
     struct Concrete : public Base {
 
         /** Returns false */
-        bool symbolic() const noexcept override final;
+        constexpr bool symbolic() const noexcept override final { return false; }
 
         /** Static hash function to satisfy factory */
-        static Hash::Hash hash();
+        static constexpr Hash::Hash hash() { return UTILS_FILE_LINE_HASH; }
 
       private:
         /** Private constructor */
-        Concrete();
+        inline Concrete() : Base { hash() } {}
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is

@@ -23,6 +23,7 @@ namespace Utils::Log::Style {
       protected:
         /** Default virtual destructor */
         virtual ~Base() = 0;
+        /* inline virtual ~Base() = 0; */
 
       public:
         // Rule of 5
@@ -32,6 +33,9 @@ namespace Utils::Log::Style {
         virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,
                                 const std::ostringstream &raw) = 0;
     };
+
+    // For compilation reasons
+    /* Base::~Base() = default; */
 
 } // namespace Utils::Log::Style
 

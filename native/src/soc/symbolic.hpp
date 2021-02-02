@@ -7,6 +7,8 @@
 
 #include "base.hpp"
 
+#include "../utils.hpp"
+
 #include <string>
 
 
@@ -21,10 +23,13 @@ namespace SOC {
     struct Symbolic : public Base {
 
         /** Returns true */
-        bool symbolic() const noexcept override final;
+        constexpr bool symbolic() const noexcept override final { return true; }
 
         /** Static hash function */
-        static Hash::Hash hash(const std::string &s);
+        static inline Hash::Hash hash(const std::string &s) {
+            static const std::hash<std::string> hasher;
+            return UTILS_FILE_LINE_HASH + hasher(s);
+        }
 
         /** The name of the symbol */
         const std::string name;
