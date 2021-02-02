@@ -40,21 +40,34 @@ namespace Hash {
     /** The FNV1a hash function to be invoked for for size sizeof(Hash) */
     template <typename Type> const auto &fnv1a = Utils::FNV1a<Type>::template hash<Hash>;
 
-    /** A specialization for pre-hashed types */
-    template <> constexpr inline Hash singular(const std::shared_ptr<Hashed> &h) noexcept {
+    // Specialization
+
+    /** A specialization for pre-hashed types
+     *  Not constexpr
+     */
+    template <> inline Hash singular(const std::shared_ptr<Hashed> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return h->hash;
     }
 
-    /** A specialization for shared pointers of subclasses of Hashed types */
+    /** A specialization for shared pointers of subclasses of Hashed types
+     *  Not constexpr
+     */
     template <typename Internal, std::enable_if_t<std::is_base_of_v<Hashed, Internal>, int> = 0>
-    constexpr inline Hash singular(const std::shared_ptr<Internal> &h) noexcept {
+    inline Hash singular(const std::shared_ptr<Internal> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return singular(std::static_pointer_cast<Hashed>(h));
     }
 
-    /** A specialization for T = std::string */
-    template <> constexpr inline Hash singular(const std::string &s) noexcept {
+    /** A specialization for T = Constants::CCSC */
+    template <> constexpr inline Hash singular(Constants::CCSC &s) noexcept {
+        return fnv1a<char>(s, Utils::strlen(s));
+    }
+
+    /** A specialization for T = std::string
+     *  Not constexpr
+     */
+    template <> inline Hash singular(const std::string &s) noexcept {
         return fnv1a<char>(s.c_str(), s.size());
     }
 

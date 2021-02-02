@@ -20,7 +20,7 @@ namespace SOC {
     struct Base : public Hash::Hashed {
       protected:
         /** Passthrough constructor */
-        inline Base(const Hash::Hash &hash) : Hash::Hashed { hash } {}
+        inline Base(const Hash::Hash &h) : Hash::Hashed { h } {}
 
       public:
         /** Returns true if this is symbolic */
