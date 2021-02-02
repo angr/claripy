@@ -17,11 +17,6 @@
 #include <vector>
 
 
-// Forward declarations
-namespace Annotation {
-    struct Base;
-}
-
 namespace Hash {
 
     /** Converts its input into a Hash
@@ -46,9 +41,16 @@ namespace Hash {
     template <typename Type> const auto &fnv1a = Utils::FNV1a<Type>::template hash<Hash>;
 
     /** A specialization for pre-hashed types */
-    template <> constexpr inline Hash singular(const Hashed &h) noexcept {
+    template <> constexpr inline Hash singular(const std::shared_ptr<Hashed> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
-        return h.hash;
+        return h->hash;
+    }
+
+    /** A specialization for shared pointers of subclasses of Hashed types */
+    template <typename Internal, std::enable_if_t<std::is_base_of_v<Hashed, Internal>, int> = 0>
+    constexpr inline Hash singular(const std::shared_ptr<Internal> &h) noexcept {
+        // Will warn if types are different or implicit convesion is dangerous / impossible
+        return singular(std::static_pointer_cast<Hashed>(h));
     }
 
     /** A specialization for T = std::string */
@@ -72,16 +74,16 @@ namespace Hash {
         return i;
     }
 
-    /** A specialization for T = std::vector<std::shared_ptr<Annotation::Base>>
+    /** A specialization for T = std::vector<Internal>
      *  Not constexpr
      */
-    template <typename T> inline Hash singular(const std::vector<std::shared_ptr<T>> &v) noexcept {
+    template <typename Internal> inline Hash singular(const std::vector<Internal> &v) noexcept {
         Constants::UInt hashes[v.size()]; // NOLINT
         Constants::UInt i = -1ULL;
         for (const auto &p : v) {
-            hashes[++i] = singular(*p);
+            hashes[++i] = singular(p);
         }
-#if DEBUG
+#ifdef DEBUG
         // Verify no memory corruption
         Utils::affirm<Utils::Error::Unexpected::Unknown>(v.size() == i,
                                                          "Incorrect value of i within Hash::hash");

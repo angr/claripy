@@ -25,24 +25,24 @@ void all_diff_class_hash() {
     // Verify unique hashes
 
     std::set<Hash::Hash> hashes;
-    hashes.insert(a1->id);
-    hashes.insert(a2->id);
-    hashes.insert(a3->id);
-    hashes.insert(a4->id);
-    hashes.insert(a5->id);
+    hashes.insert(a1->hash);
+    hashes.insert(a2->hash);
+    hashes.insert(a3->hash);
+    hashes.insert(a4->hash);
+    hashes.insert(a5->hash);
 
     UNITTEST_ASSERT(hashes.size() == 5)
 
     // Verify unique pointers
 
-    std::set<Raw::Base *> ids;
-    ids.insert(a1.get());
-    ids.insert(a2.get());
-    ids.insert(a3.get());
-    ids.insert(a4.get());
-    ids.insert(a5.get());
+    std::set<Raw::Base *> ptrs;
+    ptrs.insert(a1.get());
+    ptrs.insert(a2.get());
+    ptrs.insert(a3.get());
+    ptrs.insert(a4.get());
+    ptrs.insert(a5.get());
 
-    UNITTEST_ASSERT(ids.size() == 5)
+    UNITTEST_ASSERT(ptrs.size() == 5)
 }
 
 // Define the test

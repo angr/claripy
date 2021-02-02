@@ -6,6 +6,7 @@
 #ifndef __TESTS_UNIT_TESTLIB_TESTLIB_FACTORY_HPP__
 #define __TESTS_UNIT_TESTLIB_TESTLIB_FACTORY_HPP__
 
+#include "annotation.hpp"
 #include "expression.hpp"
 #include "utils.hpp"
 

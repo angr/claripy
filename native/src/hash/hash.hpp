@@ -25,7 +25,7 @@ namespace Hash {
         Constants::UInt i { -1ULL };
         // Basically: hashes[i] = singular(args[i]) for each arg
         (static_cast<void>(hashes[++i] = singular(args)), ...);
-#if DEBUG
+#ifdef DEBUG
         // Verify no memory corruption
         Utils::affirm<Utils::Error::Unexpected::Unknown>(size == i,
                                                          "Incorrect value of i within Hash::hash");

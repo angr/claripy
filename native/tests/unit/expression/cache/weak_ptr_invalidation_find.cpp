@@ -29,7 +29,7 @@ void weak_ptr_invalidation_find() {
 
     // Create and destroy a base, but record its hash
     Hash::Hash id;
-    { id = literal_int()->id; }
+    { id = literal_int()->hash; }
 
     // Check cache size
     UNITTEST_ASSERT(cache.size() == 1)
