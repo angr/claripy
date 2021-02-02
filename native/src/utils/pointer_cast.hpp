@@ -16,14 +16,14 @@
 namespace Utils {
 
     /** An up cast */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out up_cast(const std::shared_ptr<In> &in) noexcept {
         static_assert(std::is_base_of_v<Out, In>, "up_cast passed invalid <In, Out> type pair");
         return std::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** A dynamic down cast */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
         static_assert(std::is_base_of_v<In, Out>,
                       "dynamic_down_cast passed invalid <In, Out> type pair");
@@ -33,13 +33,13 @@ namespace Utils {
     /** A dynamic side cast
      *  Warning: No static checks used
      */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out dynamic_side_cast(const std::shared_ptr<In> &in) noexcept {
         return std::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** Dynamic down-cast that throws on failure */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_down_cast<Out>(in);
         affirm<Error::Unexpected::BadCast>(ret != nullptr, "Dynamic down-cast failed");
@@ -47,7 +47,7 @@ namespace Utils {
     }
 
     /** A dynamic side cast that throws on failure */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_side_cast<Out>(in);
         affirm<Error::Unexpected::BadCast>(ret != nullptr, "Dynamic down-cast failed");
@@ -59,7 +59,7 @@ namespace Utils {
     /** An static down cast
      *  Is dynamic and throws on failure during debugging
      */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out static_down_cast(const std::shared_ptr<In> &in)
 #ifdef DEBUG
     {
@@ -76,7 +76,7 @@ namespace Utils {
     /** An static side cast
      *  Is dynamic and throws on failure during debugging
      */
-    template <typename In, typename Out>
+    template <typename Out, typename In>
     constexpr inline Out static_side_cast(const std::shared_ptr<In> &in)
 #ifdef DEBUG
     {
