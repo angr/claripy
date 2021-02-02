@@ -28,6 +28,8 @@ namespace Utils {
 
     /** A thread-safe recurrence guard class
      *  Warning: The destructor of the recurrence guard may throw!
+     *  Note: The destructor will not throw if std::uncaught_exceptions differs
+     *  from the value it had during the initial construction of RecurrenceGuard
      *  Note that a recurrence in another thread, even if created by this thread, will not count
      */
     class RecurrenceGuard {
@@ -37,7 +39,7 @@ namespace Utils {
          *  Default argument value: 1000
          */
         explicit inline RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim = 1000)
-            : func(f) {
+            : func(f), n_except(std::uncaught_exceptions()) {
             const auto num { ++count[func] };
             affirm<Error::Unexpected::RecurrenceLimit>(
                 num <= lim, func, " has reached its recurrence limit of: ", lim);
@@ -48,17 +50,27 @@ namespace Utils {
          */
         inline ~RecurrenceGuard() {
             auto &num = count[func];
-            affirm<Error::Unexpected::Unknown>(
-                num-- != 0,
-                "RecurrenceGuard is trying to decrement a count of 0."
-                "\nThis probably happened because something went wrong with control flow."
-                "\nFor example, an exception was thrown in a guarded function but nothing was "
-                "cleaned up.");
+#ifdef DEBUG
+            // Check for stack unwinding
+            if (n_except == std::uncaught_exceptions()) {
+                // Error checking
+                affirm<Error::Unexpected::Unknown>(
+                    num != 0,
+                    "RecurrenceGuard is trying to decrement a count of 0."
+                    "\nThis probably happened because something went wrong with control flow."
+                    "\nFor example, an exception was thrown in a guarded function but nothing was "
+                    "cleaned up.");
+            }
+#endif
+            num -= 1; // Could be more efficient, but it would be less readable
         }
 
       private:
         /** The name of the function */
         const std::string func;
+
+        /** The number of uncaught exceptions alive during construction */
+        const int n_except;
 
         /** Static map to keep track of recurrences */
         inline static thread_local std::map<std::string, Constants::UInt> count {};
