@@ -19,10 +19,10 @@ namespace SOC {
 
     /** A concrete variable */
     struct Concrete : public Base {
-        CUID_DEFINE_STATIC_CUID
+        DEFINE_STATIC_CUID
 
         /** Returns false */
-        constexpr bool symbolic() const noexcept override final { return false; }
+        inline bool symbolic() const noexcept override final { return false; }
 
       private:
         /** Private constructor */
@@ -32,7 +32,7 @@ namespace SOC {
         ~Concrete() noexcept override final = default;
 
         // Disable other methods of construction
-        SET_IMPLICITS_CONST_MEMBERS(Base, delete, noexcept)
+        SET_IMPLICITS_CONST_MEMBERS(Concrete, delete, noexcept)
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is

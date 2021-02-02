@@ -21,10 +21,10 @@ namespace SOC {
 
     /** A symbolic variable */
     struct Symbolic : public Base {
-        CUID_DEFINE_STATIC_CUID
+        DEFINE_STATIC_CUID
 
         /** Returns true */
-        constexpr bool symbolic() const noexcept override final { return true; }
+        inline bool symbolic() const noexcept override final { return true; }
 
         /** The name of the symbol */
         const std::string name;
@@ -42,7 +42,7 @@ namespace SOC {
         // Disable other methods of construction
         // Technically std::string can throw, but if we are out of memory that is an ok time to
         // crash
-        SET_IMPLICITS_CONST_MEMBERS(Base, delete, noexcept)
+        SET_IMPLICITS_CONST_MEMBERS(Symbolic, delete, noexcept)
 
         /** Allow cache friend access
          *  We expose the constructor so that the cache may emplace new objects, which is

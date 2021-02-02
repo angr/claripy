@@ -14,16 +14,11 @@
  */
 #define OP_FINAL_INIT(CLASS)                                                                      \
   public:                                                                                         \
-    /** Static check */                                                                           \
-    static_assert(std::is_final_v<CLASS>, #CLASS " must be final");                               \
-                                                                                                  \
+    DEFINE_STATIC_CUID                                                                            \
     /* Delete implicits */                                                                        \
-    SET_IMPLICITS_CONST_MEMBERS(CUID, delete)                                                     \
+    SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                    \
     /** Default destructor */                                                                     \
     ~CLASS() noexcept override final = default;                                                   \
-                                                                                                  \
-    /** Create class unique id */                                                                 \
-    static const constexpr Constants::UInt class_uid { UTILS_FILE_LINE_HASH };                    \
                                                                                                   \
   private:
 

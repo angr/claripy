@@ -18,14 +18,14 @@ namespace Utils {
     /** An up cast */
     template <typename In, typename Out>
     constexpr inline Out up_cast(const std::shared_ptr<In> &in) noexcept {
-        static_assert(std::is_base_v<Out, In>, "up_cast passed invalid <In, Out> type pair");
+        static_assert(std::is_base_of_v<Out, In>, "up_cast passed invalid <In, Out> type pair");
         return std::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** A dynamic down cast */
     template <typename In, typename Out>
     constexpr inline Out dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
-        static_assert(std::is_base_v<In, Out>,
+        static_assert(std::is_base_of_v<In, Out>,
                       "dynamic_down_cast passed invalid <In, Out> type pair");
         return std::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }

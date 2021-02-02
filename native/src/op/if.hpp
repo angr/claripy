@@ -34,7 +34,7 @@ namespace Op {
         explicit inline If(const Hash::Hash &h, const Constants::SConstPtr<Expression::Bool> &c,
                            const Constants::SConstPtr<Expression::Base> &if_tru,
                            const Constants::SConstPtr<Expression::Base> &if_fal)
-            : Base { h, class_uid }, cond { c }, if_true { if_tru }, if_false { if_fal } {}
+            : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {}
     };
 
 } // namespace Op

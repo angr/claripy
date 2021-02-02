@@ -5,10 +5,14 @@
 #ifndef __FACTORY_FACTORY_HPP__
 #define __FACTORY_FACTORY_HPP__
 
-#include "../cuid.hpp"
+#include "private/has_static_cuid.hpp"
+
 #include "../hash.hpp"
 #include "../utils.hpp"
 
+
+// Forward declarations
+struct CUID;
 
 namespace Factory {
 
@@ -26,12 +30,12 @@ namespace Factory {
     template <typename Base, typename T, typename... Args>
     inline Constants::SConstPtr<T> factory(Args &&...args) {
         // Verify inheretence
-        static_assert(std::is_base_of_v<CUID::CUID, Base>, "Base must derive from CUID");
+        static_assert(std::is_base_of_v<CUID, Base>, "Base must derive from CUID");
         static_assert(std::is_base_of_v<Base, T>, "T must derive from Base");
         // Verify static_cuid
         static_assert(Private::has_static_cuid_v<T>,
                       "Factory cannot construct anything without a static_cuid");
-        static_assert(std::is_same_u<Constants::UInt, T::static_cuid>,
+        static_assert(std::is_same_v<Constants::UInt, T::static_cuid>,
                       "T::static_cuid must be of type Constants::UInt");
 
         // Check to see if the object to be constructed exists in the hash cache

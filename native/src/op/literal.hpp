@@ -7,7 +7,7 @@
 
 #include "base.hpp"
 
-#include "../cusized.hpp"
+#include "../csized.hpp"
 #include "../utils.hpp"
 
 #include <variant>
@@ -34,19 +34,22 @@ namespace Op {
          *  @todo figure out how this will work
          *  @todo Intern strings
          */
-        explicit inline Literal(const std::string &data, const Constant::UInt size)
-            : CSized { size }, value { create_value(data, size) } {}
+        explicit inline Literal(const Hash::Hash &h, const std::string &data,
+                                const Constants::UInt size)
+            : Base { h, static_cuid }, CSized { size }, value { create_value(data, size) } {}
 
         /** Used by the constructor to initalize value */
         static inline ValueT create_value(const std::string &rdata, Constants::UInt size) {
+            using Usage = Utils::Error::Unexpected::IncorrectUsage;
+            using MP = boost::multiprecision;
             // Constants
-            static const constexpr Constant::UInt max64 = sizeof(int_fast64_t);
-            static const constexpr Constant::UInt max128 = 128;
+            static const constexpr Constants::UInt max64 = sizeof(int_fast64_t);
+            static const constexpr Constants::UInt max128 = 128;
             // Construct differently depending on size
             if (size <= max64) {
-                Utils::affirm<IncorrectUsage>(rdata.size() == (m64 / CHAR_BIT),
-                                              "Literal constructor with size ", size,
-                                              " given a string with less than 8 bytes in it");
+                Utils::affirm<Usage>(rdata.size() == (max64 / CHAR_BIT),
+                                     "Literal constructor with size ", size,
+                                     " given a string with less than 8 bytes in it");
                 Constants::CCSC data = rdata.data();
                 return { Utils::type_pun<int_fast64_t>(data) }; // Used with caution
             }

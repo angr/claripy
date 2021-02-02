@@ -20,7 +20,7 @@ namespace Op {
       private:
         /** A protected constructor to disallow public creation */
         explicit inline Symbol(const Hash::Hash &h, const std::string &n)
-            : Base { h, class_uid }, name { n } {}
+            : Base { h, static_cuid }, name { n } {}
     };
 
 } // namespace Op
