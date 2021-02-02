@@ -21,7 +21,7 @@ struct CUID {
 
   protected:
     /** Constructor */
-    explicit inline CUID(const Constants::UInt c) noexcept : cuid(c) {}
+    explicit inline CUID(const Constants::UInt c) noexcept : cuid { c } {}
 
     /** Virtual destructor */
     virtual inline ~CUID() noexcept;

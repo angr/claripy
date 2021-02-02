@@ -51,7 +51,7 @@ namespace Utils {
         inline ~RecurrenceGuard()
 #ifdef DEBUG
             noexcept(false) {
-            auto &num = count[func];
+            auto &num { count[func] };
             // Check for stack unwinding
             if (n_except == std::uncaught_exceptions()) {
                 // Error checking

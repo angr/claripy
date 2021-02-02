@@ -20,7 +20,7 @@ namespace Hash {
 
       protected:
         /** Default constructor */
-        explicit inline Hashed(const Hash &h) noexcept : hash(h) {}
+        explicit inline Hashed(const Hash &h) noexcept : hash { h } {}
 
         /** Virtual destructor */
         virtual inline ~Hashed() noexcept;

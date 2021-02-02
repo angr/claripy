@@ -18,7 +18,7 @@ using Sty = Style::Base;
 
 // File local variables
 static ThreadSafeAccess<Sty> access(std::make_shared<Style::Default>());
-using Ptr = std::shared_ptr<Style::Base>;
+using Ptr = Constants::SPtr<Style::Base>;
 
 
 // Error checking

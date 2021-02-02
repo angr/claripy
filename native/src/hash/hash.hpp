@@ -20,7 +20,7 @@ namespace Hash {
      *  Note: types may want to pass in some sort of typeid if their hashes matter
      */
     template <typename... Args> constexpr Hash hash(const Args &...args) {
-        constexpr Constants::UInt size = sizeof...(Args);
+        constexpr Constants::UInt size { sizeof...(Args) };
         Constants::UInt hashes[size]; // NOLINT
         Constants::UInt i { -1ULL };
         // Basically: hashes[i] = singular(args[i]) for each arg
