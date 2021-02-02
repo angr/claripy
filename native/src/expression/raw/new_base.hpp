@@ -7,7 +7,7 @@
 
 #include "macros.hpp"
 
-#include "../../hash.hpp"
+#include "../hash.hpp"
 
 #include <memory>
 #include <vector>
@@ -28,7 +28,7 @@ namespace Expression {
         /** The base Expression type
          *  All expressions must subclass this
          */
-        class Base : public Hash::Hashed {
+        class Base {
             EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(Base)
           public:
             /************************************************/
@@ -36,7 +36,7 @@ namespace Expression {
             /************************************************/
 
             /** Return true if and only if this expression is symbolic */
-            virtual bool symbolic() const = 0;
+            virtual bool symbolic() const;
 
             /** Get the op of the expression */
             virtual Constants::CCS op() const = 0;
@@ -53,6 +53,15 @@ namespace Expression {
             /************************************************/
             /*                Representation                */
             /************************************************/
+
+            /** The operation */
+            const std::shared_ptr<const Op> op;
+
+            /** Symbolic / Concrete representation */
+            const std::shared_ptr<const SymOrConc> soc;
+
+            /** The hash of the Expression */
+            const Hash::Hash id;
 
             /** A set of annotations applied onto this Expression */
             const std::vector<std::shared_ptr<Annotation::Base>> annotations;

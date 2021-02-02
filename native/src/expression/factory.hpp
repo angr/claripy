@@ -6,9 +6,9 @@
 #define __EXPRESSION_FACTORY_HPP__
 
 #include "cast.hpp"
-#include "hash.hpp"
 #include "private/raw.hpp"
 
+#include "../hash.hpp"
 #include "../utils.hpp"
 
 

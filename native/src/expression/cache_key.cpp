@@ -17,11 +17,11 @@ CacheKey::CacheKey(const Raw::Type::Base &a) : ref(a) {}
 /** @todo implement */
 std::string CacheKey::repr() const {
     std::ostringstream ret;
-    ret << this->ref.id;
+    ret << this->ref.hash;
     return ret.str();
 }
 
 // CacheKey comparison
 bool Expression::operator==(const CacheKey &a, const CacheKey &b) {
-    return a.ref.id == b.ref.id;
+    return a.ref.hash == b.ref.hash;
 }

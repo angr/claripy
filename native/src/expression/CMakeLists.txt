@@ -4,5 +4,5 @@ target_sources("${CLARICPP}" PRIVATE
 )
 
 # Add subdirectories
-add_subdirectory(hash)
+# add_subdirectory(hash) # TODO
 add_subdirectory(raw)

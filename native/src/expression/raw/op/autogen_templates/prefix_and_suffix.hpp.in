@@ -16,8 +16,8 @@
 
 #include "__OPINCLUDE"
 
+#include "../../../../hash.hpp"
 #include "../../../../macros.hpp"
-#include "../../../hash.hpp"
 #include "../../concrete.hpp"
 #include "../../symbolic.hpp"
 #include "../../type.hpp"
