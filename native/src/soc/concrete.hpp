@@ -19,16 +19,14 @@ namespace SOC {
 
     /** A concrete variable */
     struct Concrete : public Base {
+        CUID_DEFINE_STATIC_CUID
 
         /** Returns false */
         constexpr bool symbolic() const noexcept override final { return false; }
 
-        /** Static hash function to satisfy factory */
-        static constexpr Hash::Hash hash() { return UTILS_FILE_LINE_HASH; }
-
       private:
         /** Private constructor */
-        inline Concrete() noexcept : Base { hash() } {}
+        explicit inline Concrete(const Hash::Hash &h) noexcept : Base { h } {}
 
         /** Destructor */
         ~Concrete() noexcept override final = default;

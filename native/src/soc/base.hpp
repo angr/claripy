@@ -5,6 +5,7 @@
 #ifndef __SOC_BASE_HPP__
 #define __SOC_BASE_HPP__
 
+#include "../cuid.hpp" // For subclasses
 #include "../hash.hpp"
 
 #include <cstddef>

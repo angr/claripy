@@ -21,26 +21,20 @@ namespace SOC {
 
     /** A symbolic variable */
     struct Symbolic : public Base {
+        CUID_DEFINE_STATIC_CUID
 
         /** Returns true */
         constexpr bool symbolic() const noexcept override final { return true; }
-
-        /** Static hash function */
-        static inline Hash::Hash hash(const std::string &s) {
-            static const std::hash<std::string> hasher;
-            return UTILS_FILE_LINE_HASH + hasher(s);
-        }
 
         /** The name of the symbol */
         const std::string name;
 
       private:
         /** Private constructor
-         *  Note: const ref is preferrable here as then we don't have to worry about
-         *  when name is moved when trying to hash(name) for the Hashed superclass
          *  Note: String copy can throw, but if it does we are out of memory and should crash
          */
-        explicit inline Symbolic(const std::string &n) noexcept : Base { hash(n) } name { n } {}
+        explicit inline Symbolic(const Hash::Hash &h, std::string &&n) noexcept
+            : Base { h }, name { n } {}
 
         /** Destructor */
         ~Symbolic() noexcept override final = default;
