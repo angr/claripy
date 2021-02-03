@@ -38,7 +38,8 @@ namespace Hash {
     }
 
     /** The FNV1a hash function to be invoked for for size sizeof(Hash) */
-    template <typename Type> const auto &fnv1a { Utils::FNV1a<Type>::template hash<Hash> };
+    template <typename Type>
+    const constexpr auto fnv1a { Utils::FNV1a<Type>::template hash<Hash> };
 
     // Specialization
 
