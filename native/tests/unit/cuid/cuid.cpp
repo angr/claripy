@@ -14,7 +14,7 @@ struct A : public CUID {
 };
 
 
-/** Verify that the simple_test function works */
+/** Verify that the cuid class works */
 void cuid() {
     constexpr Constants::UInt c = 4635;
     A a(c);
