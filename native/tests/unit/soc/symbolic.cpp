@@ -15,7 +15,7 @@ void symbolic() {
     // Construct
     const auto s1 = SOC::factory<SOC::Symbolic>(std::move(n1));
     const auto s2 = SOC::factory<SOC::Symbolic>(std::move(n2));
-    const auto s3 = SOC::factory<SOC::Symbolic>(std::move(n2));
+    const auto s3 = SOC::factory<SOC::Symbolic>(std::move(n3));
     // Verify factory works
     UNITTEST_ASSERT(s1 == s2)
     UNITTEST_ASSERT(s1 != s3)
