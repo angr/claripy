@@ -20,10 +20,10 @@ namespace Hash {
 
       protected:
         /** Default constructor */
-        explicit inline Hashed(const Hash &h) noexcept : hash { h } {}
+        explicit constexpr Hashed(const Hash &h) noexcept : hash { h } {}
 
-        /** Virtual destructor */
-        virtual inline ~Hashed() noexcept;
+        /** Pure virtual destructor */
+        virtual inline ~Hashed() noexcept = 0;
 
         // Rule of 5
         SET_IMPLICITS_CONST_MEMBERS(Hashed, default, noexcept)

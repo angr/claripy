@@ -6,5 +6,6 @@
 #define __FACTORY_HPP__
 
 #include "factory/factory.hpp"
+#include "factory/factory_made.hpp"
 
 #endif

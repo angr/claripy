@@ -32,10 +32,10 @@ struct CUID {
 
   protected:
     /** Constructor */
-    explicit inline CUID(const Constants::UInt c) noexcept : cuid { c } {}
+    explicit constexpr CUID(const Constants::UInt &c) noexcept : cuid { c } {}
 
-    /** Virtual destructor */
-    virtual inline ~CUID() noexcept;
+    /** Pure virtual destructor */
+    virtual inline ~CUID() noexcept = 0;
 
     // Rule of 5
     SET_IMPLICITS_CONST_MEMBERS(CUID, default, noexcept)
