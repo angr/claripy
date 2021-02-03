@@ -17,7 +17,10 @@ struct CUID;
 namespace Factory {
 
     namespace Private {
-        /** The factory cache */
+        /** The factory cache
+         *  Note: This is not a static variable of the factory function because
+         *  we want to allow classes to declare this, and only this specific cache, as a friend
+         */
         template <typename Base> Utils::Cache<Hash::Hash, Base> cache {};
     } // namespace Private
 
