@@ -14,8 +14,17 @@
 
 /** Allow factory to construct a class
  *  BASE is the same base class as factory's template Base argument
- *  Factory made subclasses that want to be directly constructed by factory must definethis */
-#define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE)
+ *  Factory made subclasses that want to be directly constructed by factory must definethis
+ *  Leaves class in a private access state
+ */
+#define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE)                                               \
+    DEFINE_STATIC_CUID                                                                            \
+    /** Allow verification to have friend access */                                               \
+    template <typename, typename...> friend struct ::Utils::HasConstructor;                       \
+    /** Allow cache friend access for factory construction */                                     \
+    friend class ::Utils::Cache<Hash::Hash, BASE>;                                                \
+                                                                                                  \
+  private:
 
 
 namespace Factory {
@@ -23,11 +32,10 @@ namespace Factory {
     /** A type that can be constructed by the factory
      *  All factory constructable types must subclass this
      *  Instantiable subclasses that want to be directly constructed via factory:
-     *    1. Must have a static const Constants::UInt static_cuid field (define it by
-     *DEFINE_STATIC_CUID)
-     *    2. Must have each desired usable constructor's first argument be of type const
-     *Hash::Hash& and must pass this argument up to the FactoryMade class
-     *	  3. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method
+     *    1. Must have each desired usable constructor's first argument be of type const
+     *       Hash::Hash& and must pass this argument up to the FactoryMade class
+     *	  2. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that
+     *		 this also defines a static_cuid
      */
     struct FactoryMade : public Hash::Hashed, public CUID {
 
@@ -53,7 +61,7 @@ namespace Factory {
             static_assert(std::is_same_v<const Constants::UInt, decltype(T::static_cuid)>,
                           "T::static_cuid must be of type Constants::UInt");
             // Constructor
-            static_assert(Utils::has_constructor<T, const Hash::Hash &, Args...>,
+            static_assert(Utils::has_constructor<T, const Hash::Hash &, Args &&...>,
                           "T does not have a constructor T(const Hash::Hash &, Args...");
         }
 

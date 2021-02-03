@@ -27,9 +27,9 @@ namespace Factory {
     /** A factory used to construct subclasses of Base.
      *  Instantiable subclasses that want to be directly constructed via factory:
      *    1. Must have a static const Constants::UInt static_cuid field (define it by
-     *DEFINE_STATIC_CUID)
+     *       DEFINE_STATIC_CUID)
      *    2. Must have each desired usable constructor's first argument be of type const
-     *Hash::Hash& and must pass this argument up to the FactoryMade class
+     *       Hash::Hash& and must pass this argument up to the FactoryMade class
      *	  3. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method
      *  Arguments are passed by non-const forwarding reference
      *  @todo update eager_backends functionality

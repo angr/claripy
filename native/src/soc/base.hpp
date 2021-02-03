@@ -7,8 +7,7 @@
 
 #include "macros.hpp" // For subclasses
 
-#include "../cuid.hpp"
-#include "../hash.hpp"
+#include "../factory.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -20,7 +19,7 @@ namespace SOC {
      *  Note: the factory demands a static hash function that takes the
      *  same arguments as the constructor except by const reference
      */
-    struct Base : public Hash::Hashed, public CUID {
+    struct Base : public Factory::FactoryMade {
 
         /** Returns true if this is symbolic */
         virtual bool symbolic() const noexcept = 0;
@@ -28,7 +27,7 @@ namespace SOC {
       protected:
         /** Passthrough constructor */
         explicit inline Base(const Hash::Hash &h, const Constants::UInt c) noexcept
-            : Hash::Hashed { h }, CUID { c } {}
+            : FactoryMade { h, c } {}
 
         /** Virtual destructor */
         virtual inline ~Base() noexcept override = 0;

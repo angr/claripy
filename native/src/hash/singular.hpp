@@ -27,11 +27,11 @@ namespace Hash {
      *  For example, one use case of this function could be:
      *  array = { singular(expression1), singular(name_string) }; return md5(array);
      *  Since, for numeric types among others, this may be a no-op or very quick, we inline
-     * specializations Note: Otherwise full specializations are put in a cpp file and linked later.
+     *  specializations Note: Otherwise full specializations are put in a cpp file and linked later
      *  Every type requries a specialization or is not supported!
+     *  Finally, we do want to avoid inter-type collisions if possible, so we often add a line hash
      */
     template <typename T> constexpr Hash singular(const T &) noexcept {
-        /* static_assert(false, "Given value of T is not supported for Hash::singular"); */
         static_assert(Utils::TD::false_<T>,
                       "Given value of T is not supported for Hash::singular");
         return std::declval<Hash>(); // Satisfy the compiler
@@ -62,14 +62,14 @@ namespace Hash {
 
     /** A specialization for T = Constants::CCSC */
     template <> constexpr inline Hash singular(Constants::CCSC &s) noexcept {
-        return fnv1a<char>(s, Utils::strlen(s));
+        return UTILS_FILE_LINE_HASH + fnv1a<char>(s, Utils::strlen(s));
     }
 
     /** A specialization for T = std::string
      *  Not constexpr
      */
     template <> inline Hash singular(const std::string &s) noexcept {
-        return fnv1a<char>(s.c_str(), s.size());
+        return UTILS_FILE_LINE_HASH + fnv1a<char>(s.c_str(), s.size());
     }
 
     /** A specialization for T = Constants::Int */
@@ -79,13 +79,13 @@ namespace Hash {
         static_assert(std::is_fundamental_v<Hash>, "singular(Constants::Int) must be modified");
         // Unsafe for numerical reasons if Hash is unsigned. But we only
         // care about uniqueness, so this is fine if the above hold
-        return static_cast<Hash>(i);
+        return UTILS_FILE_LINE_HASH + static_cast<Hash>(i);
     }
 
     /** A specialization for T = Constants::UInt */
     template <> constexpr inline Hash singular(const Constants::UInt &i) noexcept {
         // Compiler will warn if this is unsafe or invalid
-        return i;
+        return UTILS_FILE_LINE_HASH + i;
     }
 
     /** A specialization for T = std::vector<Internal>
