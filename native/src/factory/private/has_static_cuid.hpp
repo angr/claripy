@@ -19,7 +19,7 @@ namespace Factory::Private {
      *  True case
      *  The comma operator returns the second item, so "(A, B)" returns B
      *  If static_cuid does not exist, T::static_cuid fails is not resolvable so this
-     * specialization is rejected (via SFINAE) in favor if the previous, more general, definition.
+     *  specialization is rejected (via SFINAE) in favor if the previous, more general, definition
      *  If static_cuid exists, then (T::static_cuid,  0) returns 0, and we have specialized
      *  with int = 0. Note that specializations are prioritized over the general definition
      */
