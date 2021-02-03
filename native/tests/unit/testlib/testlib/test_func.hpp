@@ -13,7 +13,7 @@ namespace UnitTest::TestLib {
     using TestFN = void();
 
     /** A method to test a test function */
-    void test_func(TestFN &f);
+    int test_func(TestFN &f);
 
 } // namespace UnitTest::TestLib
 

@@ -15,8 +15,7 @@
     /** Main function: test TFUNC */                                                              \
     int main() {                                                                                  \
         using namespace UnitTest::TestLib;                                                        \
-        test_func((TFUNC));                                                                       \
-        return 0;                                                                                 \
+        return test_func((TFUNC));                                                                \
     }
 
 

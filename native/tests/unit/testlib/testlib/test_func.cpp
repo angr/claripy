@@ -18,15 +18,20 @@
     }
 
 
-void UnitTest::TestLib::test_func(TestFN &f) {
+int UnitTest::TestLib::test_func(TestFN &f) {
     // Notify verify that test_func has started running
     Private::verify();
     // Test f
     try {
         f();
-        return;
+        return EXIT_SUCCESS;
     }
-    // If there was an error, note so and fail
+    // UnitTest error
+    catch (Error &e) {
+        Utils::Log::error(e.what());
+        return EXIT_FAILURE;
+    }
+    // If there was an different error, note so and fail
     CATCH_ERROR(UnitTest::TestLib::Error)
     CATCH_ERROR(Utils::Error::Unexpected::Base)
     CATCH_ERROR(Utils::Error::Python::Base)
