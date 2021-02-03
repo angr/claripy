@@ -71,7 +71,7 @@ namespace Utils {
     }
 #else
         noexcept {
-        static_assert(std::is_base_v<In, Out>,
+        static_assert(std::is_base_of_v<In, Out>,
                       "static_down_cast passed invalid <In, Out> type pair");
         return std::static_pointer_cast<Out>(in); // Does its own checks as well
     }
