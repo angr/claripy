@@ -8,7 +8,6 @@
 
 /** A factory constructable object */
 struct A : public Factory::FactoryMade {
-    DEFINE_STATIC_CUID
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(A)
     /** Constructor 0 */
     A(const Hash::Hash &h) : FactoryMade { h, 0_ui } {}

@@ -8,10 +8,14 @@
 
 /** Verify that the Symbolic class works */
 void symbolic() {
+    // Names
+    std::string n1 { "name1" };
+    std::string n2 { n1 };
+    std::string n3 { "name2" };
     // Construct
-    const auto s1 = SOC::factory<Symbolic>("name1"s);
-    const auto s2 = SOC::factory<Symbolic>("name1"s);
-    const auto s3 = SOC::factory<Symbolic>("name3"s);
+    const auto s1 = SOC::factory<SOC::Symbolic>(std::move(n1));
+    const auto s2 = SOC::factory<SOC::Symbolic>(std::move(n2));
+    const auto s3 = SOC::factory<SOC::Symbolic>(std::move(n2));
     // Verify factory works
     UNITTEST_ASSERT(s1 == s2)
     UNITTEST_ASSERT(s1 != s3)

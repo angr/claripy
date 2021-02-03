@@ -9,8 +9,8 @@
 /** Verify that the Concrete class works */
 void concrete() {
     // Construct
-    const auto c1 = SOC::factory<Concrete>();
-    const auto c2 = SOC::factory<Concrete>();
+    const auto c1 = SOC::factory<SOC::Concrete>();
+    const auto c2 = SOC::factory<SOC::Concrete>();
     // Verify factory works
     UNITTEST_ASSERT(c1 == c2)
 }
