@@ -98,6 +98,17 @@ namespace Utils {
 
 } // namespace Utils
 
+/** A namespace used for the factory directory */
+namespace Factory {
+
+    /** A namespace used for private members of factory */
+    namespace Private {}
+
+} // namespace Factory
+
+/** A namespace used for the hash directory */
+namespace Hash {}
+
 /** A namespace used for Symbolic and Concrete interfaces */
 namespace SOC {
 

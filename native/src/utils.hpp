@@ -1,8 +1,11 @@
+/*
+ * \defgroup utils Claricpp Utilities
+ * @brief A group of useful classes and methods which all parts of claricpp can utilize
+ */
+
 /**
  * @file
  * @brief This file includes all public pieces of utils
- * \defgroup utils Claricpp Utilities
- * @brief A group of useful classes and methods which all parts of claricpp can utilize
  * \ingroup utils
  */
 #ifndef __UTILS_HPP__
