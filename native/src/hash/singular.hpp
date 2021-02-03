@@ -51,10 +51,14 @@ namespace Hash {
         return h->hash;
     }
 
-    /** A specialization for shared pointers of subclasses of Hashed types
+    /** A specialization for shared pointers of strict subclasses of Hashed types
      *  Not constexpr
      */
-    template <typename Internal, std::enable_if_t<std::is_base_of_v<Hashed, Internal>, int> = 0>
+    template <typename Internal,
+              // Require to prevent infinite recursion
+              std::enable_if_t<!std::is_same_v<Hashed, Internal>, int> = 0,
+              // Ensure Internal derives from Hashed
+              std::enable_if_t<std::is_base_of_v<Hashed, Internal>, int> = 0>
     inline Hash singular(const std::shared_ptr<Internal> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return singular(std::static_pointer_cast<Hashed>(h));
