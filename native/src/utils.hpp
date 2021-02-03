@@ -18,6 +18,7 @@
 #include "utils/error.hpp"
 #include "utils/file_line_hash.hpp"
 #include "utils/fnv1a.hpp"
+#include "utils/has_constructor.hpp"
 #include "utils/inc.hpp"
 #include "utils/log.hpp"
 #include "utils/max.hpp"
@@ -38,5 +39,6 @@
 #include "utils/type_id.hpp"
 #include "utils/type_pun.hpp"
 #include "utils/unconstructable.hpp"
+#include "utils/unique.hpp"
 
 #endif

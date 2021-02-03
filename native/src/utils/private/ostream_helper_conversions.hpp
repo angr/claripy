@@ -9,6 +9,7 @@
 #define __UTILS_PRIVATE_OSTREAMHELPERCONVERSIONS_HPP__
 
 #include "../../macros.hpp"
+#include "../unique.hpp"
 
 #include <ostream>
 #include <type_traits>
@@ -31,8 +32,7 @@ namespace Utils::Private {
 
     /** A struct used to determine if T has the << operator defined */
     template <typename T> struct HasStreamOp {
-        /** A forward declaration of a type that doesn't exist anywhere else */
-        class Unique;
+        UTILS_DEFINE_UNIQUE
         /** If U has the << operator defined the return type is resolvable
          *  Note: we do not use declval for the ostream because some compilers are buggy with it
          *  @todo Update to use declval when possible
@@ -41,11 +41,11 @@ namespace Utils::Private {
         static constexpr decltype(*static_cast<std::ostream *>(nullptr) << std::declval<U>())
         test(U *);
         /** If the first declaration had an unresolvable return type, we return a Unique */
-        template <typename U> static constexpr Unique test(...);
+        template <typename> static constexpr Unique test(...);
         /** Determine the return type of test<T>(nullptr) */
         using Ret = decltype(test<T>(nullptr));
         /** Compare the return type to determine if the << operator is defined */
-        static constexpr bool value { !std::is_same<Unique, Ret>::value };
+        static constexpr bool value { !std::is_same_v<Unique, Ret> };
     };
 
 
