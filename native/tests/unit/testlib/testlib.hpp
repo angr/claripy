@@ -1,7 +1,7 @@
+/** \defgroup testlib Test Helper Library */
 /**
  * @file
  * @brief This file includes all relevant public sections of testlib
- * \defgroup testlib Test Helper Library
  * @brief A library that contains common functions that unit teses may use
  * \ingroup testlib
  */

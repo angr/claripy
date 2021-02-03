@@ -39,14 +39,18 @@ namespace Utils {
          *  Default argument value: 1000
          */
         explicit inline RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim = 1000)
-            : func(f), n_except(std::uncaught_exceptions()) {
+            : func(f)
+#ifdef DEBUG
+			, n_except(std::uncaught_exceptions())
+#endif
+		{
             const auto num { ++count[func] };
             affirm<Error::Unexpected::RecurrenceLimit>(
                 num <= lim, func, " has reached its recurrence limit of: ", lim);
         }
 
         /** Destructor
-         *  Warning: This destructor may throw!
+         *  Warning: This destructor may throw when DEBUG mode is enabled
          */
         inline ~RecurrenceGuard()
 #ifdef DEBUG
@@ -74,8 +78,10 @@ namespace Utils {
         /** The name of the function */
         const std::string func;
 
+#ifdef DEBUG
         /** The number of uncaught exceptions alive during construction */
         const int n_except;
+#endif
 
         /** Static map to keep track of recurrences */
         inline static thread_local std::map<std::string, Constants::UInt> count {};

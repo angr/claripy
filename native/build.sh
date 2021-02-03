@@ -1,7 +1,6 @@
 #!/bin/bash -eux
 set -o pipefail
 
-
 # Optional env arguments for build.sh
 DOCKER_TARGET="${DOCKER_TARGET:-test}"
 PROGRESS="${PROGRESS:-tty}"
@@ -14,6 +13,9 @@ CMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE:-OFF}"
 NUM_CORES="${NUM_CORES:-"$(nproc)"}"
 VERBOSE_TEST="${VERBOSE_TEST:-False}"
 
+
+# Change directories
+cd "$(dirname "$(realpath "${0}")")"
 
 # Get the version
 VERSION="$(cat ../VERSION)"

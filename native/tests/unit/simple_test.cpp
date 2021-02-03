@@ -2,7 +2,7 @@
  * @file
  * \defgroup unittest Claricpp Unit Tests
  * @brief Claricpp Unit Tests
- * \ingroup
+ * \ingroup unittest
  */
 #include "testlib.hpp"
 
