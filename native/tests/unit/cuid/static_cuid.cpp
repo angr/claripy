@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "cuid.hpp"
 #include "testlib.hpp"
 
 
@@ -17,7 +18,7 @@ struct HasSCUID2 {
 
 
 /** Verify that cuids are unique */
-void static_cuid() { UNITEST_ASSERT(HasSCUID1::static_cuid != HasSCUID2::static_cuid) }
+void static_cuid() { UNITTEST_ASSERT(HasSCUID1::static_cuid != HasSCUID2::static_cuid) }
 
 // Define the test
 UNITTEST_DEFINE_MAIN_TEST(static_cuid)

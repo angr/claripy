@@ -2,14 +2,16 @@
  * @file
  * \ingroup unittest
  */
+#include "factory.hpp"
 #include "testlib.hpp"
 
 
 /** A factory constructable object */
-struct A : public FactoryMade {
+struct A : public Factory::FactoryMade {
+    DEFINE_STATIC_CUID
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(A)
     /** Constructor */
-    A(const Hash::Hash &h) : FactoryMade { h, 0 } {}
+    A(const Hash::Hash &h) : FactoryMade { h, 0_ui } {}
 };
 
 /** Verify that two identical A objects are the same */

@@ -2,20 +2,22 @@
  * @file
  * \ingroup unittest
  */
+#include "factory.hpp"
 #include "testlib.hpp"
 
 
 /** A factory constructable object */
-struct A : public FactoryMade {
+struct A : public Factory::FactoryMade {
+    DEFINE_STATIC_CUID
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(A)
     /** Constructor */
-    A(const Hash::Hash &h, const int) : FactoryMade { h, 0 } {}
+    A(const Hash::Hash &h, const Constants::UInt) : FactoryMade { h, 0_ui } {}
 };
 
 /** Verify that two identical A objects are the same */
 void factory_diff_t() {
-    const auto a1 = Factory::factory<A, A>(1);
-    const auto a2 = Factory::factory<A, A>(2);
+    const auto a1 = Factory::factory<A, A>(1_ui);
+    const auto a2 = Factory::factory<A, A>(2_ui);
     UNITTEST_ASSERT(a1 != a2)
 }
 
