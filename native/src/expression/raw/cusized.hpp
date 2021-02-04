@@ -5,8 +5,8 @@
 #ifndef __EXPRESSION_RAW_CUSIZED_HPP__
 #define __EXPRESSION_RAW_CUSIZED_HPP__
 
-#include "macros.hpp"
 #include "base.hpp"
+#include "macros.hpp"
 
 #include "../../constants.hpp"
 

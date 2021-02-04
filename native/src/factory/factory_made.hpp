@@ -18,20 +18,20 @@
  *  Leaves class in a private access state
  */
 #define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE)                                               \
-	/* The CUID does not need to be used in non-instantiated classes */ \
-    DEFINE_MAYBE_UNUSED_STATIC_CUID                                                                            \
-  private: \
+    /* The CUID does not need to be used in non-instantiated classes */                           \
+    DEFINE_MAYBE_UNUSED_STATIC_CUID                                                               \
+  private:                                                                                        \
     /** Allow verification to have friend access */                                               \
     template <typename, typename...> friend struct ::Utils::HasConstructor;                       \
     /** Allow cache friend access for factory construction */                                     \
-    friend class ::Utils::Cache<Hash::Hash, const BASE>;                                                \
+    friend class ::Utils::Cache<Hash::Hash, const BASE>;
 
 
 namespace Factory {
 
     /** A type that can be constructed by the factory
      *  All factory constructable types must subclass this
-	 *  All subclasses that are or have an instantiable subclass constructed via factory
+     *  All subclasses that are or have an instantiable subclass constructed via factory
      *	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that
      *		 this also defines a static_cuid
      */

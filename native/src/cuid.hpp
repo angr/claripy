@@ -23,7 +23,7 @@
 /** Used to define a possible unused static_cuid in a class
  *  Leaves the class in a public state
  */
-#define DEFINE_MAYBE_UNUSED_STATIC_CUID                                                                        \
+#define DEFINE_MAYBE_UNUSED_STATIC_CUID                                                           \
   public:                                                                                         \
     /** Define a static_cuid */                                                                   \
     [[maybe_unused]] static const constexpr Constants::UInt static_cuid = UTILS_FILE_LINE_HASH;

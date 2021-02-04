@@ -41,9 +41,10 @@ namespace Utils {
         explicit inline RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim = 1000)
             : func(f)
 #ifdef DEBUG
-			, n_except(std::uncaught_exceptions())
+              ,
+              n_except(std::uncaught_exceptions())
 #endif
-		{
+        {
             const auto num { ++count[func] };
             affirm<Error::Unexpected::RecurrenceLimit>(
                 num <= lim, func, " has reached its recurrence limit of: ", lim);

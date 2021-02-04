@@ -21,8 +21,7 @@ namespace SOC {
      */
     struct Base : public Factory::FactoryMade {
         SOC_INIT
-	  public:
-
+      public:
         /** Returns true if this is symbolic */
         virtual bool symbolic() const noexcept = 0;
 

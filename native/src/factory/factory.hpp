@@ -16,8 +16,8 @@ struct CUID;
 
 namespace Factory {
 
-	/** The const shared pointer type that factory returns */
-	template <typename T> using Ptr = std::shared_ptr<const T>;
+    /** The const shared pointer type that factory returns */
+    template <typename T> using Ptr = std::shared_ptr<const T>;
 
     namespace Private {
         /** The factory cache
@@ -37,8 +37,7 @@ namespace Factory {
      *  Arguments are passed by non-const forwarding reference
      *  @todo update eager_backends functionality
      */
-    template <typename Base, typename T, typename... Args>
-    inline Ptr<T> factory(Args &&...args) {
+    template <typename Base, typename T, typename... Args> inline Ptr<T> factory(Args &&...args) {
         FactoryMade::static_type_check<Base, T, Args...>();
 
         // Check to see if the object to be constructed exists in the hash cache
@@ -47,12 +46,10 @@ namespace Factory {
         // Note: we have these two as distinct statements to ensure hash is done first
         // As the std::forward may move args
 
-        const auto ret {
-			// Use the cv-unqualified cache
-			Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
-				hash, std::forward<Args>(args)...
-			)
-		};
+        const auto ret { // Use the cv-unqualified cache
+                         Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
+                             hash, std::forward<Args>(args)...)
+        };
         if constexpr (std::is_same_v<Base, T>) {
             return ret;
         }

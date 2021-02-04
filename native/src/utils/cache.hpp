@@ -7,8 +7,8 @@
 
 #include "log.hpp"
 #include "max.hpp"
-#include "pow.hpp"
 #include "pointer_cast.hpp"
+#include "pow.hpp"
 
 #include "../unittest.hpp"
 
@@ -55,7 +55,7 @@ namespace Utils {
         std::shared_ptr<Cached> find_or_emplace(const Hash &h, Args &&...args) {
             // Static check
             static_assert(std::is_base_of_v<Cached, Derived>, "Derived must derive from Base");
-			// Sanity check
+            // Sanity check
             static_assert(std::is_base_of_v<Cached, TransferConst<Derived, Cached>>,
                           "Derived must derive from Base");
 
@@ -71,14 +71,13 @@ namespace Utils {
 
             // Construct our object to be cached
             // We don't know how long the constructor will take so we do it in an unlocked context
-            std::shared_ptr<Cached> ret{
-				static_cast<Cached*>(
-					// We use new because make_shared might not have access permissions
-					new TransferConst<Derived, Cached>(	h, std::forward<Args>(args)... )
-				),
-				// Pass a custom deleter
-				deleter
-			};
+            std::shared_ptr<Cached> ret {
+                static_cast<Cached *>(
+                    // We use new because make_shared might not have access permissions
+                    new TransferConst<Derived, Cached>(h, std::forward<Args>(args)...)),
+                // Pass a custom deleter
+                deleter
+            };
 
             // Create locked scope
             {
@@ -101,8 +100,8 @@ namespace Utils {
         }
 
       private:
-		/** A custom deleter (allows shared_ptr to bypass access controls */
-		static void deleter(const Cached * c) noexcept { delete c; }
+        /** A custom deleter (allows shared_ptr to bypass access controls */
+        static void deleter(const Cached *c) noexcept { delete c; }
 
         /** A non-threadsafe find function for the cache
          *  On success returns a shared pointer to the value

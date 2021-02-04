@@ -11,10 +11,10 @@
 
 namespace Utils {
 
-	/** Returns a const Out if In is const, else Out */
-	template <typename Out, typename In>
-	using TransferConst = std::conditional_t<std::is_const_v<In>, const Out, Out>;
+    /** Returns a const Out if In is const, else Out */
+    template <typename Out, typename In>
+    using TransferConst = std::conditional_t<std::is_const_v<In>, const Out, Out>;
 
-}
+} // namespace Utils
 
 #endif

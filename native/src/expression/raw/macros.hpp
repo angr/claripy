@@ -5,9 +5,9 @@
 #ifndef __EXPRESSION_RAW_MACROS_HPP__
 #define __EXPRESSION_RAW_MACROS_HPP__
 
+#include "../../hash.hpp"
 #include "../../macros.hpp"
 #include "../../utils.hpp"
-#include "../../hash.hpp"
 
 #include <memory>
 
@@ -45,7 +45,8 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(CLASS)                                         \
-    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>; \
+    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>;                           \
+                                                                                                  \
   public:                                                                                         \
     DEFINE_TYPEID                                                                                 \
   protected:                                                                                      \
@@ -64,7 +65,8 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(CLASS)                                           \
-    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>; \
+    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>;                           \
+                                                                                                  \
   public:                                                                                         \
     DEFINE_TYPEID                                                                                 \
   protected:                                                                                      \
