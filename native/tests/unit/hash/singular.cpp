@@ -11,7 +11,7 @@
 /** A hashed struct */
 struct A : public Hash::Hashed {
     /** Constructor */
-    A(const Hash::Hash h) : Hashed { h } {}
+    A(const Hash::Hash h) noexcept : Hashed { h } {}
 };
 
 
@@ -19,9 +19,9 @@ struct A : public Hash::Hashed {
 void singular() {
 
     // Hashed
-    auto s1 = std::make_shared<A>(0_ui);
-    auto s2 = std::make_shared<A>(0_ui);
-    auto s3 = std::make_shared<A>(1_ui);
+    auto s1 = std::make_shared<const A>(0_ui);
+    auto s2 = std::make_shared<const A>(0_ui);
+    auto s3 = std::make_shared<const A>(1_ui);
     UNITTEST_ASSERT(Hash::singular(s1) == Hash::singular(s2))
     UNITTEST_ASSERT(Hash::singular(s1) != Hash::singular(s3))
 
