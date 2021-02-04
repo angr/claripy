@@ -9,7 +9,7 @@
 
 
 /** Allows factory construction of final types */
-#define SOC_FINAL_INIT FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::SOC::Base)
+#define SOC_INIT FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::SOC::Base)
 
 
 #endif

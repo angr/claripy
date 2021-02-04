@@ -17,7 +17,7 @@ namespace SOC {
      *  Arguments are passed by non-const forwarding reference
      */
     template <typename T, typename... Args>
-    inline Constants::SPtr<const T> factory(Args &&...args) {
+    inline Factory::Ptr<T> factory(Args &&...args) {
         static_assert(std::is_base_of_v<Base, T>, "T must derive from SOC::Base");
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }

@@ -20,6 +20,8 @@ namespace SOC {
      *  same arguments as the constructor except by const reference
      */
     struct Base : public Factory::FactoryMade {
+        SOC_INIT
+	  public:
 
         /** Returns true if this is symbolic */
         virtual bool symbolic() const noexcept = 0;

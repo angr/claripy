@@ -21,7 +21,7 @@ namespace SOC {
 
     /** A symbolic variable */
     struct Symbolic final : public Base {
-        SOC_FINAL_INIT
+        SOC_INIT
       public:
         /** Returns true */
         inline bool symbolic() const noexcept override final { return true; }

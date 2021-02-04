@@ -23,17 +23,17 @@ namespace Op {
         OP_FINAL_INIT(If)
       public:
         /** If condition */
-        const Constants::SConstPtr<Expression::Bool> cond;
+        const Factory::Ptr<Expression::Bool> cond;
         /** If true expression */
-        const Constants::SConstPtr<Expression::Base> if_true;
+        const Factory::Ptr<Expression::Base> if_true;
         /** If false expression */
-        const Constants::SConstPtr<Expression::Base> if_false;
+        const Factory::Ptr<Expression::Base> if_false;
 
       private:
         /** Protected constructor */
-        explicit inline If(const Hash::Hash &h, const Constants::SConstPtr<Expression::Bool> &c,
-                           const Constants::SConstPtr<Expression::Base> &if_tru,
-                           const Constants::SConstPtr<Expression::Base> &if_fal)
+        explicit inline If(const Hash::Hash &h, const Factory::Ptr<Expression::Bool> &c,
+                           const Factory::Ptr<Expression::Base> &if_tru,
+                           const Factory::Ptr<Expression::Base> &if_fal)
             : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {}
     };
 

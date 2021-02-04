@@ -19,7 +19,7 @@ namespace SOC {
 
     /** A concrete variable */
     struct Concrete final : public Base {
-        SOC_FINAL_INIT
+        SOC_INIT
       public:
         /** Returns false */
         inline bool symbolic() const noexcept override final { return false; }
