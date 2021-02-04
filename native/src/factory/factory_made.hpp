@@ -16,7 +16,7 @@
 
 /** Allow factory to construct a class
  *  BASE is the same base class as factory's template Base argument
- *  Factory made subclasses that want to be directly constructed by factory must definethis
+ *  Factory made subclasses that want to be directly constructed by factory must define this
  *  Leaves class in a private access state
  */
 #define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE)                                               \

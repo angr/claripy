@@ -313,17 +313,6 @@ endif()
 # Create a make target for the library
 add_subdirectory("${CLARICPP_SRC}")
 
-# Clang is overly cautious and gives warnings that do not apply here
-# So for the specific source file, we reduce them back to warnings
-# Note: This must not be defined in a lower scope than where the shared object is
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	set(FNAME "${CLARICPP_SRC}/expression/raw/op/literal.cpp")
-	message(WARNING "Reducing uninitialized errors to warnings for ${FNAME}")
-	set_source_files_properties("${FNAME}"
-		PROPERTY COMPILE_FLAGS "-Wno-error=uninitialized"
-	)
-endif()
-
 # Configure library compilation and linking
 # This is just in case we missed any flags above
 if(CMAKE_BUILD_TYPE MATCHES Release)

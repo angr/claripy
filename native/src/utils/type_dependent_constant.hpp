@@ -14,6 +14,8 @@ namespace Utils::TD {
      *  within a constexpr conditional static_assert without instantly trigging an assertion
      *  failure. Instead, the static_assert will only fail if the line of code is reached
      *  as until that point constant<bool, false, T> is an unevaluated expression, for example.
+     *  This also has the nice side effect that, if a static_assert fails, the compiler will
+     *  likely print out the passed types which can help with debugging
      */
     template <typename T, T value, typename...> constexpr T constant { value };
 
@@ -24,6 +26,9 @@ namespace Utils::TD {
 
     /** A type dependent false boolean */
     template <typename... _> constexpr bool false_ { boolean<false, _...> };
+
+    /** A type dependent true boolean */
+    template <typename... _> constexpr bool true_ { boolean<true, _...> };
 
 } // namespace Utils::TD
 

@@ -64,6 +64,11 @@ namespace Hash {
         return singular(Utils::up_cast<Hashed>(h));
     }
 
+    /** A specialization for T = bool */
+    template <> constexpr inline Hash singular(const bool &b) noexcept {
+        return UTILS_FILE_LINE_HASH + (b ? 1ULL : 0ULL);
+    }
+
     /** A specialization for T = Constants::CCSC */
     template <> constexpr inline Hash singular(Constants::CCSC &s) noexcept {
         return UTILS_FILE_LINE_HASH + fnv1a<char>(s, Utils::strlen(s));

@@ -33,23 +33,25 @@ namespace Expression {
         /** The Expression Op */
         const Factory::Ptr<Op::Base> op;
 
+        /** Annotation vector type */
+        using AnnotationVec = std::vector<Factory::Ptr<Annotation::Base>>;
+
         /** A set of annotations applied onto this Expression */
-        const std::vector<Factory::Ptr<Annotation::Base>> annotations;
+        const AnnotationVec annotations;
 
       protected:
-/** We make this a macro for brevity in subclasses */
-#define EXPRESSION_BASE_ARGS(HASH, CUID, SYM, OP, ANS)                                            \
-    const Hash::hash HASH, const Constants::UInt CUID const bool SYM Factory::Ptr<Op::Base> &&OP, \
-        std::vector<Factory::Ptr<Annotation::Base>> &&ANS
-
         /** Protected Constructor */
-        explicit inline Base(EXPRESSION_BASE_ARGS(h, c, sym, op_, annotations_)) noexcept
+        explicit inline Base(const Hash::Hash h, const Constants::UInt c, const bool sym,
+                             Factory::Ptr<Op::Base> &&op_, AnnotationVec &&annotations_) noexcept
             : FactoryMade { h, c }, symbolic { sym }, op { op_ }, annotations { annotations_ } {
 #ifdef DEBUG
-            if (const auto cast { std::dynamic_pointer_cast<CSized>(op_) }; cast) {
-                using Err = Utils::Error::Unexpected::Base;
-                Utils::affirm<Err>(op_.size == this->size,
-                                   "CSized Op size and Bits size mismatch");
+            if (const auto cast { Utils::dynamic_pointer_cast<Symbol>(op_) }; cast) {
+                using Err = Utils::Error::Unexpected::IncorrectUsage;
+                Utils::affirm<Err>(symbolic, "Literal Op may not be symbolic");
+            }
+            else if (const auto cast { Utils::dynamic_pointer_cast<Literal>(op_) }; cast) {
+                using Err = Utils::Error::Unexpected::IncorrectUsage;
+                Utils::affirm<Err>(!symbolic, "Literal Op may not be symbolic");
             }
 #endif
         }

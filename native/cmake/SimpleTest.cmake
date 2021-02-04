@@ -73,7 +73,11 @@ function(simple_test FUNC_NAME)
 		"${TESTLIB_SRC}"
 	)
 	# Link the test
-	target_link_libraries("${BINARY}" PRIVATE "${CLARICPP}" "${TESTLIB}")
+	target_link_libraries("${BINARY}" PRIVATE
+		"${CLARICPP}"
+		"${TESTLIB}"
+		${GMP_LIBRARIES}
+	)
 
 	## Add the test
 	message(STATUS "\t${TEST_NAME}")

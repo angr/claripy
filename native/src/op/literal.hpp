@@ -19,7 +19,7 @@
 namespace Op {
 
     /** The op class Literal */
-    class Literal final : virtual public Base, virtual public CSized {
+    class Literal final : public Base, public CSized {
         OP_FINAL_INIT(Literal)
       public:
         /** Value type */
@@ -51,7 +51,7 @@ namespace Op {
                                      "Literal constructor with size ", size_,
                                      " given a string with less than 8 bytes in it");
                 Constants::CCSC data = rdata.data();
-                return { Utils::type_pun<int_fast64_t>(data) }; // Used with caution
+                return { Utils::type_pun<int_fast64_t, char, true>(data) }; // Used with caution
             }
             else if (size_ <= max128) {
                 Constants::CCSC data = rdata.data();

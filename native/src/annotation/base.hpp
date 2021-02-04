@@ -18,7 +18,7 @@ namespace Annotation {
      */
     struct Base : public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
-
+      public:
         /** Constructor */
         explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid)
             : FactoryMade { h, c } {}
@@ -27,7 +27,7 @@ namespace Annotation {
         virtual ~Base() = default;
 
         // Rule of 5
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Base, default, noexcept)
+        SET_IMPLICITS_NONDEFAULT_CTORS(Base, default, noexcept)
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise
