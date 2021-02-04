@@ -109,14 +109,6 @@ namespace Factory {
 /** A namespace used for the hash directory */
 namespace Hash {}
 
-/** A namespace used for Symbolic and Concrete interfaces */
-namespace SOC {
-
-    /** A namespace used for private members of SOC */
-    namespace Private {}
-
-} // namespace SOC
-
 /** A namespace used for the errors directory */
 namespace Error {
 
