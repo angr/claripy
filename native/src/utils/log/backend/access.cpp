@@ -18,7 +18,7 @@ using Bk = Backend::Base;
 
 // Create a thread safe backend wrapper
 static ThreadSafeAccess<Bk> access(std::make_shared<Backend::Default>());
-using Ptr = Constants::SPtr<Backend::Base>;
+using Ptr = std::shared_ptr<Backend::Base>;
 
 
 // Error checking

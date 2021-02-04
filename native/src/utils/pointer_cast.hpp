@@ -19,7 +19,7 @@ namespace Utils {
 
     /** An up cast */
     template <typename Out, typename In>
-    constexpr inline auto up_cast(const In &in) noexcept {
+    constexpr inline auto up_cast(const std::shared_ptr<In> &in) noexcept {
         static_assert(std::is_base_of_v<Out, In>, "up_cast passed invalid <In, Out> type pair");
         return Private::static_pointer_cast<Out>(in); // Does its own checks as well
     }
@@ -37,7 +37,7 @@ namespace Utils {
      */
     template <typename Out, typename In>
     constexpr inline auto dynamic_side_cast(const In in) noexcept {
-        return Utils::dynamic_pointer_cast<Out>(in); // Does its own checks as well
+        return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** Dynamic down-cast that throws on failure */
