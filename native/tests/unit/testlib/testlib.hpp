@@ -11,7 +11,7 @@
 #define __TESTS_UNIT_TESTLIB_TESTLIB_HPP__
 
 #include "testlib/error.hpp"
-#include "testlib/factory.hpp"
+#include "testlib/expression_factory.hpp"
 #include "testlib/main.hpp"
 #include "testlib/test_func.hpp"
 

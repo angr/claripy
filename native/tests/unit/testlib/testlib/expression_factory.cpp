@@ -2,7 +2,7 @@
  * @file
  * \ingroup testlib
  */
-#include "factory.hpp"
+#include "expression_factory.hpp"
 
 
 // For brevity

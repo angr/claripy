@@ -8,6 +8,7 @@
 
 #include "annotation.hpp"
 #include "expression.hpp"
+#include "factory.hpp"
 #include "utils.hpp"
 
 
@@ -15,7 +16,7 @@ namespace UnitTest::TestLib {
 
     /** Make it easier to create expressions */
     template <typename T> auto literal_factory(const Constants::Int i) {
-        std::vector<Factory::Ptr<const Annotation::Base>> a;
+        std::vector<::Factory::Ptr<const Annotation::Base>> a;
         Constants::CCSC cs { reinterpret_cast<Constants::CCSC>(&i) }; // NOLINT
         const std::string s { cs, 8 };
         return Expression::factory<T>(a, 64_ui, s);
