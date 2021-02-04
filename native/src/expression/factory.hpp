@@ -5,8 +5,7 @@
 #ifndef __EXPRESSION_FACTORY_HPP__
 #define __EXPRESSION_FACTORY_HPP__
 
-#include "cast.hpp"
-#include "private/raw.hpp"
+#include "base.hpp"
 
 #include "../hash.hpp"
 #include "../utils.hpp"
@@ -14,32 +13,13 @@
 
 namespace Expression {
 
-    namespace Private {
-        /** The factory cache */
-        inline Utils::Cache<Hash::Hash, ::Expression::Raw::Base> cache {};
-    } // namespace Private
-
-    /** A factory used to construct subclasses of Expression::Raw::Base. Arguments are
-     *  consumed. This function takes in move references for everything; it has no const
-     *  promises, it may consume anything that is passed to it. This factory handles hashing
-     *  and returns an Expression::Base (a shared pointer to the constructed object)
+    /** A factory used to construct Expression subclasses
+     *  Arguments are passed by non-const forwarding reference
      *  @todo update eager_backends functionality
      */
     template <typename T, typename... Args> T factory(Args &&...args) {
-
-        // Deduce the Expression::Raw::Type type the shared pointer type T contains
-        using RawT = Private::Raw<T>;
-
-        // Compile time error checking
-        static_assert(std::is_same<std::shared_ptr<RawT>, T>::value, "T must be a shared pointer");
-        static_assert(std::is_base_of<Raw::Base, RawT>::value,
-                      "T must derive from Expression::Cached::Base");
-
-        // Check to see if the object to be constructed exists in the hash cache
-        // We run hash vis run_cr_function to ensure args are passed by const reference
-        const auto h { Hash::hash(RawT::id, static_cast<const Args>(args)...) };
-        auto base_ptr { Private::cache.find_or_emplace<RawT>(h, std::forward<Args>(args)...) };
-        return down_cast_throw_on_fail<T>(base_ptr);
+        static_assert(std::is_base_of_v<Base, T>, "T must derive from Expression::Base");
+        return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 
 } // namespace Expression

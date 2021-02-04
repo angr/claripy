@@ -5,8 +5,9 @@
 #ifndef __EXPRESSION_HPP__
 #define __EXPRESSION_HPP__
 
-#include "expression/cast.hpp"
+#include "expression/base.hpp"
+#include "expression/bits.hpp"
 #include "expression/factory.hpp"
-#include "expression/raw.hpp"
+#include "expression/instantiables.hpp"
 
 #endif
