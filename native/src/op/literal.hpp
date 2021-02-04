@@ -35,25 +35,25 @@ namespace Op {
          *  @todo Intern strings
          */
         explicit inline Literal(const Hash::Hash &h, const std::string &data,
-                                const Constants::UInt size)
-            : Base { h, static_cuid }, CSized { size }, value { create_value(data, size) } {}
+                                const Constants::UInt size_)
+            : Base { h, static_cuid }, CSized { size_ }, value { create_value(data, size_) } {}
 
         /** Used by the constructor to initalize value */
-        static inline ValueT create_value(const std::string &rdata, Constants::UInt size) {
+        static inline ValueT create_value(const std::string &rdata, Constants::UInt size_) {
             using Usage = Utils::Error::Unexpected::IncorrectUsage;
             namespace MP = boost::multiprecision;
             // Constants
             static const constexpr Constants::UInt max64 = sizeof(int_fast64_t);
             static const constexpr Constants::UInt max128 = 128;
             // Construct differently depending on size
-            if (size <= max64) {
+            if (size_ <= max64) {
                 Utils::affirm<Usage>(rdata.size() == (max64 / CHAR_BIT),
-                                     "Literal constructor with size ", size,
+                                     "Literal constructor with size ", size_,
                                      " given a string with less than 8 bytes in it");
                 Constants::CCSC data = rdata.data();
                 return { Utils::type_pun<int_fast64_t>(data) }; // Used with caution
             }
-            else if (size <= max128) {
+            else if (size_ <= max128) {
                 Constants::CCSC data = rdata.data();
                 return { MP::int128_t(data) };
             }
