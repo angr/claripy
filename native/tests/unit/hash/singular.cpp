@@ -11,7 +11,7 @@
 /** A hashed struct */
 struct A : public Hash::Hashed {
     /** Constructor */
-    A(const Hash::Hash h) noexcept : Hashed { h } {}
+    explicit A(const Hash::Hash h) noexcept : Hashed { h } {}
 };
 
 
