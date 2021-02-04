@@ -130,8 +130,8 @@ namespace Expression {
 
     /** A namespace which contains the raw Expression types that are factory constructed
      *
-     *  These classes are unlikely to be accessed directly, but rather should be via an
-     *  std::shared_ptr
+     *  These classes are unlikely to be accessed directly, but rather should be via a
+     *  Factory::Ptr
      */
     namespace Raw {
 

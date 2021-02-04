@@ -65,7 +65,7 @@ namespace Factory {
 
       protected:
         /** Pure virtual destructor */
-        ~FactoryMade() noexcept override = 0;
+        inline ~FactoryMade() noexcept override = 0;
 
         // Rule of 5
         SET_IMPLICITS_CONST_MEMBERS(FactoryMade, default, noexcept)
