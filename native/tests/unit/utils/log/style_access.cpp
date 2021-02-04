@@ -14,7 +14,7 @@ using namespace UnitTest::TestLib;
 struct Plain final : Style::Base {
     /** The style function */
     std::string str(Constants::CCSC, const Level::Level &,
-                    const std::ostringstream &s) override final {
+                    const std::ostringstream &s) const override final {
         return s.str();
     }
 };
@@ -22,7 +22,7 @@ struct Plain final : Style::Base {
 /** Verify our set style was indeed set */
 void style_access() {
     Style::set<Plain>();
-    UNITTEST_ASSERT(dynamic_cast<Plain *>(Style::get().get()) != nullptr)
+    UNITTEST_ASSERT(Style::get())
 }
 
 // Define the test

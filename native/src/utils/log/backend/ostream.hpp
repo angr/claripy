@@ -49,7 +49,7 @@ namespace Utils::Log::Backend {
 
         /** Log the message */
         inline void log(Constants::CCSC, const Level::Level &,
-                        const std::string &msg) override final {
+                        const std::string &msg) const override final {
             std::lock_guard<decltype(this->m)> lock(m);
             *stream << msg << "\n";
             if (this->flush) {
@@ -59,7 +59,7 @@ namespace Utils::Log::Backend {
 
       private:
         /** The stream we log to */
-        std::shared_ptr<std::ostream> stream;
+        const std::shared_ptr<std::ostream> stream;
 
         /** If true, every time stream is written to the contents are flushed */
         const bool flush;

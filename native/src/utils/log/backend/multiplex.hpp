@@ -24,7 +24,7 @@ namespace Utils::Log::Backend {
 
         /** Log the given message, level, to the correct log given by log_id with each backend */
         inline void log(Constants::CCSC id, const Level::Level &lvl,
-                        const std::string &msg) override final {
+                        const std::string &msg) const override final {
             for (const auto &i : *backends.get()) {
                 i->log(id, lvl, msg);
             }

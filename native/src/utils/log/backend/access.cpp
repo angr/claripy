@@ -17,12 +17,8 @@ using Bk = Backend::Base;
 
 
 // Create a thread safe backend wrapper
-static ThreadSafeAccess<Bk> access(std::make_shared<Backend::Default>());
-using Ptr = std::shared_ptr<Backend::Base>;
-
-
-// Error checking
-static_assert(std::is_same_v<Ptr, decltype(access)::Ptr>, "Inconsistiency between pointer types");
+static ThreadSafeAccess<const Bk> access(std::make_shared<const Backend::Default>());
+using Ptr = decltype(access)::Ptr;
 
 
 void Backend::Private::set(Ptr &&ptr) {
