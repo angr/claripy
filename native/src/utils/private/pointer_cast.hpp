@@ -18,13 +18,25 @@ namespace Utils::Private {
     /** A const preserving static pointer cast */
     template <typename Out, typename In>
     constexpr inline auto static_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        return std::static_pointer_cast<TransferConst<Out, In>>(in);
+        using TrueOut = TransferConst<Out, In>;
+        if constexpr (!std::is_same_v<In, TrueOut>) {
+            return std::static_pointer_cast<TrueOut>(in);
+        }
+        else {
+            return in;
+        }
     }
 
     /** An unchecked dynamic pointer cast */
     template <typename Out, typename In>
     constexpr inline auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        return std::dynamic_pointer_cast<TransferConst<Out, In>>(in);
+        using TrueOut = TransferConst<Out, In>;
+        if constexpr (!std::is_same_v<In, TrueOut>) {
+            return std::dynamic_pointer_cast<TrueOut>(in);
+        }
+        else {
+            return in;
+        }
     }
 
 } // namespace Utils::Private
