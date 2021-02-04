@@ -26,17 +26,6 @@ namespace Constants {
      */
     using UInt = uint_fast64_t;
 
-    /** The shared pointer type claricpp uses
-     *  Gaurnteed to be use-able whereever std::share_ptr is used
-     */
-    template <typename T> using SPtr = std::shared_ptr<T>;
-
-    /** An alias for SPtr<const T>
-     *  Ensures the T value pointed to is const
-     *  Gaurnteed to be use-able whereever std::share_ptr is used
-     */
-    template <typename T> using SConstPtr = SPtr<const T>;
-
     /** A shortcut for a const Type * const */
     template <typename T> using CTS = const T *;
 
