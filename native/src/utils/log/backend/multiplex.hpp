@@ -25,16 +25,13 @@ namespace Utils::Log::Backend {
         /** Log the given message, level, to the correct log given by log_id with each backend */
         inline void log(Constants::CCSC id, const Level::Level &lvl,
                         const std::string &msg) const override final {
-            for (const auto &i : *backends.get()) {
+            for (const auto &i : backends) {
                 i->log(id, lvl, msg);
             }
         }
 
-        /** Backend container type */
-        using BackendContainer = std::vector<std::shared_ptr<Base>>;
-
         /** Store each backend */
-        ThreadSafeAccess<const BackendContainer> backends;
+        std::vector<std::shared_ptr<const Base>> backends;
     };
 
 } // namespace Utils::Log::Backend

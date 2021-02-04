@@ -38,8 +38,8 @@ void multiplex() {
 
     // The streams to be logged to
     std::vector<std::shared_ptr<std::ostringstream>> s;
-    s.emplace_back(new std::ostringstream); // NOLINT
-    s.emplace_back(new std::ostringstream); // NOLINT
+    s.emplace_back(std::make_shared<std::ostringstream>());
+    s.emplace_back(std::make_shared<std::ostringstream>());
 
     // Up cast
     auto ptr1 { Utils::up_cast<std::ostream>(s[0]) };
@@ -48,13 +48,9 @@ void multiplex() {
     // Create the real backend
     Multiplex multi;
 
-    // Create the backends to be multiplex to
-    Multiplex::BackendContainer c;
-    c.emplace_back(new OStream { ptr1, true }); // NOLINT
-    c.emplace_back(new OStream { ptr2, true }); // NOLINT
-
     // Install the backends
-    multi.backends.set_copy<Multiplex::BackendContainer>(c);
+    multi.backends.emplace_back(std::make_shared<OStream>(ptr1, true));
+    multi.backends.emplace_back(std::make_shared<OStream>(ptr2, true));
 
     // Install the multi backend
     copy<Multiplex>(multi);
