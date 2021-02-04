@@ -17,16 +17,12 @@ using Sty = Style::Base;
 
 
 // File local variables
-static ThreadSafeAccess<Sty> access(std::make_shared<Style::Default>());
-using Ptr = std::shared_ptr<Style::Base>;
+static ThreadSafeAccess<const Sty> access(std::make_shared<const Style::Default>());
+using Ptr = decltype(access)::Ptr;
 
 
-// Error checking
-static_assert(std::is_same_v<Ptr, decltype(access)::Ptr>, "Inconsistiency between pointer types");
-
-
-void Style::Private::set(Ptr &ptr) {
-    access.set_shared_ptr(ptr);
+void Style::Private::set(Ptr &&ptr) {
+    access.set_shared_ptr_move(std::forward<Ptr>(ptr));
 }
 
 Ptr Style::get() {

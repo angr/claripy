@@ -21,7 +21,7 @@ using Lvl = Level::Level;
 
 // Return "<level>: <timestamp>: <raw>"
 std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
-                                       const std::ostringstream &raw) {
+                                       const std::ostringstream &raw) const {
 
     // Get time
     const auto t { std::time(nullptr) };

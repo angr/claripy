@@ -16,7 +16,7 @@ namespace Utils::Log::Style {
 
         /** Format the log message */
         std::string str(Constants::CCSC, const Level::Level &lvl,
-                        const std::ostringstream &raw) override final;
+                        const std::ostringstream &raw) const override final;
     };
 
 } // namespace Utils::Log::Style

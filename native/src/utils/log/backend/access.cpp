@@ -25,8 +25,8 @@ using Ptr = std::shared_ptr<Backend::Base>;
 static_assert(std::is_same_v<Ptr, decltype(access)::Ptr>, "Inconsistiency between pointer types");
 
 
-void Backend::Private::set(Ptr &ptr) {
-    access.set_shared_ptr(ptr);
+void Backend::Private::set(Ptr &&ptr) {
+    access.set_shared_ptr_move(std::forward<Ptr>(ptr));
 }
 
 Ptr Backend::get() {

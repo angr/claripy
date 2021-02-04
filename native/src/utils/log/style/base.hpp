@@ -30,7 +30,7 @@ namespace Utils::Log::Style {
 
         /** Format the log message */
         virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,
-                                const std::ostringstream &raw) = 0;
+                                const std::ostringstream &raw) const = 0;
     };
 
     /** Default virtual destructor */
