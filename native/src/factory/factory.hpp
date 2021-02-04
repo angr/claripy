@@ -16,12 +16,15 @@ struct CUID;
 
 namespace Factory {
 
+	/** The const shared pointer type that factory returns */
+	template <typename T> using Ptr = std::shared_ptr<const T>;
+
     namespace Private {
         /** The factory cache
          *  Note: This is not a static variable of the factory function because
-         *  we want to allow classes to declare this, and only this specific cache, as a friend
+         *  we want to to make it agnostic of cv qualifiers
          */
-        template <typename Base> Utils::Cache<Hash::Hash, Base> cache {};
+        template <typename Base> Utils::Cache<Hash::Hash, const Base> inline cache {};
     } // namespace Private
 
     /** A factory used to construct subclasses of Base.
@@ -35,7 +38,7 @@ namespace Factory {
      *  @todo update eager_backends functionality
      */
     template <typename Base, typename T, typename... Args>
-    inline Constants::SConstPtr<T> factory(Args &&...args) {
+    inline Ptr<T> factory(Args &&...args) {
         FactoryMade::static_type_check<Base, T, Args...>();
 
         // Check to see if the object to be constructed exists in the hash cache
@@ -44,14 +47,18 @@ namespace Factory {
         // Note: we have these two as distinct statements to ensure hash is done first
         // As the std::forward may move args
 
-        const auto ret { Private::cache<Base>.template find_or_emplace<T>(
-            hash, std::forward<Args>(args)...) };
+        const auto ret {
+			// Use the cv-unqualified cache
+			Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
+				hash, std::forward<Args>(args)...
+			)
+		};
         if constexpr (std::is_same_v<Base, T>) {
             return ret;
         }
         else {
             // Since cache emplaces a T, this is a safe static cast
-            return Utils::static_down_cast<const T>(ret);
+            return Utils::static_down_cast<T>(ret);
         }
     }
 

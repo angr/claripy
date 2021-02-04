@@ -41,12 +41,12 @@ namespace Hash {
     template <typename Type>
     const constexpr auto fnv1a { Utils::FNV1a<Type>::template hash<Hash> };
 
-    // Specialization
+    // Specializations
 
     /** A specialization for pre-hashed types
      *  Not constexpr
      */
-    template <> inline Hash singular(const std::shared_ptr<Hashed> &h) noexcept {
+    template <> inline Hash singular(const std::shared_ptr<const Hashed> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return h->hash;
     }
@@ -59,9 +59,9 @@ namespace Hash {
               std::enable_if_t<!std::is_same_v<Hashed, Internal>, int> = 0,
               // Ensure Internal derives from Hashed
               std::enable_if_t<std::is_base_of_v<Hashed, Internal>, int> = 0>
-    inline Hash singular(const std::shared_ptr<Internal> &h) noexcept {
+    inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
-        return singular(std::static_pointer_cast<Hashed>(h));
+        return singular(Utils::up_cast<Hashed>(h));
     }
 
     /** A specialization for T = Constants::CCSC */
