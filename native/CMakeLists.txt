@@ -50,7 +50,7 @@ set( DEFAULT_OTHER_LOG_LEVEL "Info" )
 # Static Analysis Options
 option( IWYU "Enable iwyu" OFF )
 option( LWYU "Enable lwyu" ON )
-option( CPP_CHECK "Enable cppcheck" ON )
+option( CPP_CHECK "Enable cppcheck" OFF )
 option( CLANG_TIDY "Enable clang-tidy" ON )
 
 # Config options
