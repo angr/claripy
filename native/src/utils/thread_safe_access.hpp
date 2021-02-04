@@ -6,6 +6,8 @@
 #ifndef __UTILS_THREADSAFEACCESS_HPP__
 #define __UTILS_THREADSAFEACCESS_HPP__
 
+#include "make_derived_shared.hpp"
+
 #include "../macros.hpp"
 
 #include <algorithm>
@@ -20,10 +22,10 @@ namespace Utils {
     /** A class that exposes thread-safe setters and getters for a T
      *  Warning: This does not protect T internally; it only protects setting and getting
      */
-    template <typename T> class ThreadSafeAccess {
+    template <typename Base> class ThreadSafeAccess {
       public:
         /** The get-able type */
-        using Ptr = std::shared_ptr<T>;
+        using Ptr = std::shared_ptr<const Base>;
 
         /** A getter */
         Ptr get() const {
@@ -44,7 +46,7 @@ namespace Utils {
         /** Construct and point to nothing by default */
         ThreadSafeAccess() = default;
 
-        /** shared_ptr constructor
+        /** Ptr constructor
          *  This is by value to allow temporary shared pointers to be used
          */
         // cppcheck-suppress nullPointer
@@ -81,57 +83,67 @@ namespace Utils {
 
 
         /** A setter by default constructor */
-        template <typename U = T> void set_default() { this->set_raw(new U); }
+        template <typename Derived = Base> void set_default() {
+            this->set_move(std::move(make_derived_shared<Base, Derived>()));
+        }
 
         /** A setter by copy constructor */
-        template <typename U> void set_copy(const U &t) { this->set_raw(new U(t)); }
+        template <typename Derived = Base> void set_copy(const Derived &t) {
+            this->set_move(std::move(make_derived_shared<Base, Derived>(t)));
+        }
 
         /** A setter by move constructor */
-        template <typename U> void set_copy(U &&t) { this->set_raw(new U(std::forward<U>(t))); }
+        template <typename Derived = Base> void set_move(Derived &&t) {
+            this->set_move(
+                std::move(make_derived_shared<Base, Derived>(std::forward<Derived>(t))));
+        }
 
 
         /** A setter by emplacement with args passed by copy
-         *  A specialization that requires no U parameter
+         *  A specialization that requires no Derived parameter
          */
         template <typename... Args> void set_emplace_ref_copy(Args... args) {
-            this->set_raw(new T(std::forward<Args>(args)...));
+            this->set_emplace_forward_args(std::forward<Args>(args)...);
         }
 
         /** A setter by emplacement with args passed by copy
          *  The general definition
          */
-        template <typename U, typename... Args> void set_emplace_ref_copy(Args... args) {
-            this->set_raw(new U(std::forward<Args>(args)...));
+        template <typename Derived, typename... Args> void set_emplace_ref_copy(Args... args) {
+            this->set_emplace_forward_args<Derived>(std::forward<Args>(args)...);
         }
 
 
         /** A setter by emplacement with args passed by const reference
-         *  A specialization that requires no U parameter
+         *  A specialization that requires no Derived parameter
          */
         template <typename... Args> void set_emplace_ref_args(const Args &...args) {
-            this->set_raw(new T(args...));
+            this->set_move(std::move(std::make_shared<Base>(args...)));
         }
 
         /** A setter by emplacement with args passed by const reference
          *  The general definition
          */
-        template <typename U, typename... Args> void set_emplace_ref_args(const Args &...args) {
-            this->set_raw(new U(args...));
+        template <typename Derived, typename... Args>
+        void set_emplace_ref_args(const Args &...args) {
+            this->set_move(std::move(make_derived_shared<Base, Derived>(args...)));
         }
 
 
         /** A setter by emplacement with args passed by forward reference
-         *  A specialization that requires no U parameter
+         *  A specialization that requires no Derived parameter
          */
         template <typename... Args> void set_emplace_foward_args(Args &&...args) {
-            this->set_raw(new T(std::forward<Args>(args)...));
+            this->set_move(std::move(std::make_shared<Base>(std::forward<Args>(args)...)));
         }
 
         /** A setter by emplacement with args passed by forward reference
          *  The general definition
          */
-        template <typename U, typename... Args> void set_emplace_forward_args(Args &&...args) {
-            this->set_raw(new U(std::forward<Args>(args)...));
+        template <typename Derived, typename... Args>
+        void set_emplace_forward_args(Args &&...args) {
+            this->set_move(
+                std::move(make_derived_shared<Base, Derived>(std::forward<Args>(args)...)));
         }
 
       private:
@@ -145,13 +157,6 @@ namespace Utils {
         inline void set_move(Ptr &&ptr) {
             std::lock_guard<decltype(this->m)>(this->m);
             this->obj = ptr;
-        }
-
-        /** A private member used to set m safely */
-        template <typename U> void set_raw(U *const o) {
-            static_assert(std::is_base_of_v<T, U>, "ThreadSafeAccess.set requires U subclass T");
-            std::lock_guard<decltype(this->m)>(this->m);
-            this->obj.reset(o);
         }
 
         /** A mutex to protect obj */
