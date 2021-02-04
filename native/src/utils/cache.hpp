@@ -75,12 +75,14 @@ namespace Utils {
             // in exchange we have to pass a custom deleter in case Cached has non-public
             // destructor
             // We don't know how long the constructor will take so we do it in an unlocked context
-            auto ret { // Pointer up cast
-                       Utils::up_cast<Cached>(
-                           // Construct this before casting to avoid slicing
-                           std::shared_ptr<TransferConst<Derived, Cached>>(
-                               // We use new because make_shared might not have access permissions
-                               new TransferConst<Derived, Cached>(h, std::forward<Args>(args)...)))
+            auto ret {
+                // Pointer up cast
+                Utils::up_cast<Cached>(
+                    // Construct this before casting to avoid slicing
+                    // It also avoids the need for a custom deleter to deal with access controls
+                    std::shared_ptr<TransferConst<Derived, Cached>>(
+                        // We use new because make_shared might not have access permissions
+                        new TransferConst<Derived, Cached>(h, std::forward<Args>(args)...)))
             };
 
             // Create locked scope
