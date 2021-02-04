@@ -21,6 +21,7 @@
 #include "utils/has_constructor.hpp"
 #include "utils/inc.hpp"
 #include "utils/log.hpp"
+#include "utils/make_derived_shared.hpp"
 #include "utils/max.hpp"
 #include "utils/ostream.hpp"
 #include "utils/pointer_cast.hpp"

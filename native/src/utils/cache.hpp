@@ -6,6 +6,7 @@
 #define __UTILS_CACHE_HPP__
 
 #include "log.hpp"
+#include "make_derived_shared.hpp"
 #include "max.hpp"
 #include "pointer_cast.hpp"
 #include "pow.hpp"
@@ -70,13 +71,16 @@ namespace Utils {
             } // Unlock
 
             // Construct our object to be cached
+            // This might be a bit faster than constructing then using a staic pointer cost
+            // in exchange we have to pass a custom deleter in case Cached has non-public
+            // destructor
             // We don't know how long the constructor will take so we do it in an unlocked context
-            std::shared_ptr<Cached> ret {
-                static_cast<Cached *>(
-                    // We use new because make_shared might not have access permissions
-                    new TransferConst<Derived, Cached>(h, std::forward<Args>(args)...)),
-                // Pass a custom deleter
-                deleter
+            auto ret { // Pointer up cast
+                       Utils::up_cast<Cached>(
+                           // Construct this before casting to avoid slicing
+                           std::shared_ptr<TransferConst<Derived, Cached>>(
+                               // We use new because make_shared might not have access permissions
+                               new TransferConst<Derived, Cached>(h, std::forward<Args>(args)...)))
             };
 
             // Create locked scope
@@ -100,9 +104,6 @@ namespace Utils {
         }
 
       private:
-        /** A custom deleter (allows shared_ptr to bypass access controls */
-        static void deleter(const Cached *c) noexcept { delete c; }
-
         /** A non-threadsafe find function for the cache
          *  On success returns a shared pointer to the value
          *  On failure, returns a null shared pointer
