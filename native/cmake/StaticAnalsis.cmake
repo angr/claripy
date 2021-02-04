@@ -1,29 +1,28 @@
 # cppcheck
 if(CPP_CHECK)
 	message(WARNING "cppcheck's internal AST can break because of control block initalizers."
-			"Until this bug is fixed we cannot use cppcheck. Skipping.")
-	set(CPP_CHECK OFF)
-	# set(CPPCHECK_FLAGS "cppcheck"
-	# 	"--enable=all"
-	# 	"--std=c++17"
-	# 	"--error-exitcode=1"
-	# 	"--inline-suppr"
-	# 	# TODO: remove this after python wrapper and c ABI made
-	# 	"--suppress=unusedFunction"
-	# 	# cppcheck might have path issues; this check is redundant since we can compile successfully
-	# 	"--suppress=missingIncludeSystem"
-	# 	# cppcheck is over-aggressive and includes static member variables, we do not want that
-	# 	"--suppress=duplInheritedMember"
-	# 	# cppcheck is over-aggressive and that leads to a ton of false positives
-	# 	# The compilers and clang-tidy both have shadow detection enabled anyway so we disable this
-	# 	"--suppress=shadowVariable"
-	# 	# Allow the above suppression to be unmatched
-	# 	# That is: do not mandate files violate the conditions that invoke the above suppressions
-	# 	# Note: this does not apply to inline suppressions
-	# 	"--suppress=unmatchedSuppression"
-	# )
-	# set(CMAKE_C_CPPCHECK ${CPPCHECK_FLAGS})
-	# set(CMAKE_CXX_CPPCHECK ${CPPCHECK_FLAGS})
+			"Until this bug is fixed cppcheck may not pass.")
+	set(CPPCHECK_FLAGS "cppcheck"
+		"--enable=all"
+		"--std=c++17"
+		"--error-exitcode=1"
+		"--inline-suppr"
+		# TODO: remove this after python wrapper and c ABI made
+		"--suppress=unusedFunction"
+		# cppcheck might have path issues; this check is redundant since we can compile successfully
+		"--suppress=missingIncludeSystem"
+		# cppcheck is over-aggressive and includes static member variables, we do not want that
+		"--suppress=duplInheritedMember"
+		# cppcheck is over-aggressive and that leads to a ton of false positives
+		# The compilers and clang-tidy both have shadow detection enabled anyway so we disable this
+		"--suppress=shadowVariable"
+		# Allow the above suppression to be unmatched
+		# That is: do not mandate files violate the conditions that invoke the above suppressions
+		# Note: this does not apply to inline suppressions
+		"--suppress=unmatchedSuppression"
+	)
+	set(CMAKE_C_CPPCHECK ${CPPCHECK_FLAGS})
+	set(CMAKE_CXX_CPPCHECK ${CPPCHECK_FLAGS})
 endif()
 
 # Include What You Use
