@@ -18,7 +18,8 @@
  *  Leaves class in a private access state
  */
 #define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE)                                               \
-    DEFINE_STATIC_CUID                                                                            \
+	/* The CUID does not need to be used in non-instantiated classes */ \
+    DEFINE_MAYBE_UNUSED_STATIC_CUID                                                                            \
   private: \
     /** Allow verification to have friend access */                                               \
     template <typename, typename...> friend struct ::Utils::HasConstructor;                       \

@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief This file defines a type that has a unique class id
- * This file also defines a macro to create a static_cuid
+ * This file also defines macros to create a static_cuid
  */
 #ifndef __CUID_HPP__
 #define __CUID_HPP__
@@ -18,6 +18,15 @@
   public:                                                                                         \
     /** Define a static_cuid */                                                                   \
     static const constexpr Constants::UInt static_cuid = UTILS_FILE_LINE_HASH;
+
+
+/** Used to define a possible unused static_cuid in a class
+ *  Leaves the class in a public state
+ */
+#define DEFINE_MAYBE_UNUSED_STATIC_CUID                                                                        \
+  public:                                                                                         \
+    /** Define a static_cuid */                                                                   \
+    [[maybe_unused]] static const constexpr Constants::UInt static_cuid = UTILS_FILE_LINE_HASH;
 
 
 /** A type that has a class unique id
