@@ -5,9 +5,7 @@
 #ifndef __ANNOTATION_BASE_HPP__
 #define __ANNOTATION_BASE_HPP__
 
-#include "../constants.hpp"
-#include "../hash.hpp"
-#include "../macros.hpp"
+#include "../factory.hpp"
 
 #include <memory>
 #include <utility>
@@ -18,17 +16,18 @@ namespace Annotation {
     /** Annotations are used to achieve claripy's goal of being an arithmetic instrumentation
      * engine. They provide a means to pass extra information to the claripy backends.
      */
-    struct Base : public Hash::Hashed {
+    struct Base : public Factory::FactoryMade {
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
 
         /** Constructor */
-        explicit inline Base(const Hash::Hash &h = default_hash) : Hashed { h } {}
+        explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid)
+            : FactoryMade { h, c } {}
 
         /** Virtual destructor */
-        virtual ~Base();
+        virtual ~Base() = default;
 
         // Rule of 5
-        SET_IMPLICITS_NONDEFAULT_CTORS(Base, default)
-        SET_IMPLICITS_OPERATORS(Base, delete)
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Base, default, noexcept)
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise

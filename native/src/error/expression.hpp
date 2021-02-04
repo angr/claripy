@@ -19,7 +19,7 @@ namespace Error {
         /** Base Expression exception
          *  All Expression exceptions must derive from this
          */
-        DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(Base, Claricpp, Utils::Error)
+        DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(Base, Claripy, Utils::Error::Python)
 
         /** @todo document */
         DEFINE_SUBCLASS_WITH_CTOR(Balancer, Base)

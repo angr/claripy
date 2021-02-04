@@ -17,7 +17,7 @@ struct CSized {
 
   protected:
     /** Protected constructor */
-    explicit inline CSized(const Constants::UInt s) : size { s } {}
+    explicit inline CSized(const Constants::UInt s) noexcept : size { s } {}
 
     /** Virtual destructor */
     virtual inline ~CSized() noexcept;
