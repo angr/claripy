@@ -11,6 +11,8 @@
 #include "../hash.hpp"
 #include "../utils.hpp"
 
+#include <type_traits>
+
 
 /** Allow factory to construct a class
  *  BASE is the same base class as factory's template Base argument
@@ -23,6 +25,7 @@
   private:                                                                                        \
     /** Allow verification to have friend access */                                               \
     template <typename, typename...> friend struct ::Utils::HasConstructor;                       \
+    template <typename, typename...> friend struct ::std::is_constructible;                       \
     /** Allow cache friend access for factory construction */                                     \
     friend class ::Utils::Cache<Hash::Hash, const BASE>;
 
@@ -59,6 +62,7 @@ namespace Factory {
             static_assert(std::is_same_v<const Constants::UInt, decltype(T::static_cuid)>,
                           "T::static_cuid must be of type Constants::UInt");
             // Constructor
+            // Note: We use has_constructor to pass if the desired constructor is private
             static_assert(Utils::has_constructor<T, const Hash::Hash &, Args &&...>,
                           "T does not have a constructor T(const Hash::Hash &, Args...");
         }

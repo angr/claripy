@@ -1,8 +1,8 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines a way to check if a type has a visible constructor matching a specific
- * signature
+ * @brief This file defines a way to check if a type T can accepts Args... args.
+ * Note: unlike std::is_constructible, this can be friended to allow private constructor access
  */
 #ifndef __UTILS_HASCONSTRUCTOR_HPP__
 #define __UTILS_HASCONSTRUCTOR_HPP__
@@ -12,7 +12,9 @@
 
 namespace Utils {
 
-    /** A struct which determines if the constructor T(Args...) is visible and exists */
+    /** A struct which determines if the constructor T(Args...) is visible and exists
+     *  Basically std::is_constructible but can be friendedto allow private constructor access
+     */
     template <typename T, typename... Args> struct HasConstructor {
         UTILS_DEFINE_UNIQUE
 
