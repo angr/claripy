@@ -23,14 +23,13 @@ namespace Expression {
     /** This function is used to statically up-cast between Expression types
      *  Normal dynamic casting will not work on because shared pointers are not subclasses of each
      *  other like their template arguments are.
-     *  Since we are up-casting, this is staticlly typesafe
      */
     template <typename To, typename From> To up_cast(const From &f) noexcept {
         using RawTo = Private::Raw<To>;
         using RawFrom = Private::Raw<From>;
         static_assert(std::is_base_of<Raw::Base, RawTo>::value, "To must derive from Base");
         static_assert(std::is_base_of<RawTo, RawFrom>::value, "From must derive from To");
-        return std::static_pointer_cast<RawTo>(f);
+        return Utils::up_cast<RawTo>(f);
     }
 
     /** This function is used to dynamically down-cast between Expression types
@@ -45,7 +44,7 @@ namespace Expression {
         using RawFrom = Private::Raw<From>;
         static_assert(std::is_base_of<Raw::Base, RawFrom>::value, "From must derive from Base");
         static_assert(std::is_base_of<RawFrom, RawTo>::value, "To must derive from From");
-        return std::dynamic_pointer_cast<RawTo>(f);
+        return Utils::dynamic_down_cast<RawTo>(f);
     }
 
     /** This function extends Expression::cast by throwing a BadCast exception on failure

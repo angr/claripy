@@ -49,7 +49,7 @@ void lower_level_ignored() {
 
     // Configure backend and style to output to with all relevant info
     auto s { std::make_shared<std::ostringstream>() };
-    Backend::set<Backend::OStream>(std::static_pointer_cast<std::ostream>(s), true, false);
+    Backend::set<Backend::OStream>(Utils::up_cast<std::ostream>(s), true, false);
     s->str("");
     UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check")
 

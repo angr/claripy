@@ -33,7 +33,7 @@ void levels() {
     // Configure backend and style to output to with all relevant info
     Style::set<Style::LevelTimestampMessage>();
     auto s { std::make_shared<std::ostringstream>() };
-    Backend::set<Backend::OStream>(std::static_pointer_cast<std::ostream>(s), true);
+    Backend::set<Backend::OStream>(Utils::up_cast<std::ostream>(s), true);
 
     // Test each level
     UnitTest::test_each_level(s, test, STR);
