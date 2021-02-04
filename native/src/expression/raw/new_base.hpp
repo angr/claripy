@@ -64,7 +64,7 @@ namespace Expression {
             const Hash::Hash id;
 
             /** A set of annotations applied onto this Expression */
-            const std::vector<std::shared_ptr<Annotation::Base>> annotations;
+            const std::vector<std::shared_ptr<const Annotation::Base>> annotations;
 
           protected:
             /************************************************/
@@ -75,7 +75,7 @@ namespace Expression {
              *  ans is consumed via move semantics in the constructor source file
              *  It is not passed as a forwarding reference due to limitations with autogen
              */
-            explicit Base(const Hash::Hash h, std::vector<std::shared_ptr<Annotation::Base>> &ans);
+            explicit Base(const Hash::Hash h, std::vector<std::shared_ptr<const Annotation::Base>> &ans);
         };
 
     } // namespace Raw

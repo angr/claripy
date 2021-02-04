@@ -48,7 +48,7 @@ import os
 # Non-path Globals
 templates = {}
 ctor_args = {
-    'Base' : [ 'const Hash::Hash', 'std::vector<std::shared_ptr<Annotation::Base>> &' ],
+    'Base' : [ 'const Hash::Hash', 'std::vector<std::shared_ptr<const Annotation::Base>> &' ],
     'CUSized' : [ 'Constants::UInt' ],
     'Symbolic' : [],
     'Concrete' : [],

@@ -7,6 +7,7 @@
 
 #include "../../macros.hpp"
 #include "../../utils.hpp"
+#include "../../hash.hpp"
 
 #include <memory>
 
@@ -37,13 +38,14 @@
      *  We expose the constructor so that the cache may emplace new objects, which is             \
      *  faster than copying them in                                                               \
      */                                                                                           \
-    friend class ::Utils::Cache<Hash::Hash, ::Expression::Raw::Base>;
+    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>;
 
 
 /** Used to initalize an abstract expression that uses the implict constructors
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_IMPLICIT_CTOR(CLASS)                                         \
+    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>; \
   public:                                                                                         \
     DEFINE_TYPEID                                                                                 \
   protected:                                                                                      \
@@ -62,6 +64,7 @@
  *  This macro will end in a 'private' state
  */
 #define EXPRESSION_RAW_ABSTRACT_INIT_CUSTOM_CTOR(CLASS)                                           \
+    friend class ::Utils::Cache<::Hash::Hash, ::Expression::Raw::Base>; \
   public:                                                                                         \
     DEFINE_TYPEID                                                                                 \
   protected:                                                                                      \

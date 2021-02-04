@@ -6,6 +6,7 @@
 #define __EXPRESSION_RAW_CUSIZED_HPP__
 
 #include "macros.hpp"
+#include "base.hpp"
 
 #include "../../constants.hpp"
 
