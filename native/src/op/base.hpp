@@ -7,8 +7,7 @@
 
 #include "macros.hpp" // For subclasses
 
-#include "../cuid.hpp"
-#include "../hash.hpp"
+#include "../factory.hpp"
 
 
 namespace Op {
@@ -16,11 +15,12 @@ namespace Op {
     /** Base operation expression
      *  All op expressions must subclass this
      */
-    class Base : public Hash::Hashed, public CUID {
+    class Base : public Factory::FactoryMade {
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       protected:
         /** Constructor */
         explicit inline Base(const Hash::Hash &h, const Constants::UInt cuid) noexcept
-            : Hashed { h }, CUID { cuid } {}
+            : FactoryMade { h, cuid } {}
 
         /** Virtual destructor */
         inline ~Base() noexcept override = 0;

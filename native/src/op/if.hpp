@@ -11,10 +11,10 @@
 
 
 // Forward declarations
-namespace Expression {
+namespace Expression::Raw {
     class Base;
     class Bool;
-} // namespace Expression
+} // namespace Expression::Raw
 
 namespace Op {
 
@@ -23,17 +23,17 @@ namespace Op {
         OP_FINAL_INIT(If)
       public:
         /** If condition */
-        const Factory::Ptr<Expression::Bool> cond;
+        const Factory::Ptr<Expression::Raw::Bool> cond;
         /** If true expression */
-        const Factory::Ptr<Expression::Base> if_true;
+        const Factory::Ptr<Expression::Raw::Base> if_true;
         /** If false expression */
-        const Factory::Ptr<Expression::Base> if_false;
+        const Factory::Ptr<Expression::Raw::Base> if_false;
 
       private:
         /** Protected constructor */
-        explicit inline If(const Hash::Hash &h, const Factory::Ptr<Expression::Bool> &c,
-                           const Factory::Ptr<Expression::Base> &if_tru,
-                           const Factory::Ptr<Expression::Base> &if_fal)
+        explicit inline If(const Hash::Hash &h, const Factory::Ptr<Expression::Raw::Bool> &c,
+                           const Factory::Ptr<Expression::Raw::Base> &if_tru,
+                           const Factory::Ptr<Expression::Raw::Base> &if_fal)
             : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {}
     };
 
