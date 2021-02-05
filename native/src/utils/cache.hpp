@@ -23,12 +23,15 @@
 namespace Utils {
 
     /** A generic cache class that
-     *  This maps a Key to std::weak_ptr<Value>
+     *  This maps a Key to std::weak_ptr<const Value>
      *  This class will occassionally gc dead weak_ptr's in the cache
      *  @todo We could have a TLS deletion queue if we want to increase efficiency
      */
     template <typename Hash, typename Cached> class Cache {
         ENABLE_UNITTEST_FRIEND_ACCESS
+
+        /** The pointer type publically exposed */
+        using Ptr = std::shared_ptr<const Cached>;
 
         /** Abbreviate the type this is */
         using Self = Cache<Hash, Cached>;
@@ -38,7 +41,7 @@ namespace Utils {
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
 
         /** The type of the cache used internally */
-        using CacheMap = std::map<Hash, std::weak_ptr<Cached>>;
+        using CacheMap = std::map<Hash, std::weak_ptr<const Cached>>;
 
         /** If hash h is not in the cache, construct a Cached from the given args
          *  Return a shared pointer to the newly constructed Cached, and cache it
@@ -53,12 +56,10 @@ namespace Utils {
          *  @param args: The arguments given to Cached's constructor
          */
         template <typename Derived, typename... Args>
-        std::shared_ptr<Cached> find_or_emplace(const Hash &h, Args &&...args) {
+        Ptr find_or_emplace(const Hash &h, Args &&...args) {
             // Static check
-            static_assert(std::is_base_of_v<Cached, Derived>, "Derived must derive from Base");
-            // Sanity check
-            static_assert(std::is_base_of_v<Cached, TransferConst<Derived, Cached>>,
-                          "Derived must derive from Base");
+            static_assert(is_ancestor<Cached, Derived>,
+                          "Derived must derive from Base or be Base");
 
             // Create locked scope
             {
@@ -75,14 +76,14 @@ namespace Utils {
             // in exchange we have to pass a custom deleter in case Cached has non-public
             // destructor
             // We don't know how long the constructor will take so we do it in an unlocked context
-            auto ret {
+            Ptr ret {
                 // Pointer up cast
                 Utils::up_cast<Cached>(
                     // Construct this before casting to avoid slicing
                     // It also avoids the need for a custom deleter to deal with access controls
-                    std::shared_ptr<TransferConst<Derived, Cached>>(
+                    std::shared_ptr<const Derived> {
                         // We use new because make_shared might not have access permissions
-                        new TransferConst<Derived, Cached>(h, std::forward<Args>(args)...)))
+                        new Derived { std::forward<Args>(args)... } })
             };
 
             // Create locked scope
@@ -110,7 +111,7 @@ namespace Utils {
          *  On success returns a shared pointer to the value
          *  On failure, returns a null shared pointer
          */
-        std::shared_ptr<Cached> unsafe_find(const Hash &h) {
+        Ptr unsafe_find(const Hash &h) {
             if (auto lookup { this->cache.find(h) }; lookup != this->cache.end()) {
                 // If the weak_ptr is valid, return it
                 if (auto locked { lookup->second.lock() }; locked) {

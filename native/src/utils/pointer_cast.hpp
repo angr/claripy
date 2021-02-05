@@ -9,6 +9,7 @@
 
 #include "affirm.hpp"
 #include "error.hpp"
+#include "is_ancestor.hpp"
 #include "private/pointer_cast.hpp"
 
 #include <memory>
@@ -20,14 +21,14 @@ namespace Utils {
     /** An up cast */
     template <typename Out, typename In>
     constexpr inline auto up_cast(const std::shared_ptr<In> &in) noexcept {
-        static_assert(std::is_base_of_v<Out, In>, "up_cast passed invalid <In, Out> type pair");
+        static_assert(is_ancestor<Out, In>, "up_cast passed invalid <In, Out> type pair");
         return Private::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** A dynamic down cast */
     template <typename Out, typename In>
     constexpr inline auto dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
-        static_assert(std::is_base_of_v<In, Out>,
+        static_assert(is_ancestor<In, Out>,
                       "dynamic_down_cast passed invalid <In, Out> type pair");
         return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
@@ -69,8 +70,7 @@ namespace Utils {
     }
 #else
         noexcept {
-        static_assert(std::is_base_of_v<In, Out>,
-                      "static_down_cast passed invalid <In, Out> type pair");
+        static_assert(is_ancestor<In, Out>, "static_down_cast passed invalid <In, Out> type pair");
         return Private::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 #endif

@@ -24,7 +24,7 @@ namespace Utils {
         // Transfer constness
         using TrueDerived = TransferConst<Derived, Base>;
         // Static verification
-        static_assert(std::is_base_of_v<Base, TrueDerived>, "Derived must derive from Base");
+        static_assert(is_ancestor<Base, TrueDerived>, "Derived must derive from Base");
         if constexpr (std::is_same_v<Base, TrueDerived>) {
             return std::make_shared<TrueDerived>(std::forward<Args>(args)...);
         }
