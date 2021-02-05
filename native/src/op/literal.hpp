@@ -10,10 +10,14 @@
 #include "../csized.hpp"
 #include "../utils.hpp"
 
+#include <cstddef>
 #include <variant>
 
-#include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/gmp.hpp>
+/** @todo */
+#ifdef ENABLE_MPZ
+    #include <boost/multiprecision/cpp_int.hpp>
+    #include <boost/multiprecision/gmp.hpp>
+#endif
 
 
 namespace Op {
@@ -22,34 +26,47 @@ namespace Op {
     class Literal final : public Base, public CSized {
         OP_FINAL_INIT(Literal)
       public:
+#ifdef ENABLE_MPZ
         /** Value type */
         using ValueT = std::variant<int_fast64_t, boost::multiprecision::int128_t,
                                     boost::multiprecision::mpz_int>;
 
         /** Representation */
         const ValueT value;
+#else
+        /** Representation */
+        const std::string value;
+#endif
 
       private:
         /** Private constructor
          *  @todo figure out how this will work
          *  @todo Intern strings
          */
-        explicit inline Literal(const Hash::Hash &h, const std::string &data,
+        explicit inline Literal(const Hash::Hash &h, const Constants::CCSC data,
                                 const Constants::UInt size_)
-            : Base { h, static_cuid }, CSized { size_ }, value { create_value(data, size_) } {}
+#ifndef ENABLE_MPZ
+            : Base { h, static_cuid }, CSized { size_ }, value { data, size_ } {
+        }
+#else
+            : Base { h, static_cuid }, CSized { size_ }, value { create_value(data, size_) } {
+        }
 
         /** Used by the constructor to initalize value */
-        static inline ValueT create_value(const std::string &rdata, Constants::UInt size_) {
+        static inline ValueT create_value(const Constants::CCSC data, Constants::UInt size_) {
             using Usage = Utils::Error::Unexpected::IncorrectUsage;
             namespace MP = boost::multiprecision;
             // Constants
-            static const constexpr Constants::UInt max64 = sizeof(int_fast64_t);
-            static const constexpr Constants::UInt max128 = 128;
+            static const constexpr Constants::UInt max64 =
+                sizeof(int_fast64_t);                               // >= 64 / CHAR_BIT
+            static const constexpr Constants::UInt max128 = 128ULL; // exactly 128 / CHAR_BIT
             // Construct differently depending on size
             if (size_ <= max64) {
-                Utils::affirm<Usage>(rdata.size() == (max64 / CHAR_BIT),
-                                     "Literal constructor with size ", size_,
-                                     " given a string with less than 8 bytes in it");
+                Utils::affirm<Usage>(data == max64, "Literal constructor with size ", size_,
+                                     " given a string with only ", rdata.size(),
+                                     " bytes in it."
+                                     " The minimum amount allowed is: ",
+                                     max64);
                 Constants::CCSC data = rdata.data();
                 return { Utils::type_pun<int_fast64_t, char, true>(data) }; // Used with caution
             }
@@ -61,6 +78,7 @@ namespace Op {
                 return { MP::mpz_int(rdata) };
             }
         }
+#endif
     };
 
 } // namespace Op

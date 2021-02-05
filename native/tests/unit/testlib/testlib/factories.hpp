@@ -19,7 +19,10 @@ namespace UnitTest::TestLib::Factories {
 
     /** Create a simple Literal */
     inline Factory::Ptr<Op::Literal> literal(const Constants::Int i = 0) {
-        Constants::CCSC cs { reinterpret_cast<Constants::CCSC>(&i) }; // NOLINT
+        const constexpr Constants::UInt size { sizeof(Constants::Int) };
+        char buf[size];                                                // NOLINT
+        std::memcpy(buf, reinterpret_cast<Constants::CCSC>(&i), size); // NOLINT
+        Constants::CCSC cs { buf };
         return Op::factory<Op::Literal>(cs, Constants::UInt { sizeof(i) });
     }
 

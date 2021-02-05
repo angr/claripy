@@ -1,0 +1,11 @@
+# Add current directory's source files
+target_sources("${CLARICPP}" PRIVATE
+	symbolic.cpp
+	concrete.cpp
+	cusized.cpp
+	base.cpp
+)
+
+# Add type and op sources
+add_subdirectory(type)
+add_subdirectory(op)

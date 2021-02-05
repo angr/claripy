@@ -23,6 +23,7 @@ namespace Factory {
         /** The factory cache
          *  Note: This is not a static variable of the factory function because
          *  we want to to make it agnostic of cv qualifiers
+         *  It also makes testing easier
          */
         template <typename Base> Utils::Cache<Hash::Hash, const Base> inline cache {};
     } // namespace Private
@@ -48,7 +49,7 @@ namespace Factory {
 
         const auto ret { // Use the cv-unqualified cache
                          Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
-                             hash, std::forward<Args>(args)...)
+                             hash, hash, std::forward<Args>(args)...)
         };
         if constexpr (std::is_same_v<Base, T>) {
             return ret;

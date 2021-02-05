@@ -6,6 +6,8 @@
 #ifndef __UTILS_ISANCESTOR_HPP__
 #define __UTILS_ISANCESTOR_HPP__
 
+#include "transfer_const.hpp"
+
 #include <type_traits>
 
 
@@ -14,7 +16,7 @@ namespace Utils {
     /** Return true if Derived is Base or subclasses Base */
     template <typename Base, typename Derived>
     const constexpr bool is_ancestor =
-        std::is_same_v<Base, Derived> || std::is_base_of<Base.Derirved>;
+        std::is_same_v<TransferConst<Base, Derived>, Derived> || std::is_base_of_v<Base, Derived>;
 
 } // namespace Utils
 
