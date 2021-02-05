@@ -16,7 +16,7 @@
 /** Local: A macro to declare trivial subclasses of BASE */
 #define EXPRESSION_SUBCLASS(CLASS, BASE, CTOR_MIDDLE)                                                    \
     /** This class is an Expression subclass */                                                          \
-    class CLASS : public BASE {                                                                          \
+    class CLASS final : public BASE {                                                                          \
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expression::Base)                                        \
       public:                                                                                            \
         /** Virtual destructor */                                                                        \
@@ -24,7 +24,7 @@
                                                                                                          \
       private:                                                                                           \
         /** Protected Constructor */                                                                     \
-                explicit inline CLASS(const Hash::Hash h, const bool sym, Factory::Ptr<Op::Base> && op_, \
+        explicit inline CLASS(const Hash::Hash h, const bool sym, Factory::Ptr<Op::Base> && op_, \
 			AnnotationVec && annotations_ CTOR_MIDDLE {} \
         /* Disable other methods of construction */                                               \
         SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                       \

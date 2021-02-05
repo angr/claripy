@@ -69,7 +69,6 @@ void gc() {
     // Construct another base to trigger a garbage collection
     Utils::Log::debug("Constructing one more expression");
     (void) cache.find_or_emplace<Constants::UInt>(n, n);
-    n += 1;
 
     // Verify cache size and gc_size
     UNITTEST_ASSERT(ut_cache.size() == hold.size() + 1);

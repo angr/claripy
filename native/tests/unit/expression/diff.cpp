@@ -4,8 +4,6 @@
  */
 #include "testlib.hpp"
 
-#include <set>
-
 
 // For brevity
 using namespace Expression;
@@ -40,9 +38,9 @@ void diff() {
 
     // Verify unique pointers
 
-    std::set<Constants::CTSC<Base>> ptrs;
+    std::set<Base*> ptrs;
     for (const auto &i : objs) {
-        ptrs.insert(i.get());
+        ptrs.insert(const_cast<Base*>(i.get())); // NOLINT
     }
 
     UNITTEST_ASSERT(ptrs.size() == objs.size())

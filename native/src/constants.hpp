@@ -27,10 +27,16 @@ namespace Constants {
     using UInt = uint_fast64_t;
 
     /** A shortcut for a const Type * const */
+    template <typename T> using TSC = T * const;
+
+    /** A shortcut for a const Type * const */
     template <typename T> using CTS = const T *;
 
     /** A shortcut for a const Type * const */
     template <typename T> using CTSC = CTS<T> const;
+
+    /** An abreviation for const char * */
+    using CSC = TSC<char>;
 
     /** An abreviation for const char * */
     using CCS = CTS<char>;

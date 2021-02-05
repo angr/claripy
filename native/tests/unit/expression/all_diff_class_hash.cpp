@@ -12,6 +12,12 @@ using namespace Expression;
 using namespace UnitTest::TestLib;
 
 
+/** Add p's pointer to s */
+template <typename T>
+void insert(std::set<Base*>& s, const Factory::Ptr<T>& p) {
+	s.insert(const_cast<Base* const>(static_cast<const Base * const>(p.get()))); // NOLINT
+}
+
 /** Each construction should have a unique pointer and hash */
 void all_diff_class_hash() {
 
@@ -36,13 +42,13 @@ void all_diff_class_hash() {
 
     // Verify unique pointers
 
-    std::set<Constants::CTSC<Base>> ptrs;
-    ptrs.insert(a1.get());
-    ptrs.insert(a2.get());
-    ptrs.insert(a3.get());
-    ptrs.insert(a4.get());
-    ptrs.insert(a5.get());
-    ptrs.insert(a6.get());
+    std::set<Base*> ptrs;
+    insert(ptrs, a1);
+    insert(ptrs, a2);
+    insert(ptrs, a3);
+    insert(ptrs, a4);
+    insert(ptrs, a5);
+    insert(ptrs, a6);
 
     UNITTEST_ASSERT(ptrs.size() == 6)
 }
