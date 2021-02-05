@@ -43,7 +43,7 @@ void same() {
 
     std::set<Constants::CTSC<Base>> ptrs;
     for (const auto &i : objs) {
-        hashes.insert(i.get());
+        ptrs.insert(i.get());
     }
 
     UNITTEST_ASSERT(ptrs.size() == objs.size() / 2)

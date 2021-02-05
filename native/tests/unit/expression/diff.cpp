@@ -27,12 +27,11 @@ void diff() {
         // Round 2
         construct<Int>(1_i), construct<Bool>(1_i), construct<String>(1_i), construct<FP>(1_i),
         construct<BV>(1_i), construct<VS>(1_i)
-    }
+    };
 
     // Verify unique hashes
 
-    std::set<Hash::Hash>
-        hashes;
+    std::set<Hash::Hash> hashes;
     for (const auto &i : objs) {
         hashes.insert(i->hash);
     }
@@ -43,7 +42,7 @@ void diff() {
 
     std::set<Constants::CTSC<Base>> ptrs;
     for (const auto &i : objs) {
-        hashes.insert(i.get());
+        ptrs.insert(i.get());
     }
 
     UNITTEST_ASSERT(ptrs.size() == objs.size())
