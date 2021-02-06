@@ -51,11 +51,10 @@ namespace Factory {
         template <typename Base, typename T, typename... Args>
         [[gnu::always_inline]] static constexpr void static_type_check() noexcept {
             // Inheretence
-            static_assert(std::is_base_of_v<FactoryMade, Base>,
+            static_assert(Utils::is_ancestor<FactoryMade, Base>,
                           "Base must derive from FactoryMade");
-            static_assert(std::is_base_of_v<FactoryMade, Base>,
-                          "Base must derive from FactoryMade");
-            static_assert(std::is_base_of_v<Base, T>, "T must derive from Base");
+            static_assert(Utils::is_ancestor<Base, T>,
+                          "T must derive from Base"); // Allow equality
             // Verify static_cuid
             static_assert(Private::has_static_cuid_v<T>,
                           "Factory cannot construct anything without a static_cuid");

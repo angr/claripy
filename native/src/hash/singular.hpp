@@ -58,7 +58,7 @@ namespace Hash {
               // Require to prevent infinite recursion
               std::enable_if_t<!std::is_same_v<Hashed, Internal>, int> = 0,
               // Ensure Internal derives from Hashed
-              std::enable_if_t<std::is_base_of_v<Hashed, Internal>, int> = 0>
+              std::enable_if_t<Utils::is_ancestor<Hashed, Internal>, int> = 0> // Allows primitives
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return singular(Utils::up_cast<Hashed>(h));

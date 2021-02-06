@@ -47,6 +47,7 @@ namespace Factory {
         // Note: we have these two as distinct statements to ensure hash is done first
         // As the std::forward may move args
 
+        // If the Factory::Ptr and Cache::Ptr are not implicitly convertible, this should warn
         const auto ret { // Use the cv-unqualified cache
                          Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
                              hash, hash, std::forward<Args>(args)...)

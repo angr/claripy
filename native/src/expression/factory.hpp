@@ -18,7 +18,7 @@ namespace Expression {
      *  @todo update eager_backends functionality
      */
     template <typename T, typename... Args> inline Factory::Ptr<T> factory(Args &&...args) {
-        static_assert(std::is_base_of_v<Base, T>, "T must derive from Expression::Base");
+        static_assert(Utils::is_ancestor<Base, T>, "T must derive from Expression::Base");
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 

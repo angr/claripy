@@ -78,7 +78,7 @@ namespace Utils {
             // We don't know how long the constructor will take so we do it in an unlocked context
             Ptr ret {
                 // Pointer up cast
-                Utils::up_cast<Cached>(
+                Utils::up_cast<const Cached>(
                     // Construct this before casting to avoid slicing
                     // It also avoids the need for a custom deleter to deal with access controls
                     std::shared_ptr<const Derived> {
