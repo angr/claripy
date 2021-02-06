@@ -3,7 +3,6 @@
  * \ingroup unittest
  */
 #include "testlib.hpp"
-#include "utils.hpp"
 
 
 /** Verify the file line hash macros work */
