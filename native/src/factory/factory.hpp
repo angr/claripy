@@ -52,7 +52,7 @@ namespace Factory {
                          Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
                              hash, hash, std::forward<Args>(args)...)
         };
-        if constexpr (std::is_same_v<Base, T>) {
+        if constexpr (Utils::is_same_ignore_const<Base, T>) {
             return ret;
         }
         else {

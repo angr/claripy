@@ -9,6 +9,7 @@
 #define __UTILS_PRIVATE_OSTREAMHELPERCONVERSIONS_HPP__
 
 #include "../../macros.hpp"
+#include "../is_same.hpp"
 #include "../unique.hpp"
 
 #include <ostream>
@@ -45,7 +46,7 @@ namespace Utils::Private {
         /** Determine the return type of test<T>(nullptr) */
         using Ret = decltype(test<T>(nullptr));
         /** Compare the return type to determine if the << operator is defined */
-        static constexpr bool value { !std::is_same_v<Unique, Ret> };
+        static constexpr bool value { !is_exactly_same<Unique, Ret> };
     };
 
 

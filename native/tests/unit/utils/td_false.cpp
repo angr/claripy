@@ -8,7 +8,7 @@
 
 // Invoking this function with the default template argument should compile
 template <typename T = bool> void check() {
-    if constexpr (std::is_same_v<T, int *>) {
+    if constexpr (Utils::is_exactly_same<T, int *>) {
         // This should not fail compilation because of TD::false_
         static_assert(Utils::TD::false_<T>);
     }

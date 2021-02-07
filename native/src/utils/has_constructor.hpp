@@ -7,6 +7,7 @@
 #ifndef __UTILS_HASCONSTRUCTOR_HPP__
 #define __UTILS_HASCONSTRUCTOR_HPP__
 
+#include "is_same.hpp"
 #include "unique.hpp"
 
 
@@ -26,7 +27,7 @@ namespace Utils {
         /** The return type of the selected overload */
         using Ret = decltype(test<T>(nullptr));
         /** Compare the return types to determine if T(Args...) as resolvable and invokable */
-        static constexpr bool value { !std::is_same_v<Unique, Ret> };
+        static constexpr bool value { !is_exactly_same<Unique, Ret> };
     };
 
     /** A shortcut for checking of T(Args...) is visible and exists */

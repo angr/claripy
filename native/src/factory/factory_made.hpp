@@ -58,7 +58,7 @@ namespace Factory {
             // Verify static_cuid
             static_assert(Private::has_static_cuid_v<T>,
                           "Factory cannot construct anything without a static_cuid");
-            static_assert(std::is_same_v<const Constants::UInt, decltype(T::static_cuid)>,
+            static_assert(Utils::is_exactly_same<const Constants::UInt, decltype(T::static_cuid)>,
                           "T::static_cuid must be of type Constants::UInt");
             // Constructor
             // Note: We use has_constructor to pass if the desired constructor is private

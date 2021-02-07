@@ -21,11 +21,11 @@ namespace Utils {
      */
     template <typename Base, typename Derived, typename... Args>
     inline std::shared_ptr<Base> make_derived_shared(Args &&...args) {
+        // Static verification
+        static_assert(is_ancestor<Base, Derived>, "Derived must derive from Base");
         // Transfer constness
         using TrueDerived = TransferConst<Derived, Base>;
-        // Static verification
-        static_assert(is_ancestor<Base, TrueDerived>, "Derived must derive from Base");
-        if constexpr (std::is_same_v<Base, TrueDerived>) {
+        if constexpr (is_same_ignore_const<Base, Derived>) {
             return std::make_shared<TrueDerived>(std::forward<Args>(args)...);
         }
         else {
