@@ -27,7 +27,7 @@ namespace Hash {
         (static_cast<void>(hashes[++i] = singular(args)), ...);
 #ifdef DEBUG
         // Verify no memory corruption
-        Utils::affirm<Utils::Error::Unexpected::Unknown>(size == i,
+        Utils::affirm<Utils::Error::Unexpected::Unknown>(size == i + 1, WHOAMI_WITH_SOURCE
                                                          "Incorrect value of i within Hash::hash");
 #endif
         // Return hash

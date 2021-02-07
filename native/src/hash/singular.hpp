@@ -108,7 +108,7 @@ namespace Hash {
         }
 #ifdef DEBUG
         // Verify no memory corruption
-        Utils::affirm<Utils::Error::Unexpected::Unknown>(v.size() == i,
+        Utils::affirm<Utils::Error::Unexpected::Unknown>(v.size() == i + 1, WHOAMI_WITH_SOURCE
                                                          "Incorrect value of i within Hash::hash");
 #endif
         // Return hash
