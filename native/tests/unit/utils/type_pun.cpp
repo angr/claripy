@@ -21,14 +21,14 @@ void type_pun() {
                   __FILE__ " needs a shorter message.");
 
     // Create p
-    UnsafePun p;
-    p.i = 0;
+    UnsafePun p; // NOLINT
+    p.i = 0;     // NOLINT
 
     // Safe pun
-    p.i = Utils::type_pun<Constants::Int, char, true>(msg);
+    p.i = Utils::type_pun<Constants::Int, char, true>(msg); // NOLINT
 
     // Use unsafe pun in controlled context to verify safe pun
-    UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0)
+    UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0) // NOLINT
 }
 
 // Define the test
