@@ -47,7 +47,7 @@ namespace Error {
             using Base::Base;
 
             /** Virtual destructor */
-            inline virtual ~Operation() noexcept = default;
+            inline virtual ~Operator() noexcept = default;
         };
 
         // Final classes
