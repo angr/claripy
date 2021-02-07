@@ -98,6 +98,9 @@ namespace Utils {
 
 } // namespace Utils
 
+/** A namespace used for the CUID related members */
+namespace CUID {}
+
 /** A namespace used for the factory directory */
 namespace Factory {
 
