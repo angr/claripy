@@ -13,7 +13,7 @@ namespace Utils {
      *  But since V is guaranteed to be evaluated, any compiler should
      *  eval const_eval at compile time assuming optimizations are enabled
      */
-    template <typename T, T V> const constexpr T const_eval { V };
+    template <typename T, T V> inline const constexpr T const_eval { V };
 
 } // namespace Utils
 

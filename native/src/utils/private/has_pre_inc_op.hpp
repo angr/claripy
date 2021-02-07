@@ -26,11 +26,11 @@ namespace Utils::Private {
         /** Determine the return type of test<T>(nullptr) */
         using Ret = decltype(test<T>(nullptr));
         /** Compare the return type to determine if the << operator is defined */
-        static constexpr bool value { !is_exactly_same<Unique, Ret> };
+        static UTILS_CCBOOL value { !is_exactly_same<Unique, Ret> };
     };
 
     /** A bool that determines if T has the pre ++ operator is defined */
-    template <typename T> constexpr bool has_pre_inc_op { HasPreIncOp<T>::value };
+    template <typename T> UTILS_ICCBOOL has_pre_inc_op { HasPreIncOp<T>::value };
 
 } // namespace Utils::Private
 

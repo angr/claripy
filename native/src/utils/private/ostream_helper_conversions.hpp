@@ -46,13 +46,13 @@ namespace Utils::Private {
         /** Determine the return type of test<T>(nullptr) */
         using Ret = decltype(test<T>(nullptr));
         /** Compare the return type to determine if the << operator is defined */
-        static constexpr bool value { !is_exactly_same<Unique, Ret> };
+        static UTILS_CCBOOL value { !is_exactly_same<Unique, Ret> };
     };
 
 
     /** True if and only if T is a strong enum with no << operator defined */
     template <typename T>
-    constexpr bool needs_ostream_conversion { IsStrongEnum<T>::value && !HasStreamOp<T>::value };
+    UTILS_ICCBOOL needs_ostream_conversion { IsStrongEnum<T>::value && !HasStreamOp<T>::value };
 
 
     /** If T is a strong enum with no stream operator defined, static cast to its underlying type

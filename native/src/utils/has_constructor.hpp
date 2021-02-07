@@ -27,12 +27,12 @@ namespace Utils {
         /** The return type of the selected overload */
         using Ret = decltype(test<T>(nullptr));
         /** Compare the return types to determine if T(Args...) as resolvable and invokable */
-        static constexpr bool value { !is_exactly_same<Unique, Ret> };
+        static UTILS_CCBOOL value { !is_exactly_same<Unique, Ret> };
     };
 
     /** A shortcut for checking of T(Args...) is visible and exists */
     template <typename T, typename... Args>
-    const constexpr bool has_constructor { HasConstructor<T, Args...>::value };
+    UTILS_ICCBOOL has_constructor { HasConstructor<T, Args...>::value };
 
 } // namespace Utils
 

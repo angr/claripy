@@ -29,8 +29,7 @@ namespace Utils {
         // Error checking
         if constexpr (!InIsArray) {
             // The actual error condition
-            const constexpr bool err = sizeof(Out) <= sizeof(In);
-            static_assert(err && TD::true_<Out, In>,
+            static_assert((sizeof(Out) <= sizeof(In)) && TD::true_<Out, In>,
                           "type_pun will not pun to a size larger than its input");
         }
         // Type pun

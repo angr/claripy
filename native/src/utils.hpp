@@ -24,6 +24,7 @@
 #include "utils/is_in.hpp"
 #include "utils/is_same.hpp"
 #include "utils/log.hpp"
+#include "utils/macros.hpp"
 #include "utils/make_derived_shared.hpp"
 #include "utils/max.hpp"
 #include "utils/ostream.hpp"

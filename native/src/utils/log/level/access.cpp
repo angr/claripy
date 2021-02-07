@@ -17,7 +17,7 @@ using Lvl = Level::Level;
 
 #ifdef CONSTANT_LOG_LEVEL
 
-static constexpr Lvl lvl { Level::default_ };
+static const constexpr Lvl lvl { Level::default_ };
 
 constexpr Lvl Level::get() noexcept {
     return lvl;
