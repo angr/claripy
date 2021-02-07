@@ -25,7 +25,7 @@ void type_pun() {
     p.i = 0;
 
     // Safe pun
-    p.i = Utils::type_pun<Constants::Int>(msg);
+    p.i = Utils::type_pun<Constants::Int, true>(msg);
 
     // Use unsafe pun in controlled context to verify safe pun
     UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0)

@@ -25,14 +25,33 @@ namespace Error {
             using Claricpp::Claricpp;
 
             /** Virtual destructor */
-            inline virtual ~Base() noexcept;
+            inline virtual ~Base() noexcept = default;
         };
 
-        /** Default virtual destructor */
-        Base::~Base() noexcept = default;
+        // Intermediate classes
 
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Balancer, Base)
+        /** Expression Balance exception */
+        struct Balancer : public Base {
+
+            /** Inherit constructors */
+            using Base::Base;
+
+            /** Virtual destructor */
+            inline virtual ~Balancer() noexcept = default;
+        };
+
+        /** Expression Balance exception */
+        struct Operator : public Base {
+
+            /** Inherit constructors */
+            using Base::Base;
+
+            /** Virtual destructor */
+            inline virtual ~Operation() noexcept = default;
+        };
+
+        // Final classes
+
         /** @todo document */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(BalancerUnsat, Balancer)
         /** @todo document */
@@ -41,8 +60,6 @@ namespace Error {
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(Value, Base)
         /** @todo document */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(Size, Base)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Operation, Base)
         /** @todo document */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(Replacement, Base)
         /** @todo document */

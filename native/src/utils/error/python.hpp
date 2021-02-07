@@ -26,12 +26,9 @@ namespace Utils::Error {
             /** Inherit constructors */
             using Claricpp::Claricpp;
 
-            /** Virtual destructor */
-            inline virtual ~Base() noexcept;
+            /** Default virtual destructor */
+            inline virtual ~Base() noexcept = default;
         };
-
-        /** Default virtual destructor */
-        Base::~Base() noexcept = default;
 
         /** A custom claripy exception */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(Claripy, Base)

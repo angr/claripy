@@ -24,9 +24,9 @@ namespace Expression {
                      std::forward<AnnotationVec>(annotations_) },
               CSized { size_ } {
 #ifdef DEBUG
-            if (const auto cast { Utils::dynamic_pointer_cast<CSized>(op_) }; cast) {
+            if (const auto cast { Utils::dynamic_down_cast<CSized>(op_) }; cast) {
                 using Err = Utils::Error::Unexpected::Base;
-                Utils::affirm<Err>(op_.size == this->size,
+                Utils::affirm<Err>(op_->size == this->size,
                                    "CSized Op size and Bits size mismatch");
             }
 #endif

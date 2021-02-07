@@ -18,13 +18,12 @@ using Sty = Style::Base;
 
 // File local variables
 static ThreadSafeAccess<const Sty> access(std::make_shared<const Style::Default>());
-using Ptr = decltype(access)::Ptr;
 
 
-void Style::Private::set(Ptr &&ptr) {
-    access.set_shared_ptr_move(std::forward<Ptr>(ptr));
+void Style::Private::set(std::shared_ptr<const Base> &&ptr) {
+    access.set_shared_ptr_move(std::forward<std::shared_ptr<const Base>>(ptr));
 }
 
-Ptr Style::get() {
+std::shared_ptr<const Style::Base> Style::get() {
     return access.get();
 }

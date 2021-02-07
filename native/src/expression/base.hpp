@@ -43,11 +43,12 @@ namespace Expression {
                              Factory::Ptr<Op::Base> &&op_, AnnotationVec &&annotations_) noexcept
             : FactoryMade { h, c }, symbolic { sym }, op { op_ }, annotations { annotations_ } {
 #ifdef DEBUG
-            if (const auto cast { Utils::dynamic_pointer_cast<Symbol>(op_) }; cast) {
+            foobar(); // TODO
+            if (const auto cast { Utils::dynamic_down_cast<Symbol>(op_) }; cast) {
                 using Err = Utils::Error::Unexpected::IncorrectUsage;
                 Utils::affirm<Err>(symbolic, "Literal Op may not be symbolic");
             }
-            else if (const auto cast { Utils::dynamic_pointer_cast<Literal>(op_) }; cast) {
+            else if (const auto cast { Utils::dynamic_down_cast<Literal>(op_) }; cast) {
                 using Err = Utils::Error::Unexpected::IncorrectUsage;
                 Utils::affirm<Err>(!symbolic, "Literal Op may not be symbolic");
             }

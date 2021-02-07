@@ -6,6 +6,7 @@
 #ifndef __UTILS_FNV1A_HPP__
 #define __UTILS_FNV1A_HPP__
 
+#include "is_same.hpp"
 #include "pow.hpp"
 #include "type_dependent_constant.hpp"
 #include "unconstructable.hpp"
@@ -71,7 +72,7 @@ namespace Utils {
         static constexpr Constants::UInt hash(CInput s, const Constants::UInt len) {
             static_assert(sizeof(Size) >= sizeof(Type),
                           "FNV1a::hash given a size too small for the given Type");
-            if constexpr (Utils::is_same_ignore_cv<Size, u64T>) {
+            if constexpr (is_same_ignore_cv<Size, u64T>) {
                 return u64(s, len);
             }
             else if constexpr (Utils::is_same_ignore_cv<Size, u32T>) {

@@ -18,13 +18,12 @@ using Bk = Backend::Base;
 
 // Create a thread safe backend wrapper
 static ThreadSafeAccess<const Bk> access(std::make_shared<const Backend::Default>());
-using Ptr = decltype(access)::Ptr;
 
 
-void Backend::Private::set(Ptr &&ptr) {
-    access.set_shared_ptr_move(std::forward<Ptr>(ptr));
+void Backend::Private::set(std::shared_ptr<const Base> &&ptr) {
+    access.set_shared_ptr_move(std::forward<std::shared_ptr<const Base>>(ptr));
 }
 
-Ptr Backend::get() {
+std::shared_ptr<const Backend::Base> Backend::get() {
     return access.get();
 }

@@ -6,6 +6,8 @@
 #ifndef __UTILS_TYPEDEPENDENTCONSTANT_HPP__
 #define __UTILS_TYPEDEPENDENTCONSTANT_HPP__
 
+#include "macros.hpp"
+
 
 namespace Utils::TD {
 

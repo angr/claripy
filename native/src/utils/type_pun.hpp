@@ -31,6 +31,7 @@ namespace Utils {
             // The actual error condition
             static_assert((sizeof(Out) <= sizeof(In)) && TD::true_<Out, In>,
                           "type_pun will not pun to a size larger than its input");
+            throw 0; // TODO
         }
         // Type pun
         Out ret;

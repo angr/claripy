@@ -28,8 +28,8 @@ namespace Utils::Error {
         template <typename... Args>
         explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
-        /** Virtual destructor */
-        inline virtual ~Claricpp() noexcept;
+        /** Default virtual destructor */
+        inline virtual ~Claricpp() noexcept = default;
 
         /** Message getter */
         inline const char *what() const noexcept override final { return msg.c_str(); }
@@ -41,9 +41,6 @@ namespace Utils::Error {
         /** Allow all error factories friend access */
         template <typename T, typename S> friend T factory(const S msg);
     };
-
-    /** Default virtual destructor */
-    Claricpp::~Claricpp() noexcept = default;
 
 } // namespace Utils::Error
 
