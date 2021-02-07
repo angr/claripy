@@ -71,10 +71,10 @@ namespace Utils {
         static constexpr Constants::UInt hash(CInput s, const Constants::UInt len) {
             static_assert(sizeof(Size) >= sizeof(Type),
                           "FNV1a::hash given a size too small for the given Type");
-            if constexpr (std::is_same_v<Size, u64T>) {
+            if constexpr (Utils::is_same_ignore_cv<Size, u64T>) {
                 return u64(s, len);
             }
-            else if constexpr (std::is_same_v<Size, u32T>) {
+            else if constexpr (Utils::is_same_ignore_cv<Size, u32T>) {
                 return u32(s, len);
             }
             else {

@@ -56,7 +56,7 @@ namespace Hash {
      */
     template <typename Internal,
               // Require to prevent infinite recursion
-              std::enable_if_t<!std::is_same_v<Hashed, Internal>, int> = 0,
+              std::enable_if_t<!Utils::is_wrap_same<Hashed, Internal, std::remove_cv_t>, int> = 0,
               // Ensure Internal derives from Hashed
               std::enable_if_t<Utils::is_ancestor<Hashed, Internal>, int> = 0> // Allows primitives
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {

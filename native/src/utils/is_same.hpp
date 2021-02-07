@@ -23,6 +23,10 @@ namespace Utils {
     template <typename T, typename U>
     const inline constexpr bool is_same_ignore_const { is_wrap_same<T, U, std::remove_const_t> };
 
+    /** Verifies that the cv unqualified types are the same */
+    template <typename T, typename U>
+    const inline constexpr bool is_same_ignore_cv { is_wrap_same<T, U, std::remove_cv_t> };
+
 } // namespace Utils
 
 #endif

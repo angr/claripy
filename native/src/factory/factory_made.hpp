@@ -56,7 +56,7 @@ namespace Factory {
             static_assert(Utils::is_ancestor<Base, T>,
                           "T must derive from Base"); // Allow equality
             // Verify static_cuid
-            static_assert(Private::has_static_cuid_v<T>,
+            static_assert(Private::has_static_cuid<T>,
                           "Factory cannot construct anything without a static_cuid");
             static_assert(Utils::is_exactly_same<const Constants::UInt, decltype(T::static_cuid)>,
                           "T::static_cuid must be of type Constants::UInt");
