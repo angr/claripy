@@ -230,7 +230,7 @@ endif()
 
 # Enable good coding checks as actual warnings
 if(NOT EFFECTIVE_CPP_STYLE_CHECK) # TODO
-	target_compile_options("${CLARICPP}" PRIVATE
+	target_compile_options("${CLARICPP}" PUBLIC
 		"-Weffc++" # Enforces a few generally good C++ coding practices
 		"-Wno-error=effc++" # Allow effc++ warnings to remain warnings
 	)
@@ -269,12 +269,12 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("Debug Mode enabled!")
 	target_compile_definitions("${CLARICPP}"
 		PUBLIC  "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}" # Export this macro
-		PRIVATE "DEBUG"
+		PUBLIC "DEBUG"
 	)
 	# Macros
-	target_compile_definitions("${CLARICPP}" PRIVATE "_GLIBCXX_ASSERTIONS")
+	target_compile_definitions("${CLARICPP}" PUBLIC "_GLIBCXX_ASSERTIONS")
 	# Compile flags
-	target_compile_options("${CLARICPP}" PRIVATE
+	target_compile_options("${CLARICPP}" PUBLIC
 		"-O0"
 		"-g"
 		"-fasynchronous-unwind-tables"

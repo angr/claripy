@@ -25,12 +25,25 @@ namespace Utils {
         return Private::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 
+    /** An unchecked dynamic pointer cast
+     *  Warning: Use this only if all other pointer casts cannot be used
+     */
+    template <typename Out, typename In>
+    constexpr inline auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
+        if constexpr (!is_same_ignore_const<In, Out>) {
+            return std::dynamic_pointer_cast<TransferConst<Out, In>>(in);
+        }
+        else {
+            return in;
+        }
+    }
+
     /** A dynamic down cast */
     template <typename Out, typename In>
     constexpr inline auto dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
         static_assert(is_ancestor<In, Out>,
                       "dynamic_down_cast passed invalid <In, Out> type pair");
-        return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
+        return Utils::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** A dynamic side cast
@@ -38,7 +51,7 @@ namespace Utils {
      */
     template <typename Out, typename In>
     constexpr inline auto dynamic_side_cast(const std::shared_ptr<In> &in) noexcept {
-        return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
+        return Utils::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** Dynamic down-cast that throws on failure */

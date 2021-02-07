@@ -26,17 +26,6 @@ namespace Utils::Private {
         }
     }
 
-    /** An unchecked dynamic pointer cast */
-    template <typename Out, typename In>
-    constexpr inline auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        if constexpr (!is_same_ignore_const<In, Out>) {
-            return std::dynamic_pointer_cast<TransferConst<Out, In>>(in);
-        }
-        else {
-            return in;
-        }
-    }
-
 } // namespace Utils::Private
 
 #endif
