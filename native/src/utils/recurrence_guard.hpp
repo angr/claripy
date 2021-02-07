@@ -32,7 +32,7 @@ namespace Utils {
      *  from the value it had during the initial construction of RecurrenceGuard
      *  Note that a recurrence in another thread, even if created by this thread, will not count
      */
-    class RecurrenceGuard {
+    class RecurrenceGuard final {
       public:
         /** Constructor
          *  Takes in optional recurrence limit argument

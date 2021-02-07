@@ -17,7 +17,7 @@ namespace Utils::Log::Backend {
      *  This takes in an ostream and logs to it
      *  When the buffer is flushed after each log call
      */
-    struct Cerr : public OStream {
+    struct Cerr final : public OStream {
 
         /** Constructor */
         inline Cerr() : OStream(std::make_shared<std::ostream>(std::cerr.rdbuf()), true, false) {}

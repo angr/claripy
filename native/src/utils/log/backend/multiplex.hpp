@@ -20,7 +20,7 @@ namespace Utils::Log::Backend {
      *  This backend logs to multiple backends
      *  This class is not thread safe when written to after installed as a backend
      */
-    struct Multiplex : public Base {
+    struct Multiplex final : public Base {
 
         /** Log the given message, level, to the correct log given by log_id with each backend */
         inline void log(Constants::CCSC id, const Level::Level &lvl,

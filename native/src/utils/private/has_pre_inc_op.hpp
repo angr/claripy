@@ -15,7 +15,7 @@
 namespace Utils::Private {
 
     /** A struct used to determine if T has the pre ++ operator is defined */
-    template <typename T> struct HasPreIncOp {
+    template <typename T> struct HasPreIncOp final {
         UTILS_DEFINE_UNIQUE
         /** If U has the << operator defined the return type is resolvable
          *  Note: we do not use declval for the ostream because some compilers are buggy with it

@@ -15,7 +15,7 @@
     /** Declare an anonomyous namespace to obsure internals  */                                   \
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
-        struct [[nodiscard]] RunAfterMain {                                                       \
+        struct [[nodiscard]] RunAfterMain final {                                                 \
             /** Default constructor */                                                            \
             RunAfterMain() noexcept = default;                                                    \
             /** Destructor */                                                                     \
@@ -34,7 +34,7 @@
     /** Declare an anonomyous namespace to obscure internals */                                   \
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
-        struct [[nodiscard]] RunAfterMain {                                                       \
+        struct [[nodiscard]] RunAfterMain final {                                                 \
             /** Default constructor */                                                            \
             RunAfterMain() noexcept = default;                                                    \
             /** Destructor */                                                                     \

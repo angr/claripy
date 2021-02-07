@@ -19,26 +19,36 @@ namespace Error {
         /** Base Expression exception
          *  All Expression exceptions must derive from this
          */
-        DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(Base, Claripy, Utils::Error::Python)
+        struct Base : public Utils::Error::Claricpp {
+
+            /** Inherit constructors */
+            using Claricpp::Claricpp;
+
+            /** Virtual destructor */
+            inline virtual ~Base() noexcept;
+        };
+
+        /** Default virtual destructor */
+        Base::~Base() noexcept = default;
 
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Balancer, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Balancer, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(BalancerUnsat, Balancer)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(BalancerUnsat, Balancer)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Type, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Type, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Value, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Value, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Size, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Size, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Operation, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Operation, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Replacement, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Replacement, Base)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(Recursion, Operation)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Recursion, Operation)
         /** @todo document */
-        DEFINE_SUBCLASS_WITH_CTOR(ZeroDivision, Operation)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(ZeroDivision, Operation)
 
     } // namespace Expression
 

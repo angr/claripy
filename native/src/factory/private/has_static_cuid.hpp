@@ -13,7 +13,7 @@ namespace Factory::Private {
     /** Used to determine if T has a static member called static_cuid
      *  False case
      */
-    template <typename T, typename = int> struct HasStaticCUID : std::false_type {};
+    template <typename T, typename = int> struct HasStaticCUID final : std::false_type {};
 
     /** Used to determine if T has a static Constants::UInt called static_cuid
      *  True case
@@ -24,7 +24,7 @@ namespace Factory::Private {
      *  with int = 0. Note that specializations are prioritized over the general definition
      */
     template <typename T>
-    struct HasStaticCUID<T, decltype((void) T::static_cuid, 0)> : std::true_type {};
+    struct HasStaticCUID<T, decltype((void) T::static_cuid, 0)> final : std::true_type {};
 
     /** Used to determien of T has a static_cuid variable */
     template <typename T> const inline constexpr bool has_static_cuid = HasStaticCUID<T>::value;

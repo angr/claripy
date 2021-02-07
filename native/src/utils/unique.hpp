@@ -23,7 +23,7 @@
 namespace Utils {
 
     /** A unique class */
-    template <Constants::UInt> struct Unique {};
+    template <Constants::UInt> struct Unique final {};
 
 } // namespace Utils
 

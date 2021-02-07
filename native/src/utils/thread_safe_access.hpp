@@ -22,7 +22,7 @@ namespace Utils {
     /** A class that exposes thread-safe setters and getters for a T
      *  Warning: This does not protect T internally; it only protects setting and getting
      */
-    template <typename Base> class ThreadSafeAccess {
+    template <typename Base> class ThreadSafeAccess final {
       public:
         /** The get-able type */
         using Ptr = std::shared_ptr<const Base>;

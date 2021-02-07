@@ -34,10 +34,10 @@ namespace Utils::Error {
         Base::~Base() noexcept = default;
 
         /** A custom claripy exception */
-        DEFINE_SUBCLASS_WITH_CTOR(Claripy, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Claripy, Base)
 
         /** Analogous to python's ValueError exception */
-        DEFINE_SUBCLASS_WITH_CTOR(ValueError, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(ValueError, Base)
 
     } // namespace Python
 

@@ -24,22 +24,22 @@
 #define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
 
 
-/** A macro used to define a derived class that inherets its parent's constructors
+/** A macro used to define a final derived class that inherets its parent's constructors
  *  The body of this class is otherwise empty
  *  This macro requires SUPER be in the same namespace
  */
-#define DEFINE_SUBCLASS_WITH_CTOR(DERIVED, SUPER)                                                 \
-    struct DERIVED : public SUPER {                                                               \
+#define DEFINE_FINAL_SUBCLASS_WITH_CTOR(DERIVED, SUPER)                                           \
+    struct DERIVED final : public SUPER {                                                         \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
     };
 
-/** A macro used to define a derived class that inherets its parent's constructors
+/** A macro used to define a final derived class that inherets its parent's constructors
  *  The body of this class is otherwise empty
  *  This macro does not require SUPER be in the same namespace
  */
-#define DEFINE_NAMESPACED_SUBCLASS_WITH_CTOR(DERIVED, SUPER, NS)                                  \
-    struct DERIVED : public NS::SUPER {                                                           \
+#define DEFINE_NAMESPACED_FINAL_SUBCLASS_WITH_CTOR(DERIVED, SUPER, NS)                            \
+    struct DERIVED final : public NS::SUPER {                                                     \
         /** Inherit constructors */                                                               \
         using NS::SUPER::SUPER;                                                                   \
     };

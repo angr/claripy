@@ -27,7 +27,7 @@ namespace Utils {
      *  This class will occassionally gc dead weak_ptr's in the cache
      *  @todo We could have a TLS deletion queue if we want to increase efficiency
      */
-    template <typename Hash, typename Cached> class Cache {
+    template <typename Hash, typename Cached> class Cache final {
         ENABLE_UNITTEST_FRIEND_ACCESS
 
         /** The pointer type publically exposed */

@@ -20,7 +20,7 @@ namespace Utils {
      *  As such, F can be the return of a lambda, or a callable object, for example
      *  If NoExcept is set to false, the destructor may throw; by default it is true
      */
-    template <typename F, bool NoExcept = true> class [[nodiscard]] RunOnDestruction {
+    template <typename F, bool NoExcept = true> class [[nodiscard]] RunOnDestruction final {
       public:
         /** Constructor */
         explicit RunOnDestruction(const F &func) : f(func) {}

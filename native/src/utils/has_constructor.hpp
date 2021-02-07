@@ -16,7 +16,7 @@ namespace Utils {
     /** A struct which determines if the constructor T(Args...) is visible and exists
      *  Basically std::is_constructible but can be friendedto allow private constructor access
      */
-    template <typename T, typename... Args> struct HasConstructor {
+    template <typename T, typename... Args> struct HasConstructor final {
         UTILS_DEFINE_UNIQUE
 
         /** This overload returns a T and is resolvable if T(Args...) is invokable */

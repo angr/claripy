@@ -12,7 +12,7 @@
 namespace Utils::Log::Style {
 
     /** A Log Style whcih prints out the log level, a timestamp, and the message */
-    struct LevelTimestampMessage : public Base {
+    struct LevelTimestampMessage final : public Base {
 
         /** Format the log message */
         std::string str(Constants::CCSC, const Level::Level &lvl,

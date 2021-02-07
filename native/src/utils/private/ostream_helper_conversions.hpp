@@ -21,18 +21,18 @@ namespace Utils::Private {
     /** Determine if T is a strong enum: default false case
      *  We implicitly leverage SFINAE here
      */
-    template <typename T, bool = std::is_enum_v<T>> struct IsStrongEnum : std::false_type {};
+    template <typename T, bool = std::is_enum_v<T>> struct IsStrongEnum final : std::false_type {};
 
     /** Determine if T is a strong enum: possible true case
      *  We implicitly leverage SFINAE here
      */
     template <typename T>
-    struct IsStrongEnum<T, true> :
+    struct IsStrongEnum<T, true> final :
         std::bool_constant<!std::is_convertible_v<T, std::underlying_type_t<T>>> {};
 
 
     /** A struct used to determine if T has the << operator defined */
-    template <typename T> struct HasStreamOp {
+    template <typename T> struct HasStreamOp final {
         UTILS_DEFINE_UNIQUE
         /** If U has the << operator defined the return type is resolvable
          *  Note: we do not use declval for the ostream because some compilers are buggy with it

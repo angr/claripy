@@ -14,7 +14,7 @@
     /** Declare an anonomyous namespace to obsure internals  */                                   \
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
-        struct [[nodiscard]] RunBeforeMain {                                                      \
+        struct [[nodiscard]] RunBeforeMain final {                                                \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) (STATEMENT); }                                               \
             /** Rule of 5: Destructor */                                                          \
@@ -33,7 +33,7 @@
     /** Declare an anonomyous namespace to obscure internals */                                   \
     namespace {                                                                                   \
         /** Declare a class that will run F(args...) before main */                               \
-        struct [[nodiscard]] RunBeforeMain {                                                      \
+        struct [[nodiscard]] RunBeforeMain final {                                                \
             /** Constructor */                                                                    \
             RunBeforeMain() { (void) F(__VA_ARGS__); }                                            \
             /** Rule of 5: Destructor */                                                          \
