@@ -7,7 +7,7 @@
 
 
 union UnsafePun {
-    char arr[sizeof(Constants::Int)];
+    char arr[sizeof(Constants::Int)]; // NOLINT
     Constants::Int i;
 };
 
