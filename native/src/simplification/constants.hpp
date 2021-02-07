@@ -11,7 +11,7 @@
 namespace Simplification {
 
     /** The type each top level simplifier must have */
-    using SimplifierFunc = Expression::Base(const Expression::Base &);
+    using SimplifierFunc = Factory::Ptr<Expression::Base>(const Factory::Ptr<Expression::Base> &);
 
 } // namespace Simplification
 

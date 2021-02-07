@@ -11,7 +11,7 @@ using OP = Op::Operation;
 
 
 /** @todo */
-Expression::Base Simplifier::if_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base> Simplifier::if_(const Factory::Ptr<Expression::Base> &original) {
     /* Expression::Bool { Expression::cast_throw_on_fail<Expression::Bool>(original->args[0]) }; */
 
     /* if (cond->is_true()) { */
@@ -27,12 +27,13 @@ Expression::Base Simplifier::if_(const Expression::Base &original) {
 }
 
 /** @todo */
-Expression::Base Simplifier::concat(const Expression::Base &original) {
+Factory::Ptr<Expression::Base> Simplifier::concat(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::BV::reverse(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::BV::reverse(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
@@ -41,17 +42,20 @@ Expression::Base Simplifier::BV::reverse(const Expression::Base &original) {
 /************************************************/
 
 /** @todo */
-Expression::Base Simplifier::Shift::r(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Shift::r(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Shift::l(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Shift::l(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Shift::lshr(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Shift::lshr(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
@@ -60,12 +64,12 @@ Expression::Base Simplifier::Shift::lshr(const Expression::Base &original) {
 /************************************************/
 
 /** @todo */
-Expression::Base Simplifier::eq(const Expression::Base &original) {
+Factory::Ptr<Expression::Base> Simplifier::eq(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::ne(const Expression::Base &original) {
+Factory::Ptr<Expression::Base> Simplifier::ne(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
@@ -74,17 +78,20 @@ Expression::Base Simplifier::ne(const Expression::Base &original) {
 /************************************************/
 
 /** @todo */
-Expression::Base Simplifier::Boolean::and_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Boolean::and_(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Boolean::or_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Boolean::or_(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Boolean::not_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Boolean::not_(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
@@ -93,36 +100,43 @@ Expression::Base Simplifier::Boolean::not_(const Expression::Base &original) {
 /************************************************/
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::add(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::add(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::mul(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::mul(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::sub(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::sub(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::xor_minmax(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::xor_minmax(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::or_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::or_(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::and_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::and_(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
 
 /** @todo */
-Expression::Base Simplifier::Bitwise::xor_(const Expression::Base &original) {
+Factory::Ptr<Expression::Base>
+Simplifier::Bitwise::xor_(const Factory::Ptr<Expression::Base> &original) {
     return original; // todo
 }
