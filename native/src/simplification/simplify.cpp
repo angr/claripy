@@ -1,7 +1,6 @@
 /** @file */
 #include "simplify.hpp"
 
-#include "../expression.hpp"
 #include "../utils.hpp"
 
 

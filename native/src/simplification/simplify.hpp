@@ -11,7 +11,7 @@
 namespace Simplification {
 
     /** Simplify old and return the result */
-    Expression::Base simplify(const Expression::Base &old);
+    Factory::Ptr<Expression::Base> simplify(const Factory::Ptr<Expression::Base> &old);
 
 } // namespace Simplification
 

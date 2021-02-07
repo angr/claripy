@@ -1,13 +1,9 @@
 /** @file */
 #include "simplifiers.hpp"
 
-#include "../expression.hpp"
-#include "../op.hpp"
-
 
 // For clarity
 using namespace Simplification;
-using OP = Op::Operation;
 
 
 /** @todo */
