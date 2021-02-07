@@ -8,15 +8,15 @@
 
 
 /** A class with a cuid */
-struct A : public CUID {
+struct A : public CUID::HasCUID {
     /** Constructor */
-    A(Constants::UInt c) : CUID { c } {}
+    A(CUID::CUID c) : HasCUID { c } {}
 };
 
 
 /** Verify that the cuid class works */
 void cuid() {
-    constexpr Constants::UInt c = 4635;
+    const constexpr CUID::CUID c { 4635 };
     A a(c);
     UNITTEST_ASSERT(a.cuid == c);
 }

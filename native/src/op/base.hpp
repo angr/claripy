@@ -19,7 +19,7 @@ namespace Op {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       protected:
         /** Constructor */
-        explicit inline Base(const Hash::Hash &h, const Constants::UInt cuid_) noexcept
+        explicit inline Base(const Hash::Hash &h, const CUID::CUID &cuid_) noexcept
             : FactoryMade { h, cuid_ } {}
 
         /** Virtual destructor */

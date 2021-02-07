@@ -41,7 +41,7 @@ namespace Expression {
 
       protected:
         /** Protected Constructor */
-        explicit inline Base(const Hash::Hash h, const Constants::UInt c, const bool sym,
+        explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
                              Factory::Ptr<Op::Base> &&op_, AnnotationVec &&annotations_) noexcept
             : FactoryMade { h, c }, symbolic { sym }, op { op_ }, annotations { annotations_ } {
 #ifdef DEBUG

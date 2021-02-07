@@ -38,11 +38,11 @@ namespace Factory {
      *	  1. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method. Note that
      *		 this also defines a static_cuid
      */
-    struct FactoryMade : public Hash::Hashed, public CUID {
+    struct FactoryMade : public Hash::Hashed, public CUID::HasCUID {
 
         /** Constructor */
-        explicit inline FactoryMade(const Hash::Hash &h, const Constants::UInt &c) noexcept
-            : Hashed { h }, CUID { c } {}
+        explicit inline FactoryMade(const Hash::Hash &h, const CUID::CUID &c) noexcept
+            : Hashed { h }, HasCUID { c } {}
 
         /** Statically check if Base and T can be factor constructed
          *  Warning: This is not a gaurntee that these types can be factory constructed
@@ -58,8 +58,8 @@ namespace Factory {
             // Verify static_cuid
             static_assert(Private::has_static_cuid<T>,
                           "Factory cannot construct anything without a static_cuid");
-            static_assert(Utils::is_exactly_same<const Constants::UInt, decltype(T::static_cuid)>,
-                          "T::static_cuid must be of type Constants::UInt");
+            static_assert(Utils::is_exactly_same<const CUID::CUID, decltype(T::static_cuid)>,
+                          "T::static_cuid must be of type const CUID::CUID");
             // Constructor
             // Note: We use has_constructor to pass if the desired constructor is private
             static_assert(Utils::has_constructor<T, const Hash::Hash &, Args &&...>,

@@ -1,6 +1,7 @@
 /**
  * @file
- * @brief This file defines a type that has a unique class id
+ * @brief This file defines a class unique identifier type
+ * This also defined a type that has a unique class id
  * This file also defines macros to create a static_cuid
  */
 #ifndef __CUID_HPP__
@@ -17,7 +18,7 @@
 #define DEFINE_STATIC_CUID                                                                        \
   public:                                                                                         \
     /** Define a static_cuid */                                                                   \
-    static const constexpr Constants::UInt static_cuid = UTILS_FILE_LINE_HASH;
+    static const constexpr ::CUID::CUID static_cuid { UTILS_FILE_LINE_HASH };
 
 
 /** Used to define a possible unused static_cuid in a class
@@ -26,32 +27,38 @@
 #define DEFINE_MAYBE_UNUSED_STATIC_CUID                                                           \
   public:                                                                                         \
     /** Define a static_cuid */                                                                   \
-    [[maybe_unused]] static const constexpr Constants::UInt static_cuid = UTILS_FILE_LINE_HASH;
+    [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid { UTILS_FILE_LINE_HASH };
 
 
-/** A type that has a class unique id
- *  This has the benefits of a virtual function as inhereted classes
- *  can have different CUIDs than their ancestors, while also avoiding
- *  the overhead of a vtabel call to invoke virtual cuid() const;
- */
-struct CUID {
+namespace CUID {
 
-    /** The class unique id */
-    const Constants::UInt cuid;
+    /** The CUID type */
+    using CUID = Constants::UInt;
 
-  protected:
-    /** Constructor */
-    explicit constexpr CUID(const Constants::UInt &c) noexcept : cuid { c } {}
+    /** A type that has a class unique id
+     *  This has the benefits of a virtual function as inhereted classes
+     *  can have different CUIDs than their ancestors, while also avoiding
+     *  the overhead of a vtabel call to invoke virtual cuid() const;
+     */
+    struct HasCUID {
 
-    /** Pure virtual destructor */
-    virtual inline ~CUID() noexcept = 0;
+        /** The class unique id */
+        const CUID cuid;
 
-    // Rule of 5
-    SET_IMPLICITS_CONST_MEMBERS(CUID, default, noexcept)
-};
+      protected:
+        /** Constructor */
+        explicit constexpr HasCUID(const CUID &c) noexcept : cuid { c } {}
 
-/** Default virtual destructor */
-CUID::~CUID() noexcept = default;
+        /** Pure virtual destructor */
+        virtual inline ~HasCUID() noexcept = 0;
 
+        // Rule of 5
+        SET_IMPLICITS_CONST_MEMBERS(HasCUID, default, noexcept)
+    };
+
+    /** Default virtual destructor */
+    HasCUID::~HasCUID() noexcept = default;
+
+} // namespace CUID
 
 #endif

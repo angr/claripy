@@ -17,7 +17,7 @@ namespace Expression {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       protected:
         /** Protected Constructor */
-        explicit inline Bits(const Hash::Hash h, const Constants::UInt c, const bool sym,
+        explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
                              Factory::Ptr<Op::Base> &&op_, AnnotationVec &&annotations_,
                              const Constants::UInt size_) noexcept
             : Base { h, c, sym, std::forward<Factory::Ptr<Op::Base>>(op_),
