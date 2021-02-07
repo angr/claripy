@@ -35,12 +35,12 @@ void is_in() {
 
 
     // Transfer const
-    const constexpr bool true2 { Utils::ignore_const_is_in<int, unsigned, bool, const int> };
+    const constexpr bool true2 { Utils::is_in_ignore_const<int, unsigned, bool, const int> };
     UNITTEST_ASSERT(true2);
-    const constexpr bool true3 { Utils::ignore_const_is_in<const int, unsigned, bool, const int> };
+    const constexpr bool true3 { Utils::is_in_ignore_const<const int, unsigned, bool, const int> };
     UNITTEST_ASSERT(true3);
     // Ancestor failure
-    const constexpr bool false5 { Utils::ignore_const_is_in<B, unsigned, bool, A> };
+    const constexpr bool false5 { Utils::is_in_ignore_const<B, unsigned, bool, A> };
     UNITTEST_ASSERT(!false5);
 
     // Ancestor

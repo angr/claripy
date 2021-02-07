@@ -22,6 +22,7 @@
 #include "utils/inc.hpp"
 #include "utils/is_ancestor.hpp"
 #include "utils/is_in.hpp"
+#include "utils/is_same.hpp"
 #include "utils/log.hpp"
 #include "utils/make_derived_shared.hpp"
 #include "utils/max.hpp"
