@@ -20,7 +20,7 @@ namespace UnitTest::TestLib::Factories {
     /** Create a simple Literal */
     inline Factory::Ptr<Op::Literal> literal(const Constants::Int i = 0) {
         const constexpr Constants::UInt size { sizeof(Constants::Int) };
-        char buf[size];                                                // NOLINT
+        char buf[size]; // NOLINT
         std::memcpy(buf, &i, size);
         Constants::CCSC cs { buf };
         return Op::factory<Op::Literal>(cs, Constants::UInt { sizeof(i) });

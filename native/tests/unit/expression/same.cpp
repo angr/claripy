@@ -41,9 +41,9 @@ void same() {
 
     // Verify unique pointers
 
-    std::set<Base*> ptrs;
+    std::set<Base *> ptrs;
     for (const auto &i : objs) {
-        ptrs.insert(const_cast<Base*>(i.get())); // NOLINT
+        ptrs.insert(const_cast<Base *>(i.get())); // NOLINT
     }
 
     UNITTEST_ASSERT(ptrs.size() == objs.size() / 2)

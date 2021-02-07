@@ -13,9 +13,8 @@ using namespace UnitTest::TestLib;
 
 
 /** Add p's pointer to s */
-template <typename T>
-void insert(std::set<Base*>& s, const Factory::Ptr<T>& p) {
-	s.insert(const_cast<Base* const>(static_cast<const Base * const>(p.get()))); // NOLINT
+template <typename T> void insert(std::set<Base *> &s, const Factory::Ptr<T> &p) {
+    s.insert(const_cast<Base *const>(static_cast<const Base *const>(p.get()))); // NOLINT
 }
 
 /** Each construction should have a unique pointer and hash */
@@ -42,7 +41,7 @@ void all_diff_class_hash() {
 
     // Verify unique pointers
 
-    std::set<Base*> ptrs;
+    std::set<Base *> ptrs;
     insert(ptrs, a1);
     insert(ptrs, a2);
     insert(ptrs, a3);
