@@ -5,8 +5,6 @@
 #ifndef __EXPRESSION_BASE_HPP__
 #define __EXPRESSION_BASE_HPP__
 
-#include "macros.hpp"
-
 #include "../factory.hpp"
 #include "../op.hpp"
 
