@@ -41,13 +41,13 @@ namespace Error {
         };
 
         /** Expression Balance exception */
-        struct Operator : public Base {
+        struct Operation : public Base {
 
             /** Inherit constructors */
             using Base::Base;
 
             /** Virtual destructor */
-            inline virtual ~Operator() noexcept = default;
+            inline virtual ~Operation() noexcept = default;
         };
 
         // Final classes
