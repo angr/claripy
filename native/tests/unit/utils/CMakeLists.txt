@@ -1,6 +1,7 @@
 # Add tests
 simple_test(is_same)
 simple_test(is_in)
+simple_test(type_pun)
 simple_test(fnv1a)
 simple_test(strlen)
 simple_test(td_false)

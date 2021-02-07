@@ -16,16 +16,16 @@ union UnsafePun {
 void type_pun() {
 
     // The message
-    constexpr Constants::CCSC msg { "Under 16 bytes" };
+    constexpr Constants::CCSC msg { "Short" };
     static_assert(Utils::strlen(msg) + 1 <= sizeof(Constants::Int),
-                  WHOAMI_WITH_SOURCE " needs a shorter message.");
+                  __FILE__ " needs a shorter message.");
 
     // Create p
     UnsafePun p;
     p.i = 0;
 
     // Safe pun
-    p.i = Utils::type_pun<Constants::Int, true>(msg);
+    p.i = Utils::type_pun<Constants::Int, char, true>(msg);
 
     // Use unsafe pun in controlled context to verify safe pun
     UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0)
