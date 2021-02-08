@@ -16,7 +16,7 @@ void if_true() {
 
     Dummy::echo(true, false);
     UNITTEST_ASSERT(!b->is_true())
-    UNITTEST_ASSERT(b->is_true())
+    UNITTEST_ASSERT(b->is_false())
 }
 
 // Define the test
