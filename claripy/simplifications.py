@@ -899,7 +899,7 @@ class SimplificationManager:
                         if b.size() % 8 == 0:
                             # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
                             if (b_highbit_idx + 1) % 8 != 0:
-                                b_highbit_idx += (b_highbit_idx + 1) % 8
+                                b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
                         b_lower = b[b_highbit_idx : 0]
                         if mask_allones:
                             # yes!
