@@ -26,9 +26,6 @@
     /** Define a custom logging class */                                                          \
     struct NAME final : private ::Utils::Unconstructable {                                        \
         UTILS_LOG_ENABLE_CUSTOM_LOGGING(#NAME)                                                    \
-        SET_IMPLICITS(NAME, delete)                                                               \
-        /** Delete destructor */                                                                  \
-        ~NAME() = delete;                                                                         \
     };
 
 
