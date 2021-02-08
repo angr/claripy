@@ -164,7 +164,7 @@ def test_mask_eq_constant():
 
     assert expr.op == "__eq__"
     assert expr.args[0].op == "__and__"
-    arg0, arg1 = expr.args[0].args
+    _, arg1 = expr.args[0].args
     assert arg1.size() == 16
     assert arg1.args[0] == 0x1fff
 
@@ -231,7 +231,7 @@ def test_zeroext_extract_comparing_against_constant_simplifier():
 
 
 def perf():
-    import timeit
+    import timeit  # pylint:disable=import-outside-toplevel
     print(timeit.timeit("perf_boolean_and_simplification_0()",
                         number=10,
                         setup="from __main__ import perf_boolean_and_simplification_0"))
