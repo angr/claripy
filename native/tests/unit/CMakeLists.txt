@@ -13,7 +13,11 @@ include(SimpleTest)
 message("Adding tests generally in order of dependency."
 	    "If an early test case fails it will likely take many later ones with it")
 message(STATUS "Adding unit tests:")
+
+# Test test system
 simple_test(simple_test)
+
+# Add actual test cases
 add_subdirectory(utils)
 add_subdirectory(cuid)
 add_subdirectory(hash)
@@ -21,3 +25,4 @@ add_subdirectory(factory)
 add_subdirectory(expression)
 add_subdirectory(op)
 add_subdirectory(dummy)
+add_subdirectory(create)
