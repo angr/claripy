@@ -61,6 +61,7 @@ Simplifier::Shift::lshr(const Factory::Ptr<Expression::Base> &original) {
 
 /** @todo */
 Factory::Ptr<Expression::Base> Simplifier::eq(const Factory::Ptr<Expression::Base> &original) {
+    Utils::Log::verbose("Eq simplifier invoked");
     return original; // todo
 }
 
