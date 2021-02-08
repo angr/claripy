@@ -6,6 +6,7 @@
 #define __OP_HPP__
 
 #include "op/base.hpp"
+#include "op/eq.hpp"
 #include "op/factory.hpp"
 #include "op/if.hpp"
 #include "op/literal.hpp"
