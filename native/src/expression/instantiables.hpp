@@ -19,11 +19,11 @@
     class CLASS final : public BASE {                                                             \
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expression::Base)                                 \
       public:                                                                                     \
-        /** Virtual destructor */                                                                 \
+        /** Default destructor */                                                                 \
         inline ~CLASS() noexcept override final = default;                                        \
                                                                                                   \
       private:                                                                                    \
-        /** Protected Constructor */                                                              \
+        /** Private Constructor */                                                                \
         explicit inline CLASS(const Hash::Hash h, const bool sym, Factory::Ptr<Op::Base> && op_, \
 			AnnotationVec && annotations_ CTOR_MIDDLE {} \
         /* Disable other methods of construction */                                               \
@@ -62,7 +62,6 @@ namespace Expression {
 
     // Base subclasses
     DEFINE_BASE_SUBCLASS(Int)
-    DEFINE_BASE_SUBCLASS(Bool)
 
     // Bits subclasses
     DEFINE_BITS_SUBCLASS(String)
