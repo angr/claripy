@@ -6,7 +6,7 @@
 #include "testlib.hpp"
 
 
-/** Verify that the eq function compiles */
+/** Verify that the eq function compiles and can be run without issue */
 void eq() {
     const auto a { UnitTest::TestLib::Factories::t_literal() };
     const auto b { UnitTest::TestLib::Factories::t_literal() };
