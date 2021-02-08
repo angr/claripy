@@ -147,8 +147,6 @@ def test_mask_eq_constant():
     assert expr.args[0].args[0] == 0 and expr.args[0].args[1] == 0
     assert expr.args[0].args[2] is a
     assert expr.args[1].op == "BVV" and expr.args[1].args == (0, 1)
-    assert expr.op == "__eq__"
-    assert expr.args[0].op == "Extract"
 
 
 def test_and_mask_comparing_against_constant_simplifier():
