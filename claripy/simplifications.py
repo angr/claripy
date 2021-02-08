@@ -906,6 +906,9 @@ class SimplificationManager:
                             return op(a_arg0[b_highbit_idx : 0], b_lower)
                         else:
                             # nope
+                            if b_highbit_idx == b.size() - 1:
+                                # no change is happening
+                                return None
                             return op(a_arg0[b_highbit_idx : 0] & a_arg1.args[0], b_lower)
                     elif b_higher_bits_are_0 is False:
                         return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
