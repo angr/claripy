@@ -895,13 +895,21 @@ class SimplificationManager:
 
                     if b_higher_bits_are_0 is True:
                         # extra check: can we get rid of the mask
-                        b_lower = b[b.size() - 1 - zero_bits: 0]
+                        b_highbit_idx = b.size() - 1 - zero_bits
+                        if b.size() % 8 == 0:
+                            # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
+                            if (b_highbit_idx + 1) % 8 != 0:
+                                b_highbit_idx += 8 - (b_highbit_idx + 1) % 8
+                        b_lower = b[b_highbit_idx : 0]
                         if mask_allones:
                             # yes!
-                            return op(a_arg0[b.size() - 1 - zero_bits : 0], b_lower)
+                            return op(a_arg0[b_highbit_idx : 0], b_lower)
                         else:
                             # nope
-                            return op(a_arg0[b.size() - 1 - zero_bits: 0] & a_arg1.args[0], b_lower)
+                            if b_highbit_idx == b.size() - 1:
+                                # no change is happening
+                                return None
+                            return op(a_arg0[b_highbit_idx : 0] & a_arg1.args[0], b_lower)
                     elif b_higher_bits_are_0 is False:
                         return ast.all_operations.false if op is operator.__eq__ else ast.all_operations.true
 

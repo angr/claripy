@@ -147,8 +147,26 @@ def test_mask_eq_constant():
     assert expr.args[0].args[0] == 0 and expr.args[0].args[1] == 0
     assert expr.args[0].args[2] is a
     assert expr.args[1].op == "BVV" and expr.args[1].args == (0, 1)
+
+    # the highest bit of the mask (0x1fff) is not aligned to 8
+    # we want the mask to be BVV(16, 0x1fff) instead of BVV(13, 0x1fff)
+    a = claripy.BVS("sim_data", 8, explicit_name=True)
+    expr = (claripy.ZeroExt(
+        48,
+        claripy.Extract(
+            15,
+            0,
+            claripy.Concat(
+                claripy.BVV(0, 63),
+                a[0:0]
+            )
+        )) & 0x1fff) == 0x0
+
     assert expr.op == "__eq__"
-    assert expr.args[0].op == "Extract"
+    assert expr.args[0].op == "__and__"
+    _, arg1 = expr.args[0].args
+    assert arg1.size() == 16
+    assert arg1.args[0] == 0x1fff
 
 
 def test_and_mask_comparing_against_constant_simplifier():
@@ -213,7 +231,7 @@ def test_zeroext_extract_comparing_against_constant_simplifier():
 
 
 def perf():
-    import timeit
+    import timeit  # pylint:disable=import-outside-toplevel
     print(timeit.timeit("perf_boolean_and_simplification_0()",
                         number=10,
                         setup="from __main__ import perf_boolean_and_simplification_0"))
