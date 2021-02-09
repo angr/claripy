@@ -8,8 +8,8 @@
 
 /** Verify that the eq function compiles and can be run without issue */
 void eq() {
-    const auto a { UnitTest::TestLib::Factories::t_literal() };
-    const auto b { UnitTest::TestLib::Factories::t_literal() };
+    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
+    const auto b { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
     (void) Create::eq(a, b, Expression::Base::AnnotationVec {});
 }
 

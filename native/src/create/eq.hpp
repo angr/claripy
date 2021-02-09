@@ -18,21 +18,21 @@ namespace Create {
     inline Factory::Ptr<Expression::Bool> eq(const Factory::Ptr<Left> &left,
                                              const Factory::Ptr<Right> &right,
                                              Expression::Base::AnnotationVec &&av) {
+        // For brevity
+        namespace Ex = Expression;
+        using AnVec = Ex::Base::AnnotationVec;
+        const constexpr auto &simplify { Simplification::simplify };
         // Static checks
-        static_assert(Utils::is_ancestor<Expression::Base, Left>,
-                      "Create::eq Left must derive from Expression::Base");
-        static_assert(Utils::is_ancestor<Expression::Base, Right>,
-                      "Create::eq Right must derive from Expression::Base");
-        // Simplify arguments
-        auto simp_left { Simplification::simplify(Utils::up_cast<Expression::Base>(left)) };
-        auto simp_right { Simplification::simplify(Utils::up_cast<Expression::Base>(right)) };
+        static_assert(Utils::is_exactly_same<Left, Right>,
+                      "Create::eq Left and Right must be of the same type");
+        static_assert(Utils::qualified_is_in<Left, Ex::FP, Ex::Bool, Ex::BV, Ex::String>,
+                      "Create::eq argument types must be of type FP, Bool, BV, or String");
         // Construct expression
-        auto unsimp_ret { Expression::factory<Expression::Bool>(
-            simp_left->symbolic || simp_right->symbolic,
-            Op::factory<Op::Eq>(simp_left, simp_right),
-            std::forward<Expression::Base::AnnotationVec>(av)) };
+        auto unsimp_ret { Ex::factory<Ex::Bool>(left->symbolic || right->symbolic,
+                                                Op::factory<Op::Eq>(left, right),
+                                                std::forward<AnVec>(av)) };
         // Simplify expression
-        return Utils::static_down_cast<Expression::Bool>(Simplification::simplify(unsimp_ret));
+        return Utils::static_down_cast<Ex::Bool>(simplify(unsimp_ret));
     }
 
 } // namespace Create
