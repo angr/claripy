@@ -20,14 +20,7 @@ namespace Utils::Error {
         /** Base unexpected exception
          *  All unexpected exceptions must derive from this
          */
-        struct Base : public Claricpp {
-
-            /** Inherit constructors */
-            using Claricpp::Claricpp;
-
-            /** Default virtual destructor */
-            inline virtual ~Base() noexcept = default;
-        };
+        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Base, Claricpp)
 
         /** Bad cast exception */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(BadCast, Base)

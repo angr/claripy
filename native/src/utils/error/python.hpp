@@ -21,17 +21,12 @@ namespace Utils::Error {
         /** Base Python exception
          *  All Python exceptions must derive from this
          */
-        struct Base : public Claricpp {
+        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Base, Claricpp)
 
-            /** Inherit constructors */
-            using Claricpp::Claricpp;
-
-            /** Default virtual destructor */
-            inline virtual ~Base() noexcept = default;
-        };
-
-        /** A custom claripy exception */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Claripy, Base)
+        /** A custom claripy exception
+         *  All Claripy exceptions must derive from this
+         */
+        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Claripy, Base)
 
         /** Analogous to python's ValueError exception */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(ValueError, Base)

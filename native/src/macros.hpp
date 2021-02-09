@@ -24,6 +24,11 @@
 #define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
 
 
+/********************************************************************/
+/*          Define Subclasses That Use Parent Constructors          */
+/********************************************************************/
+
+
 /** A macro used to define a final derived class that inherets its parent's constructors
  *  The body of this class is otherwise empty
  *  This macro requires SUPER be in the same namespace
@@ -32,6 +37,19 @@
     struct DERIVED final : public SUPER {                                                         \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
+    };
+
+/** A macro used to define a non-final instantiable class that inherets its parent's constructors
+ *  The body of this class is otherwise empty
+ *  This macro requires SUPER be in the same namespace
+ *  Destructor is defaulted with noexcept
+ */
+#define DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(DERIVED, SUPER)                           \
+    struct DERIVED : public SUPER {                                                               \
+        /** Inherit constructors */                                                               \
+        using SUPER::SUPER;                                                                       \
+        /** Default virtual destructor */                                                         \
+        inline virtual ~DERIVED() noexcept = default;                                             \
     };
 
 /** A macro used to define a final derived class that inherets its parent's constructors

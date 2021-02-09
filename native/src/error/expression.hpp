@@ -16,52 +16,28 @@ namespace Error {
     // Expression errors
     namespace Expression {
 
-        /** Base Expression exception
-         *  All Expression exceptions must derive from this
-         */
-        struct Base : public Utils::Error::Claricpp {
-
-            /** Inherit constructors */
-            using Claricpp::Claricpp;
-
-            /** Virtual destructor */
-            inline virtual ~Base() noexcept = default;
-        };
+        /** Claripy Expression exception */
+        using Claripy = Utils::Error::Python::Claripy;
 
         // Intermediate classes
 
         /** Expression Balance exception */
-        struct Balancer : public Base {
-
-            /** Inherit constructors */
-            using Base::Base;
-
-            /** Virtual destructor */
-            inline virtual ~Balancer() noexcept = default;
-        };
-
+        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Balancer, Claripy)
         /** Expression Balance exception */
-        struct Operation : public Base {
-
-            /** Inherit constructors */
-            using Base::Base;
-
-            /** Virtual destructor */
-            inline virtual ~Operation() noexcept = default;
-        };
+        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Operation, Claripy)
 
         // Final classes
 
         /** @todo document */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(BalancerUnsat, Balancer)
         /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Type, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Type, Claripy)
         /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Value, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Value, Claripy)
         /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Size, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Size, Claripy)
         /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Replacement, Base)
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Replacement, Claripy)
         /** @todo document */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(Recursion, Operation)
         /** @todo document */
