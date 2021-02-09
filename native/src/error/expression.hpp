@@ -23,7 +23,7 @@ namespace Error {
 
         /** Expression Balance exception */
         DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Balancer, Claripy)
-        /** Expression Balance exception */
+        /** Expression Operation exception */
         DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Operation, Claripy)
 
         // Final classes
