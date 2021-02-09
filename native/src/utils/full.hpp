@@ -2,6 +2,7 @@
  * @file
  * \ingroup utils
  * @brief This file defines a best effort thread-safe guess of if a shared_ptr is full / empty.
+ * Note: If you do not need to be involved with the lifetime of the object, consider raw pointers
  * Note: Our guesses rely on likely undocumented behavior of shared_ptr; they *should* never fail
  */
 #ifndef __UTILS_FULL_HPP__
@@ -13,6 +14,7 @@
 namespace Utils {
 
     /** A best guess that returns true if we think the pointer is not empty
+     *  If you do not need to be involved with the lifetime of the object, consider raw pointers
      *  Note: This relies on likely undocumented behavior of shared_ptr; it *should* never fail
      *  Return true if p is empty
      *  Note: if p is empty, the object p points to, if not nullptr, may not be done destructing
@@ -22,6 +24,7 @@ namespace Utils {
     }
 
     /** A best guess that returns true if we think the pointer is not empty
+     *  If you do not need to be involved with the lifetime of the object, consider raw pointers
      *  Note: This relies on likely undocumented behavior of shared_ptr; it *should* never fail
      *  Return true if p is not empty
      *  Note: if p is empty, the object p points to, if not nullptr, may not be done destructing
