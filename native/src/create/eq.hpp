@@ -6,6 +6,7 @@
 #ifndef __CREATE_EQ_HPP__
 #define __CREATE_EQ_HPP__
 
+#include "../error.hpp"
 #include "../expression.hpp"
 #include "../op.hpp"
 #include "../simplification.hpp"
@@ -27,6 +28,12 @@ namespace Create {
                       "Create::eq Left and Right must be of the same type");
         static_assert(Utils::qualified_is_in<Left, Ex::FP, Ex::Bool, Ex::BV, Ex::String>,
                       "Create::eq argument types must be of type FP, Bool, BV, or String");
+        // Dynamic checks
+        if constexpr (Utils::is_exactly_same<Left, Ex::BV>) {
+            Utils::affirm<Error::Expression::Operation>(
+                left->size == right->size,
+                "Left and Right sizes must be the same to invoke Create::eq");
+        }
         // Construct expression
         auto unsimp_ret { Ex::factory<Ex::Bool>(left->symbolic || right->symbolic,
                                                 Op::factory<Op::Eq>(left, right),
