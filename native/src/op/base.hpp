@@ -5,7 +5,7 @@
 #ifndef __OP_BASE_HPP__
 #define __OP_BASE_HPP__
 
-#include "macros.hpp" // For subclasses
+#include "macros.hpp"
 
 #include "../factory.hpp"
 
@@ -16,17 +16,11 @@ namespace Op {
      *  All op expressions must subclass this
      */
     class Base : public Factory::FactoryMade {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
+        OP_PURE_INIT(Base)
       protected:
-        /** Constructor */
+        /** Protected constructor */
         explicit inline Base(const Hash::Hash &h, const CUID::CUID &cuid_) noexcept
             : FactoryMade { h, cuid_ } {}
-
-        /** Virtual destructor */
-        inline ~Base() noexcept override = 0;
-
-        // Disable other methods of construction
-        SET_IMPLICITS_CONST_MEMBERS(Base, delete)
     };
 
     /** Default virtual destructor */
