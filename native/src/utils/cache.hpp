@@ -65,7 +65,7 @@ namespace Utils {
             {
                 std::lock_guard<decltype(lock)> rw(lock);
                 // Initial find
-                if (auto lookup { this->unsafe_find(h) }; lookup != nullptr) {
+                if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
                     return lookup;
                 }
 
@@ -90,7 +90,7 @@ namespace Utils {
             {
                 std::lock_guard<decltype(lock)> rw(lock);
                 // Second lookup
-                if (auto lookup { this->unsafe_find(h) }; lookup != nullptr) {
+                if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
                     return lookup;
                 }
                 // Add to cache
@@ -114,7 +114,7 @@ namespace Utils {
         Ptr unsafe_find(const Hash &h) {
             if (auto lookup { this->cache.find(h) }; lookup != this->cache.end()) {
                 // If the weak_ptr is valid, return it
-                if (auto locked { lookup->second.lock() }; locked) {
+                if (auto locked { lookup->second.lock() }; full(locked)) {
                     return locked;
                 }
                 // Otherwise remove it from the cache

@@ -61,6 +61,10 @@ Simplifier::Shift::lshr(const Factory::Ptr<Expression::Base> &original) {
 
 /** @todo */
 Factory::Ptr<Expression::Base> Simplifier::eq(const Factory::Ptr<Expression::Base> &original) {
+#ifdef DEBUG
+    Utils::dynamic_test_throw_on_fail<Op::Eq>(original->op,
+                                              "Simplifer::eq's Expression's op must be an Op::Eq");
+#endif
     Utils::Log::verbose("Eq simplifier invoked");
     return original; // todo
 }

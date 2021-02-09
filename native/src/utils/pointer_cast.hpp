@@ -9,6 +9,7 @@
 
 #include "affirm.hpp"
 #include "error.hpp"
+#include "full.hpp"
 #include "is_ancestor.hpp"
 #include "private/pointer_cast.hpp"
 
@@ -58,7 +59,7 @@ namespace Utils {
     template <typename Out, typename In>
     constexpr inline auto dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_down_cast<Out>(in);
-        affirm<Error::Unexpected::BadCast>(ret != nullptr, "Dynamic down-cast failed");
+        affirm<Error::Unexpected::BadCast>(empty(ret), "Dynamic down-cast failed");
         return ret;
     }
 
@@ -66,7 +67,7 @@ namespace Utils {
     template <typename Out, typename In>
     constexpr inline auto dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_side_cast<Out>(in);
-        affirm<Error::Unexpected::BadCast>(ret != nullptr, "Dynamic down-cast failed");
+        affirm<Error::Unexpected::BadCast>(empty(ret), "Dynamic side-cast failed");
         return ret;
     }
 
@@ -103,6 +104,22 @@ namespace Utils {
     }
 #endif
 
+    /** Return true if the dynamic cast desired will pass
+     *  Note: this does not static assertion verification itself
+     */
+    template <typename Out, typename In>
+    constexpr inline auto dynamic_test(const std::shared_ptr<In> &in) {
+        return full(Utils::dynamic_pointer_cast<Out>(in));
+    }
+
+    /** Return true if the dynamic cast desired will pass
+     *  Note: this does not static assertion verification itself
+     */
+    template <typename To, typename In, typename... Args>
+    constexpr inline void dynamic_test_throw_on_fail(const std::shared_ptr<In> &in,
+                                                     const Args &...args) {
+        affirm<Error::Unexpected::BadCast>(dynamic_test<To>(in), args...);
+    }
 
 } // namespace Utils
 
