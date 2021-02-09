@@ -13,12 +13,12 @@
 namespace Op {
 
     /** The op class: Add */
-    class Add final : public Flat {
-        OP_FINAL_INIT(Eq)
+    class Add final : public Flat<> {
+        OP_FINAL_INIT(Add)
       private:
         /** Private constructor */
-        explicit inline Eq(const Hash::Hash &h, OpContainer &&input)
-            : Flat { h, static_cuid, input } {}
+        explicit inline Add(const Hash::Hash &h, OpContainer &&input)
+            : Flat { h, static_cuid, std::forward<OpContainer>(input) } {}
     };
 
 } // namespace Op

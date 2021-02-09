@@ -15,12 +15,6 @@ namespace Expression {
 }
 
 
-/** Static assert T is an expression */
-#define OP_ASSERT_IS_EXPRESSION(T)                                                                \
-    static_assert(Utils::is_ancestor<Expression::Base, T>, "T must derive from "                  \
-                                                           "Expression::Base");
-
-
 /** Initalize a pure abstract op class
  *  Leaves the class in a private access context
  *  Note: The constructors for these classes are declared, but not defined

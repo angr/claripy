@@ -20,7 +20,6 @@ namespace Op {
 
     /** A flattened Op class */
     template <typename T = Expression::Base> class Flat : public Base {
-        OP_ASSERT_IS_EXPRESSION(T)
         OP_PURE_INIT(Flat)
       public:
         /** Operand container type */

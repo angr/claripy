@@ -13,17 +13,16 @@
 // Forward declarations
 namespace Expression {
     class Bits;
-} // namespace Expression
+}
 
 namespace Op {
 
     /** The comparison op class: Eq */
     class Concat final : public Binary<Expression::Bits> {
-        OP_FINAL_INIT(Eq)
+        OP_FINAL_INIT(Concat)
       private:
         /** Private constructor */
-        explicit inline Eq(const Hash::Hash &h, const Factory::Ptr<Expression::Base> &l,
-                           const Factory::Ptr<Expression::Base> &r)
+        explicit inline Concat(const Hash::Hash &h, const Operand &l, const Operand &r)
             : Binary { h, static_cuid, l, r } {}
     };
 

@@ -13,9 +13,11 @@
 
 namespace Op {
 
-    /** A flattened Op class */
+    /** A flattened Op class
+     *  T must derive from Expression::Base but we do not enforce this
+     *  to avoid cyclic header inclusion issues
+     */
     template <typename T = Expression::Base> class Binary : public Base {
-        OP_ASSERT_IS_EXPRESSION(T)
         OP_PURE_INIT(Binary)
       public:
         /** The operand type */
