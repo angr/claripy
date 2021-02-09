@@ -6,6 +6,8 @@
 #ifndef __CREATE_HPP__
 #define __CREATE_HPP__
 
+#include "create/add.hpp"
+#include "create/concat.hpp"
 #include "create/eq.hpp"
 
 #endif
