@@ -11,6 +11,19 @@
 #include <memory>
 
 
+/** A macro used to define a trivial subclass of Binary
+ *  Optionally private a type that Binary templates on
+ */
+#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, ...)                                                    \
+    class CLASS final : public Binary<__VA_ARGS__> {                                              \
+        OP_FINAL_INIT(CLASS)                                                                      \
+      private:                                                                                    \
+        /** Private constructor */                                                                \
+        explicit inline CLASS(const Hash::Hash &h, const Operand &l, const Operand &r)            \
+            : Binary { h, static_cuid, l, r } {}                                                  \
+    };
+
+
 namespace Op {
 
     /** A flattened Op class

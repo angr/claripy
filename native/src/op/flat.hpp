@@ -11,10 +11,24 @@
 #include <memory>
 
 
+/** A macro used to define a trivial subclass of Flat
+ *  Optionally private a type that Flat templates on
+ */
+#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, ...)                                                      \
+    class CLASS final : public Flat<__VA_ARGS__> {                                                \
+        OP_FINAL_INIT(CLASS)                                                                      \
+      private:                                                                                    \
+        /** Private constructor */                                                                \
+        explicit inline CLASS(const Hash::Hash &h, OpContainer &&input)                           \
+            : Flat { h, static_cuid, std::forward<OpContainer>(input) } {}                        \
+    };
+
+
 // Forward declarations
 namespace Expression {
     class Bool;
 } // namespace Expression
+
 
 namespace Op {
 
