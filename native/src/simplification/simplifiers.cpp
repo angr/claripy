@@ -1,6 +1,8 @@
 /** @file */
 #include "simplifiers.hpp"
 
+#include "../op.hpp"
+
 
 // For clarity
 using namespace Simplification;
