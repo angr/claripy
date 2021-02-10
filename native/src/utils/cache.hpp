@@ -63,7 +63,7 @@ namespace Utils {
 
             // Create locked scope
             {
-                std::scoped_lock rw(lock);
+                std::shared_lock<decltype(s_m)> r(s_m);
                 // Initial find
                 if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
                     return lookup;
@@ -88,7 +88,7 @@ namespace Utils {
 
             // Create locked scope
             {
-                std::scoped_lock rw(lock);
+                std::unique_lock<decltype(s_m)> rw(s_m);
                 // Second lookup
                 if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
                     return lookup;
@@ -155,7 +155,7 @@ namespace Utils {
         /************************************************/
 
         /** A mutex used to protect the internal representation */
-        std::shared_mutex lock;
+        std::shared_mutex s_m;
 
         /** The cache representation */
         CacheMap cache;
