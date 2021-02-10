@@ -19,7 +19,7 @@ namespace Op {
     /** A factory used to construct Op subclasses
      *  Arguments are passed by non-const forwarding reference
      */
-    template <typename T, typename... Args> inline Factory::Ptr<T> factory(Args &&...args) {
+    template <typename T, typename... Args> inline BasePtr factory(Args &&...args) {
         static_assert(Utils::is_ancestor<Base, T>, "T must derive from SOC::Base");
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }

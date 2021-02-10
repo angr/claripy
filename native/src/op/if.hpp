@@ -22,19 +22,29 @@ namespace Op {
     class If final : public Base {
         OP_FINAL_INIT(If)
       public:
-        /** If condition */
-        const Factory::Ptr<Expression::Bool> cond;
+        /** If condition: This must be an Expression::Bool pointer
+         *  Note: We leave it as a base for optimizations purposes
+         */
+        const Expression::BasePtr cond;
         /** If true expression */
-        const Factory::Ptr<Expression::Base> if_true;
+        const Expression::BasePtr if_true;
         /** If false expression */
-        const Factory::Ptr<Expression::Base> if_false;
+        const Expression::BasePtr if_false;
 
       private:
-        /** Protected constructor */
-        explicit inline If(const Hash::Hash &h, const Factory::Ptr<Expression::Bool> &c,
-                           const Factory::Ptr<Expression::Base> &if_tru,
-                           const Factory::Ptr<Expression::Base> &if_fal)
-            : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {}
+        /** Protected constructor
+         *  Ensure that cond is a bool
+         */
+        explicit inline If(const Hash::Hash &h, const Expression::BasePtr &c,
+                           const Expression::BasePtr &if_tru, const Expression::BasePtr &if_fal)
+            : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {
+            // Error checking
+            namespace Err = Error::Expression;
+            Utils::affirm<Err::Type>(cond->cuid == Expression::Bool::static_cuid,
+                                     "Op::If: Condition expression must be a boolean");
+            Utils::affirm<Err::Type>(if_true->cuid == if_false->cuid,
+                                     "Op::If: if_true must be of the same type as if_false");
+        }
     };
 
 } // namespace Op

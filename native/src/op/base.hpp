@@ -7,10 +7,23 @@
 
 #include "macros.hpp"
 
+#include "../expression.hpp" // For subclasses
 #include "../factory.hpp"
 
 
+// Forward declarations helpful for derived ops
+namespace Expression {
+    using BasePtr = Factory::Ptr<Base>;
+}
+
+
 namespace Op {
+
+    // Forward declarations
+    class Base;
+
+    /** An alias for Factory::Ptr<Base> */
+    using BasePtr = Factory::Ptr<Base>;
 
     /** Base operation expression
      *  All op expressions must subclass this
