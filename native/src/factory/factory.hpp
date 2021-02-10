@@ -26,6 +26,7 @@ namespace Factory {
     } // namespace Private
 
     /** A factory used to construct subclasses of Base.
+     *  Returns a pointer Ptr<Base> that can be static_pointer casted down to Ptr<T> safely
      *  Instantiable subclasses that want to be directly constructed via factory:
      *    1. Must have a static const CUID::CUID static_cuid field (define it by
      *       DEFINE_STATIC_CUID)
@@ -35,7 +36,8 @@ namespace Factory {
      *  Arguments are passed by non-const forwarding reference
      *  @todo update eager_backends functionality
      */
-    template <typename Base, typename T, typename... Args> inline Ptr<T> factory(Args &&...args) {
+    template <typename Base, typename T, typename... Args>
+    inline Ptr<Base> factory(Args &&...args) {
         FactoryMade::static_type_check<Base, T, Args...>();
 
         // Check to see if the object to be constructed exists in the hash cache
@@ -44,18 +46,12 @@ namespace Factory {
         // Note: we have these two as distinct statements to ensure hash is done first
         // As the std::forward may move args
 
+        // Use the cv unqualified type as the key
+        using CacheKeyT = std::remove_cv_t<Base>;
+
         // If the Factory::Ptr and Cache::Ptr are not implicitly convertible, this should warn
-        const auto ret { // Use the cv-unqualified cache
-                         Private::cache<std::remove_cv_t<Base>>.template find_or_emplace<T>(
-                             hash, hash, std::forward<Args>(args)...)
-        };
-        if constexpr (Utils::is_same_ignore_const<Base, T>) {
-            return ret;
-        }
-        else {
-            // Since cache emplaces a T, this is a safe static cast
-            return Utils::static_down_cast<T>(ret);
-        }
+        return Private::cache<CacheKeyT>.template find_or_emplace<T>(hash, hash,
+                                                                     std::forward<Args>(args)...);
     }
 
 } // namespace Factory
