@@ -12,6 +12,24 @@
 #include <type_traits>
 
 
+// Verify RTTI is enabled
+#if defined(__clang__)
+    #if !__has_feature(cxx_rtti)
+        #error "Claricpp requires on RTTI"
+    #endif
+#elif defined(__GNUG__)
+    #if !defined(__GXX_RTTI)
+        #error "Claricpp requires on RTTI"
+    #endif
+#elif defined(_MSC_VER)
+    #if !defined(_CPPRTTI)
+        #error "Claricpp requires on RTTI"
+    #endif
+#elif !defined(RTTI_OVERRIDE)
+    #error "Compiler unknown. If your compiler supports RTTI define RTTI_OVERRIDE"
+#endif
+
+
 namespace Constants {
 
     /** A signed integer type that is consistent across all of claricpp
