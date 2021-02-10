@@ -11,7 +11,7 @@
 namespace Create {
 
     /** Create a Bool Expression with an Eq op */
-    template <typename T> BasePtr concat(const Ptr<T> &left, const Ptr<T> &right, AnVec &&av) {
+    template <typename T> EBasePtr concat(const Ptr<T> &left, const Ptr<T> &right, EAnVec &&av) {
 #if 1
         (void) left;
         (void) right;
@@ -35,7 +35,7 @@ namespace Create {
         // Construct expression
         return simplify(Ex::factory<T>(left->symbolic || right->symbolic,
                                        Op::factory<Op::Concat>(left, right),
-                                       std::forward<AnVec>(av)));
+                                       std::forward<EAnVec>(av)));
 #endif
     }
 

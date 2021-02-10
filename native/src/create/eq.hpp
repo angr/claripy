@@ -11,7 +11,7 @@
 namespace Create {
 
     /** Create a Bool Expression with an Eq op */
-    template <typename T> BasePtr eq(const BasePtr &left, const BasePtr &right, AnVec &&av) {
+    template <typename T> EBasePtr eq(const EBasePtr &left, const EBasePtr &right, EAnVec &&av) {
 
         // For brevity
         namespace Ex = Expression;
@@ -30,9 +30,9 @@ namespace Create {
         }
 
         // Construct expression
-        return simplify(Ex::factory<Ex::Bool>(left->symbolic || right->symbolic,
-                                              Op::factory<Op::Eq>(left, right),
-                                              std::forward<AnVec>(av)));
+        return simplify(Ex::factory<Ex::Bool>(std::forward<EAnVec>(av),
+                                              left->symbolic || right->symbolic,
+                                              Op::factory<Op::Eq>(left, right)));
     }
 
 } // namespace Create

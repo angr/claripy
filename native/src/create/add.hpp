@@ -11,25 +11,37 @@
 namespace Create {
 
     /** Create a Bool Expression with an Eq op */
-    template <typename T> BasePtr add(Op::Add::OpContainer &&operands, AnVec &&av) {
+    template <typename T> EBasePtr add(Op::Add::OpContainer &&operands, EAnVec &&av) {
 
         // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         using OpC = Op::Add::OpContainer;
+        namespace Err = Error::Expression;
 
         // Or of all operands sym
         bool sym { false };
-
-        // Used for checks
-        const Constants::UInt size { dynamic_cast<CTSC<CSized>>(operands[0].get())->size };
 
         // Checks
         static_assert(Utils::qualified_is_in<T, Ex::BV>,
                       "Create::add only supported for Expression::BV");
         static_assert(std::is_final_v<T>, "Create::add's assumes T is final");
-        Utils::affirm<Error::Expression::Size>(operands.size() >= 2,
-                                               "Create::add takes at least 2 operands");
+        Utils::affirm<Err::Size>(operands.size() >= 1, "Create::add's operands are empty.");
+
+        // Verify that Op::Add is flat and that the first operand is of type BV
+        // Flat ops promise to verify all operand types are identical
+        static_assert(Utils::is_ancestor<Op::FlatBase, Op::Add>,
+                      "Op::Add is not flat as expected");
+        Utils::affirm<Err::Type>(
+            operands[0]->cuid == Expression::BV::static_cuid,
+            "Create::add operands are not all of type Expression::BV as is required.");
+
+        // Get size
+        // We already verified that operands[0] is a BV
+        static_assert(Utils::is_ancestor<CSized, Expression::BV>, "BV is unsized");
+        const Constants::UInt size { static_cast<CTSC<Expression::BV>>(operands[0].get())->size };
+
+        // Verify identical sizes
         for (const auto &i : operands) {
             const auto ptr { dynamic_cast<CTSC<CSized>>(i.get()) };
             Utils::affirm<Error::Expression::Type>(
@@ -42,8 +54,8 @@ namespace Create {
 
         // Construct expression
         return simplify(
-            Ex::factory<Expression::BV>(sym, Op::factory<Op::Add>(std::forward<OpC>(operands)),
-                                        std::forward<AnVec>(av), size));
+            Ex::factory<Expression::BV>(std::forward<EAnVec>(av), sym,
+                                        Op::factory<Op::Add>(std::forward<OpC>(operands)), size));
     }
 
 } // namespace Create

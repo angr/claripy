@@ -7,6 +7,7 @@
 
 #include "../expression.hpp"
 
+
 // For files that include this
 #include "../error.hpp"
 #include "../op.hpp"
@@ -16,13 +17,13 @@
 namespace Create {
 
     /** A shortcut for an annotation vector */
-    using AnVec = Expression::Base::AnnotationVec;
+    using EAnVec = Expression::Base::AnVec;
 
     /** A shortcut for a factory pointer */
     template <typename T> using Ptr = Factory::Ptr<T>;
 
     /** A shortcut for Ptr<Expression::Base> */
-    using BasePtr = Ptr<Expression::Base>;
+    using EBasePtr = Ptr<Expression::Base>;
 
     /** An abbreviation for Constants::CTSC */
     template <typename T> using CTSC = Constants::CTSC<T>;
