@@ -6,7 +6,6 @@
 #define __EXPRESSION_BASE_HPP__
 
 #include "../factory.hpp"
-#include "../op.hpp"
 
 #include <memory>
 #include <vector>
@@ -15,9 +14,20 @@
 // Forward declarations
 namespace Annotation {
     struct Base;
-}
+    using BasePtr = Factory::Ptr<Base>;
+} // namespace Annotation
+namespace Op {
+    class Base;
+    using BasePtr = Factory::Ptr<Base>;
+} // namespace Op
 
 namespace Expression {
+
+    // Forward declarations
+    class Base;
+
+    /** An alias for Factory::Ptr<Expression::Base> */
+    using BasePtr = Factory::Ptr<Base>;
 
     /** The base Expression type
      *  All expressions must subclass this
@@ -25,38 +35,36 @@ namespace Expression {
     class Base : public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       public:
+        /** Annotation vector type */
+        using AnVec = std::vector<Annotation::BasePtr>;
+
+        /** A set of annotations applied onto this Expression */
+        const AnVec annotations;
+
         /** Return true if and only if this expression is symbolic */
         const bool symbolic;
 
         /** The Expression Op */
-        const Factory::Ptr<Op::Base> op;
-
-        /** Annotation vector type */
-        using AnnotationVec = std::vector<Factory::Ptr<Annotation::Base>>;
-
-        /** A set of annotations applied onto this Expression */
-        const AnnotationVec annotations;
+        const Op::BasePtr op;
 
       protected:
         /** Protected Constructor */
-        explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Factory::Ptr<Op::Base> &&op_, AnnotationVec &&annotations_) noexcept
-            : FactoryMade { h, c }, symbolic { sym }, op { op_ }, annotations { annotations_ } {
+        explicit inline Base(const Hash::Hash h, const CUID::CUID &c, AnVec &&ans, const bool sym,
+                             Op::BasePtr &&op_) noexcept
+            : FactoryMade { h, c }, annotations { ans }, symbolic { sym }, op { op_ } {
 #ifdef DEBUG
-            if (const auto cast { dynamic_cast<Constants::CTSC<Op::Symbol>>(op_.get()) }; cast) {
-                using Err = Utils::Error::Unexpected::IncorrectUsage;
-                Utils::affirm<Err>(symbolic, "Symbolic Op may not be concrete");
-            }
-            else if (const auto cast2 { dynamic_cast<Constants::CTSC<Op::Literal>>(op_.get()) };
-                     cast2) {
-                using Err = Utils::Error::Unexpected::IncorrectUsage;
-                Utils::affirm<Err>(!symbolic, "Literal Op may not be symbolic");
-            }
+            ctor_debug_checks();
 #endif
         }
 
         /** Pure virtual destructor */
         inline ~Base() noexcept override = 0;
+
+      private:
+        /** Used during debugging for extra checks
+         *  These need access to the internals of op so the cannot be inlined
+         */
+        void ctor_debug_checks() const;
 
         // Disable other methods of construction
         SET_IMPLICITS_CONST_MEMBERS(Base, delete)

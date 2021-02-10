@@ -17,23 +17,23 @@ namespace Expression {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
       protected:
         /** Protected Constructor */
-        explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Factory::Ptr<Op::Base> &&op_, AnnotationVec &&annotations_,
-                             const Constants::UInt size_) noexcept
-            : Base { h, c, sym, std::forward<Factory::Ptr<Op::Base>>(op_),
-                     std::forward<AnnotationVec>(annotations_) },
+        explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, AnVec &&ans, const bool sym,
+                             Op::BasePtr &&op_, const Constants::UInt size_) noexcept
+            : Base { h, c, std::forward<AnVec>(ans), sym, std::forward<Op::BasePtr>(op_) },
               CSized { size_ } {
 #ifdef DEBUG
-            if (const auto cast { dynamic_cast<Constants::CTSC<CSized>>(op_.get()) }; cast) {
-                using Err = Utils::Error::Unexpected::Base;
-                Utils::affirm<Err>(cast->size == this->size,
-                                   "CSized Op size and Bits size mismatch");
-            }
+            ctor_debug_checks();
 #endif
         }
 
         /** Pure virtual destructor */
         inline ~Bits() noexcept override = 0;
+
+      private:
+        /** Used during debugging for extra checks
+         *  These need access to the internals of op so the cannot be inlined
+         */
+        void ctor_debug_checks() const;
 
         // Disable other methods of construction
         SET_IMPLICITS_CONST_MEMBERS(Bits, delete)

@@ -29,10 +29,10 @@ namespace Expression {
 
       private:
         /** Private Constructor */
-        explicit inline Bool(const Hash::Hash h, const bool sym, Factory::Ptr<Op::Base> &&op_,
-                             AnnotationVec &&annotations_) noexcept
-            : Base { h, static_cuid, sym, std::forward<Factory::Ptr<Op::Base>>(op_),
-                     std::forward<AnnotationVec>(annotations_) } {}
+        explicit inline Bool(const Hash::Hash h, AnVec &&ans, const bool sym,
+                             Op::BasePtr &&op_) noexcept
+            : Base { h, static_cuid, std::forward<AnVec>(ans), sym,
+                     std::forward<Op::BasePtr>(op_) } {}
 
         /** Check to see if this evaluates to X */
         template <bool X> inline bool is_X() const {

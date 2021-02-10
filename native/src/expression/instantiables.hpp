@@ -24,26 +24,26 @@
                                                                                                   \
       private:                                                                                    \
         /** Private Constructor */                                                                \
-        explicit inline CLASS(const Hash::Hash h, const bool sym, Factory::Ptr<Op::Base> && op_, \
-			AnnotationVec && annotations_ CTOR_MIDDLE {} \
+        explicit inline CLASS(const Hash::Hash h, AnVec && ans, const bool sym, \
+			Op::BasePtr && op_ CTOR_MIDDLE {} \
         /* Disable other methods of construction */                                               \
         SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                \
     };
 
-/** Local: Forward op and annotations */
-#define FORWARD_OP_ANS                                                                            \
-    std::forward<Factory::Ptr<Op::Base>>(op_), std::forward<AnnotationVec>(annotations_)
-
 /** Local: A macro to define a passthrough constructor for a subclass of Base */
 #define BASE_SUBCLASS_CTOR(CLASS)                                                                 \
         ) noexcept \
-	: Base { h, static_cuid, sym, FORWARD_OP_ANS }
+	: Base {                                                                                  \
+        h, static_cuid, std::forward<AnVec>(ans), sym, std::forward<Op::BasePtr>(op_)             \
+    }
 
 
 /** Local: A macro to define a passthrough constructor for a subclass of Bits */
 #define BITS_SUBCLASS_CTOR(CLASS)                                                                 \
         , const Constants::UInt size_) noexcept \
-	: Bits { h, static_cuid, sym, FORWARD_OP_ANS, size_ }
+	: Bits {                                                                                  \
+        h, static_cuid, std::forward<AnVec>(ans), sym, std::forward<Op::BasePtr>(op_), size_      \
+    }
 
 
 /** Local: A macro to declare trivial subclasses of Base */
@@ -74,7 +74,6 @@ namespace Expression {
 
 // Cleanup
 #undef EXPRESSION_SUBCLASS
-#undef FORWARD_OP_ANS
 #undef BASE_SUBCLASS_CTOR
 #undef BITS_SUBCLASS_CTOR
 #undef DEFINE_BASE_SUBCLASS
