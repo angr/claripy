@@ -43,6 +43,9 @@ namespace Annotation {
         static const constexpr Constants::UInt default_hash { UTILS_FILE_LINE_HASH };
     };
 
+    /** An alias for Factory::Ptr<Annotation::Base> */
+    using BasePtr = Factory::Ptr<Base>;
+
 } // namespace Annotation
 
 #endif
