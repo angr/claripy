@@ -10,15 +10,14 @@ using namespace Expression;
 using namespace UnitTest::TestLib;
 
 /** Construct a t_literal<T> and up-cast it */
-template <typename T> Factory::Ptr<Expression::Base> construct(const Constants::Int i) {
-    auto ret { Factories::t_literal<T>(i) };
-    return Utils::up_cast<Expression::Base>(ret);
+template <typename T> BasePtr construct(const Constants::Int i) {
+    return Factories::t_literal<T>(i);
 }
 
 /** Each construction should have a unique pointer and hash */
 void diff() {
 
-    const std::vector<Factory::Ptr<Expression::Base>> objs {
+    const std::vector<BasePtr> objs {
         // Round 1
         construct<Int>(0_i), construct<Bool>(0_i), construct<String>(0_i), construct<FP>(0_i),
         construct<BV>(0_i), construct<VS>(0_i),

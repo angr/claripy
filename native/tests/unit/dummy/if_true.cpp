@@ -6,9 +6,13 @@
 #include "testlib.hpp"
 
 
+// For brevity
+using namespace UnitTest::TestLib::Factories;
+
+
 /** Verify that the if_true class works */
 void if_true() {
-    const auto b = UnitTest::TestLib::Factories::t_literal<Expression::Bool>();
+    const auto b = Utils::static_down_cast<Expression::Bool>(t_literal<Expression::Bool>());
 
     Dummy::echo(true, true);
     UNITTEST_ASSERT(b->is_true())

@@ -15,7 +15,7 @@ void add() {
         input.push_back(UnitTest::TestLib::Factories::t_literal<Expression::BV>());
     }
 
-    (void) Create::add<Expression::BV>(std::move(input), Expression::Base::AnnotationVec {});
+    (void) Create::add<Expression::BV>(std::move(input), Create::EAnVec {});
 }
 
 // Define the test

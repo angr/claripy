@@ -10,7 +10,7 @@
 void eq() {
     const auto a { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
     const auto b { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
-    (void) Create::eq<Expression::Bool>(a, b, Expression::Base::AnnotationVec {});
+    (void) Create::eq<Expression::Bool>(a, b, Create::EAnVec {});
 }
 
 // Define the test
