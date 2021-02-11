@@ -8,6 +8,7 @@
 #include "hashed.hpp"
 #include "type.hpp"
 
+#include "../mode.hpp"
 #include "../utils.hpp"
 
 #include <exception>
@@ -67,6 +68,15 @@ namespace Hash {
     /** A specialization for T = bool */
     template <> constexpr inline Hash singular(const bool &b) noexcept {
         return UTILS_FILE_LINE_HASH + (b ? 1ULL : 0ULL);
+    }
+
+    /** A specialization for T = Mode::FP */
+    template <> constexpr inline Hash singular(const Mode::FP &m) noexcept {
+        using U = std::underlying_type_t<Mode::FP>;
+        static_assert(sizeof(U) <= sizeof(Hash), "singular(Mode::FP) must be modified");
+        static_assert(std::is_fundamental_v<U> && std::is_fundamental_v<Hash>,
+                      "singular(Mode::FP) must be modified");
+        return UTILS_FILE_LINE_HASH + static_cast<Hash>(static_cast<U>(m));
     }
 
     /** A specialization for T = Constants::CCSC */
