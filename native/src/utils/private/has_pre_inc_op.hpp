@@ -7,30 +7,18 @@
 #define __UTILS_PRIVATE_HASPREINCOP_HPP__
 
 #include "../../constants.hpp"
-#include "../is_same.hpp"
-#include "../unique.hpp"
+#include "../sfinae_test.hpp"
 
 #include <utility>
 
 namespace Utils::Private {
 
-    /** A struct used to determine if T has the pre ++ operator is defined */
-    template <typename T> struct HasPreIncOp final {
-        UTILS_DEFINE_UNIQUE
-        /** If U has the << operator defined the return type is resolvable
-         *  Note: we do not use declval for the ostream because some compilers are buggy with it
-         */
-        template <typename U> static constexpr decltype(++std::declval<U>()) test(U *);
-        /** If the first declaration had an unresolvable return type, we return a Unique */
-        template <typename U> static constexpr Unique test(...);
-        /** Determine the return type of test<T>(nullptr) */
-        using Ret = decltype(test<T>(nullptr));
-        /** Compare the return type to determine if the << operator is defined */
-        static UTILS_CCBOOL value { !is_exactly_same<Unique, Ret> };
-    };
-
-    /** A bool that determines if T has the pre ++ operator is defined */
-    template <typename T> UTILS_ICCBOOL has_pre_inc_op { HasPreIncOp<T>::value };
+    /** A struct which determines if T has a << stream op defined */
+    UTILS_SFINAETEST(has_pre_inc_op,      // Invoke this
+                     HasPreIncOp,         // Internal class name
+                     ++std::declval<U>(), // Condition we are checking
+                     typename T           // Template arguments
+    )
 
 } // namespace Utils::Private
 

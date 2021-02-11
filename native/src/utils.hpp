@@ -37,6 +37,7 @@
 #include "utils/run_before_main.hpp"
 #include "utils/run_on_destruction.hpp"
 #include "utils/set_join.hpp"
+#include "utils/sfinae_test.hpp"
 #include "utils/sink.hpp"
 #include "utils/strlen.hpp"
 #include "utils/thread_safe.hpp"
@@ -46,6 +47,5 @@
 #include "utils/type_id.hpp"
 #include "utils/type_pun.hpp"
 #include "utils/unconstructable.hpp"
-#include "utils/unique.hpp"
 
 #endif

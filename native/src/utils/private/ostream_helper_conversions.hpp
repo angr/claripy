@@ -9,8 +9,7 @@
 #define __UTILS_PRIVATE_OSTREAMHELPERCONVERSIONS_HPP__
 
 #include "../../macros.hpp"
-#include "../is_same.hpp"
-#include "../unique.hpp"
+#include "../sfinae_test.hpp"
 
 #include <ostream>
 #include <type_traits>
@@ -31,28 +30,17 @@ namespace Utils::Private {
         std::bool_constant<!std::is_convertible_v<T, std::underlying_type_t<T>>> {};
 
 
-    /** A struct used to determine if T has the << operator defined */
-    template <typename T> struct HasStreamOp final {
-        UTILS_DEFINE_UNIQUE
-        /** If U has the << operator defined the return type is resolvable
-         *  Note: we do not use declval for the ostream because some compilers are buggy with it
-         *  @todo Update to use declval when possible
-         */
-        template <typename U>
-        static constexpr decltype(*static_cast<std::ostream *>(nullptr) << std::declval<U>())
-        test(U *);
-        /** If the first declaration had an unresolvable return type, we return a Unique */
-        template <typename> static constexpr Unique test(...);
-        /** Determine the return type of test<T>(nullptr) */
-        using Ret = decltype(test<T>(nullptr));
-        /** Compare the return type to determine if the << operator is defined */
-        static UTILS_CCBOOL value { !is_exactly_same<Unique, Ret> };
-    };
-
+    /** A struct which determines if T has a << stream op defined */
+    UTILS_SFINAETEST(has_stream_op, // Invoke this
+                     HasStreamOp,   // Internal class name
+                     *static_cast<std::ostream *>(nullptr)
+                         << std::declval<U>(), // Condition we are checking
+                     typename T                // Template arguments
+    )
 
     /** True if and only if T is a strong enum with no << operator defined */
     template <typename T>
-    UTILS_ICCBOOL needs_ostream_conversion { IsStrongEnum<T>::value && !HasStreamOp<T>::value };
+    UTILS_ICCBOOL needs_ostream_conversion { IsStrongEnum<T>::value && !has_stream_op<T> };
 
 
     /** If T is a strong enum with no stream operator defined, static cast to its underlying type

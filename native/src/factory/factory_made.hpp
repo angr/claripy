@@ -24,7 +24,7 @@
     DEFINE_MAYBE_UNUSED_STATIC_CUID                                                               \
   private:                                                                                        \
     /** Allow verification to have friend access */                                               \
-    template <typename, typename...> friend struct ::Utils::HasConstructor;                       \
+    template <typename, typename...> friend class ::Utils::HasConstructor;                        \
     template <typename, typename...> friend struct ::std::is_constructible;                       \
     /** Allow cache friend access for factory construction */                                     \
     friend class ::Utils::Cache<Hash::Hash, const BASE>;
