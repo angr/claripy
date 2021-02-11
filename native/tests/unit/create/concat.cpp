@@ -14,7 +14,7 @@ void concat() {
     const auto b { UnitTest::TestLib::Factories::t_literal<Expression::BV>() };
 
     // Test
-    (void) Create::concat<Expression::BV>(a, b, Create::EAnVec {});
+    (void) Create::concat<Expression::BV>(Create::EAnVec {}, a, b);
 }
 
 // Define the test

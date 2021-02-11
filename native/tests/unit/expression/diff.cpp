@@ -6,24 +6,24 @@
 
 
 // For brevity
-using namespace Expression;
+namespace Ex = Expression;
 using namespace UnitTest::TestLib;
 
 /** Construct a t_literal<T> and up-cast it */
-template <typename T> BasePtr construct(const Constants::Int i) {
+template <typename T> Ex::BasePtr construct(const Constants::Int i) {
     return Factories::t_literal<T>(i);
 }
 
 /** Each construction should have a unique pointer and hash */
 void diff() {
 
-    const std::vector<BasePtr> objs {
+    const std::vector<Ex::BasePtr> objs {
         // Round 1
-        construct<Int>(0_i), construct<Bool>(0_i), construct<String>(0_i), construct<FP>(0_i),
-        construct<BV>(0_i), construct<VS>(0_i),
+        construct<Ex::Int>(0_i), construct<Ex::Bool>(0_i), construct<Ex::String>(0_i),
+        construct<Ex::FP>(0_i), construct<Ex::BV>(0_i), construct<Ex::VS>(0_i),
         // Round 2
-        construct<Int>(1_i), construct<Bool>(1_i), construct<String>(1_i), construct<FP>(1_i),
-        construct<BV>(1_i), construct<VS>(1_i)
+        construct<Ex::Int>(1_i), construct<Ex::Bool>(1_i), construct<Ex::String>(1_i),
+        construct<Ex::FP>(1_i), construct<Ex::BV>(1_i), construct<Ex::VS>(1_i)
     };
 
     // Verify unique hashes
@@ -37,9 +37,9 @@ void diff() {
 
     // Verify unique pointers
 
-    std::set<Base *> ptrs;
+    std::set<Ex::Base *> ptrs;
     for (const auto &i : objs) {
-        ptrs.insert(const_cast<Base *>(i.get())); // NOLINT
+        ptrs.insert(const_cast<Ex::Base *>(i.get())); // NOLINT
     }
 
     UNITTEST_ASSERT(ptrs.size() == objs.size())

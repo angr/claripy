@@ -15,7 +15,7 @@ void add() {
         input.push_back(UnitTest::TestLib::Factories::t_literal<Expression::BV>()); // NOLINT
     }
 
-    (void) Create::add<Expression::BV>(std::move(input), Create::EAnVec {});
+    (void) Create::add(Create::EAnVec {}, std::move(input));
 }
 
 // Define the test

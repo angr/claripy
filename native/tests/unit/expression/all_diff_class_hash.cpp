@@ -8,24 +8,24 @@
 
 
 // For brevity
-using namespace Expression;
+namespace Ex = Expression;
 using namespace UnitTest::TestLib;
 
 
 /** Add p's pointer to s */
-template <typename T> void insert(std::set<Base *> &s, const Factory::Ptr<T> &p) {
-    s.insert(const_cast<Base *const>(static_cast<const Base *const>(p.get()))); // NOLINT
+template <typename T> void insert(std::set<Ex::Base *> &s, const Factory::Ptr<T> &p) {
+    s.insert(const_cast<Ex::Base *const>(static_cast<const Ex::Base *const>(p.get()))); // NOLINT
 }
 
 /** Each construction should have a unique pointer and hash */
 void all_diff_class_hash() {
 
-    const auto a1 { Factories::t_literal<Int>() };
-    const auto a2 { Factories::t_literal<Bool>() };
-    const auto a3 { Factories::t_literal<String>() };
-    const auto a4 { Factories::t_literal<FP>() };
-    const auto a5 { Factories::t_literal<BV>() };
-    const auto a6 { Factories::t_literal<VS>() };
+    const auto a1 { Factories::t_literal<Ex::Int>() };
+    const auto a2 { Factories::t_literal<Ex::Bool>() };
+    const auto a3 { Factories::t_literal<Ex::String>() };
+    const auto a4 { Factories::t_literal<Ex::FP>() };
+    const auto a5 { Factories::t_literal<Ex::BV>() };
+    const auto a6 { Factories::t_literal<Ex::VS>() };
 
     // Verify unique hashes
 
@@ -41,7 +41,7 @@ void all_diff_class_hash() {
 
     // Verify unique pointers
 
-    std::set<Base *> ptrs;
+    std::set<Ex::Base *> ptrs;
     insert(ptrs, a1);
     insert(ptrs, a2);
     insert(ptrs, a3);
