@@ -171,6 +171,9 @@ class SimplificationManager:
     def lshift_simplifier(val, shift):
         if (shift == 0).is_true():
             return val
+        if val.op == '__lshift__':
+            real_val, inner_shift = val.args
+            return real_val << (inner_shift + shift)
 
     @staticmethod
     def eq_simplifier(a, b):
