@@ -7,6 +7,7 @@
 #define __UTILS_THREADSAFE_HPP__
 
 #include "thread_safe/access.hpp"
+#include "thread_safe/atomic.hpp"
 #include "thread_safe/move_lock.hpp"
 #include "thread_safe/mutable.hpp"
 
