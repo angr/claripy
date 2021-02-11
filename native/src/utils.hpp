@@ -39,7 +39,7 @@
 #include "utils/set_join.hpp"
 #include "utils/sink.hpp"
 #include "utils/strlen.hpp"
-#include "utils/thread_safe_access.hpp"
+#include "utils/thread_safe.hpp"
 #include "utils/to_str.hpp"
 #include "utils/transfer_const.hpp"
 #include "utils/type_dependent_constant.hpp"
