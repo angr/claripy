@@ -10,6 +10,5 @@
 #include "expression/bool.hpp"
 #include "expression/factory.hpp"
 #include "expression/instantiables.hpp"
-#include "expression/repr_level.hpp"
 
 #endif
