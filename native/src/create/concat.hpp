@@ -10,30 +10,32 @@
 
 namespace Create {
 
-#if 0
-    /** Create a Bool Expression with an Eq op */
-    template <typename T> EBasePtr concat(const Ptr<T> &left, const Ptr<T> &right, EAnVec &&av) {
+    /** Create a Expression with an Concat op */
+    template <typename T>
+    EBasePtr concat(const EBasePtr &left, const EBasePtr &right, EAnVec &&av) {
+
         // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
+        namespace Err = Error::Expression;
 
         // Static checks
-        static_assert(Utils::qualified_is_in<T, Ex::FP, Ex::Bool, Ex::BV, Ex::String>,
-                      "Create::eq argument types must be of type FP, Bool, BV, or String");
+        static_assert(Utils::qualified_is_in<T, Ex::BV, Ex::String>,
+                      "Create::concat argument types must be of type BV or String");
+        static_assert(std::is_final_v<T>, "Create::concat's assumes T is final");
 
         // Dynamic checks
-        if constexpr (Utils::is_exactly_same<Left, Ex::BV>) {
-            Utils::affirm<Error::Expression::Operation>(
-                left->size == right->size,
-                "Operand sizes must be the same to invoke Create::concat");
-        }
+        Utils::affirm<Err::Type>(left->cuid == T::static_cuid,
+                                 "Create::concat left operands must be of type T");
+        Utils::affirm<Err::Type>(right->cuid == T::static_cuid,
+                                 "Create::concat right operands must be of type T");
 
-        // Construct expression
-        return simplify(Ex::factory<T>(left->symbolic || right->symbolic,
+        // Construct expression (static casts are safe because of previous checks
+        return simplify(Ex::factory<T>(std::forward<EAnVec>(av), left->symbolic || right->symbolic,
                                        Op::factory<Op::Concat>(left, right),
-                                       std::forward<EAnVec>(av)));
+                                       static_cast<CTSC<Ex::BV>>(left.get())->size +
+                                           static_cast<CTSC<Ex::BV>>(right.get())->size));
     }
-#endif
 
 } // namespace Create
 

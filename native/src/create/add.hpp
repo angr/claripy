@@ -10,7 +10,7 @@
 
 namespace Create {
 
-    /** Create a Bool Expression with an Eq op */
+    /** Create a Expression with an Add op */
     template <typename T> EBasePtr add(Op::Add::OpContainer &&operands, EAnVec &&av) {
 
         // For brevity
@@ -44,10 +44,10 @@ namespace Create {
         // Verify identical sizes
         for (const auto &i : operands) {
             const auto ptr { dynamic_cast<CTSC<CSized>>(i.get()) };
-            Utils::affirm<Error::Expression::Type>(
-                ptr, "Not all operands given to Create::add<BV> are of type BV");
-            Utils::affirm<Error::Expression::Operation>(
-                ptr->size == size, "Create::add's arguments are of different sizes");
+            Utils::affirm<Err::Type>(ptr,
+                                     "Not all operands given to Create::add<BV> are of type BV");
+            Utils::affirm<Err::Operation>(ptr->size == size,
+                                          "Create::add's arguments are of different sizes");
             // Update sym
             sym |= i->symbolic;
         }
