@@ -11,7 +11,7 @@
 namespace Create {
 
     /** Create a Bool Expression with an Eq op */
-    template <typename T> EBasePtr eq(const EBasePtr &left, const EBasePtr &right, EAnVec &&av) {
+    template <typename T> EBasePtr eq(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
 
         // For brevity
         namespace Ex = Expression;

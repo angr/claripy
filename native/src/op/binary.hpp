@@ -17,12 +17,12 @@
  *  Optionally pass a template argument to require all of input be the type
  */
 #define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, ...)                                                    \
-    class CLASS final : public Binary<__VA_ARGS__> {                                              \
+    class CLASS final : public ::Op::Binary<__VA_ARGS__> {                                        \
         OP_FINAL_INIT(CLASS)                                                                      \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const Hash::Hash &h, const Expression::BasePtr &l,                  \
-                              const Expression::BasePtr &r)                                       \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
+                              const ::Expression::BasePtr &r)                                     \
             : Binary { h, static_cuid, l, r } {}                                                  \
     };
 

@@ -11,7 +11,7 @@
 namespace Create {
 
     /** Create a Expression with an Add op */
-    template <typename T> EBasePtr add(Op::Add::OpContainer &&operands, EAnVec &&av) {
+    inline EBasePtr add(EAnVec &&av, Op::Add::OpContainer &&operands) {
 
         // For brevity
         namespace Ex = Expression;
@@ -23,9 +23,7 @@ namespace Create {
         bool sym { false };
 
         // Checks
-        static_assert(Utils::qualified_is_in<T, Ex::BV>,
-                      "Create::add only supported for Expression::BV");
-        static_assert(std::is_final_v<T>, "Create::add's assumes T is final");
+        static_assert(std::is_final_v<Ex::BV>, "Create::add's assumes Expression::BV is final");
         Utils::affirm<Err::Size>(operands.size() >= 1, "Create::add's operands are empty.");
 
         // Verify that Op::Add is flat and that the first operand is of type BV

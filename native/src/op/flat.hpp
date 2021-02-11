@@ -15,11 +15,11 @@
  *  Optionally pass a template argument to require all of input be the type
  */
 #define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, ...)                                                      \
-    class CLASS final : public Flat<__VA_ARGS__> {                                                \
+    class CLASS final : public ::Op::Flat<__VA_ARGS__> {                                          \
         OP_FINAL_INIT(CLASS)                                                                      \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const Hash::Hash &h, OpContainer &&input)                           \
+        explicit inline CLASS(const ::Hash::Hash &h, OpContainer &&input)                         \
             : Flat { h, static_cuid, std::forward<OpContainer>(input) } {}                        \
     };
 

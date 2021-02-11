@@ -12,7 +12,7 @@ namespace Create {
 
     /** Create a Expression with an Concat op */
     template <typename T>
-    EBasePtr concat(const EBasePtr &left, const EBasePtr &right, EAnVec &&av) {
+    EBasePtr concat(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
 
         // For brevity
         namespace Ex = Expression;
@@ -30,7 +30,7 @@ namespace Create {
         Utils::affirm<Err::Type>(right->cuid == T::static_cuid,
                                  "Create::concat right operands must be of type T");
 
-        // Construct expression (static casts are safe because of previous checks
+        // Construct expression (static casts are safe because of previous checks)
         return simplify(Ex::factory<T>(std::forward<EAnVec>(av), left->symbolic || right->symbolic,
                                        Op::factory<Op::Concat>(left, right),
                                        static_cast<CTSC<Ex::BV>>(left.get())->size +

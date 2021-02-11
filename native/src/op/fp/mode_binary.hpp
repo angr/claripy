@@ -5,7 +5,7 @@
 #ifndef __OP_FP_MODEBINARY_HPP__
 #define __OP_FP_MODEBINARY_HPP__
 
-#include "../../fp.hpp"
+#include "../../mode.hpp"
 #include "../binary.hpp"
 
 
@@ -15,8 +15,8 @@
         OP_FINAL_INIT(CLASS)                                                                      \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const Hash::Hash &h, const Expression::BasePtr &l,                  \
-                              const Expression::BasePtr &r, const ::FP::Mode m)                   \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
+                              const ::Expression::BasePtr &r, const ::Mode::FP m)                 \
             : ModeBinary { h, static_cuid, l, r, m } {}                                           \
     };
 
@@ -30,13 +30,13 @@ namespace Op::FP {
         OP_PURE_INIT(ModeBinary)
       public:
         /** FP Mode */
-        const ::FP::Mode mode;
+        const Mode::FP mode;
 
       protected:
         /** Protected constructor */
         explicit inline ModeBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
                                    const Expression::BasePtr &l, const Expression::BasePtr &r,
-                                   const ::FP::Mode m)
+                                   const Mode::FP m)
             : Binary { h, cuid_, l, r }, mode { m } {}
     };
 
