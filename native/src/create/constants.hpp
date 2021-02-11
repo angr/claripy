@@ -25,6 +25,9 @@ namespace Create {
     /** A shortcut for Ptr<Expression::Base> */
     using EBasePtr = Ptr<Expression::Base>;
 
+    /** An abbreviation for Constants::CTS */
+    template <typename T> using CTS = Constants::CTS<T>;
+
     /** An abbreviation for Constants::CTSC */
     template <typename T> using CTSC = Constants::CTSC<T>;
 

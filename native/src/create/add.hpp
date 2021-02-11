@@ -39,7 +39,7 @@ namespace Create {
         // Get size
         // We already verified that operands[0] is a BV
         static_assert(Utils::is_ancestor<CSized, Expression::BV>, "BV is unsized");
-        const Constants::UInt size { static_cast<CTSC<Expression::BV>>(operands[0].get())->size };
+        const Constants::UInt size { static_cast<CTS<Expression::BV>>(operands[0].get())->size };
 
         // Verify identical sizes
         for (const auto &i : operands) {

@@ -65,9 +65,9 @@ namespace Op {
                                      "Op::Flat constructor requires at least two arguments");
 
             // Verify inputs subclass T
-            const auto cuid = operands[0]->cuid;
+            const auto cuid0 { operands[0]->cuid };
             if constexpr (std::is_final_v<T>) {
-                Utils::affirm<Err::Type>(cuid == T::static_cuid,
+                Utils::affirm<Err::Type>(cuid0 == T::static_cuid,
                                          "Op::Flat operands do not subclass given T");
             }
             else {
@@ -79,7 +79,7 @@ namespace Op {
             // Verify all inputs are the same
             for (const auto &i : operands) {
                 Utils::affirm<Err::Type>(
-                    i->cuid == cuid,
+                    i->cuid == cuid0,
                     "The cuids of left and right differ for Op::Flat's constructor."
                     " This indicates that left and right are of different types, which"
                     " is not allowed.");
