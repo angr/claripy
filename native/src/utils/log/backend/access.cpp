@@ -17,7 +17,9 @@ using Bk = Backend::Base;
 
 
 // Create a thread safe backend wrapper
-static ThreadSafe::Access<const Bk> access(std::make_shared<const Backend::Default>());
+static ThreadSafe::Access<const Bk> access {
+    make_derived_shared<const Bk, const Backend::Default>()
+};
 
 
 void Backend::Private::set(std::shared_ptr<const Base> &&ptr) {

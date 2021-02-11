@@ -17,7 +17,9 @@ using Sty = Style::Base;
 
 
 // File local variables
-static ThreadSafe::Access<const Sty> access(std::make_shared<const Style::Default>());
+static ThreadSafe::Access<const Sty> access {
+    make_derived_shared<const Sty, const Style::Default>()
+};
 
 
 void Style::Private::set(std::shared_ptr<const Base> &&ptr) {
