@@ -7,7 +7,7 @@
 #include "base.hpp"
 #include "default.hpp"
 
-#include "../../thread_safe_access.hpp"
+#include "../../thread_safe.hpp"
 
 
 // For brevity
@@ -17,7 +17,7 @@ using Sty = Style::Base;
 
 
 // File local variables
-static ThreadSafeAccess<const Sty> access(std::make_shared<const Style::Default>());
+static ThreadSafe::Access<const Sty> access(std::make_shared<const Style::Default>());
 
 
 void Style::Private::set(std::shared_ptr<const Base> &&ptr) {

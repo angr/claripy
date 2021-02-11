@@ -8,7 +8,7 @@
 
 #include "base.hpp"
 
-#include "../../thread_safe_access.hpp"
+#include "../../thread_safe.hpp"
 
 #include <memory>
 #include <vector>

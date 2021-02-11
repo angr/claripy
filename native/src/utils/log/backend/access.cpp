@@ -7,7 +7,7 @@
 #include "base.hpp"
 #include "default.hpp"
 
-#include "../../thread_safe_access.hpp"
+#include "../../thread_safe.hpp"
 
 
 // For brevity
@@ -17,7 +17,7 @@ using Bk = Backend::Base;
 
 
 // Create a thread safe backend wrapper
-static ThreadSafeAccess<const Bk> access(std::make_shared<const Backend::Default>());
+static ThreadSafe::Access<const Bk> access(std::make_shared<const Backend::Default>());
 
 
 void Backend::Private::set(std::shared_ptr<const Base> &&ptr) {
