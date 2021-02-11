@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief A binary Op; one that takes two inputs of the same type
+ * @brief A binary Op; takes two inputs of the same type
  * For example: Concat(Str1, Str2)
  */
 #ifndef __OP_BINARY_HPP__

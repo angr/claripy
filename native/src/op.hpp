@@ -9,6 +9,7 @@
 #include "op/binary.hpp"
 #include "op/factory.hpp"
 #include "op/flat.hpp"
+#include "op/fp.hpp"
 #include "op/if.hpp"
 #include "op/literal.hpp"
 #include "op/macros.hpp"
