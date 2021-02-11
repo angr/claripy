@@ -11,7 +11,7 @@ void add() {
 
     // Create input
     std::vector<Factory::Ptr<Expression::Base>> input;
-    for (int i = 0; i < 4; ++i) { // NOLINT
+    for (int i = 0; i < 4; ++i) {                                                   // NOLINT
         input.push_back(UnitTest::TestLib::Factories::t_literal<Expression::BV>()); // NOLINT
     }
 
