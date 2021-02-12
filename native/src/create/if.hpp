@@ -6,6 +6,7 @@
 #define __CREATE_IF_HPP__
 
 #include "constants.hpp"
+#include "private/size.hpp"
 
 
 namespace Create {
@@ -35,8 +36,8 @@ namespace Create {
         auto op { Op::factory<Op::If>(cond, left, right) };
         if constexpr (Utils::is_ancestor<CSized, T>) {
             // static cast is safe because we verified left is a T
-            return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op),
-                                           static_cast<Constants::CTSC<T>>(left.get())->size));
+            return simplify(
+                Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op), Private::size(left)));
         }
         else {
             return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op)));

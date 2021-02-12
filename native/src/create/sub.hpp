@@ -20,10 +20,9 @@ namespace Create {
         using namespace Simplification;
 
         // Dynamic checks
+        // Required to invoke Private::size
         Utils::affirm<Err::Type>(Ex::is_t<Ex::BV>(left),
                                  "Create::sub operands must be of type Expression::BV");
-        Utils::affirm<Err::Type>(Ex::are_same<true>(left, right),
-                                 "Create::sub operands must be of the same size and type");
 
         // Construct expression
         return simplify(

@@ -8,6 +8,7 @@
 #include "constants.hpp"
 
 #include "../../mode.hpp"
+#include "../private/size.hpp"
 
 
 namespace Create::FP {
@@ -25,16 +26,10 @@ namespace Create::FP {
         static_assert(std::is_final_v<Ex::FP>,
                       "Create::FP::add's assumes Expression::FP is final");
 
-        // Dynamic type checks
+        // Get size
         Utils::affirm<Err::Type>(Ex::is_t<Ex::FP>(left),
                                  "Create::FP::add left operands must be of type Expression::FP");
-        Utils::affirm<Err::Type>(Ex::is_t<Ex::FP>(right),
-                                 "Create::FP::add right operands must be of type Expression::FP");
-
-        // Size check (static casts are safe because of previous checks)
-        const auto size { static_cast<CTSC<Ex::BV>>(left.get())->size };
-        Utils::affirm<Err::Size>(static_cast<CTSC<Ex::BV>>(right.get())->size == size,
-                                 "Create::FP::add requires both operands be of the same size");
+        const auto size { Private::size(left) };
 
         // Create expression
         return simplify(Ex::factory<Expression::FP>(

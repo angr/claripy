@@ -6,6 +6,7 @@
 #define __CREATE_CONCAT_HPP__
 
 #include "constants.hpp"
+#include "private/size.hpp"
 
 
 namespace Create {
@@ -33,8 +34,7 @@ namespace Create {
         // Construct expression (static casts are safe because of previous checks)
         return simplify(Ex::factory<T>(std::forward<EAnVec>(av), left->symbolic || right->symbolic,
                                        Op::factory<Op::Concat>(left, right),
-                                       static_cast<CTSC<Ex::BV>>(left.get())->size +
-                                           static_cast<CTSC<Ex::BV>>(right.get())->size));
+                                       Private::size(left) + Private::size(right)));
     }
 
 } // namespace Create

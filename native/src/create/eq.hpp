@@ -6,6 +6,7 @@
 #define __CREATE_EQ_HPP__
 
 #include "constants.hpp"
+#include "private/size.hpp"
 
 
 namespace Create {
@@ -20,14 +21,6 @@ namespace Create {
         // Static checks
         static_assert(Utils::qualified_is_in<T, Ex::FP, Ex::Bool, Ex::BV, Ex::String>,
                       "Create::eq argument types must be of type FP, Bool, BV, or String");
-
-        // Dynamic checks
-        if constexpr (Utils::is_exactly_same<T, Ex::BV>) {
-            Utils::affirm<Error::Expression::Operation>(
-                dynamic_cast<CTSC<CSized>>(left.get())->size ==
-                    dynamic_cast<CTSC<CSized>>(right.get())->size,
-                "Operand sizes must be the same to invoke Create::eq");
-        }
 
         // Construct expression
         return simplify(Ex::factory<Ex::Bool>(std::forward<EAnVec>(av),
