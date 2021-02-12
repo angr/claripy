@@ -50,7 +50,6 @@ namespace Op {
       public:
         /** Left operand */
         const Expression::BasePtr left;
-
         /** Right operand */
         const Expression::BasePtr right;
 
@@ -62,14 +61,12 @@ namespace Op {
             using Err = Error::Expression::Type;
 
             // Error checking
-            Utils::affirm<Err>(left->cuid == right->cuid,
-                               "The cuids of left and right differ for Op::Binary's constructor."
-                               " This indicates that left and right are of different types, which"
-                               " is not allowed.");
+            Utils::affirm<Err>(Expression::are_same<false>(left, right),
+                               "Op::Binary left and right types differ");
 
             // Verify inputs subclass T
             if constexpr (std::is_final_v<T>) {
-                Utils::affirm<Err>(left->cuid == T::static_cuid,
+                Utils::affirm<Err>(Expression::is_t<T>(left),
                                    "Op::Flat operands do not subclass given T");
             }
             else {
