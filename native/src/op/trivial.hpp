@@ -32,6 +32,9 @@ namespace Op {
     /** The op class: Neg */
     OP_UNARY_TRIVIAL_SUBCLASS(Neg, Expression::Bits)
 
+    /** The op class: Abs */
+    OP_UNARY_TRIVIAL_SUBCLASS(Abs, Expression::Bits)
+
     /**********************************************************/
     /*                   Binary Subclasses                    */
     /**********************************************************/
