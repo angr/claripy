@@ -10,5 +10,6 @@
 #include "create/concat.hpp"
 #include "create/eq.hpp"
 #include "create/fp.hpp"
+#include "create/if.hpp"
 
 #endif
