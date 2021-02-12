@@ -1,3 +1,4 @@
+simple_test(neg)
 simple_test(eq)
 simple_test(if)
 simple_test(add)
