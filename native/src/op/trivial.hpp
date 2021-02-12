@@ -7,6 +7,7 @@
 
 #include "binary.hpp"
 #include "flat.hpp"
+#include "unary.hpp"
 
 
 // Forward declarations
@@ -22,19 +23,14 @@ namespace Op {
     /**********************************************************/
 
     /** The op class: Add */
-    OP_FLAT_TRIVIAL_SUBCLASS(Add, Expression::BV)
+    OP_FLAT_TRIVIAL_SUBCLASS(Add, true, Expression::BV)
 
-    /** The op class: And */
-    OP_FLAT_TRIVIAL_SUBCLASS(And)
+    /**********************************************************/
+    /*                    Unary Subclasses                    */
+    /**********************************************************/
 
-    /** The op class: Or */
-    OP_FLAT_TRIVIAL_SUBCLASS(Or)
-
-    /** The op class: Xor */
-    OP_FLAT_TRIVIAL_SUBCLASS(Xor, Expression::BV)
-
-    /** The op class: Mul */
-    OP_FLAT_TRIVIAL_SUBCLASS(Mul, Expression::Bits)
+    /** The op class: Neg */
+    OP_UNARY_TRIVIAL_SUBCLASS(Neg, Expression::Bits)
 
     /**********************************************************/
     /*                   Binary Subclasses                    */

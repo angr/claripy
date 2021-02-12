@@ -72,15 +72,8 @@ namespace Op {
             }
 
             // Verify inputs subclass T
-            if constexpr (std::is_final_v<T>) {
-                Utils::affirm<Err>(Expression::is_t<T>(left),
-                                   "Op::Flat operands do not subclass given T");
-            }
-            else {
-                Utils::affirm<Err>(
-                    dynamic_cast<const T *>(left.get()) != nullptr,
-                    "Op::Flat: Input operand either points to null, or is not a subclass of T");
-            }
+            Utils::affirm<Err>(Expression::is_t<T, true>(left),
+                               "Op::Flat operands do not subclass given T");
         }
     };
 

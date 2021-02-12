@@ -12,7 +12,7 @@
 
 
 /** A macro used to define a trivial subclass of Flat
- *  Optionally pass a template argument to require all of input be the type
+ *  Pass template arguments to Binary via variadic macro arguments
  */
 #define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, ...)                                                      \
     class CLASS final : public ::Op::Flat<__VA_ARGS__> {                                          \
@@ -41,9 +41,10 @@ namespace Op {
     /** A flattened Op class
      *  Operands must all be of the same type and there must be at least 2
      *  Both of these conditions are verified during construction
+     *  If ConsiderSize, sizes will be compared as well when type checking if applicable
      *	Will verify that each input operand subclasses T
      */
-    template <typename T = Expression::Base> class Flat : public FlatBase {
+    template <bool ConsiderSize, typename T = Expression::Base> class Flat : public FlatBase {
         OP_PURE_INIT(Flat)
       public:
         /** Operand container type */
@@ -60,35 +61,32 @@ namespace Op {
             : FlatBase { h, cuid_ }, operands { input } {
             namespace Err = Error::Expression;
 
-            // Verify there are at least 2 operands
+            // Verify T
+            static_assert(Utils::is_ancestor<Expression::Base, T>,
+                          "T must derive from Expression::Base");
+
+            // Leftmost operand
             Utils::affirm<Err::Size>(operands.size() >= 2,
                                      "Op::Flat constructor requires at least two arguments");
+            Utils::affirm<Err::Type>(Expression::is_t<T, true>(operands[0]),
+                                     "Op::Flat leftmost does not subclass given T");
 
-            // Verify inputs subclass T
-            const auto cuid0 { operands[0]->cuid };
-            if constexpr (std::is_final_v<T>) {
-                Utils::affirm<Err::Type>(cuid0 == T::static_cuid,
-                                         "Op::Flat operands do not subclass given T");
-            }
-            else {
-                Utils::affirm<Err::Type>(
-                    dynamic_cast<const T *>(operands[0].get()) != nullptr,
-                    "Op::Flat: Input operand either points to null, or is not a subclass of T");
-            }
-
-            // Verify all inputs are the same
+            // Verify all inputs are the same type
             for (const auto &i : operands) {
-                Utils::affirm<Err::Type>(
-                    i->cuid == cuid0,
-                    "The cuids of left and right differ for Op::Flat's constructor."
-                    " This indicates that left and right are of different types, which"
-                    " is not allowed.");
+                if constexpr (ConsiderSize) {
+                    Utils::affirm<Err::Type>(Expression::are_same<true>(operands[0], i),
+                                             "Op::Flat operands differ by size or type");
+                }
+                else {
+                    Utils::affirm<Err::Type>(Expression::are_same<false>(operands[0], i),
+                                             "Op::Flat operands differ by size");
+                }
             }
         }
     };
 
     /** Default virtual destructor */
-    template <typename T> Flat<T>::~Flat() noexcept = default;
+    template <bool B, typename T> Flat<B, T>::~Flat() noexcept = default;
 
 } // namespace Op
 
