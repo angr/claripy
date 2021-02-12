@@ -13,12 +13,18 @@
 namespace Expression {
 
     /** Return true if x is a T */
-    template <typename T, bool AllowKin> bool is_t(const BasePtr &x) {
+    template <typename T, bool AllowKin> constexpr bool is_t(const BasePtr &x) {
+        static_assert(Utils::is_ancestor<Base, T>, "T must subclass Base");
         if constexpr (std::is_final_v<T>) {
             return x->cuid == T::static_cuid;
         }
-        else if (AllowKin) {
-            return dynamic_cast<Constants::CTSC<T>>(x.get()) != nullptr;
+        else if constexpr (AllowKin) {
+            if constexpr (Utils::is_same_ignore_cv<T, Base>) {
+                return true;
+            }
+            else {
+                return dynamic_cast<Constants::CTSC<T>>(x.get()) != nullptr;
+            }
         }
         else {
             return false;
