@@ -25,9 +25,9 @@ namespace Create {
         static_assert(std::is_final_v<T>, "Create::concat's assumes T is final");
 
         // Dynamic checks
-        Utils::affirm<Err::Type>(left->cuid == T::static_cuid,
+        Utils::affirm<Err::Type>(Ex::is_t<T>(left),
                                  "Create::concat left operands must be of type T");
-        Utils::affirm<Err::Type>(right->cuid == T::static_cuid,
+        Utils::affirm<Err::Type>(Ex::is_t<T>(right),
                                  "Create::concat right operands must be of type T");
 
         // Construct expression (static casts are safe because of previous checks)

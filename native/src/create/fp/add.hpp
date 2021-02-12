@@ -26,9 +26,9 @@ namespace Create::FP {
                       "Create::FP::add's assumes Expression::FP is final");
 
         // Dynamic type checks
-        Utils::affirm<Err::Type>(left->cuid == Ex::FP::static_cuid,
+        Utils::affirm<Err::Type>(Ex::is_t<Ex::FP>(left),
                                  "Create::FP::add left operands must be of type Expression::FP");
-        Utils::affirm<Err::Type>(right->cuid == Ex::FP::static_cuid,
+        Utils::affirm<Err::Type>(Ex::is_t<Ex::FP>(right),
                                  "Create::FP::add right operands must be of type Expression::FP");
 
         // Size check (static casts are safe because of previous checks)

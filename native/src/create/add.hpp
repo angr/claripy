@@ -31,7 +31,7 @@ namespace Create {
         static_assert(Utils::is_ancestor<Op::FlatBase, Op::Add>,
                       "Op::Add is not flat as expected");
         Utils::affirm<Err::Type>(
-            operands[0]->cuid == Expression::BV::static_cuid,
+            Ex::is_t<Ex::BV>(operands[0]),
             "Create::add operands are not all of type Expression::BV as is required.");
 
         // Get size
