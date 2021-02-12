@@ -20,34 +20,15 @@ namespace Create {
         using OpC = Op::Add::OpContainer;
         namespace Err = Error::Expression;
 
-        // Or of all operands sym
-        bool sym { false };
-
-        // Checks
-        static_assert(std::is_final_v<Ex::BV>, "Create::add's assumes Expression::BV is final");
-        Utils::affirm<Err::Size>(operands.size() >= 1, "Create::add's operands are empty.");
-
-        // Verify that Op::Add is flat and that the first operand is of type BV
-        // Flat ops promise to verify all operand types are identical
-        static_assert(Utils::is_ancestor<Op::FlatBase, Op::Add>,
-                      "Op::Add is not flat as expected");
-        Utils::affirm<Err::Type>(
-            Ex::is_t<Ex::BV>(operands[0]),
-            "Create::add operands are not all of type Expression::BV as is required.");
-
         // Get size
-        // We already verified that operands[0] is a BV
-        static_assert(Utils::is_ancestor<CSized, Expression::BV>, "BV is unsized");
+        Utils::affirm<Err::Size>(operands.size() >= 2, "Create::add's operands are empty.");
+        Utils::affirm<Err::Type>(Ex::is_t<Ex::BV>(operands[0]),
+                                 "Create::add operands[0] is not a BV");
         const Constants::UInt size { Private::size(operands[0]) };
 
-        // Verify identical sizes
+        // Calculate simple sym
+        bool sym { false };
         for (const auto &i : operands) {
-            const auto ptr { dynamic_cast<CTSC<CSized>>(i.get()) };
-            Utils::affirm<Err::Type>(ptr,
-                                     "Not all operands given to Create::add<BV> are of type BV");
-            Utils::affirm<Err::Operation>(ptr->size == size,
-                                          "Create::add's arguments are of different sizes");
-            // Update sym
             sym |= i->symbolic;
         }
 
