@@ -13,7 +13,24 @@
 namespace Expression {
 
     /** Return true if x is a T */
-    template <typename T> bool is_t(const BasePtr &x) { return x->cuid == T::static_cuid; }
+    template <typename T, bool AllowKin> bool is_t(const BasePtr &x) {
+        if constexpr (std::is_final_v<T>) {
+            return x->cuid == T::static_cuid;
+        }
+        else if (AllowKin) {
+            return dynamic_cast<Constants::CTSC<T>>(x.get()) != nullptr;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /** Return true if x is a T */
+    template <typename T> bool is_t(const BasePtr &x) {
+        static_assert(std::is_final_v<T>,
+                      "is_t only allowed without AllowKin defined if T is final");
+        return is_t<T, false>(x);
+    }
 
     /** Return true if x and y are the same expression type
      *  If ConsiderSize is true, sizes are compared if the types are sized
