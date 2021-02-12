@@ -1,5 +1,6 @@
 simple_test(eq)
 simple_test(if)
 simple_test(add)
+simple_test(sub)
 simple_test(concat)
 add_subdirectory(fp)

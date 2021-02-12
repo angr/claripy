@@ -6,5 +6,6 @@
 #define __CREATE_FP_HPP__
 
 #include "fp/add.hpp"
+#include "fp/sub.hpp"
 
 #endif

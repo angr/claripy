@@ -22,7 +22,7 @@ namespace Op {
     /**********************************************************/
 
     /** The op class: Add */
-    OP_FLAT_TRIVIAL_SUBCLASS(Add)
+    OP_FLAT_TRIVIAL_SUBCLASS(Add, Expression::BV)
 
     /** The op class: And */
     OP_FLAT_TRIVIAL_SUBCLASS(And)
@@ -42,6 +42,9 @@ namespace Op {
 
     /** The comparison op class: Eq */
     OP_BINARY_TRIVIAL_SUBCLASS(Eq)
+
+    /** The comparison op class: Sub */
+    OP_BINARY_TRIVIAL_SUBCLASS(Sub, Expression::BV)
 
     /** The comparison op class: Concat */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, Expression::Bits)

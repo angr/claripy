@@ -19,6 +19,9 @@ namespace Op {
         /** The op class: FP::Add */
         OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Add)
 
+        /** The op class: FP::Sub */
+        OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Sub)
+
     } // namespace FP
 
 } // namespace Op
