@@ -5,6 +5,7 @@
 #ifndef __EXPRESSION_HPP__
 #define __EXPRESSION_HPP__
 
+#include "expression/are_same.hpp"
 #include "expression/base.hpp"
 #include "expression/bits.hpp"
 #include "expression/bool.hpp"
