@@ -24,9 +24,9 @@
 namespace Op::FP {
 
     /** An FP Binary Op class
-     *  Operands must all be of the same type
+     *  Operands must all be of the same type and size
      */
-    class ModeBinary : public Binary<Expression::FP> {
+    class ModeBinary : public Binary<true, Expression::FP> {
         OP_PURE_INIT(ModeBinary)
       public:
         /** FP Mode */

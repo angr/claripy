@@ -14,7 +14,7 @@
 
 
 /** A macro used to define a trivial subclass of Binary
- *  Optionally pass a template argument to require all of input be the type
+ *  Pass template arguments to Binary via variadic macro arguments
  */
 #define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, ...)                                                    \
     class CLASS final : public ::Op::Binary<__VA_ARGS__> {                                        \
@@ -44,8 +44,9 @@ namespace Op {
     /** A Binary Op class
      *  Operands must all be of the same type
      *	Will verify that each input operand subclasses T
+     *  If ConsiderSize, sizes will be compared as well when type checking if applicable
      */
-    template <typename T = Expression::Base> class Binary : public BinaryBase {
+    template <bool ConsiderSize, typename T = Expression::Base> class Binary : public BinaryBase {
         OP_PURE_INIT(Binary)
       public:
         /** Left operand */
@@ -60,9 +61,15 @@ namespace Op {
             : BinaryBase { h, cuid_ }, left { l }, right { r } {
             using Err = Error::Expression::Type;
 
-            // Error checking
-            Utils::affirm<Err>(Expression::are_same<false>(left, right),
-                               "Op::Binary left and right types differ");
+            // Type / size checking
+            if constexpr (ConsiderSize) {
+                Utils::affirm<Err>(Expression::are_same<true>(left, right),
+                                   "Op::Binary left and right types or sizes differ");
+            }
+            else {
+                Utils::affirm<Err>(Expression::are_same<false>(left, right),
+                                   "Op::Binary left and right types differ");
+            }
 
             // Verify inputs subclass T
             if constexpr (std::is_final_v<T>) {
@@ -78,7 +85,7 @@ namespace Op {
     };
 
     /** Default virtual destructor */
-    template <typename T> Binary<T>::~Binary() noexcept = default;
+    template <bool B, typename T> Binary<B, T>::~Binary() noexcept = default;
 
 } // namespace Op
 

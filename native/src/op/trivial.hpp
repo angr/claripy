@@ -41,13 +41,13 @@ namespace Op {
     /**********************************************************/
 
     /** The comparison op class: Eq */
-    OP_BINARY_TRIVIAL_SUBCLASS(Eq)
+    OP_BINARY_TRIVIAL_SUBCLASS(Eq, true)
 
     /** The comparison op class: Sub */
-    OP_BINARY_TRIVIAL_SUBCLASS(Sub, Expression::BV)
+    OP_BINARY_TRIVIAL_SUBCLASS(Sub, true, Expression::BV)
 
     /** The comparison op class: Concat */
-    OP_BINARY_TRIVIAL_SUBCLASS(Concat, Expression::Bits)
+    OP_BINARY_TRIVIAL_SUBCLASS(Concat, false, Expression::Bits)
 
 } // namespace Op
 
