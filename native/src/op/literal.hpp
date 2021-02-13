@@ -43,17 +43,16 @@ namespace Op {
          *  @todo figure out how this will work
          *  @todo Intern strings
          */
-        explicit inline Literal(const Hash::Hash &h, const Constants::CCSC data,
-                                const Constants::UInt size_)
+        explicit inline Literal(const Hash::Hash &h, std::string &&data)
 #ifndef ENABLE_MPZ
-            : Base { h, static_cuid }, CSized { size_ }, value { data, size_ } {
+            : Base { h, static_cuid }, CSized { data.size() }, value { data } {
         }
 #else
-            : Base { h, static_cuid }, CSized { size_ }, value { create_value(data, size_) } {
+            : Base { h, static_cuid }, CSized { data.size() }, value { create_value(data) } {
         }
 
         /** Used by the constructor to initalize value */
-        static inline ValueT create_value(const Constants::CCSC data, Constants::UInt size_) {
+        static inline ValueT create_value(std::string &&data) {
             using Usage = Utils::Error::Unexpected::IncorrectUsage;
             namespace MP = boost::multiprecision;
             // Constants
