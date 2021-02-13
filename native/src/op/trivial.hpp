@@ -38,6 +38,9 @@ namespace Op {
     /** The op class: Invert */
     OP_UNARY_TRIVIAL_SUBCLASS(Invert)
 
+    /** The op class: Reverse */
+    OP_UNARY_TRIVIAL_SUBCLASS(Reverse)
+
     /**********************************************************/
     /*                   Binary Subclasses                    */
     /**********************************************************/

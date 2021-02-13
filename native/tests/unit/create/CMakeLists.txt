@@ -1,6 +1,7 @@
 simple_test(neg)
 simple_test(abs)
 simple_test(invert)
+simple_test(reverse)
 simple_test(eq)
 simple_test(if)
 simple_test(add)
