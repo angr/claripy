@@ -15,7 +15,7 @@ void invert() {
 
     // Test
     (void) Create::invert<Expression::BV>(Create::EAnVec {}, a);
-    (void) Create::invert<Expression::BV>(Create::EAnVec {}, b);
+    (void) Create::invert<Expression::Bool>(Create::EAnVec {}, b);
 }
 
 // Define the test
