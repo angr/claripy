@@ -1,3 +1,5 @@
+simple_test(symbol)
+simple_test(literal)
 simple_test(neg)
 simple_test(abs)
 simple_test(invert)

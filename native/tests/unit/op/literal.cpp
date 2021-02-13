@@ -8,9 +8,8 @@
 /** Verify that the Concrete class works */
 void literal() {
     // Construct
-    Constants::CCSC s = { "hi" };
-    const auto c1 = Op::factory<Op::Literal>(s, 2_ui);
-    const auto c2 = Op::factory<Op::Literal>(s, 2_ui);
+    const auto c1 = Op::factory<Op::Literal>(std::string { "hi", 2 });
+    const auto c2 = Op::factory<Op::Literal>(std::string { "hi", 2 });
     // Verify factory works
     UNITTEST_ASSERT(c1 == c2)
 }
