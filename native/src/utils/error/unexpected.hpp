@@ -22,6 +22,9 @@ namespace Utils::Error {
          */
         DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Base, Claricpp)
 
+        /** Bad size exception */
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Size, Base)
+
         /** Bad cast exception */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(BadCast, Base)
 
