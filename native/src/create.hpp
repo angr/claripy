@@ -13,8 +13,10 @@
 #include "create/fp.hpp"
 #include "create/if.hpp"
 #include "create/invert.hpp"
+#include "create/literal.hpp"
 #include "create/neg.hpp"
 #include "create/reverse.hpp"
 #include "create/sub.hpp"
+#include "create/symbol.hpp"
 
 #endif
