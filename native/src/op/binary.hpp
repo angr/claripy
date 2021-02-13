@@ -15,9 +15,10 @@
 
 /** A macro used to define a trivial subclass of Binary
  *  Pass template arguments to Binary via variadic macro arguments
+ *  If ConsiderSize, sizes will be compared as well when type checking if applicable
  */
-#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, ...)                                                    \
-    class CLASS final : public ::Op::Binary<__VA_ARGS__> {                                        \
+#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE)                                           \
+    class CLASS final : public ::Op::Binary<CONSIDERSIZE> {                                       \
         OP_FINAL_INIT(CLASS)                                                                      \
       private:                                                                                    \
         /** Private constructor */                                                                \
@@ -29,24 +30,11 @@
 
 namespace Op {
 
-    /** A binary Base op class
-     *  All templated binary classes must subclass this
-     *  To check if a class is binary, check if it subclasses BinaryBase
-     */
-    struct BinaryBase : public Base {
-        /** Use parent constructors */
-        using Base::Base;
-        OP_PURE_INIT(BinaryBase)
-    };
-    /** Default destructor */
-    BinaryBase::~BinaryBase() noexcept = default;
-
     /** A Binary Op class
      *  Operands must all be of the same type
-     *	Will verify that each input operand subclasses T
      *  If ConsiderSize, sizes will be compared as well when type checking if applicable
      */
-    template <bool ConsiderSize, typename T = Expression::Base> class Binary : public BinaryBase {
+    template <bool ConsiderSize> class Binary : public Base {
         OP_PURE_INIT(Binary)
       public:
         /** Left operand */
@@ -58,7 +46,7 @@ namespace Op {
         /** Protected constructor */
         explicit inline Binary(const Hash::Hash &h, const CUID::CUID &cuid_,
                                const Expression::BasePtr &l, const Expression::BasePtr &r)
-            : BinaryBase { h, cuid_ }, left { l }, right { r } {
+            : Base { h, cuid_ }, left { l }, right { r } {
             using Err = Error::Expression::Type;
 
             // Type / size checking
@@ -70,15 +58,16 @@ namespace Op {
                 Utils::affirm<Err>(Expression::are_same<false>(left, right),
                                    "Op::Binary left and right types differ");
             }
-
-            // Verify inputs subclass T
-            Utils::affirm<Err>(Expression::is_t<T, true>(left),
-                               "Op::Flat operands do not subclass given T");
         }
     };
 
     /** Default virtual destructor */
-    template <bool B, typename T> Binary<B, T>::~Binary() noexcept = default;
+    template <bool B> Binary<B>::~Binary() noexcept = default;
+
+    /** Returns true if T is binary */
+    template <typename T>
+    UTILS_ICCBOOL is_binary { Utils::is_ancestor<Binary<true>, T> ||
+                              Utils::is_ancestor<Binary<false>, T> };
 
 } // namespace Op
 

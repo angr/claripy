@@ -13,9 +13,10 @@
 
 /** A macro used to define a trivial subclass of Flat
  *  Pass template arguments to Binary via variadic macro arguments
+ *  If ConsiderSize, sizes will be compared as well when type checking if applicable
  */
-#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, ...)                                                      \
-    class CLASS final : public ::Op::Flat<__VA_ARGS__> {                                          \
+#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE)                                             \
+    class CLASS final : public ::Op::Flat<CONSIDERSIZE> {                                         \
         OP_FINAL_INIT(CLASS)                                                                      \
       private:                                                                                    \
         /** Private constructor */                                                                \
@@ -26,25 +27,12 @@
 
 namespace Op {
 
-    /** A flattened Base op class
-     *  All templated flat classes must subclass this
-     *  To check if a class is flat, check if it subclasses FlatBase
-     */
-    struct FlatBase : public Base {
-        /** Use parent constructors */
-        using Base::Base;
-        OP_PURE_INIT(FlatBase)
-    };
-    /** Default destructor */
-    FlatBase::~FlatBase() noexcept = default;
-
     /** A flattened Op class
      *  Operands must all be of the same type and there must be at least 2
      *  Both of these conditions are verified during construction
      *  If ConsiderSize, sizes will be compared as well when type checking if applicable
-     *	Will verify that each input operand subclasses T
      */
-    template <bool ConsiderSize, typename T = Expression::Base> class Flat : public FlatBase {
+    template <bool ConsiderSize> class Flat : public Base {
         OP_PURE_INIT(Flat)
       public:
         /** Operand container type */
@@ -58,18 +46,12 @@ namespace Op {
          *  Verify that all operands are of the same type and that there are at least 2
          */
         explicit inline Flat(const Hash::Hash &h, const CUID::CUID &cuid_, OpContainer &&input)
-            : FlatBase { h, cuid_ }, operands { input } {
+            : Base { h, cuid_ }, operands { input } {
             namespace Err = Error::Expression;
 
-            // Verify T
-            static_assert(Utils::is_ancestor<Expression::Base, T>,
-                          "T must derive from Expression::Base");
-
-            // Leftmost operand
+            // Operands size
             Utils::affirm<Err::Size>(operands.size() >= 2,
                                      "Op::Flat constructor requires at least two arguments");
-            Utils::affirm<Err::Type>(Expression::is_t<T, true>(operands[0]),
-                                     "Op::Flat leftmost does not subclass given T");
 
             // Verify all inputs are the same type
             for (const auto &i : operands) {
@@ -86,7 +68,12 @@ namespace Op {
     };
 
     /** Default virtual destructor */
-    template <bool B, typename T> Flat<B, T>::~Flat() noexcept = default;
+    template <bool B> Flat<B>::~Flat() noexcept = default;
+
+    /** Returns true if T is flat */
+    template <typename T>
+    UTILS_ICCBOOL is_flat { Utils::is_ancestor<Flat<true>, T> ||
+                            Utils::is_ancestor<Flat<false>, T> };
 
 } // namespace Op
 

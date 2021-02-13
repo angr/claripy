@@ -23,17 +23,17 @@ namespace Op {
     /**********************************************************/
 
     /** The op class: Add */
-    OP_FLAT_TRIVIAL_SUBCLASS(Add, true, Expression::BV)
+    OP_FLAT_TRIVIAL_SUBCLASS(Add, true)
 
     /**********************************************************/
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
     /** The op class: Neg */
-    OP_UNARY_TRIVIAL_SUBCLASS(Neg, Expression::Bits)
+    OP_UNARY_TRIVIAL_SUBCLASS(Neg)
 
     /** The op class: Abs */
-    OP_UNARY_TRIVIAL_SUBCLASS(Abs, Expression::Bits)
+    OP_UNARY_TRIVIAL_SUBCLASS(Abs)
 
     /**********************************************************/
     /*                   Binary Subclasses                    */
@@ -43,10 +43,10 @@ namespace Op {
     OP_BINARY_TRIVIAL_SUBCLASS(Eq, true)
 
     /** The comparison op class: Sub */
-    OP_BINARY_TRIVIAL_SUBCLASS(Sub, true, Expression::BV)
+    OP_BINARY_TRIVIAL_SUBCLASS(Sub, true)
 
     /** The comparison op class: Concat */
-    OP_BINARY_TRIVIAL_SUBCLASS(Concat, false, Expression::Bits)
+    OP_BINARY_TRIVIAL_SUBCLASS(Concat, false)
 
 } // namespace Op
 

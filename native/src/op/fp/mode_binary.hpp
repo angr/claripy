@@ -26,7 +26,7 @@ namespace Op::FP {
     /** An FP Binary Op class
      *  Operands must all be of the same type and size
      */
-    class ModeBinary : public Binary<true, Expression::FP> {
+    class ModeBinary : public Binary<true> {
         OP_PURE_INIT(ModeBinary)
       public:
         /** FP Mode */
@@ -42,6 +42,9 @@ namespace Op::FP {
 
     /** Default virtual destructor */
     ModeBinary::~ModeBinary() noexcept = default;
+
+    /** Returns true if T is ModeBinary */
+    template <typename T> UTILS_ICCBOOL is_modebinary { Utils::is_ancestor<ModeBinary, T> };
 
 } // namespace Op::FP
 
