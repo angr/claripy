@@ -20,11 +20,11 @@ namespace Create {
         using OpC = Op::Add::OpContainer;
         namespace Err = Error::Expression;
 
-        // Get size
+        // Type check
+        static_assert(Op::is_flat<Op::Add>, "Create::add assumes Op::Add is flat");
         Utils::affirm<Err::Size>(operands.size() >= 2, "Create::add's operands are empty.");
         Utils::affirm<Err::Type>(Ex::is_t<Ex::BV>(operands[0]),
                                  "Create::add operands[0] is not a BV");
-        const Constants::UInt size { Private::size(operands[0]) };
 
         // Calculate simple sym
         bool sym { false };
@@ -33,9 +33,9 @@ namespace Create {
         }
 
         // Construct expression
-        return simplify(
-            Ex::factory<Expression::BV>(std::forward<EAnVec>(av), sym,
-                                        Op::factory<Op::Add>(std::forward<OpC>(operands)), size));
+        return simplify(Ex::factory<Expression::BV>(
+            std::forward<EAnVec>(av), sym, Op::factory<Op::Add>(std::forward<OpC>(operands)),
+            Private::size(operands[0])));
     }
 
 } // namespace Create

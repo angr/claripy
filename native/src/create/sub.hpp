@@ -19,8 +19,8 @@ namespace Create {
         namespace Err = Error::Expression;
         using namespace Simplification;
 
-        // Dynamic checks
-        // Required to invoke Private::size
+        // Type checks
+        static_assert(Op::is_binary<Op::Sub>, "Create::sub assumes Op::Sub is binary");
         Utils::affirm<Err::Type>(Ex::is_t<Ex::BV>(left),
                                  "Create::sub operands must be of type Expression::BV");
 

@@ -22,19 +22,16 @@ namespace Create::FP {
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Static checks
-        static_assert(std::is_final_v<Ex::FP>,
-                      "Create::FP::add's assumes Expression::FP is final");
-
-        // Get size
+        // Type check
+        static_assert(Op::FP::is_modebinary<Op::FP::Add>,
+                      "Create::FP::add assumes Op::FP::Add is Op::FP::ModeBinary");
         Utils::affirm<Err::Type>(Ex::is_t<Ex::FP>(left),
                                  "Create::FP::add left operands must be of type Expression::FP");
-        const auto size { Private::size(left) };
 
         // Create expression
         return simplify(Ex::factory<Expression::FP>(
             std::forward<EAnVec>(av), left->symbolic || right->symbolic,
-            Op::factory<Op::FP::Add>(left, right, mode), size));
+            Op::factory<Op::FP::Add>(left, right, mode), Private::size(left)));
     }
 
 } // namespace Create::FP

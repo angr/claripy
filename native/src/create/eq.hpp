@@ -21,6 +21,7 @@ namespace Create {
         // Static checks
         static_assert(Utils::qualified_is_in<T, Ex::FP, Ex::Bool, Ex::BV, Ex::String>,
                       "Create::eq argument types must be of type FP, Bool, BV, or String");
+        static_assert(Op::is_binary<Op::Eq>, "Create::eq assumes Op::Eq is binary");
 
         // Construct expression
         return simplify(Ex::factory<Ex::Bool>(std::forward<EAnVec>(av),

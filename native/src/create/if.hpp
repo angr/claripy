@@ -20,16 +20,9 @@ namespace Create {
         namespace Err = Error::Expression;
         using namespace Simplification;
 
-        // Static checks
+        // Type checks
         static_assert(Utils::is_ancestor<Expression::Base, T>, "T must subclass Expression::Base");
-        static_assert(std::is_final_v<T>, "T must be a final class");
-
-        // Dynamic checks
-        Utils::affirm<Err::Type>(Ex::is_t<Ex::Bool>(cond),
-                                 "Create::if_ cond operands must be an Expression::Bool");
         Utils::affirm<Err::Type>(Ex::is_t<T>(left), "Create::if_ left operands must be a T");
-        Utils::affirm<Err::Type>(Ex::are_same<true>(left, right),
-                                 "Create::if_ operands differ in type or size");
 
         // Construct expression
         const bool sym { cond->symbolic || left->symbolic || right->symbolic };

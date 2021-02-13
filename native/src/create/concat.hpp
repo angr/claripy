@@ -20,16 +20,12 @@ namespace Create {
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Static checks
+        // Type check
         static_assert(Utils::qualified_is_in<T, Ex::BV, Ex::String>,
                       "Create::concat argument types must be of type BV or String");
-        static_assert(std::is_final_v<T>, "Create::concat's assumes T is final");
-
-        // Dynamic checks
+        static_assert(Op::is_binary<Op::Concat>, "Create::concat assumes Op::Concat is binary");
         Utils::affirm<Err::Type>(Ex::is_t<T>(left),
                                  "Create::concat left operands must be of type T");
-        Utils::affirm<Err::Type>(Ex::is_t<T>(right),
-                                 "Create::concat right operands must be of type T");
 
         // Construct expression (static casts are safe because of previous checks)
         return simplify(Ex::factory<T>(std::forward<EAnVec>(av), left->symbolic || right->symbolic,
