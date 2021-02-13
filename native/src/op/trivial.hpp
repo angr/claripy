@@ -35,6 +35,9 @@ namespace Op {
     /** The op class: Abs */
     OP_UNARY_TRIVIAL_SUBCLASS(Abs)
 
+    /** The op class: Invert */
+    OP_UNARY_TRIVIAL_SUBCLASS(Invert)
+
     /**********************************************************/
     /*                   Binary Subclasses                    */
     /**********************************************************/

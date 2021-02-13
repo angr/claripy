@@ -12,6 +12,7 @@
 #include "create/eq.hpp"
 #include "create/fp.hpp"
 #include "create/if.hpp"
+#include "create/invert.hpp"
 #include "create/neg.hpp"
 #include "create/sub.hpp"
 

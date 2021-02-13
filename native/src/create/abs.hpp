@@ -25,7 +25,7 @@ namespace Create {
         static_assert(Op::is_unary<Op::Abs>, "Create::neg assumes Op::Abs is unary");
         Utils::affirm<Err::Type>(Ex::is_t<T>(x), "Create::abs operand must be of type T");
 
-        // Construct expression (static casts are safe because of previous checks)
+        // Construct expression
         return simplify(Ex::factory<T>(std::forward<EAnVec>(av), x->symbolic,
                                        Op::factory<Op::Abs>(x), Private::size(x)));
     }
