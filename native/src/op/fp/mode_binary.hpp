@@ -44,7 +44,7 @@ namespace Op::FP {
     ModeBinary::~ModeBinary() noexcept = default;
 
     /** Returns true if T is ModeBinary */
-    template <typename T> UTILS_ICCBOOL is_modebinary { Utils::is_ancestor<ModeBinary, T> };
+    template <typename T> UTILS_ICCBOOL is_mode_binary { Utils::is_ancestor<ModeBinary, T> };
 
 } // namespace Op::FP
 

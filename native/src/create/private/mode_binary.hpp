@@ -25,7 +25,7 @@ namespace Create::Private {
         namespace Err = Error::Expression;
 
         // Type check
-        static_assert(Op::FP::is_modebinary<OpT>,
+        static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
         Utils::affirm<Err::Type>(
             Ex::is_t<Ex::FP>(left),
