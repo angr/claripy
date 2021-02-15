@@ -2,15 +2,12 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
-#include "testlib.hpp"
+#include "binary.hpp"
 
 
-/** Verify that the eq function compiles and can be run without issue */
+/** Test the Create::eq function */
 void eq() {
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
-    const auto b { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
-    (void) Create::eq<Expression::Bool>(Create::EAnVec {}, a, b);
+    binary<Expression::Bool, Op::Eq, SM::First, Create::eq<Expression::Bool>>();
 }
 
 // Define the test

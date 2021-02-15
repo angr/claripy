@@ -2,15 +2,12 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
-#include "testlib.hpp"
+#include "binary.hpp"
 
 
-/** Verify that the sub function compiles and can be run without issue */
+/** Test the Create::sub function */
 void sub() {
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::BV>() };
-    const auto b { UnitTest::TestLib::Factories::t_literal<Expression::BV>() };
-    (void) Create::sub(Create::EAnVec {}, a, b);
+    binary<Expression::BV, Op::Sub, SM::First, Create::sub>();
 }
 
 // Define the test
