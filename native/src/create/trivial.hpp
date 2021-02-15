@@ -75,9 +75,15 @@ namespace Create {
     /** Create a Expression with an Add op */
     inline EBasePtr add(EAnVec &&av, Op::Add::OpContainer &&operands) {
         namespace Ex = Expression;
-        using OpC = Op::Add::OpContainer;
         return Private::flat<Ex::BV, Op::Add, Private::SizeMode::First, Ex::BV>(
-            std::forward<EAnVec>(av), std::forward<OpC>(operands));
+            std::forward<EAnVec>(av), std::forward<Op::Add::OpContainer>(operands));
+    }
+
+    /** Create a Expression with an Mul op */
+    inline EBasePtr mul(EAnVec &&av, Op::Mul::OpContainer &&operands) {
+        namespace Ex = Expression;
+        return Private::flat<Ex::BV, Op::Mul, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), std::forward<Op::Mul::OpContainer>(operands));
     }
 
 } // namespace Create

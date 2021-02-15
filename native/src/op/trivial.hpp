@@ -25,6 +25,9 @@ namespace Op {
     /** The op class: Add */
     OP_FLAT_TRIVIAL_SUBCLASS(Add, true)
 
+    /** The op class: Mul */
+    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true)
+
     /**********************************************************/
     /*                    Unary Subclasses                    */
     /**********************************************************/
