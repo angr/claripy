@@ -2,18 +2,13 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
-#include "testlib.hpp"
+#include "unary.hpp"
 
 
 /** Verify that the reverse function compiles and can be run without issue */
+/** Test the Create::reverse function */
 void reverse() {
-
-    // Create input
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::BV>() };
-
-    // Test
-    (void) Create::reverse(Create::EAnVec {}, a);
+    unary<Expression::BV, Op::Reverse, Create::reverse>();
 }
 
 // Define the test
