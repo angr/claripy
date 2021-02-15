@@ -41,5 +41,4 @@ namespace Create::Private {
 
 } // namespace Create::Private
 
-
 #endif

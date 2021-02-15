@@ -15,7 +15,7 @@ namespace Create::Private {
 
     /** Create a Expression with a binary op */
     template <typename T, typename OpT, SizeMode Mode, typename... Allowed>
-    EBasePtr binary(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr binary(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
 
         // For brevity
         namespace Ex = Expression;
@@ -55,6 +55,5 @@ namespace Create::Private {
     }
 
 } // namespace Create::Private
-
 
 #endif
