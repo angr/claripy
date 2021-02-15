@@ -12,6 +12,8 @@
 
 /** Test a unary op */
 template <typename T, typename OpT, auto CreateF> inline void unary() {
+    static_assert(Utils::is_ancestor<Expression::Base, T>, "unary requires T be an Expression");
+    static_assert(Op::is_unary<OpT>, "unary requires a unary OpT");
 
     // Create input
     const auto a { UnitTest::TestLib::Factories::t_literal<T>() };

@@ -16,6 +16,8 @@ using SM = Create::Private::SizeMode;
 
 /** Test a binary op */
 template <typename T, typename OpT, SM Mode, auto CreateF> inline void binary() {
+    static_assert(Utils::is_ancestor<Expression::Base, T>, "binary requires T be an Expression");
+    static_assert(Op::is_binary<OpT>, "binary requires a binary OpT");
 
     // Create distinct inputs
     const auto a { UnitTest::TestLib::Factories::t_literal<T>(0) };
