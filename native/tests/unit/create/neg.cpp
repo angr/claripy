@@ -2,18 +2,12 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
-#include "testlib.hpp"
+#include "unary.hpp"
 
 
-/** Verify that the neg function compiles and can be run without issue */
+/** Test the Create::neg function */
 void neg() {
-
-    // Create input
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::BV>() };
-
-    // Test
-    (void) Create::neg<Expression::BV>(Create::EAnVec {}, a);
+    unary<Expression::BV, Op::Neg, Create::neg<Expression::BV>>();
 }
 
 // Define the test

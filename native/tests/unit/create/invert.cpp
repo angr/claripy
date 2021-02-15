@@ -2,20 +2,13 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
-#include "testlib.hpp"
+#include "unary.hpp"
 
 
-/** Verify that the invert function compiles and can be run without issue */
+/** Test the Create::invert function */
 void invert() {
-
-    // Create input
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::BV>() };
-    const auto b { UnitTest::TestLib::Factories::t_literal<Expression::Bool>() };
-
-    // Test
-    (void) Create::invert<Expression::BV>(Create::EAnVec {}, a);
-    (void) Create::invert<Expression::Bool>(Create::EAnVec {}, b);
+    unary<Expression::BV, Op::Invert, Create::invert<Expression::BV>>();
+    unary<Expression::Bool, Op::Invert, Create::invert<Expression::Bool>>();
 }
 
 // Define the test
