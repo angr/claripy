@@ -6,6 +6,7 @@
 #define __OP_MACROS_HPP__
 
 #include "../constants.hpp"
+#include "../unittest.hpp"
 #include "../utils.hpp"
 
 
@@ -27,7 +28,8 @@ namespace Expression {
     /** Default destructor */                                                                     \
     inline ~CLASS() noexcept override = 0;                                                        \
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base)                                             \
-  private:
+  private:                                                                                        \
+    ENABLE_UNITTEST_FRIEND_ACCESS
 
 /** Initalize a final op class
  *  Leaves the class in a private access context
@@ -39,7 +41,8 @@ namespace Expression {
     /** Default destructor */                                                                     \
     ~CLASS() noexcept override final = default;                                                   \
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base)                                             \
-  private:
+  private:                                                                                        \
+    ENABLE_UNITTEST_FRIEND_ACCESS
 
 
 #endif
