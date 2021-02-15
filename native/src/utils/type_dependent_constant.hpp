@@ -21,6 +21,9 @@ namespace Utils::TD {
      */
     template <typename T, T value, typename...> inline const constexpr T constant { value };
 
+    /** A type-dependent id variable */
+    template <auto value> inline const constexpr auto id { value };
+
     // Abbreviations
 
     /** A type dependent boolean */
