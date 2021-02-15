@@ -2,18 +2,12 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
-#include "testlib.hpp"
+#include "mode_binary.hpp"
 
 
-/** Verify that the sub function compiles and can be run without issue */
+/** Test the Create::FP::sub function */
 void sub() {
-
-    // Create input
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::FP>() };
-    const auto b { UnitTest::TestLib::Factories::t_literal<Expression::FP>() };
-
-    (void) Create::FP::sub(Create::EAnVec {}, a, b, Mode::FP::TowardsZero);
+    mode_binary<Op::FP::Sub, Create::FP::sub>();
 }
 
 // Define the test
