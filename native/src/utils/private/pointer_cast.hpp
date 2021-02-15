@@ -12,28 +12,27 @@
 #include <memory>
 #include <type_traits>
 
-
 namespace Utils::Private {
 
     /** A const preserving static pointer cast */
     template <typename Out, typename In>
     constexpr inline auto static_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        if constexpr (!is_exactly_same<In, Out>) {
-            return std::static_pointer_cast<TransferConst<Out, In>>(in);
+        if constexpr (is_exactly_same<In, Out>) {
+            return in;
         }
         else {
-            return in;
+            return std::static_pointer_cast<TransferConst<Out, In>>(in);
         }
     }
 
     /** An unchecked dynamic pointer cast */
     template <typename Out, typename In>
     constexpr inline auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        if constexpr (!is_same_ignore_const<In, Out>) {
-            return std::dynamic_pointer_cast<TransferConst<Out, In>>(in);
+        if constexpr (is_same_ignore_const<In, Out>) {
+            return Private::static_pointer_cast<Out>(in);
         }
         else {
-            return Private::static_pointer_cast<Out>(in);
+            return std::dynamic_pointer_cast<TransferConst<Out, In>>(in);
         }
     }
 

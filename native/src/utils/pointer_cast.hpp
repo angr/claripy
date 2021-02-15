@@ -46,7 +46,7 @@ namespace Utils {
     template <typename Out, typename In>
     constexpr inline auto dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_down_cast<Out>(in);
-        affirm<Error::Unexpected::BadCast>(empty(ret), "Dynamic down-cast failed");
+        affirm<Error::Unexpected::BadCast>(full(ret), "Dynamic down-cast failed");
         return ret;
     }
 
@@ -54,7 +54,7 @@ namespace Utils {
     template <typename Out, typename In>
     constexpr inline auto dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_side_cast<Out>(in);
-        affirm<Error::Unexpected::BadCast>(empty(ret), "Dynamic side-cast failed");
+        affirm<Error::Unexpected::BadCast>(full(ret), "Dynamic side-cast failed");
         return ret;
     }
 
