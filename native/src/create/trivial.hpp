@@ -38,7 +38,7 @@ namespace Create {
     /** Create a Expression with an reverse op */
     inline EBasePtr reverse(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<Ex::BV, Op::Neg, Ex::BV>(std::forward<EAnVec>(av), x);
+        return Private::unary<Ex::BV, Op::Reverse, Ex::BV>(std::forward<EAnVec>(av), x);
     }
 
     /********************************************************************/

@@ -24,13 +24,9 @@ template <typename T, typename OpT, auto CreateF> inline void unary() {
     UNITTEST_ASSERT(exp->op.use_count() == 1)
 
     // Type check
-    Utils::Log::critical(__LINE__);
     const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<T>(exp) };
-    Utils::Log::critical(__LINE__);
     const auto a_down { Utils::dynamic_down_cast_throw_on_fail<T>(a) };
-    Utils::Log::critical(__LINE__);
     const auto unary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
-    Utils::Log::critical(__LINE__);
 
     // Contains check
     UNITTEST_ASSERT(unary->child == a)
