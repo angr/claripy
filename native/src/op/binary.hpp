@@ -16,6 +16,8 @@
 /** A macro used to define a trivial subclass of Binary
  *  Pass template arguments to Binary via variadic macro arguments
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+ *  Note: You can prepend templates to this if desired meant only to create distinct classes
+ *  For example: template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(LT, true)
  */
 #define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE)                                           \
     class CLASS final : public ::Op::Binary<CONSIDERSIZE> {                                       \
