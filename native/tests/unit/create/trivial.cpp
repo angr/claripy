@@ -39,6 +39,12 @@ void trivial() {
 
     binary<Expression::BV, Op::Xor, SM::First, Create::xor_>();
 
+    binary<Expression::BV, Op::Pow, SM::First, Create::pow>();
+
+    binary<Expression::BV, Op::Mod, SM::First, Create::mod>();
+
+    binary<Expression::BV, Op::DivMod, SM::First, Create::div_mod>();
+
     // Flat
 
     flat<Expression::BV, Op::Add, SM::First, Create::add>();

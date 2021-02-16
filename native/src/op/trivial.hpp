@@ -69,6 +69,15 @@ namespace Op {
     /** The comparison op class: Xor */
     OP_BINARY_TRIVIAL_SUBCLASS(Xor, true)
 
+    /** The comparison op class: Pow */
+    OP_BINARY_TRIVIAL_SUBCLASS(Pow, true)
+
+    /** The comparison op class: Mod */
+    OP_BINARY_TRIVIAL_SUBCLASS(Mod, true)
+
+    /** The comparison op class: DivMod */
+    OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true)
+
 } // namespace Op
 
 #endif

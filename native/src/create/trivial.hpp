@@ -98,6 +98,27 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
+    /** Create an Expression with an Or op */
+    inline EBasePtr pow(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Pow, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an Or op */
+    inline EBasePtr mod(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Mod, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an Or op */
+    inline EBasePtr div_mod(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::DivMod, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
     /********************************************************************/
     /*                    Flat Passthrough Functions                    */
     /********************************************************************/
