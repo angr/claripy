@@ -45,13 +45,28 @@ namespace Create {
     /*                   Binary Passthrough Functions                   */
     /********************************************************************/
 
-    /** Create a Expression with an Concat op */
+    // Comparisons
+
+    /** Create a Bool Expression with an Eq op */
     template <typename T>
-    inline EBasePtr concat(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr eq(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<T, Op::Concat, Private::SizeMode::Add, Ex::BV, Ex::String>(
-            std::forward<EAnVec>(av), left, right);
+        return Private::binary<T, Op::Eq, Private::SizeMode::NA, Ex::FP, Ex::Bool, Ex::BV,
+                               Ex::String>(std::forward<EAnVec>(av), left, right);
     }
+
+    /** Create an Expression with a Compare op */
+    template <typename In, bool Signed, bool Less, bool Eq>
+    inline EBasePtr compare(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        if constexpr (Utils::is_same_ignore_const<In, Ex::FP>) {
+            static_assert(Utils::TD::boolean<Signed, In>, "FP comparisons must be signed");
+        }
+        return Private::binary<Ex::Bool, In, Op::Compare<Signed, Less, Eq>, Private::SizeMode::NA,
+                               Ex::FP, Ex::BV>(std::forward<EAnVec>(av), left, right);
+    }
+
+    // Math
 
     /** Create an Expression with an sub op */
     inline EBasePtr sub(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
@@ -64,37 +79,6 @@ namespace Create {
     inline EBasePtr div(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Div, Private::SizeMode::First, Ex::BV>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create a Bool Expression with an Eq op */
-    template <typename T>
-    inline EBasePtr eq(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<T, Op::Eq, Private::SizeMode::NA, Ex::FP, Ex::Bool, Ex::BV,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with an Or op */
-    template <typename T>
-    inline EBasePtr or_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<T, Op::Or, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with an And op */
-    template <typename T>
-    inline EBasePtr and_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<T, Op::And, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with an Or op */
-    inline EBasePtr xor_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
@@ -116,6 +100,41 @@ namespace Create {
     inline EBasePtr div_mod(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::DivMod, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    // Logical
+
+    /** Create an Expression with an Or op */
+    template <typename T>
+    inline EBasePtr or_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<T, Op::Or, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an And op */
+    template <typename T>
+    inline EBasePtr and_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<T, Op::And, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an Xor op */
+    inline EBasePtr xor_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    // Misc
+
+    /** Create a Expression with an Concat op */
+    template <typename T>
+    inline EBasePtr concat(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<T, Op::Concat, Private::SizeMode::Add, Ex::BV, Ex::String>(
             std::forward<EAnVec>(av), left, right);
     }
 
