@@ -48,35 +48,47 @@ namespace Op {
     /*                   Binary Subclasses                    */
     /**********************************************************/
 
+    // Comparisons
+
     /** The comparison op class: Eq */
     OP_BINARY_TRIVIAL_SUBCLASS(Eq, true)
+
+    /** The comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE */
+    template <bool Signed, bool Less, bool Eq>
+    OP_BINARY_TRIVIAL_SUBCLASS(Compare, true)
+
+    // Math
 
     /** The comparison op class: Sub */
     OP_BINARY_TRIVIAL_SUBCLASS(Sub, true)
 
-    /** The comparison op class: Div */
-    OP_BINARY_TRIVIAL_SUBCLASS(Div, true)
+        /** The comparison op class: Div */
+        OP_BINARY_TRIVIAL_SUBCLASS(Div, true)
 
-    /** The comparison op class: Concat */
-    OP_BINARY_TRIVIAL_SUBCLASS(Concat, false)
+        /** The comparison op class: Pow */
+        OP_BINARY_TRIVIAL_SUBCLASS(Pow, true)
 
-    /** The comparison op class: Or */
-    OP_BINARY_TRIVIAL_SUBCLASS(Or, true)
+        /** The comparison op class: Mod */
+        OP_BINARY_TRIVIAL_SUBCLASS(Mod, true)
 
-    /** The comparison op class: And */
-    OP_BINARY_TRIVIAL_SUBCLASS(And, true)
+        /** The comparison op class: DivMod */
+        OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true)
 
-    /** The comparison op class: Xor */
-    OP_BINARY_TRIVIAL_SUBCLASS(Xor, true)
+        // Logical
 
-    /** The comparison op class: Pow */
-    OP_BINARY_TRIVIAL_SUBCLASS(Pow, true)
+        /** The comparison op class: Or */
+        OP_BINARY_TRIVIAL_SUBCLASS(Or, true)
 
-    /** The comparison op class: Mod */
-    OP_BINARY_TRIVIAL_SUBCLASS(Mod, true)
+        /** The comparison op class: And */
+        OP_BINARY_TRIVIAL_SUBCLASS(And, true)
 
-    /** The comparison op class: DivMod */
-    OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true)
+        /** The comparison op class: Xor */
+        OP_BINARY_TRIVIAL_SUBCLASS(Xor, true)
+
+        // Misc
+
+        /** The comparison op class: Concat */
+        OP_BINARY_TRIVIAL_SUBCLASS(Concat, false)
 
 } // namespace Op
 
