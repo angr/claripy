@@ -60,6 +60,13 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
+    /** Create a Bool Expression with an div op */
+    inline EBasePtr div(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Div, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
     /** Create a Bool Expression with an Eq op */
     template <typename T>
     inline EBasePtr eq(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {

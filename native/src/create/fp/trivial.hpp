@@ -29,6 +29,13 @@ namespace Create::FP {
             std::forward<EAnVec>(av), left, right, mode);
     }
 
+    /** Create a Expression with an div op */
+    inline EBasePtr div(EAnVec &&av, const Expression::BasePtr &left,
+                        const Expression::BasePtr &right, const Mode::FP mode) {
+        return Private::mode_binary<Op::FP::Div, Private::SizeMode::First>(
+            std::forward<EAnVec>(av), left, right, mode);
+    }
+
 
 } // namespace Create::FP
 

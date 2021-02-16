@@ -54,6 +54,9 @@ namespace Op {
     /** The comparison op class: Sub */
     OP_BINARY_TRIVIAL_SUBCLASS(Sub, true)
 
+    /** The comparison op class: Div */
+    OP_BINARY_TRIVIAL_SUBCLASS(Div, true)
+
     /** The comparison op class: Concat */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, false)
 
