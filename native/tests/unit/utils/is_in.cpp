@@ -6,10 +6,10 @@
 
 
 /** A base struct */
-struct A {};
+struct TestBase {};
 
 /** A derived struct */
-struct B : public A {};
+struct TestDerived : public TestBase {};
 
 
 /** Verify the is_in members work */
@@ -30,7 +30,7 @@ void is_in() {
     const constexpr bool false3 { Utils::qualified_is_in<int, unsigned, bool, const int> };
     UNITTEST_ASSERT(!false3);
     // Ancestor failure
-    const constexpr bool false4 { Utils::qualified_is_in<B, unsigned, bool, A> };
+    const constexpr bool false4 { Utils::qualified_is_in<TestDerived, unsigned, bool, TestBase> };
     UNITTEST_ASSERT(!false4);
 
 
@@ -40,11 +40,13 @@ void is_in() {
     const constexpr bool true3 { Utils::is_in_ignore_const<const int, unsigned, bool, const int> };
     UNITTEST_ASSERT(true3);
     // Ancestor failure
-    const constexpr bool false5 { Utils::is_in_ignore_const<B, unsigned, bool, A> };
+    const constexpr bool false5 {
+        Utils::is_in_ignore_const<TestDerived, unsigned, bool, TestBase>
+    };
     UNITTEST_ASSERT(!false5);
 
     // Ancestor
-    const constexpr bool true4 { Utils::ancestor_is_in<B, unsigned, bool, A> };
+    const constexpr bool true4 { Utils::ancestor_is_in<TestDerived, unsigned, bool, TestBase> };
     UNITTEST_ASSERT(true4);
 }
 

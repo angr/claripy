@@ -8,18 +8,13 @@
 #define __TESTS_UNIT_TESTLIB_TESTLIB_PRIVATE_VERIFY_HPP__
 
 
-namespace UnitTest::TestLib {
+namespace UnitTest::TestLib::Private {
 
-    /** The private methods of testlib */
-    namespace Private {
+    /** This function is called to verify that test_func was executed
+     *  If this function does not run, a destructor will raise an exception after main exits
+     */
+    void verify();
 
-        /** This function is called to verify that test_func was executed
-         *  If this function does not run, a destructor will raise an exception after main exits
-         */
-        void verify();
-
-    } // namespace Private
-
-} // namespace UnitTest::TestLib
+} // namespace UnitTest::TestLib::Private
 
 #endif

@@ -10,9 +10,9 @@
 
 
 /** A hashed struct */
-struct A : public Hash::Hashed {
+struct TestHashed : public Hash::Hashed {
     /** Constructor */
-    explicit A(const Hash::Hash h) noexcept : Hashed { h } {}
+    explicit TestHashed(const Hash::Hash h) noexcept : Hashed { h } {}
 };
 
 
@@ -21,9 +21,9 @@ void hash() {
     std::set<Hash::Hash> hashes;
 
     // Values to use
-    using PT = std::shared_ptr<const A>;
-    const PT a0 { std::make_shared<const A>(0_ui) };
-    const PT a1 { std::make_shared<const A>(1_ui) };
+    using PT = std::shared_ptr<const TestHashed>;
+    const PT a0 { std::make_shared<const TestHashed>(0_ui) };
+    const PT a1 { std::make_shared<const TestHashed>(1_ui) };
     const std::string hi_s { "hi" };
     const Constants::CCSC hi_c { "hi" };
     const std::vector<PT> vec1 { PT { a0 }, PT { a1 } };

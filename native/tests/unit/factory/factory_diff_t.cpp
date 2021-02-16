@@ -7,16 +7,16 @@
 
 
 /** A factory constructable object */
-struct A : public Factory::FactoryMade {
-    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(A)
+struct TestFactory : public Factory::FactoryMade {
+    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(TestFactory)
     /** Constructor */
-    A(const Hash::Hash &h, const Constants::UInt) : FactoryMade { h, 0_ui } {}
+    TestFactory(const Hash::Hash &h, const Constants::UInt) : FactoryMade { h, 0_ui } {}
 };
 
-/** Verify that two identical A objects are the same */
+/** Verify that two identical TestFactory objects are the same */
 void factory_diff_t() {
-    const auto a1 = Factory::factory<A, A>(1_ui);
-    const auto a2 = Factory::factory<A, A>(2_ui);
+    const auto a1 = Factory::factory<TestFactory, TestFactory>(1_ui);
+    const auto a2 = Factory::factory<TestFactory, TestFactory>(2_ui);
     UNITTEST_ASSERT(a1 != a2)
 }
 

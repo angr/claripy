@@ -8,7 +8,14 @@
 namespace UnitTest {
 
     /** A namespace used for testlib */
-    namespace TestLib {}
+    namespace TestLib {
+
+        /** The private methods of testlib */
+        namespace Private {}
+
+        /** Factory methods for testlib */
+        namespace Factories {}
+    } // namespace TestLib
 
 } // namespace UnitTest
 
