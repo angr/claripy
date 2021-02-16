@@ -16,6 +16,7 @@
  *  the whether or not CONDITION was resolvable and valid.
  *  The template arguments the condition requires must be passed in after condition
  *  Note: The first template argument *must* exist and be named T
+ *  Note: In the CONDITION use U instead of T as we have to redeclare it as U
  */
 #define UTILS_SFINAETEST(WRAPPER_NAME, CLASS_NAME, CONDITION, ...)                                \
     template <__VA_ARGS__> class CLASS_NAME final {                                               \

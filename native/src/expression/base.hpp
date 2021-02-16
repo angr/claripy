@@ -23,12 +23,6 @@ namespace Op {
 
 namespace Expression {
 
-    // Forward declarations
-    class Base;
-
-    /** An alias for Factory::Ptr<Expression::Base> */
-    using BasePtr = Factory::Ptr<Base>;
-
     /** The base Expression type
      *  All expressions must subclass this
      */
@@ -69,6 +63,9 @@ namespace Expression {
         // Disable other methods of construction
         SET_IMPLICITS_CONST_MEMBERS(Base, delete)
     };
+
+    /** An alias for Factory::Ptr<Expression::Base> */
+    using BasePtr = Factory::Ptr<Base>;
 
     /** Default virtual destructor */
     Base::~Base() noexcept = default;

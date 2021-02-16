@@ -13,7 +13,7 @@
 
 namespace Utils::Private {
 
-    /** A struct which determines if T has a << stream op defined */
+    /** A struct which determines if T has an ++T op defined */
     UTILS_SFINAETEST(has_pre_inc_op,      // Invoke this
                      HasPreIncOp,         // Internal class name
                      ++std::declval<U>(), // Condition we are checking

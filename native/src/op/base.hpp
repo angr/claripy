@@ -19,12 +19,6 @@ namespace Expression {
 
 namespace Op {
 
-    // Forward declarations
-    class Base;
-
-    /** An alias for Factory::Ptr<Base> */
-    using BasePtr = Factory::Ptr<Base>;
-
     /** Base operation expression
      *  All op expressions must subclass this
      */
@@ -35,6 +29,9 @@ namespace Op {
         explicit inline Base(const Hash::Hash &h, const CUID::CUID &cuid_) noexcept
             : FactoryMade { h, cuid_ } {}
     };
+
+    /** An alias for Factory::Ptr<Base> */
+    using BasePtr = Factory::Ptr<Base>;
 
     /** Default virtual destructor */
     Base::~Base() noexcept = default;
