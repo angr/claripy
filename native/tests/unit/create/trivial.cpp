@@ -9,47 +9,86 @@
 
 /** Test the trivial create functions */
 void trivial() {
+    namespace Ex = Expression;
+    namespace Cr = Create;
 
-    // Unary
+    /********************************************************************/
+    /*                              Unary                               */
+    /********************************************************************/
 
-    unary<Expression::BV, Op::Abs, Create::abs<Expression::BV>>();
+    unary<Ex::BV, Op::Abs, Cr::abs<Expression::BV>>();
 
-    unary<Expression::BV, Op::Neg, Create::neg<Expression::BV>>();
+    unary<Ex::BV, Op::Neg, Cr::neg<Expression::BV>>();
 
-    unary<Expression::BV, Op::Invert, Create::invert<Expression::BV>>();
-    unary<Expression::Bool, Op::Invert, Create::invert<Expression::Bool>>();
+    unary<Ex::BV, Op::Invert, Cr::invert<Expression::BV>>();
+    unary<Ex::Bool, Op::Invert, Cr::invert<Expression::Bool>>();
 
-    unary<Expression::BV, Op::Reverse, Create::reverse>();
+    unary<Ex::BV, Op::Reverse, Cr::reverse>();
 
-    // Binary
+    /********************************************************************/
+    /*                              Binary                              */
+    /********************************************************************/
 
-    binary<Expression::BV, Op::Concat, SM::Add, Create::concat<Expression::BV>>();
+    // Comparisons
 
-    binary<Expression::BV, Op::Sub, SM::First, Create::sub>();
+    binary<Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>();
 
-    binary<Expression::BV, Op::Div, SM::First, Create::div>();
+/** A macro used to test a comparison function */
+#define TEST_COMPARE(T_, S_, L_, E_)                                                              \
+    binary<Ex::Bool, T_, Op::Compare<S_, L_, E_>, SM::First, Cr::compare<T_, S_, L_, E_>>();
 
-    binary<Expression::Bool, Op::Eq, SM::First, Create::eq<Expression::Bool>>();
+/** A macro used to test a comparison function for all values of Equals */
+#define TEST_COMPARE_1(T_, S_, L_)                                                                \
+    TEST_COMPARE(T_, S_, L_, true)                                                                \
+    TEST_COMPARE(T_, S_, L_, false)
 
-    binary<Expression::BV, Op::Or, SM::First, Create::or_<Expression::BV>>();
-    binary<Expression::Bool, Op::Or, SM::First, Create::or_<Expression::Bool>>();
+/** A macro used to test a comparison function for all values of Less and Equals */
+#define TEST_COMPARE_2(T_, S_)                                                                    \
+    TEST_COMPARE_1(T_, S_, true)                                                                  \
+    TEST_COMPARE_1(T_, S_, false)
 
-    binary<Expression::BV, Op::And, SM::First, Create::and_<Expression::BV>>();
-    binary<Expression::Bool, Op::And, SM::First, Create::and_<Expression::Bool>>();
+    TEST_COMPARE_2(Ex::FP, true) // FP comparisons must be signed
+    TEST_COMPARE_2(Ex::BV, true) // BV can be either
+    TEST_COMPARE_2(Ex::BV, false)
 
-    binary<Expression::BV, Op::Xor, SM::First, Create::xor_>();
+// Cleanup
+#undef TEST_COMPARE
+#undef TEST_COMPARE_1
+#undef TEST_COMPARE_2
 
-    binary<Expression::BV, Op::Pow, SM::First, Create::pow>();
+    // Math
 
-    binary<Expression::BV, Op::Mod, SM::First, Create::mod>();
+    binary<Ex::BV, Op::Sub, SM::First, Cr::sub>();
 
-    binary<Expression::BV, Op::DivMod, SM::First, Create::div_mod>();
+    binary<Ex::BV, Op::Div, SM::First, Cr::div>();
 
-    // Flat
+    binary<Ex::BV, Op::Pow, SM::First, Cr::pow>();
 
-    flat<Expression::BV, Op::Add, SM::First, Create::add>();
+    binary<Ex::BV, Op::Mod, SM::First, Cr::mod>();
 
-    flat<Expression::BV, Op::Mul, SM::First, Create::mul>();
+    binary<Ex::BV, Op::DivMod, SM::First, Cr::div_mod>();
+
+    // Logical
+
+    binary<Ex::BV, Op::Or, SM::First, Cr::or_<Expression::BV>>();
+    binary<Ex::Bool, Op::Or, SM::First, Cr::or_<Expression::Bool>>();
+
+    binary<Ex::BV, Op::And, SM::First, Cr::and_<Expression::BV>>();
+    binary<Ex::Bool, Op::And, SM::First, Cr::and_<Expression::Bool>>();
+
+    binary<Ex::BV, Op::Xor, SM::First, Cr::xor_>();
+
+    // Misc
+
+    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expression::BV>>();
+
+    /********************************************************************/
+    /*                               Flat                               */
+    /********************************************************************/
+
+    flat<Ex::BV, Op::Add, SM::First, Cr::add>();
+
+    flat<Ex::BV, Op::Mul, SM::First, Cr::mul>();
 }
 
 // Define the test
