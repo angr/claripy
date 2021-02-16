@@ -53,14 +53,14 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create a Bool Expression with an sub op */
+    /** Create an Expression with an sub op */
     inline EBasePtr sub(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Sub, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create a Bool Expression with an div op */
+    /** Create an Expression with an div op */
     inline EBasePtr div(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Div, Private::SizeMode::First, Ex::BV>(
@@ -73,6 +73,29 @@ namespace Create {
         namespace Ex = Expression;
         return Private::binary<T, Op::Eq, Private::SizeMode::NA, Ex::FP, Ex::Bool, Ex::BV,
                                Ex::String>(std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an Or op */
+    template <typename T>
+    inline EBasePtr or_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<T, Op::Or, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an And op */
+    template <typename T>
+    inline EBasePtr and_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<T, Op::And, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with an Or op */
+    inline EBasePtr xor_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
     }
 
     /********************************************************************/

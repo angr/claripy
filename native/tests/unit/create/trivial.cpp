@@ -31,6 +31,14 @@ void trivial() {
 
     binary<Expression::Bool, Op::Eq, SM::First, Create::eq<Expression::Bool>>();
 
+    binary<Expression::BV, Op::Or, SM::First, Create::or_<Expression::BV>>();
+    binary<Expression::Bool, Op::Or, SM::First, Create::or_<Expression::Bool>>();
+
+    binary<Expression::BV, Op::And, SM::First, Create::and_<Expression::BV>>();
+    binary<Expression::Bool, Op::And, SM::First, Create::and_<Expression::Bool>>();
+
+    binary<Expression::BV, Op::Xor, SM::First, Create::xor_>();
+
     // Flat
 
     flat<Expression::BV, Op::Add, SM::First, Create::add>();

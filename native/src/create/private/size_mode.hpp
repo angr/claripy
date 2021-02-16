@@ -5,6 +5,9 @@
 #ifndef __CREATE_PRIVATE_SIZEMODE_HPP__
 #define __CREATE_PRIVATE_SIZEMODE_HPP__
 
+#include "../../expression.hpp"
+
+
 namespace Create::Private {
 
     /** Modes that determine how Expression sizes are computed */
@@ -15,6 +18,12 @@ namespace Create::Private {
         First,
         /** All operand sizes are summed */
         Add
+    };
+
+    /** A shortcut for selecting First if T is a subclass of Bits, else NA */
+    template <typename T>
+    inline const constexpr SizeMode first_or_na {
+        Utils::select<Utils::is_ancestor<Expression::Bits, T>, SizeMode::First, SizeMode::NA>
     };
 
 } // namespace Create::Private

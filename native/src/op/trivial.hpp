@@ -60,6 +60,15 @@ namespace Op {
     /** The comparison op class: Concat */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, false)
 
+    /** The comparison op class: Or */
+    OP_BINARY_TRIVIAL_SUBCLASS(Or, true)
+
+    /** The comparison op class: And */
+    OP_BINARY_TRIVIAL_SUBCLASS(And, true)
+
+    /** The comparison op class: Xor */
+    OP_BINARY_TRIVIAL_SUBCLASS(Xor, true)
+
 } // namespace Op
 
 #endif
