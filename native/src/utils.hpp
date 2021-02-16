@@ -36,6 +36,7 @@
 #include "utils/run_after_main.hpp"
 #include "utils/run_before_main.hpp"
 #include "utils/run_on_destruction.hpp"
+#include "utils/select.hpp"
 #include "utils/set_join.hpp"
 #include "utils/sfinae_test.hpp"
 #include "utils/sink.hpp"
