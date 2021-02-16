@@ -1,3 +1,1 @@
-simple_test(add)
-simple_test(sub)
-simple_test(div)
+simple_test(trivial)
