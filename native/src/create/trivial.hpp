@@ -103,6 +103,14 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
+    /** Create an Expression with a Shift op */
+    template <bool Left>
+    inline EBasePtr shift(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Shift<Left>, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
     // Logical
 
     /** Create an Expression with an Or op */

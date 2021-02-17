@@ -68,6 +68,15 @@ void trivial() {
 
     binary<Ex::BV, Op::DivMod, SM::First, Cr::div_mod>();
 
+/** A macro used to test a shift op */
+#define TEST_SHIFT(LEFT) binary<Ex::BV, Op::Shift<LEFT>, SM::First, Cr::shift<LEFT>>();
+
+    TEST_SHIFT(true)
+    TEST_SHIFT(false)
+
+// Cleanup
+#undef TEST_SHIFT
+
     // Logical
 
     binary<Ex::BV, Op::Or, SM::First, Cr::or_<Expression::BV>>();

@@ -23,26 +23,26 @@ namespace Op {
     /**********************************************************/
 
     /** The op class: Add */
-    OP_FLAT_TRIVIAL_SUBCLASS(Add, true)
+    OP_FLAT_TRIVIAL_SUBCLASS(Add, true);
 
     /** The op class: Mul */
-    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true)
+    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true);
 
     /**********************************************************/
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
     /** The op class: Neg */
-    OP_UNARY_TRIVIAL_SUBCLASS(Neg)
+    OP_UNARY_TRIVIAL_SUBCLASS(Neg);
 
     /** The op class: Abs */
-    OP_UNARY_TRIVIAL_SUBCLASS(Abs)
+    OP_UNARY_TRIVIAL_SUBCLASS(Abs);
 
     /** The op class: Invert */
-    OP_UNARY_TRIVIAL_SUBCLASS(Invert)
+    OP_UNARY_TRIVIAL_SUBCLASS(Invert);
 
     /** The op class: Reverse */
-    OP_UNARY_TRIVIAL_SUBCLASS(Reverse)
+    OP_UNARY_TRIVIAL_SUBCLASS(Reverse);
 
     /**********************************************************/
     /*                   Binary Subclasses                    */
@@ -51,44 +51,46 @@ namespace Op {
     // Comparisons
 
     /** The comparison op class: Eq */
-    OP_BINARY_TRIVIAL_SUBCLASS(Eq, true)
+    OP_BINARY_TRIVIAL_SUBCLASS(Eq, true);
 
     /** The comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE */
-    template <bool Signed, bool Less, bool Eq>
-    OP_BINARY_TRIVIAL_SUBCLASS(Compare, true)
+    template <bool Signed, bool Less, bool Eq> OP_BINARY_TRIVIAL_SUBCLASS(Compare, true);
 
     // Math
 
     /** The comparison op class: Sub */
-    OP_BINARY_TRIVIAL_SUBCLASS(Sub, true)
+    OP_BINARY_TRIVIAL_SUBCLASS(Sub, true);
 
-        /** The comparison op class: Div */
-        OP_BINARY_TRIVIAL_SUBCLASS(Div, true)
+    /** The comparison op class: Div */
+    OP_BINARY_TRIVIAL_SUBCLASS(Div, true);
 
-        /** The comparison op class: Pow */
-        OP_BINARY_TRIVIAL_SUBCLASS(Pow, true)
+    /** The comparison op class: Pow */
+    OP_BINARY_TRIVIAL_SUBCLASS(Pow, true);
 
-        /** The comparison op class: Mod */
-        OP_BINARY_TRIVIAL_SUBCLASS(Mod, true)
+    /** The comparison op class: Mod */
+    OP_BINARY_TRIVIAL_SUBCLASS(Mod, true);
 
-        /** The comparison op class: DivMod */
-        OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true)
+    /** The comparison op class: DivMod */
+    OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true);
 
-        // Logical
+    /** The comparison op class: Shift */
+    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true);
 
-        /** The comparison op class: Or */
-        OP_BINARY_TRIVIAL_SUBCLASS(Or, true)
+    // Logical
 
-        /** The comparison op class: And */
-        OP_BINARY_TRIVIAL_SUBCLASS(And, true)
+    /** The comparison op class: Or */
+    OP_BINARY_TRIVIAL_SUBCLASS(Or, true);
 
-        /** The comparison op class: Xor */
-        OP_BINARY_TRIVIAL_SUBCLASS(Xor, true)
+    /** The comparison op class: And */
+    OP_BINARY_TRIVIAL_SUBCLASS(And, true);
 
-        // Misc
+    /** The comparison op class: Xor */
+    OP_BINARY_TRIVIAL_SUBCLASS(Xor, true);
 
-        /** The comparison op class: Concat */
-        OP_BINARY_TRIVIAL_SUBCLASS(Concat, false)
+    // Misc
+
+    /** The comparison op class: Concat */
+    OP_BINARY_TRIVIAL_SUBCLASS(Concat, false);
 
 } // namespace Op
 
