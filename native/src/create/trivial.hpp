@@ -51,8 +51,8 @@ namespace Create {
     template <typename T>
     inline EBasePtr eq(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<T, Op::Eq, Private::SizeMode::NA, Ex::FP, Ex::Bool, Ex::BV,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
+        return Private::binary<Ex::Bool, T, Op::Eq, Private::SizeMode::NA, Ex::FP, Ex::Bool,
+                               Ex::BV, Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
     /** Create an Expression with a Compare op */
