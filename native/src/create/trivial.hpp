@@ -148,6 +148,28 @@ namespace Create {
 
     // Misc
 
+    /** Create a Expression with an Widen op */
+    inline EBasePtr widen(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Widen, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create a Expression with an Union op */
+    inline EBasePtr union_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::Union, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create a Expression with an Intersection op */
+    template <typename T>
+    inline EBasePtr intersection_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<T, Op::Intersection, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), left, right);
+    }
+
     /** Create a Expression with an Concat op */
     template <typename T>
     inline EBasePtr concat(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
