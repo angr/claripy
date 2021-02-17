@@ -65,8 +65,11 @@ namespace Op {
 
     // Bitwise
 
-    /** The op class: Shift */
-    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true);
+    /** The op class: LogicalShift */
+    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(LogicalShift, true);
+
+    /** The op class: ArithmeticShift */
+    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(ArithmeticShift, true);
 
     /** The op class: Rotate */
     template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true);

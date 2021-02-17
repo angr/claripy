@@ -83,9 +83,12 @@ void trivial() {
 
     // Bitwise
 
-    Log::debug("Testing shift...");
-    binary<Ex::BV, Op::Shift<true>, SM::First, Cr::shift<true>>();
-    binary<Ex::BV, Op::Shift<false>, SM::First, Cr::shift<false>>();
+    Log::debug("Testing arithmetic shift...");
+    binary<Ex::BV, Op::ArithmeticShift<true>, SM::First, Cr::arithmetic_shift<true>>();
+    binary<Ex::BV, Op::ArithmeticShift<false>, SM::First, Cr::arithmetic_shift<false>>();
+
+    Log::debug("Testing logical shift...");
+    binary<Ex::BV, Op::LogicalShift<false>, SM::First, Cr::logical_shift<false>>();
 
     Log::debug("Testing rotate...");
     binary<Ex::BV, Op::Rotate<true>, SM::First, Cr::rotate<true>>();

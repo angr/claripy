@@ -105,11 +105,20 @@ namespace Create {
 
     // Bitwise
 
-    /** Create an Expression with a Shift op */
+    /** Create an Expression with a ArithmeticShift op */
     template <bool Left>
-    inline EBasePtr shift(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr arithmetic_shift(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Shift<Left>, Private::SizeMode::First, Ex::BV>(
+        return Private::binary<Ex::BV, Op::ArithmeticShift<Left>, Private::SizeMode::First,
+                               Ex::BV>(std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with a LogicalShift op */
+    template <bool Left>
+    inline EBasePtr logical_shift(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        static_assert(!Left, "Only right logical shifts are supported by claricpp");
+        namespace Ex = Expression;
+        return Private::binary<Ex::BV, Op::LogicalShift<Left>, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
