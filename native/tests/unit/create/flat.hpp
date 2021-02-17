@@ -23,7 +23,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     std::vector<Factory::Ptr<Expression::Base>> input {
         4,
         // Temporary so that it looses the reference after construction
-        UnitTest::TestLib::Factories::t_literal<Expression::BV>()
+        UnitTest::TestLib::Factories::t_literal<T>()
     };
 
     // Test

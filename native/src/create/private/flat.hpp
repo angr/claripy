@@ -38,10 +38,6 @@ namespace Create::Private {
             sym |= i->symbolic;
         }
 
-        // Construct expression
-        return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym,
-                                       Op::factory<OpT>(std::forward<OpC>(operands)),
-                                       size(operands[0])));
         // Construct expression (static casts are safe because of previous checks)
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
             static_assert(Mode == Utils::TD::id<SizeMode::First>,

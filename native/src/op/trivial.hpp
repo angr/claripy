@@ -19,16 +19,6 @@ namespace Expression {
 namespace Op {
 
     /**********************************************************/
-    /*                    Flat Subclasses                     */
-    /**********************************************************/
-
-    /** The op class: Add */
-    OP_FLAT_TRIVIAL_SUBCLASS(Add, true);
-
-    /** The op class: Mul */
-    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true);
-
-    /**********************************************************/
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
@@ -81,17 +71,6 @@ namespace Op {
     /** The op class: Rotate */
     template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true);
 
-    // Logical
-
-    /** The op class: Or */
-    OP_BINARY_TRIVIAL_SUBCLASS(Or, true);
-
-    /** The op class: And */
-    OP_BINARY_TRIVIAL_SUBCLASS(And, true);
-
-    /** The op class: Xor */
-    OP_BINARY_TRIVIAL_SUBCLASS(Xor, true);
-
     // Misc
 
     /** The op class: Widen */
@@ -105,6 +84,28 @@ namespace Op {
 
     /** The op class: Concat */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, false);
+
+    /**********************************************************/
+    /*                    Flat Subclasses                     */
+    /**********************************************************/
+
+    // Math
+
+    /** The op class: Add */
+    OP_FLAT_TRIVIAL_SUBCLASS(Add, true);
+
+    /** The op class: Mul */
+    OP_FLAT_TRIVIAL_SUBCLASS(Mul, true);
+
+    // Logical
+    /** The op class: Or */
+    OP_FLAT_TRIVIAL_SUBCLASS(Or, true);
+
+    /** The op class: And */
+    OP_FLAT_TRIVIAL_SUBCLASS(And, true);
+
+    /** The op class: Xor */
+    OP_FLAT_TRIVIAL_SUBCLASS(Xor, true);
 
 } // namespace Op
 

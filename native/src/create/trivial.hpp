@@ -121,31 +121,6 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
-    // Logical
-
-    /** Create an Expression with an Or op */
-    template <typename T>
-    inline EBasePtr or_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<T, Op::Or, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with an And op */
-    template <typename T>
-    inline EBasePtr and_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<T, Op::And, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with an Xor op */
-    inline EBasePtr xor_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
     // Misc
 
     /** Create a Expression with an Widen op */
@@ -182,6 +157,8 @@ namespace Create {
     /*                    Flat Passthrough Functions                    */
     /********************************************************************/
 
+    // Math
+
     /** Create a Expression with an Add op */
     inline EBasePtr add(EAnVec &&av, Op::Add::OpContainer &&operands) {
         namespace Ex = Expression;
@@ -194,6 +171,29 @@ namespace Create {
         namespace Ex = Expression;
         return Private::flat<Ex::BV, Op::Mul, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), std::forward<Op::Mul::OpContainer>(operands));
+    }
+
+    // Logical
+
+    /** Create an Expression with an Or op */
+    template <typename T> inline EBasePtr or_(EAnVec &&av, Op::Or::OpContainer &&operands) {
+        namespace Ex = Expression;
+        return Private::flat<T, Op::Or, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), std::forward<Op::Or::OpContainer>(operands));
+    }
+
+    /** Create an Expression with an And op */
+    template <typename T> inline EBasePtr and_(EAnVec &&av, Op::And::OpContainer &&operands) {
+        namespace Ex = Expression;
+        return Private::flat<T, Op::And, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+            std::forward<EAnVec>(av), std::forward<Op::And::OpContainer>(operands));
+    }
+
+    /** Create an Expression with an Xor op */
+    inline EBasePtr xor_(EAnVec &&av, Op::Xor::OpContainer &&operands) {
+        namespace Ex = Expression;
+        return Private::flat<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), std::forward<Op::Xor::OpContainer>(operands));
     }
 
 } // namespace Create

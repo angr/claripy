@@ -18,10 +18,10 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing abs...");
-    unary<Ex::BV, Op::Abs, Cr::abs<Expression::BV>>();
+    unary<Ex::BV, Op::Abs, Cr::abs<Expression::BV>>(); // TODO
 
     Log::debug("Testing neg...");
-    unary<Ex::BV, Op::Neg, Cr::neg<Expression::BV>>();
+    unary<Ex::BV, Op::Neg, Cr::neg<Expression::BV>>(); // TODO
 
     Log::debug("Testing invert...");
     unary<Ex::BV, Op::Invert, Cr::invert<Expression::BV>>();
@@ -37,7 +37,7 @@ void trivial() {
     // Comparisons
 
     Log::debug("Testing reverse...");
-    binary<Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>();
+    binary<Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>(); // TODO
 
 /** A macro used to test a comparison function */
 #define TEST_COMPARE(T_, S_, L_, E_)                                                              \
@@ -90,19 +90,6 @@ void trivial() {
     binary<Ex::BV, Op::Rotate<true>, SM::First, Cr::rotate<true>>();
     binary<Ex::BV, Op::Rotate<false>, SM::First, Cr::rotate<false>>();
 
-    // Logical
-
-    Log::debug("Testing or...");
-    binary<Ex::BV, Op::Or, SM::First, Cr::or_<Expression::BV>>();
-    binary<Ex::Bool, Op::Or, SM::First, Cr::or_<Expression::Bool>>();
-
-    Log::debug("Testing and...");
-    binary<Ex::BV, Op::And, SM::First, Cr::and_<Expression::BV>>();
-    binary<Ex::Bool, Op::And, SM::First, Cr::and_<Expression::Bool>>();
-
-    Log::debug("Testing xor...");
-    binary<Ex::BV, Op::Xor, SM::First, Cr::xor_>();
-
     // Misc
 
     Log::debug("Testing widen...");
@@ -116,17 +103,32 @@ void trivial() {
     binary<Ex::Bool, Op::Intersection, SM::First, Cr::intersection_<Expression::Bool>>();
 
     Log::debug("Testing concat...");
-    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expression::BV>>();
+    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expression::BV>>(); // TODO
 
     /********************************************************************/
     /*                               Flat                               */
     /********************************************************************/
+
+    // Math
 
     Log::debug("Testing add...");
     flat<Ex::BV, Op::Add, SM::First, Cr::add>();
 
     Log::debug("Testing mul...");
     flat<Ex::BV, Op::Mul, SM::First, Cr::mul>();
+
+    // Logical
+
+    Log::debug("Testing or...");
+    flat<Ex::BV, Op::Or, SM::First, Cr::or_<Expression::BV>>();
+    flat<Ex::Bool, Op::Or, SM::First, Cr::or_<Expression::Bool>>();
+
+    Log::debug("Testing and...");
+    flat<Ex::BV, Op::And, SM::First, Cr::and_<Expression::BV>>();
+    flat<Ex::Bool, Op::And, SM::First, Cr::and_<Expression::Bool>>();
+
+    Log::debug("Testing xor...");
+    flat<Ex::BV, Op::Xor, SM::First, Cr::xor_>();
 }
 
 // Define the test
