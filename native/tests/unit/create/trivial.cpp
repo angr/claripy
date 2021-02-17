@@ -40,8 +40,8 @@ void trivial() {
 
     Log::debug("Testing reverse...");
     /* binary<Ex::FP, Op::Eq, SM::First, Cr::eq<Expression::FP>>(); */
-    /* binary<Ex::BV, Op::Eq, SM::First, Cr::eq<Expression::BV>>(); */
-    /* binary<Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>(); */
+    /* binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq<Expression::BV>>(); */
+    binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>();
     /* binary<Ex::String, Op::Eq, SM::First, Cr::eq<Expression::String>>(); */
 
 /** A macro used to test a comparison function */

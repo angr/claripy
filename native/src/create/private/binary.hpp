@@ -41,13 +41,15 @@ namespace Create::Private {
 
         // Construct expression (static casts are safe because of previous checks)
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
+            static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
+                          "SizeMode::NA not allowed with sized output type");
             // Construct size
             Constants::UInt esize { size(left) };
             if constexpr (Mode == SizeMode::Add) {
                 esize += size(right);
             }
             else if constexpr (Mode != SizeMode::First) {
-                static_assert(Utils::TD::false_<Mode>,
+                static_assert(Utils::TD::false_<Out>,
                               "Create::Private::binary does not support the given SizeMode");
             }
             // Actually construct expression
