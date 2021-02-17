@@ -73,8 +73,13 @@ namespace Op {
     /** The comparison op class: DivMod */
     OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true);
 
+    // Bitwise
+
     /** The comparison op class: Shift */
     template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true);
+
+    /** The comparison op class: Rotate */
+    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true);
 
     // Logical
 
