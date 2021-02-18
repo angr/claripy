@@ -19,11 +19,11 @@ void diff() {
 
     const std::vector<Ex::BasePtr> objs {
         // Round 1
-        construct<Ex::Bool>(0_i), construct<Ex::Bool>(0_i), construct<Ex::String>(0_i),
-        construct<Ex::FP>(0_i), construct<Ex::BV>(0_i), construct<Ex::VS>(0_i),
+        construct<Ex::Bool>(0_i), construct<Ex::String>(0_i), construct<Ex::FP>(0_i),
+        construct<Ex::BV>(0_i), construct<Ex::VS>(0_i),
         // Round 2
-        construct<Ex::Bool>(1_i), construct<Ex::Bool>(1_i), construct<Ex::String>(1_i),
-        construct<Ex::FP>(1_i), construct<Ex::BV>(1_i), construct<Ex::VS>(1_i)
+        construct<Ex::Bool>(1_i), construct<Ex::String>(1_i), construct<Ex::FP>(1_i),
+        construct<Ex::BV>(1_i), construct<Ex::VS>(1_i)
     };
 
     // Verify unique hashes

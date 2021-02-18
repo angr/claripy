@@ -23,11 +23,11 @@ void same() {
 
     const std::vector<Ex::BasePtr> objs {
         // Round 1
-        construct<Ex::Bool>(), construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(),
-        construct<Ex::BV>(), construct<Ex::VS>(),
+        construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(), construct<Ex::BV>(),
+        construct<Ex::VS>(),
         // Round 2
-        construct<Ex::Bool>(), construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(),
-        construct<Ex::BV>(), construct<Ex::VS>()
+        construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(), construct<Ex::BV>(),
+        construct<Ex::VS>()
     };
 
     // Verify unique hashes
