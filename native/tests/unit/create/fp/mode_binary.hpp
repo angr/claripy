@@ -3,8 +3,8 @@
  * @brief Trivial binary create test
  * \ingroup unittest
  */
-#ifndef __TESTS_UNIT_CREATE_BINARY_HPP__
-#define __TESTS_UNIT_CREATE_BINARY_HPP__
+#ifndef __TESTS_UNIT_CREATE_FP_MODEBINARY_HPP__
+#define __TESTS_UNIT_CREATE_FP_MODEBINARY_HPP__
 
 #include "create.hpp"
 #include "testlib.hpp"

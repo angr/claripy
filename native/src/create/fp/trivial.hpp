@@ -6,6 +6,7 @@
 #ifndef __CREATE_FP_TRIVIAL_HPP__
 #define __CREATE_FP_TRIVIAL_HPP__
 
+#include "../private/binary.hpp"
 #include "../private/mode_binary.hpp"
 #include "../private/ternary.hpp"
 #include "../private/unary.hpp"
@@ -20,22 +21,22 @@ namespace Create::FP {
     /** Create a Expression with an FP::IsInf op */
     inline EBasePtr is_inf(EAnVec &&av, const Expression::BasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Private::SizeMode::NA, Ex::FP>(
-            std::forward<EAnVec>(av), x);
+        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Ex::FP>(std::forward<EAnVec>(av),
+                                                                       x);
     }
 
     /** Create a Expression with an FP::IsNan op */
     inline EBasePtr is_nan(EAnVec &&av, const Expression::BasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Private::SizeMode::NA, Ex::FP>(
-            std::forward<EAnVec>(av), x);
+        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Ex::FP>(std::forward<EAnVec>(av),
+                                                                       x);
     }
 
     /** Create a Expression with an FP::ToIEEEBV op */
     inline EBasePtr to_ieee_bv(EAnVec &&av, const Expression::BasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Private::SizeMode::First, Ex::FP>(
-            std::forward<EAnVec>(av), x);
+        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(std::forward<EAnVec>(av),
+                                                                        x);
     }
 
     /********************************************************************/
@@ -46,7 +47,7 @@ namespace Create::FP {
     inline EBasePtr ne(EAnVec &&av, const Expression::BasePtr &left,
                        const Expression::BasePtr &right) {
         namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::NE, Private::SizeMode::NA, Ex::FP>(
+        return Private::binary<Ex::Bool, Ex::FP, Op::FP::NE, Private::SizeMode::NA, Ex::FP>(
             std::forward<EAnVec>(av), left, right);
     }
 
