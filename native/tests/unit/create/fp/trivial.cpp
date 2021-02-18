@@ -4,7 +4,9 @@
  */
 #include "mode_binary.hpp"
 
+#include "../binary.hpp"
 #include "../ternary.hpp"
+#include "../unary.hpp"
 
 
 /** Test the trivial create fp functions */
@@ -15,13 +17,18 @@ void trivial() {
     // Unary
 
     Log::debug("Testing Fp::IsInf...");
-    mode_binary<Op::FP::IsInf, Create::FP::is_inf>();
+    unary<Ex::Bool, Ex::FP, Op::FP::IsInf, SM::NA, Create::FP::is_inf>();
 
     Log::debug("Testing Fp::IsNaN...");
-    mode_binary<Op::FP::IsNaN, Create::FP::is_nan>();
+    unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, SM::NA, Create::FP::is_nan>();
 
     Log::debug("Testing Fp::ToIEEEBV...");
-    mode_binary<Op::FP::ToIEEEBV, Create::FP::to_ieee_bv>();
+    unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, SM::First, Create::FP::to_ieee_bv>();
+
+    // Binary
+
+    Log::debug("Testing Fp::NE...");
+    binary<Ex::Bool, Ex::FP, Op::FP::NE, SM::NA, Create::FP::ne>();
 
     // ModeBinary
 
