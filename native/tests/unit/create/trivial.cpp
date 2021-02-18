@@ -91,6 +91,17 @@ void trivial() {
     binary<Ex::BV, Op::Rotate<true>, SM::First, Cr::rotate<true>>();
     binary<Ex::BV, Op::Rotate<false>, SM::First, Cr::rotate<false>>();
 
+    // String
+
+    Log::debug("Testing str_contains...");
+    binary<Ex::Bool, Ex::String, Op::StrContains, SM::NA, Cr::str_contains>();
+
+    Log::debug("Testing str_prefix_of...");
+    binary<Ex::Bool, Ex::String, Op::StrPrefixOf, SM::NA, Cr::str_prefix_of>();
+
+    Log::debug("Testing str_suffix_of...");
+    binary<Ex::Bool, Ex::String, Op::StrSuffixOf, SM::NA, Cr::str_suffix_of>();
+
     // Misc
 
     Log::debug("Testing widen...");

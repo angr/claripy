@@ -22,16 +22,24 @@ namespace Op {
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
-    /** The op class: Neg */
+    /** The op class: Neg
+     *  A unary op class
+     */
     OP_UNARY_TRIVIAL_SUBCLASS(Neg);
 
-    /** The op class: Abs */
+    /** The op class: Abs
+     *  A unary op class
+     */
     OP_UNARY_TRIVIAL_SUBCLASS(Abs);
 
-    /** The op class: Invert */
+    /** The op class: Invert
+     *  A unary op class
+     */
     OP_UNARY_TRIVIAL_SUBCLASS(Invert);
 
-    /** The op class: Reverse */
+    /** The op class: Reverse
+     *  A unary op class
+     */
     OP_UNARY_TRIVIAL_SUBCLASS(Reverse);
 
     /**********************************************************/
@@ -40,46 +48,87 @@ namespace Op {
 
     // Comparisons
 
-    /** The comparison op class: Eq */
+    /** The binary comparison op class: Eq
+     *  Requires equal sized inputs
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Eq, true);
 
-    /** The comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE */
+    /** The binary comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE
+     *  Requires equal sized inputs
+     */
     template <bool Signed, bool Less, bool Eq> OP_BINARY_TRIVIAL_SUBCLASS(Compare, true);
 
     // Math
 
-    /** The op class: Sub */
+    /** The mathematical binary op class: Sub
+     *  Requires equal sized inputs
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Sub, true);
 
-    /** The op class: Div */
+    /** The mathematical binary op class: Div
+     *  Requires equal sized inputs
+     */
     template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Div, true);
 
-    /** The op class: Pow */
+    /** The mathematical binary op class: Pow
+     *  Requires equal sized inputs
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Pow, true);
 
-    /** The op class: Mod */
+    /** The mathematical binary op class: Mod
+     *  Requires equal sized inputs
+     */
     template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true);
 
     // Bitwise
 
-    /** The op class: Shift */
+    /** The bitwise binary op class: Shift
+     *  Requires equal sized inputs
+     */
     template <bool Arithmetic, bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true);
 
-    /** The op class: Rotate */
+    /** The bitwise binary op class: Rotate
+     *  Requires equal sized inputs
+     */
     template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true);
+
+    // String
+
+    /** The string binary op class: StrContains
+     *  Input sizes may differ
+     */
+    OP_BINARY_TRIVIAL_SUBCLASS(StrContains, false);
+
+    /** The string binary op class: StrContains
+     *  Input sizes may differ
+     */
+    OP_BINARY_TRIVIAL_SUBCLASS(StrPrefixOf, false);
+
+    /** The string binary op class: StrContains
+     *  Input sizes may differ
+     */
+    OP_BINARY_TRIVIAL_SUBCLASS(StrSuffixOf, false);
 
     // Misc
 
-    /** The op class: Widen */
+    /** The set binary op class: Widen
+     *  Requires equal sized inputs
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Widen, true);
 
-    /** The op class: Union */
+    /** The set binary op class: Union
+     *  Requires equal sized inputs
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Union, true);
 
-    /** The op class: Inersection */
+    /** The set binary op class: Inersection
+     *  Requires equal sized inputs
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Intersection, true);
 
-    /** The op class: Concat */
+    /** The binary op class: Concat
+     *  Input sizes may differ
+     */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, false);
 
     /**********************************************************/
@@ -88,20 +137,31 @@ namespace Op {
 
     // Math
 
-    /** The op class: Add */
+    /** The flat math op class: Add
+     *  Requires equal sized inputs
+     */
     OP_FLAT_TRIVIAL_SUBCLASS(Add, true);
 
-    /** The op class: Mul */
+    /** The flat op class: Mul
+     *  Requires equal sized inputs
+     */
     OP_FLAT_TRIVIAL_SUBCLASS(Mul, true);
 
     // Logical
-    /** The op class: Or */
+
+    /** The flat op class: Or
+     *  Requires equal sized inputs
+     */
     OP_FLAT_TRIVIAL_SUBCLASS(Or, true);
 
-    /** The op class: And */
+    /** The flat op class: And
+     *  Requires equal sized inputs
+     */
     OP_FLAT_TRIVIAL_SUBCLASS(And, true);
 
-    /** The op class: Xor */
+    /** The flat op class: Xor
+     *  Requires equal sized inputs
+     */
     OP_FLAT_TRIVIAL_SUBCLASS(Xor, true);
 
 } // namespace Op

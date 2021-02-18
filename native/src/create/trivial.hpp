@@ -118,6 +118,29 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
+    // String
+
+    /** Create an Expression with a StrContains op */
+    inline EBasePtr str_contains(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::Bool, Ex::String, Op::StrContains, Private::SizeMode::NA,
+                               Ex::String>(std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with a StrContains op */
+    inline EBasePtr str_prefix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::Bool, Ex::String, Op::StrPrefixOf, Private::SizeMode::NA,
+                               Ex::String>(std::forward<EAnVec>(av), left, right);
+    }
+
+    /** Create an Expression with a StrContains op */
+    inline EBasePtr str_suffix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::Bool, Ex::String, Op::StrSuffixOf, Private::SizeMode::NA,
+                               Ex::String>(std::forward<EAnVec>(av), left, right);
+    }
+
     // Misc
 
     /** Create a Expression with an Widen op */
