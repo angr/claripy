@@ -14,6 +14,7 @@
 #include "op/literal.hpp"
 #include "op/macros.hpp"
 #include "op/symbol.hpp"
+#include "op/ternary.hpp"
 #include "op/trivial.hpp"
 
 #endif
