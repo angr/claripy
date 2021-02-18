@@ -31,6 +31,13 @@ namespace Create::FP {
             std::forward<EAnVec>(av), x);
     }
 
+    /** Create a Expression with an FP::ToIEEEBV op */
+    inline EBasePtr to_ieee_bv(EAnVec &&av, const Expression::BasePtr &x) {
+        namespace Ex = Expression;
+        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Private::SizeMode::First, Ex::FP>(
+            std::forward<EAnVec>(av), x);
+    }
+
     /********************************************************************/
     /*                 ModeBinary Passthrough Functions                 */
     /********************************************************************/

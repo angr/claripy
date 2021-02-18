@@ -20,6 +20,9 @@ void trivial() {
     Log::debug("Testing Fp::IsNaN...");
     mode_binary<Op::FP::IsNaN, Create::FP::is_nan>();
 
+    Log::debug("Testing Fp::ToIEEEBV...");
+    mode_binary<Op::FP::ToIEEEBV, Create::FP::to_ieee_bv>();
+
     // ModeBinary
 
     Log::debug("Testing Fp::Add...");
