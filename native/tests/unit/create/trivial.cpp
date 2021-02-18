@@ -4,7 +4,6 @@
  */
 #include "binary.hpp"
 #include "flat.hpp"
-#include "ternary.hpp"
 #include "unary.hpp"
 
 
@@ -32,9 +31,6 @@ void trivial() {
 
     Log::debug("Testing reverse...");
     unary<Ex::BV, Op::Reverse, Cr::reverse>();
-
-    Log::debug("Testing str_is_digit...");
-    unary<Ex::Bool, Ex::String, Op::StrIsDigit, Cr::str_is_digit>();
 
     /********************************************************************/
     /*                              Binary                              */
@@ -95,17 +91,6 @@ void trivial() {
     binary<Ex::BV, Op::Rotate<true>, SM::First, Cr::rotate<true>>();
     binary<Ex::BV, Op::Rotate<false>, SM::First, Cr::rotate<false>>();
 
-    // String
-
-    Log::debug("Testing str_contains...");
-    binary<Ex::Bool, Ex::String, Op::StrContains, SM::NA, Cr::str_contains>();
-
-    Log::debug("Testing str_prefix_of...");
-    binary<Ex::Bool, Ex::String, Op::StrPrefixOf, SM::NA, Cr::str_prefix_of>();
-
-    Log::debug("Testing str_suffix_of...");
-    binary<Ex::Bool, Ex::String, Op::StrSuffixOf, SM::NA, Cr::str_suffix_of>();
-
     // Misc
 
     Log::debug("Testing widen...");
@@ -121,16 +106,6 @@ void trivial() {
     Log::debug("Testing concat...");
     binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expression::BV>>();
     binary<Ex::String, Op::Concat, SM::Add, Cr::concat<Expression::String>>();
-
-    /********************************************************************/
-    /*                             Ternary                              */
-    /********************************************************************/
-
-    Log::debug("Testing fpFP...");
-    ternary<Ex::FP, Ex::BV, Op::fpFP, SM::Add, Cr::fp_fp>();
-
-    Log::debug("Testing StrReplace...");
-    ternary<Ex::String, Op::StrReplace, SM::StrReplace, Cr::str_replace>();
 
     /********************************************************************/
     /*                               Flat                               */

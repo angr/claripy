@@ -7,6 +7,7 @@
 #define __CREATE_FP_TRIVIAL_HPP__
 
 #include "../private/mode_binary.hpp"
+#include "../private/ternary.hpp"
 
 
 namespace Create::FP {
@@ -36,6 +37,16 @@ namespace Create::FP {
             std::forward<EAnVec>(av), left, right, mode);
     }
 
+    /********************************************************************/
+    /*                  Ternary Passthrough Functions                   */
+    /********************************************************************/
+
+    inline EBasePtr fp(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
+                       const EBasePtr &third) {
+        namespace Ex = Expression;
+        return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
+            std::forward<EAnVec>(av), first, second, third);
+    }
 
 } // namespace Create::FP
 

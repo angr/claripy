@@ -8,8 +8,6 @@
 
 #include "private/binary.hpp"
 #include "private/flat.hpp"
-#include "private/size_mode.hpp"
-#include "private/ternary.hpp"
 #include "private/unary.hpp"
 
 
@@ -41,13 +39,6 @@ namespace Create {
     inline EBasePtr reverse(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
         return Private::unary<Ex::BV, Ex::BV, Op::Reverse, Ex::BV>(std::forward<EAnVec>(av), x);
-    }
-
-    /** Create a bool Expression with an StrIsDigit op */
-    inline EBasePtr str_is_digit(EAnVec &&av, const EBasePtr &x) {
-        namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::String, Op::StrIsDigit, Ex::String>(
-            std::forward<EAnVec>(av), x);
     }
 
     /********************************************************************/
@@ -127,29 +118,6 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
-    // String
-
-    /** Create an Expression with a StrContains op */
-    inline EBasePtr str_contains(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::String, Op::StrContains, Private::SizeMode::NA,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with a StrContains op */
-    inline EBasePtr str_prefix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::String, Op::StrPrefixOf, Private::SizeMode::NA,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with a StrContains op */
-    inline EBasePtr str_suffix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::String, Op::StrSuffixOf, Private::SizeMode::NA,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
-    }
-
     // Misc
 
     /** Create a Expression with an Widen op */
@@ -180,24 +148,6 @@ namespace Create {
         namespace Ex = Expression;
         return Private::binary<T, Op::Concat, Private::SizeMode::Add, Ex::BV, Ex::String>(
             std::forward<EAnVec>(av), left, right);
-    }
-
-    /********************************************************************/
-    /*                  Ternary Passthrough Functions                   */
-    /********************************************************************/
-
-    inline EBasePtr fp_fp(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
-                          const EBasePtr &third) {
-        namespace Ex = Expression;
-        return Private::ternary<Ex::FP, Ex::BV, Op::fpFP, Private::SizeMode::Add, Ex::BV>(
-            std::forward<EAnVec>(av), first, second, third);
-    }
-
-    inline EBasePtr str_replace(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
-                                const EBasePtr &third) {
-        namespace Ex = Expression;
-        return Private::ternary<Ex::String, Op::StrReplace, Private::SizeMode::StrReplace,
-                                Ex::String>(std::forward<EAnVec>(av), first, second, third);
     }
 
     /********************************************************************/

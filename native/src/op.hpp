@@ -13,6 +13,7 @@
 #include "op/if.hpp"
 #include "op/literal.hpp"
 #include "op/macros.hpp"
+#include "op/string.hpp"
 #include "op/symbol.hpp"
 #include "op/ternary.hpp"
 #include "op/trivial.hpp"

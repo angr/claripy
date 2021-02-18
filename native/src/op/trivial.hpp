@@ -7,15 +7,8 @@
 
 #include "binary.hpp"
 #include "flat.hpp"
-#include "ternary.hpp"
 #include "unary.hpp"
 
-
-// Forward declarations
-namespace Expression {
-    class Bits;
-    class BV;
-} // namespace Expression
 
 namespace Op {
 
@@ -34,9 +27,6 @@ namespace Op {
 
     /** The unary bitwise op class: Reverse */
     OP_UNARY_TRIVIAL_SUBCLASS(Reverse);
-
-    /** The unary string op class: StrIsDigit */
-    OP_UNARY_TRIVIAL_SUBCLASS(StrIsDigit);
 
     /**********************************************************/
     /*                   Binary Subclasses                    */
@@ -88,23 +78,6 @@ namespace Op {
      */
     template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true);
 
-    // String
-
-    /** The string binary op class: StrContains
-     *  Input sizes may differ
-     */
-    OP_BINARY_TRIVIAL_SUBCLASS(StrContains, false);
-
-    /** The string binary op class: StrContains
-     *  Input sizes may differ
-     */
-    OP_BINARY_TRIVIAL_SUBCLASS(StrPrefixOf, false);
-
-    /** The string binary op class: StrContains
-     *  Input sizes may differ
-     */
-    OP_BINARY_TRIVIAL_SUBCLASS(StrSuffixOf, false);
-
     // Misc
 
     /** The set binary op class: Widen
@@ -126,20 +99,6 @@ namespace Op {
      *  Input sizes may differ
      */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, false);
-
-    /**********************************************************/
-    /*                   Ternary Subclasses                   */
-    /**********************************************************/
-
-    /** The binary op class: Concat
-     *  Input sizes may differ
-     */
-    OP_TERNARY_TRIVIAL_SUBCLASS(fpFP, false);
-
-    /** The binary op class: Concat
-     *  Input sizes may differ
-     */
-    OP_TERNARY_TRIVIAL_SUBCLASS(StrReplace, false);
 
     /**********************************************************/
     /*                    Flat Subclasses                     */

@@ -9,6 +9,7 @@
 #include "create/fp.hpp"
 #include "create/if.hpp"
 #include "create/literal.hpp"
+#include "create/string.hpp"
 #include "create/symbol.hpp"
 #include "create/trivial.hpp"
 
