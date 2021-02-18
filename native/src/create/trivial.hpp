@@ -8,6 +8,7 @@
 
 #include "private/binary.hpp"
 #include "private/flat.hpp"
+#include "private/size_mode.hpp"
 #include "private/unary.hpp"
 
 
@@ -17,28 +18,35 @@ namespace Create {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create a Expression with an abs op */
+    /** Create a Expression with an Abs op */
     template <typename T> inline EBasePtr abs(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<T, Op::Abs, Ex::BV, Ex::FP>(std::forward<EAnVec>(av), x);
+        return Private::unary<T, T, Op::Abs, Ex::BV, Ex::FP>(std::forward<EAnVec>(av), x);
     }
 
-    /** Create a Expression with an neg op */
+    /** Create a Expression with an Neg op */
     template <typename T> inline EBasePtr neg(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<T, Op::Neg, Ex::BV, Ex::FP>(std::forward<EAnVec>(av), x);
+        return Private::unary<T, T, Op::Neg, Ex::BV, Ex::FP>(std::forward<EAnVec>(av), x);
     }
 
-    /** Create a Expression with an invert op */
+    /** Create a Expression with an Invert op */
     template <typename T> inline EBasePtr invert(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<T, Op::Invert, Ex::BV, Ex::Bool>(std::forward<EAnVec>(av), x);
+        return Private::unary<T, T, Op::Invert, Ex::BV, Ex::Bool>(std::forward<EAnVec>(av), x);
     }
 
-    /** Create a Expression with an reverse op */
+    /** Create a Expression with an Reverse op */
     inline EBasePtr reverse(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<Ex::BV, Op::Reverse, Ex::BV>(std::forward<EAnVec>(av), x);
+        return Private::unary<Ex::BV, Ex::BV, Op::Reverse, Ex::BV>(std::forward<EAnVec>(av), x);
+    }
+
+    /** Create a bool Expression with an StrIsDigit op */
+    inline EBasePtr str_is_digit(EAnVec &&av, const EBasePtr &x) {
+        namespace Ex = Expression;
+        return Private::unary<Ex::Bool, Ex::String, Op::StrIsDigit, Ex::String>(
+            std::forward<EAnVec>(av), x);
     }
 
     /********************************************************************/
@@ -68,14 +76,14 @@ namespace Create {
 
     // Math
 
-    /** Create an Expression with an sub op */
+    /** Create an Expression with an Sub op */
     inline EBasePtr sub(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Sub, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create an Expression with an div op */
+    /** Create an Expression with an Div op */
     template <bool Signed>
     inline EBasePtr div(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
@@ -83,14 +91,14 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create an Expression with an Or op */
+    /** Create an Expression with an Pow op */
     inline EBasePtr pow(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Pow, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create an Expression with an Or op */
+    /** Create an Expression with an Mod op */
     template <bool Signed>
     inline EBasePtr mod(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;

@@ -32,6 +32,9 @@ void trivial() {
     Log::debug("Testing reverse...");
     unary<Ex::BV, Op::Reverse, Cr::reverse>();
 
+    Log::debug("Testing str_is_digit...");
+    /* unary<Ex::Bool, Ex::String, Op::StrIsDigit, Cr::str_is_digit>(); */
+
     /********************************************************************/
     /*                              Binary                              */
     /********************************************************************/

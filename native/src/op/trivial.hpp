@@ -22,25 +22,20 @@ namespace Op {
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
-    /** The op class: Neg
-     *  A unary op class
-     */
+    /** The unary op class: Neg */
     OP_UNARY_TRIVIAL_SUBCLASS(Neg);
 
-    /** The op class: Abs
-     *  A unary op class
-     */
+    /** The unary mathematical op class: Abs */
     OP_UNARY_TRIVIAL_SUBCLASS(Abs);
 
-    /** The op class: Invert
-     *  A unary op class
-     */
+    /** The unary op class: Invert */
     OP_UNARY_TRIVIAL_SUBCLASS(Invert);
 
-    /** The op class: Reverse
-     *  A unary op class
-     */
+    /** The unary bitwise op class: Reverse */
     OP_UNARY_TRIVIAL_SUBCLASS(Reverse);
+
+    /** The unary string op class: StrIsDigit */
+    OP_UNARY_TRIVIAL_SUBCLASS(StrIsDigit);
 
     /**********************************************************/
     /*                   Binary Subclasses                    */

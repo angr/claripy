@@ -17,10 +17,10 @@ namespace Create::Private {
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr binary(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                      "binary requires Out be an Expression");
+                      "Create::Private::binary requires Out be an Expression");
         static_assert(Utils::is_ancestor<Expression::Base, In>,
-                      "binary requires In be an Expression");
-        static_assert(Op::is_binary<OpT>, "binary requires a binary OpT");
+                      "Create::Private::binary requires In be an Expression");
+        static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
         if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
             const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
             static_assert(Utils::TD::boolean<sized_in, In>,
