@@ -70,16 +70,15 @@ void trivial() {
     binary<Ex::BV, Op::Sub, SM::First, Cr::sub>();
 
     Log::debug("Testing div...");
-    binary<Ex::BV, Op::Div, SM::First, Cr::div>();
+    binary<Ex::BV, Op::Div<true>, SM::First, Cr::div<true>>();
+    binary<Ex::BV, Op::Div<false>, SM::First, Cr::div<false>>();
 
     Log::debug("Testing pow...");
     binary<Ex::BV, Op::Pow, SM::First, Cr::pow>();
 
     Log::debug("Testing mod...");
-    binary<Ex::BV, Op::Mod, SM::First, Cr::mod>();
-
-    Log::debug("Testing div_mod...");
-    binary<Ex::BV, Op::DivMod, SM::First, Cr::div_mod>();
+    binary<Ex::BV, Op::Mod<true>, SM::First, Cr::mod<true>>();
+    binary<Ex::BV, Op::Mod<false>, SM::First, Cr::mod<false>>();
 
     // Bitwise
 

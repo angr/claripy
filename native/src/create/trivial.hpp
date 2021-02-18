@@ -76,9 +76,10 @@ namespace Create {
     }
 
     /** Create an Expression with an div op */
+    template <bool Signed>
     inline EBasePtr div(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Div, Private::SizeMode::First, Ex::BV>(
+        return Private::binary<Ex::BV, Op::Div<Signed>, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
@@ -90,16 +91,10 @@ namespace Create {
     }
 
     /** Create an Expression with an Or op */
+    template <bool Signed>
     inline EBasePtr mod(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Mod, Private::SizeMode::First, Ex::BV>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /** Create an Expression with an Or op */
-    inline EBasePtr div_mod(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::DivMod, Private::SizeMode::First, Ex::BV>(
+        return Private::binary<Ex::BV, Op::Mod<Signed>, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 

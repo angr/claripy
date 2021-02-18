@@ -52,16 +52,13 @@ namespace Op {
     OP_BINARY_TRIVIAL_SUBCLASS(Sub, true);
 
     /** The op class: Div */
-    OP_BINARY_TRIVIAL_SUBCLASS(Div, true);
+    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Div, true);
 
     /** The op class: Pow */
     OP_BINARY_TRIVIAL_SUBCLASS(Pow, true);
 
     /** The op class: Mod */
-    OP_BINARY_TRIVIAL_SUBCLASS(Mod, true);
-
-    /** The op class: DivMod */
-    OP_BINARY_TRIVIAL_SUBCLASS(DivMod, true);
+    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true);
 
     // Bitwise
 
