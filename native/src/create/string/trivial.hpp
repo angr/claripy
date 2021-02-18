@@ -6,7 +6,6 @@
 #define __CREATE_STRING_TRIVIAL_HPP__
 
 #include "../private/binary.hpp"
-#include "../private/ternary.hpp"
 #include "../private/unary.hpp"
 
 
@@ -46,18 +45,6 @@ namespace Create::String {
         namespace Ex = Expression;
         return Private::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, Private::SizeMode::NA,
                                Ex::String>(std::forward<EAnVec>(av), left, right);
-    }
-
-    /********************************************************************/
-    /*                  Ternary Passthrough Functions                   */
-    /********************************************************************/
-
-    /** Create an Expression with a String::Replace op */
-    inline EBasePtr replace(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
-                            const EBasePtr &third) {
-        namespace Ex = Expression;
-        return Private::ternary<Ex::String, Op::String::Replace, Private::SizeMode::StrReplace,
-                                Ex::String>(std::forward<EAnVec>(av), first, second, third);
     }
 
 } // namespace Create::String

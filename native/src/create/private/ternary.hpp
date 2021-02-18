@@ -44,25 +44,16 @@ namespace Create::Private {
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
-            // Type check before size extraction
-            Utils::affirm<Err::Type>(Ex::is_t<In>(second),
-                                     "Create::Private::ternary second operand of incorrect type");
-            Utils::affirm<Err::Type>(Ex::is_t<In>(third),
-                                     "Create::Private::ternary third operand of incorrect type");
             // Construct size
             Constants::UInt esize { size(first) };
             if constexpr (Mode == SizeMode::Add) {
+                Utils::affirm<Err::Type>(
+                    Ex::is_t<In>(second),
+                    "Create::Private::ternary second operand of incorrect type");
+                Utils::affirm<Err::Type>(
+                    Ex::is_t<In>(third),
+                    "Create::Private::ternary third operand of incorrect type");
                 esize += size(second) + size(third);
-            }
-            else if constexpr (Mode == SizeMode::StrReplace) {
-                const auto s2 { size(second) };
-                Utils::affirm<Err::Size>(
-                    esize >= s2,
-                    "The pattern that has to be replaced is longer than the string itself");
-                const auto s3 { size(third) };
-                if (s2 < s3) {
-                    esize = esize - s2 + s3;
-                }
             }
             else {
                 static_assert(Utils::TD::false_<Out>,

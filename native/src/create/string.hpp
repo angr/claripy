@@ -5,6 +5,7 @@
 #ifndef __CREATE_STRING_HPP__
 #define __CREATE_STRING_HPP__
 
+#include "string/replace.hpp"
 #include "string/trivial.hpp"
 
 #endif

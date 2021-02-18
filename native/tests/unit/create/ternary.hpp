@@ -60,11 +60,6 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
         if constexpr (Mode == SM::Add) {
             size += b_down->size + c_down->size;
         }
-        else if constexpr (Mode == SM::StrReplace) {
-            if (b_down->size < c_down->size) {
-                size = size - b_down->size + c_down->size;
-            }
-        }
         else {
             static_assert(Utils::TD::false_<Mode>, "Unsupported mode for ternary");
         }

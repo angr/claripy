@@ -3,7 +3,6 @@
  * \ingroup unittest
  */
 #include "../binary.hpp"
-#include "../ternary.hpp"
 #include "../unary.hpp"
 
 
@@ -32,13 +31,6 @@ void trivial() {
 
     Log::debug("Testing String::suffix_of...");
     binary<Ex::Bool, Ex::String, Op::String::SuffixOf, SM::NA, Cr::String::suffix_of>();
-
-    /********************************************************************/
-    /*                             Ternary                              */
-    /********************************************************************/
-
-    Log::debug("Testing String::Replace...");
-    ternary<Ex::String, Op::String::Replace, SM::StrReplace, Cr::String::replace>();
 }
 
 // Define the test
