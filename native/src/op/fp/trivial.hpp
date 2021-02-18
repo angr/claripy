@@ -28,7 +28,7 @@ namespace Op::FP {
     OP_UNARY_TRIVIAL_SUBCLASS(IsNaN);
 
     /**********************************************************/
-    /*               FP Mode Binary Subclasses                */
+    /*                   Binary Subclasses                    */
     /**********************************************************/
 
     /** The op class: FP::NE

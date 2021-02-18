@@ -8,29 +8,48 @@
 
 #include "../private/mode_binary.hpp"
 #include "../private/ternary.hpp"
+#include "../private/unary.hpp"
 
 
 namespace Create::FP {
 
     /********************************************************************/
+    /*                   Unary Passthrough Functions                    */
+    /********************************************************************/
+
+    /** Create a Expression with an FP::IsInf op */
+    inline EBasePtr is_inf(EAnVec &&av, const Expression::BasePtr &x) {
+        namespace Ex = Expression;
+        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Private::SizeMode::NA, Ex::FP>(
+            std::forward<EAnVec>(av), x);
+    }
+
+    /** Create a Expression with an FP::IsNan op */
+    inline EBasePtr is_nan(EAnVec &&av, const Expression::BasePtr &x) {
+        namespace Ex = Expression;
+        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Private::SizeMode::NA, Ex::FP>(
+            std::forward<EAnVec>(av), x);
+    }
+
+    /********************************************************************/
     /*                 ModeBinary Passthrough Functions                 */
     /********************************************************************/
 
-    /** Create a Expression with an Add op */
+    /** Create a Expression with an FP::Add op */
     inline EBasePtr add(EAnVec &&av, const Expression::BasePtr &left,
                         const Expression::BasePtr &right, const Mode::FP mode) {
         return Private::mode_binary<Op::FP::Add, Private::SizeMode::First>(
             std::forward<EAnVec>(av), left, right, mode);
     }
 
-    /** Create a Expression with an sub op */
+    /** Create a Expression with an FP::Sub op */
     inline EBasePtr sub(EAnVec &&av, const Expression::BasePtr &left,
                         const Expression::BasePtr &right, const Mode::FP mode) {
         return Private::mode_binary<Op::FP::Sub, Private::SizeMode::First>(
             std::forward<EAnVec>(av), left, right, mode);
     }
 
-    /** Create a Expression with an div op */
+    /** Create a Expression with an FP::Div op */
     inline EBasePtr div(EAnVec &&av, const Expression::BasePtr &left,
                         const Expression::BasePtr &right, const Mode::FP mode) {
         return Private::mode_binary<Op::FP::Div, Private::SizeMode::First>(
@@ -41,6 +60,7 @@ namespace Create::FP {
     /*                  Ternary Passthrough Functions                   */
     /********************************************************************/
 
+    /** Create an Expression with an FP::FP op */
     inline EBasePtr fp(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
                        const EBasePtr &third) {
         namespace Ex = Expression;

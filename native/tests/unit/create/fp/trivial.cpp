@@ -12,6 +12,14 @@ void trivial() {
     namespace Log = Utils::Log;
     namespace Ex = ::Expression;
 
+    // Unary
+
+    Log::debug("Testing Fp::IsInf...");
+    mode_binary<Op::FP::IsInf, Create::FP::is_inf>();
+
+    Log::debug("Testing Fp::IsNaN...");
+    mode_binary<Op::FP::IsNaN, Create::FP::is_nan>();
+
     // ModeBinary
 
     Log::debug("Testing Fp::Add...");
