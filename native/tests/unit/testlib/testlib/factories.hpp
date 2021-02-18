@@ -27,7 +27,7 @@ namespace UnitTest::TestLib::Factories {
     }
 
     /** Make it easier to create expressions */
-    template <typename T = Expression::Int>
+    template <typename T = Expression::Bool>
     Expression::BasePtr t_literal(const Constants::Int i = 0) {
         static_assert(std::is_base_of_v<Expression::Base, T>,
                       "T must derive from Expression::Base");

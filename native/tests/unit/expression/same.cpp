@@ -23,10 +23,10 @@ void same() {
 
     const std::vector<Ex::BasePtr> objs {
         // Round 1
-        construct<Ex::Int>(), construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(),
+        construct<Ex::Bool>(), construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(),
         construct<Ex::BV>(), construct<Ex::VS>(),
         // Round 2
-        construct<Ex::Int>(), construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(),
+        construct<Ex::Bool>(), construct<Ex::Bool>(), construct<Ex::String>(), construct<Ex::FP>(),
         construct<Ex::BV>(), construct<Ex::VS>()
     };
 
