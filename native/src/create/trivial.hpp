@@ -9,6 +9,7 @@
 #include "private/binary.hpp"
 #include "private/flat.hpp"
 #include "private/size_mode.hpp"
+#include "private/ternary.hpp"
 #include "private/unary.hpp"
 
 
@@ -179,6 +180,24 @@ namespace Create {
         namespace Ex = Expression;
         return Private::binary<T, Op::Concat, Private::SizeMode::Add, Ex::BV, Ex::String>(
             std::forward<EAnVec>(av), left, right);
+    }
+
+    /********************************************************************/
+    /*                  Ternary Passthrough Functions                   */
+    /********************************************************************/
+
+    inline EBasePtr fp_fp(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
+                          const EBasePtr &third) {
+        namespace Ex = Expression;
+        return Private::ternary<Ex::FP, Ex::BV, Op::fpFP, Private::SizeMode::Add, Ex::BV>(
+            std::forward<EAnVec>(av), first, second, third);
+    }
+
+    inline EBasePtr str_replace(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
+                                const EBasePtr &third) {
+        namespace Ex = Expression;
+        return Private::ternary<Ex::String, Op::StrReplace, Private::SizeMode::StrReplace,
+                                Ex::String>(std::forward<EAnVec>(av), first, second, third);
     }
 
     /********************************************************************/

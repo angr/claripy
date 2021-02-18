@@ -11,12 +11,14 @@
 
 
 /** Test a unary op */
-template <typename T, typename OpT, auto CreateF> inline void unary() {
-    static_assert(Utils::is_ancestor<Expression::Base, T>, "unary requires T be an Expression");
+template <typename Out, typename In, typename OpT, auto CreateF> inline void unary() {
+    static_assert(Utils::is_ancestor<Expression::Base, Out>,
+                  "unary requires Out be an Expression");
+    static_assert(Utils::is_ancestor<Expression::Base, In>, "unary requires In be an Expression");
     static_assert(Op::is_unary<OpT>, "unary requires a unary OpT");
 
     // Create input
-    const auto a { UnitTest::TestLib::Factories::t_literal<T>() };
+    const auto a { UnitTest::TestLib::Factories::t_literal<In>() };
 
     // Test
     const auto exp { CreateF(Create::EAnVec {}, a) };
@@ -26,17 +28,26 @@ template <typename T, typename OpT, auto CreateF> inline void unary() {
     UNITTEST_ASSERT(exp->op.use_count() == 1)
 
     // Type check
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<T>(exp) };
-    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<T>(a) };
+    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Out>(exp) };
+    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<In>(a) };
     const auto unary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
 
     // Contains check
     UNITTEST_ASSERT(unary->child == a)
 
     // Size test
-    if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
+    if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
+        static_assert(Utils::TD::boolean<Utils::is_ancestor<Expression::Bits, In>, In>,
+                      "unary requires a sized input type for a sized output type");
         UNITTEST_ASSERT(a_down->size == exp_down->size)
     }
+}
+
+/** Test a unary op
+ *  A specialization where In = Out
+ */
+template <typename InOut, typename OpT, auto CreateF> inline void unary() {
+    return unary<InOut, InOut, OpT, CreateF>();
 }
 
 #endif

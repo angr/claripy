@@ -17,7 +17,9 @@ namespace Create::Private {
         /** First operand's size is selected */
         First,
         /** All operand sizes are summed */
-        Add
+        Add,
+        /** A special mode for string replacement */
+        StrReplace
     };
 
     /** A shortcut for selecting First if T is a subclass of Bits, else NA */

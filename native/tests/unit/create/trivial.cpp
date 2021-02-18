@@ -4,6 +4,7 @@
  */
 #include "binary.hpp"
 #include "flat.hpp"
+#include "ternary.hpp"
 #include "unary.hpp"
 
 
@@ -33,7 +34,7 @@ void trivial() {
     unary<Ex::BV, Op::Reverse, Cr::reverse>();
 
     Log::debug("Testing str_is_digit...");
-    /* unary<Ex::Bool, Ex::String, Op::StrIsDigit, Cr::str_is_digit>(); */
+    unary<Ex::Bool, Ex::String, Op::StrIsDigit, Cr::str_is_digit>();
 
     /********************************************************************/
     /*                              Binary                              */
@@ -41,11 +42,11 @@ void trivial() {
 
     // Comparisons
 
-    Log::debug("Testing reverse...");
-    /* binary<Ex::FP, Op::Eq, SM::First, Cr::eq<Expression::FP>>(); */
+    Log::debug("Testing eq...");
+    binary<Ex::Bool, Ex::FP, Op::Eq, SM::First, Cr::eq<Expression::FP>>();
     binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq<Expression::BV>>();
     binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>();
-    /* binary<Ex::String, Op::Eq, SM::First, Cr::eq<Expression::String>>(); */
+    binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq<Expression::String>>();
 
 /** A macro used to test a comparison function */
 #define TEST_COMPARE(T_, S_, L_, E_)                                                              \
@@ -120,6 +121,16 @@ void trivial() {
     Log::debug("Testing concat...");
     binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expression::BV>>();
     binary<Ex::String, Op::Concat, SM::Add, Cr::concat<Expression::String>>();
+
+    /********************************************************************/
+    /*                             Ternary                              */
+    /********************************************************************/
+
+    Log::debug("Testing fpFP...");
+    ternary<Ex::FP, Ex::BV, Op::fpFP, SM::Add, Cr::fp_fp>();
+
+    Log::debug("Testing StrReplace...");
+    ternary<Ex::String, Op::StrReplace, SM::StrReplace, Cr::str_replace>();
 
     /********************************************************************/
     /*                               Flat                               */

@@ -23,9 +23,9 @@
         OP_FINAL_INIT(CLASS)                                                                      \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
-                              const ::Expression::BasePtr &r)                                     \
-            : Ternary { h, static_cuid, l, r } {}                                                 \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &a,              \
+                              const ::Expression::BasePtr &b, const ::Expression::BasePtr &c)     \
+            : Ternary { h, static_cuid, a, b, c } {}                                              \
     };
 
 
@@ -57,13 +57,13 @@ namespace Op {
             if constexpr (ConsiderSize) {
                 Utils::affirm<Err>(Expression::are_same<true>(first, second),
                                    "Op::Ternary first and second types or sizes differ");
-                Utils::affirm<Err>(Expression::are_same<true>(first, thrid),
+                Utils::affirm<Err>(Expression::are_same<true>(first, third),
                                    "Op::Ternary first and third types or sizes differ");
             }
             else {
                 Utils::affirm<Err>(Expression::are_same<false>(first, second),
                                    "Op::Ternary first and second types differ");
-                Utils::affirm<Err>(Expression::are_same<false>(first, thrid),
+                Utils::affirm<Err>(Expression::are_same<false>(first, third),
                                    "Op::Ternary first and third types differ");
             }
         }

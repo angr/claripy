@@ -37,7 +37,7 @@ namespace Create::Private {
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::binary requires In is in Allowed");
         Utils::affirm<Err::Type>(Ex::is_t<In>(left),
-                                 "Create::Private::binary left operands of incorrect type");
+                                 "Create::Private::binary left operand of incorrect type");
 
         // Construct expression (static casts are safe because of previous checks)
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
@@ -46,6 +46,10 @@ namespace Create::Private {
             // Construct size
             Constants::UInt esize { size(left) };
             if constexpr (Mode == SizeMode::Add) {
+                // Type check before size extraction
+                Utils::affirm<Err::Type>(
+                    Ex::is_t<In>(right),
+                    "Create::Private::binary right operand of incorrect type");
                 esize += size(right);
             }
             else if constexpr (Mode != SizeMode::First) {

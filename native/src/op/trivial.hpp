@@ -7,6 +7,7 @@
 
 #include "binary.hpp"
 #include "flat.hpp"
+#include "ternary.hpp"
 #include "unary.hpp"
 
 
@@ -125,6 +126,20 @@ namespace Op {
      *  Input sizes may differ
      */
     OP_BINARY_TRIVIAL_SUBCLASS(Concat, false);
+
+    /**********************************************************/
+    /*                   Ternary Subclasses                   */
+    /**********************************************************/
+
+    /** The binary op class: Concat
+     *  Input sizes may differ
+     */
+    OP_TERNARY_TRIVIAL_SUBCLASS(fpFP, false);
+
+    /** The binary op class: Concat
+     *  Input sizes may differ
+     */
+    OP_TERNARY_TRIVIAL_SUBCLASS(StrReplace, false);
 
     /**********************************************************/
     /*                    Flat Subclasses                     */
