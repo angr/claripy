@@ -50,19 +50,21 @@ inline void int_binary() {
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-        Constants::UInt size { integer };
-        if constexpr (Mode == SizeMode::Add) {
-            esize += size(expr)
+        Constants::UInt esize { int_binary->integer };
+        if constexpr (Mode == SM::Add) {
+            esize += exp_down->size;
         }
-        else if constexpr (Mode != SizeMode::Second) {
+        else if constexpr (Mode != SM::Second) {
             static_assert(Utils::TD::false_<Out>,
                           "int_binary does not support the given SizeMode");
         }
-        UNITTEST_ASSERT(exp_down->size == size)
+        UNITTEST_ASSERT(exp_down->size == esize)
     }
 }
 
-/** A specialization where In = Out */
+/** A specialization where In = Out
+ *  Default IntT to Constants::UInt
+ */
 template <typename InOut, typename OpT, SM Mode, auto CreateF, typename IntT = Constants::UInt>
 inline void int_binary() {
     int_binary<InOut, InOut, OpT, Mode, CreateF, IntT>();

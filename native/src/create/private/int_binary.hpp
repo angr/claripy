@@ -14,8 +14,12 @@
 namespace Create::Private {
 
     /** Create a Expression with an int binary op */
-    template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr int_binary(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
+    template <typename IntT, typename Out, typename In, typename OpT, SizeMode Mode,
+              typename... Allowed>
+    inline EBasePtr int_binary(EAnVec &&av, const EBasePtr &expr, const IntT integer) {
+        static_assert(Utils::qualified_is_in<IntT, Constants::UInt, Constants::Int>,
+                      "Create::Private::int_binary requires IntT be either Constants::UInt or "
+                      "Constants::Int");
         static_assert(Utils::is_ancestor<Expression::Base, Out>,
                       "Create::Private::int_binary requires Out be an Expression");
         static_assert(Utils::is_ancestor<Expression::Base, In>,
@@ -48,7 +52,7 @@ namespace Create::Private {
             // Construct size
             Constants::UInt esize { integer };
             if constexpr (Mode == SizeMode::Add) {
-                esize += size(expr)
+                esize += size(expr);
             }
             else if constexpr (Mode != SizeMode::Second) {
                 static_assert(Utils::TD::false_<Out>,
@@ -56,7 +60,7 @@ namespace Create::Private {
             }
             // Actually construct expression
             return simplify(Ex::factory<Out>(std::forward<EAnVec>(av), expr->symbolic,
-                                             Op::factory<OpT>(left, right), esize));
+                                             Op::factory<OpT>(expr, integer), esize));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,
@@ -69,10 +73,10 @@ namespace Create::Private {
     /** Create a Expression with a int binary op
      *  A specialization where In = Out
      */
-    template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr int_binary(EAnVec &&av, const EBasePtr &expr, const Constants::Int integer) {
-        return int_binary<InOut, InOut, OpT, Mode, Allowed...>(std::forward<EAnVec>(av), expr,
-                                                               integer);
+    template <typename IntT, typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
+    inline EBasePtr int_binary(EAnVec &&av, const EBasePtr &expr, const IntT integer) {
+        return int_binary<IntT, InOut, InOut, OpT, Mode, Allowed...>(std::forward<EAnVec>(av),
+                                                                     expr, integer);
     }
 
 } // namespace Create::Private

@@ -8,6 +8,7 @@
 
 #include "private/binary.hpp"
 #include "private/flat.hpp"
+#include "private/int_binary.hpp"
 #include "private/unary.hpp"
 
 
@@ -48,15 +49,15 @@ namespace Create {
     /** Create an Expression with an SignExt op */
     inline EBasePtr sign_ext(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
-        return Private::int_binary<Ex::BV, Op::SignExt, Ex::BV>(std::forward<EAnVec>(av), expr,
-                                                                integer);
+        return Private::int_binary<Constants::UInt, Ex::BV, Op::SignExt, Private::SizeMode::Add,
+                                   Ex::BV>(std::forward<EAnVec>(av), expr, integer);
     }
 
     /** Create an Expression with an ZeroExt op */
     inline EBasePtr zero_ext(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
-        return Private::int_binary<Ex::BV, Op::ZeroExt, Ex::BV>(std::forward<EAnVec>(av), expr,
-                                                                integer);
+        return Private::int_binary<Constants::UInt, Ex::BV, Op::ZeroExt, Private::SizeMode::Add,
+                                   Ex::BV>(std::forward<EAnVec>(av), expr, integer);
     }
 
     /********************************************************************/

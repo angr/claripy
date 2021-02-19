@@ -4,6 +4,7 @@
  */
 #include "binary.hpp"
 #include "flat.hpp"
+#include "int_binary.hpp"
 #include "unary.hpp"
 
 

@@ -3,6 +3,7 @@
  * \ingroup unittest
  */
 #include "../binary.hpp"
+#include "../int_binary.hpp"
 #include "../unary.hpp"
 
 
@@ -24,7 +25,7 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing to_int...");
-    int_binary<Ex::BV, Op::ToInt, SM::Second, Cr::String::to_int>();
+    int_binary<Ex::BV, Op::String::ToInt, SM::Second, Cr::String::to_int>();
 
     /********************************************************************/
     /*                              Binary                              */
