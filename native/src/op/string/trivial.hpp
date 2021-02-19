@@ -6,6 +6,7 @@
 #define __OP_STRING_TRIVIAL_HPP__
 
 #include "../binary.hpp"
+#include "../int_binary.hpp"
 #include "../ternary.hpp"
 #include "../unary.hpp"
 
@@ -24,6 +25,13 @@ namespace Op::String {
 
     /** The unary string op class: String::Unit */
     OP_UNARY_TRIVIAL_SUBCLASS(Unit);
+
+    /**********************************************************/
+    /*                  IntBinary Subclasses                  */
+    /**********************************************************/
+
+    /** The int binary op class: String::ToInt */
+    OP_INTBINARY_TRIVIAL_SUBCLASS(ToInt, true);
 
     /**********************************************************/
     /*                   Binary Subclasses                    */

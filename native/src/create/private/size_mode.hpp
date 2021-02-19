@@ -16,6 +16,8 @@ namespace Create::Private {
         NA,
         /** First operand's size is selected */
         First,
+        /** Second operand's size is selected */
+        Second,
         /** All operand sizes are summed */
         Add
     };

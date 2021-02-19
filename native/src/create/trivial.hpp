@@ -17,28 +17,46 @@ namespace Create {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create a Expression with an Abs op */
+    /** Create an Expression with an Abs op */
     template <typename T> inline EBasePtr abs(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
         return Private::unary<T, T, Op::Abs, Ex::BV, Ex::FP>(std::forward<EAnVec>(av), x);
     }
 
-    /** Create a Expression with an Neg op */
+    /** Create an Expression with an Neg op */
     template <typename T> inline EBasePtr neg(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
         return Private::unary<T, T, Op::Neg, Ex::BV, Ex::FP>(std::forward<EAnVec>(av), x);
     }
 
-    /** Create a Expression with an Invert op */
+    /** Create an Expression with an Invert op */
     template <typename T> inline EBasePtr invert(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
         return Private::unary<T, T, Op::Invert, Ex::BV, Ex::Bool>(std::forward<EAnVec>(av), x);
     }
 
-    /** Create a Expression with an Reverse op */
+    /** Create an Expression with an Reverse op */
     inline EBasePtr reverse(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
         return Private::unary<Ex::BV, Ex::BV, Op::Reverse, Ex::BV>(std::forward<EAnVec>(av), x);
+    }
+
+    /********************************************************************/
+    /*                 Int Binary Passthrough Functions                 */
+    /********************************************************************/
+
+    /** Create an Expression with an SignExt op */
+    inline EBasePtr sign_ext(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
+        namespace Ex = Expression;
+        return Private::int_binary<Ex::BV, Op::SignExt, Ex::BV>(std::forward<EAnVec>(av), expr,
+                                                                integer);
+    }
+
+    /** Create an Expression with an ZeroExt op */
+    inline EBasePtr zero_ext(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
+        namespace Ex = Expression;
+        return Private::int_binary<Ex::BV, Op::ZeroExt, Ex::BV>(std::forward<EAnVec>(av), expr,
+                                                                integer);
     }
 
     /********************************************************************/
@@ -120,21 +138,21 @@ namespace Create {
 
     // Misc
 
-    /** Create a Expression with an Widen op */
+    /** Create an Expression with an Widen op */
     inline EBasePtr widen(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Widen, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create a Expression with an Union op */
+    /** Create an Expression with an Union op */
     inline EBasePtr union_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Union, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create a Expression with an Intersection op */
+    /** Create an Expression with an Intersection op */
     template <typename T>
     inline EBasePtr intersection_(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
@@ -142,7 +160,7 @@ namespace Create {
             std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create a Expression with an Concat op */
+    /** Create an Expression with an Concat op */
     template <typename T>
     inline EBasePtr concat(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
@@ -156,14 +174,14 @@ namespace Create {
 
     // Math
 
-    /** Create a Expression with an Add op */
+    /** Create an Expression with an Add op */
     inline EBasePtr add(EAnVec &&av, Op::Add::OpContainer &&operands) {
         namespace Ex = Expression;
         return Private::flat<Ex::BV, Op::Add, Private::SizeMode::First, Ex::BV>(
             std::forward<EAnVec>(av), std::forward<Op::Add::OpContainer>(operands));
     }
 
-    /** Create a Expression with an Mul op */
+    /** Create an Expression with an Mul op */
     inline EBasePtr mul(EAnVec &&av, Op::Mul::OpContainer &&operands) {
         namespace Ex = Expression;
         return Private::flat<Ex::BV, Op::Mul, Private::SizeMode::First, Ex::BV>(

@@ -7,6 +7,7 @@
 
 #include "binary.hpp"
 #include "flat.hpp"
+#include "int_binary.hpp"
 #include "unary.hpp"
 
 
@@ -27,6 +28,16 @@ namespace Op {
 
     /** The unary bitwise op class: Reverse */
     OP_UNARY_TRIVIAL_SUBCLASS(Reverse);
+
+    /**********************************************************/
+    /*                  IntBinary Subclasses                  */
+    /**********************************************************/
+
+    /** The int binary op class: SignExt */
+    OP_INTBINARY_TRIVIAL_SUBCLASS(SignExt, true);
+
+    /** The int binary op class: ZeroExt */
+    OP_INTBINARY_TRIVIAL_SUBCLASS(ZeroExt, true);
 
     /**********************************************************/
     /*                   Binary Subclasses                    */

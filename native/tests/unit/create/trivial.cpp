@@ -33,6 +33,16 @@ void trivial() {
     unary<Ex::BV, Op::Reverse, Cr::reverse>();
 
     /********************************************************************/
+    /*                            Int Binary                            */
+    /********************************************************************/
+
+    Log::debug("Testing sign_ext...");
+    int_binary<Ex::BV, Op::SignExt, SM::Add, Cr::sign_ext>();
+
+    Log::debug("Testing zero_ext...");
+    int_binary<Ex::BV, Op::ZeroExt, SM::Add, Cr::zero_ext>();
+
+    /********************************************************************/
     /*                              Binary                              */
     /********************************************************************/
 

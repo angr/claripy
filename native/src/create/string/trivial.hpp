@@ -23,6 +23,17 @@ namespace Create::String {
     }
 
     /********************************************************************/
+    /*                 Int Binary Passthrough Functions                 */
+    /********************************************************************/
+
+    /** Create an Expression with an SignExt op */
+    inline EBasePtr to_int(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
+        namespace Ex = Expression;
+        return Private::int_binary<Ex::BV, Ex::String, Op::ToInt, Private::SizeMode::Second,
+                                   Ex::String>(std::forward<EAnVec>(av), expr, integer);
+    }
+
+    /********************************************************************/
     /*                   Binary Passthrough Functions                   */
     /********************************************************************/
 
