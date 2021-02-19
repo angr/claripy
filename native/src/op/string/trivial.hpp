@@ -33,6 +33,9 @@ namespace Op::String {
     /** The int binary op class: String::ToInt */
     OP_INTBINARY_TRIVIAL_SUBCLASS(ToInt, true);
 
+    /** The int binary op class: String::Len */
+    OP_INTBINARY_TRIVIAL_SUBCLASS(Len, true);
+
     /**********************************************************/
     /*                   Binary Subclasses                    */
     /**********************************************************/

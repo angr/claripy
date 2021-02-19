@@ -27,6 +27,9 @@ void trivial() {
     Log::debug("Testing to_int...");
     int_binary<Ex::BV, Ex::String, Op::String::ToInt, SM::Second, Cr::String::to_int>();
 
+    Log::debug("Testing str_len...");
+    int_binary<Ex::BV, Ex::String, Op::String::Len, SM::Second, Cr::String::len>();
+
     /********************************************************************/
     /*                              Binary                              */
     /********************************************************************/
