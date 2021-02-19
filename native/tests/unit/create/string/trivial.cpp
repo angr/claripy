@@ -25,7 +25,7 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing to_int...");
-    int_binary<Ex::BV, Op::String::ToInt, SM::Second, Cr::String::to_int>();
+    int_binary<Ex::BV, Ex::String, Op::String::ToInt, SM::Second, Cr::String::to_int>();
 
     /********************************************************************/
     /*                              Binary                              */

@@ -15,7 +15,8 @@ using SM = Create::Private::SizeMode;
 
 
 /** Test an int int_binary op */
-template <typename Out, typename In, typename OpT, SM Mode, auto CreateF, typename IntT>
+template <typename Out, typename In, typename OpT, SM Mode, auto CreateF,
+          typename IntT = Constants::UInt>
 inline void int_binary() {
     static_assert(Utils::is_ancestor<Expression::Base, Out>,
                   "int_binary requires Out be an Expression");
@@ -62,8 +63,8 @@ inline void int_binary() {
     }
 }
 
-/** A specialization where In = Out
- *  Default IntT to Constants::UInt
+/** Test an int int_binary op
+ *  A specialization where In = Out
  */
 template <typename InOut, typename OpT, SM Mode, auto CreateF, typename IntT = Constants::UInt>
 inline void int_binary() {
