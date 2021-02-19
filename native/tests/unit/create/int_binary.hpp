@@ -53,7 +53,7 @@ inline void int_binary() {
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
         Constants::UInt esize { int_binary->integer };
         if constexpr (Mode == SM::Add) {
-            esize += exp_down->size;
+            esize += a_down->size;
         }
         else if constexpr (Mode != SM::Second) {
             static_assert(Utils::TD::false_<Out>,
