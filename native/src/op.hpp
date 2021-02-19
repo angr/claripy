@@ -11,6 +11,7 @@
 #include "op/flat.hpp"
 #include "op/fp.hpp"
 #include "op/if.hpp"
+#include "op/int_binary.hpp"
 #include "op/literal.hpp"
 #include "op/macros.hpp"
 #include "op/string.hpp"

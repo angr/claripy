@@ -10,8 +10,6 @@
 
 #include "../error.hpp"
 
-#include <memory>
-
 
 /** A macro used to define a trivial subclass of Binary
  *  Pass template arguments to Binary via variadic macro arguments

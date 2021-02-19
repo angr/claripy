@@ -8,8 +8,6 @@
 
 #include "base.hpp"
 
-#include <memory>
-
 
 /** A macro used to define a trivial subclass of Flat
  *  Pass template arguments to Binary via variadic macro arguments

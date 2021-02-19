@@ -9,8 +9,6 @@
 
 #include "../error.hpp"
 
-#include <memory>
-
 
 /** A macro used to define a trivial subclass of Unary
  *  Pass template arguments to Unary via variadic macro arguments
