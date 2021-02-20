@@ -24,21 +24,14 @@ namespace Op::String {
         const Expression::BasePtr pattern;
         /** Start Index */
         Constants::UInt start_index;
-        /** The bit length of the resulting BV */
-        Constants::UInt bit_length;
 
       private:
         /** Protected constructor
          *  Ensure that str and pattern are of type String
          */
         explicit inline IndexOf(const Hash::Hash &h, const Expression::BasePtr &s,
-                                const Expression::BasePtr &pat, const Constants::UInt si,
-                                const Constants::UInt bl)
-            : Base { h, static_cuid },
-              str { s },
-              pattern { pat },
-              start_index { si },
-              bit_length { bl } {
+                                const Expression::BasePtr &pat, const Constants::UInt si)
+            : Base { h, static_cuid }, str { s }, pattern { pat }, start_index { si } {
             using Err = Error::Expression::Type;
             Utils::affirm<Err>(Expression::is_t<Expression::String>(str),
                                "Op::String::IndexOf: str expression must be a String");
