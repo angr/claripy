@@ -7,8 +7,8 @@
  * Note: these exceptions ignore the rule of 5 (see claricpp.hpp)
  * @todo Document method when known
  */
-#ifndef __ERRORS_PYTHON_HPP__
-#define __ERRORS_PYTHON_HPP__
+#ifndef __UTILS_ERROR_PYTHON_HPP__
+#define __UTILS_ERROR_PYTHON_HPP__
 
 #include "claricpp.hpp"
 

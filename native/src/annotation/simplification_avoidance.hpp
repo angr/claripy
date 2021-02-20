@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Annotation::SimplificationAvoidance class
  */
-#ifndef __ANNOTATION_SIMPLIFICATION_AVOIDANCE_HPP__
-#define __ANNOTATION_SIMPLIFICATION_AVOIDANCE_HPP__
+#ifndef __ANNOTATION_SIMPLIFICATIONAVOIDANCE_HPP__
+#define __ANNOTATION_SIMPLIFICATIONAVOIDANCE_HPP__
 
 #include "base.hpp"
 

@@ -5,8 +5,8 @@
  * These exceptions have python analogs and must be caught and sent to python
  * via a different method.
  */
-#ifndef __UTILS_ERRORS_CLARICPP_HPP__
-#define __UTILS_ERRORS_CLARICPP_HPP__
+#ifndef __UTILS_ERROR_CLARICPP_HPP__
+#define __UTILS_ERROR_CLARICPP_HPP__
 
 #include "../to_str.hpp"
 

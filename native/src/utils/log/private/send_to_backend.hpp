@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a function which preps its args then sends them to the Log Backend
  */
-#ifndef __UTILS_LOG_LOG_SENDTOBACKEND_HPP__
-#define __UTILS_LOG_LOG_SENDTOBACKEND_HPP__
+#ifndef __UTILS_LOG_PRIVATE_SENDTOBACKEND_HPP__
+#define __UTILS_LOG_PRIVATE_SENDTOBACKEND_HPP__
 
 #include "../../ostream.hpp"
 #include "../backend.hpp"
