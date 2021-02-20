@@ -7,6 +7,7 @@
 
 #include "op/base.hpp"
 #include "op/binary.hpp"
+#include "op/extract.hpp"
 #include "op/factory.hpp"
 #include "op/flat.hpp"
 #include "op/fp.hpp"

@@ -21,7 +21,6 @@ void replace() {
     namespace CS = Create::String;
     namespace OS = Op::String;
 
-
     // Create distinct inputs
     const auto a { F::t_literal<ES>(0) };
     const auto b { F::t_literal<ES>(1) };

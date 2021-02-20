@@ -6,6 +6,7 @@
 #ifndef __CREATE_HPP__
 #define __CREATE_HPP__
 
+#include "create/extract.hpp"
 #include "create/fp.hpp"
 #include "create/if.hpp"
 #include "create/literal.hpp"
