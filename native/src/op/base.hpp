@@ -11,12 +11,6 @@
 #include "../factory.hpp"
 
 
-// Forward declarations helpful for derived ops
-namespace Expression {
-    using BasePtr = Factory::Ptr<Base>;
-}
-
-
 namespace Op {
 
     /** Base operation expression

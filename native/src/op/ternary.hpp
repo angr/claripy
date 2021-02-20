@@ -7,10 +7,6 @@
 
 #include "base.hpp"
 
-#include "../error.hpp"
-
-#include <memory>
-
 
 /** A macro used to define a trivial subclass of Ternary
  *  Pass template arguments to Ternary via variadic macro arguments

@@ -15,6 +15,9 @@ struct CSized {
     /** The size */
     const Constants::UInt size;
 
+    /** An alias for size */
+    [[deprecated("Use .size instead")]] inline auto length() const noexcept { return size; }
+
   protected:
     /** Protected constructor */
     explicit inline CSized(const Constants::UInt s) noexcept : size { s } {}

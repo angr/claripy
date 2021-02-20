@@ -10,12 +10,6 @@
 #include "../utils.hpp"
 
 
-// Forward declarations
-namespace Expression {
-    class Base;
-}
-
-
 /** Initalize a pure abstract op class
  *  Leaves the class in a private access context
  *  Note: The constructors for these classes are declared, but not defined

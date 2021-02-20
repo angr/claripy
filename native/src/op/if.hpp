@@ -1,20 +1,12 @@
 /**
  * @file
- * @brief The OP representing an If
+ * @brief This file defines the Op class representing an If statement
  */
 #ifndef __OP_IF_HPP__
 #define __OP_IF_HPP__
 
 #include "base.hpp"
 
-#include <memory>
-
-
-// Forward declarations
-namespace Expression {
-    class Base;
-    class Bool;
-} // namespace Expression
 
 namespace Op {
 
