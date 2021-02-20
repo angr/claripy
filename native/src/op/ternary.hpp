@@ -52,15 +52,15 @@ namespace Op {
             // Type / size checking
             if constexpr (ConsiderSize) {
                 Utils::affirm<Err>(Expression::are_same<true>(first, second),
-                                   "Op::Ternary first and second types or sizes differ");
+                                   WHOAMI_WITH_SOURCE "first and second types or sizes differ");
                 Utils::affirm<Err>(Expression::are_same<true>(first, third),
-                                   "Op::Ternary first and third types or sizes differ");
+                                   WHOAMI_WITH_SOURCE "first and third types or sizes differ");
             }
             else {
                 Utils::affirm<Err>(Expression::are_same<false>(first, second),
-                                   "Op::Ternary first and second types differ");
+                                   WHOAMI_WITH_SOURCE "first and second types differ");
                 Utils::affirm<Err>(Expression::are_same<false>(first, third),
-                                   "Op::Ternary first and third types differ");
+                                   WHOAMI_WITH_SOURCE "first and third types differ");
             }
         }
     };

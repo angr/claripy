@@ -38,7 +38,7 @@ namespace Create::Private {
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::ternary requires In is in Allowed");
         Utils::affirm<Err::Type>(Ex::is_t<In>(first),
-                                 "Create::Private::ternary first operand of incorrect type");
+                                 WHOAMI_WITH_SOURCE "first operand of incorrect type");
 
         // Construct expression (static casts are safe because of previous checks)
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
@@ -47,12 +47,10 @@ namespace Create::Private {
             // Construct size
             Constants::UInt esize { size(first) };
             if constexpr (Mode == SizeMode::Add) {
-                Utils::affirm<Err::Type>(
-                    Ex::is_t<In>(second),
-                    "Create::Private::ternary second operand of incorrect type");
-                Utils::affirm<Err::Type>(
-                    Ex::is_t<In>(third),
-                    "Create::Private::ternary third operand of incorrect type");
+                Utils::affirm<Err::Type>(Ex::is_t<In>(second),
+                                         WHOAMI_WITH_SOURCE "second operand of incorrect type");
+                Utils::affirm<Err::Type>(Ex::is_t<In>(third),
+                                         WHOAMI_WITH_SOURCE "third operand of incorrect type");
                 esize += size(second) + size(third);
             }
             else {

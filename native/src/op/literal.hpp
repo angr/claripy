@@ -61,7 +61,8 @@ namespace Op {
             static const constexpr Constants::UInt max128 = 128ULL; // exactly 128 / CHAR_BIT
             // Construct differently depending on size
             if (size_ <= max64) {
-                Utils::affirm<Usage>(data == max64, "Literal constructor with size ", size_,
+                Utils::affirm<Usage>(data == max64,
+                                     WHOAMI_WITH_SOURCE "Literal constructor with size ", size_,
                                      " given a string with only ", rdata.size(),
                                      " bytes in it."
                                      " The minimum amount allowed is: ",

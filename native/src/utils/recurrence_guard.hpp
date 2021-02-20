@@ -47,7 +47,8 @@ namespace Utils {
         {
             const auto num { ++count[func] };
             affirm<Error::Unexpected::RecurrenceLimit>(
-                num <= lim, func, " has reached its recurrence limit of: ", lim);
+                num <= lim, WHOAMI_WITH_SOURCE, func,
+                " has reached its recurrence limit of: ", lim);
         }
 
         /** Destructor
@@ -61,7 +62,7 @@ namespace Utils {
             if (n_except == std::uncaught_exceptions()) {
                 // Error checking
                 affirm<Error::Unexpected::Unknown>(
-                    num != 0,
+                    num != 0, WHOAMI_WITH_SOURCE
                     "RecurrenceGuard is trying to decrement a count of 0."
                     "\nThis probably happened because something went wrong with control flow."
                     "\nFor example, an exception was thrown in a guarded function but nothing was "

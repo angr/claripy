@@ -21,16 +21,17 @@ namespace Create::String {
         namespace Err = Error::Expression;
 
         // Type check
-        Utils::affirm<Err::Type>(
-            Ex::is_t<Ex::String>(first) && Ex::is_t<Ex::String>(second) &&
-                Ex::is_t<Ex::String>(third),
-            "Create::String::replace operands must be each be of type Expression::String");
+        Utils::affirm<Err::Type>(Ex::is_t<Ex::String>(first) && Ex::is_t<Ex::String>(second) &&
+                                     Ex::is_t<Ex::String>(third),
+                                 WHOAMI_WITH_SOURCE
+                                 "operands must be each be of type Expression::String");
 
         // Construct size
         Constants::UInt esize { Private::size(first) };
         const auto s2 { Private::size(second) };
         Utils::affirm<Err::Size>(
-            esize >= s2, "The pattern that has to be replaced is longer than the string itself");
+            esize >= s2, WHOAMI_WITH_SOURCE
+            "The pattern that has to be replaced is longer than the string itself");
         const auto s3 { Private::size(third) };
         if (s2 < s3) {
             esize = esize - s2 + s3;

@@ -22,7 +22,8 @@ namespace Create {
 
         // Type checks
         static_assert(Utils::is_ancestor<Expression::Base, T>, "T must subclass Expression::Base");
-        Utils::affirm<Err::Type>(Ex::is_t<T>(left), "Create::if_ left operands must be a T");
+        Utils::affirm<Err::Type>(Ex::is_t<T>(left),
+                                 WHOAMI_WITH_SOURCE "left operands must be a T");
 
         // Construct expression
         const bool sym { cond->symbolic || left->symbolic || right->symbolic };

@@ -34,9 +34,9 @@ namespace Op::String {
             : Base { h, static_cuid }, str { s }, pattern { pat }, start_index { si } {
             using Err = Error::Expression::Type;
             Utils::affirm<Err>(Expression::is_t<Expression::String>(str),
-                               "Op::String::IndexOf: str expression must be a String");
+                               WHOAMI_WITH_SOURCE "str expression must be a String");
             Utils::affirm<Err>(Expression::is_t<Expression::String>(pattern),
-                               "Op::String::IndexOf: pattern expression must be a String");
+                               WHOAMI_WITH_SOURCE "pattern expression must be a String");
         }
     };
 

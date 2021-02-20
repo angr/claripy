@@ -52,11 +52,11 @@ namespace Op {
             // Type / size checking
             if constexpr (ConsiderSize) {
                 Utils::affirm<Err>(Expression::are_same<true>(left, right),
-                                   "Op::Binary left and right types or sizes differ");
+                                   WHOAMI_WITH_SOURCE "left and right types or sizes differ");
             }
             else {
                 Utils::affirm<Err>(Expression::are_same<false>(left, right),
-                                   "Op::Binary left and right types differ");
+                                   WHOAMI_WITH_SOURCE "left and right types differ");
             }
         }
     };

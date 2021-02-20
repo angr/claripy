@@ -35,8 +35,7 @@ namespace Create::Private {
         // Type checks
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::unary argument types must be in Allowed");
-        Utils::affirm<Err::Type>(Ex::is_t<In>(x),
-                                 "Create::Private::unary operand must be of type In");
+        Utils::affirm<Err::Type>(Ex::is_t<In>(x), WHOAMI_WITH_SOURCE "operand must be of type In");
 
         // Construct expression
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {

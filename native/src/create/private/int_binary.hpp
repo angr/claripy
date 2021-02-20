@@ -41,9 +41,8 @@ namespace Create::Private {
         // Type check
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::int_binary requires In is in Allowed");
-        Utils::affirm<Err::Type>(
-            Ex::is_t<In>(expr),
-            "Create::Private::int_binary Expression operand of incorrect type");
+        Utils::affirm<Err::Type>(Ex::is_t<In>(expr),
+                                 WHOAMI_WITH_SOURCE "Expression operand of incorrect type");
 
         // Construct expression (static casts are safe because of previous checks)
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {

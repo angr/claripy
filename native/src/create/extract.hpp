@@ -24,8 +24,10 @@ namespace Create {
         // Checks
         static_assert(Utils::qualified_is_in<T, Ex::String, Ex::BV>,
                       "T must be either a BV or String");
-        Utils::affirm<Err::Type>(Ex::is_t<T>(from), "Create::extract from operands must be a T");
-        Utils::affirm<Err::Type>(high >= low, "Create::extract high should not be lower than low");
+        Utils::affirm<Err::Type>(Ex::is_t<T>(from),
+                                 WHOAMI_WITH_SOURCE "from operands must be a T");
+        Utils::affirm<Err::Type>(high >= low,
+                                 WHOAMI_WITH_SOURCE "high should not be lower than low");
 
         // Construct expression
         return simplify(Ex::factory<T>(std::forward<EAnVec>(av), from->symbolic,

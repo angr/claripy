@@ -27,8 +27,8 @@ namespace Create {
 
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
             // Size check
-            Utils::affirm<Utils::Error::Unexpected::Size>(
-                size >= data.size(), "Create::literal given size smaller than data size");
+            Utils::affirm<Utils::Error::Unexpected::Size>(size >= data.size(), WHOAMI_WITH_SOURCE
+                                                          "given size smaller than data size");
             // Construct expression
             return Ex::factory<T>(std::forward<EAnVec>(av), false,
                                   Op::factory<Op::Literal>(std::forward<std::string>(data)), size);
