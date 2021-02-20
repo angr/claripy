@@ -6,6 +6,7 @@
 #define __OP_FP_HPP__
 
 #include "fp/mode_binary.hpp"
+#include "fp/to_bv.hpp"
 #include "fp/trivial.hpp"
 
 #endif
