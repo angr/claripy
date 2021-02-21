@@ -39,7 +39,7 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     UNITTEST_ASSERT(mbinary->mode == mode)
 
     // Size test
-    UNITTEST_ASSERT(exp_down->size == a_down->size)
+    UNITTEST_ASSERT(exp_down->bit_length == a_down->bit_length)
 }
 
 #endif

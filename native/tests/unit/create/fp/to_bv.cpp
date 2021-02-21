@@ -35,7 +35,7 @@ template <bool Signed> void to_bv_b() {
     UNITTEST_ASSERT(op_down->fp == fp)
 
     // Size check
-    UNITTEST_ASSERT(exp_down->size == bit_length)
+    UNITTEST_ASSERT(exp_down->bit_length == bit_length)
 }
 
 /** Verify that the to_bv function compiles and can be run without issue */

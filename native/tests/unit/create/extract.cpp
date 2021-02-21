@@ -35,7 +35,7 @@ template <typename T> void extract_t() {
     UNITTEST_ASSERT(op_down->from == a)
 
     // Size check
-    UNITTEST_ASSERT(exp_down->size == high + 1 - low)
+    UNITTEST_ASSERT(exp_down->bit_length == high + 1 - low)
 }
 
 /** Verify that the extract function compiles and can be run without issue */

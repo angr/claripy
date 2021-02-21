@@ -51,7 +51,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
         static_assert(Mode == Utils::TD::id<SM::First>, "Unsupported mode for flat");
         const auto i0 { dcast<T>(flat->operands[0]) };
-        UNITTEST_ASSERT(exp_down->size == i0->size)
+        UNITTEST_ASSERT(exp_down->bit_length == i0->bit_length)
     }
 }
 

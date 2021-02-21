@@ -34,7 +34,7 @@ void from_int() {
     UNITTEST_ASSERT(op_down->child == a)
 
     // Size check
-    UNITTEST_ASSERT(exp_down->size == a_down->size + 2_ui * 8)
+    UNITTEST_ASSERT(exp_down->bit_length == a_down->bit_length + 2_ui * 8)
 }
 
 // Define the test

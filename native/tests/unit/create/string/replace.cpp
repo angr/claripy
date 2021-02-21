@@ -45,11 +45,11 @@ void replace() {
     UNITTEST_ASSERT(ternary->third == c)
 
     // Size check
-    Constants::UInt size { a_down->size };
-    if (b_down->size < c_down->size) {
-        size = size - b_down->size + c_down->size;
+    Constants::UInt size { a_down->bit_length };
+    if (b_down->bit_length < c_down->bit_length) {
+        size = size - b_down->bit_length + c_down->bit_length;
     }
-    UNITTEST_ASSERT(exp_down->size == size)
+    UNITTEST_ASSERT(exp_down->bit_length == size)
 }
 
 // Define the test

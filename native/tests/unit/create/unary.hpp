@@ -40,7 +40,7 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
         static_assert(Utils::TD::boolean<Utils::is_ancestor<Expression::Bits, In>, In>,
                       "unary requires a sized input type for a sized output type");
-        UNITTEST_ASSERT(a_down->size == exp_down->size)
+        UNITTEST_ASSERT(a_down->bit_length == exp_down->bit_length)
     }
 }
 

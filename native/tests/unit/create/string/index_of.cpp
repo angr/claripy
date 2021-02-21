@@ -43,7 +43,7 @@ void index_of() {
     UNITTEST_ASSERT(ido->start_index == start_index)
 
     // Size check
-    UNITTEST_ASSERT(exp_down->size == bit_length)
+    UNITTEST_ASSERT(exp_down->bit_length == bit_length)
 }
 
 // Define the test

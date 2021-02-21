@@ -7,6 +7,7 @@
 #define __TESTS_UNIT_CREATE_TERNARY_HPP__
 
 #include "create.hpp"
+#include "dcast.hpp"
 #include "testlib.hpp"
 
 
@@ -42,11 +43,11 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     UNITTEST_ASSERT(exp->op.use_count() == 1)
 
     // Type check
-    const auto ternary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Out>(exp) };
-    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<In>(a) };
-    const auto b_down { Utils::dynamic_down_cast_throw_on_fail<In>(b) };
-    const auto c_down { Utils::dynamic_down_cast_throw_on_fail<In>(c) };
+    const auto ternary { dcast<OpT>(exp->op) };
+    const auto exp_down { dcast<Out>(exp) };
+    const auto a_down { dcast<In>(a) };
+    const auto b_down { dcast<In>(b) };
+    const auto c_down { dcast<In>(c) };
 
     // Contains check
     UNITTEST_ASSERT(ternary->first == a)
@@ -56,14 +57,14 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
         // Because of previous static asserts we know In must also be sized
-        Constants::UInt size { a_down->size };
+        Constants::UInt size { a_down->bit_length };
         if constexpr (Mode == SM::Add) {
-            size += b_down->size + c_down->size;
+            size += b_down->bit_length + c_down->bit_length;
         }
         else {
             static_assert(Utils::TD::false_<Mode>, "Unsupported mode for ternary");
         }
-        UNITTEST_ASSERT(exp_down->size == size)
+        UNITTEST_ASSERT(exp_down->bit_length == size)
     }
 }
 

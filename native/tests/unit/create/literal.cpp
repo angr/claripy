@@ -8,11 +8,9 @@
 
 /** Verify that the literal function compiles and can be run without issue */
 void literal() {
-
-    // Test
     std::string data { "This is data!" };
-    const auto size { 100 + data.size() };
-    (void) Create::literal<Expression::BV>(Create::EAnVec {}, std::move(data), size);
+    const auto bl { 100 + BitLength::char_bit * data.size() };
+    (void) Create::literal<Expression::BV>(Create::EAnVec {}, std::move(data), bl);
 }
 
 // Define the test

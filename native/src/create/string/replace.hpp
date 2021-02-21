@@ -6,7 +6,7 @@
 #define __CREATE_STRING_REPLACE_HPP__
 
 #include "../constants.hpp"
-#include "../private/size.hpp"
+#include "../private/bit_length.hpp"
 
 
 namespace Create::String {
@@ -27,12 +27,12 @@ namespace Create::String {
                                  "operands must be each be of type Expression::String");
 
         // Construct size
-        Constants::UInt esize { Private::size(first) };
-        const auto s2 { Private::size(second) };
+        Constants::UInt esize { Private::bit_length(first) };
+        const auto s2 { Private::bit_length(second) };
         Utils::affirm<Err::Size>(
             esize >= s2, WHOAMI_WITH_SOURCE
             "The pattern that has to be replaced is longer than the string itself");
-        const auto s3 { Private::size(third) };
+        const auto s3 { Private::bit_length(third) };
         if (s2 < s3) {
             esize = esize - s2 + s3;
         }
