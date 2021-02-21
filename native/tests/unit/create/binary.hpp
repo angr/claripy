@@ -7,6 +7,7 @@
 #define __TESTS_UNIT_CREATE_BINARY_HPP__
 
 #include "create.hpp"
+#include "dcast.hpp"
 #include "testlib.hpp"
 
 
@@ -39,10 +40,10 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     UNITTEST_ASSERT(exp->op.use_count() == 1)
 
     // Type check
-    const auto binary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Out>(exp) };
-    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<In>(a) };
-    const auto b_down { Utils::dynamic_down_cast_throw_on_fail<In>(b) };
+    const auto binary { dcast<OpT>(exp->op) };
+    const auto exp_down { dcast<Out>(exp) };
+    const auto a_down { dcast<In>(a) };
+    const auto b_down { dcast<In>(b) };
 
     // Contains check
     UNITTEST_ASSERT(binary->left == a)

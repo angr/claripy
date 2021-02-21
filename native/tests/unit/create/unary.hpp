@@ -7,6 +7,7 @@
 #define __TESTS_UNIT_CREATE_UNARY_HPP__
 
 #include "create.hpp"
+#include "dcast.hpp"
 #include "testlib.hpp"
 
 
@@ -28,9 +29,9 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     UNITTEST_ASSERT(exp->op.use_count() == 1)
 
     // Type check
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Out>(exp) };
-    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<In>(a) };
-    const auto unary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
+    const auto exp_down { dcast<Out>(exp) };
+    const auto a_down { dcast<In>(a) };
+    const auto unary { dcast<OpT>(exp->op) };
 
     // Contains check
     UNITTEST_ASSERT(unary->child == a)

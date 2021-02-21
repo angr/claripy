@@ -3,13 +3,9 @@
  * \ingroup unittest
  */
 #include "create.hpp"
+#include "dcast.hpp"
 #include "testlib.hpp"
 
-
-/** A dynamic down-cast alias */
-template <typename T, typename U> auto dcast(const U &u) {
-    return Utils::dynamic_down_cast_throw_on_fail<T>(u);
-}
 
 /** Verify that the extract<T> function compiles and can be run without issue */
 template <typename T> void extract_t() {

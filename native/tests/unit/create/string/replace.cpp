@@ -5,11 +5,8 @@
 #include "create.hpp"
 #include "testlib.hpp"
 
+#include "../dcast.hpp"
 
-/** A dynamic down-cast alias */
-template <typename T, typename U> auto dcast(const U &u) {
-    return Utils::dynamic_down_cast_throw_on_fail<T>(u);
-}
 
 /** Test the replace create functions */
 void replace() {

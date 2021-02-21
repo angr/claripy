@@ -7,6 +7,7 @@
 #define __TESTS_UNIT_CREATE_FLAT_HPP__
 
 #include "create.hpp"
+#include "dcast.hpp"
 #include "testlib.hpp"
 
 
@@ -37,8 +38,8 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     UNITTEST_ASSERT(exp->op.use_count() == 1)
 
     // Type check
-    const auto flat { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<T>(exp) };
+    const auto flat { dcast<OpT>(exp->op) };
+    const auto exp_down { dcast<T>(exp) };
 
     // Contains check
     UNITTEST_ASSERT(flat->operands.size() == input.size())
@@ -49,7 +50,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
         static_assert(Mode == Utils::TD::id<SM::First>, "Unsupported mode for flat");
-        const auto i0 { Utils::dynamic_down_cast_throw_on_fail<T>(flat->operands[0]) };
+        const auto i0 { dcast<T>(flat->operands[0]) };
         UNITTEST_ASSERT(exp_down->size == i0->size)
     }
 }

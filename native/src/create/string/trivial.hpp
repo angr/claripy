@@ -27,7 +27,9 @@ namespace Create::String {
     /*                 Int Binary Passthrough Functions                 */
     /********************************************************************/
 
-    /** Create an Expression with an String::SignExt op */
+    /** Create an Expression with an String::SignExt op
+     *  Note: Currently Ints are taken in as BVs
+     */
     inline EBasePtr to_int(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
         return Private::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
@@ -35,7 +37,9 @@ namespace Create::String {
                                                                           expr, integer);
     }
 
-    /** Create an Expression with an String::Len op */
+    /** Create an Expression with an String::Len op
+     *  Note: Currently Ints are output as BVs
+     */
     inline EBasePtr len(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
         return Private::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
@@ -54,14 +58,14 @@ namespace Create::String {
                                Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create an Expression with a String::Contains op */
+    /** Create an Expression with a String::PrefixOf op */
     inline EBasePtr prefix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, Private::SizeMode::NA,
                                Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
-    /** Create an Expression with a String::Contains op */
+    /** Create an Expression with a String::SuffixOf op */
     inline EBasePtr suffix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         return Private::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, Private::SizeMode::NA,
