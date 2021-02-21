@@ -20,13 +20,13 @@
       private:                                                                                    \
         /** Private Constructor */                                                                \
         explicit inline CLASS(const Hash::Hash h, AnVec &&ans, const bool sym, Op::BasePtr &&op_, \
-                              const Constants::UInt size_) noexcept                               \
+                              const Constants::UInt bit_length_) noexcept                         \
             : Bits { h,                                                                           \
                      static_cuid,                                                                 \
                      std::forward<AnVec>(ans),                                                    \
                      sym,                                                                         \
                      std::forward<Op::BasePtr>(op_),                                              \
-                     size_ } {}                                                                   \
+                     bit_length_ } {}                                                             \
         /* Disable other methods of construction */                                               \
         SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                \
     };

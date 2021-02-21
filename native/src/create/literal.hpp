@@ -13,7 +13,7 @@ namespace Create {
 
     /** Create a Expression with an literal op */
     template <typename T>
-    EBasePtr literal(EAnVec &&av, std::string &&data, const Constants::UInt size) {
+    EBasePtr literal(EAnVec &&av, std::string &&data, const Constants::UInt bit_length) {
 
         // For brevity
         namespace Ex = Expression;
@@ -27,11 +27,13 @@ namespace Create {
 
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
             // Size check
-            Utils::affirm<Utils::Error::Unexpected::Size>(size >= data.size(), WHOAMI_WITH_SOURCE
-                                                          "given size smaller than data size");
+            Utils::affirm < Utils::Error::Unexpected::Size(
+                                bit_length >= BitLength::char_bit * data.size(),
+                                WHOAMI_WITH_SOURCE "given size smaller than data size");
             // Construct expression
             return Ex::factory<T>(std::forward<EAnVec>(av), false,
-                                  Op::factory<Op::Literal>(std::forward<std::string>(data)), size);
+                                  Op::factory<Op::Literal>(std::forward<std::string>(data)),
+                                  bit_length);
         }
         else {
             // Construct expression

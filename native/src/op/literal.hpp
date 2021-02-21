@@ -7,7 +7,7 @@
 
 #include "base.hpp"
 
-#include "../csized.hpp"
+#include "../bit_length.hpp"
 #include "../utils.hpp"
 
 #include <cstddef>
@@ -23,7 +23,7 @@
 namespace Op {
 
     /** The op class Literal */
-    class Literal final : public Base, public CSized {
+    class Literal final : public Base, public BitLength {
         OP_FINAL_INIT(Literal)
       public:
 #ifdef ENABLE_MPZ
@@ -45,10 +45,14 @@ namespace Op {
          */
         explicit inline Literal(const Hash::Hash &h, std::string &&data)
 #ifndef ENABLE_MPZ
-            : Base { h, static_cuid }, CSized { data.size() }, value { data } {
+            : Base { h, static_cuid },
+              BitLength { BitLength::char_bit * data.size() },
+              value { data } {
         }
 #else
-            : Base { h, static_cuid }, CSized { data.size() }, value { create_value(data) } {
+            : Base { h, static_cuid },
+              BitLength { BitLength::char_bit * data.size() },
+              value { create_value(data) } {
         }
 
         /** Used by the constructor to initalize value */
@@ -60,17 +64,17 @@ namespace Op {
                 sizeof(int_fast64_t);                               // >= 64 / CHAR_BIT
             static const constexpr Constants::UInt max128 = 128ULL; // exactly 128 / CHAR_BIT
             // Construct differently depending on size
-            if (size_ <= max64) {
+            if (bit_length <= max64) {
                 Utils::affirm<Usage>(data == max64,
-                                     WHOAMI_WITH_SOURCE "Literal constructor with size ", size_,
-                                     " given a string with only ", rdata.size(),
+                                     WHOAMI_WITH_SOURCE "Literal constructor with bit length ",
+                                     bit_length, " given a string with only ", rdata.size(),
                                      " bytes in it."
                                      " The minimum amount allowed is: ",
                                      max64);
                 Constants::CCSC data = rdata.data();
                 return { Utils::type_pun<int_fast64_t, char, true>(data) }; // Used with caution
             }
-            else if (size_ <= max128) {
+            else if (bit_length <= max128) {
                 Constants::CCSC data = rdata.data();
                 return { MP::int128_t(data) };
             }

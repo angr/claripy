@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to get the size of some T
+ * @brief This file defines a method to get the bit length of some T
  */
 #ifndef __CREATE_PRIVATE_SIZE_HPP__
 #define __CREATE_PRIVATE_SIZE_HPP__
@@ -13,15 +13,15 @@ namespace Create::Private {
     /** Static casts T to Expression::Bits, then returns the size
      *  Warning: This static casts, the user must ensure that p.get() is a T
      */
-    inline Constants::UInt size(const Expression::BasePtr &p) noexcept {
+    inline Constants::UInt bit_length(const Expression::BasePtr &p) noexcept {
         using To = Constants::CTSC<Expression::Bits>;
 #ifdef DEBUG
         const auto ptr { dynamic_cast<To>(p.get()) };
         using Err = Utils::Error::Unexpected::BadCast;
         Utils::affirm<Err>(ptr, WHOAMI_WITH_SOURCE "cast failed");
-        return ptr->size;
+        return ptr->bit_length;
 #else
-        return static_cast<To>(p.get())->size;
+        return static_cast<To>(p.get()) - bit_length;
 #endif
     }
 
