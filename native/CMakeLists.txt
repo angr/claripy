@@ -186,11 +186,21 @@ add_compile_options(
 	"-Wwrite-strings"
 )
 
+# Treat #warning's as warnings
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	add_compile_options("-Wno-error=cpp")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	add_compile_options("-Wno-error=#warnings")
+else()
+	message(WARNING "Unknown compiler, please manually add a compile flag"
+					"to ensure that #warnings are not caught by -Werror")
+endif()
+
 # Compile options that cannot be used with clang
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	if(CLANG_TIDY)
 		message(WARNING "Clang (from clang-tidy) cannot handle gcc specific warning options."
-			"\nDisabling them to allow clang-tidy to function.")
+						"Disabling them to allow clang-tidy to function.")
 	else()
 		add_compile_options(
 			"-Wsuggest-override"
