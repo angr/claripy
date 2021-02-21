@@ -11,6 +11,8 @@
 
 namespace Create {
 
+#warning str_extract_check seems to take different arguments, we ignored that function *for now*
+
     /** Create an Expression with an Extract op */
     template <typename T>
     EBasePtr extract(EAnVec &&av, const Constants::UInt high, const Constants::UInt low,
