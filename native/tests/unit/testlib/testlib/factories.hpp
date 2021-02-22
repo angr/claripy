@@ -23,7 +23,7 @@ namespace UnitTest::TestLib::Factories {
         const constexpr Constants::UInt size { sizeof(Constants::Int) };
         char buf[size]; // NOLINT
         std::memcpy(buf, &i, size);
-        return Op::factory<Op::Literal>(std::string { buf, size * BitLength::char_bit });
+        return Op::factory<Op::Literal>(std::string { buf, size });
     }
 
     /** Make it easier to create expressions */
@@ -36,7 +36,7 @@ namespace UnitTest::TestLib::Factories {
         auto baseop { Utils::up_cast<Op::Base>(op) };
         if constexpr (std::is_base_of_v<Expression::Bits, T>) {
             return Expression::factory<T>(std::move(ans), false, std::move(baseop),
-                                          Constants::UInt { sizeof(i) });
+                                          Utils::static_down_cast<Op::Literal>(op)->bit_length);
         }
         else {
             return Expression::factory<T>(std::move(ans), false, std::move(baseop));
