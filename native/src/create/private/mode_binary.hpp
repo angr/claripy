@@ -5,7 +5,7 @@
 #ifndef __CREATE_PRIVATE_MODEBINARY_HPP__
 #define __CREATE_PRIVATE_MODEBINARY_HPP__
 
-#include "size.hpp"
+#include "bit_length.hpp"
 #include "size_mode.hpp"
 
 #include "../../mode.hpp"
@@ -35,7 +35,7 @@ namespace Create::Private {
                       "Create::Private::mode_binary does not support the given SizeMode");
         return simplify(Ex::factory<Expression::FP>(
             std::forward<EAnVec>(av), left->symbolic || right->symbolic,
-            Op::factory<OpT>(left, right, mode), size(left)));
+            Op::factory<OpT>(left, right, mode), bit_length(left)));
     }
 
 } // namespace Create::Private

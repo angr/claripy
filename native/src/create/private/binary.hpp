@@ -5,7 +5,7 @@
 #ifndef __CREATE_PRIVATE_BINARY_HPP__
 #define __CREATE_PRIVATE_BINARY_HPP__
 
-#include "size.hpp"
+#include "bit_length.hpp"
 #include "size_mode.hpp"
 
 #include "../constants.hpp"
@@ -44,12 +44,12 @@ namespace Create::Private {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
-            Constants::UInt esize { size(left) };
+            Constants::UInt new_bit_length { bit_length(left) };
             if constexpr (Mode == SizeMode::Add) {
                 // Type check before size extraction
                 Utils::affirm<Err::Type>(Ex::is_t<In>(right),
                                          WHOAMI_WITH_SOURCE "right operand of incorrect type");
-                esize += size(right);
+                new_bit_length += bit_length(right);
             }
             else if constexpr (Mode != SizeMode::First) {
                 static_assert(Utils::TD::false_<Out>,
@@ -58,7 +58,7 @@ namespace Create::Private {
             // Actually construct expression
             return simplify(Ex::factory<Out>(std::forward<EAnVec>(av),
                                              left->symbolic || right->symbolic,
-                                             Op::factory<OpT>(left, right), esize));
+                                             Op::factory<OpT>(left, right), new_bit_length));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,

@@ -5,7 +5,7 @@
 #ifndef __CREATE_PRIVATE_INTBINARY_HPP__
 #define __CREATE_PRIVATE_INTBINARY_HPP__
 
-#include "size.hpp"
+#include "bit_length.hpp"
 #include "size_mode.hpp"
 
 #include "../constants.hpp"
@@ -49,9 +49,9 @@ namespace Create::Private {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
-            Constants::UInt esize { integer };
+            Constants::UInt new_bit_length { integer };
             if constexpr (Mode == SizeMode::Add) {
-                esize += size(expr);
+                new_bit_length += bit_length(expr);
             }
             else if constexpr (Mode != SizeMode::Second) {
                 static_assert(Utils::TD::false_<Out>,
@@ -59,7 +59,7 @@ namespace Create::Private {
             }
             // Actually construct expression
             return simplify(Ex::factory<Out>(std::forward<EAnVec>(av), expr->symbolic,
-                                             Op::factory<OpT>(expr, integer), esize));
+                                             Op::factory<OpT>(expr, integer), new_bit_length));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,
