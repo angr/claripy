@@ -23,7 +23,7 @@ namespace UnitTest::TestLib::Factories {
         const constexpr Constants::UInt size { sizeof(Constants::Int) };
         char buf[size]; // NOLINT
         std::memcpy(buf, &i, size);
-        return Op::factory<Op::Literal>(std::string { buf, size });
+        return Op::factory<Op::Literal>(std::string { buf, size * BitLength::char_bit });
     }
 
     /** Make it easier to create expressions */

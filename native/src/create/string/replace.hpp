@@ -27,20 +27,20 @@ namespace Create::String {
                                  "operands must be each be of type Expression::String");
 
         // Construct size
-        Constants::UInt esize { Private::bit_length(first) };
+        Constants::UInt new_bit_length { Private::bit_length(first) };
         const auto s2 { Private::bit_length(second) };
         Utils::affirm<Err::Size>(
-            esize >= s2, WHOAMI_WITH_SOURCE
+            new_bit_length >= s2, WHOAMI_WITH_SOURCE
             "The pattern that has to be replaced is longer than the string itself");
         const auto s3 { Private::bit_length(third) };
         if (s2 < s3) {
-            esize = esize - s2 + s3;
+            new_bit_length = new_bit_length - s2 + s3;
         }
 
         // Construct expression
         return simplify(Ex::factory<Ex::String>(
             std::forward<EAnVec>(av), first->symbolic || second->symbolic || third->symbolic,
-            Op::factory<Op::String::Replace>(first, second, third), esize));
+            Op::factory<Op::String::Replace>(first, second, third), new_bit_length));
     }
 
 } // namespace Create::String

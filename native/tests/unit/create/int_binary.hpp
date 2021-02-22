@@ -51,15 +51,15 @@ inline void int_binary() {
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-        Constants::UInt esize { int_binary->integer };
+        Constants::UInt new_bit_length { int_binary->integer };
         if constexpr (Mode == SM::Add) {
-            esize += a_down->bit_length;
+            new_bit_length += a_down->bit_length;
         }
         else if constexpr (Mode != SM::Second) {
             static_assert(Utils::TD::false_<Out>,
                           "int_binary does not support the given SizeMode");
         }
-        UNITTEST_ASSERT(exp_down->bit_length == esize)
+        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length)
     }
 }
 

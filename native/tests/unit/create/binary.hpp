@@ -52,14 +52,14 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
         // Because of previous static asserts we know In must also be sized
-        Constants::UInt size { a_down->bit_length };
+        Constants::UInt new_bit_length { a_down->bit_length };
         if constexpr (Mode == SM::Add) {
-            size += b_down->bit_length;
+            new_bit_length += b_down->bit_length;
         }
         else if constexpr (Mode != SM::First) {
             static_assert(Utils::TD::false_<Mode>, "Unsupported mode for binary");
         }
-        UNITTEST_ASSERT(exp_down->bit_length == size)
+        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length)
     }
 }
 

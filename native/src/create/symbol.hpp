@@ -37,7 +37,7 @@ namespace Create {
      *  This override is for sized symbols
      */
     template <typename T>
-    EBasePtr symbol(EAnVec &&av, std::string &&name, const Constants::UInt size) {
+    EBasePtr symbol(EAnVec &&av, std::string &&name, const Constants::UInt bit_length) {
 
         // For brevity
         namespace Ex = Expression;
@@ -50,7 +50,8 @@ namespace Create {
 
         // Construct expression
         return Ex::factory<T>(std::forward<EAnVec>(av), false,
-                              Op::factory<Op::Symbol>(std::forward<std::string>(name)), size);
+                              Op::factory<Op::Symbol>(std::forward<std::string>(name)),
+                              bit_length);
     }
 
 } // namespace Create
