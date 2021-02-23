@@ -13,6 +13,8 @@
 #include "is_ancestor.hpp"
 #include "private/pointer_cast.hpp"
 
+#include "../constants.hpp"
+
 #include <memory>
 #include <type_traits>
 
@@ -43,20 +45,18 @@ namespace Utils {
     }
 
     /** Dynamic down-cast that throws on failure */
-    template <typename Out, typename In>
+    template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
     constexpr inline auto dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_down_cast<Out>(in);
-        affirm<Error::Unexpected::BadCast>(full(ret),
-                                           WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
+        affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
         return ret;
     }
 
     /** A dynamic side cast that throws on failure */
-    template <typename Out, typename In>
+    template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
     constexpr inline auto dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_side_cast<Out>(in);
-        affirm<Error::Unexpected::BadCast>(full(ret),
-                                           WHOAMI_WITH_SOURCE "Dynamic side-cast failed");
+        affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic side-cast failed");
         return ret;
     }
 
@@ -93,21 +93,24 @@ namespace Utils {
     }
 #endif
 
-    /** Return true if the dynamic cast desired will pass
-     *  Note: this does not static assertion verification itself
+    /** Return true if in is an Out
+     *  Warning: We return false if the pointer points to nullptr
+     *  Note: this does not do any static assertion verification itself
      */
     template <typename Out, typename In>
-    constexpr inline auto dynamic_test(const std::shared_ptr<In> &in) {
-        return full(Private::dynamic_pointer_cast<Out>(in));
+    constexpr inline bool dynamic_test(const std::shared_ptr<In> &in) {
+        return dynamic_cast<Constants::CTSC<Out>>(in.get()) != nullptr;
     }
 
     /** Return true if the dynamic cast desired will pass
-     *  Note: this does not static assertion verification itself
+     *  Warning: We throw if the pointer points to nullptr
+     *  Note: this does not do any static assertion verification itself
+     *  Note: This requires the type of exception to be thrown to be passed
      */
-    template <typename To, typename In, typename... Args>
+    template <typename To, typename Err, typename In, typename... Args>
     constexpr inline void dynamic_test_throw_on_fail(const std::shared_ptr<In> &in,
                                                      const Args &...args) {
-        affirm<Error::Unexpected::BadCast>(dynamic_test<To>(in), args...);
+        affirm<Err>(dynamic_test<To>(in), args...);
     }
 
 } // namespace Utils

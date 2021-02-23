@@ -37,6 +37,9 @@ namespace Utils::Error {
         /** Raised when something unknown occurs */
         DEFINE_FINAL_SUBCLASS_WITH_CTOR(Unknown, Claricpp)
 
+        /** Raised when a dynamic type error occurs */
+        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Type, Claricpp)
+
     } // namespace Unexpected
 
 } // namespace Utils::Error
