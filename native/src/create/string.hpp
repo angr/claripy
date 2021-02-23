@@ -8,6 +8,7 @@
 #include "string/from_int.hpp"
 #include "string/index_of.hpp"
 #include "string/replace.hpp"
+#include "string/sub_string.hpp"
 #include "string/trivial.hpp"
 
 #endif
