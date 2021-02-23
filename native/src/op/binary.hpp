@@ -51,11 +51,11 @@ namespace Op {
 
             // Type / size checking
             if constexpr (ConsiderSize) {
-                Utils::affirm<Err>(Expression::are_same<true>(left, right),
+                Utils::affirm<Err>(Expression::are_same_type<true>(left, right),
                                    WHOAMI_WITH_SOURCE "left and right types or sizes differ");
             }
             else {
-                Utils::affirm<Err>(Expression::are_same<false>(left, right),
+                Utils::affirm<Err>(Expression::are_same_type<false>(left, right),
                                    WHOAMI_WITH_SOURCE "left and right types differ");
             }
         }

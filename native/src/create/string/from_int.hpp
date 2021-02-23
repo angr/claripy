@@ -18,11 +18,11 @@ namespace Create::String {
      */
     inline EBasePtr from_int(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        Utils::affirm<Error::Expression::Type>(Ex::is_t<Ex::BV>(x), WHOAMI_WITH_SOURCE
+        Utils::affirm<Error::Expression::Type>(CUID::is_t<Ex::BV>(x), WHOAMI_WITH_SOURCE
                                                "operand must be each be of type Expression::BV");
         return Simplification::simplify(Ex::factory<Ex::String>(
             std::forward<EAnVec>(av), x->symbolic, Op::factory<Op::String::FromInt>(x),
-            Private::bit_length(x) + 2_ui * BitLength::char_bit));
+            ::Create::Private::bit_length(x) + 2_ui * BitLength::char_bit));
     }
 
 } // namespace Create::String

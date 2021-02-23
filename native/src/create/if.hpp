@@ -22,7 +22,7 @@ namespace Create {
 
         // Type checks
         static_assert(Utils::is_ancestor<Expression::Base, T>, "T must subclass Expression::Base");
-        Utils::affirm<Err::Type>(Ex::is_t<T>(left),
+        Utils::affirm<Err::Type>(CUID::is_t<T>(left),
                                  WHOAMI_WITH_SOURCE "left operands must be a T");
 
         // Construct expression

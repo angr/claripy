@@ -37,7 +37,7 @@ namespace Create::Private {
         // Type check
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::ternary requires In is in Allowed");
-        Utils::affirm<Err::Type>(Ex::is_t<In>(first),
+        Utils::affirm<Err::Type>(CUID::is_t<In>(first),
                                  WHOAMI_WITH_SOURCE "first operand of incorrect type");
 
         // Construct expression (static casts are safe because of previous checks)
@@ -47,9 +47,9 @@ namespace Create::Private {
             // Construct size
             Constants::UInt new_bit_length { bit_length(first) };
             if constexpr (Mode == SizeMode::Add) {
-                Utils::affirm<Err::Type>(Ex::is_t<In>(second),
+                Utils::affirm<Err::Type>(CUID::is_t<In>(second),
                                          WHOAMI_WITH_SOURCE "second operand of incorrect type");
-                Utils::affirm<Err::Type>(Ex::is_t<In>(third),
+                Utils::affirm<Err::Type>(CUID::is_t<In>(third),
                                          WHOAMI_WITH_SOURCE "third operand of incorrect type");
                 new_bit_length += bit_length(second) + bit_length(third);
             }

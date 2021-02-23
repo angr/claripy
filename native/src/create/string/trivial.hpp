@@ -19,7 +19,8 @@ namespace Create::String {
     /** Create a bool Expression with an String::IsDigit op */
     inline EBasePtr is_digit(EAnVec &&av, const EBasePtr &x) {
         namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(
+        namespace CP = ::Create::Private;
+        return CP::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(
             std::forward<EAnVec>(av), x);
     }
 
@@ -32,9 +33,10 @@ namespace Create::String {
      */
     inline EBasePtr to_int(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
-        return Private::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
-                                   Private::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av),
-                                                                          expr, integer);
+        namespace CP = ::Create::Private;
+        return CP::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
+                              CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
+                                                                integer);
     }
 
     /** Create an Expression with an String::Len op
@@ -42,9 +44,10 @@ namespace Create::String {
      */
     inline EBasePtr len(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
-        return Private::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
-                                   Private::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av),
-                                                                          expr, integer);
+        namespace CP = ::Create::Private;
+        return CP::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
+                              CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
+                                                                integer);
     }
 
     /********************************************************************/
@@ -54,22 +57,25 @@ namespace Create::String {
     /** Create an Expression with a String::Contains op */
     inline EBasePtr contains(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::String, Op::String::Contains, Private::SizeMode::NA,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
+        namespace CP = ::Create::Private;
+        return CP::binary<Ex::Bool, Ex::String, Op::String::Contains, CP::SizeMode::NA,
+                          Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
     /** Create an Expression with a String::PrefixOf op */
     inline EBasePtr prefix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, Private::SizeMode::NA,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
+        namespace CP = ::Create::Private;
+        return CP::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, CP::SizeMode::NA,
+                          Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
     /** Create an Expression with a String::SuffixOf op */
     inline EBasePtr suffix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, Private::SizeMode::NA,
-                               Ex::String>(std::forward<EAnVec>(av), left, right);
+        namespace CP = ::Create::Private;
+        return CP::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, CP::SizeMode::NA,
+                          Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
 } // namespace Create::String

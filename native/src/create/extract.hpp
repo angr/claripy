@@ -26,7 +26,7 @@ namespace Create {
         // Checks
         static_assert(Utils::qualified_is_in<T, Ex::String, Ex::BV>,
                       "T must be either a BV or String");
-        Utils::affirm<Err::Type>(Ex::is_t<T>(from),
+        Utils::affirm<Err::Type>(CUID::is_t<T>(from),
                                  WHOAMI_WITH_SOURCE "from operands must be a T");
         Utils::affirm<Err::Type>(high >= low,
                                  WHOAMI_WITH_SOURCE "high should not be lower than low");

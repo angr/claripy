@@ -33,9 +33,9 @@ namespace Op {
             // For brevity
             namespace Err = Error::Expression;
             // Error checking
-            Utils::affirm<Err::Type>(Expression::is_t<Expression::Bool>(cond),
+            Utils::affirm<Err::Type>(CUID::is_t<Expression::Bool>(cond),
                                      WHOAMI_WITH_SOURCE "Condition expression must be a boolean");
-            Utils::affirm<Err::Type>(Expression::are_same<true>(if_true, if_false),
+            Utils::affirm<Err::Type>(Expression::are_same_type<true>(if_true, if_false),
                                      WHOAMI_WITH_SOURCE
                                      "if_true must be of the same type and size as if_false");
         }

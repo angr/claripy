@@ -18,21 +18,22 @@ namespace Create::String {
         // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
+        namespace CP = ::Create::Private;
         namespace Err = Error::Expression;
 
         // Type check
-        Utils::affirm<Err::Type>(Ex::is_t<Ex::String>(first) && Ex::is_t<Ex::String>(second) &&
-                                     Ex::is_t<Ex::String>(third),
+        Utils::affirm<Err::Type>(CUID::is_t<Ex::String>(first) && CUID::is_t<Ex::String>(second) &&
+                                     CUID::is_t<Ex::String>(third),
                                  WHOAMI_WITH_SOURCE
                                  "operands must be each be of type Expression::String");
 
         // Construct size
-        Constants::UInt new_bit_length { Private::bit_length(first) };
-        const auto s2 { Private::bit_length(second) };
+        Constants::UInt new_bit_length { CP::bit_length(first) };
+        const auto s2 { CP::bit_length(second) };
         Utils::affirm<Err::Size>(
             new_bit_length >= s2, WHOAMI_WITH_SOURCE
             "The pattern that has to be replaced is longer than the string itself");
-        const auto s3 { Private::bit_length(third) };
+        const auto s3 { CP::bit_length(third) };
         if (s2 < s3) {
             new_bit_length = new_bit_length - s2 + s3;
         }

@@ -28,7 +28,7 @@ namespace Create::Private {
         static_assert(Utils::qualified_is_in<T, Allowed...>,
                       "Create::Private::flat argument types must be in Allowed");
         Utils::affirm<Err::Size>(operands.size() >= 2, WHOAMI_WITH_SOURCE "operands are empty.");
-        Utils::affirm<Err::Type>(Ex::is_t<T>(operands[0]),
+        Utils::affirm<Err::Type>(CUID::is_t<T>(operands[0]),
                                  WHOAMI_WITH_SOURCE "operands[0] is the wrong type");
 
         // Calculate simple sym

@@ -54,11 +54,11 @@ namespace Op {
             // Verify all inputs are the same type
             for (const auto &i : operands) {
                 if constexpr (ConsiderSize) {
-                    Utils::affirm<Err::Type>(Expression::are_same<true>(operands[0], i),
+                    Utils::affirm<Err::Type>(Expression::are_same_type<true>(operands[0], i),
                                              WHOAMI_WITH_SOURCE "operands differ by size or type");
                 }
                 else {
-                    Utils::affirm<Err::Type>(Expression::are_same<false>(operands[0], i),
+                    Utils::affirm<Err::Type>(Expression::are_same_type<false>(operands[0], i),
                                              WHOAMI_WITH_SOURCE "operands differ by size");
                 }
             }

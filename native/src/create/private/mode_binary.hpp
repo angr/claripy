@@ -27,7 +27,7 @@ namespace Create::Private {
         // Type check
         static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
-        Utils::affirm<Err::Type>(Ex::is_t<Ex::FP>(left), WHOAMI_WITH_SOURCE
+        Utils::affirm<Err::Type>(CUID::is_t<Ex::FP>(left), WHOAMI_WITH_SOURCE
                                  "left operands must be of type Expression::FP");
 
         // Create expression

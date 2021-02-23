@@ -28,7 +28,7 @@ namespace Op {
          */
         explicit inline ToBV(const Hash::Hash &h, const Mode::FP m, const Expression::BasePtr &f)
             : Base { h, static_cuid }, mode { m }, fp { f } {
-            Utils::affirm<Error::Expression::Type>(Expression::is_t<Expression::FP>(fp),
+            Utils::affirm<Error::Expression::Type>(CUID::is_t<Expression::FP>(fp),
                                                    WHOAMI_WITH_SOURCE
                                                    "Operand fp must be an Expression::FP");
         }
