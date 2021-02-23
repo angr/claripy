@@ -36,7 +36,7 @@ namespace Create::String {
                                    WHOAMI_WITH_SOURCE "count expression must be a BV");
 #endif
                 Utils::affirm<Err>(CUID::is_t<Op::Literal>(count->op), WHOAMI_WITH_SOURCE
-                                   "count op must be a Concrete. More than likely, this means "
+                                   "count op must be a Literal. More than likely, this means "
                                    "that some simplifiers are unimplemented / failing.");
                 return 0x1000; // NOLINT TODO
             }
@@ -44,9 +44,9 @@ namespace Create::String {
     } // namespace Private
 
     /** Create an Expression with a String::SubString op */
-    inline EBasePtr index_of(EAnVec &&av, const Expression::BasePtr &start_index,
-                             const Expression::BasePtr &count,
-                             const Expression::BasePtr &full_string) {
+    inline EBasePtr sub_string(EAnVec &&av, const Expression::BasePtr &start_index,
+                               const Expression::BasePtr &count,
+                               const Expression::BasePtr &full_string) {
         namespace Ex = Expression;
         const Constants::UInt bit_length { Private::sub_string_length(count, full_string) };
         return Simplification::simplify(Ex::factory<Ex::String>(

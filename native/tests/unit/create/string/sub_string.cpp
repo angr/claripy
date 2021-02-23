@@ -9,18 +9,18 @@
 
 
 /** Create a BV using either name or val depending on Literal */
-template <bool Literal>
-Expression::BasePtr create_bv(std::string name, const Constants::UInt val) {
+template <bool Literal> Expression::BasePtr create_bv(std::string name, const Constants::Int val) {
     if constexpr (Literal) {
         return UnitTest::TestLib::Factories::t_literal<Expression::BV>(val);
     }
     else {
-        return Create::symbol<Expression::BV>(Create::EAnVec {}, std::move(name));
+        return Create::symbol<Expression::BV>(Create::EAnVec {}, std::move(name),
+                                              name.size() * BitLength::char_bit);
     }
 }
 
 /** Test the sub_string create function */
-template <bool Literal> void sub_string() {
+template <bool Literal> void sub_string_b() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
@@ -30,7 +30,7 @@ template <bool Literal> void sub_string() {
 
     // Create distinct inputs
     const auto a { F::t_literal<Expression::BV>(0) };
-    const Ex::BasePtr b { create_bv<Literal>("named", 1); };
+    const Ex::BasePtr b { create_bv<Literal>("named", 1) };
     const auto c { F::t_literal<Expression::String>(2) };
 
     // Test
@@ -47,7 +47,7 @@ template <bool Literal> void sub_string() {
     const auto exp_down { dcast<Ex::String>(exp) };
     const auto a_down { dcast<Ex::BV>(a) };
     const auto b_down { dcast<Ex::BV>(b) };
-    const auto c_down { dcast<Ex::String>(b) };
+    const auto c_down { dcast<Ex::String>(c) };
 
     // Contains check
     UNITTEST_ASSERT(ss_op->start_index == a)

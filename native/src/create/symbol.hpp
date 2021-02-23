@@ -29,7 +29,7 @@ namespace Create {
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
 
         // Construct expression
-        return Ex::factory<T>(std::forward<EAnVec>(av), false,
+        return Ex::factory<T>(std::forward<EAnVec>(av), true,
                               Op::factory<Op::Symbol>(std::forward<std::string>(name)));
     }
 
@@ -49,7 +49,7 @@ namespace Create {
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
 
         // Construct expression
-        return Ex::factory<T>(std::forward<EAnVec>(av), false,
+        return Ex::factory<T>(std::forward<EAnVec>(av), true,
                               Op::factory<Op::Symbol>(std::forward<std::string>(name)),
                               bit_length);
     }
