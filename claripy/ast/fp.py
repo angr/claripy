@@ -126,8 +126,8 @@ fpToFPUnsigned = operations.op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP, boun
 fpFP = operations.op('fpFP', (BV, BV, BV), FP, bound=False,
                   calc_length=lambda a, b, c: a.length + b.length + c.length)
 fpToIEEEBV = operations.op('fpToIEEEBV', (FP,), BV, bound=False, calc_length=lambda fp: fp.length)
-fpToSBV = operations.op('fpToSBV', (fp.RM, FP, (int)), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
-fpToUBV = operations.op('fpToUBV', (fp.RM, FP, (int)), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
+fpToSBV = operations.op('fpToSBV', (fp.RM, FP, int), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
+fpToUBV = operations.op('fpToUBV', (fp.RM, FP, int), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
 
 #
 # unbound float point comparisons
