@@ -295,10 +295,6 @@ backend_symbol_creation_operations = {
     'BoolS', 'BVS', 'FPS', 'StringS'
 }
 
-backend_vsa_creation_operations = {
-    'TopStridedInterval', 'StridedInterval', 'ValueSet', 'AbstractLocation'
-}
-
 backend_other_operations = { 'If' }
 
 backend_arithmetic_operations = {'SDiv', 'SMod'}
@@ -306,7 +302,7 @@ backend_arithmetic_operations = {'SDiv', 'SMod'}
 backend_operations = backend_comparator_operations | backend_bitwise_operations | backend_boolean_operations | \
                      backend_bitmod_operations | backend_creation_operations | backend_other_operations | backend_arithmetic_operations
 backend_operations_vsa_compliant = backend_bitwise_operations | backend_comparator_operations | backend_boolean_operations | backend_bitmod_operations
-backend_operations_all = backend_operations | backend_operations_vsa_compliant | backend_vsa_creation_operations
+backend_operations_all = backend_operations | backend_operations_vsa_compliant
 
 backend_fp_cmp_operations = {
     'fpLT', 'fpLEQ', 'fpGT', 'fpGEQ', 'fpEQ',
@@ -384,7 +380,7 @@ inverse_operations = {
     'SLE': 'SGT', 'SGT': 'SLE',
 }
 
-leaf_operations = backend_symbol_creation_operations | backend_creation_operations | backend_vsa_creation_operations
+leaf_operations = backend_symbol_creation_operations | backend_creation_operations
 leaf_operations_concrete = backend_creation_operations
 leaf_operations_symbolic = backend_symbol_creation_operations
 
@@ -392,7 +388,7 @@ leaf_operations_symbolic = backend_symbol_creation_operations
 # Reversibility
 #
 
-not_invertible = {'Identical', 'union'}
+not_invertible = {'union'}
 reverse_distributable = { 'widen', 'union', 'intersection',
     '__invert__', '__or__', '__ror__', '__and__', '__rand__', '__xor__', '__rxor__',
 }
