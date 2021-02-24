@@ -81,7 +81,7 @@ class LightFrontend(ConstrainedFrontend):
 
     def satisfiable(self, extra_constraints=(), exact=None):
         if any(
-            self._solver_backend.is_false(c) for c in
+            self.is_false(c, extra_constraints=extra_constraints, exact=exact) for c in
             reversed(self.constraints + list(extra_constraints))
         ):
             return False
