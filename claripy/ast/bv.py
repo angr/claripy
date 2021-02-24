@@ -387,8 +387,6 @@ BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.lengt
 BV.__radd__ = operations.reversed_op(BV.__add__)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__)
-BV.__div__ = BV.__floordiv__
-BV.__rdiv__ = BV.__rfloordiv__
 BV.__truediv__ = BV.__floordiv__
 BV.__rtruediv__ = BV.__rfloordiv__
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)

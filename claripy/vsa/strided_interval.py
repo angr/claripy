@@ -1074,8 +1074,6 @@ class StridedInterval(BackendObject):
 
         return self.udiv(o)
 
-    def __div__(self, other):
-        return self // other
     def __truediv__(self, other):
         return self // other # decline to involve floating point numbers at ALL
 

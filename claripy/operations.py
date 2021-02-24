@@ -215,7 +215,6 @@ def strtoint_bv_size_calc(s, bitlength): # pylint: disable=unused-argument
 expression_arithmetic_operations = {
     # arithmetic
     '__add__', '__radd__',
-    '__div__', '__rdiv__',
     '__truediv__', '__rtruediv__',
     '__floordiv__', '__rfloordiv__',
     '__mul__', '__rmul__',
@@ -325,7 +324,6 @@ backend_strings_operations = {
 
 opposites = {
     '__add__': '__radd__', '__radd__': '__add__',
-    '__div__': '__rdiv__', '__rdiv__': '__div__',
     '__truediv__': '__rtruediv__', '__rtruediv__': '__truediv__',
     '__floordiv__': '__rfloordiv__', '__rfloordiv__': '__floordiv__',
     '__mul__': '__rmul__', '__rmul__': '__mul__',
@@ -357,7 +355,6 @@ opposites = {
 reversed_ops = {
     '__radd__': '__add__',
     '__rand__': '__and__',
-    '__rdiv__': '__div__',
     '__rdivmod__': '__divmod__',
     '__rfloordiv__': '__floordiv__',
     '__rlshift__': '__lshift__',
@@ -401,7 +398,6 @@ infix = {
     '__add__': '+',
     '__sub__': '-',
     '__mul__': '*',
-    '__div__': '/',
     '__floordiv__': '/',
     '__truediv__': '/', # the raw / operator should use integral semantics on bitvectors
     '__pow__': '**',
@@ -455,7 +451,6 @@ op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_
 
     # precedence: 3
     '__mul__': 3,
-    '__div__': 3,
     '__floordiv__': 3,
     '__truediv__': 3, # the raw / operator should use integral semantics on bitvectors
     '__mod__': 3,

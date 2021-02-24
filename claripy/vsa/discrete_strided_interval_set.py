@@ -395,8 +395,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         """
         pass
 
-    def __div__(self, o):
-        return self.__floordiv__(o)
     def __truediv__(self, o):
         return self.__floordiv__(o) # floats not welcome
 
