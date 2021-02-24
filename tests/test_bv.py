@@ -32,7 +32,7 @@ def test_bv():
     assert Concat(e, e, e, e) == 0b1010101010101010
     assert Concat(e,f,f) == 0b10101111
 
-    # test that __div__ is unsigned
+    # test that __truediv__ is unsigned
     assert BVV(5, 8) / BVV(254, 8) == 0
     assert SDiv(BVV(5, 8), BVV(-2, 8)) == -2
 
@@ -116,7 +116,6 @@ def test_zero_division_errors():
         except Exception as ex:  # pylint:disable=broad-except
             assert type(ex) is ClaripyZeroDivisionError
 
-    _check_exception(a, b, '__div__')
     _check_exception(a, b, '__truediv__')
     _check_exception(a, b, '__floordiv__')
     _check_exception(a, b, '__mod__')
