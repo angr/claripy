@@ -1309,6 +1309,9 @@ class BackendZ3(Backend):
     def _op_raw_SDiv(a, b):
         return a / b
 
+    def _identical(self, a, b):
+        return a.eq(b)
+
     # String operations:
 
     @staticmethod
