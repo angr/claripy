@@ -119,7 +119,6 @@ def test_zero_division_errors():
     _check_exception(a, b, '__truediv__')
     _check_exception(a, b, '__floordiv__')
     _check_exception(a, b, '__mod__')
-    _check_exception(b, a, '__rdiv__')
     _check_exception(b, a, '__rtruediv__')
     _check_exception(b, a, '__rfloordiv__')
     _check_exception(b, a, '__rmod__')

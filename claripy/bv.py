@@ -156,9 +156,6 @@ class BVV(BackendObject):
             raise ClaripyZeroDivisionError()
         return BVV(o.value // self.value, self.bits)
 
-    def __rdiv__(self, o):
-        return self.__rfloordiv__(o)
-
     def __rtruediv__(self, o):
         return self.__rfloordiv__(o)
 

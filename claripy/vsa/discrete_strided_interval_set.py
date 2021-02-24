@@ -400,8 +400,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
     def __rfloordiv__(self, o):
         return self.__floordiv__(o)
-    def __rdiv__(self, o):
-        return self.__rfloordiv__(o)
     def __rtruediv__(self, o):
         return self.__rfloordiv__(o)
 
