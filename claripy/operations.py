@@ -222,7 +222,6 @@ expression_arithmetic_operations = {
     '__sub__', '__rsub__',
     '__pow__', '__rpow__',
     '__mod__', '__rmod__',
-    '__divmod__', '__rdivmod__',
     'SDiv', 'SMod',
     '__neg__',
     '__pos__',
@@ -332,7 +331,6 @@ opposites = {
     '__sub__': '__rsub__', '__rsub__': '__sub__',
     '__pow__': '__rpow__', '__rpow__': '__pow__',
     '__mod__': '__rmod__', '__rmod__': '__mod__',
-    '__divmod__': '__rdivmod__', '__rdivmod__': '__divmod__',
 
     '__eq__': '__eq__',
     '__ne__': '__ne__',
@@ -358,7 +356,6 @@ reversed_ops = {
     '__radd__': '__add__',
     '__rand__': '__and__',
     '__rdiv__': '__div__',
-    '__rdivmod__': '__divmod__',
     '__rfloordiv__': '__floordiv__',
     '__rlshift__': '__lshift__',
     '__rmod__': '__mod__',
@@ -406,7 +403,6 @@ infix = {
     '__truediv__': '/', # the raw / operator should use integral semantics on bitvectors
     '__pow__': '**',
     '__mod__': '%',
-#    '__divmod__': "don't think this is used either",
 
     '__eq__': '==',
     '__ne__': '!=',
@@ -459,7 +455,6 @@ op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_
     '__floordiv__': 3,
     '__truediv__': 3, # the raw / operator should use integral semantics on bitvectors
     '__mod__': 3,
-    #'__divmod__': "don't think this is used either",
     'SDiv': 3,
     'SMod': 3,
 
