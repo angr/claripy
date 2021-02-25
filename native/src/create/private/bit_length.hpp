@@ -14,14 +14,14 @@ namespace Create::Private {
      *  Warning: This static casts, the user must ensure that p.get() is a T
      */
     inline Constants::UInt bit_length(const Expression::BasePtr &p) noexcept {
-        using To = Constants::CTSC<Expression::Bits>;
+        using To = Constants::CTS<Expression::Bits>;
 #ifdef DEBUG
         const auto ptr { dynamic_cast<To>(p.get()) };
         using Err = Utils::Error::Unexpected::BadCast;
         Utils::affirm<Err>(ptr, WHOAMI_WITH_SOURCE "cast failed");
         return ptr->bit_length;
 #else
-        return static_cast<To>(p.get()) - bit_length;
+        return static_cast<To>(p.get())->bit_length;
 #endif
     }
 
