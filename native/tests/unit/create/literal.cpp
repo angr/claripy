@@ -11,8 +11,7 @@
 template <typename T> void literal_t() {
 
     // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression;
+    namespace Ex = Expression; // NOLINT (false positive)
 
     // Create inputs
     std::string data { "This is data!" };
@@ -46,6 +45,9 @@ template <typename T> void literal_t() {
     if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size)
     }
+
+    // For compilation
+    (void) size;
 }
 
 /** Test the literal create function */

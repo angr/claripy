@@ -12,8 +12,7 @@ template <typename T> void symbol_t() {
     static int n_runs = 0;
 
     // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression;
+    namespace Ex = Expression; // NOLINT (false positive)
 
     // Create name
     std::string name { std::to_string(++n_runs) };
@@ -47,6 +46,9 @@ template <typename T> void symbol_t() {
     if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size)
     }
+
+    // For compilation
+    (void) size;
 }
 
 /** Test the symbol create function */

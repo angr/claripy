@@ -12,7 +12,7 @@ template <typename T> void if_t() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression;
+    namespace Ex = Expression; // NOLINT (false positive)
 
     // Create distinct inputs
     const auto a { F::t_literal<T>(0) };

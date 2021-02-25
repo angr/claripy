@@ -13,7 +13,7 @@ template <bool Signed> void to_bv_b() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression;
+    namespace Ex = Expression; // NOLINT (false positive)
 
     // Create distinct inputs
     const Mode::FP mode { Mode::FP::TowardsZero };

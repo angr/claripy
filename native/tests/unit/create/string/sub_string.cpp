@@ -14,6 +14,7 @@ template <bool Literal> Expression::BasePtr create_bv(std::string name, const Co
         return UnitTest::TestLib::Factories::t_literal<Expression::BV>(val);
     }
     else {
+        (void) val;
         return Create::symbol<Expression::BV>(Create::EAnVec {}, std::move(name),
                                               name.size() * BitLength::char_bit);
     }
@@ -25,8 +26,8 @@ template <bool Literal> void sub_string_b() {
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
     namespace CS = Create::String;
-    namespace Ex = Expression;
-    namespace OS = Op::String;
+    namespace Ex = Expression; // NOLINT (false positive)
+    namespace OS = Op::String; // NOLINT (false positive)
 
     // Create distinct inputs
     const auto a { F::t_literal<Expression::BV>(0) };

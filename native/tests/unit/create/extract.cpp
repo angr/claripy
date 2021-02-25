@@ -11,13 +11,12 @@
 template <typename T> void extract_t() {
 
     // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression;
+    namespace Ex = Expression; // NOLINT (false positive)
 
     // Create distinct inputs
     const Constants::UInt high { 2 };
     const Constants::UInt low { 2 };
-    const auto a { F::t_literal<T>(0) };
+    const auto a { UnitTest::TestLib::Factories::t_literal<T>(0) };
 
     // Test
     const auto exp { Create::extract<T>(Create::EAnVec {}, high, low, a) };

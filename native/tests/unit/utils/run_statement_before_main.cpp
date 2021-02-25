@@ -7,14 +7,14 @@
 
 
 /** A global variable */
-int i { 0 };
+static int test_var { 0 };
 
-// Run i = 4 before main
-UTILS_RUN_STATEMENT_BEFORE_MAIN(i = 4);
+// Run test_var = 4 before main
+UTILS_RUN_STATEMENT_BEFORE_MAIN(test_var = 4);
 
 
 /** Ensure f(4) was run before main */
-void run_statement_before_main() { UNITTEST_ASSERT(i == 4) }
+void run_statement_before_main() { UNITTEST_ASSERT(test_var == 4) }
 
 // Define the test
 UNITTEST_DEFINE_MAIN_TEST(run_statement_before_main)
