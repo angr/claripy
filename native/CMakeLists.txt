@@ -193,7 +193,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	add_compile_options("-Wno-error=#warnings")
 else()
 	message(WARNING "Unknown compiler, please manually add a compile flag"
-					"to ensure that #warnings are not caught by -Werror")
+					"to ensure that #warnings are not caught by -Werror.")
 endif()
 
 # Compile options that cannot be used with clang
