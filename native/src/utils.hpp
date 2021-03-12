@@ -42,6 +42,7 @@
 #include "utils/sink.hpp"
 #include "utils/strlen.hpp"
 #include "utils/thread_safe.hpp"
+#include "utils/to_heap_cache.hpp"
 #include "utils/to_str.hpp"
 #include "utils/transfer_const.hpp"
 #include "utils/type_dependent_constant.hpp"
