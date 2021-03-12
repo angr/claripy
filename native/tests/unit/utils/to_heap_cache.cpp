@@ -66,6 +66,11 @@ void to_heap_cache() {
     heap.push_back(cache.c.move_to_heap(NEW_MOVE));
     UNITTEST_ASSERT(cache.data.size() == cache.dsize)
 
+    // Read each item on the heap (for memory checker testing)
+    for (auto &i : heap) {
+        UNITTEST_ASSERT(i->x == NEW_MOVE.x)
+    }
+
     // Make cache larger than reserve size
     dsize = cache.data.size() + heap.size();
     while (heap.size() > 0) {
