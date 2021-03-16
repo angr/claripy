@@ -133,7 +133,6 @@ class BackendZ3(Backend):
         self._op_raw['__lt__'] = self._op_raw_ULT
 
         self._op_raw['Reverse'] = self._op_raw_Reverse
-        self._op_raw['Identical'] = self._identical
         self._op_raw['fpToSBV'] = self._op_raw_fpToSBV
         self._op_raw['fpToUBV'] = self._op_raw_fpToUBV
 
