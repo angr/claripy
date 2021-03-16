@@ -104,8 +104,6 @@ class BackendZ3Parallel(BackendZ3):
         return self._synchronize('_convert', *args, **kwargs)
     def abstract(self, *args, **kwargs):
         return self._synchronize('abstract', *args, **kwargs)
-    def _size(self, *args, **kwargs):
-        return self._synchronize('_size', *args, **kwargs)
     def solver(self, *args, **kwargs):
         return self._synchronize('solver', *args, **kwargs)
     def _add(self, *args, **kwargs):

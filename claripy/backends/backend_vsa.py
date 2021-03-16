@@ -333,13 +333,6 @@ class BackendVSA(Backend):
 
         return ret
 
-    @arg_filter
-    def _size(self, arg):
-        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
-            return len(arg)
-        else:
-            return arg.size()
-
     @staticmethod
     def Extract(*args):
         low_bit = args[1]

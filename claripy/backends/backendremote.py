@@ -95,9 +95,6 @@ class BackendRemote(Backend):
         res = remotetasks.max.delay(solver.plus_extra(extra_constraints), expr)
         return get(res)
 
-    def _size(self, o):
-        return o.length
-
     def _name(self, o):
         raise Exception('wat') # TODO: Be more explicit :p
 
