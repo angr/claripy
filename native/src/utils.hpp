@@ -21,6 +21,7 @@
 #include "utils/full.hpp"
 #include "utils/has_constructor.hpp"
 #include "utils/inc.hpp"
+#include "utils/internal_type.hpp"
 #include "utils/is_ancestor.hpp"
 #include "utils/is_in.hpp"
 #include "utils/is_same.hpp"
@@ -48,6 +49,7 @@
 #include "utils/type_dependent_constant.hpp"
 #include "utils/type_id.hpp"
 #include "utils/type_pun.hpp"
+#include "utils/type_to_type.hpp"
 #include "utils/unconstructable.hpp"
 
 #endif
