@@ -3,9 +3,9 @@
  * \ingroup unittest
  */
 #include "testlib.hpp"
-#include "utils.hpp"
 
 
+// Whitespace padding
 // The file line hash *must* be on lines 10 and 11 for test purposes
 static const constexpr Constants::UInt my_FLH_10 { UTILS_FILE_LINE_HASH };
 static const constexpr Constants::UInt my_FLH_11 { UTILS_FILE_LINE_HASH };
