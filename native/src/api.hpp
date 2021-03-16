@@ -5,13 +5,14 @@
 #ifndef __API_HPP__
 #define __API_HPP__
 
-#include "constants.hpp"
-#include "create.hpp"
-#include "expression/base.hpp"
-#include "utils/log/log.hpp"
-
-#include <exception>
 #include <memory>
+
+
+// Forward declarations
+namespace Expression {
+    class Base;
+    using BasePtr = std::shared_ptr<const Base>;
+} // namespace Expression
 
 
 namespace C_API {
@@ -20,6 +21,9 @@ namespace C_API {
         /** Expression heap cache */
         thread_local HeapCache<Expression::BasePtr> expression_heap_cache {};
     }; // namespace Private
+
+    /** Annotation base pointer pointer abbreviation */
+    using AnPtr = Annotation::BasePtr *;
 
     /** Enfore compatability with the C ABI
      *  Note: Defining extern "C" within a namespace defines the functions
@@ -32,11 +36,16 @@ namespace C_API {
         Private::expression_heap_cache.free(ptr);
     }
 
-    /* Create::EBasePtr * claricpp_abs(const Annotation::BasePtr>* ans[], const Constants::UInt
-     * size, const EBasePtr * x) { */
-    /* 	return expression_heap_cache.move_to_heap(Create::abs(std::vector<Annotation::BasePtr{ans,
-     * size}, x)); */
-    /* } */
+    /** Create an ABS Expression with arguments: x
+     *  @param annotations: An array of size AnPtrs
+     *  @param size: The number of elements in annotations
+     *  @param x: The operand to ABS
+     */
+    Create::EBasePtr *claricpp_abs(const AnPtr *annotations, const Constants::UInt size,
+                                   const EBasePtr *x) {
+        return expression_heap_cache.move_to_heap(
+            Create::abs(std::vector < Annotation::BasePtr { ans, ans + size }, x));
+    }
     }
 
 } // namespace C_API
