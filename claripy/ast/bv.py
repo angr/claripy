@@ -399,8 +399,6 @@ BV.__pow__ = operations.op('__pow__', (BV, BV), BV, extra_check=operations.lengt
 BV.__rpow__ = operations.reversed_op(BV.__pow__)
 BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rmod__ = operations.reversed_op(BV.__mod__)
-BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdivmod__ = operations.reversed_op(BV.__divmod__)
 BV.SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 BV.SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 
