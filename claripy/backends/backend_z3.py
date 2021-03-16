@@ -253,13 +253,6 @@ class BackendZ3(Backend):
         self._simplification_cache_key.clear()
         self._simplification_cache_val.clear()
 
-    @condom
-    def _size(self, a):
-        if not isinstance(a, z3.BitVecRef) and not isinstance(a, z3.BitVecNumRef):
-            l.debug("Unable to determine length of value of type %s", a.__class__)
-            raise BackendError("Unable to determine length of value of type %s" % a.__class__)
-        return a.size()
-
     def _name(self, o): #pylint:disable=unused-argument
         l.warning("BackendZ3.name() called. This is weird.")
         raise BackendError("name is not implemented yet")
