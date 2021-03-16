@@ -686,22 +686,6 @@ class Backend:
     # Some other methods
     #
 
-    def size(self, a):
-        """
-        This should return the size of an expression.
-
-        :param a: the AST to evaluate
-        """
-        return self._size(self.convert(a))
-
-    def _size(self, o): #pylint:disable=no-self-use,unused-argument
-        """
-        This should return the size of an object.
-
-        :param o: the (backend-native) object
-        """
-        raise BackendError("backend doesn't support size()")
-
     def name(self, a):
         """
         This should return the name of an expression.

@@ -107,16 +107,6 @@ class BackendConcrete(Backend):
             raise BackendError("BackendConcrete can't handle non-bool condition in If.")
         return t if b else f
 
-    def _size(self, e):
-        if isinstance(e, (bool, numbers.Number)):
-            return None
-        elif isinstance(e, bv.BVV):
-            return e.size()
-        elif isinstance(e, fp.FPV):
-            return e.sort.length
-        else:
-            raise BackendError("can't get size of type %s" % type(e))
-
     def _name(self, e): #pylint:disable=unused-argument,no-self-use
         return None
 
