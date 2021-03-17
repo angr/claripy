@@ -112,7 +112,7 @@ class BackendZ3(Backend):
         self._ast_cache_size = ast_cache_size
 
         # and the operations
-        all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
+        all_ops = backend_fp_operations | backend_operations
         all_ops |= backend_strings_operations - {'StrIsDigit'}
         for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
