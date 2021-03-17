@@ -265,7 +265,7 @@ def fpToFP(a1, a2, a3=None):
             unpacked, = struct.unpack('<' + unpack, packed)
         except OverflowError as e:
             # struct.pack sometimes overflows
-            raise ClaripyOperationError("OverflowError: " + str(e))
+            raise ClaripyOperationError("OverflowError: " + str(e)) from e
 
         return FPV(unpacked, sort)
     elif isinstance(a1, RM) and isinstance(a2, FPV) and isinstance(a3, FSort):
@@ -302,7 +302,7 @@ def fpToIEEEBV(fpv):
         unpacked, = struct.unpack('<' + unpack, packed)
     except OverflowError as e:
         # struct.pack sometimes overflows
-        raise ClaripyOperationError("OverflowError: " + str(e))
+        raise ClaripyOperationError("OverflowError: " + str(e)) from e
 
     return BVV(unpacked, fpv.sort.length)
 
@@ -329,7 +329,7 @@ def fpFP(sgn, exp, mantissa):
         unpacked, = struct.unpack('<' + unpack, packed)
     except OverflowError as e:
         # struct.pack sometimes overflows
-        raise ClaripyOperationError("OverflowError: " + str(e))
+        raise ClaripyOperationError("OverflowError: " + str(e)) from e
 
     return FPV(unpacked, sort)
 
@@ -342,7 +342,6 @@ def fpToSBV(rm, fp, size):
     except (ValueError, OverflowError):
         return BVV(0, size)
     except Exception as ex:
-        import ipdb; ipdb.set_trace()
         print("Unhandled error during floating point rounding! {}".format(ex))
         raise
 

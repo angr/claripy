@@ -1,4 +1,3 @@
-import binascii
 import logging
 import numbers
 
@@ -56,7 +55,7 @@ class BV(Bits):
         s = len(self)
         if s % bits != 0:
             raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
-        elif s == bits:
+        if s == bits:
             return [ self ]
         else:
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s // bits) ]))
