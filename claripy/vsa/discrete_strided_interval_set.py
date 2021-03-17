@@ -248,7 +248,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:    An instance of DiscreteStridedIntervalSet.
         """
-        pass
 
     def __rand__(self, o):
         return self.__and__(o)
@@ -262,7 +261,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:    An instance of DiscreteStridedIntervalSet.
         """
-        pass
 
     def __ror__(self, o):
         return self.__or__(o)
@@ -276,7 +274,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:    An instance of DiscreteStridedIntervalSet.
         """
-        pass
 
     def __rxor__(self, o):
         return self.__xor__(o)
@@ -310,7 +307,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:    An instance of DiscreteStridedIntervalSet.
         """
-        pass
 
     @apply_on_each_si
     def __rshift__(self, o):
@@ -320,7 +316,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:    An instance of DiscreteStridedIntervalSet.
         """
-        pass
 
     @apply_on_each_si
     def concat(self, b):
@@ -330,7 +325,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param b:   The other operand to concatenate with.
         :return:    The concatenated value.
         """
-        pass
 
     def extract(self, high_bit, low_bit):
         """
@@ -365,7 +359,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:
         """
-        pass
 
     def __radd__(self, o):
         return self.__add__(o)
@@ -379,7 +372,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:
         """
-        pass
 
     def __rsub__(self, o):
         return self.__sub__(o)
@@ -393,7 +385,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:
         """
-        pass
 
     def __div__(self, o):
         return self.__floordiv__(o)
@@ -416,7 +407,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param o:   The other operand.
         :return:
         """
-        pass
 
     def __rmod__(self, o):
         return self.__mod__(o)
@@ -479,7 +469,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
 
         :return: None
         """
-        pass
 
     @apply_on_each_si
     def sign_extend(self, new_length):
@@ -489,7 +478,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param new_length:  The length to extend to.
         :return:            SignExtended value.
         """
-        pass
 
     @apply_on_each_si
     def zero_extend(self, new_length):
@@ -499,7 +487,6 @@ class DiscreteStridedIntervalSet(StridedInterval):
         :param new_length:  The length to extend to.
         :return:            ZeroExtended value.
         """
-        pass
 
     @collapse_operand
     def widen(self, b):
