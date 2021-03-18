@@ -157,8 +157,6 @@ class FPV(BackendObject):
             else:
                 return FPV(float('inf'), self.sort)
 
-    def __div__(self, other):
-        return self.__truediv__(other)
     def __floordiv__(self, other): # decline to involve integers in this floating point process
         return self.__truediv__(other)
 
@@ -197,8 +195,6 @@ class FPV(BackendObject):
             else:
                 return FPV(float('inf'), self.sort)
 
-    def __rdiv__(self, other):
-        return self.__rtruediv__(other)
     def __rfloordiv__(self, other): # decline to involve integers in this floating point process
         return self.__rtruediv__(other)
 

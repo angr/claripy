@@ -85,8 +85,8 @@ class BV(Bits):
                 index, 0, self.size() // 8 - 1
             ))
         r = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
-        if r.size() % 8 != 0:
-            r = r.zero_extend(8 - r.size() % 8)
+        if r.size() % 8 != 0: #pylint:disable=no-member
+            r = r.zero_extend(8 - r.size() % 8) #pylint:disable=no-member
         return r
 
     def get_bytes(self, index, size):
@@ -105,8 +105,8 @@ class BV(Bits):
         if size == 0:
             return BVV(0, 0)
         r = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
-        if r.size() % 8 != 0:
-            r = r.zero_extend(8 - r.size() % 8)
+        if r.size() % 8 != 0: #pylint:disable=no-member
+            r = r.zero_extend(8 - r.size() % 8) #pylint:disable=no-member
         return r
 
     def zero_extend(self, n):
@@ -386,8 +386,6 @@ BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.lengt
 BV.__radd__ = operations.reversed_op(BV.__add__)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__)
-BV.__div__ = BV.__floordiv__
-BV.__rdiv__ = BV.__rfloordiv__
 BV.__truediv__ = BV.__floordiv__
 BV.__rtruediv__ = BV.__rfloordiv__
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
