@@ -84,7 +84,7 @@ class BV(Bits):
             raise ValueError("Incorrect index %d. Your index must be between %d and %d." % (
                 index, 0, self.size() // 8 - 1
             ))
-        BV: r = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
+        r: BV = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
         if r.size() % 8 != 0:
             r = r.zero_extend(8 - r.size() % 8)
         return r
@@ -104,7 +104,7 @@ class BV(Bits):
             ))
         if size == 0:
             return BVV(0, 0)
-        BV: r = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
+        r: BV = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
         if r.size() % 8 != 0:
             r = r.zero_extend(8 - r.size() % 8)
         return r
