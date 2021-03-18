@@ -14,6 +14,19 @@ namespace Utils {
     template <bool B, auto IfTrue, auto IfFalse>
     inline const constexpr auto select { B ? IfTrue : IfFalse };
 
+    /** constexpr If B return IfTrue, else IfFalse
+     *  To pass things by reference, make InT a reference type
+     */
+    template <bool B, const InT, const OutT = InT>
+    inline constexpr OutT select_constexpr(const InT if_true, const InT if_false) {
+        if constexpr (B) {
+            return if_true;
+        }
+        else {
+            return if_false;
+        }
+    }
+
 } // namespace Utils
 
 #endif

@@ -15,7 +15,7 @@ namespace Utils {
 
     namespace Private {
         /** Returns a U given a TypeToType<U>
-         *  If we were to simply return U we may loose qualifiers
+         *  If we were to simply return U we may lose qualifiers
          */
         template <template <typename> typename T, typename U> TypeToType<U> internal_type(T<U>);
     } // namespace Private
