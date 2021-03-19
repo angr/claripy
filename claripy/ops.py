@@ -28,6 +28,3 @@ from .ast.strings import *
 from . import vsa
 
 VS = ValueSet
-#SI = StridedInterval
-#TSI = TopStridedInterval
-#ESI = EmptyStridedInterval

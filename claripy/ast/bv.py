@@ -1,4 +1,3 @@
-import binascii
 import logging
 import numbers
 
@@ -56,7 +55,7 @@ class BV(Bits):
         s = len(self)
         if s % bits != 0:
             raise ValueError("expression length (%d) should be a multiple of 'bits' (%d)" % (len(self), bits))
-        elif s == bits:
+        if s == bits:
             return [ self ]
         else:
             return list(reversed([ self[(n+1)*bits - 1:n*bits] for n in range(0, s // bits) ]))
@@ -86,8 +85,8 @@ class BV(Bits):
                 index, 0, self.size() // 8 - 1
             ))
         r = self[min(pos * 8 + 7, self.size() - 1) : pos * 8]
-        if r.size() % 8 != 0:
-            r = r.zero_extend(8 - r.size() % 8)
+        if r.size() % 8 != 0: #pylint:disable=no-member
+            r = r.zero_extend(8 - r.size() % 8) #pylint:disable=no-member
         return r
 
     def get_bytes(self, index, size):
@@ -106,8 +105,8 @@ class BV(Bits):
         if size == 0:
             return BVV(0, 0)
         r = self[min(pos * 8 + 7, self.size() - 1) : (pos - size + 1) * 8]
-        if r.size() % 8 != 0:
-            r = r.zero_extend(8 - r.size() % 8)
+        if r.size() % 8 != 0: #pylint:disable=no-member
+            r = r.zero_extend(8 - r.size() % 8) #pylint:disable=no-member
         return r
 
     def zero_extend(self, n):
@@ -387,8 +386,6 @@ BV.__add__ = operations.op('__add__', (BV, BV), BV, extra_check=operations.lengt
 BV.__radd__ = operations.reversed_op(BV.__add__)
 BV.__floordiv__ = operations.op('__floordiv__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rfloordiv__ = operations.reversed_op(BV.__floordiv__)
-BV.__div__ = BV.__floordiv__
-BV.__rdiv__ = BV.__rfloordiv__
 BV.__truediv__ = BV.__floordiv__
 BV.__rtruediv__ = BV.__rfloordiv__
 BV.__mul__ = operations.op('__mul__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
@@ -399,8 +396,6 @@ BV.__pow__ = operations.op('__pow__', (BV, BV), BV, extra_check=operations.lengt
 BV.__rpow__ = operations.reversed_op(BV.__pow__)
 BV.__mod__ = operations.op('__mod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
 BV.__rmod__ = operations.reversed_op(BV.__mod__)
-BV.__divmod__ = operations.op('__divmod__', (BV, BV), BV, extra_check=operations.length_same_check, calc_length=operations.basic_length_calc)
-BV.__rdivmod__ = operations.reversed_op(BV.__divmod__)
 BV.SDiv = operations.op('SDiv', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 BV.SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_check, bound=False, calc_length=operations.basic_length_calc)
 

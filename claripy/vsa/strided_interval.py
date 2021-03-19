@@ -338,10 +338,10 @@ class StridedInterval(BackendObject):
         self._upper_bound = upper_bound if upper_bound is not None else (2**bits-1)
 
         if lower_bound is not None and not isinstance(lower_bound, numbers.Number):
-            raise ClaripyVSAError("'lower_bound' must be an int or a long. %s is not supported." % type(lower_bound))
+            raise ClaripyVSAError("'lower_bound' must be an int. %s is not supported." % type(lower_bound))
 
         if upper_bound is not None and not isinstance(upper_bound, numbers.Number):
-            raise ClaripyVSAError("'upper_bound' must be an int or a long. %s is not supported." % type(upper_bound))
+            raise ClaripyVSAError("'upper_bound' must be an int. %s is not supported." % type(upper_bound))
 
         self._reversed = False
 
@@ -1074,8 +1074,6 @@ class StridedInterval(BackendObject):
 
         return self.udiv(o)
 
-    def __div__(self, other):
-        return self // other
     def __truediv__(self, other):
         return self // other # decline to involve floating point numbers at ALL
 

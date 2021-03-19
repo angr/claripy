@@ -1,5 +1,3 @@
-from past.builtins import long
-
 from .bits import Bits
 from ..ast.base import _make_name
 
@@ -128,8 +126,8 @@ fpToFPUnsigned = operations.op('fpToFPUnsigned', (fp.RM, BV, fp.FSort), FP, boun
 fpFP = operations.op('fpFP', (BV, BV, BV), FP, bound=False,
                   calc_length=lambda a, b, c: a.length + b.length + c.length)
 fpToIEEEBV = operations.op('fpToIEEEBV', (FP,), BV, bound=False, calc_length=lambda fp: fp.length)
-fpToSBV = operations.op('fpToSBV', (fp.RM, FP, (int, long)), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
-fpToUBV = operations.op('fpToUBV', (fp.RM, FP, (int, long)), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
+fpToSBV = operations.op('fpToSBV', (fp.RM, FP, int), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
+fpToUBV = operations.op('fpToUBV', (fp.RM, FP, int), BV, bound=False, calc_length=lambda _rm, _fp, len: len)
 
 #
 # unbound float point comparisons
@@ -177,14 +175,12 @@ FP.__neg__ = fpNeg
 FP.__add__ = fpAdd
 FP.__sub__ = fpSub
 FP.__mul__ = fpMul
-FP.__div__ = fpDiv
 FP.__truediv__ = fpDiv
 
 FP.__radd__ = operations.reversed_op(FP.__add__)
 FP.__rsub__ = operations.reversed_op(FP.__sub__)
 FP.__rmul__ = operations.reversed_op(FP.__mul__)
-FP.__rdiv__ = operations.reversed_op(FP.__div__)
-FP.__rtruediv__ = operations.reversed_op(FP.__div__)
+FP.__rtruediv__ = operations.reversed_op(FP.__truediv__)
 
 FP.isNaN = fpIsNaN
 FP.isInf = fpIsInf

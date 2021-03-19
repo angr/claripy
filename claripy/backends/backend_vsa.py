@@ -58,9 +58,6 @@ class BackendVSA(Backend):
         self._make_expr_ops(set(expression_set_operations), op_class=self)
         self._make_raw_ops(set(backend_operations_vsa_compliant), op_module=BackendVSA)
 
-        self._op_raw['StridedInterval'] = BackendVSA.CreateStridedInterval
-        self._op_raw['ValueSet'] = ValueSet.__init__
-        self._op_raw['AbstractLocation'] = AbstractLocation.__init__
         self._op_raw['Reverse'] = BackendVSA.Reverse
         self._op_raw['If'] = self.If
         self._op_expr['BVV'] = self.BVV
@@ -335,13 +332,6 @@ class BackendVSA(Backend):
             ret = ret.concat(expr) if ret is not None else expr
 
         return ret
-
-    @arg_filter
-    def _size(self, arg):
-        if type(arg) in { StridedInterval, DiscreteStridedIntervalSet, ValueSet }: #pylint:disable=unidiomatic-typecheck
-            return len(arg)
-        else:
-            return arg.size()
 
     @staticmethod
     def Extract(*args):

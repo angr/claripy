@@ -133,7 +133,6 @@ class BackendZ3(Backend):
         self._op_raw['__lt__'] = self._op_raw_ULT
 
         self._op_raw['Reverse'] = self._op_raw_Reverse
-        self._op_raw['Identical'] = self._identical
         self._op_raw['fpToSBV'] = self._op_raw_fpToSBV
         self._op_raw['fpToUBV'] = self._op_raw_fpToUBV
 
@@ -252,13 +251,6 @@ class BackendZ3(Backend):
         self._sym_cache.clear()
         self._simplification_cache_key.clear()
         self._simplification_cache_val.clear()
-
-    @condom
-    def _size(self, a):
-        if not isinstance(a, z3.BitVecRef) and not isinstance(a, z3.BitVecNumRef):
-            l.debug("Unable to determine length of value of type %s", a.__class__)
-            raise BackendError("Unable to determine length of value of type %s" % a.__class__)
-        return a.size()
 
     def _name(self, o): #pylint:disable=unused-argument
         l.warning("BackendZ3.name() called. This is weird.")

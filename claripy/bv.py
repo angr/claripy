@@ -123,9 +123,6 @@ class BVV(BackendObject):
     def __truediv__(self, other):
         return self // other # decline to implicitly have anything to do with floats
 
-    def __div__(self, other):
-        return self // other
-
     #
     # Reverse arithmetic stuff
     #
@@ -158,9 +155,6 @@ class BVV(BackendObject):
         if self.value == 0:
             raise ClaripyZeroDivisionError()
         return BVV(o.value // self.value, self.bits)
-
-    def __rdiv__(self, o):
-        return self.__rfloordiv__(o)
 
     def __rtruediv__(self, o):
         return self.__rfloordiv__(o)

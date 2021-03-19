@@ -272,6 +272,11 @@ class Base:
                 tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
             ))).keys()
 
+            self.annotations = tuple(itertools.chain(
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                tuple(a for a in self.annotations)
+            ))
+
         if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
 
