@@ -24,7 +24,7 @@ namespace Utils::ThreadSafe {
          *  Lock on construction
          *  Shared lock if Shared, else exclusive lock
          */
-        MoveLock(std::shared_mutex *const m) : mutex { m } {
+        MoveLock(Mutex *const m) : mutex { m } {
             if constexpr (Shared) {
                 mutex->lock_shared();
             }
