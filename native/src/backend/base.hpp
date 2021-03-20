@@ -50,16 +50,17 @@ namespace Backend {
 
         // Non-virtual functions
 
-        /** Create a new thread local solver and return its id
+        /** Create a new thread local solver and return its id along with an opaque shared pointer
+         *  When this opaque shared pointer dies, the solver may also die as well
          *  This ID must be unique across all solvers of backends of the current thread
          *  Warning: Do *not* share SolverIDs between threads, this is undefined behavior
          */
-        SolverID new_tls_solver() {
+        std::pair<SolverID, std::shared_ptr<void>> new_tls_solver() {
             static std::atomic<Constants::UInt> counter { 0 };
-            auto id = ++counter;                            // atomic pre-increment
-            auto new_solver { new_tls_solver_with_id(id) }; // should be inlined by compiler
-            solvers.emplace(id, std::move(new_solver));
-            return id;
+            const auto id = ++counter;
+            std::shared_ptr<void> new_solver { new_tls_solver_with_id(id) };
+            solvers.emplace(id, std::weak_ptr<void>(new_solver));
+            return { id, new_solver };
         }
 
 #if 0
@@ -96,7 +97,7 @@ namespace Backend {
         /** A map from SolverIDs to a shared pointers of any type
          *  In this case, the pointers to the solvers must dynamic casted before use
          */
-        static thread_local Utils::ThreadSafe::Mutable<std::map<SolverID, std::shared_ptr<void>>>
+        static thread_local Utils::ThreadSafe::Mutable<std::map<SolverID, std::weak_ptr<void>>>
             solvers;
 
         // Caches
