@@ -14,8 +14,6 @@ namespace Backend {
     template <typename BackendObj, typename Solver, typename DispatchConvFunc>
     class Generic : public Base {
       public:
-        // Base methods
-
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
          */

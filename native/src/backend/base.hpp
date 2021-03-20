@@ -72,17 +72,13 @@ namespace Backend {
 #endif
 
       protected:
+        // Pure Virtual functions
+
         /** Create a new thread local solver and return a shared pointer to it
          *  Note: we return a shared_ptr<void> to keep things abstract
          *  Functions which later access the solver map must properly cast this
          */
-        std::shared_ptr<void> new_tls_solver_with_id(const SolverID id) = 0;
-
-        /** Clears the given thread-safe cache */
-        template <typename Cache>
-        static void thread_safe_clear_cache(Utils::ThreadSafe::Mutable &cache) {
-            cache.unique().first.clear();
-        }
+        virtual std::shared_ptr<void> new_tls_solver_with_id(const SolverID id) = 0;
 
         // Types
 
