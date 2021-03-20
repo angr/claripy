@@ -6,5 +6,6 @@
 #define __BACKEND_HPP__
 
 #include "backend/base.hpp"
+#include "backend/generic.hpp"
 
 #endif

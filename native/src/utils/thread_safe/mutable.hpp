@@ -39,6 +39,9 @@ namespace Utils::ThreadSafe {
 
     /** Takes in a type T to hold
      *  Takes in a SharedMutex type, default to std::shared_mutex
+     *  Note that you shared() and unique() behave s.t. auto A = shared() behaves
+     *  the same as auto && A = shared(). This is because the first element of
+     *  the pair is a reference value, and the second is not copy-constructable
      */
     template <typename T, typename SharedMutex = std::shared_mutex>
     class Mutable final : public Base {
