@@ -34,12 +34,11 @@ namespace Backend::Z3 {
             // across 'trivial' ops to reduce copy-paste errors.
 
 #define UNARY_CASE(OP, FN)                                                                        \
-    case Op::OP::static_cuid:                                                                     \
-        {                                                                                         \
-            auto ret { std::move(FN(*args.back())) };                                             \
-            args.pop_back();                                                                      \
-            return ret;                                                                           \
-        }
+    case Op::OP::static_cuid: {                                                                   \
+        auto ret { std::move(FN(*args.back())) };                                                 \
+        args.pop_back();                                                                          \
+        return ret;                                                                               \
+    }
 
 #define BINARY_DISPATCH(FN)                                                                       \
     const auto size = args.size();                                                                \
@@ -48,78 +47,71 @@ namespace Backend::Z3 {
     return ret;
 
 #define BINARY_CASE(OP, FN)                                                                       \
-    case Op::OP::static_cuid:                                                                     \
-        {                                                                                         \
-            BINARY_DISPATCH(FN);                                                                  \
-        }
+    case Op::OP::static_cuid: {                                                                   \
+        BINARY_DISPATCH(FN);                                                                      \
+    }
 
 // Passing templated objects to macros can be messy since ','s are in both
 // For simplicity and consistency we define a binary op macro for this case
 #define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                         \
-    case Op::OP<__VA_ARGS__>::static_cuid:                                                        \
-        {                                                                                         \
-            const auto &func = FN<__VA_ARGS__>;                                                   \
-            BINARY_DISPATCH(func);                                                                \
-        }
+    case Op::OP<__VA_ARGS__>::static_cuid: {                                                      \
+        const auto &func = FN<__VA_ARGS__>;                                                       \
+        BINARY_DISPATCH(func);                                                                    \
+    }
 
 #define INT_BINARY_CASE(OP, FN)                                                                   \
-    case Op::OP::static_cuid:                                                                     \
-        {                                                                                         \
-            using To = Constants::CTSC<Op::IntBinary>;                                            \
-            auto ret { std::move(FN(*args.back(), static_cast<To>(expr)->integer)) };             \
-            args.pop_back();                                                                      \
-            return ret;                                                                           \
-        }
+    case Op::OP::static_cuid: {                                                                   \
+        using To = Constants::CTSC<Op::IntBinary>;                                                \
+        auto ret { std::move(FN(*args.back(), static_cast<To>(expr)->integer)) };                 \
+        args.pop_back();                                                                          \
+        return ret;                                                                               \
+    }
 
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
-    case Op::OP::static_cuid:                                                                     \
-        {                                                                                         \
-            const auto size = args.size();                                                        \
-            using To = Constants::CTSC<Op::FP::ModeBinary>;                                       \
-            auto ret { std::move(                                                                 \
-                FN(static_cast<To>(expr)->mode, *args[size - 2], *args[size - 1])) };             \
-            args.resize(size - 2);                                                                \
-            return ret;                                                                           \
-        }
+    case Op::OP::static_cuid: {                                                                   \
+        const auto size = args.size();                                                            \
+        using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
+        auto ret { std::move(                                                                     \
+            FN(static_cast<To>(expr)->mode, *args[size - 2], *args[size - 1])) };                 \
+        args.resize(size - 2);                                                                    \
+        return ret;                                                                               \
+    }
 
 #define TERNARY_CASE(OP, FN)                                                                      \
-    case Op::OP::static_cuid:                                                                     \
-        {                                                                                         \
-            const auto size = args.size();                                                        \
-            auto ret { std::move(FN(*args[size - 3], *args[size - 2], *args[size - 1])) };        \
-            args.resize(size - 3);                                                                \
-            return ret;                                                                           \
-        }
+    case Op::OP::static_cuid: {                                                                   \
+        const auto size = args.size();                                                            \
+        auto ret { std::move(FN(*args[size - 3], *args[size - 2], *args[size - 1])) };            \
+        args.resize(size - 3);                                                                    \
+        return ret;                                                                               \
+    }
 
 #define FLAT_CASE(OP, FN)                                                                         \
-    case Op::OP::static_cuid:                                                                     \
-        {                                                                                         \
-            const auto a_size = args.size();                                                      \
-            using To = Constants::CTSC<Op::Flat>;                                                 \
-            const auto n = static_cast<To>(expr)->operands.size();                                \
-            ExprRawPtr fn_args[n];                                                                \
-            const auto first_n = a_size - n;                                                      \
-            for (auto i = 0; i < n; ++i) {                                                        \
-                fn_args[i] = *args[first_n + i];                                                  \
-            }                                                                                     \
-            auto ret { std::move(FN(n, fn_args)) };                                               \
-            args.resize(size - n);                                                                \
-            return ret;                                                                           \
-        }
+    case Op::OP::static_cuid: {                                                                   \
+        const auto a_size = args.size();                                                          \
+        using To = Constants::CTSC<Op::Flat>;                                                     \
+        const auto n = static_cast<To>(expr)->operands.size();                                    \
+        ExprRawPtr fn_args[n];                                                                    \
+        const auto first_n = a_size - n;                                                          \
+        for (auto i = 0; i < n; ++i) {                                                            \
+            fn_args[i] = *args[first_n + i];                                                      \
+        }                                                                                         \
+        auto ret { std::move(FN(n, fn_args)) };                                                   \
+        args.resize(size - n);                                                                    \
+        return ret;                                                                               \
+    }
 
             // Switch on expr type
             switch (expr->op->cuid) {
 
                 // This should never be hit
-                default:
-                    {
-                        using Usage = Utils::Error::Unexpected;
-                        throw Err::IncorrectUsage(
-                            WHOAMI_WITH_SOURCE
-                            "Unknown expression op given to z3::dispatch_conversion."
-                            "\nOp CUID: ",
-                            expr->op->cuid);
-                    }
+                default: {
+                    using Usage = Utils::Error::Unexpected;
+                    throw Err::IncorrectUsage(
+                        WHOAMI_WITH_SOURCE
+                        "Unknown expression op given to z3::dispatch_conversion."
+                        "\nOp CUID: ",
+                        expr->op->cuid);
+                }
 
                     /************************************************/
                     /*              Top-Level Trivial               */
@@ -185,22 +177,18 @@ namespace Backend::Z3 {
                     /*            Top-Level Non-Trivial             */
                     /************************************************/
 
-                case Op::Extract::static_cuid:
-                    {
-                        break; // TODO
-                    }
-                case Op::If::static_cuid:
-                    {
-                        break; // TODO
-                    }
-                case Op::Literal::static_cuid:
-                    {
-                        break; // TODO
-                    }
-                case Op::Symbol::static_cuid:
-                    {
-                        break; // TODO
-                    }
+                case Op::Extract::static_cuid: {
+                    break; // TODO
+                }
+                case Op::If::static_cuid: {
+                    break; // TODO
+                }
+                case Op::Literal::static_cuid: {
+                    break; // TODO
+                }
+                case Op::Symbol::static_cuid: {
+                    break; // TODO
+                }
 
                     /************************************************/
                     /*                  FP Trivial                  */
@@ -230,10 +218,9 @@ namespace Backend::Z3 {
                     /*                FP Non-Trivial                */
                     /************************************************/
 
-                case Op::FP::ToBV::static_cuid:
-                    {
-                        break; // TODO
-                    }
+                case Op::FP::ToBV::static_cuid: {
+                    break; // TODO
+                }
 
                     /************************************************/
                     /*                String Trivial                */
@@ -264,14 +251,12 @@ namespace Backend::Z3 {
                     /*              String Non-Trivial              */
                     /************************************************/
 
-                case Op::String::IndexOf::static_cuid:
-                    {
-                        break; // TODO
-                    }
-                case Op::String::SubString::static_cuid:
-                    {
-                        break; // TODO
-                    }
+                case Op::String::IndexOf::static_cuid: {
+                    break; // TODO
+                }
+                case Op::String::SubString::static_cuid: {
+                    break; // TODO
+                }
             }
 
                 // Cleanup
