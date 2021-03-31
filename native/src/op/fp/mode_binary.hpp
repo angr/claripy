@@ -26,18 +26,25 @@ namespace Op::FP {
     /** An FP Binary Op class
      *  Operands must all be of the same type and size
      */
-    class ModeBinary : public Binary<true> {
+    class ModeBinary : public Base {
         OP_PURE_INIT(ModeBinary)
       public:
         /** FP Mode */
         const Mode::FP mode;
+        /** Left operand */
+        const Expression::BasePtr left;
+        /** Right operand */
+        const Expression::BasePtr right;
 
       protected:
         /** Protected constructor */
         explicit inline ModeBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
                                    const Expression::BasePtr &l, const Expression::BasePtr &r,
                                    const Mode::FP m)
-            : Binary { h, cuid_, l, r }, mode { m } {}
+            : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
+            Utils::affirm<Err>(Expression::are_same_type<true>(left, right),
+                               WHOAMI_WITH_SOURCE "left and right types or sizes differ");
+        }
     };
 
     /** Default virtual destructor */
