@@ -30,30 +30,30 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
     // Color label
     const char *color;
     switch (lvl) {
-    case Lvl::Verbose:
-        color = ANSIColorCodes::wht;
-        break;
-    case Lvl::Info:
-        color = ANSIColorCodes::blu;
-        break;
-    case Lvl::Warning:
-        color = ANSIColorCodes::yel;
-        break;
-    case Lvl::Error:
-        color = ANSIColorCodes::Bold::mag;
-        break;
-    case Lvl::Critical:
-        color = ANSIColorCodes::HighIntensity::Bold::red;
-        break;
-    case Lvl::Debug:
-        color = ANSIColorCodes::blk;
-        break;
-    case Lvl::Disabled: // Should not be possible
-        throw Error::Unexpected::IncorrectUsage("Log backend given disabled level");
-        break;
-    default: // Should not be possible
-        throw Error::Unexpected::Unknown("Logger was given unknown level");
-        break;
+        case Lvl::Verbose:
+            color = ANSIColorCodes::wht;
+            break;
+        case Lvl::Info:
+            color = ANSIColorCodes::blu;
+            break;
+        case Lvl::Warning:
+            color = ANSIColorCodes::yel;
+            break;
+        case Lvl::Error:
+            color = ANSIColorCodes::Bold::mag;
+            break;
+        case Lvl::Critical:
+            color = ANSIColorCodes::HighIntensity::Bold::red;
+            break;
+        case Lvl::Debug:
+            color = ANSIColorCodes::blk;
+            break;
+        case Lvl::Disabled: // Should not be possible
+            throw Error::Unexpected::IncorrectUsage("Log backend given disabled level");
+            break;
+        default: // Should not be possible
+            throw Error::Unexpected::Unknown("Logger was given unknown level");
+            break;
     }
 
     // Output
