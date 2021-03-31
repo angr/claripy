@@ -7,12 +7,13 @@
 
 #include "base.hpp"
 
+#include <memory>
+
 
 namespace Backend {
 
     /** A subclass of Backend::Base which other backends should derive from for consistency */
-    template <typename BackendObj, typename Solver, typename DispatchConvFunc>
-    class Generic : public Base {
+    template <typename BackendObj, typename Solver> class Generic : public Base {
       public:
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
@@ -24,12 +25,36 @@ namespace Backend {
             object_cache.clear();
         }
 
-      protected:
-        /** A mutable raw pointer to a constant expression */
-        using ExprRawPtr = Constants::TCS<Expression::Base>;
+        /** Checks whether this backend can handle the expression
+         *  @todo Make this better than this simplistic way
+         */
+        bool handles(const ExprRawPtr expr) {
+            try {
+                (void) convert(expr);
+            }
+            catch (Error::Backend::Base &) {
+                return false;
+            }
+            return true;
+        }
 
+      protected:
         /** A shared pointer to a constant backend object */
         using BOCPtr = std::shared_ptr<const BackendObj>;
+
+        /** A vector based stack */
+        template <typename T> using VStack = std::stack<T, std::vector>;
+
+        // Pure Virtual Functions
+
+        /** This dynamic dispatcher converts expr into a backend object
+         *  All arguments of expr that are not primitives have been
+         *  pre-converted into backend objects and are in args
+         *  Arguments must be popped off the args stack if used
+         */
+        virtual BOCPtr dispatch_conversion(const ExprRawPtr expr, VStack<BOCPtr> &args) = 0;
+
+        // Concrete functions
 
         /** Convert a claricpp Expression to a backend object
          *  This function does not deal with the lifetimes of expressions
@@ -37,16 +62,17 @@ namespace Backend {
          */
         BOCPtr convert(Constants::CTSC<Expression::Base> input) {
             using BackendError = Error::Backend::Base;
-            template <typename T> using Stack = std::stack<T, std::vector>;
 
             // Functionally a stack of lists of expression to be converted
             // We flatten and reverse this list for preformance reasons
             // To denote the end of a list we prefix its elements with a nullptr
             // Note prefix because we reversed the list, thus the 'end' must come first
             // Each list represents the arguments of an expression
-            Stack<ExprRawPtr> expr_stack { nullptr, input };
-            Stack<ExprRawPtr> op_stack; // Expressions to give to the conversion dispatcher
-            Stack<std::shared_ptr<BackendObj>> arg_stack; // Converted backend objects
+            VStack<ExprRawPtr> expr_stack { nullptr, input };
+            VStack<ExprRawPtr> op_stack;   // Expressions to give to the conversion dispatcher
+                                           // We leave this as a vector for preformance reasons
+                                           // within the dispatcher
+            std::vector<BOCPtr> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
             for (const auto expr = expr_stack.top(); expr_stack.size() > 0;
@@ -62,7 +88,7 @@ namespace Backend {
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
-                        arg_stack.push(lookup->second.second);
+                        arg_stack.push_back(lookup->second.second);
                     }
 
                     // Update stacks
@@ -77,23 +103,24 @@ namespace Backend {
                     op_stack.pop();
 
                     // Convert the expression to a backend object
-                    BOPtr<BackendObj> obj; // NOLINT
+                    BOCPtr obj; // NOLINT
                     const auto op_id = expr->op->cuid;
                     if (auto func = ctors.find(op_id); func != ctors.end()) {
-                        obj = func(expr);
+                        obj = std::move(func(expr));
                     }
                     else {
-                        obj = DispatchConvFunc(expr, arg_queue);
+                        obj = std::move(dispatch_conversion(expr, arg_stack));
                     }
 
                     // Apply annotations
                     for (const auto a : expr->annotations) {
-                        obj = apply_annotation(obj, a);
+                        obj = std::move(apply_annotation(obj, a));
                     }
 
                     // Store the result in the arg stack and in the cache
-                    arg_stack.push(obj);
-                    object_cache.emplace(op_id, expr, obj); // This moves its arguments
+                    arg_stack.push_back(obj);
+                    object_cache.emplace(op_id, std::move(expr),
+                                         std::move(obj)); // This moves its arguments
                 }
             }
 #ifdef DEBUG
@@ -110,7 +137,7 @@ namespace Backend {
 
         // Constant variables
 
-        /** ctor map
+        /** Ctor map
          *  This maps, via cuid, an Expression Type T to a function which produces a backend
          *  object. This function takes as its sole argument a const Expression, E, of type T.
          *  E must be an expression that has either no children, or children of exclusively
@@ -122,16 +149,15 @@ namespace Backend {
 
         // Caches
 
-        /** errored cache
+        /** Errored cache
          *  Functionally this is a set of expression hashes that this backend is known
          *  to be incapable of handling. Technically it is a map to weak pointers
          *  of expressions so we don't need to store information about dead expressions
          */
         static Utils::ThreadSafe::Mutable<std::map<Hash::Hash, const WPtr>> errored_cache;
 
-        /** thread local object cache
-         *  Map an expression hash to the result of is_true and to a weak pointer
-         *  that points to the expression that has the key as a hash value
+        /** Thread local object cache
+         *  Map an expression hash to a backend object representing it
          */
         static thread_local WeapExpressionMap<BackendObj> object_cache;
     };
