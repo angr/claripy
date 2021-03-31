@@ -11,7 +11,9 @@
 
 namespace Create::String {
 
-    /** Create an Expression with a String::Replace op */
+    /** Create an Expression with a String::Replace op
+     *  Despite being ternary, this is not a trivial op because of the unique length calculation
+     */
     inline EBasePtr replace(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
                             const EBasePtr &third) {
 

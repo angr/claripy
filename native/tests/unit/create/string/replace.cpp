@@ -8,7 +8,10 @@
 #include "../dcast.hpp"
 
 
-/** Test the replace create functions */
+/** Test the replace create functions
+ *  Note: this is not a trivial ternary test because the length
+ *  calculation is done in a special way.
+ */
 void replace() {
     static_assert(Op::is_ternary<Op::String::Replace>, "ternary requires a ternary OpT");
 
