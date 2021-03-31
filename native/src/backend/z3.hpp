@@ -26,6 +26,8 @@ namespace Backend::Z3 {
          *  All arguments of expr that are not primitives have been
          *  pre-converted into backend objects and are in args
          *  Arguments must be popped off the args stack if used
+         *  Warning: This function may internally do unchecked static casting, we permit this
+         *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
         BOCPtr dispatch_conversion(const ExprRawPtr expr,
                                    std::vector<BOCPtr> &args) override final {
@@ -61,6 +63,7 @@ namespace Backend::Z3 {
 
 #define INT_BINARY_CASE(OP, FN)                                                                   \
     case Op::OP::static_cuid: {                                                                   \
+        static_assert(Op::is_int_binary<Op::OP>, WHOAMI "Op::" #OP "is not IntBinary");           \
         using To = Constants::CTSC<Op::IntBinary>;                                                \
         auto ret { std::move(FN(*args.back(), static_cast<To>(expr)->integer)) };                 \
         args.pop_back();                                                                          \
@@ -70,6 +73,7 @@ namespace Backend::Z3 {
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
         const auto size = args.size();                                                            \
+        static_assert(Op::is_mode_binary<Op::OP>, WHOAMI "Op::" #OP "is not ModeBinary");         \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         auto ret { std::move(                                                                     \
             FN(static_cast<To>(expr)->mode, *args[size - 2], *args[size - 1])) };                 \
@@ -88,6 +92,7 @@ namespace Backend::Z3 {
 #define FLAT_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                   \
         const auto a_size = args.size();                                                          \
+        static_assert(Op::is_flat<Op::OP>, WHOAMI "Op::" #OP "is not Flat");                      \
         using To = Constants::CTSC<Op::Flat>;                                                     \
         const auto n = static_cast<To>(expr)->operands.size();                                    \
         ExprRawPtr fn_args[n];                                                                    \
@@ -173,15 +178,16 @@ namespace Backend::Z3 {
                     FLAT_CASE(And, convert_and);
                     FLAT_CASE(Xor, convert_xor);
 
-                    /************************************************/
-                    /*            Top-Level Non-Trivial             */
-                    /************************************************/
+                    // Other
+
+                    TERNARY_CASE(If, convert_if);
 
                 case Op::Extract::static_cuid: {
-                    break; // TODO
-                }
-                case Op::If::static_cuid: {
-                    break; // TODO
+                    using To = Constants::CTSC<Op::Extract>;
+                    auto ret { std::move(convert_extract(
+                        static_cast<To>(expr)->high, static_cast<To>(expr)->low, *args.back())) };
+                    args.pop_back();
+                    return ret;
                 }
                 case Op::Literal::static_cuid: {
                     break; // TODO
@@ -214,12 +220,14 @@ namespace Backend::Z3 {
 
                     TERNARY_CASE(FP::FP, convert_fp_fp)
 
-                    /************************************************/
-                    /*                FP Non-Trivial                */
-                    /************************************************/
+                    // Other
 
                 case Op::FP::ToBV::static_cuid: {
-                    break; // TODO
+                    using To = Constants::CTSC<Op::FP::ToBV>;
+                    auto ret { std::move(
+                        convert_extract(static_cast<To>(expr)->mode, *args.back())) };
+                    args.pop_back();
+                    return ret;
                 }
 
                     /************************************************/
@@ -247,15 +255,17 @@ namespace Backend::Z3 {
 
                     TERNARY_CASE(String::Replace, convert_string_replace);
 
-                    /************************************************/
-                    /*              String Non-Trivial              */
-                    /************************************************/
+                    // Other
+
+                    TERNARY_CASE(String::SubString, convert_sub_string)
 
                 case Op::String::IndexOf::static_cuid: {
-                    break; // TODO
-                }
-                case Op::String::SubString::static_cuid: {
-                    break; // TODO
+                    using To = Constants::CTSC<Op::String::IndexOf>;
+                    const auto size = args.size();
+                    auto ret { std::move(convert_if(*args[size - 2], *args[size - 1],
+                                                    static_cast<To>(expr)->start_index)) };
+                    args.resize(size - 2);
+                    return ret;
                 }
             }
 
