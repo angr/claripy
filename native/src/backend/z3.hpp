@@ -95,6 +95,14 @@ case Op::OP::static_cuid:                                                       
             // Switch on expr type
             switch (expr->op->cuid) {
 
+            // This should never be hit
+            default:
+                using Usage = Utils::Error::Unexpected;
+                throw Err::IncorrectUsage(WHOAMI_WITH_SOURCE
+                                          "Unknown expression op given to z3::dispatch_conversion."
+                                          "\nOp CUID: ",
+                                          expr->op->cuid);
+
                 /************************************************/
                 /*              Top-Level Trivial               */
                 /************************************************/
@@ -159,7 +167,14 @@ case Op::OP::static_cuid:                                                       
                 /*            Top-Level Non-Trivial             */
                 /************************************************/
 
-                // TODO
+            case Op::Extract::static_cuid:
+                break; // TODO
+            case Op::If::static_cuid:
+                break; // TODO
+            case Op::Literal::static_cuid:
+                break; // TODO
+            case Op::Symbol::static_cuid:
+                break; // TODO
 
                 /************************************************/
                 /*                  FP Trivial                  */
@@ -189,7 +204,8 @@ case Op::OP::static_cuid:                                                       
                 /*                FP Non-Trivial                */
                 /************************************************/
 
-                // TODO
+            case Op::FP::ToBV::static_cuid:
+                break; // TODO
 
                 /************************************************/
                 /*                String Trivial                */
@@ -220,13 +236,13 @@ case Op::OP::static_cuid:                                                       
                 /*              String Non-Trivial              */
                 /************************************************/
 
-                // TODO
+            case Op::String::IndexOf::static_cuid:
+                break; // TODO
+            case Op::String::SubString::static_cuid:
+                break; // TODO
+            }
 
-                /************************************************/
-                /*                Error Checking                */
-                /************************************************/
-
-                // Cleanup
+            // Cleanup
 #undef UNARY_CASE
 #undef BINARY_DISPATCH
 #undef BINARY_CASE
@@ -235,15 +251,6 @@ case Op::OP::static_cuid:                                                       
 #undef MODE_BINARY_CASE
 #undef TERNARY_CASE
 #undef FLAT_CASE
-
-            // This should never be hit
-            default:
-                using Usage = Utils::Error::Unexpected;
-                throw Err::IncorrectUsage(WHOAMI_WITH_SOURCE
-                                          "Unknown expression op given to z3::dispatch_conversion."
-                                          "\nOp CUID: ",
-                                          expr->op->cuid);
-            }
         }
 
         /** Z3 context */
