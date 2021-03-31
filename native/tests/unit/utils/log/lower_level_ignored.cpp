@@ -23,10 +23,10 @@ const std::string cst { "Custom" };
 void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
     const auto str { s->str() };
     if (Level::enabled(l)) {
-        UNITTEST_ASSERT(str.find(STR) != std::string::npos)
+        UNITTEST_ASSERT(str.find(STR) != std::string::npos);
     }
     else {
-        UNITTEST_ASSERT_MSG(str.empty(), WHOAMI)
+        UNITTEST_ASSERT_MSG(str.empty(), WHOAMI);
     }
     s->str(""); // clear the log for the next test
 }
@@ -51,7 +51,7 @@ void lower_level_ignored() {
     auto s { std::make_shared<std::ostringstream>() };
     Backend::set<Backend::OStream>(Utils::up_cast<std::ostream>(s), true, false);
     s->str("");
-    UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check")
+    UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check");
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL

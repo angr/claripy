@@ -23,7 +23,7 @@ using namespace UnitTest::TestLib;
 
 /** Test the given logging function */
 void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
-    UNITTEST_ASSERT(s->str().find(STR) != std::string::npos)
+    UNITTEST_ASSERT(s->str().find(STR) != std::string::npos);
     s->str(""); // clear the log for the next test
 }
 

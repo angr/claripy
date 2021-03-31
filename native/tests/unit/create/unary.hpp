@@ -25,8 +25,8 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     const auto exp { CreateF(Create::EAnVec {}, a) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto exp_down { dcast<Out>(exp) };
@@ -34,7 +34,7 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     const auto unary { dcast<OpT>(exp->op) };
 
     // Contains check
-    UNITTEST_ASSERT(unary->child == a)
+    UNITTEST_ASSERT(unary->child == a);
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {

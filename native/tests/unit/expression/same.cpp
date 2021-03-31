@@ -37,7 +37,7 @@ void same() {
         hashes.insert(i->hash);
     }
 
-    UNITTEST_ASSERT(hashes.size() == objs.size() / 2)
+    UNITTEST_ASSERT(hashes.size() == objs.size() / 2);
 
     // Verify unique pointers
 
@@ -46,7 +46,7 @@ void same() {
         ptrs.insert(const_cast<Ex::Base *>(i.get())); // NOLINT
     }
 
-    UNITTEST_ASSERT(ptrs.size() == objs.size() / 2)
+    UNITTEST_ASSERT(ptrs.size() == objs.size() / 2);
 }
 
 // Define the test

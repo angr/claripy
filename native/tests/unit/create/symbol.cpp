@@ -29,22 +29,22 @@ template <typename T> void symbol_t() {
     }
 
     // Pointer checks
-    UNITTEST_ASSERT(sym.use_count() == 1)
-    UNITTEST_ASSERT(sym->op.use_count() == 1)
+    UNITTEST_ASSERT(sym.use_count() == 1);
+    UNITTEST_ASSERT(sym->op.use_count() == 1);
 
     // Symbolic check
-    UNITTEST_ASSERT(sym->symbolic)
+    UNITTEST_ASSERT(sym->symbolic);
 
     // Type check
     const auto op_down { dcast<Op::Symbol>(sym->op) };
     const auto exp_down { dcast<T>(sym) };
 
     // Contains check
-    UNITTEST_ASSERT(op_down->name == name_copy)
+    UNITTEST_ASSERT(op_down->name == name_copy);
 
     // Size check
     if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
-        UNITTEST_ASSERT(exp_down->bit_length == size)
+        UNITTEST_ASSERT(exp_down->bit_length == size);
     }
 
     // For compilation

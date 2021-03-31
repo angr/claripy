@@ -28,7 +28,7 @@ const std::string cst { "Custom" };
 void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
     auto str { s->str() };
     str.pop_back(); // newline
-    UNITTEST_ASSERT(str == cst)
+    UNITTEST_ASSERT(str == cst);
     s->str(""); // clear the log for the next test
 }
 

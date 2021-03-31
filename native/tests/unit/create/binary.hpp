@@ -35,9 +35,9 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     const auto exp { CreateF(Create::EAnVec {}, a, b) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(b.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto binary { dcast<OpT>(exp->op) };
@@ -46,8 +46,8 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     const auto b_down { dcast<In>(b) };
 
     // Contains check
-    UNITTEST_ASSERT(binary->left == a)
-    UNITTEST_ASSERT(binary->right == b)
+    UNITTEST_ASSERT(binary->left == a);
+    UNITTEST_ASSERT(binary->right == b);
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
@@ -59,7 +59,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
         else if constexpr (Mode != SM::First) {
             static_assert(Utils::TD::false_<Mode>, "Unsupported mode for binary");
         }
-        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length)
+        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }
 }
 

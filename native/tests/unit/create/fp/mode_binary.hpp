@@ -23,9 +23,9 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     const auto exp { CreateF(Create::EAnVec {}, a, b, mode) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(b.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Expression::FP>(exp) };
@@ -34,12 +34,12 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     (void) Utils::dynamic_down_cast_throw_on_fail<Expression::FP>(b);
 
     // Contains check
-    UNITTEST_ASSERT(mbinary->left == a)
-    UNITTEST_ASSERT(mbinary->right == b)
-    UNITTEST_ASSERT(mbinary->mode == mode)
+    UNITTEST_ASSERT(mbinary->left == a);
+    UNITTEST_ASSERT(mbinary->right == b);
+    UNITTEST_ASSERT(mbinary->mode == mode);
 
     // Size test
-    UNITTEST_ASSERT(exp_down->bit_length == a_down->bit_length)
+    UNITTEST_ASSERT(exp_down->bit_length == a_down->bit_length);
 }
 
 #endif

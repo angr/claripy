@@ -21,13 +21,13 @@ extern const Constants::UInt helper_FH;
 void file_line_hash() {
 
     // Unique file hashes
-    UNITTEST_ASSERT(my_FH != helper_FH)
+    UNITTEST_ASSERT(my_FH != helper_FH);
 
     // Line offset tests
-    UNITTEST_ASSERT(my_FLH_10 == my_FH + 10) UNITTEST_ASSERT(my_FLH_11 == my_FH + 11)
-        UNITTEST_ASSERT(helper_FLH_10 == helper_FH + 10)
-            UNITTEST_ASSERT(helper_FLH_11 == helper_FH + 11)
-
+    UNITTEST_ASSERT(my_FLH_10 == my_FH + 10);
+    UNITTEST_ASSERT(my_FLH_11 == my_FH + 11);
+    UNITTEST_ASSERT(helper_FLH_10 == helper_FH + 10);
+    UNITTEST_ASSERT(helper_FLH_11 == helper_FH + 11);
 }
 
 // Define the test

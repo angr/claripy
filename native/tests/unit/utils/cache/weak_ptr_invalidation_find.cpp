@@ -27,14 +27,14 @@ void weak_ptr_invalidation_find() {
     { (void) cache.find_or_emplace<int>(hash, 1); }
 
     // Check cache size
-    UNITTEST_ASSERT(ut_cache.size() == 1)
+    UNITTEST_ASSERT(ut_cache.size() == 1);
 
     // Verify inablity to find: side effect removes from cache
     const auto nll { ut_cache.unsafe_find(hash) };
     UNITTEST_ASSERT(nll == nullptr);
 
     // Check cache size
-    UNITTEST_ASSERT(ut_cache.size() == 0)
+    UNITTEST_ASSERT(ut_cache.size() == 0);
 }
 
 // Define the test

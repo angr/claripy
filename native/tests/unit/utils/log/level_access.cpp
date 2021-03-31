@@ -23,7 +23,7 @@ void level_access() {
     Level::set(different);
 
     // Error checking
-    UNITTEST_ASSERT(Level::get() != init)
+    UNITTEST_ASSERT(Level::get() != init);
 #endif
 }
 

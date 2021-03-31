@@ -14,7 +14,9 @@ UTILS_RUN_STATEMENT_BEFORE_MAIN(test_var = 4);
 
 
 /** Ensure f(4) was run before main */
-void run_statement_before_main() { UNITTEST_ASSERT(test_var == 4) }
+void run_statement_before_main() {
+    UNITTEST_ASSERT(test_var == 4);
+}
 
 // Define the test
 UNITTEST_DEFINE_MAIN_TEST(run_statement_before_main)

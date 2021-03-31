@@ -19,11 +19,13 @@ int f(int a = 0) {
 
 
 // Run f(4) before main
-UTILS_RUN_FUNCTION_BEFORE_MAIN(f, 4);
+UTILS_RUN_FUNCTION_BEFORE_MAIN(f, 4)
 
 
 /** Ensure f(4) was run before main */
-void run_function_before_main() { UNITTEST_ASSERT(f() == 4) }
+void run_function_before_main() {
+    UNITTEST_ASSERT(f() == 4);
+}
 
 // Define the test
 UNITTEST_DEFINE_MAIN_TEST(run_function_before_main)

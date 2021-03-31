@@ -13,7 +13,7 @@ static Utils::Cache<int, int> cache;
 void diff() {
     const auto a { cache.find_or_emplace<int>(1, 1) };
     const auto b { cache.find_or_emplace<int>(2, 2) };
-    UNITTEST_ASSERT(a != b)
+    UNITTEST_ASSERT(a != b);
 }
 
 // Define the test

@@ -37,10 +37,10 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     const auto exp { CreateF(Create::EAnVec {}, a, b, c) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(b.use_count() == 2)
-    UNITTEST_ASSERT(c.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2);
+    UNITTEST_ASSERT(c.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto ternary { dcast<OpT>(exp->op) };
@@ -50,9 +50,9 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     const auto c_down { dcast<In>(c) };
 
     // Contains check
-    UNITTEST_ASSERT(ternary->first == a)
-    UNITTEST_ASSERT(ternary->second == b)
-    UNITTEST_ASSERT(ternary->third == c)
+    UNITTEST_ASSERT(ternary->first == a);
+    UNITTEST_ASSERT(ternary->second == b);
+    UNITTEST_ASSERT(ternary->third == c);
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
@@ -64,7 +64,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
         else {
             static_assert(Utils::TD::false_<Mode>, "Unsupported mode for ternary");
         }
-        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length)
+        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }
 }
 

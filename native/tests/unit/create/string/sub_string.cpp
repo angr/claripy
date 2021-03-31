@@ -38,10 +38,10 @@ template <bool Literal> void sub_string_b() {
     const auto exp { CS::sub_string(Create::EAnVec {}, a, b, c) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(b.use_count() == 2)
-    UNITTEST_ASSERT(c.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2);
+    UNITTEST_ASSERT(c.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto ss_op { dcast<OS::SubString>(exp->op) };
@@ -51,16 +51,16 @@ template <bool Literal> void sub_string_b() {
     const auto c_down { dcast<Ex::String>(c) };
 
     // Contains check
-    UNITTEST_ASSERT(ss_op->start_index == a)
-    UNITTEST_ASSERT(ss_op->count == b)
-    UNITTEST_ASSERT(ss_op->full_string == c)
+    UNITTEST_ASSERT(ss_op->start_index == a);
+    UNITTEST_ASSERT(ss_op->count == b);
+    UNITTEST_ASSERT(ss_op->full_string == c);
 
     // Size check
     if constexpr (Literal) {
-        UNITTEST_ASSERT(exp_down->bit_length == 0x1000) // TODO
+        UNITTEST_ASSERT(exp_down->bit_length == 0x1000); // TODO
     }
     else {
-        UNITTEST_ASSERT(exp_down->bit_length == c_down->bit_length)
+        UNITTEST_ASSERT(exp_down->bit_length == c_down->bit_length);
     }
 }
 

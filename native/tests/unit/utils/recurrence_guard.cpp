@@ -19,7 +19,7 @@ static unsigned count { 0 };
  *  Increments count each time
  */
 void loop(unsigned n) {
-    UTILS_RECURRENCE_GUARD_LIM(LIMIT)
+    UTILS_RECURRENCE_GUARD_LIM(LIMIT);
     count += 1;
     if (n == 0) {
         return;
@@ -41,8 +41,8 @@ void recurrence_guard() {
     }
 
     // Verify recurrence gaurd worked
-    UNITTEST_ASSERT(caught)
-    UNITTEST_ASSERT(count == LIMIT)
+    UNITTEST_ASSERT(caught);
+    UNITTEST_ASSERT(count == LIMIT);
 }
 
 // Define the test

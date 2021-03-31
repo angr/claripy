@@ -20,7 +20,7 @@ void fnv1a() {
 
     // Hash
     const constexpr auto hash { Utils::FNV1a<char>::hash(msg, len) };
-    UNITTEST_ASSERT(correct == hash)
+    UNITTEST_ASSERT(correct == hash);
 }
 
 // Define the test

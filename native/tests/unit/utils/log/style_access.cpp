@@ -22,7 +22,7 @@ struct Plain final : Style::Base {
 /** Verify our set style was indeed set */
 void style_access() {
     Style::set<Plain>();
-    UNITTEST_ASSERT(Style::get())
+    UNITTEST_ASSERT(Style::get());
 }
 
 // Define the test

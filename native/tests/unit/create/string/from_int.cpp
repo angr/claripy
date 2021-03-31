@@ -22,8 +22,8 @@ void from_int() {
     const auto exp { Create::String::from_int(Create::EAnVec {}, a) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto op_down { dcast<Op::String::FromInt>(exp->op) };
@@ -31,10 +31,10 @@ void from_int() {
     const auto a_down { dcast<Ex::BV>(a) };
 
     // Contains check
-    UNITTEST_ASSERT(op_down->child == a)
+    UNITTEST_ASSERT(op_down->child == a);
 
     // Size check
-    UNITTEST_ASSERT(exp_down->bit_length == a_down->bit_length + 2_ui * 8)
+    UNITTEST_ASSERT(exp_down->bit_length == a_down->bit_length + 2_ui * 8);
 }
 
 // Define the test

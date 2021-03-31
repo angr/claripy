@@ -11,7 +11,7 @@ void literal() {
     const auto c1 = Op::factory<Op::Literal>(std::string { "hi", 2 });
     const auto c2 = Op::factory<Op::Literal>(std::string { "hi", 2 });
     // Verify factory works
-    UNITTEST_ASSERT(c1 == c2)
+    UNITTEST_ASSERT(c1 == c2);
 }
 
 // Define the test

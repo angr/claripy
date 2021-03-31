@@ -15,12 +15,12 @@ void if_true() {
     const auto b = Utils::static_down_cast<Expression::Bool>(t_literal<Expression::Bool>());
 
     Dummy::echo(true, true);
-    UNITTEST_ASSERT(b->is_true())
-    UNITTEST_ASSERT(!b->is_false())
+    UNITTEST_ASSERT(b->is_true());
+    UNITTEST_ASSERT(!b->is_false());
 
     Dummy::echo(true, false);
-    UNITTEST_ASSERT(!b->is_true())
-    UNITTEST_ASSERT(b->is_false())
+    UNITTEST_ASSERT(!b->is_true());
+    UNITTEST_ASSERT(b->is_false());
 }
 
 // Define the test

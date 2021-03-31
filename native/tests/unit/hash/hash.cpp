@@ -53,7 +53,7 @@ void hash() {
     hashes.insert(Hash::hash(a1)); // 8
 
     // Verify uniqueness
-    UNITTEST_ASSERT(hashes.size() == 8)
+    UNITTEST_ASSERT(hashes.size() == 8);
 }
 
 // Define the test

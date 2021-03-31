@@ -22,8 +22,8 @@ template <typename T> void extract_t() {
     const auto exp { Create::extract<T>(Create::EAnVec {}, high, low, a) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto op_down { dcast<Op::Extract>(exp->op) };
@@ -31,10 +31,10 @@ template <typename T> void extract_t() {
     const auto a_down { dcast<T>(a) };
 
     // Contains check
-    UNITTEST_ASSERT(op_down->from == a)
+    UNITTEST_ASSERT(op_down->from == a);
 
     // Size check
-    UNITTEST_ASSERT(exp_down->bit_length == high + 1 - low)
+    UNITTEST_ASSERT(exp_down->bit_length == high + 1 - low);
 }
 
 /** Verify that the extract function compiles and can be run without issue */

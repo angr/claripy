@@ -37,8 +37,8 @@ inline void int_binary() {
     const auto exp { CreateF(Create::EAnVec {}, a, b) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto int_binary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
@@ -46,8 +46,8 @@ inline void int_binary() {
     const auto a_down { Utils::dynamic_down_cast_throw_on_fail<In>(a) };
 
     // Contains check
-    UNITTEST_ASSERT(int_binary->expr == a)
-    UNITTEST_ASSERT(int_binary->integer == b)
+    UNITTEST_ASSERT(int_binary->expr == a);
+    UNITTEST_ASSERT(int_binary->integer == b);
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
@@ -59,7 +59,7 @@ inline void int_binary() {
             static_assert(Utils::TD::false_<Out>,
                           "int_binary does not support the given SizeMode");
         }
-        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length)
+        UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }
 }
 

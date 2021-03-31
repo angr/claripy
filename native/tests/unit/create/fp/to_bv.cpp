@@ -24,18 +24,18 @@ template <bool Signed> void to_bv_b() {
     const auto exp { Create::to_bv<Signed>(Create::EAnVec {}, mode, fp, bit_length) };
 
     // Pointer checks
-    UNITTEST_ASSERT(fp.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(fp.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto op_down { dcast<Op::ToBV<Signed>>(exp->op) };
     const auto exp_down { dcast<Ex::BV>(exp) };
 
     // Contains check
-    UNITTEST_ASSERT(op_down->fp == fp)
+    UNITTEST_ASSERT(op_down->fp == fp);
 
     // Size check
-    UNITTEST_ASSERT(exp_down->bit_length == bit_length)
+    UNITTEST_ASSERT(exp_down->bit_length == bit_length);
 }
 
 /** Verify that the to_bv function compiles and can be run without issue */

@@ -26,11 +26,11 @@ void weak_ptr_invalidation_gc() {
     { (void) cache.find_or_emplace<int>(1, 1); }
 
     // Check cache size
-    UNITTEST_ASSERT(ut_cache.size() == 1)
+    UNITTEST_ASSERT(ut_cache.size() == 1);
 
     // Garbage collect then verify size
     ut_cache.unsafe_gc();
-    UNITTEST_ASSERT(ut_cache.size() == 0)
+    UNITTEST_ASSERT(ut_cache.size() == 0);
 }
 
 // Define the test

@@ -23,10 +23,10 @@ template <typename T> void if_t() {
     const auto exp { Create::if_<T>(Create::EAnVec {}, c, a, b) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(b.use_count() == 2)
-    UNITTEST_ASSERT(c.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2);
+    UNITTEST_ASSERT(c.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto op { dcast<Op::If>(exp->op) };
@@ -36,9 +36,9 @@ template <typename T> void if_t() {
     (void) dcast<T>(exp);
 
     // Contains check
-    UNITTEST_ASSERT(op->cond == c)
-    UNITTEST_ASSERT(op->if_true == a)
-    UNITTEST_ASSERT(op->if_false == b)
+    UNITTEST_ASSERT(op->cond == c);
+    UNITTEST_ASSERT(op->if_true == a);
+    UNITTEST_ASSERT(op->if_false == b);
 }
 
 /** Verify that the if_ function works */

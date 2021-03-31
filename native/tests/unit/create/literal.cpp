@@ -28,18 +28,18 @@ template <typename T> void literal_t() {
     }
 
     // Pointer checks
-    UNITTEST_ASSERT(lit.use_count() == 1)
-    UNITTEST_ASSERT(lit->op.use_count() == 1)
+    UNITTEST_ASSERT(lit.use_count() == 1);
+    UNITTEST_ASSERT(lit->op.use_count() == 1);
 
     // Symbolic check
-    UNITTEST_ASSERT(not lit->symbolic)
+    UNITTEST_ASSERT(not lit->symbolic);
 
     // Type check
     const auto op_down { dcast<Op::Literal>(lit->op) };
     const auto exp_down { dcast<T>(lit) };
 
     // Contains check
-    UNITTEST_ASSERT(op_down->value == data_copy)
+    UNITTEST_ASSERT(op_down->value == data_copy);
 
     // Size check
     if constexpr (Utils::is_ancestor<Ex::Bits, T>) {

@@ -27,9 +27,9 @@ void index_of() {
     const auto exp { CS::index_of(Create::EAnVec {}, a, b, start_index, bit_length) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2)
-    UNITTEST_ASSERT(b.use_count() == 2)
-    UNITTEST_ASSERT(exp->op.use_count() == 1)
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2);
+    UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto ido { dcast<OS::IndexOf>(exp->op) };
@@ -38,12 +38,12 @@ void index_of() {
     const auto b_down { dcast<Ex::String>(b) };
 
     // Contains check
-    UNITTEST_ASSERT(ido->str == a)
-    UNITTEST_ASSERT(ido->pattern == b)
-    UNITTEST_ASSERT(ido->start_index == start_index)
+    UNITTEST_ASSERT(ido->str == a);
+    UNITTEST_ASSERT(ido->pattern == b);
+    UNITTEST_ASSERT(ido->start_index == start_index);
 
     // Size check
-    UNITTEST_ASSERT(exp_down->bit_length == bit_length)
+    UNITTEST_ASSERT(exp_down->bit_length == bit_length);
 }
 
 // Define the test

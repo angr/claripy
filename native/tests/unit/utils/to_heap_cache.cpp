@@ -38,15 +38,15 @@ void to_heap_cache() {
     std::vector<Moveable *> heap;
 
     // Constructor test
-    UNITTEST_ASSERT(cache.data.size() == cache.dsize)
-    UNITTEST_ASSERT(cache.dsize > 4)
+    UNITTEST_ASSERT(cache.data.size() == cache.dsize);
+    UNITTEST_ASSERT(cache.dsize > 4);
 
     // Verify cache is used
     for (Constants::UInt i = 0; i < cache.dsize / 2; ++i) {
         heap.push_back(cache.c.move_to_heap(NEW_MOVE));
     }
     auto dsize { cache.dsize - cache.dsize / 2 }; // If dsize is odd this isn't simply /2
-    UNITTEST_ASSERT(cache.data.size() == dsize)
+    UNITTEST_ASSERT(cache.data.size() == dsize);
 
     // Verify free returns to cache
     for (Constants::UInt i = 0; i < cache.dsize / 4; ++i) {
@@ -54,21 +54,21 @@ void to_heap_cache() {
         heap.pop_back();
     }
     dsize += cache.dsize / 4;
-    UNITTEST_ASSERT(cache.data.size() == dsize)
+    UNITTEST_ASSERT(cache.data.size() == dsize);
 
     // Empty cache
     for (Constants::UInt i = 0; i < dsize; ++i) {
         heap.push_back(cache.c.move_to_heap(NEW_MOVE));
     }
-    UNITTEST_ASSERT(cache.data.size() == 0)
+    UNITTEST_ASSERT(cache.data.size() == 0);
 
     // Verify cache recreation when empty
     heap.push_back(cache.c.move_to_heap(NEW_MOVE));
-    UNITTEST_ASSERT(cache.data.size() == cache.dsize)
+    UNITTEST_ASSERT(cache.data.size() == cache.dsize);
 
     // Read each item on the heap (for memory checker testing)
     for (auto &i : heap) {
-        UNITTEST_ASSERT(i->x == NEW_MOVE.x)
+        UNITTEST_ASSERT(i->x == NEW_MOVE.x);
     }
 
     // Make cache larger than reserve size
@@ -77,12 +77,12 @@ void to_heap_cache() {
         cache.c.free(heap.back());
         heap.pop_back();
     }
-    UNITTEST_ASSERT(cache.data.size() == dsize)
-    UNITTEST_ASSERT(dsize > cache.dsize)
+    UNITTEST_ASSERT(cache.data.size() == dsize);
+    UNITTEST_ASSERT(dsize > cache.dsize);
 
     // Verify downsize functions
     cache.c.downsize();
-    UNITTEST_ASSERT(cache.data.size() == cache.dsize)
+    UNITTEST_ASSERT(cache.data.size() == cache.dsize);
 }
 
 // Define the test

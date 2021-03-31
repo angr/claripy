@@ -28,7 +28,7 @@ void type_pun() {
     p.i = Utils::type_pun<Constants::Int, char, true>(msg); // NOLINT
 
     // Use unsafe pun in controlled context to verify safe pun
-    UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0) // NOLINT
+    UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0); // NOLINT
 }
 
 // Define the test

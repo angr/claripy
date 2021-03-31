@@ -17,8 +17,8 @@ void symbol() {
     const auto s2 = Op::factory<Op::Symbol>(std::move(n2));
     const auto s3 = Op::factory<Op::Symbol>(std::move(n3));
     // Verify factory works
-    UNITTEST_ASSERT(s1 == s2)
-    UNITTEST_ASSERT(s1 != s3)
+    UNITTEST_ASSERT(s1 == s2);
+    UNITTEST_ASSERT(s1 != s3);
 }
 
 // Define the test

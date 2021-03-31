@@ -22,8 +22,8 @@ void singular() {
     auto s1 = std::make_shared<const TestHashed>(0_ui);
     auto s2 = std::make_shared<const TestHashed>(0_ui);
     auto s3 = std::make_shared<const TestHashed>(1_ui);
-    UNITTEST_ASSERT(Hash::singular(s1) == Hash::singular(s2))
-    UNITTEST_ASSERT(Hash::singular(s1) != Hash::singular(s3))
+    UNITTEST_ASSERT(Hash::singular(s1) == Hash::singular(s2));
+    UNITTEST_ASSERT(Hash::singular(s1) != Hash::singular(s3));
 
     // Constexpr compilation tests
     constexpr Constants::CCSC msg { "Hello" };
