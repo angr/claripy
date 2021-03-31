@@ -20,6 +20,12 @@ namespace Backend {
      *  All backends must subclass this
      */
     class Base {
+        /** A mutable raw pointer to a constant expression */
+        using ExprRawPtr = Constants::TCS<Expression::Base>;
+        // Static checks
+        static_assert(std::is_same_v<ExprRawPtr, Utils::InternalType<Expression::BasePtr>>,
+                      "Expression::BasePtr is not what backend base assumed it to be");
+
       public:
         // Define implicits
         SET_IMPLICITS(Base, default)
@@ -30,10 +36,10 @@ namespace Backend {
         // Pure virtual functions
 
         /** Check whether the backend can handle the given expression */
-        virtual bool handles(const Expression::BasePtr &expr) = 0;
+        virtual bool handles(const ExprRawPtr expr) = 0;
 
         /** Simplify the given expression */
-        virtual Expression::BasePtr simplify(const Expression::BasePtr &expr) = 0;
+        virtual Expression::BasePtr simplify(const ExprRawPtr expr) = 0;
 
         /** Backend name */
         virtual Constants::CCSC name() const = 0;
@@ -63,6 +69,8 @@ namespace Backend {
             return { id, new_solver };
         }
 
+        // @todo
+        // TODO:
 #if 0
         // true / false ones here
 		template <bool B> bool is_B
@@ -71,6 +79,13 @@ namespace Backend {
 			is_not_b_cache = (!B) ? ( is_true_cache : is_false_cache );
 			//
 #endif
+        /** Return true if expr can be B */ /** Return true if expr can be B */
+        /** Return true if expr can be B */ A template <bool B>
+        bool has_B(const Expression::BasePtr &expr, const SolverID id,
+                   const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
+
+        /** Checks whether this backend can handle the expression */
+        bool handles(const ExprRawPtr expr) = 0;
 
       protected:
         // Pure Virtual functions
