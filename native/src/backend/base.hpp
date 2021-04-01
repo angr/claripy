@@ -21,7 +21,7 @@ namespace Backend {
      */
     class Base {
         /** A mutable raw pointer to a constant expression */
-        using ExprRawPtr = Constants::TCS<Expression::Base>;
+        using ExprRawPtr = Constants::CTS<Expression::Base>;
         // Static checks
         static_assert(std::is_same_v<ExprRawPtr, Utils::InternalType<Expression::BasePtr>>,
                       "Expression::BasePtr is not what backend base assumed it to be");
