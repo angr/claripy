@@ -7,12 +7,19 @@
 
 /** A moveable type */
 struct Moveable {
+  public:
     /** Constructor */
-    Moveable(const int in) : x(in) {}
+    Moveable(const int in) noexcept : x { in } {}
     /** Move constructor */
-    Moveable(Moveable &&old) : x(old.x) {}
+    Moveable(Moveable &&old) noexcept : x { old.x } {}
+    /** Disable copy construction */
+    Moveable(const Moveable &) = delete;
+    /** Default destructor */
+    ~Moveable() = default;
+    // Rule of 5
+    SET_IMPLICITS_OPERATORS(Moveable, delete);
     /** Representation */
-    const int x;
+    const int x; // NOLINT (false positive)
 };
 
 /** A macro used for consistency */
@@ -20,14 +27,15 @@ struct Moveable {
     Moveable { 0x1234 }
 
 struct UnitTest::ClaricppUnitTest {
+  public:
     /** Constructor */
-    ClaricppUnitTest() : c {}, data { c.data }, dsize { c.dsize } {}
+    ClaricppUnitTest() : c {}, data { c.data }, dsize { decltype(c)::dsize } {}
     /** The cache */
-    Utils::ToHeapCache<Moveable> c;
+    Utils::ToHeapCache<Moveable> c; // NOLINT (false positive)
     /** Extract data */
-    const decltype(c.data) &data;
+    const decltype(c.data) &data; // NOLINT (false positive)
     /** Extract dsize */
-    const Constants::UInt &dsize;
+    const Constants::UInt &dsize; // NOLINT (false positive)
 };
 
 /** Verify the to_heap_cache members work */
@@ -60,7 +68,7 @@ void to_heap_cache() {
     for (Constants::UInt i = 0; i < dsize; ++i) {
         heap.push_back(cache.c.move_to_heap(NEW_MOVE));
     }
-    UNITTEST_ASSERT(cache.data.size() == 0);
+    UNITTEST_ASSERT(cache.data.empty());
 
     // Verify cache recreation when empty
     heap.push_back(cache.c.move_to_heap(NEW_MOVE));
@@ -73,7 +81,7 @@ void to_heap_cache() {
 
     // Make cache larger than reserve size
     dsize = cache.data.size() + heap.size();
-    while (heap.size() > 0) {
+    while (!heap.empty()) {
         cache.c.free(heap.back());
         heap.pop_back();
     }

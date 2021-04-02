@@ -27,7 +27,7 @@ namespace Utils {
         inline ToHeapCache() { reserve(); }
 
         /** Move x onto the heap */
-        inline T *const move_to_heap(T &&x) {
+        inline T *move_to_heap(T &&x) {
             // Construct our new T on pop()'s memory
             return new (pop()) T { std::move(x) }; // NOLINT
         }
@@ -60,7 +60,7 @@ namespace Utils {
         }
 
         /** The allocation method */
-        inline T *const alloc() noexcept {
+        inline T *alloc() noexcept {
             void *const ret { std::malloc(sizeof(T)) }; // NOLINT
             if (ret != nullptr) {
                 return static_cast<T *const>(ret);
@@ -83,7 +83,7 @@ namespace Utils {
         }
 
         /** Pop an item from the cache for use */
-        inline T *const pop() {
+        inline T *pop() {
             if (data.size() > 0) {
                 const auto ret { data.back() };
                 data.pop_back();
