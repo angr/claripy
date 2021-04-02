@@ -42,6 +42,7 @@ namespace Op::FP {
                                    const Expression::BasePtr &l, const Expression::BasePtr &r,
                                    const Mode::FP m)
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
+            using Err = Error::Expression::Type;
             Utils::affirm<Err>(Expression::are_same_type<true>(left, right),
                                WHOAMI_WITH_SOURCE "left and right types or sizes differ");
         }

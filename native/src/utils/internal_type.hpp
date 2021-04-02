@@ -6,6 +6,8 @@
 #ifndef __UTILS_INTERNALTYPE_HPP__
 #define __UTILS_INTERNALTYPE_HPP__
 
+#include "type_to_type.hpp"
+
 #include "../constants.hpp"
 
 #include <type_traits>

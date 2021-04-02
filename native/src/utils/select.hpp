@@ -17,7 +17,7 @@ namespace Utils {
     /** constexpr If B return IfTrue, else IfFalse
      *  To pass things by reference, make InT a reference type
      */
-    template <bool B, const InT, const OutT = InT>
+    template <bool B, typename InT, typename OutT = InT>
     inline constexpr OutT select_constexpr(const InT if_true, const InT if_false) {
         if constexpr (B) {
             return if_true;
