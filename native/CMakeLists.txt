@@ -279,8 +279,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     message("Debug Mode enabled!")
 	target_compile_definitions("${CLARICPP}"
 		PUBLIC "DEFAULT_LOG_LEVEL=${DEFAULT_DEBUG_LOG_LEVEL}" # Export this macro
-		PUBLIC "DEBUGMODE=DEBUGMODE"
-		PUBLIC "DEBUG=DEBUG"
+		PUBLIC "DEBUGMODE=1"
+		PUBLIC "DEBUG=1"
 	)
 	# Macros
 	target_compile_definitions("${CLARICPP}" PUBLIC "_GLIBCXX_ASSERTIONS")
