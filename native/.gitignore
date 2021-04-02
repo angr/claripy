@@ -4,6 +4,7 @@ Ignore/*
 ignore/*
 build/*
 Build/*
+z3/*
 compile_commands.json
 
 # Prerequisites

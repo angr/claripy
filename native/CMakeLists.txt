@@ -137,7 +137,7 @@ if(BUILD_DOC)
 endif()
 
 # Global definitions
-if (ENABLE_ANSI_COLOR_CODES)
+if(ENABLE_ANSI_COLOR_CODES)
 	add_definitions("-DENABLE_ANSI_COLOR_CODES")
 endif()
 

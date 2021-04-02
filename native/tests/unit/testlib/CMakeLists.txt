@@ -12,7 +12,6 @@ endif()
 
 # Create the test library target that test cases link to
 # Then add headers and sources to the test library
-message(WARNING "${CMAKE_CXX_CLANG_TIDY}")
 add_library("${TESTLIB}" SHARED)
 target_link_libraries("${TESTLIB}" PRIVATE "${CLARICPP}")
 target_include_directories("${TESTLIB}" PRIVATE "${CLARICPP_SRC}")
