@@ -25,7 +25,7 @@ namespace Backend::Z3 {
 
 
         /** Thread local Z3 context */
-        thread_local z3::Context context {};
+        thread_local z3::Context context {}; // TODO: figure out if this is a pointer or what
 
 
         /********************************************************************/
