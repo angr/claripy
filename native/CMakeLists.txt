@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 3.16 )
 
 #################################################
 #                                               #
-#                  Set by user                  #
+#                  Set by User                  #
 #                                               #
 #################################################
 
@@ -16,7 +16,7 @@ option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"    ON )
 
 #################################################
 #                                               #
-#               Set by developer                #
+#               Set by Developer                #
 #                                               #
 #################################################
 
@@ -126,6 +126,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Find Required
 include(FindRequired)
+include(z3)
 
 # Static Anaylsis
 include(StaticAnalsis)
@@ -323,6 +324,10 @@ endif()
 
 # Create a make target for the library
 add_subdirectory("${CLARICPP_SRC}")
+
+# Allow building with z3
+target_include_directories("${CLARICPP}" PRIVATE "${Z3_INCLUDE_DIR}")
+target_link_libraries("${CLARICPP}" PRIVATE "${Z3_LIB_TARGET}")
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above
