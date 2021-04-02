@@ -23,6 +23,14 @@
 /** A macro to convert a macro name into a string */
 #define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
 
+#ifndef DEBUG
+    /** Defined to noexcept when DEBUG is not defined */
+    #define NOEXCEPT_UNLESS_DEBUG noexcept
+#else
+    // DEBUG defined case
+    #define NOEXCEPT_UNLESS_DEBUG
+#endif
+
 
 /********************************************************************/
 /*          Define Subclasses That Use Parent Constructors          */
