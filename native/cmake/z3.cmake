@@ -17,10 +17,6 @@
 set( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
 set( Z3_GIT_COMMIT "517d907567f4283ad8b48ff9c2a3f6dce838569e" )
 
-# The name of the built shared object
-# Note: This depends on the repo being built
-set( Z3_LIB_SO_NAME "z3.so" )
-
 # Define the location of the z3 directory
 set( Z3_DIR "${CMAKE_SOURCE_DIR}/z3/" )
 
@@ -34,58 +30,80 @@ set( Z3_DIR "${CMAKE_SOURCE_DIR}/z3/" )
 include(ExternalProject)
 include(ProcessorCount)
 
+
+# Determine the library's name
+if (NOT DEFINED Z3_LIB_EXTENSION)
+	if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+		set( Z3_LIB_EXTENSION ".so" )
+	elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+		set( Z3_LIB_EXTENSION ".dylib" )
+	elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+		set( Z3_LIB_EXTENSION ".dll" )
+	else()
+		message( FATAL_ERROR "Unknown operating system. Please manually set Z3_LIB_EXTENSION" )
+	endif()
+endif()
+set( Z3_LIB_SO_NAME "libz3${Z3_LIB_EXTENSION}" )
+
+
 # Define various z3 sub-directories
-set( Z3_INSTALL_DIR "${Z3_DIR}/build/install/" )
+set( Z3_INSTALL_DIR "${Z3_DIR}/install/" )
 set( Z3_INCLUDE_DIR "${Z3_INSTALL_DIR}/include/") # Required by name outside of this file
 set( Z3_LIB_DIR "${Z3_INSTALL_DIR}/lib/" )
 set( Z3_LIB "${Z3_LIB_DIR}/${Z3_LIB_SO_NAME}" )
 
 
-# The Z3 library target
-set( Z3_LIB_TARGET "z3" ) # Required by name outside of this file
-add_library( "${Z3_LIB_TARGET}"
-	SHARED
-	IMPORTED
-	GLOBAL # Scopes the library outside of its directory
-)
-set_property(TARGET "${Z3_LIB_TARGET}" PROPERTY
-	IMPORTED_LOCATION "${Z3_LIB}"
-)
+
+
+#################################################
+#                 Configuration                 #
+#################################################
 
 # If a local z3 dir exists, override download command with an empty string
 if(EXISTS "${Z3_DIR}")
 	message(WARNING "Existing z3 directory found. Prioritizing it over a fresh clone.")
-	set(SKIP_DOWNLOAD_IF_EXISTS DOWNLOAD_COMMAND "") # Unquoted is needed here
+	set(Z3_SKIP_DOWNLOAD_IF_EXISTS DOWNLOAD_COMMAND "") # Unquoted is needed here
 else()
 	message("No existing z3 directory found. Cloning a new one.")
 endif()
 
-# Locate the system's make program
-# Define the arguments to be passed to it
-# If no suitable program is found, report so and error out
-find_program(Z3_MAKE_EXE NAMES gmake make)
-if (Z3_MAKE_EXE MATCHES "-NOTFOUND$")
-	find_program(MAKE_EXE NAMES nmake)
-	if (Z3_MAKE_EXE MATCHES "-NOTFOUND$")
-		message(FATAL_ERROR "No suitable make program found.")
-	endif()
-	set(Z3_MAKE_ARGS) # Empty args, no parallelization args for nmake
-else()
-	ProcessorCount(Z3_NUM_CORES)
-	math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2")
-	message( WARNING
-		"Because make doesn't expose the number of jobs it is allowed to use,"
-		" Z3 will be built with the number of cores on the system minus two. "
-		" That is, Z3 will be built with ${Z3_NUM_CORES} cores."
+# Determine the config and make commands
+# If the library already exists, we skip them because they are very slow
+# This is safe since we pin to a specific git commit, so there should be no updates
+if (EXISTS "${Z3_LIB}")
+	set(Z3_SKIP_CONFIG_AND_INSTALL_IF_LIB_EXISTS
+		CONFIGURE_COMMAND ""
+		INSTALL_COMMAND ""
 	)
-	set(Z3_MAKE_ARGS "-j${Z3_NUM_CORES}")
+	set(Z3_MAKE_EXE "")
+	message(WARNING "${Z3_LIB} found already built; using it")
+else()
+	# Locate the system's make program
+	# Define the arguments to be passed to it
+	# If no suitable program is found, report so and error out
+	find_program(Z3_MAKE_EXE NAMES gmake make)
+	if (Z3_MAKE_EXE MATCHES "-NOTFOUND$")
+		find_program(MAKE_EXE NAMES nmake)
+		if (Z3_MAKE_EXE MATCHES "-NOTFOUND$")
+			message(FATAL_ERROR "No suitable make program found.")
+		endif()
+	else()
+		ProcessorCount(Z3_NUM_CORES)
+		math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2")
+		message( WARNING
+			"Because make doesn't expose the number of jobs it is allowed to use,"
+			" Z3 will be built with the number of cores on the system minus two. "
+			" That is, Z3 will be built with ${Z3_NUM_CORES} cores."
+		)
+		set(Z3_MAKE_ARGS "-j${Z3_NUM_CORES}")
+	endif()
 endif()
 
 # Define Z3 as an external project
 set( Z3_BUILDER "z3_build" )
 ExternalProject_Add("${Z3_BUILDER}"
 	# Download options
-	${SKIP_DOWNLOAD_IF_EXISTS} # This should *not* be quoted
+	${Z3_SKIP_DOWNLOAD_IF_EXISTS} # This should *not* be quoted
 	GIT_REPOSITORY "${Z3_REPO_LINK}"
 	GIT_TAG "${Z3_GIT_COMMIT}"
 	GIT_CONFIG "advice.detachedHead=false" # Silence unneeded warnings
@@ -93,7 +111,10 @@ ExternalProject_Add("${Z3_BUILDER}"
 	GIT_PROGRESS TRUE                      # Show progress while cloning
 	# Where to put the z3 directory
 	PREFIX "${Z3_DIR}"
-	BUILD_COMMAND "${Z3_MAKE_EXE}" ${Z3_MAKE_ARGS} # The second one must be unquoted
+	# Build options
+	${Z3_SKIP_CONFIG_AND_INSTALL_IF_LIB_EXISTS} # This should *not* be quoted
+	INSTALL_COMMAND ""
+	BUILD_COMMAND "${Z3_MAKE_EXE}" ${Z3_MAKE_ARGS} # Z3_MAKE_ARGS must be unquoted
 	CMAKE_CACHE_ARGS
 		"-DZ3_SINGLE_THREADED:BOOL=FALSE"
 		"-DZ3_INCLUDE_GIT_HASH:BOOL=TRUE"
@@ -122,6 +143,21 @@ ExternalProject_Add("${Z3_BUILDER}"
 		"-DZ3_BUILD_PYTHON_BINDINGS:BOOL=FALSE"
 )
 
+#################################################
+#                   Z3 Target                   #
+#################################################
+
+
+# The Z3 library target
+set( Z3_LIB_TARGET "z3" ) # Required by name outside of this file
+add_library( "${Z3_LIB_TARGET}"
+	SHARED
+	IMPORTED
+	GLOBAL # Scopes the library outside of its directory
+)
+set_property(TARGET "${Z3_LIB_TARGET}" PROPERTY
+	IMPORTED_LOCATION "${Z3_LIB}"
+)
 
 # Define our shared library target to depend on the external z3 build
 # That is, when this target is made, it makes the external z3 build first
