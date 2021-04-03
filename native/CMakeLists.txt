@@ -73,6 +73,35 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 
 ### Z3 Options ###
 
+# Defines how the z3 library is acquired
+# The supported options are:
+#   SYSTEM   - Looks for a z3 library in common library directories
+#   DOWNLOAD - Download the pre-built from some URL
+#   PATH     - Define the library to be loaded from some file path
+#   BUILD    - Build z3 either from a local directory or git link (local will be prioritized)
+set(Z3_ACQUISITION_MODE DOWNLOAD) # TODO
+
+# Depending on the mode selected, only one of the groups of options below will be relevant
+
+## Z3 System Options ## (Only relevant if Z3_ACQUISITION_MODE is SYSTEM)
+
+# TODO
+
+## Z3 Download Options ## (Only relevant if Z3_ACQUISITION_MODE is DOWNLOAD)
+
+# The link to download z3 from
+set(Z3_DOWNLOAD_LINK "https://link-to.com/z3")
+
+## Z3 Custom Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
+
+# The path to the Z3 library
+# On Mac this will probably be a dynamic library (.dylib)
+# On Linux this will probably be a shared object (.so)
+# On Windows this will probably be a dynamic link library (.dll)
+set(Z3_LIB_PATH "/path/to/z3/library.so")
+
+## Z3 Build Options ## (Only relevant if Z3_ACQUISITION_MODE is BUILD)
+
 # If false, rebuilds will not occur if libz3 is present during configuration
 # Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
 # libz3 may re-build every time make is invoked as it is using an old configuration
