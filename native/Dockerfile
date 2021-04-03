@@ -34,6 +34,10 @@ RUN apt-get install -yq \
 	"${CXX_COMPILER}" \
 	cmake \
 	make
+# Z3 build
+RUN apt-get install -yq \
+	python3-distutils \
+	git
 # Boost multiprecision with gmp backend for mpz frontend
 RUN apt-get install -yq \
 	libboost-dev \
