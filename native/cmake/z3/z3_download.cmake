@@ -42,14 +42,19 @@ function(_download_z3)
 			endif()
 		endif()
 
+		# Show progress
+		if(Z3_DOWNLOAD_SHOW_PROGRESS)
+			set(PROGRESS "SHOW_PROGRESS")
+		endif()
+
 		# Download the compressed file
 		message(STATUS "Downloading Z3 from: ${Z3_DOWNLOAD_LINK}")
 		file(DOWNLOAD "${Z3_DOWNLOAD_LINK}" "${COMPRESSED}"
 			TIMEOUT "${Z3_DOWNLOAD_TIMEOUT_SECONDS}"
-			${DOWNLOAD_ENABLE_HASH} # This should *not* be quoted
-			STATUS DOWNLOAD_STATUS
-			SHOW_PROGRESS
 			TLS_VERIFY "${Z3_DOWNLOAD_TLS_VERIFY}"
+			${DOWNLOAD_ENABLE_HASH} # This should *not* be quoted
+			${PROGRESS} # This should *not* be quoted
+			STATUS DOWNLOAD_STATUS
 		)
 		# Check if download was successful.
 		list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
@@ -76,11 +81,6 @@ function(_download_z3)
 			)
 		endif()
 		list(GET CHILDREN 0 EXTRACTED_DIR)
-
-		file(GLOB CHILD LIST_DIRECTORIES TRUE "${EXTRACTED_DIR}/bin/*")
-		foreach(FOO ${CHILD})
-			message("${FOO}")
-		endforeach()
 
 		# Verification
 		set(LIB_LOCATION "${EXTRACTED_DIR}/bin/${Z3_LIB_NAME}")

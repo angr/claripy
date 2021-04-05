@@ -126,6 +126,7 @@ set( Z3_DOWNLOAD_HASH_TYPE "MD5" )
 
 # Other required download settings
 option( Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON )
+option( Z3_DOWNLOAD_SHOW_PROGRESS "Show download progress while downloading." OFF )
 set( Z3_DOWNLOAD_TIMEOUT_SECONDS 60 )
 
 
