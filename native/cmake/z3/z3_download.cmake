@@ -12,12 +12,15 @@
 #  Z3_DOWNLOAD_HASH_TYPE (Optional) - Specifies the type of the hash Z3_DOWNLOAD_HASH is
 #                                     Must be defiend with Z3_DOWNLAD_HASH
 
+# We rely on 3.18 features here
+cmake_minimum_required( VERSION 3.18 )
+
 # Wrapping this in a function to create a new scope
 function(_download_z3)
 
 	# Z3 download location
 	set(DOWNLOAD_DIR "${Z3_DIR}/download/")
-	set(COMPRESSED "${DOWNLOAD_DIR}/z3.zip")
+	set(COMPRESSED "${DOWNLOAD_DIR}/z3-compressed")
 
 	# Reuse existing z3 install if possible
 	if(EXISTS "${Z3_LIB}")
@@ -32,7 +35,10 @@ function(_download_z3)
 					" or both be undefined; however, one cannot be defined without the other."
 				)
 			else()
-				set(DOWNLOAD_ENABLE_HASH "${Z3_DOWNLOAD_HASH_TYPE}:${Z3_DOWNLOAD_HASH}")
+				set(DOWNLOAD_ENABLE_HASH
+					"EXPECTED_HASH"
+					"${Z3_DOWNLOAD_HASH_TYPE}=${Z3_DOWNLOAD_HASH}"
+				)
 			endif()
 		endif()
 
@@ -71,10 +77,25 @@ function(_download_z3)
 		endif()
 		list(GET CHILDREN 0 EXTRACTED_DIR)
 
+		file(GLOB CHILD LIST_DIRECTORIES TRUE "${EXTRACTED_DIR}/bin/*")
+		foreach(FOO ${CHILD})
+			message("${FOO}")
+		endforeach()
+
+		# Verification
+		set(LIB_LOCATION "${EXTRACTED_DIR}/bin/${Z3_LIB_NAME}")
+		if (NOT EXISTS "${LIB_LOCATION}")
+			message(FATAL_ERROR
+				"Downloaded files do not seem to contain: ${Z3_LIB_NAME}."
+				" Perhaps this link is for a different operating system"
+				" / the library has an unexpected file extension (a dll on linux, for example)."
+			)
+		endif()
+
 		# Setup install tree and cleanup
 		message(STATUS "Installing Z3 with build directory")
 		file(MAKE_DIRECTORY "${Z3_DIR}/bin/")
-		file(RENAME "${EXTRACTED_DIR}/bin/${Z3_LIB_NAME}" "${Z3_LIB}")
+		file(RENAME "${LIB_LOCATION}" "${Z3_LIB}")
 		file(RENAME "${EXTRACTED_DIR}/include/" "${Z3_DIR}/include/")
 		file(REMOVE_RECURSE "${EXTRACTED_DIR}")
 

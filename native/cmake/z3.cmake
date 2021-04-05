@@ -2,10 +2,10 @@
 #
 # The following variables should be defined before including this file:
 #  Z3_ACQUISITION_MODE - The method used to acquire z3. Either SYSTEM, DOWNLOAD, PATH, or BUILD
+#  Z3_LIB_TARGET - The name of the z3 target
 # All variables required by the the selected mode, define in the respective cmake/z3/z3_<mode> file
 #
 # This file defines the following variables:
-#  Z3_LIB_TARGET - The name of the z3 target
 #  Z3_INCLUDE_DIR - The directory containing the headers linked targets may wish to include
 
 # Wrapping this in a function to create a new scope
@@ -29,15 +29,10 @@ function(_acquire_z3)
 	endif()
 
 	# Define various z3 sub-directories
-	set( Z3_DIR "${CMAKE_BINARY_DIR}/z3/${Z3_ACQUISITION_MODE}/" ) # Vary Z3 dir depending on mode
+	string(TOLOWER "${Z3_ACQUISITION_MODE}" LOW_ACQ)
+	set( Z3_DIR "${CMAKE_BINARY_DIR}/z3/${LOW_ACQ}/" ) # Vary Z3 dir depending on mode
 	set( Z3_LIB_NAME "libz3${Z3_LIB_EXTENSION}" )
 	set( Z3_LIB "${Z3_DIR}/bin/${Z3_LIB_NAME}" )
-
-	### Constants defined for use outside of this file ###
-
-	# The Z3 library target
-	set( Z3_LIB_TARGET "z3" ) # Child scope
-	set( Z3_LIB_TARGET "${Z3_LIB_TARGET}" PARENT_SCOPE ) # Parent scope, but not child scope
 
 	# Where Z3 headers are installed
 	set( Z3_INCLUDE_DIR "${Z3_DIR}/include/" PARENT_SCOPE ) # Parent scope, but not child scope
