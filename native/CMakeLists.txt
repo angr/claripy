@@ -81,10 +81,10 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 
 # Defines how the z3 library is acquired
 # The supported options are:
-#   SYSTEM   - Looks for a z3 library in common library directories
-#   DOWNLOAD - Download and extract a compressed directory given a URL
-#   PATH     - Define the library to be loaded from some file path
-#   BUILD    - Build z3 either from a local directory or git link (local will be prioritized)
+#  SYSTEM   - Looks for a z3 library in common library directories
+#  DOWNLOAD - Download and extract a compressed directory given a URL
+#  PATH     - Define the library to be loaded from some file path
+#  BUILD    - Build z3 either from a local directory or git link (local will be prioritized)
 # Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
 # The 'bin' directory should include the shared library claricpp can link to
 # The 'include' directory should include the header files claricpp can use

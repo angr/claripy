@@ -5,24 +5,30 @@
 #  Z3_LIB          - The location of the z3 library once installed
 #  Z3_DIR          - The directory the z3 install tree should be placed
 
+# Wrapping this in a function to create a new scope
+function(_system_z3)
 
-# Don't bother re-linking if it already works
-if (EXISTS "${Z3_LIB}")
-	message(STATUS "Existing z3 library linked, prioritizing it above all else.")
-elseif (EXISTS "${Z3_DIR}/include/" OR EXISTS "${Z3_DIR}/bin/")
-	message(STATUS
-		"Directory ${Z3_DIR} is polluted."
-		" Refusing to continue. Please clean it and try again"
-	)
-else()
+	# Don't bother re-linking if it already works
+	if (EXISTS "${Z3_LIB}")
+		message(STATUS "Existing z3 library linked, prioritizing it above all else.")
+	elseif (EXISTS "${Z3_DIR}/include/" OR EXISTS "${Z3_DIR}/bin/")
+		message(STATUS
+			"Directory ${Z3_DIR} is polluted."
+			" Refusing to continue. Please clean it and try again"
+		)
+	else()
 
-	# Find Z3
-	find_library(Z3_LIB_FIND z3 REQUIRED)
+		# Find Z3
+		find_library(Z3_LIB_FIND z3 REQUIRED)
 
-	# Setup symlinks
-	include(symlink_required)
-	file(MAKE_DIRECTORY "${Z3_DIR}/bin/")
-	symlink_required("${Z3_LIB_FIND}" "${Z3_LIB}")
-	symlink_required("${Z3_INCLUDE_PATH}" "${Z3_DIR}/include")
+		# Setup symlinks
+		include(symlink_required)
+		file(MAKE_DIRECTORY "${Z3_DIR}/bin/")
+		symlink_required("${Z3_LIB_FIND}" "${Z3_LIB}")
+		symlink_required("${Z3_INCLUDE_PATH}" "${Z3_DIR}/include")
 
-endif()
+	endif()
+
+endfunction()
+
+_system_z3()
