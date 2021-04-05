@@ -1,5 +1,6 @@
 cmake_minimum_required( VERSION 3.16 )
 
+
 #################################################
 #                                               #
 #                  Set by User                  #
@@ -19,6 +20,7 @@ option( ENABLE_ANSI_COLOR_CODES "Enable ansi color codes"    ON )
 #               Set by Developer                #
 #                                               #
 #################################################
+
 
 ### Constants ###
 
@@ -71,28 +73,62 @@ option( CONSTANT_LOG_LEVEL "Force log level to be set at compiletime for release
 option( ENABLE_SECURITY "Build with security flags at the cost of runtime performance" OFF )
 option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OFF )
 
-### Z3 Options ###
+
+#################################################
+#                  Z3 Options                   #
+#################################################
+
 
 # Defines how the z3 library is acquired
 # The supported options are:
 #   SYSTEM   - Looks for a z3 library in common library directories
-#   DOWNLOAD - Download the pre-built from some URL
+#   DOWNLOAD - Download and extract a compressed directory given a URL
 #   PATH     - Define the library to be loaded from some file path
 #   BUILD    - Build z3 either from a local directory or git link (local will be prioritized)
-set(Z3_ACQUISITION_MODE DOWNLOAD) # TODO
+# Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
+# The 'bin' directory should include the shared library claricpp can link to
+# The 'include' directory should include the header files claricpp can use
+set(Z3_ACQUISITION_MODE DOWNLOAD)
+
 
 # Depending on the mode selected, only one of the groups of options below will be relevant
 
-## Z3 System Options ## (Only relevant if Z3_ACQUISITION_MODE is SYSTEM)
 
-# TODO
+#########################
+### Z3 System Options ### (Only relevant if Z3_ACQUISITION_MODE is SYSTEM)
+#########################
 
+
+# The path to the include directory (z3 header files)
+# This directory will by symlinked into the build directory for read-only usage
+# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
+set(Z3_INCLUDE_PATH "/path/to/z3-headers/")
+
+
+#########################
 ## Z3 Download Options ## (Only relevant if Z3_ACQUISITION_MODE is DOWNLOAD)
+#########################
+
 
 # The link to download z3 from
-set(Z3_DOWNLOAD_LINK "https://link-to.com/z3")
+# The link must be the compressed z3 install directory containing 'bin' and 'include'
+set(Z3_DOWNLOAD_LINK "https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-osx-10.15.7.zip")
 
-## Z3 Custom Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
+# Optionally provide the hash of the compressed file
+# If this is done, the hash will be checked after download for security
+# If this is not desired, leave these variable undefined
+set(Z3_DOWNLOAD_HASH "750773630d05cc7c6e4e92be937bfdc6")
+set(Z3_DOWNLOAD_HASH_TYPE "MD5")
+
+# Other required download settings
+option(Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON)
+set(Z3_DOWNLOAD_TIMEOUT_SECONDS "60")
+
+
+#####################
+## Z3 Path Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
+#####################
+
 
 # The path to the Z3 library
 # On Mac this will probably be a dynamic library (.dylib)
@@ -100,12 +136,25 @@ set(Z3_DOWNLOAD_LINK "https://link-to.com/z3")
 # On Windows this will probably be a dynamic link library (.dll)
 set(Z3_LIB_PATH "/path/to/z3/library.so")
 
+# The path to the include directory (z3 header files)
+# This directory will by symlinked into the build directory for read-only usage
+# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
+set(Z3_INCLUDE_PATH "/path/to/z3-headers/")
+
+
+######################
 ## Z3 Build Options ## (Only relevant if Z3_ACQUISITION_MODE is BUILD)
+######################
+
 
 # If false, rebuilds will not occur if libz3 is present during configuration
 # Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
 # libz3 may re-build every time make is invoked as it is using an old configuration
 option(Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present during configuration" OFF)
+
+# Specify the repo and commit that should be used to build Z3
+set(Z3_REPO_LINK "https://github.com/Z3Prover/z3")
+set(Z3_GIT_COMMIT "517d907567f4283ad8b48ff9c2a3f6dce838569e")
 
 # The number of cores used to compile z3 (think of this as make -j<this>)
 # Note: this will override whatever is passed to make during the build

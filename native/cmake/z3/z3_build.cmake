@@ -1,84 +1,16 @@
 # This file configures a make target for z3, which other targets can depend on
 #
 # The following variables should be defined before including this file:
-#  Z3_FORCE_REBUILD (Required) - If false, rebuilds will not occur if libz3 is present during configuration
-#                                Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
-#                                libz3 may re-build every time make is invoked as it is using an old configuration
-#  Z3_NUM_CORES     (Required) - The number of cores used to compile z3 with (i.e. make -j<this>)
+#  Z3_FORCE_REBUILD - If false, rebuilds will not occur if libz3 is present during configuration
+#                     Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
+#                     libz3 may re-build every time make is invoked as it is using an old configuration
+#  Z3_REPO_LINK     - The git repo to download Z3 source files from
+#  Z3_GIT_COMMIT    - The git commit to download from Z3_REPO_LINK
+#  Z3_NUM_CORES     - The number of cores used to compile z3 with (i.e. make -j<this>)
+#  Z3_LIB_TARGET    - The name of the z3 library target
+#  Z3_LIB           - The location of the z3 library once installed
+#  Z3_DIR           - The directory the z3 install tree should be placed
 #  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
-#
-# This file defines the following variables:
-#  Z3_LIB_TARGET - The name of the z3 target
-#  Z3_INCLUDE_DIR - The directory containing the headers linked targets may wish to include
-
-
-#################################################
-#               Set by developer                #
-#################################################
-
-
-# The link to the Z3 repo / commit
-# If a local z3 directory exists it will be prefferred to this
-set( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-set( Z3_GIT_COMMIT "517d907567f4283ad8b48ff9c2a3f6dce838569e" )
-
-# Define the location of the z3 directory
-set( Z3_DIR "${CMAKE_SOURCE_DIR}/z3/" )
-
-
-#################################################
-#               Program Constants               #
-#################################################
-
-
-# Determine the library's name
-if (NOT DEFINED Z3_LIB_EXTENSION)
-	if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-		set( Z3_LIB_EXTENSION ".so" )
-	elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-		set( Z3_LIB_EXTENSION ".dylib" )
-	elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-		set( Z3_LIB_EXTENSION ".dll" )
-	else()
-		message( FATAL_ERROR "Unknown operating system. Please manually set Z3_LIB_EXTENSION" )
-	endif()
-endif()
-
-# Define various z3 sub-directories
-set( Z3_INSTALL_DIR "${Z3_DIR}/install/" )
-set( Z3_LIB_DIR "${Z3_INSTALL_DIR}/lib/" )
-set( Z3_LIB "${Z3_LIB_DIR}/libz3${Z3_LIB_EXTENSION}" )
-
-# Constants by name outside of this file:
-
-# The Z3 library target
-set( Z3_LIB_TARGET "z3" )
-
-# Where Z3 headers are installed
-set( Z3_INCLUDE_DIR "${Z3_INSTALL_DIR}/include/")
-
-
-#################################################
-#                   Z3 Target                   #
-#################################################
-
-
-# Add a z3 library target
-# This allows us to make using z3 dependent on build later, if needed
-add_library( "${Z3_LIB_TARGET}"
-	SHARED
-	IMPORTED
-	GLOBAL # Scopes the library outside of its directory
-)
-# Point the target to the shared library file
-set_property(TARGET "${Z3_LIB_TARGET}" PROPERTY
-	IMPORTED_LOCATION "${Z3_LIB}"
-)
-
-
-#################################################
-#              Build Configuration              #
-#################################################
 
 
 # This step is only necessary if the build does not already exist
@@ -167,9 +99,9 @@ else()
 			"-DWARNINGS_AS_ERRORS:STRING=SERIOUS_ONLY"
 			# Install Options
 			"-DCMAKE_INSTALL_INCLUDEDIR:PATH=${Z3_INCLUDE_DIR}" # Absolute path
-			"-DCMAKE_INSTALL_LIBDIR:PATH=${Z3_LIB_DIR}"         # Absolute path
+			"-DCMAKE_INSTALL_LIBDIR:PATH=${Z3_DIR}/bin/"         # Absolute path
 			# This should never be used, but just in case:
-			"-DCMAKE_INSTALL_PREFIX:PATH=${Z3_INSTALL_DIR}"
+			"-DCMAKE_INSTALL_PREFIX:PATH=${Z3_DIR}"
 			# Disable Unwanted Options
 			"-DZ3_BUILD_EXECUTABLE:BOOL=FALSE"
 			"-DZ3_USE_LIB_GMP:BOOL=FALSE"
