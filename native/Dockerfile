@@ -18,6 +18,7 @@ ENV CXX_COMPILER="${CXX_COMPILER}"
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -yq \
+	python3-pip \
 	gnupg2 \
 	wget
 
@@ -32,16 +33,18 @@ RUN apt-get update
 # Build
 RUN apt-get install -yq \
 	"${CXX_COMPILER}" \
-	cmake \
 	make
-# Z3 build
-RUN apt-get install -yq \
-	python3-distutils \
-	git
+RUN pip3 install cmake # apt cmake is old
+
 # Boost multiprecision with gmp backend for mpz frontend
 RUN apt-get install -yq \
 	libboost-dev \
 	libgmp-dev
+
+# Z3 build (only required when z3 acquisition mode is set to build)
+RUN apt-get install -yq \
+	python3-distutils \
+	git
 
 # Optional depending on use build config
 
@@ -120,12 +123,12 @@ RUN cmake \
 
 
 ##################################################
-#                  Build Stage                   #
+#                Acquire Z3 Stage                #
 ##################################################
 
 
-FROM cmake as build
-LABEL claricpp=build
+FROM cmake as acquire_z3
+LABEL claricpp=acquire_z3
 
 # Optional build arg
 ARG NUM_CORES=1
@@ -133,6 +136,18 @@ RUN test -n "${NUM_CORES}"
 
 # Move build args into env
 ENV NUM_CORES="${NUM_CORES}"
+
+# Make
+RUN make -j "${NUM_CORES}" z3
+
+
+##################################################
+#                  Build Stage                   #
+##################################################
+
+
+FROM acquire_z3 as build
+LABEL claricpp=build
 
 # Make
 RUN make -j "${NUM_CORES}" claricpp
