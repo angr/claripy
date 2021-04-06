@@ -6,7 +6,7 @@
 #define __BACKEND_Z3_CONVERT_HPP__
 
 
-#include "ref.hpp"
+#include "to_rc_shared_pointer.hpp"
 
 #include "../../op.hpp"
 
@@ -26,18 +26,20 @@ class Converter final {
     z3::context &context;
 
   public:
-    /** Constructor: takes in a reference to a Z3 context */
+    /** Constructor: takes in a reference to a Z3 context
+     *  Note: we do this instead of access tl_context directly because in shared libraries
+     *  thread local variable accesses can be function calls internally; thus this is faster
+     */
     inline Converter(z3::context &ref) : context { ref } {}
 
     /** Default destructor */
     inline ~Converter() = default;
 
-    /** The claricpp expression pointer type */
-    using ExprPtr = const ExprRawPtr;
+    /** Backend Object Pointer */
 
     // Conversion functions
 
-    BackendObj /* TODO: or pointer? */ neg(ExprPtr expr) {}
+    Z3ASTPtr neg(Z3ASTRawPtr expr) {}
 };
 
 #endif

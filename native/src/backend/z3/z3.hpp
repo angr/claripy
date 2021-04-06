@@ -17,7 +17,7 @@ namespace Backend::Z3 {
     using Solver = z3::Solver;
 
     /** The Z3 backend */
-    class Z3 final : public Generic<BackendObj, Solver> {
+    class Z3 final : public Generic<Z3ASTPtr, Solver> {
       private:
         /********************************************************************/
         /*                          Representation                          */
@@ -40,22 +40,22 @@ namespace Backend::Z3 {
          *  Warning: This function may internally do unchecked static casting, we permit this
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
-        BOCPtr dispatch_conversion(const ExprRawPtr expr,
-                                   std::vector<BOCPtr> &args) override final {
+        BackendObjPtr dispatch_conversion(const ExprRawPtr expr,
+                                          std::vector<BackendObjPtr> &args) override final {
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
 
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
-        auto ret { std::move(FN(*args.back())) };                                                 \
+        auto ret { std::move(FN(args.back()->get())) };                                           \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define BINARY_DISPATCH(FN)                                                                       \
     const auto size = args.size();                                                                \
-    auto ret { std::move(FN(*args[size - 2], *args[size - 1])) };                                 \
+    auto ret { std::move(FN(args[size - 2]->get(), args[size - 1]->get())) };                     \
     args.resize(size - 2);                                                                        \
     return ret;
 
@@ -76,7 +76,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_int_binary<Op::OP>, WHOAMI "Op::" #OP "is not IntBinary");           \
         using To = Constants::CTSC<Op::IntBinary>;                                                \
-        auto ret { std::move(FN(*args.back(), static_cast<To>(expr)->integer)) };                 \
+        auto ret { std::move(FN(args.back()->get(), static_cast<To>(expr)->integer)) };           \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -87,7 +87,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_mode_binary<Op::OP>, WHOAMI "Op::" #OP "is not ModeBinary");         \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         auto ret { std::move(                                                                     \
-            FN(static_cast<To>(expr)->mode, *args[size - 2], *args[size - 1])) };                 \
+            FN(static_cast<To>(expr)->mode, args[size - 2]->get(), args[size - 1]->get())) };     \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -95,7 +95,8 @@ namespace Backend::Z3 {
 #define TERNARY_CASE(OP, FN)                                                                      \
     case Op::OP::static_cuid: {                                                                   \
         const auto size = args.size();                                                            \
-        auto ret { std::move(FN(*args[size - 3], *args[size - 2], *args[size - 1])) };            \
+        auto ret { std::move(                                                                     \
+            FN(args[size - 3]->get(), args[size - 2]->get(), args[size - 1]->get())) };           \
         args.resize(size - 3);                                                                    \
         return ret;                                                                               \
     }
@@ -109,7 +110,7 @@ namespace Backend::Z3 {
         ExprRawPtr fn_args[n];                                                                    \
         const auto first_n = a_size - n;                                                          \
         for (auto i = 0; i < n; ++i) {                                                            \
-            fn_args[i] = *args[first_n + i];                                                      \
+            fn_args[i] = args[first_n + i]->get();                                                \
         }                                                                                         \
         auto ret { std::move(FN(n, fn_args)) };                                                   \
         args.resize(size - n);                                                                    \

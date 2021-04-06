@@ -44,6 +44,27 @@ namespace Backend {
         /** Backend name */
         virtual Constants::CCSC name() const = 0;
 
+        /** Return true if expr is always true */
+        virtual bool is_true(const Expression::BasePtr &expr, const SolverID id,
+                             const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
+
+        /** Return true if expr is always false */
+        virtual bool is_false(const Expression::BasePtr &expr, const SolverID id,
+                              const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
+
+        /** Return true if expr can be true */
+        virtual bool
+        can_be_true(const Expression::BasePtr &expr, const SolverID id,
+                    const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
+
+        /** Return true if expr can be false */
+        virtual bool
+        can_be_false(const Expression::BasePtr &expr, const SolverID id,
+                     const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
+
+        /** Checks whether this backend can handle the expression */
+        virtual bool handles(const ExprRawPtr expr) = 0;
+
         // Virtual functions
 
         /** Clear caches to decrease memory pressure
@@ -68,24 +89,6 @@ namespace Backend {
             solvers.emplace(id, std::weak_ptr<void>(new_solver));
             return { id, new_solver };
         }
-
-        // @todo
-        // TODO:
-#if 0
-        // true / false ones here
-		template <bool B> bool is_B
-			// Since B is a constant there should be no runtime overhead here
-			is_b_cache = B ? ( is_true_cache : is_false_cache );
-			is_not_b_cache = (!B) ? ( is_true_cache : is_false_cache );
-			//
-#endif
-        /** Return true if expr can be B */ /** Return true if expr can be B */
-        /** Return true if expr can be B */ A template <bool B>
-        bool has_B(const Expression::BasePtr &expr, const SolverID id,
-                   const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
-
-        /** Checks whether this backend can handle the expression */
-        bool handles(const ExprRawPtr expr) = 0;
 
       protected:
         // Pure Virtual functions
