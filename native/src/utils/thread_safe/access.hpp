@@ -68,15 +68,16 @@ namespace Utils::ThreadSafe {
         explicit Access(const Ptr ptr) : obj(ptr) {}
 
         /** Copy constructor */
-        Access(const Access &old) : obj(old.get()) {}
+        Access(const Access &old) : Base { old } obj(old.get()) {}
 
         /** Move constructor is just a copy
          *  Because of our lock, we cannot specify noexcept
          */
-        Access(Access &&old) : obj(old.get()) {} // NOLINT
+        Access(Access &&old) : Base { std::forward<Base>(old) }, obj(old.get()) {} // NOLINT
 
         /** Copy assignment */
         Access &operator=(const Access &old) {
+            Base::operator=(static_cast<Base>(old));
             this->set_ref(old.get());
             return *this;
         }
@@ -84,7 +85,10 @@ namespace Utils::ThreadSafe {
         /** Move assignment is copy assignment
          *  Because of our lock, we cannot specify noexcept
          */
-        Access &operator=(Access &&old) { return (*this = old); } // NOLINT
+        Access &operator=(Access &&old) {
+            Base::operator=(std::forward<Base>(old));
+            return (*this = old);
+        }
 
         /************************************************/
         /*                   Setters                    */

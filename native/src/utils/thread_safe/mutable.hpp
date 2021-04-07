@@ -50,7 +50,7 @@ namespace Utils::ThreadSafe {
 
       public:
         /** Emplacement constructor, take object by move */
-        Mutable(T &&o) : obj { o } {}
+        Mutable(T &&o) : Base { std::forward<Base>(o) }, obj { o } {}
 
         /** Request read-write access
          *  Structure bind to the return type as follows:
@@ -78,7 +78,7 @@ namespace Utils::ThreadSafe {
         T obj;
 
         // Delete other methods of construction / assignment
-        SET_IMPLICITS(Mutable, delete)
+        SET_IMPLICITS_CONST_MEMBERS(Mutable, delete)
     };
 
 } // namespace Utils::ThreadSafe

@@ -19,7 +19,7 @@ namespace Hash {
         const Hash hash;
 
       protected:
-        /** Default constructor */
+        /** Constructor */
         explicit constexpr Hashed(const Hash &h) noexcept : hash { h } {}
 
         /** Pure virtual destructor */

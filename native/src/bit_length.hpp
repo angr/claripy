@@ -23,7 +23,7 @@ struct BitLength {
     explicit inline BitLength(const Constants::UInt bl) noexcept : bit_length { bl } {}
 
     /** Virtual destructor */
-    virtual inline ~BitLength() noexcept;
+    virtual inline ~BitLength() noexcept = 0;
 
     // Rule of 5
     SET_IMPLICITS_CONST_MEMBERS(BitLength, default, noexcept)

@@ -106,7 +106,9 @@
 /** Set the implicits of a class with const members */
 #define SET_IMPLICITS_CONST_MEMBERS(CLASS, VALUE, ...)                                            \
     SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)                                     \
-    SET_IMPLICITS_OPERATORS(CLASS, delete)
+    SET_IMPLICITS_OPERATORS(CLASS, delete)                                                        \
+    /** Disable the default constructor */                                                        \
+    CLASS() = delete;
 
 
 #endif

@@ -36,6 +36,9 @@ namespace Utils {
         /** Abbreviate the type this is */
         using Self = Cache<Hash, Cached>;
 
+        // Disable most implicits
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Cache, delete);
+
       public:
         // Enable custom logging
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
