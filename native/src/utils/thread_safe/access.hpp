@@ -65,15 +65,15 @@ namespace Utils::ThreadSafe {
          *  This is by value to allow temporary shared pointers to be used
          */
         // cppcheck-suppress nullPointer
-        explicit Access(const Ptr ptr) : obj(ptr) {}
+        explicit Access(const Ptr ptr) : obj { ptr } {}
 
         /** Copy constructor */
-        Access(const Access &old) : Base { old } obj(old.get()) {}
+        Access(const Access &old) : Base { old }, obj { old.get() } {}
 
         /** Move constructor is just a copy
          *  Because of our lock, we cannot specify noexcept
          */
-        Access(Access &&old) : Base { std::forward<Base>(old) }, obj(old.get()) {} // NOLINT
+        Access(Access &&old) : Base { std::forward<Base>(old) }, obj { old.get() } {} // NOLINT
 
         /** Copy assignment */
         Access &operator=(const Access &old) {

@@ -7,13 +7,15 @@
 #ifndef __UTILS_AFFIRM_HPP__
 #define __UTILS_AFFIRM_HPP__
 
+#include "../macros.hpp"
+
 
 namespace Utils {
 
     /** If not b, throw T(args...); */
     template <typename T, typename B, typename... Args>
     constexpr inline void affirm(const B b, const Args &...args) {
-        if (!b) {
+        if (UNLIKELY(!b)) {
             throw T(args...);
         }
     }

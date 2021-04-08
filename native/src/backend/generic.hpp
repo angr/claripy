@@ -13,7 +13,7 @@
 namespace Backend {
 
     /** A subclass of Backend::Base which other backends should derive from for consistency */
-    template <typename BackendObjPtr, typename Solver> class Generic : public Base {
+    template <typename BackendObj, typename Solver> class Generic : public Base {
       public:
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
@@ -48,9 +48,10 @@ namespace Backend {
          *  All arguments of expr that are not primitives have been
          *  pre-converted into backend objects and are in args
          *  Arguments must be popped off the args stack if used
+         *  Note that we use a raw vector instead of a stack for efficiency
          */
-        virtual BackendObjPtr dispatch_conversion(const ExprRawPtr expr,
-                                                  VStack<BackendObjPtr> &args) = 0;
+        virtual BackendObj dispatch_conversion(const ExprRawPtr expr,
+                                               std::Vector<const BackendObj> &args) = 0;
 
         // Concrete functions
 
@@ -58,7 +59,7 @@ namespace Backend {
          *  This function does not deal with the lifetimes of expressions
          *  This function does deal with the lifetimes of backend objects
          */
-        BackendObjPtr convert(Constants::CTSC<Expression::Base> input) {
+        BackendObj convert(Constants::CTSC<Expression::Base> input) {
             using BackendError = Error::Backend::Base;
 
             // Functionally a stack of lists of expression to be converted
@@ -70,7 +71,7 @@ namespace Backend {
             VStack<ExprRawPtr> op_stack; // Expressions to give to the conversion dispatcher
                                          // We leave this as a vector for preformance reasons
                                          // within the dispatcher
-            std::vector<BackendObjPtr> arg_stack; // Converted backend objects
+            std::vector<const BackendObj &> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
             for (const auto expr = expr_stack.top(); expr_stack.size() > 0;
@@ -86,7 +87,7 @@ namespace Backend {
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
-                        arg_stack.push_back(lookup->second.second);
+                        arg_stack.emplace_back(lookup->second.second);
                     }
 
                     // Update stacks
@@ -101,7 +102,7 @@ namespace Backend {
                     op_stack.pop();
 
                     // Convert the expression to a backend object
-                    BackendObjPtr obj {}; // NOLINT
+                    BackendObj obj {}; // NOLINT
                     const auto op_id = expr->op->cuid;
                     if (auto func = ctors.find(op_id); func != ctors.end()) {
                         obj = std::move(func(expr));
@@ -112,13 +113,19 @@ namespace Backend {
 
                     // Apply annotations
                     for (const auto a : expr->annotations) {
-                        obj = std::move(apply_annotation(obj, a));
+                        obj = std::move(apply_annotation(std::move(obj), a));
                     }
 
                     // Store the result in the arg stack and in the cache
-                    arg_stack.push_back(obj);
-                    object_cache.emplace(op_id, std::move(expr),
-                                         std::move(obj)); // This moves its arguments
+                    auto &&[iter, success] =
+                        object_cache.emplace(op_id, std::move(expr), std::move(obj));
+#ifdef DEBUG
+                    Utils::affirm<Utils::Error::Unexpected::Unknown>(
+                        success, WHOAMI_WITH_SOURCE "Cache update failed for some reason.");
+#else
+                    Utils::sink(success);
+#endif
+                    arg_stack.emplace_back(iter->second.second);
                 }
             }
 #ifdef DEBUG
@@ -143,7 +150,7 @@ namespace Backend {
          *  In otherwords, E must be directly convertible to a backend object without needing
          *  to recurse to convert any of E's children first.
          */
-        static const std::map<CUID::CUID, BackendObjPtr(const ExprRawPtr)> ctors;
+        static const std::map<CUID::CUID, BackendObj(const ExprRawPtr)> ctors;
 
         // Caches
 
@@ -157,7 +164,7 @@ namespace Backend {
         /** Thread local object cache
          *  Map an expression hash to a backend object representing it
          */
-        static thread_local WeapExpressionMap<BackendObjPtr> object_cache;
+        static thread_local WeapExpressionMap<BackendObj> object_cache;
     };
 
 } // namespace Backend

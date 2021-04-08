@@ -5,6 +5,7 @@
 #ifndef __UTILS_CACHE_HPP__
 #define __UTILS_CACHE_HPP__
 
+#include "error/unexpected.hpp"
 #include "log.hpp"
 #include "make_derived_shared.hpp"
 #include "max.hpp"
@@ -97,7 +98,13 @@ namespace Utils {
                     return lookup;
                 }
                 // Add to cache
-                this->cache.emplace(h, ret);
+#ifdef DEBUG
+                auto &&[_, success] = this->cache.emplace(h, ret);
+                affirm<Error::Unexpected::Unknown>(success,
+                                                   WHOAMI_WITH_SOURCE "Cache emplacement failed.");
+#else
+                (void) this->cache.emplace(h, ret);
+#endif
                 // Garbage collection if needed
                 if (this->cache.size() > this->gc_resize) {
                     this->unsafe_gc();
