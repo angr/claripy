@@ -41,21 +41,21 @@ namespace Backend::Z3 {
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
         BackendObj dispatch_conversion(const ExprRawPtr expr,
-                                       std::vector<BackendObj> &args) override final {
+                                       std::vector<BORCPtr> &args) override final {
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
 
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
-        auto ret { std::move(FN(args.back())) };                                                  \
+        auto ret { std::move(FN(*args.back())) };                                                 \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define BINARY_DISPATCH(FN)                                                                       \
     const auto size = args.size();                                                                \
-    auto ret { std::move(FN(args[size - 2], args[size - 1])) };                                   \
+    auto ret { std::move(FN(*args[size - 2], *args[size - 1])) };                                 \
     args.resize(size - 2);                                                                        \
     return ret;
 
@@ -76,7 +76,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_int_binary<Op::OP>, WHOAMI "Op::" #OP "is not IntBinary");           \
         using To = Constants::CTSC<Op::IntBinary>;                                                \
-        auto ret { std::move(FN(args.back(), static_cast<To>(expr)->integer)) };                  \
+        auto ret { std::move(FN(*args.back(), static_cast<To>(expr)->integer)) };                 \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -86,7 +86,8 @@ namespace Backend::Z3 {
         const auto size = args.size();                                                            \
         static_assert(Op::is_mode_binary<Op::OP>, WHOAMI "Op::" #OP "is not ModeBinary");         \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
-        auto ret { std::move(FN(static_cast<To>(expr)->mode, args[size - 2], args[size - 1])) };  \
+        auto ret { std::move(                                                                     \
+            FN(static_cast<To>(expr)->mode, *args[size - 2], *args[size - 1])) };                 \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -94,7 +95,7 @@ namespace Backend::Z3 {
 #define TERNARY_CASE(OP, FN)                                                                      \
     case Op::OP::static_cuid: {                                                                   \
         const auto size = args.size();                                                            \
-        auto ret { std::move(FN(args[size - 3], args[size - 2], args[size - 1])) };               \
+        auto ret { std::move(FN(*args[size - 3], *args[size - 2], *args[size - 1])) };            \
         args.resize(size - 3);                                                                    \
         return ret;                                                                               \
     }
@@ -105,13 +106,8 @@ namespace Backend::Z3 {
         static_assert(Op::is_flat<Op::OP>, WHOAMI "Op::" #OP "is not Flat");                      \
         using To = Constants::CTSC<Op::Flat>;                                                     \
         const auto n = static_cast<To>(expr)->operands.size();                                    \
-        ExprRawPtr fn_args[n];                                                                    \
-        const auto first_n = a_size - n;                                                          \
-        for (auto i = 0; i < n; ++i) {                                                            \
-            fn_args[i] = args[first_n + i];                                                       \
-        }                                                                                         \
-        auto ret { std::move(FN(n, fn_args)) };                                                   \
-        args.resize(size - n);                                                                    \
+        auto ret { std::move(FN(&(args.data()[a_size - n]), n)) };                                \
+        args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
     }
 

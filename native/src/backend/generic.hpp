@@ -14,6 +14,9 @@ namespace Backend {
 
     /** A subclass of Backend::Base which other backends should derive from for consistency */
     template <typename BackendObj, typename Solver> class Generic : public Base {
+        /** A raw pointer to a backend object */
+        using BORCPtr = Constants::CTSC<BackendObj>;
+
       public:
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
@@ -51,7 +54,7 @@ namespace Backend {
          *  Note that we use a raw vector instead of a stack for efficiency
          */
         virtual BackendObj dispatch_conversion(const ExprRawPtr expr,
-                                               std::Vector<const BackendObj> &args) = 0;
+                                               std::vector<BORCPtr> &args) = 0;
 
         // Concrete functions
 
@@ -68,10 +71,10 @@ namespace Backend {
             // Note prefix because we reversed the list, thus the 'end' must come first
             // Each list represents the arguments of an expression
             VStack<ExprRawPtr> expr_stack { nullptr, input };
-            VStack<ExprRawPtr> op_stack; // Expressions to give to the conversion dispatcher
-                                         // We leave this as a vector for preformance reasons
-                                         // within the dispatcher
-            std::vector<const BackendObj &> arg_stack; // Converted backend objects
+            VStack<ExprRawPtr> op_stack;    // Expressions to give to the conversion dispatcher
+                                            // We leave this as a vector for preformance reasons
+                                            // within the dispatcher
+            std::vector<BORCPtr> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
             for (const auto expr = expr_stack.top(); expr_stack.size() > 0;
@@ -87,7 +90,7 @@ namespace Backend {
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
-                        arg_stack.emplace_back(lookup->second.second);
+                        arg_stack.emplace_back(&(lookup->second.second));
                     }
 
                     // Update stacks
@@ -125,7 +128,7 @@ namespace Backend {
 #else
                     Utils::sink(success);
 #endif
-                    arg_stack.emplace_back(iter->second.second);
+                    arg_stack.emplace_back(&(iter->second.second));
                 }
             }
 #ifdef DEBUG

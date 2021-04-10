@@ -9,6 +9,8 @@
 
 #include "../../op.hpp"
 
+#include <functional>
+
 
 /********************************************************************/
 /*                    Claricpp -> Z3 Conversion                     */
@@ -46,11 +48,65 @@ namespace Backend::z3::Convert {
     /** Pow converter */
     inline z3::expr pow(const z3::expr &l, const z3::expr &r) { return z3::pow(l, r); }
 
+    /** Mod converter */
+    template <bool Signed> z3::expr mod(const z3::expr &l, const z3::expr &r) {
+        if constexpr (Signed) {
+            return z3::smod(l, r);
+        }
+        else {
+            return z3::mod(l, r);
+        }
+    }
+
     // Flat
 
-    // Other
+    namespace Private {
+        /** Like C++20's version of std::accumulate, except it works with pointers */
+        template <typename Fn>
+        inline z3::expr ptr_accumulate(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+#ifdef DEBUG
+            Utils::affirm<Utils::Error::Unexpected::Size>(
+                n >= 2, "n < 2; this probably resulted from an invalid claricpp expression.");
+#endif
+            z3::expr ret { Fn(*arr[0], *arr[1]) };
+            for (Constants::UInt i = 2; i < size; ++i) {
+                ret = std::move(Fn(std::move(ret), *arr[i]));
+            }
+            return ret;
+        }
+    } // namespace Private
 
-    namespace FP {}
+    /** Add converter */
+    inline z3::expr add(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+        return Private::ptr_accumulate<std::plus<z3::expr>>(arr, size);
+    }
+
+    /** Mul converter */
+    inline z3::expr add(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+        return Private::ptr_accumulate<std::multiplies<z3::expr>>(arr, size);
+    }
+
+    /** Or converter */
+    inline z3::expr or_(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+        // Note that z3's bit or auto switched to logical or for booleans
+        return Private::ptr_accumulate<std::bit_or<z3::expr>>(arr, size);
+    }
+
+    /** And converter */
+    inline z3::expr and_(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+        // Note that z3's bit and auto switched to logical and for booleans
+        return Private::ptr_accumulate<std::bit_and<z3::expr>>(arr, size);
+    }
+
+    /** Xor converter */
+    inline z3::expr xor
+        (Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+            return Private::ptr_accumulate<std::bit_xor<z3::expr>>(arr, size);
+        }
+
+        // Other
+
+        namespace FP {}
 
     namespace String {}
 
@@ -72,9 +128,6 @@ namespace Backend::z3::Convert {
 	BINARY_TEMPLATE_CASE(Div, convert.div, true);
 	BINARY_TEMPLATE_CASE(Div, convert.div, false);
 
-	BINARY_TEMPLATE_CASE(Mod, convert.mod, true);
-	BINARY_TEMPLATE_CASE(Mod, convert.mod, false);
-
 	BINARY_TEMPLATE_CASE(Shift, convert.shift, true, true);
 	BINARY_TEMPLATE_CASE(Shift, convert.shift, true, false);
 	BINARY_TEMPLATE_CASE(Shift, convert.shift, false, true);
@@ -87,14 +140,6 @@ namespace Backend::z3::Convert {
 	BINARY_CASE(Union, convert.union);
 	BINARY_CASE(Intersection, convert.intersection);
 	BINARY_CASE(Concat, convert.concat);
-
-	// Flat
-
-	FLAT_CASE(Add, convert.add);
-	FLAT_CASE(Mul, convert.mul);
-	FLAT_CASE(Or, convert.or);
-	FLAT_CASE(And, convert.and);
-	FLAT_CASE(Xor, convert.xor);
 
 	// Other
 
