@@ -627,6 +627,10 @@ class SimplificationManager:
                 return a
             elif a is b:
                 return a
+            elif (a == 0).is_true():
+                return ast.all_operations.BVV(0, a.size())
+            elif (b == 0).is_true():
+                return ast.all_operations.BVV(0, a.size())
             elif a.op == "Concat" and len(a.args) == 2:
                 # Concat(a.args[0], a.args[1]) & b  ==>  ZeroExt(size, a.args[1])
                 # maybe we can drop the second argument
@@ -887,7 +891,7 @@ class SimplificationManager:
                     v = v >> 1
                     zero_bits -= 1
                 if zero_bits > 0:
-                    # the higher `zero_bits` bits are zero
+                    # the high `zero_bits` bits are zero
                     # check the constant
                     b_higher = b[b.size() - 1 : b.size() - zero_bits]
                     b_higher_bits_are_0: Optional[bool] = None
@@ -898,6 +902,10 @@ class SimplificationManager:
 
                     if b_higher_bits_are_0 is True:
                         # extra check: can we get rid of the mask
+                        if zero_bits == b.size():
+                            # the mask is 0, which means the left-hand side becomes 0 after masking
+                            return op(ast.all_operations.BVV(0, b.size()), b)
+
                         b_highbit_idx = b.size() - 1 - zero_bits
                         if b.size() % 8 == 0:
                             # originally, b was 8-bit aligned. Can we keep the size of the new expression 8-byte aligned?
