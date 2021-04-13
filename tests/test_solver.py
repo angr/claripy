@@ -560,25 +560,6 @@ def test_zero_division_in_cache_mixin():
     s.add(denum == 3)
     assert not s.satisfiable()
 
-def test_nan():
-    a = claripy.FPS('a', claripy.FSORT_FLOAT)
-    b = claripy.BVS('b', 32)
-
-    s1 = claripy.Solver()
-    s1.add((a + 1).isNaN())
-    res = s1.eval(a, 1)[0]
-    assert math.isnan(res)
-
-    s2 = claripy.Solver()
-    s2.add(b.raw_to_fp().isNaN())
-    res = s2.eval(b, 1)[0]
-    assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
-
-    s3 = claripy.Solver()
-    s3.add(a.isNaN())
-    res = s3.eval(a.raw_to_bv(), 1)[0]
-    assert res & 0xff800000 == 0x7f800000 and res & 0x007fffff != 0
-
 def test_composite_solver_branching_optimizations():
     s = claripy.SolverComposite()
     w = claripy.BVS("w", 32)
@@ -648,5 +629,4 @@ if __name__ == '__main__':
     for fparams in test_composite_solver():
         fparams[0](*fparams[1:])
     test_zero_division_in_cache_mixin()
-    test_nan()
     test_composite_solver_branching_optimizations()
