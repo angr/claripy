@@ -143,8 +143,23 @@ def test_ast_hash_should_consider_relocatable_annotations():
     assert y0._hash != y1._hash
 
 
+def test_remove_relocatable_annotations():
+    relocatable_anno = AnnotationC('a', 2)
+    const = claripy.BVV(1337, 32)
+
+    x0 = claripy.BVS('x', 32).annotate(relocatable_anno)
+    y0 = claripy.Concat(x0, const)
+    assert len(y0.annotations) == 1
+    assert y0.annotations == (relocatable_anno,)
+
+    y1 = y0.remove_annotation(relocatable_anno)
+
+    assert len(y1.annotations) == 0
+
+
 if __name__ == '__main__':
     test_annotations()
     test_backend()
     test_eagerness()
     test_ast_hash_should_consider_relocatable_annotations()
+    test_remove_relocatable_annotations()
