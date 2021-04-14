@@ -18,6 +18,23 @@ class Solver(
     def __init__(self, backend=backends.z3, **kwargs):
         super(Solver, self).__init__(backend, **kwargs)
 
+class SolverKnots(
+    frontend_mixins.ConstraintFixerMixin,
+    frontend_mixins.ConcreteHandlerMixin,
+    frontend_mixins.EagerResolutionMixin,
+    frontend_mixins.KnotsMixin,
+    frontend_mixins.ConstraintFilterMixin,
+    frontend_mixins.ConstraintDeduplicatorMixin,
+    frontend_mixins.SimplifySkipperMixin,
+    frontend_mixins.SatCacheMixin,
+    frontend_mixins.ModelCacheMixin,
+    frontend_mixins.ConstraintExpansionMixin,
+    frontend_mixins.SimplifyHelperMixin,
+    frontends.FullFrontend
+):
+    def __init__(self, backend=backends.z3, **kwargs):
+        super().__init__(backend, **kwargs)
+
 class SolverCacheless(
     frontend_mixins.ConstraintFixerMixin,
     frontend_mixins.ConcreteHandlerMixin,

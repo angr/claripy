@@ -14,3 +14,4 @@ from .composited_cache_mixin import CompositedCacheMixin
 from .sat_cache_mixin import SatCacheMixin
 from .eval_string_to_ast_mixin import EvalStringsToASTsMixin
 from .smtlib_script_dumper_mixin import SMTLibScriptDumperMixin
+from .knots_mixin import KnotsMixin
