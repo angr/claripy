@@ -177,6 +177,10 @@ class Base:
             self = super(Base, cls).__new__(cls)
             depth = arg_max_depth + 1
             self.__a_init__(op, a_args, depth=depth, args_have_annotations=args_have_annotations, **kwargs)
+            if self.annotations != kwargs['annotations']:
+                # recalculate the hash since this AST gets annotations from its children
+                kwargs['annotations'] = self.annotations
+                h = Base._calc_hash(op, a_args, kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
