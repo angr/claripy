@@ -315,9 +315,10 @@ class Backend:
             return self._true_cache[e.cache_key]
         except KeyError:
             t = self._is_true(self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
-            self._true_cache[e.cache_key] = t
-            if t is True:
-                self._false_cache[e.cache_key] = False
+            if len(extra_constraints) == 0: # Only update cache when we have no extra constraints
+                self._true_cache[e.cache_key] = t
+                if t is True:
+                    self._false_cache[e.cache_key] = False
             return t
 
     def is_false(self, e, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument
@@ -339,9 +340,10 @@ class Backend:
             return self._false_cache[e.cache_key]
         except KeyError:
             f = self._is_false(self.convert(e), extra_constraints=extra_constraints, solver=solver, model_callback=model_callback)
-            self._false_cache[e.cache_key] = f
-            if f is True:
-                self._true_cache[e.cache_key] = False
+            if len(extra_constraints) == 0: # Only update cache when we have no extra constraints
+                self._false_cache[e.cache_key] = f
+                if f is True:
+                    self._true_cache[e.cache_key] = False
             return f
 
     def _is_false(self, e, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=no-self-use,unused-argument
