@@ -19,10 +19,10 @@
 
 namespace Backend::Z3::Convert {
 
-    namespace {
+    namespace Private {
         /** A thread local context all Z3 exprs should use */
         inline thread_local Z3::context tl_context;
-    } // namespace
+    } // namespace Private
 
     // Unary
 
@@ -85,7 +85,7 @@ namespace Backend::Z3::Convert {
 
     // Flat
 
-    namespace {
+    namespace Private {
         /** Like C++20's version of std::accumulate, except it works with pointers */
         template <typename Fn>
         inline Z3::expr ptr_accumulate(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
@@ -99,28 +99,28 @@ namespace Backend::Z3::Convert {
             }
             return ret;
         }
-    } // namespace
+    } // namespace Private
 
     /** Add converter */
     inline Z3::expr add(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
-        return ptr_accumulate<std::plus<Z3::expr>>(arr, size);
+        return Private::ptr_accumulate<std::plus<Z3::expr>>(arr, size);
     }
 
     /** Mul converter */
     inline Z3::expr add(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
-        return ptr_accumulate<std::multiplies<Z3::expr>>(arr, size);
+        return Private::ptr_accumulate<std::multiplies<Z3::expr>>(arr, size);
     }
 
     /** Or converter */
     inline Z3::expr or_(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
         // Note that Z3's bit or auto switched to logical or for booleans
-        return ptr_accumulate<std::bit_or<Z3::expr>>(arr, size);
+        return Private::ptr_accumulate<std::bit_or<Z3::expr>>(arr, size);
     }
 
     /** And converter */
     inline Z3::expr and_(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
         // Note that Z3's bit and auto switched to logical and for booleans
-        return ptr_accumulate<std::bit_and<Z3::expr>>(arr, size);
+        return Private::ptr_accumulate<std::bit_and<Z3::expr>>(arr, size);
     }
 
     /** Xor converter */
