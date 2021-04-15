@@ -6,6 +6,7 @@
 #ifndef __MODE_HPP__
 #define __MODE_HPP__
 
+#include "mode/compare.hpp"
 #include "mode/fp.hpp"
 #include "mode/repr.hpp"
 
