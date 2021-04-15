@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the z3 backend
+ * @brief This file defines the Z3 backend
  */
 #ifndef __BACKEND_Z3_Z3_HPP__
 #define __BACKEND_Z3_Z3_HPP__
@@ -14,20 +14,11 @@
 namespace Backend::Z3 {
 
     /** The solver type */
-    using Solver = z3::Solver;
+    using Solver = Z3::Solver;
 
     /** The Z3 backend */
     class Z3 final : public Generic<Z3ASTPtr, Solver> {
       private:
-        /********************************************************************/
-        /*                          Representation                          */
-        /********************************************************************/
-
-
-        /** Thread local Z3 context */
-        thread_local z3::Context context {}; // TODO: figure out if this is a pointer or what
-
-
         /********************************************************************/
         /*                        Function Overrides                        */
         /********************************************************************/
@@ -119,7 +110,7 @@ namespace Backend::Z3 {
                     using Usage = Utils::Error::Unexpected;
                     throw Err::IncorrectUsage(
                         WHOAMI_WITH_SOURCE
-                        "Unknown expression op given to z3::dispatch_conversion."
+                        "Unknown expression op given to Z3::dispatch_conversion."
                         "\nOp CUID: ",
                         expr->op->cuid);
                 }
@@ -172,7 +163,7 @@ namespace Backend::Z3 {
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, false);
 
                     BINARY_CASE(Widen, Convert::widen);
-                    BINARY_CASE(Union, Convert::union);
+                    BINARY_CASE(Union, Convert::union_);
                     BINARY_CASE(Intersection, Convert::intersection);
                     BINARY_CASE(Concat, Convert::concat);
 
@@ -180,13 +171,13 @@ namespace Backend::Z3 {
 
                     FLAT_CASE(Add, Convert::add);
                     FLAT_CASE(Mul, Convert::mul);
-                    FLAT_CASE(Or, Convert:: or);
-                    FLAT_CASE(And, Convert::and);
-                    FLAT_CASE(Xor, Convert:: xor);
+                    FLAT_CASE(Or, Convert::or_);
+                    FLAT_CASE(And, Convert::and_);
+                    FLAT_CASE(Xor, Convert::xor_);
 
                     // Other
 
-                    TERNARY_CASE(If, Convert::if);
+                    TERNARY_CASE(If, Convert::if_);
 
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
@@ -231,7 +222,7 @@ namespace Backend::Z3 {
                 case Op::FP::ToBV::static_cuid: {
                     using To = Constants::CTSC<Op::FP::ToBV>;
                     auto ret { std::move(
-                        Convert::extract(static_cast<To>(expr)->mode, *args.back())) };
+                        Convert::FP::to_bv(static_cast<To>(expr)->mode, *args.back())) };
                     args.pop_back();
                     return ret;
                 }
@@ -268,10 +259,8 @@ namespace Backend::Z3 {
                 case Op::String::IndexOf::static_cuid: {
                     using To = Constants::CTSC<Op::String::IndexOf>;
                     const auto size = args.size();
-                    auto ret {
-                        std::move(Convert::if (*args[size - 2], *args[size - 1],
-                                               static_cast<To>(expr)->start_index))
-                    };
+                    auto ret { std::move(Convert::String::index_of(
+                        *args[size - 2], *args[size - 1], static_cast<To>(expr)->start_index)) };
                     args.resize(size - 2);
                     return ret;
                 }

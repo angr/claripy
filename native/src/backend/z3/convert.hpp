@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines how the z3 backend converts Claricpp Expressions into Z3 ASTs
+ * @brief This file defines how the Z3 backend converts Claricpp Expressions into Z3 ASTs
  */
 #ifndef __BACKEND_Z3_CONVERT_HPP__
 #define __BACKEND_Z3_CONVERT_HPP__
@@ -17,102 +17,125 @@
 /********************************************************************/
 
 
-namespace Backend::z3::Convert {
+namespace Backend::Z3::Convert {
+
+    namespace {
+        /** A thread local context all Z3 exprs should use */
+        inline thread_local Z3::context tl_context;
+    } // namespace
 
     // Unary
 
     /** Negation converter */
-    inline z3::expr neg(const z3::expr &e) { return -e; }
+    inline Z3::expr neg(const Z3::expr &e) { return -e; }
 
     /** Abs converter */
-    inline z3::expr abs(const z3::expr &e) { return z3::abs(e); }
+    inline Z3::expr abs(const Z3::expr &e) { return Z3::abs(e); }
+
+    /** Reverse converter */
+    inline Z3::expr reverse(const Z3::expr &e) {
+        const auto size { e.size() };
+        // Trivial case
+        if (size == 8) {
+            return e;
+        }
+        // Error checking
+        Utils::affirm<Error::Expression::Operation>(size % 8 == 0,
+                                                    "Can't reverse non-byte sized bitvectors");
+        // Reverse byte by byte
+        std::vector<Z3::expr> extracted;
+        extracted.reserve(size / 8 + 1);
+        for (decltype(size) i = 0; i < size; i += 8) {
+            extracted.emplace_back(std::move(extract(i + 7, i, e)));
+        }
+        // Join bytes
+        return concat(extracted);
+    }
 
     // IntBinary
 
     /** Sign Extension converter */
-    inline z3::expr signext(const z3::expr &e, const unsigned i) { return sext(e, i); }
+    inline Z3::expr signext(const Z3::expr &e, const unsigned i) { return sext(e, i); }
 
     /** Zero Extension converter */
-    inline z3::expr zeroext(const z3::expr &e, const unsigned i) { return zext(e, i); }
+    inline Z3::expr zeroext(const Z3::expr &e, const unsigned i) { return zext(e, i); }
 
     // Binary
 
     /** Equality comparisson converter */
-    inline z3::expr eq(const z3::expr &l, const z3::expr &r) { return l == r; }
+    inline Z3::expr eq(const Z3::expr &l, const Z3::expr &r) { return l == r; }
 
 
     /** Subtraction converter */
-    inline z3::expr sub(const z3::expr &l, const z3::expr &r) { return l - r; }
+    inline Z3::expr sub(const Z3::expr &l, const Z3::expr &r) { return l - r; }
 
 
     /** Pow converter */
-    inline z3::expr pow(const z3::expr &l, const z3::expr &r) { return z3::pow(l, r); }
+    inline Z3::expr pow(const Z3::expr &l, const Z3::expr &r) { return Z3::pow(l, r); }
 
     /** Mod converter */
-    template <bool Signed> z3::expr mod(const z3::expr &l, const z3::expr &r) {
+    template <bool Signed> Z3::expr mod(const Z3::expr &l, const Z3::expr &r) {
         if constexpr (Signed) {
-            return z3::smod(l, r);
+            return Z3::smod(l, r);
         }
         else {
-            return z3::mod(l, r);
+            return Z3::mod(l, r);
         }
     }
 
     // Flat
 
-    namespace Private {
+    namespace {
         /** Like C++20's version of std::accumulate, except it works with pointers */
         template <typename Fn>
-        inline z3::expr ptr_accumulate(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+        inline Z3::expr ptr_accumulate(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
 #ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 n >= 2, "n < 2; this probably resulted from an invalid claricpp expression.");
 #endif
-            z3::expr ret { Fn(*arr[0], *arr[1]) };
+            Z3::expr ret { Fn(*arr[0], *arr[1]) };
             for (Constants::UInt i = 2; i < size; ++i) {
                 ret = std::move(Fn(std::move(ret), *arr[i]));
             }
             return ret;
         }
-    } // namespace Private
+    } // namespace
 
     /** Add converter */
-    inline z3::expr add(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
-        return Private::ptr_accumulate<std::plus<z3::expr>>(arr, size);
+    inline Z3::expr add(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
+        return ptr_accumulate<std::plus<Z3::expr>>(arr, size);
     }
 
     /** Mul converter */
-    inline z3::expr add(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
-        return Private::ptr_accumulate<std::multiplies<z3::expr>>(arr, size);
+    inline Z3::expr add(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
+        return ptr_accumulate<std::multiplies<Z3::expr>>(arr, size);
     }
 
     /** Or converter */
-    inline z3::expr or_(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
-        // Note that z3's bit or auto switched to logical or for booleans
-        return Private::ptr_accumulate<std::bit_or<z3::expr>>(arr, size);
+    inline Z3::expr or_(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
+        // Note that Z3's bit or auto switched to logical or for booleans
+        return ptr_accumulate<std::bit_or<Z3::expr>>(arr, size);
     }
 
     /** And converter */
-    inline z3::expr and_(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
-        // Note that z3's bit and auto switched to logical and for booleans
-        return Private::ptr_accumulate<std::bit_and<z3::expr>>(arr, size);
+    inline Z3::expr and_(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
+        // Note that Z3's bit and auto switched to logical and for booleans
+        return ptr_accumulate<std::bit_and<Z3::expr>>(arr, size);
     }
 
     /** Xor converter */
-    inline z3::expr xor
-        (Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
-            return Private::ptr_accumulate<std::bit_xor<z3::expr>>(arr, size);
-        }
+    inline Z3::expr xor_(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
+        return Private::ptr_accumulate<std::bit_xor<Z3::expr>>(arr, size);
+    }
 
-        // Other
+    // Other
 
-        namespace FP {}
+    namespace FP {}
 
     namespace String {}
 
 #if 0
-	UNARY_CASE(Invert, convert.invert);
-	UNARY_CASE(Reverse, convert.reverse);
+	UNARY_CASE(Invert, convert.invert);  // z3 does not suport, concerete only?
 
 	// Binary
 
@@ -234,6 +257,6 @@ namespace Backend::z3::Convert {
 	}
 #endif
 
-} // namespace Backend::z3::Convert
+} // namespace Backend::Z3::Convert
 
 #endif
