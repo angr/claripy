@@ -169,18 +169,42 @@ class Base:
             kwargs['uc_alloc_depth'] = None
 
         if 'annotations' not in kwargs or kwargs['annotations'] is None:
-            kwargs['annotations'] = ()
+            annotations = ()
+        else:
+            annotations = kwargs['annotations']
+
+        # process annotations
+        if not annotations and not args_have_annotations:
+            uneliminatable_annotations = frozenset()
+            relocatable_annotations = frozenset()
+        else:
+            ast_args = tuple(a for a in a_args if isinstance(a, Base))
+            uneliminatable_annotations = frozenset(itertools.chain(
+                itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
+                tuple(a for a in annotations if not a.eliminatable and not a.relocatable)
+            ))
+
+            relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                tuple(a for a in annotations if not a.eliminatable and a.relocatable)
+            ))).keys()
+
+            annotations = tuple(itertools.chain(
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                tuple(a for a in annotations)
+            ))
+
+        kwargs['annotations'] = annotations
 
         h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
         self = cls._hash_cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls)
             depth = arg_max_depth + 1
-            self.__a_init__(op, a_args, depth=depth, args_have_annotations=args_have_annotations, **kwargs)
-            if self.annotations != kwargs['annotations']:
-                # recalculate the hash since this AST gets annotations from its children
-                kwargs['annotations'] = self.annotations
-                h = Base._calc_hash(op, a_args, kwargs)
+            self.__a_init__(op, a_args, depth=depth,
+                            uneliminatable_annotations=uneliminatable_annotations,
+                            relocatable_annotations=relocatable_annotations,
+                            **kwargs)
             self._hash = h
             cls._hash_cache[h] = self
         # else:
@@ -228,7 +252,9 @@ class Base:
         return md5_unpacker.unpack(hd)[0] # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
-    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None, eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None, encoded_name=None, depth=None, args_have_annotations=None):  #pylint:disable=unused-argument
+    def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None,
+                   eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None,
+                   encoded_name=None, depth=None, uneliminatable_annotations=None, relocatable_annotations=None):  #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -244,6 +270,8 @@ class Base:
         self.variables = frozenset(variables) if type(variables) is not frozenset else variables
         self.symbolic = symbolic
         self.annotations = annotations
+        self._uneliminatable_annotations = uneliminatable_annotations
+        self._relocatable_annotations = relocatable_annotations
 
 
         self.depth = depth if depth is not None else 1
@@ -260,26 +288,6 @@ class Base:
 
         self._uninitialized = uninitialized
         self._uc_alloc_depth = uc_alloc_depth
-
-        if not annotations and not args_have_annotations:
-            self._uneliminatable_annotations = frozenset()
-            self._relocatable_annotations = frozenset()
-        else:
-            ast_args = tuple(a for a in self.args if isinstance(a, Base))
-            self._uneliminatable_annotations = frozenset(itertools.chain(
-                itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
-                tuple(a for a in self.annotations if not a.eliminatable and not a.relocatable)
-            ))
-
-            self._relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
-                tuple(a for a in self.annotations if not a.eliminatable and a.relocatable)
-            ))).keys()
-
-            self.annotations = tuple(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
-                tuple(a for a in self.annotations)
-            ))
 
         if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
