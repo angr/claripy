@@ -174,23 +174,28 @@ class Base:
             annotations = kwargs['annotations']
 
         # process annotations
+        if 'skip_child_annotations' in kwargs:
+            skip_child_annotations = kwargs.pop('skip_child_annotations')
+        else:
+            skip_child_annotations = False
+
         if not annotations and not args_have_annotations:
             uneliminatable_annotations = frozenset()
             relocatable_annotations = frozenset()
         else:
             ast_args = tuple(a for a in a_args if isinstance(a, Base))
             uneliminatable_annotations = frozenset(itertools.chain(
-                itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args),
+                itertools.chain.from_iterable(a._uneliminatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations if not a.eliminatable and not a.relocatable)
             ))
 
             relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations if not a.eliminatable and a.relocatable)
             ))).keys()
 
             annotations = tuple(itertools.chain(
-                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args),
+                itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations)
             ))
 
@@ -353,7 +358,7 @@ class Base:
     #
 
     def _apply_to_annotations(self, f):
-        return self.make_like(self.op, self.args, annotations=f(self.annotations))
+        return self.make_like(self.op, self.args, annotations=f(self.annotations), skip_child_annotations=True)
 
     def append_annotation(self, a):
         """
