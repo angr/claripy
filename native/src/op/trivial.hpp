@@ -10,6 +10,8 @@
 #include "int_binary.hpp"
 #include "unary.hpp"
 
+#include "../mode.hpp"
+
 
 namespace Op {
 
@@ -53,7 +55,7 @@ namespace Op {
     /** The binary comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE
      *  Requires equal sized inputs
      */
-    template <bool Signed, bool Less, bool Eq> OP_BINARY_TRIVIAL_SUBCLASS(Compare, true);
+    template <Mode::Compare Mask> OP_BINARY_TRIVIAL_SUBCLASS(Compare, true);
 
     // Math
 

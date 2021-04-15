@@ -56,20 +56,23 @@ void trivial() {
     binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq<Expression::String>>();
 
 /** A macro used to test a comparison function */
-#define TEST_COMPARE(T_, S_, L_, E_)                                                              \
-    binary<Ex::Bool, T_, Op::Compare<S_, L_, E_>, SM::First, Cr::compare<T_, S_, L_, E_>>();
+#define TEST_COMPARE(T_, MASK)                                                                    \
+    binary<Ex::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<T_, MASK>>();
 
 /** A macro used to test a comparison function for all values of Less and Equals */
 #define TEST_COMPARE_MULTI(T_, S_)                                                                \
-    TEST_COMPARE(T_, S_, true, true)                                                              \
-    TEST_COMPARE(T_, S_, true, false)                                                             \
-    TEST_COMPARE(T_, S_, false, true)                                                             \
-    TEST_COMPARE(T_, S_, false, false)
+    TEST_COMPARE(T_, S_ | C::Less | C::Eq)                                                        \
+    TEST_COMPARE(T_, S_ | C::Less)                                                                \
+    TEST_COMPARE(T_, S_ | C::Eq)                                                                  \
+    TEST_COMPARE(T_, S_)
 
     Log::debug("Testing compare...");
-    TEST_COMPARE_MULTI(Ex::FP, true) // FP comparisons must be signed
-    TEST_COMPARE_MULTI(Ex::BV, true) // BV can be either
-    TEST_COMPARE_MULTI(Ex::BV, false)
+    {
+        using C = Mode::Compare;
+        TEST_COMPARE_MULTI(Ex::FP, C::Signed) // FP comparisons must be signed
+        TEST_COMPARE_MULTI(Ex::BV, C::Signed) // BV can be either
+        TEST_COMPARE_MULTI(Ex::BV, C::None)
+    }
 
 // Cleanup
 #undef TEST_COMPARE

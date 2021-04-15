@@ -75,14 +75,15 @@ namespace Create {
     }
 
     /** Create an Expression with a Compare op */
-    template <typename In, bool Signed, bool Less, bool Eq>
+    template <typename In, Mode::Compare Mask>
     inline EBasePtr compare(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
         if constexpr (Utils::is_same_ignore_const<In, Ex::FP>) {
-            static_assert(Utils::TD::boolean<Signed, In>, "FP comparisons must be signed");
+            static_assert(Utils::TD::boolean<Utils::has_flag(Mask, Mode::Compare::Signed), In>,
+                          "FP comparisons must be signed");
         }
-        return Private::binary<Ex::Bool, In, Op::Compare<Signed, Less, Eq>, Private::SizeMode::NA,
-                               Ex::FP, Ex::BV>(std::forward<EAnVec>(av), left, right);
+        return Private::binary<Ex::Bool, In, Op::Compare<Mask>, Private::SizeMode::NA, Ex::FP,
+                               Ex::BV>(std::forward<EAnVec>(av), left, right);
     }
 
     // Math
