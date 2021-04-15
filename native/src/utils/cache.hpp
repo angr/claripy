@@ -41,6 +41,9 @@ namespace Utils {
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Cache, delete);
 
       public:
+        /** Default constructor */
+        Cache() = default;
+
         // Enable custom logging
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
 
