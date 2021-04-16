@@ -53,6 +53,7 @@ function(_acquire_z3)
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/z3")
 
 	# Acquire Z3
+	message(STATUS "z3 acquisition mode set to: ${Z3_ACQUISITION_MODE}")
 	if(Z3_ACQUISITION_MODE STREQUAL SYSTEM)
 		include(z3_system)
 	elseif(Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
