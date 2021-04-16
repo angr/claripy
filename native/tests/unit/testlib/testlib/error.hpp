@@ -28,7 +28,7 @@
 namespace UnitTest::TestLib {
 
     /** The UnitTest error struct */
-    DEFINE_NAMESPACED_FINAL_SUBCLASS_WITH_CTOR(Error, Claricpp, Utils::Error)
+    DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Utils::Error)
 
 } // namespace UnitTest::TestLib
 

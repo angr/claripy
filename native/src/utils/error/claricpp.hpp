@@ -8,6 +8,7 @@
 #ifndef __UTILS_ERROR_CLARICPP_HPP__
 #define __UTILS_ERROR_CLARICPP_HPP__
 
+#include "../../macros.hpp"
 #include "../to_str.hpp"
 
 #include <exception>
@@ -28,11 +29,16 @@ namespace Utils::Error {
         template <typename... Args>
         explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
+        // Rule of 5
+        SET_IMPLICITS_CONST_MEMBERS(Claricpp, default);
+
         /** Default virtual destructor */
-        inline virtual ~Claricpp() noexcept = default;
+        inline ~Claricpp() noexcept override = default;
 
         /** Message getter */
-        inline const char *what() const noexcept override final { return msg.c_str(); }
+        [[nodiscard]] inline const char *what() const noexcept override final {
+            return msg.c_str();
+        }
 
       private:
         /** The message */
