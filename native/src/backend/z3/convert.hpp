@@ -40,8 +40,8 @@ namespace Backend::Z3::Convert {
             return e;
         }
         // Error checking
-        Utils::affirm<Error::Expression::Operation>(size % 8 == 0,
-                                                    "Can't reverse non-byte sized bitvectors");
+        using Err = Error::Expression::Operation;
+        Utils::affirm<Err>(size % 8 == 0, "Can't reverse non-byte sized bitvectors");
         // Reverse byte by byte
         std::vector<Z3::expr> extracted;
         extracted.reserve(size / 8 + 1);
@@ -65,10 +65,51 @@ namespace Backend::Z3::Convert {
     /** Equality comparisson converter */
     inline Z3::expr eq(const Z3::expr &l, const Z3::expr &r) { return l == r; }
 
+    /** Compare converter */
+    template <Mode::Compare Mask> inline Z3::expr compare(const Z3::expr &l, const Z3::expr &r) {
+        using C = Mode::Compare;
+        static_assert(Mode::compare_is_valid(Mask), "Invalid mask mode");
+        if constexpr (Utils::has_flags(Mask, C::Signed | C::Less | C::Eq)) {
+            return Z3::sle(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Signed | C::Less | C::Neq)) {
+            return Z3::slt(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Signed | C::Greater | C::Eq)) {
+            return Z3::sge(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Signed | C::Greater | C::Neq)) {
+            return Z3::sgt(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Unsigned | C::Less | C::Eq)) {
+            return Z3::ult(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Unsigned | C::Less | C::Neq)) {
+            return Z3::ult(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Unsigned | C::Greater | C::Eq)) {
+            return Z3::uge(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Unsigned | C::Greater | C::Neq)) {
+            return Z3::ugt(l, r);
+        }
+        else {
+            static_assert(Utils::CD::false_<Mask>, "Unsupported mask mode");
+        }
+    }
 
     /** Subtraction converter */
     inline Z3::expr sub(const Z3::expr &l, const Z3::expr &r) { return l - r; }
 
+    /** Division converter */
+    template <bool Signed> Z3::expr div(const Z3::expr &l, const Z3::expr &r) {
+        if constexpr (Signed) {
+            return Z3::sdiv(l, r);
+        }
+        else {
+            return Z3::udiv(l, r);
+        }
+    }
 
     /** Pow converter */
     inline Z3::expr pow(const Z3::expr &l, const Z3::expr &r) { return Z3::pow(l, r); }
@@ -82,6 +123,33 @@ namespace Backend::Z3::Convert {
             return Z3::mod(l, r);
         }
     }
+
+    /** Shift converter */
+    template <Mode::Shift Mask> Z3::expr mod(const Z3::expr &l, const Z3::expr &r) {
+        using S = Mode::Shift;
+        static_assert(Mode::shift_is_valid(Mask), "Invalid mask mode");
+        if constexpr (Utils::has_flags(Mask, C::Arithmetic | C::Left)) {
+            return Z3::shl(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Arithmetic | C::Right)) {
+            return Z3::shr(l, r);
+        }
+        else if constexpr (Utils::has_flags(Mask, C::Logical | C::Right)) {
+            return Z3::lshr(l, r);
+        }
+        else {
+            static_assert(Utils::CD::false_<Mask>, "Unsupported mask mode");
+        }
+    }
+
+    /* BINARY_TEMPLATE_CASE(Rotate, convert.rotate, true); */
+    /* BINARY_TEMPLATE_CASE(Rotate, convert.rotate, false); */
+
+    /* BINARY_CASE(Widen, convert.widen); */
+    /* BINARY_CASE(Union, convert.union); */
+    /* BINARY_CASE(Intersection, convert.intersection); */
+    /* BINARY_CASE(Concat, convert.concat); */
+
 
     // Flat
 
@@ -139,30 +207,8 @@ namespace Backend::Z3::Convert {
 
 	// Binary
 
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, true, true, true);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, true, true, false);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, true, false, true);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, true, false, false);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, false, true, true);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, false, true, false);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, false, false, true);
-	BINARY_TEMPLATE_CASE(Compare, convert.compare, false, false, false);
-
 	BINARY_TEMPLATE_CASE(Div, convert.div, true);
 	BINARY_TEMPLATE_CASE(Div, convert.div, false);
-
-	BINARY_TEMPLATE_CASE(Shift, convert.shift, true, true);
-	BINARY_TEMPLATE_CASE(Shift, convert.shift, true, false);
-	BINARY_TEMPLATE_CASE(Shift, convert.shift, false, true);
-	BINARY_TEMPLATE_CASE(Shift, convert.shift, false, false);
-
-	BINARY_TEMPLATE_CASE(Rotate, convert.rotate, true);
-	BINARY_TEMPLATE_CASE(Rotate, convert.rotate, false);
-
-	BINARY_CASE(Widen, convert.widen);
-	BINARY_CASE(Union, convert.union);
-	BINARY_CASE(Intersection, convert.intersection);
-	BINARY_CASE(Concat, convert.concat);
 
 	// Other
 

@@ -84,7 +84,7 @@ namespace Op {
     /** The bitwise binary op class: Shift
      *  Requires equal sized inputs
      */
-    template <bool Arithmetic, bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true);
+    template <Mode::Shift Mask> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true);
 
     /** The bitwise binary op class: Rotate
      *  Requires equal sized inputs

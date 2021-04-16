@@ -9,5 +9,6 @@
 #include "mode/compare.hpp"
 #include "mode/fp.hpp"
 #include "mode/repr.hpp"
+#include "mode/shift.hpp"
 
 #endif

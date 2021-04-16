@@ -122,13 +122,12 @@ namespace Create {
     // Bitwise
 
     /** Create an Expression with a Shift op */
-    template <bool Arithmetic, bool Left>
+    template <Mode::Shift Mask>
     inline EBasePtr arithmetic_shift(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        static_assert(Arithmetic || !Left,
-                      "Do not use Logical Left shift, use Arithmetic Left shift");
+        static_assert(Mode::shift_is_valid(Mask), "Invalid Shift Mode");
         namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Shift<Arithmetic, Left>, Private::SizeMode::First,
-                               Ex::BV>(std::forward<EAnVec>(av), left, right);
+        return Private::binary<Ex::BV, Op::Shift<Mask>, Private::SizeMode::First, Ex::BV>(
+            std::forward<EAnVec>(av), left, right);
     }
 
     /** Create an Expression with a Rotate op */

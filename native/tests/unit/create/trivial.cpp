@@ -55,16 +55,16 @@ void trivial() {
     binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>();
     binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq<Expression::String>>();
 
-/** A macro used to test a comparison function */
+/** A local macro used to test a comparison function */
 #define TEST_COMPARE(T_, MASK)                                                                    \
     binary<Ex::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<T_, MASK>>();
 
-/** A macro used to test a comparison function for all values of Less and Equals */
+/** A local macro used to test a comparison function for all values of Less and Equals */
 #define TEST_COMPARE_MULTI(T_, S_)                                                                \
-    TEST_COMPARE(T_, S_ | C::Less | C::Eq)                                                        \
-    TEST_COMPARE(T_, S_ | C::Less | C::Neq)                                                       \
-    TEST_COMPARE(T_, S_ | C::Greater | C::Eq)                                                     \
-    TEST_COMPARE(T_, S_ | C::Greater | C::Neq)
+    TEST_COMPARE(T_, S_ | C::Less | C::Eq);                                                       \
+    TEST_COMPARE(T_, S_ | C::Less | C::Neq);                                                      \
+    TEST_COMPARE(T_, S_ | C::Greater | C::Eq);                                                    \
+    TEST_COMPARE(T_, S_ | C::Greater | C::Neq);
 
     Log::debug("Testing compare...");
     {
@@ -96,10 +96,19 @@ void trivial() {
 
     // Bitwise
 
+/** A local macro used for testing a shift function */
+#define TEST_SHIFT(MASK) binary<Ex::BV, Op::Shift<MASK>, SM::First, Cr::arithmetic_shift<MASK>>();
+
     Log::debug("Testing shift...");
-    binary<Ex::BV, Op::Shift<true, true>, SM::First, Cr::arithmetic_shift<true, true>>();
-    binary<Ex::BV, Op::Shift<true, false>, SM::First, Cr::arithmetic_shift<true, false>>();
-    binary<Ex::BV, Op::Shift<false, false>, SM::First, Cr::arithmetic_shift<false, false>>();
+    {
+        using S = Mode::Shift;
+        TEST_SHIFT(S::Arithmetic | S::Left);
+        TEST_SHIFT(S::Arithmetic | S::Right);
+        TEST_SHIFT(S::Logical | S::Right);
+    }
+
+// Cleanup
+#undef TEST_SHIFT
 
     Log::debug("Testing rotate...");
     binary<Ex::BV, Op::Rotate<true>, SM::First, Cr::rotate<true>>();
