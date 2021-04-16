@@ -6,9 +6,9 @@
 #ifndef __UTILS_FNV1A_HPP__
 #define __UTILS_FNV1A_HPP__
 
+#include "dependent_constant.hpp"
 #include "is_same.hpp"
 #include "pow.hpp"
-#include "type_dependent_constant.hpp"
 #include "unconstructable.hpp"
 
 #include "../constants.hpp"

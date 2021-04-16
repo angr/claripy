@@ -6,7 +6,7 @@
 #ifndef __UTILS_TYPEPUN_HPP__
 #define __UTILS_TYPEPUN_HPP__
 
-#include "type_dependent_constant.hpp"
+#include "dependent_constant.hpp"
 
 #include "../constants.hpp"
 
