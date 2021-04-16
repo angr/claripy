@@ -32,6 +32,9 @@ namespace Backend::Z3::Convert {
     /** Abs converter */
     inline Z3::expr abs(const Z3::expr &e) { return Z3::abs(e); }
 
+    /** Invert converter */
+    inline Z3::expr invert(const Z3::expr &e) { return ~e; }
+
     /** Reverse converter */
     inline Z3::expr reverse(const Z3::expr &e) {
         const auto size { e.size() };
@@ -142,12 +145,17 @@ namespace Backend::Z3::Convert {
         }
     }
 
-    /* BINARY_TEMPLATE_CASE(Rotate, convert.rotate, true); */
-    /* BINARY_TEMPLATE_CASE(Rotate, convert.rotate, false); */
+    /** Rotate converter */
+    template <bool Left> Z3::expr rotate(const Z3::expr &l, const Z3::expr &r) {
+        // z3's C++ API's rotate functions are different (note the "ext" below)
+        const auto &ctx = l.ctx();
+        Z3_ast r { Left ? Z3_mk_ext_rotate_left(ctx, l, r) : Z3_mk_ext_rotate_right(ctx, l, r) : };
+        ctx.check_error();
+        return expr(l.ctx, std::move(r));
+    }
 
-    /* BINARY_CASE(Widen, convert.widen); */
-    /* BINARY_CASE(Union, convert.union); */
-    /* BINARY_CASE(Intersection, convert.intersection); */
+
+    // TODO
     /* BINARY_CASE(Concat, convert.concat); */
 
 
@@ -203,7 +211,7 @@ namespace Backend::Z3::Convert {
     namespace String {}
 
 #if 0
-	UNARY_CASE(Invert, convert.invert);  // z3 does not suport, concerete only?
+	// TODO
 
 	// Binary
 

@@ -8,6 +8,7 @@
 #include "abstract.hpp"
 #include "convert.hpp"
 
+#include "../../error.hpp"
 #include "../generic.hpp"
 
 
@@ -115,6 +116,18 @@ namespace Backend::Z3 {
                         expr->op->cuid);
                 }
 
+                // Unsupported ops
+                case Op::Widen::static_cuid: // fallthrough
+                case Op::Union::static_cuid: // fallthrough
+                case Op::Intersection::static_cuid: {
+                    using Usage = Error::Backend;
+                    throw Err::Unsupported(
+                        WHOAMI_WITH_SOURCE
+                        "Unknown expression op given to Z3::dispatch_conversion."
+                        "\nOp CUID: ",
+                        expr->op->cuid);
+                }
+
                     /************************************************/
                     /*              Top-Level Trivial               */
                     /************************************************/
@@ -162,9 +175,6 @@ namespace Backend::Z3 {
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, true);
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, false);
 
-                    BINARY_CASE(Widen, Convert::widen);
-                    BINARY_CASE(Union, Convert::union_);
-                    BINARY_CASE(Intersection, Convert::intersection);
                     BINARY_CASE(Concat, Convert::concat);
 
                     // Flat
