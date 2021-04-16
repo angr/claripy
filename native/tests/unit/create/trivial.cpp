@@ -62,16 +62,16 @@ void trivial() {
 /** A macro used to test a comparison function for all values of Less and Equals */
 #define TEST_COMPARE_MULTI(T_, S_)                                                                \
     TEST_COMPARE(T_, S_ | C::Less | C::Eq)                                                        \
-    TEST_COMPARE(T_, S_ | C::Less)                                                                \
-    TEST_COMPARE(T_, S_ | C::Eq)                                                                  \
-    TEST_COMPARE(T_, S_)
+    TEST_COMPARE(T_, S_ | C::Less | C::Neq)                                                       \
+    TEST_COMPARE(T_, S_ | C::Greater | C::Eq)                                                     \
+    TEST_COMPARE(T_, S_ | C::Greater | C::Neq)
 
     Log::debug("Testing compare...");
     {
         using C = Mode::Compare;
-        TEST_COMPARE_MULTI(Ex::FP, C::Signed) // FP comparisons must be signed
-        TEST_COMPARE_MULTI(Ex::BV, C::Signed) // BV can be either
-        TEST_COMPARE_MULTI(Ex::BV, C::None)
+        TEST_COMPARE_MULTI(Ex::FP, C::Signed)   // FP comparisons must be signed
+        TEST_COMPARE_MULTI(Ex::BV, C::Unsigned) // BV can be either
+        TEST_COMPARE_MULTI(Ex::BV, C::Unsigned)
     }
 
 // Cleanup

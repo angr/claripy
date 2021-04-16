@@ -78,8 +78,9 @@ namespace Create {
     template <typename In, Mode::Compare Mask>
     inline EBasePtr compare(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
         namespace Ex = Expression;
+        static_assert(Mode::compare_is_valid(Mask), "Invalid Compare Mode");
         if constexpr (Utils::is_same_ignore_const<In, Ex::FP>) {
-            static_assert(Utils::TD::boolean<Utils::has_flag(Mask, Mode::Compare::Signed), In>,
+            static_assert(Utils::BitMask::has(Mask, Mode::Compare::Signed),
                           "FP comparisons must be signed");
         }
         return Private::binary<Ex::Bool, In, Op::Compare<Mask>, Private::SizeMode::NA, Ex::FP,
