@@ -11,40 +11,35 @@
 #include "../utils.hpp"
 
 
-namespace Error {
+namespace Error::Expression {
 
-    // Expression errors
-    namespace Expression {
+    /** Claripy Expression exception */
+    using Claripy = Utils::Error::Python::Claripy;
 
-        /** Claripy Expression exception */
-        using Claripy = Utils::Error::Python::Claripy;
+    // Intermediate classes
 
-        // Intermediate classes
+    /** Expression Balance exception */
+    DEFINE_NONFINAL_EXCEPTION(Balancer, Claripy);
+    /** Expression Operation exception */
+    DEFINE_NONFINAL_EXCEPTION(Operation, Claripy);
 
-        /** Expression Balance exception */
-        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Balancer, Claripy)
-        /** Expression Operation exception */
-        DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(Operation, Claripy)
+    // Final classes
 
-        // Final classes
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(BalancerUnsat, Balancer);
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Type, Claripy);
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Value, Claripy);
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Size, Claripy);
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Replacement, Claripy);
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Recursion, Operation);
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(ZeroDivision, Operation);
 
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(BalancerUnsat, Balancer)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Type, Claripy)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Value, Claripy)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Size, Claripy)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Replacement, Claripy)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Recursion, Operation)
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(ZeroDivision, Operation)
-
-    } // namespace Expression
-
-} // namespace Error
+} // namespace Error::Expression
 
 #endif

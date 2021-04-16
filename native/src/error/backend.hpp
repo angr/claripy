@@ -11,19 +11,30 @@
 #include "../utils.hpp"
 
 
-namespace Error {
+namespace Error::Backend {
 
-    // Expression errors
-    namespace Backend {
+    /** Claripy Expression exception */
+    using Claripy = Utils::Error::Python::Claripy;
 
-        /** Claripy Expression exception */
-        using Claripy = Utils::Error::Python::Claripy;
+    // Intermediate classes
 
-        /** @todo document */
-        DEFINE_FINAL_SUBCLASS_WITH_CTOR(Base, Claripy)
+    /** Expression Balance exception */
+    DEFINE_NONFINAL_EXCEPTION(Base, Claripy);
 
-    } // namespace Backend
+    // Final classes
 
-} // namespace Error
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Unsupported, Base);
+
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(VSA, Base);
+
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(Z3, Claripy);
+
+    /** @todo document */
+    DEFINE_FINAL_EXCEPTION(MissingSolver, Claripy);
+
+} // namespace Error::Backend
 
 #endif
