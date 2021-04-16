@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a macro used to enable bitmask operators on an enum
  */
-#ifndef __UTILS_BITMASK_ENABLEASBITMASK_HPP__
-#define __UTILS_BITMASK_ENABLEASBITMASK_HPP__
+#ifndef __UTILS_BITMASK_ENABLE_HPP__
+#define __UTILS_BITMASK_ENABLE_HPP__
 
 #include "../macros.hpp"
 
@@ -13,7 +13,7 @@
  *  Warning: Because of compiler bugs, if this isn't invoked
  *  from the global namespace the compiler might throw an error
  */
-#define ENABLE_AS_BITMASK(ENUM)                                                                   \
+#define UTILS_BITMASK_ENABLE(ENUM)                                                                \
     /** Enable bitmask functionality for the enum given */                                        \
     template <> UTILS_ICCBOOL ::Utils::BitMask::Private::enabled<ENUM> { true };
 

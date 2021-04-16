@@ -6,7 +6,7 @@
 #ifndef __UTILS_BITMASK_OPERATORS_HPP__
 #define __UTILS_BITMASK_OPERATORS_HPP__
 
-#include "enable_as_bitmask.hpp"
+#include "enable.hpp"
 
 #include "../../macros.hpp"
 #include "../is_strong_enum.hpp"

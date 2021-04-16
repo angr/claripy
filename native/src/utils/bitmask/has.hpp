@@ -15,7 +15,8 @@ namespace Utils::BitMask {
 
     /** Return true if e has all flags in flags set */
     template <typename Enum> constexpr bool has(const Enum e, const Enum flags) {
-        return static_cast<std::underlying_type_t<Enum>>(e & flags) != 0;
+        using U = std::underlying_type_t<Enum>;
+        return (static_cast<U>(e) & static_cast<U>(flags)) != 0;
     }
 
 } // namespace Utils::BitMask
