@@ -47,34 +47,32 @@
 /********************************************************************/
 
 
-/** A macro used to define a final derived class that inherets its parent's constructors
- *  The body of this class is otherwise empty
+/** A macro used to define a final derived exception class
  *  This macro requires SUPER be in the same namespace
  */
-#define DEFINE_FINAL_SUBCLASS_WITH_CTOR(DERIVED, SUPER)                                           \
+#define DEFINE_FINAL_EXCEPTION(DERIVED, SUPER)                                                    \
     struct DERIVED final : public SUPER {                                                         \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
     };
 
-/** A macro used to define a non-final instantiable class that inherets its parent's constructors
- *  The body of this class is otherwise empty
+/** A macro used to define a non-final derived exception class
  *  This macro requires SUPER be in the same namespace
  *  Destructor is defaulted with noexcept
  */
-#define DEFINE_NONFINAL_INSTANTIABLE_SUBCLASS_WITH_CTOR(DERIVED, SUPER)                           \
+#define DEFINE_NONFINAL_EXCEPTION(DERIVED, SUPER)                                                 \
     struct DERIVED : public SUPER {                                                               \
+        SET_IMPLICITS_CONST_MEMBERS(DERIVED, default);                                            \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
         /** Default virtual destructor */                                                         \
         inline virtual ~DERIVED() noexcept = default;                                             \
     };
 
-/** A macro used to define a final derived class that inherets its parent's constructors
- *  The body of this class is otherwise empty
+/** A macro used to define a final derived exception class
  *  This macro does not require SUPER be in the same namespace
  */
-#define DEFINE_NAMESPACED_FINAL_SUBCLASS_WITH_CTOR(DERIVED, SUPER, NS)                            \
+#define DEFINE_NAMESPACED_FINAL_EXCEPTION(DERIVED, SUPER, NS)                                     \
     struct DERIVED final : public NS::SUPER {                                                     \
         /** Inherit constructors */                                                               \
         using NS::SUPER::SUPER;                                                                   \
