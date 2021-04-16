@@ -9,16 +9,16 @@
 #include "macros.hpp"
 
 
-/** A local macro that defines dependent constant types that depend on a METATYPE */
+/** A local macro that defines dependent constant types that depend on a METATYPE
+ *  Because templates are not evaluated until use, these can safely be placed
+ *  within a constexpr conditional static_assert without instantly trigging an assertion
+ *  failure. Instead, the static_assert will only fail if the line of code is reached
+ *  as until that point constant<bool, false, T> is an unevaluated expression, for example.
+ *  This also has the nice side effect that, if a static_assert fails, the compiler will
+ *  likely print out the passed types which can help with debugging
+ */
 #define DEPCONST(METATYPE)                                                                        \
-    /** A dependent constant type                                                                 \
-     *  Because templates are not evaluated until use, this can safely be placed                  \
-     *  within a constexpr conditional static_assert without instantly trigging an assertion      \
-     *  failure. Instead, the static_assert will only fail if the line of code is reached         \
-     *  as until that point constant<bool, false, T> is an unevaluated expression, for example.   \
-     *  This also has the nice side effect that, if a static_assert fails, the compiler will      \
-     *  likely print out the passed types which can help with debugging                           \
-     */                                                                                           \
+    /** A dependent constant variable */                                                          \
     template <typename T, T value, METATYPE...> inline const constexpr T constant { value };      \
                                                                                                   \
     /** A dependent id variable */                                                                \
@@ -37,12 +37,12 @@
 
 // Type dependent constants
 namespace Utils::TD {
-    DEPCONST(typename)
+    DEPCONST(typename);
 } // namespace Utils::TD
 
 // Constant dependent constants
 namespace Utils::CD {
-    DEPCONST(auto)
+    DEPCONST(auto);
 } // namespace Utils::CD
 
 // Cleanup
