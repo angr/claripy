@@ -58,10 +58,10 @@ namespace Backend::Z3::Convert {
     // IntBinary
 
     /** Sign Extension converter */
-    inline Z3::expr signext(const Z3::expr &e, const unsigned i) { return sext(e, i); }
+    inline Z3::expr signext(const Z3::expr &e, const unsigned i) { return Z3::sext(e, i); }
 
     /** Zero Extension converter */
-    inline Z3::expr zeroext(const Z3::expr &e, const unsigned i) { return zext(e, i); }
+    inline Z3::expr zeroext(const Z3::expr &e, const unsigned i) { return Z3::zext(e, i); }
 
     // Binary
 
@@ -107,7 +107,7 @@ namespace Backend::Z3::Convert {
     /** Division converter */
     template <bool Signed> Z3::expr div(const Z3::expr &l, const Z3::expr &r) {
         if constexpr (Signed) {
-            return Z3::sdiv(l, r);
+            return l / r;
         }
         else {
             return Z3::udiv(l, r);
@@ -148,6 +148,7 @@ namespace Backend::Z3::Convert {
     /** Rotate converter */
     template <bool Left> Z3::expr rotate(const Z3::expr &l, const Z3::expr &r) {
         // z3's C++ API's rotate functions are different (note the "ext" below)
+        using namespace Z3;
         const auto &ctx = l.ctx();
         Z3_ast r { Left ? Z3_mk_ext_rotate_left(ctx, l, r) : Z3_mk_ext_rotate_right(ctx, l, r) : };
         ctx.check_error();
@@ -183,7 +184,7 @@ namespace Backend::Z3::Convert {
     }
 
     /** Mul converter */
-    inline Z3::expr add(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
+    inline Z3::expr mul(Constants::CTSC<Z3::expr> arr, const Constants::UInt size) {
         return Private::ptr_accumulate<std::multiplies<Z3::expr>>(arr, size);
     }
 
@@ -206,42 +207,23 @@ namespace Backend::Z3::Convert {
 
     // Other
 
-    namespace FP {}
-
-    namespace String {}
+    /** Extract converter */
+    inline Z3::expr extract(const unsigned high, const unsigned low, const Z3::expr &e) {
+        return e.extract(high, low);
+    }
 
 #if 0
-	// TODO
-
-	// Binary
-
-	BINARY_TEMPLATE_CASE(Div, convert.div, true);
-	BINARY_TEMPLATE_CASE(Div, convert.div, false);
-
-	// Other
-
 	TERNARY_CASE(If, convert.if);
-
-	case Op::Extract::static_cuid: {
-		using To = Constants::CTSC<Op::Extract>;
-		auto ret { std::move(convert.extract(
-			static_cast<To>(expr)->high, static_cast<To>(expr)->low, *args.back())) };
-		args.pop_back();
-		return ret;
-	}
 	case Op::Literal::static_cuid: {
 		break; // TODO
 	}
 	case Op::Symbol::static_cuid: {
 		break; // TODO
 	}
+#endif
 
-	/************************************************/
-	/*                  FP Trivial                  */
-	/************************************************/
-
-	// Unary
-
+    namespace FP {}
+#if 0
 	UNARY_CASE(FP::ToIEEEBV, convert.fp_to_ieee_bv);
 	UNARY_CASE(FP::IsInf, convert.fp_is_inf);
 	UNARY_CASE(FP::IsNan, convert.fp_is_nan);
@@ -269,36 +251,60 @@ namespace Backend::Z3::Convert {
 		args.pop_back();
 		return ret;
 	}
+#endif
 
-	/************************************************/
-	/*                String Trivial                */
-	/************************************************/
+    namespace String {
 
-	// Unary
+        /** FromInt converter */
+        inline Z3::expr from_int(const Z3::expr &e) { return z3::bv2int(e).itos(); }
 
-	UNARY_CASE(String::IsDigit, convert.string_is_digit);
-	UNARY_CASE(String::FromInt, convert.string_from_int);
-	UNARY_CASE(String::Unit, convert.string_unit);
+        /** Unit converter */
+        inline Z3::expr unit(const Z3::expr &e) { return e.unit(); }
 
-	// Int Binary
+        // Int Binary
 
-	INT_BINARY_CASE(String::ToInt, convert.string_to_int);
-	INT_BINARY_CASE(String::Len, convert.string_len);
+        /** ToInt converter */
+        inline Z3::expr to_int(const Z3::expr &e, const unsigned len) {
+            return Z3::int2bv(Z3.stoi(e), len);
+        }
 
-	// Binary
+        /** Len converter */
+        inline Z3::expr to_int(const Z3::expr &e, const unsigned len) {
+            return Z3::int2bv(e.length(), len);
+        }
 
-	BINARY_CASE(String::Contains, convert.string_contains);
-	BINARY_CASE(String::PrefixOf, convert.string_prefix_of);
-	BINARY_CASE(String::SuffixOf, convert.string_suffix_of);
+        // Binary
 
-	// Ternary
+        /** Contains converter */
+        inline Z3::expr contains(const Z3::expr &l, const Z3::expr &r) { return l.contains(r); }
 
-	TERNARY_CASE(String::Replace, convert.string_replace);
+        /** PrefixOf converter */
+        inline Z3::expr prefix_of(const Z3::expr &l, const Z3::expr &r) {
+            return Z3::prefixof(l, r);
+        }
 
-	// Other
+        /** SuffixOf converter */
+        inline Z3::expr suffix_of(const Z3::expr &l, const Z3::expr &r) {
+            return Z3::suffixof(l, r);
+        }
 
-	TERNARY_CASE(String::SubString, convert.sub_string)
+        // Ternary
 
+        /** Replace converter */
+        inline Z3::expr replace(const Z3::expr &a const Z3::expr &b, const Z3::expr &c) {
+            return a.replace(b, c);
+        }
+
+        // Other
+
+#if 0
+	TERNARY_CASE(String::SubString, convert.sub_string) // expr extract(expr const& offset, expr const& length) const
+7         return z3.Int2BV(
+1358             z3.IndexOf(string, pattern, z3.BV2Int(start_idx)),
+1359             bitlength
+1360         )
+
+//    inline expr indexof(expr const& s, expr const& substr, expr const& offset) {
 	case Op::String::IndexOf::static_cuid: {
 		using To = Constants::CTSC<Op::String::IndexOf>;
 		const auto size = args.size();
@@ -310,6 +316,7 @@ namespace Backend::Z3::Convert {
 		return ret;
 	}
 #endif
+    } // namespace String
 
 } // namespace Backend::Z3::Convert
 

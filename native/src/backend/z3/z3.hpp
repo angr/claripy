@@ -117,8 +117,9 @@ namespace Backend::Z3 {
                 }
 
                 // Unsupported ops
-                case Op::Widen::static_cuid: // fallthrough
-                case Op::Union::static_cuid: // fallthrough
+                case Op::Widen::static_cuid:           // fallthrough
+                case Op::Union::static_cuid:           // fallthrough
+                case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
                     using Usage = Error::Backend;
                     throw Err::Unsupported(
