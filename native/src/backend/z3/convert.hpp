@@ -218,6 +218,7 @@ namespace Backend::Z3::Convert {
     }
 
 #if 0
+		// TODO: @todo
 	case Op::Literal::static_cuid: {
 		break; // TODO
 	}
@@ -226,36 +227,66 @@ namespace Backend::Z3::Convert {
 	}
 #endif
 
-    namespace FP {}
+    namespace FP {
 #if 0
-	UNARY_CASE(FP::ToIEEEBV, convert.fp_to_ieee_bv);
-	UNARY_CASE(FP::IsInf, convert.fp_is_inf);
-	UNARY_CASE(FP::IsNan, convert.fp_is_nan);
+		// TODO: @todo
+		UNARY_CASE(FP::ToIEEEBV, convert.fp_to_ieee_bv);
+		UNARY_CASE(FP::IsInf, convert.fp_is_inf);
+		UNARY_CASE(FP::IsNan, convert.fp_is_nan);
 
-	// Binary
+		// Binary
 
-	BINARY_CASE(FP::NE, convert.fp_ne);
-
-	// Mode Binary
-
-	MODE_BINARY_CASE(FP::Add, convert.fp_add)
-	MODE_BINARY_CASE(FP::Sub, convert.fp_sub)
-	MODE_BINARY_CASE(FP::Div, convert.fp_div)
-
-	// Ternary
-
-	TERNARY_CASE(FP::FP, convert.fp_fp)
-
-	// Other
-
-	case Op::FP::ToBV::static_cuid: {
-		using To = Constants::CTSC<Op::FP::ToBV>;
-		auto ret { std::move(
-			convert.extract(static_cast<To>(expr)->mode, *args.back())) };
-		args.pop_back();
-		return ret;
-	}
+		BINARY_CASE(FP::NE, convert.fp_ne);
 #endif
+        // Mode Binary
+
+        namespace Private {
+            /** Verifes 2 expressions are FPs with the same context */
+            inline void assert_are_compatible() {
+#if DEBUG
+                Z3::check_context(a, b);
+                Utils::affirm<Utils::Error::Unexpected::Type>(
+                    a.is_fpa() && b.is_fpa(), WHOAMI_WITH_SOURCE " called non-FP ops");
+#endif
+            }
+        }; // namespace Private
+
+/** A local macro used for fp math conversions */
+#define FP_ARITH_CONVERT(FN)                                                                      \
+    inline Z3::expr add(const Mode::FP mode, const Z3::expr &l, const Z3::expr &r) {              \
+        Private::assert_are_compatible();                                                         \
+        auto r { Z3::Z3_mk_fpa_add(l.ctx(), mode, l, r) };                                        \
+        a.check_error();                                                                          \
+        return Z3::expr(a.ctx(), r);                                                              \
+    }
+        /** FP::Add converter */
+        FP_ARITH_CONVERT(add)
+        /** FP::Sub converter */
+        FP_ARITH_CONVERT(sub)
+        /** FP::Mul converter */
+        FP_ARITH_CONVERT(mul)
+        /** FP::Div converter */
+        FP_ARITH_CONVERT(div)
+
+// Cleanup
+#undef FP_ARITH_CONVERT
+
+        // Ternary
+#if 0
+		// TODO: @todo
+		TERNARY_CASE(FP::FP, convert.fp_fp)
+
+		// Other
+
+		case Op::FP::ToBV::static_cuid: {
+			using To = Constants::CTSC<Op::FP::ToBV>;
+			auto ret { std::move(
+				convert.extract(static_cast<To>(expr)->mode, *args.back())) };
+			args.pop_back();
+			return ret;
+		}
+#endif
+    } // namespace FP
 
     namespace String {
 

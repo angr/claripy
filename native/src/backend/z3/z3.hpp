@@ -222,6 +222,7 @@ namespace Backend::Z3 {
 
                     MODE_BINARY_CASE(FP::Add, Convert::FP::add)
                     MODE_BINARY_CASE(FP::Sub, Convert::FP::sub)
+                    MODE_BINARY_CASE(FP::Mul, Convert::FP::mul)
                     MODE_BINARY_CASE(FP::Div, Convert::FP::div)
 
                     // Ternary
