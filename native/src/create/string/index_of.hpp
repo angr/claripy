@@ -12,7 +12,8 @@ namespace Create::String {
 
     /** Create an Expression with a String::IndexOf op */
     inline EBasePtr index_of(EAnVec &&av, const Expression::BasePtr &str,
-                             const Expression::BasePtr &pattern, const Constants::UInt start_index,
+                             const Expression::BasePtr &pattern,
+                             const Expression::BasePtr &start_index,
                              const Constants::UInt bit_length) {
         namespace Ex = Expression;
         return Simplification::simplify(Ex::factory<Ex::BV>(
