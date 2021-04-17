@@ -128,7 +128,7 @@ namespace Backend::Z3::Convert {
     }
 
     /** Shift converter */
-    template <Mode::Shift Mask> Z3::expr mod(const Z3::expr &l, const Z3::expr &r) {
+    template <Mode::Shift Mask> Z3::expr shift(const Z3::expr &l, const Z3::expr &r) {
         using S = Mode::Shift;
         static_assert(Mode::shift_is_valid(Mask), "Invalid mask mode");
         if constexpr (Utils::has_flags(Mask, C::Arithmetic | C::Left)) {
@@ -212,8 +212,12 @@ namespace Backend::Z3::Convert {
         return e.extract(high, low);
     }
 
+    /** If converter */
+    inline Z3::expr if_(const Z3::expr &cond, const Z3::expr &if_true, const Z3::expr &if_false) {
+        return Z3::ite(cond, if_true, if_false);
+    }
+
 #if 0
-	TERNARY_CASE(If, convert.if);
 	case Op::Literal::static_cuid: {
 		break; // TODO
 	}
@@ -265,57 +269,57 @@ namespace Backend::Z3::Convert {
 
         /** ToInt converter */
         inline Z3::expr to_int(const Z3::expr &e, const unsigned len) {
-            return Z3::int2bv(Z3.stoi(e), len);
+            const auto a { e.stoi() };
+            return Z3::int2bv(a, len);
         }
 
         /** Len converter */
         inline Z3::expr to_int(const Z3::expr &e, const unsigned len) {
-            return Z3::int2bv(e.length(), len);
+            const auto a { e.length() };
+            return Z3::int2bv(a, len);
         }
 
         // Binary
 
         /** Contains converter */
-        inline Z3::expr contains(const Z3::expr &l, const Z3::expr &r) { return l.contains(r); }
+        inline Z3::expr contains(const Z3::expr &full, const Z3::expr &sub) {
+            return full.contains(sub);
+        }
 
         /** PrefixOf converter */
-        inline Z3::expr prefix_of(const Z3::expr &l, const Z3::expr &r) {
-            return Z3::prefixof(l, r);
+        inline Z3::expr prefix_of(const Z3::expr &full, const Z3::expr &prefix) {
+            return Z3::prefixof(full, prefix);
         }
 
         /** SuffixOf converter */
-        inline Z3::expr suffix_of(const Z3::expr &l, const Z3::expr &r) {
-            return Z3::suffixof(l, r);
+        inline Z3::expr suffix_of(const Z3::expr &full, const Z3::expr &suffix) {
+            return Z3::suffixof(full, suffix);
         }
 
         // Ternary
 
         /** Replace converter */
-        inline Z3::expr replace(const Z3::expr &a const Z3::expr &b, const Z3::expr &c) {
-            return a.replace(b, c);
+        inline Z3::expr replace(const Z3::expr &full, const Z3::expr &search,
+                                const Z3::expr replacement) {
+            return full.replace(search, replacement);
+        }
+
+        /** SubString converter */
+        inline Z3::expr substring(const Z3::expr &full, const Z3::expr &offset,
+                                  const Z3::expr &len) {
+            const auto a { z3::bv2int(offset) };
+            const auto b { z3::bv2int(len) };
+            return full.extract(a, b);
         }
 
         // Other
 
-#if 0
-	TERNARY_CASE(String::SubString, convert.sub_string) // expr extract(expr const& offset, expr const& length) const
-7         return z3.Int2BV(
-1358             z3.IndexOf(string, pattern, z3.BV2Int(start_idx)),
-1359             bitlength
-1360         )
-
-//    inline expr indexof(expr const& s, expr const& substr, expr const& offset) {
-	case Op::String::IndexOf::static_cuid: {
-		using To = Constants::CTSC<Op::String::IndexOf>;
-		const auto size = args.size();
-		auto ret {
-			std::move(convert.if (*args[size - 2], *args[size - 1],
-								  static_cast<To>(expr)->start_index))
-		};
-		args.resize(size - 2);
-		return ret;
-	}
-#endif
+        /** IndexOf converter */
+        inline Z3::expr index_of(const Z3::expr &str, const Z3::expr &pattern,
+                                 const Z3::expr &start_index, const unsigned bit_length) {
+            const auto a { z3::indexof(str, pattern, start_index) };
+            return Z3::int2bv(a, bit_length);
+        }
     } // namespace String
 
 } // namespace Backend::Z3::Convert

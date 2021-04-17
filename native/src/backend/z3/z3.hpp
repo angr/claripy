@@ -46,7 +46,7 @@ namespace Backend::Z3 {
     }
 
 #define BINARY_DISPATCH(FN)                                                                       \
-    const auto size = args.size();                                                                \
+    const auto size { args.size() };                                                              \
     auto ret { std::move(FN(*args[size - 2], *args[size - 1])) };                                 \
     args.resize(size - 2);                                                                        \
     return ret;
@@ -60,7 +60,7 @@ namespace Backend::Z3 {
 // For simplicity and consistency we define a binary op macro for this case
 #define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                         \
     case Op::OP<__VA_ARGS__>::static_cuid: {                                                      \
-        const auto &func = FN<__VA_ARGS__>;                                                       \
+        const auto &func { FN<__VA_ARGS__> };                                                     \
         BINARY_DISPATCH(func);                                                                    \
     }
 
@@ -68,25 +68,25 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_int_binary<Op::OP>, WHOAMI "Op::" #OP "is not IntBinary");           \
         using To = Constants::CTSC<Op::IntBinary>;                                                \
-        auto ret { std::move(FN(*args.back(), static_cast<To>(expr)->integer)) };                 \
+        auto ret { std::move(FN(*args.back(), static_cast<To>(expr->op.get())->integer)) };       \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
-        const auto size = args.size();                                                            \
         static_assert(Op::is_mode_binary<Op::OP>, WHOAMI "Op::" #OP "is not ModeBinary");         \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
+        const auto size { args.size() };                                                          \
         auto ret { std::move(                                                                     \
-            FN(static_cast<To>(expr)->mode, *args[size - 2], *args[size - 1])) };                 \
+            FN(static_cast<To>(expr->op.get())->mode, *args[size - 2], *args[size - 1])) };       \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
 
 #define TERNARY_CASE(OP, FN)                                                                      \
     case Op::OP::static_cuid: {                                                                   \
-        const auto size = args.size();                                                            \
+        const auto size { args.size() };                                                          \
         auto ret { std::move(FN(*args[size - 3], *args[size - 2], *args[size - 1])) };            \
         args.resize(size - 3);                                                                    \
         return ret;                                                                               \
@@ -94,10 +94,10 @@ namespace Backend::Z3 {
 
 #define FLAT_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                   \
-        const auto a_size = args.size();                                                          \
         static_assert(Op::is_flat<Op::OP>, WHOAMI "Op::" #OP "is not Flat");                      \
         using To = Constants::CTSC<Op::Flat>;                                                     \
-        const auto n = static_cast<To>(expr)->operands.size();                                    \
+        const auto a_size { args.size() };                                                        \
+        const auto n { static_cast<To>(expr->op.get())->operands.size() };                        \
         auto ret { std::move(FN(&(args.data()[a_size - n]), n)) };                                \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
@@ -192,8 +192,8 @@ namespace Backend::Z3 {
 
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
-                    auto ret { std::move(Convert::extract(
-                        static_cast<To>(expr)->high, static_cast<To>(expr)->low, *args.back())) };
+                    const auto op { static_cast<To>(expr->op.get()) };
+                    auto ret { std::move(Convert::extract(op->high, op->low, *args.back())) };
                     args.pop_back();
                     return ret;
                 }
@@ -233,7 +233,7 @@ namespace Backend::Z3 {
                 case Op::FP::ToBV::static_cuid: {
                     using To = Constants::CTSC<Op::FP::ToBV>;
                     auto ret { std::move(
-                        Convert::FP::to_bv(static_cast<To>(expr)->mode, *args.back())) };
+                        Convert::FP::to_bv(static_cast<To>(expr->op.get())->mode, *args.back())) };
                     args.pop_back();
                     return ret;
                 }
@@ -269,9 +269,15 @@ namespace Backend::Z3 {
 
                 case Op::String::IndexOf::static_cuid: {
                     using To = Constants::CTSC<Op::String::IndexOf>;
-                    const auto size = args.size();
+                    const auto size { args.size() };
+#ifdef DEBUG
+                    Utils::affirm<Utils::Error::Unexpected::Type>(
+                        dynamic_cast<BitLength>(&expr)->bit_length != nullptr,
+                        WHOAMI_WITH_SOURCE "String::IndexOf expr has no length");
+#endif
                     auto ret { std::move(Convert::String::index_of(
-                        *args[size - 2], *args[size - 1], static_cast<To>(expr)->start_index)) };
+                        *args[size - 2], *args[size - 1],
+                        static_cast<To>(expr->op.get())->start_index, bit_length)) };
                     args.resize(size - 2);
                     return ret;
                 }
