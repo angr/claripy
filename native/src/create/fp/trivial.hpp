@@ -55,26 +55,25 @@ namespace Create::FP {
     /*                 ModeBinary Passthrough Functions                 */
     /********************************************************************/
 
+/** A local macro used for fp mode binary math ops with size mode first */
+#define FP_MB_SMF_ARITH(FN, OP)                                                                   \
+    inline EBasePtr FN(EAnVec &&av, const Expression::BasePtr &left,                              \
+                       const Expression::BasePtr &right, const Mode::FP mode) {                   \
+        return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(                        \
+            std::forward<EAnVec>(av), left, right, mode);                                         \
+    }
+
     /** Create a Expression with an FP::Add op */
-    inline EBasePtr add(EAnVec &&av, const Expression::BasePtr &left,
-                        const Expression::BasePtr &right, const Mode::FP mode) {
-        return Private::mode_binary<Op::FP::Add, Private::SizeMode::First>(
-            std::forward<EAnVec>(av), left, right, mode);
-    }
-
+    FP_MB_SMF_ARITH(add, Add);
     /** Create a Expression with an FP::Sub op */
-    inline EBasePtr sub(EAnVec &&av, const Expression::BasePtr &left,
-                        const Expression::BasePtr &right, const Mode::FP mode) {
-        return Private::mode_binary<Op::FP::Sub, Private::SizeMode::First>(
-            std::forward<EAnVec>(av), left, right, mode);
-    }
-
+    FP_MB_SMF_ARITH(sub, Sub);
+    /** Create a Expression with an FP::Mul op */
+    FP_MB_SMF_ARITH(mul, Mul);
     /** Create a Expression with an FP::Div op */
-    inline EBasePtr div(EAnVec &&av, const Expression::BasePtr &left,
-                        const Expression::BasePtr &right, const Mode::FP mode) {
-        return Private::mode_binary<Op::FP::Div, Private::SizeMode::First>(
-            std::forward<EAnVec>(av), left, right, mode);
-    }
+    FP_MB_SMF_ARITH(div, Div);
+
+    // Cleanup
+#undef FP_MB_SMF_ARITH
 
     /********************************************************************/
     /*                  Ternary Passthrough Functions                   */

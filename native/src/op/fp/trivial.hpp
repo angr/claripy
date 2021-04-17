@@ -50,6 +50,11 @@ namespace Op::FP {
      */
     OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Sub);
 
+    /** The op class: FP::Mul
+     *  Input sizes may not differ
+     */
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Mul);
+
     /** The op class: FP::Div
      *  Input sizes may not differ
      */
