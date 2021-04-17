@@ -22,15 +22,17 @@ namespace Op::String {
          *  Note: We leave it as a base for optimizations purposes
          */
         const Expression::BasePtr pattern;
-        /** Start Index */
-        Constants::UInt start_index;
+        /** Start Index
+         *  Note: We leave it as a base for optimizations purposes
+         */
+        const Expression::BasePtr start_index;
 
       private:
         /** Protected constructor
          *  Ensure that str and pattern are of type String
          */
         explicit inline IndexOf(const Hash::Hash &h, const Expression::BasePtr &s,
-                                const Expression::BasePtr &pat, const Constants::UInt si)
+                                const Expression::BasePtr &pat, const Expression::BasePtr &si)
             : Base { h, static_cuid }, str { s }, pattern { pat }, start_index { si } {
             using Err = Error::Expression::Type;
             Utils::affirm<Err>(CUID::is_t<Expression::String>(str),
