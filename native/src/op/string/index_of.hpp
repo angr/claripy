@@ -39,6 +39,8 @@ namespace Op::String {
                                WHOAMI_WITH_SOURCE "str expression must be a String");
             Utils::affirm<Err>(CUID::is_t<Expression::String>(pattern),
                                WHOAMI_WITH_SOURCE "pattern expression must be a String");
+            Utils::affirm<Err>(CUID::is_t<Expression::BV>(start_index),
+                               WHOAMI_WITH_SOURCE "start_index expression must be a BV");
         }
     };
 

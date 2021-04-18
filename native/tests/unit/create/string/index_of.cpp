@@ -20,11 +20,11 @@ void index_of() {
     // Create distinct inputs
     const auto a { F::t_literal<Expression::String>(0) };
     const auto b { F::t_literal<Expression::String>(1) };
-    const Constants::UInt start_index { 0 };
+    const auto c { F::t_literal<Expression::String>(2) };
     const Constants::UInt bit_length { 16 };
 
     // Test
-    const auto exp { CS::index_of(Create::EAnVec {}, a, b, start_index, bit_length) };
+    const auto exp { CS::index_of(Create::EAnVec {}, a, b, c, bit_length) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);
@@ -40,7 +40,7 @@ void index_of() {
     // Contains check
     UNITTEST_ASSERT(ido->str == a);
     UNITTEST_ASSERT(ido->pattern == b);
-    UNITTEST_ASSERT(ido->start_index == start_index);
+    UNITTEST_ASSERT(ido->start_index == c);
 
     // Size check
     UNITTEST_ASSERT(exp_down->bit_length == bit_length);
