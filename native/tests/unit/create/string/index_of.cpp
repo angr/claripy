@@ -20,7 +20,7 @@ void index_of() {
     // Create distinct inputs
     const auto a { F::t_literal<Expression::String>(0) };
     const auto b { F::t_literal<Expression::String>(1) };
-    const auto c { F::t_literal<Expression::String>(2) };
+    const auto c { F::t_literal<Expression::BV>(2) };
     const Constants::UInt bit_length { 16 };
 
     // Test

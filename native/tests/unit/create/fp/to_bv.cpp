@@ -28,7 +28,7 @@ template <bool Signed> void to_bv_b() {
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto op_down { dcast<Op::ToBV<Signed>>(exp->op) };
+    const auto op_down { dcast<Op::FP::ToBV<Signed>>(exp->op) };
     const auto exp_down { dcast<Ex::BV>(exp) };
 
     // Contains check

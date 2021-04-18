@@ -17,7 +17,7 @@ namespace Create {
         namespace Ex = Expression;
         return Simplification::simplify(
             Ex::factory<Ex::BV>(std::forward<EAnVec>(av), fp->symbolic,
-                                Op::factory<Op::ToBV<Signed>>(mode, fp), bit_length));
+                                Op::factory<Op::FP::ToBV<Signed>>(mode, fp), bit_length));
     }
 
 } // namespace Create
