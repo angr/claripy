@@ -12,7 +12,8 @@ namespace Op {
 
     /** The op class: If */
     class If final : public Base {
-        OP_FINAL_INIT(If)
+        OP_FINAL_INIT(If);
+
       public:
         /** If condition: This must be an Expression::Bool pointer
          *  Note: We leave it as a base for optimizations purposes
@@ -22,6 +23,15 @@ namespace Op {
         const Expression::BasePtr if_true;
         /** If false expression */
         const Expression::BasePtr if_false;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            s.emplace(if_false.get());
+            s.emplace(if_true.get());
+            s.emplace(cond.get());
+        }
 
       private:
         /** Protected constructor

@@ -10,7 +10,7 @@
 #include "../utils.hpp"
 
 
-/** Initalize a pure abstract op class
+/** Initalize a non-base pure abstract op class
  *  Leaves the class in a private access context
  *  Note: The constructors for these classes are declared, but not defined
  *  The user must define the destructor as noexcept = default after the class definition
@@ -18,25 +18,31 @@
 #define OP_PURE_INIT(CLASS)                                                                       \
   public:                                                                                         \
     /* Delete implicits */                                                                        \
-    SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                    \
+    SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                                   \
     /** Default destructor */                                                                     \
     inline ~CLASS() noexcept override = 0;                                                        \
-    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base)                                             \
+                                                                                                  \
   private:                                                                                        \
-    ENABLE_UNITTEST_FRIEND_ACCESS
+    ENABLE_UNITTEST_FRIEND_ACCESS;
 
 /** Initalize a final op class
  *  Leaves the class in a private access context
+ *  Optionally pass a second argument to prefix the class name for the debug name
  */
-#define OP_FINAL_INIT(CLASS)                                                                      \
+#define OP_FINAL_INIT(CLASS, ...)                                                                 \
   public:                                                                                         \
     /* Delete implicits */                                                                        \
-    SET_IMPLICITS_CONST_MEMBERS(CLASS, delete)                                                    \
+    SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                                   \
     /** Default destructor */                                                                     \
     ~CLASS() noexcept override final = default;                                                   \
-    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base)                                             \
+    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base);                                            \
+    /** The name of the op */                                                                     \
+    inline Constants::CTSC<char> op_name() const noexcept override final {                        \
+        return __VA_ARGS__ #CLASS;                                                                \
+    };                                                                                            \
+                                                                                                  \
   private:                                                                                        \
-    ENABLE_UNITTEST_FRIEND_ACCESS
+    ENABLE_UNITTEST_FRIEND_ACCESS;
 
 
 #endif

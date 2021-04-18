@@ -17,10 +17,13 @@
  *  Note: You can prepend templates to this if desired meant only to create distinct classes
  *  UNSIGNEDINT can be true or false
  *  For example: template <bool Signed> OP_INTBINARY_TRIVIAL_SUBCLASS(Foo)
+ *  An additional argument can be passed as the prefix to the desired debug name of the class
+ *  For example, "FP::" may be desired for an FP op
  */
-#define OP_INTBINARY_TRIVIAL_SUBCLASS(CLASS, UNSIGNEDINT)                                         \
+#define OP_INTBINARY_TRIVIAL_SUBCLASS(CLASS, UNSIGNEDINT, ...)                                    \
     class CLASS final : public ::Op::IntBinary<UNSIGNEDINT> {                                     \
-        OP_FINAL_INIT(CLASS)                                                                      \
+        OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
+                                                                                                  \
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &e,              \
@@ -33,7 +36,8 @@ namespace Op {
 
     /** An Op class that has an Expression operand and an int operand */
     template <bool UnsignedInt> class IntBinary : public Base {
-        OP_PURE_INIT(IntBinary)
+        OP_PURE_INIT(IntBinary);
+
       public:
         /** The int type */
         using IntT = std::conditional_t<UnsignedInt, Constants::UInt, Constants::Int>;
@@ -42,6 +46,11 @@ namespace Op {
         const Expression::BasePtr expr;
         /* Integer operand */
         const IntT integer;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final { s.emplace(expr.get()); }
 
       protected:
         /** Protected constructor */

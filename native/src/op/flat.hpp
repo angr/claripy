@@ -12,10 +12,13 @@
 /** A macro used to define a trivial subclass of Flat
  *  Pass template arguments to Binary via variadic macro arguments
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+ *  An additional argument can be passed as the prefix to the desired debug name of the class
+ *  For example, "FP::" may be desired for an FP op
  */
-#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE)                                             \
+#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, ...)                                        \
     class CLASS final : public ::Op::Flat<CONSIDERSIZE> {                                         \
-        OP_FINAL_INIT(CLASS)                                                                      \
+        OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
+                                                                                                  \
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, OpContainer &&input)                         \
@@ -31,13 +34,23 @@ namespace Op {
      *  If ConsiderSize, sizes will be compared as well when type checking if applicable
      */
     template <bool ConsiderSize> class Flat : public Base {
-        OP_PURE_INIT(Flat)
+        OP_PURE_INIT(Flat);
+
       public:
         /** Operand container type */
         using OpContainer = std::vector<Expression::BasePtr>;
 
         /** Operands */
         const OpContainer operands;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            for (auto i = operands.crbegin(); i != operands.crend(); ++i) {
+                s.emplace(i->get());
+            }
+        }
 
       protected:
         /** Protected constructor

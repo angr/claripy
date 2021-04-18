@@ -9,10 +9,14 @@
 #include "../binary.hpp"
 
 
-/** A macro used to define a trivial subclass of ModeBinary */
-#define OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(CLASS)                                                  \
+/** A macro used to define a trivial subclass of ModeBinary
+ *  An additional argument can be passed as the prefix to the desired debug name of the class
+ *  For example, "FP::" may be desired for an FP op
+ */
+#define OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(CLASS, ...)                                             \
     class CLASS final : public ModeBinary {                                                       \
-        OP_FINAL_INIT(CLASS)                                                                      \
+        OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
+                                                                                                  \
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
@@ -27,7 +31,8 @@ namespace Op::FP {
      *  Operands must all be of the same type and size
      */
     class ModeBinary : public Base {
-        OP_PURE_INIT(ModeBinary)
+        OP_PURE_INIT(ModeBinary);
+
       public:
         /** FP Mode */
         const Mode::FP mode;
@@ -35,6 +40,14 @@ namespace Op::FP {
         const Expression::BasePtr left;
         /** Right operand */
         const Expression::BasePtr right;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            s.emplace(right.get());
+            s.emplace(left.get());
+        }
 
       protected:
         /** Protected constructor */

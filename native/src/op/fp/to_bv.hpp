@@ -9,11 +9,12 @@
 #include "../base.hpp"
 
 
-namespace Op {
+namespace Op::FP {
 
     /** The op class: to_bv */
     template <bool Signed> class ToBV final : public Base {
-        OP_FINAL_INIT(ToBV)
+        OP_FINAL_INIT(ToBV, "FP::");
+
       public:
         /** The FP mode */
         const Mode::FP mode;
@@ -21,6 +22,11 @@ namespace Op {
          *  Note: We leave it as a base for optimizations purposes
          */
         const Expression::BasePtr fp;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final { s.emplace(fp.get()); }
 
       private:
         /** Protected constructor
@@ -34,6 +40,6 @@ namespace Op {
         }
     };
 
-} // namespace Op
+} // namespace Op::FP
 
 #endif

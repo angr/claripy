@@ -24,7 +24,8 @@ namespace Op {
 
     /** The op class Literal */
     class Literal final : public Base, public BitLength {
-        OP_FINAL_INIT(Literal)
+        OP_FINAL_INIT(Literal);
+
       public:
 #ifdef ENABLE_MPZ
         /** Value type */
@@ -37,6 +38,11 @@ namespace Op {
         /** Representation */
         const std::string value;
 #endif
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &) const noexcept override final {}
 
       private:
         /** Private constructor

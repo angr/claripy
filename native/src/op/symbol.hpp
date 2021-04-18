@@ -17,6 +17,11 @@ namespace Op {
         /** Symbol name */
         const std::string name;
 
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &) const noexcept override final {}
+
       private:
         /** A protected constructor to disallow public creation */
         explicit inline Symbol(const Hash::Hash &h, const std::string &n)

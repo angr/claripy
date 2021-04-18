@@ -12,7 +12,8 @@ namespace Op::String {
 
     /** The op class: String::SubString */
     class SubString final : public Base {
-        OP_FINAL_INIT(SubString)
+        OP_FINAL_INIT(SubString, "String::");
+
       public:
         /** The start index of the substring stored as a BV
          *  Note: We leave it as a base for optimizations purposes
@@ -26,6 +27,15 @@ namespace Op::String {
          *  Note: We leave it as a base for optimizations purposes
          */
         const Expression::BasePtr full_string;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            s.emplace(full_string.get());
+            s.emplace(count.get());
+            s.emplace(start_index.get());
+        }
 
       private:
         /** Protected constructor

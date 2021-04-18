@@ -12,7 +12,8 @@ namespace Op {
 
     /** The op class: Extract */
     class Extract final : public Base {
-        OP_FINAL_INIT(Extract)
+        OP_FINAL_INIT(Extract);
+
       public:
         /** High index */
         const Constants::UInt high;
@@ -20,6 +21,11 @@ namespace Op {
         const Constants::UInt low;
         /** What we extract from */
         const Expression::BasePtr from;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final { s.emplace(from.get()); }
 
       private:
         /** Protected constructor */

@@ -12,7 +12,8 @@ namespace Op::String {
 
     /** The op class: String::IndexOf */
     class IndexOf final : public Base {
-        OP_FINAL_INIT(IndexOf)
+        OP_FINAL_INIT(IndexOf, "String::");
+
       public:
         /** String to search: This must be an Expression::String pointer
          *  Note: We leave it as a base for optimizations purposes
@@ -26,6 +27,15 @@ namespace Op::String {
          *  Note: We leave it as a base for optimizations purposes
          */
         const Expression::BasePtr start_index;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            s.emplace(start_index.get());
+            s.emplace(pattern.get());
+            s.emplace(str.get());
+        }
 
       private:
         /** Protected constructor

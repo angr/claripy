@@ -12,10 +12,13 @@
 
 /** A macro used to define a trivial subclass of Unary
  *  Pass template arguments to Unary via variadic macro arguments
+ *  An additional argument can be passed as the prefix to the desired debug name of the class
+ *  For example, "FP::" may be desired for an FP op
  */
-#define OP_UNARY_TRIVIAL_SUBCLASS(CLASS)                                                          \
+#define OP_UNARY_TRIVIAL_SUBCLASS(CLASS, ...)                                                     \
     class CLASS final : public ::Op::Unary {                                                      \
-        OP_FINAL_INIT(CLASS)                                                                      \
+        OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
+                                                                                                  \
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &x)              \
@@ -27,10 +30,18 @@ namespace Op {
 
     /** A Unary Op class */
     class Unary : public Base {
-        OP_PURE_INIT(Unary)
+        OP_PURE_INIT(Unary);
+
       public:
         /** The operand */
         const Expression::BasePtr child;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            s.emplace(child.get());
+        }
 
       protected:
         /** Protected constructor */

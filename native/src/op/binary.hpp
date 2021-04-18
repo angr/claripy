@@ -16,10 +16,13 @@
  *  If ConsiderSize, sizes will be compared as well when type checking if applicable
  *  Note: You can prepend templates to this if desired meant only to create distinct classes
  *  For example: template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(LT, true)
+ *  An additional argument can be passed as the prefix to the desired debug name of the class
+ *  For example, "FP::" may be desired for an FP op
  */
-#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE)                                           \
+#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, ...)                                      \
     class CLASS final : public ::Op::Binary<CONSIDERSIZE> {                                       \
-        OP_FINAL_INIT(CLASS)                                                                      \
+        OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
+                                                                                                  \
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
@@ -35,12 +38,21 @@ namespace Op {
      *  If ConsiderSize, sizes will be compared as well when type checking if applicable
      */
     template <bool ConsiderSize> class Binary : public Base {
-        OP_PURE_INIT(Binary)
+        OP_PURE_INIT(Binary);
+
       public:
         /** Left operand */
         const Expression::BasePtr left;
         /** Right operand */
         const Expression::BasePtr right;
+
+        /** Add's the raw expression children of the expression to the given stack in reverse
+         *  Warning: This does *not* give ownership, it transfers raw pointers
+         */
+        inline void add_reversed_children(Stack &s) const override final {
+            s.emplace(right.get());
+            s.emplace(left.get());
+        }
 
       protected:
         /** Protected constructor */
