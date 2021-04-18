@@ -65,6 +65,9 @@ namespace Expression {
     };
 
     /** An alias for Factory::Ptr<Expression::Base> */
+    using RawPtr = Constants::CTS<Base>;
+
+    /** An alias for Factory::Ptr<Expression::Base> */
     using BasePtr = Factory::Ptr<Base>;
 
     /** Default virtual destructor */
