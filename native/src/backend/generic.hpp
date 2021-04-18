@@ -6,8 +6,10 @@
 #define __BACKEND_GENERIC_HPP__
 
 #include "base.hpp"
+#include "op.hpp"
 
 #include <memory>
+#include <stack>
 
 
 namespace Backend {
@@ -31,7 +33,7 @@ namespace Backend {
         /** Checks whether this backend can handle the expression
          *  @todo Make this better than this simplistic way
          */
-        bool handles(const ExprRawPtr expr) {
+        bool handles(const Expression::RawPtr expr) {
             try {
                 (void) convert(expr);
             }
@@ -43,7 +45,7 @@ namespace Backend {
 
       protected:
         /** A vector based stack */
-        template <typename T> using VStack = std::stack<T, std::vector>;
+        template <typename T> using Stack = std::stack<T, std::vector<T>>;
 
         // Pure Virtual Functions
 
@@ -53,7 +55,7 @@ namespace Backend {
          *  Arguments must be popped off the args stack if used
          *  Note that we use a raw vector instead of a stack for efficiency
          */
-        virtual BackendObj dispatch_conversion(const ExprRawPtr expr,
+        virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
                                                std::vector<BORCPtr> &args) = 0;
 
         // Concrete functions
@@ -70,23 +72,25 @@ namespace Backend {
             // To denote the end of a list we prefix its elements with a nullptr
             // Note prefix because we reversed the list, thus the 'end' must come first
             // Each list represents the arguments of an expression
-            VStack<ExprRawPtr> expr_stack { nullptr, input };
-            VStack<ExprRawPtr> op_stack;    // Expressions to give to the conversion dispatcher
+            Op::Base::Stack expr_stack { std::vector<Expression::RawPtr> { nullptr, input } };
+            Op::Base::Stack op_stack;       // Expressions to give to the conversion dispatcher
                                             // We leave this as a vector for preformance reasons
                                             // within the dispatcher
             std::vector<BORCPtr> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
-            for (const auto expr = expr_stack.top(); expr_stack.size() > 0;
-                 expr = expr_stack.top()) {
+            for (auto expr = expr_stack.top(); expr_stack.size() > 0; expr = expr_stack.top()) {
+                const auto op { expr->op.get() };
                 expr_stack.pop();
 
                 // If the expression does not represent the end of a list
                 if (expr != nullptr) {
 
                     // Cache lookups
-                    if (errored.find(expr->hash) == errored.end()) {
-                        throw BackendError(name(), " cannot handle operation: ", expr->op->name());
+                    if (const auto [map, _] = errored_cache.shared();
+                        map.find(expr->hash) == map.end()) {
+                        throw BackendError(name(),
+                                           " cannot handle operation with CUID:  ", op->op_name());
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
@@ -95,18 +99,18 @@ namespace Backend {
 
                     // Update stacks
                     op_stack.push(expr);
-                    expr->add_reversed_children(expr_stack);
+                    op->add_reversed_children(expr_stack);
                 }
 
                 // If the expression represents the end of a list
                 // All arguments of expr_stack.top() have been converted
-                else if (expr_stack.size() != 0) {
+                else if (!expr_stack.empty()) {
                     expr = op_stack.top();
                     op_stack.pop();
 
                     // Convert the expression to a backend object
                     BackendObj obj {}; // NOLINT
-                    const auto op_id = expr->op->cuid;
+                    const auto op_id { op->cuid };
                     if (auto func = ctors.find(op_id); func != ctors.end()) {
                         obj = std::move(func(expr));
                     }
@@ -115,7 +119,7 @@ namespace Backend {
                     }
 
                     // Apply annotations
-                    for (const auto a : expr->annotations) {
+                    for (const auto &a : expr->annotations) {
                         obj = std::move(apply_annotation(std::move(obj), a));
                     }
 
@@ -153,7 +157,7 @@ namespace Backend {
          *  In otherwords, E must be directly convertible to a backend object without needing
          *  to recurse to convert any of E's children first.
          */
-        static const std::map<CUID::CUID, BackendObj(const ExprRawPtr)> ctors;
+        static const std::map<CUID::CUID, BackendObj(const Expression::RawPtr)> ctors;
 
         // Caches
 
@@ -167,7 +171,7 @@ namespace Backend {
         /** Thread local object cache
          *  Map an expression hash to a backend object representing it
          */
-        static thread_local WeapExpressionMap<BackendObj> object_cache;
+        static thread_local WeakExpressionMap<BackendObj> object_cache;
     };
 
 } // namespace Backend

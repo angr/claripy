@@ -20,12 +20,6 @@ namespace Backend {
      *  All backends must subclass this
      */
     class Base {
-        /** A mutable raw pointer to a constant expression */
-        using ExprRawPtr = Constants::CTS<Expression::Base>;
-        // Static checks
-        static_assert(std::is_same_v<ExprRawPtr, Utils::InternalType<Expression::BasePtr>>,
-                      "Expression::BasePtr is not what backend base assumed it to be");
-
       public:
         // Define implicits
         SET_IMPLICITS(Base, default)
@@ -35,11 +29,8 @@ namespace Backend {
 
         // Pure virtual functions
 
-        /** Check whether the backend can handle the given expression */
-        virtual bool handles(const ExprRawPtr expr) = 0;
-
         /** Simplify the given expression */
-        virtual Expression::BasePtr simplify(const ExprRawPtr expr) = 0;
+        virtual Expression::BasePtr simplify(const Expression::RawPtr expr) = 0;
 
         /** Backend name */
         virtual Constants::CCSC name() const = 0;
@@ -62,8 +53,9 @@ namespace Backend {
         can_be_false(const Expression::BasePtr &expr, const SolverID id,
                      const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
 
-        /** Checks whether this backend can handle the expression */
-        virtual bool handles(const ExprRawPtr expr) = 0;
+        /** Check whether the backend can handle the given expression */
+        virtual bool handles(const Expression::RawPtr expr) = 0;
+
 
         // Virtual functions
 
@@ -86,7 +78,7 @@ namespace Backend {
             static std::atomic<Constants::UInt> counter { 0 };
             const auto id = ++counter;
             std::shared_ptr<void> new_solver { new_tls_solver_with_id(id) };
-            solvers.emplace(id, std::weak_ptr<void>(new_solver));
+            solvers.unique().first.emplace(id, std::weak_ptr<void>(new_solver));
             return { id, new_solver };
         }
 
