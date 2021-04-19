@@ -4,7 +4,7 @@
  */
 #include "binary.hpp"
 #include "flat.hpp"
-#include "int_binary.hpp"
+#include "uint_binary.hpp"
 #include "unary.hpp"
 
 
@@ -38,10 +38,10 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing sign_ext...");
-    int_binary<Ex::BV, Op::SignExt, SM::Add, Cr::sign_ext>();
+    uint_binary<Ex::BV, Op::SignExt, SM::Add, Cr::sign_ext>();
 
     Log::debug("Testing zero_ext...");
-    int_binary<Ex::BV, Op::ZeroExt, SM::Add, Cr::zero_ext>();
+    uint_binary<Ex::BV, Op::ZeroExt, SM::Add, Cr::zero_ext>();
 
     /********************************************************************/
     /*                              Binary                              */
