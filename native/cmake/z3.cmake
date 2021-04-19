@@ -35,7 +35,9 @@ function(_acquire_z3)
 	set( Z3_LIB "${Z3_DIR}/bin/${Z3_LIB_NAME}" )
 
 	# Where Z3 headers are installed
-	set( Z3_INCLUDE_DIR "${Z3_DIR}/include/" PARENT_SCOPE ) # Parent scope, but not child scope
+	set( Z3_INCLUDE_DIR "${Z3_DIR}/include/" ) # Define for acquisition mode's usage
+	set( Z3_INCLUDE_DIR "${Z3_INCLUDE_DIR}" PARENT_SCOPE ) # Parent scope, but not child scope
+	message(STATUS "Using z3 include directory: ${Z3_INCLUDE_DIR}")
 
 	#################################################
 	#                   Z3 Target                   #
@@ -67,6 +69,7 @@ function(_acquire_z3)
 	endif()
 
 	# Point the target to the shared library file
+	message(STATUS "Configuring top level z3 target: ${Z3_LIB_TARGET}")
 	set_property(TARGET "${Z3_LIB_TARGET}" PROPERTY
 		IMPORTED_LOCATION "${Z3_LIB}"
 	)

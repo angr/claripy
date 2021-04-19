@@ -91,7 +91,7 @@ set( Z3_LIB_TARGET "z3" )
 # Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
 # The 'bin' directory should include the shared library claricpp can link to
 # The 'include' directory should include the header files claricpp can use
-set( Z3_ACQUISITION_MODE DOWNLOAD )
+set( Z3_ACQUISITION_MODE BUILD )
 
 
 # Depending on the mode selected, only one of the groups of options below will be relevant
@@ -159,7 +159,7 @@ option( Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present 
 
 # Specify the repo and commit that should be used to build Z3
 set( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-set( Z3_GIT_COMMIT "517d907567f4283ad8b48ff9c2a3f6dce838569e" )
+set( Z3_GIT_COMMIT "542878dea3fd3d89d9ef8a1664925431b512e1b1" )
 
 # The number of cores used to compile z3 (think of this as make -j<this>)
 # Note: this will override whatever is passed to make during the build
