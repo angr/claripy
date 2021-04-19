@@ -2,8 +2,8 @@
  * @file
  * @brief An op that takes in one Expression and one intger
  */
-#ifndef __OP_INTBINARY_HPP__
-#define __OP_INTBINARY_HPP__
+#ifndef __OP_UINTBINARY_HPP__
+#define __OP_UINTBINARY_HPP__
 
 #include "base.hpp"
 
@@ -20,32 +20,29 @@
  *  An additional argument can be passed as the prefix to the desired debug name of the class
  *  For example, "FP::" may be desired for an FP op
  */
-#define OP_INTBINARY_TRIVIAL_SUBCLASS(CLASS, UNSIGNEDINT, ...)                                    \
-    class CLASS final : public ::Op::IntBinary<UNSIGNEDINT> {                                     \
+#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, ...)                                                \
+    class CLASS final : public ::Op::UIntBinary {                                                 \
         OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &e,              \
-                              const IntT i)                                                       \
-            : IntBinary { h, static_cuid, e, i } {}                                               \
+                              const Constants::UInt i)                                            \
+            : UIntBinary { h, static_cuid, e, i } {}                                              \
     };
 
 
 namespace Op {
 
     /** An Op class that has an Expression operand and an int operand */
-    template <bool UnsignedInt> class IntBinary : public Base {
-        OP_PURE_INIT(IntBinary);
+    class UIntBinary : public Base {
+        OP_PURE_INIT(UIntBinary);
 
       public:
-        /** The int type */
-        using IntT = std::conditional_t<UnsignedInt, Constants::UInt, Constants::Int>;
-
         /** Expression operand */
         const Expression::BasePtr expr;
         /* Integer operand */
-        const IntT integer;
+        const Constants::UInt integer;
 
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
@@ -54,18 +51,16 @@ namespace Op {
 
       protected:
         /** Protected constructor */
-        explicit inline IntBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                  const Expression::BasePtr &e, const IntT i)
+        explicit inline UIntBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
+                                   const Expression::BasePtr &e, const Constants::UInt i)
             : Base { h, cuid_ }, expr { e }, integer { i } {}
     };
 
     /** Default virtual destructor */
-    template <bool B> IntBinary<B>::~IntBinary() noexcept = default;
+    UIntBinary::~UIntBinary() noexcept = default;
 
     /** Returns true if T is int binary */
-    template <typename T>
-    UTILS_ICCBOOL is_int_binary { Utils::is_ancestor<IntBinary<true>, T> ||
-                                  Utils::is_ancestor<IntBinary<false>, T> };
+    template <typename T> UTILS_ICCBOOL is_uint_binary { Utils::is_ancestor<UIntBinary, T> };
 
 } // namespace Op
 

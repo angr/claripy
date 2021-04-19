@@ -6,7 +6,7 @@
 #define __CREATE_STRING_TRIVIAL_HPP__
 
 #include "../private/binary.hpp"
-#include "../private/int_binary.hpp"
+#include "../private/uint_binary.hpp"
 #include "../private/unary.hpp"
 
 
@@ -34,9 +34,9 @@ namespace Create::String {
     inline EBasePtr to_int(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
-        return CP::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
-                              CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
-                                                                integer);
+        return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
+                               CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
+                                                                 integer);
     }
 
     /** Create an Expression with an String::Len op
@@ -45,9 +45,9 @@ namespace Create::String {
     inline EBasePtr len(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
-        return CP::int_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
-                              CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
-                                                                integer);
+        return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
+                               CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
+                                                                 integer);
     }
 
     /********************************************************************/

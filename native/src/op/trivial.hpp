@@ -7,7 +7,7 @@
 
 #include "binary.hpp"
 #include "flat.hpp"
-#include "int_binary.hpp"
+#include "uint_binary.hpp"
 #include "unary.hpp"
 
 #include "../mode.hpp"
@@ -32,14 +32,14 @@ namespace Op {
     OP_UNARY_TRIVIAL_SUBCLASS(Reverse);
 
     /**********************************************************/
-    /*                  IntBinary Subclasses                  */
+    /*                  UIntBinary Subclasses                 */
     /**********************************************************/
 
     /** The int binary op class: SignExt */
-    OP_INTBINARY_TRIVIAL_SUBCLASS(SignExt, true);
+    OP_UINTBINARY_TRIVIAL_SUBCLASS(SignExt);
 
     /** The int binary op class: ZeroExt */
-    OP_INTBINARY_TRIVIAL_SUBCLASS(ZeroExt, true);
+    OP_UINTBINARY_TRIVIAL_SUBCLASS(ZeroExt);
 
     /**********************************************************/
     /*                   Binary Subclasses                    */
