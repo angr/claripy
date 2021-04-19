@@ -250,6 +250,7 @@ namespace Backend::Z3::Convert {
         // Mode Binary
 
         namespace Private {
+
             /** Verifes 2 expressions are FPs with the same context */
             inline void assert_are_compatible(const z3::expr &a, const z3::expr &b) {
 #if DEBUG
@@ -258,28 +259,52 @@ namespace Backend::Z3::Convert {
                     a.is_fpa() && b.is_fpa(), WHOAMI_WITH_SOURCE " called non-FP ops");
 #endif
             }
+
+            /** Converts a claricpp rounding mode to a z3 rounding mode */
+            constexpr z3::rounding_mode to_z3_rm(const Mode::FP mode) {
+                switch (mode) {
+                    case Mode::FP::NearestTiesAwayFromZero:
+                        return z3::RNA;
+                    case Mode::FP::NearestTiesEven:
+                        return z3::RNE;
+                    case Mode::FP::TowardsNegativeInf:
+                        return z3::RTN;
+                    case Mode::FP::TowardsPositiveInf:
+                        return z3::RTP;
+                    case Mode::FP::TowardsZero:
+                        return z3::RTZ;
+                    default:
+                        throw Utils::Error::Unexpected::NotSupported(
+                            WHOAMI_WITH_SOURCE "Unable to map Mode::FP ", mode,
+                            " to z3::rounding_mode");
+                };
+            }
+
         }; // namespace Private
 
-/** A local macro used for fp math conversions */
-#define FP_ARITH_CONVERT(FN)                                                                      \
-    inline z3::expr FN(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {               \
-        Private::assert_are_compatible(l, r);                                                     \
-        const auto &ctx { l.ctx() };                                                              \
-        const z3::expr ret { ctx, Z3_mk_fpa_##FN(l.ctx(), mode, l, r) };                          \
-        ret.check_error();                                                                        \
-        return ret;                                                                               \
-    }
         /** FP::Add converter */
-        FP_ARITH_CONVERT(add)
-        /** FP::Sub converter */
-        FP_ARITH_CONVERT(sub)
-        /** FP::Mul converter */
-        FP_ARITH_CONVERT(mul)
-        /** FP::Div converter */
-        FP_ARITH_CONVERT(div)
+        inline z3::expr add(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            return l + r;
+        }
 
-// Cleanup
-#undef FP_ARITH_CONVERT
+        /** FP::Sub converter */
+        inline z3::expr sub(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            return l - r;
+        }
+
+        /** FP::Mul converter */
+        inline z3::expr mul(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            return l * r;
+        }
+
+        /** FP::Div converter */
+        inline z3::expr div(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            return l / r;
+        }
 
         // Ternary
 #if 0

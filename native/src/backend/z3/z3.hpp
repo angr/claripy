@@ -75,7 +75,7 @@ namespace Backend::Z3 {
 
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_mode_binary<Op::OP>, "Op::" #OP "is not ModeBinary");                \
+        static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP "is not ModeBinary");            \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         const auto size { args.size() };                                                          \
         auto ret { FN(static_cast<To>(expr->op.get())->mode, *args[size - 2], *args[size - 1]) }; \
