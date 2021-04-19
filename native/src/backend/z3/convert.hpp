@@ -5,11 +5,10 @@
 #ifndef __BACKEND_Z3_CONVERT_HPP__
 #define __BACKEND_Z3_CONVERT_HPP__
 
-#include "z3++.h"
-
 #include "../../op.hpp"
 
 #include <functional>
+#include <z3++.h>
 
 
 /********************************************************************/

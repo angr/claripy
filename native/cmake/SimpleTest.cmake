@@ -65,8 +65,10 @@ function(simple_test FUNC_NAME)
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${FUNC_NAME}.cpp" ${ARGN})
 	# Link libraries and headers
-	target_include_directories("${BINARY}" SYSTEM PRIVATE
-		${Boost_INCLUDE_DIRS}
+	target_include_directories("${BINARY}"
+		SYSTEM BEFORE
+		PRIVATE "${Z3_INCLUDE_DIR}"
+		PRIVATE ${Boost_INCLUDE_DIRS}
 	)
 	target_include_directories("${BINARY}" PRIVATE
 		"${CLARICPP_SRC}"

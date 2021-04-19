@@ -414,7 +414,10 @@ endif()
 add_subdirectory("${CLARICPP_SRC}")
 
 # Allow building with z3
-target_include_directories("${CLARICPP}" PRIVATE "${Z3_INCLUDE_DIR}")
+target_include_directories("${CLARICPP}"
+	SYSTEM BEFORE
+	PRIVATE "${Z3_INCLUDE_DIR}"
+)
 target_link_libraries("${CLARICPP}" PRIVATE "${Z3_LIB_TARGET}")
 
 # Configure library compilation and linking
