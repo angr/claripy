@@ -15,10 +15,10 @@
 namespace Backend::Z3 {
 
     /** The solver type */
-    using Solver = Z3::Solver;
+    using Solver = z3::solver;
 
     /** The Z3 backend */
-    class Z3 final : public Generic<Z3ASTPtr, Solver> {
+    class Z3 final : public Generic<z3::expr, Solver> {
       private:
         /********************************************************************/
         /*                        Function Overrides                        */
@@ -32,8 +32,8 @@ namespace Backend::Z3 {
          *  Warning: This function may internally do unchecked static casting, we permit this
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
-        BackendObj dispatch_conversion(const ExprRawPtr expr,
-                                       std::vector<BORCPtr> &args) override final {
+        z3::expr dispatch_conversion(const Expression::RawPtr expr,
+                                     std::vector<Constants::CTSC<z3::expr>> &args) override final {
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
@@ -64,10 +64,10 @@ namespace Backend::Z3 {
         BINARY_DISPATCH(func);                                                                    \
     }
 
-#define INT_BINARY_CASE(OP, FN)                                                                   \
+#define UINT_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_int_binary<Op::OP>, WHOAMI "Op::" #OP "is not IntBinary");           \
-        using To = Constants::CTSC<Op::IntBinary>;                                                \
+        static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP "is not UIntBinary");                \
+        using To = Constants::CTSC<Op::UIntBinary>;                                               \
         auto ret { std::move(FN(*args.back(), static_cast<To>(expr->op.get())->integer)) };       \
         args.pop_back();                                                                          \
         return ret;                                                                               \
@@ -75,7 +75,7 @@ namespace Backend::Z3 {
 
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_mode_binary<Op::OP>, WHOAMI "Op::" #OP "is not ModeBinary");         \
+        static_assert(Op::is_mode_binary<Op::OP>, "Op::" #OP "is not ModeBinary");                \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         const auto size { args.size() };                                                          \
         auto ret { std::move(                                                                     \
@@ -94,7 +94,7 @@ namespace Backend::Z3 {
 
 #define FLAT_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_flat<Op::OP>, WHOAMI "Op::" #OP "is not Flat");                      \
+        static_assert(Op::is_flat<Op::OP>, "Op::" #OP "is not Flat");                             \
         using To = Constants::CTSC<Op::Flat>;                                                     \
         const auto a_size { args.size() };                                                        \
         const auto n { static_cast<To>(expr->op.get())->operands.size() };                        \
@@ -108,10 +108,9 @@ namespace Backend::Z3 {
 
                 // This should never be hit
                 default: {
-                    using Usage = Utils::Error::Unexpected;
-                    throw Err::IncorrectUsage(
+                    throw Utils::Error::Unexpected::IncorrectUsage(
                         WHOAMI_WITH_SOURCE
-                        "Unknown expression op given to Z3::dispatch_conversion."
+                        "Unknown expression op given to z3::dispatch_conversion."
                         "\nOp CUID: ",
                         expr->op->cuid);
                 }
@@ -121,10 +120,9 @@ namespace Backend::Z3 {
                 case Op::Union::static_cuid:           // fallthrough
                 case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
-                    using Usage = Error::Backend;
-                    throw Err::Unsupported(
+                    throw Error::Backend::Unsupported(
                         WHOAMI_WITH_SOURCE
-                        "Unknown expression op given to Z3::dispatch_conversion."
+                        "Unknown expression op given to z3::dispatch_conversion."
                         "\nOp CUID: ",
                         expr->op->cuid);
                 }
@@ -140,10 +138,10 @@ namespace Backend::Z3 {
                     UNARY_CASE(Invert, Convert::invert);
                     UNARY_CASE(Reverse, Convert::reverse);
 
-                    // IntBinary
+                    // UIntBinary
 
-                    INT_BINARY_CASE(SignExt, Convert::signext);
-                    INT_BINARY_CASE(ZeroExt, Convert::zeroext);
+                    UINT_BINARY_CASE(SignExt, Convert::signext);
+                    UINT_BINARY_CASE(ZeroExt, Convert::zeroext);
 
                     // Binary
 

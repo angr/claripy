@@ -33,7 +33,7 @@ namespace Backend {
         /** Checks whether this backend can handle the expression
          *  @todo Make this better than this simplistic way
          */
-        bool handles(const Expression::RawPtr expr) {
+        bool handles(const Expression::RawPtr expr) override {
             try {
                 (void) convert(expr);
             }

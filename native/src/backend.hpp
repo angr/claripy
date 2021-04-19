@@ -7,5 +7,6 @@
 
 #include "backend/base.hpp"
 #include "backend/generic.hpp"
+#include "backend/z3.hpp"
 
 #endif
