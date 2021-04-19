@@ -94,13 +94,17 @@ namespace Backend::Z3 {
 #define FLAT_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_flat<Op::OP>, "Op::" #OP "is not Flat");                             \
-        using To = Constants::CTSC<Op::Flat>;                                                     \
+        using To = Constants::CTSC<Op::AbstractFlat>;                                             \
         const auto a_size { args.size() };                                                        \
         const auto n { static_cast<To>(expr->op.get())->operands.size() };                        \
         auto ret { FN(&(args.data()[a_size - n]), n) };                                           \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
     }
+
+            // For brevity
+            using Cmp = Mode::Compare;
+            using Shft = Mode::Shift;
 
             // Switch on expr type
             switch (expr->op->cuid) {
@@ -146,14 +150,22 @@ namespace Backend::Z3 {
 
                     BINARY_CASE(Eq, Convert::eq);
 
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, true, true, true);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, true, true, false);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, true, false, true);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, true, false, false);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, false, true, true);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, false, true, false);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, false, false, true);
-                    BINARY_TEMPLATE_CASE(Compare, Convert::compare, false, false, false);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Signed | Cmp::Greater | Cmp::Eq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Signed | Cmp::Greater | Cmp::Neq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Signed | Cmp::Less | Cmp::Eq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Signed | Cmp::Less | Cmp::Neq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Unsigned | Cmp::Greater | Cmp::Eq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Unsigned | Cmp::Greater | Cmp::Neq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Unsigned | Cmp::Less | Cmp::Eq);
+                    BINARY_TEMPLATE_CASE(Compare, Convert::compare,
+                                         Cmp::Unsigned | Cmp::Less | Cmp::Neq);
 
                     BINARY_CASE(Sub, Convert::sub);
 
@@ -165,10 +177,10 @@ namespace Backend::Z3 {
                     BINARY_TEMPLATE_CASE(Mod, Convert::mod, true);
                     BINARY_TEMPLATE_CASE(Mod, Convert::mod, false);
 
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, true, true);
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, true, false);
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, false, true);
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, false, false);
+                    // Logic / left is not supported a valid mode
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Arithmetic | Shft::Left);
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Logical | Shft::Left);
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Logical | Shft::Right);
 
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, true);
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, false);
@@ -190,7 +202,7 @@ namespace Backend::Z3 {
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
                     const auto op { static_cast<To>(expr->op.get()) };
-                    auto ret { std::move(Convert::extract(op->high, op->low, *args.back())) };
+                    auto ret { Convert::extract(op->high, op->low, *args.back()) };
                     args.pop_back();
                     return ret;
                 }
@@ -230,8 +242,8 @@ namespace Backend::Z3 {
 
                 case Op::FP::ToBV::static_cuid: {
                     using To = Constants::CTSC<Op::FP::ToBV>;
-                    auto ret { std::move(
-                        Convert::FP::to_bv(static_cast<To>(expr->op.get())->mode, *args.back())) };
+                    auto ret { Convert::FP::to_bv(static_cast<To>(expr->op.get())->mode,
+                                                  *args.back()) };
                     args.pop_back();
                     return ret;
                 }
@@ -273,9 +285,9 @@ namespace Backend::Z3 {
                         dynamic_cast<BitLength>(&expr)->bit_length != nullptr,
                         WHOAMI_WITH_SOURCE "String::IndexOf expr has no length");
 #endif
-                    auto ret { std::move(Convert::String::index_of(
+                    auto ret { Convert::String::index_of(
                         *args[size - 2], *args[size - 1],
-                        static_cast<To>(expr->op.get())->start_index, bit_length)) };
+                        static_cast<To>(expr->op.get())->start_index, bit_length) };
                     args.resize(size - 2);
                     return ret;
                 }

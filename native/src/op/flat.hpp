@@ -28,13 +28,12 @@
 
 namespace Op {
 
-    /** A flattened Op class
+    /** An abstract flattened Op class
      *  Operands must all be of the same type and there must be at least 2
-     *  Both of these conditions are verified during construction
-     *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+     *  These conditions are *not* validated
      */
-    template <bool ConsiderSize> class Flat : public Base {
-        OP_PURE_INIT(Flat);
+    class AbstractFlat : public Base {
+        OP_PURE_INIT(AbstractFlat);
 
       public:
         /** Operand container type */
@@ -42,6 +41,9 @@ namespace Op {
 
         /** Operands */
         const OpContainer operands;
+
+        /** Return true if this class requires each operand be of the same size */
+        virtual bool consider_size() const noexcept = 0;
 
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
@@ -56,8 +58,32 @@ namespace Op {
         /** Protected constructor
          *  Verify that all operands are of the same type and that there are at least 2
          */
+        explicit inline AbstractFlat(const Hash::Hash &h, const CUID::CUID &cuid_,
+                                     OpContainer &&input)
+            : Base { h, cuid_ }, operands { input } {}
+    };
+
+    /** Default virtual destructor */
+    AbstractFlat::~AbstractFlat() noexcept = default;
+
+    /** A flattened Op class
+     *  Operands must all be of the same type and there must be at least 2
+     *  Both of these conditions are verified during construction
+     *  If ConsiderSize, sizes will be compared as well when type checking if applicable
+     */
+    template <bool ConsiderSize> class Flat : public AbstractFlat {
+        OP_PURE_INIT(Flat);
+
+      public:
+        /** Return ConsiderSize */
+        inline bool consider_size() const noexcept override final { return ConsiderSize; }
+
+      protected:
+        /** Protected constructor
+         *  Verify that all operands are of the same type and that there are at least 2
+         */
         explicit inline Flat(const Hash::Hash &h, const CUID::CUID &cuid_, OpContainer &&input)
-            : Base { h, cuid_ }, operands { input } {
+            : AbstractFlat { h, cuid_, std::move(input) } {
             namespace Err = Error::Expression;
 
             // Operands size
