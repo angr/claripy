@@ -40,14 +40,14 @@ namespace Backend::Z3 {
 
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
-        auto ret { std::move(FN(*args.back())) };                                                 \
+        auto ret { FN(*args.back()) };                                                            \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define BINARY_DISPATCH(FN)                                                                       \
     const auto size { args.size() };                                                              \
-    auto ret { std::move(FN(*args[size - 2], *args[size - 1])) };                                 \
+    auto ret { FN(*args[size - 2], *args[size - 1]) };                                            \
     args.resize(size - 2);                                                                        \
     return ret;
 
@@ -68,7 +68,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP "is not UIntBinary");                \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
-        auto ret { std::move(FN(*args.back(), static_cast<To>(expr->op.get())->integer)) };       \
+        auto ret { FN(*args.back(), static_cast<To>(expr->op.get())->integer) };                  \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -78,8 +78,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_mode_binary<Op::OP>, "Op::" #OP "is not ModeBinary");                \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         const auto size { args.size() };                                                          \
-        auto ret { std::move(                                                                     \
-            FN(static_cast<To>(expr->op.get())->mode, *args[size - 2], *args[size - 1])) };       \
+        auto ret { FN(static_cast<To>(expr->op.get())->mode, *args[size - 2], *args[size - 1]) }; \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -87,7 +86,7 @@ namespace Backend::Z3 {
 #define TERNARY_CASE(OP, FN)                                                                      \
     case Op::OP::static_cuid: {                                                                   \
         const auto size { args.size() };                                                          \
-        auto ret { std::move(FN(*args[size - 3], *args[size - 2], *args[size - 1])) };            \
+        auto ret { FN(*args[size - 3], *args[size - 2], *args[size - 1]) };                       \
         args.resize(size - 3);                                                                    \
         return ret;                                                                               \
     }
@@ -98,7 +97,7 @@ namespace Backend::Z3 {
         using To = Constants::CTSC<Op::Flat>;                                                     \
         const auto a_size { args.size() };                                                        \
         const auto n { static_cast<To>(expr->op.get())->operands.size() };                        \
-        auto ret { std::move(FN(&(args.data()[a_size - n]), n)) };                                \
+        auto ret { FN(&(args.data()[a_size - n]), n) };                                           \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
     }

@@ -210,7 +210,7 @@ namespace Backend::Z3::Convert {
     }
 
     /** Xor converter */
-    inline z3::expr xor_(Constants::CTSC<z3::expr> arr, const Constants::UInt size) {
+    inline z3::expr xor_(FlatArr arr, const Constants::UInt size) {
         return Private::ptr_accumulate<std::bit_xor<z3::expr>>(arr, size);
     }
 
