@@ -19,22 +19,13 @@ namespace Op::FP {
     /**********************************************************/
 
     /** The unary fp op class: FP::ToIEEEBV */
-    OP_UNARY_TRIVIAL_SUBCLASS(ToIEEEBV, "FP::");
+    OP_UNARY_TRIVIAL_SUBCLASS(ToIEEEBV, 0, "FP::");
 
     /** The unary fp op class: FP::IsInf */
-    OP_UNARY_TRIVIAL_SUBCLASS(IsInf, "FP::");
+    OP_UNARY_TRIVIAL_SUBCLASS(IsInf, 0, "FP::");
 
     /** The unary fp op class: FP::IsNaN */
-    OP_UNARY_TRIVIAL_SUBCLASS(IsNaN, "FP::");
-
-    /**********************************************************/
-    /*                   Binary Subclasses                    */
-    /**********************************************************/
-
-    /** The op class: FP::NE
-     *  Input sizes must be the same
-     */
-    OP_BINARY_TRIVIAL_SUBCLASS(NE, true, "FP::");
+    OP_UNARY_TRIVIAL_SUBCLASS(IsNaN, 0, "FP::");
 
     /**********************************************************/
     /*               FP Mode Binary Subclasses                */
@@ -43,22 +34,22 @@ namespace Op::FP {
     /** The op class: FP::Add
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Add, "FP::");
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Add, 0, "FP::");
 
     /** The op class: FP::Sub
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Sub, "FP::");
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Sub, 0, "FP::");
 
     /** The op class: FP::Mul
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Mul, "FP::");
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Mul, 0, "FP::");
 
     /** The op class: FP::Div
      *  Input sizes may not differ
      */
-    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Div, "FP::");
+    OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(Div, 0, "FP::");
 
     /**********************************************************/
     /*                   Ternary Subclasses                   */
@@ -67,7 +58,7 @@ namespace Op::FP {
     /** The ternary op class: FP::FP
      *  Input sizes may differ
      */
-    OP_TERNARY_TRIVIAL_SUBCLASS(FP, false, "FP::");
+    OP_TERNARY_TRIVIAL_SUBCLASS(FP, false, 0, "FP::");
 
 } // namespace Op::FP
 

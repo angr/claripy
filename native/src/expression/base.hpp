@@ -27,7 +27,7 @@ namespace Expression {
      *  All expressions must subclass this
      */
     class Base : public Factory::FactoryMade {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Annotation vector type */
         using AnVec = std::vector<Annotation::BasePtr>;

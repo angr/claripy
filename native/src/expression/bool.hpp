@@ -16,7 +16,7 @@ namespace Expression {
      *  All expressions must subclass this
      */
     class Bool final : public Base {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Default destructor */
         inline ~Bool() noexcept override final = default;

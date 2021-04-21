@@ -12,7 +12,7 @@ namespace Op::String {
 
     /** The op class: String::IndexOf */
     class IndexOf final : public Base {
-        OP_FINAL_INIT(IndexOf, "String::");
+        OP_FINAL_INIT(IndexOf, 0, "String::");
 
       public:
         /** String to search: This must be an Expression::String pointer

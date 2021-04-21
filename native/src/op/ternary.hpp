@@ -15,10 +15,12 @@
  *  For example: template <bool Signed> OP_TERNARY_TRIVIAL_SUBCLASS(LT, true)
  *  An additional argument can be passed as the prefix to the desired debug name of the class
  *  For example, "FP::" may be desired for an FP op
+ *  X can be anything, but must be different between different templates of the same class
+ *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define OP_TERNARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, ...)                                     \
+#define OP_TERNARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                  \
     class CLASS final : public ::Op::Ternary<CONSIDERSIZE> {                                      \
-        OP_FINAL_INIT(CLASS, "" __VA_ARGS__);                                                     \
+        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \

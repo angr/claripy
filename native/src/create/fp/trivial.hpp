@@ -40,18 +40,6 @@ namespace Create::FP {
     }
 
     /********************************************************************/
-    /*                   Binary Passthrough Functions                   */
-    /********************************************************************/
-
-    /** Create a Expression with an FP::NE op */
-    inline EBasePtr ne(EAnVec &&av, const Expression::BasePtr &left,
-                       const Expression::BasePtr &right) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::Bool, Ex::FP, Op::FP::NE, Private::SizeMode::NA, Ex::FP>(
-            std::forward<EAnVec>(av), left, right);
-    }
-
-    /********************************************************************/
     /*                 ModeBinary Passthrough Functions                 */
     /********************************************************************/
 

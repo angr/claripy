@@ -18,23 +18,23 @@ namespace Op::String {
     /**********************************************************/
 
     /** The unary string op class: String::IsDigit */
-    OP_UNARY_TRIVIAL_SUBCLASS(IsDigit, "String::");
+    OP_UNARY_TRIVIAL_SUBCLASS(IsDigit, 0, "String::");
 
     /** The unary string op class: String::FromInt */
-    OP_UNARY_TRIVIAL_SUBCLASS(FromInt, "String::");
+    OP_UNARY_TRIVIAL_SUBCLASS(FromInt, 0, "String::");
 
     /** The unary string op class: String::Unit */
-    OP_UNARY_TRIVIAL_SUBCLASS(Unit, "String::");
+    OP_UNARY_TRIVIAL_SUBCLASS(Unit, 0, "String::");
 
     /**********************************************************/
     /*                  UIntBinary Subclasses                 */
     /**********************************************************/
 
     /** The int binary op class: String::ToInt */
-    OP_UINTBINARY_TRIVIAL_SUBCLASS(ToInt, "String::");
+    OP_UINTBINARY_TRIVIAL_SUBCLASS(ToInt, 0, "String::");
 
     /** The int binary op class: String::Len */
-    OP_UINTBINARY_TRIVIAL_SUBCLASS(Len, "String::");
+    OP_UINTBINARY_TRIVIAL_SUBCLASS(Len, 0, "String::");
 
     /**********************************************************/
     /*                   Binary Subclasses                    */
@@ -43,17 +43,17 @@ namespace Op::String {
     /** The string binary op class: String::Contains
      *  Input sizes may differ
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(Contains, false, "String::");
+    OP_BINARY_TRIVIAL_SUBCLASS(Contains, false, 0, "String::");
 
     /** The string binary op class: String::PrefixOf
      *  Input sizes may differ
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(PrefixOf, false, "String::");
+    OP_BINARY_TRIVIAL_SUBCLASS(PrefixOf, false, 0, "String::");
 
     /** The string binary op class: String::SuffixOf
      *  Input sizes may differ
      */
-    OP_BINARY_TRIVIAL_SUBCLASS(SuffixOf, false, "String::");
+    OP_BINARY_TRIVIAL_SUBCLASS(SuffixOf, false, 0, "String::");
 
     /**********************************************************/
     /*                   Ternary Subclasses                   */
@@ -62,7 +62,7 @@ namespace Op::String {
     /** The ternary string op class: String::Replace
      *  Input sizes may differ
      */
-    OP_TERNARY_TRIVIAL_SUBCLASS(Replace, false, "String::");
+    OP_TERNARY_TRIVIAL_SUBCLASS(Replace, false, 0, "String::");
 
 } // namespace Op::String
 

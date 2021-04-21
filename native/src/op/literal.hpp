@@ -24,7 +24,7 @@ namespace Op {
 
     /** The op class Literal */
     class Literal final : public Base, public BitLength {
-        OP_FINAL_INIT(Literal);
+        OP_FINAL_INIT(Literal, 0);
 
       public:
 #ifdef ENABLE_MPZ

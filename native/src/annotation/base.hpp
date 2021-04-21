@@ -17,7 +17,7 @@ namespace Annotation {
      * engine. They provide a means to pass extra information to the claripy backends.
      */
     struct Base : public Factory::FactoryMade {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Constructor */
         explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid)

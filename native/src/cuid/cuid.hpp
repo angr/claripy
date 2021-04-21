@@ -12,22 +12,17 @@
 #include "../utils.hpp"
 
 
-/** Used to define a static_cuid in a class
- *  Leaves the class in a public state
- */
-#define DEFINE_STATIC_CUID                                                                        \
-  public:                                                                                         \
-    /** Define a static_cuid */                                                                   \
-    static const constexpr ::CUID::CUID static_cuid { UTILS_FILE_LINE_HASH };
-
-
 /** Used to define a possible unused static_cuid in a class
  *  Leaves the class in a public state
+ *  Will not cause any compiler warnings if this field is not used
+ *  X can be anything, but must be different between different templates of the same class
+ *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define DEFINE_MAYBE_UNUSED_STATIC_CUID                                                           \
+#define CUID_DEFINE_MAYBE_UNUSED(X)                                                               \
   public:                                                                                         \
     /** Define a static_cuid */                                                                   \
-    [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid { UTILS_FILE_LINE_HASH };
+    [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid { UTILS_FILE_LINE_HASH ^     \
+                                                                       (X) };
 
 
 namespace CUID {

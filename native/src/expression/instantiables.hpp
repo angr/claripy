@@ -12,7 +12,7 @@
 #define BITS_SUBCLASS(CLASS)                                                                      \
     /** This class is an Expression subclass */                                                   \
     class CLASS final : public Bits {                                                             \
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expression::Base)                                 \
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expression::Base, 0)                              \
       public:                                                                                     \
         /** Default destructor */                                                                 \
         inline ~CLASS() noexcept override final = default;                                        \

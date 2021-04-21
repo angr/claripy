@@ -74,6 +74,14 @@ namespace Create {
                                Ex::BV, Ex::String>(std::forward<EAnVec>(av), left, right);
     }
 
+    /** Create a Bool Expression with an Neq op */
+    template <typename T>
+    inline EBasePtr neq(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+        namespace Ex = Expression;
+        return Private::binary<Ex::Bool, T, Op::Neq, Private::SizeMode::NA, Ex::FP, Ex::Bool,
+                               Ex::BV, Ex::String>(std::forward<EAnVec>(av), left, right);
+    }
+
     /** Create an Expression with a Compare op */
     template <typename In, Mode::Compare Mask>
     inline EBasePtr compare(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {

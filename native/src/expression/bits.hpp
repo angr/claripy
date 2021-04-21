@@ -14,7 +14,7 @@ namespace Expression {
 
     /** This class represents an Expression of Bits */
     class Bits : public Base, public BitLength {
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base)
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       protected:
         /** Protected Constructor */
         explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, AnVec &&ans, const bool sym,

@@ -12,7 +12,7 @@ namespace Op {
 
     /** The op class Symbol */
     class Symbol final : public Base {
-        OP_FINAL_INIT(Symbol)
+        OP_FINAL_INIT(Symbol, 0)
       public:
         /** Symbol name */
         const std::string name;
