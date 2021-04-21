@@ -68,6 +68,7 @@ namespace Op {
     /** Default virtual destructor */
     AbstractFlat::~AbstractFlat() noexcept = default;
 
+
     /** A flattened Op class
      *  Operands must all be of the same type and there must be at least 2
      *  Both of these conditions are verified during construction
@@ -108,6 +109,7 @@ namespace Op {
 
     /** Default virtual destructor */
     template <bool B> Flat<B>::~Flat() noexcept = default;
+
 
     /** Returns true if T is flat */
     template <typename T>

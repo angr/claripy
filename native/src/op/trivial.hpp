@@ -60,7 +60,9 @@ namespace Op {
     /** The binary comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE
      *  Requires equal sized inputs
      */
-    template <Mode::Compare Mask> OP_BINARY_TRIVIAL_SUBCLASS(Compare, true, 0);
+    template <Mode::Compare Mask>
+    OP_BINARY_TRIVIAL_SUBCLASS(Compare, true,
+                               static_cast<std::underlying_type_t<Mode::Shift>>(Mask));
 
     // Math
 
