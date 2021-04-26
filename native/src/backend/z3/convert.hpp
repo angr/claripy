@@ -320,10 +320,10 @@ namespace Backend::Z3::Convert {
         }
 
         // Ternary
-#if 0
-		// TODO: @todo
-		TERNARY_CASE(FP::FP, convert.fp_fp)
-#endif
+        /** FP::fp converter */
+        inline z3::expr fp(const z3::expr &sgn, const z3::expr &exp, const z3::expr &sig) {
+            return z3::fpa_fp(sgn, exp, sig);
+        }
 
         // Other
 
@@ -333,10 +333,10 @@ namespace Backend::Z3::Convert {
                               const Constants::UInt bit_length) {
             using To = Constants::CTSC<Op::FP::ToBV<Signed>>;
             if constexpr (Signed) {
-                return z3::fp_to_sbv(Private::to_z3_rm(mode), e, bit_length);
+                return z3::fpa_to_sbv(Private::to_z3_rm(mode), e, bit_length);
             }
             else {
-                return z3::fp_to_ubv(Private::to_z3_rm(mode), e, bit_length);
+                return z3::fpa_to_ubv(Private::to_z3_rm(mode), e, bit_length);
             }
         }
 
