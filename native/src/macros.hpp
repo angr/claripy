@@ -6,6 +6,9 @@
 #define __MACROS_HPP__
 
 
+/** The CHAR_BIT claricpp will use */
+#define C_CHAR_BIT 8
+
 /** A macro that contains the information about the current line
  *  Useful for debugging
  */
@@ -30,6 +33,7 @@
     // DEBUG defined case
     #define NOEXCEPT_UNLESS_DEBUG
 #endif
+
 
 /** Hint to the compiler that x is likely; in C++20 use attributes
  *  In most cases, you should avoid this and use profile guided optimization

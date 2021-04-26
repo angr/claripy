@@ -32,6 +32,7 @@
 #include "utils/macros.hpp"
 #include "utils/make_derived_shared.hpp"
 #include "utils/max.hpp"
+#include "utils/narrow.hpp"
 #include "utils/ostream.hpp"
 #include "utils/pointer_cast.hpp"
 #include "utils/pow.hpp"

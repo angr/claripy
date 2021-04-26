@@ -42,17 +42,18 @@ namespace Backend::Z3::Convert {
     inline z3::expr reverse(const z3::expr &e) {
         const auto size { e.length().get_numeral_uint64() };
         // Trivial case
-        if (size == 8) {
+        if (size == C_CHAR_BIT) {
             return e;
         }
         // Error checking
         using Err = Error::Expression::Operation;
-        Utils::affirm<Err>(size % 8 == 0, "Can't reverse non-byte sized bitvectors");
+        Utils::affirm<Err>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
         // Reverse byte by byte
         std::vector<z3::expr> extracted;
-        extracted.reserve(size / 8 + 1);
-        for (Constants::UInt i = 0; i < size; i += 8) {
-            extracted.emplace_back(extract(i + 7, i, e));
+        extracted.reserve(size / C_CHAR_BIT + 1);
+        for (Constants::UInt i = 0; i < size; i += C_CHAR_BIT) {
+            extracted.emplace_back(extract(Utils::narrow<unsigned>(i + C_CHAR_BIT - 1),
+                                           Utils::narrow<unsigned>(i), e));
         }
         // Join bytes
         return concat(extracted);
@@ -70,6 +71,9 @@ namespace Backend::Z3::Convert {
 
     /** Equality comparisson converter */
     inline z3::expr eq(const z3::expr &l, const z3::expr &r) { return l == r; }
+
+    /** Not-equals comparisson converter */
+    inline z3::expr neq(const z3::expr &l, const z3::expr &r) { return l != r; }
 
     /** Compare converter */
     template <Mode::Compare Mask> inline z3::expr compare(const z3::expr &l, const z3::expr &r) {
@@ -172,16 +176,17 @@ namespace Backend::Z3::Convert {
     namespace Private {
 
         /** Like C++20's version of std::accumulate, except it works with pointers */
-        template <typename Fn>
+        template <typename FunctorType>
         inline z3::expr ptr_accumulate(FlatArr arr, const Constants::UInt size) {
 #ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 size >= 2,
                 "size < 2; this probably resulted from an invalid claricpp expression.");
 #endif
-            z3::expr ret { Fn(*arr[0], *arr[1]) };
+            const FunctorType fn {};
+            z3::expr ret { fn(*arr[0], *arr[1]) };
             for (Constants::UInt i = 2; i < size; ++i) {
-                ret = std::move(Fn(std::move(ret), *arr[i]));
+                ret = std::move(fn(std::move(ret), *arr[i]));
             }
             return ret;
         }
@@ -237,16 +242,16 @@ namespace Backend::Z3::Convert {
 #endif
 
     namespace FP {
-#if 0
-		// TODO: @todo
-		UNARY_CASE(FP::ToIEEEBV, convert.fp_to_ieee_bv);
-		UNARY_CASE(FP::IsInf, convert.fp_is_inf);
-		UNARY_CASE(FP::IsNan, convert.fp_is_nan);
 
-		// Binary
+        /** IsInf converter */
+        inline z3::expr is_inf(const z3::expr &e) { return e.is_inf(); }
 
-		BINARY_CASE(FP::NE, convert.fp_ne);
-#endif
+        /** IsNan converter */
+        inline z3::expr is_nan(const z3::expr &e) { return e.is_nan(); }
+
+        /** ToIEEEBV converter */
+        inline z3::expr to_ieee_bv(const z3::expr &e) { return e.to_ieee_bv(); }
+
         // Mode Binary
 
         namespace Private {
@@ -310,17 +315,28 @@ namespace Backend::Z3::Convert {
 #if 0
 		// TODO: @todo
 		TERNARY_CASE(FP::FP, convert.fp_fp)
-
-		// Other
-
-		case Op::FP::ToBV::static_cuid: {
-			using To = Constants::CTSC<Op::FP::ToBV>;
-			auto ret { std::move(
-				convert.extract(static_cast<To>(expr)->mode, *args.back())) };
-			args.pop_back();
-			return ret;
-		}
 #endif
+
+        // Other
+
+        /** FP::ToBV converter */
+        template <bool Signed> inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e) {
+            const auto bl { Utils::narrow<unsigned>(static_cast<To>(expr)->bit_length) };
+            if constexpr (Signed) {
+                return z3::fp_to_sbv(Private::to_z3_rm(mode), e, bl);
+            }
+            else {
+                return z3::fp_to_ubv(Private::to_z3_rm(mode), e, bl);
+            }
+        }
+
+        case Op::FP::ToBV<true>::static_cuid: {
+            using To = Constants::CTSC<Op::FP::ToBV>;
+            auto ret { std::move(convert.extract(static_cast<To>(expr)->mode, *args.back())) };
+            args.pop_back();
+            return ret;
+        }
+
     } // namespace FP
 
     namespace String {
@@ -368,7 +384,7 @@ namespace Backend::Z3::Convert {
 
         /** Replace converter */
         inline z3::expr replace(const z3::expr &full, const z3::expr &search,
-                                const z3::expr replacement) {
+                                const z3::expr &replacement) {
             return full.replace(search, replacement);
         }
 
@@ -388,6 +404,7 @@ namespace Backend::Z3::Convert {
             const auto a { z3::indexof(str, pattern, start_index) };
             return z3::int2bv(bit_length, a);
         }
+
     } // namespace String
 
 } // namespace Backend::Z3::Convert

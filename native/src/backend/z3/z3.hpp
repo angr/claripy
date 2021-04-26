@@ -11,6 +11,8 @@
 #include "../../error.hpp"
 #include "../generic.hpp"
 
+#include <type_traits>
+
 
 namespace Backend::Z3 {
 
@@ -66,16 +68,17 @@ namespace Backend::Z3 {
 
 #define UINT_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP "is not UIntBinary");                \
+        static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
-        auto ret { FN(*args.back(), static_cast<To>(expr->op.get())->integer) };                  \
+        const auto int_ { static_cast<To>(expr->op.get())->integer };                             \
+        auto ret { FN(*args.back(), Utils::narrow<unsigned>(int_)) };                             \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP "is not ModeBinary");            \
+        static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");           \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         const auto size { args.size() };                                                          \
         auto ret { FN(static_cast<To>(expr->op.get())->mode, *args[size - 2], *args[size - 1]) }; \
@@ -93,7 +96,7 @@ namespace Backend::Z3 {
 
 #define FLAT_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_flat<Op::OP>, "Op::" #OP "is not Flat");                             \
+        static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                            \
         using To = Constants::CTSC<Op::AbstractFlat>;                                             \
         const auto a_size { args.size() };                                                        \
         const auto n { static_cast<To>(expr->op.get())->operands.size() };                        \
@@ -150,6 +153,8 @@ namespace Backend::Z3 {
 
                     BINARY_CASE(Eq, Convert::eq);
 
+                    BINARY_CASE(Neq, Convert::neq);
+
                     BINARY_TEMPLATE_CASE(Compare, Convert::compare,
                                          Cmp::Signed | Cmp::Greater | Cmp::Eq);
                     BINARY_TEMPLATE_CASE(Compare, Convert::compare,
@@ -179,7 +184,7 @@ namespace Backend::Z3 {
 
                     // Logic / left is not supported a valid mode
                     BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Arithmetic | Shft::Left);
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Logical | Shft::Left);
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Arithmetic | Shft::Right);
                     BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Logical | Shft::Right);
 
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, true);
@@ -202,7 +207,8 @@ namespace Backend::Z3 {
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
                     const auto op { static_cast<To>(expr->op.get()) };
-                    auto ret { Convert::extract(op->high, op->low, *args.back()) };
+                    auto ret { Convert::extract(Utils::narrow<unsigned>(op->high),
+                                                Utils::narrow<unsigned>(op->low), *args.back()) };
                     args.pop_back();
                     return ret;
                 }
@@ -221,11 +227,7 @@ namespace Backend::Z3 {
 
                     UNARY_CASE(FP::ToIEEEBV, Convert::FP::to_ieee_bv);
                     UNARY_CASE(FP::IsInf, Convert::FP::is_inf);
-                    UNARY_CASE(FP::IsNan, Convert::FP::is_nan);
-
-                    // Binary
-
-                    BINARY_CASE(FP::NE, Convert::FP::ne);
+                    UNARY_CASE(FP::IsNaN, Convert::FP::is_nan);
 
                     // Mode Binary
 
@@ -240,10 +242,17 @@ namespace Backend::Z3 {
 
                     // Other
 
-                case Op::FP::ToBV::static_cuid: {
-                    using To = Constants::CTSC<Op::FP::ToBV>;
-                    auto ret { Convert::FP::to_bv(static_cast<To>(expr->op.get())->mode,
-                                                  *args.back()) };
+                case Op::FP::ToBV<true>::static_cuid: {
+                    using To = Constants::CTSC<Op::FP::ToBV<true>>;
+                    auto ret { Convert::FP::to_bv<true>(static_cast<To>(expr->op.get())->mode,
+                                                        *args.back()) };
+                    args.pop_back();
+                    return ret;
+                }
+                case Op::FP::ToBV<false>::static_cuid: {
+                    using To = Constants::CTSC<Op::FP::ToBV<false>>;
+                    auto ret { Convert::FP::to_bv<false>(static_cast<To>(expr->op.get())->mode,
+                                                         *args.back()) };
                     args.pop_back();
                     return ret;
                 }
@@ -254,7 +263,6 @@ namespace Backend::Z3 {
 
                     // Unary
 
-                    UNARY_CASE(String::IsDigit, Convert::String::is_digit);
                     UNARY_CASE(String::FromInt, Convert::String::from_int);
                     UNARY_CASE(String::Unit, Convert::String::unit);
 
@@ -275,19 +283,20 @@ namespace Backend::Z3 {
 
                     // Other
 
-                    TERNARY_CASE(String::SubString, Convert::sub_string)
+                    TERNARY_CASE(String::SubString, Convert::String::substring)
 
                 case Op::String::IndexOf::static_cuid: {
-                    using To = Constants::CTSC<Op::String::IndexOf>;
+                    using To = Constants::CTSC<Expression::Bits>;
                     const auto size { args.size() };
 #ifdef DEBUG
                     Utils::affirm<Utils::Error::Unexpected::Type>(
-                        dynamic_cast<BitLength>(&expr)->bit_length != nullptr,
-                        WHOAMI_WITH_SOURCE "String::IndexOf expr has no length");
+                        dynamic_cast<To>(expr) != nullptr,
+                        WHOAMI_WITH_SOURCE "String::IndexOf has no length");
 #endif
-                    auto ret { Convert::String::index_of(
-                        *args[size - 2], *args[size - 1],
-                        static_cast<To>(expr->op.get())->start_index, bit_length) };
+                    const auto bl { static_cast<To>(expr)->bit_length };
+                    auto ret { Convert::String::index_of(*args[size - 3], *args[size - 2],
+                                                         *args[size - 1],
+                                                         Utils::narrow<unsigned>(bl)) };
                     args.resize(size - 2);
                     return ret;
                 }
