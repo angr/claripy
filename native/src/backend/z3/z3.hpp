@@ -35,7 +35,7 @@ namespace Backend::Z3 {
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
         z3::expr dispatch_conversion(const Expression::RawPtr expr,
-                                     std::vector<Constants::CTSC<z3::expr>> &args) override final {
+                                     std::vector<Constants::CTS<z3::expr>> &args) override final {
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
@@ -70,8 +70,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
-        const auto int_ { static_cast<To>(expr->op.get())->integer };                             \
-        auto ret { FN(*args.back(), Utils::narrow<unsigned>(int_)) };                             \
+        auto ret { FN(*args.back(), static_cast<To>(expr->op.get())->integer) };                  \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -207,8 +206,7 @@ namespace Backend::Z3 {
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
                     const auto op { static_cast<To>(expr->op.get()) };
-                    auto ret { Convert::extract(Utils::narrow<unsigned>(op->high),
-                                                Utils::narrow<unsigned>(op->low), *args.back()) };
+                    auto ret { Convert::extract(op->high, op->low, *args.back()) };
                     args.pop_back();
                     return ret;
                 }
@@ -242,20 +240,35 @@ namespace Backend::Z3 {
 
                     // Other
 
+/** A local macro used for consistency */
+#define TO_BV_BODY(TF)                                                                            \
+    using ToBV = Constants::CTSC<Op::FP::ToBV<false>>;                                            \
+    auto ret { Convert::FP::to_bv<TF>(static_cast<ToBV>(expr->op.get())->mode, *args.back(),      \
+                                      static_cast<Bits>(expr)->bit_length) };                     \
+    args.pop_back();                                                                              \
+    return ret;
+
                 case Op::FP::ToBV<true>::static_cuid: {
-                    using To = Constants::CTSC<Op::FP::ToBV<true>>;
-                    auto ret { Convert::FP::to_bv<true>(static_cast<To>(expr->op.get())->mode,
-                                                        *args.back()) };
-                    args.pop_back();
-                    return ret;
+                    using Bits = Constants::CTSC<Expression::Bits>;
+#ifdef DEBUG
+                    Utils::affirm<Utils::Error::Unexpected::Type>(
+                        dynamic_cast<Bits>(expr) != nullptr,
+                        WHOAMI_WITH_SOURCE "FP::ToBV has no length");
+#endif
+                    TO_BV_BODY(true);
                 }
                 case Op::FP::ToBV<false>::static_cuid: {
-                    using To = Constants::CTSC<Op::FP::ToBV<false>>;
-                    auto ret { Convert::FP::to_bv<false>(static_cast<To>(expr->op.get())->mode,
-                                                         *args.back()) };
-                    args.pop_back();
-                    return ret;
+                    using Bits = Constants::CTSC<Expression::Bits>;
+#ifdef DEBUG
+                    Utils::affirm<Utils::Error::Unexpected::Type>(
+                        dynamic_cast<Bits>(expr) != nullptr,
+                        WHOAMI_WITH_SOURCE "FP::ToBV has no length");
+#endif
+                    TO_BV_BODY(false);
                 }
+
+// Cleanup
+#undef TO_BV_BODY
 
                     /************************************************/
                     /*                String Trivial                */
@@ -268,8 +281,8 @@ namespace Backend::Z3 {
 
                     // Int Binary
 
-                    INT_BINARY_CASE(String::ToInt, Convert::String::to_int);
-                    INT_BINARY_CASE(String::Len, Convert::String::len);
+                    UINT_BINARY_CASE(String::ToInt, Convert::String::to_int);
+                    UINT_BINARY_CASE(String::Len, Convert::String::len);
 
                     // Binary
 
@@ -295,8 +308,7 @@ namespace Backend::Z3 {
 #endif
                     const auto bl { static_cast<To>(expr)->bit_length };
                     auto ret { Convert::String::index_of(*args[size - 3], *args[size - 2],
-                                                         *args[size - 1],
-                                                         Utils::narrow<unsigned>(bl)) };
+                                                         *args[size - 1], bl) };
                     args.resize(size - 2);
                     return ret;
                 }
@@ -307,7 +319,7 @@ namespace Backend::Z3 {
 #undef BINARY_DISPATCH
 #undef BINARY_CASE
 #undef BINARY_TEMPLATE_CASE
-#undef INT_BINARY_CASE
+#undef UINT_BINARY_CASE
 #undef MODE_BINARY_CASE
 #undef TERNARY_CASE
 #undef FLAT_CASE

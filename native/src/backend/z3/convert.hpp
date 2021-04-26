@@ -18,9 +18,12 @@
 
 namespace Backend::Z3::Convert {
 
+    /** The z3 unsigned type */
+    using z3u = unsigned;
+
     // Forward declarations
     // concat
-    z3::expr extract(const unsigned high, const unsigned low, const z3::expr &e);
+    z3::expr extract(const Constants::UInt high, const Constants::UInt low, const z3::expr &e);
 
     namespace Private {
         /** A thread local context all Z3 exprs should use */
@@ -52,8 +55,8 @@ namespace Backend::Z3::Convert {
         std::vector<z3::expr> extracted;
         extracted.reserve(size / C_CHAR_BIT + 1);
         for (Constants::UInt i = 0; i < size; i += C_CHAR_BIT) {
-            extracted.emplace_back(extract(Utils::narrow<unsigned>(i + C_CHAR_BIT - 1),
-                                           Utils::narrow<unsigned>(i), e));
+            extracted.emplace_back(
+                extract(Utils::narrow<z3u>(i + C_CHAR_BIT - 1), Utils::narrow<z3u>(i), e));
         }
         // Join bytes
         return concat(extracted);
@@ -62,10 +65,14 @@ namespace Backend::Z3::Convert {
     // UIntBinary
 
     /** Sign Extension converter */
-    inline z3::expr signext(const z3::expr &e, const unsigned i) { return z3::sext(e, i); }
+    inline z3::expr signext(const z3::expr &e, const Constants::UInt i) {
+        return z3::sext(e, Utils::narrow<z3u>(i));
+    }
 
     /** Zero Extension converter */
-    inline z3::expr zeroext(const z3::expr &e, const unsigned i) { return z3::zext(e, i); }
+    inline z3::expr zeroext(const z3::expr &e, const Constants::UInt i) {
+        return z3::zext(e, Utils::narrow<z3u>(i));
+    }
 
     // Binary
 
@@ -222,8 +229,9 @@ namespace Backend::Z3::Convert {
     // Other
 
     /** Extract converter */
-    inline z3::expr extract(const unsigned high, const unsigned low, const z3::expr &e) {
-        return e.extract(high, low);
+    inline z3::expr extract(const Constants::UInt high, const Constants::UInt low,
+                            const z3::expr &e) {
+        return e.extract(Utils::narrow<z3u>(high), Utils::narrow<z3u>(low));
     }
 
     /** If converter */
@@ -320,22 +328,18 @@ namespace Backend::Z3::Convert {
         // Other
 
         /** FP::ToBV converter */
-        template <bool Signed> inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e) {
-            const auto bl { Utils::narrow<unsigned>(static_cast<To>(expr)->bit_length) };
+        template <bool Signed>
+        inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e,
+                              const Constants::UInt bit_length) {
+            using To = Constants::CTSC<Op::FP::ToBV<Signed>>;
             if constexpr (Signed) {
-                return z3::fp_to_sbv(Private::to_z3_rm(mode), e, bl);
+                return z3::fp_to_sbv(Private::to_z3_rm(mode), e, bit_length);
             }
             else {
-                return z3::fp_to_ubv(Private::to_z3_rm(mode), e, bl);
+                return z3::fp_to_ubv(Private::to_z3_rm(mode), e, bit_length);
             }
         }
 
-        case Op::FP::ToBV<true>::static_cuid: {
-            using To = Constants::CTSC<Op::FP::ToBV>;
-            auto ret { std::move(convert.extract(static_cast<To>(expr)->mode, *args.back())) };
-            args.pop_back();
-            return ret;
-        }
 
     } // namespace FP
 
@@ -352,15 +356,15 @@ namespace Backend::Z3::Convert {
         // Int Binary
 
         /** ToInt converter */
-        inline z3::expr to_int(const z3::expr &e, const unsigned len) {
+        inline z3::expr to_int(const z3::expr &e, const Constants::UInt len) {
             const auto a { e.stoi() };
-            return z3::int2bv(len, a);
+            return z3::int2bv(Utils::narrow<z3u>(len), a);
         }
 
         /** Len converter */
-        inline z3::expr len(const z3::expr &e, const unsigned len) {
+        inline z3::expr len(const z3::expr &e, const Constants::UInt len) {
             const auto a { e.length() };
-            return z3::int2bv(len, a);
+            return z3::int2bv(Utils::narrow<z3u>(len), a);
         }
 
         // Binary
@@ -400,9 +404,9 @@ namespace Backend::Z3::Convert {
 
         /** IndexOf converter */
         inline z3::expr index_of(const z3::expr &str, const z3::expr &pattern,
-                                 const z3::expr &start_index, const unsigned bit_length) {
+                                 const z3::expr &start_index, const Constants::UInt bit_length) {
             const auto a { z3::indexof(str, pattern, start_index) };
-            return z3::int2bv(bit_length, a);
+            return z3::int2bv(Utils::narrow<z3u>(bit_length), a);
         }
 
     } // namespace String
