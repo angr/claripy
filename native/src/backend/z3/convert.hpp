@@ -22,7 +22,7 @@ namespace Backend::Z3::Convert {
     using z3u = unsigned;
 
     // Forward declarations
-    // concat
+    z3::expr concat(const z3::expr &l, const z3::expr &r);
     z3::expr extract(const Constants::UInt high, const Constants::UInt low, const z3::expr &e);
 
     namespace Private {
@@ -44,22 +44,24 @@ namespace Backend::Z3::Convert {
     /** Reverse converter */
     inline z3::expr reverse(const z3::expr &e) {
         const auto size { e.length().get_numeral_uint64() };
+
         // Trivial case
         if (size == C_CHAR_BIT) {
             return e;
         }
+
         // Error checking
         using Err = Error::Expression::Operation;
         Utils::affirm<Err>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
+
         // Reverse byte by byte
-        std::vector<z3::expr> extracted;
-        extracted.reserve(size / C_CHAR_BIT + 1);
-        for (Constants::UInt i = 0; i < size; i += C_CHAR_BIT) {
-            extracted.emplace_back(
+        auto ret { extract(Utils::narrow<z3u>(C_CHAR_BIT - 1), Utils::narrow<z3u>(0), e) };
+        for (Constants::UInt i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
+            ret = ::Backend::Z3::Convert::concat(
+                ret, // Move?
                 extract(Utils::narrow<z3u>(i + C_CHAR_BIT - 1), Utils::narrow<z3u>(i), e));
         }
-        // Join bytes
-        return concat(extracted);
+        return ret;
     }
 
     // UIntBinary
@@ -170,10 +172,8 @@ namespace Backend::Z3::Convert {
         return ret;
     }
 
-
-    // TODO
-    /* BINARY_CASE(Concat, convert.concat); */
-
+    /** Concat converter */
+    z3::expr concat(const z3::expr &l, const z3::expr &r) { return z3::concat(l, r); }
 
     // Flat
 
@@ -252,13 +252,13 @@ namespace Backend::Z3::Convert {
     namespace FP {
 
         /** IsInf converter */
-        inline z3::expr is_inf(const z3::expr &e) { return e.is_inf(); }
+        inline z3::expr is_inf(const z3::expr &e) { return e.mk_is_inf(); }
 
         /** IsNan converter */
-        inline z3::expr is_nan(const z3::expr &e) { return e.is_nan(); }
+        inline z3::expr is_nan(const z3::expr &e) { return e.mk_is_nan(); }
 
         /** ToIEEEBV converter */
-        inline z3::expr to_ieee_bv(const z3::expr &e) { return e.to_ieee_bv(); }
+        inline z3::expr to_ieee_bv(const z3::expr &e) { return e.mk_to_ieee_bv(); }
 
         // Mode Binary
 
@@ -320,6 +320,7 @@ namespace Backend::Z3::Convert {
         }
 
         // Ternary
+
         /** FP::fp converter */
         inline z3::expr fp(const z3::expr &sgn, const z3::expr &exp, const z3::expr &sig) {
             return z3::fpa_fp(sgn, exp, sig);
@@ -332,11 +333,14 @@ namespace Backend::Z3::Convert {
         inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e,
                               const Constants::UInt bit_length) {
             using To = Constants::CTSC<Op::FP::ToBV<Signed>>;
+            e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
-                return z3::fpa_to_sbv(Private::to_z3_rm(mode), e, bit_length);
+                return z3::fpa_to_sbv(e.ctx().fpa_rounding_mode(), e,
+                                      Utils::narrow<z3u>(bit_length));
             }
             else {
-                return z3::fpa_to_ubv(Private::to_z3_rm(mode), e, bit_length);
+                return z3::fpa_to_ubv(e.ctx().fpa_rounding_mode(), e,
+                                      Utils::narrow<z3u>(bit_length));
             }
         }
 

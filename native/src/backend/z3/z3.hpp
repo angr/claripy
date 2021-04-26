@@ -211,10 +211,10 @@ namespace Backend::Z3 {
                     return ret;
                 }
                 case Op::Literal::static_cuid: {
-                    break; // TODO
+                    return {}; // TODO
                 }
                 case Op::Symbol::static_cuid: {
-                    break; // TODO
+                    return {}; // TODO
                 }
 
                     /************************************************/

@@ -17,7 +17,7 @@ namespace Backend {
     /** A subclass of Backend::Base which other backends should derive from for consistency */
     template <typename BackendObj, typename Solver> class Generic : public Base {
         /** A raw pointer to a backend object */
-        using BORCPtr = Constants::CTSC<BackendObj>;
+        using BORCPtr = Constants::CTS<BackendObj>;
 
       public:
         /** Clear caches to decrease memory pressure
