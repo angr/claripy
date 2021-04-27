@@ -191,6 +191,13 @@ def test_and_mask_comparing_against_constant_simplifier():
     expr = claripy.Concat(claripy.BVV(0, 24), a) & 0xffff == b
     assert expr.is_false()
 
+    # A & 0 == 0 ==> true
+    a = claripy.BVS('a', 32)
+    b = claripy.BVV(0, 32)
+    expr = (a & 0) == b
+    assert expr.is_true()
+    expr = (a & 0) == claripy.BVV(1, 32)
+    assert expr.is_false()
 
 def test_zeroext_extract_comparing_against_constant_simplifier():
 

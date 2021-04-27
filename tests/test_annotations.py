@@ -16,13 +16,18 @@ class AnnotationB(AnnotationA):
         return False
 
 class AnnotationC(AnnotationA):
+
+    def __init__(self, letter, number):
+        super().__init__(letter, number)
+        self._relocatable = True
+
     @property
     def eliminatable(self):
         return False
 
     @property
     def relocatable(self):
-        return True
+        return self._relocatable
 
     def relocate(self, src, dst):
         return AnnotationC(self.letter, self.number+1)
@@ -118,7 +123,43 @@ def test_eagerness():
     y = x + 1
     assert y.annotations == x.annotations
 
+
+def test_ast_hash_should_consider_relocatable_annotations():
+
+    relocatable_anno = AnnotationC('a', 2)
+    const = claripy.BVV(1337, 32)
+    x0 = claripy.BVS('x', 32).annotate(relocatable_anno)
+    y0 = claripy.Concat(x0, const)
+
+    # make the annotation not relocatable
+    # this is of course a hack, but it can demonstrate the problem
+    relocatable_anno._relocatable = False
+    x0._relocatable_annotations = frozenset()
+
+    y1 = claripy.Concat(x0, const)
+
+    assert len(y0.annotations) == 1
+    assert len(y1.annotations) == 0
+    assert y0._hash != y1._hash
+
+
+def test_remove_relocatable_annotations():
+    relocatable_anno = AnnotationC('a', 2)
+    const = claripy.BVV(1337, 32)
+
+    x0 = claripy.BVS('x', 32).annotate(relocatable_anno)
+    y0 = claripy.Concat(x0, const)
+    assert len(y0.annotations) == 1
+    assert y0.annotations == (relocatable_anno,)
+
+    y1 = y0.remove_annotation(relocatable_anno)
+
+    assert len(y1.annotations) == 0
+
+
 if __name__ == '__main__':
     test_annotations()
     test_backend()
     test_eagerness()
+    test_ast_hash_should_consider_relocatable_annotations()
+    test_remove_relocatable_annotations()

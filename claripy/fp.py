@@ -349,8 +349,9 @@ def fpToUBV(rm, fp, size):
     # todo: actually make unsigned
     try:
         rounding_mode = rm.pydecimal_equivalent_rounding_mode()
-        val = int(Decimal(fp).to_integral_value(rounding_mode))
-        assert val & ((1 << size) - 1) == val, "Rounding produced values outside the BV range! rounding {} with rounding mode {} produced {}".format
+        val = int(Decimal(fp.value).to_integral_value(rounding_mode))
+        assert val & ((1 << size) - 1) == val, \
+            f"Rounding produced values outside the BV range! rounding {fp.value} with rounding mode {rm} produced {val}"
         if val < 0:
             val = (1 << size) + val
         return BVV(val, size)

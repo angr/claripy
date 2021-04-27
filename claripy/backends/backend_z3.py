@@ -52,8 +52,6 @@ def _add_memory_pressure(p):
 # track the count of solves
 solve_count = 0
 
-supports_fp = hasattr(z3, 'fpEQ')
-
 # as of z3 4.8.7.0 this seems to matter
 z3.set_param('rewriter.hi_fp_unspecified', 'true')
 
@@ -71,13 +69,6 @@ def condom(f):
         except z3.Z3Exception as ze:
             raise ClaripyZ3Error() from ze
     return z3_condom
-
-def _raw_caller(f):
-    @staticmethod
-    @condom
-    def raw_caller(*args, **kwargs):
-        return f(*args, **kwargs)
-    return raw_caller
 
 def _z3_decl_name_str(ctx, decl):
     decl_name = z3.Z3_get_decl_name(ctx, decl)
@@ -121,8 +112,8 @@ class BackendZ3(Backend):
         self._ast_cache_size = ast_cache_size
 
         # and the operations
-        all_ops = backend_fp_operations | backend_operations if supports_fp else backend_operations
-        all_ops |= backend_strings_operations - {'StrIsDigit'} 
+        all_ops = backend_fp_operations | backend_operations
+        all_ops |= backend_strings_operations - {'StrIsDigit'}
         for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
@@ -381,7 +372,6 @@ class BackendZ3(Backend):
 
     @condom
     def _abstract(self, e):
-        #return self._abstract(z, split_on=split_on)[0]
         return self._abstract_internal(e.ctx.ctx, e.ast)
 
     @staticmethod
@@ -759,7 +749,7 @@ class BackendZ3(Backend):
         for m_f in z3_model:
             n = _z3_decl_name_str(m_f.ctx.ctx, m_f.ast).decode()
             m = m_f()
-            me = z3_model.eval(m)
+            me = z3_model.eval(m, model_completion=True)
             model[n] = self._abstract_to_primitive(me.ctx.ctx, me.ast)
 
         return model
