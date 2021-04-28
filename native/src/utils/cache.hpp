@@ -50,6 +50,17 @@ namespace Utils {
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<const Cached>>;
 
+        /** If h is in the cache, return a shared pointer to it
+         *  Otherwise return a shared pointer to nullptr
+         */
+        Ptr find(const Hash &h) {
+            std::shared_lock<decltype(s_m)> r(s_m);
+            if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
+                return lookup;
+            }
+            return { nullptr };
+        }
+
         /** If hash h is not in the cache, construct a Cached from the given args
          *  Return a shared pointer to the newly constructed Cached, and cache it
          *  This function is thread-safe
@@ -68,15 +79,10 @@ namespace Utils {
             static_assert(is_ancestor<Cached, Derived>,
                           "Derived must derive from Base or be Base");
 
-            // Create locked scope
-            {
-                std::shared_lock<decltype(s_m)> r(s_m);
-                // Initial find
-                if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
-                    return lookup;
-                }
-
-            } // Unlock
+            // Initial cache lookup
+            if (auto lookup { this->find(h) }; full(lookup)) {
+                return lookup;
+            }
 
             // Construct our object to be cached
             // This might be a bit faster than constructing then using a staic pointer cost
