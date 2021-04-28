@@ -5,6 +5,8 @@
 #ifndef __BACKEND_Z3_CONVERT_HPP__
 #define __BACKEND_Z3_CONVERT_HPP__
 
+#include "fp_width.hpp"
+
 #include "../../op.hpp"
 
 #include <functional>
@@ -26,8 +28,19 @@ namespace Backend::Z3::Convert {
     z3::expr extract(const Constants::UInt high, const Constants::UInt low, const z3::expr &e);
 
     namespace Private {
+
         /** A thread local context all Z3 exprs should use */
-        inline thread_local z3::context tl_context;
+        inline thread_local z3::context tl_ctx;
+
+        /** A hack copied from python that *should* be removed ASAP
+         *  @todo Remove the need for this
+         *  Python comment: XXX this is a HUGE HACK that should be removed whenever uninitialized
+         *  gets moved to the "proposed annotation backend" or wherever will prevent it from being
+         *  part of the object identity. also whenever the VSA attributes get the fuck out of BVS
+         * as well
+         */
+        inline thread_local std::map<std::string, Expression::BasePtr> extra_bvs_data;
+
     } // namespace Private
 
     // Unary
@@ -165,9 +178,9 @@ namespace Backend::Z3::Convert {
     template <bool Left> z3::expr rotate(const z3::expr &l, const z3::expr &r) {
         // z3's C++ API's rotate functions are different (note the "ext" below)
         using namespace Z3;
-        auto &ctx = l.ctx();
-        const z3::expr ret { ctx, (Left ? Z3_mk_ext_rotate_left(ctx, l, r)
-                                        : Z3_mk_ext_rotate_right(ctx, l, r)) };
+        auto &ctx { Private::tl_ctx };
+        z3::expr ret { ctx, (Left ? Z3_mk_ext_rotate_left(ctx, l, r)
+                                  : Z3_mk_ext_rotate_right(ctx, l, r)) };
         ctx.check_error();
         return ret;
     }
@@ -244,10 +257,51 @@ namespace Backend::Z3::Convert {
 	case Op::Literal::static_cuid: {
 		break; // TODO
 	}
-	case Op::Symbol::static_cuid: {
-		break; // TODO
-	}
 #endif
+
+    /** Symbol converter
+     *  To handle the extra_bvs_data hack, this uses a hack of viewing the Private data of factory
+     *  @todo Remove the hack
+     */
+    inline z3::expr symbol(const Expression::RawPtr expr) {
+        using To = Constants::CTSC<Op::Symbol>;
+        const std::string &name { static_cast<To>(expr->op.get())->name };
+        auto &ctx { Private::tl_ctx };
+        switch (expr->cuid) {
+            case Expression::Bool::static_cuid:
+                return ctx.constant(name.c_str(), ctx.bool_sort());
+            case Expression::String::static_cuid:
+                return ctx.constant(name.c_str(), ctx.string_sort());
+            case Expression::FP::static_cuid: {
+                using FPP = Constants::CTSC<Expression::FP>;
+                const auto fpw { (static_cast<FPP>(expr)->bit_length == 32) ? FP::flt : FP::dbl };
+                return ctx.constant(name.c_str(), ctx.fpa_sort(Utils::narrow<z3u>(fpw.exp),
+                                                               Utils::narrow<z3u>(fpw.mantissa)));
+            }
+            case Expression::BV::static_cuid: {
+                using BVP = Constants::CTSC<Expression::FP>;
+#ifdef DEBUG
+                Utils::affirm<Utils::Error::Unexpected::Unknown>(
+                    Factory::Private::cache<Expression::Base>.find(expr->hash) != nullptr,
+                    WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
+#endif
+                // This is a hack
+                Private::extra_bvs_data.emplace(
+                    expr->hash, Factory::Private::cache<Expression::Base>.find(expr->hash));
+                // Return the converted constant
+                const Constants::UInt bit_length { static_cast<BVP>(expr)->bit_length };
+                return ctx.constant(name.c_str(),
+                                    ctx.bv_sort(Utils::narrow<unsigned>(bit_length)));
+            }
+            // Error handling
+            case Expression::VS::static_cuid:
+                throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
+                                                  "VSA is not supported by the Z3 backend");
+            default:
+                throw Utils::Error::Unexpected::NotSupported(
+                    WHOAMI_WITH_SOURCE "Unknown expression CUID given to z3 backend");
+        }
+    }
 
     namespace FP {
 
@@ -297,25 +351,29 @@ namespace Backend::Z3::Convert {
 
         /** FP::Add converter */
         inline z3::expr add(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l + r;
         }
 
         /** FP::Sub converter */
         inline z3::expr sub(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l - r;
         }
 
         /** FP::Mul converter */
         inline z3::expr mul(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l * r;
         }
 
         /** FP::Div converter */
         inline z3::expr div(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l / r;
         }
 
@@ -333,14 +391,13 @@ namespace Backend::Z3::Convert {
         inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e,
                               const Constants::UInt bit_length) {
             using To = Constants::CTSC<Op::FP::ToBV<Signed>>;
-            e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            ctx.set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
-                return z3::fpa_to_sbv(e.ctx().fpa_rounding_mode(), e,
-                                      Utils::narrow<z3u>(bit_length));
+                return z3::fpa_to_sbv(ctx.fpa_rounding_mode(), e, Utils::narrow<z3u>(bit_length));
             }
             else {
-                return z3::fpa_to_ubv(e.ctx().fpa_rounding_mode(), e,
-                                      Utils::narrow<z3u>(bit_length));
+                return z3::fpa_to_ubv(ctx.fpa_rounding_mode(), e, Utils::narrow<z3u>(bit_length));
             }
         }
 

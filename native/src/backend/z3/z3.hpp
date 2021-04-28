@@ -113,7 +113,7 @@ namespace Backend::Z3 {
 
                 // This should never be hit
                 default: {
-                    throw Utils::Error::Unexpected::IncorrectUsage(
+                    throw Utils::Error::Unexpected::NotSupported(
                         WHOAMI_WITH_SOURCE
                         "Unknown expression op given to z3::dispatch_conversion."
                         "\nOp CUID: ",
@@ -205,7 +205,7 @@ namespace Backend::Z3 {
 
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
-                    const auto op { static_cast<To>(expr->op.get()) };
+                    const auto *const op { static_cast<To>(expr->op.get()) };
                     auto ret { Convert::extract(op->high, op->low, *args.back()) };
                     args.pop_back();
                     return ret;
@@ -214,7 +214,7 @@ namespace Backend::Z3 {
                     return {}; // TODO
                 }
                 case Op::Symbol::static_cuid: {
-                    return {}; // TODO
+                    return Convert::symbol(expr);
                 }
 
                     /************************************************/

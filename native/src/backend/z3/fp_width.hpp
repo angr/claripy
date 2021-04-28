@@ -2,13 +2,13 @@
  * @file
  * @brief This file defines a floating point width class
  */
-#ifndef __FPWIDTH_HPP__
-#define __FPWIDTH_HPP__
+#ifndef __BACKEND_Z3_FPWIDTH_HPP__
+#define __BACKEND_Z3_FPWIDTH_HPP__
 
-#include "constants.hpp"
+#include "../../constants.hpp"
 
 
-namespace FP {
+namespace Backend::Z3::FP {
 
     /** A floating point width struct */
     struct Width {
@@ -23,6 +23,6 @@ namespace FP {
 
     /** A double wide fp width */
     static inline const constexpr Width flt { 11, 53 };
-} // namespace FP
+} // namespace Backend::Z3::FP
 
 #endif
