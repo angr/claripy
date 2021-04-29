@@ -11,6 +11,7 @@
 #include "../../macros.hpp"
 #include "../is_strong_enum.hpp"
 #include "../sfinae_test.hpp"
+#include "../to_underlying.hpp"
 
 #include <ostream>
 #include <type_traits>
@@ -36,7 +37,7 @@ namespace Utils::Private {
     template <typename T, std::enable_if_t<needs_ostream_conversion<T>, int> = 0>
     [[gnu::always_inline]] constexpr inline std::underlying_type_t<T>
     ostream_helper_conversions(const T &v) noexcept {
-        return static_cast<std::underlying_type_t<T>>(v);
+        return to_underlying(v);
     }
 
     /** This specalization is a no-op */

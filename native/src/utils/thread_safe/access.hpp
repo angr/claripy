@@ -16,6 +16,7 @@
 #include "base.hpp"
 
 #include "../../macros.hpp"
+#include "../checked_static_cast.hpp"
 #include "../make_derived_shared.hpp"
 
 #include <algorithm>
@@ -77,7 +78,7 @@ namespace Utils::ThreadSafe {
 
         /** Copy assignment */
         Access &operator=(const Access &old) {
-            Base::operator=(static_cast<Base>(old));
+            Base::operator=(checked_static_cast<Base>(old));
             this->set_ref(old.get());
             return *this;
         }

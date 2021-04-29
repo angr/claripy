@@ -10,6 +10,7 @@
 
 #include "../../macros.hpp"
 #include "../is_strong_enum.hpp"
+#include "../to_underlying.hpp"
 
 #include <type_traits>
 
@@ -20,9 +21,9 @@
     /** Define the given operator for the type Enum if it is requested */                         \
     template <typename Enum, std::enable_if_t<Utils::BitMask::Private::enabled<Enum>, int> = 0>   \
     constexpr Enum operator OP(const Enum l, const Enum r) {                                      \
-        static_assert(Utils::is_strong_enum<Enum>, "Enum is not a scoped enum");                  \
-        using Underling = typename std::underlying_type_t<Enum>;                                  \
-        return static_cast<Enum>(static_cast<Underling>(l) OP static_cast<Underling>(r));         \
+        using namespace Utils;                                                                    \
+        static_assert(is_strong_enum<Enum>, "Enum is not a scoped enum");                         \
+        return static_cast<Enum>(to_underlying(l) OP to_underlying(r));                           \
     }
 
 /** A local macro used to define a binary eq operator */
@@ -30,9 +31,9 @@
     /** Define the given operator for the type Enum if it is requested */                         \
     template <typename Enum, std::enable_if_t<Utils::BitMask::Private::enabled<Enum>, int> = 0>   \
     constexpr Enum operator OP(const Enum l, const Enum r) {                                      \
-        static_assert(Utils::is_strong_enum<Enum>, "Enum is not a scoped enum");                  \
-        using Underling = typename std::underlying_type_t<Enum>;                                  \
-        return l = static_cast<Enum>(static_cast<Underling>(l) OP static_cast<Underling>(r));     \
+        using namespace Utils;                                                                    \
+        static_assert(is_strong_enum<Enum>, "Enum is not a scoped enum");                         \
+        return l = static_cast<Enum>(to_underlying(l) OP to_underlying(r));                       \
     }
 
 // Bitmask operators
@@ -46,7 +47,9 @@ DEFINE_BINARY_EQ_OP(^=)
 /** Conditinally enabled ~ bitmask operator */
 template <typename Enum, std::enable_if_t<Utils::BitMask::Private::enabled<Enum>, int> = 0>
 constexpr Enum operator~(const Enum e) {
-    return static_cast<Enum>(~static_cast<std::underlying_type_t<Enum>>(e));
+    using namespace Utils;
+    static_assert(is_strong_enum<Enum>, "Enum is not a scoped enum");
+    return static_cast<Enum>(~to_underlying(e));
 }
 
 // Cleanup
