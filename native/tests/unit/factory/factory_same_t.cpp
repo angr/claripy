@@ -8,7 +8,7 @@
 
 /** A factory constructable object */
 struct TestFactory : public Factory::FactoryMade {
-    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(TestFactory);
+    FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(TestFactory, 0);
     /** Constructor */
     TestFactory(const Hash::Hash &h) : FactoryMade { h, 0_ui } {}
 };

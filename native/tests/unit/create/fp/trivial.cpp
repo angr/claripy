@@ -25,11 +25,6 @@ void trivial() {
     Log::debug("Testing Fp::ToIEEEBV...");
     unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Create::FP::to_ieee_bv>();
 
-    // Binary
-
-    Log::debug("Testing Fp::NE...");
-    binary<Ex::Bool, Ex::FP, Op::FP::NE, SM::NA, Create::FP::ne>();
-
     // ModeBinary
 
     Log::debug("Testing Fp::Add...");
