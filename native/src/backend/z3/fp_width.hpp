@@ -23,6 +23,7 @@ namespace Backend::Z3::FP {
 
     /** A double wide fp width */
     static inline const constexpr Width flt { 11, 53 };
+
 } // namespace Backend::Z3::FP
 
 #endif
