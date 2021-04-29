@@ -33,6 +33,14 @@ namespace Expression {
     /** Default virtual destructor */
     Bits::~Bits() noexcept = default;
 
+    /** Static casts T to Expression::Bits, then returns the bit_length
+     *  Warning: This static casts, the user must ensure that p.get() is a T
+     */
+    constexpr Constants::UInt get_bit_length(const Expression::BasePtr &p) {
+        using To = Constants::CTS<Expression::Bits>;
+        return Utils::checked_static_cast<To>(p.get())->bit_length;
+    }
+
 } // namespace Expression
 
 #endif
