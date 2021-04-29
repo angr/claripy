@@ -5,7 +5,6 @@
 #ifndef __CREATE_PRIVATE_FLAT_HPP__
 #define __CREATE_PRIVATE_FLAT_HPP__
 
-#include "bit_length.hpp"
 #include "size_mode.hpp"
 
 #include "../constants.hpp"
@@ -43,7 +42,7 @@ namespace Create::Private {
                           "Create::Private::flat does not support the given SizeMode");
             return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym,
                                            Op::factory<OpT>(std::forward<OpC>(operands)),
-                                           bit_length(operands[0])));
+                                           Expression::get_bit_length(operands[0])));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,

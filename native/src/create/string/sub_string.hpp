@@ -6,7 +6,6 @@
 #define __CREATE_STRING_SUBSTRING_HPP__
 
 #include "../constants.hpp"
-#include "../private/bit_length.hpp"
 
 
 namespace Create::String {
@@ -17,18 +16,13 @@ namespace Create::String {
          */
         static inline Constants::UInt sub_string_length(const Expression::BasePtr &count,
                                                         const Expression::BasePtr &full_string) {
-
-            // For brevity
             using Err = Error::Expression::Type;
-            namespace CP = ::Create::Private;
-
             // If symbolic, use full_string's length
             if (count->symbolic) {
                 Utils::affirm<Err>(CUID::is_t<Expression::String>(full_string),
                                    WHOAMI_WITH_SOURCE "full_string expression must be a String");
-                return CP::bit_length(full_string);
+                return Expression::get_bit_length(full_string);
             }
-
             // If concrete, use Concrete Op's length
             else {
 #ifdef DEBUG

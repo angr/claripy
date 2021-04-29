@@ -6,7 +6,6 @@
 #define __CREATE_LITERAL_HPP__
 
 #include "constants.hpp"
-#include "private/bit_length.hpp"
 
 
 namespace Create {

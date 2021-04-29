@@ -5,7 +5,6 @@
 #ifndef __CREATE_PRIVATE_TERNARY_HPP__
 #define __CREATE_PRIVATE_TERNARY_HPP__
 
-#include "bit_length.hpp"
 #include "size_mode.hpp"
 
 #include "../constants.hpp"
@@ -45,13 +44,14 @@ namespace Create::Private {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
-            Constants::UInt new_bit_length { bit_length(first) };
+            Constants::UInt new_bit_length { Expression::get_bit_length(first) };
             if constexpr (Mode == SizeMode::Add) {
                 Utils::affirm<Err::Type>(CUID::is_t<In>(second),
                                          WHOAMI_WITH_SOURCE "second operand of incorrect type");
                 Utils::affirm<Err::Type>(CUID::is_t<In>(third),
                                          WHOAMI_WITH_SOURCE "third operand of incorrect type");
-                new_bit_length += bit_length(second) + bit_length(third);
+                new_bit_length +=
+                    Expression::get_bit_length(second) + Expression::get_bit_length(third);
             }
             else {
                 static_assert(Utils::TD::false_<Out>,

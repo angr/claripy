@@ -5,8 +5,6 @@
 #ifndef __CREATE_PRIVATE_UNARY_HPP__
 #define __CREATE_PRIVATE_UNARY_HPP__
 
-#include "bit_length.hpp"
-
 #include "../constants.hpp"
 
 
@@ -41,7 +39,7 @@ namespace Create::Private {
         // Construct expression
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
             return simplify(Ex::factory<Out>(std::forward<EAnVec>(av), x->symbolic,
-                                             Op::factory<OpT>(x), bit_length(x)));
+                                             Op::factory<OpT>(x), Expression::get_bit_length(x)));
         }
         else {
             return simplify(

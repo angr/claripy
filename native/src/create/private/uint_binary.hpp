@@ -5,7 +5,6 @@
 #ifndef __CREATE_PRIVATE_UINTBINARY_HPP__
 #define __CREATE_PRIVATE_UINTBINARY_HPP__
 
-#include "bit_length.hpp"
 #include "size_mode.hpp"
 
 #include "../constants.hpp"
@@ -52,7 +51,7 @@ namespace Create::Private {
             // Construct size
             Constants::UInt new_bit_length { integer };
             if constexpr (Mode == SizeMode::Add) {
-                new_bit_length += bit_length(expr);
+                new_bit_length += Expression::get_bit_length(expr);
             }
             else if constexpr (Mode != SizeMode::Second) {
                 static_assert(Utils::TD::false_<Out>,

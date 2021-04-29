@@ -6,7 +6,6 @@
 #define __CREATE_IF_HPP__
 
 #include "constants.hpp"
-#include "private/bit_length.hpp"
 
 
 namespace Create {
@@ -31,7 +30,7 @@ namespace Create {
         if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
             // static cast is safe because we verified left is a T
             return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op),
-                                           Private::bit_length(left)));
+                                           Expression::get_bit_length(left)));
         }
         else {
             return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op)));
