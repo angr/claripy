@@ -21,7 +21,7 @@ namespace Create::Private {
         Utils::affirm<Err>(ptr, WHOAMI_WITH_SOURCE "cast failed");
         return ptr->bit_length;
 #else
-        return static_cast<To>(p.get())->bit_length;
+        return Utils::checked_static_cast<To>(p.get())->bit_length;
 #endif
     }
 

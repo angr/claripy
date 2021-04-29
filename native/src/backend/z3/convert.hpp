@@ -265,7 +265,7 @@ namespace Backend::Z3::Convert {
      */
     inline z3::expr symbol(const Expression::RawPtr expr) {
         using To = Constants::CTSC<Op::Symbol>;
-        const std::string &name { static_cast<To>(expr->op.get())->name };
+        const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
         auto &ctx { Private::tl_ctx };
         switch (expr->cuid) {
             case Expression::Bool::static_cuid:
@@ -274,7 +274,9 @@ namespace Backend::Z3::Convert {
                 return ctx.constant(name.c_str(), ctx.string_sort());
             case Expression::FP::static_cuid: {
                 using FPP = Constants::CTSC<Expression::FP>;
-                const auto fpw { (static_cast<FPP>(expr)->bit_length == 32) ? FP::flt : FP::dbl };
+                const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length == 32_ui)
+                                     ? FP::flt
+                                     : FP::dbl };
                 return ctx.constant(name.c_str(), ctx.fpa_sort(Utils::narrow<z3u>(fpw.exp),
                                                                Utils::narrow<z3u>(fpw.mantissa)));
             }
@@ -289,7 +291,9 @@ namespace Backend::Z3::Convert {
                 Private::extra_bvs_data.emplace(
                     expr->hash, Factory::Private::cache<Expression::Base>.find(expr->hash));
                 // Return the converted constant
-                const Constants::UInt bit_length { static_cast<BVP>(expr)->bit_length };
+                const Constants::UInt bit_length {
+                    Utils::checked_static_cast<BVP>(expr)->bit_length
+                };
                 return ctx.constant(name.c_str(),
                                     ctx.bv_sort(Utils::narrow<unsigned>(bit_length)));
             }
@@ -390,8 +394,7 @@ namespace Backend::Z3::Convert {
         template <bool Signed>
         inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e,
                               const Constants::UInt bit_length) {
-            using To = Constants::CTSC<Op::FP::ToBV<Signed>>;
-            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            auto &ctx { e.ctx() };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
                 return z3::fpa_to_sbv(ctx.fpa_rounding_mode(), e, Utils::narrow<z3u>(bit_length));

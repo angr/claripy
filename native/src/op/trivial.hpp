@@ -61,8 +61,7 @@ namespace Op {
      *  Requires equal sized inputs
      */
     template <Mode::Compare Mask>
-    OP_BINARY_TRIVIAL_SUBCLASS(Compare, true,
-                               static_cast<std::underlying_type_t<Mode::Shift>>(Mask));
+    OP_BINARY_TRIVIAL_SUBCLASS(Compare, true, Utils::to_underlying(Mask));
 
     // Math
 
@@ -74,7 +73,7 @@ namespace Op {
     /** The mathematical binary op class: Div
      *  Requires equal sized inputs
      */
-    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Div, true, static_cast<int>(Signed));
+    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Div, true, Signed);
 
     /** The mathematical binary op class: Pow
      *  Requires equal sized inputs
@@ -84,7 +83,7 @@ namespace Op {
     /** The mathematical binary op class: Mod
      *  Requires equal sized inputs
      */
-    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true, static_cast<int>(Signed));
+    template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Mod, true, Signed);
 
     // Bitwise
 
@@ -92,13 +91,12 @@ namespace Op {
      *  Requires equal sized inputs
      */
     template <Mode::Shift Mask>
-    OP_BINARY_TRIVIAL_SUBCLASS(Shift, true,
-                               static_cast<std::underlying_type_t<Mode::Shift>>(Mask));
+    OP_BINARY_TRIVIAL_SUBCLASS(Shift, true, Utils::to_underlying(Mask));
 
     /** The bitwise binary op class: Rotate
      *  Requires equal sized inputs
      */
-    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, static_cast<int>(Left));
+    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, Left);
 
     // Misc
 

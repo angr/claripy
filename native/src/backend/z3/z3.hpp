@@ -70,7 +70,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
-        auto ret { FN(*args.back(), static_cast<To>(expr->op.get())->integer) };                  \
+        auto ret { FN(*args.back(), Utils::checked_static_cast<To>(expr->op.get())->integer) };   \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -80,7 +80,8 @@ namespace Backend::Z3 {
         static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");           \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         const auto size { args.size() };                                                          \
-        auto ret { FN(static_cast<To>(expr->op.get())->mode, *args[size - 2], *args[size - 1]) }; \
+        auto ret { FN(Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],      \
+                      *args[size - 1]) };                                                         \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -98,7 +99,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                            \
         using To = Constants::CTSC<Op::AbstractFlat>;                                             \
         const auto a_size { args.size() };                                                        \
-        const auto n { static_cast<To>(expr->op.get())->operands.size() };                        \
+        const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
         auto ret { FN(&(args.data()[a_size - n]), n) };                                           \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
@@ -205,7 +206,7 @@ namespace Backend::Z3 {
 
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
-                    const auto *const op { static_cast<To>(expr->op.get()) };
+                    const auto *const op { Utils::checked_static_cast<To>(expr->op.get()) };
                     auto ret { Convert::extract(op->high, op->low, *args.back()) };
                     args.pop_back();
                     return ret;
@@ -243,8 +244,9 @@ namespace Backend::Z3 {
 /** A local macro used for consistency */
 #define TO_BV_BODY(TF)                                                                            \
     using ToBV = Constants::CTSC<Op::FP::ToBV<false>>;                                            \
-    auto ret { Convert::FP::to_bv<TF>(static_cast<ToBV>(expr->op.get())->mode, *args.back(),      \
-                                      static_cast<Bits>(expr)->bit_length) };                     \
+    auto ret { Convert::FP::to_bv<TF>(Utils::checked_static_cast<ToBV>(expr->op.get())->mode,     \
+                                      *args.back(),                                               \
+                                      Utils::checked_static_cast<Bits>(expr)->bit_length) };      \
     args.pop_back();                                                                              \
     return ret;
 
@@ -306,7 +308,7 @@ namespace Backend::Z3 {
                         dynamic_cast<To>(expr) != nullptr,
                         WHOAMI_WITH_SOURCE "String::IndexOf has no length");
 #endif
-                    const auto bl { static_cast<To>(expr)->bit_length };
+                    const auto bl { Utils::checked_static_cast<To>(expr)->bit_length };
                     auto ret { Convert::String::index_of(*args[size - 3], *args[size - 2],
                                                          *args[size - 1], bl) };
                     args.resize(size - 2);

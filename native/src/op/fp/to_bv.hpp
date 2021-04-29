@@ -13,7 +13,7 @@ namespace Op::FP {
 
     /** The op class: to_bv */
     template <bool Signed> class ToBV final : public Base {
-        OP_FINAL_INIT(ToBV, static_cast<bool>(Signed), "FP::");
+        OP_FINAL_INIT(ToBV, Signed, "FP::");
 
       public:
         /** The FP mode */
