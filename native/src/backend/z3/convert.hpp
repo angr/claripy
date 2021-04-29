@@ -41,6 +41,9 @@ namespace Backend::Z3::Convert {
          */
         inline thread_local std::map<std::string, Expression::BasePtr> extra_bvs_data;
 
+        /** The size of a float */
+        static inline constexpr const auto flt_size { 4_ui * BitLength::char_bit };
+
     } // namespace Private
 
     // Unary
@@ -252,16 +255,46 @@ namespace Backend::Z3::Convert {
         return z3::ite(cond, if_true, if_false);
     }
 
-#if 0
-		// TODO: @todo
-	case Op::Literal::static_cuid: {
-		break; // TODO
-	}
-#endif
+    /** Literal converter */
+    inline z3::expr literal(const Expression::RawPtr expr) {
+        using To = Constants::CTSC<Op::Literal>;
+        const auto &data { Utils::checked_static_cast<To>(expr->op.get())->data };
+        auto &ctx { Private::tl_ctx };
+        try {
+            switch (expr->cuid) {
+                case Expression::Bool::static_cuid:
+                    return ctx.bool_val(std::get<bool>(data));
+                case Expression::String::static_cuid:
+                    return ctx.string_val(std::get<std::string>(data));
+                case Expression::FP::static_cuid: {
+                    using Bits = Constants::CTSC<Expression::Bits>;
+                    return (Utils::checked_static_cast<Bits>(expr)->bit_length ==
+                            Private::flt_size)
+                             ? ctx.fpa_val(std::get<float>(data))
+                             : ctx.fpa_val(std::get<double>(data));
+                }
+                case Expression::BV::static_cuid: {
+                    const auto &vec { std::get<std::vector<char>>(data) };
+                    return ctx.bv_val(vec.data(), vec.size());
+                }
+                // Error handling
+                case Expression::VS::static_cuid:
+                    throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
+                                                      "VSA is not supported by the Z3 backend");
+                default:
+                    throw Utils::Error::Unexpected::NotSupported(
+                        WHOAMI_WITH_SOURCE "Unknown expression CUID given to z3 backend");
+            }
+        }
+        // Re-emit these exceptions with additional info and wrapped as a Claricpp exception
+        catch (const std::bad_variant_access &ex) {
+            throw Utils::Error::Unexpected::BadVariantAccess(WHOAMI_WITH_SOURCE, ex.what());
+        }
+    }
 
     /** Symbol converter
-     *  To handle the extra_bvs_data hack, this uses a hack of viewing the Private data of factory
-     *  @todo Remove the hack
+     *  to handle the extra_bvs_data hack, this uses a hack of viewing the private data of factory
+     *  @todo remove the hack
      */
     inline z3::expr symbol(const Expression::RawPtr expr) {
         using To = Constants::CTSC<Op::Symbol>;
@@ -269,16 +302,17 @@ namespace Backend::Z3::Convert {
         auto &ctx { Private::tl_ctx };
         switch (expr->cuid) {
             case Expression::Bool::static_cuid:
-                return ctx.constant(name.c_str(), ctx.bool_sort());
+                return ctx.bool_const(name.c_str());
             case Expression::String::static_cuid:
-                return ctx.constant(name.c_str(), ctx.string_sort());
+                return ctx.string_const(name.c_str());
             case Expression::FP::static_cuid: {
                 using FPP = Constants::CTSC<Expression::FP>;
-                const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length == 32_ui)
+                const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length ==
+                                  Private::flt_size)
                                      ? FP::flt
                                      : FP::dbl };
-                return ctx.constant(name.c_str(), ctx.fpa_sort(Utils::narrow<z3u>(fpw.exp),
-                                                               Utils::narrow<z3u>(fpw.mantissa)));
+                return ctx.fpa_const(name.c_str(), Utils::narrow<z3u>(fpw.exp),
+                                     Utils::narrow<z3u>(fpw.mantissa));
             }
             case Expression::BV::static_cuid: {
                 using BVP = Constants::CTSC<Expression::FP>;
@@ -294,8 +328,7 @@ namespace Backend::Z3::Convert {
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
                 };
-                return ctx.constant(name.c_str(),
-                                    ctx.bv_sort(Utils::narrow<unsigned>(bit_length)));
+                return ctx.bv_const(name.c_str(), Utils::narrow<unsigned>(bit_length));
             }
             // Error handling
             case Expression::VS::static_cuid:

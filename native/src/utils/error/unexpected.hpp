@@ -23,6 +23,9 @@ namespace Utils::Error::Unexpected {
     /** Bad cast exception */
     DEFINE_FINAL_EXCEPTION(BadCast, Base);
 
+    /** Bad variant access exception */
+    DEFINE_FINAL_EXCEPTION(BadVariantAccess, Base);
+
     /** Raised when a function is given invalid arguments */
     DEFINE_FINAL_EXCEPTION(IncorrectUsage, Claricpp);
 
