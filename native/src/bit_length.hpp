@@ -16,7 +16,7 @@ struct BitLength {
     const Constants::UInt bit_length;
 
     /** The number of bits in a byte */
-    static inline const constexpr Constants::UInt char_bit { 8_ui };
+    static inline const constexpr Constants::UInt char_bit { C_CHAR_BIT };
 
   protected:
     /** Protected constructor */
