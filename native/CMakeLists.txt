@@ -159,7 +159,7 @@ option( Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present 
 
 # Specify the repo and commit that should be used to build Z3
 set( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-set( Z3_GIT_COMMIT "fa2d59373933f9be9112749fbdb00c7ffb6cfbba" )
+set( Z3_GIT_COMMIT "e4b660321f89cfda69d92ba8e52cc818a2e3e552" )
 
 # The number of cores used to compile z3 (think of this as make -j<this>)
 # Note: this will override whatever is passed to make during the build
