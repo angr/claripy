@@ -71,8 +71,7 @@ namespace Backend {
 
         /** Create a new thread local solver and return its id along with an opaque shared pointer
          *  When this opaque shared pointer dies, the solver may also die as well
-         *  This ID must be unique across all solvers of backends of the current thread
-         *  Warning: Do *not* share SolverIDs between threads, this is undefined behavior
+         *  Warning: Do *not* share SolverIDs between threads
          */
         std::pair<SolverID, std::shared_ptr<void>> new_tls_solver() {
             static std::atomic<Constants::UInt> counter { 0 };

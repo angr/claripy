@@ -23,11 +23,18 @@ namespace Backend {
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
          */
-        virtual void downsize() override {
+        void downsize() override {
             Base::downsize(); // Super downsize
             errored_cache.unique().first.clear();
             // Thread locals
             object_cache.clear();
+        }
+
+        /** Create a new solver */
+        std::shared_ptr<void> new_tls_solver_with_id(const SolverID id) override final {
+            const auto s { create_tls_solver() };
+            tls_solvers.emplace(id, s);
+            return s;
         }
 
         /** Checks whether this backend can handle the expression
@@ -48,6 +55,9 @@ namespace Backend {
         template <typename T> using Stack = std::stack<T, std::vector<T>>;
 
         // Pure Virtual Functions
+
+        /** Create a tls solver */
+        virtual std::shared_ptr<Solver> create_tls_solver() const = 0;
 
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been
@@ -148,6 +158,9 @@ namespace Backend {
         }
 
         // Constant variables
+
+        /** Solver map */
+        static thread_local std::map<SolverID, std::weak_ptr<Solver>> tls_solvers;
 
         /** Ctor map
          *  This maps, via cuid, an Expression Type T to a function which produces a backend

@@ -7,10 +7,12 @@
 
 #include "abstract.hpp"
 #include "convert.hpp"
+#include "tl_ctx.hpp"
 
 #include "../../error.hpp"
 #include "../generic.hpp"
 
+#include <memory>
 #include <type_traits>
 
 
@@ -25,6 +27,11 @@ namespace Backend::Z3 {
         /********************************************************************/
         /*                        Function Overrides                        */
         /********************************************************************/
+
+        /** Create a tls solver */
+        std::shared_ptr<Solver> create_tls_solver() const override final {
+            return std::make_shared<Solver>(Private::tl_ctx);
+        }
 
         /** The name of this backend */
         [[nodiscard]] Constants::CCSC name() const noexcept override final { return "z3"; }

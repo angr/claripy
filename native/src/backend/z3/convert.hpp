@@ -6,6 +6,7 @@
 #define __BACKEND_Z3_CONVERT_HPP__
 
 #include "fp_width.hpp"
+#include "tl_ctx.hpp"
 
 #include "../../op.hpp"
 
@@ -28,9 +29,6 @@ namespace Backend::Z3::Convert {
     z3::expr extract(const Constants::UInt high, const Constants::UInt low, const z3::expr &e);
 
     namespace Private {
-
-        /** A thread local context all Z3 exprs should use */
-        inline thread_local z3::context tl_ctx;
 
         /** A hack copied from python that *should* be removed ASAP
          *  @todo Remove the need for this
@@ -181,7 +179,7 @@ namespace Backend::Z3::Convert {
     template <bool Left> z3::expr rotate(const z3::expr &l, const z3::expr &r) {
         // z3's C++ API's rotate functions are different (note the "ext" below)
         using namespace Z3;
-        auto &ctx { Private::tl_ctx };
+        auto &ctx { ::Backend::Z3::Private::tl_ctx };
         z3::expr ret { ctx, (Left ? Z3_mk_ext_rotate_left(ctx, l, r)
                                   : Z3_mk_ext_rotate_right(ctx, l, r)) };
         ctx.check_error();
@@ -259,7 +257,7 @@ namespace Backend::Z3::Convert {
     inline z3::expr literal(const Expression::RawPtr expr) {
         using To = Constants::CTSC<Op::Literal>;
         const auto &data { Utils::checked_static_cast<To>(expr->op.get())->data };
-        auto &ctx { Private::tl_ctx };
+        auto &ctx { ::Backend::Z3::Private::tl_ctx };
         try {
             switch (expr->cuid) {
                 case Expression::Bool::static_cuid:
@@ -277,7 +275,7 @@ namespace Backend::Z3::Convert {
                     const auto &vec { std::get<std::vector<char>>(data) };
                     return ctx.bv_val(vec.data(), vec.size());
                 }
-                // Error handling
+                    // Error handling
                 case Expression::VS::static_cuid:
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
                                                       "VSA is not supported by the Z3 backend");
@@ -299,7 +297,7 @@ namespace Backend::Z3::Convert {
     inline z3::expr symbol(const Expression::RawPtr expr) {
         using To = Constants::CTSC<Op::Symbol>;
         const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
-        auto &ctx { Private::tl_ctx };
+        auto &ctx { ::Backend::Z3::Private::tl_ctx };
         switch (expr->cuid) {
             case Expression::Bool::static_cuid:
                 return ctx.bool_const(name.c_str());
@@ -330,7 +328,7 @@ namespace Backend::Z3::Convert {
                 };
                 return ctx.bv_const(name.c_str(), Utils::narrow<unsigned>(bit_length));
             }
-            // Error handling
+                // Error handling
             case Expression::VS::static_cuid:
                 throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
                                                   "VSA is not supported by the Z3 backend");
@@ -388,28 +386,28 @@ namespace Backend::Z3::Convert {
 
         /** FP::Add converter */
         inline z3::expr add(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l + r;
         }
 
         /** FP::Sub converter */
         inline z3::expr sub(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l - r;
         }
 
         /** FP::Mul converter */
         inline z3::expr mul(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l * r;
         }
 
         /** FP::Div converter */
         inline z3::expr div(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Convert::Private::tl_ctx };
+            auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l / r;
         }
@@ -506,7 +504,6 @@ namespace Backend::Z3::Convert {
         }
 
     } // namespace String
-
 } // namespace Backend::Z3::Convert
 
 #endif
