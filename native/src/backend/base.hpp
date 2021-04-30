@@ -33,7 +33,7 @@ namespace Backend {
         virtual Expression::BasePtr simplify(const Expression::RawPtr expr) = 0;
 
         /** Backend name */
-        virtual Constants::CCSC name() const = 0;
+        [[nodiscard]] virtual Constants::CCSC name() const noexcept = 0;
 
         /** Return true if expr is always true */
         virtual bool is_true(const Expression::BasePtr &expr, const SolverID id,

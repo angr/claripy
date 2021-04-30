@@ -39,7 +39,7 @@ namespace Backend::Z3::Convert {
          *  part of the object identity. also whenever the VSA attributes get the fuck out of BVS
          * as well
          */
-        inline thread_local std::map<std::string, Expression::BasePtr> extra_bvs_data;
+        inline thread_local std::map<std::string, const Expression::BasePtr> extra_bvs_data;
 
         /** The size of a float */
         static inline constexpr const auto flt_size { 4_ui * BitLength::char_bit };
@@ -321,9 +321,9 @@ namespace Backend::Z3::Convert {
                     Factory::Private::cache<Expression::Base>.find(expr->hash) != nullptr,
                     WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
-                // This is a hack
+                // This is a hack take from python
                 Private::extra_bvs_data.emplace(
-                    expr->hash, Factory::Private::cache<Expression::Base>.find(expr->hash));
+                    name, Factory::Private::cache<Expression::Base>.find(expr->hash));
                 // Return the converted constant
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
@@ -427,13 +427,12 @@ namespace Backend::Z3::Convert {
         template <bool Signed>
         inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e,
                               const Constants::UInt bit_length) {
-            auto &ctx { e.ctx() };
-            ctx.set_rounding_mode(Private::to_z3_rm(mode));
+            e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
-                return z3::fpa_to_sbv(ctx.fpa_rounding_mode(), e, Utils::narrow<z3u>(bit_length));
+                return z3::fpa_to_sbv(e, Utils::narrow<z3u>(bit_length));
             }
             else {
-                return z3::fpa_to_ubv(ctx.fpa_rounding_mode(), e, Utils::narrow<z3u>(bit_length));
+                return z3::fpa_to_ubv(e, Utils::narrow<z3u>(bit_length));
             }
         }
 

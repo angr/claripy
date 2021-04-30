@@ -26,6 +26,8 @@ namespace Backend::Z3 {
         /*                        Function Overrides                        */
         /********************************************************************/
 
+        /** The name of this backend */
+        [[nodiscard]] Constants::CCSC name() const noexcept override final { return "z3"; }
 
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been
@@ -212,7 +214,7 @@ namespace Backend::Z3 {
                     return ret;
                 }
                 case Op::Literal::static_cuid: {
-                    return {}; // TODO
+                    return Convert::literal(expr);
                 }
                 case Op::Symbol::static_cuid: {
                     return Convert::symbol(expr);
