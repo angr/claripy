@@ -43,16 +43,6 @@ namespace Backend {
         virtual bool is_false(const Expression::RawPtr &expr, const Solver &solver,
                               const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
 
-        /** Return true if expr can be true */
-        virtual bool
-        can_be_true(const Expression::RawPtr &expr, const Solver &solver,
-                    const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
-
-        /** Return true if expr can be false */
-        virtual bool
-        can_be_false(const Expression::RawPtr &expr, const Solver &solver,
-                     const std::vector<Expression::BasePtr> extra_constraints = {}) = 0;
-
         /** Check whether the backend can handle the given expression */
         virtual bool handles(const Expression::RawPtr expr) = 0;
 

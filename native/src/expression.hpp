@@ -8,7 +8,6 @@
 #include "expression/are_same_type.hpp"
 #include "expression/base.hpp"
 #include "expression/bits.hpp"
-#include "expression/bool.hpp"
 #include "expression/copy.hpp"
 #include "expression/factory.hpp"
 #include "expression/instantiables.hpp"

@@ -6,7 +6,6 @@
 #define __EXPRESSION_COPY_HPP__
 
 #include "base.hpp"
-#include "bool.hpp"
 #include "factory.hpp"
 #include "instantiables.hpp"
 
