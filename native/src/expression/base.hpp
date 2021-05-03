@@ -5,17 +5,13 @@
 #ifndef __EXPRESSION_BASE_HPP__
 #define __EXPRESSION_BASE_HPP__
 
+#include "../annotation.hpp"
 #include "../factory.hpp"
 
 #include <memory>
 #include <vector>
 
 
-// Forward declarations
-namespace Annotation {
-    struct Base;
-    using BasePtr = Factory::Ptr<Base>;
-} // namespace Annotation
 namespace Op {
     class Base;
     using BasePtr = Factory::Ptr<Base>;
@@ -45,7 +41,7 @@ namespace Expression {
         /** Protected Constructor */
         explicit inline Base(const Hash::Hash h, const CUID::CUID &c, AnVec &&ans, const bool sym,
                              Op::BasePtr &&op_) noexcept
-            : FactoryMade { h, c }, annotations { ans }, symbolic { sym }, op { op_ } {
+            : FactoryMade { h, c }, annotations { std::move(ans) }, symbolic { sym }, op { op_ } {
 #ifdef DEBUG
             ctor_debug_checks();
 #endif

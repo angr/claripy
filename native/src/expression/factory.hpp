@@ -22,6 +22,11 @@ namespace Expression {
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 
+    /** Retrun true if the given hash is in the cache; and thus the assoicated object is alive
+     *  Warning: by the time this function ends, the object may have died.
+     */
+    inline bool in_cache(const Hash::Hash h) { return ::Factory::in_cache<Base>(h); }
+
 } // namespace Expression
 
 #endif
