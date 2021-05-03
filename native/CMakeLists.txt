@@ -243,7 +243,6 @@ add_compile_options(
 	"-Wdeprecated"
 	"-Wconversion"
 	"-Wdisabled-optimization"
-	"-Wfloat-equal"
 	"-Wformat-nonliteral"
 	"-Wformat-security"
 	"-Wformat-y2k"
