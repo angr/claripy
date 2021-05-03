@@ -14,10 +14,7 @@ namespace Create {
      *  This override is for non-sized symbols
      */
     template <typename T> EBasePtr symbol(EAnVec &&av, std::string &&name) {
-
-        // For brevity
         namespace Ex = Expression;
-        namespace Err = Error::Expression;
 
         // Type checks
         static_assert(Utils::is_ancestor<Ex::Base, T>,
@@ -37,10 +34,7 @@ namespace Create {
      */
     template <typename T>
     EBasePtr symbol(EAnVec &&av, std::string &&name, const Constants::UInt bit_length) {
-
-        // For brevity
         namespace Ex = Expression;
-        namespace Err = Error::Expression;
 
         // Type checks
         static_assert(Utils::is_ancestor<Ex::Bits, T>,

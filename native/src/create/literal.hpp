@@ -10,54 +10,27 @@
 
 namespace Create {
 
-    /** Create a Expression with an literal op
-     *  A specialization for non-sized classes
-     */
-    template <typename T> EBasePtr literal(EAnVec &&av, std::string &&data) {
-
-        // For brevity
+    /** Create a Expression with a Literal op */
+    template <typename T> EBasePtr literal(EAnVec &&av, Op::Literal::Data &&data) {
         namespace Ex = Expression;
-        using namespace Simplification;
-        namespace Err = Error::Expression;
 
         // Type checks
         static_assert(Utils::is_ancestor<Ex::Base, T>,
                       "argument types must be a subclass of Expression::Base");
-        static_assert(not Utils::is_ancestor<Ex::Bits, T>,
-                      "bits subclasses must be passed a bit_length as another argument.");
         static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");
 
+        // Construct op
+        auto op = Op::factory<Op::Literal>(std::forward<Op::Literal::Data>(data));
+
         // Construct expression
-        return Ex::factory<T>(std::forward<EAnVec>(av), false,
-                              Op::factory<Op::Literal>(std::forward<std::string>(data)));
-    }
-
-    /** Create a Expression with an literal op
-     *  A specialization for sized classes
-     */
-    template <typename T>
-    EBasePtr literal(EAnVec &&av, std::string &&data, const Constants::UInt bit_length) {
-
-        // For brevity
-        namespace Ex = Expression;
-        using namespace Simplification;
-        namespace Err = Error::Expression;
-
-        // Type checks
-        static_assert(Utils::is_ancestor<Ex::Base, T>,
-                      "argument types must be a subclass of Expression::Base");
-        static_assert(Utils::is_ancestor<Ex::Bits, T>,
-                      "non-bits subclasses should not be passed a bit_length argument.");
-        static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");
-
-        // Size check
-        Utils::affirm<Error::Expression::Size>(bit_length >= (BitLength::char_bit * data.size()),
-                                               WHOAMI_WITH_SOURCE
-                                               "given size smaller than data size");
-        // Construct expression
-        return Ex::factory<T>(std::forward<EAnVec>(av), false,
-                              Op::factory<Op::Literal>(std::forward<std::string>(data)),
-                              bit_length);
+        if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
+            using To = Constants::CTSC<Op::Literal>;
+            const auto bl { Utils::checked_static_cast<To>(op.get())->bit_length() };
+            return Ex::factory<T>(std::forward<EAnVec>(av), false, std::move(op), bl);
+        }
+        else {
+            return Ex::factory<T>(std::forward<EAnVec>(av), false, std::move(op));
+        }
     }
 
 } // namespace Create

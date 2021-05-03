@@ -21,18 +21,18 @@ namespace Op {
 
       public:
         /** The value type */
-        using Value = std::variant<bool,              // Bool
-                                   std::string,       // String
-                                   std::vector<char>, // BV
-                                   float, double      // FP
+        using Data = std::variant<bool,              // Bool
+                                  std::string,       // String
+                                  std::vector<char>, // BV
+                                  float, double      // FP
 #warning Literal doesn't have support for VS
-                                   >;
+                                  >;
 
         /** Representation */
-        const Value value;
+        const Data value;
 
-        /** Returns the bit_length of the value stored in Value
-         *  If Value contains a type that doesn't correspond to an Expression that is a subclass
+        /** Returns the bit_length of the value stored in Data
+         *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an IncorrectUsage exception is thrown
          */
         Constants::UInt bit_length() const {
@@ -61,7 +61,7 @@ namespace Op {
 
       private:
         /** Private constructor */
-        explicit inline Literal(const Hash::Hash &h, Value &&data)
+        explicit inline Literal(const Hash::Hash &h, Data &&data)
             : Base { h, static_cuid }, value { std::move(data) } {}
     };
 
