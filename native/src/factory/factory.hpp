@@ -54,6 +54,14 @@ namespace Factory {
                                                                      std::forward<Args>(args)...);
     }
 
+    /** Return true if the given hash is in the factory cache
+     *  This is exposed for optimization reasons; it allows objects to invoke this to check
+     *  if something is cached ratehr than store a weak pointer to the factory pointer returned
+     */
+    template <typename Base> bool in_cache(const Hash::Hash h) {
+        return Private::cache<Base>.exists(h);
+    }
+
 } // namespace Factory
 
 #endif
