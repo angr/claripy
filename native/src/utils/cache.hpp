@@ -50,6 +50,12 @@ namespace Utils {
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<const Cached>>;
 
+        /** Return true if the object is within the cache, else false */
+        bool exists(const Hash &h) {
+            std::shared_lock<decltype(s_m)> r(s_m);
+            return this->unsafe_find(h) != nullptr;
+        }
+
         /** If h is in the cache, return a shared pointer to it
          *  Otherwise return a shared pointer to nullptr
          */

@@ -26,6 +26,9 @@ namespace Utils::Error::Unexpected {
     /** Bad variant access exception */
     DEFINE_FINAL_EXCEPTION(BadVariantAccess, Base);
 
+    /** Raised when a virtual function that should have been overriden was called */
+    DEFINE_FINAL_EXCEPTION(MissingVirtualFunction, Claricpp);
+
     /** Raised when a function is given invalid arguments */
     DEFINE_FINAL_EXCEPTION(IncorrectUsage, Claricpp);
 
