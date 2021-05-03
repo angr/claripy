@@ -49,6 +49,9 @@ namespace Utils::ThreadSafe {
         template <bool Shared> using MLock = MoveLock<SharedMutex, Shared>;
 
       public:
+        /** Default constructor, default constructs T */
+        Mutable() = default;
+
         /** Emplacement constructor, take object by move */
         Mutable(T &&o) : Base { std::forward<Base>(o) }, obj { o } {}
 
@@ -78,7 +81,7 @@ namespace Utils::ThreadSafe {
         T obj;
 
         // Delete other methods of construction / assignment
-        SET_IMPLICITS_CONST_MEMBERS(Mutable, delete)
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Mutable, delete);
     };
 
 } // namespace Utils::ThreadSafe

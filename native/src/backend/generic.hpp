@@ -167,12 +167,12 @@ namespace Backend {
          *  to be incapable of handling. Technically it is a map to weak pointers
          *  of expressions so we don't need to store information about dead expressions
          */
-        static Utils::ThreadSafe::Mutable<std::set<Hash::Hash>> errored_cache;
+        inline static Utils::ThreadSafe::Mutable<std::set<Hash::Hash>> errored_cache {};
 
         /** Thread local object cache
          *  Map an expression hash to a backend object representing it
          */
-        static thread_local std::map<Hash::Hash, const BackendObj> object_cache;
+        inline static thread_local std::map<Hash::Hash, const BackendObj> object_cache {};
     };
 
 } // namespace Backend

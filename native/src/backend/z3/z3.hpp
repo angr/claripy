@@ -36,14 +36,28 @@ namespace Backend::Z3 {
         /** Return true if expr is always true */
         bool is_true(const Expression::RawPtr &expr, const Solver &solver,
                      const std::vector<Expression::BasePtr> extra_constraints) override final {
+#ifdef DEBUG
+            Utils::sink(solver, extra_constraints);
+#endif
             return convert(expr).is_true();
         }
 
         /** Return true if expr is always false */
         bool is_false(const Expression::RawPtr &expr, const Solver &solver,
                       const std::vector<Expression::BasePtr> extra_constraints) override final {
+#ifdef DEBUG
+            Utils::sink(solver, extra_constraints);
+#endif
             return convert(expr).is_false();
         }
+
+        /** Simplify the given expression */
+        Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
+#warning Simplify is stubbed and not actually implemented
+            (void) expr;
+            return { nullptr };
+        }
+
 
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been

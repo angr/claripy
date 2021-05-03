@@ -68,12 +68,14 @@ namespace Backend {
         /** is_true cache
          *  Map an expression hash to the result of is_true
          */
-        static Utils::ThreadSafe::Mutable<std::map<Hash::Hash, const bool>> is_true_cache;
+        inline static Utils::ThreadSafe::Mutable<std::map<Hash::Hash, const bool>>
+            is_true_cache {};
 
         /** is_false cache
          *  Map an expression hash to the result of is_false
          */
-        static Utils::ThreadSafe::Mutable<std::map<Hash::Hash, const bool>> is_false_cache;
+        inline static Utils::ThreadSafe::Mutable<std::map<Hash::Hash, const bool>>
+            is_false_cache {};
     };
 
 } // namespace Backend
