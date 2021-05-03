@@ -6,7 +6,8 @@
 #define __BACKEND_GENERIC_HPP__
 
 #include "base.hpp"
-#include "op.hpp"
+
+#include "../op.hpp"
 
 #include <memory>
 #include <stack>
@@ -14,8 +15,11 @@
 
 namespace Backend {
 
-    /** A subclass of Backend::Base which other backends should derive from for consistency */
-    template <typename BackendObj, typename Solver> class Generic : public Base {
+    /** A subclass of Backend::Base which other backends should derive from for consistency
+     *  If ApplyAnnotations, convert will invoke apply_annotations() on newly converted backend
+     *  objects, passing the expressions's annotation vector to the function as it does
+     */
+    template <typename BackendObj, bool ApplyAnnotations> class Generic : public Base {
         /** A raw pointer to a backend object */
         using BORCPtr = Constants::CTS<BackendObj>;
 
@@ -28,13 +32,6 @@ namespace Backend {
             errored_cache.unique().first.clear();
             // Thread locals
             object_cache.clear();
-        }
-
-        /** Create a new solver */
-        std::shared_ptr<void> new_tls_solver_with_id(const SolverID id) override final {
-            const auto s { create_tls_solver() };
-            tls_solvers.emplace(id, s);
-            return s;
         }
 
         /** Checks whether this backend can handle the expression
@@ -56,9 +53,6 @@ namespace Backend {
 
         // Pure Virtual Functions
 
-        /** Create a tls solver */
-        virtual std::shared_ptr<Solver> create_tls_solver() const = 0;
-
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been
          *  pre-converted into backend objects and are in args
@@ -68,13 +62,27 @@ namespace Backend {
         virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
                                                std::vector<BORCPtr> &args) = 0;
 
+        // Virtual Functions
+
+        /** This applies the given annotations to the backend object */
+        virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {
+            (void) o;
+            (void) ans;
+#ifdef DEBUG
+            Utils::affirm<Utils::Error::Unexpected::MissingVirtualFunction>(
+                ApplyAnnotations, WHOAMI_WITH_SOURCE,
+                "subclass failed to override apply_annotations"
+                " despite setting ApplyAnnotations to true");
+#endif
+        }
+
         // Concrete functions
 
         /** Convert a claricpp Expression to a backend object
          *  This function does not deal with the lifetimes of expressions
          *  This function does deal with the lifetimes of backend objects
          */
-        BackendObj convert(Constants::CTSC<Expression::Base> input) {
+        BackendObj convert(const Expression::RawPtr input) {
             using BackendError = Error::Backend::Base;
 
             // Functionally a stack of lists of expression to be converted
@@ -89,8 +97,9 @@ namespace Backend {
             std::vector<BORCPtr> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
-            for (auto expr = expr_stack.top(); expr_stack.size() > 0; expr = expr_stack.top()) {
-                const auto op { expr->op.get() };
+            for (const auto *expr = expr_stack.top(); !expr_stack.empty();
+                 expr = expr_stack.top()) {
+                const auto *const op { expr->op.get() };
                 expr_stack.pop();
 
                 // If the expression does not represent the end of a list
@@ -99,12 +108,11 @@ namespace Backend {
                     // Cache lookups
                     if (const auto [map, _] = errored_cache.shared();
                         map.find(expr->hash) == map.end()) {
-                        throw BackendError(name(),
-                                           " cannot handle operation with CUID:  ", op->op_name());
+                        throw BackendError(name(), " cannot handle operation: ", op->op_name());
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
-                        arg_stack.emplace_back(&(lookup->second.second));
+                        arg_stack.emplace_back(&(lookup->second));
                     }
 
                     // Update stacks
@@ -119,58 +127,38 @@ namespace Backend {
                     op_stack.pop();
 
                     // Convert the expression to a backend object
-                    BackendObj obj {}; // NOLINT
-                    const auto op_id { op->cuid };
-                    if (auto func = ctors.find(op_id); func != ctors.end()) {
-                        obj = std::move(func(expr));
-                    }
-                    else {
-                        obj = std::move(dispatch_conversion(expr, arg_stack));
-                    }
-
-                    // Apply annotations
-                    for (const auto &a : expr->annotations) {
-                        obj = std::move(apply_annotation(std::move(obj), a));
+                    BackendObj obj { dispatch_conversion(expr, arg_stack) };
+                    if constexpr (ApplyAnnotations) {
+                        apply_annotations(obj, expr->annotations);
                     }
 
                     // Store the result in the arg stack and in the cache
-                    auto &&[iter, success] =
-                        object_cache.emplace(op_id, std::move(expr), std::move(obj));
+                    auto &&[iter, success] = object_cache.emplace(expr->hash, std::move(obj));
 #ifdef DEBUG
                     Utils::affirm<Utils::Error::Unexpected::Unknown>(
                         success, WHOAMI_WITH_SOURCE "Cache update failed for some reason.");
 #else
                     Utils::sink(success);
 #endif
-                    arg_stack.emplace_back(&(iter->second.second));
+                    arg_stack.emplace_back(&(iter->second));
                 }
             }
 #ifdef DEBUG
             // Sanity checks
             using UnknownErr = Utils::Error::Unexpected::Unknown;
-            Utils::affirm<UnknownErr>(op_stack.size() == 0, WHOAMI "op_stack should be empty");
-            Utils::affirm<UnknownErr>(expr_stack.size() == 0, WHOAMI "expr_stack should be empty");
+            Utils::affirm<UnknownErr>(op_stack.empty(), WHOAMI "op_stack should be empty");
+            Utils::affirm<UnknownErr>(expr_stack.empty(), WHOAMI "expr_stack should be empty");
             Utils::affirm<UnknownErr>(arg_stack.size() == 1,
                                       WHOAMI "arg_stack should be of size: 1");
+            const auto lookup { object_cache.find(input->hash) };
+            Utils::affirm<UnknownErr>(lookup != object_cache.end(),
+                                      WHOAMI "object_cache does not contain expr hash");
+            Utils::affirm<UnknownErr>(&lookup->second == arg_stack.back(), WHOAMI
+                                      "object_cache lookup does not match arg_stack back()");
 #endif
             // Return result
-            return arg_stack.top();
+            return *arg_stack.back(); // shortcut for object_cache.find(input->hash)->second;
         }
-
-        // Constant variables
-
-        /** Solver map */
-        static thread_local std::map<SolverID, std::weak_ptr<Solver>> tls_solvers;
-
-        /** Ctor map
-         *  This maps, via cuid, an Expression Type T to a function which produces a backend
-         *  object. This function takes as its sole argument a const Expression, E, of type T.
-         *  E must be an expression that has either no children, or children of exclusively
-         *  primtives, Symbols, and / or Literals.
-         *  In otherwords, E must be directly convertible to a backend object without needing
-         *  to recurse to convert any of E's children first.
-         */
-        static const std::map<CUID::CUID, BackendObj(const Expression::RawPtr)> ctors;
 
         // Caches
 
@@ -179,12 +167,12 @@ namespace Backend {
          *  to be incapable of handling. Technically it is a map to weak pointers
          *  of expressions so we don't need to store information about dead expressions
          */
-        static Utils::ThreadSafe::Mutable<std::map<Hash::Hash, const WPtr>> errored_cache;
+        static Utils::ThreadSafe::Mutable<std::set<Hash::Hash>> errored_cache;
 
         /** Thread local object cache
          *  Map an expression hash to a backend object representing it
          */
-        static thread_local WeakExpressionMap<BackendObj> object_cache;
+        static thread_local std::map<Hash::Hash, const BackendObj> object_cache;
     };
 
 } // namespace Backend

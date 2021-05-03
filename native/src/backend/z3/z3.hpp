@@ -18,23 +18,32 @@
 
 namespace Backend::Z3 {
 
-    /** The solver type */
-    using Solver = z3::solver;
-
     /** The Z3 backend */
-    class Z3 final : public Generic<z3::expr, Solver> {
-      private:
+    class Z3 final : public Generic<z3::expr, false> {
+      public:
         /********************************************************************/
         /*                        Function Overrides                        */
         /********************************************************************/
 
         /** Create a tls solver */
-        std::shared_ptr<Solver> create_tls_solver() const override final {
-            return std::make_shared<Solver>(Private::tl_ctx);
+        [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const override final {
+            return { std::make_shared<z3::solver>(Private::tl_ctx) };
         }
 
         /** The name of this backend */
         [[nodiscard]] Constants::CCSC name() const noexcept override final { return "z3"; }
+
+        /** Return true if expr is always true */
+        bool is_true(const Expression::RawPtr &expr, const Solver &solver,
+                     const std::vector<Expression::BasePtr> extra_constraints) override final {
+            return convert(expr).is_true();
+        }
+
+        /** Return true if expr is always false */
+        bool is_false(const Expression::RawPtr &expr, const Solver &solver,
+                      const std::vector<Expression::BasePtr> extra_constraints) override final {
+            return convert(expr).is_false();
+        }
 
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been
