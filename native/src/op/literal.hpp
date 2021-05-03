@@ -25,7 +25,7 @@ namespace Op {
                                    std::string,       // String
                                    std::vector<char>, // BV
                                    float, double      // FP
-#warning Literal doesn't have support for FP
+#warning Literal doesn't have support for VS
                                    >;
 
         /** Representation */
