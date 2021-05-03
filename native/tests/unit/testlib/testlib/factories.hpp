@@ -36,7 +36,7 @@ namespace UnitTest::TestLib::Factories {
         auto baseop { Utils::up_cast<Op::Base>(op) };
         if constexpr (std::is_base_of_v<Expression::Bits, T>) {
             return Expression::factory<T>(std::move(ans), false, std::move(baseop),
-                                          Utils::static_down_cast<Op::Literal>(op)->bit_length);
+                                          Utils::static_down_cast<Op::Literal>(op)->bit_length());
         }
         else {
             return Expression::factory<T>(std::move(ans), false, std::move(baseop));

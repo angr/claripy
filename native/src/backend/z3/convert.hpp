@@ -256,7 +256,7 @@ namespace Backend::Z3::Convert {
     /** Literal converter */
     inline z3::expr literal(const Expression::RawPtr expr) {
         using To = Constants::CTSC<Op::Literal>;
-        const auto &data { Utils::checked_static_cast<To>(expr->op.get())->data };
+        const auto &data { Utils::checked_static_cast<To>(expr->op.get())->value };
         auto &ctx { ::Backend::Z3::Private::tl_ctx };
         try {
             switch (expr->cuid) {
@@ -273,7 +273,7 @@ namespace Backend::Z3::Convert {
                 }
                 case Expression::BV::static_cuid: {
                     const auto &vec { std::get<std::vector<char>>(data) };
-                    return ctx.bv_val(vec.data(), vec.size());
+                    return ctx.bv_val(vec.data(), Utils::narrow<unsigned>(vec.size()));
                 }
                     // Error handling
                 case Expression::VS::static_cuid:
