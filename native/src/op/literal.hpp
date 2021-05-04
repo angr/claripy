@@ -35,6 +35,33 @@ namespace Op {
          */
         constexpr Constants::UInt bit_length() const { return C_CHAR_BIT * byte_length(); }
 
+        /** Python's repr function
+         *  @todo This could be a switch-case statement; do when more stable
+         */
+        inline void repr(std::ostringstream &out, const bool) const override final {
+            out << op_name() << '[';
+            if (std::holds_alternative<std::string>(value)) {
+                out << std::get<std::string>(value);
+            }
+            else if (std::holds_alternative<std::vector<char>>(value)) {
+                out << "[BV: " << std::get<std::vector<char>>(value).size() << "]";
+            }
+            else if (std::holds_alternative<float>(value)) {
+                out << std::get<float>(value) << "f";
+            }
+            else if (std::holds_alternative<double>(value)) {
+                out << std::get<double>(value);
+            }
+            else if (std::holds_alternative<bool>(value)) {
+                out << std::get<bool>(value);
+            }
+            else {
+                throw Utils::Error::Unexpected::NotSupported(WHOAMI_WITH_SOURCE,
+                                                             "given bad CUIDl unknown type");
+            }
+            out << ']';
+        }
+
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
@@ -61,6 +88,7 @@ namespace Op {
         /** Returns the byte_length of the value stored in Data
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an IncorrectUsage exception is thrown
+         *  @todo This could be a switch-case statement; do when more stable
          */
         constexpr Constants::UInt byte_length() const {
             if (std::holds_alternative<std::string>(value)) {

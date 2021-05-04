@@ -22,6 +22,14 @@ namespace Op {
         /** What we extract from */
         const Expression::BasePtr from;
 
+        /** Python's repr function */
+        inline void repr(std::ostringstream &out,
+                         const bool verbose = false) const override final {
+            out << op_name() << '[' << high << ", " << low << ", ";
+            Expression::repr(from, out, verbose);
+            out << ']';
+        }
+
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */

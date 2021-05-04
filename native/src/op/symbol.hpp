@@ -17,6 +17,11 @@ namespace Op {
         /** Symbol name */
         const std::string name;
 
+        /** Python's repr function */
+        inline void repr(std::ostringstream &out, const bool) const override final {
+            out << op_name() << '[' << name << ']';
+        }
+
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */

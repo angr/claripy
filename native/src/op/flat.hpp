@@ -81,6 +81,17 @@ namespace Op {
         /** Return ConsiderSize */
         inline bool consider_size() const noexcept override final { return ConsiderSize; }
 
+        /** Python's repr function */
+        inline void repr(std::ostringstream &out,
+                         const bool verbose = false) const override final {
+            out << op_name() << "[ConsiderSize: " << ConsiderSize << "] " << '[';
+            for (const auto &i : operands) {
+                Expression::repr(i, out, verbose);
+                out << ", ";
+            }
+            out << ']';
+        }
+
       protected:
         /** Protected constructor
          *  Verify that all operands are of the same type and that there are at least 2

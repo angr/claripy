@@ -47,6 +47,18 @@ namespace Op {
         /** Third operand */
         const Expression::BasePtr third;
 
+        /** Python's repr function */
+        inline void repr(std::ostringstream &out,
+                         const bool verbose = false) const override final {
+            out << op_name() << "[ConsiderSize: " << ConsiderSize << "] " << '[';
+            Expression::repr(first, out, verbose);
+            out << ", ";
+            Expression::repr(second, out, verbose);
+            out << ", ";
+            Expression::repr(third, out, verbose);
+            out << ']';
+        }
+
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */

@@ -25,7 +25,9 @@ namespace Op {
         /** The type of the stack usd in the add_reversed_children function */
         using Stack = std::stack<Expression::RawPtr, std::vector<Expression::RawPtr>>;
         /** The name of the op */
-        virtual inline Constants::CTSC<char> op_name() const noexcept = 0;
+        virtual inline Constants::CCSC op_name() const noexcept = 0;
+        /** Python's repr function */
+        virtual inline void repr(std::ostringstream &out, const bool verbose = false) const = 0;
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */

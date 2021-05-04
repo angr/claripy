@@ -24,6 +24,18 @@ namespace Op {
         /** If false expression */
         const Expression::BasePtr if_false;
 
+        /** Python's repr function */
+        inline void repr(std::ostringstream &out,
+                         const bool verbose = false) const override final {
+            out << op_name() << '[';
+            Expression::repr(cond, out, verbose);
+            out << ", ";
+            Expression::repr(if_true, out, verbose);
+            out << ", ";
+            Expression::repr(if_false, out, verbose);
+            out << ']';
+        }
+
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
