@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines Utils::to_str and related functions
+ * @brief This file defines Utils::to_str
  */
 #ifndef __UTILS_TOSTR_HPP__
 #define __UTILS_TOSTR_HPP__

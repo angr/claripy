@@ -37,6 +37,7 @@
 #include "utils/ostream.hpp"
 #include "utils/pointer_cast.hpp"
 #include "utils/pow.hpp"
+#include "utils/range_to_str.hpp"
 #include "utils/recurrence_guard.hpp"
 #include "utils/ref.hpp"
 #include "utils/run_after_main.hpp"
