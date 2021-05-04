@@ -17,7 +17,7 @@
 /** A macro that contains the information about the current line
  *  Useful for debugging
  */
-#define WHOAMI_WITH_SOURCE __FILE__ " via " __BASE_FILE__ ": ", __LINE__, " (", __func__, "): "
+#define WHOAMI_WITH_SOURCE __FILE__ ": ", __LINE__, " (", __func__, ")  via " __BASE_FILE__ ": "
 
 
 /** A macro to convert the value of a macro into a string */

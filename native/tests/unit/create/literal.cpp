@@ -53,9 +53,10 @@ void literal() {
 
     // Tests
     literal_t<Expression::Bool>(true);
-    literal_t<Expression::String>(data_s, data_s.size());
-    literal_t<Expression::BV>(data_v, data_v.size());
-    literal_t<Expression::FP>(3.4, 64_ui); // NOLINT
+    literal_t<Expression::String>(data_s, 8 * data_s.size());
+    literal_t<Expression::BV>(data_v, 8 * data_v.size());
+    literal_t<Expression::FP>(3.4, 64_ui);  // NOLINT
+    literal_t<Expression::FP>(3.4f, 32_ui); // NOLINT
 
 #warning Not testing Literal VS
     /* literal_t<Expression::VS>(); */

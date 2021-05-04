@@ -7,8 +7,6 @@
 
 #include "base.hpp"
 
-#include "../utils.hpp"
-
 #include <cstddef>
 #include <variant>
 
@@ -35,24 +33,7 @@ namespace Op {
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an IncorrectUsage exception is thrown
          */
-        Constants::UInt bit_length() const {
-            if (std::holds_alternative<std::string>(value)) {
-                return std::get<std::string>(value).size();
-            }
-            else if (std::holds_alternative<std::vector<char>>(value)) {
-                return std::get<std::vector<char>>(value).size();
-            }
-            else if (std::holds_alternative<float>(value)) {
-                return sizeof(float);
-            }
-            else if (std::holds_alternative<std::vector<char>>(value)) {
-                return sizeof(double);
-            }
-            // Invalid types: bool
-            throw Utils::Error::Unexpected::IncorrectUsage(
-                WHOAMI_WITH_SOURCE, "invoked when internal type does not correspond"
-                                    " to an Expression which subclasses BitLength");
-        }
+        constexpr Constants::UInt bit_length() const { return C_CHAR_BIT * byte_length(); }
 
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
@@ -73,6 +54,35 @@ namespace Op {
         P_CTOR(std::vector<char>);
         P_CTOR(float);
         P_CTOR(double);
+
+// Cleanup
+#undef P_CTOR
+
+        /** Returns the byte_length of the value stored in Data
+         *  If Data contains a type that doesn't correspond to an Expression that is a subclass
+         *  of BitLength then an IncorrectUsage exception is thrown
+         */
+        constexpr Constants::UInt byte_length() const {
+            if (std::holds_alternative<std::string>(value)) {
+                return std::get<std::string>(value).size();
+            }
+            else if (std::holds_alternative<std::vector<char>>(value)) {
+                return std::get<std::vector<char>>(value).size();
+            }
+            else if (std::holds_alternative<float>(value)) {
+                return sizeof(float);
+            }
+            else if (std::holds_alternative<double>(value)) {
+                return sizeof(double);
+            }
+            // Invalid types: bool
+            throw Utils::Error::Unexpected::IncorrectUsage(
+                WHOAMI_WITH_SOURCE,
+                "invoked when internal type does not correspond"
+                " to an Expression which subclasses BitLength."
+                " Current variant index is: ",
+                value.index());
+        }
     };
 
 } // namespace Op
