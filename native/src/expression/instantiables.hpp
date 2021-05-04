@@ -16,10 +16,6 @@
       public:                                                                                     \
         /** Default destructor */                                                                 \
         inline ~CLASS() noexcept override final = default;                                        \
-        /** Type name */                                                                          \
-        inline Constants::CCSC type_name() const override final { return #CLASS; }                \
-        /** Python's repr function */                                                             \
-        void repr(std::ostringstream &out, const bool verbose = false) const override final;      \
                                                                                                   \
       private:                                                                                    \
         /** Private Constructor */                                                                \
@@ -44,10 +40,6 @@ namespace Expression {
       public:
         /** Default destructor */
         inline ~Bool() noexcept override final = default;
-        /** Type name */
-        inline Constants::CCSC type_name() const override final { return "Bool"; }
-        /** Python's repr function */
-        void repr(std::ostringstream &out, const bool verbose = false) const override final;
 
       private:
         /** Private Constructor */
