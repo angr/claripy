@@ -19,17 +19,18 @@ namespace Expression {
         namespace Err = Error::Expression;
         // Type check
         if (x->cuid != y->cuid) {
+            Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to cuid difference");
             return false;
         }
         // Size check
         if constexpr (ConsiderSize) {
-            using namespace Constants;
-            using namespace Expression;
-            // If sized
-            if (const auto xcast { dynamic_cast<CTSC<Bits>>(x.get()) }; xcast) {
-                return xcast->bit_length == Expression::get_bit_length(y);
-            }
-            else {
+            Utils::affirm<Utils::Error::Unexpected::IncorrectUsage>(
+                dynamic_cast<Constants::CTSC<Expression::Bits>>(x.get()) != nullptr,
+                WHOAMI_WITH_SOURCE, "called on non-bits subclasses");
+            if (Expression::get_bit_length(x) != Expression::get_bit_length(y)) {
+                Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to size difference:",
+                                    Expression::get_bit_length(x), " vs ",
+                                    Expression::get_bit_length(y));
                 return false;
             }
         }
