@@ -12,6 +12,13 @@
 void Expression::repr(const Expression::RawPtr e, std::ostringstream &out, const bool verbose) {
     Utils::affirm<Utils::Error::Unexpected::NotSupported>(!verbose,
                                                           "verbose repr not yet implmented");
+    // Null check
+    if (e == nullptr) {
+        Utils::Log::warning(WHOAMI_WITH_SOURCE "called on nullptr");
+        out << R"|({ "ptr":"nullptr" })|";
+        return;
+    }
+    // Normal operation
     out << R"|({ "type":")|" << Expression::type_name(e) << R"|(", "symbolic":)|" << std::boolalpha
         << e->symbolic << ", ";
     if (dynamic_cast<Constants::CTSC<Expression::Bits>>(e) != nullptr) {

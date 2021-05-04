@@ -8,6 +8,8 @@
 
 #include "base.hpp"
 
+#include <sstream>
+
 
 namespace Expression {
 
@@ -18,6 +20,20 @@ namespace Expression {
     inline void repr(const Expression::BasePtr &e, std::ostringstream &out,
                      const bool verbose = false) {
         repr(e.get(), out, verbose);
+    }
+
+    /** repr, but returns the result as a string */
+    inline std::string inline_repr(const Expression::RawPtr e, const bool verbose = false) {
+        std::ostringstream o;
+        repr(e, o, verbose);
+        return o.str();
+    }
+
+    /** repr, but returns the result as a string */
+    inline std::string inline_repr(const Expression::BasePtr &e, const bool verbose = false) {
+        std::ostringstream o;
+        repr(e, o, verbose);
+        return o.str();
     }
 
 } // namespace Expression
