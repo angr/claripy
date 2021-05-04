@@ -79,7 +79,6 @@ function(simple_test FUNC_NAME)
 		"${CLARICPP}"
 		"${Z3_LIB_TARGET}"
 		"${TESTLIB}"
-		${GMP_LIBRARIES}
 	)
 
 	## Add the test

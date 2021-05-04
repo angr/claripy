@@ -36,11 +36,6 @@ RUN apt-get install -yq \
 	make
 RUN pip3 install cmake # apt cmake is old
 
-# Boost multiprecision with gmp backend for mpz frontend
-RUN apt-get install -yq \
-	libboost-dev \
-	libgmp-dev
-
 # Z3 build (only required when z3 acquisition mode is set to build)
 RUN apt-get install -yq \
 	python3-distutils \
