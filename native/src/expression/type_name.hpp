@@ -21,9 +21,9 @@ namespace Expression {
             case BV::static_cuid:
                 return "BV";
             case FP::static_cuid:
-                return "BV";
+                return "FP";
             case VS::static_cuid:
-                return "BV";
+                return "VS";
             default:
                 throw Utils::Error::Unexpected::Type(WHOAMI_WITH_SOURCE
                                                      "CUID unknown; unknown type.");

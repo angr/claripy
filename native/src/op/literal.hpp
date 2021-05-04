@@ -53,7 +53,7 @@ namespace Op {
                 out << std::get<double>(value);
             }
             else if (std::holds_alternative<bool>(value)) {
-                out << std::get<bool>(value);
+                out << std::boolalpha << std::get<bool>(value);
             }
             else {
                 throw Utils::Error::Unexpected::NotSupported(WHOAMI_WITH_SOURCE,

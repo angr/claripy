@@ -84,8 +84,8 @@ namespace Op {
         /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << ConsiderSize
-                << R"|(, "args":[ )|";
+            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
+                << ConsiderSize << R"|(, "args":[ )|";
             Expression::repr(operands[0], out, verbose);
             for (Constants::UInt i = 1; i < operands.size(); ++i) {
                 out << ", ";
