@@ -22,15 +22,15 @@ namespace Hash {
 
     /** Converts its input into a Hash
      *  Note: these do not have to be unique to all hashes, however
-     *  this function called on various inputs should avoid collsions
+     *  this function called on various inputs should avoid collsions.
      *  This function exists to convert its input into Hash that will
      *  later be hashed by a more secure hash function along with other arguments
      *  For example, one use case of this function could be:
-     *  array = { singular(expression1), singular(name_string) }; return md5(array);
+     *  array = { singular(expression1), singular(name_string) }; return hash(array);
      *  Since, for numeric types among others, this may be a no-op or very quick, we inline
      *  specializations Note: Otherwise full specializations are put in a cpp file and linked later
      *  Every type requries a specialization or is not supported!
-     *  Finally, we do want to avoid inter-type collisions if possible, so we often add a line hash
+     *  Note: we do want to avoid inter-type collisions if possible, so we often add a line hash
      */
     template <typename T> constexpr Hash singular(const T &) noexcept {
         static_assert(Utils::TD::false_<T>,
@@ -63,6 +63,24 @@ namespace Hash {
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return singular(Utils::up_cast<Hashed>(h));
+    }
+
+    /** A specialization for T = char */
+    template <> constexpr inline Hash singular(const char &c) noexcept {
+        return UTILS_FILE_LINE_HASH + static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = float */
+    template <> inline Hash singular(const float &f) noexcept {
+        static_assert(sizeof(float) == sizeof(unsigned),
+                      "Numeric type must have the same size as float");
+        return UTILS_FILE_LINE_HASH +
+               Utils::type_pun<unsigned>(&f); // pun to unsigned, Hash is too large
+    }
+
+    /** A specialization for T = double */
+    template <> inline Hash singular(const double &d) noexcept {
+        return UTILS_FILE_LINE_HASH + Utils::type_pun<Hash>(&d);
     }
 
     /** A specialization for T = bool */

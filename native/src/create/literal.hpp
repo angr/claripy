@@ -11,7 +11,7 @@
 namespace Create {
 
     /** Create a Expression with a Literal op */
-    template <typename T> EBasePtr literal(EAnVec &&av, Op::Literal::Data &&data) {
+    template <typename T, typename U> EBasePtr literal(EAnVec &&av, U &&data) {
         namespace Ex = Expression;
 
         // Type checks
@@ -20,7 +20,7 @@ namespace Create {
         static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");
 
         // Construct op
-        auto op = Op::factory<Op::Literal>(std::forward<Op::Literal::Data>(data));
+        auto op { Op::factory<Op::Literal>(std::forward<U>(data)) };
 
         // Construct expression
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {

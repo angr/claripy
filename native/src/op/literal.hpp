@@ -60,9 +60,19 @@ namespace Op {
         inline void add_reversed_children(Stack &) const noexcept override final {}
 
       private:
-        /** Private constructor */
-        explicit inline Literal(const Hash::Hash &h, Data &&data)
-            : Base { h, static_cuid }, value { std::move(data) } {}
+/** A local macro used to define a private constructor for Literal */
+#define P_CTOR(TYPE)                                                                              \
+    /** Private constructor */                                                                    \
+    explicit inline Literal(const Hash::Hash &h, TYPE &&data)                                     \
+        : Base { h, static_cuid }, value { std::move(data) } {}
+
+        // The different private constructors we allow
+        // There should be one for each variant type
+        P_CTOR(bool);
+        P_CTOR(std::string);
+        P_CTOR(std::vector<char>);
+        P_CTOR(float);
+        P_CTOR(double);
     };
 
 } // namespace Op
