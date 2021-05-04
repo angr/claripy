@@ -10,6 +10,7 @@
 #  Z3_LIB_TARGET    - The name of the z3 library target
 #  Z3_LIB           - The location of the z3 library once installed
 #  Z3_DIR           - The directory the z3 install tree should be placed
+#  Z3_BUILD_RELEASE_MODE - On to build in release mode; off for debug mode
 #  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
 
 # Wrapping this in a function to create a new scope
@@ -77,6 +78,16 @@ function(_build_z3)
 				"To build, update the Z3_NUM_CORES variable."
 			)
 		endif()
+		# Set build options
+		if (Z3_BUILD_RELEASE_MODE)
+			message(STATUS "Building z3 in Release mode")
+			set(BUILDTYPE "Release")
+			set(FLTO TRUE)
+		else()
+			message(WARNING "Building z3 in Debug mode")
+			set(BUILDTYPE "Debug")
+			set(FLTO FALSE)
+		endif()
 		# Define Z3 as an external project
 		set( BUILDER "z3_build" )
 		ExternalProject_Add("${BUILDER}"
@@ -95,9 +106,9 @@ function(_build_z3)
 				"-DZ3_SINGLE_THREADED:BOOL=FALSE"
 				"-DZ3_INCLUDE_GIT_HASH:BOOL=TRUE"
 				# Build Options
-				"-DCMAKE_BUILD_TYPE:STRING=Release"
+				"-DCMAKE_BUILD_TYPE:STRING=${BUILDTYPE}"
+				"-DZ3_LINK_TIME_OPTIMIZATION:BOOL=${FLTO}"
 				"-DZ3_BUILD_LIBZ3_SHARED:BOOL=TRUE"
-				"-DZ3_LINK_TIME_OPTIMIZATION:BOOL=TRUE"
 				"-DWARNINGS_AS_ERRORS:STRING=SERIOUS_ONLY"
 				# Install Options
 				"-DCMAKE_INSTALL_INCLUDEDIR:PATH=${Z3_INCLUDE_DIR}" # Absolute path
