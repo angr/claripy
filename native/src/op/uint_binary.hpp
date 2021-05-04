@@ -46,12 +46,12 @@ namespace Op {
         /* Integer operand */
         const Constants::UInt integer;
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << op_name() << '[';
+            out << R"|({ "name":")|" << op_name() << R"|(", "expr":)|";
             Expression::repr(expr, out, verbose);
-            out << ", " << integer << ']';
+            out << R"|(, "integer":)|" << integer << " }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse

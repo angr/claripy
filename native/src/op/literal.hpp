@@ -35,19 +35,19 @@ namespace Op {
          */
         constexpr Constants::UInt bit_length() const { return C_CHAR_BIT * byte_length(); }
 
-        /** Python's repr function
+        /** Python's repr function (outputs json)
          *  @todo This could be a switch-case statement; do when more stable
          */
         inline void repr(std::ostringstream &out, const bool) const override final {
-            out << op_name() << '[';
+            out << R"|({ "name":")|" << op_name() << R"|(", "value":)|";
             if (std::holds_alternative<std::string>(value)) {
-                out << std::get<std::string>(value);
+                out << '"' << std::get<std::string>(value) << '"';
             }
             else if (std::holds_alternative<std::vector<char>>(value)) {
-                out << "[BV: " << std::get<std::vector<char>>(value).size() << "]";
+                out << "[BV-" << std::get<std::vector<char>>(value).size() << "]";
             }
             else if (std::holds_alternative<float>(value)) {
-                out << std::get<float>(value) << "f";
+                out << std::get<float>(value);
             }
             else if (std::holds_alternative<double>(value)) {
                 out << std::get<double>(value);
@@ -59,7 +59,7 @@ namespace Op {
                 throw Utils::Error::Unexpected::NotSupported(WHOAMI_WITH_SOURCE,
                                                              "given bad CUIDl unknown type");
             }
-            out << ']';
+            out << " }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse

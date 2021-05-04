@@ -17,9 +17,9 @@ namespace Op {
         /** Symbol name */
         const std::string name;
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out, const bool) const override final {
-            out << op_name() << '[' << name << ']';
+            out << R"|({ "name":")|" << op_name() << R"|(", "symbol":")|" << name << "\" }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse

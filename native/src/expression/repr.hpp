@@ -11,10 +11,10 @@
 
 namespace Expression {
 
-    /** The repr function for expressions */
+    /** The repr function for expressions (outputs json) */
     void repr(const Expression::RawPtr e, std::ostringstream &out, const bool verbose = false);
 
-    /** The repr function for expressions */
+    /** The repr function for expressions (outputs json) */
     inline void repr(const Expression::BasePtr &e, std::ostringstream &out,
                      const bool verbose = false) {
         repr(e.get(), out, verbose);

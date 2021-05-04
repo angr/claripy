@@ -12,11 +12,12 @@
 void Expression::repr(const Expression::RawPtr e, std::ostringstream &out, const bool verbose) {
     Utils::affirm<Utils::Error::Unexpected::NotSupported>(!verbose,
                                                           "verbose repr not yet implmented");
-    out << '(' << Expression::type_name(e) << "[" << (e->symbolic ? "symbolic" : "concrete");
+    out << R"|({ "type":")|" << Expression::type_name(e) << R"|(", "symbolic":)|" << e->symbolic
+        << ", ";
     if (dynamic_cast<Constants::CTSC<Expression::Bits>>(e) != nullptr) {
-        out << ", bl=" << Expression::get_bit_length(e);
+        out << R"|( "bit_length":)|" << Expression::get_bit_length(e) << ", ";
     }
-    out << "] ";
+    out << R"|( "op":)|";
     e->op->repr(out, verbose);
-    out << ')';
+    out << " }";
 }

@@ -28,7 +28,6 @@ namespace Create {
         const bool sym { cond->symbolic || left->symbolic || right->symbolic };
         auto op { Op::factory<Op::If>(cond, left, right) };
         if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
-            // static cast is safe because we verified left is a T
             return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op),
                                            Expression::get_bit_length(left)));
         }

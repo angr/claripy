@@ -81,15 +81,17 @@ namespace Op {
         /** Return ConsiderSize */
         inline bool consider_size() const noexcept override final { return ConsiderSize; }
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << op_name() << "[ConsiderSize: " << ConsiderSize << "] " << '[';
-            for (const auto &i : operands) {
-                Expression::repr(i, out, verbose);
+            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << ConsiderSize
+                << R"|(, "args":[ )|";
+            Expression::repr(operands[0], out, verbose);
+            for (Constants::UInt i = 1; i < operands.size(); ++i) {
                 out << ", ";
+                Expression::repr(operands[0], out, verbose);
             }
-            out << ']';
+            out << " ] }";
         }
 
       protected:

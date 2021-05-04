@@ -23,13 +23,13 @@ namespace Op::FP {
          */
         const Expression::BasePtr fp;
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << op_name() << "[Signed: " << Signed
-                << "] [ [FP Mode: " << Utils::to_underlying(mode) << "], ";
+            out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << Signed
+                << R"|(, "mode":)|" << Utils::to_underlying(mode) << R"|(, "fp":)|";
             Expression::repr(fp, out, verbose);
-            out << ']';
+            out << " }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse

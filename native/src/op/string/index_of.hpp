@@ -28,16 +28,16 @@ namespace Op::String {
          */
         const Expression::BasePtr start_index;
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << op_name() << '[';
+            out << R"|({ "name":")|" << op_name() << R"|(", "str":)|";
             Expression::repr(str, out, verbose);
-            out << ", ";
+            out << R"|(, "pattern":)|";
             Expression::repr(pattern, out, verbose);
-            out << ", ";
+            out << R"|(, "start_index":)|";
             Expression::repr(start_index, out, verbose);
-            out << ']';
+            out << " }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse

@@ -47,16 +47,17 @@ namespace Op {
         /** Third operand */
         const Expression::BasePtr third;
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << op_name() << "[ConsiderSize: " << ConsiderSize << "] " << '[';
+            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << ConsiderSize
+                << R"|(, "first":)|";
             Expression::repr(first, out, verbose);
-            out << ", ";
+            out << R"|(, "second":)|";
             Expression::repr(second, out, verbose);
-            out << ", ";
+            out << R"|(, "thrid":)|";
             Expression::repr(third, out, verbose);
-            out << ']';
+            out << " }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse

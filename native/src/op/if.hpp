@@ -24,16 +24,16 @@ namespace Op {
         /** If false expression */
         const Expression::BasePtr if_false;
 
-        /** Python's repr function */
+        /** Python's repr function (outputs json) */
         inline void repr(std::ostringstream &out,
                          const bool verbose = false) const override final {
-            out << op_name() << '[';
+            out << R"|({ "name":")|" << op_name() << R"|(", "cond":)|";
             Expression::repr(cond, out, verbose);
-            out << ", ";
+            out << R"|(, "if_true":)|";
             Expression::repr(if_true, out, verbose);
-            out << ", ";
+            out << R"|(, "if_false":)|";
             Expression::repr(if_false, out, verbose);
-            out << ']';
+            out << " }";
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse
