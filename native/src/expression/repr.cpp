@@ -18,4 +18,5 @@ void Expression::repr(const Expression::RawPtr e, std::ostringstream &out, const
     }
     out << "] ";
     e->op->repr(out, verbose);
+    out << ')';
 }

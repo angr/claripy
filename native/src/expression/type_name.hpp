@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This file defines the type_name functions for expressions
+ * Note that these are not member functions to avoid vtables
  */
 #ifndef __EXPRESSION_TYPENAME_HPP__
 #define __EXPRESSION_TYPENAME_HPP__

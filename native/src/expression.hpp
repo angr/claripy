@@ -11,5 +11,7 @@
 #include "expression/copy.hpp"
 #include "expression/factory.hpp"
 #include "expression/instantiables.hpp"
+#include "expression/repr.hpp"
+#include "expression/type_name.hpp"
 
 #endif
