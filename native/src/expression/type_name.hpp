@@ -12,7 +12,7 @@
 namespace Expression {
 
     /** Return the type name of e */
-    Constants::CCSC type_name(const Expression::RawPtr e) {
+    constexpr Constants::CCSC type_name(const Expression::RawPtr e) {
         switch (e->cuid) {
             case Bool::static_cuid:
                 return "Bool";
@@ -31,7 +31,7 @@ namespace Expression {
     }
 
     /** Return the type name of e */
-    Constants::CCSC type_name(const Expression::BasePtr &e) { return type_name(e.get()); }
+    inline Constants::CCSC type_name(const Expression::BasePtr &e) { return type_name(e.get()); }
 
 } // namespace Expression
 

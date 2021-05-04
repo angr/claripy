@@ -9,7 +9,6 @@
 
 #include "../error.hpp"
 
-
 namespace Expression {
 
     /** Return true if x and y are the same expression type
@@ -21,16 +20,15 @@ namespace Expression {
             Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to cuid difference");
             return false;
         }
-        // Size check
+        // Size check, skip if unsized
         if constexpr (ConsiderSize) {
-            Utils::affirm<Utils::Error::Unexpected::IncorrectUsage>(
-                dynamic_cast<Constants::CTSC<Expression::Bits>>(x.get()) != nullptr,
-                WHOAMI_WITH_SOURCE, "called on non-bits subclasses");
-            if (Expression::get_bit_length(x) != Expression::get_bit_length(y)) {
-                Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to size difference:",
-                                    Expression::get_bit_length(x), " vs ",
-                                    Expression::get_bit_length(y));
-                return false;
+            if (dynamic_cast<Constants::CTSC<Expression::Bits>>(x.get()) != nullptr) {
+                if (Expression::get_bit_length(x) != Expression::get_bit_length(y)) {
+                    Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to size difference:",
+                                        Expression::get_bit_length(x), " vs ",
+                                        Expression::get_bit_length(y));
+                    return false;
+                }
             }
         }
         return true;

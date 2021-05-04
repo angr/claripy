@@ -13,7 +13,7 @@ void Expression::repr(const Expression::RawPtr e, std::ostringstream &out, const
     Utils::affirm<Utils::Error::Unexpected::NotSupported>(!verbose,
                                                           "verbose repr not yet implmented");
     out << '(' << Expression::type_name(e) << "[" << (e->symbolic ? "symbolic" : "concrete");
-    if (e->cuid != Expression::Bool::static_cuid) {
+    if (dynamic_cast<Constants::CTSC<Expression::Bits>>(e) != nullptr) {
         out << ", bl=" << Expression::get_bit_length(e);
     }
     out << "] ";
