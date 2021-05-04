@@ -9,6 +9,7 @@
 #include "../factory.hpp"
 
 #include <memory>
+#include <sstream>
 #include <vector>
 
 
