@@ -30,15 +30,11 @@ auto make_ite() {
     // Composite
     const auto prod { C::FP::mul(AV {}, x, fp3, Mode::FP::NearestTiesEven) };
     const auto eq { C::eq<Ex::FP>(AV {}, fp4, prod) };
-    Utils::Log::critical("\nString: ", Ex::String::static_cuid, "\n0: ", hello->cuid,
-                         "\n1: ", y->cuid);
-
     return C::if_<Ex::String>(AV {}, eq, hello, y);
 }
 
 /** Try to convert a claricpp expression to z3 */
 void convert() {
-    Utils::Log::Level::set(Utils::Log::Level::Level::Debug);
     const auto ite { make_ite() };
     auto z3 { Backend::Z3::Z3 {} };
     (void) z3.convert(ite.get());

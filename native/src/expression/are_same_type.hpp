@@ -16,7 +16,6 @@ namespace Expression {
      *  If ConsiderSize is true, sizes are compared if the types are sized
      */
     template <bool ConsiderSize> bool are_same_type(const BasePtr &x, const BasePtr &y) {
-        namespace Err = Error::Expression;
         // Type check
         if (x->cuid != y->cuid) {
             Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to cuid difference");
