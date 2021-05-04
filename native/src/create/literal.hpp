@@ -5,34 +5,37 @@
 #ifndef __CREATE_LITERAL_HPP__
 #define __CREATE_LITERAL_HPP__
 
-#include "constants.hpp"
+#include "private/literal.hpp"
 
 
 namespace Create {
 
-    /** Create a Expression with a Literal op */
-#warning Split up into many type safe functions w/r/t U based off T
-    template <typename T, typename U> EBasePtr literal(EAnVec &&av, U &&data) {
-        namespace Ex = Expression;
-
-        // Type checks
-        static_assert(Utils::is_ancestor<Ex::Base, T>,
-                      "argument types must be a subclass of Expression::Base");
-        static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");
-
-        // Construct op
-        auto op { Op::factory<Op::Literal>(std::forward<U>(data)) };
-
-        // Construct expression
-        if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
-            using To = Constants::CTSC<Op::Literal>;
-            const auto bl { Utils::checked_static_cast<To>(op.get())->bit_length() };
-            return Ex::factory<T>(std::forward<EAnVec>(av), false, std::move(op), bl);
-        }
-        else {
-            return Ex::factory<T>(std::forward<EAnVec>(av), false, std::move(op));
-        }
+    /** Create a Bool Expression with a Literal op */
+    inline EBasePtr literal(EAnVec &&av, const bool data) {
+        return Private::literal<Expression::Bool, bool>(std::move(av), bool { data });
     }
+
+    /** Create a String Expression with a Literal op */
+    inline EBasePtr literal(EAnVec &&av, std::string &&data) {
+        return Private::literal<Expression::String, std::string>(std::move(av), std::move(data));
+    }
+
+    /** Create a BV Expression with a Literal op */
+    inline EBasePtr literal(EAnVec &&av, std::vector<char> &&data) {
+        return Private::literal<Expression::BV, std::vector<char>>(std::move(av), std::move(data));
+    }
+
+    /** Create a FP Expression with a Literal op containing a double precision float */
+    inline EBasePtr literal(EAnVec &&av, const double data) {
+        return Private::literal<Expression::FP, double>(std::move(av), double { data });
+    }
+
+    /** Create a FP Expression with a Literal op containing a single precision float */
+    inline EBasePtr literal(EAnVec &&av, const float data) {
+        return Private::literal<Expression::FP, float>(std::move(av), float { data });
+    }
+
+#warning Literal create does not support VS
 
 } // namespace Create
 
