@@ -47,35 +47,6 @@ namespace Backend {
             return true;
         }
 
-      protected:
-        /** A vector based stack */
-        template <typename T> using Stack = std::stack<T, std::vector<T>>;
-
-        // Pure Virtual Functions
-
-        /** This dynamic dispatcher converts expr into a backend object
-         *  All arguments of expr that are not primitives have been
-         *  pre-converted into backend objects and are in args
-         *  Arguments must be popped off the args stack if used
-         *  Note that we use a raw vector instead of a stack for efficiency
-         */
-        virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
-                                               std::vector<BORCPtr> &args) = 0;
-
-        // Virtual Functions
-
-        /** This applies the given annotations to the backend object */
-        virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {
-            (void) o;
-            (void) ans;
-#ifdef DEBUG
-            Utils::affirm<Utils::Error::Unexpected::MissingVirtualFunction>(
-                ApplyAnnotations, WHOAMI_WITH_SOURCE,
-                "subclass failed to override apply_annotations"
-                " despite setting ApplyAnnotations to true");
-#endif
-        }
-
         // Concrete functions
 
         /** Convert a claricpp Expression to a backend object
@@ -158,6 +129,36 @@ namespace Backend {
 #endif
             // Return result
             return *arg_stack.back(); // shortcut for object_cache.find(input->hash)->second;
+        }
+
+
+      protected:
+        /** A vector based stack */
+        template <typename T> using Stack = std::stack<T, std::vector<T>>;
+
+        // Pure Virtual Functions
+
+        /** This dynamic dispatcher converts expr into a backend object
+         *  All arguments of expr that are not primitives have been
+         *  pre-converted into backend objects and are in args
+         *  Arguments must be popped off the args stack if used
+         *  Note that we use a raw vector instead of a stack for efficiency
+         */
+        virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
+                                               std::vector<BORCPtr> &args) = 0;
+
+        // Virtual Functions
+
+        /** This applies the given annotations to the backend object */
+        virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {
+            (void) o;
+            (void) ans;
+#ifdef DEBUG
+            Utils::affirm<Utils::Error::Unexpected::MissingVirtualFunction>(
+                ApplyAnnotations, WHOAMI_WITH_SOURCE,
+                "subclass failed to override apply_annotations"
+                " despite setting ApplyAnnotations to true");
+#endif
         }
 
         // Caches

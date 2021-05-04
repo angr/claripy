@@ -102,6 +102,13 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH + fnv1a<char>(s, Utils::strlen(s));
     }
 
+    /** A specialization for T = char[]
+     *  Not constexpr
+     */
+    template <std::size_t N> constexpr Hash singular(const char (&s)[N]) noexcept { // NOLINT
+        return UTILS_FILE_LINE_HASH + fnv1a<char>(s, N);
+    }
+
     /** A specialization for T = std::string
      *  Not constexpr
      */

@@ -11,6 +11,7 @@
 namespace Create {
 
     /** Create a Expression with a Literal op */
+#warning Split up into many type safe functions w/r/t U based off T
     template <typename T, typename U> EBasePtr literal(EAnVec &&av, U &&data) {
         namespace Ex = Expression;
 
