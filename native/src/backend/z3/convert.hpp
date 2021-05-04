@@ -265,9 +265,7 @@ namespace Backend::Z3::Convert {
                 case Expression::String::static_cuid:
                     return ctx.string_val(std::get<std::string>(data));
                 case Expression::FP::static_cuid: {
-                    using Bits = Constants::CTSC<Expression::Bits>;
-                    return (Utils::checked_static_cast<Bits>(expr)->bit_length ==
-                            Private::flt_size)
+                    return (Expression::get_bit_length(expr) == Private::flt_size)
                              ? ctx.fpa_val(std::get<float>(data))
                              : ctx.fpa_val(std::get<double>(data));
                 }

@@ -21,9 +21,8 @@ namespace Expression {
 /** A local macro used for consistency */
 #define BITS_SUB(TYPE)                                                                            \
     case TYPE::static_cuid:                                                                       \
-        return ::Expression::factory<TYPE>(                                                       \
-            std::move(ans), in->symbolic, std::move(op),                                          \
-            Utils::checked_static_cast<Constants::CTSC<Bits>>(in.get())->bit_length);
+        return ::Expression::factory<TYPE>(std::move(ans), in->symbolic, std::move(op),           \
+                                           Expression::get_bit_length(in));
                 BITS_SUB(String);
                 BITS_SUB(FP);
                 BITS_SUB(VS);

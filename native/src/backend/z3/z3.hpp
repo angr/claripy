@@ -277,8 +277,7 @@ namespace Backend::Z3 {
 #define TO_BV_BODY(TF)                                                                            \
     using ToBV = Constants::CTSC<Op::FP::ToBV<false>>;                                            \
     auto ret { Convert::FP::to_bv<TF>(Utils::checked_static_cast<ToBV>(expr->op.get())->mode,     \
-                                      *args.back(),                                               \
-                                      Utils::checked_static_cast<Bits>(expr)->bit_length) };      \
+                                      *args.back(), Expression::get_bit_length(expr)) };          \
     args.pop_back();                                                                              \
     return ret;
 
@@ -340,7 +339,7 @@ namespace Backend::Z3 {
                         dynamic_cast<To>(expr) != nullptr,
                         WHOAMI_WITH_SOURCE "String::IndexOf has no length");
 #endif
-                    const auto bl { Utils::checked_static_cast<To>(expr)->bit_length };
+                    const auto bl { Expression::get_bit_length(expr) };
                     auto ret { Convert::String::index_of(*args[size - 3], *args[size - 2],
                                                          *args[size - 1], bl) };
                     args.resize(size - 2);

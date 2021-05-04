@@ -27,7 +27,10 @@ namespace Expression {
             using namespace Expression;
             // If sized
             if (const auto xcast { dynamic_cast<CTSC<Bits>>(x.get()) }; xcast) {
-                return xcast->bit_length == dynamic_cast<CTSC<Bits>>(y.get())->bit_length;
+                return xcast->bit_length == Expression::get_bit_length(y);
+            }
+            else {
+                return false;
             }
         }
         return true;
