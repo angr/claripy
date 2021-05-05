@@ -9,6 +9,17 @@
 #include <cmath>
 
 
+/** Return true iff p evaluates to true */
+inline bool is_true(Backend::Z3::Z3 &z3, const Expression::BasePtr &p) {
+    return z3.convert(p.get()).simplify().is_true();
+}
+
+/** Return true iff p evaluates to false */
+inline bool is_false(Backend::Z3::Z3 &z3, const Expression::BasePtr &p) {
+    return z3.convert(p.get()).simplify().is_false();
+}
+
+
 /** Try to convert a claricpp expression to z3 */
 void fp_convert() {
     namespace Ex = Expression;
@@ -23,17 +34,15 @@ void fp_convert() {
     const auto nan_is_nan { C::FP::is_nan(AV {}, nan) };
     const auto nan_is_inf { C::FP::is_inf(AV {}, nan) };
 
-    Utils::Log::critical(z3.convert(nan_is_nan.get()));
-
-    UNITTEST_ASSERT(z3.is_true(nan_is_nan.get(), solver, {}));
-    UNITTEST_ASSERT(z3.is_false(nan_is_inf.get(), solver, {}));
+    UNITTEST_ASSERT(is_true(z3, nan_is_nan))
+    UNITTEST_ASSERT(is_false(z3, nan_is_inf))
 
     // Test with Inf
     const auto inf { C::literal(AV {}, std::numeric_limits<double>::infinity()) };
     const auto inf_is_nan { C::FP::is_nan(AV {}, inf) };
     const auto inf_is_inf { C::FP::is_inf(AV {}, inf) };
-    UNITTEST_ASSERT(z3.is_false(inf_is_nan.get(), solver, {}));
-    UNITTEST_ASSERT(z3.is_true(inf_is_inf.get(), solver, {}));
+    UNITTEST_ASSERT(is_false(z3, inf_is_nan))
+    UNITTEST_ASSERT(is_true(z3, inf_is_inf))
 
     // Test float
     const auto flt { C::literal(AV {}, 0.f) }; // NOLINT
