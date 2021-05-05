@@ -1,4 +1,5 @@
 # Add tests
+simple_test(stack_limit)
 simple_test(is_same)
 simple_test(is_in)
 simple_test(type_pun)
