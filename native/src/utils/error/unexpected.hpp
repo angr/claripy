@@ -17,6 +17,9 @@ namespace Utils::Error::Unexpected {
      */
     DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
 
+    /** Syscall failure exception */
+    DEFINE_FINAL_EXCEPTION(Syscall, Base);
+
     /** Bad size exception */
     DEFINE_FINAL_EXCEPTION(Size, Base);
 
