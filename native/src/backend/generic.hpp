@@ -70,24 +70,26 @@ namespace Backend {
             // For the next element in our expr_stack
             for (const auto *expr = expr_stack.top(); !expr_stack.empty();
                  expr = expr_stack.top()) {
-                const auto *const op { expr->op.get() };
                 expr_stack.pop();
 
                 // If the expression does not represent the end of a list
                 if (expr != nullptr) {
+                    const auto *const op { expr->op.get() };
 
                     // Cache lookups
                     if (const auto [map, _] = errored_cache.shared();
-                        map.find(expr->hash) == map.end()) {
+                        map.find(expr->hash) != map.end()) {
                         throw BackendError(name(), " cannot handle operation: ", op->op_name());
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
                         arg_stack.emplace_back(&(lookup->second));
+                        continue;
                     }
 
                     // Update stacks
                     op_stack.push(expr);
+                    expr_stack.push(nullptr);
                     op->add_reversed_children(expr_stack);
                 }
 

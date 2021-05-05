@@ -19,10 +19,10 @@ namespace Backend::Z3::FP {
     };
 
     /** A single wide fp width */
-    static inline const constexpr Width dbl { 8, 24 };
+    static inline const constexpr Width flt { 8, 24 };
 
     /** A double wide fp width */
-    static inline const constexpr Width flt { 11, 53 };
+    static inline const constexpr Width dbl { 11, 53 };
 
 } // namespace Backend::Z3::FP
 
