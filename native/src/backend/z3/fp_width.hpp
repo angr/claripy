@@ -24,6 +24,11 @@ namespace Backend::Z3::FP {
     /** A double wide fp width */
     static inline const constexpr Width dbl { 11, 53 };
 
+    /** Equality operator */
+    inline bool operator==(const Width &a, const Width &b) noexcept {
+        return (a.exp == b.exp) && (a.mantissa == b.mantissa);
+    }
+
 } // namespace Backend::Z3::FP
 
 #endif
