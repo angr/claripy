@@ -35,9 +35,11 @@ static auto make_ite() {
 
 /** Try to convert a claricpp expression to z3 */
 void convert() {
-    const auto ite { make_ite() };
     auto z3 { Backend::Z3::Z3 {} };
-    (void) z3.convert(ite.get());
+
+    // Test with if (4 == (x * 3)) then "Hello" else y
+    const auto ite { make_ite() };
+    (void) z3.convert(ite.get()); // Verify this runs
 }
 
 // Define the test
