@@ -39,7 +39,12 @@ function(_build_z3)
 		endif()
 
 		# If we desire build parallelization
-		if (Z3_NUM_CORES GREATER 1)
+		if(Z3_NUM_CORES LESS 1)
+			message(FATAL_ERROR
+				"Z3 cannot be built with fewer than 1 core. "
+				"To build, update the Z3_NUM_CORES variable."
+			)
+		elseif(Z3_NUM_CORES GREATER 1)
 
 			# Parallelization args depend on the make generator
 			# First we must locate the system's make program from a list of make
@@ -70,14 +75,8 @@ function(_build_z3)
 					"-j${Z3_NUM_CORES}"
 				)
 			endif()
-
-		# Usage check
-		elseif(Z3_NUM_CORES LESS 1)
-			message(FATAL_ERROR
-				"Z3 cannot be built with fewer than 1 core. "
-				"To build, update the Z3_NUM_CORES variable."
-			)
 		endif()
+
 		# Set build options
 		if (Z3_BUILD_RELEASE_MODE)
 			message(STATUS "Building z3 in Release mode")
@@ -112,7 +111,7 @@ function(_build_z3)
 				"-DWARNINGS_AS_ERRORS:STRING=SERIOUS_ONLY"
 				# Install Options
 				"-DCMAKE_INSTALL_INCLUDEDIR:PATH=${Z3_INCLUDE_DIR}" # Absolute path
-				"-DCMAKE_INSTALL_LIBDIR:PATH=${Z3_DIR}/bin/"         # Absolute path
+				"-DCMAKE_INSTALL_LIBDIR:PATH=${Z3_DIR}/bin/"        # Absolute path
 				# This should never be used, but just in case:
 				"-DCMAKE_INSTALL_PREFIX:PATH=${Z3_DIR}"
 				# Disable Unwanted Options
