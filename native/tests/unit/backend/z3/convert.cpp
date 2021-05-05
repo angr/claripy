@@ -8,7 +8,7 @@
 
 
 /** Construct the ite expression: if (4 == (x * 3)) then "Hello" else y */
-auto make_ite() {
+static auto make_ite() {
     namespace Ex = Expression;
     using AV = Ex::Base::AnVec;
     namespace C = Create;
