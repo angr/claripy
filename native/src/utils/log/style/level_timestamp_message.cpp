@@ -10,6 +10,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <mutex>
 
 
 // For brevity
@@ -19,14 +20,17 @@ using namespace Style;
 using Lvl = Level::Level;
 
 
+/** Get the current local time */
+static auto get_time() {
+	static std::mutex m;
+    const auto t { std::time(nullptr) };
+	std::unique_lock<decltype(m)> l{m};
+	return *std::localtime(&t); // NOLINT (this is a thread-unsafe function)
+}
+
 // Return "<level>: <timestamp>: <raw>"
 std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
                                        const std::ostringstream &raw) const {
-
-    // Get time
-    const auto t { std::time(nullptr) };
-    const auto tm { *std::localtime(&t) };
-
     // Color label
     const char *color;
     switch (lvl) {
@@ -55,6 +59,9 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
             throw Error::Unexpected::Unknown("Logger was given unknown level");
             break;
     }
+
+    // Get time
+    const auto tm { get_time() };
 
     // Output
     std::ostringstream ret;
