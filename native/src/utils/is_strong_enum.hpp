@@ -32,6 +32,7 @@ namespace Utils {
 
     /** True if T is a strong enum */
     template <typename T> UTILS_ICCBOOL is_strong_enum { Private::IsStrongEnum<T>::value };
+
 } // namespace Utils
 
 #endif

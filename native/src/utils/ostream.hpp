@@ -7,9 +7,8 @@
 #ifndef __UTILS_OSTREAM_HPP__
 #define __UTILS_OSTREAM_HPP__
 
-#include "private/ostream_helper_conversions.hpp"
-
-#include "../macros.hpp"
+#include "is_strong_enum.hpp"
+#include "private/has_ostream_op.hpp"
 
 
 namespace Utils {
@@ -18,7 +17,12 @@ namespace Utils {
      *  If the strong enum already has a << operator defined, this is a passthrough
      */
     template <typename T, typename U> inline void OStream(T &left, const U &right) {
-        left << Private::ostream_helper_conversions(right);
+		if constexpr(is_strong_enum<U> && ! Private::has_ostream_op<U>) {
+			left << to_underlying(right);
+		}
+		else {
+			left << right;
+		}
     }
 
 } // namespace Utils
