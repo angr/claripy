@@ -24,7 +24,7 @@ namespace Utils::ThreadSafe {
          *  Lock on construction
          *  Shared lock if Shared, else exclusive lock
          */
-        MoveLock(Mutex *const m) : mutex { m } {
+        explicit MoveLock(Mutex *const m) : mutex { m } {
             if constexpr (Shared) {
                 mutex->lock_shared();
             }
@@ -56,10 +56,10 @@ namespace Utils::ThreadSafe {
         /** The mutex to lock */
         Mutex *mutex;
 
-        /** Delete copy constructor */
-        MoveLock(const MoveLock &) = delete;
         /** Delete default constructor */
         MoveLock() = delete;
+        /** Delete copy constructor */
+        MoveLock(const MoveLock &) = delete;
 
         // Disable assignment
         SET_IMPLICITS_OPERATORS(MoveLock, delete);
