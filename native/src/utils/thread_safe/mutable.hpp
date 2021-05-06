@@ -48,10 +48,10 @@ namespace Utils::ThreadSafe {
         /** The moveable lock type returned */
         template <bool Shared> using MLock = MoveLock<SharedMutex, Shared>;
 
-		/** Unique Lock */
-		using UniqueLock = MLock<false>;
-		/** Shared Lock */
-		using SharedLock = MLock<true>;
+        /** Unique Lock */
+        using UniqueLock = MLock<false>;
+        /** Shared Lock */
+        using SharedLock = MLock<true>;
 
       public:
         /** Default constructor, default constructs T */
@@ -65,9 +65,7 @@ namespace Utils::ThreadSafe {
          *  auto [ref, lock] = mutable.unique();
          *  Or use the provided macro
          */
-        [[nodiscard]] auto unique() {
-            return std::pair<T &, const UniqueLock>{obj, m};
-        }
+        [[nodiscard]] auto unique() { return std::pair<T &, const UniqueLock> { obj, m }; }
 
         /** Request read-only access
          *  Structure bind to the return type as follows:
@@ -75,7 +73,7 @@ namespace Utils::ThreadSafe {
          *  Or use the provided macro
          */
         [[nodiscard]] auto shared() const {
-            return std::pair<const T &, const SharedLock>{obj, m};
+            return std::pair<const T &, const SharedLock> { obj, m };
         }
 
       private:

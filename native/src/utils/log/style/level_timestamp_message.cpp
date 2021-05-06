@@ -9,8 +9,8 @@
 
 #include <ctime>
 #include <iomanip>
-#include <sstream>
 #include <mutex>
+#include <sstream>
 
 
 // For brevity
@@ -22,10 +22,10 @@ using Lvl = Level::Level;
 
 /** Get the current local time */
 static auto get_time() {
-	static std::mutex m;
+    static std::mutex m;
     const auto t { std::time(nullptr) };
-	std::unique_lock<decltype(m)> l{m};
-	return *std::localtime(&t); // NOLINT (this is a thread-unsafe function)
+    std::unique_lock<decltype(m)> l { m };
+    return *std::localtime(&t); // NOLINT (this is a thread-unsafe function)
 }
 
 // Return "<level>: <timestamp>: <raw>"

@@ -90,7 +90,7 @@ namespace Backend::Z3 {
 // For simplicity and consistency we define a binary op macro for this case
 #define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                         \
     case Op::OP<__VA_ARGS__>::static_cuid: {                                                      \
-        const constexpr auto func { FN<__VA_ARGS__> };                                                     \
+        const constexpr auto func { FN<__VA_ARGS__> };                                            \
         BINARY_DISPATCH(func);                                                                    \
     }
 
