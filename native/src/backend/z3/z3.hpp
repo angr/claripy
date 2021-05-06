@@ -28,7 +28,7 @@ namespace Backend::Z3 {
         }
 
         /** The name of this backend */
-        [[nodiscard]] Constants::CCSC name() const noexcept override final { return "z3"; }
+        [[nodiscard]] Constants::CCS name() const noexcept override final { return "z3"; }
 
         /** Return true if expr is always true */
         bool is_true(const Expression::RawPtr &expr, const Solver &solver,
@@ -90,7 +90,7 @@ namespace Backend::Z3 {
 // For simplicity and consistency we define a binary op macro for this case
 #define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                         \
     case Op::OP<__VA_ARGS__>::static_cuid: {                                                      \
-        const auto &func { FN<__VA_ARGS__> };                                                     \
+        const constexpr auto func { FN<__VA_ARGS__> };                                                     \
         BINARY_DISPATCH(func);                                                                    \
     }
 

@@ -44,7 +44,7 @@ namespace Expression {
     /** Static casts T to Expression::Bits, then returns the bit_length
      *  Warning: This static casts, the user must ensure that p.get() is a Bits
      */
-    constexpr Constants::UInt get_bit_length(const Expression::BasePtr &p) {
+    inline Constants::UInt get_bit_length(const Expression::BasePtr &p) {
         return get_bit_length(p.get());
     }
 

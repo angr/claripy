@@ -8,6 +8,8 @@
 
 #include "error.hpp"
 
+#include <cstring>
+
 
 namespace Utils {
 
