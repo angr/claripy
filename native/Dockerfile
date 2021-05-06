@@ -104,6 +104,10 @@ LABEL claricpp=cmake
 # Optional build args
 ARG CMAKE_BUILD_TYPE="Debug"
 ARG CMAKE_VERBOSE_MAKEFILE="OFF"
+ARG NUM_CORES=1
+
+# Move build args into env
+ENV NUM_CORES="${NUM_CORES}"
 
 # cd build
 RUN mkdir "${BUILD}"
@@ -114,6 +118,7 @@ RUN cmake \
 	-DCMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE}" \
 	-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
 	-DCMAKE_CXX_COMPILER="${CXX_COMPILER}" \
+	-D"Z3_NUM_CORES"="${NUM_CORES}" \
 	"${NATIVE}"
 
 
@@ -125,15 +130,8 @@ RUN cmake \
 FROM cmake as acquire_z3
 LABEL claricpp=acquire_z3
 
-# Optional build arg
-ARG NUM_CORES=1
-RUN test -n "${NUM_CORES}"
-
-# Move build args into env
-ENV NUM_CORES="${NUM_CORES}"
-
 # Make
-RUN make -j "${NUM_CORES}" z3
+RUN make z3
 
 
 ##################################################

@@ -174,9 +174,11 @@ option( Z3_BUILD_RELEASE_MODE "ON to build z3 in release mode, OFF for debug mod
 # The number of cores used to compile z3 (think of this as make -j<this>)
 # Note: this will override whatever is passed to make during the build
 # This is because make doesn't give a way for subprocess builds to reuse this job limit
-include(ProcessorCount)
-ProcessorCount(Z3_NUM_CORES)
-math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2") # Set Z3_NUM_CORES to: $(nproc) - 2
+if(NOT DEFINED Z3_NUM_CORES)
+	include(ProcessorCount)
+	ProcessorCount(Z3_NUM_CORES)
+	math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2") # Set Z3_NUM_CORES to: $(nproc) - 2
+endif()
 
 # This option is used to help locate the Z3 library.
 # If left undefined cmake will attempt to locate it automatically
