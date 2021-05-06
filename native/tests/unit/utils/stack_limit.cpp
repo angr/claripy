@@ -29,7 +29,7 @@ void stack_limit() {
         UNITTEST_ASSERT(ns_get);
         const bool ns_max { is_not_supported(Utils::StackLimit::max) };
         UNITTEST_ASSERT(ns_max);
-        const bool ns_set { is_not_supported(Utils::StackLimit::set, 0ull) };
+        const bool ns_set { is_not_supported(Utils::StackLimit::set, 0ULL) };
         UNITTEST_ASSERT(ns_set);
     }
 }

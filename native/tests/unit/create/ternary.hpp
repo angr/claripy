@@ -62,7 +62,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
             new_bit_length += b_down->bit_length + c_down->bit_length;
         }
         else {
-            static_assert(Utils::TD::false_<Mode>, "Unsupported mode for ternary");
+            static_assert(Utils::CD::false_<Mode>, "Unsupported mode for ternary");
         }
         UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }

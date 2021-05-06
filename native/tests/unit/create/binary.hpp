@@ -57,7 +57,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
             new_bit_length += b_down->bit_length;
         }
         else if constexpr (Mode != SM::First) {
-            static_assert(Utils::TD::false_<Mode>, "Unsupported mode for binary");
+            static_assert(Utils::CD::false_<Mode>, "Unsupported mode for binary");
         }
         UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }
