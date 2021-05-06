@@ -158,8 +158,9 @@ set( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
 option( Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present during configuration" OFF )
 
 # Specify the repo and commit that should be used to build Z3
+# Z3_GIT_COMMIT can be a branch, tag, or commit hash
 set( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-set( Z3_GIT_COMMIT "0c6722f48b2814e44ed98ea33b2a356579fd90f4" )
+set( Z3_GIT_COMMIT "master" )
 
 # Build z3 in release or debug mode
 option( Z3_BUILD_RELEASE_MODE "ON to build z3 in release mode, OFF for debug mode" ON )
