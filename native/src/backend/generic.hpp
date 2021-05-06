@@ -47,7 +47,8 @@ namespace Backend {
             return true;
         }
 
-        // Concrete functions
+        /** Abstract a backend object into a claricpp expression */
+        virtual Expression::BasePtr abstract(const BackendObj &input) = 0;
 
         /** Convert a claricpp Expression to a backend object
          *  This function does not deal with the lifetimes of expressions
@@ -132,7 +133,6 @@ namespace Backend {
             // Return result
             return *arg_stack.back(); // shortcut for object_cache.find(input->hash)->second;
         }
-
 
       protected:
         /** A vector based stack */

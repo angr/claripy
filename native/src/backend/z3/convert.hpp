@@ -5,13 +5,11 @@
 #ifndef __BACKEND_Z3_CONVERT_HPP__
 #define __BACKEND_Z3_CONVERT_HPP__
 
+#include "constants.hpp"
 #include "fp_width.hpp"
 #include "tl_ctx.hpp"
 
 #include "../../op.hpp"
-
-#include <functional>
-#include <z3++.h>
 
 
 /********************************************************************/
@@ -20,9 +18,6 @@
 
 
 namespace Backend::Z3::Convert {
-
-    /** The z3 unsigned type */
-    using z3u = unsigned;
 
     // Forward declarations
     z3::expr concat(const z3::expr &l, const z3::expr &r);

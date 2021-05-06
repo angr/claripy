@@ -12,9 +12,6 @@
 #include "../../error.hpp"
 #include "../generic.hpp"
 
-#include <memory>
-#include <type_traits>
-
 
 namespace Backend::Z3 {
 
@@ -57,7 +54,6 @@ namespace Backend::Z3 {
             (void) expr;
             return { nullptr };
         }
-
 
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been
@@ -356,6 +352,14 @@ namespace Backend::Z3 {
 #undef MODE_BINARY_CASE
 #undef TERNARY_CASE
 #undef FLAT_CASE
+        }
+
+        /** Abstract a backend object into a claricpp expression */
+        Expression::BasePtr abstract(const z3::expr &input) override final {
+            (void) input;
+
+
+            return { nullptr }; // TODO
         }
     };
 
