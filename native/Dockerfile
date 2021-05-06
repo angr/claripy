@@ -1,3 +1,7 @@
+# Use build.sh to build this
+# If building directly, this is meant to be built with docker buildkit enabled:
+#    export DOCKER_BUILDKIT=1
+
 ##################################################
 #                   Base Stage                   #
 ##################################################
@@ -113,13 +117,20 @@ ENV NUM_CORES="${NUM_CORES}"
 RUN mkdir "${BUILD}"
 WORKDIR "${BUILD}"
 
+# Create cmake command
+ENV CMAKE_SH="${BUILD}/cmake.sh"
+RUN echo \
+	cmake \
+		-DCMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE}" \
+		-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
+		-DCMAKE_CXX_COMPILER="${CXX_COMPILER}" \
+		-D"Z3_NUM_CORES"="${NUM_CORES}" \
+		"${NATIVE}" \
+	> "${CMAKE_SH}"
+RUN chmod +x "${CMAKE_SH}"
+
 # CMake
-RUN cmake \
-	-DCMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE}" \
-	-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
-	-DCMAKE_CXX_COMPILER="${CXX_COMPILER}" \
-	-D"Z3_NUM_CORES"="${NUM_CORES}" \
-	"${NATIVE}"
+RUN "${CMAKE_SH}"
 
 
 ##################################################
@@ -132,6 +143,10 @@ LABEL claricpp=acquire_z3
 
 # Make
 RUN make z3
+
+# Re-run CMake
+# This step only matters if z3 acquisition mode is set to build
+RUN "${CMAKE_SH}"
 
 
 ##################################################
