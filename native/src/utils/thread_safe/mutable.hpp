@@ -66,7 +66,7 @@ namespace Utils::ThreadSafe {
          *  Or use the provided macro
          */
         [[nodiscard]] auto unique() {
-            return std::pair<T &, const UniqueLock>{obj, &m};
+            return std::pair<T &, const UniqueLock>{obj, m};
         }
 
         /** Request read-only access
@@ -75,7 +75,7 @@ namespace Utils::ThreadSafe {
          *  Or use the provided macro
          */
         [[nodiscard]] auto shared() const {
-            return std::pair<const T &, const SharedLock>{obj, &m};
+            return std::pair<const T &, const SharedLock>{obj, m};
         }
 
       private:
