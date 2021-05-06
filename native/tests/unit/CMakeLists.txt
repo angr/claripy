@@ -10,8 +10,8 @@ set(SIMPLE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 include(SimpleTest)
 
 # Add test cases
-message("Adding tests generally in order of dependency."
-	    "If an early test case fails it will likely take many later ones with it")
+message(STATUS "Adding tests generally in order of dependency.")
+message(STATUS "If an early test case fails it will likely take many later ones with it")
 message(STATUS "Adding unit tests:")
 
 # Test test system

@@ -80,7 +80,13 @@ option( ENABLE_CET "Builds with CET fcf-protection, requires ENABLE_SECURITY" OF
 
 
 # The name of the z3 make target
-set( Z3_LIB_TARGET "z3" )
+set( Z3_MAKE_TARGET "z3" )
+
+# The name of the z3 library target (this is different from the make target)
+# The make target triggers this target to be built; this is the library claricpp should link to
+# This has to be distinct from the make target because cmake will
+# not export imported shared library targets to the build system
+set( Z3_LIB_PRIVATE_TARGET "lib-z3" )
 
 # Defines how the z3 library is acquired
 # The supported options are:
@@ -420,7 +426,7 @@ target_include_directories("${CLARICPP}"
 	SYSTEM BEFORE
 	PRIVATE "${Z3_INCLUDE_DIR}"
 )
-target_link_libraries("${CLARICPP}" PRIVATE "${Z3_LIB_TARGET}")
+target_link_libraries("${CLARICPP}" PRIVATE "${Z3_LIB_PRIVATE_TARGET}")
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above

@@ -2,7 +2,8 @@
 #
 # The following variables should be defined before including this file:
 #  Z3_ACQUISITION_MODE - The method used to acquire z3. Either SYSTEM, DOWNLOAD, PATH, or BUILD
-#  Z3_LIB_TARGET - The name of the z3 target
+#  Z3_LIB_PRIVATE_TARGET - The name of the z3 library internal target
+#  Z3_MAKE_TARGET - The name of the z3 make target that buils the z3 library internal target
 # All variables required by the the selected mode, define in the respective cmake/z3/z3_<mode> file
 #
 # This file defines the following variables:
@@ -45,7 +46,7 @@ function(_acquire_z3)
 
 	# Add a z3 library target
 	# This allows us to make using z3 dependent on build later, if needed
-	add_library( "${Z3_LIB_TARGET}"
+	add_library( "${Z3_LIB_PRIVATE_TARGET}"
 		SHARED
 		IMPORTED
 		GLOBAL # Scopes the library outside of its directory
@@ -69,9 +70,16 @@ function(_acquire_z3)
 	endif()
 
 	# Point the target to the shared library file
-	message(STATUS "Configuring top level z3 target: ${Z3_LIB_TARGET}")
-	set_property(TARGET "${Z3_LIB_TARGET}" PROPERTY
+	message(STATUS "Configuring top level z3 target")
+	set_property(TARGET "${Z3_LIB_PRIVATE_TARGET}" PROPERTY
 		IMPORTED_LOCATION "${Z3_LIB}"
+	)
+
+	# Expose a make target to allow `make z3` to acquire z3
+	message(STATUS "Generating z3 make target: ${Z3_MAKE_TARGET}")
+	add_custom_target("${Z3_MAKE_TARGET}"
+		COMMENT "Acquiring z3"
+		DEPENDS "${Z3_LIB_PRIVATE_TARGET}"
 	)
 
 endfunction()

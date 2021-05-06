@@ -77,7 +77,7 @@ function(simple_test FUNC_NAME)
 	# Link the test
 	target_link_libraries("${BINARY}" PRIVATE
 		"${CLARICPP}"
-		"${Z3_LIB_TARGET}"
+		"${Z3_LIB_PRIVATE_TARGET}"
 		"${TESTLIB}"
 	)
 

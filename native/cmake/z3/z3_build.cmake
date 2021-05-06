@@ -7,10 +7,10 @@
 #  Z3_REPO_LINK     - The git repo to download Z3 source files from
 #  Z3_GIT_COMMIT    - The git commit to download from Z3_REPO_LINK
 #  Z3_NUM_CORES     - The number of cores used to compile z3 with (i.e. make -j<this>)
-#  Z3_LIB_TARGET    - The name of the z3 library target
 #  Z3_LIB           - The location of the z3 library once installed
 #  Z3_DIR           - The directory the z3 install tree should be placed
-#  Z3_BUILD_RELEASE_MODE - On to build in release mode; off for debug mode
+#  Z3_LIB_PRIVATETARGET        - The name of the z3 library target
+#  Z3_BUILD_RELEASE_MODE       - On to build in release mode; off for debug mode
 #  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
 
 # Wrapping this in a function to create a new scope
@@ -35,7 +35,7 @@ function(_build_z3)
 			message("Existing z3 directory found. Prioritizing it over a fresh clone.")
 			set(SKIP_DOWNLOAD_IF_EXISTS "DOWNLOAD_COMMAND" "") # Unquoted is needed here
 		else()
-			message("No existing z3 directory found. Cloning a new one.")
+			message("No existing z3 directory found. A new fresh clone will be downloaded.")
 		endif()
 
 		# If we desire build parallelization
@@ -127,11 +127,12 @@ function(_build_z3)
 				"-DZ3_BUILD_DOTNET_BINDINGS:BOOL=FALSE"
 				"-DZ3_BUILD_JAVA_BINDINGS:BOOL=FALSE"
 				"-DZ3_BUILD_PYTHON_BINDINGS:BOOL=FALSE"
+			# TODO BUILD_BYPRODUCTS for Ninja build system usage
 		)
 
 		# Define our shared library target to depend on the external z3 build
 		# That is, when this target is made, it builds z3 first
-		add_dependencies("${Z3_LIB_TARGET}" "${BUILDER}")
+		add_dependencies("${Z3_LIB_PRIVATE_TARGET}" "${BUILDER}")
 	endif()
 
 endfunction()
