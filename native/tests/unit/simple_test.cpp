@@ -5,6 +5,7 @@
 
 /**
  * @file
+ * @brief Tests the Claricpp Unit Test tester
  * \ingroup unittest
  */
 #include "testlib.hpp"

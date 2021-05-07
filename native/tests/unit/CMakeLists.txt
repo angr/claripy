@@ -16,6 +16,7 @@ message(STATUS "Adding unit tests:")
 
 # Test test system
 simple_test(simple_test)
+simple_test(sanity_check)
 
 # Add actual test cases
 add_subdirectory(utils)
