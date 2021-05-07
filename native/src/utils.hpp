@@ -19,6 +19,8 @@
 #include "utils/const_eval.hpp"
 #include "utils/dependent_constant.hpp"
 #include "utils/error.hpp"
+#include "utils/norm_path_hash.hpp"
+#include "utils/str_prefix.hpp"
 #include "utils/file_line_hash.hpp"
 #include "utils/fnv1a.hpp"
 #include "utils/full.hpp"
