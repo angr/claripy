@@ -12,7 +12,7 @@
 namespace Utils {
 
 /** Return a file specific hash */
-#define UTILS_FILE_HASH Utils::norm_path_hash(__FILE__)
+#define UTILS_FILE_HASH Utils::norm_path_hash<Utils::strlen(__FILE__)>(__FILE__)
 
 /** Return a file line specific hash */
 #define UTILS_FILE_LINE_HASH (UTILS_FILE_HASH + __LINE__)

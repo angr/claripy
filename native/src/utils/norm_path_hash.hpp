@@ -16,19 +16,22 @@
 
 #include "../constants.hpp"
 
+#include <array>
 #include <cstdint>
 #include <type_traits>
 
 
 namespace Utils {
 
-    /** Return the FNV1a of the normal path of s */
-    constexpr auto norm_path_hash(Constants::CCS s) {
+    /** Return the FNV1a of the normal path of s
+     *  Len must be the length of s
+     */
+    template <Constants::UInt Len> constexpr auto norm_path_hash(Constants::CCS s) {
 
         // Trivial case
         auto len { Utils::strlen(s) };
         if (len == 0) {
-            return 0UL;
+            return static_cast<uint64_t>(0);
         }
 
 /** A local macro used to advance s */
@@ -47,8 +50,8 @@ namespace Utils {
         }
 
         // Store path segments
-        Constants::CCS segments[len] {};
-        Constants::UInt segment_lengths[len] {};
+        std::array<Constants::CCS, Len> segments {};
+        std::array<Constants::UInt, Len> segment_lengths {};
         Constants::UInt n_seg { 0 };
 
         // Current segment info
@@ -98,14 +101,8 @@ namespace Utils {
         segment_lengths[n_seg] = current_seg_length;
         ++n_seg;
 
-        // Norm path length
-        Constants::UInt total_n_len { (absolute ? 1_ui : 2_ui) - 1_ui };
-        for (Constants::UInt i = 0; i < n_seg; ++i) {
-            total_n_len += 1 + segment_lengths[i];
-        }
-
         // Construct norm path
-        char norm[total_n_len + 1] {};
+        std::array<char, Len + 3> norm {};
         Constants::UInt n_len { 0 };
         if (!absolute) {
             norm[n_len++] = '.';
@@ -113,16 +110,14 @@ namespace Utils {
         norm[n_len++] = '/';
         for (Constants::UInt i { 0 }; i < n_seg; ++i) {
             for (Constants::UInt k { 0 }; k < segment_lengths[i]; ++k) {
-                norm[n_len++] = segments[i][k];
+                norm[n_len++] = static_cast<Constants::CCS>(segments[i])[k];
             }
             norm[n_len++] = '/';
         }
         norm[--n_len] = 0;
-        affirm<Error::Unexpected::Unknown>(n_len == total_n_len,
-                                           WHOAMI_WITH_SOURCE "internal error detected");
 
         // Hash
-        return FNV1a<char>::hash(norm, n_len);
+        return FNV1a<char>::hash(norm.data(), n_len);
     }
 
 } // namespace Utils
