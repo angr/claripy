@@ -4,6 +4,7 @@
 #  Z3_ACQUISITION_MODE - The method used to acquire z3. Either SYSTEM, DOWNLOAD, PATH, or BUILD
 #  Z3_LIB_PRIVATE_TARGET - The name of the z3 library internal target
 #  Z3_MAKE_TARGET - The name of the z3 make target that buils the z3 library internal target
+#  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
 # All variables required by the the selected mode, define in the respective cmake/z3/z3_<mode> file
 #
 # This file defines the following variables:

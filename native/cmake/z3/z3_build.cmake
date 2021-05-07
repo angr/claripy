@@ -11,7 +11,6 @@
 #  Z3_DIR           - The directory the z3 install tree should be placed
 #  Z3_LIB_PRIVATETARGET        - The name of the z3 library target
 #  Z3_BUILD_RELEASE_MODE       - On to build in release mode; off for debug mode
-#  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
 
 # Wrapping this in a function to create a new scope
 function(_build_z3)
