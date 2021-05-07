@@ -24,11 +24,21 @@ namespace Backend {
         using BORCPtr = Constants::CTS<BackendObj>;
 
       public:
+
+		// Pure Virtual Functions
+
+        /** Create a new thread local solver and return an opaque shared pointer to it
+         *  When this opaque shared pointer dies, the solver may also die as well
+         *  Warning: Do *not* share solvers between threads
+         */
+        [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const = 0;
+
+		// Virtual and Concrete Functions
+
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
          */
         void downsize() override {
-            Base::downsize(); // Super downsize
             errored_cache.unique().first.clear();
             // Thread locals
             object_cache.clear();
@@ -135,8 +145,6 @@ namespace Backend {
         }
 
       protected:
-        /** A vector based stack */
-        template <typename T> using Stack = std::stack<T, std::vector<T>>;
 
         // Pure Virtual Functions
 
@@ -150,6 +158,9 @@ namespace Backend {
                                                std::vector<BORCPtr> &args) = 0;
 
         // Virtual Functions
+
+		/** Destructor */
+		virtual ~Generic() = default;
 
         /** This applies the given annotations to the backend object */
         virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {

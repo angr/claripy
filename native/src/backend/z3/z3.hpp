@@ -17,10 +17,22 @@ namespace Backend::Z3 {
 
     /** The Z3 backend */
     class Z3 final : public Generic<z3::expr, false> {
+		/** Z3 parent class */
+		using Super = Generic<z3::expr, false>;
       public:
         /********************************************************************/
         /*                        Function Overrides                        */
         /********************************************************************/
+
+		/** Destructor */
+		virtual ~Z3() = default;
+
+        /** Clear caches to decrease memory pressure */
+        void downsize() override {
+			Super::downsize();
+			is_true_cache.unique().first.clear();
+			is_false_cache.unique().first.clear();
+        }
 
         /** Create a tls solver */
         [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const override final {
@@ -31,21 +43,23 @@ namespace Backend::Z3 {
         [[nodiscard]] Constants::CCS name() const noexcept override final { return "z3"; }
 
         /** Return true if expr is always true */
-        bool is_true(const Expression::RawPtr &expr, const Solver &solver,
-                     const std::vector<Expression::BasePtr> extra_constraints) override final {
-#ifdef DEBUG
-            Utils::sink(solver, extra_constraints);
-#endif
-            return convert(expr).is_true();
+        bool is_true(const Expression::RawPtr &expr) {
+			auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
+			if (in_cache) { return res; }
+            const bool ret { convert(expr).is_true() };
+			is_true_cache.unique().first.emplace(expr->hash, ret);
+			is_false_cache.unique().first.emplace(expr->hash, ret);
+			return ret;
         }
 
         /** Return true if expr is always false */
-        bool is_false(const Expression::RawPtr &expr, const Solver &solver,
-                      const std::vector<Expression::BasePtr> extra_constraints) override final {
-#ifdef DEBUG
-            Utils::sink(solver, extra_constraints);
-#endif
-            return convert(expr).is_false();
+        bool is_false(const Expression::RawPtr &expr) {
+			auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
+			if (in_cache) { return res; }
+            const bool ret { convert(expr).is_true() };
+			is_false_cache.unique().first.emplace(expr->hash, ret);
+			is_true_cache.unique().first.emplace(expr->hash, ret);
+			return ret;
         }
 
         /** Simplify the given expression */
@@ -328,9 +342,9 @@ namespace Backend::Z3 {
                     TERNARY_CASE(String::SubString, Convert::String::substring)
 
                 case Op::String::IndexOf::static_cuid: {
-                    using To = Constants::CTSC<Expression::Bits>;
                     const auto size { args.size() };
 #ifdef DEBUG
+                    using To = Constants::CTSC<Expression::Bits>;
                     Utils::affirm<Utils::Error::Unexpected::Type>(
                         dynamic_cast<To>(expr) != nullptr,
                         WHOAMI_WITH_SOURCE "String::IndexOf has no length");
@@ -359,8 +373,38 @@ namespace Backend::Z3 {
             (void) input;
 
 
+
             return { nullptr }; // TODO
         }
+
+	private:
+		/** An abbreviation for Utils::ThreadSafe::Mutable */
+		template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
+
+        // Caches
+
+		/** A helper function that tries to get an object from a cache
+		 *  Returns a pair; the first value is a boolean that stores if it was found
+		 *  The second value is the value that was found, or default constructed if not found
+		 *  Note that the second value is copied to ensure thread safety
+		 */
+		template <typename Key, typename Value> static std::pair<bool, Value> get_from_cache(const TSM<std::map<Key, Value>> & tsm_cache, const Key & key) {
+			const auto cache { tsm_cache.shared().first };
+			if (const auto lookup { cache.find(key) }; lookup != cache.end()) {
+				return { true, lookup->second };
+			}
+			return { false, {} };
+		}
+
+        /** is_true cache
+         *  Map an expression hash to the result of is_true
+         */
+        inline static TSM<std::map<Hash::Hash, const bool>> is_true_cache {};
+
+        /** is_false cache
+         *  Map an expression hash to the result of is_false
+         */
+        inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
     };
 
 } // namespace Backend::Z3
