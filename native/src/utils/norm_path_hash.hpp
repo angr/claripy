@@ -23,7 +23,7 @@
 namespace Utils {
 
     /** Return the FNV1a of the normal path of s */
-    constexpr auto norm_path_hash(Constants::CCS s) noexcept {
+    constexpr auto norm_path_hash(Constants::CCS s) {
 
         // Trivial case
         auto len { Utils::strlen(s) };
