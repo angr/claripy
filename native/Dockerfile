@@ -161,7 +161,7 @@ RUN make z3
 
 # Re-run CMake
 # This step only matters if z3 acquisition mode is set to build
-RUN "${CMAKE_SH}"
+RUN if [ -z "${Z3_HEADER_REL_PATH}" ]; then "${CMAKE_SH}"; fi
 
 
 ##################################################
