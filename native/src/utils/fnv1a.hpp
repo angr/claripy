@@ -46,7 +46,7 @@ namespace Utils {
                     // len >= 1, so this is safe
                     len - 1,
                     // s[0] is safe since len != 0
-                    Prime * (pre_hash ^ Size(s[0])));
+                    Prime * (pre_hash ^ static_cast<Size>(s[0])));
             }
         }
 
