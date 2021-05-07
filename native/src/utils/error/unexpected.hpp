@@ -17,6 +17,9 @@ namespace Utils::Error::Unexpected {
      */
     DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
 
+    /** Invalid path exception */
+    DEFINE_FINAL_EXCEPTION(BadPath, Base);
+
     /** Syscall failure exception */
     DEFINE_FINAL_EXCEPTION(Syscall, Base);
 
