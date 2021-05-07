@@ -14,11 +14,11 @@
 namespace Utils::Private {
 
     /** A struct which determines if T has a << stream op defined */
-    UTILS_SFINAETEST(has_ostream_op, // Invoke this
-                     HasOStreamOp,   // Internal class name
+    UTILS_SFINAETEST(has_ostream_op,                       // Invoke this
+                     HasOStreamOp,                         // Internal class name
                      *static_cast<std::ostream *>(nullptr) // declval is buggy so we cast
-                         << std::declval<U>(), // Condition we are checking
-                     typename T                // Template arguments
+                         << std::declval<U>(),             // Condition we are checking
+                     typename T                            // Template arguments
     )
 
 } // namespace Utils::Private
