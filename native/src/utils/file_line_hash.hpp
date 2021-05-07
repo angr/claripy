@@ -6,17 +6,15 @@
 #ifndef __UTILS_FILELINEHASH_HPP__
 #define __UTILS_FILELINEHASH_HPP__
 
-#include "fnv1a.hpp"
-#include "strlen.hpp"
+#include "norm_path_hash.hpp"
 
 
 namespace Utils {
 
 /** Return a file specific hash */
-#define UTILS_FILE_HASH Utils::FNV1a<char>::hash(__FILE__, Utils::strlen(__FILE__))
+#define UTILS_FILE_HASH Utils::norm_path_hash(__FILE__)
 
-/** Return a file line specific hash
- */
+/** Return a file line specific hash */
 #define UTILS_FILE_LINE_HASH (UTILS_FILE_HASH + __LINE__)
 
 } // namespace Utils
