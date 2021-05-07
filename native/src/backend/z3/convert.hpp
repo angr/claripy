@@ -348,10 +348,13 @@ namespace Backend::Z3::Convert {
 
             /** Verifes 2 expressions are FPs with the same context */
             inline void assert_are_compatible(const z3::expr &a, const z3::expr &b) {
-#if DEBUG
+#ifdef DEBUG
                 z3::check_context(a, b);
                 Utils::affirm<Utils::Error::Unexpected::Type>(
                     a.is_fpa() && b.is_fpa(), WHOAMI_WITH_SOURCE " called non-FP ops");
+#else
+				(void) a;
+				(void) b;
 #endif
             }
 

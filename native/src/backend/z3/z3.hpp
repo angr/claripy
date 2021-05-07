@@ -278,8 +278,8 @@ namespace Backend::Z3 {
     return ret;
 
                 case Op::FP::ToBV<true>::static_cuid: {
-                    using Bits = Constants::CTSC<Expression::Bits>;
 #ifdef DEBUG
+                    using Bits = Constants::CTSC<Expression::Bits>;
                     Utils::affirm<Utils::Error::Unexpected::Type>(
                         dynamic_cast<Bits>(expr) != nullptr,
                         WHOAMI_WITH_SOURCE "FP::ToBV has no length");
@@ -287,8 +287,8 @@ namespace Backend::Z3 {
                     TO_BV_BODY(true);
                 }
                 case Op::FP::ToBV<false>::static_cuid: {
-                    using Bits = Constants::CTSC<Expression::Bits>;
 #ifdef DEBUG
+                    using Bits = Constants::CTSC<Expression::Bits>;
                     Utils::affirm<Utils::Error::Unexpected::Type>(
                         dynamic_cast<Bits>(expr) != nullptr,
                         WHOAMI_WITH_SOURCE "FP::ToBV has no length");
