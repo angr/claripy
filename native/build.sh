@@ -1,6 +1,10 @@
 #!/bin/bash -eux
 set -o pipefail
 
+# Note: this build script is not comprehensive.
+# For example, it cannot do all the configurations for Z3 acquisition
+
+
 # Optional env arguments for build.sh
 DOCKER_TARGET="${DOCKER_TARGET:-test}"
 PROGRESS="${PROGRESS:-tty}"
@@ -8,6 +12,7 @@ PROGRESS="${PROGRESS:-tty}"
 # Optional env arguments passed as --build-args to docker
 CXX_COMPILER="${CXX_COMPILER:-g++}"
 FORMAT="${FORMAT:-False}"
+Z3_HEADER_REL_PATH="${Z3_HEADER_REL_PATH:-}"
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
 CMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE:-OFF}"
 NUM_CORES="${NUM_CORES:-"$(nproc)"}"
@@ -36,6 +41,7 @@ docker build -t claricpp:"${CTAG}" \
 	--build-arg VERSION="${VERSION}" \
 	--build-arg FORMAT="${FORMAT}" \
 	`# CMake ` \
+	--build-arg Z3_HEADER_REL_PATH="${Z3_HEADER_REL_PATH}" \
 	--build-arg CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
 	--build-arg CMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE}" \
 	`# Build ` \
