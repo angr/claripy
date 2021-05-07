@@ -9,16 +9,11 @@
 #include "affirm.hpp"
 #include "error.hpp"
 #include "fnv1a.hpp"
-#include "pow.hpp"
 #include "str_prefix.hpp"
-#include "strlen.hpp"
-#include "unconstructable.hpp"
 
 #include "../constants.hpp"
 
 #include <array>
-#include <cstdint>
-#include <type_traits>
 
 
 namespace Utils {
@@ -29,7 +24,7 @@ namespace Utils {
     template <Constants::UInt Len> constexpr auto norm_path_hash(Constants::CCS s) {
 
         // Trivial case
-        auto len { Utils::strlen(s) };
+        auto len { Len };
         if (len == 0) {
             return static_cast<uint64_t>(0);
         }
