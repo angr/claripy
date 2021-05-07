@@ -13,7 +13,12 @@ static Constants::UInt id_ref(const Constants::UInt &id) {
 
 /** A macro to help with testing */
 #define TEST_TYPE(X)                                                                              \
-    UNITTEST_ASSERT(Expression::X::static_cuid == id_ref(Expression::X::static_cuid));
+    {                                                                                             \
+        namespace F = UnitTest::TestLib::Factories;                                               \
+        const auto s { Expression::X::static_cuid };                                              \
+        UNITTEST_ASSERT(s == id_ref(Expression::X::static_cuid));                                 \
+        UNITTEST_ASSERT(s == F::t_literal<Expression::X>(0)->cuid);                               \
+    }
 
 /** Test samoty checks */
 void sanity_check() {
