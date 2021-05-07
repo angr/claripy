@@ -1,5 +1,12 @@
 cmake_minimum_required( VERSION 3.16 )
 
+# Append to the cmake search path
+# This allows for simple invoking of cmake files in this path
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Help with user config
+include(set_prefer_cli)
+
 
 #################################################
 #                                               #
@@ -97,7 +104,12 @@ set( Z3_LIB_PRIVATE_TARGET "lib-z3" )
 # Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
 # The 'bin' directory should include the shared library claricpp can link to
 # The 'include' directory should include the header files claricpp can use
-set( Z3_ACQUISITION_MODE BUILD )
+set_prefer_cli( Z3_ACQUISITION_MODE BUILD )
+
+# This option is used to help locate the Z3 library.
+# If left undefined cmake will attempt to locate it automatically
+# If necessary, a message will be printed out explaining this variable should be set
+#set(Z3_LIB_EXTENSION ".so")
 
 
 # Depending on the mode selected, only one of the groups of options below will be relevant
@@ -107,84 +119,89 @@ set( Z3_ACQUISITION_MODE BUILD )
 ### Z3 System Options ### (Only relevant if Z3_ACQUISITION_MODE is SYSTEM)
 #########################
 
+if (Z3_ACQUISITION_MODE STREQUAL SYSTEM)
 
-# The path to the include directory (z3 header files)
-# This directory will by symlinked into the build directory for read-only usage
-# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-set( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
+	# The path to the include directory (z3 header files)
+	# This directory will by symlinked into the build directory for read-only usage
+	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
+	set_prefer_cli( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
 
+endif()
 
 #########################
 ## Z3 Download Options ## (Only relevant if Z3_ACQUISITION_MODE is DOWNLOAD)
 #########################
 
+if (Z3_ACQUISITION_MODE STREQUAL DOWNLOAD)
 
-# The link to download z3 from
-# The link must be the compressed z3 install directory containing 'bin' and 'include'
-set( Z3_DOWNLOAD_LINK "https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-osx-10.15.7.zip" )
-# set( Z3_DOWNLOAD_LINK "https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip" )
+	# The link to download z3 from
+	# The link must be the compressed z3 install directory containing 'bin' and 'include'
+	set_prefer_cli( Z3_DOWNLOAD_LINK
+		# "https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-ubuntu-18.04.zip"
+		"https://github.com/Z3Prover/z3/releases/download/z3-4.8.10/z3-4.8.10-x64-osx-10.15.7.zip"
+	)
 
-# Optionally provide the hash of the compressed file
-# If this is done, the hash will be checked after download for security
-# If this is not desired, leave these variable undefined
-set( Z3_DOWNLOAD_HASH "750773630d05cc7c6e4e92be937bfdc6" )
-set( Z3_DOWNLOAD_HASH_TYPE "MD5" )
+	# Optionally provide the hash of the compressed file
+	# If this is done, the hash will be checked after download for security
+	# If this is not desired, leave these variable undefined
+	set_prefer_cli( Z3_DOWNLOAD_HASH "750773630d05cc7c6e4e92be937bfdc6" )
+	set_prefer_cli( Z3_DOWNLOAD_HASH_TYPE "MD5" )
 
-# Other required download settings
-option( Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON )
-option( Z3_DOWNLOAD_SHOW_PROGRESS "Show download progress while downloading." OFF )
-set( Z3_DOWNLOAD_TIMEOUT_SECONDS 120 )
+	# Other required download settings
+	option( Z3_DOWNLOAD_TLS_VERIFY "Specify whether to verify the server certificate for https:// urls" ON )
+	option( Z3_DOWNLOAD_SHOW_PROGRESS "Show download progress while downloading." OFF )
+	set( Z3_DOWNLOAD_TIMEOUT_SECONDS 120 )
 
+endif()
 
 #####################
 ## Z3 Path Options ## (Only relevant if Z3_ACQUISITION_MODE is PATH)
 #####################
 
+if (Z3_ACQUISITION_MODE STREQUAL PATH)
 
-# The path to the Z3 library
-# On Mac this will probably be a dynamic library (.dylib)
-# On Linux this will probably be a shared object (.so)
-# On Windows this will probably be a dynamic link library (.dll)
-set( Z3_LIB_PATH "/path/to/z3/library.so" )
+	# The path to the Z3 library
+	# On Mac this will probably be a dynamic library (.dylib)
+	# On Linux this will probably be a shared object (.so)
+	# On Windows this will probably be a dynamic link library (.dll)
+	set_prefer_cli( Z3_LIB_PATH "/path/to/z3/library.so" )
 
-# The path to the include directory (z3 header files)
-# This directory will by symlinked into the build directory for read-only usage
-# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
-set( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
+	# The path to the include directory (z3 header files)
+	# This directory will by symlinked into the build directory for read-only usage
+	# Claricpp is coded to use z3 headers as non-system headers, so this is necessary
+	set_prefer_cli( Z3_INCLUDE_PATH "/path/to/z3-headers/" )
 
+endif()
 
 ######################
 ## Z3 Build Options ## (Only relevant if Z3_ACQUISITION_MODE is BUILD)
 ######################
 
+if (Z3_ACQUISITION_MODE STREQUAL BUILD)
 
-# If false, rebuilds will not occur if libz3 is present during configuration
-# Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
-# libz3 may re-build every time make is invoked as it is using an old configuration
-option( Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present during configuration" OFF )
+	# If false, rebuilds will not occur if libz3 is present during configuration
+	# Note: It is reccomended you reconfigure cmake after a libz3 build otherwise
+	# libz3 may re-build every time make is invoked as it is using an old configuration
+	option( Z3_FORCE_REBUILD "If false, rebuilds will not occur if libz3 is present during configuration" OFF )
 
-# Specify the repo and commit that should be used to build Z3
-# Z3_GIT_COMMIT can be a branch, tag, or commit hash
-set( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
-set( Z3_GIT_COMMIT "master" )
+	# Specify the repo and commit that should be used to build Z3
+	# Z3_GIT_COMMIT can be a branch, tag, or commit hash
+	set_prefer_cli( Z3_REPO_LINK "https://github.com/Z3Prover/z3" )
+	set_prefer_cli( Z3_GIT_COMMIT "master" )
 
-# Build z3 in release or debug mode
-option( Z3_BUILD_RELEASE_MODE "ON to build z3 in release mode, OFF for debug mode" ON )
+	# Build z3 in release or debug mode
+	option( Z3_BUILD_RELEASE_MODE "ON to build z3 in release mode, OFF for debug mode" ON )
 
-# The number of cores used to compile z3 (think of this as make -j<this>)
-# Note: this will override whatever is passed to make during the build
-# This is because make doesn't give a way for subprocess builds to reuse this job limit
-if(NOT DEFINED Z3_NUM_CORES)
-	include(ProcessorCount)
-	ProcessorCount(Z3_NUM_CORES)
-	math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2") # Set Z3_NUM_CORES to: $(nproc) - 2
+	# The number of cores used to compile z3 (think of this as make -j<this>)
+	# Note: this will override whatever is passed to make during the build
+	# This is because make doesn't give a way for subprocess builds to reuse this job limit
+	if(NOT DEFINED Z3_NUM_CORES)
+		include(ProcessorCount)
+		ProcessorCount(Z3_NUM_CORES)
+		math(EXPR Z3_NUM_CORES "${Z3_NUM_CORES}-2") # Set Z3_NUM_CORES to: $(nproc) - 2
+	endif()
+
 endif()
-
-# This option is used to help locate the Z3 library.
-# If left undefined cmake will attempt to locate it automatically
-# If necessary, a message will be printed out explaining this variable should be set
-#set(Z3_LIB_EXTENSION ".so")
-
 
 #################################################
 #                                               #
@@ -211,10 +228,6 @@ string(STRIP "${VERSION}" VERSION)
 # Library source
 # Used for compilation and header lookup for tests
 set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-# Append to the cmake search path
-# This allows for simple invoking of cmake files in this path
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 
 #################################################
