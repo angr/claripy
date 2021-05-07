@@ -53,7 +53,7 @@ static std::string make_solution(const std::string &str, const Constants::UInt l
 }
 
 /** Print the repr of the expression: if (4 == (x * 3)) then "Hello" else y */
-void convert() {
+void repr() {
     namespace Ex = Expression;
     using AV = Ex::Base::AnVec;
     namespace C = Create;
@@ -87,4 +87,4 @@ void convert() {
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(convert)
+UNITTEST_DEFINE_MAIN_TEST(repr)
