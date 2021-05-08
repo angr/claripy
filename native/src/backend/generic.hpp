@@ -24,8 +24,7 @@ namespace Backend {
         using BORCPtr = Constants::CTS<BackendObj>;
 
       public:
-
-		// Pure Virtual Functions
+        // Pure Virtual Functions
 
         /** Create a new thread local solver and return an opaque shared pointer to it
          *  When this opaque shared pointer dies, the solver may also die as well
@@ -33,13 +32,13 @@ namespace Backend {
          */
         [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const = 0;
 
-		// Virtual and Concrete Functions
+        // Virtual and Concrete Functions
 
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
          */
         void downsize() override {
-            errored_cache.unique().first.clear();
+            errored_cache.scoped_unique().first.clear();
             // Thread locals
             object_cache.clear();
         }
@@ -88,7 +87,7 @@ namespace Backend {
                     const auto *const op { expr->op.get() };
 
                     // Cache lookups
-                    if (const auto [map, _] = errored_cache.shared();
+                    if (const auto [map, _] = errored_cache.scoped_shared();
                         map.find(expr->hash) != map.end()) {
                         throw BackendError(name(), " cannot handle operation: ", op->op_name());
                     }
@@ -145,7 +144,6 @@ namespace Backend {
         }
 
       protected:
-
         // Pure Virtual Functions
 
         /** This dynamic dispatcher converts expr into a backend object
@@ -159,8 +157,8 @@ namespace Backend {
 
         // Virtual Functions
 
-		/** Destructor */
-		virtual ~Generic() = default;
+        /** Destructor */
+        virtual ~Generic() = default;
 
         /** This applies the given annotations to the backend object */
         virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {

@@ -17,21 +17,22 @@ namespace Backend::Z3 {
 
     /** The Z3 backend */
     class Z3 final : public Generic<z3::expr, false> {
-		/** Z3 parent class */
-		using Super = Generic<z3::expr, false>;
+        /** Z3 parent class */
+        using Super = Generic<z3::expr, false>;
+
       public:
         /********************************************************************/
         /*                        Function Overrides                        */
         /********************************************************************/
 
-		/** Destructor */
-		virtual ~Z3() = default;
+        /** Destructor */
+        virtual ~Z3() = default;
 
         /** Clear caches to decrease memory pressure */
         void downsize() override {
-			Super::downsize();
-			is_true_cache.unique().first.clear();
-			is_false_cache.unique().first.clear();
+            Super::downsize();
+            is_true_cache.scoped_unique().first.clear();
+            is_false_cache.scoped_unique().first.clear();
         }
 
         /** Create a tls solver */
@@ -44,22 +45,26 @@ namespace Backend::Z3 {
 
         /** Return true if expr is always true */
         bool is_true(const Expression::RawPtr &expr) {
-			auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
-			if (in_cache) { return res; }
+            auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
+            if (in_cache) {
+                return res;
+            }
             const bool ret { convert(expr).is_true() };
-			is_true_cache.unique().first.emplace(expr->hash, ret);
-			is_false_cache.unique().first.emplace(expr->hash, ret);
-			return ret;
+            is_true_cache.scoped_unique().first.emplace(expr->hash, ret);
+            is_false_cache.scoped_unique().first.emplace(expr->hash, ret);
+            return ret;
         }
 
         /** Return true if expr is always false */
         bool is_false(const Expression::RawPtr &expr) {
-			auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
-			if (in_cache) { return res; }
+            auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
+            if (in_cache) {
+                return res;
+            }
             const bool ret { convert(expr).is_true() };
-			is_false_cache.unique().first.emplace(expr->hash, ret);
-			is_true_cache.unique().first.emplace(expr->hash, ret);
-			return ret;
+            is_false_cache.scoped_unique().first.emplace(expr->hash, ret);
+            is_true_cache.scoped_unique().first.emplace(expr->hash, ret);
+            return ret;
         }
 
         /** Simplify the given expression */
@@ -373,28 +378,29 @@ namespace Backend::Z3 {
             (void) input;
 
 
-
             return { nullptr }; // TODO
         }
 
-	private:
-		/** An abbreviation for Utils::ThreadSafe::Mutable */
-		template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
+      private:
+        /** An abbreviation for Utils::ThreadSafe::Mutable */
+        template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
 
         // Caches
 
-		/** A helper function that tries to get an object from a cache
-		 *  Returns a pair; the first value is a boolean that stores if it was found
-		 *  The second value is the value that was found, or default constructed if not found
-		 *  Note that the second value is copied to ensure thread safety
-		 */
-		template <typename Key, typename Value> static std::pair<bool, Value> get_from_cache(const TSM<std::map<Key, Value>> & tsm_cache, const Key & key) {
-			const auto cache { tsm_cache.shared().first };
-			if (const auto lookup { cache.find(key) }; lookup != cache.end()) {
-				return { true, lookup->second };
-			}
-			return { false, {} };
-		}
+        /** A helper function that tries to get an object from a cache
+         *  Returns a pair; the first value is a boolean that stores if it was found
+         *  The second value is the value that was found, or default constructed if not found
+         *  Note that the second value is copied to ensure thread safety
+         */
+        template <typename Key, typename Value>
+        static std::pair<bool, Value> get_from_cache(const TSM<std::map<Key, Value>> &tsm_cache,
+                                                     const Key &key) {
+            auto [cache, _] = tsm_cache.scoped_shared();
+            if (const auto lookup { cache.find(key) }; lookup != cache.end()) {
+                return { true, lookup->second };
+            }
+            return { false, {} };
+        }
 
         /** is_true cache
          *  Map an expression hash to the result of is_true
