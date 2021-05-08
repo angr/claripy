@@ -67,11 +67,12 @@ namespace Backend::Z3 {
             return ret;
         }
 
-        /** Simplify the given expression */
+        /** Simplify the given expression
+         *  @todo: Currently this si stubbed, it needs to be implemented
+         */
         Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
-#warning Simplify is stubbed and not actually implemented
             (void) expr;
-            return { nullptr };
+            throw Utils::Error::Unexpected::NotSupported("This has yet to be implemented"); // TODO
         }
 
         /** This dynamic dispatcher converts expr into a backend object
