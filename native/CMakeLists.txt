@@ -253,14 +253,22 @@ if(ENABLE_ANSI_COLOR_CODES)
 	add_definitions("-DENABLE_ANSI_COLOR_CODES")
 endif()
 
+# Remap file prefixes to make source location irrelevant to __FILE__, etc.
+# This is *required* as we calculate class unique IDs based off the normalized
+# path acquired by processing the __FILE__ macro. Anything that uses any headers
+# with a class unique ID *must* include this flag otherwise we may end up with
+# silent ODR violations as the calculated values of the CUIDs may differ from
+# the ones inlined in the shared library. Furthermore, other compilation which
+# used the headers may not move the headers within this directory for the same
+# reason: it changes the normpath of __FILE__ which changes the CUIDs, etc.
+add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/")
+
 # Global required complication flags
 add_compile_options(
 	# Warning globs
 	"-Wall"
 	"-Wextra"
 	"-Werror" # Convert warnings to errors
-	# Remap file prefixes to make source location irrelevant to build constants like __FILE__
-	"-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=/"
 	# A bunch of useful warnings to have
 	"-Wcast-align"
 	"-Wcast-qual"
