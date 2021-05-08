@@ -36,7 +36,13 @@ namespace Utils::ThreadSafe {
         /** Move constructor
          *  Disables the auto-locking on destruction of old
          */
-        MoveLock(MoveLock &&old) : mutex { old.mutex } { old.mutex = nullptr; }
+        MoveLock(MoveLock &&old) noexcept : mutex { old.mutex } { old.mutex = nullptr; }
+
+        /** Move assignment */
+        MoveLock &operator=(MoveLock &&old) noexcept {
+            mutex = old.mutex;
+            old.mutex = nullptr;
+        }
 
         /** Destructor
          *  On destruction, unlock if the mutex pointer is valid
@@ -60,9 +66,8 @@ namespace Utils::ThreadSafe {
         MoveLock() = delete;
         /** Delete copy constructor */
         MoveLock(const MoveLock &) = delete;
-
-        // Disable assignment
-        SET_IMPLICITS_OPERATORS(MoveLock, delete);
+        /** Disable copy assignment */
+        MoveLock &operator=(const MoveLock &) = delete;
     };
 
 } // namespace Utils::ThreadSafe
