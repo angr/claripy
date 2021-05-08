@@ -20,7 +20,7 @@ namespace Create::Private {
         static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");
 
         // Construct op
-        auto op { Op::factory<Op::Literal>(std::forward<Data>(data)) };
+        auto op { Op::factory<Op::Literal>(std::move(data)) };
 
         // Construct expression
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {

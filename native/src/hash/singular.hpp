@@ -44,7 +44,7 @@ namespace Hash {
 
     // Specializations
 
-    /** A specialization for pre-hashed types
+    /** A specialization for shared pointers to pre-hashed types
      *  Not constexpr
      */
     template <> inline Hash singular(const std::shared_ptr<const Hashed> &h) noexcept {
