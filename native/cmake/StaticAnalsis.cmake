@@ -2,7 +2,8 @@
 if(CPP_CHECK)
 	message(WARNING "cppcheck's internal AST can break because of control block initalizers."
 			"Until this bug is fixed cppcheck may not pass.")
-	set(CPPCHECK_FLAGS "cppcheck"
+	find_program(CPP_CHECK_PATH "cpp-check" REQUIRED)
+	set(CPPCHECK_CMD "${CPP_CHECK_PATH}"
 		"--enable=all"
 		"--std=c++17"
 		"--error-exitcode=1"
@@ -21,16 +22,17 @@ if(CPP_CHECK)
 		# Note: this does not apply to inline suppressions
 		"--suppress=unmatchedSuppression"
 	)
-	set(CMAKE_C_CPPCHECK ${CPPCHECK_FLAGS})
-	set(CMAKE_CXX_CPPCHECK ${CPPCHECK_FLAGS})
+	set(CMAKE_C_CPPCHECK ${CPPCHECK_CMD})
+	set(CMAKE_CXX_CPPCHECK ${CPPCHECK_CMD})
 endif()
 
 # Include What You Use
 if(IWYU)
 	if(APPLE)
-		set(IWYU_PATH "include-what-you-use")
+		find_program(IWYU_PATH "include-what-you-use" "iwyu" REQUIRED)
 	else()
-		set(IWYU_PATH "iwyu" "--cxx17ns")
+		find_program(IWYU_PATH "iwyu" "include-what-you-use" REQUIRED)
+		set(IWYU_PATH "${IWYU_PATH}" "--cxx17ns")
 	endif()
 	set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${IWYU_PATH}")
@@ -53,7 +55,8 @@ if(CLANG_TIDY)
 		set(CMAKE_C_CLANG_TIDY "/usr/local/opt/llvm/bin/clang-tidy")
 		set(CMAKE_CXX_CLANG_TIDY "/usr/local/opt/llvm/bin/clang-tidy")
 	else()
-		set(CMAKE_C_CLANG_TIDY "clang-tidy-11")
-		set(CMAKE_CXX_CLANG_TIDY "clang-tidy-11")
+		find_program(CLANG_TIDY_PATH "clang-tidy-11" "clang-tidy" REQUIRED)
+		set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_PATH}")
+		set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH}")
 	endif()
 endif()
