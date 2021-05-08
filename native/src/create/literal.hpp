@@ -35,7 +35,10 @@ namespace Create {
         return Private::literal<Expression::FP, float>(std::move(av), float { data });
     }
 
-#warning Literal create does not support VS
+    /** Create a FP Expression with a Literal op containing a single precision float */
+    inline EBasePtr literal(EAnVec &&av, PyObj::VSPtr &&data) {
+        return Private::literal<Expression::VS, PyObj::VSPtr>(std::move(av), std::move(data));
+    }
 
 } // namespace Create
 

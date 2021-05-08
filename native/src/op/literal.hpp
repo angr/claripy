@@ -7,6 +7,8 @@
 
 #include "base.hpp"
 
+#include "../py_obj.hpp"
+
 #include <cstddef>
 #include <variant>
 
@@ -22,8 +24,8 @@ namespace Op {
         using Data = std::variant<bool,              // Bool
                                   std::string,       // String
                                   std::vector<char>, // BV
-                                  float, double      // FP
-#warning "Literal doesn't have support for VS"
+                                  float, double,     // FP
+                                  PyObj::VSPtr       // VS
                                   >;
 
         /** Representation */
@@ -81,6 +83,7 @@ namespace Op {
         P_CTOR(std::vector<char>);
         P_CTOR(float);
         P_CTOR(double);
+        P_CTOR(PyObj::VSPtr);
 
 // Cleanup
 #undef P_CTOR
