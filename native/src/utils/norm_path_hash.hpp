@@ -21,12 +21,12 @@ namespace Utils {
     /** Return the FNV1a of the normal path of s
      *  Len must be the length of s
      */
-    template <Constants::UInt Len> constexpr auto norm_path_hash(Constants::CCS s) {
+    template <Constants::UInt Len> constexpr uint64_t norm_path_hash(Constants::CCS s) {
 
         // Trivial case
         auto len { Len };
         if (len == 0) {
-            return static_cast<uint64_t>(0);
+            return 0;
         }
 
 /** A local macro used to advance s */
@@ -105,14 +105,14 @@ namespace Utils {
         norm[n_len++] = '/';
         for (Constants::UInt i { 0 }; i < n_seg; ++i) {
             for (Constants::UInt k { 0 }; k < segment_lengths[i]; ++k) {
-                norm[n_len++] = static_cast<Constants::CCS>(segments[i])[k];
+                norm[n_len++] = segments[i][k];
             }
             norm[n_len++] = '/';
         }
         norm[--n_len] = 0;
 
         // Hash
-        return FNV1a<char>::hash(norm.data(), n_len);
+        return FNV1a<char>::u64(norm.data(), n_len);
     }
 
 } // namespace Utils
