@@ -41,7 +41,6 @@ namespace Backend {
         virtual inline void downsize() = 0;
 
       protected:
-
         /** Default destructor */
         virtual ~Base() = default;
     };
