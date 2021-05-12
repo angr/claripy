@@ -29,7 +29,7 @@
 namespace Utils::ThreadSafe {
 
     /** A class that exposes thread-safe setters and getters for a T
-     *  Warning: This does not protect T internally; it only protects setting and getting
+     * Warning: This does not protect T internally; it only protects setting and getting
      * Note: this class is similiar to std::atomic, except that unlike atomic,
      * we do note require the following to be true:
      * 1. std::is_trivially_copyable<T>::value
@@ -78,8 +78,10 @@ namespace Utils::ThreadSafe {
 
         /** Copy assignment */
         Access &operator=(const Access &old) {
-            Base::operator=(checked_static_cast<Base>(old));
-            this->set_ref(old.get());
+            if (this != &old) {
+                Base::operator=(checked_static_cast<Base>(old));
+                this->set_ref(old.get());
+            }
             return *this;
         }
 
@@ -87,7 +89,9 @@ namespace Utils::ThreadSafe {
          *  Because of our lock, we cannot specify noexcept
          */
         Access &operator=(Access &&old) {
-            Base::operator=(std::forward<Base>(old));
+            if (this != &old) {
+                Base::operator=(std::forward<Base>(old));
+            }
             return (*this = old);
         }
 

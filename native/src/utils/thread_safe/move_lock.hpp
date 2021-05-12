@@ -40,8 +40,11 @@ namespace Utils::ThreadSafe {
 
         /** Move assignment */
         MoveLock &operator=(MoveLock &&old) noexcept {
-            mutex = old.mutex;
-            old.mutex = nullptr;
+            if (this != &old) {
+                mutex = old.mutex;
+                old.mutex = nullptr;
+            }
+            return *this;
         }
 
         /** Destructor

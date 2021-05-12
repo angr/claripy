@@ -36,9 +36,11 @@ namespace Utils::ThreadSafe {
 
         /** Move Assignment */
         ProtectedObject &operator=(ProtectedObject &&o) noexcept {
-            pointer = o.pointer;
-            o.pointer = nullptr;
-            lock = std::move(o.lock);
+            if (this != &o) {
+                pointer = o.pointer;
+                o.pointer = nullptr;
+                lock = std::move(o.lock);
+            }
             return *this;
         }
 
