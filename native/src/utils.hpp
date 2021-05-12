@@ -17,6 +17,7 @@
 #include "utils/cache.hpp"
 #include "utils/checked_static_cast.hpp"
 #include "utils/const_eval.hpp"
+#include "utils/declare.hpp"
 #include "utils/dependent_constant.hpp"
 #include "utils/error.hpp"
 #include "utils/file_line_hash.hpp"
