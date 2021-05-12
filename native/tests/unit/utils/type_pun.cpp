@@ -7,7 +7,7 @@
 
 
 union UnsafePun {
-    char arr[sizeof(Constants::Int)]; // NOLINT
+    char arr[sizeof(Constants::Int) + 1]; // NOLINT
     Constants::Int i;
 };
 
@@ -22,13 +22,20 @@ void type_pun() {
 
     // Create p
     UnsafePun p; // NOLINT
-    p.i = 0;     // NOLINT
+    p.i = 0;     // NOLINT (note that this also memsets 0)
 
     // Safe pun
-    p.i = Utils::type_pun<Constants::Int, char, true>(msg); // NOLINT
+    UTILS_TYPE_PUN_ONTO(Constants::Int, &p.i, msg,
+                        true); // NOLINT
+                               // Since we memset to 0, and msg is strictly shorter than arr, arr
+                               // is null-terminated
 
     // Use unsafe pun in controlled context to verify safe pun
     UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0); // NOLINT
+
+    // Check other pun macros
+    UTILS_TYPE_PUN_(Constants::Int, tmp, msg, true); // NOLINT
+    UNITTEST_ASSERT(p.i == tmp);                     // NOLINT
 }
 
 // Define the test
