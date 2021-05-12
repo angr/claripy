@@ -22,9 +22,13 @@
 
 /** A macro to convert the value of a macro into a string */
 #define MACRO_VALUE_TO_STRING(X) #X
-
 /** A macro to convert a macro name into a string */
 #define MACRO_TO_STRING(X) MACRO_VALUE_TO_STRING(X)
+
+/** A macro to concat the two evaluated macros together */
+#define MACRO_VALUE_CONCAT(A, B) A##B
+/** A macro to concat the two macro evaluations */
+#define MACRO_CONCAT(A, B) MACRO_VALUE_CONCAT(A, B)
 
 #ifndef DEBUG
     /** Defined to noexcept when DEBUG is not defined */
