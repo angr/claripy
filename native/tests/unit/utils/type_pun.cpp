@@ -25,12 +25,10 @@ void type_pun() {
     p.i = 0;     // NOLINT (note that this also memsets 0)
 
     // Safe pun
-    UTILS_TYPE_PUN_ONTO(Constants::Int, &p.i, msg,
-                        true); // NOLINT
-                               // Since we memset to 0, and msg is strictly shorter than arr, arr
-                               // is null-terminated
+    UTILS_TYPE_PUN_ONTO(Constants::Int, &p.i, msg, true); // NOLINT
 
     // Use unsafe pun in controlled context to verify safe pun
+    // Since we memset to 0, and msg is strictly shorter than arr, arr is null-terminated
     UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0); // NOLINT
 
     // Check other pun macros
