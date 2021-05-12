@@ -12,7 +12,7 @@
 namespace Utils {
 
     /** constexpr strlen */
-    constexpr Constants::UInt strlen(Constants::CCSC s) {
+    constexpr Constants::UInt strlen(Constants::CCSC s) noexcept {
         if (s[0] == 0) {
             return 0;
         }

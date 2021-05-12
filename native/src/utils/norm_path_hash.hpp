@@ -20,8 +20,10 @@ namespace Utils {
 
     /** Return the FNV1a of the normal path of s
      *  Len must be the length of s
+     *  Will throw in noexcept context if s goes outside of '/' or './' (depending on the prefix)
+     *  For example /../foo is not ok; likewise ./../foo is not ok. But /bar/../foo is fine
      */
-    template <Constants::UInt Len> constexpr uint64_t norm_path_hash(Constants::CCS s) {
+    template <Constants::UInt Len> constexpr uint64_t norm_path_hash(Constants::CCS s) noexcept {
 
         // Trivial case
         auto len { Len };

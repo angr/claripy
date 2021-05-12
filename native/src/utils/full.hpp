@@ -19,7 +19,7 @@ namespace Utils {
      *  Return true if p is empty
      *  Note: if p is empty, the object p points to, if not nullptr, may not be done destructing
      */
-    template <typename T> inline bool empty(const std::shared_ptr<T> &p) {
+    template <typename T> inline bool empty(const std::shared_ptr<T> &p) noexcept {
         return p.use_count() == 0;
     }
 
@@ -29,7 +29,9 @@ namespace Utils {
      *  Return true if p is not empty
      *  Note: if p is empty, the object p points to, if not nullptr, may not be done destructing
      */
-    template <typename T> inline bool full(const std::shared_ptr<T> &p) { return !empty(p); }
+    template <typename T> inline bool full(const std::shared_ptr<T> &p) noexcept {
+        return !empty(p);
+    }
 
 } // namespace Utils
 

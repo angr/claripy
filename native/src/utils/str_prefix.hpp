@@ -12,7 +12,7 @@
 namespace Utils {
 
     /** Return true if a starts with b */
-    constexpr bool str_prefix(Constants::CCS a, Constants::CCS b) {
+    constexpr bool str_prefix(Constants::CCS a, Constants::CCS b) noexcept {
         if (Utils::strlen(a) < Utils::strlen(b)) {
             return false;
         }
