@@ -95,6 +95,9 @@ namespace Utils::ThreadSafe {
             return (*this = old);
         }
 
+        /** Destructor */
+        ~Access() noexcept override final = default;
+
         /************************************************/
         /*                   Setters                    */
         /************************************************/

@@ -25,6 +25,16 @@ namespace Utils::ThreadSafe {
      */
     template <typename T, typename Lock> class ProtectedObject final : Base {
       public:
+        // Representation
+
+        /** A pointer to the object being protected */
+        T *pointer;
+
+        /** Lock */
+        mutable Lock lock;
+
+        // Constructors / destructors
+
         /** Constructor */
         ProtectedObject(T &r, Lock &&l) noexcept : pointer { &r }, lock { std::move(l) } {}
 
@@ -45,7 +55,7 @@ namespace Utils::ThreadSafe {
         }
 
         /** Default destructor */
-        ~ProtectedObject();
+        ~ProtectedObject() noexcept = default;
 
         // Getters
 
@@ -130,13 +140,9 @@ namespace Utils::ThreadSafe {
 
         /** Delete copy constructor */
         ProtectedObject(const ProtectedObject &) = delete;
+
         /** Delete copy assignment operator */
         ProtectedObject &operator=(const ProtectedObject &) = delete;
-
-        /** A pointer to the object being protected */
-        T *pointer;
-        /** Lock */
-        mutable Lock lock;
 
 // Cleanup
 #undef ENABLE_IF_T_MUTABLE

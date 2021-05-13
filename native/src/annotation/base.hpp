@@ -24,7 +24,7 @@ namespace Annotation {
             : FactoryMade { h, c } {}
 
         /** Virtual destructor */
-        virtual ~Base() = default;
+        ~Base() noexcept override = default;
 
         // Rule of 5
         SET_IMPLICITS_NONDEFAULT_CTORS(Base, default)

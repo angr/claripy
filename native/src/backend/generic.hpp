@@ -158,7 +158,7 @@ namespace Backend {
         // Virtual Functions
 
         /** Destructor */
-        virtual ~Generic() = default;
+        ~Generic() noexcept override = default;
 
         /** This applies the given annotations to the backend object */
         virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {

@@ -49,8 +49,9 @@ namespace Utils::ThreadSafe {
 
         /** Destructor
          *  On destruction, unlock if the mutex pointer is valid
+         *  If the mutex fails to unlock, the program is aborted
          */
-        ~MoveLock() {
+        ~MoveLock() noexcept {
             if (mutex) { // NOLINT (false positive)
                 if constexpr (Shared) {
                     mutex->unlock_shared();

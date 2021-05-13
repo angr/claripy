@@ -33,7 +33,7 @@ namespace Utils::Error {
         SET_IMPLICITS_CONST_MEMBERS(Claricpp, default);
 
         /** Default virtual destructor */
-        inline ~Claricpp() noexcept override = default;
+        ~Claricpp() noexcept override = default;
 
         /** Message getter */
         [[nodiscard]] inline const char *what() const noexcept override final {

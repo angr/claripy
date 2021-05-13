@@ -21,7 +21,7 @@ namespace PyObj {
             : Hashed { h }, ref { r } {}
 
         /** Pure virtual destructor */
-        inline virtual ~Base() noexcept = 0;
+        virtual inline ~Base() noexcept = 0;
 
         // Default implicits
         SET_IMPLICITS_CONST_MEMBERS(Base, default);

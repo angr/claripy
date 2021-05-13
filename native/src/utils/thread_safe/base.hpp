@@ -9,6 +9,8 @@
 #ifndef __UTILS_THREADSAFE_BASE_HPP__
 #define __UTILS_THREADSAFE_BASE_HPP__
 
+#include "../../macros.hpp"
+
 
 namespace Utils::ThreadSafe {
 
@@ -20,7 +22,12 @@ namespace Utils::ThreadSafe {
      * own what they guard, they are just a guard mechanism.
      * Something like std::atomic should derive from this
      */
-    class Base {};
+    struct Base {
+        /** Virtual destructor */
+        virtual ~Base() noexcept = default;
+        // Rule of 5
+        SET_IMPLICITS(Base, default);
+    };
 
 } // namespace Utils::ThreadSafe
 

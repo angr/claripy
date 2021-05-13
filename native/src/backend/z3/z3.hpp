@@ -26,7 +26,7 @@ namespace Backend::Z3 {
         /********************************************************************/
 
         /** Destructor */
-        virtual ~Z3() = default;
+        ~Z3() noexcept override = default;
 
         /** Clear caches to decrease memory pressure */
         void downsize() override {

@@ -42,7 +42,7 @@ namespace Backend {
 
       protected:
         /** Default destructor */
-        virtual ~Base() = default;
+        virtual ~Base() noexcept = default;
     };
 
 } // namespace Backend

@@ -23,7 +23,7 @@ namespace Utils {
         Declare() noexcept {} // NOLINT (this is a union, default is incorrect)
 
         /** Destructor */
-        ~Declare() noexcept {
+        ~Declare() noexcept(!Destruct || noexcept(~T())) {
             if constexpr (Destruct) {
                 value.~T();
             }

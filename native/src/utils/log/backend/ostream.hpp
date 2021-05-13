@@ -33,7 +33,7 @@ namespace Utils::Log::Backend {
             : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {}
 
         /** A virtual destructor */
-        virtual inline ~OStream() noexcept override {
+        inline ~OStream() noexcept override {
             if (this->flush_on_exit) {
                 try {
                     this->stream->flush();
