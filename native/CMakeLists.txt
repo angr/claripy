@@ -304,6 +304,9 @@ add_compile_options(
 	"-Wunused-parameter"
 	"-Wvariadic-macros"
 	"-Wwrite-strings"
+	"-Wnull-dereference"
+	"-Wdouble-promotion"
+	"-Wnon-virtual-dtor"
 )
 
 # Treat #warning's as warnings
