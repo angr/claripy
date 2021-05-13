@@ -50,7 +50,7 @@ namespace Backend {
             try {
                 (void) convert(expr);
             }
-            catch (Error::Backend::Base &) {
+            catch (Error::Backend::Unsupported &) {
                 return false;
             }
             return true;
@@ -64,7 +64,7 @@ namespace Backend {
          *  This function does deal with the lifetimes of backend objects
          */
         BackendObj convert(const Expression::RawPtr input) {
-            using BackendError = Error::Backend::Base;
+            using UnknownErr = Utils::Error::Unexpected::Unknown;
 
             // Functionally a stack of lists of expression to be converted
             // We flatten and reverse this list for preformance reasons
@@ -89,7 +89,8 @@ namespace Backend {
                     // Cache lookups
                     if (const auto [map, _] = errored_cache.scoped_shared();
                         map.find(expr->hash) != map.end()) {
-                        throw BackendError(name(), " cannot handle operation: ", op->op_name());
+                        using Unsupported = Error::Backend::Unsupported;
+                        throw Unsupported(name(), " cannot handle operation: ", op->op_name());
                     }
                     else if (const auto lookup = object_cache.find(expr->hash);
                              lookup != object_cache.end()) {
@@ -118,8 +119,8 @@ namespace Backend {
                     // Store the result in the arg stack and in the cache
                     auto &&[iter, success] = object_cache.emplace(expr->hash, std::move(obj));
 #ifdef DEBUG
-                    Utils::affirm<Utils::Error::Unexpected::Unknown>(
-                        success, WHOAMI_WITH_SOURCE "Cache update failed for some reason.");
+                    Utils::affirm<UnknownErr>(success, WHOAMI_WITH_SOURCE
+                                              "Cache update failed for some reason.");
 #else
                     Utils::sink(success);
 #endif
@@ -128,7 +129,6 @@ namespace Backend {
             }
 #ifdef DEBUG
             // Sanity checks
-            using UnknownErr = Utils::Error::Unexpected::Unknown;
             Utils::affirm<UnknownErr>(op_stack.empty(), WHOAMI "op_stack should be empty");
             Utils::affirm<UnknownErr>(expr_stack.empty(), WHOAMI "expr_stack should be empty");
             Utils::affirm<UnknownErr>(arg_stack.size() == 1,
