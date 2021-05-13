@@ -25,7 +25,7 @@ namespace Utils::Error::Python {
     DEFINE_NONFINAL_EXCEPTION(Claripy, Base);
 
     /** Analogous to python's ValueError exception */
-    DEFINE_FINAL_EXCEPTION(ValueError, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(ValueError, Base);
 
 } // namespace Utils::Error::Python
 

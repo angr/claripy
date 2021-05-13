@@ -11,14 +11,11 @@
 namespace PyObj {
 
     /** VS pointer */
-    struct VS final : public Base {
-        SET_IMPLICITS_CONST_MEMBERS(VS, default, noexcept);
-        /** Destructor */
-        inline ~VS() override final = default;
-    };
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(VS, Base);
 
     /** Define VS pointer alias */
     using VSPtr = std::shared_ptr<const VS>;
+
 } // namespace PyObj
 
 #endif

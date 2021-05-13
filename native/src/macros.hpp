@@ -55,10 +55,10 @@
 /********************************************************************/
 
 
-/** A macro used to define a final derived exception class
- *  This macro requires SUPER be in the same namespace
+/** A macro used to define a final derived subclass
+ *  class which inherets its parent's constructors
  */
-#define DEFINE_FINAL_EXCEPTION(DERIVED, SUPER)                                                    \
+#define DEFINE_FINAL_SUBCLASS_USING_CTOR(DERIVED, SUPER)                                          \
     struct DERIVED final : public SUPER {                                                         \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
@@ -93,35 +93,35 @@
 
 
 /** A macro used to enable/disable the implict operators of a class */
-#define SET_IMPLICITS_OPERATORS(CLASS, VALUE, ...)                                                \
+#define SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                     \
     /** Define the copy operator */                                                               \
-    CLASS &operator=(const CLASS &) __VA_ARGS__ = VALUE;                                          \
+    CLASS &operator=(const CLASS &) = VALUE;                                                      \
     /** Define the move operator */                                                               \
-    CLASS &operator=(CLASS &&) __VA_ARGS__ = VALUE;
+    CLASS &operator=(CLASS &&) = VALUE;
 
 /** A macro used to enable/disable the implicit non-default constructors of a class */
-#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, ...)                                         \
+#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                              \
     /** Define the default copy constructor */                                                    \
-    CLASS(const CLASS &) __VA_ARGS__ = VALUE;                                                     \
+    CLASS(const CLASS &) = VALUE;                                                                 \
     /** Define the default move constructor */                                                    \
-    CLASS(CLASS &&) __VA_ARGS__ = VALUE;
+    CLASS(CLASS &&) = VALUE;
 
 /** A macro used to enable/disable all implict constructors and operators of a class
  *  except for the default constructor
  */
-#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE, ...)                                     \
-    SET_IMPLICITS_OPERATORS(CLASS, VALUE, __VA_ARGS__)                                            \
-    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)
+#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                          \
+    SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                         \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)
 
 /** A macro used to enable/disable all implicit constructors and operators of a class */
-#define SET_IMPLICITS(CLASS, VALUE, ...)                                                          \
-    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE, __VA_ARGS__)                                 \
+#define SET_IMPLICITS(CLASS, VALUE)                                                               \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                              \
     /** Define the default constructor */                                                         \
-    CLASS() __VA_ARGS__ = VALUE;
+    CLASS() = VALUE;
 
 /** Set the implicits of a class with const members */
-#define SET_IMPLICITS_CONST_MEMBERS(CLASS, VALUE, ...)                                            \
-    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)                                     \
+#define SET_IMPLICITS_CONST_MEMBERS(CLASS, VALUE)                                                 \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                                  \
     SET_IMPLICITS_OPERATORS(CLASS, delete)                                                        \
     /** Disable the default constructor */                                                        \
     CLASS() = delete;

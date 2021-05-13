@@ -26,19 +26,19 @@ namespace Error::Expression {
     // Final classes
 
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(BalancerUnsat, Balancer);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BalancerUnsat, Balancer);
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(Type, Claripy);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Type, Claripy);
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(Value, Claripy);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Value, Claripy);
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(Size, Claripy);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Claripy);
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(Replacement, Claripy);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Replacement, Claripy);
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(Recursion, Operation);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Recursion, Operation);
     /** @todo document */
-    DEFINE_FINAL_EXCEPTION(ZeroDivision, Operation);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(ZeroDivision, Operation);
 
 } // namespace Error::Expression
 

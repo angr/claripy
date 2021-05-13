@@ -18,37 +18,37 @@ namespace Utils::Error::Unexpected {
     DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
 
     /** Invalid path exception */
-    DEFINE_FINAL_EXCEPTION(BadPath, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadPath, Base);
 
     /** Syscall failure exception */
-    DEFINE_FINAL_EXCEPTION(Syscall, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Syscall, Base);
 
     /** Bad size exception */
-    DEFINE_FINAL_EXCEPTION(Size, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Base);
 
     /** Bad cast exception */
-    DEFINE_FINAL_EXCEPTION(BadCast, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Base);
 
     /** Bad variant access exception */
-    DEFINE_FINAL_EXCEPTION(BadVariantAccess, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Base);
 
     /** Raised when a virtual function that should have been overriden was called */
-    DEFINE_FINAL_EXCEPTION(MissingVirtualFunction, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(MissingVirtualFunction, Claricpp);
 
     /** Raised when a function is given invalid arguments */
-    DEFINE_FINAL_EXCEPTION(IncorrectUsage, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(IncorrectUsage, Claricpp);
 
     /** Raised when a recurrence gaurded function recurrses too many times */
-    DEFINE_FINAL_EXCEPTION(RecurrenceLimit, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(RecurrenceLimit, Claricpp);
 
     /** Raised when something unknown occurs */
-    DEFINE_FINAL_EXCEPTION(Unknown, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Unknown, Claricpp);
 
     /** Raised when an unsupported op is invoked */
-    DEFINE_FINAL_EXCEPTION(NotSupported, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(NotSupported, Claricpp);
 
     /** Raised when a dynamic type error occurs */
-    DEFINE_FINAL_EXCEPTION(Type, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Type, Claricpp);
 
 } // namespace Utils::Error::Unexpected
 

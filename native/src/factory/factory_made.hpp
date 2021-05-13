@@ -73,7 +73,7 @@ namespace Factory {
         inline ~FactoryMade() noexcept override = 0;
 
         // Rule of 5
-        SET_IMPLICITS_CONST_MEMBERS(FactoryMade, default, noexcept)
+        SET_IMPLICITS_CONST_MEMBERS(FactoryMade, default)
     };
 
     /** Default virtual destructor */

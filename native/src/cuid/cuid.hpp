@@ -49,7 +49,7 @@ namespace CUID {
         virtual inline ~HasCUID() noexcept = 0;
 
         // Rule of 5
-        SET_IMPLICITS_CONST_MEMBERS(HasCUID, default, noexcept)
+        SET_IMPLICITS_CONST_MEMBERS(HasCUID, default)
     };
 
     /** Default virtual destructor */
