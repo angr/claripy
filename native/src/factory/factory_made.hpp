@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a type that can be constructed by factory
  */
-#ifndef __FACTORY_FACTORYMADE_HPP__
-#define __FACTORY_FACTORYMADE_HPP__
+#ifndef R_FACTORY_FACTORYMADE_HPP_
+#define R_FACTORY_FACTORYMADE_HPP_
 
 #include "private/has_static_cuid.hpp"
 

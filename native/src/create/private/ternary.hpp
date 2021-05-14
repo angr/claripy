@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create Expressions with standard ternary ops
  */
-#ifndef __CREATE_PRIVATE_TERNARY_HPP__
-#define __CREATE_PRIVATE_TERNARY_HPP__
+#ifndef R_CREATE_PRIVATE_TERNARY_HPP_
+#define R_CREATE_PRIVATE_TERNARY_HPP_
 
 #include "size_mode.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief An op that takes in one Expression and one intger
  */
-#ifndef __OP_UINTBINARY_HPP__
-#define __OP_UINTBINARY_HPP__
+#ifndef R_OP_UINTBINARY_HPP_
+#define R_OP_UINTBINARY_HPP_
 
 #include "base.hpp"
 

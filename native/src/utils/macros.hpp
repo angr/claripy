@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines macros used accross Utils
  */
-#ifndef __UTILS_MACROS_HPP__
-#define __UTILS_MACROS_HPP__
+#ifndef R_UTILS_MACROS_HPP_
+#define R_UTILS_MACROS_HPP_
 
 
 /** An abbreviation for 'const constexpr bool' to enforce consistency */

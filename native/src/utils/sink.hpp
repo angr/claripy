@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines Utils::sink
  */
-#ifndef __UTILS_SINK_HPP__
-#define __UTILS_SINK_HPP__
+#ifndef R_UTILS_SINK_HPP_
+#define R_UTILS_SINK_HPP_
 
 
 namespace Utils {

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines macros used across the op directory
  */
-#ifndef __OP_MACROS_HPP__
-#define __OP_MACROS_HPP__
+#ifndef R_OP_MACROS_HPP_
+#define R_OP_MACROS_HPP_
 
 #include "../constants.hpp"
 #include "../unittest.hpp"

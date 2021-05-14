@@ -4,8 +4,8 @@
  * @brief This file defines private pointer cast methods
  * These methods preserve the constness of the internal type
  */
-#ifndef __UTILS_PRIVATE_POINTERCAST_HPP__
-#define __UTILS_PRIVATE_POINTERCAST_HPP__
+#ifndef R_UTILS_PRIVATE_POINTERCAST_HPP_
+#define R_UTILS_PRIVATE_POINTERCAST_HPP_
 
 #include "../transfer_const.hpp"
 

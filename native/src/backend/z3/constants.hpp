@@ -2,8 +2,8 @@
  * @file
  * @brief This file Z3 backend constants
  */
-#ifndef __BACKEND_Z3_CONSTANTS_HPP__
-#define __BACKEND_Z3_CONSTANTS_HPP__
+#ifndef R_BACKEND_Z3_CONSTANTS_HPP_
+#define R_BACKEND_Z3_CONSTANTS_HPP_
 
 namespace Backend::Z3 {
 

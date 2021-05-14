@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the ostream logging backend
  */
-#ifndef __UTILS_LOG_BACKEND_OSTREAM_HPP__
-#define __UTILS_LOG_BACKEND_OSTREAM_HPP__
+#ifndef R_UTILS_LOG_BACKEND_OSTREAM_HPP_
+#define R_UTILS_LOG_BACKEND_OSTREAM_HPP_
 
 #include "base.hpp"
 

@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines operators which enable enums to become bitmasks
  */
-#ifndef __UTILS_BITMASK_OPERATORS_HPP__
-#define __UTILS_BITMASK_OPERATORS_HPP__
+#ifndef R_UTILS_BITMASK_OPERATORS_HPP_
+#define R_UTILS_BITMASK_OPERATORS_HPP_
 
 #include "enable.hpp"
 

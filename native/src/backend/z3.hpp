@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of z3
  */
-#ifndef __BACKEND_Z3_HPP__
-#define __BACKEND_Z3_HPP__
+#ifndef R_BACKEND_Z3_HPP_
+#define R_BACKEND_Z3_HPP_
 
 #include "z3/z3.hpp"
 

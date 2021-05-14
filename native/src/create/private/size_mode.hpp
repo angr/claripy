@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines modes for how Expression sizes are computed
  */
-#ifndef __CREATE_PRIVATE_SIZEMODE_HPP__
-#define __CREATE_PRIVATE_SIZEMODE_HPP__
+#ifndef R_CREATE_PRIVATE_SIZEMODE_HPP_
+#define R_CREATE_PRIVATE_SIZEMODE_HPP_
 
 #include "../../expression.hpp"
 

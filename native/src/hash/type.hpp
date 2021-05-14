@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines Hash type
  */
-#ifndef __HASH_TYPE_HPP__
-#define __HASH_TYPE_HPP__
+#ifndef R_HASH_TYPE_HPP_
+#define R_HASH_TYPE_HPP_
 
 #include "../constants.hpp"
 

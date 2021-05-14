@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a method to join a set of set<T>'s together
  */
-#ifndef __UTILS_SETJOIN_HPP__
-#define __UTILS_SETJOIN_HPP__
+#ifndef R_UTILS_SETJOIN_HPP_
+#define R_UTILS_SETJOIN_HPP_
 
 #include "private/set_insert.hpp"
 

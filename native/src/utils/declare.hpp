@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief Defines a way of declaring a stack variable without invoking the constructor
  */
-#ifndef __UTILS_DECLARE_HPP__
-#define __UTILS_DECLARE_HPP__
+#ifndef R_UTILS_DECLARE_HPP_
+#define R_UTILS_DECLARE_HPP_
 
 #include "../macros.hpp"
 

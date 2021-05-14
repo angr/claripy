@@ -8,8 +8,8 @@
  * @brief This file includes all public pieces of utils
  * \ingroup utils
  */
-#ifndef __UTILS_HPP__
-#define __UTILS_HPP__
+#ifndef R_UTILS_HPP_
+#define R_UTILS_HPP_
 
 #include "utils/affirm.hpp"
 #include "utils/ansi_color_codes.hpp"

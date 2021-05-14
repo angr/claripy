@@ -4,8 +4,8 @@
  * @brief This file is used to verify that test_func ran exactly once
  * \ingroup testlib
  */
-#ifndef __TESTS_UNIT_TESTLIB_TESTLIB_PRIVATE_VERIFY_HPP__
-#define __TESTS_UNIT_TESTLIB_TESTLIB_PRIVATE_VERIFY_HPP__
+#ifndef R_UNIT_TESTLIB_TESTLIB_PRIVATE_VERIFY_HPP_
+#define R_UNIT_TESTLIB_TESTLIB_PRIVATE_VERIFY_HPP_
 
 
 namespace UnitTest::TestLib::Private {

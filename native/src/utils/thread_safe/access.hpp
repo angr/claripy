@@ -10,8 +10,8 @@
  * 4. std::is_copy_assignable<T>::value
  * 5. std::is_move_assignable<T>::value
  */
-#ifndef __UTILS_THREADSAFE_ACCESS_HPP__
-#define __UTILS_THREADSAFE_ACCESS_HPP__
+#ifndef R_UTILS_THREADSAFE_ACCESS_HPP_
+#define R_UTILS_THREADSAFE_ACCESS_HPP_
 
 #include "base.hpp"
 

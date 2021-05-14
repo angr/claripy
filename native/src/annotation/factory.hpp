@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the OP factory
  */
-#ifndef __ANNOTATION_FACTORY_HPP__
-#define __ANNOTATION_FACTORY_HPP__
+#ifndef R_ANNOTATION_FACTORY_HPP_
+#define R_ANNOTATION_FACTORY_HPP_
 
 #include "base.hpp"
 

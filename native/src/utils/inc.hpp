@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file contains declares the Utils:inc() function
  */
-#ifndef __UTILS_INC_HPP__
-#define __UTILS_INC_HPP__
+#ifndef R_UTILS_INC_HPP_
+#define R_UTILS_INC_HPP_
 
 #include "private/has_pre_inc_op.hpp"
 

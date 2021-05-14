@@ -4,8 +4,8 @@
  * Note: this macro defines the main() function
  * \ingroup testlib
  */
-#ifndef __TESTS_UNIT_TESTLIB_TESTLIB_MAIN_HPP__
-#define __TESTS_UNIT_TESTLIB_TESTLIB_MAIN_HPP__
+#ifndef R_UNIT_TESTLIB_TESTLIB_MAIN_HPP_
+#define R_UNIT_TESTLIB_TESTLIB_MAIN_HPP_
 
 #include "test_func.hpp"
 

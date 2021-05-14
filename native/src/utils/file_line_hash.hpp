@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines macro that return a hashes unique to the file (and optionally line)
  */
-#ifndef __UTILS_FILELINEHASH_HPP__
-#define __UTILS_FILELINEHASH_HPP__
+#ifndef R_UTILS_FILELINEHASH_HPP_
+#define R_UTILS_FILELINEHASH_HPP_
 
 #include "norm_path_hash.hpp"
 

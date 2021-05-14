@@ -5,8 +5,8 @@
  * Note: If you do not need to be involved with the lifetime of the object, consider raw pointers
  * Note: Our guesses rely on likely undocumented behavior of shared_ptr; they *should* never fail
  */
-#ifndef __UTILS_FULL_HPP__
-#define __UTILS_FULL_HPP__
+#ifndef R_UTILS_FULL_HPP_
+#define R_UTILS_FULL_HPP_
 
 #include <memory>
 

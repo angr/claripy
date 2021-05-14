@@ -2,8 +2,8 @@
  * @file
  * @brief Define simplifiers in Simplifications::Simplifier
  */
-#ifndef __SIMPLIFICATION_SIMPLIFIERS_HPP__
-#define __SIMPLIFICATION_SIMPLIFIERS_HPP__
+#ifndef R_SIMPLIFICATION_SIMPLIFIERS_HPP_
+#define R_SIMPLIFICATION_SIMPLIFIERS_HPP_
 
 #include "constants.hpp"
 

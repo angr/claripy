@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines Shift mask
  */
-#ifndef __MODE_SHIFT_HPP__
-#define __MODE_SHIFT_HPP__
+#ifndef R_MODE_SHIFT_HPP_
+#define R_MODE_SHIFT_HPP_
 
 #include "../utils.hpp"
 

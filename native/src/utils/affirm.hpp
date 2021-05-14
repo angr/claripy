@@ -4,8 +4,8 @@
  * @brief This file defines a method which asserts a condition, and if false throws an exception
  * We use the word affirm since C libraries like to define assert as a macro
  */
-#ifndef __UTILS_AFFIRM_HPP__
-#define __UTILS_AFFIRM_HPP__
+#ifndef R_UTILS_AFFIRM_HPP_
+#define R_UTILS_AFFIRM_HPP_
 
 #include "../macros.hpp"
 

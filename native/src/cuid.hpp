@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of CUID
  */
-#ifndef __CUID_HPP__
-#define __CUID_HPP__
+#ifndef R_CUID_HPP_
+#define R_CUID_HPP_
 
 #include "cuid/cuid.hpp"
 #include "cuid/is_t.hpp"

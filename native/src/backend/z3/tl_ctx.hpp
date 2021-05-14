@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the contexts that the z3 backend uses
  */
-#ifndef __BACKEND_Z3_TLCTX_HPP__
-#define __BACKEND_Z3_TLCTX_HPP__
+#ifndef R_BACKEND_Z3_TLCTX_HPP_
+#define R_BACKEND_Z3_TLCTX_HPP_
 
 #include <z3++.h>
 

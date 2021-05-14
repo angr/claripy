@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file includes all relevant public style members
  */
-#ifndef __UTILS_LOG_STYLE_HPP__
-#define __UTILS_LOG_STYLE_HPP__
+#ifndef R_UTILS_LOG_STYLE_HPP_
+#define R_UTILS_LOG_STYLE_HPP_
 
 #include "style/access.hpp"
 #include "style/base.hpp"

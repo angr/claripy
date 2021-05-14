@@ -3,8 +3,8 @@
  * @brief Defines an abbreviated down-cast function
  * \ingroup unittest
  */
-#ifndef __TESTS_UNIT_CREATE_DCAST_HPP__
-#define __TESTS_UNIT_CREATE_DCAST_HPP__
+#ifndef R_UNIT_CREATE_DCAST_HPP_
+#define R_UNIT_CREATE_DCAST_HPP_
 
 #include "utils.hpp"
 

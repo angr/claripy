@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Op class FP::ToBV
  */
-#ifndef __OP_FP_TOBV_HPP__
-#define __OP_FP_TOBV_HPP__
+#ifndef R_OP_FP_TOBV_HPP_
+#define R_OP_FP_TOBV_HPP_
 
 #include "../../mode.hpp"
 #include "../base.hpp"

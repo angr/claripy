@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a method for determining if T is in a typelist Args...
  */
-#ifndef __UTILS_ISIN_HPP__
-#define __UTILS_ISIN_HPP__
+#ifndef R_UTILS_ISIN_HPP_
+#define R_UTILS_ISIN_HPP_
 
 #include "is_same.hpp"
 

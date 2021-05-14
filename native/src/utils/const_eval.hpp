@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines const_eval
  */
-#ifndef __UTILS_CONSTEVAL_HPP__
-#define __UTILS_CONSTEVAL_HPP__
+#ifndef R_UTILS_CONSTEVAL_HPP_
+#define R_UTILS_CONSTEVAL_HPP_
 
 namespace Utils {
 

@@ -4,8 +4,8 @@
  * @brief This file defines the Utils::Log::Level typesafe enum
  * Also defines the << stream operator for this class
  */
-#ifndef __UTILS_LOG_LEVEL_LEVEL_HPP__
-#define __UTILS_LOG_LEVEL_LEVEL_HPP__
+#ifndef R_UTILS_LOG_LEVEL_LEVEL_HPP_
+#define R_UTILS_LOG_LEVEL_LEVEL_HPP_
 
 
 #ifdef CONSTANT_LOG_LEVEL

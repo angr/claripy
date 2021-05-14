@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file includes all relevant public backend members
  */
-#ifndef __UTILS_LOG_BACKEND_HPP__
-#define __UTILS_LOG_BACKEND_HPP__
+#ifndef R_UTILS_LOG_BACKEND_HPP_
+#define R_UTILS_LOG_BACKEND_HPP_
 
 #include "backend/access.hpp"
 #include "backend/base.hpp"

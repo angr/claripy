@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines PyObj
  */
-#ifndef __PYOBJ_TRIVIAL_HPP__
-#define __PYOBJ_TRIVIAL_HPP__
+#ifndef R_PYOBJ_TRIVIAL_HPP_
+#define R_PYOBJ_TRIVIAL_HPP_
 
 #include "base.hpp"
 

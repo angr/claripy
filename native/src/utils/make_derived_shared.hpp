@@ -4,8 +4,8 @@
  * @brief This file defines a function to make a shared_ptr<Base> of of a Derived
  * These casts preserve the constness of the internal type
  */
-#ifndef __UTILS_MAKEDERIVEDSHARED_HPP__
-#define __UTILS_MAKEDERIVEDSHARED_HPP__
+#ifndef R_UTILS_MAKEDERIVEDSHARED_HPP_
+#define R_UTILS_MAKEDERIVEDSHARED_HPP_
 
 #include "pointer_cast.hpp"
 #include "transfer_const.hpp"

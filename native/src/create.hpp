@@ -3,8 +3,8 @@
  * @brief This file exposes all relevant public members of Create
  * Create contains a set of functions that wrap expression and op constructors
  */
-#ifndef __CREATE_HPP__
-#define __CREATE_HPP__
+#ifndef R_CREATE_HPP_
+#define R_CREATE_HPP_
 
 #include "create/extract.hpp"
 #include "create/fp.hpp"

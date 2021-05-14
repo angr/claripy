@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a generic hash cache type
  */
-#ifndef __UTILS_CACHE_HPP__
-#define __UTILS_CACHE_HPP__
+#ifndef R_UTILS_CACHE_HPP_
+#define R_UTILS_CACHE_HPP_
 
 #include "error/unexpected.hpp"
 #include "log.hpp"

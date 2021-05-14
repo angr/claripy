@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a macro used to enable bitmask operators on an enum
  */
-#ifndef __UTILS_BITMASK_ENABLE_HPP__
-#define __UTILS_BITMASK_ENABLE_HPP__
+#ifndef R_UTILS_BITMASK_ENABLE_HPP_
+#define R_UTILS_BITMASK_ENABLE_HPP_
 
 #include "../macros.hpp"
 

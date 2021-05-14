@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines Utils::RunOnDestruction
  */
-#ifndef __UTILS_RUNONDESTRUCTION_HPP__
-#define __UTILS_RUNONDESTRUCTION_HPP__
+#ifndef R_UTILS_RUNONDESTRUCTION_HPP_
+#define R_UTILS_RUNONDESTRUCTION_HPP_
 
 #include "../macros.hpp"
 

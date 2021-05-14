@@ -2,8 +2,8 @@
  * @file
  * @brief Forward declares things related to unit testing
  */
-#ifndef __UNITTEST_HPP__
-#define __UNITTEST_HPP__
+#ifndef R_UNITTEST_HPP_
+#define R_UNITTEST_HPP_
 
 #ifndef ENABLE_TESTING
     #define ENABLE_UNITTEST_FRIEND_ACCESS

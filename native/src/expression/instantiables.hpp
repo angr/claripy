@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines trivial subclasses of Base and Bits
  */
-#ifndef __EXPRESSION_INSTANTIABLES_HPP__
-#define __EXPRESSION_INSTANTIABLES_HPP__
+#ifndef R_EXPRESSION_INSTANTIABLES_HPP_
+#define R_EXPRESSION_INSTANTIABLES_HPP_
 
 #include "bits.hpp"
 

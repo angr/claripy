@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create an Expression with an Eq Op
  */
-#ifndef __CREATE_IF_HPP__
-#define __CREATE_IF_HPP__
+#ifndef R_CREATE_IF_HPP_
+#define R_CREATE_IF_HPP_
 
 #include "constants.hpp"
 

@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file includes all public error members
  */
-#ifndef __UTILS_ERROR_HPP__
-#define __UTILS_ERROR_HPP__
+#ifndef R_UTILS_ERROR_HPP_
+#define R_UTILS_ERROR_HPP_
 
 #include "error/claricpp.hpp"
 #include "error/python.hpp"

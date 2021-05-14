@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines FP modes
  */
-#ifndef __MODE_FP_HPP__
-#define __MODE_FP_HPP__
+#ifndef R_MODE_FP_HPP_
+#define R_MODE_FP_HPP_
 
 
 namespace Mode {

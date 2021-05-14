@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the << stream operator for Level::Level
  */
-#ifndef __UTILS_LOG_LEVEL_OSTREAM_HPP__
-#define __UTILS_LOG_LEVEL_OSTREAM_HPP__
+#ifndef R_UTILS_LOG_LEVEL_OSTREAM_HPP_
+#define R_UTILS_LOG_LEVEL_OSTREAM_HPP_
 
 #include "level.hpp"
 

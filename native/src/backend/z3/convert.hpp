@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines how the Z3 backend converts Claricpp Expressions into Z3 ASTs
  */
-#ifndef __BACKEND_Z3_CONVERT_HPP__
-#define __BACKEND_Z3_CONVERT_HPP__
+#ifndef R_BACKEND_Z3_CONVERT_HPP_
+#define R_BACKEND_Z3_CONVERT_HPP_
 
 #include "constants.hpp"
 #include "fp_width.hpp"

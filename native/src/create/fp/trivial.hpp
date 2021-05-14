@@ -3,8 +3,8 @@
  * @brief This file defines a group of fp create methods that are trivial passthrough methods
  * For example: Functions which just shell out to mode_binary
  */
-#ifndef __CREATE_FP_TRIVIAL_HPP__
-#define __CREATE_FP_TRIVIAL_HPP__
+#ifndef R_CREATE_FP_TRIVIAL_HPP_
+#define R_CREATE_FP_TRIVIAL_HPP_
 
 #include "../private/binary.hpp"
 #include "../private/mode_binary.hpp"

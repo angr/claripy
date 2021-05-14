@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of Simplification
  */
-#ifndef __SIMPLIFICATION_HPP__
-#define __SIMPLIFICATION_HPP__
+#ifndef R_SIMPLIFICATION_HPP_
+#define R_SIMPLIFICATION_HPP_
 
 #include "simplification/constants.hpp"
 #include "simplification/op_map.hpp"

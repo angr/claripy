@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of factory
  */
-#ifndef __FACTORY_HPP__
-#define __FACTORY_HPP__
+#ifndef R_FACTORY_HPP_
+#define R_FACTORY_HPP_
 
 #include "factory/factory.hpp"
 #include "factory/factory_made.hpp"

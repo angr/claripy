@@ -2,8 +2,8 @@
  * @file
  * @brief This file includes all relevant public members of hash
  */
-#ifndef __HASH_HPP__
-#define __HASH_HPP__
+#ifndef R_HASH_HPP_
+#define R_HASH_HPP_
 
 #include "hash/hash.hpp"
 #include "hash/hashed.hpp"

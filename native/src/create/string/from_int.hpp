@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a creation method for an expression containing String::FromInt
  */
-#ifndef __CREATE_STRING_FROMINT_HPP__
-#define __CREATE_STRING_FROMINT_HPP__
+#ifndef R_CREATE_STRING_FROMINT_HPP_
+#define R_CREATE_STRING_FROMINT_HPP_
 
 #include "../constants.hpp"
 

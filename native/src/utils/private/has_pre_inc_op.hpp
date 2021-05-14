@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a bool that determines if T has the pre ++ operator defined
  */
-#ifndef __UTILS_PRIVATE_HASPREINCOP_HPP__
-#define __UTILS_PRIVATE_HASPREINCOP_HPP__
+#ifndef R_UTILS_PRIVATE_HASPREINCOP_HPP_
+#define R_UTILS_PRIVATE_HASPREINCOP_HPP_
 
 #include "../../constants.hpp"
 #include "../sfinae_test.hpp"

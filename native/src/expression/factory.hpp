@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines Expression factory functions
  */
-#ifndef __EXPRESSION_FACTORY_HPP__
-#define __EXPRESSION_FACTORY_HPP__
+#ifndef R_EXPRESSION_FACTORY_HPP_
+#define R_EXPRESSION_FACTORY_HPP_
 
 #include "base.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the String::IndexOf class
  */
-#ifndef __OP_STRING_INDEXOF_HPP__
-#define __OP_STRING_INDEXOF_HPP__
+#ifndef R_OP_STRING_INDEXOF_HPP_
+#define R_OP_STRING_INDEXOF_HPP_
 
 #include "../base.hpp"
 

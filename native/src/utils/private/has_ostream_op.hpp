@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file determines a function which checks if T has a << stream op
  */
-#ifndef __UTILS_PRIVATE_OHASSTREAMOP_HPP__
-#define __UTILS_PRIVATE_OHASSTREAMOP_HPP__
+#ifndef R_UTILS_PRIVATE_HASOSTREAMOP_HPP_
+#define R_UTILS_PRIVATE_HASOSTREAMOP_HPP_
 
 #include "../sfinae_test.hpp"
 

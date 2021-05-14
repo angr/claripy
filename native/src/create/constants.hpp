@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines constants used across Create
  */
-#ifndef __CREATE_CONSTANTS_HPP__
-#define __CREATE_CONSTANTS_HPP__
+#ifndef R_CREATE_CONSTANTS_HPP_
+#define R_CREATE_CONSTANTS_HPP_
 
 #include "../expression.hpp"
 

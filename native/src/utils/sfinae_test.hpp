@@ -4,8 +4,8 @@
  * @brief This file defines a macro which uses a common SFINAE trick
  * to determine if some condition is met by its template arguments
  */
-#ifndef __UTILS_SFINAETEST_HPP__
-#define __UTILS_SFINAETEST_HPP__
+#ifndef R_UTILS_SFINAETEST_HPP_
+#define R_UTILS_SFINAETEST_HPP_
 
 #include "is_same.hpp"
 

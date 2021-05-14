@@ -2,8 +2,8 @@
  * @file
  * @brief A floating point binary Op; takes an FP mode and two inputs of the same type
  */
-#ifndef __OP_FP_MODEBINARY_HPP__
-#define __OP_FP_MODEBINARY_HPP__
+#ifndef R_OP_FP_MODEBINARY_HPP_
+#define R_OP_FP_MODEBINARY_HPP_
 
 #include "../../mode.hpp"
 #include "../binary.hpp"

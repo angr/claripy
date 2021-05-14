@@ -7,8 +7,8 @@
  * @brief This file includes all relevant public sections of testlib
  * \ingroup testlib
  */
-#ifndef __TESTS_UNIT_TESTLIB_TESTLIB_HPP__
-#define __TESTS_UNIT_TESTLIB_TESTLIB_HPP__
+#ifndef R_UNIT_TESTLIB_TESTLIB_HPP_
+#define R_UNIT_TESTLIB_TESTLIB_HPP_
 
 #include "testlib/error.hpp"
 #include "testlib/factories.hpp"

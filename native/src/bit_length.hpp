@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a class that has a const size
  */
-#ifndef __BITLENGTH_HPP__
-#define __BITLENGTH_HPP__
+#ifndef R_BITLENGTH_HPP_
+#define R_BITLENGTH_HPP_
 
 #include "constants.hpp"
 #include "macros.hpp"

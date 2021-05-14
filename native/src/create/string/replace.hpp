@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a creation method for an expression containing String::Replace
  */
-#ifndef __CREATE_STRING_REPLACE_HPP__
-#define __CREATE_STRING_REPLACE_HPP__
+#ifndef R_CREATE_STRING_REPLACE_HPP_
+#define R_CREATE_STRING_REPLACE_HPP_
 
 #include "../constants.hpp"
 

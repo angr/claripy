@@ -3,8 +3,8 @@
  * @brief Trivial flat create test
  * \ingroup unittest
  */
-#ifndef __TESTS_UNIT_CREATE_FLAT_HPP__
-#define __TESTS_UNIT_CREATE_FLAT_HPP__
+#ifndef R_UNIT_CREATE_FLAT_HPP_
+#define R_UNIT_CREATE_FLAT_HPP_
 
 #include "create.hpp"
 #include "dcast.hpp"

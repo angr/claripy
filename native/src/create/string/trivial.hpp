@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a group of create methods for trivial passthrough string ops
  */
-#ifndef __CREATE_STRING_TRIVIAL_HPP__
-#define __CREATE_STRING_TRIVIAL_HPP__
+#ifndef R_CREATE_STRING_TRIVIAL_HPP_
+#define R_CREATE_STRING_TRIVIAL_HPP_
 
 #include "../private/binary.hpp"
 #include "../private/uint_binary.hpp"

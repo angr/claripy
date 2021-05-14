@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the hash function
  */
-#ifndef __HASH_HASH_HPP__
-#define __HASH_HASH_HPP__
+#ifndef R_HASH_HASH_HPP_
+#define R_HASH_HASH_HPP_
 
 #include "singular.hpp"
 

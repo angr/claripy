@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a method to determine if Derived derives from or is Base
  */
-#ifndef __UTILS_ISANCESTOR_HPP__
-#define __UTILS_ISANCESTOR_HPP__
+#ifndef R_UTILS_ISANCESTOR_HPP_
+#define R_UTILS_ISANCESTOR_HPP_
 
 #include "is_same.hpp"
 #include "transfer_const.hpp"

@@ -2,8 +2,8 @@
  * @file
  * @brief Define the simplify method
  */
-#ifndef __SIMPLIFICATION_SIMPLIFY_HPP__
-#define __SIMPLIFICATION_SIMPLIFY_HPP__
+#ifndef R_SIMPLIFICATION_SIMPLIFY_HPP_
+#define R_SIMPLIFICATION_SIMPLIFY_HPP_
 
 #include "op_map.hpp"
 

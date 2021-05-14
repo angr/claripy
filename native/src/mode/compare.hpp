@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines Compare mask
  */
-#ifndef __MODE_COMPARE_HPP__
-#define __MODE_COMPARE_HPP__
+#ifndef R_MODE_COMPARE_HPP_
+#define R_MODE_COMPARE_HPP_
 
 #include "../utils.hpp"
 

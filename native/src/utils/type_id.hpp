@@ -5,8 +5,8 @@
  * C++'s builtin typeid function should not be used for non-debugging.
  * It's IDs are not unique, and they can change during each compilation
  */
-#ifndef __UTILS_TYPEID_HPP__
-#define __UTILS_TYPEID_HPP__
+#ifndef R_UTILS_TYPEID_HPP_
+#define R_UTILS_TYPEID_HPP_
 
 #include "inc.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Annotation::Base class
  */
-#ifndef __ANNOTATION_BASE_HPP__
-#define __ANNOTATION_BASE_HPP__
+#ifndef R_ANNOTATION_BASE_HPP_
+#define R_ANNOTATION_BASE_HPP_
 
 #include "../factory.hpp"
 

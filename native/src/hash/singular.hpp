@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the underling hash function for Expressions
  */
-#ifndef __HASH_SINGULAR_HPP__
-#define __HASH_SINGULAR_HPP__
+#ifndef R_HASH_SINGULAR_HPP_
+#define R_HASH_SINGULAR_HPP_
 
 #include "hashed.hpp"
 #include "type.hpp"

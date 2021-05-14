@@ -3,8 +3,8 @@
  * @brief This file exposes all relevant public members of mode
  * These are enums that are copied from claripy's enums
  */
-#ifndef __MODE_HPP__
-#define __MODE_HPP__
+#ifndef R_MODE_HPP_
+#define R_MODE_HPP_
 
 #include "mode/compare.hpp"
 #include "mode/fp.hpp"

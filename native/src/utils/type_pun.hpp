@@ -6,8 +6,8 @@
  *  Likewise, due to 'strict anti-aliasing' rules, type punning via casting can have
  *  undefined behavior, especially with -O2 or higher level optimizations.
  */
-#ifndef __UTILS_TYPEPUN_HPP__
-#define __UTILS_TYPEPUN_HPP__
+#ifndef R_UTILS_TYPEPUN_HPP_
+#define R_UTILS_TYPEPUN_HPP_
 
 #include "declare.hpp"
 

@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the function norm_path_hash
  */
-#ifndef __UTILS_NORMPATHHASH_HPP__
-#define __UTILS_NORMPATHHASH_HPP__
+#ifndef R_UTILS_NORMPATHHASH_HPP_
+#define R_UTILS_NORMPATHHASH_HPP_
 
 #include "affirm.hpp"
 #include "error.hpp"

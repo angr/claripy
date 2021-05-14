@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a constexpr strlen
  */
-#ifndef __UTILS_STRLEN_HPP__
-#define __UTILS_STRLEN_HPP__
+#ifndef R_UTILS_STRLEN_HPP_
+#define R_UTILS_STRLEN_HPP_
 
 #include "../constants.hpp"
 

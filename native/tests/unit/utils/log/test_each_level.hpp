@@ -3,8 +3,8 @@
  * \ingroup unittest
  * @brief Defines the test_each_level function
  */
-#ifndef __TESTS_UNIT_UTILS_LOG_TESTEACHLEVEL_HPP__
-#define __TESTS_UNIT_UTILS_LOG_TESTEACHLEVEL_HPP__
+#ifndef R_UNIT_UTILS_LOG_TESTEACHLEVEL_HPP_
+#define R_UNIT_UTILS_LOG_TESTEACHLEVEL_HPP_
 
 #include "utils.hpp"
 

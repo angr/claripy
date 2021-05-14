@@ -4,8 +4,8 @@
  * @brief This file defines a set of methods used to cast pointers
  * These casts preserve the constness of the internal type
  */
-#ifndef __UTILS_POINTERCAST_HPP__
-#define __UTILS_POINTERCAST_HPP__
+#ifndef R_UTILS_POINTERCAST_HPP_
+#define R_UTILS_POINTERCAST_HPP_
 
 #include "affirm.hpp"
 #include "error.hpp"

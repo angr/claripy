@@ -2,8 +2,8 @@
  * @file
  * @brief A unary Op
  */
-#ifndef __OP_UNARY_HPP__
-#define __OP_UNARY_HPP__
+#ifndef R_OP_UNARY_HPP_
+#define R_OP_UNARY_HPP_
 
 #include "base.hpp"
 

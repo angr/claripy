@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a move-able lock
  */
-#ifndef __UTILS_THREADSAFE_MOVELOCK_HPP__
-#define __UTILS_THREADSAFE_MOVELOCK_HPP__
+#ifndef R_UTILS_THREADSAFE_MOVELOCK_HPP_
+#define R_UTILS_THREADSAFE_MOVELOCK_HPP_
 
 #include "../../macros.hpp"
 

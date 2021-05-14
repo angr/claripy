@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines macros used acorss Utils::Log
  */
-#ifndef __UTILS_LOG_MACROS_HPP__
-#define __UTILS_LOG_MACROS_HPP__
+#ifndef R_UTILS_LOG_MACROS_HPP_
+#define R_UTILS_LOG_MACROS_HPP_
 
 #include "constants.hpp"
 

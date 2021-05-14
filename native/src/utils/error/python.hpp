@@ -6,8 +6,8 @@
  * via a different method.
  * @todo Document method when known
  */
-#ifndef __UTILS_ERROR_PYTHON_HPP__
-#define __UTILS_ERROR_PYTHON_HPP__
+#ifndef R_UTILS_ERROR_PYTHON_HPP_
+#define R_UTILS_ERROR_PYTHON_HPP_
 
 #include "claricpp.hpp"
 

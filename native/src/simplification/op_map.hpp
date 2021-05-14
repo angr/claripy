@@ -2,8 +2,8 @@
  * @file
  * @brief Define a map from ops to simplifiers
  */
-#ifndef __SIMPLIFICATION_OPMAP_HPP__
-#define __SIMPLIFICATION_OPMAP_HPP__
+#ifndef R_SIMPLIFICATION_OPMAP_HPP_
+#define R_SIMPLIFICATION_OPMAP_HPP_
 
 #include "simplifiers.hpp"
 

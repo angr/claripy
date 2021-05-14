@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file provides an thread-safe atomic class
  */
-#ifndef __UTILS_THREADSAFE_ATOMIC_HPP__
-#define __UTILS_THREADSAFE_ATOMIC_HPP__
+#ifndef R_UTILS_THREADSAFE_ATOMIC_HPP_
+#define R_UTILS_THREADSAFE_ATOMIC_HPP_
 
 #include "base.hpp"
 

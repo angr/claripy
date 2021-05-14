@@ -307,6 +307,8 @@ add_compile_options(
 	"-Wnull-dereference"
 	"-Wdouble-promotion"
 	"-Wnon-virtual-dtor"
+	"-Wreserved-id-macro"
+	"-Wreserved-user-defined-literal"
 )
 
 # Treat #warning's as warnings

@@ -2,8 +2,8 @@
  * @file
  * @brief This file contains constants used across claricpp
  */
-#ifndef __CONSTANTS_HPP__
-#define __CONSTANTS_HPP__
+#ifndef R_CONSTANTS_HPP_
+#define R_CONSTANTS_HPP_
 
 #include <cstdint>
 #include <limits>

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a floating point width class
  */
-#ifndef __BACKEND_Z3_FPWIDTH_HPP__
-#define __BACKEND_Z3_FPWIDTH_HPP__
+#ifndef R_BACKEND_Z3_FPWIDTH_HPP_
+#define R_BACKEND_Z3_FPWIDTH_HPP_
 
 #include "../../constants.hpp"
 

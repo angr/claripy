@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a creation method for an expression containing String::IndexOf
  */
-#ifndef __CREATE_STRING_INDEXOF_HPP__
-#define __CREATE_STRING_INDEXOF_HPP__
+#ifndef R_CREATE_STRING_INDEXOF_HPP_
+#define R_CREATE_STRING_INDEXOF_HPP_
 
 #include "../constants.hpp"
 

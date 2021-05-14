@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the String::SubString class
  */
-#ifndef __OP_STRING_SUBSTRING_HPP__
-#define __OP_STRING_SUBSTRING_HPP__
+#ifndef R_OP_STRING_SUBSTRING_HPP_
+#define R_OP_STRING_SUBSTRING_HPP_
 
 #include "../base.hpp"
 

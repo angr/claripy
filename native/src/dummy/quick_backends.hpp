@@ -2,8 +2,8 @@
  * @file
  * @brief Replace this file with proper python hooks
  */
-#ifndef __DUMMY_QUICKBACKENDS_HPP__
-#define __DUMMY_QUICKBACKENDS_HPP__
+#ifndef R_DUMMY_QUICKBACKENDS_HPP_
+#define R_DUMMY_QUICKBACKENDS_HPP_
 
 #include "../constants.hpp"
 

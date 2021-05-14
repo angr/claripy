@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the str_prefix function
  */
-#ifndef __UTILS_STRPREFIX_HPP__
-#define __UTILS_STRPREFIX_HPP__
+#ifndef R_UTILS_STRPREFIX_HPP_
+#define R_UTILS_STRPREFIX_HPP_
 
 #include "strlen.hpp"
 

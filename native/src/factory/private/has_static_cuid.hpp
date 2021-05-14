@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method used to determine if a class has a static cuid defined
  */
-#ifndef __FACTORY_PRIVATE_HASSTATICCUID_HPP__
-#define __FACTORY_PRIVATE_HASSTATICCUID_HPP__
+#ifndef R_FACTORY_PRIVATE_HASSTATICCUID_HPP_
+#define R_FACTORY_PRIVATE_HASSTATICCUID_HPP_
 
 #include <type_traits>
 

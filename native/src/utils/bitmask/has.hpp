@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief Used to verify if an enum has requested flags set
  */
-#ifndef __UTILS_BITMASK_HAS_HPP__
-#define __UTILS_BITMASK_HAS_HPP__
+#ifndef R_UTILS_BITMASK_HAS_HPP_
+#define R_UTILS_BITMASK_HAS_HPP_
 
 #include "../../macros.hpp"
 #include "../to_underlying.hpp"

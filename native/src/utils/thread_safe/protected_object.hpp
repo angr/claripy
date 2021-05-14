@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file ProtectedObject
  */
-#ifndef __UTILS_THREADSAFE_PROTECTEDOBJECT_HPP__
-#define __UTILS_THREADSAFE_PROTECTEDOBJECT_HPP__
+#ifndef R_UTILS_THREADSAFE_PROTECTEDOBJECT_HPP_
+#define R_UTILS_THREADSAFE_PROTECTEDOBJECT_HPP_
 
 #include "base.hpp"
 #include "move_lock.hpp"

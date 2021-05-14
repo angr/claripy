@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines Utils::ref
  */
-#ifndef __UTILS_REF_HPP__
-#define __UTILS_REF_HPP__
+#ifndef R_UTILS_REF_HPP_
+#define R_UTILS_REF_HPP_
 
 
 namespace Utils {

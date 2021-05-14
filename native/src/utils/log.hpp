@@ -7,8 +7,8 @@
  * has no predefined order this can lead to writing to a destructed std::cout
  * This may cause a segfault.
  */
-#ifndef __UTILS_LOG_HPP__
-#define __UTILS_LOG_HPP__
+#ifndef R_UTILS_LOG_HPP_
+#define R_UTILS_LOG_HPP_
 
 #include "log/backend.hpp"
 #include "log/constants.hpp"

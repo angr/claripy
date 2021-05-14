@@ -6,8 +6,8 @@
  * That is, if a class' purpose is to enforce thread safety upon some
  * owned object, it should derive from this class
  */
-#ifndef __UTILS_THREADSAFE_BASE_HPP__
-#define __UTILS_THREADSAFE_BASE_HPP__
+#ifndef R_UTILS_THREADSAFE_BASE_HPP_
+#define R_UTILS_THREADSAFE_BASE_HPP_
 
 #include "../../macros.hpp"
 

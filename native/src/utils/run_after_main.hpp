@@ -4,8 +4,8 @@
  * @brief This file defines a class that will run the function it is passed after main
  * Note: This might not run if an exception terminates main
  */
-#ifndef __UTILS_RUNAFTERMAIN_HPP__
-#define __UTILS_RUNAFTERMAIN_HPP__
+#ifndef R_UTILS_RUNAFTERMAIN_HPP_
+#define R_UTILS_RUNAFTERMAIN_HPP_
 
 
 /** Define a macro to allow running a literal statement

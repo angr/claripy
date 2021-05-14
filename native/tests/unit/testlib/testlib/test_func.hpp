@@ -3,8 +3,8 @@
  * @brief This file defines a method to test a test function
  * \ingroup testlib
  */
-#ifndef __TESTS_UNIT_TESTLIB_TESTLIB_TESTFUNC_HPP__
-#define __TESTS_UNIT_TESTLIB_TESTLIB_TESTFUNC_HPP__
+#ifndef R_UNIT_TESTLIB_TESTLIB_TESTFUNC_HPP_
+#define R_UNIT_TESTLIB_TESTLIB_TESTFUNC_HPP_
 
 
 namespace UnitTest::TestLib {

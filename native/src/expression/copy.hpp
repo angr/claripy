@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to copy an expression but change the annotations
  */
-#ifndef __EXPRESSION_COPY_HPP__
-#define __EXPRESSION_COPY_HPP__
+#ifndef R_EXPRESSION_COPY_HPP_
+#define R_EXPRESSION_COPY_HPP_
 
 #include "base.hpp"
 #include "factory.hpp"

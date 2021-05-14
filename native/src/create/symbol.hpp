@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create an Expression with an symbol Op
  */
-#ifndef __CREATE_SYMBOL_HPP__
-#define __CREATE_SYMBOL_HPP__
+#ifndef R_CREATE_SYMBOL_HPP_
+#define R_CREATE_SYMBOL_HPP_
 
 #include "constants.hpp"
 

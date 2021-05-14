@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a type that stores a hash value
  */
-#ifndef __HASH_HASHED_HPP__
-#define __HASH_HASHED_HPP__
+#ifndef R_HASH_HASHED_HPP_
+#define R_HASH_HASHED_HPP_
 
 #include "type.hpp"
 

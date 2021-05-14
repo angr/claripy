@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the default Log Style
  */
-#ifndef __UTILS_LOG_STYLE_DEFAULT_HPP__
-#define __UTILS_LOG_STYLE_DEFAULT_HPP__
+#ifndef R_UTILS_LOG_STYLE_DEFAULT_HPP_
+#define R_UTILS_LOG_STYLE_DEFAULT_HPP_
 
 #include "level_timestamp_message.hpp"
 

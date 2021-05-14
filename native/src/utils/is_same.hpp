@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a methods like std::is_same but that can unqualify their inpus
  */
-#ifndef __UTILS_ISSAME_HPP__
-#define __UTILS_ISSAME_HPP__
+#ifndef R_UTILS_ISSAME_HPP_
+#define R_UTILS_ISSAME_HPP_
 
 #include "macros.hpp"
 

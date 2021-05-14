@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the OP factory
  */
-#ifndef __OP_FACTORY_HPP__
-#define __OP_FACTORY_HPP__
+#ifndef R_OP_FACTORY_HPP_
+#define R_OP_FACTORY_HPP_
 
 #include "base.hpp"
 

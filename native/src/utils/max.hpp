@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines various max functions
  */
-#ifndef __UTILS_MAX_HPP__
-#define __UTILS_MAX_HPP__
+#ifndef R_UTILS_MAX_HPP_
+#define R_UTILS_MAX_HPP_
 
 
 namespace Utils::Max {

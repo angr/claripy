@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Bits class
  */
-#ifndef __EXPRESSION_BITS_HPP__
-#define __EXPRESSION_BITS_HPP__
+#ifndef R_EXPRESSION_BITS_HPP_
+#define R_EXPRESSION_BITS_HPP_
 
 #include "base.hpp"
 

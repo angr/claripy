@@ -3,8 +3,8 @@
  * @brief A binary Op; takes two inputs of the same type
  * For example: Concat(Str1, Str2)
  */
-#ifndef __OP_BINARY_HPP__
-#define __OP_BINARY_HPP__
+#ifndef R_OP_BINARY_HPP_
+#define R_OP_BINARY_HPP_
 
 #include "base.hpp"
 

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the base expression
  */
-#ifndef __BACKEND_BASE_HPP__
-#define __BACKEND_BASE_HPP__
+#ifndef R_BACKEND_BASE_HPP_
+#define R_BACKEND_BASE_HPP_
 
 #include "../expression.hpp"
 

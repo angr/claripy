@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Z3 backend
  */
-#ifndef __BACKEND_Z3_Z3_HPP__
-#define __BACKEND_Z3_Z3_HPP__
+#ifndef R_BACKEND_Z3_Z3_HPP_
+#define R_BACKEND_Z3_Z3_HPP_
 
 #include "abstract.hpp"
 #include "convert.hpp"

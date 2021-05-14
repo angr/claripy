@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the base logging backend class
  */
-#ifndef __UTILS_LOG_BACKEND_BASE_HPP__
-#define __UTILS_LOG_BACKEND_BASE_HPP__
+#ifndef R_UTILS_LOG_BACKEND_BASE_HPP_
+#define R_UTILS_LOG_BACKEND_BASE_HPP_
 
 #include "../../../constants.hpp"
 #include "../../../macros.hpp"

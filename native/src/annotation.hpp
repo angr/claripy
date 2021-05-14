@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of Annotation
  */
-#ifndef __ANNOTATION_HPP__
-#define __ANNOTATION_HPP__
+#ifndef R_ANNOTATION_HPP_
+#define R_ANNOTATION_HPP_
 
 #include "annotation/base.hpp"
 #include "annotation/factory.hpp"

@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the base expression
  */
-#ifndef __EXPRESSION_BASE_HPP__
-#define __EXPRESSION_BASE_HPP__
+#ifndef R_EXPRESSION_BASE_HPP_
+#define R_EXPRESSION_BASE_HPP_
 
 #include "../annotation.hpp"
 #include "../factory.hpp"

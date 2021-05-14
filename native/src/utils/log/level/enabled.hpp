@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a function which returns true if the given log level is enabled
  */
-#ifndef __UTILS_LOG_LEVEL_ENABLED_HPP__
-#define __UTILS_LOG_LEVEL_ENABLED_HPP__
+#ifndef R_UTILS_LOG_LEVEL_ENABLED_HPP_
+#define R_UTILS_LOG_LEVEL_ENABLED_HPP_
 
 #include "access.hpp"
 #include "level.hpp"

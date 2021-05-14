@@ -2,8 +2,8 @@
  * @file
  * @brief This file exposes all relevant public members of fp
  */
-#ifndef __CREATE_STRING_HPP__
-#define __CREATE_STRING_HPP__
+#ifndef R_CREATE_STRING_HPP_
+#define R_CREATE_STRING_HPP_
 
 #include "string/from_int.hpp"
 #include "string/index_of.hpp"

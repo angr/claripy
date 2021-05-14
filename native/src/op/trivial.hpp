@@ -2,8 +2,8 @@
  * @file
  * @brief Define trivial subclass ops
  */
-#ifndef __OP_TRIVIAL_HPP__
-#define __OP_TRIVIAL_HPP__
+#ifndef R_OP_TRIVIAL_HPP_
+#define R_OP_TRIVIAL_HPP_
 
 #include "binary.hpp"
 #include "flat.hpp"

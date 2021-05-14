@@ -2,8 +2,8 @@
  * @file
  * @brief A cached way of copying data to the heap
  */
-#ifndef __UTILS_TOHEAPCACHE_HPP__
-#define __UTILS_TOHEAPCACHE_HPP__
+#ifndef R_UTILS_TOHEAPCACHE_HPP_
+#define R_UTILS_TOHEAPCACHE_HPP_
 
 #include "log.hpp"
 

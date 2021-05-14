@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the C API of claricpp
  */
-#ifndef __API_HPP__
-#define __API_HPP__
+#ifndef R_API_HPP_
+#define R_API_HPP_
 
 #include <memory>
 

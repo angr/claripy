@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create an Expression with an literal Op
  */
-#ifndef __CREATE_PRIVATE_LITERAL_HPP__
-#define __CREATE_PRIVATE_LITERAL_HPP__
+#ifndef R_CREATE_PRIVATE_LITERAL_HPP_
+#define R_CREATE_PRIVATE_LITERAL_HPP_
 
 #include "../constants.hpp"
 

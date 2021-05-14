@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the LevelTimestameMessage Log Style class
  */
-#ifndef __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
-#define __UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP__
+#ifndef R_UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP_
+#define R_UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP_
 
 #include "base.hpp"
 

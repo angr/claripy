@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines constants used across the utils/log directory
  */
-#ifndef __UTILS_LOG_CONSTANTS_HPP__
-#define __UTILS_LOG_CONSTANTS_HPP__
+#ifndef R_UTILS_LOG_CONSTANTS_HPP_
+#define R_UTILS_LOG_CONSTANTS_HPP_
 
 #include "../../constants.hpp"
 

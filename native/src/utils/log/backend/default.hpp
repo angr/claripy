@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines the default Log Backend
  */
-#ifndef __UTILS_LOG_BACKEND_DEFAULT_HPP__
-#define __UTILS_LOG_BACKEND_DEFAULT_HPP__
+#ifndef R_UTILS_LOG_BACKEND_DEFAULT_HPP_
+#define R_UTILS_LOG_BACKEND_DEFAULT_HPP_
 
 #include "clog.hpp"
 

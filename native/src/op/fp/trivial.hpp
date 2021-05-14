@@ -2,8 +2,8 @@
  * @file
  * @brief Define trivial fp subclass ops
  */
-#ifndef __OP_FP_TRIVIAL_HPP__
-#define __OP_FP_TRIVIAL_HPP__
+#ifndef R_OP_FP_TRIVIAL_HPP_
+#define R_OP_FP_TRIVIAL_HPP_
 
 #include "mode_binary.hpp"
 

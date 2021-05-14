@@ -5,8 +5,8 @@
  * via a different method.
  * @todo Document method when known
  */
-#ifndef __ERROR_BACKEND_HPP__
-#define __ERROR_BACKEND_HPP__
+#ifndef R_ERROR_BACKEND_HPP_
+#define R_ERROR_BACKEND_HPP_
 
 #include "../utils.hpp"
 

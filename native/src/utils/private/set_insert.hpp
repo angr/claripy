@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines helper methods for Utils::set_join
  */
-#ifndef __UTILS_PRIVATE_SETINSERT_HPP__
-#define __UTILS_PRIVATE_SETINSERT_HPP__
+#ifndef R_UTILS_PRIVATE_SETINSERT_HPP_
+#define R_UTILS_PRIVATE_SETINSERT_HPP_
 
 #include <set>
 

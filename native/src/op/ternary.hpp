@@ -2,8 +2,8 @@
  * @file
  * @brief A ternary Op; takes three inputs of the same type
  */
-#ifndef __OP_TERNARY_HPP__
-#define __OP_TERNARY_HPP__
+#ifndef R_OP_TERNARY_HPP_
+#define R_OP_TERNARY_HPP_
 
 #include "base.hpp"
 

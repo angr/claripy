@@ -2,8 +2,8 @@
  * @file
  * @brief This file contains macros used across claricpp
  */
-#ifndef __MACROS_HPP__
-#define __MACROS_HPP__
+#ifndef R_MACROS_HPP_
+#define R_MACROS_HPP_
 
 
 /** The CHAR_BIT claricpp will use */

@@ -2,8 +2,8 @@
  * @file
  * @brief The OP representing a Symbol
  */
-#ifndef __OP_SYMBOL_HPP__
-#define __OP_SYMBOL_HPP__
+#ifndef R_OP_SYMBOL_HPP_
+#define R_OP_SYMBOL_HPP_
 
 #include "base.hpp"
 

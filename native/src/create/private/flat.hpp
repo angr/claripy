@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create Expressions with standard flat ops
  */
-#ifndef __CREATE_PRIVATE_FLAT_HPP__
-#define __CREATE_PRIVATE_FLAT_HPP__
+#ifndef R_CREATE_PRIVATE_FLAT_HPP_
+#define R_CREATE_PRIVATE_FLAT_HPP_
 
 #include "size_mode.hpp"
 

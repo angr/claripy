@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a few terminal colors for pretty printing
  */
-#ifndef __UTILS_ANSICOLORCODES_HPP__
-#define __UTILS_ANSICOLORCODES_HPP__
+#ifndef R_UTILS_ANSICOLORCODES_HPP_
+#define R_UTILS_ANSICOLORCODES_HPP_
 
 #include "../constants.hpp"
 

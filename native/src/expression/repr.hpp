@@ -3,8 +3,8 @@
  * @brief This file defines the repr function for expressions
  * Note that these are not member functions because they require knowledge of op internals
  */
-#ifndef __EXPRESSION_REPR_HPP__
-#define __EXPRESSION_REPR_HPP__
+#ifndef R_EXPRESSION_REPR_HPP_
+#define R_EXPRESSION_REPR_HPP_
 
 #include "base.hpp"
 
