@@ -162,7 +162,7 @@ namespace Utils {
             // Find all expired weak_ptrs
             for (const auto &[hash, ptr] : this->cache) {
                 if (ptr.expired()) {
-                    del.push_back(hash);
+                    del.emplace_back(hash);
                 }
             }
             // Delete them

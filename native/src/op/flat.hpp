@@ -51,7 +51,7 @@ namespace Op {
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
-            for (auto i = operands.crbegin(); i != operands.crend(); ++i) {
+            for (auto i { operands.crbegin() }; i != operands.crend(); ++i) {
                 s.emplace(i->get());
             }
         }

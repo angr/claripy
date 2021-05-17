@@ -201,7 +201,7 @@ namespace Backend::Z3::Convert {
 #endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
-            for (Constants::UInt i = 2; i < size; ++i) {
+            for (Constants::UInt i { 2 }; i < size; ++i) {
                 ret = std::move(fn(std::move(ret), *arr[i]));
             }
             return ret;
