@@ -338,6 +338,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	endif()
 endif()
 
+# MSVC enable exceptions
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	add_compile_options("-EHsc")
+endif()
+
 
 #################################################
 #                                               #
