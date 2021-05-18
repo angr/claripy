@@ -38,7 +38,7 @@
             /** Default constructor */                                                            \
             RunAfterMain() noexcept = default;                                                    \
             /** Destructor */                                                                     \
-            ~RunAfterMain() { (void) F(__VA_ARGS__); }                                            \
+            ~RunAfterMain() { (void) (F)(__VA_ARGS__); }                                          \
             /* Disable non-default creation methods */                                            \
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \

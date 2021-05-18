@@ -28,10 +28,10 @@
  *  to data is large enough to pun to a OUT_TYPE. IS_ARRAY is simply a sanity check.
  */
 #define UTILS_TYPE_PUN_ONTO(OUT_TYPE, OUT_ONTO_PTR, IN_OBJ, IS_ARRAY)                             \
-    static_assert(IS_ARRAY || (sizeof(OUT_TYPE) <= sizeof(*IN_OBJ)),                              \
+    static_assert((IS_ARRAY) || (sizeof(OUT_TYPE) <= sizeof(*(IN_OBJ))),                          \
                   "cannot pun to a size larger than the input object");                           \
     /* Not memmove since compilers seem to be more capable of no-op-ing memcpy with -O3 */        \
-    std::memcpy(OUT_ONTO_PTR, IN_OBJ, sizeof(OUT_TYPE));
+    std::memcpy((OUT_ONTO_PTR), (IN_OBJ), sizeof(OUT_TYPE));
 
 /** Type puns IN_OBJ onto a new OUT_TYPE named OUT_NAME. IS_ARRAY should be true if IN_OBJ is not
  *  a pointer to a single object but rather to an array containing multiple objects that should
@@ -49,7 +49,7 @@
     Utils::Declare<OUT_TYPE, true> MACRO_CONCAT(_tpi##IS_ARRAY, __LINE__);                        \
     /* Due to the newline escapes, this entire macro has the same __LINE__ value */               \
     OUT_TYPE &OUT_NAME { MACRO_CONCAT(_tpi##IS_ARRAY, __LINE__).value };                          \
-    UTILS_TYPE_PUN_ONTO(OUT_TYPE, &OUT_NAME, IN_OBJ, IS_ARRAY);
+    UTILS_TYPE_PUN_ONTO(OUT_TYPE, &OUT_NAME, (IN_OBJ), (IS_ARRAY));
 
 /** Type puns IN_OBJ onto a new OUT_TYPE named OUT_NAME. IS_ARRAY should be true if IN_OBJ is not
  *  a pointer to a single object but rather to an array containing multiple objects that should
@@ -65,7 +65,7 @@
  *  to data is large enough to pun to a OUT_TYPE. IS_ARRAY is simply a sanity check.
  */
 #define UTILS_TYPE_PUN_(OUT_TYPE, OUT_NAME, IN_OBJ, IS_ARRAY)                                     \
-    UTILS_TYPE_PUN(OUT_TYPE, OUT_NAME, IN_OBJ, IS_ARRAY, _);
+    UTILS_TYPE_PUN(OUT_TYPE, OUT_NAME, (IN_OBJ), IS_ARRAY, _);
 
 
 #endif

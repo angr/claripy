@@ -22,7 +22,7 @@
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
 #define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                   \
-    class CLASS final : public ::Op::Binary<CONSIDERSIZE> {                                       \
+    class CLASS final : public ::Op::Binary<(CONSIDERSIZE)> {                                     \
         OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
                                                                                                   \
       private:                                                                                    \

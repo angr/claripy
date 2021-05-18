@@ -22,7 +22,7 @@
   public:                                                                                         \
     /** Define a static_cuid */                                                                   \
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                            \
-        UTILS_FILE_LINE_HASH ^ Utils::FNV1a<int>::hash(&Utils::ref<int, X>, 1)                    \
+        UTILS_FILE_LINE_HASH ^ Utils::FNV1a<int>::hash(&Utils::ref<int, (X)>, 1)                  \
     };
 
 

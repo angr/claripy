@@ -18,7 +18,7 @@
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
 #define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                     \
-    class CLASS final : public ::Op::Flat<CONSIDERSIZE> {                                         \
+    class CLASS final : public ::Op::Flat<(CONSIDERSIZE)> {                                       \
         OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
                                                                                                   \
       private:                                                                                    \

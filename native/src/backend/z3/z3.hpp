@@ -90,20 +90,20 @@ namespace Backend::Z3 {
 
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
-        auto ret { FN(*args.back()) };                                                            \
+        auto ret { (FN) (*args.back()) };                                                         \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define BINARY_DISPATCH(FN)                                                                       \
     const auto size { args.size() };                                                              \
-    auto ret { FN(*args[size - 2], *args[size - 1]) };                                            \
+    auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                         \
     args.resize(size - 2);                                                                        \
     return ret;
 
 #define BINARY_CASE(OP, FN)                                                                       \
     case Op::OP::static_cuid: {                                                                   \
-        BINARY_DISPATCH(FN);                                                                      \
+        BINARY_DISPATCH((FN));                                                                    \
     }
 
 // Passing templated objects to macros can be messy since ','s are in both
@@ -118,7 +118,8 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
-        auto ret { FN(*args.back(), Utils::checked_static_cast<To>(expr->op.get())->integer) };   \
+        auto ret { (FN) (*args.back(),                                                            \
+                         Utils::checked_static_cast<To>(expr->op.get())->integer) };              \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -128,8 +129,8 @@ namespace Backend::Z3 {
         static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");           \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         const auto size { args.size() };                                                          \
-        auto ret { FN(Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],      \
-                      *args[size - 1]) };                                                         \
+        auto ret { (FN) (Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],   \
+                         *args[size - 1]) };                                                      \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -148,7 +149,7 @@ namespace Backend::Z3 {
         using To = Constants::CTSC<Op::AbstractFlat>;                                             \
         const auto a_size { args.size() };                                                        \
         const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
-        auto ret { FN(&(args.data()[a_size - n]), n) };                                           \
+        auto ret { (FN) (&(args.data()[a_size - n]), n) };                                        \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
     }
