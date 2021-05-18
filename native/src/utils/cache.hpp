@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief This file defines a generic hash cache type
  */
 #ifndef R_UTILS_CACHE_HPP_

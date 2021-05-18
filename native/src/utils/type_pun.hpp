@@ -2,9 +2,9 @@
  * @file
  * \ingroup utils
  * @brief This file defines UTILS_TYPE_PUN and related macros
- *  We use this instead of unions as unions can have undefined behavior when type punning.
- *  Likewise, due to 'strict anti-aliasing' rules, type punning via casting can have
- *  undefined behavior, especially with -O2 or higher level optimizations.
+ * We use this instead of unions as unions can have undefined behavior when type punning.
+ * Likewise, due to 'strict anti-aliasing' rules, type punning via casting can have
+ * undefined behavior, especially with -O2 or higher level optimizations.
  */
 #ifndef R_UTILS_TYPEPUN_HPP_
 #define R_UTILS_TYPEPUN_HPP_

@@ -44,7 +44,7 @@ namespace Utils {
 
     } // namespace ANSIColorCodes
 
-    /** A namespace used for the util's errors directory */
+    /** A namespace used for the util's error directory */
     namespace Error {
 
         /** A namespace used exceptions to be passed back to python */
@@ -96,8 +96,22 @@ namespace Utils {
 
     } // namespace Log
 
+    /** A namespace used for members related to bit masks */
+    namespace BitMask {
+
+        /** A namespace used for private members of BitMask */
+        namespace Private {}
+
+    } // namespace BitMask
+
+    /** A namespace used for stack limit related members */
+    namespace StackLimit {}
+
     /** A namespace used for type dependent constants */
     namespace TD {}
+
+    /** A namespace used for constant dependent constants */
+    namespace CD {}
 
 } // namespace Utils
 
@@ -115,26 +129,59 @@ namespace Factory {
 /** A namespace used for the hash directory */
 namespace Hash {}
 
-/** A namespace used for the errors directory */
+/** A namespace used for the mode directory */
+namespace Mode {}
+
+/** A namespace used for the error directory */
 namespace Error {
 
     /** A namespace used for Expression errors */
     namespace Expression {}
 
+    /** A namespace used for Backend errors */
+    namespace Backend {}
+
 } // namespace Error
 
+/** A namespace used for the expression directory */
+namespace Expression {}
 
-/** A namespace used for the expressions directory */
-namespace Expression {
+/** a namespace used for the backend directory */
+namespace Backend {
 
-    /** A namespace used to designate certain items in expression as private
-     *
-     *  These members should not be called outside of the expression directory
-     *  This is useful for helper functions templated functions call
-     */
-    namespace Private {}
+    /** A namespace used for the z3 backend */
+    namespace Z3 {
 
-} // namespace Expression
+        /** A namespace used for z3::expr->Expression abstraction functions */
+        namespace Abstract {}
+
+        /** A namespace used for Expression->z3::expr conversion functions */
+        namespace Convert {
+
+            /** A namespace used for String specific Expression->z3::expr conversion functions */
+            namespace String {}
+
+            /** A namespace used for private members of Backend::Z3::Convert */
+            namespace Private {}
+
+            /** A namespace used for FP specific Expression->z3::expr conversion functions */
+            namespace FP {
+
+                /** A namespace used for private members of Backend::Z3::Convert::FP */
+                namespace Private {}
+
+            } // namespace FP
+        }     // namespace Convert
+
+        /** A namespace used for FP width related objects */
+        namespace FP {}
+
+        /** A namespace used for private members of Backend::Z3 */
+        namespace Private {}
+
+    } // namespace Z3
+
+} // namespace Backend
 
 /** A namespace that contains the various Op classes */
 namespace Op {
@@ -142,17 +189,24 @@ namespace Op {
     /** A namespace that contains various FP Op classes */
     namespace FP {}
 
+    /** A namespace that contains various String Op classes */
+    namespace String {}
+
 } // namespace Op
 
+/** A namespace used for the py_obj directory */
+namespace PyObj {}
 
-/** A namespace used for the simplifications directory */
-namespace Simplification {
+/** A namespace that containsvarious C API functions */
+namespace C_API {
 
-    /** A namespace used to designate certain items in Simplifications as private
-     *
-     *  These members should not be called outside of the simplifications directory
-     */
+    /** A namespace that contains private members of the C API */
     namespace Private {}
+
+} // namespace C_API
+
+/** A namespace used for the simplification directory */
+namespace Simplification {
 
     /** A namespace which contains the simplifiers */
     namespace Simplifier {
@@ -180,16 +234,18 @@ namespace Create {
     /** A namespace for FP creation functions */
     namespace FP {}
 
+    /** A namespace for String creation functions */
+    namespace String {
+
+        /** A namespace for private members of Create::String */
+        namespace Private {}
+
+    } // namespace String
+
     /** A namespace for private members of Create */
     namespace Private {}
-} // namespace Create
 
-/** A namespace used for unimplemented dummy objects that are required for compilation
- *
- * These objects will be replaced later, but for now Dummy stand-ins allow for testing
- * the rest of the system without implementing these first
- */
-namespace Dummy {}
+} // namespace Create
 
 /** A namespace used for the annotations directory */
 namespace Annotation {}

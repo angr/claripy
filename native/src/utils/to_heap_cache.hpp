@@ -1,5 +1,6 @@
 /**
  * @file
+ * \ingroup utils
  * @brief A cached way of copying data to the heap
  */
 #ifndef R_UTILS_TOHEAPCACHE_HPP_

@@ -1,5 +1,4 @@
-/*
- * \defgroup utils Claricpp Utilities
+/** \defgroup utils Claricpp Utilities
  * @brief A group of useful classes and methods which all parts of claricpp can utilize
  */
 

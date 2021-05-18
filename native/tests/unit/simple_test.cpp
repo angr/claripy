@@ -1,5 +1,4 @@
-/*
- * \defgroup unittest Claricpp Unit Tests
+/** \defgroup unittest Claricpp Unit Tests
  * @brief Claricpp Unit Tests
  */
 
