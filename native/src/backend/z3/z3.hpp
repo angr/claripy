@@ -68,7 +68,7 @@ namespace Backend::Z3 {
         }
 
         /** Simplify the given expression
-         *  @todo: Currently this si stubbed, it needs to be implemented
+         *  @todo: Currently this is stubbed, it needs to be implemented
          */
         Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
             (void) expr;

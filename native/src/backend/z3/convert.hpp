@@ -266,7 +266,7 @@ namespace Backend::Z3::Convert {
                 }
                 case Expression::BV::static_cuid: {
                     const auto &vec { std::get<std::vector<char>>(data) };
-                    return ctx.bv_val(vec.data(), Utils::narrow<unsigned>(vec.size()));
+                    return ctx.bv_val(vec.data(), Utils::narrow<z3u>(vec.size()));
                 }
                     // Error handling
                 case Expression::VS::static_cuid:
@@ -319,7 +319,7 @@ namespace Backend::Z3::Convert {
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
                 };
-                return ctx.bv_const(name.c_str(), Utils::narrow<unsigned>(bit_length));
+                return ctx.bv_const(name.c_str(), Utils::narrow<z3u>(bit_length));
             }
                 // Error handling
             case Expression::VS::static_cuid:

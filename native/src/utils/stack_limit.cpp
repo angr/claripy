@@ -5,6 +5,10 @@
 #include "stack_limit.hpp"
 
 
+// For brevity
+namespace US = Utils::StackLimit;
+
+
 // Not all systems support this
 #if !__has_include(<sys/resource.h>)
 
@@ -15,13 +19,13 @@ static void not_supported() {
         WHOAMI_WITH_SOURCE "This system does not support StackLimit operations");
 }
 
-unsigned long long Utils::StackLimit::get() {
+US::ULL US::get() {
     not_supported();
 }
-unsigned long long Utils::StackLimit::max() {
+US::ULL US::max() {
     not_supported();
 }
-void Utils::StackLimit::set(const unsigned long long) {
+void US::set(const US::ULL) {
     not_supported();
 }
 
@@ -38,6 +42,7 @@ void Utils::StackLimit::set(const unsigned long long) {
     #include <cstring>
     #include <sys/resource.h>
 
+
 /** A helper function to get the current rlimit struct */
 static rlimit getr() {
     rlimit rl {};
@@ -46,15 +51,15 @@ static rlimit getr() {
     return rl;
 }
 
-unsigned long long Utils::StackLimit::get() {
+US::ULL US::get() {
     return getr().rlim_cur;
 }
 
-unsigned long long Utils::StackLimit::max() {
+US::ULL US::max() {
     return getr().rlim_max;
 }
 
-void Utils::StackLimit::set(const unsigned long long to) {
+void US::set(const US::ULL to) {
     auto rl { getr() };
     affirm<Error::Unexpected::IncorrectUsage>(to <= rl.rlim_max, WHOAMI_WITH_SOURCE,
                                               "selected stack limit of ", to,

@@ -86,7 +86,7 @@ constexpr inline Constants::Int operator"" _i(const unsigned long long i) {
     // Otherwise we would have to narrow
     else {
         // Narrowing
-        throw std::domain_error("Constant given to literal operator too large");
+        throw std::domain_error("Constant given to literal operator: too large");
     }
 }
 

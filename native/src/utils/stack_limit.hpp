@@ -22,20 +22,23 @@ namespace Utils::StackLimit {
 #endif
     };
 
+    /** The unsigned type StackLimit functions take */
+    using ULL = unsigned long long;
+
     /** Get the stack limit
      *  Will throw an exception if the system does not support this
      */
-    unsigned long long get();
+    ULL get();
 
     /** Get the max stack limit
      *  Will throw an exception if the system does not support this
      */
-    unsigned long long max();
+    ULL max();
 
     /** Set the stack limit
      *  Will throw an exception if the system does not support this
      */
-    void set(const unsigned long long to);
+    void set(const ULL to);
 
 } // namespace Utils::StackLimit
 
