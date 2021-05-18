@@ -307,8 +307,6 @@ add_compile_options(
 	"-Wnull-dereference"
 	"-Wdouble-promotion"
 	"-Wnon-virtual-dtor"
-	"-Wreserved-id-macro"
-	"-Wreserved-user-defined-literal"
 )
 
 # Treat #warning's as warnings
@@ -321,8 +319,16 @@ else()
 					"to ensure that #warnings are not caught by -Werror.")
 endif()
 
+# Compile options that cannot be used with g++
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	add_compile_options(
+		"-Wreserved-id-macro"
+		"-Wreserved-user-defined-literal"
+	)
+endif()
+
 # Compile options that cannot be used with clang
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "(C|c?)lang")
 	if(CLANG_TIDY)
 		message(WARNING "Clang (from clang-tidy) cannot handle gcc specific warning options."
 						"Disabling them to allow clang-tidy to function.")
