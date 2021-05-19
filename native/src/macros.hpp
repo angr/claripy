@@ -62,6 +62,8 @@
     struct DERIVED final : public SUPER {                                                         \
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
+        /** Default virtual destructor */                                                         \
+        inline ~DERIVED() noexcept override final = default;                                      \
     };
 
 /** A macro used to define a non-final derived exception class
@@ -74,7 +76,7 @@
         /** Inherit constructors */                                                               \
         using SUPER::SUPER;                                                                       \
         /** Default virtual destructor */                                                         \
-        inline virtual ~DERIVED() noexcept = default;                                             \
+        inline ~DERIVED() noexcept override = default;                                            \
     };
 
 /** A macro used to define a final derived exception class
@@ -84,6 +86,8 @@
     struct DERIVED final : public NS::SUPER {                                                     \
         /** Inherit constructors */                                                               \
         using NS::SUPER::SUPER;                                                                   \
+        /** Default virtual destructor */                                                         \
+        inline ~DERIVED() noexcept override final = default;                                      \
     };
 
 

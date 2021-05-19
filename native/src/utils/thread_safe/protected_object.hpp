@@ -40,22 +40,23 @@ namespace Utils::ThreadSafe {
 
         /** Move Constructor */
         ProtectedObject(ProtectedObject &&o) noexcept
-            : pointer { o.pointer }, lock { std::move(o.lock) } {
+            : Base { std::forward<Base>(o) }, pointer { o.pointer }, lock { std::move(o.lock) } {
             o.pointer = nullptr;
         }
 
         /** Move Assignment */
         ProtectedObject &operator=(ProtectedObject &&o) noexcept {
             if (this != &o) {
+                Base::operator=(std::forward<Base>(o));
+                lock = std::move(o.lock);
                 pointer = o.pointer;
                 o.pointer = nullptr;
-                lock = std::move(o.lock);
             }
             return *this;
         }
 
         /** Default destructor */
-        ~ProtectedObject() noexcept = default;
+        ~ProtectedObject() noexcept override final = default;
 
         // Getters
 

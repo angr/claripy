@@ -36,7 +36,7 @@ namespace Utils::ThreadSafe {
         /** Move constructor
          *  Disables the auto-locking on destruction of old
          */
-        MoveLock(MoveLock &&old) noexcept : mutex { old.mutex } { old.mutex = nullptr; }
+        explicit MoveLock(MoveLock &&old) noexcept : mutex { old.mutex } { old.mutex = nullptr; }
 
         /** Move assignment */
         MoveLock &operator=(MoveLock &&old) noexcept {

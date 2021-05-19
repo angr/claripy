@@ -18,10 +18,8 @@ namespace Utils::Log::Backend {
     struct Base;
 
     namespace Private {
-
         /** Define a private set method */
         void set(std::shared_ptr<const Base> &&ptr);
-
     } // namespace Private
 
     /** Set the Log Backend to a new T constructed with arguments: args	*/

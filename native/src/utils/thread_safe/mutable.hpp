@@ -41,6 +41,9 @@ namespace Utils::ThreadSafe {
         /** Emplacement constructor, take object by move */
         Mutable(T &&o) : Base { std::forward<Base>(o) }, obj { o } {}
 
+        /** Destructor */
+        ~Mutable() noexcept override final = default;
+
         /** Request read-write access
          */
         [[nodiscard]] auto unique() { return ProtectedObject { obj, UniqueLock { m } }; }
@@ -71,7 +74,9 @@ namespace Utils::ThreadSafe {
         T obj;
 
         // Delete other methods of construction / assignment
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Mutable, delete);
+        SET_IMPLICITS_OPERATORS(Mutable, delete);
+        /** Delete copy constructor */
+        Mutable(const Mutable &) = delete;
     };
 
 } // namespace Utils::ThreadSafe

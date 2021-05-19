@@ -18,10 +18,8 @@ namespace Utils::Log::Style {
     struct Base;
 
     namespace Private {
-
         /** Set the logging style */
         void set(std::shared_ptr<const Base> &&ptr);
-
     } // namespace Private
 
     /** Set the Log Style to a new T constructed with arguments: args */
