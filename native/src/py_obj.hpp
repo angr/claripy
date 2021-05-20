@@ -6,6 +6,6 @@
 #define R_PYOBJ_HPP_
 
 #include "py_obj/base.hpp"
-#include "py_obj/trivial.hpp"
+#include "py_obj/vs.hpp"
 
 #endif

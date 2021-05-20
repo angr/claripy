@@ -17,15 +17,23 @@ template <typename T> void if_t() {
     // Create distinct inputs
     const auto a { F::t_literal<T>(0) };
     const auto b { F::t_literal<T>(1) };
-    const auto c { F::t_literal<Ex::Bool>(2) };
+    const auto c { F::t_literal<Ex::Bool>(1) };
+
+    // Note that if T = bool, b == c
+    const Constants::UInt bc_use_count { std::is_same_v<T, Ex::Bool> ? 2 : 1 };
+
+    // Sanity checks
+    UNITTEST_ASSERT(a.use_count() == 1);
+    UNITTEST_ASSERT(b.use_count() == bc_use_count);
+    UNITTEST_ASSERT(c.use_count() == bc_use_count);
 
     // Test
     const auto exp { Create::if_<T>(c, a, b) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);
-    UNITTEST_ASSERT(b.use_count() == 2);
-    UNITTEST_ASSERT(c.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2 * bc_use_count);
+    UNITTEST_ASSERT(c.use_count() == 2 * bc_use_count);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check

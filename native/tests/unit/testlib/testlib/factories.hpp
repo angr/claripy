@@ -35,7 +35,7 @@ namespace UnitTest::TestLib::Factories {
             return Create::literal(static_cast<double>(i));
         }
         else if constexpr (std::is_same_v<T, Ex::VS>) {
-            return Create::literal(std::make_shared<const PyObj::VS>(i, i));
+            return Create::literal(std::make_shared<const PyObj::VS>(i, i, C_CHAR_BIT));
         }
         else {
             static_assert(Utils::TD::false_<T>, "Unsupported type T");
