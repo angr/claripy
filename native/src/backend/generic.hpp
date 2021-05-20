@@ -122,7 +122,7 @@ namespace Backend {
                     Utils::affirm<UnknownErr>(success, WHOAMI_WITH_SOURCE
                                               "Cache update failed for some reason.");
 #else
-                    Utils::sink(success);
+                    (void) success;
 #endif
                     arg_stack.emplace_back(&(iter->second));
                 }
@@ -138,6 +138,9 @@ namespace Backend {
                                       WHOAMI "object_cache does not contain expr hash");
             Utils::affirm<UnknownErr>(&lookup->second == arg_stack.back(), WHOAMI
                                       "object_cache lookup does not match arg_stack back()");
+            Utils::affirm<UnknownErr>(arg_stack.back() == &object_cache.find(input->hash)->second,
+                                      WHOAMI
+                                      "arg_stack / object_cache mismatch at end of convert");
 #endif
             // Return result
             return *arg_stack.back(); // shortcut for object_cache.find(input->hash)->second;

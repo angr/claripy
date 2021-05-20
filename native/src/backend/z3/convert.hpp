@@ -353,8 +353,7 @@ namespace Backend::Z3::Convert {
                 Utils::affirm<Utils::Error::Unexpected::Type>(
                     a.is_fpa() && b.is_fpa(), WHOAMI_WITH_SOURCE " called non-FP ops");
 #else
-                (void) a;
-                (void) b;
+                (void) a, b;
 #endif
             }
 
