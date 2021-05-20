@@ -131,7 +131,7 @@ class FullFrontend(ConstrainedFrontend):
         except BackendError as e:
             raise ClaripyFrontendError("Backend error during batch_eval") from e
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), exact=None, signed=False):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _max()")
 
@@ -141,17 +141,21 @@ class FullFrontend(ConstrainedFrontend):
         if len(two) == 0: raise UnsatError("unsat during max()")
         elif len(two) == 1: return two[0]
 
-        c = tuple(extra_constraints) + (UGE(e, two[0]), UGE(e, two[1]))
+        if signed:
+            c = tuple(extra_constraints) + (SGE(e, two[0]), SGE(e, two[1]))
+        else:
+            c = tuple(extra_constraints) + (UGE(e, two[0]), UGE(e, two[1]))
         try:
             return self._solver_backend.max(
                 e, extra_constraints=c,
                 solver=self._get_solver(),
-                model_callback=self._model_hook
+                model_callback=self._model_hook,
+                signed=signed,
             )
         except BackendError as e:
             raise ClaripyFrontendError("Backend error during max") from e
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), exact=None, signed=False):
         if not self.satisfiable(extra_constraints=extra_constraints):
             raise UnsatError("Unsat during _min()")
 
@@ -161,12 +165,16 @@ class FullFrontend(ConstrainedFrontend):
         if len(two) == 0: raise UnsatError("unsat during min()")
         elif len(two) == 1: return two[0]
 
-        c = tuple(extra_constraints) + (ULE(e, two[0]), ULE(e, two[1]))
+        if signed:
+            c = tuple(extra_constraints) + (SLE(e, two[0]), SLE(e, two[1]))
+        else:
+            c = tuple(extra_constraints) + (ULE(e, two[0]), ULE(e, two[1]))
         try:
             return self._solver_backend.min(
                 e, extra_constraints=c,
                 solver=self._get_solver(),
-                model_callback=self._model_hook
+                model_callback=self._model_hook,
+                signed=signed,
             )
         except BackendError as e:
             raise ClaripyFrontendError("Backend error during min") from e
@@ -230,5 +238,5 @@ class FullFrontend(ConstrainedFrontend):
         )[1]
 
 from ..errors import UnsatError, BackendError, ClaripyFrontendError
-from ..ast.bv import UGE, ULE
+from ..ast.bv import UGE, ULE, SGE, SLE
 from ..backend_manager import backends

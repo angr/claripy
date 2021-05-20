@@ -550,7 +550,7 @@ class Backend:
 
         raise BackendError("backend doesn't support batch_eval()")
 
-    def min(self, expr, extra_constraints=(), solver=None, model_callback=None):
+    def min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         """
         Return the minimum value of `expr`.
 
@@ -558,15 +558,16 @@ class Backend:
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
+        :param signed:  Whether to solve for the minimum signed integer instead of the unsigned min
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the minimum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._min(self.convert(expr), extra_constraints=self.convert_list(extra_constraints), solver=solver, model_callback=model_callback)
+        return self._min(self.convert(expr), extra_constraints=self.convert_list(extra_constraints), signed=signed, solver=solver, model_callback=model_callback)
 
-    def _min(self, expr, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
+    def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         Return the minimum value of expr.
 
@@ -574,12 +575,13 @@ class Backend:
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
+        :param signed:  Whether to solve for the minimum signed integer instead of the unsigned min
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the minimum possible value of expr (backend object)
         """
         raise BackendError("backend doesn't support min()")
 
-    def max(self, expr, extra_constraints=(), solver=None, model_callback=None):
+    def max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         """
         Return the maximum value of expr.
 
@@ -587,15 +589,16 @@ class Backend:
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
+        :param signed:  Whether to solve for the maximum signed integer instead of the unsigned max
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the maximum possible value of expr (backend object)
         """
         if self._solver_required and solver is None:
             raise BackendError("%s requires a solver for evaluation" % self.__class__.__name__)
 
-        return self._max(self.convert(expr), extra_constraints=self.convert_list(extra_constraints), solver=solver, model_callback=model_callback)
+        return self._max(self.convert(expr), extra_constraints=self.convert_list(extra_constraints), signed=signed, solver=solver, model_callback=model_callback)
 
-    def _max(self, expr, extra_constraints=(), solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
+    def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None): #pylint:disable=unused-argument,no-self-use
         """
         Return the maximum value of expr.
 
@@ -603,6 +606,7 @@ class Backend:
         :param solver: a solver object, native to the backend, to assist in
                        the evaluation (for example, a z3.Solver)
         :param extra_constraints: extra constraints (as ASTs) to add to the solver for this solve
+        :param signed:  Whether to solve for the maximum signed integer instead of the unsigned max
         :param model_callback:      a function that will be executed with recovered models (if any)
         :return: the maximum possible value of expr (backend object)
         """

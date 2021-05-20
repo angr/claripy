@@ -177,17 +177,17 @@ class ReplacementFrontend(ConstrainedFrontend):
                 self._add_solve_result(original, er[i], r[0][i])
         return r
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact)
+        r = self._actual_frontend.max(er, extra_constraints=ecr, signed=signed, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact)
+        r = self._actual_frontend.min(er, extra_constraints=ecr, signed=signed, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 

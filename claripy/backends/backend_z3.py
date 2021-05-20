@@ -830,11 +830,16 @@ class BackendZ3(Backend):
         return result_values
 
     @condom
-    def _min(self, expr, extra_constraints=(), solver=None, model_callback=None):
+    def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         global solve_count
 
-        lo = 0
-        hi = 2**expr.size()-1
+        if signed:
+            lo = -2**(expr.size()-1)
+            hi = 2**(expr.size()-1)-1
+        else:
+            lo = 0
+            hi = 2**expr.size()-1
+
         vals = set()
 
         if len(extra_constraints) > 0:
@@ -842,6 +847,8 @@ class BackendZ3(Backend):
             solver.add(*[self.convert(e) for e in extra_constraints])
 
         numpop = 0
+        GE = operator.ge if signed else z3.UGE
+        LE = operator.le if signed else z3.ULE
 
         # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
@@ -852,7 +859,7 @@ class BackendZ3(Backend):
             # TODO: is this assumption correct?
             # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
             # integer and not a BV
-            solver.add(z3.UGE(expr, lo), z3.ULE(expr, middle))
+            solver.add(GE(expr, lo), LE(expr, middle))
             numpop += 1
 
             solve_count += 1
@@ -895,11 +902,15 @@ class BackendZ3(Backend):
         return min(vals)
 
     @condom
-    def _max(self, expr, extra_constraints=(), solver=None, model_callback=None):
+    def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         global solve_count
 
-        lo = 0
-        hi = 2**expr.size()-1
+        if signed:
+            lo = -2**(expr.size()-1)
+            hi = 2**(expr.size()-1)-1
+        else:
+            lo = 0
+            hi = 2**expr.size()-1
         vals = set()
 
         if len(extra_constraints) > 0:
@@ -907,6 +918,8 @@ class BackendZ3(Backend):
             solver.add(*[self.convert(e) for e in extra_constraints])
 
         numpop = 0
+        GT = operator.gt if signed else z3.UGT
+        LE = operator.le if signed else z3.ULE
 
         # TODO: Can only deal with bitvectors, not floats
         while hi-lo > 1:
@@ -917,7 +930,7 @@ class BackendZ3(Backend):
             # TODO: is this assumption correct?
             # here it's not safe to call directly the z3 low level API since it might happen that the argument is an
             # integer and not a BV
-            solver.add(z3.UGT(expr, middle), z3.ULE(expr, hi))
+            solver.add(GT(expr, middle), LE(expr, hi))
             numpop += 1
 
             solve_count += 1

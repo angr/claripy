@@ -134,10 +134,10 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def eval(self, e, n, extra_constraints=(), exact=None):
         raise NotImplementedError("eval() is not implemented")
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), exact=None, signed=False):
         raise NotImplementedError("min() is not implemented")
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), exact=None, signed=False):
         raise NotImplementedError("max() is not implemented")
 
     def solution(self, e, v, extra_constraints=(), exact=None):

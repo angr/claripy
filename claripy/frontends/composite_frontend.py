@@ -318,19 +318,19 @@ class CompositeFrontend(ConstrainedFrontend):
         self._reabsorb_solver(ms)
         return r
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
-        r = ms.max(e, extra_constraints=extra_constraints, exact=exact)
+        r = ms.max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
-        r = ms.min(e, extra_constraints=extra_constraints, exact=exact)
+        r = ms.min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         self._reabsorb_solver(ms)
         return r
 

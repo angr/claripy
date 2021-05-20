@@ -173,12 +173,12 @@ class BackendConcrete(Backend):
 
         return [ tuple(self._to_primitive(ex) for ex in exprs) ]
 
-    def _max(self, expr, extra_constraints=(), solver=None, model_callback=None):
+    def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self._to_primitive(expr)
 
-    def _min(self, expr, extra_constraints=(), solver=None, model_callback=None):
+    def _min(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
         if not all(extra_constraints):
             raise UnsatError('concrete False constraint in extra_constraints')
         return self._to_primitive(expr)
