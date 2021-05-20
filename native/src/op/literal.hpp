@@ -108,8 +108,10 @@ namespace Op {
             }
             else if (std::holds_alternative<PyObj::VSPtr>(value)) { // VS
 #ifdef DEBUG
-				const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
-				Utils::affirm<Utils::Error::Unexpected::Size>(bl % C_CHAR_BIT == 0, WHOAMI_WITH_SOURCE "VS of bit length ", bl, " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
+                const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
+                Utils::affirm<Utils::Error::Unexpected::Size>(
+                    bl % C_CHAR_BIT == 0, WHOAMI_WITH_SOURCE "VS of bit length ", bl,
+                    " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
 #endif
                 return std::get<PyObj::VSPtr>(value)->bit_length / C_CHAR_BIT;
             }

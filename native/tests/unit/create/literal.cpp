@@ -11,7 +11,7 @@
 template <typename T, typename Data> void literal_t(Data data, const Constants::UInt size = 0) {
 
     // Test
-    const auto lit { Create::literal(Data{data}) };
+    const auto lit { Create::literal(Data { data }) };
 
     // Pointer checks
     UNITTEST_ASSERT(lit.use_count() == 1);
@@ -51,7 +51,7 @@ void literal() {
     literal_t<Expression::BV>(data_v, C_CHAR_BIT * data_v.size());
     literal_t<Expression::FP>(3.4, 64_ui);  // NOLINT
     literal_t<Expression::FP>(3.4f, 32_ui); // NOLINT
-	const auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
+    const auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
     literal_t<Expression::VS>(std::move(ptr), ptr->bit_length);
 }
 
