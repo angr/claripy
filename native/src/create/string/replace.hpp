@@ -13,8 +13,8 @@ namespace Create::String {
     /** Create an Expression with a String::Replace op
      *  Despite being ternary, this is not a trivial op because of the unique length calculation
      */
-    inline EBasePtr replace(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
-                            const EBasePtr &third) {
+    inline EBasePtr replace(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
+                            SPAV &&sp = nullptr) {
 
         // For brevity
         namespace Ex = Expression;
@@ -39,9 +39,10 @@ namespace Create::String {
         }
 
         // Construct expression
-        return simplify(Ex::factory<Ex::String>(
-            std::forward<EAnVec>(av), first->symbolic || second->symbolic || third->symbolic,
-            Op::factory<Op::String::Replace>(first, second, third), new_bit_length));
+        return simplify(
+            Ex::factory<Ex::String>(first->symbolic || second->symbolic || third->symbolic,
+                                    Op::factory<Op::String::Replace>(first, second, third),
+                                    new_bit_length, std::move(sp)));
     }
 
 } // namespace Create::String

@@ -11,7 +11,7 @@
 namespace Create::Private {
 
     /** Create a Expression with a Literal op */
-    template <typename T, typename Data> EBasePtr literal(EAnVec &&av, Data &&data) {
+    template <typename T, typename Data> EBasePtr literal(Data &&data, SPAV &&sp) {
         namespace Ex = Expression;
 
         // Type checks
@@ -26,10 +26,10 @@ namespace Create::Private {
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
             using To = Constants::CTSC<Op::Literal>;
             const auto bl { Utils::checked_static_cast<To>(op.get())->bit_length() };
-            return Ex::factory<T>(std::forward<EAnVec>(av), false, std::move(op), bl);
+            return Ex::factory<T>(false, std::move(op), bl, std::move(sp));
         }
         else {
-            return Ex::factory<T>(std::forward<EAnVec>(av), false, std::move(op));
+            return Ex::factory<T>(false, std::move(op), std::move(sp));
         }
     }
 

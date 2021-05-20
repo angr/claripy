@@ -14,13 +14,12 @@ namespace Create::Private {
 
     /** Create a Expression with a flat op */
     template <typename T, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr flat(EAnVec &&av, typename OpT::OpContainer &&operands) {
+    inline EBasePtr flat(typename OpT::OpContainer &&operands, SPAV &&sp) {
 
         // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
-        using OpC = typename OpT::OpContainer;
 
         // Type check
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
@@ -40,15 +39,14 @@ namespace Create::Private {
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
             static_assert(Mode == Utils::TD::id<SizeMode::First>,
                           "Create::Private::flat does not support the given SizeMode");
-            return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym,
-                                           Op::factory<OpT>(std::forward<OpC>(operands)),
-                                           Expression::get_bit_length(operands[0])));
+            return simplify(Ex::factory<T>(sym, Op::factory<OpT>(std::move(operands)),
+                                           Ex::get_bit_length(operands[0]), std::move(sp)));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,
                           "SizeMode should be NA for non-sized type");
-            return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym,
-                                           Op::factory<OpT>(std::forward<OpC>(operands))));
+            return simplify(
+                Ex::factory<T>(sym, Op::factory<OpT>(std::move(operands)), std::move(sp)));
         }
     }
 

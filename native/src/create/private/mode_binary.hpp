@@ -15,8 +15,8 @@ namespace Create::Private {
 
     /** Create a Expression with an mode binary op */
     template <typename OpT, SizeMode Mode>
-    inline EBasePtr mode_binary(EAnVec &&av, const Expression::BasePtr &left,
-                                const Expression::BasePtr &right, const Mode::FP mode) {
+    inline EBasePtr mode_binary(const Expression::BasePtr &left, const Expression::BasePtr &right,
+                                const Mode::FP mode, SPAV &&sp) {
 
         // For brevity
         namespace Ex = Expression;
@@ -32,9 +32,9 @@ namespace Create::Private {
         // Create expression
         static_assert(Mode == SizeMode::First,
                       "Create::Private::mode_binary does not support the given SizeMode");
-        return simplify(Ex::factory<Expression::FP>(
-            std::forward<EAnVec>(av), left->symbolic || right->symbolic,
-            Op::factory<OpT>(left, right, mode), Expression::get_bit_length(left)));
+        return simplify(Ex::factory<Ex::FP>(left->symbolic || right->symbolic,
+                                            Op::factory<OpT>(left, right, mode),
+                                            Ex::get_bit_length(left), std::move(sp)));
     }
 
 } // namespace Create::Private

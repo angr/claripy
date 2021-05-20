@@ -15,7 +15,7 @@ namespace Create {
     /** Create an Expression with an Extract op */
     template <typename T>
     EBasePtr extract(const Constants::UInt high, const Constants::UInt low,
-                     const Expression::BasePtr &from, SPAV &&s) {
+                     const Expression::BasePtr &from, SPAV &&sp = nullptr) {
 
         // For brevity
         namespace Ex = Expression;

@@ -12,7 +12,7 @@ namespace Create::Private {
 
     /** Create a Expression with a unary op */
     template <typename Out, typename In, typename OpT, typename... Allowed>
-    inline EBasePtr unary(EAnVec &&av, const EBasePtr &x) {
+    inline EBasePtr unary(const EBasePtr &x, SPAV &&sp) {
         static_assert(Utils::is_ancestor<Expression::Base, Out>,
                       "Create::Private::unary requires Out be an Expression");
         static_assert(Utils::is_ancestor<Expression::Base, In>,
@@ -38,12 +38,11 @@ namespace Create::Private {
 
         // Construct expression
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
-            return simplify(Ex::factory<Out>(std::forward<EAnVec>(av), x->symbolic,
-                                             Op::factory<OpT>(x), Expression::get_bit_length(x)));
+            return simplify(Ex::factory<Out>(x->symbolic, Op::factory<OpT>(x),
+                                             Ex::get_bit_length(x), std::move(sp)));
         }
         else {
-            return simplify(
-                Ex::factory<Out>(std::forward<EAnVec>(av), x->symbolic, Op::factory<OpT>(x)));
+            return simplify(Ex::factory<Out>(x->symbolic, Op::factory<OpT>(x), std::move(sp)));
         }
     }
 

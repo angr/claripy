@@ -19,24 +19,21 @@ namespace Create::FP {
     /********************************************************************/
 
     /** Create a Expression with an FP::IsInf op */
-    inline EBasePtr is_inf(EAnVec &&av, const Expression::BasePtr &x) {
+    inline EBasePtr is_inf(const Expression::BasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Ex::FP>(std::forward<EAnVec>(av),
-                                                                       x);
+        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Ex::FP>(x, std::move(sp));
     }
 
     /** Create a Expression with an FP::IsNan op */
-    inline EBasePtr is_nan(EAnVec &&av, const Expression::BasePtr &x) {
+    inline EBasePtr is_nan(const Expression::BasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Ex::FP>(std::forward<EAnVec>(av),
-                                                                       x);
+        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Ex::FP>(x, std::move(sp));
     }
 
     /** Create a Expression with an FP::ToIEEEBV op */
-    inline EBasePtr to_ieee_bv(EAnVec &&av, const Expression::BasePtr &x) {
+    inline EBasePtr to_ieee_bv(const Expression::BasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(std::forward<EAnVec>(av),
-                                                                        x);
+        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
     }
 
     /********************************************************************/
@@ -45,10 +42,10 @@ namespace Create::FP {
 
 /** A local macro used for fp mode binary math ops with size mode first */
 #define FP_MB_SMF_ARITH(FN, OP)                                                                   \
-    inline EBasePtr FN(EAnVec &&av, const Expression::BasePtr &left,                              \
-                       const Expression::BasePtr &right, const Mode::FP mode) {                   \
-        return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(                        \
-            std::forward<EAnVec>(av), left, right, mode);                                         \
+    inline EBasePtr FN(const Expression::BasePtr &left, const Expression::BasePtr &right,         \
+                       const Mode::FP mode, SPAV &&sp = nullptr) {                                \
+        return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,      \
+                                                                          std::move(sp));         \
     }
 
     /** Create a Expression with an FP::Add op */
@@ -68,11 +65,11 @@ namespace Create::FP {
     /********************************************************************/
 
     /** Create an Expression with an FP::FP op */
-    inline EBasePtr fp(EAnVec &&av, const EBasePtr &first, const EBasePtr &second,
-                       const EBasePtr &third) {
+    inline EBasePtr fp(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
+                       SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
-            std::forward<EAnVec>(av), first, second, third);
+            first, second, third, std::move(sp));
     }
 
 } // namespace Create::FP

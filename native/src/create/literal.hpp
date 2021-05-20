@@ -11,33 +11,33 @@
 namespace Create {
 
     /** Create a Bool Expression with a Literal op */
-    inline EBasePtr literal(EAnVec &&av, const bool data) {
-        return Private::literal<Expression::Bool, bool>(std::move(av), bool { data });
+    inline EBasePtr literal(const bool data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::Bool, bool>(bool { data }, std::move(sp));
     }
 
     /** Create a String Expression with a Literal op */
-    inline EBasePtr literal(EAnVec &&av, std::string &&data) {
-        return Private::literal<Expression::String, std::string>(std::move(av), std::move(data));
+    inline EBasePtr literal(std::string &&data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::String, std::string>(std::move(data), std::move(sp));
     }
 
     /** Create a BV Expression with a Literal op */
-    inline EBasePtr literal(EAnVec &&av, std::vector<char> &&data) {
-        return Private::literal<Expression::BV, std::vector<char>>(std::move(av), std::move(data));
+    inline EBasePtr literal(std::vector<char> &&data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::BV, std::vector<char>>(std::move(data), std::move(sp));
     }
 
     /** Create a FP Expression with a Literal op containing a double precision float */
-    inline EBasePtr literal(EAnVec &&av, const double data) {
-        return Private::literal<Expression::FP, double>(std::move(av), double { data });
+    inline EBasePtr literal(const double data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::FP, double>(double { data }, std::move(sp));
     }
 
     /** Create a FP Expression with a Literal op containing a single precision float */
-    inline EBasePtr literal(EAnVec &&av, const float data) {
-        return Private::literal<Expression::FP, float>(std::move(av), float { data });
+    inline EBasePtr literal(const float data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::FP, float>(float { data }, std::move(sp));
     }
 
     /** Create a FP Expression with a Literal op containing a single precision float */
-    inline EBasePtr literal(EAnVec &&av, PyObj::VSPtr &&data) {
-        return Private::literal<Expression::VS, PyObj::VSPtr>(std::move(av), std::move(data));
+    inline EBasePtr literal(PyObj::VSPtr &&data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::VS, PyObj::VSPtr>(std::move(data), std::move(sp));
     }
 
 } // namespace Create

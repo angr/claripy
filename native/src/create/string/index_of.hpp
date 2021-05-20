@@ -11,14 +11,14 @@
 namespace Create::String {
 
     /** Create an Expression with a String::IndexOf op */
-    inline EBasePtr index_of(EAnVec &&av, const Expression::BasePtr &str,
-                             const Expression::BasePtr &pattern,
+    inline EBasePtr index_of(const Expression::BasePtr &str, const Expression::BasePtr &pattern,
                              const Expression::BasePtr &start_index,
-                             const Constants::UInt bit_length) {
+                             const Constants::UInt bit_length, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Simplification::simplify(Ex::factory<Ex::BV>(
-            std::forward<EAnVec>(av), str->symbolic || pattern->symbolic,
-            Op::factory<Op::String::IndexOf>(str, pattern, start_index), bit_length));
+        return Simplification::simplify(
+            Ex::factory<Ex::BV>(str->symbolic || pattern->symbolic,
+                                Op::factory<Op::String::IndexOf>(str, pattern, start_index),
+                                bit_length, std::move(sp)));
     }
 
 } // namespace Create::String

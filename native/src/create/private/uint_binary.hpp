@@ -15,28 +15,30 @@ namespace Create::Private {
     /** Create a Expression with a uint binary op */
     template <typename IntT, typename Out, typename In, typename OpT, SizeMode Mode,
               typename... Allowed>
-    inline EBasePtr uint_binary(EAnVec &&av, const EBasePtr &expr, const IntT integer) {
-        static_assert(Utils::qualified_is_in<IntT, Constants::UInt, Constants::Int>,
-                      "Create::Private::uint_binary requires IntT be either Constants::UInt or "
-                      "Constants::Int");
-        static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                      "Create::Private::uint_binary requires Out be an Expression");
-        static_assert(Utils::is_ancestor<Expression::Base, In>,
-                      "Create::Private::uint_binary requires In be an Expression");
-        static_assert(Op::is_uint_binary<OpT>,
-                      "Create::Private::uint_binary requires a int binary OpT");
-        if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-            const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
-            static_assert(
-                Utils::TD::boolean<sized_in, In>,
-                "Create::Private::uint_binary does not suppot sized output types without "
-                "sized input types");
-        }
+    inline EBasePtr uint_binary(const EBasePtr &expr, const IntT integer, SPAV &&sp) {
 
         // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
+
+        // Static checks
+        static_assert(Utils::qualified_is_in<IntT, Constants::UInt, Constants::Int>,
+                      "Create::Private::uint_binary requires IntT be either Constants::UInt or "
+                      "Constants::Int");
+        static_assert(Utils::is_ancestor<Ex::Base, Out>,
+                      "Create::Private::uint_binary requires Out be an Expression");
+        static_assert(Utils::is_ancestor<Ex::Base, In>,
+                      "Create::Private::uint_binary requires In be an Expression");
+        static_assert(Op::is_uint_binary<OpT>,
+                      "Create::Private::uint_binary requires a int binary OpT");
+        if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
+            const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
+            static_assert(
+                Utils::TD::boolean<sized_in, In>,
+                "Create::Private::uint_binary does not suppot sized output types without "
+                "sized input types");
+        }
 
         // Type check
         static_assert(Utils::qualified_is_in<In, Allowed...>,
@@ -51,21 +53,21 @@ namespace Create::Private {
             // Construct size
             Constants::UInt new_bit_length { integer };
             if constexpr (Mode == SizeMode::Add) {
-                new_bit_length += Expression::get_bit_length(expr);
+                new_bit_length += Ex::get_bit_length(expr);
             }
             else if constexpr (Mode != SizeMode::Second) {
                 static_assert(Utils::TD::false_<Out>,
                               "Create::Private::uint_binary does not support the given SizeMode");
             }
             // Actually construct expression
-            return simplify(Ex::factory<Out>(std::forward<EAnVec>(av), expr->symbolic,
-                                             Op::factory<OpT>(expr, integer), new_bit_length));
+            return simplify(Ex::factory<Out>(expr->symbolic, Op::factory<OpT>(expr, integer),
+                                             new_bit_length, std::move(sp)));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,
                           "SizeMode should be NA for non-sized type");
-            return simplify(Ex::factory<Out>(std::forward<EAnVec>(av), expr->symbolic,
-                                             Op::factory<OpT>(expr, integer)));
+            return simplify(
+                Ex::factory<Out>(expr->symbolic, Op::factory<OpT>(expr, integer), std::move(sp)));
         }
     }
 
@@ -73,9 +75,9 @@ namespace Create::Private {
      *  A specialization where In = Out
      */
     template <typename IntT, typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr uint_binary(EAnVec &&av, const EBasePtr &expr, const IntT integer) {
-        return uint_binary<IntT, InOut, InOut, OpT, Mode, Allowed...>(std::forward<EAnVec>(av),
-                                                                      expr, integer);
+    inline EBasePtr uint_binary(const EBasePtr &expr, const IntT integer, SPAV &&sp) {
+        return uint_binary<IntT, InOut, InOut, OpT, Mode, Allowed...>(expr, integer,
+                                                                      std::move(sp));
     }
 
 } // namespace Create::Private

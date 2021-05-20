@@ -12,12 +12,11 @@ namespace Create {
 
     /** Create an Expression with an ToBV op */
     template <bool Signed>
-    EBasePtr to_bv(EAnVec &&av, const Mode::FP mode, const Expression::BasePtr &fp,
-                   const Constants::UInt bit_length) {
+    EBasePtr to_bv(const Mode::FP mode, const Expression::BasePtr &fp,
+                   const Constants::UInt bit_length, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Simplification::simplify(
-            Ex::factory<Ex::BV>(std::forward<EAnVec>(av), fp->symbolic,
-                                Op::factory<Op::FP::ToBV<Signed>>(mode, fp), bit_length));
+        return Simplification::simplify(Ex::factory<Ex::BV>(
+            fp->symbolic, Op::factory<Op::FP::ToBV<Signed>>(mode, fp), bit_length, std::move(sp)));
     }
 
 } // namespace Create

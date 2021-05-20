@@ -38,15 +38,15 @@ namespace Create::String {
     } // namespace Private
 
     /** Create an Expression with a String::SubString op */
-    inline EBasePtr sub_string(EAnVec &&av, const Expression::BasePtr &start_index,
+    inline EBasePtr sub_string(const Expression::BasePtr &start_index,
                                const Expression::BasePtr &count,
-                               const Expression::BasePtr &full_string) {
+                               const Expression::BasePtr &full_string, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         const Constants::UInt bit_length { Private::sub_string_length(count, full_string) };
         return Simplification::simplify(Ex::factory<Ex::String>(
-            std::forward<EAnVec>(av),
             start_index->symbolic || count->symbolic || full_string->symbolic,
-            Op::factory<Op::String::SubString>(start_index, count, full_string), bit_length));
+            Op::factory<Op::String::SubString>(start_index, count, full_string), bit_length,
+            std::move(sp)));
     }
 
 } // namespace Create::String

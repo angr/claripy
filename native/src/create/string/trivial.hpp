@@ -17,11 +17,10 @@ namespace Create::String {
     /********************************************************************/
 
     /** Create a bool Expression with an String::IsDigit op */
-    inline EBasePtr is_digit(EAnVec &&av, const EBasePtr &x) {
+    inline EBasePtr is_digit(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
-        return CP::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(
-            std::forward<EAnVec>(av), x);
+        return CP::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(x, std::move(sp));
     }
 
     /********************************************************************/
@@ -31,23 +30,22 @@ namespace Create::String {
     /** Create an Expression with an String::SignExt op
      *  Note: Currently Ints are taken in as BVs
      */
-    inline EBasePtr to_int(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
+    inline EBasePtr to_int(const EBasePtr &expr, const Constants::UInt integer,
+                           SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
-                               CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
-                                                                 integer);
+                               CP::SizeMode::Second, Ex::String>(expr, integer, std::move(sp));
     }
 
     /** Create an Expression with an String::Len op
      *  Note: Currently Ints are output as BVs
      */
-    inline EBasePtr len(EAnVec &&av, const EBasePtr &expr, const Constants::UInt integer) {
+    inline EBasePtr len(const EBasePtr &expr, const Constants::UInt integer, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
-                               CP::SizeMode::Second, Ex::String>(std::forward<EAnVec>(av), expr,
-                                                                 integer);
+                               CP::SizeMode::Second, Ex::String>(expr, integer, std::move(sp));
     }
 
     /********************************************************************/
@@ -55,27 +53,27 @@ namespace Create::String {
     /********************************************************************/
 
     /** Create an Expression with a String::Contains op */
-    inline EBasePtr contains(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr contains(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::Contains, CP::SizeMode::NA,
-                          Ex::String>(std::forward<EAnVec>(av), left, right);
+                          Ex::String>(left, right, std::move(sp));
     }
 
     /** Create an Expression with a String::PrefixOf op */
-    inline EBasePtr prefix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr prefix_of(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, CP::SizeMode::NA,
-                          Ex::String>(std::forward<EAnVec>(av), left, right);
+                          Ex::String>(left, right, std::move(sp));
     }
 
     /** Create an Expression with a String::SuffixOf op */
-    inline EBasePtr suffix_of(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr suffix_of(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, CP::SizeMode::NA,
-                          Ex::String>(std::forward<EAnVec>(av), left, right);
+                          Ex::String>(left, right, std::move(sp));
     }
 
 } // namespace Create::String

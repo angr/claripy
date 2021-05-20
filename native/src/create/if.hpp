@@ -12,7 +12,8 @@ namespace Create {
 
     /** Create an Expression with an If op */
     template <typename T>
-    EBasePtr if_(EAnVec &&av, const EBasePtr &cond, const EBasePtr &left, const EBasePtr &right) {
+    EBasePtr if_(const EBasePtr &cond, const EBasePtr &left, const EBasePtr &right,
+                 SPAV &&sp = nullptr) {
 
         // For brevity
         namespace Ex = Expression;
@@ -20,19 +21,19 @@ namespace Create {
         using namespace Simplification;
 
         // Type checks
-        static_assert(Utils::is_ancestor<Expression::Base, T>, "T must subclass Expression::Base");
+        static_assert(Utils::is_ancestor<Ex::Base, T>, "T must subclass Expression::Base");
         Utils::affirm<Err::Type>(CUID::is_t<T>(left),
                                  WHOAMI_WITH_SOURCE "left operand must be a T");
 
         // Construct expression
         const bool sym { cond->symbolic || left->symbolic || right->symbolic };
         auto op { Op::factory<Op::If>(cond, left, right) };
-        if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
-            return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op),
-                                           Expression::get_bit_length(left)));
+        if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
+            return simplify(
+                Ex::factory<T>(sym, std::move(op), Ex::get_bit_length(left), std::move(sp)));
         }
         else {
-            return simplify(Ex::factory<T>(std::forward<EAnVec>(av), sym, std::move(op)));
+            return simplify(Ex::factory<T>(sym, std::move(op), std::move(sp)));
         }
     }
 

@@ -14,7 +14,7 @@ namespace Create::Private {
 
     /** Create a Expression with a binary op */
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr binary(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
+    inline EBasePtr binary(const EBasePtr &left, const EBasePtr &right, SPAV &&sp) {
         static_assert(Utils::is_ancestor<Expression::Base, Out>,
                       "Create::Private::binary requires Out be an Expression");
         static_assert(Utils::is_ancestor<Expression::Base, In>,
@@ -43,28 +43,27 @@ namespace Create::Private {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
-            Constants::UInt new_bit_length { Expression::get_bit_length(left) };
+            Constants::UInt new_bit_length { Ex::get_bit_length(left) };
             if constexpr (Mode == SizeMode::Add) {
                 // Type check before size extraction
                 Utils::affirm<Err::Type>(CUID::is_t<In>(right),
                                          WHOAMI_WITH_SOURCE "right operand of incorrect type");
-                new_bit_length += Expression::get_bit_length(right);
+                new_bit_length += Ex::get_bit_length(right);
             }
             else if constexpr (Mode != SizeMode::First) {
                 static_assert(Utils::TD::false_<Out>,
                               "Create::Private::binary does not support the given SizeMode");
             }
             // Actually construct expression
-            return simplify(Ex::factory<Out>(std::forward<EAnVec>(av),
-                                             left->symbolic || right->symbolic,
-                                             Op::factory<OpT>(left, right), new_bit_length));
+            return simplify(Ex::factory<Out>(left->symbolic || right->symbolic,
+                                             Op::factory<OpT>(left, right), new_bit_length,
+                                             std::move(sp)));
         }
         else {
             static_assert(Mode == Utils::TD::id<SizeMode::NA>,
                           "SizeMode should be NA for non-sized type");
-            return simplify(Ex::factory<Out>(std::forward<EAnVec>(av),
-                                             left->symbolic || right->symbolic,
-                                             Op::factory<OpT>(left, right)));
+            return simplify(Ex::factory<Out>(left->symbolic || right->symbolic,
+                                             Op::factory<OpT>(left, right), std::move(sp)));
         }
     }
 
@@ -72,8 +71,8 @@ namespace Create::Private {
      *  A specialization where In = Out
      */
     template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr binary(EAnVec &&av, const EBasePtr &left, const EBasePtr &right) {
-        return binary<InOut, InOut, OpT, Mode, Allowed...>(std::forward<EAnVec>(av), left, right);
+    inline EBasePtr binary(const EBasePtr &left, const EBasePtr &right, SPAV &&sp) {
+        return binary<InOut, InOut, OpT, Mode, Allowed...>(left, right, std::move(sp));
     }
 
 } // namespace Create::Private

@@ -13,7 +13,7 @@ namespace Create {
     /** Create a Expression with an symbol op
      *  This override is for non-sized symbols
      */
-    template <typename T> EBasePtr symbol(EAnVec &&av, std::string &&name) {
+    template <typename T> EBasePtr symbol(std::string &&name, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
 
         // Type checks
@@ -25,15 +25,14 @@ namespace Create {
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
 
         // Construct expression
-        return Ex::factory<T>(std::forward<EAnVec>(av), true,
-                              Op::factory<Op::Symbol>(std::forward<std::string>(name)));
+        return Ex::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), std::move(sp));
     }
 
     /** Create a Expression with an symbol op
      *  This override is for sized symbols
      */
     template <typename T>
-    EBasePtr symbol(EAnVec &&av, std::string &&name, const Constants::UInt bit_length) {
+    EBasePtr symbol(std::string &&name, const Constants::UInt bit_length, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
 
         // Type checks
@@ -42,9 +41,8 @@ namespace Create {
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
 
         // Construct expression
-        return Ex::factory<T>(std::forward<EAnVec>(av), true,
-                              Op::factory<Op::Symbol>(std::forward<std::string>(name)),
-                              bit_length);
+        return Ex::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), bit_length,
+                              std::move(sp));
     }
 
 } // namespace Create
