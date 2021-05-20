@@ -14,10 +14,10 @@
 namespace PyObj {
 
     /** A class containing a ref to some python object and a hash */
-    struct Base : Hash::Hashed {
+    struct Base : public Hash::Hashed {
 
         /** Constructor */
-        explicit inline Base(const Hash::Hash &h, Constants::UInt r) noexcept
+        explicit inline Base(const Hash::Hash &h, const Constants::UInt r) noexcept
             : Hashed { h }, ref { r } {}
 
         /** Pure virtual destructor */
@@ -35,6 +35,7 @@ namespace PyObj {
 
     /** Define base pointer alias */
     using BasePtr = std::shared_ptr<const Base>;
+
 } // namespace PyObj
 
 #endif
