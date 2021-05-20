@@ -8,5 +8,6 @@
 #include "annotation/base.hpp"
 #include "annotation/factory.hpp"
 #include "annotation/simplification_avoidance.hpp"
+#include "annotation/vec.hpp"
 
 #endif
