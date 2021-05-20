@@ -23,7 +23,7 @@ namespace Utils {
      *  Will throw in noexcept context if s goes outside of '/' or './' (depending on the prefix)
      *  For example /../foo is not ok; likewise ./../foo is not ok. But /bar/../foo is fine
      */
-    template <Constants::UInt Len> constexpr uint64_t norm_path_hash(Constants::CCS s) noexcept {
+    template <Constants::UInt Len> constexpr uint64_t norm_path_hash(const char *s) noexcept {
 
         // Trivial case
         auto len { Len };
@@ -47,7 +47,7 @@ namespace Utils {
         }
 
         // Store path segments
-        std::array<Constants::CCS, Len> segments {};
+        std::array<const char *, Len> segments {};
         std::array<Constants::UInt, Len> segment_lengths {};
         Constants::UInt n_seg { 0 };
 

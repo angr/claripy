@@ -30,7 +30,7 @@ namespace Backend {
         virtual Expression::BasePtr simplify(const Expression::RawPtr expr) = 0;
 
         /** Backend name */
-        [[nodiscard]] virtual Constants::CCS name() const noexcept = 0;
+        [[nodiscard]] virtual const char *name() const noexcept = 0;
 
         /** Check whether the backend can handle the given expression */
         virtual bool handles(const Expression::RawPtr expr) = 0;

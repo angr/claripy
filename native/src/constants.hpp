@@ -45,19 +45,7 @@ namespace Constants {
     using UInt = uint_fast64_t;
 
     /** A shortcut for a const Type * const */
-    template <typename T> using TSC = T *const;
-
-    /** A shortcut for a const Type * const */
-    template <typename T> using CTS = const T *;
-
-    /** A shortcut for a const Type * const */
-    template <typename T> using CTSC = CTS<T> const;
-
-    /** An abreviation for const char * */
-    using CSC = TSC<char>;
-
-    /** An abreviation for const char * */
-    using CCS = CTS<char>;
+    template <typename T> using CTSC = const T *const;
 
     /** An abreviation for const char * const */
     using CCSC = CTSC<char>;
@@ -99,7 +87,7 @@ constexpr inline Constants::UInt operator"" _ui(const unsigned long long u) noex
 /** A way to get a char * from a char[]
  *  char[]'s may not be forwardable, _c alleviates this
  */
-constexpr inline Constants::CCS operator"" _c(Constants::CCS s, unsigned long) noexcept {
+constexpr inline const char *operator"" _c(const char *s, unsigned long) noexcept {
     return s;
 }
 

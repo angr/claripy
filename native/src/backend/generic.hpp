@@ -21,7 +21,7 @@ namespace Backend {
      */
     template <typename BackendObj, bool ApplyAnnotations> class Generic : public Base {
         /** A raw pointer to a backend object */
-        using BORCPtr = Constants::CTS<BackendObj>;
+        using BORCPtr = const BackendObj *;
 
       public:
         // Pure Virtual Functions

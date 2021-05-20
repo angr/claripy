@@ -37,7 +37,7 @@ namespace Expression {
      *  Warning: This static casts, the user must ensure that p is a Bits
      */
     constexpr Constants::UInt get_bit_length(const Expression::RawPtr &p) {
-        using To = Constants::CTS<Expression::Bits>;
+        using To = const Expression::Bits *;
         return Utils::checked_static_cast<To>(p)->bit_length;
     }
 

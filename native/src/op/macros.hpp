@@ -39,7 +39,7 @@
     ~CLASS() noexcept override final = default;                                                   \
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base, (X));                                       \
     /** The name of the op */                                                                     \
-    inline Constants::CCS op_name() const noexcept override final { return __VA_ARGS__ #CLASS; }; \
+    inline const char *op_name() const noexcept override final { return __VA_ARGS__ #CLASS; };    \
                                                                                                   \
   private:                                                                                        \
     ENABLE_UNITTEST_FRIEND_ACCESS;

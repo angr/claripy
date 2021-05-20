@@ -41,7 +41,7 @@ namespace Backend::Z3 {
         }
 
         /** The name of this backend */
-        [[nodiscard]] Constants::CCS name() const noexcept override final { return "z3"; }
+        [[nodiscard]] const char *name() const noexcept override final { return "z3"; }
 
         /** Return true if expr is always true */
         bool is_true(const Expression::RawPtr &expr) {
@@ -83,7 +83,7 @@ namespace Backend::Z3 {
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
         z3::expr dispatch_conversion(const Expression::RawPtr expr,
-                                     std::vector<Constants::CTS<z3::expr>> &args) override final {
+                                     std::vector<const z3::expr *> &args) override final {
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
