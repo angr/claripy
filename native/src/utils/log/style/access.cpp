@@ -23,7 +23,7 @@ static ThreadSafe::Access<const Sty> access {
 
 
 void Style::Private::set(std::shared_ptr<const Base> &&ptr) {
-    access.set_shared_ptr_move(std::forward<std::shared_ptr<const Base>>(ptr));
+    access.set_shared_ptr_move(std::move(ptr));
 }
 
 std::shared_ptr<const Style::Base> Style::get() {

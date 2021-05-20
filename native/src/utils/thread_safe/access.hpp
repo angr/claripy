@@ -106,7 +106,7 @@ namespace Utils::ThreadSafe {
         void set_shared_ptr(const Ptr &ptr) { this->set_ref(ptr); }
 
         /** A setter that takes in a shared pointer of type type */
-        void set_shared_ptr_move(Ptr &&ptr) { this->set_move(std::forward<Ptr>(ptr)); }
+        void set_shared_ptr_move(Ptr &&ptr) { this->set_move(std::move(ptr)); }
 
 
         /** A setter by default constructor */
@@ -121,8 +121,7 @@ namespace Utils::ThreadSafe {
 
         /** A setter by move constructor */
         template <typename Derived = BaseT> void set_move(Derived &&t) {
-            this->set_move(
-                std::move(make_derived_shared<BaseT, Derived>(std::forward<Derived>(t))));
+            this->set_move(std::move(make_derived_shared<BaseT, Derived>(std::move(t))));
         }
 
 
