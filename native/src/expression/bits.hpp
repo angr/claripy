@@ -17,9 +17,10 @@ namespace Expression {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       protected:
         /** Protected Constructor */
-        explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, AnVec &&ans, const bool sym,
-                             Op::BasePtr &&op_, const Constants::UInt bit_length_) noexcept
-            : Base { h, c, std::forward<AnVec>(ans), sym, std::forward<Op::BasePtr>(op_) },
+        explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
+                             Op::BasePtr &&op_, const Constants::UInt bit_length_,
+                             SPAV &&sp) noexcept
+            : Base { h, c, sym, std::forward<Op::BasePtr>(op_), std::move(sp) },
               BitLength { bit_length_ } {}
 
         /** Pure virtual destructor */

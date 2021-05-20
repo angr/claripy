@@ -14,8 +14,8 @@ namespace Create {
 
     /** Create an Expression with an Extract op */
     template <typename T>
-    EBasePtr extract(EAnVec &&av, const Constants::UInt high, const Constants::UInt low,
-                     const Expression::BasePtr &from) {
+    EBasePtr extract(const Constants::UInt high, const Constants::UInt low,
+                     const Expression::BasePtr &from, SPAV &&s) {
 
         // For brevity
         namespace Ex = Expression;
@@ -31,8 +31,8 @@ namespace Create {
                                  WHOAMI_WITH_SOURCE "high should not be lower than low");
 
         // Construct expression
-        return simplify(Ex::factory<T>(std::forward<EAnVec>(av), from->symbolic,
-                                       Op::factory<Op::Extract>(high, low, from), high + 1 - low));
+        return simplify(Ex::factory<T>(from->symbolic, Op::factory<Op::Extract>(high, low, from),
+                                       high + 1 - low, std::move(sp)));
     }
 
 } // namespace Create

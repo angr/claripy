@@ -13,16 +13,16 @@
 namespace Expression {
 
     /** Copy the expression, but use the newly provided annotation vector */
-    inline Expression::BasePtr copy(const Expression::BasePtr &in, Base::AnVec &&ans) {
+    inline Expression::BasePtr copy(const Expression::BasePtr &in, Base::SPAV &&sp) {
         auto op { in->op };
         switch (in->cuid) {
             case Bool::static_cuid:
-                return ::Expression::factory<Bool>(std::move(ans), in->symbolic, std::move(op));
+                return ::Expression::factory<Bool>(in->symbolic, std::move(op), std::move(sp));
 /** A local macro used for consistency */
 #define BITS_SUB(TYPE)                                                                            \
     case TYPE::static_cuid:                                                                       \
-        return ::Expression::factory<TYPE>(std::move(ans), in->symbolic, std::move(op),           \
-                                           Expression::get_bit_length(in));
+        return ::Expression::factory<TYPE>(in->symbolic, std::move(op),                           \
+                                           Expression::get_bit_length(in), std::move(sp));
                 BITS_SUB(String);
                 BITS_SUB(FP);
                 BITS_SUB(VS);

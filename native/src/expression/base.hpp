@@ -27,11 +27,8 @@ namespace Expression {
     class Base : public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
-        /** Annotation vector type */
-        using AnVec = std::vector<Annotation::BasePtr>;
-
-        /** A set of annotations applied onto this Expression */
-        const AnVec annotations;
+        /** Shared pointer to a const Annotation::Vec type */
+        using SPAV = std::shared_ptr<const Annotation::Vec>;
 
         /** Return true if and only if this expression is symbolic */
         const bool symbolic;
@@ -39,11 +36,17 @@ namespace Expression {
         /** The Expression Op */
         const Op::BasePtr op;
 
+        /** A set of annotations applied onto this Expression */
+        const SPAV annotations;
+
       protected:
         /** Protected Constructor */
-        explicit inline Base(const Hash::Hash h, const CUID::CUID &c, AnVec &&ans, const bool sym,
-                             Op::BasePtr &&op_) noexcept
-            : FactoryMade { h, c }, annotations { std::move(ans) }, symbolic { sym }, op { op_ } {
+        explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
+                             Op::BasePtr &&op_, SPAV &&sp) noexcept
+            : FactoryMade { h, c },
+              symbolic { sym },
+              op { std::move(op_) },
+              annotations { std::move(sp) } {
 #ifdef DEBUG
             ctor_debug_checks();
 #endif
