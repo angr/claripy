@@ -94,17 +94,20 @@ namespace Op {
          *  @todo This could be a switch-case statement; do when more stable
          */
         constexpr Constants::UInt byte_length() const {
-            if (std::holds_alternative<std::string>(value)) {
+            if (std::holds_alternative<std::string>(value)) { // String
                 return std::get<std::string>(value).size();
             }
-            else if (std::holds_alternative<std::vector<char>>(value)) {
+            else if (std::holds_alternative<std::vector<char>>(value)) { // BV
                 return std::get<std::vector<char>>(value).size();
             }
-            else if (std::holds_alternative<float>(value)) {
+            else if (std::holds_alternative<float>(value)) { // FP
                 return sizeof(float);
             }
-            else if (std::holds_alternative<double>(value)) {
+            else if (std::holds_alternative<double>(value)) { // FP
                 return sizeof(double);
+            }
+            else if (std::holds_alternative<PyObj::VSPtr>(value)) { // VS
+                return std::get<PyObj::VSPtr>(value)->bit_length;
             }
             // Invalid types: bool
             throw Utils::Error::Unexpected::IncorrectUsage(
