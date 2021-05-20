@@ -39,8 +39,8 @@ namespace Op {
             : FactoryMade { h, cuid_ } {}
     };
 
-    /** An alias for Factory::Ptr<Base> */
-    using BasePtr = Factory::Ptr<Base>;
+    /** An alias for Factory::Ptr<const Op::Base> */
+    using BasePtr = Factory::Ptr<const Base>;
 
     /** Default virtual destructor */
     Base::~Base() noexcept = default;

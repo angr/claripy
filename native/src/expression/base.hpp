@@ -13,9 +13,10 @@
 #include <vector>
 
 
+// Forward declarations
 namespace Op {
     class Base;
-    using BasePtr = Factory::Ptr<Base>;
+    using BasePtr = Factory::Ptr<const Base>;
 } // namespace Op
 
 namespace Expression {
@@ -61,11 +62,11 @@ namespace Expression {
         SET_IMPLICITS_CONST_MEMBERS(Base, delete)
     };
 
-    /** An alias for Factory::Ptr<Expression::Base> */
-    using RawPtr = Constants::CTS<Base>;
+    /** An alias for Factory::Ptr<const Expression::Base> */
+    using RawPtr = const Base *;
 
-    /** An alias for Factory::Ptr<Expression::Base> */
-    using BasePtr = Factory::Ptr<Base>;
+    /** An alias for Factory::Ptr<const Expression::Base> */
+    using BasePtr = Factory::Ptr<const Base>;
 
     /** Default virtual destructor */
     Base::~Base() noexcept = default;

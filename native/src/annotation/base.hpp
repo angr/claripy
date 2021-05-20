@@ -44,7 +44,7 @@ namespace Annotation {
     };
 
     /** An alias for Factory::Ptr<Annotation::Base> */
-    using BasePtr = Factory::Ptr<Base>;
+    using BasePtr = Factory::Ptr<const Base>;
 
 } // namespace Annotation
 
