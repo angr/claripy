@@ -48,6 +48,9 @@ namespace Hash {
      *  Not constexpr
      */
     template <> inline Hash singular(const std::shared_ptr<const Hashed> &h) noexcept {
+        if (h == nullptr) {
+            return UTILS_FILE_LINE_HASH;
+        }
         // Will warn if types are different or implicit convesion is dangerous / impossible
         return h->hash;
     }
