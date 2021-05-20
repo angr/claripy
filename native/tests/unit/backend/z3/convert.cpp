@@ -3,42 +3,17 @@
  * \ingroup unittest
  */
 #include "backend.hpp"
-#include "create.hpp"
 #include "testlib.hpp"
 
+#include "../make_ite.hpp"
 
-/** Construct the ite expression: if (4 == (x * 3)) then "Hello" else y */
-static auto make_ite() {
-    namespace Ex = Expression;
-    using AV = Ex::Base::AnVec;
-    namespace C = Create;
-
-    // Constants
-    std::string str { "Hello" };
-    const auto len { str.size() };
-    const auto flt_size { 64_ui };
-
-    // Symbols
-    const auto x { C::symbol<Ex::FP>(AV {}, "x", flt_size) };
-    const auto y { C::symbol<Ex::String>(AV {}, "y", 8 * len) };
-
-    // Literals
-    const auto fp3 { C::literal(AV {}, 3.) };
-    const auto fp4 { C::literal(AV {}, 4.) };
-    const auto hello { C::literal(AV {}, std::move(str)) };
-
-    // Composite
-    const auto prod { C::FP::mul(AV {}, x, fp3, Mode::FP::NearestTiesEven) };
-    const auto eq { C::eq<Ex::FP>(AV {}, fp4, prod) };
-    return C::if_<Ex::String>(AV {}, eq, hello, y);
-}
 
 /** Try to convert a claricpp expression to z3 */
 void convert() {
     auto z3 { Backend::Z3::Z3 {} };
 
     // Test with if (4 == (x * 3)) then "Hello" else y
-    const auto ite { make_ite() };
+    const auto ite { make_ite("Hello") };
     (void) z3.convert(ite.get()); // Verify this runs
 }
 

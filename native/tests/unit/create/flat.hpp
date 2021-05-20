@@ -28,7 +28,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     };
 
     // Test
-    const auto exp { CreateF(Create::EAnVec {}, std::move(input)) };
+    const auto exp { CreateF(std::move(input), nullptr) };
 
     // Pointer checks
     for (auto &i : input) {

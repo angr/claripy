@@ -20,7 +20,7 @@ template <typename T> void if_t() {
     const auto c { F::t_literal<Ex::Bool>(2) };
 
     // Test
-    const auto exp { Create::if_<T>(Create::EAnVec {}, c, a, b) };
+    const auto exp { Create::if_<T>(c, a, b) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

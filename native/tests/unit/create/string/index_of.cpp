@@ -24,7 +24,7 @@ void index_of() {
     const Constants::UInt bit_length { 16 };
 
     // Test
-    const auto exp { CS::index_of(Create::EAnVec {}, a, b, c, bit_length) };
+    const auto exp { CS::index_of(a, b, c, bit_length) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

@@ -6,40 +6,39 @@
 #ifndef R_UNIT_TESTLIB_TESTLIB_FACTORIES_HPP_
 #define R_UNIT_TESTLIB_TESTLIB_FACTORIES_HPP_
 
-#include "annotation.hpp"
-#include "expression.hpp"
-#include "factory.hpp"
-#include "op.hpp"
-#include "utils.hpp"
+#include "create.hpp"
+
+#include <string>
 
 
 namespace UnitTest::TestLib::Factories {
 
-    /** Create a simple Symbol */
-    inline auto symbol(std::string name = std::string { "hi" }) { Op::factory<Op::Symbol>(name); }
-
-    /** Create a simple Literal */
-    inline Op::BasePtr literal(const Constants::Int i = 0) {
-        const constexpr Constants::UInt size { sizeof(Constants::Int) };
-        char buf[size]; // NOLINT
-        std::memcpy(buf, &i, size);
-        return Op::factory<Op::Literal>(std::string { buf, size });
-    }
-
     /** Make it easier to create expressions */
     template <typename T = Expression::Bool>
     Expression::BasePtr t_literal(const Constants::Int i = 0) {
-        static_assert(std::is_base_of_v<Expression::Base, T>,
-                      "T must derive from Expression::Base");
-        auto ans { std::vector<Factory::Ptr<Annotation::Base>> {} };
-        auto op { literal(i) };
-        auto baseop { Utils::up_cast<Op::Base>(op) };
-        if constexpr (std::is_base_of_v<Expression::Bits, T>) {
-            return Expression::factory<T>(std::move(ans), false, std::move(baseop),
-                                          Utils::static_down_cast<Op::Literal>(op)->bit_length());
+        namespace Ex = Expression;
+        static_assert(std::is_base_of_v<Ex::Base, T>, "T must derive from Expression::Base");
+
+        if constexpr (std::is_same_v<T, Ex::Bool>) {
+            return Create::literal(static_cast<bool>(i));
+        }
+        else if constexpr (std::is_same_v<T, Ex::String>) {
+            return Create::literal(std::to_string(i));
+        }
+        else if constexpr (std::is_same_v<T, Ex::BV>) {
+            std::vector<char> data;
+            data.resize(sizeof(Constants::Int));
+            UTILS_TYPE_PUN_ONTO(char, data.data(), &i, true);
+            return Create::literal(std::move(data));
+        }
+        else if constexpr (std::is_same_v<T, Ex::FP>) {
+            return Create::literal(static_cast<double>(i));
+        }
+        else if constexpr (std::is_same_v<T, Ex::VS>) {
+            return Create::literal(std::make_shared<const PyObj::VS>(i, i));
         }
         else {
-            return Expression::factory<T>(std::move(ans), false, std::move(baseop));
+            static_assert(Utils::TD::false_<T>, "Unsupported type T");
         }
     }
 

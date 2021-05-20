@@ -22,10 +22,10 @@ template <typename T> void symbol_t() {
     // Test
     Expression::BasePtr sym;
     if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
-        sym = Create::symbol<T>(Create::EAnVec {}, std::move(name), size);
+        sym = Create::symbol<T>(std::move(name), size);
     }
     else {
-        sym = Create::symbol<T>(Create::EAnVec {}, std::move(name));
+        sym = Create::symbol<T>(std::move(name));
     }
 
     // Pointer checks

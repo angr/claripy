@@ -21,7 +21,7 @@ template <bool Signed> void to_bv_b() {
     const Constants::UInt bit_length { 16 };
 
     // Test
-    const auto exp { Create::to_bv<Signed>(Create::EAnVec {}, mode, fp, bit_length) };
+    const auto exp { Create::to_bv<Signed>(mode, fp, bit_length) };
 
     // Pointer checks
     UNITTEST_ASSERT(fp.use_count() == 2);

@@ -19,7 +19,7 @@ void from_int() {
     const auto a { F::t_literal<Ex::BV>(0) };
 
     // Test
-    const auto exp { Create::String::from_int(Create::EAnVec {}, a) };
+    const auto exp { Create::String::from_int(a) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

@@ -20,7 +20,7 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
 
     // Test
     const Mode::FP mode { Mode::FP::TowardsZero };
-    const auto exp { CreateF(Create::EAnVec {}, a, b, mode) };
+    const auto exp { CreateF(a, b, mode, nullptr) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

@@ -22,7 +22,7 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     const auto a { UnitTest::TestLib::Factories::t_literal<In>() };
 
     // Test
-    const auto exp { CreateF(Create::EAnVec {}, a) };
+    const auto exp { CreateF(a, nullptr) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

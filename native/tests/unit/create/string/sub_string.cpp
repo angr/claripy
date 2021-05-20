@@ -15,8 +15,7 @@ template <bool Literal> Expression::BasePtr create_bv(std::string name, const Co
     }
     else {
         (void) val;
-        return Create::symbol<Expression::BV>(Create::EAnVec {}, std::move(name),
-                                              name.size() * BitLength::char_bit);
+        return Create::symbol<Expression::BV>(std::move(name), name.size() * BitLength::char_bit);
     }
 }
 
@@ -35,7 +34,7 @@ template <bool Literal> void sub_string_b() {
     const auto c { F::t_literal<Expression::String>(2) };
 
     // Test
-    const auto exp { CS::sub_string(Create::EAnVec {}, a, b, c) };
+    const auto exp { CS::sub_string(a, b, c) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

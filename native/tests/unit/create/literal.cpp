@@ -17,7 +17,7 @@ template <typename T, typename U> void literal_t(U data, const Constants::UInt s
     const auto data_copy { data };
 
     // Test
-    Expression::BasePtr lit { Create::literal(Create::EAnVec {}, std::move(data)) };
+    Expression::BasePtr lit { Create::literal(std::move(data)) };
 
     // Pointer checks
     UNITTEST_ASSERT(lit.use_count() == 1);

@@ -30,10 +30,6 @@ void type_pun() {
     // Use unsafe pun in controlled context to verify safe pun
     // Since we memset to 0, and msg is strictly shorter than arr, arr is null-terminated
     UNITTEST_ASSERT(std::strcmp(p.arr, msg) == 0); // NOLINT
-
-    // Check other pun macros
-    UTILS_TYPE_PUN_(Constants::Int, tmp, msg, true); // NOLINT
-    UNITTEST_ASSERT(p.i == tmp);                     // NOLINT
 }
 
 // Define the test

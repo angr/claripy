@@ -19,7 +19,7 @@ template <typename T> void extract_t() {
     const auto a { UnitTest::TestLib::Factories::t_literal<T>(0) };
 
     // Test
-    const auto exp { Create::extract<T>(Create::EAnVec {}, high, low, a) };
+    const auto exp { Create::extract<T>(high, low, a) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

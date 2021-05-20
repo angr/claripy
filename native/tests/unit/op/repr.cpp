@@ -2,8 +2,9 @@
  * @file
  * \ingroup unittest
  */
-#include "create.hpp"
 #include "testlib.hpp"
+
+#include "../make_ite.hpp"
 
 #include <string>
 
@@ -54,36 +55,17 @@ static std::string make_solution(const std::string &str, const Constants::UInt l
 
 /** Print the repr of the expression: if (4 == (x * 3)) then "Hello" else y */
 void repr() {
-    namespace Ex = Expression;
-    using AV = Ex::Base::AnVec;
-    namespace C = Create;
 
-    // Constants
+    // Make the ite
     std::string str { "Hello" };
-    const auto str2 { str };
-    const auto len { str.size() };
-    const auto flt_size { 64_ui };
-
-    // Symbols
-    const auto x { C::symbol<Ex::FP>(AV {}, "x", flt_size) };
-    const auto y { C::symbol<Ex::String>(AV {}, "y", 8 * len) };
-
-    // Literals
-    const auto fp3 { C::literal(AV {}, 3.) };
-    const auto fp4 { C::literal(AV {}, 4.) };
-    const auto hello { C::literal(AV {}, std::move(str)) };
-
-    // Composite
-    const auto prod { C::FP::mul(AV {}, x, fp3, Mode::FP::NearestTiesEven) };
-    const auto eq { C::eq<Ex::FP>(AV {}, fp4, prod) };
-    const auto ite { C::if_<Ex::String>(AV {}, eq, hello, y) };
+    const auto ite { make_ite(str) };
 
     // repr
     std::ostringstream s;
     Expression::repr(ite, s, false);
 
     // Compare
-    UNITTEST_ASSERT(s.str() == make_solution(str2, len));
+    UNITTEST_ASSERT(s.str() == make_solution(str, str.size()));
 }
 
 // Define the test

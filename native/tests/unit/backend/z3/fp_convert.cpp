@@ -23,29 +23,28 @@ inline bool is_false(Backend::Z3::Z3 &z3, const Expression::BasePtr &p) {
 /** Try to convert a claricpp expression to z3 */
 void fp_convert() {
     namespace Ex = Expression;
-    using AV = Ex::Base::AnVec;
     namespace C = Create;
 
     auto z3 { Backend::Z3::Z3 {} };
     auto solver { z3.new_tls_solver() };
 
     // Test with Nan
-    const auto nan { C::literal(AV {}, std::numeric_limits<double>::quiet_NaN()) };
-    const auto nan_is_nan { C::FP::is_nan(AV {}, nan) };
-    const auto nan_is_inf { C::FP::is_inf(AV {}, nan) };
+    const auto nan { C::literal(std::numeric_limits<double>::quiet_NaN()) };
+    const auto nan_is_nan { C::FP::is_nan(nan) };
+    const auto nan_is_inf { C::FP::is_inf(nan) };
 
     UNITTEST_ASSERT(is_true(z3, nan_is_nan))
     UNITTEST_ASSERT(is_false(z3, nan_is_inf))
 
     // Test with Inf
-    const auto inf { C::literal(AV {}, std::numeric_limits<double>::infinity()) };
-    const auto inf_is_nan { C::FP::is_nan(AV {}, inf) };
-    const auto inf_is_inf { C::FP::is_inf(AV {}, inf) };
+    const auto inf { C::literal(std::numeric_limits<double>::infinity()) };
+    const auto inf_is_nan { C::FP::is_nan(inf) };
+    const auto inf_is_inf { C::FP::is_inf(inf) };
     UNITTEST_ASSERT(is_false(z3, inf_is_nan))
     UNITTEST_ASSERT(is_true(z3, inf_is_inf))
 
     // Test float
-    const auto flt { C::literal(AV {}, 0.f) }; // NOLINT
+    const auto flt { C::literal(0.f) }; // NOLINT
     const auto flt_conv { z3.convert(flt.get()) };
     const auto srt { flt_conv.get_sort() };
     const Backend::Z3::FP::Width fpa_srt {
