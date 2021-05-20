@@ -22,7 +22,6 @@ inline bool is_false(Backend::Z3::Z3 &z3, const Expression::BasePtr &p) {
 
 /** Try to convert a claricpp expression to z3 */
 void fp_convert() {
-    namespace Ex = Expression;
     namespace C = Create;
 
     auto z3 { Backend::Z3::Z3 {} };

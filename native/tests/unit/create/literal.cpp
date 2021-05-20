@@ -8,16 +8,10 @@
 
 
 /** Test the literal create function with type T */
-template <typename T, typename U> void literal_t(U data, const Constants::UInt size = 0) {
-
-    // For brevity
-    namespace Ex = Expression; // NOLINT (false positive)
-
-    // Create inputs
-    const auto data_copy { data };
+template <typename T, typename Data> void literal_t(Data data, const Constants::UInt size = 0) {
 
     // Test
-    Expression::BasePtr lit { Create::literal(std::move(data)) };
+    const auto lit { Create::literal(Data{data}) };
 
     // Pointer checks
     UNITTEST_ASSERT(lit.use_count() == 1);
@@ -31,10 +25,10 @@ template <typename T, typename U> void literal_t(U data, const Constants::UInt s
     const auto exp_down { dcast<T>(lit) };
 
     // Contains check
-    UNITTEST_ASSERT(std::get<U>(op_down->value) == data_copy);
+    UNITTEST_ASSERT(std::get<Data>(op_down->value) == data);
 
     // Size check
-    if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
+    if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size)
     }
 
@@ -53,13 +47,12 @@ void literal() {
 
     // Tests
     literal_t<Expression::Bool>(true);
-    literal_t<Expression::String>(data_s, 8 * data_s.size());
-    literal_t<Expression::BV>(data_v, 8 * data_v.size());
+    literal_t<Expression::String>(data_s, C_CHAR_BIT * data_s.size());
+    literal_t<Expression::BV>(data_v, C_CHAR_BIT * data_v.size());
     literal_t<Expression::FP>(3.4, 64_ui);  // NOLINT
     literal_t<Expression::FP>(3.4f, 32_ui); // NOLINT
-
-#warning Not testing Literal VS
-    /* literal_t<Expression::VS>(); */
+	const auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
+    literal_t<Expression::VS>(std::move(ptr), ptr->bit_length);
 }
 
 // Define the test
