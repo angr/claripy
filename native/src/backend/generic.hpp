@@ -163,9 +163,9 @@ namespace Backend {
         ~Generic() noexcept override = default;
 
         /** This applies the given annotations to the backend object */
-        virtual void apply_annotations(BackendObj &o, Expression::Base::AnVec &&ans) {
+        virtual void apply_annotations(BackendObj &o, Expression::Base::SPAV &&sp) {
             (void) o;
-            (void) ans;
+            (void) sp;
 #ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::MissingVirtualFunction>(
                 ApplyAnnotations, WHOAMI_WITH_SOURCE,

@@ -74,13 +74,15 @@ namespace Hash {
     template <> inline Hash singular(const float &f) noexcept {
         static_assert(sizeof(float) == sizeof(uint32_t),
                       "Numeric type must have the same size as float");
-        UTILS_TYPE_PUN_(uint32_t, tmp, &f, false); // NOLINT
+        uint32_t tmp;
+        UTILS_TYPE_PUN_ONTO(uint32_t, &tmp, &f, false);
         return UTILS_FILE_LINE_HASH + tmp;
     }
 
     /** A specialization for T = double */
     template <> inline Hash singular(const double &d) noexcept {
-        UTILS_TYPE_PUN_(Hash, tmp, &d, false); // NOLINT
+        Hash tmp;
+        UTILS_TYPE_PUN_ONTO(Hash, &tmp, &d, false);
         return UTILS_FILE_LINE_HASH + tmp;
     }
 
