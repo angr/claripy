@@ -129,18 +129,16 @@ namespace Backend {
             }
 #ifdef DEBUG
             // Sanity checks
-            Utils::affirm<UnknownErr>(op_stack.empty(), WHOAMI "op_stack should be empty");
-            Utils::affirm<UnknownErr>(expr_stack.empty(), WHOAMI "expr_stack should be empty");
-            Utils::affirm<UnknownErr>(arg_stack.size() == 1,
-                                      WHOAMI "arg_stack should be of size: 1");
+            constexpr auto chk { [](const auto &...x) { Utils::affirm<UnknownErr>(x...); } };
+            chk(op_stack.empty(), WHOAMI "op_stack should be empty");
+            chk(expr_stack.empty(), WHOAMI "expr_stack should be empty");
+            chk(arg_stack.size() == 1, WHOAMI "arg_stack should be of size: 1");
             const auto lookup { object_cache.find(input->hash) };
-            Utils::affirm<UnknownErr>(lookup != object_cache.end(),
-                                      WHOAMI "object_cache does not contain expr hash");
-            Utils::affirm<UnknownErr>(&lookup->second == arg_stack.back(), WHOAMI
-                                      "object_cache lookup does not match arg_stack back()");
-            Utils::affirm<UnknownErr>(arg_stack.back() == &object_cache.find(input->hash)->second,
-                                      WHOAMI
-                                      "arg_stack / object_cache mismatch at end of convert");
+            chk(lookup != object_cache.end(), WHOAMI "object_cache does not contain expr hash");
+            chk(&lookup->second == arg_stack.back(),
+                WHOAMI "object_cache lookup does not match arg_stack back()");
+            chk(arg_stack.back() == &object_cache.find(input->hash)->second,
+                WHOAMI "arg_stack / object_cache mismatch at end of convert");
 #endif
             // Return result
             return *arg_stack.back(); // shortcut for object_cache.find(input->hash)->second;
