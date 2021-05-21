@@ -380,6 +380,8 @@ namespace Backend::Z3 {
             (void) input;
 
 
+            // Simplification::cache(ret->hash, ret);
+
             return { nullptr }; // TODO
         }
 

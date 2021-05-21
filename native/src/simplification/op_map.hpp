@@ -18,8 +18,8 @@
 namespace Simplification {
 
     /** Map op static cuids to op simplifiers */
-    inline const std::map<CUID::CUID, SimplifierFunc *> op_map { // TODO: pointer
-                                                                 MAP_ENTRY(Eq, eq)
+    inline const std::map<CUID::CUID, SimplifierFunc *const> op_map { // TODO: pointer
+                                                                      MAP_ENTRY(Eq, eq)
     };
 
 } // namespace Simplification

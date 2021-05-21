@@ -16,7 +16,7 @@ namespace Simplification {
     /** The type each top level simplifier must have
      *  Note: takes in a Factory::Ptr (as opposed to a raw pointer) since it may return the input
      */
-    using SimplifierFunc = Factory::Ptr<Expression::Base>(const Factory::Ptr<Expression::Base> &);
+    using SimplifierFunc = Expression::BasePtr(const Expression::BasePtr &);
 
 } // namespace Simplification
 

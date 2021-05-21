@@ -13,7 +13,6 @@
 #include "utils/affirm.hpp"
 #include "utils/ansi_color_codes.hpp"
 #include "utils/bitmask.hpp"
-#include "utils/cache.hpp"
 #include "utils/checked_static_cast.hpp"
 #include "utils/const_eval.hpp"
 #include "utils/declare.hpp"
@@ -61,5 +60,6 @@
 #include "utils/type_to_type.hpp"
 #include "utils/unconstructable.hpp"
 #include "utils/verify_syscall.hpp"
+#include "utils/weak_cache.hpp"
 
 #endif

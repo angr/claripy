@@ -3,8 +3,8 @@
  * \ingroup utils
  * @brief This file defines a generic hash cache type
  */
-#ifndef R_UTILS_CACHE_HPP_
-#define R_UTILS_CACHE_HPP_
+#ifndef R_UTILS_WEAKCACHE_HPP_
+#define R_UTILS_WEAKCACHE_HPP_
 
 #include "error/unexpected.hpp"
 #include "log.hpp"
@@ -24,26 +24,26 @@
 
 namespace Utils {
 
-    /** A generic cache class that
-     *  This maps a Key to std::weak_ptr<const Value>
+    /** A generic thread-safe cache class that
+     *  This maps a Key to std::weak_ptr<const Cached>
      *  This class will occassionally gc dead weak_ptr's in the cache
      *  @todo We could have a TLS deletion queue if we want to increase efficiency
      */
-    template <typename Hash, typename Cached> class Cache final {
+    template <typename Hash, typename Cached> class WeakCache final {
         ENABLE_UNITTEST_FRIEND_ACCESS
 
         /** The pointer type publically exposed */
         using Ptr = std::shared_ptr<const Cached>;
 
         /** Abbreviate the type this is */
-        using Self = Cache<Hash, Cached>;
+        using Self = WeakCache<Hash, Cached>;
 
         // Disable most implicits
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Cache, delete);
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(WeakCache, delete);
 
       public:
         /** Default constructor */
-        Cache() = default;
+        WeakCache() = default;
 
         // Enable custom logging
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
@@ -51,7 +51,9 @@ namespace Utils {
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<const Cached>>;
 
-        /** Return true if the object is within the cache, else false */
+        /** Return true if the object is within the cache, else false
+         *  This function is thread-safe
+         */
         bool exists(const Hash &h) {
             std::shared_lock<decltype(s_m)> r(s_m);
             return this->unsafe_find(h) != nullptr;
@@ -59,6 +61,7 @@ namespace Utils {
 
         /** If h is in the cache, return a shared pointer to it
          *  Otherwise return a shared pointer to nullptr
+         *  This function is thread-safe
          */
         Ptr find(const Hash &h) {
             std::shared_lock<decltype(s_m)> r(s_m);
@@ -66,6 +69,14 @@ namespace Utils {
                 return lookup;
             }
             return { nullptr };
+        }
+
+        /** Insert a new entry into the cache
+         *  This function is thread-safe
+         */
+        void insert(const Hash &h, const std::shared_ptr<const Cached> &c) {
+            std::unique_lock<decltype(s_m)> rw(s_m);
+            cache[h] = c;
         }
 
         /** If hash h is not in the cache, construct a Cached from the given args

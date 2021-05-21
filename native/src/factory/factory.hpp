@@ -22,7 +22,7 @@ namespace Factory {
          *  we want to to make it agnostic of cv qualifiers
          *  It also makes testing easier
          */
-        template <typename Base> Utils::Cache<Hash::Hash, const Base> inline cache {};
+        template <typename Base> Utils::WeakCache<Hash::Hash, const Base> inline cache {};
     } // namespace Private
 
     /** A factory used to construct subclasses of Base.

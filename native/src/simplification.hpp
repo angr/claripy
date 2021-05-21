@@ -5,6 +5,7 @@
 #ifndef R_SIMPLIFICATION_HPP_
 #define R_SIMPLIFICATION_HPP_
 
+#include "simplification/cache.hpp"
 #include "simplification/constants.hpp"
 #include "simplification/op_map.hpp"
 #include "simplification/simplifiers.hpp"
