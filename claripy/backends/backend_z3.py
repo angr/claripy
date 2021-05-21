@@ -99,7 +99,6 @@ class BackendZ3(Backend):
     def __init__(self, reuse_z3_solver=None, ast_cache_size=10000):
         Backend.__init__(self, solver_required=True)
         self._enable_simplification_cache = False
-        self._hash_to_constraint = weakref.WeakValueDictionary()
 
         # Per-thread Z3 solver
         # This setting is treated as a global setting and is not supposed to be changed during runtime, unless you know
@@ -694,9 +693,6 @@ class BackendZ3(Backend):
             s = self._tls.solver
             s.reset()
 
-        # for some reason we always reset the solver anyway, so always clear it. REUSE_SOLVER is fundamentally broken
-        self._hash_to_constraint.clear()
-
         # Configure timeouts
         if timeout is not None:
             if 'soft_timeout' in str(s.param_descrs()):
@@ -708,10 +704,10 @@ class BackendZ3(Backend):
 
     def _add(self, s, c, track=False):
         if track:
+            already_tracked = set(str(impl.children()[0]) for impl in s.assertions())
             for constraint in c:
                 name = str(hash(constraint))
-                if name not in self._hash_to_constraint:
-                    self._hash_to_constraint[name] = constraint
+                if name not in already_tracked:
                     s.assert_and_track(constraint, name)
         else:
             s.add(*c)
@@ -727,10 +723,7 @@ class BackendZ3(Backend):
 
     def _unsat_core(self, s):
         cores = s.unsat_core()
-        constraints = [ ]
-        for core in cores:
-            constraints.append(self._hash_to_constraint.get(str(core)))
-        return constraints
+        return [impl.children()[1] for impl in s.assertions() if impl.children()[0] in cores]
 
     @condom
     def _primitive_from_model(self, model, expr):
