@@ -130,12 +130,13 @@ class Frontend:
         """
         raise NotImplementedError()
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         """
         Evaluates `e`, returning its max possible value.
 
         :param e:                       the expression
         :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param signed:                  whether the value should be treated as a signed integer
         :param exact:                   whether or not to perform an exact evaluation. Ignored by
                                         non-approximating backends.
 
@@ -143,12 +144,13 @@ class Frontend:
         """
         raise NotImplementedError()
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         """
         Evaluates `e`, returning its min possible value.
 
         :param e:                       the expression
         :param extra_constraints:       extra constraints to consider when performing the evaluation
+        :param signed:                  whether the value should be treated as a signed integer
         :param exact:                   whether or not to perform an exact evaluation. Ignored by
                                         non-approximating backends.
 

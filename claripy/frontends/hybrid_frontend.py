@@ -107,11 +107,11 @@ class HybridFrontend(Frontend):
             return self._approximate_first_call('batch_eval', e, n, extra_constraints=extra_constraints)
         return self._hybrid_call('batch_eval', e, n, extra_constraints=extra_constraints, exact=exact)
 
-    def max(self, e, extra_constraints=(), exact=None):
-        return self._hybrid_call('max', e, extra_constraints=extra_constraints, exact=exact)
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
+        return self._hybrid_call('max', e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
-    def min(self, e, extra_constraints=(), exact=None):
-        return self._hybrid_call('min', e, extra_constraints=extra_constraints, exact=exact)
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
+        return self._hybrid_call('min', e, extra_constraints=extra_constraints, signed=signed, exact=exact)
 
     def solution(self, e, v, extra_constraints=(), exact=None):
         return self._hybrid_call('solution', e, v, extra_constraints=extra_constraints, exact=exact)

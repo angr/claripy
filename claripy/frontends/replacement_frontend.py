@@ -10,7 +10,7 @@ from .constrained_frontend import ConstrainedFrontend
 
 class ReplacementFrontend(ConstrainedFrontend):
     def __init__(self, actual_frontend, allow_symbolic=None, replacements=None, replacement_cache=None, unsafe_replacement=None, complex_auto_replace=None, auto_replace=None, replace_constraints=None, **kwargs):
-        super(ReplacementFrontend, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._actual_frontend = actual_frontend
         self._allow_symbolic = True if allow_symbolic is None else allow_symbolic
         self._auto_replace = True if auto_replace is None else auto_replace
@@ -23,7 +23,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         self._validation_frontend = None
 
     def _blank_copy(self, c):
-        super(ReplacementFrontend, self)._blank_copy(c)
+        super()._blank_copy(c)
         c._actual_frontend = self._actual_frontend.blank_copy()
         c._allow_symbolic = self._allow_symbolic
         c._auto_replace = self._auto_replace
@@ -39,7 +39,7 @@ class ReplacementFrontend(ConstrainedFrontend):
             c._validation_frontend = None
 
     def _copy(self, c):
-        super(ReplacementFrontend, self)._copy(c)
+        super()._copy(c)
         self._actual_frontend._copy(c._actual_frontend)
         if self._validation_frontend is not None:
             self._validation_frontend._copy(c._validation_frontend)
@@ -177,17 +177,17 @@ class ReplacementFrontend(ConstrainedFrontend):
                 self._add_solve_result(original, er[i], r[0][i])
         return r
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.max(er, extra_constraints=ecr, exact=exact)
+        r = self._actual_frontend.max(er, extra_constraints=ecr, signed=signed, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         er = self._replacement(e)
         ecr = self._replace_list(extra_constraints)
-        r = self._actual_frontend.min(er, extra_constraints=ecr, exact=exact)
+        r = self._actual_frontend.min(er, extra_constraints=ecr, signed=signed, exact=exact)
         if self._unsafe_replacement: self._add_solve_result(e, er, r)
         return r
 
@@ -215,7 +215,7 @@ class ReplacementFrontend(ConstrainedFrontend):
         return self._actual_frontend.satisfiable(extra_constraints=ecr, exact=exact)
 
     def _concrete_value(self, e):
-        c = super(ReplacementFrontend, self)._concrete_value(e)
+        c = super()._concrete_value(e)
         if c is not None: return c
 
         cr = self._replacement(e)
@@ -225,16 +225,16 @@ class ReplacementFrontend(ConstrainedFrontend):
         return None
 
     def _concrete_constraint(self, e):
-        c = super(ReplacementFrontend, self)._concrete_value(e)
+        c = super()._concrete_value(e)
         if c is not None: return c
 
         #if er.is_false():
         #   raise UnsatError("Replacement frontend received False constraint after replacement.")
         if self._replace_constraints:
             er = self._replacement(e)
-            return super(ReplacementFrontend, self)._concrete_constraint(er)
+            return super()._concrete_constraint(er)
         else:
-            return super(ReplacementFrontend, self)._concrete_constraint(e)
+            return super()._concrete_constraint(e)
 
     def add(self, constraints, **kwargs):
         if self._auto_replace:
@@ -267,7 +267,7 @@ class ReplacementFrontend(ConstrainedFrontend):
 
                         self.add_replacement(old, rold.intersection(new))
 
-        added = super(ReplacementFrontend, self).add(constraints, **kwargs)
+        added = super().add(constraints, **kwargs)
         cr = self._replace_list(added)
         if not self._allow_symbolic and any(c.symbolic for c in cr):
             raise ClaripyFrontendError(
