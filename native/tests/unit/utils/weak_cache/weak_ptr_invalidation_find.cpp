@@ -6,7 +6,7 @@
 
 
 /** A cache */
-static Utils::Cache<int, int> cache;
+static Utils::WeakCache<int, int> cache;
 
 
 /** A struct used to give friend access to unittests */

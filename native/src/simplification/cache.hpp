@@ -21,7 +21,9 @@ namespace Simplification {
     /** A method for adding to the simplification cache
      *  Record that an Expression with Hash h simplifies to Expression e
      */
-    void cache(const Hash::Hash h, const Expression::BasePtr &e) { Private::cache.insert(h, e); }
+    inline void cache(const Hash::Hash h, const Expression::BasePtr &e) {
+        Private::cache.insert(h, e);
+    }
 
 } // namespace Simplification
 

@@ -10,7 +10,7 @@ using namespace UnitTest::TestLib;
 
 
 /** A cache */
-static Utils::Cache<Constants::UInt, Constants::UInt> cache;
+static Utils::WeakCache<Constants::UInt, Constants::UInt> cache;
 
 
 /** A struct used to give friend access to unittests */
