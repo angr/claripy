@@ -15,13 +15,13 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
         self._finalized = False
 
     def _blank_copy(self, c):
-        super(ConstrainedFrontend, self)._blank_copy(c)
+        super()._blank_copy(c)
         c.constraints = []
         c.variables = set()
         c._finalized = False
 
     def _copy(self, c):
-        super(ConstrainedFrontend, self)._copy(c)
+        super()._copy(c)
         c.constraints = list(self.constraints)
         c.variables = set(self.variables)
 
@@ -134,10 +134,10 @@ class ConstrainedFrontend(Frontend):  # pylint:disable=abstract-method
     def eval(self, e, n, extra_constraints=(), exact=None):
         raise NotImplementedError("eval() is not implemented")
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         raise NotImplementedError("min() is not implemented")
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         raise NotImplementedError("max() is not implemented")
 
     def solution(self, e, v, extra_constraints=(), exact=None):

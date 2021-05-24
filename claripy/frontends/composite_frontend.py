@@ -10,7 +10,7 @@ from claripy.ast.strings import String
 
 class CompositeFrontend(ConstrainedFrontend):
     def __init__(self, template_frontend, template_frontend_string, track=False, **kwargs):
-        super(CompositeFrontend, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._solvers = { }
         self._unchecked_solvers = weakref.WeakSet()
         self._owned_solvers = weakref.WeakSet()
@@ -20,7 +20,7 @@ class CompositeFrontend(ConstrainedFrontend):
         self._track = track
 
     def _blank_copy(self, c):
-        super(CompositeFrontend, self)._blank_copy(c)
+        super()._blank_copy(c)
         c._unchecked_solvers = weakref.WeakSet()
         c._owned_solvers = weakref.WeakSet()
         c._solvers = { }
@@ -31,7 +31,7 @@ class CompositeFrontend(ConstrainedFrontend):
         c._track = self._track
 
     def _copy(self, c):
-        super(CompositeFrontend, self)._copy(c)
+        super()._copy(c)
         c._unsat = self._unsat
         c._track = self._track
 
@@ -259,7 +259,7 @@ class CompositeFrontend(ConstrainedFrontend):
                 s.add(unsure)
                 self._store_child(s)
 
-        return super(CompositeFrontend, self).add(child_added)
+        return super().add(child_added)
 
     #
     # Solving
@@ -318,19 +318,19 @@ class CompositeFrontend(ConstrainedFrontend):
         self._reabsorb_solver(ms)
         return r
 
-    def max(self, e, extra_constraints=(), exact=None):
+    def max(self, e, extra_constraints=(), signed=False, exact=None):
         self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
-        r = ms.max(e, extra_constraints=extra_constraints, exact=exact)
+        r = ms.max(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         self._reabsorb_solver(ms)
         return r
 
-    def min(self, e, extra_constraints=(), exact=None):
+    def min(self, e, extra_constraints=(), signed=False, exact=None):
         self._ensure_sat(extra_constraints=extra_constraints)
 
         ms = self._merged_solver_for(e=e, lst=extra_constraints)
-        r = ms.min(e, extra_constraints=extra_constraints, exact=exact)
+        r = ms.min(e, extra_constraints=extra_constraints, signed=signed, exact=exact)
         self._reabsorb_solver(ms)
         return r
 

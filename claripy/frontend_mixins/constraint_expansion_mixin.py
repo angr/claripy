@@ -20,16 +20,18 @@ class ConstraintExpansionMixin:
 
         return results
 
-    def max(self, e, extra_constraints=(), exact=None, **kwargs):
-        m = super(ConstraintExpansionMixin, self).max(e, extra_constraints=extra_constraints, exact=exact, **kwargs)
+    def max(self, e, extra_constraints=(), exact=None, signed=False, **kwargs):
+        m = super(ConstraintExpansionMixin, self).max(e, extra_constraints=extra_constraints, exact=exact,
+                                                      signed=signed, **kwargs)
         if len(extra_constraints) == 0:
-            self.add([e <= m], invalidate_cache=False)
+            self.add([SLE(e, m) if signed else ULE(e, m)], invalidate_cache=False)
         return m
 
-    def min(self, e, extra_constraints=(), exact=None, **kwargs):
-        m = super(ConstraintExpansionMixin, self).min(e, extra_constraints=extra_constraints, exact=exact, **kwargs)
+    def min(self, e, extra_constraints=(), exact=None, signed=False, **kwargs):
+        m = super(ConstraintExpansionMixin, self).min(e, extra_constraints=extra_constraints, exact=exact,
+                                                      signed=signed, **kwargs)
         if len(extra_constraints) == 0:
-            self.add([e >= m], invalidate_cache=False)
+            self.add([SGE(e, m) if signed else UGE(e, m)], invalidate_cache=False)
         return m
 
     def solution(self, e, v, extra_constraints=(), exact=None, **kwargs):
@@ -44,3 +46,4 @@ class ConstraintExpansionMixin:
         return b
 
 from ..ast.bool import Or
+from ..ast.bv import SGE, SLE, UGE, ULE

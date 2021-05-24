@@ -234,6 +234,15 @@ def raw_solver(solver_type, reuse_z3_solver):
     nose.tools.assert_false(s.solution(x, 2))
     nose.tools.assert_true(s.solution(x, 10))
 
+    # test signed min/max
+    s = solver_type()
+    x = claripy.BVS('x', 32)
+    nose.tools.assert_equal(s.min(x, signed=True), -0x80000000)
+    nose.tools.assert_equal(s.max(x, signed=True), 0x7FFFFFFF)
+    s.add(claripy.ULE(x, 0x40000000) | claripy.UGE(x, 0xC0000000))
+    nose.tools.assert_equal(s.min(x, signed=True), -0x40000000)
+    nose.tools.assert_equal(s.max(x, signed=True), 0x40000000)
+
     # test result caching
 
     if isinstance(s, claripy.frontend_mixins.ModelCacheMixin):

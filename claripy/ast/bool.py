@@ -143,7 +143,9 @@ Not = operations.op('Not', (Bool,), Bool, bound=False)
 
 Bool.__invert__ = Not
 Bool.__and__ = And
+Bool.__rand__ = And
 Bool.__or__ = Or
+Bool.__ror__ = Or
 
 def is_true(e, exact=None): #pylint:disable=unused-argument
     for b in backends._quick_backends:
