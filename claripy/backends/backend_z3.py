@@ -1319,11 +1319,6 @@ class BackendZ3(Backend):
 
     @staticmethod
     @condom
-    def _op_raw_StrExtract(high, low, str_val):
-        return z3.SubString(str_val, low, high + 1 - low)
-
-    @staticmethod
-    @condom
     def _op_raw_StrLen(input_string, bitlength):
         return z3.Int2BV(z3.Length(input_string), bitlength)
 

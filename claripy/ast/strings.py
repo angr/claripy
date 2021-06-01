@@ -42,7 +42,7 @@ class String(Bits):
             # Because we are indexing from the end, what was high becomes low and vice-versa
             high_str_idx = self.string_length - 1 - low
             low_str_idx = self.string_length - 1 - high
-            return StrExtract(low_str_idx, high_str_idx + 1 - low_str_idx, self)
+            return StrSubstr(high_str_idx + 1 - low_str_idx, 2*low_str_idx - high_str_idx, self)
         else:
             raise ValueError("Only slices allowed for string extraction")
 
@@ -62,7 +62,7 @@ class String(Bits):
     @staticmethod
     def _from_str(like, value):
         return StringV(value)
-    
+
     def strReplace(self, str_to_replace, replacement):
         """
         Replace the first occurence of str_to_replace with replacement
@@ -140,9 +140,6 @@ def StringV(value, length=None, **kwargs):
 StrConcat = operations.op('StrConcat', String, String, calc_length=operations.str_concat_length_calc, bound=False)
 StrSubstr = operations.op('StrSubstr', (BV, BV, String),
                         String, calc_length=operations.substr_length_calc, bound=False)
-StrExtract = operations.op('StrExtract', (int, int, String),
-                              String, extra_check=operations.str_extract_check,
-                              calc_length=operations.str_extract_length_calc, bound=False)
 StrLen = operations.op('StrLen', (String, int), BV, calc_length=operations.strlen_bv_size_calc, bound=False)
 StrReplace = operations.op('StrReplace', (String, String, String), String,
                         extra_check=operations.str_replace_check,
@@ -163,7 +160,6 @@ String.__ne__ = operations.op('__ne__', (String, String), Bool)
 # String manipulation
 String.__add__ = StrConcat
 String.StrSubstr = staticmethod(StrSubstr)
-String.StrExtract = staticmethod(StrExtract)
 String.StrConcat = staticmethod(StrConcat)
 String.StrLen = staticmethod(StrLen)
 String.StrReplace = staticmethod(StrReplace)
