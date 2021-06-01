@@ -419,21 +419,6 @@ class TestSMTLibBackend(unittest.TestCase):
         script = solver.get_smtlib_script_satisfiability()
         self.assertEqual(correct_script, script)
 
-    def test_str_extract(self):
-        correct_script = '''(set-logic ALL)
-(declare-fun STRING_symb_str_extract () String)
-(assert (let ((.def_0 (= ( str.substr STRING_symb_str_extract 5 1) "abc"))) .def_0))
-(check-sat)
-'''
-        str_symb = claripy.StringS("symb_str_extract", 12, explicit_name=True)
-        res = claripy.StrExtract(0, 1, claripy.StrExtract(1, 2, claripy.StrExtract(4, 8, str_symb)))
-        solver = self.get_solver()
-        solver.add(res == claripy.StringV("abc"))
-        script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_strextract.smt2", "w") as dump_f:
-        #     dump_f.write(script)
-        self.assertEqual(correct_script, script)
-
     def test_is_digit(self):
         correct_script = '''(set-logic ALL)
 (declare-fun STRING_symb_str_is_digit () String)
