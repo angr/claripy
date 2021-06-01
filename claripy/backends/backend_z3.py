@@ -1362,13 +1362,13 @@ class BackendZ3(Backend):
 
     @staticmethod
     @condom
-    def _op_raw_IntToStr(input_bvv):
-        return z3.IntToStr(z3.BV2Int(input_bvv))
+    def _op_raw_IntToStr(input_bv):
+        return z3.IntToStr(z3.BV2Int(input_bv))
 
     @staticmethod
     @condom
-    def _op_raw_UnitStr(input_bvv):
-        return z3.Unit(input_bvv)
+    def _op_raw_UnitStr(input_bv):
+        return z3.Unit(input_bv)
 #
 # this is for the actual->abstract conversion above
 #
