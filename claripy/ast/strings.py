@@ -27,7 +27,7 @@ class String(Bits):
     def __init__(self, *args, **kwargs):
         str_len = kwargs['length']
         kwargs['length'] *= 8
-        super(String, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.string_length = str_len
 
     def __getitem__(self, rng):
@@ -60,9 +60,9 @@ class String(Bits):
         return value
 
     @staticmethod
-    def _from_str(like, value):
+    def _from_str(like, value): # pylint: disable=unused-argument
         return StringV(value)
-    
+
     def strReplace(self, str_to_replace, replacement):
         """
         Replace the first occurence of str_to_replace with replacement
