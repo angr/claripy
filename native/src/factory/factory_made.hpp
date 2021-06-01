@@ -27,7 +27,6 @@
   private:                                                                                        \
     /** Allow verification to have friend access */                                               \
     template <typename, typename...> friend class ::Utils::HasConstructor;                        \
-    template <typename, typename...> friend struct ::std::is_constructible;                       \
     /** Allow cache friend access for factory construction */                                     \
     friend class ::Utils::WeakCache<Hash::Hash, const BASE>;
 
