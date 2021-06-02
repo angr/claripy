@@ -1,7 +1,7 @@
 import unittest
 import claripy
 
-from claripy import frontend_mixins, frontends, backend_manager, backends
+from claripy import frontend_mixins, backend_manager
 from claripy.backends.backend_smtlib import BackendSMTLibBase
 from claripy.frontends.constrained_frontend import ConstrainedFrontend
 from claripy.ast.strings import String
@@ -20,10 +20,10 @@ class TestSMTLibBackend(unittest.TestCase):
             frontend_mixins.EagerResolutionMixin,
             frontend_mixins.SMTLibScriptDumperMixin,
             ConstrainedFrontend
-        ):
+        ):  # pylint:disable=abstract-method
             def __init__(self, *args, **kwargs):
                 self._solver_backend = backend_manager.backends.smt
-                super(SolverSMT, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
 
         return SolverSMT()
 
