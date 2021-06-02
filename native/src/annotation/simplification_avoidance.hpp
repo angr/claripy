@@ -18,10 +18,10 @@ namespace Annotation {
         SimplificationAvoidance();
 
         /** Returns whether this annotation can be eliminated in a simplification. */
-        inline bool eliminatable() const final override { return false; }
+        inline bool eliminatable() const override final { return false; }
 
         /** Returns whether this annotation can be relocated in a simplification. */
-        inline bool relocatable() const final override { return false; }
+        inline bool relocatable() const override final { return false; }
     };
 
 } // namespace Annotation
