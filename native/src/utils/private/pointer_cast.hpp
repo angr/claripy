@@ -16,7 +16,7 @@ namespace Utils::Private {
 
     /** A const preserving static pointer cast */
     template <typename Out, typename In>
-    constexpr inline auto static_pointer_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto static_pointer_cast(const std::shared_ptr<In> &in) noexcept {
         if constexpr (is_exactly_same<In, Out>) {
             return in;
         }
@@ -27,7 +27,7 @@ namespace Utils::Private {
 
     /** An unchecked dynamic pointer cast */
     template <typename Out, typename In>
-    constexpr inline auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
         if constexpr (is_same_ignore_const<In, Out>) {
             return Private::static_pointer_cast<Out>(in);
         }

@@ -11,7 +11,7 @@
 namespace Utils {
 
     /** Narrow X to an Out */
-    template <typename Out, typename In> constexpr inline Out narrow(const In in) noexcept {
+    template <typename Out, typename In> constexpr Out narrow(const In in) noexcept {
         static_assert(std::is_integral_v<In>, "In must be a primitive");
         static_assert(std::is_integral_v<Out>, "Out must be a primitive");
         static_assert(std::is_convertible_v<In, Out>, "In must be convertible to Out");

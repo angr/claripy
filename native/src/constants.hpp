@@ -64,7 +64,7 @@ static_assert(std::is_arithmetic_v<Constants::UInt>,
 /** Create a literal prefix for Constants::Int
  *  This assumes the max of
  */
-constexpr inline Constants::Int operator"" _i(const unsigned long long i) {
+constexpr Constants::Int operator"" _i(const unsigned long long i) {
     // If it is safe, cast
     const constexpr auto max { std::numeric_limits<Constants::Int>::max() };
     const constexpr auto lim { static_cast<unsigned long long>(max) };
@@ -80,14 +80,14 @@ constexpr inline Constants::Int operator"" _i(const unsigned long long i) {
 
 
 /** Create a literal prefix for Constants::UInt */
-constexpr inline Constants::UInt operator"" _ui(const unsigned long long u) noexcept {
+constexpr Constants::UInt operator"" _ui(const unsigned long long u) noexcept {
     return u; // The compiler will error if this is narrowing
 }
 
 /** A way to get a char * from a char[]
  *  char[]'s may not be forwardable, _c alleviates this
  */
-constexpr inline const char *operator"" _c(const char *s, unsigned long) noexcept {
+constexpr const char *operator"" _c(const char *s, unsigned long) noexcept {
     return s;
 }
 

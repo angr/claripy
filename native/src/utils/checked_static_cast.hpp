@@ -16,7 +16,7 @@ namespace Utils {
 
     /** static_cast normally, type-checked dynamic_cast if debug mode */
     template <typename Out, typename In>
-    [[gnu::always_inline]] constexpr inline Out checked_static_cast(const In i) noexcept {
+    [[gnu::always_inline]] constexpr Out checked_static_cast(const In i) noexcept {
 #ifndef DEBUG
         return static_cast<Out>(i);
 #else

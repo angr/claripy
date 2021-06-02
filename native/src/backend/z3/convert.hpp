@@ -34,7 +34,9 @@ namespace Backend::Z3::Convert {
          */
         inline thread_local std::map<std::string, const Expression::BasePtr> extra_bvs_data;
 
-        /** The size of a float */
+        /** The size of a float
+         *  Note that constexpr may not imply inline here so we are explicit
+         */
         static inline constexpr const auto flt_size { 4_ui * BitLength::char_bit };
 
     } // namespace Private

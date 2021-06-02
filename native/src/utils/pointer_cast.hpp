@@ -23,14 +23,14 @@ namespace Utils {
 
     /** An up cast */
     template <typename Out, typename In>
-    constexpr inline auto up_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto up_cast(const std::shared_ptr<In> &in) noexcept {
         static_assert(is_ancestor<Out, In>, "up_cast passed invalid <In, Out> type pair");
         return Private::static_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** A dynamic down cast */
     template <typename Out, typename In>
-    constexpr inline auto dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto dynamic_down_cast(const std::shared_ptr<In> &in) noexcept {
         static_assert(is_ancestor<In, Out>,
                       "dynamic_down_cast passed invalid <In, Out> type pair");
         return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
@@ -40,13 +40,13 @@ namespace Utils {
      *  Warning: No static checks used
      */
     template <typename Out, typename In>
-    constexpr inline auto dynamic_side_cast(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto dynamic_side_cast(const std::shared_ptr<In> &in) noexcept {
         return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
     }
 
     /** Dynamic down-cast that throws on failure */
     template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
-    constexpr inline auto dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto dynamic_down_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_down_cast<Out>(in);
         affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
         return ret;
@@ -54,7 +54,7 @@ namespace Utils {
 
     /** A dynamic side cast that throws on failure */
     template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
-    constexpr inline auto dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
+    constexpr auto dynamic_side_cast_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
         const auto ret = dynamic_side_cast<Out>(in);
         affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic side-cast failed");
         return ret;
@@ -66,7 +66,7 @@ namespace Utils {
      *  Is dynamic and throws on failure during debugging
      */
     template <typename Out, typename In>
-    constexpr inline auto static_down_cast(const std::shared_ptr<In> &in)
+    constexpr auto static_down_cast(const std::shared_ptr<In> &in)
 #ifdef DEBUG
     {
         return dynamic_down_cast<Out>(in);
@@ -82,7 +82,7 @@ namespace Utils {
      *  Is dynamic and throws on failure during debugging
      */
     template <typename Out, typename In>
-    constexpr inline auto static_side_cast(const std::shared_ptr<In> &in)
+    constexpr auto static_side_cast(const std::shared_ptr<In> &in)
 #ifdef DEBUG
     {
         return dynamic_side_cast<Out>(in);
@@ -98,7 +98,7 @@ namespace Utils {
      *  Note: this does not do any static assertion verification itself
      */
     template <typename Out, typename In>
-    constexpr inline bool dynamic_test(const std::shared_ptr<In> &in) {
+    constexpr bool dynamic_test(const std::shared_ptr<In> &in) {
         return dynamic_cast<Constants::CTSC<Out>>(in.get()) != nullptr;
     }
 
@@ -108,8 +108,7 @@ namespace Utils {
      *  Note: This requires the type of exception to be thrown to be passed
      */
     template <typename To, typename Err, typename In, typename... Args>
-    constexpr inline void dynamic_test_throw_on_fail(const std::shared_ptr<In> &in,
-                                                     const Args &...args) {
+    constexpr void dynamic_test_throw_on_fail(const std::shared_ptr<In> &in, const Args &...args) {
         affirm<Err>(dynamic_test<To>(in), args...);
     }
 

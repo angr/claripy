@@ -5,7 +5,7 @@
 #ifndef R_FACTORY_PRIVATE_HASSTATICCUID_HPP_
 #define R_FACTORY_PRIVATE_HASSTATICCUID_HPP_
 
-#include <type_traits>
+#include "../../utils.hpp"
 
 
 namespace Factory::Private {
@@ -27,7 +27,7 @@ namespace Factory::Private {
     struct HasStaticCUID<T, decltype((void) T::static_cuid, 0)> final : std::true_type {};
 
     /** Used to determine of T has a static_cuid variable */
-    template <typename T> const inline constexpr bool has_static_cuid = HasStaticCUID<T>::value;
+    template <typename T> UTILS_ICCBOOL has_static_cuid = HasStaticCUID<T>::value;
 
 } // namespace Factory::Private
 
