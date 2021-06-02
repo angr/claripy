@@ -25,6 +25,9 @@ namespace Backend {
         using BORCPtr = const BackendObj *;
 
       public:
+        // Define implicits
+        SET_IMPLICITS(Generic, default)
+
         // Pure Virtual Functions
 
         /** Create a new thread local solver and return an opaque shared pointer to it
