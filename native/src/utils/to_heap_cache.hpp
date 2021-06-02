@@ -27,7 +27,9 @@ namespace Utils {
         /** Constructor */
         inline ToHeapCache() { reserve(); }
 
-        /** Move x onto the heap */
+        /** Move x onto the heap
+         * \todo: Wrap return value in std::launder? I don't think it is needed
+         */
         inline T *move_to_heap(T &&x) {
             // Construct our new T on pop()'s memory
             return new (pop()) T { std::move(x) }; // NOLINT
