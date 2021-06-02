@@ -10,7 +10,10 @@
 #include "tl_ctx.hpp"
 
 #include "../../error.hpp"
+#include "../../simplification.hpp"
 #include "../generic.hpp"
+
+#include <memory>
 
 
 namespace Backend::Z3 {
@@ -22,7 +25,7 @@ namespace Backend::Z3 {
 
       public:
         /********************************************************************/
-        /*                        Function Overrides                        */
+        /*                     Small Function Overrides                     */
         /********************************************************************/
 
         /** Destructor */
@@ -75,6 +78,42 @@ namespace Backend::Z3 {
             throw Utils::Error::Unexpected::NotSupported("This has yet to be implemented"); // TODO
         }
 
+      private:
+        /** An abbreviation for Utils::ThreadSafe::Mutable */
+        template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
+
+        // Caches
+
+        /** A helper function that tries to get an object from a cache
+         *  Returns a pair; the first value is a boolean that stores if it was found
+         *  The second value is the value that was found, or default constructed if not found
+         *  Note that the second value is copied to ensure thread safety
+         */
+        template <typename Key, typename Value>
+        static std::pair<bool, Value> get_from_cache(const TSM<std::map<Key, Value>> &tsm_cache,
+                                                     const Key &key) {
+            auto [cache, _] = tsm_cache.scoped_shared();
+            if (const auto lookup { cache.find(key) }; lookup != cache.end()) {
+                return { true, lookup->second };
+            }
+            return { false, {} };
+        }
+
+        /** is_true cache
+         *  Map an expression hash to the result of is_true
+         */
+        inline static TSM<std::map<Hash::Hash, const bool>> is_true_cache {};
+
+        /** is_false cache
+         *  Map an expression hash to the result of is_false
+         */
+        inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
+
+        /********************************************************************/
+        /*                 Large Dispatch Function Overrides                */
+        /********************************************************************/
+
+      public:
         /** This dynamic dispatcher converts expr into a backend object
          *  All arguments of expr that are not primitives have been
          *  pre-converted into backend objects and are in args
@@ -376,45 +415,19 @@ namespace Backend::Z3 {
         }
 
         /** Abstract a backend object into a claricpp expression */
-        Expression::BasePtr abstract(const z3::expr &input) override final {
-            (void) input;
+        Expression::BasePtr
+        dispatch_abstraction(const z3::expr &b_obj,
+                             std::vector<Expression::BasePtr> &args) override final {
 
+            // TODO:
+            (void) b_obj;
+            (void) args;
+            Expression::BasePtr ret { nullptr };
 
-            // Simplification::cache(ret->hash, ret);
-
-            return { nullptr }; // TODO
+            // Declare ret as fully simplified then return it
+            Simplification::cache(ret->hash, ret);
+            return ret;
         }
-
-      private:
-        /** An abbreviation for Utils::ThreadSafe::Mutable */
-        template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
-
-        // Caches
-
-        /** A helper function that tries to get an object from a cache
-         *  Returns a pair; the first value is a boolean that stores if it was found
-         *  The second value is the value that was found, or default constructed if not found
-         *  Note that the second value is copied to ensure thread safety
-         */
-        template <typename Key, typename Value>
-        static std::pair<bool, Value> get_from_cache(const TSM<std::map<Key, Value>> &tsm_cache,
-                                                     const Key &key) {
-            auto [cache, _] = tsm_cache.scoped_shared();
-            if (const auto lookup { cache.find(key) }; lookup != cache.end()) {
-                return { true, lookup->second };
-            }
-            return { false, {} };
-        }
-
-        /** is_true cache
-         *  Map an expression hash to the result of is_true
-         */
-        inline static TSM<std::map<Hash::Hash, const bool>> is_true_cache {};
-
-        /** is_false cache
-         *  Map an expression hash to the result of is_false
-         */
-        inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
     };
 
 } // namespace Backend::Z3

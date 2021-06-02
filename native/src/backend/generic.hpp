@@ -40,7 +40,7 @@ namespace Backend {
         void downsize() override {
             errored_cache.scoped_unique().first.clear();
             // Thread locals
-            object_cache.clear();
+            conversion_cache.clear();
         }
 
         /** Checks whether this backend can handle the expression
@@ -56,17 +56,15 @@ namespace Backend {
             return true;
         }
 
-        /** Abstract a backend object into a claricpp expression */
-        virtual Expression::BasePtr abstract(const BackendObj &input) = 0;
-
         /** Convert a claricpp Expression to a backend object
-         *  This function does not deal with the lifetimes of expressions
+         *  This function does not deal with the lifetimes of Expressions
          *  This function does deal with the lifetimes of backend objects
+         *  This is a worklist algorithm instead of recusion
          */
         BackendObj convert(const Expression::RawPtr input) {
             using UnknownErr = Utils::Error::Unexpected::Unknown;
 
-            // Functionally a stack of lists of expression to be converted
+            // Functionally a stack of lists of expressions to be converted
             // We flatten and reverse this list for preformance reasons
             // To denote the end of a list we prefix its elements with a nullptr
             // Note prefix because we reversed the list, thus the 'end' must come first
@@ -87,15 +85,15 @@ namespace Backend {
                     const auto *const op { expr->op.get() };
 
                     // Cache lookups
-                    if (const auto [map, _] = errored_cache.scoped_shared();
-                        map.find(expr->hash) != map.end()) {
-                        using Unsupported = Error::Backend::Unsupported;
-                        throw Unsupported(name(), " cannot handle operation: ", op->op_name());
-                    }
-                    else if (const auto lookup = object_cache.find(expr->hash);
-                             lookup != object_cache.end()) {
+                    if (const auto lookup = conversion_cache.find(expr->hash);
+                        lookup != conversion_cache.end()) {
                         arg_stack.emplace_back(&(lookup->second));
                         continue;
+                    }
+                    else if (const auto [map, _] = errored_cache.scoped_shared();
+                             map.find(expr->hash) != map.end()) {
+                        using Unsupported = Error::Backend::Unsupported;
+                        throw Unsupported(name(), " cannot handle operation: ", op->op_name());
                     }
 
                     // Update stacks
@@ -110,6 +108,7 @@ namespace Backend {
                     expr = op_stack.top();
                     op_stack.pop();
 
+                    // TODO: Should this be cached? I think it is above though
                     // Convert the expression to a backend object
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
                     if constexpr (ApplyAnnotations) {
@@ -117,7 +116,7 @@ namespace Backend {
                     }
 
                     // Store the result in the arg stack and in the cache
-                    auto &&[iter, success] = object_cache.emplace(expr->hash, std::move(obj));
+                    auto &&[iter, success] = conversion_cache.emplace(expr->hash, std::move(obj));
 #ifdef DEBUG
                     Utils::affirm<UnknownErr>(success, WHOAMI_WITH_SOURCE
                                               "Cache update failed for some reason.");
@@ -133,36 +132,56 @@ namespace Backend {
             chk(op_stack.empty(), WHOAMI_WITH_SOURCE "op_stack should be empty");
             chk(expr_stack.empty(), WHOAMI_WITH_SOURCE "expr_stack should be empty");
             chk(arg_stack.size() == 1, WHOAMI_WITH_SOURCE "arg_stack should be of size: 1");
-            const auto lookup { object_cache.find(input->hash) };
-            chk(lookup != object_cache.end(),
-                WHOAMI_WITH_SOURCE "object_cache does not contain expr hash");
+            const auto lookup { conversion_cache.find(input->hash) };
+            chk(lookup != conversion_cache.end(),
+                WHOAMI_WITH_SOURCE "conversion_cache does not contain expr hash");
             chk(&lookup->second == arg_stack.back(),
-                WHOAMI_WITH_SOURCE "object_cache lookup does not match arg_stack back()");
-            chk(arg_stack.back() == &object_cache.find(input->hash)->second,
-                WHOAMI_WITH_SOURCE "arg_stack / object_cache mismatch at end of convert");
+                WHOAMI_WITH_SOURCE "conversion_cache lookup does not match arg_stack back()");
+            chk(arg_stack.back() == &conversion_cache.find(input->hash)->second,
+                WHOAMI_WITH_SOURCE "arg_stack / conversion_cache mismatch at end of convert");
 #endif
             // Return result
-            return *arg_stack.back(); // shortcut for object_cache.find(input->hash)->second;
+            return *arg_stack.back(); // shortcut for conversion_cache.find(input->hash)->second;
+        }
+
+        /** Abstract a backend object into a claricpp Expression */
+        Expression::BasePtr abstract(const BackendObj &b_obj) {
+            /* inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
+             * abstraction_cache {}; */
+            /* Hash */
+            (void) b_obj;
+            return { nullptr };
         }
 
       protected:
         // Pure Virtual Functions
 
-        /** This dynamic dispatcher converts expr into a backend object
-         *  All arguments of expr that are not primitives have been
-         *  pre-converted into backend objects and are in args
+        /** This dynamic dispatcher converts an expression into a backend object
+         *  All arguments of expr that are not primitives have
+         *  been pre-converted into backend objects and are in args
          *  Arguments must be popped off the args stack if used
          *  Note that we use a raw vector instead of a stack for efficiency
          */
         virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
                                                std::vector<BORCPtr> &args) = 0;
 
+        /** This dynamic dispatcher converts a backend object into an expression
+         *  All arguments of b_obj that are not primitives have
+         *  been pre-converted into expressions and are in args
+         *  Arguments must be popped off the args stack if used
+         *  Note that we use a raw vector instead of a stack for efficiency
+         */
+        virtual Expression::BasePtr
+        dispatch_abstraction(const BackendObj &b_obj, std::vector<Expression::BasePtr> &args) = 0;
+
         // Virtual Functions
 
         /** Destructor */
         ~Generic() noexcept override = default;
 
-        /** This applies the given annotations to the backend object */
+        /** This applies the given annotations to the backend object
+         *  \todo Implement this function
+         */
         virtual void apply_annotations(BackendObj &o, Expression::Base::SPAV &&sp) {
             (void) o;
             (void) sp;
@@ -183,10 +202,16 @@ namespace Backend {
          */
         inline static Utils::ThreadSafe::Mutable<std::set<Hash::Hash>> errored_cache {};
 
-        /** Thread local object cache
+        /** Thread local converstion cache
          *  Map an expression hash to a backend object representing it
          */
-        inline static thread_local std::map<Hash::Hash, const BackendObj> object_cache {};
+        inline static thread_local std::map<Hash::Hash, const BackendObj> conversion_cache {};
+
+        /** Thread local abstraction cache
+         *  Map a backend object's hash to an expression base pointer
+         */
+        inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
+            abstraction_cache {};
     };
 
 } // namespace Backend
