@@ -8,6 +8,7 @@
 #include "base.hpp"
 
 #include "../op.hpp"
+#include "../simplification.hpp"
 
 #include <memory>
 #include <stack>
@@ -149,6 +150,10 @@ namespace Backend {
             /* inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
              * abstraction_cache {}; */
             /* Hash */
+
+            // result = dispatch_abstraction
+            // Simplification::cache(result->hash, result);
+
             (void) b_obj;
             return { nullptr };
         }
@@ -160,7 +165,7 @@ namespace Backend {
          *  All arguments of expr that are not primitives have
          *  been pre-converted into backend objects and are in args
          *  Arguments must be popped off the args stack if used
-         *  Note that we use a raw vector instead of a stack for efficiency
+         *  Note: We use a raw vector instead of a stack for efficiency
          */
         virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
                                                std::vector<BORCPtr> &args) = 0;
@@ -169,7 +174,8 @@ namespace Backend {
          *  All arguments of b_obj that are not primitives have
          *  been pre-converted into expressions and are in args
          *  Arguments must be popped off the args stack if used
-         *  Note that we use a raw vector instead of a stack for efficiency
+         *  Note: We use a raw vector instead of a stack for efficiency
+         *  Note: This function should not edit the Simplification cache
          */
         virtual Expression::BasePtr
         dispatch_abstraction(const BackendObj &b_obj, std::vector<Expression::BasePtr> &args) = 0;

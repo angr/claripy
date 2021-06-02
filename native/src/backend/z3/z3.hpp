@@ -10,7 +10,6 @@
 #include "tl_ctx.hpp"
 
 #include "../../error.hpp"
-#include "../../simplification.hpp"
 #include "../generic.hpp"
 
 #include <memory>
@@ -418,15 +417,9 @@ namespace Backend::Z3 {
         Expression::BasePtr
         dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<Expression::BasePtr> &args) override final {
-
-            // TODO:
             (void) b_obj;
             (void) args;
-            Expression::BasePtr ret { nullptr };
-
-            // Declare ret as fully simplified then return it
-            Simplification::cache(ret->hash, ret);
-            return ret;
+            return { nullptr };
         }
     };
 
