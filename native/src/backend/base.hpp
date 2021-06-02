@@ -22,7 +22,7 @@ namespace Backend {
     class Base {
       public:
         // Define implicits
-        SET_IMPLICITS(Base, default)
+        DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         // Pure virtual functions
 

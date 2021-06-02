@@ -26,7 +26,9 @@ namespace Backend {
 
       public:
         // Define implicits
-        SET_IMPLICITS(Generic, default)
+        DEFINE_IMPLICITS_ALL_NOEXCEPT(Generic);
+        /** Destructor */
+        ~Generic() noexcept override = default;
 
         // Pure Virtual Functions
 
@@ -184,9 +186,6 @@ namespace Backend {
         dispatch_abstraction(const BackendObj &b_obj, std::vector<Expression::BasePtr> &args) = 0;
 
         // Virtual Functions
-
-        /** Destructor */
-        ~Generic() noexcept override = default;
 
         /** This applies the given annotations to the backend object
          *  \todo Implement this function

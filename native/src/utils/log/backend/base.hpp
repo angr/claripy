@@ -26,7 +26,7 @@ namespace Utils::Log::Backend {
 
       public:
         // Rule of 5
-        SET_IMPLICITS(Base, default)
+        DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         /** Log the given message, level, to the correct log given by log_id */
         virtual void log(Constants::CCSC id, const Level::Level &lvl,

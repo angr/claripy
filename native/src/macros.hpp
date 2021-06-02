@@ -96,36 +96,81 @@
 /********************************************************************/
 
 
-/** A macro used to enable/disable the implict operators of a class */
-#define SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                     \
+/** A macro used to enable/disable the implict operators of a class
+ *  noexcept may be added as a third optional argument applied to move semantics
+ */
+#define SET_IMPLICITS_OPERATORS(CLASS, VALUE, ...)                                                \
     /** Define the copy operator */                                                               \
     CLASS &operator=(const CLASS &) = VALUE;                                                      \
     /** Define the move operator */                                                               \
-    CLASS &operator=(CLASS &&) = VALUE;
+    CLASS &operator=(CLASS &&) __VA_ARGS__ = VALUE;
 
-/** A macro used to enable/disable the implicit non-default constructors of a class */
-#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                              \
+/** A macro used to enable/disable the implicit non-default constructors of a class
+ *  noexcept may be added as a third optional argument applied to move semantics
+ */
+#define SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, ...)                                         \
     /** Define the default copy constructor */                                                    \
     CLASS(const CLASS &) = VALUE;                                                                 \
     /** Define the default move constructor */                                                    \
-    CLASS(CLASS &&) = VALUE;
+    CLASS(CLASS &&) __VA_ARGS__ = VALUE;
 
 /** A macro used to enable/disable all implict constructors and operators of a class
  *  except for the default constructor
+ *  noexcept may be added as a third optional argument applied to move semantics
  */
-#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                          \
-    SET_IMPLICITS_OPERATORS(CLASS, VALUE)                                                         \
-    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)
+#define SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE, ...)                                     \
+    SET_IMPLICITS_OPERATORS(CLASS, VALUE, __VA_ARGS__)                                            \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)
 
-/** A macro used to enable/disable all implicit constructors and operators of a class */
-#define SET_IMPLICITS(CLASS, VALUE)                                                               \
-    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE)                                              \
+/** A macro used to enable/disable all implicit constructors and operators of a class
+ *  noexcept may be added as a third optional argument applied to move semantics
+ */
+#define SET_IMPLICITS(CLASS, VALUE, ...)                                                          \
+    SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CLASS, VALUE, __VA_ARGS__)                                 \
     /** Define the default constructor */                                                         \
     CLASS() = VALUE;
 
-/** Set the implicits of a class with const members */
-#define SET_IMPLICITS_CONST_MEMBERS(CLASS, VALUE)                                                 \
-    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE)                                                  \
+/** Set the implicits of a class with const members
+ *  noexcept may be added as a third optional argument applied to move semantics
+ */
+#define SET_IMPLICITS_CONST_MEMBERS(CLASS, VALUE, ...)                                            \
+    SET_IMPLICITS_NONDEFAULT_CTORS(CLASS, VALUE, __VA_ARGS__)                                     \
+    SET_IMPLICITS_OPERATORS(CLASS, delete)                                                        \
+    /** Disable the default constructor */                                                        \
+    CLASS() = delete;
+
+// All noexcept implicits
+
+/** A macro used to enable the implict operators of a class as noexcept */
+#define DEFINE_IMPLICITS_OPERATORS_ALL_NOEXCEPT(CLASS)                                            \
+    /** Define the copy operator */                                                               \
+    CLASS &operator=(const CLASS &) noexcept = default;                                           \
+    /** Define the move operator */                                                               \
+    CLASS &operator=(CLASS &&) noexcept = default;
+
+/** A macro used to enable the implict non-default constructors of a class as noexcept */
+#define DEFINE_IMPLICITS_NONDEFAULT_CTORS_ALL_NOEXCEPT(CLASS)                                     \
+    /** Define the default copy constructor */                                                    \
+    CLASS(const CLASS &) noexcept = default;                                                      \
+    /** Define the default move constructor */                                                    \
+    CLASS(CLASS &&) noexcept = default;
+
+/** A macro used to enable all implict constructors and operators of a class as noexcept
+ *  except for the default constructor which is not set at all
+ */
+#define DEFINE_IMPLICITS_EXCLUDE_DEFAULT_CTOR_ALL_NOEXCEPT(CLASS)                                 \
+    DEFINE_IMPLICITS_OPERATORS_ALL_NOEXCEPT(CLASS)                                                \
+    DEFINE_IMPLICITS_NONDEFAULT_CTORS_ALL_NOEXCEPT(CLASS)
+
+/** A macro used to enable all implicit constructors and operators of a class as noexcept */
+#define DEFINE_IMPLICITS_ALL_NOEXCEPT(CLASS)                                                      \
+    DEFINE_IMPLICITS_EXCLUDE_DEFAULT_CTOR_ALL_NOEXCEPT(CLASS)                                     \
+    /** Define the default constructor */                                                         \
+    CLASS() noexcept = default;
+
+/** Set the implicits of a class with const members as noexcept */
+#define DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(CLASS)                                        \
+    DEFINE_IMPLICITS_NONDEFAULT_CTORS_ALL_NOEXCEPT(CLASS)                                         \
     SET_IMPLICITS_OPERATORS(CLASS, delete)                                                        \
     /** Disable the default constructor */                                                        \
     CLASS() = delete;

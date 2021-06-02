@@ -26,7 +26,7 @@ namespace Hash {
         virtual inline ~Hashed() noexcept = 0;
 
         // Rule of 5
-        SET_IMPLICITS_CONST_MEMBERS(Hashed, default)
+        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Hashed);
     };
 
     /** Default virtual destructor */

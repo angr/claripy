@@ -26,7 +26,7 @@ namespace Utils::ThreadSafe {
         /** Virtual destructor */
         virtual ~Base() noexcept = default;
         // Rule of 5
-        SET_IMPLICITS(Base, default);
+        DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
     };
 
 } // namespace Utils::ThreadSafe

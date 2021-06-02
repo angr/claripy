@@ -29,8 +29,8 @@ namespace Utils::Error {
         template <typename... Args>
         explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
 
-        // Rule of 5
-        SET_IMPLICITS_CONST_MEMBERS(Claricpp, default);
+        // Rule of 5 (note that std::string is not noexcept constructible)
+        SET_IMPLICITS_CONST_MEMBERS(Claricpp, default, noexcept);
 
         /** Default virtual destructor */
         ~Claricpp() noexcept override = default;

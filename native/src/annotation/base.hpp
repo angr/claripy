@@ -20,14 +20,14 @@ namespace Annotation {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Constructor */
-        explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid)
+        explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid) noexcept
             : FactoryMade { h, c } {}
 
         /** Virtual destructor */
         ~Base() noexcept override = default;
 
         // Rule of 5
-        SET_IMPLICITS_NONDEFAULT_CTORS(Base, default)
+        DEFINE_IMPLICITS_NONDEFAULT_CTORS_ALL_NOEXCEPT(Base);
 
         /** Returns whether this annotation can be eliminated in a simplification.
          * True if eliminatable, False otherwise

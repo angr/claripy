@@ -26,7 +26,7 @@ namespace Utils::Log::Style {
 
       public:
         // Rule of 5
-        SET_IMPLICITS(Base, default)
+        DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         /** Format the log message */
         virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,

@@ -24,7 +24,7 @@ namespace PyObj {
         virtual inline ~Base() noexcept = 0;
 
         // Default implicits
-        SET_IMPLICITS_CONST_MEMBERS(Base, default);
+        DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Base);
 
         /** The reference to the python object */
         const Constants::UInt ref;

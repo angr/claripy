@@ -26,7 +26,7 @@ struct BitLength {
     virtual inline ~BitLength() noexcept = 0;
 
     // Rule of 5
-    SET_IMPLICITS_CONST_MEMBERS(BitLength, default)
+    DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(BitLength);
 };
 
 /** Default virtual destructor */
