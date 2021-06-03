@@ -45,8 +45,11 @@ namespace Backend::Z3 {
         /** The name of this backend */
         [[nodiscard]] const char *name() const noexcept override final { return "z3"; }
 
-        /** Return true if expr is always true */
+        /** Return true if expr is always true
+         *  expr may not be nullptr
+         */
         bool is_true(const Expression::RawPtr &expr) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
             if (in_cache) {
                 return res;
@@ -57,8 +60,11 @@ namespace Backend::Z3 {
             return ret;
         }
 
-        /** Return true if expr is always false */
+        /** Return true if expr is always false
+         *  expr may not be nullptr
+         */
         bool is_false(const Expression::RawPtr &expr) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
             if (in_cache) {
                 return res;
@@ -70,9 +76,11 @@ namespace Backend::Z3 {
         }
 
         /** Simplify the given expression
+         *  expr may not be nullptr
          *  @todo: Currently this is stubbed, it needs to be implemented
          */
         Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             (void) expr;
             throw Utils::Error::Unexpected::NotSupported("This has yet to be implemented"); // TODO
         }
@@ -117,11 +125,14 @@ namespace Backend::Z3 {
          *  All arguments of expr that are not primitives have been
          *  pre-converted into backend objects and are in args
          *  Arguments must be popped off the args stack if used
+         *  expr may not be nullptr
          *  Warning: This function may internally do unchecked static casting, we permit this
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
         z3::expr dispatch_conversion(const Expression::RawPtr expr,
                                      std::vector<const z3::expr *> &args) override final {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
@@ -202,10 +213,8 @@ namespace Backend::Z3 {
                 // This should never be hit
                 default: {
                     throw Utils::Error::Unexpected::NotSupported(
-                        WHOAMI_WITH_SOURCE
-                        "Unknown expression op given to z3::dispatch_conversion."
-                        "\nOp CUID: ",
-                        expr->op->cuid);
+                        WHOAMI_WITH_SOURCE "Unknown expression op given to ", __func__,
+                        "\nOp CUID: ", expr->op->cuid);
                 }
 
                 // Unsupported ops
@@ -213,11 +222,9 @@ namespace Backend::Z3 {
                 case Op::Union::static_cuid:           // fallthrough
                 case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
-                    throw Error::Backend::Unsupported(
-                        WHOAMI_WITH_SOURCE
-                        "Unknown expression op given to z3::dispatch_conversion."
-                        "\nOp CUID: ",
-                        expr->op->cuid);
+                    throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
+                                                      "Unknown expression op given to ",
+                                                      __func__, "\nOp CUID: ", expr->op->cuid);
                 }
 
                     /************************************************/
@@ -413,10 +420,13 @@ namespace Backend::Z3 {
 #undef FLAT_CASE
         }
 
-        /** Abstract a backend object into a claricpp expression */
+        /** Abstract a backend object into a claricpp expression
+         *  b_obj may not be nullptr
+         */
         Expression::BasePtr
-        dispatch_abstraction(const z3::expr &b_obj,
+        dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
                              std::vector<Expression::BasePtr> &args) override final {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
             (void) b_obj;
             (void) args;
             return { nullptr };

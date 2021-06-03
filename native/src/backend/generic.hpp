@@ -51,8 +51,10 @@ namespace Backend {
 
         /** Checks whether this backend can handle the expression
          *  @todo Make this better than this simplistic way
+         *  expr may not be nullptr
          */
         bool handles(const Expression::RawPtr expr) override {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             try {
                 (void) convert(expr);
             }
@@ -66,9 +68,11 @@ namespace Backend {
          *  This function does not deal with the lifetimes of Expressions
          *  This function does deal with the lifetimes of backend objects
          *  This is a worklist algorithm instead of recusion
+         *  input may not be nullptr
          */
         BackendObj convert(const Expression::RawPtr input) {
             using UnknownErr = Utils::Error::Unexpected::Unknown;
+            UTILS_AFFIRM_NOT_NULL_DEBUG(input);
 
             // Functionally a stack of lists of expressions to be converted
             // We flatten and reverse this list for preformance reasons
@@ -150,8 +154,11 @@ namespace Backend {
             return *arg_stack.back(); // shortcut for conversion_cache.find(input->hash)->second;
         }
 
-        /** Abstract a backend object into a claricpp Expression */
-        Expression::BasePtr abstract(const BackendObj &b_obj) {
+        /** Abstract a backend object into a claricpp Expression
+         *  b_obj may not nullptr
+         */
+        Expression::BasePtr abstract(Constants::CTSC<BackendObj> b_obj) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
             /* inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
              * abstraction_cache {}; */
             /* Hash */
@@ -170,6 +177,7 @@ namespace Backend {
          *  All arguments of expr that are not primitives have
          *  been pre-converted into backend objects and are in args
          *  Arguments must be popped off the args stack if used
+         *  expr may not be nullptr
          *  Note: We use a raw vector instead of a stack for efficiency
          */
         virtual BackendObj dispatch_conversion(const Expression::RawPtr expr,
@@ -179,11 +187,13 @@ namespace Backend {
          *  All arguments of b_obj that are not primitives have
          *  been pre-converted into expressions and are in args
          *  Arguments must be popped off the args stack if used
+         *  b_obj may not be nullptr
          *  Note: We use a raw vector instead of a stack for efficiency
          *  Note: This function should not edit the Simplification cache
          */
         virtual Expression::BasePtr
-        dispatch_abstraction(const BackendObj &b_obj, std::vector<Expression::BasePtr> &args) = 0;
+        dispatch_abstraction(Constants::CTSC<BackendObj> b_obj,
+                             std::vector<Expression::BasePtr> &args) = 0;
 
         // Virtual Functions
 

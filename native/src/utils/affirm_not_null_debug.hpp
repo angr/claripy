@@ -6,6 +6,7 @@
 #ifndef R_UTILS_AFFIRMNOTNULLDEBUG_HPP_
 #define R_UTILS_AFFIRMNOTNULLDEBUG_HPP_
 
+#include "affirm.hpp"
 #include "error.hpp"
 
 
@@ -13,9 +14,8 @@
 
     /** A macro that nullchecks (X) iff DEBUG is defined */
     #define UTILS_AFFIRM_NOT_NULL_DEBUG(X)                                                        \
-        if (UNLIKELY((X) == nullptr)) {                                                           \
-            throw ::Utils::Error::Unexpected::Null(WHOAMI_WITH_SOURCE "Nullptr detected.");       \
-        }
+        ::Utils::affirm<::Utils::Error::Unexpected::Null>(WHOAMI_WITH_SOURCE "Nullptr "           \
+                                                                             "detected.");
 
 #else
 
