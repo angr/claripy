@@ -12,8 +12,11 @@
 namespace Simplification {
 
     namespace Private {
-        /** Simplify old and return the result */
-        inline Expression::BasePtr simplify(const Factory::Ptr<Expression::Base> &old) {
+        /** Simplify old and return the result
+         *  old may not be nullptr
+         */
+        inline Expression::BasePtr simplify(const Expression::BasePtr &old) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(old->op); // Sanity check
             if (const auto itr { op_map.find(old->op->cuid) }; itr != op_map.end()) {
                 return itr->second(old);
             }
@@ -25,8 +28,11 @@ namespace Simplification {
         }
     } // namespace Private
 
-    /** Simplify old and return the result */
-    inline Expression::BasePtr simplify(const Factory::Ptr<Expression::Base> &old) {
+    /** Simplify old and return the result
+     *  old may not be nullptr
+     */
+    inline Expression::BasePtr simplify(const Expression::BasePtr &old) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(old);
         if (auto lookup { Private::cache.find(old->hash) }; lookup) {
             Utils::Log::verbose("Simplification cache hit");
             return lookup;
