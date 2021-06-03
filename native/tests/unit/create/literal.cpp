@@ -51,8 +51,9 @@ void literal() {
     literal_t<Expression::BV>(data_v, C_CHAR_BIT * data_v.size());
     literal_t<Expression::FP>(3.4, 64_ui);  // NOLINT
     literal_t<Expression::FP>(3.4f, 32_ui); // NOLINT
-    const auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
-    literal_t<Expression::VS>(std::move(ptr), ptr->bit_length);
+    auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
+	const auto bl { ptr->bit_length };
+    literal_t<Expression::VS>(std::move(ptr), bl);
 }
 
 // Define the test

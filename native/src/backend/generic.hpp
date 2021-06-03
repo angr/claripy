@@ -71,8 +71,10 @@ namespace Backend {
          *  input may not be nullptr
          */
         BackendObj convert(const Expression::RawPtr input) {
+#ifdef DEBUG
             using UnknownErr = Utils::Error::Unexpected::Unknown;
             UTILS_AFFIRM_NOT_NULL_DEBUG(input);
+#endif
 
             // Functionally a stack of lists of expressions to be converted
             // We flatten and reverse this list for preformance reasons
@@ -81,8 +83,8 @@ namespace Backend {
             // Each list represents the arguments of an expression
             Op::Base::Stack expr_stack { std::vector<Expression::RawPtr> { nullptr, input } };
             Op::Base::Stack op_stack;       // Expressions to give to the conversion dispatcher
-                                            // We leave this as a vector for preformance reasons
-                                            // within the dispatcher
+                                            // We leave this as a vector for preformance
+                                            // reasons within the dispatcher
             std::vector<BORCPtr> arg_stack; // Converted backend objects
 
             // For the next element in our expr_stack
