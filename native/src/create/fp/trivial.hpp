@@ -18,19 +18,25 @@ namespace Create::FP {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create a Expression with an FP::IsInf op */
+    /** Create a Expression with an FP::IsInf op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr is_inf(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Ex::FP>(x, std::move(sp));
     }
 
-    /** Create a Expression with an FP::IsNan op */
+    /** Create a Expression with an FP::IsNan op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr is_nan(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Ex::FP>(x, std::move(sp));
     }
 
-    /** Create a Expression with an FP::ToIEEEBV op */
+    /** Create a Expression with an FP::ToIEEEBV op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr to_ieee_bv(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
@@ -48,13 +54,21 @@ namespace Create::FP {
                                                                           std::move(sp));         \
     }
 
-    /** Create a Expression with an FP::Add op */
+    /** Create a Expression with an FP::Add op
+     *  Expression pointers may not be nullptr
+     */
     FP_MB_SMF_ARITH(add, Add);
-    /** Create a Expression with an FP::Sub op */
+    /** Create a Expression with an FP::Sub op
+     *  Expression pointers may not be nullptr
+     */
     FP_MB_SMF_ARITH(sub, Sub);
-    /** Create a Expression with an FP::Mul op */
+    /** Create a Expression with an FP::Mul op
+     *  Expression pointers may not be nullptr
+     */
     FP_MB_SMF_ARITH(mul, Mul);
-    /** Create a Expression with an FP::Div op */
+    /** Create a Expression with an FP::Div op
+     *  Expression pointers may not be nullptr
+     */
     FP_MB_SMF_ARITH(div, Div);
 
     // Cleanup
@@ -64,7 +78,9 @@ namespace Create::FP {
     /*                  Ternary Passthrough Functions                   */
     /********************************************************************/
 
-    /** Create an Expression with an FP::FP op */
+    /** Create an Expression with an FP::FP op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr fp(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
                        SPAV &&sp = nullptr) {
         namespace Ex = Expression;

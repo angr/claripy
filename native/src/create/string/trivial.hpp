@@ -16,7 +16,9 @@ namespace Create::String {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create a bool Expression with an String::IsDigit op */
+    /** Create a bool Expression with an String::IsDigit op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr is_digit(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
@@ -29,6 +31,7 @@ namespace Create::String {
 
     /** Create an Expression with an String::SignExt op
      *  Note: Currently Ints are taken in as BVs
+     *  Expression pointers may not be nullptr
      */
     inline EBasePtr to_int(const EBasePtr &expr, const Constants::UInt integer,
                            SPAV &&sp = nullptr) {
@@ -40,6 +43,7 @@ namespace Create::String {
 
     /** Create an Expression with an String::Len op
      *  Note: Currently Ints are output as BVs
+     *  Expression pointers may not be nullptr
      */
     inline EBasePtr len(const EBasePtr &expr, const Constants::UInt integer, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -52,7 +56,9 @@ namespace Create::String {
     /*                   Binary Passthrough Functions                   */
     /********************************************************************/
 
-    /** Create an Expression with a String::Contains op */
+    /** Create an Expression with a String::Contains op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr contains(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
@@ -60,7 +66,9 @@ namespace Create::String {
                           Ex::String>(left, right, std::move(sp));
     }
 
-    /** Create an Expression with a String::PrefixOf op */
+    /** Create an Expression with a String::PrefixOf op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr prefix_of(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
@@ -68,7 +76,9 @@ namespace Create::String {
                           Ex::String>(left, right, std::move(sp));
     }
 
-    /** Create an Expression with a String::SuffixOf op */
+    /** Create an Expression with a String::SuffixOf op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr suffix_of(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;

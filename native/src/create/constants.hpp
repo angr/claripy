@@ -19,9 +19,6 @@ namespace Create {
     /** A shortcut for SPAV */
     using SPAV = Expression::Base::SPAV;
 
-    /** A shortcut for a factory pointer */
-    /* template <typename T> using Ptr = Factory::Ptr<const T>; */
-
     /** A shortcut for Ptr<Expression::Base> */
     using EBasePtr = Expression::BasePtr;
 

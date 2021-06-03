@@ -76,6 +76,7 @@ namespace Create::Private {
     }
 
     /** Create a Expression with a ternary op
+     *  Expression pointers may not be nullptr
      *  A specialization where In = Out
      */
     template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>

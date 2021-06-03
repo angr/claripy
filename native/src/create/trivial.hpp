@@ -18,25 +18,33 @@ namespace Create {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create an Expression with an Abs op */
+    /** Create an Expression with an Abs op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T> inline EBasePtr abs(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<T, T, Op::Abs, Ex::BV, Ex::FP>(x, std::move(sp));
     }
 
-    /** Create an Expression with an Neg op */
+    /** Create an Expression with an Neg op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T> inline EBasePtr neg(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<T, T, Op::Neg, Ex::BV, Ex::FP>(x, std::move(sp));
     }
 
-    /** Create an Expression with an Invert op */
+    /** Create an Expression with an Invert op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T> inline EBasePtr invert(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<T, T, Op::Invert, Ex::BV, Ex::Bool>(x, std::move(sp));
     }
 
-    /** Create an Expression with an Reverse op */
+    /** Create an Expression with an Reverse op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr reverse(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::BV, Ex::BV, Op::Reverse, Ex::BV>(x, std::move(sp));
@@ -46,7 +54,9 @@ namespace Create {
     /*                 Int Binary Passthrough Functions                 */
     /********************************************************************/
 
-    /** Create an Expression with an SignExt op */
+    /** Create an Expression with an SignExt op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr sign_ext(const EBasePtr &expr, const Constants::UInt integer,
                              SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -54,7 +64,9 @@ namespace Create {
                                     Ex::BV>(expr, integer, std::move(sp));
     }
 
-    /** Create an Expression with an ZeroExt op */
+    /** Create an Expression with an ZeroExt op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr zero_ext(const EBasePtr &expr, const Constants::UInt integer,
                              SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -68,7 +80,9 @@ namespace Create {
 
     // Comparisons
 
-    /** Create a Bool Expression with an Eq op */
+    /** Create a Bool Expression with an Eq op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     inline EBasePtr eq(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -76,7 +90,9 @@ namespace Create {
                                Ex::BV, Ex::String>(left, right, std::move(sp));
     }
 
-    /** Create a Bool Expression with an Neq op */
+    /** Create a Bool Expression with an Neq op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     inline EBasePtr neq(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -84,7 +100,9 @@ namespace Create {
                                Ex::BV, Ex::String>(left, right, std::move(sp));
     }
 
-    /** Create an Expression with a Compare op */
+    /** Create an Expression with a Compare op
+     *  Expression pointers may not be nullptr
+     */
     template <typename In, Mode::Compare Mask>
     inline EBasePtr compare(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -99,14 +117,18 @@ namespace Create {
 
     // Math
 
-    /** Create an Expression with an Sub op */
+    /** Create an Expression with an Sub op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr sub(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Sub, Private::SizeMode::First, Ex::BV>(left, right,
                                                                                   std::move(sp));
     }
 
-    /** Create an Expression with an Div op */
+    /** Create an Expression with an Div op
+     *  Expression pointers may not be nullptr
+     */
     template <bool Signed>
     inline EBasePtr div(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -114,14 +136,18 @@ namespace Create {
             left, right, std::move(sp));
     }
 
-    /** Create an Expression with an Pow op */
+    /** Create an Expression with an Pow op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr pow(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Pow, Private::SizeMode::First, Ex::BV>(left, right,
                                                                                   std::move(sp));
     }
 
-    /** Create an Expression with an Mod op */
+    /** Create an Expression with an Mod op
+     *  Expression pointers may not be nullptr
+     */
     template <bool Signed>
     inline EBasePtr mod(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -131,7 +157,9 @@ namespace Create {
 
     // Bitwise
 
-    /** Create an Expression with a Shift op */
+    /** Create an Expression with a Shift op
+     *  Expression pointers may not be nullptr
+     */
     template <Mode::Shift Mask>
     inline EBasePtr arithmetic_shift(const EBasePtr &left, const EBasePtr &right,
                                      SPAV &&sp = nullptr) {
@@ -141,7 +169,9 @@ namespace Create {
             left, right, std::move(sp));
     }
 
-    /** Create an Expression with a Rotate op */
+    /** Create an Expression with a Rotate op
+     *  Expression pointers may not be nullptr
+     */
     template <bool Left>
     inline EBasePtr rotate(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -151,21 +181,27 @@ namespace Create {
 
     // Misc
 
-    /** Create an Expression with an Widen op */
+    /** Create an Expression with an Widen op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr widen(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Widen, Private::SizeMode::First, Ex::BV>(left, right,
                                                                                     std::move(sp));
     }
 
-    /** Create an Expression with an Union op */
+    /** Create an Expression with an Union op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr union_(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Union, Private::SizeMode::First, Ex::BV>(left, right,
                                                                                     std::move(sp));
     }
 
-    /** Create an Expression with an Intersection op */
+    /** Create an Expression with an Intersection op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     inline EBasePtr intersection_(const EBasePtr &left, const EBasePtr &right,
                                   SPAV &&sp = nullptr) {
@@ -174,7 +210,9 @@ namespace Create {
             left, right, std::move(sp));
     }
 
-    /** Create an Expression with an Concat op */
+    /** Create an Expression with an Concat op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     inline EBasePtr concat(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -188,14 +226,18 @@ namespace Create {
 
     // Math
 
-    /** Create an Expression with an Add op */
+    /** Create an Expression with an Add op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr add(Op::Add::OpContainer &&operands, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::flat<Ex::BV, Op::Add, Private::SizeMode::First, Ex::BV>(
             std::move(operands), std::move(sp));
     }
 
-    /** Create an Expression with an Mul op */
+    /** Create an Expression with an Mul op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr mul(Op::Mul::OpContainer &&operands, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::flat<Ex::BV, Op::Mul, Private::SizeMode::First, Ex::BV>(
@@ -204,7 +246,9 @@ namespace Create {
 
     // Logical
 
-    /** Create an Expression with an Or op */
+    /** Create an Expression with an Or op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     inline EBasePtr or_(Op::Or::OpContainer &&operands, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -212,7 +256,9 @@ namespace Create {
             std::move(operands), std::move(sp));
     }
 
-    /** Create an Expression with an And op */
+    /** Create an Expression with an And op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     inline EBasePtr and_(Op::And::OpContainer &&operands, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
@@ -220,7 +266,9 @@ namespace Create {
             std::move(operands), std::move(sp));
     }
 
-    /** Create an Expression with an Xor op */
+    /** Create an Expression with an Xor op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr xor_(Op::Xor::OpContainer &&operands, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::flat<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(

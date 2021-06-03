@@ -73,6 +73,7 @@ namespace Create::Private {
     }
 
     /** Create a Expression with a uint binary op
+     *  Expression pointers may not be nullptr
      *  A specialization where In = Out
      */
     template <typename IntT, typename InOut, typename OpT, SizeMode Mode, typename... Allowed>

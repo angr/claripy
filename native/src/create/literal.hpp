@@ -35,7 +35,9 @@ namespace Create {
         return Private::literal<Expression::FP, float>(float { data }, std::move(sp));
     }
 
-    /** Create a FP Expression with a Literal op containing a single precision float */
+    /** Create a FP Expression with a Literal op containing a single precision float
+     *  data may not be nullptr
+     */
     inline EBasePtr literal(PyObj::VSPtr &&data, SPAV &&sp = nullptr) {
         return Private::literal<Expression::VS, PyObj::VSPtr>(std::move(data), std::move(sp));
     }
