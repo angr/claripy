@@ -18,7 +18,7 @@ namespace Utils::Log::Backend {
     struct Base;
 
     namespace Private {
-        /** Define a private set method */
+        /** Define a private set method; ptr cannot be nullptr */
         void set(std::shared_ptr<const Base> &&ptr);
     } // namespace Private
 

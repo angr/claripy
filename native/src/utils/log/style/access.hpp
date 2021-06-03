@@ -18,7 +18,7 @@ namespace Utils::Log::Style {
     struct Base;
 
     namespace Private {
-        /** Set the logging style */
+        /** Set the logging style; ptr cannot be nullptr */
         void set(std::shared_ptr<const Base> &&ptr);
     } // namespace Private
 

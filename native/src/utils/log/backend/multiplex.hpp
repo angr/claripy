@@ -19,6 +19,7 @@ namespace Utils::Log::Backend {
     /** The multiplex backend
      *  This backend logs to multiple backends
      *  This class is not thread safe when written to after installed as a backend
+     *  Backend shared pointers may not be null
      */
     struct Multiplex final : public Base {
 
@@ -26,11 +27,12 @@ namespace Utils::Log::Backend {
         inline void log(Constants::CCSC id, const Level::Level &lvl,
                         const std::string &msg) const override final {
             for (const auto &i : backends) {
+                UTILS_AFFIRM_NOT_NULL_DEBUG(i);
                 i->log(id, lvl, msg);
             }
         }
 
-        /** Store each backend */
+        /** A container to store every backend: no backend pointers may be null */
         std::vector<std::shared_ptr<const Base>> backends;
     };
 

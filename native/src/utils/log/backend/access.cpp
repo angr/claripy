@@ -7,6 +7,7 @@
 #include "base.hpp"
 #include "default.hpp"
 
+#include "../../affirm_not_null_debug.hpp"
 #include "../../thread_safe.hpp"
 
 
@@ -23,6 +24,7 @@ static ThreadSafe::Access<const Bk> access {
 
 
 void Backend::Private::set(std::shared_ptr<const Base> &&ptr) {
+    UTILS_AFFIRM_NOT_NULL_DEBUG(ptr);
     access.set_shared_ptr_move(std::move(ptr));
 }
 

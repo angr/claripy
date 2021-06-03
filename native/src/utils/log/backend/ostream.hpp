@@ -8,6 +8,9 @@
 
 #include "base.hpp"
 
+#include "../../affirm.hpp"
+#include "../../error.hpp"
+
 #include <exception>
 #include <memory>
 #include <mutex>
@@ -30,13 +33,16 @@ namespace Utils::Log::Backend {
          */
         explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool flush_,
                                 const bool flush_on_exit_ = true) noexcept
-            : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {}
+            : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {
+            Utils::affirm<Utils::Error::Unexpected::IncorrectUsage>(
+                stream != nullptr, WHOAMI_WITH_SOURCE, "stream may not be a null shared_ptr");
+        }
 
         /** A virtual destructor */
         inline ~OStream() noexcept override {
-            if (this->flush_on_exit) {
+            if (flush_on_exit) {
                 try {
-                    this->stream->flush();
+                    stream->flush();
                 }
                 // We are in a destructor, do not propogate exceptions
                 catch (std::exception &) {
@@ -50,15 +56,15 @@ namespace Utils::Log::Backend {
         /** Log the message */
         inline void log(Constants::CCSC, const Level::Level &,
                         const std::string &msg) const override final {
-            std::lock_guard<decltype(this->m)> lock(m);
+            std::lock_guard<decltype(m)> lock(m);
             *stream << msg << "\n";
-            if (this->flush) {
-                this->stream->flush();
+            if (flush) {
+                stream->flush();
             }
         }
 
       private:
-        /** The stream we log to */
+        /** The stream we log to; this may not be nullptr */
         const std::shared_ptr<std::ostream> stream;
 
         /** If true, every time stream is written to the contents are flushed */
