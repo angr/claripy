@@ -24,7 +24,7 @@ using Lvl = Level::Level;
 static auto get_time() {
     static std::mutex m;
     const auto t { std::time(nullptr) };
-    std::unique_lock<decltype(m)> l { m };
+    std::unique_lock<decltype(m)> rw { m };
     return *std::localtime(&t); // NOLINT (this is a thread-unsafe function)
 }
 

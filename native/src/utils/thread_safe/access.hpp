@@ -38,7 +38,7 @@ namespace Utils::ThreadSafe {
 
         /** A getter */
         Ptr get() const {
-            std::shared_lock<std::shared_mutex> r(m);
+            std::shared_lock<decltype(m)> r(m);
             return obj;
         }
 
@@ -64,11 +64,6 @@ namespace Utils::ThreadSafe {
         /** Copy constructor */
         Access(const Access &old) : Base { old }, obj { old.get() } {}
 
-        /** Move constructor is just a copy
-         *  Because of our lock, we cannot specify noexcept
-         */
-        Access(Access &&old) : Base { std::forward<Base>(old) }, obj { old.get() } {} // NOLINT
-
         /** Copy assignment */
         Access &operator=(const Access &old) {
             if (this != &old) {
@@ -78,18 +73,14 @@ namespace Utils::ThreadSafe {
             return *this;
         }
 
-        /** Move assignment is copy assignment
-         *  Because of our lock, we cannot specify noexcept
-         */
-        Access &operator=(Access &&old) {
-            if (this != &old) {
-                Base::operator=(std::forward<Base>(old));
-            }
-            return (*this = old);
-        }
-
         /** Destructor */
         ~Access() noexcept override final = default;
+
+        /** Disable Move constructor */
+        Access(Access &&old) = delete;
+
+        /** Disable move assignment */
+        Access &operator=(Access &&old) = delete;
 
         /************************************************/
         /*                   Setters                    */
