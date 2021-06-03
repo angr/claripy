@@ -19,9 +19,10 @@ namespace Simplification {
     } // namespace Private
 
     /** A method for adding to the simplification cache
-     *  Record that an Expression with Hash h simplifies to Expression e
+     *  Record that an Expression with Hash h simplifies to non-null Expression pointer e
      */
     inline void cache(const Hash::Hash h, const Expression::BasePtr &e) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(e);
         Private::cache.insert(h, e);
     }
 

@@ -47,10 +47,10 @@ namespace Expression {
               symbolic { sym },
               op { std::move(op_) },
               annotations { std::move(sp) } {
+            Utils::affirm<Utils::Error::Unexpected::Usage>(op != nullptr, "op may not be nullptr");
 #ifdef DEBUG
             ctor_debug_checks();
 #endif
-            Utils::affirm<Utils::Error::Unexpected::Usage>(op != nullptr, "op may not be nullptr");
         }
 
         /** Pure virtual destructor */
