@@ -9,6 +9,7 @@
 
 #include "is_strong_enum.hpp"
 #include "private/has_ostream_op.hpp"
+#include "to_underlying.hpp"
 
 
 namespace Utils {
