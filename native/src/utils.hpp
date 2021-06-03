@@ -11,6 +11,7 @@
 #define R_UTILS_HPP_
 
 #include "utils/affirm.hpp"
+#include "utils/affirm_not_null_debug.hpp"
 #include "utils/ansi_color_codes.hpp"
 #include "utils/bitmask.hpp"
 #include "utils/checked_static_cast.hpp"
