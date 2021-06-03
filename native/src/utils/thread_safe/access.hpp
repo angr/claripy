@@ -1,14 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines the thread-safe Access class
- * Note: this class is similiar to std::atomic, except that unlike atomic,
- * we do note require the following to be true:
- * 1. std::is_trivially_copyable<T>::value
- * 2. std::is_copy_constructible<T>::value
- * 3. std::is_move_constructible<T>::value
- * 4. std::is_copy_assignable<T>::value
- * 5. std::is_move_assignable<T>::value
+ * @brief This file defines the thread-safe Access class similiar but different from std::atomic
  */
 #ifndef R_UTILS_THREADSAFE_ACCESS_HPP_
 #define R_UTILS_THREADSAFE_ACCESS_HPP_
@@ -45,14 +38,14 @@ namespace Utils::ThreadSafe {
 
         /** A getter */
         Ptr get() const {
-            std::shared_lock<std::shared_mutex>(this->m);
-            return this->obj;
+            std::shared_lock<std::shared_mutex> r(m);
+            return obj;
         }
 
         /** Clear the internals */
         void clear() {
-            std::lock_guard<decltype(this->m)>(this->m);
-            this->obj.reset();
+            std::lock_guard<decltype(m)> lg(m);
+            obj.reset();
         }
 
         /************************************************/
@@ -80,7 +73,7 @@ namespace Utils::ThreadSafe {
         Access &operator=(const Access &old) {
             if (this != &old) {
                 Base::operator=(checked_static_cast<Base>(old));
-                this->set_ref(old.get());
+                set_ref(old.get());
             }
             return *this;
         }
@@ -103,25 +96,25 @@ namespace Utils::ThreadSafe {
         /************************************************/
 
         /** A setter that takes in a shared pointer of type type */
-        void set_shared_ptr(const Ptr &ptr) { this->set_ref(ptr); }
+        void set_shared_ptr(const Ptr &ptr) { set_ref(ptr); }
 
         /** A setter that takes in a shared pointer of type type */
-        void set_shared_ptr_move(Ptr &&ptr) { this->set_move(std::move(ptr)); }
+        void set_shared_ptr_move(Ptr &&ptr) { set_move(std::move(ptr)); }
 
 
         /** A setter by default constructor */
         template <typename Derived = BaseT> void set_default() {
-            this->set_move(std::move(make_derived_shared<BaseT, Derived>()));
+            set_move(std::move(make_derived_shared<BaseT, Derived>()));
         }
 
         /** A setter by copy constructor */
         template <typename Derived = BaseT> void set_copy(const Derived &t) {
-            this->set_move(std::move(make_derived_shared<BaseT, Derived>(t)));
+            set_move(std::move(make_derived_shared<BaseT, Derived>(t)));
         }
 
         /** A setter by move constructor */
         template <typename Derived = BaseT> void set_move(Derived &&t) {
-            this->set_move(std::move(make_derived_shared<BaseT, Derived>(std::move(t))));
+            set_move(std::move(make_derived_shared<BaseT, Derived>(std::move(t))));
         }
 
 
@@ -129,14 +122,14 @@ namespace Utils::ThreadSafe {
          *  A specialization that requires no Derived parameter
          */
         template <typename... Args> void set_emplace_ref_copy(Args... args) {
-            this->set_emplace_forward_args(std::forward<Args>(args)...);
+            set_emplace_forward_args(std::forward<Args>(args)...);
         }
 
         /** A setter by emplacement with args passed by copy
          *  The general definition
          */
         template <typename Derived, typename... Args> void set_emplace_ref_copy(Args... args) {
-            this->set_emplace_forward_args<Derived>(std::forward<Args>(args)...);
+            set_emplace_forward_args<Derived>(std::forward<Args>(args)...);
         }
 
 
@@ -144,7 +137,7 @@ namespace Utils::ThreadSafe {
          *  A specialization that requires no Derived parameter
          */
         template <typename... Args> void set_emplace_ref_args(const Args &...args) {
-            this->set_move(std::move(std::make_shared<BaseT>(args...)));
+            set_move(std::move(std::make_shared<BaseT>(args...)));
         }
 
         /** A setter by emplacement with args passed by const reference
@@ -152,7 +145,7 @@ namespace Utils::ThreadSafe {
          */
         template <typename Derived, typename... Args>
         void set_emplace_ref_args(const Args &...args) {
-            this->set_move(std::move(make_derived_shared<BaseT, Derived>(args...)));
+            set_move(std::move(make_derived_shared<BaseT, Derived>(args...)));
         }
 
 
@@ -160,7 +153,7 @@ namespace Utils::ThreadSafe {
          *  A specialization that requires no Derived parameter
          */
         template <typename... Args> void set_emplace_foward_args(Args &&...args) {
-            this->set_move(std::move(std::make_shared<BaseT>(std::forward<Args>(args)...)));
+            set_move(std::move(std::make_shared<BaseT>(std::forward<Args>(args)...)));
         }
 
         /** A setter by emplacement with args passed by forward reference
@@ -168,21 +161,20 @@ namespace Utils::ThreadSafe {
          */
         template <typename Derived, typename... Args>
         void set_emplace_forward_args(Args &&...args) {
-            this->set_move(
-                std::move(make_derived_shared<BaseT, Derived>(std::forward<Args>(args)...)));
+            set_move(std::move(make_derived_shared<BaseT, Derived>(std::forward<Args>(args)...)));
         }
 
       private:
         /** A private member used to set m safely */
         inline void set_ref(const Ptr &ptr) {
-            std::lock_guard<decltype(this->m)>(this->m);
-            this->obj = ptr;
+            std::lock_guard<decltype(m)> lg(m);
+            obj = ptr;
         }
 
         /** A private member used to set m safely */
         inline void set_move(Ptr &&ptr) {
-            std::lock_guard<decltype(this->m)>(this->m);
-            this->obj = ptr;
+            std::lock_guard<decltype(m)> lg(m);
+            obj = ptr;
         }
 
         /** A mutex to protect obj */

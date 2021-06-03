@@ -56,7 +56,7 @@ namespace Utils {
          */
         bool exists(const Hash &h) {
             std::shared_lock<decltype(s_m)> r(s_m);
-            return this->unsafe_find(h) != nullptr;
+            return unsafe_find(h) != nullptr;
         }
 
         /** If h is in the cache, return a shared pointer to it
@@ -65,7 +65,7 @@ namespace Utils {
          */
         Ptr find(const Hash &h) {
             std::shared_lock<decltype(s_m)> r(s_m);
-            if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
+            if (auto lookup { unsafe_find(h) }; full(lookup)) {
                 return lookup;
             }
             return { nullptr };
@@ -98,7 +98,7 @@ namespace Utils {
                           "Derived must derive from Base or be Base");
 
             // Initial cache lookup
-            if (auto lookup { this->find(h) }; full(lookup)) {
+            if (auto lookup { find(h) }; full(lookup)) {
                 return lookup;
             }
 
@@ -121,20 +121,20 @@ namespace Utils {
             {
                 std::unique_lock<decltype(s_m)> rw(s_m);
                 // Second lookup
-                if (auto lookup { this->unsafe_find(h) }; full(lookup)) {
+                if (auto lookup { unsafe_find(h) }; full(lookup)) {
                     return lookup;
                 }
                 // Add to cache
 #ifdef DEBUG
-                auto &&[_, success] = this->cache.emplace(h, ret);
+                auto &&[_, success] = cache.emplace(h, ret);
                 affirm<Error::Unexpected::Unknown>(success,
                                                    WHOAMI_WITH_SOURCE "Cache emplacement failed.");
 #else
-                (void) this->cache.emplace(h, ret);
+                (void) cache.emplace(h, ret);
 #endif
                 // Garbage collection if needed
-                if (this->cache.size() > this->gc_resize) {
-                    this->unsafe_gc();
+                if (cache.size() > gc_resize) {
+                    unsafe_gc();
                 }
 
             } // Unlock
@@ -149,7 +149,7 @@ namespace Utils {
          *  On failure, returns a null shared pointer
          */
         Ptr unsafe_find(const Hash &h) {
-            if (auto lookup { this->cache.find(h) }; lookup != this->cache.end()) {
+            if (auto lookup { cache.find(h) }; lookup != cache.end()) {
                 // If the weak_ptr is valid, return it
                 if (auto locked { lookup->second.lock() }; full(locked)) {
                     return locked;
@@ -172,7 +172,7 @@ namespace Utils {
             std::vector<Hash> del;
             Log::debug<Self>("Garbage collecting cache");
             // Find all expired weak_ptrs
-            for (const auto &[hash, ptr] : this->cache) {
+            for (const auto &[hash, ptr] : cache) {
                 if (ptr.expired()) {
                     del.emplace_back(hash);
                 }
@@ -180,10 +180,10 @@ namespace Utils {
             // Delete them
             Log::verbose<Self>(__func__, ": Cache invalidation of ", del.size(), " items.");
             for (const auto i : del) {
-                this->cache.erase(i);
+                cache.erase(i);
             }
             // Resize gc_size to a reasonable size
-            this->gc_resize = Max::value(gc_resize_default, this->cache.size() << 1);
+            gc_resize = Max::value(gc_resize_default, cache.size() << 1);
             Log::debug<Self>("Garbage collection complete.");
         }
 

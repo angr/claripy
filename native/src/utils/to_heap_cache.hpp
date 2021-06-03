@@ -6,6 +6,7 @@
 #ifndef R_UTILS_TOHEAPCACHE_HPP_
 #define R_UTILS_TOHEAPCACHE_HPP_
 
+#include "error/unexpected.hpp"
 #include "log.hpp"
 
 #include "../constants.hpp"
@@ -35,14 +36,16 @@ namespace Utils {
             return new (pop()) T { std::move(x) }; // NOLINT
         }
 
-        /** Reclaim the memory pointed to by x */
+        /** Reclaim the memory pointed to by non-null pointer x */
         inline void free(T *const x) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(x);
             x->~T(); // Invoke destructor
             data.emplace_back(x);
         }
 
         /** Save space by freeing extra cache items */
         inline void downsize() {
+            Utils::Log::info("ToHeapCache: ", __func__, "Downsizing");
             if (data.size() <= dsize) {
                 return;
             }

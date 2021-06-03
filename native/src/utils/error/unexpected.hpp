@@ -17,6 +17,9 @@ namespace Utils::Error::Unexpected {
      */
     DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
 
+    /** Null pointer exception */
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Null, Base);
+
     /** Invalid path exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadPath, Base);
 

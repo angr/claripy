@@ -27,7 +27,7 @@ namespace Utils {
 
         /** Destructor */
         ~RunOnDestruction() noexcept(NoExcept) {
-            if (this->enabled) {
+            if (enabled) {
                 if constexpr (NoExcept) {
                     try {
                         f();
@@ -43,10 +43,10 @@ namespace Utils {
         }
 
         /** Enable f on destruction */
-        void enable() noexcept { this->enabled = true; }
+        void enable() noexcept { enabled = true; }
 
         /** Disable f on destruction */
-        void disable() noexcept { this->enabled = false; }
+        void disable() noexcept { enabled = false; }
 
       private:
         // Disable all other methods of construction
