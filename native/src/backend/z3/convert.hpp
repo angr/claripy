@@ -250,8 +250,12 @@ namespace Backend::Z3::Convert {
         return z3::ite(cond, if_true, if_false);
     }
 
-    /** Literal converter */
+    /** Literal converter
+     *  expr may not be nullptr
+     */
     inline z3::expr literal(const Expression::RawPtr expr) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+        UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
         using To = Constants::CTSC<Op::Literal>;
         const auto &data { Utils::checked_static_cast<To>(expr->op.get())->value };
         auto &ctx { ::Backend::Z3::Private::tl_ctx };
@@ -287,9 +291,12 @@ namespace Backend::Z3::Convert {
 
     /** Symbol converter
      *  to handle the extra_bvs_data hack, this uses a hack of viewing the private data of factory
+     *  expr may not be nullptr
      *  @todo remove the hack
      */
     inline z3::expr symbol(const Expression::RawPtr expr) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+        UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
         using To = Constants::CTSC<Op::Symbol>;
         const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
         auto &ctx { ::Backend::Z3::Private::tl_ctx };
@@ -440,9 +447,6 @@ namespace Backend::Z3::Convert {
         inline z3::expr from_int(const z3::expr &e) {
             return z3::bv2int(e, false).itos();
         } // todo?
-
-        /** Unit converter */
-        inline z3::expr unit(const z3::expr &e) { return e.unit(); }
 
         // Int Binary
 

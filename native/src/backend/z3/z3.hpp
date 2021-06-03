@@ -372,7 +372,6 @@ namespace Backend::Z3 {
                     // Unary
 
                     UNARY_CASE(String::FromInt, Convert::String::from_int);
-                    UNARY_CASE(String::Unit, Convert::String::unit);
 
                     // Int Binary
 
