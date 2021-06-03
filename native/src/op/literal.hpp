@@ -33,7 +33,7 @@ namespace Op {
 
         /** Returns the bit_length of the value stored in Data
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
-         *  of BitLength then an IncorrectUsage exception is thrown
+         *  of BitLength then an Usage exception is thrown
          */
         constexpr Constants::UInt bit_length() const { return C_CHAR_BIT * byte_length(); }
 
@@ -92,7 +92,7 @@ namespace Op {
 
         /** Returns the byte_length of the value stored in Data
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
-         *  of BitLength then an IncorrectUsage exception is thrown
+         *  of BitLength then an Usage exception is thrown
          *  This function requires that if value is a shared_ptr is be non-null
          *  @todo This could be a switch-case statement; do when more stable
          */
@@ -120,12 +120,11 @@ namespace Op {
                 return std::get<PyObj::VSPtr>(value)->bit_length / C_CHAR_BIT;
             }
             // Invalid types: bool
-            throw Utils::Error::Unexpected::IncorrectUsage(
-                WHOAMI_WITH_SOURCE,
-                "invoked when internal type does not correspond"
-                " to an Expression which subclasses BitLength."
-                " Current variant index is: ",
-                value.index());
+            throw Utils::Error::Unexpected::Usage(WHOAMI_WITH_SOURCE,
+                                                  "invoked when internal type does not correspond"
+                                                  " to an Expression which subclasses BitLength."
+                                                  " Current variant index is: ",
+                                                  value.index());
         }
     };
 

@@ -61,9 +61,9 @@ US::ULL US::max() {
 
 void US::set(const US::ULL to) {
     auto rl { getr() };
-    affirm<Error::Unexpected::IncorrectUsage>(to <= rl.rlim_max, WHOAMI_WITH_SOURCE,
-                                              "selected stack limit of ", to,
-                                              " is greater than the max of: ", rl.rlim_max);
+    affirm<Error::Unexpected::Usage>(to <= rl.rlim_max, WHOAMI_WITH_SOURCE,
+                                     "selected stack limit of ", to,
+                                     " is greater than the max of: ", rl.rlim_max);
     rl.rlim_cur = to;
     const auto rv { setrlimit(RLIMIT_STACK, &rl) };
     verify_syscall(rv);

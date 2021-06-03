@@ -5,7 +5,7 @@
 
 
 void Expression::Base::ctor_debug_checks() const {
-    using Err = Utils::Error::Unexpected::IncorrectUsage;
+    using Err = Utils::Error::Unexpected::Usage;
     if (op->cuid == Op::Symbol::static_cuid) {
         Utils::affirm<Err>(symbolic, WHOAMI "Symbolic Op may not be concrete");
     }

@@ -53,7 +53,7 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
             color = ANSIColorCodes::blk;
             break;
         case Lvl::Disabled: // Should not be possible
-            throw Error::Unexpected::IncorrectUsage("Log backend given disabled level");
+            throw Error::Unexpected::Usage("Log backend given disabled level");
             break;
         default: // Should not be possible
             throw Error::Unexpected::Unknown("Logger was given unknown level");

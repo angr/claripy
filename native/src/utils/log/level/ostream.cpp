@@ -31,7 +31,7 @@ static const std::map<Lvl, std::string> names { MAP_ENTRY(Verbose), MAP_ENTRY(De
 
 std::ostream &Level::operator<<(std::ostream &os, const Lvl &l) {
     const auto it { names.find(l) };
-    Utils::affirm<IncorrectUsage>(it != names.end(), WHOAMI "Unknown level passed to << operator");
+    Utils::affirm<Usage>(it != names.end(), WHOAMI "Unknown level passed to << operator");
     os << it->second;
     return os;
 }

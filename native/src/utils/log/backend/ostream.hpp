@@ -34,8 +34,8 @@ namespace Utils::Log::Backend {
         explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool flush_,
                                 const bool flush_on_exit_ = true) noexcept
             : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {
-            Utils::affirm<Utils::Error::Unexpected::IncorrectUsage>(
-                stream != nullptr, WHOAMI_WITH_SOURCE, "stream may not be a null shared_ptr");
+            Utils::affirm<Utils::Error::Unexpected::Usage>(stream != nullptr, WHOAMI_WITH_SOURCE,
+                                                           "stream may not be a null shared_ptr");
         }
 
         /** A virtual destructor */

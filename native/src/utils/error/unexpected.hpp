@@ -39,7 +39,7 @@ namespace Utils::Error::Unexpected {
     DEFINE_FINAL_SUBCLASS_USING_CTOR(MissingVirtualFunction, Claricpp);
 
     /** Raised when a function is given invalid arguments */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(IncorrectUsage, Claricpp);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Usage, Claricpp);
 
     /** Raised when a recurrence gaurded function recurrses too many times */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(RecurrenceLimit, Claricpp);
