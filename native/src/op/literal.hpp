@@ -72,18 +72,20 @@ namespace Op {
       private:
 /** A local macro used to define a private constructor for Literal */
 #define P_CTOR(TYPE)                                                                              \
-    /** Private constructor */                                                                    \
+    /** Private constructor                                                                       \
+     *  Literal constructors should never be given shared pointers to nulllptr                    \
+     */                                                                                           \
     explicit inline Literal(const Hash::Hash &h, TYPE &&data)                                     \
-        : Base { h, static_cuid }, value { std::move(data) } {}
+        : Base { h, static_cuid }, value { std::move(data) }
 
         // The different private constructors we allow
         // There should be one for each variant type
-        P_CTOR(bool);
-        P_CTOR(std::string);
-        P_CTOR(std::vector<char>);
-        P_CTOR(float);
-        P_CTOR(double);
-        P_CTOR(PyObj::VSPtr);
+        P_CTOR(bool) {};
+        P_CTOR(std::string) {};
+        P_CTOR(std::vector<char>) {};
+        P_CTOR(float) {};
+        P_CTOR(double) {};
+        P_CTOR(PyObj::VSPtr) { UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
 
 // Cleanup
 #undef P_CTOR
@@ -91,6 +93,7 @@ namespace Op {
         /** Returns the byte_length of the value stored in Data
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an IncorrectUsage exception is thrown
+         *  This function requires that if value is a shared_ptr is be non-null
          *  @todo This could be a switch-case statement; do when more stable
          */
         constexpr Constants::UInt byte_length() const {
@@ -108,6 +111,7 @@ namespace Op {
             }
             else if (std::holds_alternative<PyObj::VSPtr>(value)) { // VS
 #ifdef DEBUG
+                UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
                 Utils::affirm<Utils::Error::Unexpected::Size>(
                     bl % C_CHAR_BIT == 0, WHOAMI_WITH_SOURCE "VS of bit length ", bl,
