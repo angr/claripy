@@ -23,9 +23,6 @@ namespace Op::String {
     /** The unary string op class: String::FromInt */
     OP_UNARY_TRIVIAL_SUBCLASS(FromInt, 0, "String::");
 
-    /** The unary string op class: String::Unit */
-    OP_UNARY_TRIVIAL_SUBCLASS(Unit, 0, "String::");
-
     /**********************************************************/
     /*                  UIntBinary Subclasses                 */
     /**********************************************************/
