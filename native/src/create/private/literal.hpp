@@ -10,11 +10,11 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a Literal op */
+    /** Create a Expression with a Literal op
+     *  data may not be nullptr
+     */
     template <typename T, typename Data> EBasePtr literal(Data &&data, SPAV &&sp) {
         namespace Ex = Expression;
-
-        // Type checks
         static_assert(Utils::is_ancestor<Ex::Base, T>,
                       "argument types must be a subclass of Expression::Base");
         static_assert(std::is_final_v<T>, "Create::literal's T must be a final type");

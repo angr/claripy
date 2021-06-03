@@ -12,19 +12,25 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a flat op */
+    /** Create a Expression with a flat op
+     *  operands' pointers may not be nullptr
+     */
     template <typename T, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr flat(typename OpT::OpContainer &&operands, SPAV &&sp) {
-
-        // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Type check
+        // Checks
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
         static_assert(Utils::qualified_is_in<T, Allowed...>,
                       "Create::Private::flat argument types must be in Allowed");
+#ifdef DEBUG
+        for (const auto &i : operands) {
+            Utils::affirm<Err::Usage>(i != nullptr,
+                                      WHOAMI_WITH_SOURCE "operands' pointers cannot be nullptrs");
+        }
+#endif
         Utils::affirm<Err::Size>(operands.size() >= 2, WHOAMI_WITH_SOURCE "operands are empty.");
         Utils::affirm<Err::Type>(CUID::is_t<T>(operands[0]),
                                  WHOAMI_WITH_SOURCE "operands[0] is the wrong type");

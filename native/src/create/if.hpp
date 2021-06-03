@@ -10,18 +10,20 @@
 
 namespace Create {
 
-    /** Create an Expression with an If op */
+    /** Create an Expression with an If op
+     *  Expression pointers may not be nullptr
+     */
     template <typename T>
     EBasePtr if_(const EBasePtr &cond, const EBasePtr &left, const EBasePtr &right,
                  SPAV &&sp = nullptr) {
-
-        // For brevity
         namespace Ex = Expression;
         namespace Err = Error::Expression;
         using namespace Simplification;
 
         // Type checks
         static_assert(Utils::is_ancestor<Ex::Base, T>, "T must subclass Expression::Base");
+        Utils::affirm<Err::Usage>(cond != nullptr && left != nullptr && right != nullptr,
+                                  WHOAMI_WITH_SOURCE " arguments may not be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<T>(left),
                                  WHOAMI_WITH_SOURCE "left operand must be a T");
 

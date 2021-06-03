@@ -12,30 +12,35 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a ternary op */
+    /** Create a Expression with a ternary op
+     *  Expression pointers may not be nullptr
+     */
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr ternary(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
                             SPAV &&sp) {
-        static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                      "Create::Private::ternary requires Out be an Expression");
-        static_assert(Utils::is_ancestor<Expression::Base, In>,
-                      "Create::Private::ternary requires In be an Expression");
-        static_assert(Op::is_ternary<OpT>, "Create::Private::ternary requires a ternary OpT");
-        if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-            const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
-            static_assert(Utils::TD::boolean<sized_in, In>,
-                          "Create::Private::ternary does not suppot sized output types without "
-                          "sized input types");
-        }
-
-        // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Type check
+        // Static checks
+        static_assert(Utils::is_ancestor<Ex::Base, Out>,
+                      "Create::Private::ternary requires Out be an Expression");
+        static_assert(Utils::is_ancestor<Ex::Base, In>,
+                      "Create::Private::ternary requires In be an Expression");
+        static_assert(Op::is_ternary<OpT>, "Create::Private::ternary requires a ternary OpT");
+        if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
+            const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
+            static_assert(Utils::TD::boolean<sized_in, In>,
+                          "Create::Private::ternary does not suppot sized output types without "
+                          "sized input types");
+        }
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::ternary requires In is in Allowed");
+
+        // Dynamic checks
+        Utils::affirm<Err::Usage>(first != nullptr, second != nullptr && third != nullptr,
+                                  WHOAMI_WITH_SOURCE
+                                  "Expression pointer arguments may not be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<In>(first),
                                  WHOAMI_WITH_SOURCE "first operand of incorrect type");
 

@@ -13,25 +13,27 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with an mode binary op */
+    /** Create a Expression with an mode binary op
+     *  Expression pointers may not be nullptr
+     */
     template <typename OpT, SizeMode Mode>
-    inline EBasePtr mode_binary(const Expression::BasePtr &left, const Expression::BasePtr &right,
-                                const Mode::FP mode, SPAV &&sp) {
-
-        // For brevity
+    inline EBasePtr mode_binary(const EBasePtr &left, const EBasePtr &right, const Mode::FP mode,
+                                SPAV &&sp) {
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Type check
+        // Checks
         static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
+        static_assert(Mode == SizeMode::First,
+                      "Create::Private::mode_binary does not support the given SizeMode");
+        Utils::affirm<Err::Usage>(left != nullptr && right != nullptr,
+                                  WHOAMI_WITH_SOURCE "Expression pointers cannot be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<Ex::FP>(left), WHOAMI_WITH_SOURCE
                                  "left operands must be of type Expression::FP");
 
         // Create expression
-        static_assert(Mode == SizeMode::First,
-                      "Create::Private::mode_binary does not support the given SizeMode");
         return simplify(Ex::factory<Ex::FP>(left->symbolic || right->symbolic,
                                             Op::factory<OpT>(left, right, mode),
                                             Ex::get_bit_length(left), std::move(sp)));

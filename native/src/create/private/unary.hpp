@@ -10,29 +10,32 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a unary op */
+    /** Create a Expression with a unary op
+     *  Expression pointers may not be nullptr
+     */
     template <typename Out, typename In, typename OpT, typename... Allowed>
     inline EBasePtr unary(const EBasePtr &x, SPAV &&sp) {
-        static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                      "Create::Private::unary requires Out be an Expression");
-        static_assert(Utils::is_ancestor<Expression::Base, In>,
-                      "Create::Private::unary requires In be an Expression");
-        static_assert(Op::is_unary<OpT>, "Create::Private::unary requries OpT to be unary");
-        if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-            const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
-            static_assert(Utils::TD::boolean<sized_in, In>,
-                          "Create::Private::unary does not suppot sized output types without "
-                          "sized input types");
-        }
-
-        // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Type checks
+        // Static checks
+        static_assert(Utils::is_ancestor<Ex::Base, Out>,
+                      "Create::Private::unary requires Out be an Expression");
+        static_assert(Utils::is_ancestor<Ex::Base, In>,
+                      "Create::Private::unary requires In be an Expression");
+        static_assert(Op::is_unary<OpT>, "Create::Private::unary requries OpT to be unary");
+        if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
+            const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
+            static_assert(Utils::TD::boolean<sized_in, In>,
+                          "Create::Private::unary does not suppot sized output types without "
+                          "sized input types");
+        }
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::unary argument types must be in Allowed");
+
+        // Dynamic checks
+        Utils::affirm<Err::Usage>(x != nullptr, WHOAMI_WITH_SOURCE "x cannot be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<In>(x),
                                  WHOAMI_WITH_SOURCE "operand must be of type In");
 

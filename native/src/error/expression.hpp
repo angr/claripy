@@ -25,6 +25,8 @@ namespace Error::Expression {
 
     // Final classes
 
+    /** Expression usage exception */
+    DEFINE_NONFINAL_EXCEPTION(Usage, Claripy);
     /** @todo document */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BalancerUnsat, Balancer);
     /** @todo document */

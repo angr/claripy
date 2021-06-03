@@ -12,12 +12,12 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a uint binary op */
+    /** Create a Expression with a uint binary op
+     *  Expression pointers may not be nullptr
+     */
     template <typename IntT, typename Out, typename In, typename OpT, SizeMode Mode,
               typename... Allowed>
     inline EBasePtr uint_binary(const EBasePtr &expr, const IntT integer, SPAV &&sp) {
-
-        // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
@@ -39,10 +39,11 @@ namespace Create::Private {
                 "Create::Private::uint_binary does not suppot sized output types without "
                 "sized input types");
         }
-
-        // Type check
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::uint_binary requires In is in Allowed");
+
+        // Dynamic checks
+        Utils::affirm<Err::Usage>(expr != nullptr, WHOAMI_WITH_SOURCE "expr cannot be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<In>(expr),
                                  WHOAMI_WITH_SOURCE "Expression operand of incorrect type");
 

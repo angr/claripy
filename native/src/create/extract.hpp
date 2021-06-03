@@ -10,16 +10,17 @@
 
 namespace Create {
 
-    /** Create an Expression with an Extract op */
+    /** Create an Expression with an Extract op
+     *  Expression pointers may not be nullptr
+     */
     inline EBasePtr extract(const Constants::UInt high, const Constants::UInt low,
-                            const Expression::BasePtr &from, SPAV &&sp = nullptr) {
-
-        // For brevity
+                            const EBasePtr &from, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace Err = Error::Expression;
         using namespace Simplification;
 
         // Checks
+        Utils::affirm<Err::Usage>(from != nullptr, WHOAMI_WITH_SOURCE "from may not be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<Ex::BV>(from),
                                  WHOAMI_WITH_SOURCE "from operands must be an Expression::BV");
         Utils::affirm<Err::Type>(high >= low,

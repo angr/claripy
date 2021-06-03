@@ -12,29 +12,33 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a binary op */
+    /** Create a Expression with a binary op
+     *  Expression pointers may not be nullptr
+     */
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr binary(const EBasePtr &left, const EBasePtr &right, SPAV &&sp) {
-        static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                      "Create::Private::binary requires Out be an Expression");
-        static_assert(Utils::is_ancestor<Expression::Base, In>,
-                      "Create::Private::binary requires In be an Expression");
-        static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
-        if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-            const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
-            static_assert(Utils::TD::boolean<sized_in, In>,
-                          "Create::Private::binary does not suppot sized output types without "
-                          "sized input types");
-        }
-
-        // For brevity
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
 
-        // Type check
+        // Static checks
+        static_assert(Utils::is_ancestor<Ex::Base, Out>,
+                      "Create::Private::binary requires Out be an Expression");
+        static_assert(Utils::is_ancestor<Ex::Base, In>,
+                      "Create::Private::binary requires In be an Expression");
+        static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
+        if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
+            const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
+            static_assert(Utils::TD::boolean<sized_in, In>,
+                          "Create::Private::binary does not suppot sized output types without "
+                          "sized input types");
+        }
         static_assert(Utils::qualified_is_in<In, Allowed...>,
                       "Create::Private::binary requires In is in Allowed");
+
+        // Dynamic checks
+        Utils::affirm<Err::Usage>(left != nullptr && right != nullptr, WHOAMI_WITH_SOURCE
+                                  "Expression pointer arguments may not be nullptr");
         Utils::affirm<Err::Type>(CUID::is_t<In>(left),
                                  WHOAMI_WITH_SOURCE "left operand of incorrect type");
 

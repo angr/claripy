@@ -19,19 +19,19 @@ namespace Create::FP {
     /********************************************************************/
 
     /** Create a Expression with an FP::IsInf op */
-    inline EBasePtr is_inf(const Expression::BasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr is_inf(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Ex::FP>(x, std::move(sp));
     }
 
     /** Create a Expression with an FP::IsNan op */
-    inline EBasePtr is_nan(const Expression::BasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr is_nan(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Ex::FP>(x, std::move(sp));
     }
 
     /** Create a Expression with an FP::ToIEEEBV op */
-    inline EBasePtr to_ieee_bv(const Expression::BasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr to_ieee_bv(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
     }
@@ -42,8 +42,8 @@ namespace Create::FP {
 
 /** A local macro used for fp mode binary math ops with size mode first */
 #define FP_MB_SMF_ARITH(FN, OP)                                                                   \
-    inline EBasePtr FN(const Expression::BasePtr &left, const Expression::BasePtr &right,         \
-                       const Mode::FP mode, SPAV &&sp = nullptr) {                                \
+    inline EBasePtr FN(const EBasePtr &left, const EBasePtr &right, const Mode::FP mode,          \
+                       SPAV &&sp = nullptr) {                                                     \
         return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,      \
                                                                           std::move(sp));         \
     }

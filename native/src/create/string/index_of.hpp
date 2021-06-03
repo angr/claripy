@@ -10,11 +10,16 @@
 
 namespace Create::String {
 
-    /** Create an Expression with a String::IndexOf op */
-    inline EBasePtr index_of(const Expression::BasePtr &str, const Expression::BasePtr &pattern,
-                             const Expression::BasePtr &start_index,
-                             const Constants::UInt bit_length, SPAV &&sp = nullptr) {
+    /** Create an Expression with a String::IndexOf op
+     *  Expression pointers may not be nullptr
+     */
+    inline EBasePtr index_of(const EBasePtr &str, const EBasePtr &pattern,
+                             const EBasePtr &start_index, const Constants::UInt bit_length,
+                             SPAV &&sp = nullptr) {
         namespace Ex = Expression;
+        Utils::affirm<Error::Expression::Usage>(
+            str != nullptr && pattern != nullptr && start_index != nullptr,
+            WHOAMI_WITH_SOURCE "Expressions pointers cannot be nullptr");
         return Simplification::simplify(
             Ex::factory<Ex::BV>(str->symbolic || pattern->symbolic,
                                 Op::factory<Op::String::IndexOf>(str, pattern, start_index),

@@ -12,10 +12,11 @@ namespace Create::String {
 
     namespace Private {
         /** Calculate the length for a SubString expression
+         *  Expression pointers may not be nullptr
          *  @todo Adjust as we edit concrete
          */
-        static inline Constants::UInt sub_string_length(const Expression::BasePtr &count,
-                                                        const Expression::BasePtr &full_string) {
+        static inline Constants::UInt sub_string_length(const EBasePtr &count,
+                                                        const EBasePtr &full_string) {
             using Err = Error::Expression::Type;
             // If symbolic, use full_string's length
             if (count->symbolic) {
@@ -37,11 +38,15 @@ namespace Create::String {
         }
     } // namespace Private
 
-    /** Create an Expression with a String::SubString op */
-    inline EBasePtr sub_string(const Expression::BasePtr &start_index,
-                               const Expression::BasePtr &count,
-                               const Expression::BasePtr &full_string, SPAV &&sp = nullptr) {
+    /** Create an Expression with a String::SubString op
+     *  Expression pointers may not be nullptr
+     */
+    inline EBasePtr sub_string(const EBasePtr &start_index, const EBasePtr &count,
+                               const EBasePtr &full_string, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
+        Utils::affirm<Error::Expression::Usage>(
+            start_index != nullptr && count != nullptr && full_string != nullptr,
+            WHOAMI_WITH_SOURCE "Expression pointers cannot be nullptr");
         const Constants::UInt bit_length { Private::sub_string_length(count, full_string) };
         return Simplification::simplify(Ex::factory<Ex::String>(
             start_index->symbolic || count->symbolic || full_string->symbolic,
