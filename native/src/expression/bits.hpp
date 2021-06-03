@@ -34,17 +34,21 @@ namespace Expression {
     Bits::~Bits() noexcept = default;
 
     /** Static casts T to Expression::Bits' raw pointer, then returns the bit_length
+     *  p may not be nullptr
      *  Warning: This static casts, the user must ensure that p is a Bits
      */
     constexpr Constants::UInt get_bit_length(const Expression::RawPtr &p) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(p);
         using To = const Expression::Bits *;
         return Utils::checked_static_cast<To>(p)->bit_length;
     }
 
     /** Static casts T to Expression::Bits, then returns the bit_length
+     *  p may not be nullptr
      *  Warning: This static casts, the user must ensure that p.get() is a Bits
      */
     inline Constants::UInt get_bit_length(const Expression::BasePtr &p) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(p);
         return get_bit_length(p.get());
     }
 

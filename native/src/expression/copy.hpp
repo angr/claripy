@@ -12,8 +12,11 @@
 
 namespace Expression {
 
-    /** Copy the expression, but use the newly provided annotation vector */
+    /** Copy the expression, but use the newly provided annotation vector
+     *  in may not be nullptr
+     */
     inline Expression::BasePtr copy(const Expression::BasePtr &in, Base::SPAV &&sp) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(in);
         auto op { in->op };
         switch (in->cuid) {
             case Bool::static_cuid:

@@ -50,6 +50,8 @@ namespace Expression {
 #ifdef DEBUG
             ctor_debug_checks();
 #endif
+            Utils::affirm<Utils::Error::Unexpected::IncorrectUsage>(op != nullptr,
+                                                                    "op may not be nullptr");
         }
 
         /** Pure virtual destructor */

@@ -13,8 +13,11 @@ namespace Expression {
 
     /** Return true if x and y are the same expression type
      *  If ConsiderSize is true, sizes are compared if the types are sized
+     *  x and y may not be null pointers
      */
     template <bool ConsiderSize> bool are_same_type(const BasePtr &x, const BasePtr &y) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(x);
+        UTILS_AFFIRM_NOT_NULL_DEBUG(y);
         // Type check
         if (x->cuid != y->cuid) {
             Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to cuid difference");

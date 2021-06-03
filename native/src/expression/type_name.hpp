@@ -11,8 +11,9 @@
 
 namespace Expression {
 
-    /** Return the type name of e */
+    /** Return the type name of the expression pointed to by non-nullptr e */
     constexpr const char *type_name(const Expression::RawPtr e) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(e);
         switch (e->cuid) {
             case Bool::static_cuid:
                 return "Bool";
@@ -30,7 +31,7 @@ namespace Expression {
         }
     }
 
-    /** Return the type name of e */
+    /** Return the type name of the expression pointed to by non-nullptr e */
     inline const char *type_name(const Expression::BasePtr &e) { return type_name(e.get()); }
 
 } // namespace Expression

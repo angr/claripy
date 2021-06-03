@@ -12,6 +12,8 @@
 void Expression::repr(const Expression::RawPtr e, std::ostringstream &out, const bool verbose) {
     Utils::affirm<Utils::Error::Unexpected::NotSupported>(!verbose,
                                                           "verbose repr not yet implmented");
+    UTILS_AFFIRM_NOT_NULL_DEBUG(e);
+    UTILS_AFFIRM_NOT_NULL_DEBUG(e->op); // Sanity check
     // Null check
     if (e == nullptr) {
         Utils::Log::warning(WHOAMI_WITH_SOURCE "called on nullptr");
