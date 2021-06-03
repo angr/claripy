@@ -93,6 +93,7 @@ namespace Backend {
                 // If the expression does not represent the end of a list
                 if (expr != nullptr) {
                     const auto *const op { expr->op.get() };
+                    UTILS_AFFIRM_NOT_NULL_DEBUG(op);
 
                     // Cache lookups
                     if (const auto lookup = conversion_cache.find(expr->hash);
@@ -149,6 +150,7 @@ namespace Backend {
                 WHOAMI_WITH_SOURCE "conversion_cache lookup does not match arg_stack back()");
             chk(arg_stack.back() == &conversion_cache.find(input->hash)->second,
                 WHOAMI_WITH_SOURCE "arg_stack / conversion_cache mismatch at end of convert");
+            UTILS_AFFIRM_NOT_NULL_DEBUG(arg_stack.back());
 #endif
             // Return result
             return *arg_stack.back(); // shortcut for conversion_cache.find(input->hash)->second;

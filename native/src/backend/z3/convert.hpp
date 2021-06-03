@@ -200,10 +200,13 @@ namespace Backend::Z3::Convert {
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 size >= 2,
                 "size < 2; this probably resulted from an invalid claricpp expression.");
+            UTILS_AFFIRM_NOT_NULL_DEBUG(arr[0]);
+            UTILS_AFFIRM_NOT_NULL_DEBUG(arr[1]);
 #endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
             for (Constants::UInt i { 2 }; i < size; ++i) {
+                UTILS_AFFIRM_NOT_NULL_DEBUG(arr[i]);
                 ret = std::move(fn(std::move(ret), *arr[i]));
             }
             return ret;

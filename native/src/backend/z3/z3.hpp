@@ -116,6 +116,24 @@ namespace Backend::Z3 {
          */
         inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
 
+        /** Verify the container contains at least n elements
+         *  In debug mode verifies that the last n elements are not nullptr
+         */
+        template <typename T, typename... Args>
+        inline void check_vec_usage(const T &c, const Constants::UInt n, Args &&...args) {
+            namespace Err = Utils::Error::Unexpected;
+            Utils::affirm<Err::Size>(c.size() >= n, std::forward<Args>(args)...,
+                                     "container is too small to access ", n, " elements");
+#ifdef DEBUG
+            const auto last { c.size() - 1 };
+            for (Constants::UInt i { 0 }; i < n; ++i) {
+                Utils::affirm<Err::Null>(c[last - i] != nullptr, std::forward<Args>(args)...,
+                                         "container element cannot be nullptr");
+            }
+#endif
+        }
+
+
         /********************************************************************/
         /*                 Large Dispatch Function Overrides                */
         /********************************************************************/
@@ -139,12 +157,14 @@ namespace Backend::Z3 {
 
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
+        check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
         auto ret { (FN) (*args.back()) };                                                         \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
 
 #define BINARY_DISPATCH(FN)                                                                       \
+    check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                              \
     const auto size { args.size() };                                                              \
     auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                         \
     args.resize(size - 2);                                                                        \
@@ -167,6 +187,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
+        check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
         auto ret { (FN) (*args.back(),                                                            \
                          Utils::checked_static_cast<To>(expr->op.get())->integer) };              \
         args.pop_back();                                                                          \
@@ -177,6 +198,7 @@ namespace Backend::Z3 {
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");           \
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
+        check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                          \
         const auto size { args.size() };                                                          \
         auto ret { (FN) (Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],   \
                          *args[size - 1]) };                                                      \
@@ -187,6 +209,7 @@ namespace Backend::Z3 {
 #define TERNARY_CASE(OP, FN)                                                                      \
     case Op::OP::static_cuid: {                                                                   \
         const auto size { args.size() };                                                          \
+        check_vec_usage(args, 3_ui, WHOAMI_WITH_SOURCE);                                          \
         auto ret { FN(*args[size - 3], *args[size - 2], *args[size - 1]) };                       \
         args.resize(size - 3);                                                                    \
         return ret;                                                                               \
@@ -198,6 +221,7 @@ namespace Backend::Z3 {
         using To = Constants::CTSC<Op::AbstractFlat>;                                             \
         const auto a_size { args.size() };                                                        \
         const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
+        check_vec_usage(args, n, WHOAMI_WITH_SOURCE);                                             \
         auto ret { (FN) (&(args.data()[a_size - n]), n) };                                        \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
@@ -300,6 +324,7 @@ namespace Backend::Z3 {
 
                 case Op::Extract::static_cuid: {
                     using To = Constants::CTSC<Op::Extract>;
+                    check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
                     const auto *const op { Utils::checked_static_cast<To>(expr->op.get()) };
                     auto ret { Convert::extract(op->high, op->low, *args.back()) };
                     args.pop_back();
@@ -338,6 +363,7 @@ namespace Backend::Z3 {
 /** A local macro used for consistency */
 #define TO_BV_BODY(TF)                                                                            \
     using ToBV = Constants::CTSC<Op::FP::ToBV<false>>;                                            \
+    check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                                 \
     auto ret { Convert::FP::to_bv<TF>(Utils::checked_static_cast<ToBV>(expr->op.get())->mode,     \
                                       *args.back(), Expression::get_bit_length(expr)) };          \
     args.pop_back();                                                                              \
@@ -393,6 +419,7 @@ namespace Backend::Z3 {
                     TERNARY_CASE(String::SubString, Convert::String::substring)
 
                 case Op::String::IndexOf::static_cuid: {
+                    check_vec_usage(args, 2, WHOAMI_WITH_SOURCE);
                     const auto size { args.size() };
 #ifdef DEBUG
                     using To = Constants::CTSC<Expression::Bits>;

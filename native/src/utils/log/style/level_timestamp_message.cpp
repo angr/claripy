@@ -4,8 +4,8 @@
  */
 #include "level_timestamp_message.hpp"
 
+#include "../../affirm_not_null_debug.hpp"
 #include "../../ansi_color_codes.hpp"
-#include "../../error/unexpected.hpp"
 
 #include <ctime>
 #include <iomanip>
@@ -32,7 +32,7 @@ static auto get_time() {
 std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
                                        const std::ostringstream &raw) const {
     // Color label
-    const char *color;
+    const char *color { nullptr };
     switch (lvl) {
         case Lvl::Verbose:
             color = ANSIColorCodes::wht;
@@ -59,6 +59,7 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
             throw Error::Unexpected::Unknown("Logger was given unknown level");
             break;
     }
+    UTILS_AFFIRM_NOT_NULL_DEBUG(color);
 
     // Get time
     const auto tm { get_time() };
