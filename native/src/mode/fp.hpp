@@ -1,22 +1,11 @@
 /**
  * @file
- * @brief This file defines FP modes
+ * @brief This file exposes all relevant public members of fp
  */
 #ifndef R_MODE_FP_HPP_
 #define R_MODE_FP_HPP_
 
-
-namespace Mode {
-
-    /** FP modes supported by claripy */
-    enum class FP {
-        NearestTiesEven = 0,
-        NearestTiesAwayFromZero,
-        TowardsZero,
-        TowardsPositiveInf,
-        TowardsNegativeInf
-    };
-
-} // namespace Mode
+#include "fp/rounding.hpp"
+#include "fp/width.hpp"
 
 #endif
