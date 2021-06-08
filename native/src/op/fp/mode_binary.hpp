@@ -22,7 +22,7 @@
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
-                              const ::Expression::BasePtr &r, const ::Mode::FP m)                 \
+                              const ::Expression::BasePtr &r, const ::Mode::FP::Rounding m)       \
             : ModeBinary { h, static_cuid, l, r, m } {}                                           \
     };
 
@@ -37,7 +37,7 @@ namespace Op::FP {
 
       public:
         /** FP Mode */
-        const Mode::FP mode;
+        const Mode::FP::Rounding mode;
         /** Left operand */
         const Expression::BasePtr left;
         /** Right operand */
@@ -66,7 +66,7 @@ namespace Op::FP {
         /** Protected constructor */
         explicit inline ModeBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
                                    const Expression::BasePtr &l, const Expression::BasePtr &r,
-                                   const Mode::FP m)
+                                   const Mode::FP::Rounding m)
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
             using Err = Error::Expression::Type;
             Utils::affirm<Err>(Expression::are_same_type<true>(left, right),

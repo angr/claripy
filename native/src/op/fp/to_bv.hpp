@@ -8,8 +8,6 @@
 #include "../../mode.hpp"
 #include "../base.hpp"
 
-#include <ios>
-
 
 namespace Op::FP {
 
@@ -19,7 +17,7 @@ namespace Op::FP {
 
       public:
         /** The FP mode */
-        const Mode::FP mode;
+        const Mode::FP::Rounding mode;
         /** The fp to convert: This must be an Expression::BV pointer
          *  Note: We leave it as a base for optimizations purposes
          */
@@ -43,7 +41,8 @@ namespace Op::FP {
         /** Protected constructor
          *  Ensure that fp is an FP
          */
-        explicit inline ToBV(const Hash::Hash &h, const Mode::FP m, const Expression::BasePtr &f)
+        explicit inline ToBV(const Hash::Hash &h, const Mode::FP::Rounding m,
+                             const Expression::BasePtr &f)
             : Base { h, static_cuid }, mode { m }, fp { f } {
             Utils::affirm<Error::Expression::Type>(CUID::is_t<Expression::FP>(fp),
                                                    WHOAMI_WITH_SOURCE
