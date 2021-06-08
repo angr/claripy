@@ -68,13 +68,24 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH ^ (b ? 1ULL : 0ULL);
     }
 
-    /** A specialization for T = Mode::FP */
-    template <> constexpr Hash singular(const Mode::FP &m) noexcept {
-        using U = std::underlying_type_t<Mode::FP>;
+    /** A specialization for T = Mode::FP::Rounding */
+    template <> constexpr Hash singular(const Mode::FP::Rounding &m) noexcept {
+        using U = std::underlying_type_t<Mode::FP::Rounding>;
         static_assert(sizeof(m) <= sizeof(Hash), "singular(Mode::FP) must be modified");
         static_assert(std::is_fundamental_v<U> && std::is_fundamental_v<Hash>,
-                      "singular(Mode::FP) must be modified");
+                      "singular(Mode::FP::Rounding) must be modified");
         return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Utils::to_underlying(m));
+    }
+
+    /** A specialization for T = Mode::FP::Width */
+    template <> inline Hash singular(const Mode::FP::Width &w) noexcept {
+        static_assert(sizeof(Mode::FP::Width) == 2 * sizeof(uint32_t),
+                      "Mode::FP::Width's composition differs from expected");
+        static_assert(sizeof(Mode::FP::Width) == sizeof(Hash),
+                      "singular(Mode::FP::Width) must be modified.");
+        Hash tmp; // NOLINT
+        UTILS_TYPE_PUN_ONTO(Hash, &tmp, &w, false);
+        return UTILS_FILE_LINE_HASH ^ tmp;
     }
 
     /** A specialization for T = Constants::CCSC */
