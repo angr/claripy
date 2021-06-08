@@ -17,8 +17,8 @@ namespace Create::Private {
      *  Expression pointers may not be nullptr
      */
     template <typename OpT, SizeMode Mode>
-    inline EBasePtr mode_binary(const EBasePtr &left, const EBasePtr &right, const Mode::FP mode,
-                                SPAV &&sp) {
+    inline EBasePtr mode_binary(const EBasePtr &left, const EBasePtr &right,
+                                const Mode::FP::Rounding mode, SPAV &&sp) {
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;

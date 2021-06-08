@@ -20,7 +20,7 @@ namespace Create {
         namespace Err = Error::Expression;
         using namespace Simplification;
 
-        // Type checks
+        // Checks
         static_assert(Utils::is_ancestor<Ex::Base, T>, "T must subclass Expression::Base");
         Utils::affirm<Err::Usage>(cond != nullptr && left != nullptr && right != nullptr,
                                   WHOAMI_WITH_SOURCE " arguments may not be nullptr");

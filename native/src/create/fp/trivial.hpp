@@ -48,8 +48,8 @@ namespace Create::FP {
 
 /** A local macro used for fp mode binary math ops with size mode first */
 #define FP_MB_SMF_ARITH(FN, OP)                                                                   \
-    inline EBasePtr FN(const EBasePtr &left, const EBasePtr &right, const Mode::FP mode,          \
-                       SPAV &&sp = nullptr) {                                                     \
+    inline EBasePtr FN(const EBasePtr &left, const EBasePtr &right,                               \
+                       const Mode::FP::Rounding mode, SPAV &&sp = nullptr) {                      \
         return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,      \
                                                                           std::move(sp));         \
     }

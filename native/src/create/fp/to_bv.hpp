@@ -14,8 +14,8 @@ namespace Create {
      *  Expression pointers may not be nullptr
      */
     template <bool Signed>
-    EBasePtr to_bv(const Mode::FP mode, const EBasePtr &fp, const Constants::UInt bit_length,
-                   SPAV &&sp = nullptr) {
+    EBasePtr to_bv(const Mode::FP::Rounding mode, const EBasePtr &fp,
+                   const Constants::UInt bit_length, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         Utils::affirm<Error::Expression::Usage>(fp != nullptr,
                                                 WHOAMI_WITH_SOURCE "fp may not be nullptr");
