@@ -47,7 +47,7 @@ class String(Bits):
             bits_low = rng.start if rng.start is not None else 0
             bits_high = rng.stop if rng.stop is not None else 8*(self.string_length - 1)
             if bits_high % 8 != 0 or (bits_low+1) % 8 != 0:
-                raise ValueError('Bit indicies must correspond to byte indicies! I.e. be divisible by 8.')
+                raise ValueError('Bit indicies must not internally divide bytes!')
             # high / low form a reverse-indexed byte index
             high = bits_high // 8
             low = bits_low // 8
