@@ -6,7 +6,6 @@
 #define R_BACKEND_Z3_CONVERT_HPP_
 
 #include "constants.hpp"
-#include "fp_width.hpp"
 #include "tl_ctx.hpp"
 
 #include "../../op.hpp"
@@ -312,8 +311,8 @@ namespace Backend::Z3::Convert {
                 using FPP = Constants::CTSC<Expression::FP>;
                 const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length ==
                                   Private::flt_size)
-                                     ? FP::flt
-                                     : FP::dbl };
+                                     ? Mode::FP::flt
+                                     : Mode::FP::dbl };
                 return ctx.fpa_const(name.c_str(), Utils::narrow<z3u>(fpw.exp),
                                      Utils::narrow<z3u>(fpw.mantissa));
             }
@@ -370,21 +369,21 @@ namespace Backend::Z3::Convert {
             }
 
             /** Converts a claricpp rounding mode to a z3 rounding mode */
-            constexpr z3::rounding_mode to_z3_rm(const Mode::FP mode) {
+            constexpr z3::rounding_mode to_z3_rm(const Mode::FP::Rounding mode) {
                 switch (mode) {
-                    case Mode::FP::NearestTiesAwayFromZero:
+                    case Mode::FP::Rounding::NearestTiesAwayFromZero:
                         return z3::RNA;
-                    case Mode::FP::NearestTiesEven:
+                    case Mode::FP::Rounding::NearestTiesEven:
                         return z3::RNE;
-                    case Mode::FP::TowardsNegativeInf:
+                    case Mode::FP::Rounding::TowardsNegativeInf:
                         return z3::RTN;
-                    case Mode::FP::TowardsPositiveInf:
+                    case Mode::FP::Rounding::TowardsPositiveInf:
                         return z3::RTP;
-                    case Mode::FP::TowardsZero:
+                    case Mode::FP::Rounding::TowardsZero:
                         return z3::RTZ;
                     default:
                         throw Utils::Error::Unexpected::NotSupported(
-                            WHOAMI_WITH_SOURCE "Unable to map Mode::FP ", mode,
+                            WHOAMI_WITH_SOURCE "Unable to map Mode::FP::Rounding ", mode,
                             " to z3::rounding_mode");
                 };
             }
@@ -392,28 +391,28 @@ namespace Backend::Z3::Convert {
         }; // namespace Private
 
         /** FP::Add converter */
-        inline z3::expr add(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+        inline z3::expr add(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
             auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l + r;
         }
 
         /** FP::Sub converter */
-        inline z3::expr sub(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+        inline z3::expr sub(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
             auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l - r;
         }
 
         /** FP::Mul converter */
-        inline z3::expr mul(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+        inline z3::expr mul(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
             auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l * r;
         }
 
         /** FP::Div converter */
-        inline z3::expr div(const Mode::FP mode, const z3::expr &l, const z3::expr &r) {
+        inline z3::expr div(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
             auto &ctx { ::Backend::Z3::Private::tl_ctx };
             ctx.set_rounding_mode(Private::to_z3_rm(mode));
             return l / r;
@@ -430,7 +429,7 @@ namespace Backend::Z3::Convert {
 
         /** FP::ToBV converter */
         template <bool Signed>
-        inline z3::expr to_bv(const Mode::FP mode, const z3::expr &e,
+        inline z3::expr to_bv(const Mode::FP::Rounding mode, const z3::expr &e,
                               const Constants::UInt bit_length) {
             e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
