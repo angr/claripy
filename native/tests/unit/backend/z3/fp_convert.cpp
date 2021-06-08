@@ -46,11 +46,11 @@ void fp_convert() {
     const auto flt { C::literal(0.f) }; // NOLINT
     const auto flt_conv { z3.convert(flt.get()) };
     const auto srt { flt_conv.get_sort() };
-    const Backend::Z3::FP::Width fpa_srt {
+    const Mode::FP::Width fpa_srt {
         srt.fpa_ebits(),
         srt.fpa_sbits(),
     };
-    UNITTEST_ASSERT(fpa_srt == Backend::Z3::FP::flt);
+    UNITTEST_ASSERT(fpa_srt == Mode::FP::flt);
 }
 
 // Define the test

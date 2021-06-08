@@ -16,7 +16,7 @@ template <bool Signed> void to_bv_b() {
     namespace Ex = Expression; // NOLINT (false positive)
 
     // Create distinct inputs
-    const Mode::FP mode { Mode::FP::TowardsZero };
+    const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
     const auto fp { F::t_literal<Ex::FP>(0) };
     const Constants::UInt bit_length { 16 };
 

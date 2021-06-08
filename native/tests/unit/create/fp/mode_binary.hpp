@@ -19,7 +19,7 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     const auto b { UnitTest::TestLib::Factories::t_literal<Expression::FP>(1) };
 
     // Test
-    const Mode::FP mode { Mode::FP::TowardsZero };
+    const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
     const auto exp { CreateF(a, b, mode, nullptr) };
 
     // Pointer checks
