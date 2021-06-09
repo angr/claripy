@@ -34,7 +34,7 @@ template <bool Signed> void from_2s_complement_bv_v() {
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto op_down { dcast<Op::FP::FromNot2sComplementBV>(exp->op) };
+    const auto op_down { dcast<Op::FP::From2sComplementBV<Signed>>(exp->op) };
     const auto exp_down { dcast<Ex::FP>(exp) };
 
     // Contains check
