@@ -5,6 +5,8 @@
 #ifndef R_MODE_FP_WIDTH_HPP_
 #define R_MODE_FP_WIDTH_HPP_
 
+#include "../../constants.hpp"
+
 #include <cstdint>
 #include <ostream>
 
@@ -12,11 +14,13 @@
 namespace Mode::FP {
 
     /** A floating point width struct */
-    struct Width {
+    struct Width final {
         /** The width of the exponent */
         const uint32_t exp;
         /** The width of the mantissa */
         const uint32_t mantissa;
+        /** The full width of the fp */
+        constexpr Constants::UInt width() const noexcept { return exp + mantissa; }
     };
 
     /** A single wide fp width */
