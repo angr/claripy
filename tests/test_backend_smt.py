@@ -1,7 +1,7 @@
 import unittest
 import claripy
 
-from claripy import frontend_mixins, frontends, backend_manager, backends
+from claripy import frontend_mixins, backend_manager
 from claripy.backends.backend_smtlib import BackendSMTLibBase
 from claripy.frontends.constrained_frontend import ConstrainedFrontend
 from claripy.ast.strings import String
@@ -20,10 +20,10 @@ class TestSMTLibBackend(unittest.TestCase):
             frontend_mixins.EagerResolutionMixin,
             frontend_mixins.SMTLibScriptDumperMixin,
             ConstrainedFrontend
-        ):
+        ):  # pylint:disable=abstract-method
             def __init__(self, *args, **kwargs):
                 self._solver_backend = backend_manager.backends.smt
-                super(SolverSMT, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
 
         return SolverSMT()
 
@@ -417,21 +417,6 @@ class TestSMTLibBackend(unittest.TestCase):
         res = claripy.StrToInt(str_concrete, 32)
         solver.add(res == 12)
         script = solver.get_smtlib_script_satisfiability()
-        self.assertEqual(correct_script, script)
-
-    def test_str_extract(self):
-        correct_script = '''(set-logic ALL)
-(declare-fun STRING_symb_str_extract () String)
-(assert (let ((.def_0 (= ( str.substr STRING_symb_str_extract 5 1) "abc"))) .def_0))
-(check-sat)
-'''
-        str_symb = claripy.StringS("symb_str_extract", 12, explicit_name=True)
-        res = claripy.StrExtract(0, 1, claripy.StrExtract(1, 2, claripy.StrExtract(4, 8, str_symb)))
-        solver = self.get_solver()
-        solver.add(res == claripy.StringV("abc"))
-        script = solver.get_smtlib_script_satisfiability()
-        # with open("dump_strextract.smt2", "w") as dump_f:
-        #     dump_f.write(script)
         self.assertEqual(correct_script, script)
 
     def test_is_digit(self):

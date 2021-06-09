@@ -154,19 +154,6 @@ def extract_length_calc(high, low, _):
 def str_basic_length_calc(str_1):
     return str_1.string_length
 
-def str_extract_check(start_idx, count, str_val):
-    if start_idx < 0:
-        return False, "StrExtract start_idx must be nonnegative"
-    elif count <= 0:
-        return False, "StrExtract count must be positive"
-    elif start_idx + count > str_val.string_length:
-        return False, "count must not exceed the length of the string."
-    else:
-        return True, ""
-
-def str_extract_length_calc(start_idx, count, str_val): # pylint: disable=unused-argument
-    return count
-
 def int_to_str_length_calc(int_val): # pylint: disable=unused-argument
     return ast.String.MAX_LENGTH
 
