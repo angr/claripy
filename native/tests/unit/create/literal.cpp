@@ -44,8 +44,10 @@ void literal() {
     // Test varaibles
     const char data[] = "This is a test"; // NOLINT
     std::string data_s { data };
-    std::vector<std::byte> data_v { reinterpret_cast<const std::byte *>(std::begin(data)),
-                                    reinterpret_cast<const std::byte *>(std::end(data)) };
+    std::vector<std::byte> data_v {
+        reinterpret_cast<const std::byte *>(std::begin(data)), // NOLINT
+        reinterpret_cast<const std::byte *>(std::end(data))    // NOLINT
+    };
 
     // Tests
     literal_t<Expression::Bool>(true);
