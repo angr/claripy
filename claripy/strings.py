@@ -37,10 +37,6 @@ def StrSubstr(start_idx, count, initial_string):
     return StringV(new_value)
 
 
-def StrExtract(high, low, str_val):
-    return StrSubstr(low, high + 1 - low, str_val)
-
-
 def StrReplace(initial_string, pattern_to_be_replaced, replacement_pattern):
     """
     Return string where the first occurrence of `pattern_to_be_replaced` is replaced with
