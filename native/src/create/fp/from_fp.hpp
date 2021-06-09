@@ -14,7 +14,7 @@ namespace Create::FP {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr from_fp(const Mode::FP::Rounding m, const EBasePtr &fp,
-                            const Mode::FP::Width w, SPAV &&sp = nullptr) {
+                            const Mode::FP::Width &w, SPAV &&sp = nullptr) {
         Utils::affirm<Error::Expression::Usage>(fp != nullptr,
                                                 WHOAMI_WITH_SOURCE "fp may not be nullptr");
         return Simplification::simplify(Expression::factory<Expression::FP>(
