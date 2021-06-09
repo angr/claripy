@@ -7,6 +7,7 @@
 
 #include "constants.hpp"
 #include "tl_ctx.hpp"
+#include "width.hpp"
 
 #include "../../op.hpp"
 
@@ -23,6 +24,9 @@ namespace Backend::Z3::Convert {
     z3::expr extract(const Constants::UInt high, const Constants::UInt low, const z3::expr &e);
 
     namespace Private {
+
+        /** A thread_local reference to tl_ctx for brevity */
+        auto &tl_ctx { ::Backend::Z3::Private::tl_ctx };
 
         /** A hack copied from python that *should* be removed ASAP
          *  @todo Remove the need for this
@@ -175,10 +179,9 @@ namespace Backend::Z3::Convert {
     template <bool Left> z3::expr rotate(const z3::expr &l, const z3::expr &r) {
         // z3's C++ API's rotate functions are different (note the "ext" below)
         using namespace Z3;
-        auto &ctx { ::Backend::Z3::Private::tl_ctx };
-        z3::expr ret { ctx, (Left ? Z3_mk_ext_rotate_left(ctx, l, r)
-                                  : Z3_mk_ext_rotate_right(ctx, l, r)) };
-        ctx.check_error();
+        z3::expr ret { l.ctx(), (Left ? Z3_mk_ext_rotate_left(l.ctx(), l, r)
+                                      : Z3_mk_ext_rotate_right(l.ctx(), l, r)) };
+        l.ctx().check_error();
         return ret;
     }
 
@@ -260,23 +263,22 @@ namespace Backend::Z3::Convert {
         UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
         using To = Constants::CTSC<Op::Literal>;
         const auto &data { Utils::checked_static_cast<To>(expr->op.get())->value };
-        auto &ctx { ::Backend::Z3::Private::tl_ctx };
         try {
             switch (expr->cuid) {
                 case Expression::Bool::static_cuid:
-                    return ctx.bool_val(std::get<bool>(data));
+                    return Private::tl_ctx.bool_val(std::get<bool>(data));
                 case Expression::String::static_cuid:
-                    return ctx.string_val(std::get<std::string>(data));
+                    return Private::tl_ctx.string_val(std::get<std::string>(data));
                 case Expression::FP::static_cuid: {
                     return (Expression::get_bit_length(expr) == Private::flt_size)
-                             ? ctx.fpa_val(std::get<float>(data))
-                             : ctx.fpa_val(std::get<double>(data));
+                             ? Private::tl_ctx.fpa_val(std::get<float>(data))
+                             : Private::tl_ctx.fpa_val(std::get<double>(data));
                 }
                 case Expression::BV::static_cuid: {
                     const auto &vec { std::get<std::vector<std::byte>>(data) };
                     static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
-                    return ctx.bv_val(reinterpret_cast<const char *>(vec.data()),
-                                      Utils::narrow<z3u>(vec.size()));
+                    return Private::tl_ctx.bv_val(reinterpret_cast<const char *>(vec.data()),
+                                                  Utils::narrow<z3u>(vec.size()));
                 }
                     // Error handling
                 case Expression::VS::static_cuid:
@@ -303,20 +305,19 @@ namespace Backend::Z3::Convert {
         UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
         using To = Constants::CTSC<Op::Symbol>;
         const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
-        auto &ctx { ::Backend::Z3::Private::tl_ctx };
         switch (expr->cuid) {
             case Expression::Bool::static_cuid:
-                return ctx.bool_const(name.c_str());
+                return Private::tl_ctx.bool_const(name.c_str());
             case Expression::String::static_cuid:
-                return ctx.string_const(name.c_str());
+                return Private::tl_ctx.string_const(name.c_str());
             case Expression::FP::static_cuid: {
                 using FPP = Constants::CTSC<Expression::FP>;
                 const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length ==
                                   Private::flt_size)
                                      ? Mode::FP::flt
                                      : Mode::FP::dbl };
-                return ctx.fpa_const(name.c_str(), Utils::narrow<z3u>(fpw.exp),
-                                     Utils::narrow<z3u>(fpw.mantissa));
+                return Private::tl_ctx.fpa_const(name.c_str(), Utils::narrow<z3u>(fpw.exp),
+                                                 Utils::narrow<z3u>(fpw.mantissa));
             }
             case Expression::BV::static_cuid: {
                 using BVP = Constants::CTSC<Expression::FP>;
@@ -332,7 +333,7 @@ namespace Backend::Z3::Convert {
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
                 };
-                return ctx.bv_const(name.c_str(), Utils::narrow<z3u>(bit_length));
+                return Private::tl_ctx.bv_const(name.c_str(), Utils::narrow<z3u>(bit_length));
             }
                 // Error handling
             case Expression::VS::static_cuid:
@@ -394,29 +395,25 @@ namespace Backend::Z3::Convert {
 
         /** FP::Add converter */
         inline z3::expr add(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Private::tl_ctx };
-            ctx.set_rounding_mode(Private::to_z3_rm(mode));
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             return l + r;
         }
 
         /** FP::Sub converter */
         inline z3::expr sub(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Private::tl_ctx };
-            ctx.set_rounding_mode(Private::to_z3_rm(mode));
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             return l - r;
         }
 
         /** FP::Mul converter */
         inline z3::expr mul(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Private::tl_ctx };
-            ctx.set_rounding_mode(Private::to_z3_rm(mode));
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             return l * r;
         }
 
         /** FP::Div converter */
         inline z3::expr div(const Mode::FP::Rounding mode, const z3::expr &l, const z3::expr &r) {
-            auto &ctx { ::Backend::Z3::Private::tl_ctx };
-            ctx.set_rounding_mode(Private::to_z3_rm(mode));
+            l.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             return l / r;
         }
 
@@ -442,15 +439,40 @@ namespace Backend::Z3::Convert {
             }
         }
 
+        /** FP::FromFP converter */
+        inline z3::expr from_fp(const Mode::FP::Rounding mode, const z3::expr &e,
+                                const Mode::FP::Width &width) {
+            e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            return z3::fpa_to_fpa(e, Backend::Z3::Private::unsafe_z3_width(width));
+        }
+
+        /** FP::From2sComplementBV converter */
+        template <bool Signed>
+        inline z3::expr from_2s_complement_bv(const Mode::FP::Rounding mode, const z3::expr &e,
+                                              const Mode::FP::Width &width) {
+            e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
+            if constexpr (Signed) {
+                return z3::sbv_to_fpa(e, Backend::Z3::Private::unsafe_z3_width(width));
+            }
+            else {
+                return z3::ubv_to_fpa(e, Backend::Z3::Private::unsafe_z3_width(width));
+            }
+        }
+
+        /** FP::FromNot2sComplementBV converter */
+        inline z3::expr from_not_2s_complement_bv(const z3::expr &e,
+                                                  const Mode::FP::Width &width) {
+            return e.mk_from_ieee_bv(width, Private::unsafe_z3_width(width));
+        }
 
     } // namespace FP
 
     namespace String {
 
-        /** FromInt converter */
-        inline z3::expr from_int(const z3::expr &e) {
-            return z3::bv2int(e, false).itos();
-        } // todo?
+        /** FromInt converter
+         *  \todo double check
+         */
+        inline z3::expr from_int(const z3::expr &e) { return z3::bv2int(e, false).itos(); }
 
         // Int Binary
 
