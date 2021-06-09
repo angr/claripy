@@ -8,7 +8,7 @@
 #include "../constants.hpp"
 
 
-namespace Create {
+namespace Create::FP {
 
     /** Create an Expression with an FromNot@sComplementBV op
      *  Expression pointers may not be nullptr
@@ -22,6 +22,6 @@ namespace Create {
             bv->symbolic, Op::factory<Not2s>(bv, w), w.width(), std::move(sp)));
     }
 
-} // namespace Create
+} // namespace Create::FP
 
 #endif

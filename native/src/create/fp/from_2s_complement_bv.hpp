@@ -8,7 +8,7 @@
 #include "../constants.hpp"
 
 
-namespace Create {
+namespace Create::FP {
 
     /** Create an Expression with an FromFP op
      *  Expression pointers may not be nullptr
@@ -18,11 +18,11 @@ namespace Create {
                                 const Mode::FP::Width w, SPAV &&sp = nullptr) {
         Utils::affirm<Error::Expression::Usage>(bv != nullptr,
                                                 WHOAMI_WITH_SOURCE "bv may not be nullptr");
-        using FromBV = Op::FP::FromComplementBV<Signed>;
+        using FromBV = Op::FP::From2sComplementBV<Signed>;
         return Simplification::simplify(Expression::factory<Expression::FP>(
             bv->symbolic, Op::factory<FromBV>(m, bv, w), w.width(), std::move(sp)));
     }
 
-} // namespace Create
+} // namespace Create::FP
 
 #endif

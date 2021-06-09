@@ -8,7 +8,7 @@
 #include "../constants.hpp"
 
 
-namespace Create {
+namespace Create::FP {
 
     /** Create an Expression with an FromFP op
      *  Expression pointers may not be nullptr
@@ -21,6 +21,6 @@ namespace Create {
             fp->symbolic, Op::factory<Op::FP::FromFP>(m, fp, w), w.width(), std::move(sp)));
     }
 
-} // namespace Create
+} // namespace Create::FP
 
 #endif

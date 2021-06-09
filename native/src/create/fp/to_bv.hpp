@@ -8,7 +8,7 @@
 #include "../constants.hpp"
 
 
-namespace Create {
+namespace Create::FP {
 
     /** Create an Expression with an ToBV op
      *  Expression pointers may not be nullptr
@@ -23,6 +23,6 @@ namespace Create {
             fp->symbolic, Op::factory<Op::FP::ToBV<Signed>>(mode, fp), bit_length, std::move(sp)));
     }
 
-} // namespace Create
+} // namespace Create::FP
 
 #endif
