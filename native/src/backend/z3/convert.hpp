@@ -462,7 +462,7 @@ namespace Backend::Z3::Convert {
         /** FP::FromNot2sComplementBV converter */
         inline z3::expr from_not_2s_complement_bv(const z3::expr &e,
                                                   const Mode::FP::Width &width) {
-            return e.mk_from_ieee_bv(width, Private::unsafe_z3_width(width));
+            return e.mk_from_ieee_bv(Backend::Z3::Private::unsafe_z3_width(width));
         }
 
     } // namespace FP

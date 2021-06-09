@@ -32,15 +32,15 @@ void fp_convert() {
     const auto nan_is_nan { C::FP::is_nan(nan) };
     const auto nan_is_inf { C::FP::is_inf(nan) };
 
-    UNITTEST_ASSERT(is_true(z3, nan_is_nan))
-    UNITTEST_ASSERT(is_false(z3, nan_is_inf))
+    UNITTEST_ASSERT(is_true(z3, nan_is_nan));
+    UNITTEST_ASSERT(is_false(z3, nan_is_inf));
 
     // Test with Inf
     const auto inf { C::literal(std::numeric_limits<double>::infinity()) };
     const auto inf_is_nan { C::FP::is_nan(inf) };
     const auto inf_is_inf { C::FP::is_inf(inf) };
-    UNITTEST_ASSERT(is_false(z3, inf_is_nan))
-    UNITTEST_ASSERT(is_true(z3, inf_is_inf))
+    UNITTEST_ASSERT(is_false(z3, inf_is_nan));
+    UNITTEST_ASSERT(is_true(z3, inf_is_inf));
 
     // Test float
     const auto flt { C::literal(0.f) }; // NOLINT

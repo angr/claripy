@@ -384,95 +384,92 @@ namespace Backend::Z3 {
         return ret;                                                                               \
     }
 
-                    // ToBV
-                    TO_BV_CASE(true);
-                    TO_BV_BODY(false);
-
-// Cleanup
-#undef TO_BV_CASE
-
-                // FromFP
-                case Op::FP::FromFP::static_cuid: {
-                    check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
-                    using FromFP = Constants::CTSC<Op::FP::FromFP>;
-                    const FromFP cast_op { Utils::checked_static_cast<FromFP>(expr->op.get()) };
-                    auto ret {
-                        Convert::FP::from_fp(cast_op->mode, *args.back(), cast_op->width);
-                        args.pop_back();
-                        return ret;
-                    }
-
 /** A local macro used for consistency */
 #define FROM_2CBV_CASE(TF)                                                                        \
     case Op::FP::From2sComplementBV<TF>::static_cuid: {                                           \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
         using OpT = Constants::CTSC<Op::FP::From2sComplementBV<TF>>;                              \
         const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };                    \
-        auto ret {                                                                                \
-            Convert::FP::from_2s_complement_bv<TF>(cast_op->mode, *args.back(), cast_op->width);  \
-            args.pop_back();                                                                      \
-            return ret;                                                                           \
-        }
+        auto ret { Convert::FP::from_2s_complement_bv<TF>(cast_op->mode, *args.back(),            \
+                                                          cast_op->width) };                      \
+        args.pop_back();                                                                          \
+        return ret;                                                                               \
+    }
+
+                    // ToBV
+                    TO_BV_CASE(true);
+                    TO_BV_CASE(false);
 
                     // From2sComplementBV
                     FROM_2CBV_CASE(true);
                     FROM_2CBV_CASE(false);
 
 // Cleanup
+#undef TO_BV_CASE
 #undef FROM_2CBV_CASE
 
-                    // FromNot2sComplementBV
-                    case Op::FP::FromNot2sComplementBV::static_cuid: {
-                        check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
-                        using OpT = Constants::CTSC<Op::FP::FromNot2sComplementBV>;
-                        const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };
-                        auto ret {
-                            Convert::FP::from_not_2s_complement_bv(*args.back(), cast_op->width);
-                            args.pop_back();
-                            return ret;
-                        }
+                // FromFP
+                case Op::FP::FromFP::static_cuid: {
+                    check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
+                    using FromFP = Constants::CTSC<Op::FP::FromFP>;
+                    const FromFP cast_op { Utils::checked_static_cast<FromFP>(expr->op.get()) };
+                    auto ret { Convert::FP::from_fp(cast_op->mode, *args.back(), cast_op->width) };
+                    args.pop_back();
+                    return ret;
+                }
 
-                        /************************************************/
-                        /*                String Trivial                */
-                        /************************************************/
+                // FromNot2sComplementBV
+                case Op::FP::FromNot2sComplementBV::static_cuid: {
+                    check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
+                    using OpT = Constants::CTSC<Op::FP::FromNot2sComplementBV>;
+                    const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };
+                    auto ret { Convert::FP::from_not_2s_complement_bv(*args.back(),
+                                                                      cast_op->width) };
+                    args.pop_back();
+                    return ret;
+                }
 
-                        // Unary
+                    /************************************************/
+                    /*                String Trivial                */
+                    /************************************************/
 
-                        UNARY_CASE(String::FromInt, Convert::String::from_int);
+                    // Unary
 
-                        // Int Binary
+                    UNARY_CASE(String::FromInt, Convert::String::from_int);
 
-                        UINT_BINARY_CASE(String::ToInt, Convert::String::to_int);
-                        UINT_BINARY_CASE(String::Len, Convert::String::len);
+                    // Int Binary
 
-                        // Binary
+                    UINT_BINARY_CASE(String::ToInt, Convert::String::to_int);
+                    UINT_BINARY_CASE(String::Len, Convert::String::len);
 
-                        BINARY_CASE(String::Contains, Convert::String::contains);
-                        BINARY_CASE(String::PrefixOf, Convert::String::prefix_of);
-                        BINARY_CASE(String::SuffixOf, Convert::String::suffix_of);
+                    // Binary
 
-                        // Ternary
+                    BINARY_CASE(String::Contains, Convert::String::contains);
+                    BINARY_CASE(String::PrefixOf, Convert::String::prefix_of);
+                    BINARY_CASE(String::SuffixOf, Convert::String::suffix_of);
 
-                        TERNARY_CASE(String::Replace, Convert::String::replace);
+                    // Ternary
 
-                        // Other
+                    TERNARY_CASE(String::Replace, Convert::String::replace);
 
-                        TERNARY_CASE(String::SubString, Convert::String::substring);
+                    // Other
 
-                        case Op::String::IndexOf::static_cuid: {
-                            check_vec_usage(args, 2, WHOAMI_WITH_SOURCE);
-                            const auto size { args.size() };
-                            debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE
-                                                                 "String::IndexOf has no length");
-                            const auto bl { Expression::get_bit_length(expr) };
-                            auto ret { Convert::String::index_of(*args[size - 3], *args[size - 2],
-                                                                 *args[size - 1], bl) };
-                            args.resize(size - 2);
-                            return ret;
-                        };
-                    }
+                    TERNARY_CASE(String::SubString, Convert::String::substring);
 
-                        // Cleanup
+                case Op::String::IndexOf::static_cuid: {
+                    check_vec_usage(args, 2, WHOAMI_WITH_SOURCE);
+                    const auto size { args.size() };
+                    debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE
+                                                         "String::IndexOf has no length");
+                    const auto bl { Expression::get_bit_length(expr) };
+                    auto ret { Convert::String::index_of(*args[size - 3], *args[size - 2],
+                                                         *args[size - 1], bl) };
+                    args.resize(size - 2);
+                    return ret;
+                };
+            }
+
+                // Cleanup
 #undef UNARY_CASE
 #undef BINARY_DISPATCH
 #undef BINARY_CASE
@@ -481,21 +478,21 @@ namespace Backend::Z3 {
 #undef MODE_BINARY_CASE
 #undef TERNARY_CASE
 #undef FLAT_CASE
-                }
+        }
 
-                    /** Abstract a backend object into a claricpp expression
-                     *  b_obj may not be nullptr
-                     */
-                    Expression::BasePtr dispatch_abstraction(
-                        Constants::CTSC<z3::expr> b_obj, std::vector<Expression::BasePtr> & args)
-                        override final {
-                        UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
-                        (void) b_obj;
-                        (void) args;
-                        return { nullptr };
-                    }
-            };
+        /** Abstract a backend object into a claricpp expression
+         *  b_obj may not be nullptr
+         */
+        Expression::BasePtr
+        dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
+                             std::vector<Expression::BasePtr> &args) override final {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
+            (void) b_obj;
+            (void) args;
+            return { nullptr };
+        }
+    };
 
-        } // namespace Backend::Z3
+} // namespace Backend::Z3
 
 #endif
