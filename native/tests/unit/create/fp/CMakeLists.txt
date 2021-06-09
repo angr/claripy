@@ -1,2 +1,5 @@
 simple_test(trivial)
 simple_test(to_bv)
+simple_test(from_fp)
+simple_test(from_2s_complement_bv)
+simple_test(from_not_2s_complement_bv)
