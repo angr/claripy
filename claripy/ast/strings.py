@@ -40,7 +40,7 @@ class String(Bits):
         Examples:
             self[7:0]  -- returns the last byte of self
             self[15:0] -- returns the last two bytes of self
-            self[8:0]  -- Error! [8:0] is 9 bytes, it asks for individual bits of the second to last byte!
+            self[8:0]  -- Error! [8:0] is 9 bits, it asks for individual bits of the second to last byte!
             self[8:1]  -- Error! [8:1] asks for 1 bit from the second to last byte and 7 from the last byte!
         '''
         if type(rng) is slice:
