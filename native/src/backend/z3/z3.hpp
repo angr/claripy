@@ -95,6 +95,9 @@ namespace Backend::Z3 {
             using Ptr = Constants::CTSC<T>;
             using Err = Utils::Error::Unexpected::Type;
             Utils::affirm<Err>(dynamic_cast<Ptr>(e) != nullptr, std::forward<Args>(args)...);
+
+#else
+            Utils::sink(e, args...);
 #endif
         }
 
