@@ -16,11 +16,15 @@ void from_not_2s_complement_bv() {
     namespace Ex = Expression; // NOLINT (false positive)
 
     // Create distinct inputs
-    const auto bytes { Mode::FP::dbl.width() / C_CHAR_BIT };
     const auto bv { F::t_literal<Ex::BV>(0) };
 
+    // Size check
+    UNITTEST_ASSERT_MSG(
+        dcast<Ex::BV>(bv)->bit_length >= Mode::FP::dbl.width(),
+        "This is not a test failure; but rather the test function itself needs to be fixed");
+
     // Test
-    const auto exp { Create::FP::from_not_2s_complement > (bv, Mode::FP::dbl) };
+    const auto exp { Create::FP::from_not_2s_complement(bv, Mode::FP::dbl) };
 
     // Pointer checks
     UNITTEST_ASSERT(bv.use_count() == 2);
