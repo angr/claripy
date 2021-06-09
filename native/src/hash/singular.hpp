@@ -118,6 +118,11 @@ namespace Hash {
     /*                Specializations                 */
     /**************************************************/
 
+    /** A specialization for T = std::byte */
+    template <> constexpr Hash singular(const std::byte &b) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Utils::to_underlying(b));
+    }
+
     /** A specialization for T = std::string */
     template <> inline Hash singular(const std::string &s) noexcept {
         return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s.c_str(), s.size());

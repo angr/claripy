@@ -26,9 +26,9 @@ namespace UnitTest::TestLib::Factories {
             return Create::literal(std::to_string(i));
         }
         else if constexpr (std::is_same_v<T, Ex::BV>) {
-            std::vector<char> data;
+            std::vector<std::byte> data;
             data.resize(sizeof(Constants::Int));
-            UTILS_TYPE_PUN_ONTO(char, data.data(), &i, true);
+            UTILS_TYPE_PUN_ONTO(std::byte, data.data(), &i, true);
             return Create::literal(std::move(data));
         }
         else if constexpr (std::is_same_v<T, Ex::FP>) {

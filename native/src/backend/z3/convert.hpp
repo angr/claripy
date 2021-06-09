@@ -273,8 +273,10 @@ namespace Backend::Z3::Convert {
                              : ctx.fpa_val(std::get<double>(data));
                 }
                 case Expression::BV::static_cuid: {
-                    const auto &vec { std::get<std::vector<char>>(data) };
-                    return ctx.bv_val(vec.data(), Utils::narrow<z3u>(vec.size()));
+                    const auto &vec { std::get<std::vector<std::byte>>(data) };
+                    static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
+                    return ctx.bv_val(reinterpret_cast<const char *>(vec.data()),
+                                      Utils::narrow<z3u>(vec.size()));
                 }
                     // Error handling
                 case Expression::VS::static_cuid:

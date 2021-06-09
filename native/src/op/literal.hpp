@@ -21,11 +21,11 @@ namespace Op {
 
       public:
         /** The value type */
-        using Data = std::variant<bool,              // Bool
-                                  std::string,       // String
-                                  std::vector<char>, // BV
-                                  float, double,     // FP
-                                  PyObj::VSPtr       // VS
+        using Data = std::variant<bool,                   // Bool
+                                  std::string,            // String
+                                  std::vector<std::byte>, // BV
+                                  float, double,          // FP
+                                  PyObj::VSPtr            // VS
                                   >;
 
         /** Representation */
@@ -45,8 +45,8 @@ namespace Op {
             if (std::holds_alternative<std::string>(value)) {
                 out << '"' << std::get<std::string>(value) << '"';
             }
-            else if (std::holds_alternative<std::vector<char>>(value)) {
-                out << "[BV-" << std::get<std::vector<char>>(value).size() << "]";
+            else if (std::holds_alternative<std::vector<std::byte>>(value)) {
+                out << "[BV-" << std::get<std::vector<std::byte>>(value).size() << "]";
             }
             else if (std::holds_alternative<float>(value)) {
                 out << std::get<float>(value);
@@ -82,7 +82,7 @@ namespace Op {
         // There should be one for each variant type
         P_CTOR(bool) {};
         P_CTOR(std::string) {};
-        P_CTOR(std::vector<char>) {};
+        P_CTOR(std::vector<std::byte>) {};
         P_CTOR(float) {};
         P_CTOR(double) {};
         P_CTOR(PyObj::VSPtr) { UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
@@ -100,8 +100,8 @@ namespace Op {
             if (std::holds_alternative<std::string>(value)) { // String
                 return std::get<std::string>(value).size();
             }
-            else if (std::holds_alternative<std::vector<char>>(value)) { // BV
-                return std::get<std::vector<char>>(value).size();
+            else if (std::holds_alternative<std::vector<std::byte>>(value)) { // BV
+                return std::get<std::vector<std::byte>>(value).size();
             }
             else if (std::holds_alternative<float>(value)) { // FP
                 return sizeof(float);

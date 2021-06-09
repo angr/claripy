@@ -8,7 +8,8 @@
 
 
 /** Test the literal create function with type T */
-template <typename T, typename Data> void literal_t(Data data, const Constants::UInt size = 0) {
+template <typename T, typename Data>
+void literal_t(const Data data, const Constants::UInt size = 0) {
 
     // Test
     const auto lit { Create::literal(Data { data }) };
@@ -38,12 +39,13 @@ template <typename T, typename Data> void literal_t(Data data, const Constants::
 
 /** Test the literal create function */
 void literal() {
+    static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
 
     // Test varaibles
-    char data[] = "This is a test"; // NOLINT
+    const char data[] = "This is a test"; // NOLINT
     std::string data_s { data };
-    std::vector<char> data_v;
-    data_v.assign(std::begin(data), std::end(data));
+    std::vector<std::byte> data_v { reinterpret_cast<const std::byte *>(std::begin(data)),
+                                    reinterpret_cast<const std::byte *>(std::end(data)) };
 
     // Tests
     literal_t<Expression::Bool>(true);

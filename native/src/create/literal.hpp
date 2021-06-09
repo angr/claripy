@@ -21,8 +21,9 @@ namespace Create {
     }
 
     /** Create a BV Expression with a Literal op */
-    inline EBasePtr literal(std::vector<char> &&data, SPAV &&sp = nullptr) {
-        return Private::literal<Expression::BV, std::vector<char>>(std::move(data), std::move(sp));
+    inline EBasePtr literal(std::vector<std::byte> &&data, SPAV &&sp = nullptr) {
+        return Private::literal<Expression::BV, std::vector<std::byte>>(std::move(data),
+                                                                        std::move(sp));
     }
 
     /** Create a FP Expression with a Literal op containing a double precision float */
