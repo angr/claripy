@@ -29,7 +29,7 @@ class String(Bits):
     def __init__(self, *args, **kwargs):
         str_len = kwargs['length']
         kwargs['length'] *= 8
-        super(String, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.string_length = str_len
 
     def __getitem__(self, rng):
@@ -77,7 +77,7 @@ class String(Bits):
         return value
 
     @staticmethod
-    def _from_str(like, value):
+    def _from_str(like, value): # pylint: disable=unused-argument
         return StringV(value)
 
     def strReplace(self, str_to_replace, replacement):
@@ -168,7 +168,6 @@ StrIndexOf = operations.op("StrIndexOf", (String, String, BV, int), BV, calc_len
 StrToInt = operations.op("StrToInt", (String, int), BV, calc_length=operations.strtoint_bv_size_calc, bound=False)
 IntToStr = operations.op("IntToStr", (BV,), String, calc_length=operations.int_to_str_length_calc, bound=False)
 StrIsDigit = operations.op("StrIsDigit", (String,), Bool, bound=False)
-UnitStr = operations.op("UnitStr", (BV,), String, bound=False) # convert BV to single-char string
 
 # Equality / inequality check
 String.__eq__ = operations.op('__eq__', (String, String), Bool)
@@ -187,4 +186,3 @@ String.StrIndexOf = staticmethod(StrIndexOf)
 String.StrToInt = staticmethod(StrToInt)
 String.StrIsDigit = staticmethod(StrIsDigit)
 String.IntToStr = staticmethod(IntToStr)
-String.UnitStr = staticmethod(UnitStr)
