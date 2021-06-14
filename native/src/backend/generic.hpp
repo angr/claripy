@@ -47,6 +47,7 @@ namespace Backend {
             errored_cache.scoped_unique().first.clear();
             // Thread locals
             conversion_cache.clear();
+            abstraction_cache.clear();
         }
 
         /** Checks whether this backend can handle the expression
@@ -125,7 +126,7 @@ namespace Backend {
                     // Convert the expression to a backend object
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
                     if constexpr (ApplyAnnotations) {
-                        apply_annotations(obj, expr->annotations);
+                        obj = std::move(apply_annotations(obj, expr->annotations));
                     }
 
                     // Store the result in the arg stack and in the cache
@@ -163,15 +164,30 @@ namespace Backend {
          */
         Expression::BasePtr abstract(Constants::CTSC<BackendObj> b_obj) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
-            /* inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
-             * abstraction_cache {}; */
-            /* Hash */
+            const auto n = { b_obj->num_args() };
 
-            // result = dispatch_abstraction
-            // Simplification::cache(result->hash, result);
+            // Cache lookup
+            const auto hash { b_obj->hash() };
+            if (const auto lookup { abstraction_cache.find(hash) };
+                lookup != abstraction_cache.end()) {
+                return lookup->second;
+            }
 
-            (void) b_obj;
-            return { nullptr };
+            // Convert b_obj args
+            std::vector<Expression::BasePtr> args;
+            if (n > 0) {
+                for (Constants::UInt i { 0 }; i < n; ++i) {
+                    args.emplace_back(abstract(b_obj->arg(i)));
+                }
+            }
+
+            // Convert b_obj
+            const auto ret { dispatch_abstraction(b_obj, args) };
+
+            // Update various caches and return
+            abstraction_cache.emplace(hash, ret);
+            Simplification::cache(ret->hash, ret);
+            return ret;
         }
 
       protected:
@@ -204,8 +220,7 @@ namespace Backend {
         /** This applies the given annotations to the backend object
          *  \todo Implement this function
          */
-        virtual void apply_annotations(BackendObj &o, Expression::Base::SPAV &&sp) {
-            (void) o;
+        virtual BackendObj apply_annotations(const BackendObj &o, Expression::Base::SPAV &&sp) {
             (void) sp;
 #ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::MissingVirtualFunction>(
@@ -213,6 +228,7 @@ namespace Backend {
                 "subclass failed to override apply_annotations"
                 " despite setting ApplyAnnotations to true");
 #endif
+            return o; // todo
         }
 
         // Caches
@@ -224,13 +240,13 @@ namespace Backend {
          */
         inline static Utils::ThreadSafe::Mutable<std::set<Hash::Hash>> errored_cache {};
 
-        /** Thread local converstion cache
+        /** Thread local conversion cache
          *  Map an expression hash to a backend object representing it
          */
         inline static thread_local std::map<Hash::Hash, const BackendObj> conversion_cache {};
 
         /** Thread local abstraction cache
-         *  Map a backend object's hash to an expression base pointer
+         *  Map a backend object hash to an expression base pointer
          */
         inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
             abstraction_cache {};
