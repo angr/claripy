@@ -486,7 +486,7 @@ namespace Backend::Z3 {
         /** Abstract a backend object into a claricpp expression
          *  b_obj may not be nullptr
          */
-        Expression::BasePtr
+        AbstractionVariant
         dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
                              std::vector<Expression::BasePtr> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
@@ -618,10 +618,15 @@ namespace Backend::Z3 {
 
                 // Rounding modes
                 case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
+                    return Mode::FP::Rounding::NearestTiesEven;
                 case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY:
+                    return Mode::FP::Rounding::NearestTiesAwayFromZero;
                 case Z3_OP_FPA_RM_TOWARD_ZERO:
+                    return Mode::FP::Rounding::TowardsZero;
                 case Z3_OP_FPA_RM_TOWARD_POSITIVE:
+                    return Mode::FP::Rounding::TowardsPositiveInf;
                 case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
+                    return Mode::FP::Rounding::TowardsNegativeInf;
 
                     // Special z3 ops
                 case Z3_OP_INTERNAL:

@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <stack>
+#include <variant>
 
 
 namespace Backend {
@@ -29,6 +30,9 @@ namespace Backend {
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Generic);
         /** Destructor */
         ~Generic() noexcept override = default;
+
+        /** The types claricpp may extract backend objects into */
+        using AbstractionVariant = std::variant<Expression::BasePtr, Mode::FP::Rounding, unsigned>;
 
         // Pure Virtual Functions
 
@@ -161,8 +165,18 @@ namespace Backend {
 
         /** Abstract a backend object into a claricpp Expression
          *  b_obj may not nullptr
+         *  \todo: Handle non-expression return types
          */
         Expression::BasePtr abstract(Constants::CTSC<BackendObj> b_obj) {
+            const auto variant { abstract_helper(b_obj) };
+            return std::get<Expression::BasePtr>(variant); // TODO
+        }
+
+      private:
+        /** Abstract a backend object into a type claricpp understands
+         *  b_obj may not nullptr
+         */
+        AbstractionVariant abstract_helper(Constants::CTSC<BackendObj> b_obj) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
             const auto n = { b_obj->num_args() };
 
@@ -174,7 +188,7 @@ namespace Backend {
             }
 
             // Convert b_obj args
-            std::vector<Expression::BasePtr> args;
+            std::vector<AbstractionVariant> args;
             if (n > 0) {
                 for (Constants::UInt i { 0 }; i < n; ++i) {
                     args.emplace_back(abstract(b_obj->arg(i)));
@@ -185,8 +199,11 @@ namespace Backend {
             const auto ret { dispatch_abstraction(b_obj, args) };
 
             // Update various caches and return
+
             abstraction_cache.emplace(hash, ret);
-            Simplification::cache(ret->hash, ret);
+            if (std::holds_alternative<Expression::BasePtr>(ret)) {
+                Simplification::cache(ret->hash, ret);
+            }
             return ret;
         }
 
@@ -211,7 +228,7 @@ namespace Backend {
          *  Note: We use a raw vector instead of a stack for efficiency
          *  Note: This function should not edit the Simplification cache
          */
-        virtual Expression::BasePtr
+        virtual AbstractionVariant
         dispatch_abstraction(Constants::CTSC<BackendObj> b_obj,
                              std::vector<Expression::BasePtr> &args) = 0;
 
