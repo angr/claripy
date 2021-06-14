@@ -503,9 +503,9 @@ namespace Backend::Z3 {
             using Shft = Mode::Shift;
 
 /** A local macro used for error checking in debug mode */
-#define ASSERT_EMPTY_DEBUG(X)                                                                     \
-    Utils::affirm<Utils::Error::Unexpected::Size>((X).empty(),                                    \
-                                                  WHOAMI_WITH_SOURCE "container is not empty");
+#define ASSERT_ARG_LEN_DEBUG(X, N)                                                                \
+    Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE           \
+                                                  "container should have " #N " elements");
 
             // Switch on expr type
             switch (decl_kind) {
@@ -554,10 +554,10 @@ namespace Backend::Z3 {
 
                 // Boolean
                 case Z3_OP_TRUE:
-                    ASSERT_EMPTY_DEBUG(args);
+                    ASSERT_ARG_LEN_DEBUG(args, 0);
                     return Abstract::bool_<true>;
                 case Z3_OP_FALSE:
-                    ASSERT_EMPTY_DEBUG(args);
+                    ASSERT_ARG_LEN_DEBUG(args, 0);
                     return Abstract::bool_<false>;
 
                 case Z3_OP_EQ:
@@ -624,7 +624,10 @@ namespace Backend::Z3 {
                 case Z3_OP_CONCAT:
                 case Z3_OP_SIGN_EXT:
                 case Z3_OP_ZERO_EXT:
-                case Z3_OP_EXTRACT:
+                case Z3_OP_EXTRACT: {
+                    ASSERT_ARG_LEN_DEBUG(args, 1);
+                    return Create::Extract(b_obj->hi(), b_obj->lo(), std::move(args[0]));
+                }
                 case Z3_OP_REPEAT:
 
                     // BV Bitwise ops
