@@ -252,8 +252,8 @@ namespace Backend::Z3 {
                 // This should never be hit
                 default: {
                     throw Utils::Error::Unexpected::NotSupported(
-                        WHOAMI_WITH_SOURCE "Unknown expression op given to ", __func__,
-                        "\nOp CUID: ", expr->op->cuid);
+                        WHOAMI_WITH_SOURCE "Unknown expression op given.\nOp CUID: ",
+                        expr->op->cuid);
                 }
 
                 // Unsupported ops
@@ -262,8 +262,8 @@ namespace Backend::Z3 {
                 case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
-                                                      "Unknown expression op given to ",
-                                                      __func__, "\nOp CUID: ", expr->op->cuid);
+                                                      "Unknown expression op given.\nOp CUID: ",
+                                                      expr->op->cuid);
                 }
 
                     /************************************************/
@@ -493,9 +493,10 @@ namespace Backend::Z3 {
             (void) args;
 
             // Get switching variables
+            // TODO: move down as needed for optimization purposes?
             const auto decl { b_obj->decl() };
             const auto decl_kind { decl.decl_kind() };
-            const auto sort_kind { b_obj->get_sort().sort_kind() };
+            const auto sort { b_obj->get_sort() };
 
             // For brevity
             using Cmp = Mode::Compare;
@@ -510,9 +511,45 @@ namespace Backend::Z3 {
             switch (decl_kind) {
 
                 // Unsupported op
+                case Z3_OP_UNINTERPRETED: {
+                    // If b_obj is a symbolic value
+                    if (args.empty()) {
+                        // Gather info
+                        std::string name { decl.name().str() };
+                        auto symbol_type { sort.sort_kind() };
+                        switch (symbol_type) {
+                            case Z3_BV_SORT:
+
+
+                                /* bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort) */
+                                /* (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None,
+                                 * None)) */
+                                /* if ast_args is None: */
+                                /*     ast_args = (symbol_str, None, None, None, False, False,
+                                 * None) */
+
+
+                                return Create::symbol(std::move(name), bl, ans); // probably? TODO:
+                            case Z3_BOOL_SORT:
+                            case Z3_FLOATING_POINT_SORT:
+                            default:
+                                throw Error::Backend::Abstraction(
+                                    WHOAMI_WITH_SOURCE "Unknown term type: ",
+                                    symbol_type "\nOp decl_kind: ", decl_kind,
+                                    "\nPlease report this.");
+                        }
+                    }
+                    // Unknown error
+                    else {
+                        throw Error::Backend::Abstraction(
+                            WHOAMI_WITH_SOURCE
+                            "Uninterpreted z3 op with args given. Op decl_kind: ",
+                            decl_kind, "\nPlease report this.");
+                    }
+                }
                 default: {
-                    throw Error::Backend::Abstraction(WHOAMI_WITH_SOURCE "Unknown z3 op given to ",
-                                                      __func__, "\nOp decl_kind: ", decl_kind);
+                    throw Error::Backend::Abstraction(
+                        WHOAMI_WITH_SOURCE "Unknown z3 op given. Op decl_kind: ", decl_kind);
                 }
 
                 // Boolean
@@ -522,6 +559,7 @@ namespace Backend::Z3 {
                 case Z3_OP_FALSE:
                     ASSERT_EMPTY_DEBUG(args);
                     return Abstract::bool_<false>;
+
                 case Z3_OP_EQ:
                 case Z3_OP_DISTINCT:
                 case Z3_OP_ITE:
@@ -639,7 +677,6 @@ namespace Backend::Z3 {
 
                     // Special z3 ops
                 case Z3_OP_INTERNAL:
-                case Z3_OP_UNINTERPRETED:
 
 // Cleanup
 #undef ASSERT_EMPTY_DEBUG
