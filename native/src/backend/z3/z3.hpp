@@ -545,6 +545,7 @@ namespace Backend::Z3 {
                 case Z3_OP_BSUB:
                 case Z3_OP_BMUL:
 
+                    // BV Arithmetic
                 case Z3_OP_BSDIV:
                 case Z3_OP_BUDIV:
                 case Z3_OP_BSREM:
@@ -566,42 +567,48 @@ namespace Backend::Z3 {
                 case Z3_OP_UGT:
                 case Z3_OP_SGT:
 
+                    // BV Logic
                 case Z3_OP_BAND:
                 case Z3_OP_BOR:
                 case Z3_OP_BNOT:
                 case Z3_OP_BXOR:
 
+                    // BV Misc
                 case Z3_OP_CONCAT:
                 case Z3_OP_SIGN_EXT:
                 case Z3_OP_ZERO_EXT:
                 case Z3_OP_EXTRACT:
                 case Z3_OP_REPEAT:
 
+                    // BV Bitwise ops
                 case Z3_OP_BSHL:
                 case Z3_OP_BLSHR:
                 case Z3_OP_BASHR:
                 case Z3_OP_EXT_ROTATE_LEFT:
                 case Z3_OP_EXT_ROTATE_RIGHT:
 
+                    // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
                 case Z3_OP_FPA_TO_UBV:
                 case Z3_OP_FPA_TO_IEEE_BV:
                 case Z3_OP_FPA_TO_FP:
                 case Z3_OP_FPA_NUM:
 
+                    // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
                 case Z3_OP_FPA_MINUS_INF:
                 case Z3_OP_FPA_PLUS_ZERO:
                 case Z3_OP_FPA_PLUS_INF:
                 case Z3_OP_FPA_NAN:
 
-                // FPA Comparisons
+                // FP Comparisons
                 case Z3_OP_FPA_EQ:
                 case Z3_OP_FPA_GT:
                 case Z3_OP_FPA_GE:
                 case Z3_OP_FPA_LT:
                 case Z3_OP_FPA_LE:
 
+                    // FP arithmetic
                 case Z3_OP_FPA_ABS:
                 case Z3_OP_FPA_NEG:
                 case Z3_OP_FPA_ADD:
@@ -616,14 +623,16 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_RM_TOWARD_POSITIVE:
                 case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
 
+                    // Special z3 ops
                 case Z3_OP_INTERNAL:
                 case Z3_OP_UNINTERPRETED:
-
-
-                    return { nullptr };
             }
-        };
 
-    } // namespace Backend::Z3
+            // TODO
+            return { nullptr };
+        }
+    };
+
+} // namespace Backend::Z3
 
 #endif
