@@ -173,7 +173,7 @@ namespace Backend::Z3 {
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
         check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
-        auto ret { (FN)(*args.back()) };                                                          \
+        auto ret { (FN) (*args.back()) };                                                         \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -181,7 +181,7 @@ namespace Backend::Z3 {
 #define BINARY_DISPATCH(FN)                                                                       \
     check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                              \
     const auto size { args.size() };                                                              \
-    auto ret { (FN)(*args[size - 2], *args[size - 1]) };                                          \
+    auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                         \
     args.resize(size - 2);                                                                        \
     return ret;
 
@@ -203,7 +203,8 @@ namespace Backend::Z3 {
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
         check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
-        auto ret { (FN)(*args.back(), Utils::checked_static_cast<To>(expr->op.get())->integer) }; \
+        auto ret { (FN) (*args.back(),                                                            \
+                         Utils::checked_static_cast<To>(expr->op.get())->integer) };              \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -214,8 +215,8 @@ namespace Backend::Z3 {
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                          \
         const auto size { args.size() };                                                          \
-        auto ret { (FN)(Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],    \
-                        *args[size - 1]) };                                                       \
+        auto ret { (FN) (Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],   \
+                         *args[size - 1]) };                                                      \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -236,7 +237,7 @@ namespace Backend::Z3 {
         const auto a_size { args.size() };                                                        \
         const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
         check_vec_usage(args, n, WHOAMI_WITH_SOURCE);                                             \
-        auto ret { (FN)(&(args.data()[a_size - n]), n) };                                         \
+        auto ret { (FN) (&(args.data()[a_size - n]), n) };                                        \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
     }
@@ -489,12 +490,140 @@ namespace Backend::Z3 {
         dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
                              std::vector<Expression::BasePtr> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
-            (void) b_obj;
             (void) args;
-            return { nullptr };
-        }
-    };
 
-} // namespace Backend::Z3
+            // Get switching variables
+            /* const auto decl { b_obj->decl() }; */
+            const auto decl_kind { b_obj->decl_kind() };
+            const auto sort_kind { b_obj->sort_kind(); };
+
+            // For brevity
+            using Cmp = Mode::Compare;
+            using Shft = Mode::Shift;
+
+            // Switch on expr type
+            switch (decl_kind) {
+
+                // Unsupported op
+                default: {
+                    throw Error::Backend::Abstraction(WHOAMI_WITH_SOURCE "Unknown z3 op given to ",
+                                                      __func__, "\nOp decl_kind: ", decl_kind);
+                }
+
+                // Boolean
+                case Z3_OP_TRUE:
+                case Z3_OP_FALSE:
+                case Z3_OP_EQ:
+                case Z3_OP_DISTINCT:
+                case Z3_OP_ITE:
+                case Z3_OP_AND:
+                case Z3_OP_OR:
+                case Z3_OP_IFF:
+                case Z3_OP_XOR:
+                case Z3_OP_NOT:
+                case Z3_OP_IMPLIES:
+
+                // Arithmetic
+                case Z3_OP_LE:
+                case Z3_OP_GE:
+                case Z3_OP_LT:
+                case Z3_OP_GT:
+                case Z3_OP_ADD:
+                case Z3_OP_SUB:
+                case Z3_OP_UMINUS:
+                case Z3_OP_MUL:
+                case Z3_OP_DIV:
+                case Z3_OP_IDIV:
+                case Z3_OP_REM:
+                case Z3_OP_MOD:
+                case Z3_OP_POWER:
+
+                // Bit-vectors
+                case Z3_OP_BNUM:
+                case Z3_OP_BNEG:
+                case Z3_OP_BADD:
+                case Z3_OP_BSUB:
+                case Z3_OP_BMUL:
+
+                case Z3_OP_BSDIV:
+                case Z3_OP_BUDIV:
+                case Z3_OP_BSREM:
+                case Z3_OP_BUREM:
+                case Z3_OP_BSMOD:
+                case Z3_OP_BSDIV_I:
+                case Z3_OP_BUDIV_I:
+                case Z3_OP_BSREM_I:
+                case Z3_OP_BUREM_I:
+                case Z3_OP_BSMOD_I:
+
+                // Comparisons
+                case Z3_OP_ULEQ:
+                case Z3_OP_SLEQ:
+                case Z3_OP_UGEQ:
+                case Z3_OP_SGEQ:
+                case Z3_OP_ULT:
+                case Z3_OP_SLT:
+                case Z3_OP_UGT:
+                case Z3_OP_SGT:
+
+                case Z3_OP_BAND:
+                case Z3_OP_BOR:
+                case Z3_OP_BNOT:
+                case Z3_OP_BXOR:
+
+                case Z3_OP_CONCAT:
+                case Z3_OP_SIGN_EXT:
+                case Z3_OP_ZERO_EXT:
+                case Z3_OP_EXTRACT:
+                case Z3_OP_REPEAT:
+
+                case Z3_OP_BSHL:
+                case Z3_OP_BLSHR:
+                case Z3_OP_BASHR:
+                case Z3_OP_EXT_ROTATE_LEFT:
+                case Z3_OP_EXT_ROTATE_RIGHT:
+
+                case Z3_OP_FPA_TO_SBV:
+                case Z3_OP_FPA_TO_UBV:
+                case Z3_OP_FPA_TO_IEEE_BV:
+                case Z3_OP_FPA_TO_FP:
+                case Z3_OP_FPA_NUM:
+
+                case Z3_OP_FPA_MINUS_ZERO:
+                case Z3_OP_FPA_MINUS_INF:
+                case Z3_OP_FPA_PLUS_ZERO:
+                case Z3_OP_FPA_PLUS_INF:
+                case Z3_OP_FPA_NAN:
+
+                // FPA Comparisons
+                case Z3_OP_FPA_EQ:
+                case Z3_OP_FPA_GT:
+                case Z3_OP_FPA_GE:
+                case Z3_OP_FPA_LT:
+                case Z3_OP_FPA_LE:
+
+                case Z3_OP_FPA_ABS:
+                case Z3_OP_FPA_NEG:
+                case Z3_OP_FPA_ADD:
+                case Z3_OP_FPA_SUB:
+                case Z3_OP_FPA_MUL:
+                case Z3_OP_FPA_DIV:
+
+                // Rounding modes
+                case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
+                case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY:
+                case Z3_OP_FPA_RM_TOWARD_ZERO:
+                case Z3_OP_FPA_RM_TOWARD_POSITIVE:
+                case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
+
+                case Z3_OP_INTERNAL:
+                case Z3_OP_UNINTERPRETED:
+
+
+                    return { nullptr };
+            }
+        };
+
+    } // namespace Backend::Z3
 
 #endif
