@@ -501,6 +501,11 @@ namespace Backend::Z3 {
             using Cmp = Mode::Compare;
             using Shft = Mode::Shift;
 
+/** A local macro used for error checking in debug mode */
+#define ASSERT_EMPTY_DEBUG(X)                                                                     \
+    Utils::affirm<Utils::Error::Unexpected::Size>((X).empty(),                                    \
+                                                  WHOAMI_WITH_SOURCE "container is not empty");
+
             // Switch on expr type
             switch (decl_kind) {
 
@@ -512,7 +517,11 @@ namespace Backend::Z3 {
 
                 // Boolean
                 case Z3_OP_TRUE:
+                    ASSERT_EMPTY_DEBUG(args);
+                    return Abstract::bool_<true>;
                 case Z3_OP_FALSE:
+                    ASSERT_EMPTY_DEBUG(args);
+                    return Abstract::bool_<false>;
                 case Z3_OP_EQ:
                 case Z3_OP_DISTINCT:
                 case Z3_OP_ITE:
@@ -631,6 +640,9 @@ namespace Backend::Z3 {
                     // Special z3 ops
                 case Z3_OP_INTERNAL:
                 case Z3_OP_UNINTERPRETED:
+
+// Cleanup
+#undef ASSERT_EMPTY_DEBUG
             }
 
             // TODO

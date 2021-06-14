@@ -7,9 +7,17 @@
 
 #include "constants.hpp"
 
-#include "../../op.hpp"
+#include "../../create.hpp"
 
 
-namespace Backend::Z3::Abstract {}
+namespace Backend::Z3::Abstract {
+
+    /** A boolean expression
+     *  Warning: Should not be inline b/c of ODR rules
+     */
+    template <bool B> const auto bool_ { Create::literal(B) };
+
+
+} // namespace Backend::Z3::Abstract
 
 #endif
