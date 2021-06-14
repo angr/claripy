@@ -559,7 +559,26 @@ namespace Backend::Z3 {
                     ASSERT_ARG_LEN_DEBUG(args, 0);
                     return Abstract::bool_<false>;
 
-                case Z3_OP_EQ:
+                case Z3_OP_EQ: {
+                    ASSERT_ARG_LEN_DEBUG(args, 2);
+                    namespace Ex = Expression;
+                    switch (args[0]->cuid) {
+/** A local macro used for consistency */
+#define EQ_CASE(T)                                                                                \
+    case:                                                                                         \
+        T::static_cuid : return Create::eq<T>(std::move(args[0]), std::move(args[1]));
+                        EQ_CASE(Ex::Bool);
+                        EQ_CASE(Ex::BV);
+                        EQ_CASE(Ex::FP);
+                        EQ_CASE(Ex::String);
+                        default:
+                            throw Utils::Error::Unexpected::Type(
+                                WHOAMI_WITH_SOURCE,
+                                "Unexpected type detected. CUID: ", args[0]->cuid);
+                    };
+// Cleanup
+#undef EQ_CASE
+                }
                 case Z3_OP_DISTINCT:
                 case Z3_OP_ITE:
                 case Z3_OP_AND:
@@ -586,6 +605,8 @@ namespace Backend::Z3 {
 
                 // Bit-vectors
                 case Z3_OP_BNUM: {
+                    ASSERT_ARG_LEN_DEBUG(args, 0);
+                    // Get the bv number
                     int bv_num; // NOLINT
                     if (!b_obj->is_numeral_u64(&bv_num)) {
                         std::string tmp;
@@ -594,9 +615,11 @@ namespace Backend::Z3 {
                             success, WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
                         bv_num = std::stoi(tmp);
                     }
+                    // Type pun to vector of bytes
                     std::vector<std::byte> data;
                     data.reserve(sizeof(bv_num));
                     std::memcpy(data.data(), &bv_num, sizeof(bv_num));
+                    // Size check
                     const auto bl { b_obj->bv_size() };
                     Utils::affirm<Utils::Error::Unexpected::Size>(
                         sizeof(bv_num) == bl * 8, // Maybe be >= ?
@@ -605,6 +628,7 @@ namespace Backend::Z3 {
                         "size is ",
                         bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
                         "bytes long.");
+                    // Return literal
                     return Create::literal(std::move(data), bl);
                 }
                 case Z3_OP_BNEG:
