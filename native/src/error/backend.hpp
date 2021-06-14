@@ -24,6 +24,9 @@ namespace Error::Backend {
     // Final classes
 
     /** @todo document */
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Abstraction, Base);
+
+    /** @todo document */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(Unsupported, Base);
 
     /** @todo document */
