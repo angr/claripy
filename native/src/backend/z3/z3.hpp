@@ -622,73 +622,81 @@ namespace Backend::Z3 {
 
                     // BV Misc
                 case Z3_OP_CONCAT:
-                case Z3_OP_SIGN_EXT:
-                case Z3_OP_ZERO_EXT:
-                case Z3_OP_EXTRACT: {
+                case Z3_OP_SIGN_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
-                    return Create::Extract(b_obj->hi(), b_obj->lo(), std::move(args[0]));
+                    return Create::sign_ext(args[0],
+                                            Z3_get_decl_int_parameter(tl_ctx.ctx(), decl_kind, 0));
                 }
-                case Z3_OP_REPEAT:
+                case Z3_OP_ZERO_EXT:
+                    ASSERT_ARG_LEN_DEBUG(args, 1);
+                    return Create::zero_ext(args[0],
+                                            Z3_get_decl_int_parameter(tl_ctx.ctx(), decl_kind, 0));
+            }
+            case Z3_OP_EXTRACT: {
+                ASSERT_ARG_LEN_DEBUG(args, 1);
+                return Create::Extract(b_obj->hi(), b_obj->lo(), std::move(args[0]));
+            }
+            case Z3_OP_REPEAT:
 
-                    // BV Bitwise ops
-                case Z3_OP_BSHL:
-                case Z3_OP_BLSHR:
-                case Z3_OP_BASHR:
-                case Z3_OP_EXT_ROTATE_LEFT:
-                case Z3_OP_EXT_ROTATE_RIGHT:
+                // BV Bitwise ops
+            case Z3_OP_BSHL:
+            case Z3_OP_BLSHR:
+            case Z3_OP_BASHR:
+            case Z3_OP_EXT_ROTATE_LEFT:
+            case Z3_OP_EXT_ROTATE_RIGHT:
 
-                    // FP Conversions
-                case Z3_OP_FPA_TO_SBV:
-                case Z3_OP_FPA_TO_UBV:
-                case Z3_OP_FPA_TO_IEEE_BV:
-                case Z3_OP_FPA_TO_FP:
-                case Z3_OP_FPA_NUM:
+                // FP Conversions
+            case Z3_OP_FPA_TO_SBV:
+            case Z3_OP_FPA_TO_UBV:
+            case Z3_OP_FPA_TO_IEEE_BV:
+            case Z3_OP_FPA_TO_FP:
+            case Z3_OP_FPA_NUM:
 
-                    // FP Constants
-                case Z3_OP_FPA_MINUS_ZERO:
-                case Z3_OP_FPA_MINUS_INF:
-                case Z3_OP_FPA_PLUS_ZERO:
-                case Z3_OP_FPA_PLUS_INF:
-                case Z3_OP_FPA_NAN:
+                // FP Constants
+            case Z3_OP_FPA_MINUS_ZERO:
+            case Z3_OP_FPA_MINUS_INF:
+            case Z3_OP_FPA_PLUS_ZERO:
+            case Z3_OP_FPA_PLUS_INF:
+            case Z3_OP_FPA_NAN:
 
-                // FP Comparisons
-                case Z3_OP_FPA_EQ:
-                case Z3_OP_FPA_GT:
-                case Z3_OP_FPA_GE:
-                case Z3_OP_FPA_LT:
-                case Z3_OP_FPA_LE:
+            // FP Comparisons
+            case Z3_OP_FPA_EQ:
+            case Z3_OP_FPA_GT:
+            case Z3_OP_FPA_GE:
+            case Z3_OP_FPA_LT:
+            case Z3_OP_FPA_LE:
 
-                    // FP arithmetic
-                case Z3_OP_FPA_ABS:
-                case Z3_OP_FPA_NEG:
-                case Z3_OP_FPA_ADD:
-                case Z3_OP_FPA_SUB:
-                case Z3_OP_FPA_MUL:
-                case Z3_OP_FPA_DIV:
+                // FP arithmetic
+            case Z3_OP_FPA_ABS:
+            case Z3_OP_FPA_NEG:
+            case Z3_OP_FPA_ADD:
+            case Z3_OP_FPA_SUB:
+            case Z3_OP_FPA_MUL:
+            case Z3_OP_FPA_DIV:
 
-                // Rounding modes
-                case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
-                    return Mode::FP::Rounding::NearestTiesEven;
-                case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY:
-                    return Mode::FP::Rounding::NearestTiesAwayFromZero;
-                case Z3_OP_FPA_RM_TOWARD_ZERO:
-                    return Mode::FP::Rounding::TowardsZero;
-                case Z3_OP_FPA_RM_TOWARD_POSITIVE:
-                    return Mode::FP::Rounding::TowardsPositiveInf;
-                case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
-                    return Mode::FP::Rounding::TowardsNegativeInf;
+            // Rounding modes
+            case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
+                return Mode::FP::Rounding::NearestTiesEven;
+            case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY:
+                return Mode::FP::Rounding::NearestTiesAwayFromZero;
+            case Z3_OP_FPA_RM_TOWARD_ZERO:
+                return Mode::FP::Rounding::TowardsZero;
+            case Z3_OP_FPA_RM_TOWARD_POSITIVE:
+                return Mode::FP::Rounding::TowardsPositiveInf;
+            case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
+                return Mode::FP::Rounding::TowardsNegativeInf;
 
-                    // Special z3 ops
-                case Z3_OP_INTERNAL:
+                // Special z3 ops
+            case Z3_OP_INTERNAL:
 
 // Cleanup
 #undef ASSERT_EMPTY_DEBUG
-            }
-
-            // TODO
-            return { nullptr };
         }
-    };
+
+        // TODO
+        return { nullptr };
+    }
+};
 
 } // namespace Backend::Z3
 
