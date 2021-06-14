@@ -493,9 +493,9 @@ namespace Backend::Z3 {
             (void) args;
 
             // Get switching variables
-            /* const auto decl { b_obj->decl() }; */
-            const auto decl_kind { b_obj->decl_kind() };
-            const auto sort_kind { b_obj->sort_kind(); };
+            const auto decl { b_obj->decl() };
+            const auto decl_kind { decl.decl_kind() };
+            const auto sort_kind { b_obj->get_sort().sort_kind() };
 
             // For brevity
             using Cmp = Mode::Compare;
