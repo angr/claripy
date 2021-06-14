@@ -490,7 +490,6 @@ namespace Backend::Z3 {
         dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
                              std::vector<Expression::BasePtr> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
-            (void) args;
 
             // Get switching variables
             // TODO: move down as needed for optimization purposes?
@@ -586,7 +585,28 @@ namespace Backend::Z3 {
                 case Z3_OP_POWER:
 
                 // Bit-vectors
-                case Z3_OP_BNUM:
+                case Z3_OP_BNUM: {
+                    int bv_num; // NOLINT
+                    if (!b_obj->is_numeral_u64(&bv_num)) {
+                        std::string tmp;
+                        const bool success { b_obj->s_numeral(&tmp) };
+                        Utils::affirm<Utils::Error::Unexpected::Type>(
+                            success, WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
+                        bv_num = std::stoi(tmp);
+                    }
+                    std::vector<std::byte> data;
+                    data.reserve(sizeof(bv_num));
+                    std::memcpy(data.data(), &bv_num, sizeof(bv_num));
+                    const auto bl { b_obj->bv_size() };
+                    Utils::affirm<Utils::Error::Unexpected::Size>(
+                        sizeof(bv_num) == bl * 8, // Maybe be >= ?
+                        WHOAMI_WITH_SOURCE
+                        "Int to BV type pun failed because the requested BV size"
+                        "size is ",
+                        bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
+                        "bytes long.");
+                    return Create::literal(std::move(data), bl);
+                }
                 case Z3_OP_BNEG:
                 case Z3_OP_BADD:
                 case Z3_OP_BSUB:
