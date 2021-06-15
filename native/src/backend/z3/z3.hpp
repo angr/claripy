@@ -497,10 +497,6 @@ namespace Backend::Z3 {
             const auto decl_kind { decl.decl_kind() };
             const auto sort { b_obj->get_sort() };
 
-            // For brevity
-            using Cmp = Mode::Compare;
-            using Shft = Mode::Shift;
-
             /** A local macro used for error checking in debug mode */
 #define ASSERT_ARG_LEN_DEBUG(X, N)                                                                \
     Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE           \
@@ -668,14 +664,15 @@ namespace Backend::Z3 {
                 case Z3_OP_CONCAT:
                 case Z3_OP_SIGN_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
-                    return Create::sign_ext(
-                        args[0], Z3_get_decl_int_parameter(Private::tl_mctx, decl_kind, 0));
+                    const auto val { static_cast<z3u>(
+                        Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
+                    return Create::sign_ext(args[0], Utils::widen<Constants::UInt>(val));
                 }
                 case Z3_OP_ZERO_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
-                    Z3_context mctx = Private::tl_ctx;
-                    return Create::zero_ext(
-                        args[0], Z3_get_decl_int_parameter(Private::tl_mctx, decl_kind, 0));
+                    const auto val { static_cast<z3u>(
+                        Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
+                    return Create::sign_ext(args[0], Utils::widen<Constants::UInt>(val));
                 }
                 case Z3_OP_EXTRACT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);

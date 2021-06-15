@@ -69,7 +69,7 @@ namespace Backend::Z3::Convert {
         Utils::affirm<Err>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
 
         // Reverse byte by byte
-        auto ret { extract(Utils::narrow<z3u>(C_CHAR_BIT - 1), Utils::narrow<z3u>(0), e) };
+        auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
         for (Constants::UInt i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
             ret = ::Backend::Z3::Convert::concat(
                 ret, // Move?
@@ -316,8 +316,7 @@ namespace Backend::Z3::Convert {
                                   Private::flt_size)
                                      ? Mode::FP::flt
                                      : Mode::FP::dbl };
-                return Private::tl_ctx.fpa_const(name.c_str(), Utils::narrow<z3u>(fpw.exp),
-                                                 Utils::narrow<z3u>(fpw.mantissa));
+                return Private::tl_ctx.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
             }
             case Expression::BV::static_cuid: {
                 using BVP = Constants::CTSC<Expression::FP>;

@@ -12,12 +12,6 @@
 
 namespace Backend::Z3::Abstract {
 
-    namespace Private {
-
-        /** A z3 thread local raw context that is the same as the z3::context */
-        Z3_context mctx = Private::tl_ctx;
-    } // namespace Private
-
     /** A boolean expression
      *  Warning: Should not be inline b/c of ODR rules
      */
