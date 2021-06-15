@@ -43,8 +43,9 @@ namespace Backend::Z3::Abstract {
     /**********************************************************/
 
     /** Abstraction function for Z3_OP_UNINTERPRETED */
-    inline auto uninterpreted(const z3::func_decl &decl, const Z3_decl_kind decl_kind,
-                              const z3::sort &sort, const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr uninterpreted(const z3::func_decl &decl,
+                                             const Z3_decl_kind decl_kind, const z3::sort &sort,
+                                             const std::vector<Expression::BasePtr> &args) {
         {
             // If b_obj is a symbolic value
             if (args.empty()) {
@@ -90,7 +91,7 @@ namespace Backend::Z3::Abstract {
     // Boolean logic
 
     /** Abstraction function for Z3_OP_EQ */
-    inline auto eq(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr eq(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
         switch (args[0]->cuid) {
             TYPE_CASE(Bool, Create::eq, args[0], args[1]);
@@ -102,37 +103,39 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_AND */
-    inline auto and_(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr and_(std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
+        Op::And::OpContainer vec { std::move(args[0]), std::move(args[1]) };
         switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::and_, args[0], args[1]);
-            TYPE_CASE(BV, Create::and_, args[0], args[1]);
+            TYPE_CASE(Bool, Create::and_, std::move(vec));
+            TYPE_CASE(BV, Create::and_, std::move(vec));
             DEFAULT_TYPE_CASE(args[0]->cuid);
         };
     }
 
     /** Abstraction function for Z3_OP_OR */
-    inline auto or_(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr or_(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
+        Op::Or::OpContainer vec { std::move(args[0]), std::move(args[1]) };
         switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::or_, args[0], args[1]);
-            TYPE_CASE(BV, Create::or_, args[0], args[1]);
+            TYPE_CASE(Bool, Create::or_, std::move(vec));
+            TYPE_CASE(BV, Create::or_, std::move(vec));
             DEFAULT_TYPE_CASE(args[0]->cuid);
         };
     }
 
     /** Abstraction function for Z3_OP_XOR */
-    inline auto xor_(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr xor_(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
-        Create::xor_(args[0], args[1]);
+        return Create::xor_({ std::move(args[0]), std::move(args[1]) });
     }
 
     /** Abstraction function for Z3_OP_NOT */
-    inline auto not_(const std::vector<Expression::BasePtr> &args) {
-        ASSERT_ARG_LEN(args, 2);
+    inline Expression::BasePtr not_(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 1);
         switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::invert, args[0], args[1]);
-            TYPE_CASE(BV, Create::invert, args[0], args[1]);
+            TYPE_CASE(Bool, Create::invert, args[0]);
+            TYPE_CASE(BV, Create::invert, args[0]);
             DEFAULT_TYPE_CASE(args[0]->cuid);
         };
     }
@@ -143,7 +146,7 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function ofr various Z3 comparison ops */
     template <Mode::Compare Mask>
-    inline auto compare(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr compare(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
         if constexpr (Utils::BitMask::has(Mask, Mode::Compare::Unsigned)) {
             return Create::compare<Expression::BV, Mask>(args[0], args[1]);
@@ -162,7 +165,7 @@ namespace Backend::Z3::Abstract {
     /**********************************************************/
 
     /** Abstraction function for Z3_OP_BNUM */
-    inline auto bnum(Constants::CTSC<z3::expr> b_obj, const z3::sort &sort) {
+    inline Expression::BasePtr bnum(Constants::CTSC<z3::expr> b_obj, const z3::sort &sort) {
         // Get the bv number
         uint64_t bv_num; // NOLINT
         if (!b_obj->is_numeral_u64(bv_num)) {
@@ -199,7 +202,8 @@ namespace Backend::Z3::Abstract {
     // Bit Vector Misc
 
     /** Abstraction function for Z3_OP_SIGN_EXT */
-    inline auto sign_ext(const z3::func_decl &decl, const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr sign_ext(const z3::func_decl &decl,
+                                        const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 1);
         const auto val { static_cast<z3u>(
             Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
@@ -207,7 +211,8 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_ZERO_EXT */
-    inline auto zero_ext(const z3::func_decl &decl, const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr zero_ext(const z3::func_decl &decl,
+                                        const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 1);
         const auto val { static_cast<z3u>(
             Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
@@ -215,8 +220,8 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_EXTRACT */
-    inline auto extract(Constants::CTSC<z3::expr> b_obj,
-                        const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr extract(Constants::CTSC<z3::expr> b_obj,
+                                       const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 1);
         return Create::extract(b_obj->hi(), b_obj->lo(), args[0]);
     }

@@ -488,7 +488,7 @@ namespace Backend::Z3 {
          */
         AbstractionVariant
         dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
-                             const std::vector<Expression::BasePtr> &args) override final {
+                             std::vector<Expression::BasePtr> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
 
             // For brevity
