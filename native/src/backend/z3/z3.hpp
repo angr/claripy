@@ -190,8 +190,8 @@ namespace Backend::Z3 {
         BINARY_DISPATCH((FN));                                                                    \
     }
 
-// Passing templated objects to macros can be messy since ','s are in both
-// For simplicity and consistency we define a binary op macro for this case
+            // Passing templated objects to macros can be messy since ','s are in both
+            // For simplicity and consistency we define a binary op macro for this case
 #define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                         \
     case Op::OP<__VA_ARGS__>::static_cuid: {                                                      \
         const constexpr auto func { FN<__VA_ARGS__> };                                            \
@@ -256,7 +256,7 @@ namespace Backend::Z3 {
                         expr->op->cuid);
                 }
 
-                // Unsupported ops
+                    // Unsupported ops
                 case Op::Widen::static_cuid:           // fallthrough
                 case Op::Union::static_cuid:           // fallthrough
                 case Op::String::IsDigit::static_cuid: // fallthrough
@@ -375,7 +375,7 @@ namespace Backend::Z3 {
 
                     // Other
 
-/** A local macro used for consistency */
+                    /** A local macro used for consistency */
 #define TO_BV_CASE(TF)                                                                            \
     case Op::FP::ToBV<TF>::static_cuid: {                                                         \
         debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE "FP::ToBV has no length");  \
@@ -387,7 +387,7 @@ namespace Backend::Z3 {
         return ret;                                                                               \
     }
 
-/** A local macro used for consistency */
+                    /** A local macro used for consistency */
 #define FROM_2CBV_CASE(TF)                                                                        \
     case Op::FP::From2sComplementBV<TF>::static_cuid: {                                           \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
@@ -407,11 +407,11 @@ namespace Backend::Z3 {
                     FROM_2CBV_CASE(true);
                     FROM_2CBV_CASE(false);
 
-// Cleanup
+                    // Cleanup
 #undef TO_BV_CASE
 #undef FROM_2CBV_CASE
 
-                // FromFP
+                    // FromFP
                 case Op::FP::FromFP::static_cuid: {
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
                     using FromFP = Constants::CTSC<Op::FP::FromFP>;
@@ -421,7 +421,7 @@ namespace Backend::Z3 {
                     return ret;
                 }
 
-                // FromNot2sComplementBV
+                    // FromNot2sComplementBV
                 case Op::FP::FromNot2sComplementBV::static_cuid: {
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
                     using OpT = Constants::CTSC<Op::FP::FromNot2sComplementBV>;
@@ -501,7 +501,7 @@ namespace Backend::Z3 {
             using Cmp = Mode::Compare;
             using Shft = Mode::Shift;
 
-/** A local macro used for error checking in debug mode */
+            /** A local macro used for error checking in debug mode */
 #define ASSERT_ARG_LEN_DEBUG(X, N)                                                                \
     Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE           \
                                                   "container should have " #N " elements");
@@ -518,24 +518,22 @@ namespace Backend::Z3 {
                         auto symbol_type { sort.sort_kind() };
                         switch (symbol_type) {
                             case Z3_BV_SORT:
-
-
+                                /* const auto bl { sort.bv_size() }; */
                                 /* bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort) */
                                 /* (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None,
                                  * None)) */
                                 /* if ast_args is None: */
                                 /*     ast_args = (symbol_str, None, None, None, False, False,
                                  * None) */
-
-
-                                return Create::symbol(std::move(name), bl, ans); // probably? TODO:
+                                /* return Create::symbol(std::move(name), bl, ans); // probably?
+                                 * TODO: */
+                                return nullptr;
                             case Z3_BOOL_SORT:
                             case Z3_FLOATING_POINT_SORT:
                             default:
                                 throw Error::Backend::Abstraction(
-                                    WHOAMI_WITH_SOURCE "Unknown term type: ",
-                                    symbol_type "\nOp decl_kind: ", decl_kind,
-                                    "\nPlease report this.");
+                                    WHOAMI_WITH_SOURCE "Unknown term type: ", symbol_type,
+                                    "\nOp decl_kind: ", decl_kind, "\nPlease report this.");
                         }
                     }
                     // Unknown error
@@ -551,7 +549,7 @@ namespace Backend::Z3 {
                         WHOAMI_WITH_SOURCE "Unknown z3 op given. Op decl_kind: ", decl_kind);
                 }
 
-                // Boolean
+                    // Boolean
                 case Z3_OP_TRUE:
                     ASSERT_ARG_LEN_DEBUG(args, 0);
                     return Abstract::bool_<true>;
@@ -563,10 +561,10 @@ namespace Backend::Z3 {
                     ASSERT_ARG_LEN_DEBUG(args, 2);
                     namespace Ex = Expression;
                     switch (args[0]->cuid) {
-/** A local macro used for consistency */
+                        /** A local macro used for consistency */
 #define EQ_CASE(T)                                                                                \
-    case:                                                                                         \
-        T::static_cuid : return Create::eq<T>(std::move(args[0]), std::move(args[1]));
+    case T::static_cuid:                                                                          \
+        return Create::eq<T>(std::move(args[0]), std::move(args[1]));
                         EQ_CASE(Ex::Bool);
                         EQ_CASE(Ex::BV);
                         EQ_CASE(Ex::FP);
@@ -576,7 +574,7 @@ namespace Backend::Z3 {
                                 WHOAMI_WITH_SOURCE,
                                 "Unexpected type detected. CUID: ", args[0]->cuid);
                     };
-// Cleanup
+                            // Cleanup
 #undef EQ_CASE
                 }
                 case Z3_OP_DISTINCT:
@@ -588,7 +586,7 @@ namespace Backend::Z3 {
                 case Z3_OP_NOT:
                 case Z3_OP_IMPLIES:
 
-                // Arithmetic
+                    // Arithmetic
                 case Z3_OP_LE:
                 case Z3_OP_GE:
                 case Z3_OP_LT:
@@ -603,17 +601,19 @@ namespace Backend::Z3 {
                 case Z3_OP_MOD:
                 case Z3_OP_POWER:
 
-                // Bit-vectors
+                    // Bit-vectors
                 case Z3_OP_BNUM: {
                     ASSERT_ARG_LEN_DEBUG(args, 0);
                     // Get the bv number
-                    int bv_num; // NOLINT
-                    if (!b_obj->is_numeral_u64(&bv_num)) {
+                    uint64_t bv_num; // NOLINT
+                    if (!b_obj->is_numeral_u64(bv_num)) {
                         std::string tmp;
-                        const bool success { b_obj->s_numeral(&tmp) };
+                        const bool success { b_obj->is_numeral(tmp) };
                         Utils::affirm<Utils::Error::Unexpected::Type>(
                             success, WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
-                        bv_num = std::stoi(tmp);
+                        bv_num = std::stoull(tmp); // Faster than istringstream
+                        static_assert(sizeof(unsigned long long) == sizeof(uint64_t),
+                                      "Bad string conversion function called");
                     }
                     // Type pun to vector of bytes
                     std::vector<std::byte> data;
@@ -648,7 +648,7 @@ namespace Backend::Z3 {
                 case Z3_OP_BUREM_I:
                 case Z3_OP_BSMOD_I:
 
-                // Comparisons
+                    // Comparisons
                 case Z3_OP_ULEQ:
                 case Z3_OP_SLEQ:
                 case Z3_OP_UGEQ:
@@ -668,79 +668,80 @@ namespace Backend::Z3 {
                 case Z3_OP_CONCAT:
                 case Z3_OP_SIGN_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
-                    return Create::sign_ext(args[0],
-                                            Z3_get_decl_int_parameter(tl_ctx.ctx(), decl_kind, 0));
+                    return Create::sign_ext(
+                        args[0], Z3_get_decl_int_parameter(Private::tl_ctx(), decl_kind, 0));
                 }
-                case Z3_OP_ZERO_EXT:
+                case Z3_OP_ZERO_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
-                    return Create::zero_ext(args[0],
-                                            Z3_get_decl_int_parameter(tl_ctx.ctx(), decl_kind, 0));
-            }
-            case Z3_OP_EXTRACT: {
-                ASSERT_ARG_LEN_DEBUG(args, 1);
-                return Create::Extract(b_obj->hi(), b_obj->lo(), std::move(args[0]));
-            }
-            case Z3_OP_REPEAT:
+                    return Create::zero_ext(
+                        args[0], Z3_get_decl_int_parameter(Private::tl_ctx(), decl_kind, 0));
+                }
+                case Z3_OP_EXTRACT: {
+                    ASSERT_ARG_LEN_DEBUG(args, 1);
+                    return Create::extract(b_obj->hi(), b_obj->lo(), std::move(args[0]));
+                }
+                case Z3_OP_REPEAT:
 
-                // BV Bitwise ops
-            case Z3_OP_BSHL:
-            case Z3_OP_BLSHR:
-            case Z3_OP_BASHR:
-            case Z3_OP_EXT_ROTATE_LEFT:
-            case Z3_OP_EXT_ROTATE_RIGHT:
+                    // BV Bitwise ops
+                case Z3_OP_BSHL:
+                case Z3_OP_BLSHR:
+                case Z3_OP_BASHR:
+                case Z3_OP_EXT_ROTATE_LEFT:
+                case Z3_OP_EXT_ROTATE_RIGHT:
 
-                // FP Conversions
-            case Z3_OP_FPA_TO_SBV:
-            case Z3_OP_FPA_TO_UBV:
-            case Z3_OP_FPA_TO_IEEE_BV:
-            case Z3_OP_FPA_TO_FP:
-            case Z3_OP_FPA_NUM:
+                    // FP Conversions
+                case Z3_OP_FPA_TO_SBV:
+                case Z3_OP_FPA_TO_UBV:
+                case Z3_OP_FPA_TO_IEEE_BV:
+                case Z3_OP_FPA_TO_FP:
+                case Z3_OP_FPA_NUM:
 
-                // FP Constants
-            case Z3_OP_FPA_MINUS_ZERO:
-            case Z3_OP_FPA_MINUS_INF:
-            case Z3_OP_FPA_PLUS_ZERO:
-            case Z3_OP_FPA_PLUS_INF:
-            case Z3_OP_FPA_NAN:
+                    // FP Constants
+                case Z3_OP_FPA_MINUS_ZERO:
+                case Z3_OP_FPA_MINUS_INF:
+                case Z3_OP_FPA_PLUS_ZERO:
+                case Z3_OP_FPA_PLUS_INF:
+                case Z3_OP_FPA_NAN:
 
-            // FP Comparisons
-            case Z3_OP_FPA_EQ:
-            case Z3_OP_FPA_GT:
-            case Z3_OP_FPA_GE:
-            case Z3_OP_FPA_LT:
-            case Z3_OP_FPA_LE:
+                    // FP Comparisons
+                case Z3_OP_FPA_EQ:
+                case Z3_OP_FPA_GT:
+                case Z3_OP_FPA_GE:
+                case Z3_OP_FPA_LT:
+                case Z3_OP_FPA_LE:
 
-                // FP arithmetic
-            case Z3_OP_FPA_ABS:
-            case Z3_OP_FPA_NEG:
-            case Z3_OP_FPA_ADD:
-            case Z3_OP_FPA_SUB:
-            case Z3_OP_FPA_MUL:
-            case Z3_OP_FPA_DIV:
+                    // FP arithmetic
+                case Z3_OP_FPA_ABS:
+                case Z3_OP_FPA_NEG:
+                case Z3_OP_FPA_ADD:
+                case Z3_OP_FPA_SUB:
+                case Z3_OP_FPA_MUL:
+                case Z3_OP_FPA_DIV:
 
-            // Rounding modes
-            case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
-                return Mode::FP::Rounding::NearestTiesEven;
-            case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY:
-                return Mode::FP::Rounding::NearestTiesAwayFromZero;
-            case Z3_OP_FPA_RM_TOWARD_ZERO:
-                return Mode::FP::Rounding::TowardsZero;
-            case Z3_OP_FPA_RM_TOWARD_POSITIVE:
-                return Mode::FP::Rounding::TowardsPositiveInf;
-            case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
-                return Mode::FP::Rounding::TowardsNegativeInf;
+                    // Rounding modes
+                case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
+                    return Mode::FP::Rounding::NearestTiesEven;
+                case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY:
+                    return Mode::FP::Rounding::NearestTiesAwayFromZero;
+                case Z3_OP_FPA_RM_TOWARD_ZERO:
+                    return Mode::FP::Rounding::TowardsZero;
+                case Z3_OP_FPA_RM_TOWARD_POSITIVE:
+                    return Mode::FP::Rounding::TowardsPositiveInf;
+                case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
+                    return Mode::FP::Rounding::TowardsNegativeInf;
 
-                // Special z3 ops
-            case Z3_OP_INTERNAL:
+                    // Special z3 ops
+                case Z3_OP_INTERNAL:
 
+                    ; // TODO
 // Cleanup
 #undef ASSERT_EMPTY_DEBUG
-        }
+            }
 
-        // TODO
-        return { nullptr };
-    }
-};
+            // TODO
+            return { nullptr };
+        }
+    };
 
 } // namespace Backend::Z3
 
