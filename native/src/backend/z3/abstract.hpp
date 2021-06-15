@@ -101,8 +101,41 @@ namespace Backend::Z3::Abstract {
         };
     }
 
-// Cleanup
-#undef EQ_CASE
+    /** Abstraction function for Z3_OP_AND */
+    inline auto and_(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        switch (args[0]->cuid) {
+            TYPE_CASE(Bool, Create::and_, args[0], args[1]);
+            TYPE_CASE(BV, Create::and_, args[0], args[1]);
+            DEFAULT_TYPE_CASE(args[0]->cuid);
+        };
+    }
+
+    /** Abstraction function for Z3_OP_OR */
+    inline auto or_(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        switch (args[0]->cuid) {
+            TYPE_CASE(Bool, Create::or_, args[0], args[1]);
+            TYPE_CASE(BV, Create::or_, args[0], args[1]);
+            DEFAULT_TYPE_CASE(args[0]->cuid);
+        };
+    }
+
+    /** Abstraction function for Z3_OP_XOR */
+    inline auto xor_(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        Create::xor_(args[0], args[1]);
+    }
+
+    /** Abstraction function for Z3_OP_NOT */
+    inline auto not_(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        switch (args[0]->cuid) {
+            TYPE_CASE(Bool, Create::invert, args[0], args[1]);
+            TYPE_CASE(BV, Create::invert, args[0], args[1]);
+            DEFAULT_TYPE_CASE(args[0]->cuid);
+        };
+    }
 
     // Arithmetic
 

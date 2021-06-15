@@ -516,6 +516,7 @@ namespace Backend::Z3 {
 
                     // Misc
                 case Z3_OP_INTERNAL:
+                    // TODO
                 case Z3_OP_UNINTERPRETED:
                     return Abstract::uninterpreted(decl, decl_kind, sort, args);
 
@@ -531,28 +532,49 @@ namespace Backend::Z3 {
                 case Z3_OP_EQ:
                     return Abstract::eq(args);
                 case Z3_OP_DISTINCT:
+                    // TODO
                 case Z3_OP_ITE:
+                    // TODO
                 case Z3_OP_AND:
+                    return Abstract::and_(args);
                 case Z3_OP_OR:
+                    return Abstract::or_(args);
                 case Z3_OP_IFF:
+                    // TODO
                 case Z3_OP_XOR:
+                    return Abstract::xor_(args);
                 case Z3_OP_NOT:
+                    return Abstract::not_(args);
                 case Z3_OP_IMPLIES:
+                    // TODO
 
                     // Arithmetic
                 case Z3_OP_LE:
+                    // TODO
                 case Z3_OP_GE:
+                    // TODO
                 case Z3_OP_LT:
+                    // TODO
                 case Z3_OP_GT:
+                    // TODO
                 case Z3_OP_ADD:
+                    // TODO
                 case Z3_OP_SUB:
+                    // TODO
                 case Z3_OP_UMINUS:
+                    // TODO
                 case Z3_OP_MUL:
+                    // TODO
                 case Z3_OP_DIV:
+                    // TODO
                 case Z3_OP_IDIV:
+                    // TODO
                 case Z3_OP_REM:
+                    // TODO
                 case Z3_OP_MOD:
+                    // TODO
                 case Z3_OP_POWER:
+                    // TODO
 
                     // Comparisons
                 case Z3_OP_ULEQ:
@@ -577,37 +599,61 @@ namespace Backend::Z3 {
                     ASSERT_ARG_EMPTY(args);
                     return Abstract::bnum(b_obj, sort);
                 case Z3_OP_BNEG:
+                    // TODO
                 case Z3_OP_BADD:
+                    // TODO
                 case Z3_OP_BSUB:
+                    // TODO
                 case Z3_OP_BMUL:
+                    // TODO
 
                     // BV Arithmetic
                 case Z3_OP_BSDIV:
+                    // TODO
                 case Z3_OP_BUDIV:
+                    // TODO
                 case Z3_OP_BSREM:
+                    // TODO
                 case Z3_OP_BUREM:
+                    // TODO
                 case Z3_OP_BSMOD:
+                    // TODO
                 case Z3_OP_BSDIV_I:
+                    // TODO
                 case Z3_OP_BUDIV_I:
+                    // TODO
                 case Z3_OP_BSREM_I:
+                    // TODO
                 case Z3_OP_BUREM_I:
+                    // TODO
                 case Z3_OP_BSMOD_I:
+                    // TODO
 
                     // BV Logic
                 case Z3_OP_BAND:
+                    // TODO
                 case Z3_OP_BOR:
+                    // TODO
                 case Z3_OP_BNOT:
+                    // TODO
                 case Z3_OP_BXOR:
+                    // TODO
 
                     // BV Bitwise Ops
                 case Z3_OP_BSHL:
+                    // TODO
                 case Z3_OP_BLSHR:
+                    // TODO
                 case Z3_OP_BASHR:
+                    // TODO
                 case Z3_OP_EXT_ROTATE_LEFT:
+                    // TODO
                 case Z3_OP_EXT_ROTATE_RIGHT:
+                    // TODO
 
                     // BV Misc
                 case Z3_OP_CONCAT:
+                    // TODO
                 case Z3_OP_SIGN_EXT:
                     return Abstract::sign_ext(decl, args);
                 case Z3_OP_ZERO_EXT:
@@ -615,35 +661,57 @@ namespace Backend::Z3 {
                 case Z3_OP_EXTRACT:
                     return Abstract::extract(b_obj, args);
                 case Z3_OP_REPEAT:
+                    // TODO
 
                     // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
+                    // TODO
                 case Z3_OP_FPA_TO_UBV:
+                    // TODO
                 case Z3_OP_FPA_TO_IEEE_BV:
+                    // TODO
                 case Z3_OP_FPA_TO_FP:
+                    // TODO
                 case Z3_OP_FPA_NUM:
+                    // TODO
 
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
+                    // TODO
                 case Z3_OP_FPA_MINUS_INF:
+                    // TODO
                 case Z3_OP_FPA_PLUS_ZERO:
+                    // TODO
                 case Z3_OP_FPA_PLUS_INF:
+                    // TODO
                 case Z3_OP_FPA_NAN:
+                    // TODO
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
+                    // TODO
                 case Z3_OP_FPA_GT:
+                    // TODO
                 case Z3_OP_FPA_GE:
+                    // TODO
                 case Z3_OP_FPA_LT:
+                    // TODO
                 case Z3_OP_FPA_LE:
+                    // TODO
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:
+                    // TODO
                 case Z3_OP_FPA_NEG:
+                    // TODO
                 case Z3_OP_FPA_ADD:
+                    // TODO
                 case Z3_OP_FPA_SUB:
+                    // TODO
                 case Z3_OP_FPA_MUL:
+                    // TODO
                 case Z3_OP_FPA_DIV:
+                    // TODO
 
                     // Rounding modes
                 case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
