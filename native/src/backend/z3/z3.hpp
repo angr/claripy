@@ -578,11 +578,11 @@ namespace Backend::Z3 {
                 case Z3_OP_BNEG:
                     return Abstract::neg<Ex::BV>(args);
                 case Z3_OP_BADD:
-                    // TODO
+                    return Abstract::add(args);
                 case Z3_OP_BSUB:
-                    // TODO
+                    return Abstract::sub(args);
                 case Z3_OP_BMUL:
-                    // TODO
+                    return Abstract::mul(args);
 
                     // BV Arithmetic
                 case Z3_OP_BSDIV:
