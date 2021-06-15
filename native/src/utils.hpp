@@ -62,5 +62,6 @@
 #include "utils/unconstructable.hpp"
 #include "utils/verify_syscall.hpp"
 #include "utils/weak_cache.hpp"
+#include "utils/widen.hpp"
 
 #endif
