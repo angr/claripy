@@ -13,10 +13,30 @@
 
 namespace Backend::Z3::Abstract {
 
-/** A local macro used for error checking in debug mode */
-#define ASSERT_ARG_LEN_DEBUG(X, N)                                                                \
+/** A local macro used for lengh checking a container */
+#define ASSERT_ARG_LEN(X, N)                                                                      \
     Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE           \
                                                   "container should have " #N " elements");
+
+/** A local macro used for adding a case for a given type
+ *  Func must be take in T as its only template argument
+ */
+#define TYPE_CASE(TYPE, FUNC, ...)                                                                \
+    case Expression::TYPE::static_cuid:                                                           \
+        return FUNC<Expression::TYPE>(__VA_ARGS__);
+
+/** A local macro used for adding a case for a given type
+ *  Func must take in <TYPE, T2> as its template arguments
+ */
+#define TYPE_CASE_2(TYPE, T2, FUNC, ...)                                                          \
+    case Expression::TYPE::static_cuid:                                                           \
+        return FUNC<Expression::TYPE, T2>(__VA_ARGS__);
+
+/** A local macro used for adding a default type case that throws an exception */
+#define DEFAULT_TYPE_CASE(BAD_CUID)                                                               \
+    default:                                                                                      \
+        throw Utils::Error::Unexpected::Type(WHOAMI_WITH_SOURCE,                                  \
+                                             "Unexpected type detected. CUID: ", (BAD_CUID));
 
     /**********************************************************/
     /*                        General                         */
@@ -24,7 +44,7 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for Z3_OP_UNINTERPRETED */
     inline auto uninterpreted(const z3::func_decl &decl, const Z3_decl_kind decl_kind,
-                              const z3::sort &sort, std::vector<Expression::BasePtr> &args) {
+                              const z3::sort &sort, const std::vector<Expression::BasePtr> &args) {
         {
             // If b_obj is a symbolic value
             if (args.empty()) {
@@ -67,28 +87,42 @@ namespace Backend::Z3::Abstract {
      */
     template <bool B> const auto bool_ { Create::literal(B) };
 
-/** A local macro used for consistency */
-#define EQ_CASE(T)                                                                                \
-    case T::static_cuid:                                                                          \
-        return Create::eq<T>(std::move(args[0]), std::move(args[1]));
+    // Boolean logic
 
     /** Abstraction function for Z3_OP_EQ */
-    inline auto eq(std::vector<Expression::BasePtr> &args) {
-        ASSERT_ARG_LEN_DEBUG(args, 2);
-        namespace Ex = Expression;
+    inline auto eq(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
         switch (args[0]->cuid) {
-            EQ_CASE(Ex::Bool);
-            EQ_CASE(Ex::BV);
-            EQ_CASE(Ex::FP);
-            EQ_CASE(Ex::String);
-            default:
-                throw Utils::Error::Unexpected::Type(
-                    WHOAMI_WITH_SOURCE, "Unexpected type detected. CUID: ", args[0]->cuid);
+            TYPE_CASE(Bool, Create::eq, args[0], args[1]);
+            TYPE_CASE(BV, Create::eq, args[0], args[1]);
+            TYPE_CASE(FP, Create::eq, args[0], args[1]);
+            TYPE_CASE(String, Create::eq, args[0], args[1]);
+            DEFAULT_TYPE_CASE(args[0]->cuid);
         };
     }
 
 // Cleanup
 #undef EQ_CASE
+
+    // Arithmetic
+
+    // Comparisons
+
+    /** Abstraction function ofr various Z3 comparison ops */
+    template <Mode::Compare Mask>
+    inline auto compare(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        if constexpr (Utils::BitMask::has(Mask, Mode::Compare::Unsigned)) {
+            return Create::compare<Expression::BV, Mask>(args[0], args[1]);
+        }
+        else {
+            switch (args[0]->cuid) {
+                TYPE_CASE_2(FP, Mask, Create::compare, args[0], args[1]);
+                TYPE_CASE_2(BV, Mask, Create::compare, args[0], args[1]);
+                DEFAULT_TYPE_CASE(args[0]->cuid);
+            };
+        }
+    }
 
     /**********************************************************/
     /*                      Bit Vectors                       */
@@ -132,25 +166,26 @@ namespace Backend::Z3::Abstract {
     // Bit Vector Misc
 
     /** Abstraction function for Z3_OP_SIGN_EXT */
-    inline auto sign_ext(const z3::func_decl &decl, std::vector<Expression::BasePtr> &args) {
-        ASSERT_ARG_LEN_DEBUG(args, 1);
+    inline auto sign_ext(const z3::func_decl &decl, const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 1);
         const auto val { static_cast<z3u>(
             Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
         return Create::sign_ext(args[0], Utils::widen<Constants::UInt>(val));
     }
 
     /** Abstraction function for Z3_OP_ZERO_EXT */
-    inline auto zero_ext(const z3::func_decl &decl, std::vector<Expression::BasePtr> &args) {
-        ASSERT_ARG_LEN_DEBUG(args, 1);
+    inline auto zero_ext(const z3::func_decl &decl, const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 1);
         const auto val { static_cast<z3u>(
             Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
         return Create::sign_ext(args[0], Utils::widen<Constants::UInt>(val));
     }
 
     /** Abstraction function for Z3_OP_EXTRACT */
-    inline auto extract(Constants::CTSC<z3::expr> b_obj, std::vector<Expression::BasePtr> &args) {
-        ASSERT_ARG_LEN_DEBUG(args, 1);
-        return Create::extract(b_obj->hi(), b_obj->lo(), std::move(args[0]));
+    inline auto extract(Constants::CTSC<z3::expr> b_obj,
+                        const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 1);
+        return Create::extract(b_obj->hi(), b_obj->lo(), args[0]);
     }
 
     /**********************************************************/
@@ -166,7 +201,10 @@ namespace Backend::Z3::Abstract {
     // FP Arithmetic
 
 // Cleanup
-#undef ASSERT_ARG_LEN_DEBUG
+#undef DEFAULT_TYPE_CASE
+#undef ASSERT_ARG_LEN
+#undef TYPE_CASE_2
+#undef TYPE_CASE
 
 } // namespace Backend::Z3::Abstract
 

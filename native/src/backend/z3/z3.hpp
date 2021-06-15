@@ -488,8 +488,11 @@ namespace Backend::Z3 {
          */
         AbstractionVariant
         dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
-                             std::vector<Expression::BasePtr> &args) override final {
+                             const std::vector<Expression::BasePtr> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
+
+            // For brevity
+            using C = Mode::Compare;
 
             // Get switching variables
             // TODO: move down as needed for optimization purposes?
@@ -553,13 +556,21 @@ namespace Backend::Z3 {
 
                     // Comparisons
                 case Z3_OP_ULEQ:
+                    return Abstract::compare<C::Unsigned | C::Less | C::Eq>(args);
                 case Z3_OP_SLEQ:
+                    return Abstract::compare<C::Signed | C::Less | C::Eq>(args);
                 case Z3_OP_UGEQ:
+                    return Abstract::compare<C::Unsigned | C::Greater | C::Eq>(args);
                 case Z3_OP_SGEQ:
+                    return Abstract::compare<C::Signed | C::Greater | C::Eq>(args);
                 case Z3_OP_ULT:
+                    return Abstract::compare<C::Unsigned | C::Less | C::Neq>(args);
                 case Z3_OP_SLT:
+                    return Abstract::compare<C::Signed | C::Less | C::Neq>(args);
                 case Z3_OP_UGT:
+                    return Abstract::compare<C::Unsigned | C::Greater | C::Neq>(args);
                 case Z3_OP_SGT:
+                    return Abstract::compare<C::Signed | C::Greater | C::Neq>(args);
 
                     // Bit-vectors
                 case Z3_OP_BNUM:
@@ -646,7 +657,7 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
                     return Mode::FP::Rounding::TowardsNegativeInf;
 // Cleanup
-#undef ASSERT_EMPTY_DEBUG
+#undef ASSERT_ARG_EMPTY
             }
         }
     };

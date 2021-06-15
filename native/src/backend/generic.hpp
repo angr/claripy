@@ -230,7 +230,7 @@ namespace Backend {
          */
         virtual AbstractionVariant
         dispatch_abstraction(Constants::CTSC<BackendObj> b_obj,
-                             std::vector<Expression::BasePtr> &args) = 0;
+                             const std::vector<Expression::BasePtr> &args) = 0;
 
         // Virtual Functions
 
