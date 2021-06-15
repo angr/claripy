@@ -46,38 +46,36 @@ namespace Backend::Z3::Abstract {
     inline Expression::BasePtr uninterpreted(const z3::func_decl &decl,
                                              const Z3_decl_kind decl_kind, const z3::sort &sort,
                                              const std::vector<Expression::BasePtr> &args) {
-        {
-            // If b_obj is a symbolic value
-            if (args.empty()) {
-                // Gather info
-                std::string name { decl.name().str() };
-                auto symbol_type { sort.sort_kind() };
-                switch (symbol_type) {
-                    case Z3_BV_SORT:
-                        /* const auto bl { sort.bv_size() }; */
-                        /* bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort) */
-                        /* (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None,
-                         * None)) */
-                        /* if ast_args is None: */
-                        /*     ast_args = (symbol_str, None, None, None, False, False,
-                         * None) */
-                        /* return Create::symbol(std::move(name), bl, ans); // probably?
-                         * TODO: */
-                        return nullptr;
-                    case Z3_BOOL_SORT:
-                    case Z3_FLOATING_POINT_SORT:
-                    default:
-                        throw Error::Backend::Abstraction(
-                            WHOAMI_WITH_SOURCE "Unknown term type: ", symbol_type,
-                            "\nOp decl_kind: ", decl_kind, "\nPlease report this.");
-                }
+        // If b_obj is a symbolic value
+        if (args.empty()) {
+            // Gather info
+            std::string name { decl.name().str() };
+            auto symbol_type { sort.sort_kind() };
+            switch (symbol_type) {
+                case Z3_BV_SORT:
+                    /* const auto bl { sort.bv_size() }; */
+                    /* bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort) */
+                    /* (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None,
+                     * None)) */
+                    /* if ast_args is None: */
+                    /*     ast_args = (symbol_str, None, None, None, False, False,
+                     * None) */
+                    /* return Create::symbol(std::move(name), bl, ans); // probably?
+                     * TODO: */
+                    return nullptr;
+                case Z3_BOOL_SORT:
+                case Z3_FLOATING_POINT_SORT:
+                default:
+                    throw Error::Backend::Abstraction(
+                        WHOAMI_WITH_SOURCE "Unknown term type: ", symbol_type,
+                        "\nOp decl_kind: ", decl_kind, "\nPlease report this.");
             }
-            // Unknown error
-            else {
-                throw Error::Backend::Abstraction(
-                    WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op decl_kind: ",
-                    decl_kind, "\nPlease report this.");
-            }
+        }
+        // Unknown error
+        else {
+            throw Error::Backend::Abstraction(
+                WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op decl_kind: ",
+                decl_kind, "\nPlease report this.");
         }
     }
 
@@ -90,57 +88,74 @@ namespace Backend::Z3::Abstract {
 
     // Boolean logic
 
-    /** Abstraction function for Z3_OP_EQ */
+    /** Abstraction function for z3 equality ops */
+    template <typename T = Expression::Base>
     inline Expression::BasePtr eq(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
+        if constexpr (std::is_same_v<T, Expression::FP>) {
+            return Create::eq<T>(args[0], args[1]);
+        }
         switch (args[0]->cuid) {
             TYPE_CASE(Bool, Create::eq, args[0], args[1]);
             TYPE_CASE(BV, Create::eq, args[0], args[1]);
-            TYPE_CASE(FP, Create::eq, args[0], args[1]);
             TYPE_CASE(String, Create::eq, args[0], args[1]);
             DEFAULT_TYPE_CASE(args[0]->cuid);
         };
     }
 
-    /** Abstraction function for Z3_OP_AND */
-    inline Expression::BasePtr and_(std::vector<Expression::BasePtr> &args) {
+    /** Abstraction function for z3 and ops */
+    template <typename T> inline Expression::BasePtr and_(std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
-        Op::And::OpContainer vec { std::move(args[0]), std::move(args[1]) };
-        switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::and_, std::move(vec));
-            TYPE_CASE(BV, Create::and_, std::move(vec));
-            DEFAULT_TYPE_CASE(args[0]->cuid);
-        };
+        return Create::and_<T>({ std::move(args[0]), std::move(args[1]) });
     }
 
-    /** Abstraction function for Z3_OP_OR */
+    /** Abstraction function for z3 or ops */
+    template <typename T>
     inline Expression::BasePtr or_(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
-        Op::Or::OpContainer vec { std::move(args[0]), std::move(args[1]) };
-        switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::or_, std::move(vec));
-            TYPE_CASE(BV, Create::or_, std::move(vec));
-            DEFAULT_TYPE_CASE(args[0]->cuid);
-        };
+        return Create::or_<T>({ std::move(args[0]), std::move(args[1]) });
     }
 
-    /** Abstraction function for Z3_OP_XOR */
+    /** Abstraction function for z3 xor ops */
+    template <typename T>
     inline Expression::BasePtr xor_(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
         return Create::xor_({ std::move(args[0]), std::move(args[1]) });
     }
 
-    /** Abstraction function for Z3_OP_NOT */
+    /** Abstraction function for invert z3 ops */
+    template <typename T>
     inline Expression::BasePtr not_(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 1);
-        switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::invert, args[0]);
-            TYPE_CASE(BV, Create::invert, args[0]);
-            DEFAULT_TYPE_CASE(args[0]->cuid);
-        };
+        return Create::invert<T>(args[0]);
     }
 
     // Arithmetic
+
+    /** Abstraction function for Z3_OP_BADD */
+    inline Expression::BasePtr add(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::add({ std::move(args[0]), std::move(args[1]) });
+    }
+
+    /** Abstraction function for Z3_OP_BSUB */
+    inline Expression::BasePtr sub(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::sub(args[0], args[1]);
+    }
+
+    /** Abstraction function for Z3_OP_BMUL */
+    inline Expression::BasePtr mul(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::mul({ std::move(args[0]), std::move(args[1]) });
+    }
+
+    /** Abstraction function for z3 negation ops */
+    template <typename T>
+    inline Expression::BasePtr neg(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 1);
+        return Create::neg<T>(std::move(args[0]));
+    }
 
     // Comparisons
 

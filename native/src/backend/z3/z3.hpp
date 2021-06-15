@@ -537,43 +537,19 @@ namespace Backend::Z3 {
                 case Z3_OP_ITE:
                     // TODO
                 case Z3_OP_AND:
-                    return Abstract::and_(args);
+                    return Abstract::and_<Ex::Bool>(args);
                 case Z3_OP_OR:
-                    return Abstract::or_(args);
+                    return Abstract::or_<Ex::Bool>(args);
                 case Z3_OP_IFF:
                     // TODO
                 case Z3_OP_XOR:
-                    return Abstract::xor_(args);
+                    return Abstract::xor_<Ex::Bool>(args);
                 case Z3_OP_NOT:
-                    return Abstract::not_(args);
+                    return Abstract::not_<Ex::Bool>(args);
                 case Z3_OP_IMPLIES:
                     // TODO
 
                     // Arithmetic
-                case Z3_OP_LE:
-                    return Abstract::compare<Ex::FP, C::Signed | C::Less | C::Eq>(args);
-                case Z3_OP_GE:
-                    return Abstract::compare<Ex::FP, C::Signed | C::Greater | C::Eq>(args);
-                case Z3_OP_LT:
-                    return Abstract::compare<Ex::FP, C::Signed | C::Less | C::Neq>(args);
-                case Z3_OP_GT:
-                    return Abstract::compare<Ex::FP, C::Signed | C::Greater | C::Neq>(args);
-                case Z3_OP_ADD:
-                    // TODO
-                case Z3_OP_SUB:
-                    // TODO
-                case Z3_OP_UMINUS:
-                    // TODO
-                case Z3_OP_MUL:
-                    // TODO
-                case Z3_OP_DIV:
-                    // TODO
-                case Z3_OP_IDIV:
-                    // TODO
-                case Z3_OP_REM:
-                    // TODO
-                case Z3_OP_MOD:
-                    // TODO
                 case Z3_OP_POWER:
                     // TODO
 
@@ -600,7 +576,7 @@ namespace Backend::Z3 {
                     ASSERT_ARG_EMPTY(args);
                     return Abstract::bnum(b_obj, sort);
                 case Z3_OP_BNEG:
-                    // TODO
+                    return Abstract::neg<Ex::BV>(args);
                 case Z3_OP_BADD:
                     // TODO
                 case Z3_OP_BSUB:
@@ -632,13 +608,13 @@ namespace Backend::Z3 {
 
                     // BV Logic
                 case Z3_OP_BAND:
-                    // TODO
+                    return Abstract::and_<Ex::BV>(args);
                 case Z3_OP_BOR:
-                    // TODO
+                    return Abstract::or_<Ex::BV>(args);
                 case Z3_OP_BNOT:
-                    // TODO
+                    return Abstract::not_<Ex::BV>(args);
                 case Z3_OP_BXOR:
-                    // TODO
+                    return Abstract::xor_<Ex::BV>(args);
 
                     // BV Bitwise Ops
                 case Z3_OP_BSHL:
@@ -690,21 +666,21 @@ namespace Backend::Z3 {
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
-                    // TODO
+                    return Abstract::eq<Ex::FP>(args);
                 case Z3_OP_FPA_GT:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Greater | C::Neq>(args);
                 case Z3_OP_FPA_GE:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Greater | C::Eq>(args);
                 case Z3_OP_FPA_LT:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Less | C::Neq>(args);
                 case Z3_OP_FPA_LE:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Less | C::Eq>(args);
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:
                     // TODO
                 case Z3_OP_FPA_NEG:
-                    // TODO
+                    return Abstract::neg<Ex::FP>(args);
                 case Z3_OP_FPA_ADD:
                     // TODO
                 case Z3_OP_FPA_SUB:
