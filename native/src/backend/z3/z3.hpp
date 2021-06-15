@@ -620,16 +620,16 @@ namespace Backend::Z3 {
                     data.reserve(sizeof(bv_num));
                     std::memcpy(data.data(), &bv_num, sizeof(bv_num));
                     // Size check
-                    const auto bl { b_obj->bv_size() };
+                    const auto bl { sort.bv_size() };
                     Utils::affirm<Utils::Error::Unexpected::Size>(
-                        sizeof(bv_num) == bl * 8, // Maybe be >= ?
+                        sizeof(bv_num) == bl * 8,
                         WHOAMI_WITH_SOURCE
                         "Int to BV type pun failed because the requested BV size"
                         "size is ",
                         bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
                         "bytes long.");
                     // Return literal
-                    return Create::literal(std::move(data), bl);
+                    return Create::literal(std::move(data));
                 }
                 case Z3_OP_BNEG:
                 case Z3_OP_BADD:
@@ -669,12 +669,13 @@ namespace Backend::Z3 {
                 case Z3_OP_SIGN_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
                     return Create::sign_ext(
-                        args[0], Z3_get_decl_int_parameter(Private::tl_ctx(), decl_kind, 0));
+                        args[0], Z3_get_decl_int_parameter(Private::tl_mctx, decl_kind, 0));
                 }
                 case Z3_OP_ZERO_EXT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
+                    Z3_context mctx = Private::tl_ctx;
                     return Create::zero_ext(
-                        args[0], Z3_get_decl_int_parameter(Private::tl_ctx(), decl_kind, 0));
+                        args[0], Z3_get_decl_int_parameter(Private::tl_mctx, decl_kind, 0));
                 }
                 case Z3_OP_EXTRACT: {
                     ASSERT_ARG_LEN_DEBUG(args, 1);
