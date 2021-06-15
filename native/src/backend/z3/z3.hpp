@@ -493,6 +493,7 @@ namespace Backend::Z3 {
 
             // For brevity
             using C = Mode::Compare;
+            namespace Ex = Expression;
 
             // Get switching variables
             // TODO: move down as needed for optimization purposes?
@@ -550,13 +551,13 @@ namespace Backend::Z3 {
 
                     // Arithmetic
                 case Z3_OP_LE:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Less | C::Eq>(args);
                 case Z3_OP_GE:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Greater | C::Eq>(args);
                 case Z3_OP_LT:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Less | C::Neq>(args);
                 case Z3_OP_GT:
-                    // TODO
+                    return Abstract::compare<Ex::FP, C::Signed | C::Greater | C::Neq>(args);
                 case Z3_OP_ADD:
                     // TODO
                 case Z3_OP_SUB:
@@ -578,21 +579,21 @@ namespace Backend::Z3 {
 
                     // Comparisons
                 case Z3_OP_ULEQ:
-                    return Abstract::compare<C::Unsigned | C::Less | C::Eq>(args);
+                    return Abstract::compare<Ex::BV, C::Unsigned | C::Less | C::Eq>(args);
                 case Z3_OP_SLEQ:
-                    return Abstract::compare<C::Signed | C::Less | C::Eq>(args);
+                    return Abstract::compare<Ex::BV, C::Signed | C::Less | C::Eq>(args);
                 case Z3_OP_UGEQ:
-                    return Abstract::compare<C::Unsigned | C::Greater | C::Eq>(args);
+                    return Abstract::compare<Ex::BV, C::Unsigned | C::Greater | C::Eq>(args);
                 case Z3_OP_SGEQ:
-                    return Abstract::compare<C::Signed | C::Greater | C::Eq>(args);
+                    return Abstract::compare<Ex::BV, C::Signed | C::Greater | C::Eq>(args);
                 case Z3_OP_ULT:
-                    return Abstract::compare<C::Unsigned | C::Less | C::Neq>(args);
+                    return Abstract::compare<Ex::BV, C::Unsigned | C::Less | C::Neq>(args);
                 case Z3_OP_SLT:
-                    return Abstract::compare<C::Signed | C::Less | C::Neq>(args);
+                    return Abstract::compare<Ex::BV, C::Signed | C::Less | C::Neq>(args);
                 case Z3_OP_UGT:
-                    return Abstract::compare<C::Unsigned | C::Greater | C::Neq>(args);
+                    return Abstract::compare<Ex::BV, C::Unsigned | C::Greater | C::Neq>(args);
                 case Z3_OP_SGT:
-                    return Abstract::compare<C::Signed | C::Greater | C::Neq>(args);
+                    return Abstract::compare<Ex::BV, C::Signed | C::Greater | C::Neq>(args);
 
                     // Bit-vectors
                 case Z3_OP_BNUM:

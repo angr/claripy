@@ -145,19 +145,10 @@ namespace Backend::Z3::Abstract {
     // Comparisons
 
     /** Abstraction function ofr various Z3 comparison ops */
-    template <Mode::Compare Mask>
+    template <typename T, Mode::Compare Mask>
     inline Expression::BasePtr compare(const std::vector<Expression::BasePtr> &args) {
         ASSERT_ARG_LEN(args, 2);
-        if constexpr (Utils::BitMask::has(Mask, Mode::Compare::Unsigned)) {
-            return Create::compare<Expression::BV, Mask>(args[0], args[1]);
-        }
-        else {
-            switch (args[0]->cuid) {
-                TYPE_CASE_2(FP, Mask, Create::compare, args[0], args[1]);
-                TYPE_CASE_2(BV, Mask, Create::compare, args[0], args[1]);
-                DEFAULT_TYPE_CASE(args[0]->cuid);
-            };
-        }
+        return Create::compare<T, Mask>(args[0], args[1]);
     }
 
     /**********************************************************/
