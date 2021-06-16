@@ -9,9 +9,13 @@
 #include "tl_ctx.hpp"
 
 #include "../../create.hpp"
+#include "../abstraction_variant.hpp"
 
 
 namespace Backend::Z3::Abstract {
+
+    /** The 'args' array type */
+    using ArgsVec = std::vector<::Backend::Private::AbstractionVariant>;
 
 /** A local macro used for lengh checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                      \
@@ -38,6 +42,9 @@ namespace Backend::Z3::Abstract {
         throw Utils::Error::Unexpected::Type(WHOAMI_WITH_SOURCE,                                  \
                                              "Unexpected type detected. CUID: ", (BAD_CUID));
 
+/** A local macro for getting the X'th element of 'args' as an expression */
+#define GET_EARG(I) std::get<Expression::BasePtr>(args[(I)])
+
     /**********************************************************/
     /*                        General                         */
     /**********************************************************/
@@ -45,7 +52,7 @@ namespace Backend::Z3::Abstract {
     /** Abstraction function for Z3_OP_UNINTERPRETED */
     inline Expression::BasePtr uninterpreted(const z3::func_decl &decl,
                                              const Z3_decl_kind decl_kind, const z3::sort &sort,
-                                             const std::vector<Expression::BasePtr> &args) {
+                                             const ArgsVec &args) {
         // If b_obj is a symbolic value
         if (args.empty()) {
             // Gather info
@@ -89,81 +96,95 @@ namespace Backend::Z3::Abstract {
     // Boolean logic
 
     /** Abstraction function for z3 equality ops */
-    template <typename T = Expression::Base>
-    inline Expression::BasePtr eq(const std::vector<Expression::BasePtr> &args) {
+    template <typename T = Expression::Base> inline Expression::BasePtr eq(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
         if constexpr (std::is_same_v<T, Expression::FP>) {
-            return Create::eq<T>(args[0], args[1]);
+            return Create::eq<T>(GET_EARG(0), GET_EARG(1));
         }
-        switch (args[0]->cuid) {
-            TYPE_CASE(Bool, Create::eq, args[0], args[1]);
-            TYPE_CASE(BV, Create::eq, args[0], args[1]);
-            TYPE_CASE(String, Create::eq, args[0], args[1]);
-            DEFAULT_TYPE_CASE(args[0]->cuid);
+        switch (GET_EARG(0)->cuid) {
+            TYPE_CASE(Bool, Create::eq, GET_EARG(0), GET_EARG(1));
+            TYPE_CASE(BV, Create::eq, GET_EARG(0), GET_EARG(1));
+            TYPE_CASE(String, Create::eq, GET_EARG(0), GET_EARG(1));
+            DEFAULT_TYPE_CASE(GET_EARG(0)->cuid);
+        };
+    }
+
+    /** Abstraction function for Z3_OP_ITE */
+    inline Expression::BasePtr ite(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 3);
+        switch (GET_EARG(1)->cuid) {
+            TYPE_CASE(Bool, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
+            TYPE_CASE(String, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
+            TYPE_CASE(BV, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
+            TYPE_CASE(FP, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
+            TYPE_CASE(VS, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
+            DEFAULT_TYPE_CASE(GET_EARG(1)->cuid);
         };
     }
 
     /** Abstraction function for z3 and ops */
-    template <typename T> inline Expression::BasePtr and_(std::vector<Expression::BasePtr> &args) {
+    template <typename T> inline Expression::BasePtr and_(ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::and_<T>({ std::move(args[0]), std::move(args[1]) });
+        return Create::and_<T>({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
     }
 
     /** Abstraction function for z3 or ops */
-    template <typename T>
-    inline Expression::BasePtr or_(const std::vector<Expression::BasePtr> &args) {
+    template <typename T> inline Expression::BasePtr or_(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::or_<T>({ std::move(args[0]), std::move(args[1]) });
+        return Create::or_<T>({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
     }
 
     /** Abstraction function for z3 xor ops */
-    template <typename T>
-    inline Expression::BasePtr xor_(const std::vector<Expression::BasePtr> &args) {
+    template <typename T> inline Expression::BasePtr xor_(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::xor_({ std::move(args[0]), std::move(args[1]) });
+        return Create::xor_({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
     }
 
     /** Abstraction function for invert z3 ops */
-    template <typename T>
-    inline Expression::BasePtr not_(const std::vector<Expression::BasePtr> &args) {
+    template <typename T> inline Expression::BasePtr not_(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 1);
-        return Create::invert<T>(args[0]);
+        return Create::invert<T>(GET_EARG(0));
     }
 
     // Arithmetic
 
     /** Abstraction function for Z3_OP_BADD */
-    inline Expression::BasePtr add(const std::vector<Expression::BasePtr> &args) {
+    template <typename T> inline Expression::BasePtr abs(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 1);
+        return Create::abs<T>(GET_EARG(0));
+    }
+
+    /** Abstraction function for Z3_OP_BADD */
+    inline Expression::BasePtr add(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::add({ std::move(args[0]), std::move(args[1]) });
+        return Create::add({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
     }
 
     /** Abstraction function for Z3_OP_BSUB */
-    inline Expression::BasePtr sub(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr sub(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::sub(args[0], args[1]);
+        return Create::sub(GET_EARG(0), GET_EARG(1));
     }
 
     /** Abstraction function for Z3_OP_BMUL */
-    inline Expression::BasePtr mul(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr mul(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::mul({ std::move(args[0]), std::move(args[1]) });
+        return Create::mul({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
     }
 
     /** Abstraction function for z3 negation ops */
-    template <typename T>
-    inline Expression::BasePtr neg(const std::vector<Expression::BasePtr> &args) {
+    template <typename T> inline Expression::BasePtr neg(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 1);
-        return Create::neg<T>(std::move(args[0]));
+        return Create::neg<T>(std::move(GET_EARG(0)));
     }
 
     // Comparisons
 
     /** Abstraction function ofr various Z3 comparison ops */
     template <typename T, Mode::Compare Mask>
-    inline Expression::BasePtr compare(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr compare(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::compare<T, Mask>(args[0], args[1]);
+        return Create::compare<T, Mask>(GET_EARG(0), GET_EARG(1));
     }
 
     /**********************************************************/
@@ -208,34 +229,31 @@ namespace Backend::Z3::Abstract {
     // Bit Vector Misc
 
     /** Abstraction function for Z3_OP_CONCAT */
-    inline Expression::BasePtr concat(const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr concat(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::concat<Expression::BV>(args[0], args[1]);
+        return Create::concat<Expression::BV>(GET_EARG(0), GET_EARG(1));
     }
 
     /** Abstraction function for Z3_OP_SIGN_EXT */
-    inline Expression::BasePtr sign_ext(const z3::func_decl &decl,
-                                        const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr sign_ext(const z3::func_decl &decl, const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 1);
         const auto val { static_cast<z3u>(
             Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
-        return Create::sign_ext(args[0], Utils::widen<Constants::UInt>(val));
+        return Create::sign_ext(GET_EARG(0), Utils::widen<Constants::UInt>(val));
     }
 
     /** Abstraction function for Z3_OP_ZERO_EXT */
-    inline Expression::BasePtr zero_ext(const z3::func_decl &decl,
-                                        const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr zero_ext(const z3::func_decl &decl, const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 1);
         const auto val { static_cast<z3u>(
             Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
-        return Create::sign_ext(args[0], Utils::widen<Constants::UInt>(val));
+        return Create::sign_ext(GET_EARG(0), Utils::widen<Constants::UInt>(val));
     }
 
     /** Abstraction function for Z3_OP_EXTRACT */
-    inline Expression::BasePtr extract(Constants::CTSC<z3::expr> b_obj,
-                                       const std::vector<Expression::BasePtr> &args) {
+    inline Expression::BasePtr extract(Constants::CTSC<z3::expr> b_obj, const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 1);
-        return Create::extract(b_obj->hi(), b_obj->lo(), args[0]);
+        return Create::extract(b_obj->hi(), b_obj->lo(), GET_EARG(0));
     }
 
     /**********************************************************/
@@ -249,6 +267,19 @@ namespace Backend::Z3::Abstract {
     // FP Comparisons
 
     // FP Arithmetic
+
+    namespace FP {
+
+        /* return Abstract::abs<Ex::FP>(args); */
+        /* case Z3_OP_FPA_ADD: */
+        /* return Abstract::FP::add(args); */
+        /* case Z3_OP_FPA_SUB: */
+        /* return Abstract::FP::sub(args); */
+        /* case Z3_OP_FPA_MUL: */
+        /* return Abstract::FP::mul(args); */
+        /* case Z3_OP_FPA_DIV: */
+        /* return Abstract::FP::div(args); */
+    } // namespace FP
 
 // Cleanup
 #undef DEFAULT_TYPE_CASE
