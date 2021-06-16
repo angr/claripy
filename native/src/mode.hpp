@@ -10,5 +10,6 @@
 #include "mode/fp.hpp"
 #include "mode/repr.hpp"
 #include "mode/shift.hpp"
+#include "mode/sign.hpp"
 
 #endif
