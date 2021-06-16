@@ -494,6 +494,7 @@ namespace Backend::Z3 {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
 
             // For brevity
+            using Sgn = Mode::Sign;
             using C = Mode::Compare;
             namespace Ex = Expression;
 
@@ -502,6 +503,7 @@ namespace Backend::Z3 {
             const auto decl { b_obj->decl() };
             const auto decl_kind { decl.decl_kind() };
             const auto sort { b_obj->get_sort() };
+            const auto sort_kind { sort.sort_kind() };
 
             /** A local macro used for error checking */
 #define ASSERT_ARG_EMPTY(X)                                                                       \
@@ -655,15 +657,20 @@ namespace Backend::Z3 {
 
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
-                    // TODO
+                    ASSERT_ARG_EMPTY(args);
+                    return Abstract::FP::zero<Sgn::Minus>(sort_kind);
                 case Z3_OP_FPA_MINUS_INF:
-                    // TODO
+                    ASSERT_ARG_EMPTY(args);
+                    return Abstract::FP::inf<Sgn::Minus>(sort_kind);
                 case Z3_OP_FPA_PLUS_ZERO:
-                    // TODO
+                    ASSERT_ARG_EMPTY(args);
+                    return Abstract::FP::zero<Sgn::Plus>(sort_kind);
                 case Z3_OP_FPA_PLUS_INF:
-                    // TODO
+                    ASSERT_ARG_EMPTY(args);
+                    return Abstract::FP::inf<Sgn::Plus>(sort_kind);
                 case Z3_OP_FPA_NAN:
-                    // TODO
+                    ASSERT_ARG_EMPTY(args);
+                    return Abstract::FP::nan(sort, sort_kind);
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
