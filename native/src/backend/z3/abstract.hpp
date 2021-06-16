@@ -270,15 +270,34 @@ namespace Backend::Z3::Abstract {
 
     namespace FP {
 
-        /* return Abstract::abs<Ex::FP>(args); */
-        /* case Z3_OP_FPA_ADD: */
-        /* return Abstract::FP::add(args); */
-        /* case Z3_OP_FPA_SUB: */
-        /* return Abstract::FP::sub(args); */
-        /* case Z3_OP_FPA_MUL: */
-        /* return Abstract::FP::mul(args); */
-        /* case Z3_OP_FPA_DIV: */
-        /* return Abstract::FP::div(args); */
+        /** Abstraction function for Z3_OP_FPA_ADD */
+        inline Expression::BasePtr add(const ArgsVec &args) {
+            ASSERT_ARG_LEN(args, 2);
+            return Create::FP::add(GET_EARG(1), GET_EARG(2),
+                                   std::get<Mode::FP::Rounding>(args[0]));
+        }
+
+        /** Abstraction function for Z3_OP_FPA_SUB */
+        inline Expression::BasePtr sub(const ArgsVec &args) {
+            ASSERT_ARG_LEN(args, 2);
+            return Create::FP::sub(GET_EARG(1), GET_EARG(2),
+                                   std::get<Mode::FP::Rounding>(args[0]));
+        }
+
+        /** Abstraction function for Z3_OP_FPA_MUL */
+        inline Expression::BasePtr mul(const ArgsVec &args) {
+            ASSERT_ARG_LEN(args, 2);
+            return Create::FP::mul(GET_EARG(1), GET_EARG(2),
+                                   std::get<Mode::FP::Rounding>(args[0]));
+        }
+
+        /** Abstraction function for Z3_OP_FPA_DIV */
+        inline Expression::BasePtr div(const ArgsVec &args) {
+            ASSERT_ARG_LEN(args, 2);
+            return Create::FP::div(GET_EARG(1), GET_EARG(2),
+                                   std::get<Mode::FP::Rounding>(args[0]));
+        }
+
     } // namespace FP
 
 // Cleanup
