@@ -21,6 +21,8 @@ namespace Backend::Z3 {
     class Z3 final : public Generic<z3::expr, false> {
         /** Z3 parent class */
         using Super = Generic<z3::expr, false>;
+        /** An alias for brevity */
+        using AbstractionVariant = ::Backend::Private::AbstractionVariant;
 
       public:
         /********************************************************************/
@@ -488,7 +490,7 @@ namespace Backend::Z3 {
          */
         AbstractionVariant
         dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
-                             std::vector<Expression::BasePtr> &args) override final {
+                             std::vector<AbstractionVariant> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
 
             // For brevity
@@ -536,7 +538,7 @@ namespace Backend::Z3 {
                 case Z3_OP_DISTINCT:
                     // TODO
                 case Z3_OP_ITE:
-                    // TODO
+                    return Abstract::ite(args);
                 case Z3_OP_AND:
                     return Abstract::and_<Ex::Bool>(args);
                 case Z3_OP_OR:
@@ -677,17 +679,17 @@ namespace Backend::Z3 {
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:
-                    // TODO
+                    return Abstract::abs<Ex::FP>(args);
                 case Z3_OP_FPA_NEG:
                     return Abstract::neg<Ex::FP>(args);
                 case Z3_OP_FPA_ADD:
-                    // TODO
+                    return Abstract::FP::add(args);
                 case Z3_OP_FPA_SUB:
-                    // TODO
+                    return Abstract::FP::sub(args);
                 case Z3_OP_FPA_MUL:
-                    // TODO
+                    return Abstract::FP::mul(args);
                 case Z3_OP_FPA_DIV:
-                    // TODO
+                    return Abstract::FP::div(args);
 
                     // Rounding modes
                 case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN:
