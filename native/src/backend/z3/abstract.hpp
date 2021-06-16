@@ -13,10 +13,10 @@
 
 namespace Backend::Z3::Abstract {
 
-/** A local macro used for lengh checking a container */
+/** A local macro used for lengh checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                      \
-    Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE           \
-                                                  "container should have " #N " elements");
+    Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE "Op ",    \
+                                                  __func__, " should have " #N " children.");
 
 /** A local macro used for adding a case for a given type
  *  Func must be take in T as its only template argument
@@ -206,6 +206,12 @@ namespace Backend::Z3::Abstract {
     // Bit Vector Bitwise Ops
 
     // Bit Vector Misc
+
+    /** Abstraction function for Z3_OP_CONCAT */
+    inline Expression::BasePtr concat(const std::vector<Expression::BasePtr> &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::concat<Expression::BV>(args[0], args[1]);
+    }
 
     /** Abstraction function for Z3_OP_SIGN_EXT */
     inline Expression::BasePtr sign_ext(const z3::func_decl &decl,

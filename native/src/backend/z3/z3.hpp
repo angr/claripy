@@ -501,10 +501,10 @@ namespace Backend::Z3 {
             const auto decl_kind { decl.decl_kind() };
             const auto sort { b_obj->get_sort() };
 
-            /** A local macro used for error checking in debug mode */
+            /** A local macro used for error checking */
 #define ASSERT_ARG_EMPTY(X)                                                                       \
     Utils::affirm<Utils::Error::Unexpected::Size>((X).empty(), WHOAMI_WITH_SOURCE                 \
-                                                  "container should be empty");
+                                                  "Op should have no children");
 
             // Switch on expr type
             switch (decl_kind) {
@@ -512,7 +512,8 @@ namespace Backend::Z3 {
                     // Unknown op
                 default: {
                     throw Error::Backend::Abstraction(
-                        WHOAMI_WITH_SOURCE "Unknown z3 op given. Op decl_kind: ", decl_kind);
+                        WHOAMI_WITH_SOURCE "Unknown z3 op given. Op decl_kind: ", decl_kind,
+                        "\nThe z3 op with this sort is:\n\t", *b_obj);
                 }
 
                     // Misc
@@ -630,15 +631,13 @@ namespace Backend::Z3 {
 
                     // BV Misc
                 case Z3_OP_CONCAT:
-                    // TODO
+                    return Abstract::concat(args);
                 case Z3_OP_SIGN_EXT:
                     return Abstract::sign_ext(decl, args);
                 case Z3_OP_ZERO_EXT:
                     return Abstract::zero_ext(decl, args);
                 case Z3_OP_EXTRACT:
                     return Abstract::extract(b_obj, args);
-                case Z3_OP_REPEAT:
-                    // TODO
 
                     // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
