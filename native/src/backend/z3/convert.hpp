@@ -148,7 +148,7 @@ namespace Backend::Z3::Convert {
     inline z3::expr pow(const z3::expr &l, const z3::expr &r) { return z3::pw(l, r); }
 
     /** Mod converter
-     *  TODO: is this correct? It is what claripy had
+     *  Note we use rem (because of the difference between C and Python % operators)
      */
     template <bool Signed> z3::expr mod(const z3::expr &l, const z3::expr &r) {
         if constexpr (Signed) {

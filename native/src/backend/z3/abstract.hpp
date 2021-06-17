@@ -217,7 +217,9 @@ namespace Backend::Z3::Abstract {
         return Create::div<Signed>(GET_EARG(0), GET_EARG(1));
     }
 
-    /** Abstraction function for z3 BV remainder */
+    /** Abstraction function for z3 BV remainder
+     *  Note we use mod (because of the difference between C and Python % operators)
+     */
     template <bool Signed> inline Expression::BasePtr rem(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
         return Create::mod<Signed>(GET_EARG(0), GET_EARG(1));
