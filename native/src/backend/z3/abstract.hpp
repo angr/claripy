@@ -274,10 +274,10 @@ namespace Backend::Z3::Abstract {
 
             /** std::copysign if Real is signed, else return x */
             template <Mode::Sign::Real Sign, typename T> constexpr T copysign(const T x) {
-                if constexpr (Sign == Mode::Sign::Real::None) {
-                    return x;
+                if constexpr (Sign != Mode::Sign::Real::None) {
+                    return std::copysign(x, T { Utils::to_underlying(Sign) });
                 }
-                return std::copysign(x, T { Utils::to_underlying(Sign) });
+                return x;
             }
 
             /** A helper function to assist in creating FPA literals */
@@ -316,10 +316,8 @@ namespace Backend::Z3::Abstract {
         /** Abstraction function for fpa inf */
         template <Mode::Sign::FP Sign>
         inline Expression::BasePtr inf(const Z3_sort_kind sort_kind) {
-            static_assert(std::numeric_limits<double>::is_iec559,
-                          "IEE 754 required to produce -inf");
-            static_assert(std::numeric_limits<float>::is_iec559,
-                          "IEE 754 required to produce -inf");
+            static_assert(std::numeric_limits<double>::is_iec559, "IEE 754 required for -inf");
+            static_assert(std::numeric_limits<float>::is_iec559, "IEE 754 required for -inf");
             static const constexpr float inf_f { std::numeric_limits<float>::infinity() };
             static const constexpr double inf_d { std::numeric_limits<double>::infinity() };
             return Private::fpa_literal<Sign>(sort_kind, inf_d, inf_f);
