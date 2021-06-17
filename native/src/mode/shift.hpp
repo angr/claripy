@@ -22,8 +22,9 @@ namespace Mode {
         using S = Shift;
         const bool logic { B::has(c, S::Logical) };
         const bool left { B::has(c, S::Left) };
-        return (logic ^ B::has(c, S::Arithmetic)) && (left ^ B::has(c, S::Right)) &&
-               !(left && logic);
+        return (logic ^ B::has(c, S::Arithmetic)) // Logical or Arithmetic
+            && (left ^ B::has(c, S::Right))       // Left or right
+            && !(left && logic);                  // Not left and logical
     }
 } // namespace Mode
 
