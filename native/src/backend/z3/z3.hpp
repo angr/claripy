@@ -495,6 +495,7 @@ namespace Backend::Z3 {
 
             // For brevity
             using C = Mode::Compare;
+            using Shift = Mode::Shift;
             using Sign = Mode::Sign::FP;
             namespace Ex = Expression;
 
@@ -615,15 +616,15 @@ namespace Backend::Z3 {
 
                     // BV Bitwise Ops
                 case Z3_OP_BSHL:
-                    // TODO
-                case Z3_OP_BLSHR:
-                    // TODO
+                    return Abstract::shift<Shift::Left | Shift::Arithmetic>(args);
                 case Z3_OP_BASHR:
-                    // TODO
+                    return Abstract::shift<Shift::Right | Shift::Arithmetic>(args);
+                case Z3_OP_BLSHR:
+                    return Abstract::shift<Shift::Right | Shift::Logical>(args);
                 case Z3_OP_EXT_ROTATE_LEFT:
-                    // TODO
+                    return Abstract::rotate<true>(args);
                 case Z3_OP_EXT_ROTATE_RIGHT:
-                    // TODO
+                    return Abstract::rotate<false>(args);
 
                     // BV Misc
                 case Z3_OP_CONCAT:

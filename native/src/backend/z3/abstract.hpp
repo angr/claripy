@@ -258,8 +258,7 @@ namespace Backend::Z3::Abstract {
             const auto bl { sort.bv_size() };
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 sizeof(bv_num) == bl * 8,
-                WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size"
-                                   "size is ",
+                WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",
                 bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
                 "bytes long.");
             // Return literal
@@ -267,6 +266,22 @@ namespace Backend::Z3::Abstract {
         }
 
     } // namespace BV
+
+    // BV Bitwise
+
+    /** Abstraction function for BV shifts */
+    template <Mode::Shift Mask> inline Expression::BasePtr shift(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::arithmetic_shift<Mask>(GET_EARG(0), GET_EARG(1));
+    }
+
+    /** Abstraction function for BV rotations */
+    template <bool Left> inline Expression::BasePtr rotate(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::rotate<Left>(GET_EARG(0), GET_EARG(1));
+    }
+
+    // BV Misc
 
     /** Abstraction function for Z3_OP_CONCAT */
     inline Expression::BasePtr concat(const ArgsVec &args) {
