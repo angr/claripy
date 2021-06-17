@@ -162,14 +162,13 @@ namespace Backend::Z3::Convert {
     /** Shift converter */
     template <Mode::Shift Mask> z3::expr shift(const z3::expr &l, const z3::expr &r) {
         using S = Mode::Shift;
-        static_assert(Mode::shift_is_valid(Mask), "Invalid mask mode");
-        if constexpr (Utils::BitMask::has(Mask, S::Arithmetic | S::Left)) {
+        if constexpr (Mask == S::Left) {
             return z3::shl(l, r);
         }
-        else if constexpr (Utils::BitMask::has(Mask, S::Arithmetic | S::Right)) {
+        else if constexpr (Mask == S::ArithmeticRight) {
             return z3::ashr(l, r);
         }
-        else if constexpr (Utils::BitMask::has(Mask, S::Logical | S::Right)) {
+        else if constexpr (Mask == S::LogicalRight) {
             return z3::lshr(l, r);
         }
         else {

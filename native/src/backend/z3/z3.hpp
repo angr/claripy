@@ -246,7 +246,7 @@ namespace Backend::Z3 {
 
             // For brevity
             using Cmp = Mode::Compare;
-            using Shft = Mode::Shift;
+            using Shift = Mode::Shift;
 
             // Switch on expr type
             switch (expr->op->cuid) {
@@ -317,10 +317,9 @@ namespace Backend::Z3 {
                     BINARY_TEMPLATE_CASE(Mod, Convert::mod, true);
                     BINARY_TEMPLATE_CASE(Mod, Convert::mod, false);
 
-                    // Logic / left is not supported a valid mode
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Arithmetic | Shft::Left);
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Arithmetic | Shft::Right);
-                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shft::Logical | Shft::Right);
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shift::Left);
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shift::ArithmeticRight);
+                    BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shift::LogicalRight);
 
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, true);
                     BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, false);
@@ -616,11 +615,11 @@ namespace Backend::Z3 {
 
                     // BV Bitwise Ops
                 case Z3_OP_BSHL:
-                    return Abstract::shift<Shift::Left | Shift::Arithmetic>(args);
+                    return Abstract::shift<Shift::Left>(args);
                 case Z3_OP_BASHR:
-                    return Abstract::shift<Shift::Right | Shift::Arithmetic>(args);
+                    return Abstract::shift<Shift::ArithmeticRight>(args);
                 case Z3_OP_BLSHR:
-                    return Abstract::shift<Shift::Right | Shift::Logical>(args);
+                    return Abstract::shift<Shift::LogicalRight>(args);
                 case Z3_OP_EXT_ROTATE_LEFT:
                     return Abstract::rotate<true>(args);
                 case Z3_OP_EXT_ROTATE_RIGHT:

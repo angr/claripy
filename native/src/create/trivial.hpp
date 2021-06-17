@@ -163,7 +163,6 @@ namespace Create {
     template <Mode::Shift Mask>
     inline EBasePtr arithmetic_shift(const EBasePtr &left, const EBasePtr &right,
                                      SPAV &&sp = nullptr) {
-        static_assert(Mode::shift_is_valid(Mask), "Invalid Shift Mode");
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Shift<Mask>, Private::SizeMode::First, Ex::BV>(
             left, right, std::move(sp));

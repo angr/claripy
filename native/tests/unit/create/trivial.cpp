@@ -102,9 +102,9 @@ void trivial() {
     Log::debug("Testing shift...");
     {
         using S = Mode::Shift;
-        TEST_SHIFT(S::Arithmetic | S::Left);
-        TEST_SHIFT(S::Arithmetic | S::Right);
-        TEST_SHIFT(S::Logical | S::Right);
+        TEST_SHIFT(S::Left);
+        TEST_SHIFT(S::ArithmeticRight);
+        TEST_SHIFT(S::LogicalRight);
     }
 
 // Cleanup
