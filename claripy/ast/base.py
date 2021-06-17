@@ -206,7 +206,7 @@ class Base:
         if hash is not None:
             h = hash
         elif op in ('BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'):
-            h = a_args
+            h = (op, kwargs.get('length', None), a_args)
             cache = cls._leaf_cache
         else:
             h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
