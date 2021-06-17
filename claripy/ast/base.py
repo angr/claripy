@@ -247,7 +247,7 @@ class Base:
         We do it using md5 to avoid hash collisions.
         (hash(-1) == hash(-2), for example)
         """
-        args_tup = tuple(a if type(a) in (int, float) else hash(a) for a in args)
+        args_tup = tuple(a if type(a) in (int, float) else getattr(a, '_hash', hash(a)) for a in args)
         # HASHCONS: these attributes key the cache
         # BEFORE CHANGING THIS, SEE ALL OTHER INSTANCES OF "HASHCONS" IN THIS FILE
         to_hash = (
