@@ -161,8 +161,7 @@ namespace Create {
      *  Expression pointers may not be nullptr
      */
     template <Mode::Shift Mask>
-    inline EBasePtr arithmetic_shift(const EBasePtr &left, const EBasePtr &right,
-                                     SPAV &&sp = nullptr) {
+    inline EBasePtr shift(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::binary<Ex::BV, Op::Shift<Mask>, Private::SizeMode::First, Ex::BV>(
             left, right, std::move(sp));

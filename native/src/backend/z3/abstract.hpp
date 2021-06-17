@@ -272,7 +272,7 @@ namespace Backend::Z3::Abstract {
     /** Abstraction function for BV shifts */
     template <Mode::Shift Mask> inline Expression::BasePtr shift(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::arithmetic_shift<Mask>(GET_EARG(0), GET_EARG(1));
+        return Create::shift<Mask>(GET_EARG(0), GET_EARG(1));
     }
 
     /** Abstraction function for BV rotations */

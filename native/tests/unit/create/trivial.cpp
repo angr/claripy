@@ -97,7 +97,7 @@ void trivial() {
     // Bitwise
 
 /** A local macro used for testing a shift function */
-#define TEST_SHIFT(MASK) binary<Ex::BV, Op::Shift<MASK>, SM::First, Cr::arithmetic_shift<MASK>>();
+#define TEST_SHIFT(MASK) binary<Ex::BV, Op::Shift<MASK>, SM::First, Cr::shift<MASK>>();
 
     Log::debug("Testing shift...");
     {
