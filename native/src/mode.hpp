@@ -8,6 +8,7 @@
 
 #include "mode/compare.hpp"
 #include "mode/fp.hpp"
+#include "mode/lr.hpp"
 #include "mode/repr.hpp"
 #include "mode/shift.hpp"
 #include "mode/sign.hpp"
