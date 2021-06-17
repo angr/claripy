@@ -579,7 +579,7 @@ namespace Backend::Z3 {
                     // Bit-vectors
                 case Z3_OP_BNUM:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::bnum(b_obj, sort);
+                    return Abstract::BV::num(b_obj, sort);
                 case Z3_OP_BNEG:
                     return Abstract::neg<Ex::BV>(args);
                 case Z3_OP_BADD:
@@ -590,26 +590,20 @@ namespace Backend::Z3 {
                     return Abstract::mul(args);
 
                     // BV Arithmetic
-                case Z3_OP_BSDIV:
-                    // TODO
-                case Z3_OP_BUDIV:
-                    // TODO
-                case Z3_OP_BSREM:
-                    // TODO
-                case Z3_OP_BUREM:
-                    // TODO
-                case Z3_OP_BSMOD:
-                    // TODO
+                case Z3_OP_BSDIV: // fallthrough
                 case Z3_OP_BSDIV_I:
-                    // TODO
+                    return Abstract::div<true>(args);
+                case Z3_OP_BUDIV: // fallthrough:
                 case Z3_OP_BUDIV_I:
-                    // TODO
+                    return Abstract::div<false>(args);
+                case Z3_OP_BSMOD:   // fallthrough
+                case Z3_OP_BSREM:   // fallthrough
+                case Z3_OP_BSMOD_I: // fallthrough
                 case Z3_OP_BSREM_I:
-                    // TODO
+                    return Abstract::rem<true>(args);
+                case Z3_OP_BUREM: // fallthrough
                 case Z3_OP_BUREM_I:
-                    // TODO
-                case Z3_OP_BSMOD_I:
-                    // TODO
+                    return Abstract::rem<false>(args);
 
                     // BV Logic
                 case Z3_OP_BAND:

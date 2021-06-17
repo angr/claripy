@@ -195,36 +195,52 @@ namespace Backend::Z3::Abstract {
     /*                      Bit Vectors                       */
     /**********************************************************/
 
-    /** Abstraction function for Z3_OP_BNUM */
-    inline Expression::BasePtr bnum(Constants::CTSC<z3::expr> b_obj, const z3::sort &sort) {
-        // Get the bv number
-        uint64_t bv_num; // NOLINT
-        if (!b_obj->is_numeral_u64(bv_num)) {
-            std::string tmp;
-            const bool success { b_obj->is_numeral(tmp) };
-            Utils::affirm<Utils::Error::Unexpected::Type>(success, WHOAMI_WITH_SOURCE
-                                                          "given z3 object is not a numeral");
-            bv_num = std::stoull(tmp); // Faster than istringstream
-            static_assert(sizeof(unsigned long long) == sizeof(uint64_t),
-                          "Bad string conversion function called");
+    namespace BV {
+
+        /** Abstraction function for Z3_OP_BNUM */
+        inline Expression::BasePtr num(Constants::CTSC<z3::expr> b_obj, const z3::sort &sort) {
+            // Get the bv number
+            uint64_t bv_num; // NOLINT
+            if (!b_obj->is_numeral_u64(bv_num)) {
+                std::string tmp;
+                const bool success { b_obj->is_numeral(tmp) };
+                Utils::affirm<Utils::Error::Unexpected::Type>(success, WHOAMI_WITH_SOURCE
+                                                              "given z3 object is not a numeral");
+                bv_num = std::stoull(tmp); // Faster than istringstream
+                static_assert(sizeof(unsigned long long) == sizeof(uint64_t),
+                              "Bad string conversion function called");
+            }
+            // Type pun to vector of bytes
+            std::vector<std::byte> data;
+            data.reserve(sizeof(bv_num));
+            std::memcpy(data.data(), &bv_num, sizeof(bv_num));
+            // Size check
+            const auto bl { sort.bv_size() };
+            Utils::affirm<Utils::Error::Unexpected::Size>(
+                sizeof(bv_num) == bl * 8,
+                WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size"
+                                   "size is ",
+                bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
+                "bytes long.");
+            // Return literal
+            return Create::literal(std::move(data));
         }
-        // Type pun to vector of bytes
-        std::vector<std::byte> data;
-        data.reserve(sizeof(bv_num));
-        std::memcpy(data.data(), &bv_num, sizeof(bv_num));
-        // Size check
-        const auto bl { sort.bv_size() };
-        Utils::affirm<Utils::Error::Unexpected::Size>(
-            sizeof(bv_num) == bl * 8,
-            WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size"
-                               "size is ",
-            bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
-            "bytes long.");
-        // Return literal
-        return Create::literal(std::move(data));
-    }
+
+    } // namespace BV
 
     // Bit Vector Arithemitic
+
+    /** Abstraction function for z3 BV division */
+    template <bool Signed> inline Expression::BasePtr div(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::div<Signed>(GET_EARG(0), GET_EARG(1));
+    }
+
+    /** Abstraction function for z3 BV remainder */
+    template <bool Signed> inline Expression::BasePtr rem(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::mod<Signed>(GET_EARG(0), GET_EARG(1));
+    }
 
     // Bit Vector Logic
 

@@ -147,13 +147,15 @@ namespace Backend::Z3::Convert {
     /** Pow converter */
     inline z3::expr pow(const z3::expr &l, const z3::expr &r) { return z3::pw(l, r); }
 
-    /** Mod converter */
+    /** Mod converter
+     *  TODO: is this correct? It is what claripy had
+     */
     template <bool Signed> z3::expr mod(const z3::expr &l, const z3::expr &r) {
         if constexpr (Signed) {
-            return z3::smod(l, r);
+            return z3::srem(l, r); // TODO
         }
         else {
-            return z3::mod(l, r);
+            return z3::urem(l, r); // TODO
         }
     }
 
