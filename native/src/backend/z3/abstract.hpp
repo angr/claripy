@@ -7,9 +7,13 @@
 
 #include "constants.hpp"
 #include "tl_ctx.hpp"
+#include "width.hpp"
 
 #include "../../create.hpp"
 #include "../abstraction_variant.hpp"
+
+#include <cmath>
+#include <limits>
 
 
 namespace Backend::Z3::Abstract {
@@ -260,15 +264,81 @@ namespace Backend::Z3::Abstract {
     /*                     Floating Point                     */
     /**********************************************************/
 
-    // FP Conversions
-
-    // FP Constants
-
-    // FP Comparisons
-
-    // FP Arithmetic
-
     namespace FP {
+
+        // Conversions
+
+        // Constants
+
+        namespace Private {
+
+            /** std::copysign if Real is signed, else return x */
+            template <Mode::Sign::Real Sign, typename T> constexpr T copysign(const T x) {
+                if constexpr (Sign == Mode::Sign::Real::None) {
+                    return x;
+                }
+                return std::copysign(x, T { Utils::to_underlying(Sign) });
+            }
+
+            /** A helper function to assist in creating FPA literals */
+            template <Mode::Sign::Real Sign>
+            inline Expression::BasePtr fpa_literal(const Z3_sort_kind sort_kind, const double dbl,
+                                                   const float flt) {
+                if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_dbl)) {
+                    return Create::literal(copysign<Sign>(dbl));
+                }
+                if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_flt)) {
+                    return Create::literal(copysign<Sign>(flt));
+                }
+                throw Utils::Error::Unexpected::NotSupported(
+                    WHOAMI_WITH_SOURCE
+                    "Cannot create a zero value for this unknown floating point standard."
+                    "\nZ3_sort_kind: ",
+                    sort_kind);
+            }
+
+            /** A helper function to assist in creating FPA literals
+             *  A specialization which use a Mode::Sign::FP
+             */
+            template <Mode::Sign::FP Sign, typename... Args>
+            inline auto fpa_literal(Args &&...args) {
+                return fpa_literal<Mode::Sign::to_real(Sign)>(std::forward<Args>(args)...);
+            }
+
+        } // namespace Private
+
+        /** Abstraction function for fpa zeros */
+        template <Mode::Sign::FP Sign>
+        inline Expression::BasePtr zero(const Z3_sort_kind sort_kind) {
+            return Private::fpa_literal<Sign>(sort_kind, 0., 0.f);
+        }
+
+        /** Abstraction function for fpa inf */
+        template <Mode::Sign::FP Sign>
+        inline Expression::BasePtr inf(const Z3_sort_kind sort_kind) {
+            static_assert(std::numeric_limits<double>::is_iec559,
+                          "IEE 754 required to produce -inf");
+            static_assert(std::numeric_limits<float>::is_iec559,
+                          "IEE 754 required to produce -inf");
+            static const constexpr float inf_f { std::numeric_limits<float>::infinity() };
+            static const constexpr double inf_d { std::numeric_limits<double>::infinity() };
+            return Private::fpa_literal<Sign>(sort_kind, inf_d, inf_f);
+        }
+
+        /** Abstraction function for Z3_OP_FPA_NAN
+         *  TODO: determine if it should be quiet or signalling
+         */
+        inline Expression::BasePtr nan(const Z3_sort_kind sort_kind) {
+            static_assert(std::numeric_limits<float>::has_quiet_NaN, "Unable to generate NaN");
+            static_assert(std::numeric_limits<double>::has_quiet_NaN, "Unable to generate NaN");
+            static const constexpr float nan_f { std::numeric_limits<float>::quiet_NaN() };
+            static const constexpr double nan_d { std::numeric_limits<double>::quiet_NaN() };
+            return Private::fpa_literal<Mode::Sign::Real::None>(sort_kind, nan_d, nan_f);
+        }
+
+        // Comparisons
+
+        // Arithmetic
 
         /** Abstraction function for Z3_OP_FPA_ADD */
         inline Expression::BasePtr add(const ArgsVec &args) {

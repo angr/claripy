@@ -494,8 +494,8 @@ namespace Backend::Z3 {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
 
             // For brevity
-            using Sgn = Mode::Sign;
             using C = Mode::Compare;
+            using Sign = Mode::Sign::FP;
             namespace Ex = Expression;
 
             // Get switching variables
@@ -658,19 +658,19 @@ namespace Backend::Z3 {
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::zero<Sgn::Minus>(sort_kind);
+                    return Abstract::FP::zero<Sign::Minus>(sort_kind);
                 case Z3_OP_FPA_MINUS_INF:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::inf<Sgn::Minus>(sort_kind);
+                    return Abstract::FP::inf<Sign::Minus>(sort_kind);
                 case Z3_OP_FPA_PLUS_ZERO:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::zero<Sgn::Plus>(sort_kind);
+                    return Abstract::FP::zero<Sign::Plus>(sort_kind);
                 case Z3_OP_FPA_PLUS_INF:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::inf<Sgn::Plus>(sort_kind);
+                    return Abstract::FP::inf<Sign::Plus>(sort_kind);
                 case Z3_OP_FPA_NAN:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::nan(sort, sort_kind);
+                    return Abstract::FP::nan(sort_kind);
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
