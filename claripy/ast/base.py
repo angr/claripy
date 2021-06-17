@@ -220,9 +220,9 @@ class Base:
                             **kwargs)
             self._hash = h
             cache[h] = self
-        else:
-           if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
-               raise Exception("CRAP -- hash collision")
+        #else:
+        #   if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
+        #       raise Exception("CRAP -- hash collision")
 
         return self
 
