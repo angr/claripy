@@ -205,7 +205,7 @@ class Base:
         cache = cls._hash_cache
         if hash is not None:
             h = hash
-        elif op in ('BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'):
+        elif op in ('BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV') and not annotations:
             h = (op, kwargs.get('length', None), a_args)
             cache = cls._leaf_cache
         else:
@@ -220,9 +220,9 @@ class Base:
                             **kwargs)
             self._hash = h
             cache[h] = self
-        # else:
-        #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
-        #        raise Exception("CRAP -- hash collision")
+        else:
+           if self.args != a_args or self.op != op or self.variables != kwargs['variables']:
+               raise Exception("CRAP -- hash collision")
 
         return self
 
