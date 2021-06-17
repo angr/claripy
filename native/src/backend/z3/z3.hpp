@@ -321,8 +321,8 @@ namespace Backend::Z3 {
                     BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shift::ArithmeticRight);
                     BINARY_TEMPLATE_CASE(Shift, Convert::shift, Shift::LogicalRight);
 
-                    BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, true);
-                    BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, false);
+                    BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, Mode::LR::Left);
+                    BINARY_TEMPLATE_CASE(Rotate, Convert::rotate, Mode::LR::Right);
 
                     BINARY_CASE(Concat, Convert::concat);
 
@@ -621,9 +621,9 @@ namespace Backend::Z3 {
                 case Z3_OP_BLSHR:
                     return Abstract::shift<Shift::LogicalRight>(args);
                 case Z3_OP_EXT_ROTATE_LEFT:
-                    return Abstract::rotate<true>(args);
+                    return Abstract::rotate<Mode::LR::Left>(args);
                 case Z3_OP_EXT_ROTATE_RIGHT:
-                    return Abstract::rotate<false>(args);
+                    return Abstract::rotate<Mode::LR::Right>(args);
 
                     // BV Misc
                 case Z3_OP_CONCAT:

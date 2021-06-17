@@ -276,9 +276,9 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for BV rotations */
-    template <bool Left> inline Expression::BasePtr rotate(const ArgsVec &args) {
+    template <Mode::LR LR> inline Expression::BasePtr rotate(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::rotate<Left>(GET_EARG(0), GET_EARG(1));
+        return Create::rotate<LR>(GET_EARG(0), GET_EARG(1));
     }
 
     // BV Misc

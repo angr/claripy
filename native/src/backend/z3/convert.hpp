@@ -177,11 +177,11 @@ namespace Backend::Z3::Convert {
     }
 
     /** Rotate converter */
-    template <bool Left> z3::expr rotate(const z3::expr &l, const z3::expr &r) {
+    template <Mode::LR LR> z3::expr rotate(const z3::expr &l, const z3::expr &r) {
         // z3's C++ API's rotate functions are different (note the "ext" below)
         using namespace Z3;
-        z3::expr ret { l.ctx(), (Left ? Z3_mk_ext_rotate_left(l.ctx(), l, r)
-                                      : Z3_mk_ext_rotate_right(l.ctx(), l, r)) };
+        z3::expr ret { l.ctx(), (LR == Mode::LR::Left ? Z3_mk_ext_rotate_left(l.ctx(), l, r)
+                                                      : Z3_mk_ext_rotate_right(l.ctx(), l, r)) };
         l.ctx().check_error();
         return ret;
     }

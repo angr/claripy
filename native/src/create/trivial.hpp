@@ -170,10 +170,10 @@ namespace Create {
     /** Create an Expression with a Rotate op
      *  Expression pointers may not be nullptr
      */
-    template <bool Left>
+    template <Mode::LR LR>
     inline EBasePtr rotate(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Rotate<Left>, Private::SizeMode::First, Ex::BV>(
+        return Private::binary<Ex::BV, Op::Rotate<LR>, Private::SizeMode::First, Ex::BV>(
             left, right, std::move(sp));
     }
 

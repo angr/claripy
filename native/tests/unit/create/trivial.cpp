@@ -111,8 +111,8 @@ void trivial() {
 #undef TEST_SHIFT
 
     Log::debug("Testing rotate...");
-    binary<Ex::BV, Op::Rotate<true>, SM::First, Cr::rotate<true>>();
-    binary<Ex::BV, Op::Rotate<false>, SM::First, Cr::rotate<false>>();
+    binary<Ex::BV, Op::Rotate<Mode::LR::Left>, SM::First, Cr::rotate<Mode::LR::Left>>();
+    binary<Ex::BV, Op::Rotate<Mode::LR::Right>, SM::First, Cr::rotate<Mode::LR::Right>>();
 
     // Misc
 

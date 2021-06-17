@@ -96,7 +96,7 @@ namespace Op {
     /** The bitwise binary op class: Rotate
      *  Requires equal sized inputs
      */
-    template <bool Left> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, Left);
+    template <Mode::LR LR> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, Utils::to_underlying(LR));
 
     // Misc
 
