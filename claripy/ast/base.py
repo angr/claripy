@@ -79,6 +79,7 @@ class Base:
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
                   'depth', '__weakref__']
     _hash_cache = weakref.WeakValueDictionary()
+    _leaf_cache = weakref.WeakValueDictionary()
 
     FULL_SIMPLIFY=1
     LITE_SIMPLIFY=2
@@ -201,8 +202,15 @@ class Base:
 
         kwargs['annotations'] = annotations
 
-        h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
-        self = cls._hash_cache.get(h, None)
+        cache = cls._hash_cache
+        if hash is not None:
+            h = hash
+        elif op in ('BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'):
+            h = a_args
+            cache = cls._leaf_cache
+        else:
+            h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
+        self = cache.get(h, None)
         if self is None:
             self = super(Base, cls).__new__(cls)
             depth = arg_max_depth + 1
@@ -211,7 +219,7 @@ class Base:
                             relocatable_annotations=relocatable_annotations,
                             **kwargs)
             self._hash = h
-            cls._hash_cache[h] = self
+            cache[h] = self
         # else:
         #    if self.args != f_args or self.op != f_op or self.variables != f_kwargs['variables']:
         #        raise Exception("CRAP -- hash collision")
@@ -300,7 +308,10 @@ class Base:
     #pylint:enable=attribute-defined-outside-init
 
     def __hash__(self):
-        return self._hash
+        res = self._hash
+        if type(self._hash) is not int:
+            res = hash(self._hash)
+        return res
 
     @property
     def cache_key(self):
