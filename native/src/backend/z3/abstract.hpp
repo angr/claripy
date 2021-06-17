@@ -90,19 +90,31 @@ namespace Backend::Z3::Abstract {
         }
     }
 
-    // Booleans
-
     /** A boolean expression
      *  Warning: Should not be inline b/c of ODR rules
      */
     template <bool B> const auto bool_ { Create::literal(B) };
 
-    // Boolean logic
+    /** Abstraction function ofr various Z3 comparison ops */
+    template <typename T, Mode::Compare Mask>
+    inline Expression::BasePtr compare(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::compare<T, Mask>(GET_EARG(0), GET_EARG(1));
+    }
 
-    /** Abstraction function for z3 equality ops */
+    /**********************************************************/
+    /*                        Logical                         */
+    /**********************************************************/
+
+    /** Abstraction function for z3 equality ops
+     *  Will warn the user if called on Expression::FP while T is not that.
+     */
     template <typename T = Expression::Base> inline Expression::BasePtr eq(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
         if constexpr (std::is_same_v<T, Expression::FP>) {
+            return Create::eq<T>(GET_EARG(0), GET_EARG(1));
+        }
+        if constexpr (std::is_same_v<T, Expression::Bool>) {
             return Create::eq<T>(GET_EARG(0), GET_EARG(1));
         }
         switch (GET_EARG(0)->cuid) {
@@ -110,7 +122,22 @@ namespace Backend::Z3::Abstract {
             TYPE_CASE(BV, Create::eq, GET_EARG(0), GET_EARG(1));
             TYPE_CASE(String, Create::eq, GET_EARG(0), GET_EARG(1));
             DEFAULT_TYPE_CASE(GET_EARG(0)->cuid);
+            // This case should never be hit if used correctly
+            // We can recover, but we will warn the user!
+            case Expression::FP::static_cuid: {
+                Utils::Log::warning(WHOAMI_WITH_SOURCE,
+                                    "called on FP but without setting T to Ex::FP as expected."
+                                    "\nIf you see this, please report it or correct your usage"
+                                    " if you are using this function directly.");
+                return Create::eq<Expression::FP>(GET_EARG(0), GET_EARG(1));
+            }
         };
+    }
+
+    /** Abstraction function for Z3_OP_DISTINCT */
+    inline Expression::BasePtr distinct(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::neq<Expression::Bool>(GET_EARG(0), GET_EARG(1));
     }
 
     /** Abstraction function for Z3_OP_ITE */
@@ -150,7 +177,15 @@ namespace Backend::Z3::Abstract {
         return Create::invert<T>(GET_EARG(0));
     }
 
-    // Arithmetic
+    /**********************************************************/
+    /*                       Arithmetic                       */
+    /**********************************************************/
+
+    /** Abstraction function for z3 negation ops */
+    template <typename T> inline Expression::BasePtr neg(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 1);
+        return Create::neg<T>(GET_EARG(0));
+    }
 
     /** Abstraction function for Z3_OP_BADD */
     template <typename T> inline Expression::BasePtr abs(const ArgsVec &args) {
@@ -176,23 +211,26 @@ namespace Backend::Z3::Abstract {
         return Create::mul({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
     }
 
-    /** Abstraction function for z3 negation ops */
-    template <typename T> inline Expression::BasePtr neg(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        return Create::neg<T>(std::move(GET_EARG(0)));
+    /** Abstraction function for z3 BV division */
+    template <bool Signed> inline Expression::BasePtr div(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::div<Signed>(GET_EARG(0), GET_EARG(1));
     }
 
-    // Comparisons
-
-    /** Abstraction function ofr various Z3 comparison ops */
-    template <typename T, Mode::Compare Mask>
-    inline Expression::BasePtr compare(const ArgsVec &args) {
+    /** Abstraction function for z3 BV remainder */
+    template <bool Signed> inline Expression::BasePtr rem(const ArgsVec &args) {
         ASSERT_ARG_LEN(args, 2);
-        return Create::compare<T, Mask>(GET_EARG(0), GET_EARG(1));
+        return Create::mod<Signed>(GET_EARG(0), GET_EARG(1));
+    }
+
+    /** Abstraction function for Z3_OP_POWER */
+    inline Expression::BasePtr pow(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 2);
+        return Create::pow(GET_EARG(0), GET_EARG(1));
     }
 
     /**********************************************************/
-    /*                      Bit Vectors                       */
+    /*                       Bit Vector                       */
     /**********************************************************/
 
     namespace BV {
@@ -227,26 +265,6 @@ namespace Backend::Z3::Abstract {
         }
 
     } // namespace BV
-
-    // Bit Vector Arithemitic
-
-    /** Abstraction function for z3 BV division */
-    template <bool Signed> inline Expression::BasePtr div(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::div<Signed>(GET_EARG(0), GET_EARG(1));
-    }
-
-    /** Abstraction function for z3 BV remainder */
-    template <bool Signed> inline Expression::BasePtr rem(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::mod<Signed>(GET_EARG(0), GET_EARG(1));
-    }
-
-    // Bit Vector Logic
-
-    // Bit Vector Bitwise Ops
-
-    // Bit Vector Misc
 
     /** Abstraction function for Z3_OP_CONCAT */
     inline Expression::BasePtr concat(const ArgsVec &args) {

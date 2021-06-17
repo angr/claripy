@@ -538,7 +538,7 @@ namespace Backend::Z3 {
                 case Z3_OP_EQ:
                     return Abstract::eq(args);
                 case Z3_OP_DISTINCT:
-                    // TODO
+                    return Abstract::distinct(args);
                 case Z3_OP_ITE:
                     return Abstract::ite(args);
                 case Z3_OP_AND:
@@ -546,17 +546,15 @@ namespace Backend::Z3 {
                 case Z3_OP_OR:
                     return Abstract::or_<Ex::Bool>(args);
                 case Z3_OP_IFF:
-                    // TODO
+                    return Abstract::eq<Ex::Bool>(args);
                 case Z3_OP_XOR:
                     return Abstract::xor_<Ex::Bool>(args);
                 case Z3_OP_NOT:
                     return Abstract::not_<Ex::Bool>(args);
-                case Z3_OP_IMPLIES:
-                    // TODO
 
                     // Arithmetic
                 case Z3_OP_POWER:
-                    // TODO
+                    return Abstract::pow(args);
 
                     // Comparisons
                 case Z3_OP_ULEQ:
