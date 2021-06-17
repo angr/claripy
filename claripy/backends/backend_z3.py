@@ -1380,7 +1380,6 @@ op_map = {
     'Z3_OP_IFF': '__eq__',
     'Z3_OP_XOR': 'Xor',
     'Z3_OP_NOT': 'Not',
-    'Z3_OP_IMPLIES': 'Implies',
     #'Z3_OP_OEQ': None,
 
     # Arithmetic
@@ -1536,7 +1535,6 @@ op_type_map = {
     'Z3_OP_IFF': Bool,
     'Z3_OP_XOR': Bool,
     'Z3_OP_NOT': Bool,
-    'Z3_OP_IMPLIES': Bool,
     #'Z3_OP_OEQ': None,
 
     # Arithmetic
