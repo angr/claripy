@@ -27,15 +27,6 @@ namespace Backend::Z3::Convert {
         /** A thread_local reference to tl_ctx for brevity */
         auto &tl_ctx { ::Backend::Z3::Private::tl_ctx };
 
-        /** A hack copied from python that *should* be removed ASAP
-         *  @todo Remove the need for this
-         *  Python comment: XXX this is a HUGE HACK that should be removed whenever uninitialized
-         *  gets moved to the "proposed annotation backend" or wherever will prevent it from being
-         *  part of the object identity. also whenever the VSA attributes get the fuck out of BVS
-         * as well
-         */
-        inline thread_local std::map<std::string, const Expression::BasePtr> extra_bvs_data;
-
         /** The size of a float
          *  Note that constexpr may not imply inline here so we are explicit
          */
@@ -298,7 +289,7 @@ namespace Backend::Z3::Convert {
     }
 
     /** Symbol converter
-     *  to handle the extra_bvs_data hack, this uses a hack of viewing the private data of factory
+     *  This saves symbol annotation for later translocation
      *  expr may not be nullptr
      *  @todo remove the hack
      */
