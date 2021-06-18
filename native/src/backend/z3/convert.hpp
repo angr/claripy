@@ -152,10 +152,10 @@ namespace Backend::Z3::Convert {
      */
     template <bool Signed> z3::expr mod(const z3::expr &l, const z3::expr &r) {
         if constexpr (Signed) {
-            return z3::srem(l, r); // TODO
+            return z3::srem(l, r);
         }
         else {
-            return z3::urem(l, r); // TODO
+            return z3::urem(l, r);
         }
     }
 
