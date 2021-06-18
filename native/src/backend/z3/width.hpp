@@ -39,6 +39,14 @@ namespace Backend::Z3::Private {
         return ret;
     }
 
+    /** Returns a Mode::FP::Width constructed from the given z3 sort */
+    inline const Mode::FP::Width from_z3(const z3::sort &s) {
+        Utils::affirm<Utils::Error::Unexpected::Usage>(
+            s.is_fpa(),
+            WHOAMI_WITH_SOURCE "called on z3::sort that is not of a floating point type");
+        return { s.fpa_ebits(), s.fpa_sbits() };
+    }
+
 } // namespace Backend::Z3::Private
 
 #endif
