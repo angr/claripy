@@ -31,8 +31,7 @@ namespace Backend {
         ~Generic() noexcept override = default;
 
         /** The types sub-classes may extract backend objects into */
-        using AbstractionVariant =
-            std::variant<Expression::BasePtr, Mode::FP::Rounding, Constants::UInt>;
+        using AbstractionVariant = std::variant<Expression::BasePtr, Mode::FP::Rounding>;
 
         // Pure Virtual Functions
 
@@ -199,7 +198,6 @@ namespace Backend {
             const auto ret { dispatch_abstraction(b_obj, args) };
 
             // Update various caches and return
-
             abstraction_cache.emplace(hash, ret);
             if (std::holds_alternative<Expression::BasePtr>(ret)) {
                 Simplification::cache(ret->hash, ret);
@@ -234,17 +232,20 @@ namespace Backend {
         // Virtual Functions
 
         /** This applies the given annotations to the backend object
-         *  \todo Implement this function
+         *  If the given backend does not support this, this function will never be called
          */
-        virtual BackendObj apply_annotations(const BackendObj &o, Expression::Base::SPAV &&sp) {
-            (void) sp;
-#ifdef DEBUG
-            Utils::affirm<Utils::Error::Unexpected::MissingVirtualFunction>(
-                ApplyAnnotations, WHOAMI_WITH_SOURCE,
-                "subclass failed to override apply_annotations"
-                " despite setting ApplyAnnotations to true");
-#endif
-            return o; // todo
+        BackendObj apply_annotations(const BackendObj &o, Expression::Base::SPAV &&sp) const {
+            static_assert(ApplyAnnotations, "ApplyAnnotations is not enabled");
+            return apply_annotations_helper(o, std::move(sp));
+        }
+
+        /** This applies the given annotations to the backend object
+         *  If the given backend does not support this, this function will never be called
+         */
+        virtual BackendObj apply_annotations_helper(const BackendObj &,
+                                                    Expression::Base::SPAV &&) const {
+            throw Utils::Error::Unexpected::NotSupported(
+                "The backend has failed to implement this method. Please report this");
         }
 
         // Caches

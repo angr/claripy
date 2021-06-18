@@ -41,9 +41,6 @@
 /** A local macro for getting the X'th element of 'args' as an expression */
 #define GET_EARG(I) std::get<Expression::BasePtr>(args[(I)])
 
-/** A local macro for getting the X'th element of 'args' as a Constants::UInt */
-#define GET_UNSIGNED_ARG(I) std::get<Constants::UInt>(args[(I)])
-
 // Macros for each op category
 
 /** A local macro used for calling a basic unary expression
@@ -55,12 +52,13 @@
     return FUNC(GET_EARG(0));
 
 /** A local macro used for calling a basic binary expression
- *  Assumes the arguments array is called args
+ *  Assumes the arguments array is called args and decl is called decl
  *  FUNC may *not* have commas in it
  */
 #define UINT_BINARY(FUNC)                                                                         \
-    ASSERT_ARG_LEN(args, 2);                                                                      \
-    return FUNC(GET_EARG(1), GET_UNSIGNED_ARG(0));
+    ASSERT_ARG_LEN(args, 1);                                                                      \
+    return FUNC(GET_EARG(1), Utils::widen<Constants::UInt, int, true>(                            \
+                                 Z3_get_decl_int_parameter(Private::tl_ctx, decl, 0)));
 
 /** A local macro used for calling a basic binary expression
  *  Assumes the arguments array is called args
@@ -317,15 +315,19 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_SIGN_EXT */
-    inline Expression::BasePtr sign_ext(const ArgsVec &args) { UINT_BINARY(Create::sign_ext); }
+    inline Expression::BasePtr sign_ext(const ArgsVec &args, const z3::func_decl &decl) {
+        UINT_BINARY(Create::sign_ext);
+    }
 
     /** Abstraction function for Z3_OP_ZERO_EXT */
-    inline Expression::BasePtr zero_ext(const ArgsVec &args) { UINT_BINARY(Create::zero_ext); }
+    inline Expression::BasePtr zero_ext(const ArgsVec &args, const z3::func_decl &decl) {
+        UINT_BINARY(Create::zero_ext);
+    }
 
     /** Abstraction function for Z3_OP_EXTRACT */
-    inline Expression::BasePtr extract(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 3);
-        return Create::extract(GET_UNSIGNED_ARG(1), GET_UNSIGNED_ARG(2), GET_EARG(0));
+    inline Expression::BasePtr extract(const ArgsVec &args, Constants::CTSC<z3::expr> e) {
+        ASSERT_ARG_LEN(args, 1);
+        return Create::extract(e->hi(), e->lo(), GET_EARG(0));
     }
 
     /**********************************************************/
@@ -337,10 +339,12 @@ namespace Backend::Z3::Abstract {
         // Conversions
 
         /** Abstraction function for Z3_OP_FPA_TO_SBV and Z3_OP_FPA_TO_UBV */
-        template <bool Signed> inline Expression::BasePtr to_bv(const ArgsVec &args) {
-            ASSERT_ARG_LEN(args, 3);
-            return Create::FP::to_bv<Signed>(std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
-                                             GET_UNSIGNED_ARG(2));
+        template <bool Signed>
+        inline Expression::BasePtr to_bv(const ArgsVec &args, const z3::func_decl &decl) {
+            ASSERT_ARG_LEN(args, 2);
+            return Create::FP::to_bv<Signed>(
+                std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
+                static_cast<Constants::UInt>(Z3_get_decl_int_parameter(Private::tl_ctx, decl, 0)));
         }
 
         /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV */

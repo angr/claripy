@@ -642,17 +642,17 @@ namespace Backend::Z3 {
                 case Z3_OP_CONCAT:
                     return Abstract::concat(args);
                 case Z3_OP_SIGN_EXT:
-                    return Abstract::sign_ext(args);
+                    return Abstract::sign_ext(args, decl);
                 case Z3_OP_ZERO_EXT:
-                    return Abstract::zero_ext(args);
+                    return Abstract::zero_ext(args, decl);
                 case Z3_OP_EXTRACT:
-                    return Abstract::extract(args);
+                    return Abstract::extract(args, b_obj);
 
                     // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
-                    return Abstract::FP::to_bv<true>(args);
+                    return Abstract::FP::to_bv<true>(args, decl);
                 case Z3_OP_FPA_TO_UBV:
-                    return Abstract::FP::to_bv<false>(args);
+                    return Abstract::FP::to_bv<false>(args, decl);
                 case Z3_OP_FPA_TO_IEEE_BV:
                     return Abstract::FP::to_ieee_bv(args);
                 case Z3_OP_FPA_TO_FP:
