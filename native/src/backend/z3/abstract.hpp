@@ -34,6 +34,11 @@
         throw Utils::Error::Unexpected::Type(WHOAMI_WITH_SOURCE,                                  \
                                              "Unexpected type detected. CUID: ", (BAD_CUID));
 
+/** A string explaining why this file refuses to abstract unknown floating point values */
+#define REFUSE_FP_STANDARD                                                                        \
+    "Refusing to use unknown point standard as the rules about bit manipulation on this "         \
+    "standard may differ from expected."
+
 /** A local macro for getting the X'th element of 'args' as an expression */
 #define GET_EARG(I) std::get<Expression::BasePtr>(args[(I)])
 
@@ -93,39 +98,47 @@ namespace Backend::Z3::Abstract {
     /**********************************************************/
 
     /** Abstraction function for Z3_OP_UNINTERPRETED */
-    inline Expression::BasePtr uninterpreted(const z3::func_decl &decl,
-                                             const Z3_decl_kind decl_kind, const z3::sort &sort,
-                                             const ArgsVec &args) {
+    inline Expression::BasePtr uninterpreted(const z3::func_decl &decl, const z3::sort &sort,
+                                             const ArgsVec &args, SymAnTransData &satd) {
         // If b_obj is a symbolic value
         if (args.empty()) {
             // Gather info
             std::string name { decl.name().str() };
-            auto symbol_type { sort.sort_kind() };
-            switch (symbol_type) {
-                case Z3_BV_SORT:
-                    /* const auto bl { sort.bv_size() }; */
-                    /* bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort) */
-                    /* (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None,
-                     * None)) */
-                    /* if ast_args is None: */
-                    /*     ast_args = (symbol_str, None, None, None, False, False,
-                     * None) */
-                    /* return Create::symbol(std::move(name), bl, ans); // probably?
-                     * TODO: */
-                    return nullptr;
+            switch (sort.sort_kind()) {
+                case Z3_BV_SORT: {
+                    const auto bl { sort.bv_size() };
+                    if (const auto lookup { satd.find(name) }; lookup != satd.end()) {
+                        return Create::symbol<Expression::BV>(
+                            std::move(name), bl, Expression::Base::SPAV { lookup->second });
+                    }
+                    return Create::symbol<Expression::BV>(std::move(name), bl);
+                }
                 case Z3_BOOL_SORT:
-                case Z3_FLOATING_POINT_SORT:
+                    return Create::symbol(std::move(name));
+                case Z3_FLOATING_POINT_SORT: {
+                    const auto width { ::Backend::Z3::Private::from_z3(sort) };
+                    if (LIKELY(width == Mode::FP::dbl)) {
+                        return Create::symbol<Expression::FP>(std::move(name),
+                                                              Mode::FP::dbl.width());
+                    }
+                    if (LIKELY(width == Mode::FP::flt)) {
+                        return Create::symbol<Expression::FP>(std::move(name),
+                                                              Mode::FP::flt.width());
+                    }
+                    throw Error::Backend::Unsupported(
+                        WHOAMI_WITH_SOURCE REFUSE_FP_STANDARD "\nWidth: ", width);
+                }
                 default:
                     throw Error::Backend::Abstraction(
-                        WHOAMI_WITH_SOURCE "Unknown term type: ", symbol_type,
-                        "\nOp decl_kind: ", decl_kind, "\nPlease report this.");
+                        WHOAMI_WITH_SOURCE "Unknown sort_kind: ", sort.sort_kind(),
+                        "\nOp decl: ", decl, "\nPlease report this.");
             }
         }
         // Unknown error
         else {
             throw Error::Backend::Abstraction(
-                WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op decl_kind: ",
-                decl_kind, "\nPlease report this.");
+                WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op decl: ", decl,
+                "\nPlease report this.");
         }
     }
 
@@ -344,24 +357,26 @@ namespace Backend::Z3::Abstract {
             throw Utils::Error::Unexpected::Base("This is not yet supported");
         }
 
-        /** Abstraction function for Z3_OP_FPA_NUM */
+        /** Abstraction function for Z3_OP_FPA_NUM
+         *  TODO
+         */
         inline Expression::BasePtr num(const ArgsVec &args) {
 #if 0
 /* #ifdef DEBUG */
 			int sign { 2 };
 			z3.Z3_fpa_get_numeral_sign(ctx, ast, &sign);
 
-			if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_dbl)) {
+			if (LIKELY(sort == ::Backend::Z3::Private::z3_dbl)) {
 				return Create::literal(copysign<Sign>(dbl));
 			}
-			if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_flt)) {
+			if (LIKELY(sort == ::Backend::Z3::Private::z3_flt)) {
 				return Create::literal(copysign<Sign>(flt));
 			}
 			throw Utils::Error::Unexpected::NotSupported(
 				WHOAMI_WITH_SOURCE
 				"Cannot create a zero value for this unknown floating point standard."
-				"\nZ3_sort_kind: ",
-				sort_kind);
+				"\nZ3_sort: ",
+				sort);
 #else
             (void) args;
             throw Utils::Error::Unexpected::Base("This is not yet supported");
@@ -382,19 +397,17 @@ namespace Backend::Z3::Abstract {
 
             /** A helper function to assist in creating FPA literals */
             template <Mode::Sign::Real Sign>
-            inline Expression::BasePtr fpa_literal(const Z3_sort_kind sort_kind, const double dbl,
+            inline Expression::BasePtr fpa_literal(const z3::sort &sort, const double dbl,
                                                    const float flt) {
-                if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_dbl)) {
+                const auto width { ::Backend::Z3::Private::from_z3(sort) };
+                if (LIKELY(width == Mode::FP::dbl)) {
                     return Create::literal(copysign<Sign>(dbl));
                 }
-                if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_flt)) {
+                if (LIKELY(width == Mode::FP::flt)) {
                     return Create::literal(copysign<Sign>(flt));
                 }
-                throw Utils::Error::Unexpected::NotSupported(
-                    WHOAMI_WITH_SOURCE
-                    "Cannot create a zero value for this unknown floating point standard."
-                    "\nZ3_sort_kind: ",
-                    sort_kind);
+                throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE REFUSE_FP_STANDARD "\nSort: ",
+                                                  sort);
             }
 
             /** A helper function to assist in creating FPA literals
@@ -408,30 +421,30 @@ namespace Backend::Z3::Abstract {
         } // namespace Private
 
         /** Abstraction function for fpa zeros */
-        template <Mode::Sign::FP Sign>
-        inline Expression::BasePtr zero(const Z3_sort_kind sort_kind) {
-            return Private::fpa_literal<Sign>(sort_kind, 0., 0.f);
+        template <Mode::Sign::FP Sign> inline Expression::BasePtr zero(const z3::sort &sort) {
+            return Private::fpa_literal<Sign>(sort, 0., 0.f);
         }
 
         /** Abstraction function for fpa inf */
-        template <Mode::Sign::FP Sign>
-        inline Expression::BasePtr inf(const Z3_sort_kind sort_kind) {
+        template <Mode::Sign::FP Sign> inline Expression::BasePtr inf(const z3::sort &sort) {
             static_assert(std::numeric_limits<double>::is_iec559, "IEE 754 required for -inf");
             static_assert(std::numeric_limits<float>::is_iec559, "IEE 754 required for -inf");
             static const constexpr float inf_f { std::numeric_limits<float>::infinity() };
             static const constexpr double inf_d { std::numeric_limits<double>::infinity() };
-            return Private::fpa_literal<Sign>(sort_kind, inf_d, inf_f);
+            return Private::fpa_literal<Sign>(sort, inf_d, inf_f);
         }
 
         /** Abstraction function for Z3_OP_FPA_NAN
-         *  TODO: determine if it should be quiet or signalling
+         *  Note: SMT theory of floating point numbers only has one NaN, it does not
+         *  distinguish between quiet and signalling NaNs.
+         *  We choose quiet as the type of nan we return
          */
-        inline Expression::BasePtr nan(const Z3_sort_kind sort_kind) {
+        inline Expression::BasePtr nan(const z3::sort &sort) {
             static_assert(std::numeric_limits<float>::has_quiet_NaN, "Unable to generate NaN");
             static_assert(std::numeric_limits<double>::has_quiet_NaN, "Unable to generate NaN");
             static const constexpr float nan_f { std::numeric_limits<float>::quiet_NaN() };
             static const constexpr double nan_d { std::numeric_limits<double>::quiet_NaN() };
-            return Private::fpa_literal<Mode::Sign::Real::None>(sort_kind, nan_d, nan_f);
+            return Private::fpa_literal<Mode::Sign::Real::None>(sort, nan_d, nan_f);
         }
 
         // Comparisons
