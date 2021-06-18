@@ -6,6 +6,7 @@
 #define R_BACKEND_Z3_Z3_HPP_
 
 #include "abstract.hpp"
+#include "constants.hpp"
 #include "convert.hpp"
 #include "tl_ctx.hpp"
 
@@ -32,25 +33,32 @@ namespace Backend::Z3 {
         /** Destructor */
         ~Z3() noexcept override = default;
 
-        /** Clear caches to decrease memory pressure */
-        void downsize() override {
+        /** Clear caches to decrease memory pressure
+         *  Note: Does not clear translocation data
+         */
+        inline void downsize() override {
             Super::downsize();
             is_true_cache.scoped_unique().first.clear();
             is_false_cache.scoped_unique().first.clear();
         }
 
+        /** Clears translocation data */
+        inline void clear_persistent_data() override {
+            symbol_annotation_translocation_data.clear();
+        }
+
         /** Create a tls solver */
-        [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const override final {
+        [[nodiscard]] inline virtual std::shared_ptr<void> new_tls_solver() const override final {
             return { std::make_shared<z3::solver>(Private::tl_ctx) };
         }
 
         /** The name of this backend */
-        [[nodiscard]] const char *name() const noexcept override final { return "z3"; }
+        [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
 
         /** Return true if expr is always true
          *  expr may not be nullptr
          */
-        bool is_true(const Expression::RawPtr &expr) {
+        inline bool is_true(const Expression::RawPtr &expr) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
             if (in_cache) {
@@ -65,7 +73,7 @@ namespace Backend::Z3 {
         /** Return true if expr is always false
          *  expr may not be nullptr
          */
-        bool is_false(const Expression::RawPtr &expr) {
+        inline bool is_false(const Expression::RawPtr &expr) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
             if (in_cache) {
@@ -81,7 +89,7 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          *  @todo: Currently this is stubbed, it needs to be implemented
          */
-        Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
+        inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             (void) expr;
             throw Utils::Error::Unexpected::NotSupported("This has yet to be implemented"); // TODO
@@ -123,16 +131,6 @@ namespace Backend::Z3 {
             return { false, {} };
         }
 
-        /** is_true cache
-         *  Map an expression hash to the result of is_true
-         */
-        inline static TSM<std::map<Hash::Hash, const bool>> is_true_cache {};
-
-        /** is_false cache
-         *  Map an expression hash to the result of is_false
-         */
-        inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
-
         /** Verify the container contains at least n elements
          *  In debug mode verifies that the last n elements are not nullptr
          */
@@ -152,8 +150,31 @@ namespace Backend::Z3 {
 
 
         /********************************************************************/
+        /*                          Representation                          */
+        /********************************************************************/
+
+
+        /** is_true cache
+         *  Map an expression hash to the result of is_true
+         */
+        inline static TSM<std::map<Hash::Hash, const bool>> is_true_cache {};
+
+        /** is_false cache
+         *  Map an expression hash to the result of is_false
+         */
+        inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
+
+        /** Stores a symbol's annotations to be translocated from the pre-conversion expression
+         *  to the post-abstraction expression symbol of the same name.
+         */
+        inline static thread_local std::map<std::string, Expression::Base::SPAV>
+            symbol_annotation_translocation_data {};
+
+
+        /********************************************************************/
         /*                 Large Dispatch Function Overrides                */
         /********************************************************************/
+
 
       public:
         /** This dynamic dispatcher converts expr into a backend object
@@ -350,7 +371,7 @@ namespace Backend::Z3 {
                     return Convert::literal(expr);
                 }
                 case Op::Symbol::static_cuid: {
-                    return Convert::symbol(expr);
+                    return Convert::symbol(expr, symbol_annotation_translocation_data);
                 }
 
                     /************************************************/
@@ -503,7 +524,6 @@ namespace Backend::Z3 {
             const auto decl_kind { decl.decl_kind() };
             // TODO: vvv move down as needed for optimization purposes?
             const auto sort { b_obj->get_sort() };
-            const auto sort_kind { sort.sort_kind() };
 
             /** A local macro used for error checking */
 #define ASSERT_ARG_EMPTY(X)                                                                       \
@@ -524,7 +544,8 @@ namespace Backend::Z3 {
                 case Z3_OP_INTERNAL:
                     // TODO
                 case Z3_OP_UNINTERPRETED: {
-                    return Abstract::uninterpreted(decl, decl_kind, sort, args);
+                    return Abstract::uninterpreted(decl, sort, args,
+                                                   symbol_annotation_translocation_data);
                 }
 
                     // Boolean
@@ -651,19 +672,19 @@ namespace Backend::Z3 {
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::zero<Sign::Minus>(sort_kind);
+                    return Abstract::FP::zero<Sign::Minus>(sort);
                 case Z3_OP_FPA_MINUS_INF:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::inf<Sign::Minus>(sort_kind);
+                    return Abstract::FP::inf<Sign::Minus>(sort);
                 case Z3_OP_FPA_PLUS_ZERO:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::zero<Sign::Plus>(sort_kind);
+                    return Abstract::FP::zero<Sign::Plus>(sort);
                 case Z3_OP_FPA_PLUS_INF:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::inf<Sign::Plus>(sort_kind);
+                    return Abstract::FP::inf<Sign::Plus>(sort);
                 case Z3_OP_FPA_NAN:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::nan(sort_kind);
+                    return Abstract::FP::nan(sort);
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
