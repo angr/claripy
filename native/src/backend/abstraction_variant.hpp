@@ -15,6 +15,7 @@ namespace Backend::Private {
 
     /** The types claricpp may extract backend objects into */
     using AbstractionVariant = std::variant<Expression::BasePtr, Mode::FP::Rounding, unsigned>;
+
 } // namespace Backend::Private
 
 #endif

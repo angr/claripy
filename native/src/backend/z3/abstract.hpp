@@ -16,11 +16,6 @@
 #include <limits>
 
 
-namespace Backend::Z3::Abstract {
-
-    /** The 'args' array type */
-    using ArgsVec = std::vector<::Backend::Private::AbstractionVariant>;
-
 /** A local macro used for lengh checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                      \
     Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE "Op ",    \
@@ -33,13 +28,6 @@ namespace Backend::Z3::Abstract {
     case Expression::TYPE::static_cuid:                                                           \
         return FUNC<Expression::TYPE>(__VA_ARGS__);
 
-/** A local macro used for adding a case for a given type
- *  Func must take in <TYPE, T2> as its template arguments
- */
-#define TYPE_CASE_2(TYPE, T2, FUNC, ...)                                                          \
-    case Expression::TYPE::static_cuid:                                                           \
-        return FUNC<Expression::TYPE, T2>(__VA_ARGS__);
-
 /** A local macro used for adding a default type case that throws an exception */
 #define DEFAULT_TYPE_CASE(BAD_CUID)                                                               \
     default:                                                                                      \
@@ -48,6 +36,54 @@ namespace Backend::Z3::Abstract {
 
 /** A local macro for getting the X'th element of 'args' as an expression */
 #define GET_EARG(I) std::get<Expression::BasePtr>(args[(I)])
+
+// Macros for each op category
+
+/** A local macro used for calling a basic unary expression
+ *  Assumes the arguments array is called args
+ *  FUNC may *not* have commas in it
+ */
+#define UNARY(FUNC)                                                                               \
+    ASSERT_ARG_LEN(args, 1);                                                                      \
+    return FUNC(GET_EARG(0));
+
+/** A local macro used for calling a basic binary expression
+ *  Assumes the arguments array is called args
+ *  FUNC may *not* have commas in it
+ */
+#define UINT_BINARY(FUNC)                                                                         \
+    ASSERT_ARG_LEN(args, 2);                                                                      \
+    return FUNC(GET_EARG(1), Utils::widen<Constants::UInt>(std::get<unsigned>(args[0])));
+
+/** A local macro used for calling a basic binary expression
+ *  Assumes the arguments array is called args
+ *  FUNC may *not* have commas in it
+ */
+#define BINARY(FUNC)                                                                              \
+    ASSERT_ARG_LEN(args, 2);                                                                      \
+    return FUNC(GET_EARG(0), GET_EARG(1));
+
+/** A local macro used for calling a basic mode binary expression
+ *  Assumes the arguments array is called args
+ *  FUNC may *not* have commas in it
+ */
+#define MODE_BINARY(FUNC)                                                                         \
+    ASSERT_ARG_LEN(args, 2);                                                                      \
+    return FUNC(GET_EARG(1), GET_EARG(2), std::get<Mode::FP::Rounding>(args[0]));
+
+/** A local macro used for calling a basic flat expression generated from only 2 arguments
+ *  Assumes the arguments array is called args
+ *  FUNC may *not* have commas in it
+ */
+#define FLAT_BINARY(FUNC)                                                                         \
+    ASSERT_ARG_LEN(args, 2);                                                                      \
+    return FUNC({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
+
+
+namespace Backend::Z3::Abstract {
+
+    /** The 'args' array type */
+    using ArgsVec = std::vector<::Backend::Private::AbstractionVariant>;
 
     /**********************************************************/
     /*                        General                         */
@@ -136,8 +172,7 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for Z3_OP_DISTINCT */
     inline Expression::BasePtr distinct(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::neq<Expression::Bool>(GET_EARG(0), GET_EARG(1));
+        BINARY(Create::neq<Expression::Bool>);
     }
 
     /** Abstraction function for Z3_OP_ITE */
@@ -155,26 +190,22 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for z3 and ops */
     template <typename T> inline Expression::BasePtr and_(ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::and_<T>({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
+        FLAT_BINARY(Create::and_<T>);
     }
 
     /** Abstraction function for z3 or ops */
     template <typename T> inline Expression::BasePtr or_(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::or_<T>({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
+        FLAT_BINARY(Create::or_<T>);
     }
 
     /** Abstraction function for z3 xor ops */
     template <typename T> inline Expression::BasePtr xor_(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::xor_({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
+        FLAT_BINARY(Create::xor_);
     }
 
     /** Abstraction function for invert z3 ops */
     template <typename T> inline Expression::BasePtr not_(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        return Create::invert<T>(GET_EARG(0));
+        UNARY(Create::invert<T>);
     }
 
     /**********************************************************/
@@ -183,53 +214,37 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for z3 negation ops */
     template <typename T> inline Expression::BasePtr neg(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        return Create::neg<T>(GET_EARG(0));
+        UNARY(Create::neg<T>);
     }
 
     /** Abstraction function for Z3_OP_BADD */
     template <typename T> inline Expression::BasePtr abs(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        return Create::abs<T>(GET_EARG(0));
+        UNARY(Create::abs<T>);
     }
 
     /** Abstraction function for Z3_OP_BADD */
-    inline Expression::BasePtr add(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::add({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
-    }
+    inline Expression::BasePtr add(const ArgsVec &args) { FLAT_BINARY(Create::add); }
 
     /** Abstraction function for Z3_OP_BSUB */
-    inline Expression::BasePtr sub(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::sub(GET_EARG(0), GET_EARG(1));
-    }
+    inline Expression::BasePtr sub(const ArgsVec &args) { BINARY(Create::sub); }
 
     /** Abstraction function for Z3_OP_BMUL */
-    inline Expression::BasePtr mul(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::mul({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
-    }
+    inline Expression::BasePtr mul(const ArgsVec &args) { FLAT_BINARY(Create::mul); }
 
     /** Abstraction function for z3 BV division */
     template <bool Signed> inline Expression::BasePtr div(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::div<Signed>(GET_EARG(0), GET_EARG(1));
+        BINARY(Create::div<Signed>);
     }
 
     /** Abstraction function for z3 BV remainder
      *  Note we use mod (because of the difference between C and Python % operators)
      */
     template <bool Signed> inline Expression::BasePtr rem(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::mod<Signed>(GET_EARG(0), GET_EARG(1));
+        BINARY(Create::mod<Signed>);
     }
 
     /** Abstraction function for Z3_OP_POWER */
-    inline Expression::BasePtr pow(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::pow(GET_EARG(0), GET_EARG(1));
-    }
+    inline Expression::BasePtr pow(const ArgsVec &args) { BINARY(Create::pow); }
 
     /**********************************************************/
     /*                       Bit Vector                       */
@@ -271,39 +286,26 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for BV shifts */
     template <Mode::Shift Mask> inline Expression::BasePtr shift(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::shift<Mask>(GET_EARG(0), GET_EARG(1));
+        BINARY(Create::shift<Mask>);
     }
 
     /** Abstraction function for BV rotations */
     template <Mode::LR LR> inline Expression::BasePtr rotate(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::rotate<LR>(GET_EARG(0), GET_EARG(1));
+        BINARY(Create::rotate<LR>);
     }
 
     // BV Misc
 
     /** Abstraction function for Z3_OP_CONCAT */
     inline Expression::BasePtr concat(const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 2);
-        return Create::concat<Expression::BV>(GET_EARG(0), GET_EARG(1));
+        BINARY(Create::concat<Expression::BV>);
     }
 
     /** Abstraction function for Z3_OP_SIGN_EXT */
-    inline Expression::BasePtr sign_ext(const z3::func_decl &decl, const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        const auto val { static_cast<z3u>(
-            Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
-        return Create::sign_ext(GET_EARG(0), Utils::widen<Constants::UInt>(val));
-    }
+    inline Expression::BasePtr sign_ext(const ArgsVec &args) { UINT_BINARY(Create::sign_ext); }
 
     /** Abstraction function for Z3_OP_ZERO_EXT */
-    inline Expression::BasePtr zero_ext(const z3::func_decl &decl, const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        const auto val { static_cast<z3u>(
-            Z3_get_decl_int_parameter(Private::tl_raw_ctx, decl, 0)) };
-        return Create::sign_ext(GET_EARG(0), Utils::widen<Constants::UInt>(val));
-    }
+    inline Expression::BasePtr zero_ext(const ArgsVec &args) { UINT_BINARY(Create::zero_ext); }
 
     /** Abstraction function for Z3_OP_EXTRACT */
     inline Expression::BasePtr extract(Constants::CTSC<z3::expr> b_obj, const ArgsVec &args) {
@@ -390,40 +392,28 @@ namespace Backend::Z3::Abstract {
         // Arithmetic
 
         /** Abstraction function for Z3_OP_FPA_ADD */
-        inline Expression::BasePtr add(const ArgsVec &args) {
-            ASSERT_ARG_LEN(args, 2);
-            return Create::FP::add(GET_EARG(1), GET_EARG(2),
-                                   std::get<Mode::FP::Rounding>(args[0]));
-        }
+        inline Expression::BasePtr add(const ArgsVec &args) { MODE_BINARY(Create::FP::add); }
 
         /** Abstraction function for Z3_OP_FPA_SUB */
-        inline Expression::BasePtr sub(const ArgsVec &args) {
-            ASSERT_ARG_LEN(args, 2);
-            return Create::FP::sub(GET_EARG(1), GET_EARG(2),
-                                   std::get<Mode::FP::Rounding>(args[0]));
-        }
+        inline Expression::BasePtr sub(const ArgsVec &args) { MODE_BINARY(Create::FP::sub); }
 
         /** Abstraction function for Z3_OP_FPA_MUL */
-        inline Expression::BasePtr mul(const ArgsVec &args) {
-            ASSERT_ARG_LEN(args, 2);
-            return Create::FP::mul(GET_EARG(1), GET_EARG(2),
-                                   std::get<Mode::FP::Rounding>(args[0]));
-        }
+        inline Expression::BasePtr mul(const ArgsVec &args) { MODE_BINARY(Create::FP::mul); }
 
         /** Abstraction function for Z3_OP_FPA_DIV */
-        inline Expression::BasePtr div(const ArgsVec &args) {
-            ASSERT_ARG_LEN(args, 2);
-            return Create::FP::div(GET_EARG(1), GET_EARG(2),
-                                   std::get<Mode::FP::Rounding>(args[0]));
-        }
+        inline Expression::BasePtr div(const ArgsVec &args) { MODE_BINARY(Create::FP::div); }
 
     } // namespace FP
 
 // Cleanup
 #undef DEFAULT_TYPE_CASE
 #undef ASSERT_ARG_LEN
-#undef TYPE_CASE_2
 #undef TYPE_CASE
+#undef FLAT_BINARY
+#undef MODE_BINARY
+#undef UINT_BINARY
+#undef BINARY
+#undef UNARY
 
 } // namespace Backend::Z3::Abstract
 

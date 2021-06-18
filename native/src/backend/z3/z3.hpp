@@ -499,9 +499,9 @@ namespace Backend::Z3 {
             namespace Ex = Expression;
 
             // Get switching variables
-            // TODO: move down as needed for optimization purposes?
             const auto decl { b_obj->decl() };
             const auto decl_kind { decl.decl_kind() };
+            // TODO: vvv move down as needed for optimization purposes?
             const auto sort { b_obj->get_sort() };
             const auto sort_kind { sort.sort_kind() };
 
@@ -523,8 +523,9 @@ namespace Backend::Z3 {
                     // Misc
                 case Z3_OP_INTERNAL:
                     // TODO
-                case Z3_OP_UNINTERPRETED:
+                case Z3_OP_UNINTERPRETED: {
                     return Abstract::uninterpreted(decl, decl_kind, sort, args);
+                }
 
                     // Boolean
                 case Z3_OP_TRUE:
@@ -629,9 +630,9 @@ namespace Backend::Z3 {
                 case Z3_OP_CONCAT:
                     return Abstract::concat(args);
                 case Z3_OP_SIGN_EXT:
-                    return Abstract::sign_ext(decl, args);
+                    return Abstract::sign_ext(args);
                 case Z3_OP_ZERO_EXT:
-                    return Abstract::zero_ext(decl, args);
+                    return Abstract::zero_ext(args);
                 case Z3_OP_EXTRACT:
                     return Abstract::extract(b_obj, args);
 

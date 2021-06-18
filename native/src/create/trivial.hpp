@@ -51,7 +51,7 @@ namespace Create {
     }
 
     /********************************************************************/
-    /*                 Int Binary Passthrough Functions                 */
+    /*                UInt Binary Passthrough Functions                 */
     /********************************************************************/
 
     /** Create an Expression with an SignExt op
