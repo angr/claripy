@@ -18,8 +18,9 @@ namespace Utils {
         static_assert(std::is_integral_v<Out>, "Out must be a primitive");
         static_assert(std::is_convertible_v<In, Out>, "In must be convertible to Out");
         static_assert(sizeof(Out) > sizeof(In), "Nothing to widen");
-        static_assert(std::is_signed_v<In> == std::is_signed_v<Out>, "Will not change sign");
-        return static_cast<In>(in);
+        static_assert(AllowSignChange || (std::is_signed_v<In> == std::is_signed_v<Out>),
+                      "Will not change sign");
+        return static_cast<Out>(in);
     }
 
 } // namespace Utils
