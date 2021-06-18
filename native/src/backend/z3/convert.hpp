@@ -6,7 +6,6 @@
 #define R_BACKEND_Z3_CONVERT_HPP_
 
 #include "constants.hpp"
-#include "tl_ctx.hpp"
 #include "width.hpp"
 
 #include "../../op.hpp"

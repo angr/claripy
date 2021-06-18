@@ -6,14 +6,10 @@
 #define R_BACKEND_Z3_Z3_HPP_
 
 #include "abstract.hpp"
-#include "constants.hpp"
 #include "convert.hpp"
-#include "tl_ctx.hpp"
 
 #include "../../error.hpp"
 #include "../generic.hpp"
-
-#include <memory>
 
 
 namespace Backend::Z3 {
