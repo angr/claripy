@@ -1,9 +1,9 @@
-import hashlib
 import itertools
 import logging
 import os
 import struct
 import weakref
+import _md5  # Python's build-in MD5 is about 2x faster than hashlib.md5 on short bytestrings
 from collections import OrderedDict, deque
 
 try:
@@ -261,7 +261,7 @@ class Base:
         # Why do we use md5 when it's broken? Because speed is more important
         # than cryptographic integrity here. Then again, look at all those
         # allocations we're doing here... fast python is painful.
-        hd = hashlib.md5(pickle.dumps(to_hash, -1)).digest()
+        hd = _md5.md5(pickle.dumps(to_hash, -1)).digest()
         return md5_unpacker.unpack(hd)[0] # 64 bits
 
     #pylint:disable=attribute-defined-outside-init
