@@ -40,6 +40,14 @@ namespace Backend {
          */
         virtual inline void downsize() = 0;
 
+        /** Clear persistent data caches
+         *  These are caches that are not just for optimization.
+         *  It is up to the user to ensure that this function is only called when safe to do so
+         *  Warning: Do not use this function unless you understand what it does to the specific
+         *  backend that has implemented it! It may clear vital persistent data from memory.
+         */
+        virtual void clear_persistent_data() = 0;
+
       protected:
         /** Default destructor */
         virtual ~Base() noexcept = default;
