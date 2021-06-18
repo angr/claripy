@@ -37,6 +37,9 @@
 /** A local macro for getting the X'th element of 'args' as an expression */
 #define GET_EARG(I) std::get<Expression::BasePtr>(args[(I)])
 
+/** A local macro for getting the X'th element of 'args' as an widened unsigned */
+#define GET_UNSIGNED_ARG(I) Utils::widen<Constants::UInt>(std::get<unsigned>(args[(I)]))
+
 // Macros for each op category
 
 /** A local macro used for calling a basic unary expression
@@ -53,7 +56,7 @@
  */
 #define UINT_BINARY(FUNC)                                                                         \
     ASSERT_ARG_LEN(args, 2);                                                                      \
-    return FUNC(GET_EARG(1), Utils::widen<Constants::UInt>(std::get<unsigned>(args[0])));
+    return FUNC(GET_EARG(1), GET_UNSIGNED_ARG(0));
 
 /** A local macro used for calling a basic binary expression
  *  Assumes the arguments array is called args
@@ -308,9 +311,9 @@ namespace Backend::Z3::Abstract {
     inline Expression::BasePtr zero_ext(const ArgsVec &args) { UINT_BINARY(Create::zero_ext); }
 
     /** Abstraction function for Z3_OP_EXTRACT */
-    inline Expression::BasePtr extract(Constants::CTSC<z3::expr> b_obj, const ArgsVec &args) {
-        ASSERT_ARG_LEN(args, 1);
-        return Create::extract(b_obj->hi(), b_obj->lo(), GET_EARG(0));
+    inline Expression::BasePtr extract(const ArgsVec &args) {
+        ASSERT_ARG_LEN(args, 3);
+        return Create::extract(GET_UNSIGNED_ARG(1), GET_UNSIGNED_ARG(2), GET_EARG(0));
     }
 
     /**********************************************************/
@@ -320,6 +323,50 @@ namespace Backend::Z3::Abstract {
     namespace FP {
 
         // Conversions
+
+        /** Abstraction function for Z3_OP_FPA_TO_SBV and Z3_OP_FPA_TO_UBV */
+        template <bool Signed> inline Expression::BasePtr to_bv(const ArgsVec &args) {
+            ASSERT_ARG_LEN(args, 3);
+            return Create::FP::to_bv<Signed>(std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
+                                             GET_UNSIGNED_ARG(2));
+        }
+
+        /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV */
+        inline Expression::BasePtr to_ieee_bv(const ArgsVec &args) {
+            UNARY(Create::FP::to_ieee_bv);
+        }
+
+        /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV
+         *  TODO
+         */
+        inline Expression::BasePtr to_fp(const ArgsVec &args) {
+            (void) args;
+            throw Utils::Error::Unexpected::Base("This is not yet supported");
+        }
+
+        /** Abstraction function for Z3_OP_FPA_NUM */
+        inline Expression::BasePtr num(const ArgsVec &args) {
+#if 0
+/* #ifdef DEBUG */
+			int sign { 2 };
+			z3.Z3_fpa_get_numeral_sign(ctx, ast, &sign);
+
+			if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_dbl)) {
+				return Create::literal(copysign<Sign>(dbl));
+			}
+			if (LIKELY(sort_kind == ::Backend::Z3::Private::z3_flt)) {
+				return Create::literal(copysign<Sign>(flt));
+			}
+			throw Utils::Error::Unexpected::NotSupported(
+				WHOAMI_WITH_SOURCE
+				"Cannot create a zero value for this unknown floating point standard."
+				"\nZ3_sort_kind: ",
+				sort_kind);
+#else
+            (void) args;
+            throw Utils::Error::Unexpected::Base("This is not yet supported");
+#endif
+        }
 
         // Constants
 

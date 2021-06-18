@@ -634,19 +634,19 @@ namespace Backend::Z3 {
                 case Z3_OP_ZERO_EXT:
                     return Abstract::zero_ext(args);
                 case Z3_OP_EXTRACT:
-                    return Abstract::extract(b_obj, args);
+                    return Abstract::extract(args);
 
                     // FP Conversions
                 case Z3_OP_FPA_TO_SBV:
-                    // TODO
+                    return Abstract::FP::to_bv<true>(args);
                 case Z3_OP_FPA_TO_UBV:
-                    // TODO
+                    return Abstract::FP::to_bv<false>(args);
                 case Z3_OP_FPA_TO_IEEE_BV:
-                    // TODO
+                    return Abstract::FP::to_ieee_bv(args);
                 case Z3_OP_FPA_TO_FP:
-                    // TODO
+                    return Abstract::FP::to_fp(args);
                 case Z3_OP_FPA_NUM:
-                    // TODO
+                    return Abstract::FP::num(args);
 
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
