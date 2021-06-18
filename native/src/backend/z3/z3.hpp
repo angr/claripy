@@ -19,12 +19,7 @@
 namespace Backend::Z3 {
 
     /** The Z3 backend */
-    class Z3 final : public Generic<z3::expr, false> {
-        /** Z3 parent class */
-        using Super = Generic<z3::expr, false>;
-        /** An alias for brevity */
-        using AbstractionVariant = ::Backend::Private::AbstractionVariant;
-
+    class Z3 final : public Z3Super {
       public:
         /********************************************************************/
         /*                     Small Function Overrides                     */
@@ -37,7 +32,7 @@ namespace Backend::Z3 {
          *  Note: Does not clear translocation data
          */
         inline void downsize() override {
-            Super::downsize();
+            Z3Super::downsize();
             is_true_cache.scoped_unique().first.clear();
             is_false_cache.scoped_unique().first.clear();
         }

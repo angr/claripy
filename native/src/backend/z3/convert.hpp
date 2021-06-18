@@ -42,6 +42,9 @@ namespace Backend::Z3::Convert {
          */
         static inline constexpr const auto flt_size { 4_ui * BitLength::char_bit };
 
+        /** A function that narrows a Constants::UInt to Z3's unsigned type */
+        constexpr auto to_z3u(const Constants::UInt x) { return Utils::narrow<unsigned>(x); }
+
     } // namespace Private
 
     // Unary
@@ -71,9 +74,8 @@ namespace Backend::Z3::Convert {
         // Reverse byte by byte
         auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
         for (Constants::UInt i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
-            ret = ::Backend::Z3::Convert::concat(
-                ret, // Move?
-                extract(Utils::narrow<z3u>(i + C_CHAR_BIT - 1), Utils::narrow<z3u>(i), e));
+            const auto tmp { extract(Private::to_z3u(i + C_CHAR_BIT - 1), Private::to_z3u(i), e) };
+            ret = ::Backend::Z3::Convert::concat(ret, tmp);
         }
         return ret;
     }
@@ -82,12 +84,12 @@ namespace Backend::Z3::Convert {
 
     /** Sign Extension converter */
     inline z3::expr signext(const z3::expr &e, const Constants::UInt i) {
-        return z3::sext(e, Utils::narrow<z3u>(i));
+        return z3::sext(e, Private::to_z3u(i));
     }
 
     /** Zero Extension converter */
     inline z3::expr zeroext(const z3::expr &e, const Constants::UInt i) {
-        return z3::zext(e, Utils::narrow<z3u>(i));
+        return z3::zext(e, Private::to_z3u(i));
     }
 
     // Binary
@@ -248,7 +250,7 @@ namespace Backend::Z3::Convert {
     /** Extract converter */
     inline z3::expr extract(const Constants::UInt high, const Constants::UInt low,
                             const z3::expr &e) {
-        return e.extract(Utils::narrow<z3u>(high), Utils::narrow<z3u>(low));
+        return e.extract(Private::to_z3u(high), Private::to_z3u(low));
     }
 
     /** If converter */
@@ -279,7 +281,7 @@ namespace Backend::Z3::Convert {
                     const auto &vec { std::get<std::vector<std::byte>>(data) };
                     static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
                     return Private::tl_ctx.bv_val(reinterpret_cast<const char *>(vec.data()),
-                                                  Utils::narrow<z3u>(vec.size()));
+                                                  Private::to_z3u(vec.size()));
                 }
                     // Error handling
                 case Expression::VS::static_cuid:
@@ -333,7 +335,7 @@ namespace Backend::Z3::Convert {
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
                 };
-                return Private::tl_ctx.bv_const(name.c_str(), Utils::narrow<z3u>(bit_length));
+                return Private::tl_ctx.bv_const(name.c_str(), Private::to_z3u(bit_length));
             }
                 // Error handling
             case Expression::VS::static_cuid:
@@ -391,6 +393,9 @@ namespace Backend::Z3::Convert {
                 };
             }
 
+            /** An alias to to_z3u */
+            const constexpr auto to_z3u = ::Backend::Z3::Convert::Private::to_z3u;
+
         }; // namespace Private
 
         /** FP::Add converter */
@@ -432,10 +437,10 @@ namespace Backend::Z3::Convert {
                               const Constants::UInt bit_length) {
             e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
-                return z3::fpa_to_sbv(e, Utils::narrow<z3u>(bit_length));
+                return z3::fpa_to_sbv(e, Private::to_z3u(bit_length));
             }
             else {
-                return z3::fpa_to_ubv(e, Utils::narrow<z3u>(bit_length));
+                return z3::fpa_to_ubv(e, Private::to_z3u(bit_length));
             }
         }
 
@@ -443,7 +448,7 @@ namespace Backend::Z3::Convert {
         inline z3::expr from_fp(const Mode::FP::Rounding mode, const z3::expr &e,
                                 const Mode::FP::Width &width) {
             e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
-            return z3::fpa_to_fpa(e, Backend::Z3::Private::unsafe_z3_width(width));
+            return z3::fpa_to_fpa(e, unsafe_fp_width_to_z3_sort(width));
         }
 
         /** FP::From2sComplementBV converter */
@@ -452,17 +457,17 @@ namespace Backend::Z3::Convert {
                                               const Mode::FP::Width &width) {
             e.ctx().set_rounding_mode(Private::to_z3_rm(mode));
             if constexpr (Signed) {
-                return z3::sbv_to_fpa(e, Backend::Z3::Private::unsafe_z3_width(width));
+                return z3::sbv_to_fpa(e, unsafe_fp_width_to_z3_sort(width));
             }
             else {
-                return z3::ubv_to_fpa(e, Backend::Z3::Private::unsafe_z3_width(width));
+                return z3::ubv_to_fpa(e, unsafe_fp_width_to_z3_sort(width));
             }
         }
 
         /** FP::FromNot2sComplementBV converter */
         inline z3::expr from_not_2s_complement_bv(const z3::expr &e,
                                                   const Mode::FP::Width &width) {
-            return e.mk_from_ieee_bv(Backend::Z3::Private::unsafe_z3_width(width));
+            return e.mk_from_ieee_bv(unsafe_fp_width_to_z3_sort(width));
         }
 
     } // namespace FP
@@ -479,13 +484,13 @@ namespace Backend::Z3::Convert {
         /** ToInt converter */
         inline z3::expr to_int(const z3::expr &e, const Constants::UInt len) {
             const auto a { e.stoi() };
-            return z3::int2bv(Utils::narrow<z3u>(len), a);
+            return z3::int2bv(Private::to_z3u(len), a);
         }
 
         /** Len converter */
         inline z3::expr len(const z3::expr &e, const Constants::UInt len) {
             const auto a { e.length() };
-            return z3::int2bv(Utils::narrow<z3u>(len), a);
+            return z3::int2bv(Private::to_z3u(len), a);
         }
 
         // Binary
@@ -527,10 +532,11 @@ namespace Backend::Z3::Convert {
         inline z3::expr index_of(const z3::expr &str, const z3::expr &pattern,
                                  const z3::expr &start_index, const Constants::UInt bit_length) {
             const auto a { z3::indexof(str, pattern, start_index) };
-            return z3::int2bv(Utils::narrow<z3u>(bit_length), a);
+            return z3::int2bv(Private::to_z3u(bit_length), a);
         }
 
     } // namespace String
+
 } // namespace Backend::Z3::Convert
 
 #endif

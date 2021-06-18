@@ -10,7 +10,6 @@
 #include "width.hpp"
 
 #include "../../create.hpp"
-#include "../abstraction_variant.hpp"
 
 #include <cmath>
 #include <limits>
@@ -42,8 +41,8 @@
 /** A local macro for getting the X'th element of 'args' as an expression */
 #define GET_EARG(I) std::get<Expression::BasePtr>(args[(I)])
 
-/** A local macro for getting the X'th element of 'args' as an widened unsigned */
-#define GET_UNSIGNED_ARG(I) Utils::widen<Constants::UInt>(std::get<unsigned>(args[(I)]))
+/** A local macro for getting the X'th element of 'args' as a Constants::UInt */
+#define GET_UNSIGNED_ARG(I) std::get<Constants::UInt>(args[(I)])
 
 // Macros for each op category
 
@@ -91,7 +90,7 @@
 namespace Backend::Z3::Abstract {
 
     /** The 'args' array type */
-    using ArgsVec = std::vector<::Backend::Private::AbstractionVariant>;
+    using ArgsVec = std::vector<Z3Super::AbstractionVariant>;
 
     /**********************************************************/
     /*                        General                         */
@@ -116,7 +115,7 @@ namespace Backend::Z3::Abstract {
                 case Z3_BOOL_SORT:
                     return Create::symbol(std::move(name));
                 case Z3_FLOATING_POINT_SORT: {
-                    const auto width { ::Backend::Z3::Private::from_z3(sort) };
+                    const auto width { z3_sort_to_fp_width(sort) };
                     if (LIKELY(width == Mode::FP::dbl)) {
                         return Create::symbol<Expression::FP>(std::move(name),
                                                               Mode::FP::dbl.width());
@@ -366,10 +365,10 @@ namespace Backend::Z3::Abstract {
 			int sign { 2 };
 			z3.Z3_fpa_get_numeral_sign(ctx, ast, &sign);
 
-			if (LIKELY(sort == ::Backend::Z3::Private::z3_dbl)) {
+			if (LIKELY(sort == z3_dbl)) {
 				return Create::literal(copysign<Sign>(dbl));
 			}
-			if (LIKELY(sort == ::Backend::Z3::Private::z3_flt)) {
+			if (LIKELY(sort == z3_flt)) {
 				return Create::literal(copysign<Sign>(flt));
 			}
 			throw Utils::Error::Unexpected::NotSupported(
@@ -399,7 +398,7 @@ namespace Backend::Z3::Abstract {
             template <Mode::Sign::Real Sign>
             inline Expression::BasePtr fpa_literal(const z3::sort &sort, const double dbl,
                                                    const float flt) {
-                const auto width { ::Backend::Z3::Private::from_z3(sort) };
+                const auto width { z3_sort_to_fp_width(sort) };
                 if (LIKELY(width == Mode::FP::dbl)) {
                     return Create::literal(copysign<Sign>(dbl));
                 }
