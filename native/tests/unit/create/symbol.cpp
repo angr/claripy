@@ -25,7 +25,7 @@ template <typename T> void symbol_t() {
         sym = Create::symbol<T>(std::move(name), size);
     }
     else {
-        sym = Create::symbol<T>(std::move(name));
+        sym = Create::symbol(std::move(name));
     }
 
     // Pointer checks
