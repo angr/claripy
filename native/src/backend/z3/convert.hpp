@@ -301,7 +301,7 @@ namespace Backend::Z3::Convert {
      *  expr may not be nullptr
      *  @todo remove the hack
      */
-    inline z3::expr symbol(const Expression::RawPtr expr) {
+    inline z3::expr symbol(const Expression::RawPtr expr, SymAnTransData &satd) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
         UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
         using To = Constants::CTSC<Op::Symbol>;
@@ -326,9 +326,9 @@ namespace Backend::Z3::Convert {
                     Factory::Private::cache<Expression::Base>.find(expr->hash) != nullptr,
                     WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
-                // This is a hack take from python
-                Private::extra_bvs_data.emplace(
-                    name, Factory::Private::cache<Expression::Base>.find(expr->hash));
+                // Store annotations for translocation
+                // We do this even if it is nullptr in case an old pointer exists
+                satd.emplace(name, expr->annotations);
                 // Return the converted constant
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
