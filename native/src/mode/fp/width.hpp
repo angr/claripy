@@ -30,7 +30,7 @@ namespace Mode::FP {
     static inline const constexpr Width dbl { 11, 53 };
 
     /** Equality operator */
-    inline bool operator==(const Width &a, const Width &b) noexcept {
+    constexpr bool operator==(const Width &a, const Width &b) noexcept {
         return (a.exp == b.exp) && (a.mantissa == b.mantissa);
     }
 
