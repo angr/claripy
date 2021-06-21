@@ -381,27 +381,36 @@ namespace Backend::Z3::Abstract {
             const auto &ctx { Private::tl_ctx };
 
             // Fp components
-            int sign;                 // NOLINT
-            Constants::UInt mantissa; // NOLINT
-            Constants::Int exp;       // NOLINT
+            int sign;          // NOLINT
+            uint64_t mantissa; // NOLINT
+            int64_t exp;       // NOLINT
 
             // Extract fp components
-            bool fail { false }; // NOLINT
-            fail |= Z3_fpa_get_numeral_sign(ctx, b_obj, &sign);
-            fail |= Z3_fpa_get_numeral_significand_uint64(ctx, b_obj, &mantissa);
-            fail |= Z3_fpa_get_numeral_exponent_int64(ctx, b_obj, &exp, false);
+            bool success { Z3_fpa_get_numeral_sign(ctx, b_obj, &sign) };
+            success &= Z3_fpa_get_numeral_significand_uint64(ctx, b_obj, &mantissa);
+            success &= Z3_fpa_get_numeral_exponent_int64(ctx, b_obj, &exp, true);
 
             // Error check
             Utils::affirm<Utils::Error::Unexpected::Unknown>(
-                !fail, WHOAMI_WITH_SOURCE "something went wrong with fp component extraction");
+                success,
+                WHOAMI_WITH_SOURCE
+                "something went wrong with fp component extraction.\nGiven fp: ",
+                b_obj);
 
             const auto sort { b_obj.get_sort() };
             const auto width { z3_sort_to_fp_width(sort) };
             if (LIKELY(width == Mode::FP::dbl)) {
-                return Create::literal(Utils::fp<double>(sign, mantissa, Utils::narrow<int>(exp)));
+                const uint64_t to_val { static_cast<uint64_t>(sign) | mantissa |
+                                        (static_cast<uint64_t>(exp) << 52) };
+                // If nothing went wrong, this reinterpret_cast should be safe
+                return Create::literal(*reinterpret_cast<const double *>(&to_val));
             }
             if (LIKELY(width == Mode::FP::flt)) {
-                return Create::literal(Utils::fp<float>(sign, mantissa, Utils::narrow<int>(exp)));
+                const uint32_t to_val { static_cast<uint32_t>(sign) |
+                                        static_cast<uint32_t>(mantissa) |
+                                        (static_cast<uint32_t>(exp) << 23) };
+                // If nothing went wrong, this reinterpret_cast should be safe
+                return Create::literal(*reinterpret_cast<const float *>(&to_val));
             }
             throw Utils::Error::Unexpected::NotSupported(
                 WHOAMI_WITH_SOURCE
