@@ -162,11 +162,8 @@ namespace Backend {
             return *arg_stack.back(); // shortcut for conversion_cache.find(input->hash)->second;
         }
 
-        /** Abstract a backend object into a claricpp Expression
-         *  b_obj may not nullptr
-         *  \todo: Handle non-expression return types
-         */
-        Expression::BasePtr abstract(Constants::CTSC<BackendObj> b_obj) {
+        /** Abstract a backend object into a claricpp Expression */
+        Expression::BasePtr abstract(const BackendObj &b_obj) {
             const auto variant { abstract_helper(b_obj) };
             try {
                 return std::get<Expression::BasePtr>(variant);
@@ -180,15 +177,12 @@ namespace Backend {
         }
 
       private:
-        /** Abstract a backend object into a type claricpp understands
-         *  b_obj may not nullptr
-         */
-        AbstractionVariant abstract_helper(Constants::CTSC<BackendObj> b_obj) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
-            const unsigned n = { b_obj->num_args() };
+        /** Abstract a backend object into a type claricpp understands */
+        AbstractionVariant abstract_helper(const BackendObj &b_obj) {
+            const unsigned n = { b_obj.num_args() };
 
             // Cache lookup
-            const auto hash { b_obj->hash() };
+            const auto hash { b_obj.hash() };
             if (const auto lookup { abstraction_cache.find(hash) };
                 lookup != abstraction_cache.end()) {
                 return lookup->second;
@@ -196,15 +190,12 @@ namespace Backend {
 
             // Convert b_obj args
             std::vector<AbstractionVariant> args;
-            if (n > 0) {
-                for (unsigned i { 0 }; i < n; ++i) {
-                    const auto tmp { b_obj->arg(i) }; // TODO
-                    args.emplace_back(abstract(&tmp));
-                }
+            for (unsigned i { 0 }; i < n; ++i) {
+                args.emplace_back(abstract(b_obj.arg(i)));
             }
 
             // Convert b_obj
-            const auto ret { dispatch_abstraction(b_obj, args) };
+            const auto ret { dispatch_abstraction(&b_obj, args) };
 
             // Update various caches and return
             abstraction_cache.emplace(hash, ret);

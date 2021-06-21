@@ -83,8 +83,7 @@ namespace Backend::Z3 {
          */
         inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            const auto z3e { convert(expr).simplify() };
-            return abstract(&z3e);
+            return abstract(convert(expr).simplify());
         }
 
       private:
