@@ -21,7 +21,6 @@
 #include "utils/error.hpp"
 #include "utils/file_line_hash.hpp"
 #include "utils/fnv1a.hpp"
-#include "utils/fp.hpp"
 #include "utils/full.hpp"
 #include "utils/has_constructor.hpp"
 #include "utils/inc.hpp"
