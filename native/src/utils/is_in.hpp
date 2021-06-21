@@ -6,6 +6,7 @@
 #ifndef R_UTILS_ISIN_HPP_
 #define R_UTILS_ISIN_HPP_
 
+#include "is_ancestor.hpp"
 #include "is_same.hpp"
 
 
