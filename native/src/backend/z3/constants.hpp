@@ -15,7 +15,6 @@
 namespace Backend::Z3 {
 
     /** The 'Generic' superclass of z3
-     *  \todo: TODO: double check false
      */
     using Z3Super = Generic<z3::expr, false>;
 

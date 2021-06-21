@@ -125,8 +125,8 @@ namespace Backend {
                     expr = op_stack.top();
                     op_stack.pop();
 
-                    // TODO: Should this be cached? I think it is above though
                     // Convert the expression to a backend object
+                    // Note: No need for a cache lookup, op_stack contains only cache misses
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
                     if constexpr (ApplyAnnotations) {
                         obj = std::move(apply_annotations(obj, expr->annotations));
@@ -168,7 +168,15 @@ namespace Backend {
          */
         Expression::BasePtr abstract(Constants::CTSC<BackendObj> b_obj) {
             const auto variant { abstract_helper(b_obj) };
-            return std::get<Expression::BasePtr>(variant); // TODO
+            try {
+                return std::get<Expression::BasePtr>(variant);
+            }
+            catch (std::bad_variant_access &) {
+                throw Utils::Error::Unexpected::Unknown(
+                    WHOAMI_WITH_SOURCE,
+                    "Abstraction culminated in a non-Expression object.\nVariant index: ",
+                    variant.index(), "\nPlease report this.");
+            }
         }
 
       private:
@@ -177,7 +185,7 @@ namespace Backend {
          */
         AbstractionVariant abstract_helper(Constants::CTSC<BackendObj> b_obj) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
-            const auto n = { b_obj->num_args() };
+            const unsigned n = { b_obj->num_args() };
 
             // Cache lookup
             const auto hash { b_obj->hash() };
@@ -189,8 +197,9 @@ namespace Backend {
             // Convert b_obj args
             std::vector<AbstractionVariant> args;
             if (n > 0) {
-                for (Constants::UInt i { 0 }; i < n; ++i) {
-                    args.emplace_back(abstract(b_obj->arg(i)));
+                for (unsigned i { 0 }; i < n; ++i) {
+                    const auto tmp { b_obj->arg(i) }; // TODO
+                    args.emplace_back(abstract(&tmp));
                 }
             }
 
@@ -199,13 +208,17 @@ namespace Backend {
 
             // Update various caches and return
             abstraction_cache.emplace(hash, ret);
-            if (std::holds_alternative<Expression::BasePtr>(ret)) {
-                Simplification::cache(ret->hash, ret);
+            if (LIKELY(std::holds_alternative<Expression::BasePtr>(ret))) {
+                const auto &tmp { std::get<Expression::BasePtr>(ret) };
+                Simplification::cache(tmp->hash, tmp);
             }
             return ret;
         }
 
       protected:
+        /** Allow subclasses access to the apply_annotations template parameter */
+        static UTILS_ICCBOOL use_apply_annotations { ApplyAnnotations };
+
         // Pure Virtual Functions
 
         /** This dynamic dispatcher converts an expression into a backend object
@@ -265,7 +278,7 @@ namespace Backend {
         /** Thread local abstraction cache
          *  Map a backend object hash to an expression base pointer
          */
-        inline static thread_local std::map<Hash::Hash, const Expression::BasePtr>
+        inline static thread_local std::map<Hash::Hash, const AbstractionVariant>
             abstraction_cache {};
     };
 
