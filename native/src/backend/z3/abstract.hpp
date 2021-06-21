@@ -96,7 +96,7 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for Z3_OP_INTERNAL */
     inline Expression::BasePtr internal(const z3::func_decl &decl) {
-        auto &ctx { Private::tl_ctx };
+        const auto &ctx { Private::tl_ctx };
         if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
                      (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
             throw Error::Backend::Abstraction("Weird Z3 model.");
@@ -148,7 +148,7 @@ namespace Backend::Z3::Abstract {
         }
         // Unknown error
         else {
-            auto &ctx { Private::tl_ctx };
+            const auto &ctx { Private::tl_ctx };
             throw Error::Backend::Abstraction(
                 WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op name: ",
                 Z3_get_symbol_string(ctx, Z3_get_decl_name(ctx, decl)), "\nPlease report this.");
@@ -376,30 +376,38 @@ namespace Backend::Z3::Abstract {
             throw Utils::Error::Unexpected::Base("This is not yet supported");
         }
 
-        /** Abstraction function for Z3_OP_FPA_NUM
-         *  TODO
-         */
-        inline Expression::BasePtr num(const ArgsVec &args) {
-#if 0
-/* #ifdef DEBUG */
-			int sign { 2 };
-			z3.Z3_fpa_get_numeral_sign(ctx, ast, &sign);
+        /** Abstraction function for Z3_OP_FPA_NUM */
+        inline Expression::BasePtr num(const z3::expr &b_obj) {
+            const auto &ctx { Private::tl_ctx };
 
-			if (LIKELY(sort == z3_dbl)) {
-				return Create::literal(copysign<Sign>(dbl));
-			}
-			if (LIKELY(sort == z3_flt)) {
-				return Create::literal(copysign<Sign>(flt));
-			}
-			throw Utils::Error::Unexpected::NotSupported(
-				WHOAMI_WITH_SOURCE
-				"Cannot create a zero value for this unknown floating point standard."
-				"\nZ3_sort: ",
-				sort);
-#else
-            (void) args;
-            throw Utils::Error::Unexpected::Base("This is not yet supported");
-#endif
+            // Fp components
+            int sign;                 // NOLINT
+            Constants::UInt mantissa; // NOLINT
+            Constants::Int exp;       // NOLINT
+
+            // Extract fp components
+            bool fail { false }; // NOLINT
+            fail |= Z3_fpa_get_numeral_sign(ctx, b_obj, &sign);
+            fail |= Z3_fpa_get_numeral_significand_uint64(ctx, b_obj, &mantissa);
+            fail |= Z3_fpa_get_numeral_exponent_int64(ctx, b_obj, &exp, false);
+
+            // Error check
+            Utils::affirm<Utils::Error::Unexpected::Unknown>(
+                !fail, WHOAMI_WITH_SOURCE "something went wrong with fp component extraction");
+
+            const auto sort { b_obj.get_sort() };
+            const auto width { z3_sort_to_fp_width(sort) };
+            if (LIKELY(width == Mode::FP::dbl)) {
+                return Create::literal(Utils::fp<double>(sign, mantissa, Utils::narrow<int>(exp)));
+            }
+            if (LIKELY(width == Mode::FP::flt)) {
+                return Create::literal(Utils::fp<float>(sign, mantissa, Utils::narrow<int>(exp)));
+            }
+            throw Utils::Error::Unexpected::NotSupported(
+                WHOAMI_WITH_SOURCE
+                "Cannot create a value for this unknown floating point standard."
+                "\nZ3_sort: ",
+                sort);
         }
 
         // Constants

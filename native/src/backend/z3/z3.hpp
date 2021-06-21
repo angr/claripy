@@ -654,7 +654,7 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_TO_FP:
                     return Abstract::FP::to_fp(args);
                 case Z3_OP_FPA_NUM:
-                    return Abstract::FP::num(args);
+                    return Abstract::FP::num(b_obj);
 
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
