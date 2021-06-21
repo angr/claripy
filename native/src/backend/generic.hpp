@@ -195,7 +195,7 @@ namespace Backend {
             }
 
             // Convert b_obj
-            const auto ret { dispatch_abstraction(&b_obj, args) };
+            const auto ret { dispatch_abstraction(b_obj, args) };
 
             // Update various caches and return
             abstraction_cache.emplace(hash, ret);
@@ -226,11 +226,10 @@ namespace Backend {
          *  All arguments of b_obj that are not primitives have
          *  been pre-converted into expressions and are in args
          *  Arguments must be popped off the args stack if used
-         *  b_obj may not be nullptr
          *  Note: We use a raw vector instead of a stack for efficiency
          *  Note: This function should not edit the Simplification cache
          */
-        virtual AbstractionVariant dispatch_abstraction(Constants::CTSC<BackendObj> b_obj,
+        virtual AbstractionVariant dispatch_abstraction(const BackendObj &b_obj,
                                                         std::vector<AbstractionVariant> &args) = 0;
 
         // Virtual Functions

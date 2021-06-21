@@ -109,10 +109,9 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_UNINTERPRETED */
-    inline Expression::BasePtr uninterpreted(const Constants::CTSC<z3::expr> b_obj,
-                                             const z3::func_decl &decl, const ArgsVec &args,
-                                             SymAnTransData &satd) {
-        const auto sort { b_obj->get_sort() };
+    inline Expression::BasePtr uninterpreted(const z3::expr &b_obj, const z3::func_decl &decl,
+                                             const ArgsVec &args, SymAnTransData &satd) {
+        const auto sort { b_obj.get_sort() };
         // If b_obj is a symbolic value
         if (LIKELY(args.empty())) {
             // Gather info
@@ -283,12 +282,12 @@ namespace Backend::Z3::Abstract {
     namespace BV {
 
         /** Abstraction function for Z3_OP_BNUM */
-        inline Expression::BasePtr num(Constants::CTSC<z3::expr> b_obj) {
+        inline Expression::BasePtr num(const z3::expr &b_obj) {
             // Get the bv number
             uint64_t bv_num; // NOLINT
-            if (!b_obj->is_numeral_u64(bv_num)) {
+            if (!b_obj.is_numeral_u64(bv_num)) {
                 std::string tmp;
-                const bool success { b_obj->is_numeral(tmp) };
+                const bool success { b_obj.is_numeral(tmp) };
                 Utils::affirm<Utils::Error::Unexpected::Type>(success, WHOAMI_WITH_SOURCE
                                                               "given z3 object is not a numeral");
                 bv_num = std::stoull(tmp); // Faster than istringstream
@@ -300,7 +299,7 @@ namespace Backend::Z3::Abstract {
             data.reserve(sizeof(bv_num));
             std::memcpy(data.data(), &bv_num, sizeof(bv_num));
             // Size check
-            const auto bl { b_obj->get_sort().bv_size() };
+            const auto bl { b_obj.get_sort().bv_size() };
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 sizeof(bv_num) == bl * 8,
                 WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",
@@ -342,9 +341,9 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_EXTRACT */
-    inline Expression::BasePtr extract(const ArgsVec &args, Constants::CTSC<z3::expr> e) {
+    inline Expression::BasePtr extract(const ArgsVec &args, const z3::expr &e) {
         ASSERT_ARG_LEN(args, 1);
-        return Create::extract(e->hi(), e->lo(), GET_EARG(0));
+        return Create::extract(e.hi(), e.lo(), GET_EARG(0));
     }
 
     /**********************************************************/
@@ -417,9 +416,9 @@ namespace Backend::Z3::Abstract {
 
             /** A helper function to assist in creating FPA literals */
             template <Mode::Sign::Real Sign>
-            inline Expression::BasePtr fpa_literal(Constants::CTSC<z3::expr> b_obj,
-                                                   const double dbl, const float flt) {
-                const auto sort { b_obj->get_sort() };
+            inline Expression::BasePtr fpa_literal(const z3::expr &b_obj, const double dbl,
+                                                   const float flt) {
+                const auto sort { b_obj.get_sort() };
                 const auto width { z3_sort_to_fp_width(sort) };
                 if (LIKELY(width == Mode::FP::dbl)) {
                     return Create::literal(copysign<Sign>(dbl));
@@ -442,14 +441,12 @@ namespace Backend::Z3::Abstract {
         } // namespace Private
 
         /** Abstraction function for fpa zeros */
-        template <Mode::Sign::FP Sign>
-        inline Expression::BasePtr zero(Constants::CTSC<z3::expr> b_obj) {
+        template <Mode::Sign::FP Sign> inline Expression::BasePtr zero(const z3::expr &b_obj) {
             return Private::fpa_literal<Sign>(b_obj, 0., 0.f);
         }
 
         /** Abstraction function for fpa inf */
-        template <Mode::Sign::FP Sign>
-        inline Expression::BasePtr inf(Constants::CTSC<z3::expr> b_obj) {
+        template <Mode::Sign::FP Sign> inline Expression::BasePtr inf(const z3::expr &b_obj) {
             static_assert(std::numeric_limits<double>::is_iec559, "IEE 754 required for -inf");
             static_assert(std::numeric_limits<float>::is_iec559, "IEE 754 required for -inf");
             static const constexpr float inf_f { std::numeric_limits<float>::infinity() };
@@ -462,7 +459,7 @@ namespace Backend::Z3::Abstract {
          *  distinguish between quiet and signalling NaNs.
          *  We choose quiet as the type of nan we return
          */
-        inline Expression::BasePtr nan(Constants::CTSC<z3::expr> b_obj) {
+        inline Expression::BasePtr nan(const z3::expr &b_obj) {
             static_assert(std::numeric_limits<float>::has_quiet_NaN, "Unable to generate NaN");
             static_assert(std::numeric_limits<double>::has_quiet_NaN, "Unable to generate NaN");
             static const constexpr float nan_f { std::numeric_limits<float>::quiet_NaN() };

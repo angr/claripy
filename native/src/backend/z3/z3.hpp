@@ -496,13 +496,10 @@ namespace Backend::Z3 {
 #undef FLAT_CASE
         }
 
-        /** Abstract a backend object into a claricpp expression
-         *  b_obj may not be nullptr
-         */
+        /** Abstract a backend object into a claricpp expression */
         AbstractionVariant
-        dispatch_abstraction(Constants::CTSC<z3::expr> b_obj,
+        dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<AbstractionVariant> &args) override final {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(b_obj);
 
             // For brevity
             using C = Mode::Compare;
@@ -511,7 +508,7 @@ namespace Backend::Z3 {
             namespace Ex = Expression;
 
             // Get switching variables
-            const auto decl { b_obj->decl() };
+            const auto decl { b_obj.decl() };
             const auto decl_kind { decl.decl_kind() };
 
             /** A local macro used for error checking */
@@ -526,7 +523,7 @@ namespace Backend::Z3 {
                 default: {
                     throw Error::Backend::Abstraction(
                         WHOAMI_WITH_SOURCE "Unknown z3 op given. Op decl_kind: ", decl_kind,
-                        "\nThe z3 op with this sort is:\n\t", *b_obj);
+                        "\nThe z3 op with this sort is:\n\t", b_obj);
                 }
 
                     // Misc
