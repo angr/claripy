@@ -5,7 +5,7 @@
 #include "backend.hpp"
 #include "testlib.hpp"
 
-#include "../make_ite.hpp"
+#include "../../make_ite.hpp"
 
 
 /** Try to convert a claricpp expression to z3 */
@@ -14,7 +14,7 @@ void convert() {
 
     // Test with if (4 == (x * 3)) then "Hello" else y
     const auto ite { make_ite("Hello") };
-    (void) z3.convert(ite.get()); // Verify this runs
+    (void) z3.convert(ite); // Verify this runs
 }
 
 // Define the test
