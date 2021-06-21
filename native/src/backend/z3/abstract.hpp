@@ -94,11 +94,27 @@ namespace Backend::Z3::Abstract {
     /*                        General                         */
     /**********************************************************/
 
+    /** Abstraction function for Z3_OP_INTERNAL */
+    inline Expression::BasePtr internal(const z3::func_decl &decl) {
+        auto &ctx { Private::tl_ctx };
+        if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
+                     (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
+            throw Error::Backend::Abstraction("Weird Z3 model.");
+        }
+        const auto symb { Z3_get_decl_symbol_parameter(ctx, decl, 0) };
+        if (UNLIKELY(Z3_get_symbol_kind(ctx, symb) != Z3_STRING_SYMBOL)) {
+            throw Error::Backend::Abstraction("Weird Z3 model.");
+        }
+        return Create::literal(Z3_get_symbol_string(ctx, symb));
+    }
+
     /** Abstraction function for Z3_OP_UNINTERPRETED */
-    inline Expression::BasePtr uninterpreted(const z3::func_decl &decl, const z3::sort &sort,
-                                             const ArgsVec &args, SymAnTransData &satd) {
+    inline Expression::BasePtr uninterpreted(const Constants::CTSC<z3::expr> b_obj,
+                                             const z3::func_decl &decl, const ArgsVec &args,
+                                             SymAnTransData &satd) {
+        const auto sort { b_obj->get_sort() };
         // If b_obj is a symbolic value
-        if (args.empty()) {
+        if (LIKELY(args.empty())) {
             // Gather info
             std::string name { decl.name().str() };
             switch (sort.sort_kind()) {
@@ -133,9 +149,10 @@ namespace Backend::Z3::Abstract {
         }
         // Unknown error
         else {
+            auto &ctx { Private::tl_ctx };
             throw Error::Backend::Abstraction(
-                WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op decl: ", decl,
-                "\nPlease report this.");
+                WHOAMI_WITH_SOURCE "Uninterpreted z3 op with args given. Op name: ",
+                Z3_get_symbol_string(ctx, Z3_get_decl_name(ctx, decl)), "\nPlease report this.");
         }
     }
 
@@ -266,7 +283,7 @@ namespace Backend::Z3::Abstract {
     namespace BV {
 
         /** Abstraction function for Z3_OP_BNUM */
-        inline Expression::BasePtr num(Constants::CTSC<z3::expr> b_obj, const z3::sort &sort) {
+        inline Expression::BasePtr num(Constants::CTSC<z3::expr> b_obj) {
             // Get the bv number
             uint64_t bv_num; // NOLINT
             if (!b_obj->is_numeral_u64(bv_num)) {
@@ -283,7 +300,7 @@ namespace Backend::Z3::Abstract {
             data.reserve(sizeof(bv_num));
             std::memcpy(data.data(), &bv_num, sizeof(bv_num));
             // Size check
-            const auto bl { sort.bv_size() };
+            const auto bl { b_obj->get_sort().bv_size() };
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 sizeof(bv_num) == bl * 8,
                 WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",
@@ -400,8 +417,9 @@ namespace Backend::Z3::Abstract {
 
             /** A helper function to assist in creating FPA literals */
             template <Mode::Sign::Real Sign>
-            inline Expression::BasePtr fpa_literal(const z3::sort &sort, const double dbl,
-                                                   const float flt) {
+            inline Expression::BasePtr fpa_literal(Constants::CTSC<z3::expr> b_obj,
+                                                   const double dbl, const float flt) {
+                const auto sort { b_obj->get_sort() };
                 const auto width { z3_sort_to_fp_width(sort) };
                 if (LIKELY(width == Mode::FP::dbl)) {
                     return Create::literal(copysign<Sign>(dbl));
@@ -424,17 +442,19 @@ namespace Backend::Z3::Abstract {
         } // namespace Private
 
         /** Abstraction function for fpa zeros */
-        template <Mode::Sign::FP Sign> inline Expression::BasePtr zero(const z3::sort &sort) {
-            return Private::fpa_literal<Sign>(sort, 0., 0.f);
+        template <Mode::Sign::FP Sign>
+        inline Expression::BasePtr zero(Constants::CTSC<z3::expr> b_obj) {
+            return Private::fpa_literal<Sign>(b_obj, 0., 0.f);
         }
 
         /** Abstraction function for fpa inf */
-        template <Mode::Sign::FP Sign> inline Expression::BasePtr inf(const z3::sort &sort) {
+        template <Mode::Sign::FP Sign>
+        inline Expression::BasePtr inf(Constants::CTSC<z3::expr> b_obj) {
             static_assert(std::numeric_limits<double>::is_iec559, "IEE 754 required for -inf");
             static_assert(std::numeric_limits<float>::is_iec559, "IEE 754 required for -inf");
             static const constexpr float inf_f { std::numeric_limits<float>::infinity() };
             static const constexpr double inf_d { std::numeric_limits<double>::infinity() };
-            return Private::fpa_literal<Sign>(sort, inf_d, inf_f);
+            return Private::fpa_literal<Sign>(b_obj, inf_d, inf_f);
         }
 
         /** Abstraction function for Z3_OP_FPA_NAN
@@ -442,12 +462,12 @@ namespace Backend::Z3::Abstract {
          *  distinguish between quiet and signalling NaNs.
          *  We choose quiet as the type of nan we return
          */
-        inline Expression::BasePtr nan(const z3::sort &sort) {
+        inline Expression::BasePtr nan(Constants::CTSC<z3::expr> b_obj) {
             static_assert(std::numeric_limits<float>::has_quiet_NaN, "Unable to generate NaN");
             static_assert(std::numeric_limits<double>::has_quiet_NaN, "Unable to generate NaN");
             static const constexpr float nan_f { std::numeric_limits<float>::quiet_NaN() };
             static const constexpr double nan_d { std::numeric_limits<double>::quiet_NaN() };
-            return Private::fpa_literal<Mode::Sign::Real::None>(sort, nan_d, nan_f);
+            return Private::fpa_literal<Mode::Sign::Real::None>(b_obj, nan_d, nan_f);
         }
 
         // Comparisons

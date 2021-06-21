@@ -16,6 +16,8 @@ namespace Backend::Z3 {
 
     /** The Z3 backend */
     class Z3 final : public Z3Super {
+        static_assert(!use_apply_annotations, "Z3 objects do not support holding annotations");
+
       public:
         /********************************************************************/
         /*                     Small Function Overrides                     */
@@ -78,12 +80,11 @@ namespace Backend::Z3 {
 
         /** Simplify the given expression
          *  expr may not be nullptr
-         *  @todo: Currently this is stubbed, it needs to be implemented
          */
         inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            (void) expr;
-            throw Utils::Error::Unexpected::NotSupported("This has yet to be implemented"); // TODO
+            const auto z3e { convert(expr).simplify() };
+            return abstract(&z3e);
         }
 
       private:
@@ -513,8 +514,6 @@ namespace Backend::Z3 {
             // Get switching variables
             const auto decl { b_obj->decl() };
             const auto decl_kind { decl.decl_kind() };
-            // TODO: vvv move down as needed for optimization purposes?
-            const auto sort { b_obj->get_sort() };
 
             /** A local macro used for error checking */
 #define ASSERT_ARG_EMPTY(X)                                                                       \
@@ -533,9 +532,10 @@ namespace Backend::Z3 {
 
                     // Misc
                 case Z3_OP_INTERNAL:
-                    // TODO
+                    ASSERT_ARG_EMPTY(args);
+                    return Abstract::internal(decl);
                 case Z3_OP_UNINTERPRETED: {
-                    return Abstract::uninterpreted(decl, sort, args,
+                    return Abstract::uninterpreted(b_obj, decl, args,
                                                    symbol_annotation_translocation_data);
                 }
 
@@ -590,7 +590,7 @@ namespace Backend::Z3 {
                     // Bit-vectors
                 case Z3_OP_BNUM:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::BV::num(b_obj, sort);
+                    return Abstract::BV::num(b_obj);
                 case Z3_OP_BNEG:
                     return Abstract::neg<Ex::BV>(args);
                 case Z3_OP_BADD:
@@ -663,19 +663,19 @@ namespace Backend::Z3 {
                     // FP Constants
                 case Z3_OP_FPA_MINUS_ZERO:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::zero<Sign::Minus>(sort);
+                    return Abstract::FP::zero<Sign::Minus>(b_obj);
                 case Z3_OP_FPA_MINUS_INF:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::inf<Sign::Minus>(sort);
+                    return Abstract::FP::inf<Sign::Minus>(b_obj);
                 case Z3_OP_FPA_PLUS_ZERO:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::zero<Sign::Plus>(sort);
+                    return Abstract::FP::zero<Sign::Plus>(b_obj);
                 case Z3_OP_FPA_PLUS_INF:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::inf<Sign::Plus>(sort);
+                    return Abstract::FP::inf<Sign::Plus>(b_obj);
                 case Z3_OP_FPA_NAN:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::FP::nan(sort);
+                    return Abstract::FP::nan(b_obj);
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
