@@ -26,8 +26,17 @@ namespace Backend {
 
         // Pure virtual functions
 
-        /** Simplify the given expression */
-        virtual Expression::BasePtr simplify(const Expression::RawPtr expr) = 0;
+        /** Simplify the given expression
+         *  expr may not be nullptr
+         */
+        inline Expression::BasePtr simplify(const Expression::BasePtr &expr) {
+            return simplify_raw(expr.get());
+        }
+
+        /** Simplify the given expression
+         *  expr may not be nullptr
+         */
+        virtual Expression::BasePtr simplify_raw(const Expression::RawPtr expr) = 0;
 
         /** Backend name */
         [[nodiscard]] virtual const char *name() const noexcept = 0;
