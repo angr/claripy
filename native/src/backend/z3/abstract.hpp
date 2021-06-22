@@ -17,8 +17,9 @@
 
 /** A local macro used for lengh checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                      \
-    Utils::affirm<Utils::Error::Unexpected::Size>((X).size() == (N), WHOAMI_WITH_SOURCE "Op ",    \
-                                                  __func__, " should have " #N " children.");
+    Utils::affirm<Utils::Error::Unexpected::Size>(                                                \
+        (X).size() == (N), WHOAMI_WITH_SOURCE "Op ", __func__,                                    \
+        " should have " #N " children, but instead has: ", (X).size());
 
 /** A local macro used for adding a case for a given type
  *  Func must be take in T as its only template argument
@@ -73,7 +74,7 @@
  *  FUNC may *not* have commas in it
  */
 #define MODE_BINARY(FUNC)                                                                         \
-    ASSERT_ARG_LEN(args, 2);                                                                      \
+    ASSERT_ARG_LEN(args, 3);                                                                      \
     return FUNC(GET_EARG(1), GET_EARG(2), std::get<Mode::FP::Rounding>(args[0]));
 
 /** A local macro used for calling a basic flat expression generated from only 2 arguments
@@ -95,11 +96,11 @@ namespace Backend::Z3::Abstract {
     /**********************************************************/
 
     /** Abstraction function for Z3_OP_INTERNAL */
-    inline Expression::BasePtr internal(const z3::func_decl &decl) {
+    inline Expression::BasePtr internal(const z3::expr &b, const z3::func_decl &decl) {
         const auto &ctx { Private::tl_ctx };
         if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
                      (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
-            throw Error::Backend::Abstraction("Weird Z3 model.");
+            throw Error::Backend::Abstraction("Weird Z3 model.", b);
         }
         const auto symb { Z3_get_decl_symbol_parameter(ctx, decl, 0) };
         if (UNLIKELY(Z3_get_symbol_kind(ctx, symb) != Z3_STRING_SYMBOL)) {
@@ -232,9 +233,14 @@ namespace Backend::Z3::Abstract {
         FLAT_BINARY(Create::xor_);
     }
 
-    /** Abstraction function for invert z3 ops */
+    /** Abstraction function for z3 not/inversion ops */
     template <typename T> inline Expression::BasePtr not_(const ArgsVec &args) {
-        UNARY(Create::invert<T>);
+        if constexpr (std::is_same_v<T, Expression::Bool>) {
+            UNARY(Create::not_);
+        }
+        else if constexpr (std::is_same_v<T, Expression::BV>) {
+            UNARY(Create::invert);
+        }
     }
 
     /**********************************************************/
