@@ -136,6 +136,12 @@ namespace Backend {
                     // Convert the expression to a backend object
                     // Note: No need for a cache lookup, op_stack contains only cache misses
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
+#ifdef DEBUG
+                    if (UNLIKELY(!bool(obj))) {
+                        Utils::Log::warning(
+                            "Backend returned a nullptr as an expression when converting: ", expr);
+                    }
+#endif
                     if constexpr (ApplyAnnotations) {
                         obj = std::move(apply_annotations(obj, expr->annotations));
                     }
@@ -199,12 +205,11 @@ namespace Backend {
             // Convert b_obj args
             std::vector<AbstractionVariant> args;
             for (unsigned i { 0 }; i < n; ++i) {
-                args.emplace_back(abstract(b_obj.arg(i)));
+                args.emplace_back(abstract_helper(b_obj.arg(i)));
             }
 
             // Convert b_obj
             const auto ret { dispatch_abstraction(b_obj, args) };
-
             // Update various caches and return
             abstraction_cache.emplace(hash, ret);
             if (LIKELY(std::holds_alternative<Expression::BasePtr>(ret))) {
