@@ -21,11 +21,14 @@ namespace Op {
     /*                    Unary Subclasses                    */
     /**********************************************************/
 
+    /** The unary mathematical op class: Abs */
+    OP_UNARY_TRIVIAL_SUBCLASS(Abs, 0);
+
     /** The unary op class: Neg */
     OP_UNARY_TRIVIAL_SUBCLASS(Neg, 0);
 
-    /** The unary mathematical op class: Abs */
-    OP_UNARY_TRIVIAL_SUBCLASS(Abs, 0);
+    /** The unary op class: Not */
+    OP_UNARY_TRIVIAL_SUBCLASS(Not, 0);
 
     /** The unary op class: Invert */
     OP_UNARY_TRIVIAL_SUBCLASS(Invert, 0);

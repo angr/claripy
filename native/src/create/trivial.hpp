@@ -34,12 +34,20 @@ namespace Create {
         return Private::unary<T, T, Op::Neg, Ex::BV, Ex::FP>(x, std::move(sp));
     }
 
+    /** Create an Expression with an Not op
+     *  Expression pointers may not be nullptr
+     */
+    inline EBasePtr not_(const EBasePtr &x, SPAV &&sp = nullptr) {
+        namespace Ex = Expression;
+        return Private::unary<Ex::Bool, Ex::Bool, Op::Not, Ex::Bool>(x, std::move(sp));
+    }
+
     /** Create an Expression with an Invert op
      *  Expression pointers may not be nullptr
      */
-    template <typename T> inline EBasePtr invert(const EBasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr invert(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::unary<T, T, Op::Invert, Ex::BV, Ex::Bool>(x, std::move(sp));
+        return Private::unary<Ex::BV, Ex::BV, Op::Invert, Ex::BV>(x, std::move(sp));
     }
 
     /** Create an Expression with an Reverse op

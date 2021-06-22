@@ -26,9 +26,11 @@ void trivial() {
     unary<Ex::BV, Op::Neg, Cr::neg<Expression::BV>>();
     unary<Ex::FP, Op::Neg, Cr::neg<Expression::FP>>();
 
+    Log::debug("Testing not...");
+    unary<Ex::Bool, Op::Not, Cr::invert>();
+
     Log::debug("Testing invert...");
-    unary<Ex::BV, Op::Invert, Cr::invert<Expression::BV>>();
-    unary<Ex::Bool, Op::Invert, Cr::invert<Expression::Bool>>();
+    unary<Ex::BV, Op::Invert, Cr::invert>();
 
     Log::debug("Testing reverse...");
     unary<Ex::BV, Op::Reverse, Cr::reverse>();
