@@ -674,7 +674,7 @@ class BackendZ3(Backend):
         # see https://stackoverflow.com/a/58829514/3154996
         if z3.Z3_get_decl_num_parameters(ctx, decl) != 1:
             raise BackendError("Weird Z3 model")
-        if z3.Z3_get_decl_parameter_kind(ctx, decl, 0) != z3.Z3_PK_SYMBOL:
+        if z3.Z3_get_decl_parameter_kind(ctx, decl, 0) != z3.Z3_PARAMETER_SYMBOL:
             raise BackendError("Weird Z3 model")
         symb = z3.Z3_get_decl_symbol_parameter(ctx, decl, 0)
         if z3.Z3_get_symbol_kind(ctx, symb) != z3.Z3_STRING_SYMBOL:
@@ -1380,7 +1380,6 @@ op_map = {
     'Z3_OP_IFF': '__eq__',
     'Z3_OP_XOR': 'Xor',
     'Z3_OP_NOT': 'Not',
-    'Z3_OP_IMPLIES': 'Implies',
     #'Z3_OP_OEQ': None,
 
     # Arithmetic
@@ -1536,7 +1535,6 @@ op_type_map = {
     'Z3_OP_IFF': Bool,
     'Z3_OP_XOR': Bool,
     'Z3_OP_NOT': Bool,
-    'Z3_OP_IMPLIES': Bool,
     #'Z3_OP_OEQ': None,
 
     # Arithmetic
