@@ -40,7 +40,7 @@ namespace Op {
         /** Python's repr function (outputs json)
          *  @todo This could be a switch-case statement; do when more stable
          */
-        inline void repr(std::ostringstream &out, const bool) const override final {
+        inline void repr(std::ostream &out, const bool) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "value":)|";
             if (std::holds_alternative<std::string>(value)) {
                 out << '"' << std::get<std::string>(value) << '"';

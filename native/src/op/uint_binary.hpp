@@ -47,8 +47,7 @@ namespace Op {
         const Constants::UInt integer;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostringstream &out,
-                         const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "expr":)|";
             Expression::repr(expr, out, verbose);
             out << R"|(, "integer":)|" << integer << " }";

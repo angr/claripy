@@ -83,8 +83,7 @@ namespace Op {
         inline bool consider_size() const noexcept override final { return ConsiderSize; }
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostringstream &out,
-                         const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "args":[ )|";
             Expression::repr(operands[0], out, verbose);

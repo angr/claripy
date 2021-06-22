@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-void Expression::repr(const Expression::RawPtr e, std::ostringstream &out, const bool verbose) {
+void Expression::repr(const Expression::RawPtr e, std::ostream &out, const bool verbose) {
     Utils::affirm<Utils::Error::Unexpected::NotSupported>(!verbose,
                                                           "verbose repr not yet implmented");
     UTILS_AFFIRM_NOT_NULL_DEBUG(e);

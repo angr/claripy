@@ -29,8 +29,7 @@ namespace Op::String {
         const Expression::BasePtr start_index;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostringstream &out,
-                         const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "str":)|";
             Expression::repr(str, out, verbose);
             out << R"|(, "pattern":)|";

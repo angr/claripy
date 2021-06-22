@@ -25,8 +25,7 @@ namespace Op {
         const Expression::BasePtr if_false;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostringstream &out,
-                         const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "cond":)|";
             Expression::repr(cond, out, verbose);
             out << R"|(, "if_true":)|";

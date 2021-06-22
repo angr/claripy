@@ -16,13 +16,12 @@ namespace Expression {
     /** The repr function for expressions (outputs json)
      *  e may not be nullptr
      */
-    void repr(const Expression::RawPtr e, std::ostringstream &out, const bool verbose = false);
+    void repr(const Expression::RawPtr e, std::ostream &out, const bool verbose = false);
 
     /** The repr function for expressions (outputs json)
      *  e may not be nullptr
      */
-    inline void repr(const Expression::BasePtr &e, std::ostringstream &out,
-                     const bool verbose = false) {
+    inline void repr(const Expression::BasePtr &e, std::ostream &out, const bool verbose = false) {
         repr(e.get(), out, verbose);
     }
 

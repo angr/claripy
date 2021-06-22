@@ -39,8 +39,7 @@ namespace Op {
         const Expression::BasePtr child;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostringstream &out,
-                         const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "child":)|";
             Expression::repr(child, out, verbose);
             out << " }";

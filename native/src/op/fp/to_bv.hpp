@@ -24,8 +24,7 @@ namespace Op::FP {
         const Expression::BasePtr fp;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostringstream &out,
-                         const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha
                 << Signed << R"|(, "mode":)|" << Utils::to_underlying(mode) << R"|(, "fp":)|";
             Expression::repr(fp, out, verbose);
