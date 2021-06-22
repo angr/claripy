@@ -16,19 +16,19 @@ namespace Expression {
     /** The repr function for expressions (outputs json)
      *  e may not be nullptr
      */
-    void repr(const Expression::RawPtr e, std::ostream &out, const bool verbose = false);
+    void repr(const RawPtr e, std::ostream &out, const bool verbose = false);
 
     /** The repr function for expressions (outputs json)
      *  e may not be nullptr
      */
-    inline void repr(const Expression::BasePtr &e, std::ostream &out, const bool verbose = false) {
+    inline void repr(const BasePtr &e, std::ostream &out, const bool verbose = false) {
         repr(e.get(), out, verbose);
     }
 
     /** repr, but returns the result as a string
      *  e may not be nullptr
      */
-    inline std::string inline_repr(const Expression::RawPtr e, const bool verbose = false) {
+    inline std::string inline_repr(const RawPtr e, const bool verbose = false) {
         std::ostringstream o;
         repr(e, o, verbose);
         return o.str();
@@ -37,10 +37,22 @@ namespace Expression {
     /** repr, but returns the result as a string
      *  e may not be nullptr
      */
-    inline std::string inline_repr(const Expression::BasePtr &e, const bool verbose = false) {
+    inline std::string inline_repr(const BasePtr &e, const bool verbose = false) {
         std::ostringstream o;
         repr(e, o, verbose);
         return o.str();
+    }
+
+    /** Overload the << stream operator to use repr */
+    inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) {
+        repr(p, os, false);
+        return os;
+    }
+
+    /** Overload the << stream operator to use repr */
+    inline std::ostream &operator<<(std::ostream &os, const RawPtr &p) {
+        repr(p, os, false);
+        return os;
     }
 
 } // namespace Expression
