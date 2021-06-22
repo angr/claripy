@@ -45,6 +45,9 @@ namespace Backend::Z3::Convert {
     /** Abs converter */
     inline z3::expr abs(const z3::expr &e) { return z3::abs(e); }
 
+    /** Not converter */
+    inline z3::expr not_(const z3::expr &e) { return !e; }
+
     /** Invert converter */
     inline z3::expr invert(const z3::expr &e) { return ~e; }
 

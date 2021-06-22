@@ -81,7 +81,7 @@ namespace Backend::Z3 {
         /** Simplify the given expression
          *  expr may not be nullptr
          */
-        inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
+        inline Expression::BasePtr simplify_raw(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             return abstract(convert(expr).simplify());
         }
@@ -288,6 +288,7 @@ namespace Backend::Z3 {
 
                     UNARY_CASE(Neg, Convert::neg);
                     UNARY_CASE(Abs, Convert::abs);
+                    UNARY_CASE(Not, Convert::not_);
                     UNARY_CASE(Invert, Convert::invert);
                     UNARY_CASE(Reverse, Convert::reverse);
 
@@ -529,7 +530,7 @@ namespace Backend::Z3 {
                     // Misc
                 case Z3_OP_INTERNAL:
                     ASSERT_ARG_EMPTY(args);
-                    return Abstract::internal(decl);
+                    return Abstract::internal(b_obj, decl);
                 case Z3_OP_UNINTERPRETED: {
                     return Abstract::uninterpreted(b_obj, decl, args,
                                                    symbol_annotation_translocation_data);
