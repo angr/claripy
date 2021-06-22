@@ -90,7 +90,7 @@ namespace Op {
             Expression::repr(operands[0], out, verbose);
             for (Constants::UInt i = 1; i < operands.size(); ++i) {
                 out << ", ";
-                Expression::repr(operands[0], out, verbose);
+                Expression::repr(operands[i], out, verbose);
             }
             out << " ] }";
         }
