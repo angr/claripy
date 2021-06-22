@@ -27,7 +27,7 @@ void trivial() {
     unary<Ex::FP, Op::Neg, Cr::neg<Expression::FP>>();
 
     Log::debug("Testing not...");
-    unary<Ex::Bool, Op::Not, Cr::invert>();
+    unary<Ex::Bool, Op::Not, Cr::not_>();
 
     Log::debug("Testing invert...");
     unary<Ex::BV, Op::Invert, Cr::invert>();
