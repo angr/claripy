@@ -22,6 +22,7 @@
 #include "utils/file_line_hash.hpp"
 #include "utils/fnv1a.hpp"
 #include "utils/full.hpp"
+#include "utils/function.hpp"
 #include "utils/has_constructor.hpp"
 #include "utils/inc.hpp"
 #include "utils/internal_type.hpp"
