@@ -10,6 +10,16 @@
 
 /** Try to abstract a claricpp expression from z3 */
 void abstract() {
+
+    z3::context ctx;
+    auto b { ctx.string_val("Hello") };
+    auto decl { b.decl() };
+    auto decl_kind { decl.decl_kind() };
+    Utils::Log::critical(b);
+    Utils::Log::critical(decl);
+    Utils::Log::critical(decl_kind);
+
+#if 0
     auto z3 { Backend::Z3::Z3 {} };
 
     // Create a z3 expression
@@ -19,6 +29,7 @@ void abstract() {
 
     // Verify abstraction runs
     (void) z3.abstract(conv);
+#endif
 }
 
 // Define the test
