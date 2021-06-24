@@ -16,15 +16,13 @@ namespace Utils {
 
     /** An ostream wrapper that augments << by default defining it for strong enums
      *  If the strong enum already has a << operator defined, this is a passthrough
-     *  Warning, this function will allow type promotion even if the compiler prevents it
      */
     template <typename T, typename U> inline void OStream(T &left, const U &right) {
         if constexpr (is_strong_enum<U> && !Private::has_ostream_op<U>) {
             left << to_underlying(right);
         }
         else {
-            using Right = Utils::Function<decltype(left << right)>::Arg<1>;
-            left << static_cast<Right>(right); // Prevent implicit type promotion
+            left << right;
         }
     }
 
