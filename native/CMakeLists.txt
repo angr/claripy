@@ -293,7 +293,6 @@ add_compile_options(
 	"-Wredundant-decls"
 	"-Wshadow"
 	"-Wsign-conversion"
-	"-Wsign-promo"
 	"-Wstrict-aliasing=1" # Improves upon Wall's level 3
 	"-Wstrict-overflow=5" # Improves upon Wall's level 1
 	"-Wswitch-default"
