@@ -63,7 +63,7 @@ Utils::Log::debug("Using cache at addr: ", &(Private::cache<CacheKeyT>));
      *  if something is cached ratehr than store a weak pointer to the factory pointer returned
      */
     template <typename Base> bool in_cache(const Hash::Hash h) {
-        /* return Private::gcache<Base>().exists(h); */
+/* return Private::gcache<Base>().exists(h); */
         return Private::cache<Base>.exists(h);
     }
 

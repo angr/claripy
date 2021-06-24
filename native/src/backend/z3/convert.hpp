@@ -319,7 +319,7 @@ namespace Backend::Z3::Convert {
 #ifdef DEBUG
                 Utils::affirm<Utils::Error::Unexpected::Unknown>(
                     Factory::Private::cache<Expression::Base>.find(expr->hash) != nullptr,
-                    /* Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr, */
+/* Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr, */
                     WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
                 // Store annotations for translocation

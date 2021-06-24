@@ -77,6 +77,4 @@ namespace Expression {
 
 } // namespace Expression
 
-template <>
-Utils::WeakCache<long unsigned int, const Expression::Base> inline Factory::Private::cache<Expression::Base> {};
 #endif
