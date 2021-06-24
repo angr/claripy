@@ -31,7 +31,8 @@ void simplify() {
     const auto simp { z3.simplify(statement) };
 
     // Solution
-    const auto sol { x }; // x && y = x && true = x
+    // x && y = x && true = x
+    const auto sol { x }; // NOLINT
 
     // Verify equality
     UNITTEST_ASSERT(Ex::inline_repr(simp) == Ex::inline_repr(sol));
