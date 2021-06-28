@@ -42,8 +42,8 @@ UNITTEST_DEFINE_MAIN_TEST(trivial)
 /** Z3 backend */
 Backend::Z3::Z3 z3bk;
 
-/** A symbolic bv variable */
-const auto _x { Create::symbol<Ex::BV>("x", 64_ui) };
+/** A symbolic fp variable */
+const auto _x { Create::symbol<Ex::FP>("x", 64_ui) };
 
 
 /**********************************************************/
