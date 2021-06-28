@@ -16,10 +16,12 @@ void abstract() {
     auto decl { b.decl() };
     auto decl_kind { decl.decl_kind() };
     Utils::Log::critical(b);
+    Utils::Log::critical("Kind: ", b.kind());
+    Utils::Log::critical("Has to be: ", Z3_APP_AST, " or ", Z3_NUMERAL_AST);
     Utils::Log::critical(decl);
     Utils::Log::critical(decl_kind);
 
-#if 0
+#if 1
     auto z3 { Backend::Z3::Z3 {} };
 
     // Create a z3 expression
