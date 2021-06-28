@@ -305,10 +305,10 @@ namespace Backend::Z3::Abstract {
             // Size check
             const auto bl { b_obj.get_sort().bv_size() };
             Utils::affirm<Utils::Error::Unexpected::Size>(
-                sizeof(bv_num) == bl * 8,
+                sizeof(bv_num) * 8 == bl,
                 WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",
                 bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
-                "bytes long.");
+                " bits long.");
             // Return literal
             return Create::literal(std::move(data));
         }
