@@ -39,11 +39,10 @@ UNITTEST_DEFINE_MAIN_TEST(trivial)
 /**********************************************************/
 
 
-/** Z3 backend */
 Backend::Z3::Z3 z3bk;
 
-/** A symbolic fp variable */
-const auto _x { Create::symbol<Ex::FP>("x", 64_ui) };
+const auto fp_x { Create::symbol<Ex::FP>("fp_x", 64_ui) };
+const auto bv_x { Create::symbol<Ex::BV>("bv_x", 64_ui) };
 
 
 /**********************************************************/
@@ -52,8 +51,20 @@ const auto _x { Create::symbol<Ex::FP>("x", 64_ui) };
 
 
 ADD_TEST(abs) {
-    const auto abs { Create::abs(_x) };
+    const auto abs { Create::abs(fp_x) };
     Utils::Log::warning(__FILE__ " ", __LINE__);
     const auto simp { z3bk.simplify(abs) };
     UNITTEST_ASSERT(abs == simp);
+}
+
+template <typename T> void neg_test(const Expression::BasePtr &x) {
+    const auto neg { Create::neg<T>(x) };
+    Utils::Log::warning(__FILE__ " ", __LINE__);
+    const auto test { z3bk.abstract(z3bk.convert(neg)) };
+    UNITTEST_ASSERT(test == neg);
+}
+
+ADD_TEST(neg) {
+    neg_test<Ex::FP>(fp_x);
+    neg_test<Ex::BV>(bv_x);
 }
