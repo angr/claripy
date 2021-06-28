@@ -50,21 +50,15 @@ const auto bv_x { Create::symbol<Ex::BV>("bv_x", 64_ui) };
 /**********************************************************/
 
 
-ADD_TEST(abs) {
-    const auto abs { Create::abs(fp_x) };
-    Utils::Log::warning(__FILE__ " ", __LINE__);
-    const auto simp { z3bk.simplify(abs) };
-    UNITTEST_ASSERT(abs == simp);
+bool test_id(const Expression::BasePtr &&x) {
+    return z3bk.abstract(z3bk.convert(x)) == x;
 }
 
-template <typename T> void neg_test(const Expression::BasePtr &x) {
-    const auto neg { Create::neg<T>(x) };
-    Utils::Log::warning(__FILE__ " ", __LINE__);
-    const auto test { z3bk.abstract(z3bk.convert(neg)) };
-    UNITTEST_ASSERT(test == neg);
+ADD_TEST(abs) {
+    UNITTEST_ASSERT(test_id(Create::abs(fp_x)));
 }
 
 ADD_TEST(neg) {
-    neg_test<Ex::FP>(fp_x);
-    neg_test<Ex::BV>(bv_x);
+    UNITTEST_ASSERT(test_id(Create::neg<Ex::FP>(fp_x)));
+    UNITTEST_ASSERT(test_id(Create::neg<Ex::BV>(bv_x)));
 }
