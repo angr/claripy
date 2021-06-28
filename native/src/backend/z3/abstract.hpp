@@ -58,7 +58,7 @@
  */
 #define UINT_BINARY(FUNC)                                                                         \
     ASSERT_ARG_LEN(args, 1);                                                                      \
-    return FUNC(GET_EARG(1), Utils::widen<Constants::UInt, int, true>(                            \
+    return FUNC(GET_EARG(0), Utils::widen<Constants::UInt, int, true>(                            \
                                  Z3_get_decl_int_parameter(Private::tl_ctx, decl, 0)));
 
 /** A local macro used for calling a basic binary expression
