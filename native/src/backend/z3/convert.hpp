@@ -315,7 +315,7 @@ namespace Backend::Z3::Convert {
                 return Private::tl_ctx.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
             }
             case Expression::BV::static_cuid: {
-                using BVP = Constants::CTSC<Expression::FP>;
+                using BVP = Constants::CTSC<Expression::BV>;
 #ifdef DEBUG
                 Utils::affirm<Utils::Error::Unexpected::Unknown>(
                     Factory::Private::cache<Expression::Base>.find(expr->hash) != nullptr,
