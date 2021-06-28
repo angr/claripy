@@ -2,9 +2,12 @@
  * @file
  * \ingroup utils
  * @brief This file defines a class that will run the function it is passed before main
+ * Warning: This uses the __COUNTER__ macro
  */
 #ifndef R_UTILS_RUNBEFOREMAIN_HPP_
 #define R_UTILS_RUNBEFOREMAIN_HPP_
+
+#include "../macros.hpp"
 
 
 /** Define a macro to allow running a literal statement
@@ -12,7 +15,7 @@
  */
 #define UTILS_RUN_STATEMENT_BEFORE_MAIN(STATEMENT)                                                \
     /** Declare an anonomyous namespace to obsure internals  */                                   \
-    namespace {                                                                                   \
+    namespace MACRO_CONCAT(__RBM_, __COUNTER__) {                                                 \
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunBeforeMain final {                                                \
             /** Constructor */                                                                    \
@@ -23,7 +26,7 @@
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
-        RunBeforeMain rbm;                                                                        \
+        static RunBeforeMain rbm;                                                                 \
     }
 
 /** Define a macro to allow running a function before main
@@ -31,7 +34,7 @@
  */
 #define UTILS_RUN_FUNCTION_BEFORE_MAIN(F, ...)                                                    \
     /** Declare an anonomyous namespace to obscure internals */                                   \
-    namespace {                                                                                   \
+    namespace MACRO_CONCAT(__RBM_, __COUNTER__) {                                                 \
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunBeforeMain final {                                                \
             /** Constructor */                                                                    \
@@ -42,7 +45,7 @@
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunBeforeMain, delete)                             \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
-        RunBeforeMain rbm;                                                                        \
+        static RunBeforeMain rbm;                                                                 \
     }
 
 

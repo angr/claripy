@@ -2,10 +2,12 @@
  * @file
  * \ingroup utils
  * @brief This file defines a class that will run the function it is passed after main
- * Note: This might not run if an exception terminates main
+ * Warning: This uses the __COUNTER__ macro
  */
 #ifndef R_UTILS_RUNAFTERMAIN_HPP_
 #define R_UTILS_RUNAFTERMAIN_HPP_
+
+#include "../macros.hpp"
 
 
 /** Define a macro to allow running a literal statement
@@ -13,7 +15,7 @@
  */
 #define UTILS_RUN_STATEMENT_AFTER_MAIN(STATEMENT)                                                 \
     /** Declare an anonomyous namespace to obsure internals  */                                   \
-    namespace {                                                                                   \
+    namespace MACRO_CONCAT(__RAM_, __COUNTER__) {                                                 \
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunAfterMain final {                                                 \
             /** Default constructor */                                                            \
@@ -24,7 +26,7 @@
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
-        RunAfterMain ram;                                                                         \
+        static RunAfterMain ram;                                                                  \
     }
 
 /** Define a macro to allow running a function before main
@@ -32,7 +34,7 @@
  */
 #define UTILS_RUN_FUNCTION_AFTER_MAIN(F, ...)                                                     \
     /** Declare an anonomyous namespace to obscure internals */                                   \
-    namespace {                                                                                   \
+    namespace MACRO_CONCAT(__RAM_, __COUNTER__) {                                                 \
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunAfterMain final {                                                 \
             /** Default constructor */                                                            \
@@ -43,7 +45,7 @@
             SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RunAfterMain, delete)                              \
         };                                                                                        \
         /** Run F(args...) when this object is created */                                         \
-        RunAfterMain ram;                                                                         \
+        static RunAfterMain ram;                                                                  \
     }
 
 
