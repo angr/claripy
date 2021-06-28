@@ -53,7 +53,7 @@ namespace Backend::Z3::Convert {
 
     /** Reverse converter */
     inline z3::expr reverse(const z3::expr &e) {
-        const auto size { e.length().get_numeral_uint64() };
+        const auto size { e.get_sort().bv_size() };
 
         // Trivial case
         if (size == C_CHAR_BIT) {
