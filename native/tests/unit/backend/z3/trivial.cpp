@@ -43,6 +43,7 @@ Backend::Z3::Z3 z3bk;
 
 const auto fp_x { Create::symbol<Ex::FP>("fp_x", 64_ui) };
 const auto bv_x { Create::symbol<Ex::BV>("bv_x", 64_ui) };
+const auto bool_x { Create::symbol("bool_x") };
 
 
 /**********************************************************/
@@ -62,3 +63,16 @@ ADD_TEST(neg) {
     UNITTEST_ASSERT(test_id(Create::neg<Ex::FP>(fp_x)));
     UNITTEST_ASSERT(test_id(Create::neg<Ex::BV>(bv_x)));
 }
+
+
+ADD_TEST(not_) {
+    UNITTEST_ASSERT(test_id(Create::not_(bool_x)));
+}
+
+ADD_TEST(invert) {
+    UNITTEST_ASSERT(test_id(Create::invert(bv_x)));
+}
+
+/* ADD_TEST(reverse) { */
+/*     UNITTEST_ASSERT(test_id(Create::reverse(bv_x))); */
+/* } */
