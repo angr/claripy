@@ -53,8 +53,8 @@ void trivial() {
 
     // UInt Binary
 
-    /* UNITTEST_ASSERT(test_id(Create::sign_ext(bv_x, 1))); */
-    /* UNITTEST_ASSERT(test_id(Create::zero_ext(bv_x, 1))); */
+    UNITTEST_ASSERT(test_id(Create::sign_ext(bv_x, 1)));
+    UNITTEST_ASSERT(test_id(Create::zero_ext(bv_x, 1)));
 }
 
 // Define the test
