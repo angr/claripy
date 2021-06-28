@@ -73,6 +73,7 @@ ADD_TEST(invert) {
     UNITTEST_ASSERT(test_id(Create::invert(bv_x)));
 }
 
-/* ADD_TEST(reverse) { */
-/*     UNITTEST_ASSERT(test_id(Create::reverse(bv_x))); */
-/* } */
+ADD_TEST(reverse) {
+    const auto also_x { Create::reverse(Create::reverse(bv_x)) };
+    UNITTEST_ASSERT(z3bk.simplify(also_x) == bv_x);
+}
