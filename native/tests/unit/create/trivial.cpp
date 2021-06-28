@@ -19,8 +19,7 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing abs...");
-    unary<Ex::BV, Op::Abs, Cr::abs<Expression::BV>>();
-    unary<Ex::FP, Op::Neg, Cr::neg<Expression::FP>>();
+    unary<Ex::FP, Op::Abs, Cr::abs>();
 
     Log::debug("Testing neg...");
     unary<Ex::BV, Op::Neg, Cr::neg<Expression::BV>>();

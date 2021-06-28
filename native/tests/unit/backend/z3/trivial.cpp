@@ -43,7 +43,7 @@ UNITTEST_DEFINE_MAIN_TEST(trivial)
 Backend::Z3::Z3 z3bk;
 
 /** A symbolic bv variable */
-const auto x { Create::symbol<Ex::BV>("x", 64_ui) };
+const auto _x { Create::symbol<Ex::BV>("x", 64_ui) };
 
 
 /**********************************************************/
@@ -52,7 +52,7 @@ const auto x { Create::symbol<Ex::BV>("x", 64_ui) };
 
 
 ADD_TEST(abs) {
-    const auto abs { Create::abs<Ex::BV>(x) };
+    const auto abs { Create::abs(_x) };
     Utils::Log::warning(__FILE__ " ", __LINE__);
     const auto simp { z3bk.simplify(abs) };
     UNITTEST_ASSERT(abs == simp);

@@ -688,7 +688,7 @@ namespace Backend::Z3 {
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:
-                    return Abstract::abs<Ex::FP>(args);
+                    return Abstract::abs(args);
                 case Z3_OP_FPA_NEG:
                     return Abstract::neg<Ex::FP>(args);
                 case Z3_OP_FPA_ADD:

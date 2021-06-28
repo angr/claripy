@@ -21,9 +21,9 @@ namespace Create {
     /** Create an Expression with an Abs op
      *  Expression pointers may not be nullptr
      */
-    template <typename T> inline EBasePtr abs(const EBasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr abs(const EBasePtr &x, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::unary<T, T, Op::Abs, Ex::BV, Ex::FP>(x, std::move(sp));
+        return Private::unary<Ex::FP, Ex::FP, Op::Abs, Ex::FP>(x, std::move(sp));
     }
 
     /** Create an Expression with an Neg op

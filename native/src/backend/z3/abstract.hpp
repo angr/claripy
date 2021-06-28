@@ -253,9 +253,7 @@ namespace Backend::Z3::Abstract {
     }
 
     /** Abstraction function for Z3_OP_BADD */
-    template <typename T> inline Expression::BasePtr abs(const ArgsVec &args) {
-        UNARY(Create::abs<T>);
-    }
+    inline Expression::BasePtr abs(const ArgsVec &args) { UNARY(Create::abs) }
 
     /** Abstraction function for Z3_OP_BADD */
     inline Expression::BasePtr add(const ArgsVec &args) { FLAT_BINARY(Create::add); }
