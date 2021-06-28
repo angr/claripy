@@ -419,12 +419,15 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	)
 	# Macros
 	target_compile_definitions("${CLARICPP}" PUBLIC "_GLIBCXX_ASSERTIONS")
-	# Compile flags
+	# Compile and link flags
 	target_compile_options("${CLARICPP}" PUBLIC
 		"-O0"
 		"-g"
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
+	)
+	target_link_options("${CLARICPP}" PUBLIC
+		"-Wl,-export_dynamic"
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("Release Build enabled!")
