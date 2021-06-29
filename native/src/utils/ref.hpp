@@ -6,7 +6,6 @@
 #ifndef R_UTILS_REF_HPP_
 #define R_UTILS_REF_HPP_
 
-
 namespace Utils {
 
     /** This allows passing compile-time literals by reference
