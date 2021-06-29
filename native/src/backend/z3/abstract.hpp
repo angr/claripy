@@ -202,7 +202,12 @@ namespace Backend::Z3::Abstract {
 
     /** Abstraction function for Z3_OP_DISTINCT */
     inline Expression::BasePtr distinct(const ArgsVec &args) {
-        BINARY(Create::neq<Expression::Bool>);
+        ASSERT_ARG_LEN(args, 2);
+        switch (GET_EARG(0)->cuid) {
+            TYPE_CASE(FP, Create::neq, GET_EARG(0), GET_EARG(1));
+            TYPE_CASE(Bool, Create::neq, GET_EARG(0), GET_EARG(1));
+            DEFAULT_TYPE_CASE(GET_EARG(0)->cuid);
+        };
     }
 
     /** Abstraction function for Z3_OP_ITE */
