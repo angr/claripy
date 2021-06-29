@@ -25,6 +25,7 @@ std::vector<Func> functions {};
 
 /** Test trivial ops in claricpp */
 void trivial() {
+    Utils::Log::Level::set(Utils::Log::Level::Level::Critical);
 
     Backend::Z3::Z3 z3bk;
 
@@ -65,12 +66,12 @@ void trivial() {
     // eq
     UNITTEST_ASSERT(test_id(Create::eq<Ex::FP>(fp_x, fp_x)));
     UNITTEST_ASSERT(test_id(Create::eq<Ex::Bool>(bool_x, bool_x)));
-    UNITTEST_ASSERT(test_id(Create::eq<Ex::String>(string_x, string_x)));
+    /* UNITTEST_ASSERT(test_id(Create::eq<Ex::String>(string_x, string_x))); */
 
     // neq
     UNITTEST_ASSERT(test_id(Create::neq<Ex::FP>(fp_x, fp_x)));
     UNITTEST_ASSERT(test_id(Create::neq<Ex::Bool>(bool_x, bool_x)));
-    UNITTEST_ASSERT(test_id(Create::neq<Ex::String>(string_x, string_x)));
+    /* UNITTEST_ASSERT(test_id(Create::neq<Ex::String>(string_x, string_x))); */
 
     // compare
     /* static_assert(Utils::BitMask::has(Mask, Mode::Compare::Signed), */
