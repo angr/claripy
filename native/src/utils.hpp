@@ -34,7 +34,6 @@
 #include "utils/macros.hpp"
 #include "utils/make_derived_shared.hpp"
 #include "utils/max.hpp"
-#include "utils/mono_state.hpp"
 #include "utils/narrow.hpp"
 #include "utils/norm_path_hash.hpp"
 #include "utils/ostream.hpp"
