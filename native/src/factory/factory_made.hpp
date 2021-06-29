@@ -18,8 +18,8 @@
  *  BASE is the same base class as factory's template Base argument
  *  Factory made subclasses that want to be directly constructed by factory must define this
  *  Leaves class in a private access state
- *  X can be anything, but must be different between different templates of the same class
- *  For example, Foo<int> must give a different X from Foo<bool>
+ *  X can be any int, but must be different between different templates of the same class
+ *  For example, Foo<int> must give a different X than Foo<bool> gives
  */
 #define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE, X)                                            \
     /* The CUID does not need to be used in non-instantiated classes */                           \
