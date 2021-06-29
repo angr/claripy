@@ -18,8 +18,10 @@
  *  For example: template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(LT, true)
  *  An additional argument can be passed as the prefix to the desired debug name of the class
  *  For example, "FP::" may be desired for an FP op
- *  X can be anything, but must be different between different templates of the same class
+ *  X can be anything that does not contain quotes or backslashes.
+ *  It must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
+ *  X will be output in repr via the << operator if it is not Utils::MonoState
  */
 #define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                   \
     class CLASS final : public ::Op::Binary<(CONSIDERSIZE)> {                                     \
@@ -30,6 +32,16 @@
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
                               const ::Expression::BasePtr &r)                                     \
             : Binary { h, static_cuid, l, r } {}                                                  \
+        /** Python's repr function (outputs json) */                                              \
+        inline void repr(std::ostream &out, const bool verbose = false) const override final {    \
+            if constexpr (Utils::is_same_ignore_cv<decltype(X), Utils::MonoState>) {              \
+                ::Op::Binary<(CONSIDERSIZE)>::repr(out, verbose);                                 \
+            }                                                                                     \
+            else {                                                                                \
+                repr_helper(out, verbose);                                                        \
+                out << R"|({ "extra":")|" << (X) << "\" }";                                       \
+            }                                                                                     \
+        }                                                                                         \
     };
 
 
@@ -48,22 +60,18 @@ namespace Op {
         /** Right operand */
         const Expression::BasePtr right;
 
-        /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const override final {
-            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
-                << ConsiderSize << R"|(, "left":)|";
-            Expression::repr(left, out, verbose);
-            out << R"|(, "right":)|";
-            Expression::repr(right, out, verbose);
-            out << " }";
-        }
-
         /** Add's the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
             s.emplace(right.get());
             s.emplace(left.get());
+        }
+
+        /** Python's repr function (outputs json) */
+        inline void repr(std::ostream &out, const bool verbose = false) const override {
+            repr_helper(out, verbose);
+            out << " }";
         }
 
       protected:
@@ -82,6 +90,16 @@ namespace Op {
                 Utils::affirm<Err>(Expression::are_same_type<false>(left, right),
                                    WHOAMI_WITH_SOURCE "left and right types differ");
             }
+        }
+
+        /** Python's repr function (outputs json), but without the closing '}' */
+        inline void repr_helper(std::ostream &out, const bool verbose = false) const {
+            out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
+                << ConsiderSize << R"|(, "left":)|";
+            Expression::repr(left, out, verbose);
+            out << R"|(, "right":)|";
+            Expression::repr(right, out, verbose);
+            out << " }";
         }
     };
 
