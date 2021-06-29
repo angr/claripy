@@ -60,12 +60,6 @@ namespace Op {
     /** The binary comparison op class: Neq */
     OP_BINARY_TRIVIAL_SUBCLASS(Neq, false, 0);
 
-    /** The binary comparison op class(es): ULT, SLT, UGT, SGT, ULE, SLE, UGE, SGE
-     *  Requires equal sized inputs
-     */
-    template <Mode::Compare Mask>
-    OP_BINARY_TRIVIAL_SUBCLASS(Compare, true, Utils::to_underlying(Mask));
-
     // Math
 
     /** The mathematical binary op class: Sub

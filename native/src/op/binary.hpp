@@ -18,10 +18,8 @@
  *  For example: template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(LT, true)
  *  An additional argument can be passed as the prefix to the desired debug name of the class
  *  For example, "FP::" may be desired for an FP op
- *  X can be anything that does not contain quotes or backslashes.
- *  It must be different between different templates of the same class
+ *  X can be any int but it must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
- *  X will be output in repr via the << operator if it is not Utils::MonoState
  */
 #define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                   \
     class CLASS final : public ::Op::Binary<(CONSIDERSIZE)> {                                     \
@@ -32,16 +30,6 @@
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
                               const ::Expression::BasePtr &r)                                     \
             : Binary { h, static_cuid, l, r } {}                                                  \
-        /** Python's repr function (outputs json) */                                              \
-        inline void repr(std::ostream &out, const bool verbose = false) const override final {    \
-            if constexpr (Utils::is_same_ignore_cv<decltype(X), Utils::MonoState>) {              \
-                ::Op::Binary<(CONSIDERSIZE)>::repr(out, verbose);                                 \
-            }                                                                                     \
-            else {                                                                                \
-                repr_helper(out, verbose);                                                        \
-                out << R"|({ "extra":")|" << (X) << "\" }";                                       \
-            }                                                                                     \
-        }                                                                                         \
     };
 
 
