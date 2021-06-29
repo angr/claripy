@@ -11,10 +11,9 @@
 
 namespace Expression {
 
-    /** Return the type name of the expression pointed to by non-nullptr e */
-    constexpr const char *type_name(const Expression::RawPtr e) {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(e);
-        switch (e->cuid) {
+    /** Return the type name of the expression type given by cuid c */
+    constexpr const char *type_name(const CUID::CUID c) {
+        switch (c) {
             case Bool::static_cuid:
                 return "Bool";
             case String::static_cuid:
@@ -29,6 +28,15 @@ namespace Expression {
                 throw Utils::Error::Unexpected::Type(WHOAMI_WITH_SOURCE
                                                      "CUID unknown; unknown type.");
         }
+    }
+
+    /** Return the type name of the expression type */
+    template <typename T> constexpr const char *type_name() { return type_name(T::static_cuid); }
+
+    /** Return the type name of the expression pointed to by non-nullptr e */
+    constexpr const char *type_name(const Expression::RawPtr e) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(e);
+        return type_name(e->cuid);
     }
 
     /** Return the type name of the expression pointed to by non-nullptr e */
