@@ -98,16 +98,36 @@ namespace Backend::Z3::Convert {
         using C = Mode::Compare;
         static_assert(Mode::compare_is_valid(Mask), "Invalid mask mode");
         if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Less | C::Eq)) {
-            return z3::sle(l, r);
+            if (l.is_fpa()) {
+                return l <= r;
+            }
+            else {
+                return z3::sle(l, r);
+            }
         }
         else if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Less | C::Neq)) {
-            return z3::slt(l, r);
+            if (l.is_fpa()) {
+                return l < r;
+            }
+            else {
+                return z3::slt(l, r);
+            }
         }
         else if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Greater | C::Eq)) {
-            return z3::sge(l, r);
+            if (l.is_fpa()) {
+                return l >= r;
+            }
+            else {
+                return z3::sge(l, r);
+            }
         }
         else if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Greater | C::Neq)) {
-            return z3::sgt(l, r);
+            if (l.is_fpa()) {
+                return l > r;
+            }
+            else {
+                return z3::sgt(l, r);
+            }
         }
         else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Less | C::Eq)) {
             return z3::ult(l, r);
@@ -319,7 +339,7 @@ namespace Backend::Z3::Convert {
 #ifdef DEBUG
                 Utils::affirm<Utils::Error::Unexpected::Unknown>(
                     Factory::Private::cache<Expression::Base>.find(expr->hash) != nullptr,
-/* Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr, */
+                    /* Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr, */
                     WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
                 // Store annotations for translocation
