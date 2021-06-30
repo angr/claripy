@@ -52,12 +52,10 @@ void trivial() {
     Utils::Log::debug("Testing invert...");
     UNITTEST_ASSERT(test_id(Create::invert(bv_x)));
 
-    // Neg
     Utils::Log::debug("Testing neg...");
     UNITTEST_ASSERT(test_id(Create::neg<Ex::FP>(fp_x)));
     UNITTEST_ASSERT(test_id(Create::neg<Ex::BV>(bv_x)));
 
-    // Reverse
     Utils::Log::debug("Testing reverse...");
     const auto also_x { Create::reverse(Create::reverse(bv_x)) };
     UNITTEST_ASSERT(z3bk.simplify(also_x) == bv_x);
@@ -74,19 +72,16 @@ void trivial() {
 
     // Binary
 
-    // eq
     Utils::Log::debug("Testing eq...");
     UNITTEST_ASSERT(test_id(Create::eq<Ex::FP>(fp_x, fp_x)));
     UNITTEST_ASSERT(test_id(Create::eq<Ex::Bool>(bool_x, bool_x)));
     /* UNITTEST_ASSERT(test_id(Create::eq<Ex::String>(string_x, string_x))); */
 
-    // neq
     Utils::Log::debug("Testing neq...");
     UNITTEST_ASSERT(test_id(Create::neq<Ex::FP>(fp_x, fp_x)));
     UNITTEST_ASSERT(test_id(Create::neq<Ex::Bool>(bool_x, bool_x)));
     /* UNITTEST_ASSERT(test_id(Create::neq<Ex::String>(string_x, string_x))); */
 
-    // fp compare
     using C = Mode::Compare;
     Utils::Log::debug("Testing compare...");
     UNITTEST_ASSERT(test_id(Create::compare<Ex::FP, C::Signed | C::Less | C::Eq>(fp_x, fp_y)));
@@ -94,7 +89,6 @@ void trivial() {
     UNITTEST_ASSERT(test_id(Create::compare<Ex::FP, C::Signed | C::Greater | C::Eq>(fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(Create::compare<Ex::FP, C::Signed | C::Greater | C::Neq>(fp_x, fp_y)));
 
-    // bv compare
     UNITTEST_ASSERT(test_id(Create::compare<Ex::BV, C::Signed | C::Less | C::Eq>(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::compare<Ex::BV, C::Signed | C::Less | C::Neq>(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::compare<Ex::BV, C::Signed | C::Greater | C::Eq>(bv_x, bv_y)));
@@ -105,6 +99,20 @@ void trivial() {
         test_id(Create::compare<Ex::BV, C::Unsigned | C::Greater | C::Eq>(bv_x, bv_y)));
     UNITTEST_ASSERT(
         test_id(Create::compare<Ex::BV, C::Unsigned | C::Greater | C::Neq>(bv_x, bv_y)));
+
+    Utils::Log::debug("Testing sub...");
+    UNITTEST_ASSERT(test_id(Create::sub(bv_x, bv_y)));
+
+    Utils::Log::debug("Testing div...");
+    UNITTEST_ASSERT(test_id(Create::div<true>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(Create::div<false>(bv_x, bv_y)));
+
+    Utils::Log::debug("Testing pow...");
+    /* UNITTEST_ASSERT(test_id(Create::pow(bv_x, bv_y))); */
+
+    Utils::Log::debug("Testing mod...");
+    UNITTEST_ASSERT(test_id(Create::mod<true>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(Create::mod<false>(bv_x, bv_y)));
 }
 
 // Define the test
