@@ -50,13 +50,16 @@ endif()
 
 # Clang Tidy
 if(CLANG_TIDY)
+	set(CLANG_TIDY_NAMES "clang-tidy-11" "clang-tidy")
+	message(WARNING "Clang Tidy might not behave well with boost headers")
 	if(APPLE)
-		message(WARNING "Clang Tidy might not behave well with boost headers")
-		set(CMAKE_C_CLANG_TIDY "/usr/local/opt/llvm/bin/clang-tidy")
-		set(CMAKE_CXX_CLANG_TIDY "/usr/local/opt/llvm/bin/clang-tidy")
+		find_program(CLANG_TIDY_PATH ${CLANG_TIDY_NAMES}
+			HINTS "/usr/local/opt/llvm/bin/"
+			REQUIRED
+		)
 	else()
-		find_program(CLANG_TIDY_PATH "clang-tidy-11" "clang-tidy" REQUIRED)
-		set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_PATH}")
-		set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH}")
+		find_program(CLANG_TIDY_PATH ${CLANG_TIDY_NAMES} REQUIRED)
 	endif()
+	set(CMAKE_C_CLANG_TIDY "${CLANG_TIDY_PATH}")
+	set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_PATH}")
 endif()
