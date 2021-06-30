@@ -5,4 +5,4 @@ simple_test(abstract)
 simple_test(simplify)
 
 # Test ops
-simple_test(trivial)
+simple_test(normal)

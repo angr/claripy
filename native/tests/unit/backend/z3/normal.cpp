@@ -5,16 +5,16 @@
 #include "backend.hpp"
 #include "testlib.hpp"
 
+#include <memory>
+
 // For brevity
 namespace Ex = Expression;
-
 
 /** The type of test functions */
 using Func = void (*)();
 
 /** List of functions to test */
 std::vector<Func> functions {};
-
 
 /** A macro to define a new test function */
 #define ADD_TEST(FNAME)                                                                           \
@@ -23,8 +23,10 @@ std::vector<Func> functions {};
     void FNAME()
 
 
-/** Test trivial ops in claricpp */
-void trivial() {
+/** Test normal ops in claricpp
+ *  @todo: Enable string symbol testing
+ */
+void normal() {
     Backend::Z3::Z3 z3bk;
 
     /* const auto string_x { Create::symbol<Ex::String>("string_x", 64_ui) }; */
@@ -33,6 +35,8 @@ void trivial() {
     const auto fp_y { Create::symbol<Ex::FP>("fp_y", Mode::FP::dbl.width()) };
     const auto bv_x { Create::symbol<Ex::BV>("bv_x", 64_ui) };
     const auto bv_y { Create::symbol<Ex::BV>("bv_y", 64_ui) };
+    const auto vs_x { Create::symbol<Ex::VS>("vs_x", 64_ui) };
+    const auto vs_y { Create::symbol<Ex::VS>("vs_y", 64_ui) };
     const auto bool_x { Create::symbol("bool_x") };
     const auto bool_y { Create::symbol("bool_y") };
 
@@ -40,6 +44,40 @@ void trivial() {
     const auto test_id = [&z3bk](const Expression::BasePtr &&x) {
         return z3bk.abstract(z3bk.convert(x)) == x;
     };
+
+    /**************************************************/
+    /*                  Non-Trivial                   */
+    /**************************************************/
+
+    Utils::Log::debug("Testing if...");
+    UNITTEST_ASSERT(test_id(Create::if_<Ex::BV>(bool_x, bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(Create::if_<Ex::FP>(bool_x, fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(Create::if_<Ex::Bool>(bool_x, bool_x, bool_y)));
+    UNITTEST_ASSERT(test_id(Create::if_<Ex::VS>(bool_x, vs_x, vs_y)));
+    /* UNITTEST_ASSERT(test_id(Create::if_<Ex::String>(bool_x, string_x, string_y))); */
+
+    Utils::Log::debug("Testing extract...");
+    UNITTEST_ASSERT(test_id(Create::extract(2, 1, bv_x)));
+
+    Utils::Log::debug("Testing literal...");
+    UNITTEST_ASSERT(test_id(Create::literal(true)));
+    UNITTEST_ASSERT(test_id(Create::literal({ 'a', 'b' })));
+    UNITTEST_ASSERT(test_id(Create::literal(0.)));
+    UNITTEST_ASSERT(test_id(Create::literal(0.F)));
+    UNITTEST_ASSERT(test_id(Create::literal(std::string("Hello"))));
+    const auto vs_obj { std::make_shared<PyObj::VS>(UTILS_FILE_LINE_HASH, 0, 64_ui) };
+    UNITTEST_ASSERT(test_id(Create::literal(vs_obj)));
+
+    Utils::Log::debug("Testing symbol...");
+    UNITTEST_ASSERT(bool_x);
+    UNITTEST_ASSERT(bv_x);
+    UNITTEST_ASSERT(fp_x);
+    UNITTEST_ASSERT(vs_x);
+    /* UNITTEST_ASSERT(string_x); */
+
+    /**************************************************/
+    /*                    Trivial                     */
+    /**************************************************/
 
     // Unary
 
@@ -147,4 +185,4 @@ void trivial() {
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(trivial)
+UNITTEST_DEFINE_MAIN_TEST(normal)
