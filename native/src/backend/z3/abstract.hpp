@@ -406,13 +406,13 @@ namespace Backend::Z3::Abstract {
             const auto sort { b_obj.get_sort() };
             const auto width { z3_sort_to_fp_width(sort) };
             if (LIKELY(width == Mode::FP::dbl)) {
-                const uint64_t to_val { static_cast<uint64_t>(sign) | mantissa |
+                const uint64_t to_val { (static_cast<uint64_t>(sign) << 63) | mantissa |
                                         (static_cast<uint64_t>(exp) << 52) };
                 // If nothing went wrong, this reinterpret_cast should be safe
                 return Create::literal(*reinterpret_cast<const double *>(&to_val));
             }
             if (LIKELY(width == Mode::FP::flt)) {
-                const uint32_t to_val { static_cast<uint32_t>(sign) |
+                const uint32_t to_val { (static_cast<uint32_t>(sign) << 31) |
                                         static_cast<uint32_t>(mantissa) |
                                         (static_cast<uint32_t>(exp) << 23) };
                 // If nothing went wrong, this reinterpret_cast should be safe
@@ -465,7 +465,7 @@ namespace Backend::Z3::Abstract {
 
         /** Abstraction function for fpa zeros */
         template <Mode::Sign::FP Sign> inline Expression::BasePtr zero(const z3::expr &b_obj) {
-            return Private::fpa_literal<Sign>(b_obj, 0., 0.f);
+            return Private::fpa_literal<Sign>(b_obj, 0., 0.F);
         }
 
         /** Abstraction function for fpa inf */
