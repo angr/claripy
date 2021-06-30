@@ -115,10 +115,9 @@ namespace Create {
     inline EBasePtr compare(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         static_assert(Mode::compare_is_valid(Mask), "Invalid Compare Mode");
-        if constexpr (Utils::is_same_ignore_const<In, Ex::FP>) {
-            static_assert(Utils::BitMask::has(Mask, Mode::Compare::Signed),
-                          "FP comparisons must be signed");
-        }
+        static_assert(Utils::BitMask::has(Mask, Mode::Compare::Signed) ||
+                          !Utils::is_same_ignore_const<In, Ex::FP>,
+                      "FP comparisons must be signed");
         return Private::binary<Ex::Bool, In, Op::Compare<Mask>, Private::SizeMode::NA, Ex::FP,
                                Ex::BV>(left, right, std::move(sp));
     }
