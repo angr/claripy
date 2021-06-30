@@ -28,12 +28,14 @@ void trivial() {
 
     Backend::Z3::Z3 z3bk;
 
-    const auto string_x { Create::symbol<Ex::String>("string_x", 64_ui) };
+    /* const auto string_x { Create::symbol<Ex::String>("string_x", 64_ui) }; */
+    /* const auto string_y { Create::symbol<Ex::String>("string_y", 64_ui) }; */
     const auto fp_x { Create::symbol<Ex::FP>("fp_x", Mode::FP::dbl.width()) };
     const auto fp_y { Create::symbol<Ex::FP>("fp_y", Mode::FP::dbl.width()) };
     const auto bv_x { Create::symbol<Ex::BV>("bv_x", 64_ui) };
     const auto bv_y { Create::symbol<Ex::BV>("bv_y", 64_ui) };
     const auto bool_x { Create::symbol("bool_x") };
+    const auto bool_y { Create::symbol("bool_y") };
 
     // Verify the round trip changes nothing
     const auto test_id = [&z3bk](const Expression::BasePtr &&x) {
@@ -73,14 +75,14 @@ void trivial() {
     // Binary
 
     Utils::Log::debug("Testing eq...");
-    UNITTEST_ASSERT(test_id(Create::eq<Ex::FP>(fp_x, fp_x)));
-    UNITTEST_ASSERT(test_id(Create::eq<Ex::Bool>(bool_x, bool_x)));
-    /* UNITTEST_ASSERT(test_id(Create::eq<Ex::String>(string_x, string_x))); */
+    UNITTEST_ASSERT(test_id(Create::eq<Ex::FP>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(Create::eq<Ex::Bool>(bool_x, bool_y)));
+    /* UNITTEST_ASSERT(test_id(Create::eq<Ex::String>(string_x, string_y))); */
 
     Utils::Log::debug("Testing neq...");
-    UNITTEST_ASSERT(test_id(Create::neq<Ex::FP>(fp_x, fp_x)));
-    UNITTEST_ASSERT(test_id(Create::neq<Ex::Bool>(bool_x, bool_x)));
-    /* UNITTEST_ASSERT(test_id(Create::neq<Ex::String>(string_x, string_x))); */
+    UNITTEST_ASSERT(test_id(Create::neq<Ex::FP>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(Create::neq<Ex::Bool>(bool_x, bool_y)));
+    /* UNITTEST_ASSERT(test_id(Create::neq<Ex::String>(string_x, string_y))); */
 
     using C = Mode::Compare;
     Utils::Log::debug("Testing compare...");
@@ -121,6 +123,10 @@ void trivial() {
     Utils::Log::debug("Testing rotate...");
     UNITTEST_ASSERT(test_id(Create::rotate<LR::Left>(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::rotate<LR::Right>(bv_x, bv_y)));
+
+    Utils::Log::debug("Testing concat...");
+    UNITTEST_ASSERT(test_id(Create::concat<Ex::BV>(bv_x, bv_y)));
+    /* UNITTEST_ASSERT(test_id(Create::concat<Ex::String>(string_x, string_y))); */
 }
 
 // Define the test
