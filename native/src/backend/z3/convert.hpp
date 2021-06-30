@@ -130,7 +130,7 @@ namespace Backend::Z3::Convert {
             }
         }
         else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Less | C::Eq)) {
-            return z3::ult(l, r);
+            return z3::ule(l, r);
         }
         else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Less | C::Neq)) {
             return z3::ult(l, r);
