@@ -35,8 +35,6 @@ void normal() {
     const auto fp_y { Create::symbol<Ex::FP>("fp_y", Mode::FP::dbl.width()) };
     const auto bv_x { Create::symbol<Ex::BV>("bv_x", 64_ui) };
     const auto bv_y { Create::symbol<Ex::BV>("bv_y", 64_ui) };
-    const auto vs_x { Create::symbol<Ex::VS>("vs_x", 64_ui) };
-    const auto vs_y { Create::symbol<Ex::VS>("vs_y", 64_ui) };
     const auto bool_x { Create::symbol("bool_x") };
     const auto bool_y { Create::symbol("bool_y") };
 
@@ -53,7 +51,6 @@ void normal() {
     UNITTEST_ASSERT(test_id(Create::if_<Ex::BV>(bool_x, bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::if_<Ex::FP>(bool_x, fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(Create::if_<Ex::Bool>(bool_x, bool_x, bool_y)));
-    UNITTEST_ASSERT(test_id(Create::if_<Ex::VS>(bool_x, vs_x, vs_y)));
     /* UNITTEST_ASSERT(test_id(Create::if_<Ex::String>(bool_x, string_x, string_y))); */
 
     Utils::Log::debug("Testing extract...");
@@ -61,18 +58,15 @@ void normal() {
 
     Utils::Log::debug("Testing literal...");
     UNITTEST_ASSERT(test_id(Create::literal(true)));
-    UNITTEST_ASSERT(test_id(Create::literal({ 'a', 'b' })));
-    UNITTEST_ASSERT(test_id(Create::literal(0.)));
-    UNITTEST_ASSERT(test_id(Create::literal(0.F)));
-    UNITTEST_ASSERT(test_id(Create::literal(std::string("Hello"))));
-    const auto vs_obj { std::make_shared<PyObj::VS>(UTILS_FILE_LINE_HASH, 0, 64_ui) };
-    UNITTEST_ASSERT(test_id(Create::literal(vs_obj)));
+    /* UNITTEST_ASSERT(test_id(Create::literal({std::byte('a')}))); */
+    UNITTEST_ASSERT(test_id(Create::literal(1.)));
+    UNITTEST_ASSERT(test_id(Create::literal(1.F)));
+    /* UNITTEST_ASSERT(test_id(Create::literal(std::string("Hello")))); */
 
     Utils::Log::debug("Testing symbol...");
     UNITTEST_ASSERT(bool_x);
     UNITTEST_ASSERT(bv_x);
     UNITTEST_ASSERT(fp_x);
-    UNITTEST_ASSERT(vs_x);
     /* UNITTEST_ASSERT(string_x); */
 
     /**************************************************/
