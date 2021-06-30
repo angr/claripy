@@ -275,9 +275,9 @@ namespace Backend::Z3 {
                 case Op::Union::static_cuid:           // fallthrough
                 case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
-                    throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
-                                                      "Unknown expression op given.\nOp CUID: ",
-                                                      expr->op->cuid);
+                    throw Error::Backend::Unsupported(
+                        WHOAMI_WITH_SOURCE "Unsupported expression op given.\nOp CUID: ",
+                        expr->op->cuid);
                 }
 
                     /************************************************/
