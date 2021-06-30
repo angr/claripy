@@ -110,6 +110,17 @@ void trivial() {
     Utils::Log::debug("Testing mod...");
     UNITTEST_ASSERT(test_id(Create::mod<true>(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::mod<false>(bv_x, bv_y)));
+
+    using M = Mode::Shift;
+    Utils::Log::debug("Testing shift...");
+    UNITTEST_ASSERT(test_id(Create::shift<M::Left>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(Create::shift<M::LogicalRight>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(Create::shift<M::ArithmeticRight>(bv_x, bv_y)));
+
+    using LR = Mode::LR;
+    Utils::Log::debug("Testing rotate...");
+    UNITTEST_ASSERT(test_id(Create::rotate<LR::Left>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(Create::rotate<LR::Right>(bv_x, bv_y)));
 }
 
 // Define the test
