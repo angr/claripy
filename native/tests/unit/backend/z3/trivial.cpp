@@ -25,7 +25,6 @@ std::vector<Func> functions {};
 
 /** Test trivial ops in claricpp */
 void trivial() {
-
     Backend::Z3::Z3 z3bk;
 
     /* const auto string_x { Create::symbol<Ex::String>("string_x", 64_ui) }; */
@@ -41,7 +40,6 @@ void trivial() {
     const auto test_id = [&z3bk](const Expression::BasePtr &&x) {
         return z3bk.abstract(z3bk.convert(x)) == x;
     };
-
 
     // Unary
 
