@@ -6,3 +6,4 @@ simple_test(simplify)
 
 # Test ops
 simple_test(normal)
+simple_test(fp)
