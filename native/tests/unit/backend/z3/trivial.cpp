@@ -127,6 +127,25 @@ void trivial() {
     Utils::Log::debug("Testing concat...");
     UNITTEST_ASSERT(test_id(Create::concat<Ex::BV>(bv_x, bv_y)));
     /* UNITTEST_ASSERT(test_id(Create::concat<Ex::String>(string_x, string_y))); */
+
+    // Flat
+
+    Utils::Log::debug("Testing add...");
+    UNITTEST_ASSERT(test_id(Create::add({ bv_x, bv_y })));
+
+    Utils::Log::debug("Testing mul...");
+    UNITTEST_ASSERT(test_id(Create::mul({ bv_x, bv_y })));
+
+    Utils::Log::debug("Testing or...");
+    UNITTEST_ASSERT(test_id(Create::or_<Ex::BV>({ bv_x, bv_y })));
+    UNITTEST_ASSERT(test_id(Create::or_<Ex::Bool>({ bool_x, bool_y })));
+
+    Utils::Log::debug("Testing and...");
+    UNITTEST_ASSERT(test_id(Create::and_<Ex::BV>({ bv_x, bv_y })));
+    UNITTEST_ASSERT(test_id(Create::and_<Ex::Bool>({ bool_x, bool_y })));
+
+    Utils::Log::debug("Testing xor...");
+    UNITTEST_ASSERT(test_id(Create::xor_({ bv_x, bv_y })));
 }
 
 // Define the test
