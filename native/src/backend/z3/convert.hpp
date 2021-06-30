@@ -159,9 +159,6 @@ namespace Backend::Z3::Convert {
         }
     }
 
-    /** Pow converter */
-    inline z3::expr pow(const z3::expr &l, const z3::expr &r) { return z3::pw(l, r); }
-
     /** Mod converter
      *  Note we use rem (because of the difference between C and Python % operators)
      */

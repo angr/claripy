@@ -72,11 +72,6 @@ namespace Op {
      */
     template <bool Signed> OP_BINARY_TRIVIAL_SUBCLASS(Div, true, Signed);
 
-    /** The mathematical binary op class: Pow
-     *  Requires equal sized inputs
-     */
-    OP_BINARY_TRIVIAL_SUBCLASS(Pow, true, 0);
-
     /** The mathematical binary op class: Mod
      *  Requires equal sized inputs
      */

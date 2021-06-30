@@ -143,15 +143,6 @@ namespace Create {
             left, right, std::move(sp));
     }
 
-    /** Create an Expression with an Pow op
-     *  Expression pointers may not be nullptr
-     */
-    inline EBasePtr pow(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
-        return Private::binary<Ex::BV, Op::Pow, Private::SizeMode::First, Ex::BV>(left, right,
-                                                                                  std::move(sp));
-    }
-
     /** Create an Expression with an Mod op
      *  Expression pointers may not be nullptr
      */

@@ -88,9 +88,6 @@ void trivial() {
     binary<Ex::BV, Op::Div<true>, SM::First, Cr::div<true>>();
     binary<Ex::BV, Op::Div<false>, SM::First, Cr::div<false>>();
 
-    Log::debug("Testing pow...");
-    binary<Ex::BV, Op::Pow, SM::First, Cr::pow>();
-
     Log::debug("Testing mod...");
     binary<Ex::BV, Op::Mod<true>, SM::First, Cr::mod<true>>();
     binary<Ex::BV, Op::Mod<false>, SM::First, Cr::mod<false>>();

@@ -281,9 +281,6 @@ namespace Backend::Z3::Abstract {
         BINARY(Create::mod<Signed>);
     }
 
-    /** Abstraction function for Z3_OP_POWER */
-    inline Expression::BasePtr pow(const ArgsVec &args) { BINARY(Create::pow); }
-
     /**********************************************************/
     /*                       Bit Vector                       */
     /**********************************************************/

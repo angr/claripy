@@ -325,8 +325,6 @@ namespace Backend::Z3 {
                     BINARY_TEMPLATE_CASE(Div, Convert::div, true);
                     BINARY_TEMPLATE_CASE(Div, Convert::div, false);
 
-                    BINARY_CASE(Pow, Convert::pow);
-
                     BINARY_TEMPLATE_CASE(Mod, Convert::mod, true);
                     BINARY_TEMPLATE_CASE(Mod, Convert::mod, false);
 
@@ -561,10 +559,6 @@ namespace Backend::Z3 {
                     return Abstract::xor_<Ex::Bool>(args);
                 case Z3_OP_NOT:
                     return Abstract::not_<Ex::Bool>(args);
-
-                    // Arithmetic
-                case Z3_OP_POWER:
-                    return Abstract::pow(args);
 
                     // Comparisons
                 case Z3_OP_ULEQ:

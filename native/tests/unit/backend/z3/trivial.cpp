@@ -107,9 +107,6 @@ void trivial() {
     UNITTEST_ASSERT(test_id(Create::div<true>(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::div<false>(bv_x, bv_y)));
 
-    Utils::Log::debug("Testing pow...");
-    /* UNITTEST_ASSERT(test_id(Create::pow(bv_x, bv_y))); */
-
     Utils::Log::debug("Testing mod...");
     UNITTEST_ASSERT(test_id(Create::mod<true>(bv_x, bv_y)));
     UNITTEST_ASSERT(test_id(Create::mod<false>(bv_x, bv_y)));
