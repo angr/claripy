@@ -18,22 +18,6 @@ namespace Create::FP {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create a Expression with an FP::IsInf op
-     *  Expression pointers may not be nullptr
-     */
-    inline EBasePtr is_inf(const EBasePtr &x, SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Ex::FP>(x, std::move(sp));
-    }
-
-    /** Create a Expression with an FP::IsNan op
-     *  Expression pointers may not be nullptr
-     */
-    inline EBasePtr is_nan(const EBasePtr &x, SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
-        return Private::unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Ex::FP>(x, std::move(sp));
-    }
-
     /** Create a Expression with an FP::ToIEEEBV op
      *  Expression pointers may not be nullptr
      */

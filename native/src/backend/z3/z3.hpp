@@ -371,8 +371,6 @@ namespace Backend::Z3 {
                     // Unary
 
                     UNARY_CASE(FP::ToIEEEBV, Convert::FP::to_ieee_bv);
-                    UNARY_CASE(FP::IsInf, Convert::FP::is_inf);
-                    UNARY_CASE(FP::IsNaN, Convert::FP::is_nan);
 
                     // Mode Binary
 

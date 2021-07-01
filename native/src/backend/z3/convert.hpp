@@ -289,9 +289,12 @@ namespace Backend::Z3::Convert {
                 }
                 case Expression::BV::static_cuid: {
                     const auto &vec { std::get<std::vector<std::byte>>(data) };
+                    const auto bl { Private::to_z3u(Expression::get_bit_length(expr)) };
+                    Utils::affirm<Utils::Error::Unexpected::Size>(
+                        bl <= (vec.size() * C_CHAR_BIT),
+                        "BV internal size is too smal for BV size!");
                     static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
-                    return Private::tl_ctx.bv_val(reinterpret_cast<const char *>(vec.data()),
-                                                  Private::to_z3u(vec.size()));
+                    return Private::tl_ctx.bv_val(reinterpret_cast<const char *>(vec.data()), bl);
                 }
                     // Error handling
                 case Expression::VS::static_cuid:
@@ -359,12 +362,6 @@ namespace Backend::Z3::Convert {
     }
 
     namespace FP {
-
-        /** IsInf converter */
-        inline z3::expr is_inf(const z3::expr &e) { return e.mk_is_inf(); }
-
-        /** IsNan converter */
-        inline z3::expr is_nan(const z3::expr &e) { return e.mk_is_nan(); }
 
         /** ToIEEEBV converter */
         inline z3::expr to_ieee_bv(const z3::expr &e) { return e.mk_to_ieee_bv(); }

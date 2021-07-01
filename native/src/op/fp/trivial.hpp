@@ -21,12 +21,6 @@ namespace Op::FP {
     /** The unary fp op class: FP::ToIEEEBV */
     OP_UNARY_TRIVIAL_SUBCLASS(ToIEEEBV, 0, "FP::");
 
-    /** The unary fp op class: FP::IsInf */
-    OP_UNARY_TRIVIAL_SUBCLASS(IsInf, 0, "FP::");
-
-    /** The unary fp op class: FP::IsNaN */
-    OP_UNARY_TRIVIAL_SUBCLASS(IsNaN, 0, "FP::");
-
     /**********************************************************/
     /*               FP Mode Binary Subclasses                */
     /**********************************************************/

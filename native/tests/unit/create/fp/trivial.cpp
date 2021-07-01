@@ -16,12 +16,6 @@ void trivial() {
 
     // Unary
 
-    Log::debug("Testing Fp::IsInf...");
-    unary<Ex::Bool, Ex::FP, Op::FP::IsInf, Create::FP::is_inf>();
-
-    Log::debug("Testing Fp::IsNaN...");
-    unary<Ex::Bool, Ex::FP, Op::FP::IsNaN, Create::FP::is_nan>();
-
     Log::debug("Testing Fp::ToIEEEBV...");
     unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Create::FP::to_ieee_bv>();
 
