@@ -191,16 +191,20 @@ namespace Backend {
         }
 
       private:
-        /** Abstract a backend object into a type claricpp understands */
+        /** Abstract a backend object into a type claricpp understands
+         *  @todo: Enable abstraction cache-ing
+         */
         AbstractionVariant abstract_helper(const BackendObj &b_obj) {
             const unsigned n = { b_obj.num_args() };
 
+#if 0
             // Cache lookup
             const auto hash { b_obj.hash() };
             if (const auto lookup { abstraction_cache.find(hash) };
                 lookup != abstraction_cache.end()) {
                 return lookup->second;
             }
+#endif
 
             // Convert b_obj args
             std::vector<AbstractionVariant> args;
@@ -208,10 +212,11 @@ namespace Backend {
                 args.emplace_back(abstract_helper(b_obj.arg(i)));
             }
 
-            // Convert b_obj
+            // Convert b_obj then update various caches and return
             const auto ret { dispatch_abstraction(b_obj, args) };
-            // Update various caches and return
+#if 0
             abstraction_cache.emplace(hash, ret);
+#endif
             if (LIKELY(std::holds_alternative<Expression::BasePtr>(ret))) {
                 const auto &tmp { std::get<Expression::BasePtr>(ret) };
                 Simplification::cache(tmp->hash, tmp);

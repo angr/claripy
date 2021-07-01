@@ -50,18 +50,18 @@ void fp() {
     Utils::Log::debug("Testing 0...");
     UNITTEST_ASSERT(test_id(C::literal(0.)));
     UNITTEST_ASSERT(test_id(C::literal(-0.)));
-    /* UNITTEST_ASSERT(test_id(C::literal(0.F))); */
-    /* UNITTEST_ASSERT(test_id(C::literal(-0.F))); */
+    UNITTEST_ASSERT(test_id(C::literal(0.F)));
+    UNITTEST_ASSERT(test_id(C::literal(-0.F)));
 
     Utils::Log::debug("Testing Inf...");
     UNITTEST_ASSERT(test_id(C::literal(NLD::infinity())));
     UNITTEST_ASSERT(test_id(C::literal(-NLD::infinity())));
-    /* UNITTEST_ASSERT(test_id(C::literal(NLF::infinity()))); */
-    /* UNITTEST_ASSERT(test_id(C::literal(-NLF::infinity()))); */
+    UNITTEST_ASSERT(test_id(C::literal(NLF::infinity())));
+    UNITTEST_ASSERT(test_id(C::literal(-NLF::infinity())));
 
     Utils::Log::debug("Testing NaN...");
     UNITTEST_ASSERT(test_id(C::literal(NLD::quiet_NaN())));
-    /* UNITTEST_ASSERT(test_id(C::literal(NLF::signaling_NaN()))); */
+    UNITTEST_ASSERT(test_id(C::literal(NLF::signaling_NaN())));
 
     Utils::Log::debug("Testing subnormals...");
     UNITTEST_ASSERT(test_id(C::literal(NLD::denorm_min())));
@@ -87,6 +87,47 @@ void fp() {
     /**************************************************/
     /*                    Trivial                     */
     /**************************************************/
+
+#if 0
+    /** Create a Expression with an FP::ToIEEEBV op
+     *  Expression pointers may not be nullptr
+     */
+    inline EBasePtr to_ieee_bv(const EBasePtr &x, SPAV &&sp = nullptr) {
+        namespace Ex = Expression;
+        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
+    }
+
+    #define FP_MB_SMF_ARITH(FN, OP)                                                               \
+        inline EBasePtr FN(const EBasePtr &left, const EBasePtr &right,                           \
+                           const Mode::FP::Rounding mode, SPAV &&sp = nullptr) {                  \
+            return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,  \
+                                                                              std::move(sp));     \
+        }
+
+    /** Create a Expression with an FP::Add op
+     *  Expression pointers may not be nullptr
+     */
+    FP_MB_SMF_ARITH(add, Add);
+    /** Create a Expression with an FP::Sub op
+     *  Expression pointers may not be nullptr
+     */
+    FP_MB_SMF_ARITH(sub, Sub);
+    /** Create a Expression with an FP::Mul op
+     *  Expression pointers may not be nullptr
+     */
+    FP_MB_SMF_ARITH(mul, Mul);
+    /** Create a Expression with an FP::Div op
+     *  Expression pointers may not be nullptr
+     */
+    FP_MB_SMF_ARITH(div, Div);
+
+    inline EBasePtr fp(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
+                       SPAV &&sp = nullptr) {
+        namespace Ex = Expression;
+        return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
+            first, second, third, std::move(sp));
+    }
+#endif
 }
 
 // Define the test
