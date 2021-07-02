@@ -430,13 +430,6 @@ namespace Backend::Z3::Convert {
             return l / r;
         }
 
-        // Ternary
-
-        /** FP::fp converter */
-        inline z3::expr fp(const z3::expr &sgn, const z3::expr &exp, const z3::expr &sig) {
-            return z3::fpa_fp(sgn, exp, sig);
-        }
-
         // Other
 
         /** FP::ToBV converter */

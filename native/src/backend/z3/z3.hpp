@@ -273,6 +273,7 @@ namespace Backend::Z3 {
                     // Unsupported ops
                 case Op::Widen::static_cuid:           // fallthrough
                 case Op::Union::static_cuid:           // fallthrough
+                case Op::FP::fp::static_cuid:          // fallthrough
                 case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
                     throw Error::Backend::Unsupported(
@@ -378,10 +379,6 @@ namespace Backend::Z3 {
                     MODE_BINARY_CASE(FP::Sub, Convert::FP::sub);
                     MODE_BINARY_CASE(FP::Mul, Convert::FP::mul);
                     MODE_BINARY_CASE(FP::Div, Convert::FP::div);
-
-                    // Ternary
-
-                    TERNARY_CASE(FP::FP, Convert::FP::fp);
 
                     // Other
 
