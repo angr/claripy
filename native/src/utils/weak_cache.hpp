@@ -102,7 +102,7 @@ namespace Utils {
                 Utils::Log::critical("Never initalized");
                 Utils::Log::warning("Cache addr ", &cache);
                 Utils::Log::error("Intentionally segfaulting...");
-                int buf[sizeof(cache) / sizeof(int) + 1];
+                int buf[sizeof(cache) / sizeof(int) + 1]; // NOLINT
                 std::memcpy(buf, &cache, sizeof(cache));
                 std::shared_ptr<const Cached> x { nullptr };
                 std::weak_ptr<const Cached> y { x };
