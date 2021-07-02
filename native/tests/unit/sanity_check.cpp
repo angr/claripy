@@ -25,11 +25,11 @@ struct UnitTest::ClaricppUnitTest {
     /** Cache Type */
     using Cache = Utils::WeakCache<Hash::Hash, const Expression::Base>;
     /** The cache */
-    const Cache &cache { Factory::Private::cache<Expression::Base> };
+    const Cache &cache { Factory::Private::cache<Expression::Base> }; // NOLINT
     /** Get the cache gc_resize */
-    auto gc_resize() const { return cache.gc_resize; }
+    [[nodiscard]] auto gc_resize() const { return cache.gc_resize; }
     /** Get the default cache gc_resize */
-    auto def() const { return Cache::gc_resize_default; }
+    [[nodiscard]] auto def() const { return Cache::gc_resize_default; }
 };
 
 
