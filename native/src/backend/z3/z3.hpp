@@ -386,7 +386,7 @@ namespace Backend::Z3 {
 #define TO_BV_CASE(TF)                                                                            \
     case Op::FP::ToBV<TF>::static_cuid: {                                                         \
         debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE "FP::ToBV has no length");  \
-        using ToBV = Constants::CTSC<Op::FP::ToBV<false>>;                                        \
+        using ToBV = Constants::CTSC<Op::FP::ToBV<TF>>;                                           \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
         auto ret { Convert::FP::to_bv<TF>(Utils::checked_static_cast<ToBV>(expr->op.get())->mode, \
                                           *args.back(), Expression::get_bit_length(expr)) };      \
