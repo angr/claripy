@@ -115,52 +115,20 @@ void fp() {
     /*                    Trivial                     */
     /**************************************************/
 
+    Utils::Log::debug("Testing to_ieee_bv...");
+    UNITTEST_ASSERT(test_id(C::FP::to_ieee_bv(fp_x)));
 
-    auto conv { z3bk.convert(C::FP::to_ieee_bv(fp_x)) };
-    Utils::Log::warning(conv);
-    auto abs { z3bk.abstract(conv) };
-    Utils::Log::warning(abs);
+    Utils::Log::debug("Testing FP Add...");
+    UNITTEST_ASSERT(test_id(C::FP::add(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
 
-#if 0
-    /** Create a Expression with an FP::ToIEEEBV op
-     *  Expression pointers may not be nullptr
-     */
-    inline EBasePtr to_ieee_bv(const EBasePtr &x, SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
-        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
-    }
+    Utils::Log::debug("Testing FP Sub...");
+    UNITTEST_ASSERT(test_id(C::FP::sub(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
 
-    #define FP_MB_SMF_ARITH(FN, OP)                                                               \
-        inline EBasePtr FN(const EBasePtr &left, const EBasePtr &right,                           \
-                           const Mode::FP::Rounding mode, SPAV &&sp = nullptr) {                  \
-            return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,  \
-                                                                              std::move(sp));     \
-        }
+    Utils::Log::debug("Testing FP Mul...");
+    UNITTEST_ASSERT(test_id(C::FP::mul(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
 
-    /** Create a Expression with an FP::Add op
-     *  Expression pointers may not be nullptr
-     */
-    FP_MB_SMF_ARITH(add, Add);
-    /** Create a Expression with an FP::Sub op
-     *  Expression pointers may not be nullptr
-     */
-    FP_MB_SMF_ARITH(sub, Sub);
-    /** Create a Expression with an FP::Mul op
-     *  Expression pointers may not be nullptr
-     */
-    FP_MB_SMF_ARITH(mul, Mul);
-    /** Create a Expression with an FP::Div op
-     *  Expression pointers may not be nullptr
-     */
-    FP_MB_SMF_ARITH(div, Div);
-
-    inline EBasePtr fp(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                       SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
-        return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
-            first, second, third, std::move(sp));
-    }
-#endif
+    Utils::Log::debug("Testing FP Div...");
+    UNITTEST_ASSERT(test_id(C::FP::div(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
 }
 
 // Define the test
