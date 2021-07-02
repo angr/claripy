@@ -20,11 +20,13 @@ namespace Factory {
         /** The factory cache
          *  Note: This is not a static variable of the factory function because we want
          *  to make it agnostic of cv qualifiers. This also makes testing easier.
-         *  Warning: Since this is inline, using it in library files should be done with care
+         *  Note: For some reason if this is an inline variable rather than a
+         *  function linked executables may get an incorrect address when using this.
          */
-        /* template <typename Base> inline auto & gcache() { static Utils::WeakCache<Hash::Hash,
-         * const Base> cache {}; return cache; } */
-        template <typename Base> Utils::WeakCache<Hash::Hash, const Base> inline cache {};
+        template <typename Base> inline auto &gcache() {
+            static Utils::WeakCache<Hash::Hash, const Base> cache {};
+            return cache;
+        }
     } // namespace Private
 
     /** A factory used to construct subclasses of Base.
@@ -52,11 +54,8 @@ namespace Factory {
         using CacheKeyT = std::remove_cv_t<Base>;
 
         // If the Factory::Ptr and Cache::Ptr are not implicitly convertible, this should warn
-        /* Utils::Log::debug("Cache addr: ", &(Private::gcache<CacheKeyT>())); */
-        /* return Private::gcache<CacheKeyT>().template find_or_emplace<T>(hash, hash, */
-        Utils::Log::verbose("Using cache at addr: ", &(Private::cache<CacheKeyT>) );
-        return Private::cache<CacheKeyT>.template find_or_emplace<T>(hash, hash,
-                                                                     std::forward<Args>(args)...);
+        return Private::gcache<CacheKeyT>().template find_or_emplace<T>(
+            hash, hash, std::forward<Args>(args)...);
     }
 
     /** Return true if the given hash is in the factory cache
@@ -65,7 +64,7 @@ namespace Factory {
      */
     template <typename Base> bool in_cache(const Hash::Hash h) {
         /* return Private::gcache<Base>().exists(h); */
-        return Private::cache<Base>.exists(h);
+        return Private::gcache<Base>().exists(h);
     }
 
 } // namespace Factory

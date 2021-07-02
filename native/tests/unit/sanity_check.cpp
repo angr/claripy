@@ -25,7 +25,7 @@ struct UnitTest::ClaricppUnitTest {
     /** Cache Type */
     using Cache = Utils::WeakCache<Hash::Hash, const Expression::Base>;
     /** The cache */
-    const Cache &cache { Factory::Private::cache<Expression::Base> }; // NOLINT
+    const Cache &cache { Factory::Private::gcache<Expression::Base>() }; // NOLINT
     /** Get the cache gc_resize */
     [[nodiscard]] auto gc_resize() const { return cache.gc_resize; }
     /** Get the default cache gc_resize */

@@ -306,11 +306,13 @@ namespace Backend::Z3::Abstract {
             std::memcpy(data.data(), &bv_num, sizeof(bv_num));
             // Size check
             const auto bl { b_obj.get_sort().bv_size() };
+#ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 sizeof(bv_num) * 8 == bl,
                 WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",
                 bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
                 " bits long.");
+#endif
             // Return literal
             return Create::literal(std::move(data));
         }

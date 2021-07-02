@@ -43,11 +43,7 @@ namespace Utils {
 
       public:
         /** Default constructor */
-        WeakCache() : cache {} {
-            Utils::Log::warning("Cache constructor starting up at ", this,
-                                " with Size = ", cache.size());
-        };
-        /* WeakCache() = default; */
+        WeakCache() = default;
 
         // Enable custom logging
         UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
@@ -97,17 +93,6 @@ namespace Utils {
          */
         template <typename Derived, typename... Args>
         Ptr find_or_emplace(const Hash &h, Args &&...args) {
-
-            if (gc_resize == 0) {
-                Utils::Log::critical("Never initalized");
-                Utils::Log::warning("Cache addr ", &cache);
-                Utils::Log::error("Intentionally segfaulting...");
-                int buf[sizeof(cache) / sizeof(int) + 1]; // NOLINT
-                std::memcpy(buf, &cache, sizeof(cache));
-                std::shared_ptr<const Cached> x { nullptr };
-                std::weak_ptr<const Cached> y { x };
-                cache.emplace(1, y);
-            }
 
             // Static check
             static_assert(is_ancestor<Cached, Derived>,
