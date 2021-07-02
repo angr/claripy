@@ -12,6 +12,7 @@
  *  @todo: Enable string symbol testing
  */
 void fp() {
+    const auto tz { Mode::FP::Rounding::TowardsZero };
     namespace Ex = Expression;
     namespace C = Create;
 
@@ -22,6 +23,7 @@ void fp() {
     using NLF = std::numeric_limits<float>;
     using NLD = std::numeric_limits<double>;
 
+    const auto bv_x { C::symbol<Ex::BV>("bv_x", Mode::FP::dbl.width()) };
     const auto fp_x { C::symbol<Ex::FP>("fp_x", Mode::FP::dbl.width()) };
     const auto fp_y { C::symbol<Ex::FP>("fp_y", Mode::FP::dbl.width()) };
     const auto nan { C::literal(std::numeric_limits<double>::quiet_NaN()) };
@@ -111,6 +113,16 @@ void fp() {
     /*                  Non-Trivial                   */
     /**************************************************/
 
+    Utils::Log::debug("Testing from_fp...");
+    /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */
+
+    Utils::Log::debug("Testing from_2s_complement...");
+    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement<true>(tz, bv_x, Mode::FP::dbl))); */
+    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement<false>(tz, bv_x, Mode::FP::dbl))); */
+
+    Utils::Log::debug("Testing from_not_2s_complement...");
+    /* UNITTEST_ASSERT(test_id(C::FP::from_not_2s_complement(bv_x, Mode::FP::dbl))); */
+
     /**************************************************/
     /*                    Trivial                     */
     /**************************************************/
@@ -119,16 +131,16 @@ void fp() {
     UNITTEST_ASSERT(test_id(C::FP::to_ieee_bv(fp_x)));
 
     Utils::Log::debug("Testing FP Add...");
-    UNITTEST_ASSERT(test_id(C::FP::add(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
+    UNITTEST_ASSERT(test_id(C::FP::add(fp_x, fp_y, tz)));
 
     Utils::Log::debug("Testing FP Sub...");
-    UNITTEST_ASSERT(test_id(C::FP::sub(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
+    UNITTEST_ASSERT(test_id(C::FP::sub(fp_x, fp_y, tz)));
 
     Utils::Log::debug("Testing FP Mul...");
-    UNITTEST_ASSERT(test_id(C::FP::mul(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
+    UNITTEST_ASSERT(test_id(C::FP::mul(fp_x, fp_y, tz)));
 
     Utils::Log::debug("Testing FP Div...");
-    UNITTEST_ASSERT(test_id(C::FP::div(fp_x, fp_y, Mode::FP::Rounding::TowardsZero)));
+    UNITTEST_ASSERT(test_id(C::FP::div(fp_x, fp_y, tz)));
 }
 
 // Define the test
