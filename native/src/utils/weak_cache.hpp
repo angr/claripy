@@ -211,7 +211,7 @@ namespace Utils {
         std::shared_mutex s_m;
 
         /** The cache representation */
-        CacheMap cache;
+        CacheMap cache {};
 
         /** The size the cache should have std::weak_ptr's gc'd when it is larger than */
         typename CacheMap::size_type gc_resize { gc_resize_default };
