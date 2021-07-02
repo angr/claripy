@@ -62,9 +62,11 @@ void repr() {
 
     // repr
     std::ostringstream s;
-    Expression::repr(ite, s, false);
+    s << ite;
 
     // Compare
+    Utils::Log::warning(s.str());
+    Utils::Log::warning(make_solution(str, str.size()));
     UNITTEST_ASSERT(s.str() == make_solution(str, str.size()));
 }
 

@@ -87,7 +87,6 @@ namespace Op {
             Expression::repr(left, out, verbose);
             out << R"|(, "right":)|";
             Expression::repr(right, out, verbose);
-            out << " }";
         }
     };
 
