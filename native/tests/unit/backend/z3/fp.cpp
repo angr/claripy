@@ -61,7 +61,34 @@ void fp() {
 
     Utils::Log::debug("Testing NaN...");
     UNITTEST_ASSERT(test_id(C::literal(NLD::quiet_NaN())));
-    UNITTEST_ASSERT(test_id(C::literal(NLF::signaling_NaN())));
+    UNITTEST_ASSERT(test_id(C::literal(NLF::quiet_NaN())));
+
+    const auto test_snan = [&z3bk](const bool is_double) {
+        const auto s { is_double ? C::literal(NLD::signaling_NaN())
+                                 : C::literal(NLF::signaling_NaN()) };
+        const auto *const op_s { dynamic_cast<Constants::CTSC<Op::Literal>>(s->op.get()) };
+        UNITTEST_ASSERT(op_s != nullptr);
+        // Verify cycled expr
+        const auto cycled { z3bk.abstract(z3bk.convert(s)) };
+        UNITTEST_ASSERT(Ex::are_same_type<true>(cycled, s));
+        // Verify cycled op
+        const auto *const op { dynamic_cast<Constants::CTSC<Op::Literal>>(cycled->op.get()) };
+        UNITTEST_ASSERT(op != nullptr);
+        // Verify cycled value
+        if (is_double) {
+            const auto *const d_ptr { std::get_if<double>(&(op->value)) };
+            UNITTEST_ASSERT(d_ptr != nullptr);
+            UNITTEST_ASSERT(std::isnan(*d_ptr));
+        }
+        else {
+            const auto *const f_ptr { std::get_if<float>(&(op->value)) };
+            UNITTEST_ASSERT(f_ptr != nullptr);
+            UNITTEST_ASSERT(std::isnan(*f_ptr));
+        }
+        return true;
+    };
+    UNITTEST_ASSERT(test_snan(true));
+    UNITTEST_ASSERT(test_snan(false));
 
     Utils::Log::debug("Testing subnormals...");
     UNITTEST_ASSERT(test_id(C::literal(NLD::denorm_min())));
@@ -87,6 +114,12 @@ void fp() {
     /**************************************************/
     /*                    Trivial                     */
     /**************************************************/
+
+
+    auto conv { z3bk.convert(C::FP::to_ieee_bv(fp_x)) };
+    Utils::Log::warning(conv);
+    auto abs { z3bk.abstract(conv) };
+    Utils::Log::warning(abs);
 
 #if 0
     /** Create a Expression with an FP::ToIEEEBV op
