@@ -113,6 +113,10 @@ void fp() {
     /*                  Non-Trivial                   */
     /**************************************************/
 
+    Utils::Log::debug("Testing to_bv...");
+    UNITTEST_ASSERT(test_id(C::FP::to_bv<true>(tz, fp_x, Ex::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv<false>(tz, fp_x, Ex::get_bit_length(fp_x))));
+
     Utils::Log::debug("Testing from_fp...");
     /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */
 
