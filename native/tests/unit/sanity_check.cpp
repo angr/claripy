@@ -20,6 +20,19 @@ static Constants::UInt id_ref(const Constants::UInt &id) {
         UNITTEST_ASSERT(s == F::t_literal<Expression::X>(0)->cuid);                               \
     }
 
+/** A struct used to give friend access to unittests */
+struct UnitTest::ClaricppUnitTest {
+    /** Cache Type */
+    using Cache = Utils::WeakCache<Hash::Hash, const Expression::Base>;
+    /** The cache */
+    const Cache &cache { Factory::Private::cache<Expression::Base> };
+    /** Get the cache gc_resize */
+    auto gc_resize() const { return cache.gc_resize; }
+    /** Get the default cache gc_resize */
+    auto def() const { return Cache::gc_resize_default; }
+};
+
+
 /** Test samoty checks */
 void sanity_check() {
 
@@ -36,6 +49,11 @@ void sanity_check() {
     TEST_TYPE(VS);
     TEST_TYPE(BV);
     TEST_TYPE(FP);
+
+    // Verify that the expression cache has been instantiated
+    // If it was, the constructor sets gc_resize to gc_resize_default
+    UnitTest::ClaricppUnitTest wrapper;
+    UNITTEST_ASSERT_MSG(wrapper.gc_resize() == wrapper.def(), "Cache failed to instantiate.");
 }
 
 // Define the test
