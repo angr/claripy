@@ -8,6 +8,7 @@
 
 #include "affirm.hpp"
 #include "demangle.hpp"
+#include "error.hpp"
 #include "min.hpp"
 #include "safe_alloc.hpp"
 #include "to_hex.hpp"
@@ -23,6 +24,7 @@
 namespace Utils {
 
     namespace Private {
+        /** A private helper function used to print a backtrace line */
         inline void print_bt_line(std::ostream &o, const int lg_i, const Constants::UInt line_num,
                                   const Constants::UInt addr, Constants::CCSC mangled,
                                   const std::uintptr_t offset) {
@@ -35,6 +37,10 @@ namespace Utils {
 
     inline void backtrace(std::ostream &o, const Constants::UInt ignore_frames = 0,
                           const int16_t max_frames = 0x1000) noexcept {
+#ifdef DEBUG
+        // Prevent infinite recursion if something goes wrong
+        const auto old { Utils::Error::Claricpp::toggle_backtrace(false) };
+#endif
         // Dummy variables
         int _ignore_int;   // NOLINT
         char _ignore_char; // NOLINT
@@ -93,6 +99,9 @@ namespace Utils {
         }
         // Cleanup
         std::free(callstack); // NOLINT
+#ifdef DEBUG
+        Utils::Error::Claricpp::toggle_backtrace(old);
+#endif
     }
 
 } // namespace Utils

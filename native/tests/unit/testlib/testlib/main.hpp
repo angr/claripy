@@ -15,6 +15,7 @@
     /** Main function: test TFUNC */                                                              \
     int main() {                                                                                  \
         using namespace UnitTest::TestLib;                                                        \
+        Utils::Error::Claricpp::toggle_backtrace(true);                                           \
         return test_func((TFUNC));                                                                \
     }
 

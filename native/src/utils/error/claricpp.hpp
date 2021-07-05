@@ -11,11 +11,18 @@
 #include "../../macros.hpp"
 #include "../to_str.hpp"
 
+#include <atomic>
 #include <exception>
 #include <string>
 
-
 namespace Utils::Error {
+
+#ifdef DEBUG
+    namespace Private {
+        /** A function that prints the backtrace if in debug mode, else is a no-op */
+        void backtrace_if_debug();
+    }; // namespace Private
+#endif
 
     /** The base claricpp exception class
      *  Any exception thrown intentioanlly must subclass this
@@ -27,7 +34,24 @@ namespace Utils::Error {
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
         template <typename... Args>
-        explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {}
+        explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {
+#ifdef DEBUG
+            Private::backtrace_if_debug();
+#endif
+        }
+
+#ifdef DEBUG
+        /** Enable / disable backtraces
+         *  Returns the old state
+         */
+        static inline bool toggle_backtrace(bool set) noexcept {
+            enable_backtraces.exchange(set, std::memory_order::memory_order_relaxed);
+            return set;
+        }
+
+        /** Return true if and only if backtraces are enabled */
+        static inline bool backtraces_enabled() noexcept { return enable_backtraces; }
+#endif
 
         // Rule of 5 (note that std::string is not noexcept constructible)
         SET_IMPLICITS_CONST_MEMBERS(Claricpp, default, noexcept);
@@ -43,6 +67,11 @@ namespace Utils::Error {
       private:
         /** The message */
         const std::string msg;
+
+#ifdef DEBUG
+        /** True if backtraces should be enabled */
+        static thread_local std::atomic_bool enable_backtraces;
+#endif
 
         /** Allow all error factories friend access */
         template <typename T, typename S> friend T factory(const S msg);
