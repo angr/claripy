@@ -8,10 +8,11 @@
 
 #include "base.hpp"
 
+#include "../../affirm_not_null_debug.hpp"
 #include "../../thread_safe.hpp"
 
 #include <memory>
-#include <vector>
+#include <vector> // NOLINT
 
 
 namespace Utils::Log::Backend {
@@ -33,7 +34,7 @@ namespace Utils::Log::Backend {
         }
 
         /** A container to store every backend: no backend pointers may be null */
-        std::vector<std::shared_ptr<const Base>> backends;
+        std::vector<std::shared_ptr<const Base>> backends; // NOLINT
     };
 
 } // namespace Utils::Log::Backend
