@@ -15,7 +15,6 @@
 #include "../macros.hpp"
 
 #include <shared_mutex>
-#include <type_traits>
 
 
 namespace Utils::ThreadSafe {
