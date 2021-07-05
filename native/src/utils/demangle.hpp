@@ -12,6 +12,7 @@
 #include "../constants.hpp"
 
 #include <cxxabi.h>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 
@@ -34,7 +35,7 @@ namespace Utils {
             case -1:
                 throw std::bad_alloc();
             case -2:
-                throw Err::Unknown("Demangling failed for: ", mangled);
+                throw std::runtime_error("Demangling failed.");
             case -3:
                 throw Err::Usage(WHOAMI_WITH_SOURCE);
             default:
@@ -48,6 +49,9 @@ namespace Utils {
             return demangle(mangled);
         }
         catch (Utils::Error::Claricpp &) {
+            return mangled;
+        }
+        catch (std::runtime_error &) {
             return mangled;
         }
     }
