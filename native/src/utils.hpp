@@ -54,6 +54,7 @@
 #include "utils/strlen.hpp"
 #include "utils/thread_safe.hpp"
 #include "utils/to_heap_cache.hpp"
+#include "utils/to_hex.hpp"
 #include "utils/to_str.hpp"
 #include "utils/to_underlying.hpp"
 #include "utils/transfer_const.hpp"
