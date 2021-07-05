@@ -25,7 +25,7 @@ void loop(unsigned n) {
         return;
     }
     loop(n - 1);
-    Utils::Log::warning("end");
+    Utils::Log::warning("End loop");
 }
 
 /** Ensure the recourrence guard works */
@@ -34,7 +34,7 @@ void recurrence_guard() {
     // Test recurrence guard
     bool caught { false };
     try {
-        loop(20);
+        loop(20); // NOLINT
     }
     catch (const RecurrenceLimit &e) {
         caught = true;
