@@ -40,9 +40,7 @@ void backtrace() {
     wrapper1();
 
     const auto str { s->str() };
-    const auto contains = [](const std::string &s, Constants::CCSC x) {
-        return s.find(x) != std::string::npos;
-    };
+    const auto contains = [&str](Constants::CCSC x) { return str.find(x) != std::string::npos; };
 
     /* The backtrace should be something like this:
             3  : 0x40f6c6           : generate_bt() + 38
@@ -56,13 +54,13 @@ void backtrace() {
     */
 
     // Ensure the backtrace is valid
-    UNITTEST_ASSERT(contains(str, "generate_bt() + "));
+    UNITTEST_ASSERT(contains("generate_bt() + "));
     // Note: we do not check the wrappers because of static / anon namespaces
-    UNITTEST_ASSERT(contains(str, "backtrace() + "));
-    UNITTEST_ASSERT(contains(str, "UnitTest::TestLib::test_func(void"));
-    UNITTEST_ASSERT(contains(str, "main + "));
-    UNITTEST_ASSERT(contains(str, "__libc_start_main + "));
-    UNITTEST_ASSERT(contains(str, "_start + "));
+    UNITTEST_ASSERT(contains("backtrace() + "));
+    UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
+    UNITTEST_ASSERT(contains("main + "));
+    UNITTEST_ASSERT(contains("__libc_start_main + "));
+    UNITTEST_ASSERT(contains("_start + "));
 }
 
 // Define the test
