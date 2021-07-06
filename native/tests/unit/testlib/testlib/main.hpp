@@ -15,6 +15,8 @@
     /** Main function: test TFUNC */                                                              \
     int main() {                                                                                  \
         using namespace UnitTest::TestLib;                                                        \
+        original_bk = Utils::Log::Backend::get();                                                 \
+        original_sty = Utils::Log::Style::get();                                                  \
         Utils::Error::Claricpp::toggle_backtrace(true);                                           \
         return test_func((TFUNC));                                                                \
     }
