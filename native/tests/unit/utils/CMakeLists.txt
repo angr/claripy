@@ -20,3 +20,6 @@ simple_test(file_line_hash file_line_hash_helper.cpp)
 # Add other tests
 add_subdirectory(log)
 add_subdirectory(weak_cache)
+
+# Add more local tests
+simple_test(backtrace)
