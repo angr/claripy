@@ -17,21 +17,23 @@ namespace Utils::Log::Style {
     // Forward declarations
     struct Base;
 
-    namespace Private {
-        /** Set the logging style; ptr cannot be nullptr */
-        void set(std::shared_ptr<const Base> &&ptr);
-    } // namespace Private
+    /** Define a private set method
+     *  Warning: Because the logging system is so critical, ensure that all other
+     *  copies of ptr do not edit the internals of *ptr in dangerous ways
+     *  ptr cannot be nullptr
+     */
+    void unsafe_set(std::shared_ptr<const Base> &&ptr);
 
     /** Set the Log Style to a new T constructed with arguments: args */
     template <typename T, typename... Args> inline void set(Args &&...args) {
         static_assert(is_ancestor<Base, T>, "T must subclass log style Base");
-        Private::set(std::move(make_derived_shared<const Base, T>(std::forward<Args>(args)...)));
+        unsafe_set(std::move(make_derived_shared<const Base, T>(std::forward<Args>(args)...)));
     }
 
     /** Set the Log Style to a new T copy constructed from c */
     template <typename T, typename... Args> inline void copy(const T &c) {
         static_assert(is_ancestor<Base, T>, "T must subclass log style Base");
-        Private::set(std::move(make_derived_shared<const Base, T>(c)));
+        unsafe_set(std::move(make_derived_shared<const Base, T>(c)));
     }
 
     /** Return a copy of the Style */
