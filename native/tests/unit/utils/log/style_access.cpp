@@ -22,7 +22,8 @@ struct Plain final : Style::Base {
 /** Verify our set style was indeed set */
 void style_access() {
     Style::set<Plain>();
-    UNITTEST_ASSERT(Style::get());
+    const bool success { dynamic_cast<const Plain *>(Style::get().get()) != nullptr };
+    UNITTEST_ASSERT(success);
 }
 
 // Define the test

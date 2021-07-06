@@ -15,15 +15,11 @@ using Lvl = Level::Level;
 using namespace UnitTest::TestLib;
 
 
-#define STR "logged data"
-const std::string cst { "Custom" };
-
-
 /** Test the given logging function */
 void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
     const auto str { s->str() };
     if (Level::enabled(l)) {
-        UNITTEST_ASSERT(str.find(STR) != std::string::npos);
+        UNITTEST_ASSERT(str.find("Logged data") != std::string::npos);
     }
     else {
         UNITTEST_ASSERT_MSG(str.empty(), WHOAMI);
@@ -37,7 +33,6 @@ UTILS_LOG_DEFINE_LOG_CLASS(Custom)
 
 /** Log levels lower than the set level should be no-op's */
 void lower_level_ignored() {
-
     // Determine if this test case is possible
 #ifdef CONSTANT_LOG_LEVEL
     if constexpr (constexpr auto lvl { Level::get() }; lvl == Lvl::Verbose) {
@@ -49,9 +44,9 @@ void lower_level_ignored() {
 
     // Configure backend and style to output to with all relevant info
     auto s { std::make_shared<std::ostringstream>() };
-    Backend::set<Backend::OStream>(Utils::up_cast<std::ostream>(s), true, false);
     s->str("");
     UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check");
+    Backend::set<Backend::OStream>(Utils::up_cast<std::ostream>(s), true, false);
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL
@@ -61,7 +56,7 @@ void lower_level_ignored() {
 #endif
 
     // Run tests
-    UnitTest::test_each_level(s, test, STR);
+    UnitTest::test_each_level(s, test, "Logged data");
 }
 
 // Define the test

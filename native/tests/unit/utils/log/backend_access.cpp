@@ -20,7 +20,8 @@ struct Cout final : Backend::OStream {
 /** Verify our set backend was indeed set */
 void backend_access() {
     Backend::set<Cout>();
-    UNITTEST_ASSERT(Backend::get())
+    const bool success { dynamic_cast<const Cout *>(Backend::get().get()) != nullptr };
+    UNITTEST_ASSERT(success);
 }
 
 // Define the test

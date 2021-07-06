@@ -21,14 +21,11 @@ using Lvl = Level::Level;
 using namespace UnitTest::TestLib;
 
 
-const std::string cst { "Custom" };
-
-
 /** Test the given logging function */
 void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
     auto str { s->str() };
     str.pop_back(); // newline
-    UNITTEST_ASSERT(str == cst);
+    UNITTEST_ASSERT(str == "Custom");
     s->str(""); // clear the log for the next test
 }
 
@@ -37,10 +34,9 @@ struct CustomSty final : Style::Base {
     /** The style function */
     std::string str(Constants::CCSC, const Lvl &,
                     const std::ostringstream &) const override final {
-        return cst;
+        return "Custom";
     }
 };
-
 
 /** Each construction should have a unique pointer */
 void custom() {
