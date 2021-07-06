@@ -24,6 +24,7 @@
 namespace Utils {
 
     namespace Private {
+
         /** A private helper function used to print a backtrace line */
         inline void print_bt_line(std::ostream &o, const int lg_i, const Constants::UInt line_num,
                                   const Constants::UInt addr, Constants::CCSC mangled,
@@ -33,6 +34,13 @@ namespace Utils {
               << std::left << to_hex(addr) << " : " << try_demangle(mangled) << " + " << offset
               << '\n';
         }
+
+        /** A private helper function used to print a backtrace line */
+        inline void print_raw_bt_line(std::ostream &o, const int lg_i,
+                                      const Constants::UInt line_num, Constants::CCSC line) {
+            o << std::setw(lg_i) << std::left << line_num << " : " << line << '\n';
+        }
+
     } // namespace Private
 
     inline void backtrace(std::ostream &o, const Constants::UInt ignore_frames = 0,
@@ -89,7 +97,7 @@ namespace Utils {
                     }
                     // Parse failed
                     else {
-                        o << symbols[i] << '\n'; // NOLINT
+                        Private::print_raw_bt_line(o, lg_i, i, symbols[i]); // NOLINT
                     }
                 }
             }
