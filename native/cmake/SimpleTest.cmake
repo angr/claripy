@@ -81,6 +81,11 @@ function(simple_test FUNC_NAME)
 		"${TESTLIB}"
 	)
 
+	# For debugging
+	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		target_link_libraries("${CLARICPP}" PRIVATE dl)
+	endif()
+
 	## Add the test
 	message(STATUS "\t${TEST_NAME}")
 	add_test("${TEST_NAME}" "./${BINARY}")
