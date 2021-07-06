@@ -6,6 +6,7 @@
 #ifndef R_UTILS_TOHEX_HPP_
 #define R_UTILS_TOHEX_HPP_
 
+#include <climits>
 #include <string>
 #include <type_traits>
 
