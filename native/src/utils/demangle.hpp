@@ -12,21 +12,20 @@
 #include "../constants.hpp"
 
 #include <cxxabi.h>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
-
 
 namespace Utils {
 
     /** Demangle a C++ name-mangled symbol */
     inline std::string demangle(Constants::CCSC mangled) {
-        int status { -1 };     // NOLINT Status: Failure
-        std::size_t len { 0 }; // NOLINT
-        auto *buf { abi::__cxa_demangle(mangled, nullptr, &len, &status) };
+        int status { -1 }; // NOLINT Status: Failure
+        auto *buf { abi::__cxa_demangle(mangled, nullptr, nullptr, &status) };
         namespace Err = Utils::Error::Unexpected;
         if (status == 0) {
-            std::string ret { buf, len };
+            std::string ret { buf };
             std::free(buf); // NOLINT
             return ret;
         }
