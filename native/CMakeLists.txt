@@ -427,7 +427,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 		"-grecord-gcc-switches"
 	)
 	target_link_options("${CLARICPP}" PUBLIC
-		"-Wl,-export_dynamic"
+		"-rdynamic"
 	)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     message("Release Build enabled!")
