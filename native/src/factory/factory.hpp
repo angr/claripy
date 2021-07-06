@@ -23,7 +23,7 @@ namespace Factory {
          *  Note: For some reason if this is an inline variable rather than a
          *  function linked executables may get an incorrect address when using this.
          */
-        template <typename Base> inline auto &gcache() {
+        template <typename Base> inline auto &gcache() noexcept {
             static Utils::WeakCache<Hash::Hash, const Base> cache {};
             return cache;
         }
