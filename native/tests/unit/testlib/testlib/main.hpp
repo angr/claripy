@@ -10,6 +10,13 @@
 #include "test_func.hpp"
 
 
+/** Toggle claricpp backtrace */
+static inline void toggle_backtrace() {
+#ifdef DEBUG
+    Utils::Error::Claricpp::toggle_backtrace(true);
+#endif
+}
+
 /** Define the main function and use it to test a given function */
 #define UNITTEST_DEFINE_MAIN_TEST(TFUNC)                                                          \
     /** Main function: test TFUNC */                                                              \
@@ -17,7 +24,7 @@
         using namespace UnitTest::TestLib;                                                        \
         original_bk = Utils::Log::Backend::get();                                                 \
         original_sty = Utils::Log::Style::get();                                                  \
-        Utils::Error::Claricpp::toggle_backtrace(true);                                           \
+        toggle_backtrace();                                                                       \
         return test_func((TFUNC));                                                                \
     }
 

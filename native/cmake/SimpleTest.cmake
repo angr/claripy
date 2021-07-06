@@ -77,12 +77,12 @@ function(simple_test FUNC_NAME)
 		"-fasynchronous-unwind-tables"
 		"-grecord-gcc-switches"
 	)
-	target_link_options("${BINARY}" PUBLIC
-		"-rdynamic"
-	)
 
 	# For debugging
 	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		target_link_options("${BINARY}" PUBLIC
+			"-rdynamic"
+		)
 		target_link_libraries("${CLARICPP}" PRIVATE dl)
 	endif()
 
