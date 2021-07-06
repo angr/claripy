@@ -64,6 +64,38 @@ function(simple_test FUNC_NAME)
 	set(TEST_NAME "${TEST_PREFIX}${FUNC_NAME}")
 	set(BINARY "${TEST_NAME}.test")
 	add_executable("${BINARY}" "${FUNC_NAME}.cpp" ${ARGN})
+
+	## Add the test
+	message(STATUS "\t${TEST_NAME}")
+	add_test("${TEST_NAME}" "./${BINARY}")
+
+	# Add compile options
+	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
+	target_compile_options("${BINARY}" PRIVATE
+		"-O0"
+		"-g"
+		"-fasynchronous-unwind-tables"
+		"-grecord-gcc-switches"
+	)
+	target_link_options("${BINARY}" PUBLIC
+		"-rdynamic"
+	)
+
+	# For debugging
+	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		target_link_libraries("${CLARICPP}" PRIVATE dl)
+	endif()
+
+	# Add memcheck test
+	if(RUN_MEMCHECK_TESTS)
+		set(MEMCHECK
+			"${CMAKE_MEMORYCHECK_COMMAND}"
+			"${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}"
+		)
+		separate_arguments(MEMCHECK)
+		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
+	endif()
+
 	# Link libraries and headers
 	target_include_directories("${BINARY}"
 		SYSTEM BEFORE
@@ -80,33 +112,5 @@ function(simple_test FUNC_NAME)
 		"${Z3_LIB_PRIVATE_TARGET}"
 		"${TESTLIB}"
 	)
-
-	# For debugging
-	if(CMAKE_BUILD_TYPE MATCHES Debug)
-		target_link_libraries("${CLARICPP}" PRIVATE dl)
-	endif()
-
-	## Add the test
-	message(STATUS "\t${TEST_NAME}")
-	add_test("${TEST_NAME}" "./${BINARY}")
-
-	# Add compile options
-	target_compile_definitions("${BINARY}" PRIVATE "_GLIBCXX_ASSERTIONS")
-	target_compile_options("${BINARY}" PRIVATE
-		"-O0"
-		"-g"
-		"-fasynchronous-unwind-tables"
-		"-grecord-gcc-switches"
-	)
-
-	# Add memcheck test
-	if(RUN_MEMCHECK_TESTS)
-		set(MEMCHECK
-			"${CMAKE_MEMORYCHECK_COMMAND}"
-			"${CMAKE_MEMORYCHECK_COMMAND_OPTIONS}"
-		)
-		separate_arguments(MEMCHECK)
-		add_test("${TEST_NAME}.memcheck" ${MEMCHECK} "./${BINARY}")
-	endif()
 
 endfunction()
