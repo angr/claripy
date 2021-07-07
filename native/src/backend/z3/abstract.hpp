@@ -304,9 +304,9 @@ namespace Backend::Z3::Abstract {
             std::vector<std::byte> data;
             data.reserve(sizeof(bv_num));
             std::memcpy(data.data(), &bv_num, sizeof(bv_num));
+#ifdef DEBUG
             // Size check
             const auto bl { b_obj.get_sort().bv_size() };
-#ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 sizeof(bv_num) * 8 == bl,
                 WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",

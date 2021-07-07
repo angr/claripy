@@ -31,6 +31,7 @@ static void wrapper1() {
 /** Test error backtraces */
 void backtrace() {
     namespace B = Utils::Log::Backend;
+    auto old { B::get() };
 
     // Set logging to be done to a string stream
     auto s { std::make_shared<std::ostringstream>() };
@@ -38,11 +39,9 @@ void backtrace() {
 
     // Generate a backtrace
     wrapper1();
+    const auto backtrace { s->str() };
 
-    const auto str { s->str() };
-    const auto contains = [&str](Constants::CCSC x) { return str.find(x) != std::string::npos; };
-
-    /* The backtrace should be something like this:
+    /* In DEBUG mode the backtrace should be something like this:
             3  : 0x40f6c6           : generate_bt() + 38
             4  : /path/to/claripy/native/build/tests/unit/utils/utils-backtrace.test() [0x40f949]
             5  : /path/to/claripy/native/build/tests/unit/utils/utils-backtrace.test() [0x40f829]
@@ -53,6 +52,14 @@ void backtrace() {
             10 : 0x40f5de           : _start + 46
     */
 
+    // Log the backtrace
+    B::unsafe_set(std::move(old));
+    Utils::Log::debug(backtrace);
+
+#ifdef DEBUG
+    const auto contains = [&backtrace](Constants::CCSC x) {
+        return backtrace.find(x) != std::string::npos;
+    };
     // Ensure the backtrace is valid
     UNITTEST_ASSERT(contains("generate_bt() + "));
     // Note: we do not check the wrappers because of static / anon namespaces
@@ -61,6 +68,9 @@ void backtrace() {
     UNITTEST_ASSERT(contains("main + "));
     UNITTEST_ASSERT(contains("__libc_start_main + "));
     UNITTEST_ASSERT(contains("_start + "));
+#else
+    UNITTEST_ASSERT(backtrace.empty());
+#endif
 }
 
 // Define the test
