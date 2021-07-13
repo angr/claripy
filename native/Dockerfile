@@ -63,10 +63,14 @@ RUN apt-get install -yq \
 	make
 RUN pip3 install cmake # apt cmake is old
 
+# Boost multiprecision with gmp backend for mpz frontend
+RUN apt-get install -yq \
+	libboost-dev \
+	libgmp-dev
+
 # Z3
 RUN test -n "${Z3_HEADER_REL_PATH}" && INST='z3' || INST='git'; \
 	apt-get install -yq "${INST}"
-
 
 ##################################################
 #                  Config Stage                  #
