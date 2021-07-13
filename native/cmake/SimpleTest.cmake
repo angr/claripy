@@ -102,15 +102,16 @@ function(simple_test FUNC_NAME)
 		PRIVATE "${Z3_INCLUDE_DIR}"
 		PRIVATE ${Boost_INCLUDE_DIRS}
 	)
-	target_include_directories("${BINARY}" PRIVATE
-		"${CLARICPP_SRC}"
-		"${TESTLIB_SRC}"
+	target_include_directories("${BINARY}"
+		PRIVATE "${CLARICPP_SRC}"
+		PRIVATE "${TESTLIB_SRC}"
 	)
 	# Link the test
-	target_link_libraries("${BINARY}" PRIVATE
-		"${CLARICPP}"
-		"${Z3_LIB_PRIVATE_TARGET}"
-		"${TESTLIB}"
+	target_link_libraries("${BINARY}"
+		PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
+		PRIVATE "${Z3_LIB_PRIVATE_TARGET}"
+		PRIVATE "${CLARICPP}"
+		PRIVATE "${TESTLIB}"
 	)
 
 endfunction()
