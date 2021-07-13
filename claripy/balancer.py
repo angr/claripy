@@ -97,14 +97,40 @@ class Balancer:
 
     @staticmethod
     def _min(a, signed=False):
-        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
-        else: bounds = backends.vsa.convert(a)._signed_bounds()
+        converted = backends.vsa.convert(a)
+        if isinstance(converted, vsa.ValueSet):
+            if len(converted.regions) == 1:
+                converted = list(converted.regions.values())[0]
+            else:
+                # unfortunately, this is a real abstract pointer
+                # the minimum value will be 0 or MIN_INT
+                if signed:
+                    return -(1 << (len(converted) - 1))
+                else:
+                    return 0
+        if not signed:
+            bounds = converted._unsigned_bounds()
+        else:
+            bounds = converted._signed_bounds()
         return min(mn for mn,mx in bounds)
 
     @staticmethod
     def _max(a, signed=False):
-        if not signed: bounds = backends.vsa.convert(a)._unsigned_bounds()
-        else: bounds = backends.vsa.convert(a)._signed_bounds()
+        converted = backends.vsa.convert(a)
+        if isinstance(converted, vsa.ValueSet):
+            if len(converted.regions) == 1:
+                converted = list(converted.regions.values())[0]
+            else:
+                # unfortunately, this is a real abstract pointer
+                # the minimum value will be 0 or MIN_INT
+                if signed:
+                    return (1 << (len(converted) - 1)) - 1
+                else:
+                    return (1 << len(converted)) - 1
+        if not signed:
+            bounds = converted._unsigned_bounds()
+        else:
+            bounds = converted._signed_bounds()
         return max(mx for mn,mx in bounds)
 
     def _range(self, a, signed=False):
