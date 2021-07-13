@@ -238,6 +238,11 @@ set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 
 # Find Required
+find_package(Boost 1.7 REQUIRED)
+include(GMP) # Boost multiprecision backend
+if(NOT GMP_FOUND)
+	message(FATAL_ERROR "gmp not found")
+endif()
 include(z3)
 
 # Static Anaylsis
@@ -466,8 +471,12 @@ add_subdirectory("${CLARICPP_SRC}")
 target_include_directories("${CLARICPP}"
 	SYSTEM BEFORE
 	PRIVATE "${Z3_INCLUDE_DIR}"
+	PRIVATE ${Boost_INCLUDE_DIRS}
 )
-target_link_libraries("${CLARICPP}" PRIVATE "${Z3_LIB_PRIVATE_TARGET}")
+target_link_libraries("${CLARICPP}"
+	PRIVATE "${Z3_LIB_PRIVATE_TARGET}"
+	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
+)
 
 # For debugging
 if(CMAKE_BUILD_TYPE MATCHES Debug)
