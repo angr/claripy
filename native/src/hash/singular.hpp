@@ -81,18 +81,6 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
-    /** A specialization for T = boost::multiprecision::mpz_int */
-    template <> inline Hash singular(const BigInt &arb) noexcept {
-        static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
-        static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
-        const mpz_t &raw { arb.value.backend().data() };
-        return UTILS_FILE_LINE_HASH ^ arb.bit_length ^
-               fnv1a<mp_limb_t>(
-                   raw->_mp_d,
-                   sizeof(mp_limb_t) *
-                       Utils::widen<mp_limb_t, decltype(raw->_mp_size), true>(raw->_mp_size));
-    }
-
     /** A specialization for T = char */
     template <> constexpr Hash singular(const char &c) noexcept {
         return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
@@ -123,6 +111,36 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH ^ (b ? 1ULL : 0ULL);
     }
 
+    /** A specialization for T = Constants::CCSC */
+    template <> constexpr Hash singular(Constants::CCSC &s) noexcept {
+        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Utils::strlen(s));
+    }
+
+    /** A specialization for T = char[] */
+    template <std::size_t N> constexpr Hash singular(const char (&s)[N]) noexcept { // NOLINT
+        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, N);
+    }
+
+    /**************************************************/
+    /*                Specializations                 */
+    /**************************************************/
+
+    /** A specialization for T = boost::multiprecision::mpz_int */
+    template <> inline Hash singular(const BigInt &arb) noexcept {
+        // mp_limb_t is assumed to be an standard integral type, typically unsigned long
+        // This basic idea will work for a different type, but the hash will have to
+        // be on a char * rather than an mp_limb_t * directly, which would be much slower
+        // as it would hash one charcter at a time rather than one mp_limb_t at a time
+        static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
+        static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
+        const mpz_t &raw { arb.value.backend().data() };
+        return UTILS_FILE_LINE_HASH ^ arb.bit_length ^
+               fnv1a<mp_limb_t>(
+                   raw->_mp_d,
+                   sizeof(mp_limb_t) *
+                       Utils::widen<mp_limb_t, decltype(raw->_mp_size), true>(raw->_mp_size));
+    }
+
     /** A specialization for T = Mode::FP::Rounding */
     template <> constexpr Hash singular(const Mode::FP::Rounding &m) noexcept {
         using U = std::underlying_type_t<Mode::FP::Rounding>;
@@ -142,20 +160,6 @@ namespace Hash {
         UTILS_TYPE_PUN_ONTO(Hash, &tmp, &w);
         return UTILS_FILE_LINE_HASH ^ tmp;
     }
-
-    /** A specialization for T = Constants::CCSC */
-    template <> constexpr Hash singular(Constants::CCSC &s) noexcept {
-        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Utils::strlen(s));
-    }
-
-    /** A specialization for T = char[] */
-    template <std::size_t N> constexpr Hash singular(const char (&s)[N]) noexcept { // NOLINT
-        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, N);
-    }
-
-    /**************************************************/
-    /*                Specializations                 */
-    /**************************************************/
 
     /** A specialization for T = std::byte */
     template <> constexpr Hash singular(const std::byte &b) noexcept {
