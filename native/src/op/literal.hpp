@@ -7,6 +7,7 @@
 
 #include "base.hpp"
 
+#include "../big_int.hpp"
 #include "../py_obj.hpp"
 
 #include <cstddef>
@@ -21,12 +22,13 @@ namespace Op {
 
       public:
         /** The value type */
-        using Data = std::variant<bool,                   // Bool
-                                  std::string,            // String
-                                  std::vector<std::byte>, // BV
-                                  float, double,          // FP
-                                  PyObj::VSPtr            // VS
-                                  >;
+        using Data = std::variant<bool,          // Bool
+                                  std::string,   // String
+                                  float, double, // FP
+                                  PyObj::VSPtr,  // VS
+                                  // BV
+                                  int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t,
+                                  uint64_t, BigInt>;
 
         /** Representation */
         const Data value;
@@ -35,33 +37,77 @@ namespace Op {
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an Usage exception is thrown
          */
-        constexpr Constants::UInt bit_length() const { return C_CHAR_BIT * byte_length(); }
+        constexpr Constants::UInt bit_length() const {
+            if (std::holds_alternative<BigInt>(value)) {
+                return std::get<BigInt>(value).bit_length;
+            }
+            else {
+                return C_CHAR_BIT * byte_length();
+            }
+        }
 
         /** Python's repr function (outputs json)
          *  @todo This could be a switch-case statement; do when more stable
          */
         inline void repr(std::ostream &out, const bool) const override final {
+
+/** A local macro used for consistency */
+#define VCASE_PRE(INDEX, TYPE)                                                                    \
+    case (INDEX): {                                                                               \
+        static_assert(std::is_same_v<const TYPE &, decltype(std::get<INDEX>(value))>,             \
+                      "Wrong index for given type");                                              \
+        const auto &got { std::get<TYPE>(value) };
+
+/** A local macro used for consistency */
+#define VCASE_POST                                                                                \
+    break;                                                                                        \
+    }
+
+/** A local macro used for consistency */
+#define VCASE(INDEX, TYPE)                                                                        \
+    VCASE_PRE(INDEX, TYPE);                                                                       \
+    out << got;                                                                                   \
+    VCASE_POST;
+
+            // Repr depending on type
             out << R"|({ "name":")|" << op_name() << R"|(", "value":)|";
-            if (std::holds_alternative<std::string>(value)) {
-                out << '"' << std::get<std::string>(value) << '"';
-            }
-            else if (std::holds_alternative<std::vector<std::byte>>(value)) {
-                out << "[BV-" << std::get<std::vector<std::byte>>(value).size() << "]";
-            }
-            else if (std::holds_alternative<float>(value)) {
-                out << std::get<float>(value);
-            }
-            else if (std::holds_alternative<double>(value)) {
-                out << std::get<double>(value);
-            }
-            else if (std::holds_alternative<bool>(value)) {
-                out << std::boolalpha << std::get<bool>(value);
-            }
-            else {
-                throw Utils::Error::Unexpected::NotSupported(WHOAMI_WITH_SOURCE,
-                                                             "given bad CUIDl unknown type");
+            switch (value.index()) {
+                // Bool
+                VCASE_PRE(0, bool);
+                out << std::boolalpha << got;
+                VCASE_POST;
+                // String
+                VCASE_PRE(1, std::string);
+                out << std::quoted(got);
+                VCASE_POST;
+                // FP
+                VCASE(2, float);
+                VCASE(3, double);
+                // VS
+                VCASE(4, PyObj::VSPtr);
+                // BV
+                VCASE(5, int8_t);
+                VCASE(6, int16_t);
+                VCASE(7, int32_t);
+                VCASE(8, int64_t);
+                VCASE(9, uint8_t);
+                VCASE(10, uint16_t);
+                VCASE(11, uint32_t);
+                VCASE(12, uint64_t);
+                VCASE_PRE(13, BigInt);
+                out << got.value << R"|(", "Bit length":)|" << got.bit_length;
+                VCASE_POST;
+                    // Bad variant
+                default:
+                    throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
+                                                            "unknown type in variant");
             }
             out << " }";
+
+// Cleanup
+#undef VCASE_PRE
+#undef VCASE_POST
+#undef VCASE
         }
 
         /** Add's the raw expression children of the expression to the given stack in reverse
@@ -82,10 +128,19 @@ namespace Op {
         // There should be one for each variant type
         P_CTOR(bool) {};
         P_CTOR(std::string) {};
-        P_CTOR(std::vector<std::byte>) {};
         P_CTOR(float) {};
         P_CTOR(double) {};
         P_CTOR(PyObj::VSPtr) { UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
+        // BV constructors
+        P_CTOR(int8_t) {};
+        P_CTOR(int16_t) {};
+        P_CTOR(int32_t) {};
+        P_CTOR(int64_t) {};
+        P_CTOR(uint8_t) {};
+        P_CTOR(uint16_t) {};
+        P_CTOR(uint32_t) {};
+        P_CTOR(uint64_t) {};
+        P_CTOR(BigInt) {};
 
 // Cleanup
 #undef P_CTOR
@@ -94,22 +149,36 @@ namespace Op {
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an Usage exception is thrown
          *  This function requires that if value is a shared_ptr is be non-null
-         *  @todo This could be a switch-case statement; do when more stable
+         *  This function may not be called on a BigInt
          */
         constexpr Constants::UInt byte_length() const {
-            if (std::holds_alternative<std::string>(value)) { // String
-                return std::get<std::string>(value).size();
-            }
-            else if (std::holds_alternative<std::vector<std::byte>>(value)) { // BV
-                return std::get<std::vector<std::byte>>(value).size();
-            }
-            else if (std::holds_alternative<float>(value)) { // FP
-                return sizeof(float);
-            }
-            else if (std::holds_alternative<double>(value)) { // FP
-                return sizeof(double);
-            }
-            else if (std::holds_alternative<PyObj::VSPtr>(value)) { // VS
+
+/** A local macro used for consistency */
+#define VCASE_PRE(INDEX, TYPE)                                                                    \
+    case (INDEX): {                                                                               \
+        static_assert(std::is_same_v<const TYPE &, decltype(std::get<INDEX>(value))>,             \
+                      "Wrong index for given type");                                              \
+        const auto &got { std::get<TYPE>(value) };
+
+/** A local macro used for consistency */
+#define RET(X)                                                                                    \
+    return (X);                                                                                   \
+    }
+
+/** A local macro used for consistency */
+#define VCASE(INDEX, TYPE)                                                                        \
+    VCASE_PRE(INDEX, TYPE);                                                                       \
+    RET(sizeof(got));
+
+            switch (value.index()) {
+                // String
+                VCASE_PRE(1, std::string);
+                RET(got.size());
+                // FP
+                VCASE(2, float);
+                VCASE(3, double);
+                // VS
+                VCASE_PRE(4, PyObj::VSPtr);
 #ifdef DEBUG
                 UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
@@ -117,14 +186,31 @@ namespace Op {
                     bl % C_CHAR_BIT == 0, WHOAMI_WITH_SOURCE "VS of bit length ", bl,
                     " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
 #endif
-                return std::get<PyObj::VSPtr>(value)->bit_length / C_CHAR_BIT;
+                RET(got->bit_length / C_CHAR_BIT);
+                // BV
+                VCASE(5, int8_t);
+                VCASE(6, int16_t);
+                VCASE(7, int32_t);
+                VCASE(8, int64_t);
+                VCASE(9, uint8_t);
+                VCASE(10, uint16_t);
+                VCASE(11, uint32_t);
+                VCASE(12, uint64_t);
+                // Bool
+                default: {
+                    using Err = Utils::Error::Unexpected::Usage;
+                    throw Err(WHOAMI_WITH_SOURCE,
+                              "invoked when internal type does not correspond"
+                              " to an Expression which subclasses BitLength."
+                              " Current variant index is: ",
+                              value.index());
+                };
             }
-            // Invalid types: bool
-            throw Utils::Error::Unexpected::Usage(WHOAMI_WITH_SOURCE,
-                                                  "invoked when internal type does not correspond"
-                                                  " to an Expression which subclasses BitLength."
-                                                  " Current variant index is: ",
-                                                  value.index());
+
+// Cleanup
+#undef VCASE_PRE
+#undef RET
+#undef VCASE
         }
     };
 
