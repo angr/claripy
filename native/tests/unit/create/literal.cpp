@@ -41,23 +41,33 @@ void literal_t(const Data data, const Constants::UInt size = 0) {
 void literal() {
     static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
 
-    // Test varaibles
-    const char data[] = "This is a test"; // NOLINT
-    std::string data_s { data };
-    std::vector<std::byte> data_v {
-        reinterpret_cast<const std::byte *>(std::begin(data)), // NOLINT
-        reinterpret_cast<const std::byte *>(std::end(data))    // NOLINT
-    };
-
-    // Tests
+    // Bool
     literal_t<Expression::Bool>(true);
+
+    // String
+    std::string data_s { "This is a test" };
     literal_t<Expression::String>(data_s, C_CHAR_BIT * data_s.size());
-    literal_t<Expression::BV>(data_v, C_CHAR_BIT * data_v.size());
+
+    // FP
     literal_t<Expression::FP>(3.4, 64_ui);  // NOLINT
     literal_t<Expression::FP>(3.4f, 32_ui); // NOLINT
+
+    // VS
     auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
     const auto bl { ptr->bit_length };
     literal_t<Expression::VS>(std::move(ptr), bl);
+
+    // BV
+    Create::literal(int8_t { 3 });
+    Create::literal(int16_t { 3 });
+    Create::literal(int32_t { 3 });
+    Create::literal(int64_t { 3 });
+    Create::literal(uint8_t { 3 });
+    Create::literal(uint16_t { 3 });
+    Create::literal(uint32_t { 3 });
+    Create::literal(uint64_t { 3 });
+    const boost::multiprecision::mpz_int big { 4 }; // NOLINT
+    Create::literal(BigInt { big, 200_ui });        // NOLINT
 }
 
 // Define the test
