@@ -8,6 +8,7 @@
 #include "hashed.hpp"
 #include "type.hpp"
 
+#include "../big_int.hpp"
 #include "../mode.hpp"
 #include "../utils.hpp"
 
@@ -37,6 +38,60 @@ namespace Hash {
     /**************************************************/
     /*           Primitive Specializations            */
     /**************************************************/
+
+    static_assert(sizeof(Hash) >= sizeof(int64_t), "Hash of unexpected size");
+
+    /** A specialization for T = int8_t */
+    template <> constexpr Hash singular(const int8_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = int16_t */
+    template <> constexpr Hash singular(const int16_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = int32_t */
+    template <> constexpr Hash singular(const int32_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = int64_t */
+    template <> constexpr Hash singular(const int64_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = uint8_t */
+    template <> constexpr Hash singular(const uint8_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = uint16_t */
+    template <> constexpr Hash singular(const uint16_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = uint32_t */
+    template <> constexpr Hash singular(const uint32_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = uint64_t */
+    template <> constexpr Hash singular(const uint64_t &c) noexcept {
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+    }
+
+    /** A specialization for T = boost::multiprecision::mpz_int */
+    template <> inline Hash singular(const BigInt &arb) noexcept {
+        static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
+        static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
+        const mpz_t &raw { arb.value.backend().data() };
+        return UTILS_FILE_LINE_HASH ^ arb.bit_length ^
+               fnv1a<mp_limb_t>(
+                   raw->_mp_d,
+                   sizeof(mp_limb_t) *
+                       Utils::widen<mp_limb_t, decltype(raw->_mp_size), true>(raw->_mp_size));
+    }
 
     /** A specialization for T = char */
     template <> constexpr Hash singular(const char &c) noexcept {
@@ -93,25 +148,9 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Utils::strlen(s));
     }
 
-    /** A specialization for T = Constants::Int */
-    template <> constexpr Hash singular(const Constants::Int &i) noexcept {
-        static_assert(sizeof(Constants::Int) == sizeof(Hash),
-                      "singular(Constants::Int) must be modified");
-        static_assert(std::is_fundamental_v<Hash>, "singular(Constants::Int) must be modified");
-        // Unsafe for numerical reasons if Hash is unsigned. But we only
-        // care about uniqueness, so this is fine if the above hold
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(i);
-    }
-
     /** A specialization for T = char[] */
     template <std::size_t N> constexpr Hash singular(const char (&s)[N]) noexcept { // NOLINT
         return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, N);
-    }
-
-    /** A specialization for T = Constants::UInt */
-    template <> constexpr Hash singular(const Constants::UInt &i) noexcept {
-        // Compiler will warn if this is unsafe or invalid
-        return UTILS_FILE_LINE_HASH ^ i;
     }
 
     /**************************************************/
