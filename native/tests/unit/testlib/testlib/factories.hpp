@@ -26,10 +26,7 @@ namespace UnitTest::TestLib::Factories {
             return Create::literal(std::to_string(i));
         }
         else if constexpr (std::is_same_v<T, Ex::BV>) {
-            std::vector<std::byte> data;
-            data.resize(sizeof(i));
-            std::memcpy(data.data(), &i, sizeof(i));
-            return Create::literal(std::move(data));
+            return Create::literal(i);
         }
         else if constexpr (std::is_same_v<T, Ex::FP>) {
             return Create::literal(static_cast<double>(i));
