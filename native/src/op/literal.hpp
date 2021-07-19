@@ -85,11 +85,15 @@ namespace Op {
                 // VS
                 VCASE(4, PyObj::VSPtr);
                 // BV
-                VCASE(5, int8_t);
+                VCASE_PRE(5, int8_t);
+                out << static_cast<int16_t>(got); // To avoid printing as a char
+                VCASE_POST;
                 VCASE(6, int16_t);
                 VCASE(7, int32_t);
                 VCASE(8, int64_t);
-                VCASE(9, uint8_t);
+                VCASE_PRE(9, uint8_t);
+                out << static_cast<uint16_t>(got); // To avoid printing as a char
+                VCASE_POST;
                 VCASE(10, uint16_t);
                 VCASE(11, uint32_t);
                 VCASE(12, uint64_t);
