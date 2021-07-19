@@ -294,30 +294,21 @@ namespace Backend::Z3::Convert {
                     UTILS_VARIANT_INDEX_TYPE_IS(data, 4, PyObj::VSPtr);
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
                                                       "VSA is not supported by the Z3 backend");
-                case 5:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 5, int8_t);
-                    return Private::tl_ctx.bv_val(std::get<int8_t>(data), 8);
-                case 6:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 6, int16_t);
-                    return Private::tl_ctx.bv_val(std::get<int16_t>(data), 16);
-                case 7:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 7, int32_t);
-                    return Private::tl_ctx.bv_val(std::get<int32_t>(data), 32);
-                case 8:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 8, int64_t);
-                    return Private::tl_ctx.bv_val(std::get<int64_t>(data), 64);
-                case 9:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 9, uint8_t);
-                    return Private::tl_ctx.bv_val(std::get<uint8_t>(data), 8);
-                case 10:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 10, uint16_t);
-                    return Private::tl_ctx.bv_val(std::get<uint16_t>(data), 16);
-                case 11:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 11, uint32_t);
-                    return Private::tl_ctx.bv_val(std::get<uint32_t>(data), 32);
-                case 12:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 12, uint64_t);
-                    return Private::tl_ctx.bv_val(std::get<uint64_t>(data), 64);
+/** A local macro used for consistency */
+#define STD_INT(INDEX, TYPE, BL)                                                                  \
+    case INDEX:                                                                                   \
+        UTILS_VARIANT_INDEX_TYPE_IS(data, INDEX, TYPE);                                           \
+        return Private::tl_ctx.bv_val(std::get<TYPE>(data), BL);
+                    STD_INT(5, int8_t, 8);
+                    STD_INT(6, int16_t, 16);
+                    STD_INT(7, int32_t, 32);
+                    STD_INT(8, int64_t, 64);
+                    STD_INT(9, uint8_t, 8);
+                    STD_INT(10, uint16_t, 16);
+                    STD_INT(11, uint32_t, 32);
+                    STD_INT(12, uint64_t, 64);
+// Cleanup
+#undef STD_INT
                 case 13: {
                     UTILS_VARIANT_INDEX_TYPE_IS(data, 13, BigInt);
                     const auto &big { std::get<BigInt>(data) };
