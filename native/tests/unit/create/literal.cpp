@@ -58,10 +58,6 @@ void literal() {
     literal_t<Expression::VS>(std::move(ptr), bl);
 
     // BV
-    Create::literal(int8_t { 3 });
-    Create::literal(int16_t { 3 });
-    Create::literal(int32_t { 3 });
-    Create::literal(int64_t { 3 });
     Create::literal(uint8_t { 3 });
     Create::literal(uint16_t { 3 });
     Create::literal(uint32_t { 3 });
