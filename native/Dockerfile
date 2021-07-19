@@ -57,16 +57,17 @@ RUN apt-get install -yq \
 ENV CXX_COMPILER="${CXX_COMPILER}"
 ENV Z3_HEADER_REL_PATH="${Z3_HEADER_REL_PATH}"
 
-# Build
-RUN apt-get install -yq \
-	"${CXX_COMPILER}" \
-	make
-RUN pip3 install cmake # apt cmake is old
-
 # Boost multiprecision with gmp backend for mpz frontend
 RUN apt-get install -yq \
 	libboost-dev \
 	libgmp-dev
+
+# Build
+RUN apt-get install -yq \
+	"${CXX_COMPILER}" \
+	make
+# Apt cmake is old
+RUN pip3 install cmake
 
 # Z3
 RUN test -n "${Z3_HEADER_REL_PATH}" && INST='z3' || INST='git'; \
