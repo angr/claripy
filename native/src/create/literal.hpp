@@ -41,15 +41,6 @@ namespace Create {
 
     // BV creation methods
 
-    /** Create a BV Expression with a Literal op containing an 8-bit signed int */
-    TRIVIAL_TYPE(BV, int8_t);
-    /** Create a BV Expression with a Literal op containing an 16-bit signed int */
-    TRIVIAL_TYPE(BV, int16_t);
-    /** Create a BV Expression with a Literal op containing an 32-bit signed int */
-    TRIVIAL_TYPE(BV, int32_t);
-    /** Create a BV Expression with a Literal op containing an 64-bit signed int */
-    TRIVIAL_TYPE(BV, int64_t);
-
     /** Create a BV Expression with a Literal op containing an 8-bit unsigned int */
     TRIVIAL_TYPE(BV, uint8_t);
     /** Create a BV Expression with a Literal op containing an 16-bit unsigned int */

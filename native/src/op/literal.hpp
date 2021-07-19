@@ -27,8 +27,7 @@ namespace Op {
                                   float, double, // FP
                                   PyObj::VSPtr,  // VS
                                   // BV
-                                  int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t,
-                                  uint64_t, BigInt>;
+                                  uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
 
         /** Representation */
         const Data value;
@@ -85,19 +84,13 @@ namespace Op {
                 // VS
                 VCASE(4, PyObj::VSPtr);
                 // BV
-                VCASE_PRE(5, int8_t);
-                out << static_cast<int16_t>(got); // To avoid printing as a char
-                VCASE_POST;
-                VCASE(6, int16_t);
-                VCASE(7, int32_t);
-                VCASE(8, int64_t);
-                VCASE_PRE(9, uint8_t);
+                VCASE_PRE(5, uint8_t);
                 out << static_cast<uint16_t>(got); // To avoid printing as a char
                 VCASE_POST;
-                VCASE(10, uint16_t);
-                VCASE(11, uint32_t);
-                VCASE(12, uint64_t);
-                VCASE_PRE(13, BigInt);
+                VCASE(6, uint16_t);
+                VCASE(7, uint32_t);
+                VCASE(8, uint64_t);
+                VCASE_PRE(9, BigInt);
                 out << got.value << R"|(", "Bit length":)|" << got.bit_length;
                 VCASE_POST;
                     // Bad variant
@@ -135,10 +128,6 @@ namespace Op {
         P_CTOR(double) {};
         P_CTOR(PyObj::VSPtr) { UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
         // BV constructors
-        P_CTOR(int8_t) {};
-        P_CTOR(int16_t) {};
-        P_CTOR(int32_t) {};
-        P_CTOR(int64_t) {};
         P_CTOR(uint8_t) {};
         P_CTOR(uint16_t) {};
         P_CTOR(uint32_t) {};
@@ -190,14 +179,10 @@ namespace Op {
 #endif
                 RET(got->bit_length / C_CHAR_BIT);
                 // BV
-                VCASE(5, int8_t);
-                VCASE(6, int16_t);
-                VCASE(7, int32_t);
-                VCASE(8, int64_t);
-                VCASE(9, uint8_t);
-                VCASE(10, uint16_t);
-                VCASE(11, uint32_t);
-                VCASE(12, uint64_t);
+                VCASE(5, uint8_t);
+                VCASE(6, uint16_t);
+                VCASE(7, uint32_t);
+                VCASE(8, uint64_t);
                 // Bool
                 default: {
                     using Err = Utils::Error::Unexpected::Usage;

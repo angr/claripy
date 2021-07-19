@@ -100,11 +100,11 @@ namespace Backend::Z3::Abstract {
         const auto &ctx { Private::tl_ctx };
         if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
                      (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
-            throw Error::Backend::Abstraction("Weird Z3 model.", b);
+            throw Error::Backend::Abstraction("Weird Z3 model (Type 1).", b);
         }
         const auto symb { Z3_get_decl_symbol_parameter(ctx, decl, 0) };
         if (UNLIKELY(Z3_get_symbol_kind(ctx, symb) != Z3_STRING_SYMBOL)) {
-            throw Error::Backend::Abstraction("Weird Z3 model.");
+            throw Error::Backend::Abstraction("Weird Z3 model (Type 2).", b);
         }
         return Create::literal(Z3_get_symbol_string(ctx, symb));
     }

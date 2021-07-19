@@ -299,18 +299,14 @@ namespace Backend::Z3::Convert {
     case INDEX:                                                                                   \
         UTILS_VARIANT_INDEX_TYPE_IS(data, INDEX, TYPE);                                           \
         return Private::tl_ctx.bv_val(std::get<TYPE>(data), BL);
-                    STD_INT(5, int8_t, 8);
-                    STD_INT(6, int16_t, 16);
-                    STD_INT(7, int32_t, 32);
-                    STD_INT(8, int64_t, 64);
-                    STD_INT(9, uint8_t, 8);
-                    STD_INT(10, uint16_t, 16);
-                    STD_INT(11, uint32_t, 32);
-                    STD_INT(12, uint64_t, 64);
+                    STD_INT(5, uint8_t, 8);
+                    STD_INT(6, uint16_t, 16);
+                    STD_INT(7, uint32_t, 32);
+                    STD_INT(8, uint64_t, 64);
 // Cleanup
 #undef STD_INT
-                case 13: {
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 13, BigInt);
+                case 9: {
+                    UTILS_VARIANT_INDEX_TYPE_IS(data, 9, BigInt);
                     const auto &big { std::get<BigInt>(data) };
                     std::ostringstream s;
                     s << big.value;
