@@ -289,32 +289,36 @@ namespace Backend::Z3::Abstract {
 
         /** Abstraction function for Z3_OP_BNUM */
         inline Expression::BasePtr num(const z3::expr &b_obj) {
-            // Get the bv number
-            uint64_t bv_num; // NOLINT
-            if (!b_obj.is_numeral_u64(bv_num)) {
-                std::string tmp;
-                const bool success { b_obj.is_numeral(tmp) };
-                Utils::affirm<Utils::Error::Unexpected::Type>(success, WHOAMI_WITH_SOURCE
-                                                              "given z3 object is not a numeral");
-                bv_num = std::stoull(tmp); // Faster than istringstream
-                static_assert(sizeof(unsigned long long) == sizeof(uint64_t),
-                              "Bad string conversion function called");
+
+            // We only ever need one at a time
+            union {
+                int64_t i64;
+                uint64_t u64;
+                int32_t i32;
+                uint32_t u32;
+            };
+
+            // Get the number if standard
+            if (b_obj.is_numeral_i64(i64)) {
+                return Create::literal(i64);
             }
-            // Type pun to vector of bytes
-            std::vector<std::byte> data;
-            data.reserve(sizeof(bv_num));
-            std::memcpy(data.data(), &bv_num, sizeof(bv_num));
-#ifdef DEBUG
-            // Size check
+            else if (b_obj.is_numeral_u64(u64)) {
+                return Create::literal(u64);
+            }
+            else if (b_obj.is_numeral_i(i32)) {
+                return Create::literal(i32);
+            }
+            else if (b_obj.is_numeral_u(u32)) {
+                return Create::literal(u32);
+            }
+
+            // Get the BV as a BigInt
+            std::string str;
+            using Err = Utils::Error::Unexpected::Type;
+            Utils::affirm<Err>(b_obj.is_numeral(str),
+                               WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
             const auto bl { b_obj.get_sort().bv_size() };
-            Utils::affirm<Utils::Error::Unexpected::Size>(
-                sizeof(bv_num) * 8 == bl,
-                WHOAMI_WITH_SOURCE "Int to BV type pun failed because the requested BV size is ",
-                bl, " bits long where as the integer type is only ", sizeof(bv_num) * 8,
-                " bits long.");
-#endif
-            // Return literal
-            return Create::literal(std::move(data));
+            return Create::literal(BigInt { BigInt::Value { str }, bl });
         }
 
     } // namespace BV
