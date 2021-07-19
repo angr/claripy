@@ -45,10 +45,17 @@ void normal() {
 
     Utils::Log::debug("Testing literal...");
     UNITTEST_ASSERT(test_id(C::literal(true)));
-    /* UNITTEST_ASSERT(test_id(C::literal({std::byte('a')}))); */
     UNITTEST_ASSERT(test_id(C::literal(1.)));
     UNITTEST_ASSERT(test_id(C::literal(1.F)));
     /* UNITTEST_ASSERT(test_id(C::literal(std::string("Hello")))); */
+
+    Utils::Log::critical(C::literal(int8_t { 2 }));
+    Utils::Log::critical(z3bk.convert(C::literal(int8_t { 2 })));
+    Utils::Log::critical(z3bk.abstract(z3bk.convert(C::literal(int8_t { 2 }))));
+
+    UNITTEST_ASSERT(test_id(C::literal(int8_t { 2 })));
+    /* UNITTEST_ASSERT(test_id(C::literal(int8_t{2}))); */
+
 
     Utils::Log::debug("Testing symbol...");
     UNITTEST_ASSERT(bool_x);
