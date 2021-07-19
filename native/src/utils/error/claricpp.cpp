@@ -15,6 +15,7 @@ thread_local std::atomic_bool Utils::Error::Claricpp::enable_backtraces { false 
 void Utils::Error::Private::backtrace_if_debug() {
     if (Utils::Error::Claricpp::backtraces_enabled()) {
         std::ostringstream s;
+        s << "Backtrace:\n";
         Utils::backtrace(s, 1);
         Utils::Log::error(s.str());
     }
