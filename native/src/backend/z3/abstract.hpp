@@ -289,35 +289,33 @@ namespace Backend::Z3::Abstract {
 
         /** Abstraction function for Z3_OP_BNUM */
         inline Expression::BasePtr num(const z3::expr &b_obj) {
+            using Err = Utils::Error::Unexpected::Type;
 
-            // We only ever need one at a time
-            union {
+            // Get the bit length
+            const auto bl { b_obj.get_sort().bv_size() };
+
+            if (bl <= 64) {
                 int64_t i64;
-                uint64_t u64;
-                int32_t i32;
-                uint32_t u32;
-            };
-
-            // Get the number if standard
-            if (b_obj.is_numeral_i64(i64)) {
-                return Create::literal(i64);
-            }
-            else if (b_obj.is_numeral_u64(u64)) {
-                return Create::literal(u64);
-            }
-            else if (b_obj.is_numeral_i(i32)) {
-                return Create::literal(i32);
-            }
-            else if (b_obj.is_numeral_u(u32)) {
-                return Create::literal(u32);
+                Utils::affirm<Err>(b_obj.is_numeral_i64(i64),
+                                   WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
+                switch (bl) {
+                    case 8:
+                        return Create::literal(Utils::narrow<int8_t>(i64));
+                    case 16:
+                        return Create::literal(Utils::narrow<int16_t>(i64));
+                    case 32:
+                        return Create::literal(Utils::narrow<int32_t>(i64));
+                    case 64:
+                        return Create::literal(i64);
+                    default:
+                        break;
+                };
             }
 
             // Get the BV as a BigInt
             std::string str;
-            using Err = Utils::Error::Unexpected::Type;
             Utils::affirm<Err>(b_obj.is_numeral(str),
                                WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
-            const auto bl { b_obj.get_sort().bv_size() };
             return Create::literal(BigInt { BigInt::Value { str }, bl });
         }
 
