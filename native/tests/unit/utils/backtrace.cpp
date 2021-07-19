@@ -66,8 +66,7 @@ void backtrace() {
     UNITTEST_ASSERT(contains("backtrace() + "));
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
     UNITTEST_ASSERT(contains("main + "));
-    UNITTEST_ASSERT(contains("__libc_start_main + "));
-    UNITTEST_ASSERT(contains("_start + "));
+    UNITTEST_ASSERT(contains("start + "));
 #else
     UNITTEST_ASSERT(backtrace.empty());
 #endif
