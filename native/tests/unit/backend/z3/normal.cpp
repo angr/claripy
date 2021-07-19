@@ -50,13 +50,13 @@ void normal() {
     /* UNITTEST_ASSERT(test_id(C::literal(std::string("Hello")))); */
 
     UNITTEST_ASSERT(test_id(C::literal(int8_t { 2 })));
-    UNITTEST_ASSERT(test_id(C::literal(int16_t { 2 })));
-    UNITTEST_ASSERT(test_id(C::literal(int32_t { 2 })));
-    UNITTEST_ASSERT(test_id(C::literal(int64_t { 2 })));
-    /* UNITTEST_ASSERT(test_id(C::literal(uint8_t { 2 }))); */
-    /* UNITTEST_ASSERT(test_id(C::literal(uint16_t { 2 }))); */
-    /* UNITTEST_ASSERT(test_id(C::literal(uint32_t { 2 }))); */
-    /* UNITTEST_ASSERT(test_id(C::literal(uint64_t { 2 }))); */
+    /* UNITTEST_ASSERT(test_id(C::literal(int16_t { 2 }))); */
+    /* UNITTEST_ASSERT(test_id(C::literal(int32_t { 2 }))); */
+    /* UNITTEST_ASSERT(test_id(C::literal(int64_t { 2 }))); */
+    UNITTEST_ASSERT(test_id(C::literal(uint8_t { 2 })));
+    UNITTEST_ASSERT(test_id(C::literal(uint16_t { 2 })));
+    UNITTEST_ASSERT(test_id(C::literal(uint32_t { 2 })));
+    UNITTEST_ASSERT(test_id(C::literal(uint64_t { 2 })));
 
     Utils::Log::debug("Testing symbol...");
     UNITTEST_ASSERT(bool_x);

@@ -295,18 +295,18 @@ namespace Backend::Z3::Abstract {
             const auto bl { b_obj.get_sort().bv_size() };
 
             if (bl <= 64) {
-                int64_t i64;
-                Utils::affirm<Err>(b_obj.is_numeral_i64(i64),
+                uint64_t u64;
+                Utils::affirm<Err>(b_obj.is_numeral_u64(u64),
                                    WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
                 switch (bl) {
                     case 8:
-                        return Create::literal(Utils::narrow<int8_t>(i64));
+                        return Create::literal(Utils::narrow<uint8_t>(u64));
                     case 16:
-                        return Create::literal(Utils::narrow<int16_t>(i64));
+                        return Create::literal(Utils::narrow<uint16_t>(u64));
                     case 32:
-                        return Create::literal(Utils::narrow<int32_t>(i64));
+                        return Create::literal(Utils::narrow<uint32_t>(u64));
                     case 64:
-                        return Create::literal(i64);
+                        return Create::literal(u64);
                     default:
                         break;
                 };
