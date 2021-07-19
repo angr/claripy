@@ -24,7 +24,7 @@ namespace UnitTest::TestLib::Factories {
             return Create::literal(std::to_string(i));
         }
         else if constexpr (std::is_same_v<T, Ex::BV>) {
-            return Create::literal(i);
+            return Create::literal(static_cast<Constants::UInt>(i));
         }
         else if constexpr (std::is_same_v<T, Ex::FP>) {
             return Create::literal(static_cast<double>(i));
