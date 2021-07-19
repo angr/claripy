@@ -66,6 +66,7 @@
 #include "utils/type_pun.hpp"
 #include "utils/type_to_type.hpp"
 #include "utils/unconstructable.hpp"
+#include "utils/variant_index_type_is.hpp"
 #include "utils/verify_syscall.hpp"
 #include "utils/weak_cache.hpp"
 #include "utils/widen.hpp"
