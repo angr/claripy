@@ -54,8 +54,7 @@ namespace Op {
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                    \
     case (INDEX): {                                                                               \
-        static_assert(std::is_same_v<const TYPE &, decltype(std::get<INDEX>(value))>,             \
-                      "Wrong index for given type");                                              \
+        UTILS_VARIANT_INDEX_TYPE_IS(value, INDEX, TYPE)                                           \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
@@ -156,8 +155,7 @@ namespace Op {
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                    \
     case (INDEX): {                                                                               \
-        static_assert(std::is_same_v<const TYPE &, decltype(std::get<INDEX>(value))>,             \
-                      "Wrong index for given type");                                              \
+        UTILS_VARIANT_INDEX_TYPE_IS(value, INDEX, TYPE)                                           \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
