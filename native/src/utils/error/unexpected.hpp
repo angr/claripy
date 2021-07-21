@@ -32,6 +32,9 @@ namespace Utils::Error::Unexpected {
     /** Bad cast exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Base);
 
+    /** Hash Collision exception */
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(HashCollision, Base);
+
     /** Bad variant access exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Base);
 
