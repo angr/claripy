@@ -15,11 +15,6 @@ namespace Backend::Z3::Private {
      */
     thread_local z3::context tl_ctx;
 
-    /** A z3 thread local raw context that is the same as the z3::context
-     *  This might be inline-able, but the tests cases might violate the ODR rules
-     */
-    thread_local Z3_context tl_raw_ctx { tl_ctx };
-
 } // namespace Backend::Z3::Private
 
 #endif
