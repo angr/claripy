@@ -6,6 +6,7 @@
 #define R_BACKEND_Z3_Z3_HPP_
 
 #include "abstract.hpp"
+#include "bool_tactic.hpp"
 #include "convert.hpp"
 
 #include "../../error.hpp"
@@ -78,12 +79,40 @@ namespace Backend::Z3 {
             return ret;
         }
 
+        /** The method used to simplify z3 boolean expressions */
+        static inline z3::expr bool_simplify(const z3::expr &expr) {
+            thread_local BoolTactic bt;
+            return bt(expr);
+        }
+
         /** Simplify the given expression
          *  expr may not be nullptr
          */
         inline Expression::BasePtr simplify_raw(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            return abstract(convert(expr).simplify());
+            namespace Ex = Expression;
+            switch (expr->cuid) {
+                case Ex::Bool::static_cuid: {
+                    auto b_obj { convert(expr) };
+                    b_obj = bool_simplify(b_obj);
+                    return abstract(b_obj);
+                }
+                case Ex::BV::static_cuid: {
+                    auto b_obj = convert(expr);
+                    b_obj = b_obj.simplify();
+                    return abstract(b_obj);
+                }
+                default: {
+#ifdef DEBUG
+                    const auto ret { Ex::find(expr->hash) };
+                    using Err = Utils::Error::Unexpected::HashCollision;
+                    Utils::affirm<Err>(ret.get() == expr, WHOAMI_WITH_SOURCE);
+                    return ret;
+#else
+                    return Ex::find(expr->hash);
+#endif
+                }
+            }
         }
 
       private:
