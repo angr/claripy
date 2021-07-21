@@ -58,13 +58,12 @@ namespace Factory {
             hash, hash, std::forward<Args>(args)...);
     }
 
-    /** Return true if the given hash is in the factory cache
-     *  This is exposed for optimization reasons; it allows objects to invoke this to check
-     *  if something is cached ratehr than store a weak pointer to the factory pointer returned
+    /** Get a shared pointer from a hash
+     *  If the object does not exist it returns a shared pointer to nullptr
      */
-    template <typename Base> bool in_cache(const Hash::Hash h) {
-        /* return Private::gcache<Base>().exists(h); */
-        return Private::gcache<Base>().exists(h);
+    template <typename Base> Ptr<Base> find(const Hash::Hash h) {
+        using CacheKeyT = std::remove_cv_t<Base>;
+        return Private::gcache<CacheKeyT>().find(h);
     }
 
 } // namespace Factory

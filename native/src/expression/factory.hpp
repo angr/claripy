@@ -22,10 +22,10 @@ namespace Expression {
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 
-    /** Retrun true if the given hash is in the cache; and thus the assoicated object is alive
-     *  Warning: by the time this function ends, the object may have died.
+    /** Get a shared pointer from a hash
+     *  If the object does not exist it returns a shared pointer to nullptr
      */
-    inline bool in_cache(const Hash::Hash h) { return ::Factory::in_cache<Base>(h); }
+    inline Factory::Ptr<Base> find(const Hash::Hash h) { return ::Factory::find<Base>(h); }
 
 } // namespace Expression
 
