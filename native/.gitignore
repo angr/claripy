@@ -1,11 +1,17 @@
+# IDE
+build-clion/*
+.idea/*
+
 # Explicit
-Doxyfile
 Ignore/*
 ignore/*
 build/*
 Build/*
-z3/*
+
+# Build artifacts
+Doxyfile
 compile_commands.json
+z3/*
 
 # Prerequisites
 *.d
