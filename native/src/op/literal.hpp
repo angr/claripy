@@ -53,7 +53,7 @@ namespace Op {
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                    \
     case (INDEX): {                                                                               \
-        UTILS_VARIANT_INDEX_TYPE_IS(value, INDEX, TYPE)                                           \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE(value, INDEX, TYPE)                                       \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
@@ -148,7 +148,7 @@ namespace Op {
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                    \
     case (INDEX): {                                                                               \
-        UTILS_VARIANT_INDEX_TYPE_IS(value, INDEX, TYPE)                                           \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE(value, INDEX, TYPE)                                       \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */

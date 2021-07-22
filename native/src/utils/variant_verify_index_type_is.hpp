@@ -10,7 +10,7 @@
 #include <variant>
 
 
-#define UTILS_VARIANT_INDEX_TYPE_IS(VAR, INDEX, TYPE)                                             \
+#define UTILS_VARIANT_VERIFY_INDEX_TYPE(VAR, INDEX, TYPE)                                         \
     static_assert(std::is_same_v<const TYPE &, decltype(std::get<INDEX>((VAR)))>,                 \
                   "Wrong index for given type");
 

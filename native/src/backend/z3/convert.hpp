@@ -279,25 +279,25 @@ namespace Backend::Z3::Convert {
         try {
             switch (data.index()) {
                 case 0:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 0, bool);
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE(data, 0, bool);
                     return Private::tl_ctx.bool_val(std::get<bool>(data));
                 case 1:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 1, std::string);
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE(data, 1, std::string);
                     return Private::tl_ctx.string_val(std::get<std::string>(data));
                 case 2:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 2, float);
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE(data, 2, float);
                     return Private::tl_ctx.fpa_val(std::get<float>(data));
                 case 3:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 3, double);
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE(data, 3, double);
                     return Private::tl_ctx.fpa_val(std::get<double>(data));
                 case 4:
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 4, PyObj::VSPtr);
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE(data, 4, PyObj::VSPtr);
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
                                                       "VSA is not supported by the Z3 backend");
 /** A local macro used for consistency */
 #define STD_INT(INDEX, TYPE, BL)                                                                  \
     case INDEX:                                                                                   \
-        UTILS_VARIANT_INDEX_TYPE_IS(data, INDEX, TYPE);                                           \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE(data, INDEX, TYPE);                                       \
         return Private::tl_ctx.bv_val(std::get<TYPE>(data), BL);
                     STD_INT(5, uint8_t, 8);
                     STD_INT(6, uint16_t, 16);
@@ -306,7 +306,7 @@ namespace Backend::Z3::Convert {
 // Cleanup
 #undef STD_INT
                 case 9: {
-                    UTILS_VARIANT_INDEX_TYPE_IS(data, 9, BigInt);
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE(data, 9, BigInt);
                     const auto &big { std::get<BigInt>(data) };
                     std::ostringstream s;
                     s << big.value;
