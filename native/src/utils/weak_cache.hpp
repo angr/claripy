@@ -24,13 +24,13 @@ namespace Utils {
 
     /** A generic thread-safe cache class that
      *  This maps a Key to std::weak_ptr<const Cached>
-     *  This class will occassionally gc dead weak_ptr's in the cache
+     *  This class will occasionally gc dead weak_ptr's in the cache
      *  @todo We could have a TLS deletion queue if we want to increase efficiency
      */
     template <typename Hash, typename Cached> class WeakCache final {
         ENABLE_UNITTEST_FRIEND_ACCESS
 
-        /** The pointer type publically exposed */
+        /** The pointer type publicly exposed */
         using Ptr = std::shared_ptr<const Cached>;
 
         /** Abbreviate the type this is */
@@ -102,9 +102,6 @@ namespace Utils {
             }
 
             // Construct our object to be cached
-            // This might be a bit faster than constructing then using a staic pointer cost
-            // in exchange we have to pass a custom deleter in case Cached has non-public
-            // destructor
             // We don't know how long the constructor will take so we do it in an unlocked context
             Ptr ret {
                 // Pointer up cast
