@@ -29,7 +29,7 @@ void weak_ptr_invalidation_find() {
     // Check cache size
     UNITTEST_ASSERT(ut_cache.size() == 1);
 
-    // Verify inablity to find: side effect removes from cache
+    // Verify inability to find: side effect removes from cache
     const auto nll { ut_cache.unsafe_find(hash) };
     UNITTEST_ASSERT(nll == nullptr);
 

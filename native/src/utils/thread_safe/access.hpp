@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines the thread-safe Access class similiar but different from std::atomic
+ * @brief This file defines the thread-safe Access class similar but different from std::atomic
  */
 #ifndef R_UTILS_THREADSAFE_ACCESS_HPP_
 #define R_UTILS_THREADSAFE_ACCESS_HPP_
@@ -23,7 +23,7 @@ namespace Utils::ThreadSafe {
 
     /** A class that exposes thread-safe setters and getters for a T
      * Warning: This does not protect T internally; it only protects setting and getting
-     * Note: this class is similiar to std::atomic, except that unlike atomic,
+     * Note: this class is similar to std::atomic, except that unlike atomic,
      * we do note require the following to be true:
      * 1. std::is_trivially_copyable<T>::value
      * 2. std::is_copy_constructible<T>::value

@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines a thread-safe recurence guard
+ * @brief This file defines a thread-safe recurrence guard
  */
 #ifndef R_UTILS_RECURRENCEGUARD_HPP_
 #define R_UTILS_RECURRENCEGUARD_HPP_

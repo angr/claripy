@@ -47,7 +47,7 @@ namespace Op {
         /** Return true if this class requires each operand be of the same size */
         virtual bool consider_size() const noexcept = 0;
 
-        /** Add's the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {

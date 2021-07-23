@@ -36,7 +36,7 @@ namespace Create::Private {
             const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
             static_assert(
                 Utils::TD::boolean<sized_in, In>,
-                "Create::Private::uint_binary does not suppot sized output types without "
+                "Create::Private::uint_binary does not support sized output types without "
                 "sized input types");
         }
         static_assert(Utils::qualified_is_in<In, Allowed...>,

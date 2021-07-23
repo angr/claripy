@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines the LevelTimestameMessage Log Style class
+ * @brief This file defines the LevelTimestampMessage Log Style class
  */
 #ifndef R_UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP_
 #define R_UTILS_LOG_STYLE_LEVELTIMESTAMPMESSAGE_HPP_
@@ -11,7 +11,7 @@
 
 namespace Utils::Log::Style {
 
-    /** A Log Style whcih prints out the log level, a timestamp, and the message */
+    /** A Log Style which prints out the log level, a timestamp, and the message */
     struct LevelTimestampMessage final : public Base {
 
         /** Format the log message */

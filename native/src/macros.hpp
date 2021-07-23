@@ -56,7 +56,7 @@
 
 
 /** A macro used to define a final derived subclass
- *  class which inherets its parent's constructors
+ *  class which inherits its parent's constructors
  */
 #define DEFINE_FINAL_SUBCLASS_USING_CTOR(DERIVED, SUPER)                                          \
     struct DERIVED final : public SUPER {                                                         \
@@ -96,7 +96,7 @@
 /********************************************************************/
 
 
-/** A macro used to enable/disable the implict operators of a class
+/** A macro used to enable/disable the implicit operators of a class
  *  noexcept may be added as a third optional argument applied to move semantics
  */
 #define SET_IMPLICITS_OPERATORS(CLASS, VALUE, ...)                                                \
@@ -114,7 +114,7 @@
     /** Define the default move constructor */                                                    \
     CLASS(CLASS &&) __VA_ARGS__ = VALUE;
 
-/** A macro used to enable/disable all implict constructors and operators of a class
+/** A macro used to enable/disable all implicit constructors and operators of a class
  *  except for the default constructor
  *  noexcept may be added as a third optional argument applied to move semantics
  */
@@ -141,21 +141,21 @@
 
 // All noexcept implicits
 
-/** A macro used to enable the implict operators of a class as noexcept */
+/** A macro used to enable the implicit operators of a class as noexcept */
 #define DEFINE_IMPLICITS_OPERATORS_ALL_NOEXCEPT(CLASS)                                            \
     /** Define the copy operator */                                                               \
     CLASS &operator=(const CLASS &) noexcept = default;                                           \
     /** Define the move operator */                                                               \
     CLASS &operator=(CLASS &&) noexcept = default;
 
-/** A macro used to enable the implict non-default constructors of a class as noexcept */
+/** A macro used to enable the implicit non-default constructors of a class as noexcept */
 #define DEFINE_IMPLICITS_NONDEFAULT_CTORS_ALL_NOEXCEPT(CLASS)                                     \
     /** Define the default copy constructor */                                                    \
     CLASS(const CLASS &) noexcept = default;                                                      \
     /** Define the default move constructor */                                                    \
     CLASS(CLASS &&) noexcept = default;
 
-/** A macro used to enable all implict constructors and operators of a class as noexcept
+/** A macro used to enable all implicit constructors and operators of a class as noexcept
  *  except for the default constructor which is not set at all
  */
 #define DEFINE_IMPLICITS_EXCLUDE_DEFAULT_CTOR_ALL_NOEXCEPT(CLASS)                                 \

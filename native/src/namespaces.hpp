@@ -197,7 +197,7 @@ namespace Op {
 /** A namespace used for the py_obj directory */
 namespace PyObj {}
 
-/** A namespace that containsvarious C API functions */
+/** A namespace that contains various C API functions */
 namespace C_API {
 
     /** A namespace that contains private members of the C API */
@@ -251,7 +251,7 @@ namespace Create {
 namespace Annotation {}
 
 
-/** A namespace used for unittesting instrumentation */
+/** A namespace used for unit testing instrumentation */
 namespace UnitTest {}
 
 

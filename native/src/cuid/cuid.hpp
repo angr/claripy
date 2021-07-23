@@ -32,7 +32,7 @@ namespace CUID {
     using CUID = Constants::UInt;
 
     /** A type that has a class unique id
-     *  This has the benefits of a virtual function as inhereted classes
+     *  This has the benefits of a virtual function as inherited classes
      *  can have different CUIDs than their ancestors, while also avoiding
      *  the overhead of a vtabel call to invoke virtual cuid() const;
      */

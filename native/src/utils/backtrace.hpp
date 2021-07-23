@@ -69,7 +69,7 @@ namespace Utils {
             Utils::affirm<Err::Unknown>(n_frames <= max_frames,
                                         WHOAMI_WITH_SOURCE "backtrace overflow failure");
             Constants::CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
-            // Used for formating
+            // Used for formatting
             const auto n_to_print { Utils::widen<Constants::UInt, int, true>(
                 Utils::Min::value(n_frames, 1 + static_cast<int>(max_frames))) };
             const auto lg_i { static_cast<int>(std::ceil(std::log10(n_to_print))) };

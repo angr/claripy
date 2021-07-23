@@ -18,7 +18,7 @@ namespace Backend {
 
     /** A subclass of Backend::Base which other backends should derive from for consistency
      *  If ApplyAnnotations, convert will invoke apply_annotations() on newly converted backend
-     *  objects, passing the expressions's annotation vector to the function as it does
+     *  objects, passing the expressions' annotation vector to the function as it does
      */
     template <typename BackendObj, bool ApplyAnnotations> class Generic : public Base {
         /** A raw pointer to a backend object */
@@ -71,7 +71,7 @@ namespace Backend {
         /** Convert a claricpp Expression to a backend object
          *  This function does not deal with the lifetimes of Expressions
          *  This function does deal with the lifetimes of backend objects
-         *  This is a worklist algorithm instead of recusion
+         *  This is a worklist algorithm instead of recursion
          *  input may not be nullptr
          */
         BackendObj convert(const Expression::BasePtr &input) { return convert(input.get()); }
@@ -79,7 +79,7 @@ namespace Backend {
         /** Convert a claricpp Expression to a backend object
          *  This function does not deal with the lifetimes of Expressions
          *  This function does deal with the lifetimes of backend objects
-         *  This is a worklist algorithm instead of recusion
+         *  This is a worklist algorithm instead of recursion
          *  input may not be nullptr
          */
         BackendObj convert(const Expression::RawPtr input) {
@@ -89,13 +89,13 @@ namespace Backend {
 #endif
 
             // Functionally a stack of lists of expressions to be converted
-            // We flatten and reverse this list for preformance reasons
+            // We flatten and reverse this list for performance reasons
             // To denote the end of a list we prefix its elements with a nullptr
             // Note prefix because we reversed the list, thus the 'end' must come first
             // Each list represents the arguments of an expression
             Op::Base::Stack expr_stack { std::vector<Expression::RawPtr> { nullptr, input } };
             Op::Base::Stack op_stack;       // Expressions to give to the conversion dispatcher
-                                            // We leave this as a vector for preformance
+                                            // We leave this as a vector for performance
                                             // reasons within the dispatcher
             std::vector<BORCPtr> arg_stack; // Converted backend objects
 

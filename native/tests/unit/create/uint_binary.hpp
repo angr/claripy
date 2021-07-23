@@ -26,7 +26,7 @@ inline void uint_binary() {
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
         const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
         static_assert(Utils::TD::boolean<sized_in, In>,
-                      "uint_binary does not suppot sized output types without sized input types");
+                      "uint_binary does not support sized output types without sized input types");
     }
 
     // Create inputs

@@ -1,5 +1,5 @@
 /** \defgroup testlib Test Helper Library
- * @brief A library that contains common functions that unit teses may use
+ * @brief A library that contains common functions that unit tests may use
  */
 
 /**

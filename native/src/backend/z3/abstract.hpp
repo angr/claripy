@@ -15,7 +15,7 @@
 #include <limits>
 
 
-/** A local macro used for lengh checking the number of children in a container */
+/** A local macro used for length checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                      \
     Utils::affirm<Utils::Error::Unexpected::Size>(                                                \
         (X).size() == (N), WHOAMI_WITH_SOURCE "Op ", __func__,                                    \

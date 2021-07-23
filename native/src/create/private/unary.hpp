@@ -24,11 +24,11 @@ namespace Create::Private {
                       "Create::Private::unary requires Out be an Expression");
         static_assert(Utils::is_ancestor<Ex::Base, In>,
                       "Create::Private::unary requires In be an Expression");
-        static_assert(Op::is_unary<OpT>, "Create::Private::unary requries OpT to be unary");
+        static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
         if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
             const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
             static_assert(Utils::TD::boolean<sized_in, In>,
-                          "Create::Private::unary does not suppot sized output types without "
+                          "Create::Private::unary does not support sized output types without "
                           "sized input types");
         }
         static_assert(Utils::qualified_is_in<In, Allowed...>,

@@ -11,11 +11,11 @@
 
 
 namespace Mode {
-    /** A mask used to define the type of comparisson to be used */
+    /** A mask used to define the type of comparison to be used */
     enum class Compare { Signed = 1, Unsigned = 2, Less = 4, Greater = 8, Eq = 16, Neq = 32 };
 } // namespace Mode
 
-// Enable bitmasking
+// Enable bit masking
 UTILS_BITMASK_ENABLE(Mode::Compare)
 
 namespace Mode {

@@ -28,7 +28,7 @@ namespace Op {
         virtual inline const char *op_name() const noexcept = 0;
         /** Python's repr function (outputs json) */
         virtual inline void repr(std::ostream &out, const bool verbose = false) const = 0;
-        /** Add's the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         virtual inline void add_reversed_children(Stack &) const = 0;

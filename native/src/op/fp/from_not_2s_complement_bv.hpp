@@ -28,7 +28,7 @@ namespace Op::FP {
             out << R"|(, "width":)|" << width << " }";
         }
 
-        /** Add's the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final { s.emplace(bv.get()); }

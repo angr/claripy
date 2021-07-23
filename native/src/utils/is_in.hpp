@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines a method for determining if T is in a typelist Args...
+ * @brief This file defines a method for determining if T is in a type list Args...
  */
 #ifndef R_UTILS_ISIN_HPP_
 #define R_UTILS_ISIN_HPP_
@@ -16,7 +16,7 @@ namespace Utils {
     template <typename T, typename... Args>
     UTILS_ICCBOOL qualified_is_in { (is_exactly_same<T, Args> || ...) };
 
-    /** Return true if T in Args; ignores constness of everything */
+    /** Return true if T in Args; ignores const-ness of everything */
     template <typename T, typename... Args>
     UTILS_ICCBOOL is_in_ignore_const { (is_same_ignore_const<T, Args> || ...) };
 

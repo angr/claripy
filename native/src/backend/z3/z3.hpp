@@ -117,7 +117,7 @@ namespace Backend::Z3 {
 
       private:
         /** A function that checks that *e is a subclass of T if DEBUG is enabled
-         *  If not, a type exception prefiexed by with message args... will be raised
+         *  If not, a type exception prefixed by with message args... will be raised
          */
         template <typename T, typename... Args>
         static constexpr void debug_assert_dcast(const Expression::RawPtr e, Args &&...args) {

@@ -11,7 +11,7 @@
 
 /** A local macro that defines dependent constant types that depend on a METATYPE
  *  Because templates are not evaluated until use, these can safely be placed
- *  within a constexpr conditional static_assert without instantly trigging an assertion
+ *  within a constexpr conditional static_assert without instantly triggering an assertion
  *  failure. Instead, the static_assert will only fail if the line of code is reached
  *  as until that point constant<bool, false, T> is an unevaluated expression, for example.
  *  This also has the nice side effect that, if a static_assert fails, the compiler will

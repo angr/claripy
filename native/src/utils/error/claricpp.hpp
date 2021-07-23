@@ -25,7 +25,7 @@ namespace Utils::Error {
 #endif
 
     /** The base claricpp exception class
-     *  Any exception thrown intentioanlly must subclass this
+     *  Any exception thrown intentionally must subclass this
      *  Note: Since exceptions do not need to be super fast and since we have const date members:
      *  for clarity we ignore the rule of 5 in favor of what the compiler defaults. Subclasses
      *  of Claricpp should feel free to do the same unless they have non-const data members

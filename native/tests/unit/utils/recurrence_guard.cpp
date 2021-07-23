@@ -15,7 +15,7 @@ using namespace Utils::Error::Unexpected;
 /** A static count variable */
 static unsigned count { 0 };
 
-/** A recurrence guarded function that will recurr N times
+/** A recurrence guarded function that will recur N times
  *  Increments count each time
  */
 void loop(unsigned n) {
@@ -28,7 +28,7 @@ void loop(unsigned n) {
     Utils::Log::warning("End loop");
 }
 
-/** Ensure the recourrence guard works */
+/** Ensure the recurrence guard works */
 void recurrence_guard() {
 
     // Test recurrence guard
@@ -40,7 +40,7 @@ void recurrence_guard() {
         caught = true;
     }
 
-    // Verify recurrence gaurd worked
+    // Verify recurrence guard worked
     UNITTEST_ASSERT(caught);
     UNITTEST_ASSERT(count == LIMIT);
 }

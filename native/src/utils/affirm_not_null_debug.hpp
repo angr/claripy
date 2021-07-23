@@ -12,7 +12,7 @@
 
 #ifdef DEBUG
 
-    /** A macro that nullchecks (X) iff DEBUG is defined */
+    /** A macro that null checks (X) iff DEBUG is defined */
     #define UTILS_AFFIRM_NOT_NULL_DEBUG(X)                                                        \
         ::Utils::affirm<::Utils::Error::Unexpected::Null>((X) != nullptr, WHOAMI_WITH_SOURCE      \
                                                           "Nullptr detected.");

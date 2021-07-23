@@ -33,7 +33,7 @@ namespace Factory {
      *  Returns a pointer Ptr<Base> that can be static_pointer casted down to Ptr<T> safely
      *  Instantiable subclasses that want to be directly constructed via factory:
      *    1. Must have a static const CUID::CUID static_cuid field (define it by
-     *       CUID_DEFINE_MAYBE_UNUSUED)
+     *       CUID_DEFINE_MAYBE_UNUSED)
      *    2. Must have each desired usable constructor's first argument be of type const
      *       Hash::Hash& and must pass this argument up to the FactoryMade class
      *	  3. Must include the FACTORY_ENABLE_CONSTRUCTION_FROM_BASE method

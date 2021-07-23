@@ -13,7 +13,7 @@
 
 namespace Utils {
 
-    /** A type which contains but does not initalize a T
+    /** A type which contains but does not initialize a T
      *  Destructs value when unions goes out of scope only if Destruct
      *  Note: This is a raw union, std::variant and such would not work
      */

@@ -87,10 +87,10 @@ namespace Backend::Z3::Convert {
 
     // Binary
 
-    /** Equality comparisson converter */
+    /** Equality comparison converter */
     inline z3::expr eq(const z3::expr &l, const z3::expr &r) { return l == r; }
 
-    /** Not-equals comparisson converter */
+    /** Not-equals comparison converter */
     inline z3::expr neq(const z3::expr &l, const z3::expr &r) { return l != r; }
 
     /** Compare converter */
@@ -384,7 +384,7 @@ namespace Backend::Z3::Convert {
 
         namespace Private {
 
-            /** Verifes 2 expressions are FPs with the same context */
+            /** Verifies 2 expressions are FPs with the same context */
             inline void assert_are_compatible(const z3::expr &a, const z3::expr &b) {
 #ifdef DEBUG
                 z3::check_context(a, b);

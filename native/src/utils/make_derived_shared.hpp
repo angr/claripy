@@ -2,7 +2,7 @@
  * @file
  * \ingroup utils
  * @brief This file defines a function to make a shared_ptr<Base> of of a Derived
- * These casts preserve the constness of the internal type
+ * These casts preserve the const-ness of the internal type
  */
 #ifndef R_UTILS_MAKEDERIVEDSHARED_HPP_
 #define R_UTILS_MAKEDERIVEDSHARED_HPP_
@@ -26,13 +26,13 @@ namespace Utils {
         if constexpr (std::is_const_v<Derived>) {
             static_assert(std::is_const_v<Base>, "Derived is const, so Base must also be const");
         }
-        // Transfer constness
+        // Transfer const-ness
         using TrueDerived = TransferConst<Derived, Base>;
         if constexpr (is_same_ignore_const<Base, Derived>) {
             return std::make_shared<TrueDerived>(std::forward<Args>(args)...);
         }
         else {
-            // Return initialize a static up cast from a new Derived constructed via fowarded args
+            // Return initialize a static up cast from a new Derived constructed via forwarded args
             return up_cast<Base>(std::make_shared<TrueDerived>(std::forward<Args>(args)...));
         }
     }

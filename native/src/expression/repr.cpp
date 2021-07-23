@@ -11,7 +11,7 @@
 
 void Expression::repr(const Expression::RawPtr e, std::ostream &out, const bool verbose) {
     Utils::affirm<Utils::Error::Unexpected::NotSupported>(!verbose,
-                                                          "verbose repr not yet implmented");
+                                                          "verbose repr not yet implemented");
     UTILS_AFFIRM_NOT_NULL_DEBUG(e);
     UTILS_AFFIRM_NOT_NULL_DEBUG(e->op); // Sanity check
     // Null check

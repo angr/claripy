@@ -66,7 +66,7 @@ namespace Utils {
         }
 
         /** Any HashSize version
-         *  Default: Contants::UInt
+         *  Default: Constants::UInt
          */
         template <typename HashSize = Constants::UInt>
         static constexpr Constants::UInt hash(CInput s, const Constants::UInt len) noexcept {

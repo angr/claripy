@@ -3,7 +3,7 @@
  * \ingroup utils
  * @brief This file defines methods for adjusting the stack size
  * Note that we do not inline these functions since they require
- * C headers that would polute the global namespace
+ * C headers which would pollute the global namespace
  */
 #ifndef R_UTILS_STACKLIMIT_HPP_
 #define R_UTILS_STACKLIMIT_HPP_

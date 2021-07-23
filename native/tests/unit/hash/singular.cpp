@@ -32,7 +32,7 @@ void singular() {
     constexpr auto ci = Hash::singular(0_i);
     Utils::sink(c, cui, ci);
 
-    // Non-constexpor compilation tests
+    // Non-constexpr compilation tests
     (void) Hash::singular(std::vector<Constants::Int> { 0_i, 1_i });
     const std::string sref { "Hello" };
     (void) Hash::singular(sref);

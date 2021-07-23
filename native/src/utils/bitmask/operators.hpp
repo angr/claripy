@@ -44,7 +44,7 @@ DEFINE_BINARY_EQ_OP(|=)
 DEFINE_BINARY_EQ_OP(&=)
 DEFINE_BINARY_EQ_OP(^=)
 
-/** Conditinally enabled ~ bitmask operator */
+/** Conditionally enabled ~ bitmask operator */
 template <typename Enum, std::enable_if_t<Utils::BitMask::Private::enabled<Enum>, int> = 0>
 constexpr Enum operator~(const Enum e) {
     using namespace Utils;

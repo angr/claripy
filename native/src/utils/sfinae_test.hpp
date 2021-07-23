@@ -10,7 +10,7 @@
 #include "is_same.hpp"
 
 
-/** This macro alows easy SFINAE testing of a specified condition
+/** This macro allows easy SFINAE testing of a specified condition
  *  The macro defines a class named CLASS_NAME which uses SFINAE to test CONDITION
  *  This macro defines a constexpr boolean WRAPPER_NAME which can be used to obtain
  *  the whether or not CONDITION was resolvable and valid.

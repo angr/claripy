@@ -25,7 +25,7 @@ namespace Utils::Log::Backend {
      */
     struct OStream : public Base {
 
-        /** Constructor: Use default with initalizer list
+        /** Constructor: Use default with initializer list
          *  If flush, every time s is written to the contents are flushed; by default flush = true
          *  Note: if the ostream is constructed by sharing a buffer with a static like std::cout
          *  or something, flush_on_exit should be false as static destruction is done without
@@ -44,7 +44,7 @@ namespace Utils::Log::Backend {
                 try {
                     stream->flush();
                 }
-                // We are in a destructor, do not propogate exceptions
+                // We are in a destructor, do not propagate exceptions
                 catch (std::exception &) {
                 }
             }

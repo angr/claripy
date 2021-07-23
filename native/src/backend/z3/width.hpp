@@ -24,7 +24,7 @@ namespace Backend::Z3 {
 
     /** A function that returns a reference to an internal thread_local z3 fpa sort
      *  This sort is the z3 analog of the given Mode::FP::Width
-     *  Warning: This function *may* return the same reference on repeated infocations; that is
+     *  Warning: This function *may* return the same reference on repeated invocations; that is
      *  repeated invocations of this function may overwrite the result of the previous reference
      */
     inline const z3::sort &unsafe_fp_width_to_z3_sort(const Mode::FP::Width &w) {

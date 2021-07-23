@@ -11,7 +11,7 @@
 namespace Hash {
 
     /** The Hash type
-     *  Guarnteed to be never throw
+     *  Guaranteed to be never throw
      */
     using Hash = Constants::UInt;
 

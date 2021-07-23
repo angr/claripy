@@ -23,7 +23,7 @@ namespace Hash {
 
     /** Converts its input into a Hash
      *  Since this may be a no-op or very quick we inline full specializations
-     *  Every type requries a specialization or is not supported!
+     *  Every type requires a specialization or is not supported!
      *  Note: we want to avoid inter-type hash collisions so we often xor with a file line hash
      */
     template <typename T> constexpr Hash singular(const T &) noexcept {
@@ -127,10 +127,10 @@ namespace Hash {
 
     /** A specialization for T = boost::multiprecision::mpz_int */
     template <> inline Hash singular(const BigInt &arb) noexcept {
-        // mp_limb_t is assumed to be an standard integral type, typically unsigned long
+        // mp_limb_t is assumed to be a standard integral type, typically unsigned long
         // This basic idea will work for a different type, but the hash will have to
         // be on a char * rather than an mp_limb_t * directly, which would be much slower
-        // as it would hash one charcter at a time rather than one mp_limb_t at a time
+        // as it would hash one character at a time rather than one mp_limb_t at a time
         static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
         static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
         const mpz_t &raw { arb.value.backend().data() };
@@ -176,7 +176,7 @@ namespace Hash {
         if (h == nullptr) {
             return UTILS_FILE_LINE_HASH;
         }
-        // Will warn if types are different or implicit convesion is dangerous / impossible
+        // Will warn if types are different or implicit conversion is dangerous / impossible
         return h->hash;
     }
 
@@ -187,7 +187,7 @@ namespace Hash {
               // Ensure Internal derives from Hashed
               std::enable_if_t<Utils::is_ancestor<Hashed, Internal>, int> = 0> // Allows primitives
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
-        // Will warn if types are different or implicit convesion is dangerous / impossible
+        // Will warn if types are different or implicit conversion is dangerous / impossible
         return singular(Utils::up_cast<Hashed>(h));
     }
 

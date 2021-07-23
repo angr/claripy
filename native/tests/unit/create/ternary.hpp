@@ -25,7 +25,7 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
         const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
         static_assert(Utils::TD::boolean<sized_in, In>,
-                      "ternary does not suppot sized output types without sized input types");
+                      "ternary does not support sized output types without sized input types");
     }
 
     // Create distinct inputs

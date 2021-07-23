@@ -25,9 +25,9 @@ namespace C_API {
     /** Annotation base pointer pointer abbreviation */
     using AnPtr = Annotation::BasePtr *;
 
-    /** Enfore compatability with the C ABI
+    /** Enforce compatability with the C ABI
      *  Note: Defining extern "C" within a namespace defines the functions
-     *  both within and outside of the namesapce
+     *  both within and outside of the namespace
      */
     extern "C" {
 

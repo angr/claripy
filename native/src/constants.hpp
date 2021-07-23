@@ -47,7 +47,7 @@ namespace Constants {
     /** A shortcut for a const Type * const */
     template <typename T> using CTSC = const T *const;
 
-    /** An abreviation for const char * const */
+    /** An abbreviation for const char * const */
     using CCSC = CTSC<char>;
 
 } // namespace Constants

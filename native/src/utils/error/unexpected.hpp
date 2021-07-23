@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file contains the possible exceptions that indicate an internal claricpp failur
+ * @brief This file contains the possible exceptions that indicate an internal claricpp failure
  * These exceptions are not expected to be raised if claricpp is operating as intended
  */
 #ifndef R_UTILS_ERROR_UNEXPECTED_HPP_
@@ -38,13 +38,13 @@ namespace Utils::Error::Unexpected {
     /** Bad variant access exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Base);
 
-    /** Raised when a virtual function that should have been overriden was called */
+    /** Raised when a virtual function that should have been overridden was called */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(MissingVirtualFunction, Claricpp);
 
     /** Raised when a function is given invalid arguments */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(Usage, Claricpp);
 
-    /** Raised when a recurrence gaurded function recurrses too many times */
+    /** Raised when a recurrence guarded function recurses too many times */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(RecurrenceLimit, Claricpp);
 
     /** Raised when something unknown occurs */

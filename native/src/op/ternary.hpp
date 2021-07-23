@@ -54,12 +54,12 @@ namespace Op {
             Expression::repr(first, out, verbose);
             out << R"|(, "second":)|";
             Expression::repr(second, out, verbose);
-            out << R"|(, "thrid":)|";
+            out << R"|(, "third":)|";
             Expression::repr(third, out, verbose);
             out << " }";
         }
 
-        /** Add's the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expression children of the expression to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {

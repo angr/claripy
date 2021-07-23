@@ -46,12 +46,12 @@ namespace Factory {
             : Hashed { h }, HasCUID { c } {}
 
         /** Statically check if Base and T can be factor constructed
-         *  Warning: This is not a gaurntee that these types can be factory constructed
+         *  Warning: This is not a guarantee that these types can be factory constructed
          *  It just does a few useful static checks to help with the compiler error messages
          */
         template <typename Base, typename T, typename... Args>
         [[gnu::always_inline]] static constexpr void static_type_check() noexcept {
-            // Inheretence
+            // Inheritance
             static_assert(Utils::is_ancestor<FactoryMade, Base>,
                           "Base must derive from FactoryMade");
             static_assert(Utils::is_ancestor<Base, T>,

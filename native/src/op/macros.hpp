@@ -10,7 +10,7 @@
 #include "../utils.hpp"
 
 
-/** Initalize a non-base pure abstract op class
+/** Initialize a non-base pure abstract op class
  *  Leaves the class in a private access context
  *  Note: The constructors for these classes are declared, but not defined
  *  The user must define the destructor as noexcept = default after the class definition
@@ -25,7 +25,7 @@
   private:                                                                                        \
     ENABLE_UNITTEST_FRIEND_ACCESS;
 
-/** Initalize a final op class
+/** Initialize a final op class
  *  Leaves the class in a private access context
  *  Optionally pass a second argument to prefix the class name for the debug name
  *  X can be anything, but must be different between different templates of the same class

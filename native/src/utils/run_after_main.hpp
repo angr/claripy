@@ -14,7 +14,7 @@
  *  This must be used outside of a function as it works by declaring global variables
  */
 #define UTILS_RUN_STATEMENT_AFTER_MAIN(STATEMENT)                                                 \
-    /** Declare an anonomyous namespace to obsure internals  */                                   \
+    /** Declare an anonymous namespace to obscure internals  */                                   \
     namespace MACRO_CONCAT(__RAM_, __COUNTER__) {                                                 \
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunAfterMain final {                                                 \
@@ -33,7 +33,7 @@
  *  This must be used outside of a function as it works by declaring global variables
  */
 #define UTILS_RUN_FUNCTION_AFTER_MAIN(F, ...)                                                     \
-    /** Declare an anonomyous namespace to obscure internals */                                   \
+    /** Declare an anonymous namespace to obscure internals */                                    \
     namespace MACRO_CONCAT(__RAM_, __COUNTER__) {                                                 \
         /** Declare a class that will run F(args...) before main */                               \
         struct [[nodiscard]] RunAfterMain final {                                                 \

@@ -2,7 +2,7 @@
  * @file
  * \ingroup utils
  * @brief This file defines private pointer cast methods
- * These methods preserve the constness of the internal type
+ * These methods preserve the const-ness of the internal type
  */
 #ifndef R_UTILS_PRIVATE_POINTERCAST_HPP_
 #define R_UTILS_PRIVATE_POINTERCAST_HPP_

@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines macros used accross Utils
+ * @brief This file defines macros used across Utils
  */
 #ifndef R_UTILS_MACROS_HPP_
 #define R_UTILS_MACROS_HPP_

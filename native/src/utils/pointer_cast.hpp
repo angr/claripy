@@ -2,7 +2,7 @@
  * @file
  * \ingroup utils
  * @brief This file defines a set of methods used to cast pointers
- * These casts preserve the constness of the internal type
+ * These casts preserve the const-ness of the internal type
  */
 #ifndef R_UTILS_POINTERCAST_HPP_
 #define R_UTILS_POINTERCAST_HPP_

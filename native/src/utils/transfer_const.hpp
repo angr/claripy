@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file defines way to transfer the constness of one type onto another
+ * @brief This file defines way to transfer the const-ness of one type onto another
  */
 #ifndef R_UTILS_TRANSFERCONST_HPP_
 #define R_UTILS_TRANSFERCONST_HPP_

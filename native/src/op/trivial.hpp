@@ -102,7 +102,7 @@ namespace Op {
      */
     OP_BINARY_TRIVIAL_SUBCLASS(Union, true, 0);
 
-    /** The set binary op class: Inersection
+    /** The set binary op class: Intersection
      *  Requires equal sized inputs
      */
     OP_BINARY_TRIVIAL_SUBCLASS(Intersection, true, 0);

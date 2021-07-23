@@ -19,7 +19,7 @@ void generate_bt() {
 }
 
 namespace {
-    /** A wrapper in an anonomous namespace */
+    /** A wrapper in an anonymous namespace */
     void wrapper2() { generate_bt(); }
 } // namespace
 
@@ -45,7 +45,7 @@ void backtrace() {
             3  : 0x40f6c6           : generate_bt() + 38
             4  : /path/to/claripy/native/build/tests/unit/utils/utils-backtrace.test() [0x40f949]
             5  : /path/to/claripy/native/build/tests/unit/utils/utils-backtrace.test() [0x40f829]
-            6  : 0xhome/zwimer40f76a           : backtrace() + 58
+            6  : 0x40f76a           : backtrace() + 58
             7  : 0x7f0b106ecb7a     : UnitTest::TestLib::test_func(void (&)()) + 26
             8  : 0x40f85b           : main + 43
             9  : 0x7f0b0f11f0b3     : __libc_start_main + 243
