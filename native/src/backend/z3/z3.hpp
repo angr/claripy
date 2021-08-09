@@ -49,6 +49,43 @@ namespace Backend::Z3 {
         /** The name of this backend */
         [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
 
+        /** Check to see if the solver is in a satisfiable state
+         *  Warning: solver *must* be a valid solver pointer for this particular backend
+         */
+        inline bool satisfiable(const std::shared_ptr<void> &solver) override final {
+            auto real_solver { Utils::Cast::Static::from_void<z3::solver>(solver) };
+            return real_solver->check() == z3::check_result::sat;
+            // @todo: model callback
+        }
+
+        /** Check to see if the solver is in a satisfiable state
+         *  Temporarily adds the extra constraints to the solver
+         *  Warning: solver *must* be a valid solver pointer for this particular backend
+         */
+        inline bool
+        satisfiable(const std::shared_ptr<void> &solver,
+                    const std::set<Expression::BasePtr> &extra_constraints) override final {
+            // If extra constraints are empty, skip them
+            if (extra_constraints.empty()) {
+                return satisfiable(solver);
+            }
+            // Load each extra constraint into the solver
+            auto real_solver { Utils::Cast::Static::from_void<z3::solver>(solver) };
+            real_solver->push();
+            Expression::BasePtr i2 { nullptr };
+            (void) convert(i2);
+            auto _ = convert(i2);
+            auto _2 = convert(i2.get());
+            for (const auto &i : extra_constraints) {
+                const auto c { convert(i) };
+                real_solver->add(c);
+            }
+            // Check if the solver is in a satisfiable state, then pop the extra constraints
+            const auto ret { satisfiable(solver) };
+            real_solver->pop();
+            return ret;
+        }
+
         /** Return true if expr is always true
          *  expr may not be nullptr
          */
@@ -205,8 +242,8 @@ namespace Backend::Z3 {
          *  Warning: This function may internally do unchecked static casting, we permit this
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
-        z3::expr dispatch_conversion(const Expression::RawPtr expr,
-                                     std::vector<const z3::expr *> &args) override final {
+        inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
+                                            std::vector<const z3::expr *> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
 
@@ -520,7 +557,7 @@ namespace Backend::Z3 {
         }
 
         /** Abstract a backend object into a claricpp expression */
-        AbstractionVariant
+        inline AbstractionVariant
         dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<AbstractionVariant> &args) override final {
 
