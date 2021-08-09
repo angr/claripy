@@ -30,7 +30,7 @@ namespace Hash {
 
         // Variables
         Hash hashes[size]; // NOLINT
-        Constants::UInt i { -1ULL };
+        Constants::UInt i { -1_ui };
 
         // Basically: hashes[i] = singular(args[i]) for each arg
         (static_cast<void>(hashes[++i] = singular(args)), ...);
