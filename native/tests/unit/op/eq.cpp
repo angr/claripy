@@ -11,7 +11,7 @@
  */
 void eq() {
     const auto e = UnitTest::TestLib::Factories::t_literal();
-    const auto op = Utils::static_down_cast<Op::Eq>(Op::factory<Op::Eq>(e, e));
+    const auto op = Utils::Cast::Static::down<Op::Eq>(Op::factory<Op::Eq>(e, e));
     UNITTEST_ASSERT(op->left->hash == op->right->hash);
 }
 
