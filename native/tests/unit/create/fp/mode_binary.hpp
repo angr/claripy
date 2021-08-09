@@ -9,6 +9,8 @@
 #include "create.hpp"
 #include "testlib.hpp"
 
+#include "../dcast.hpp"
+
 
 /** Test a binary op */
 template <typename OpT, auto CreateF> inline void mode_binary() {
@@ -28,10 +30,10 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Expression::FP>(exp) };
-    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<Expression::FP>(a) };
-    const auto mbinary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
-    (void) Utils::dynamic_down_cast_throw_on_fail<Expression::FP>(b);
+    const auto exp_down { dcast<Expression::FP>(exp) };
+    const auto a_down { dcast<Expression::FP>(a) };
+    const auto mbinary { dcast<OpT>(exp->op) };
+    (void) dcast<Expression::FP>(b);
 
     // Contains check
     UNITTEST_ASSERT(mbinary->left == a);

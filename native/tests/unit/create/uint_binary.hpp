@@ -7,6 +7,7 @@
 #define R_UNIT_CREATE_UINTBINARY_HPP_
 
 #include "create.hpp"
+#include "dcast.hpp"
 #include "testlib.hpp"
 
 
@@ -41,9 +42,9 @@ inline void uint_binary() {
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto uint_binary { Utils::dynamic_down_cast_throw_on_fail<OpT>(exp->op) };
-    const auto exp_down { Utils::dynamic_down_cast_throw_on_fail<Out>(exp) };
-    const auto a_down { Utils::dynamic_down_cast_throw_on_fail<In>(a) };
+    const auto uint_binary { dcast<OpT>(exp->op) };
+    const auto exp_down { dcast<Out>(exp) };
+    const auto a_down { dcast<In>(a) };
 
     // Contains check
     UNITTEST_ASSERT(uint_binary->expr == a);

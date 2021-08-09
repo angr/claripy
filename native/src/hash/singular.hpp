@@ -188,13 +188,13 @@ namespace Hash {
               std::enable_if_t<Utils::is_ancestor<Hashed, Internal>, int> = 0> // Allows primitives
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit conversion is dangerous / impossible
-        return singular(Utils::up_cast<Hashed>(h));
+        return singular(Utils::Cast::Static::up<Hashed>(h));
     }
 
     /** A specialization for T = std::vector<Internal> */
     template <typename Internal> inline Hash singular(const std::vector<Internal> &v) noexcept {
         Constants::UInt hashes[v.size()]; // NOLINT
-        Constants::UInt i = -1ULL;
+        Constants::UInt i { -1_ui };
         for (const auto &p : v) {
             hashes[++i] = singular(p);
         }

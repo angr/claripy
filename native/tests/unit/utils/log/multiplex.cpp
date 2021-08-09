@@ -42,8 +42,8 @@ void multiplex() {
     s.emplace_back(std::make_shared<std::ostringstream>());
 
     // Up cast
-    auto ptr1 { Utils::up_cast<std::ostream>(s[0]) };
-    auto ptr2 { Utils::up_cast<std::ostream>(s[1]) };
+    auto ptr1 { Utils::Cast::Static::up<std::ostream>(s[0]) };
+    auto ptr2 { Utils::Cast::Static::up<std::ostream>(s[1]) };
 
     // Create the real backend
     Multiplex multi;
