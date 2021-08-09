@@ -11,7 +11,6 @@
 #include "../macros.hpp"
 #include "../utils.hpp"
 
-
 /** Used to define a possible unused static_cuid in a class
  *  Leaves the class in a public state
  *  Will not cause any compiler warnings if this field is not used
@@ -20,9 +19,12 @@
  */
 #define CUID_DEFINE_MAYBE_UNUSED(X)                                                               \
   public:                                                                                         \
+    static_assert(std::is_convertible_v<decltype((X)), int>,                                      \
+                  "X should be convertible to an int!");                                          \
     /** Define a static_cuid */                                                                   \
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                            \
-        UTILS_FILE_LINE_HASH ^ Utils::FNV1a<int>::hash(&Utils::ref<int, (X)>, 1)                  \
+        UTILS_FILE_LINE_HASH ^                                                                    \
+        Utils::FNV1a<int>::hash(&Utils::ref<int, static_cast<int>((X))>, 1)                       \
     };
 
 
