@@ -42,7 +42,7 @@ CheckOptions:
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           'true'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnorePublicMemberVariables
-    value:           'false'
+    value:           'true'
   - key:             cppcoreguidelines-owning-memory.LegacyResourceConsumers
     value:           '::free;::realloc;::freopen;::fclose'
   - key:             cppcoreguidelines-owning-memory.LegacyResourceProducers
