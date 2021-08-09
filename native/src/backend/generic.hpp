@@ -41,6 +41,15 @@ namespace Backend {
          */
         [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const = 0;
 
+        /** Check to see if the solver is in a satisfiable state */
+        virtual bool satisfiable(const std::shared_ptr<void> &solver) = 0;
+
+        /** Check to see if the solver is in a satisfiable state
+         *  Temporarily adds the extra constraints to the solver
+         */
+        virtual bool satisfiable(const std::shared_ptr<void> &solver,
+                                 const std::set<Expression::BasePtr> &extra_constraints) = 0;
+
         // Virtual and Concrete Functions
 
         /** Clear caches to decrease memory pressure
@@ -61,11 +70,11 @@ namespace Backend {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             try {
                 (void) convert(expr);
+                return true;
             }
             catch (Error::Backend::Unsupported &) {
                 return false;
             }
-            return true;
         }
 
         /** Convert a claricpp Expression to a backend object
