@@ -33,23 +33,6 @@ namespace Backend {
         /** The types sub-classes may extract backend objects into */
         using AbstractionVariant = std::variant<Expression::BasePtr, Mode::FP::Rounding>;
 
-        // Pure Virtual Functions
-
-        /** Create a new thread local solver and return an opaque shared pointer to it
-         *  When this opaque shared pointer dies, the solver may also die as well
-         *  Warning: Do *not* share solvers between threads
-         */
-        [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const = 0;
-
-        /** Check to see if the solver is in a satisfiable state */
-        virtual bool satisfiable(const std::shared_ptr<void> &solver) = 0;
-
-        /** Check to see if the solver is in a satisfiable state
-         *  Temporarily adds the extra constraints to the solver
-         */
-        virtual bool satisfiable(const std::shared_ptr<void> &solver,
-                                 const std::set<Expression::BasePtr> &extra_constraints) = 0;
-
         // Virtual and Concrete Functions
 
         /** Clear caches to decrease memory pressure
@@ -66,7 +49,7 @@ namespace Backend {
          *  @todo Make this better than this simplistic way
          *  expr may not be nullptr
          */
-        bool handles(const Expression::RawPtr expr) override {
+        bool handles_raw(const Expression::RawPtr expr) override {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             try {
                 (void) convert(expr);
