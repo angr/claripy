@@ -41,15 +41,14 @@ namespace Backend::Z3 {
         [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
 
         /** Create a tls solver */
-        inline virtual std::shared_ptr<z3::solver> new_tls_solver() const {
+        [[nodiscard]] inline virtual std::shared_ptr<z3::solver> new_tls_solver() const {
             return std::make_shared<z3::solver>(Private::tl_ctx);
         }
 
         /** Check to see if the solver is in a satisfiable state
          *  Warning: solver *must* be a valid solver pointer for this particular backend
          */
-        inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(solver);
+        static inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
             return solver->check() == z3::check_result::sat;
             // @todo: model callback
         }
@@ -121,7 +120,7 @@ namespace Backend::Z3 {
                 }
                 default: {
 #ifdef DEBUG
-                    const auto ret { Ex::find(expr->hash) };
+                    auto ret { Ex::find(expr->hash) };
                     using Err = Utils::Error::Unexpected::HashCollision;
                     Utils::affirm<Err>(ret.get() == expr, WHOAMI_WITH_SOURCE);
                     return ret;
@@ -134,7 +133,8 @@ namespace Backend::Z3 {
 
       private:
         /** Create a == b; neither may be nullptr */
-        Expression::BasePtr to_eq(const Expression::BasePtr &a, const Expression::BasePtr &b) {
+        static Expression::BasePtr to_eq(const Expression::BasePtr &a,
+                                         const Expression::BasePtr &b) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(a);
             namespace Ex = Expression;
             switch (a->cuid) {
