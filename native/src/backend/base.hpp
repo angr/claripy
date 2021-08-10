@@ -79,27 +79,7 @@ namespace Backend {
          */
         virtual void clear_persistent_data() = 0;
 
-        /** Return true if expr is always true
-         *  expr may not be nullptr
-         */
-        virtual bool is_true_raw(const Expression::RawPtr expr) = 0;
-
-        /** Return true if expr is always false
-         *  expr may not be nullptr
-         */
-        virtual bool is_false_raw(const Expression::RawPtr expr) = 0;
-
         // Concrete functions
-
-        /** Return true if expr is always true
-         *  expr may not be nullptr
-         */
-        inline bool is_true(const Expression::BasePtr &expr) { return is_true_raw(expr.get()); }
-
-        /** Return true if expr is always false
-         *  expr may not be nullptr
-         */
-        inline bool is_false(const Expression::BasePtr &expr) { return is_false_raw(expr.get()); }
 
         /** Check whether the backend can handle the given expression
          *  expr may not be nullptr

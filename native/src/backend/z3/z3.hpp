@@ -30,11 +30,7 @@ namespace Backend::Z3 {
         /** Clear caches to decrease memory pressure
          *  Note: Does not clear translocation data
          */
-        inline void downsize() override {
-            Z3Super::downsize();
-            is_true_cache.scoped_unique().first.clear();
-            is_false_cache.scoped_unique().first.clear();
-        }
+        inline void downsize() override { Z3Super::downsize(); }
 
         /** Clears translocation data */
         inline void clear_persistent_data() override {
@@ -101,36 +97,6 @@ namespace Backend::Z3 {
             static thread_local std::set<Expression::BasePtr> s;
             s.clear();
             return solution(expr, sol, solver, s);
-        }
-
-        /** Return true if expr is always true
-         *  expr may not be nullptr
-         */
-        inline bool is_true_raw(const Expression::RawPtr expr) override final {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
-            if (in_cache) {
-                return res;
-            }
-            const bool ret { convert(expr).is_true() };
-            is_true_cache.scoped_unique().first.emplace(expr->hash, ret);
-            is_false_cache.scoped_unique().first.emplace(expr->hash, ret);
-            return ret;
-        }
-
-        /** Return true if expr is always false
-         *  expr may not be nullptr
-         */
-        inline bool is_false_raw(const Expression::RawPtr expr) override final {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
-            if (in_cache) {
-                return res;
-            }
-            const bool ret { convert(expr).is_true() };
-            is_false_cache.scoped_unique().first.emplace(expr->hash, ret);
-            is_true_cache.scoped_unique().first.emplace(expr->hash, ret);
-            return ret;
         }
 
         /** The method used to simplify z3 boolean expressions */
@@ -245,16 +211,6 @@ namespace Backend::Z3 {
         /*                          Representation                          */
         /********************************************************************/
 
-
-        /** is_true cache
-         *  Map an expression hash to the result of is_true
-         */
-        inline static TSM<std::map<Hash::Hash, const bool>> is_true_cache {};
-
-        /** is_false cache
-         *  Map an expression hash to the result of is_false
-         */
-        inline static TSM<std::map<Hash::Hash, const bool>> is_false_cache {};
 
         /** Stores a symbol's annotations to be translocated from the pre-conversion expression
          *  to the post-abstraction expression symbol of the same name.

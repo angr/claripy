@@ -5,7 +5,6 @@ simple_test(fp_convert)
 simple_test(abstract)
 simple_test(bool_tactic)
 simple_test(simplify)
-simple_test(is_x)
 simple_test(satisfiable)
 simple_test(solution)
 
