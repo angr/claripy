@@ -13,9 +13,6 @@
 
 namespace Backend {
 
-    /** A Solver type */
-    using Solver = std::shared_ptr<void>;
-
     /** The base Backend type
      *  All backends must subclass this
      */
@@ -25,33 +22,6 @@ namespace Backend {
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         // Pure virtual functions
-
-        /** Create a new thread local solver and return an opaque shared pointer to it
-         *  When this opaque shared pointer dies, the solver may also die as well
-         *  Warning: Do *not* share solvers between threads
-         */
-        [[nodiscard]] virtual std::shared_ptr<void> new_tls_solver() const = 0;
-
-        /** Check to see if the solver is in a satisfiable state */
-        virtual bool satisfiable(const std::shared_ptr<void> &solver) = 0;
-
-        /** Check to see if the solver is in a satisfiable state
-         *  Temporarily adds the extra constraints to the solver
-         */
-        virtual bool satisfiable(const std::shared_ptr<void> &solver,
-                                 const std::set<Expression::BasePtr> &extra_constraints) = 0;
-
-        /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
-         *  extra_constraints may be modified
-         */
-        virtual bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
-                              std::shared_ptr<void> &solver,
-                              std::set<Expression::BasePtr> &extra_constraints) = 0;
-
-        /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
-         */
-        virtual bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
-                              std::shared_ptr<void> &solver) = 0;
 
         /** Backend name */
         [[nodiscard]] virtual const char *name() const noexcept = 0;
