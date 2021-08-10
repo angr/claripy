@@ -53,6 +53,7 @@ namespace Backend::Z3 {
          *  Warning: solver *must* be a valid solver pointer for this particular backend
          */
         inline bool satisfiable(const std::shared_ptr<void> &solver) override final {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(solver);
             auto real_solver { Utils::Cast::Static::from_void<z3::solver>(solver) };
             return real_solver->check() == z3::check_result::sat;
             // @todo: model callback
@@ -70,12 +71,9 @@ namespace Backend::Z3 {
                 return satisfiable(solver);
             }
             // Load each extra constraint into the solver
+            UTILS_AFFIRM_NOT_NULL_DEBUG(solver);
             auto real_solver { Utils::Cast::Static::from_void<z3::solver>(solver) };
             real_solver->push();
-            Expression::BasePtr i2 { nullptr };
-            (void) convert(i2);
-            auto _ = convert(i2);
-            auto _2 = convert(i2.get());
             for (const auto &i : extra_constraints) {
                 const auto c { convert(i) };
                 real_solver->add(c);
@@ -86,10 +84,29 @@ namespace Backend::Z3 {
             return ret;
         }
 
+        /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
+         *  extra_constraints may be modified
+         */
+        inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
+                             std::shared_ptr<void> &solver,
+                             std::set<Expression::BasePtr> &extra_constraints) override final {
+            extra_constraints.emplace(to_eq(expr, sol));
+            return satisfiable(solver, extra_constraints);
+        }
+
+        /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
+         */
+        inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
+                             std::shared_ptr<void> &solver) override final {
+            static thread_local std::set<Expression::BasePtr> s;
+            s.clear();
+            return solution(expr, sol, solver, s);
+        }
+
         /** Return true if expr is always true
          *  expr may not be nullptr
          */
-        inline bool is_true(const Expression::RawPtr &expr) {
+        inline bool is_true_raw(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             auto [in_cache, res] { get_from_cache(is_true_cache, expr->hash) };
             if (in_cache) {
@@ -104,7 +121,7 @@ namespace Backend::Z3 {
         /** Return true if expr is always false
          *  expr may not be nullptr
          */
-        inline bool is_false(const Expression::RawPtr &expr) {
+        inline bool is_false_raw(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             auto [in_cache, res] { get_from_cache(is_false_cache, expr->hash) };
             if (in_cache) {
@@ -153,6 +170,25 @@ namespace Backend::Z3 {
         }
 
       private:
+        /** Create a == b; neither may be nullptr */
+        Expression::BasePtr to_eq(const Expression::BasePtr &a, const Expression::BasePtr &b) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(a);
+            namespace Ex = Expression;
+            switch (a->cuid) {
+                case Ex::Bool::static_cuid:
+                    return Create::eq<Ex::Bool>(a, b);
+                case Ex::BV::static_cuid:
+                    return Create::eq<Ex::BV>(a, b);
+                case Ex::FP::static_cuid:
+                    return Create::eq<Ex::FP>(a, b);
+                case Ex::String::static_cuid:
+                    return Create::eq<Ex::String>(a, b);
+                default:
+                    throw Utils::Error::Unexpected::Type(WHOAMI_WITH_SOURCE
+                                                         "Unsupported expression type");
+            }
+        }
+
         /** A function that checks that *e is a subclass of T if DEBUG is enabled
          *  If not, a type exception prefixed by with message args... will be raised
          */
@@ -162,7 +198,6 @@ namespace Backend::Z3 {
             using Ptr = Constants::CTSC<T>;
             using Err = Utils::Error::Unexpected::Type;
             Utils::affirm<Err>(dynamic_cast<Ptr>(e) != nullptr, std::forward<Args>(args)...);
-
 #else
             Utils::sink(e, args...);
 #endif
