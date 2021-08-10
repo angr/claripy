@@ -16,15 +16,15 @@ template <typename T> static void test_bv(T x) {
 
 /** Test is_true and is_false */
 void bv() {
-    Utils::Log::Debug("Testing BV via uint8");
+    Utils::Log::debug("Testing BV via uint8");
     test_bv(uint8_t { 3 });
-    Utils::Log::Debug("Testing BV via uint16");
+    Utils::Log::debug("Testing BV via uint16");
     test_bv(uint16_t { 3 });
-    Utils::Log::Debug("Testing BV via uint32");
+    Utils::Log::debug("Testing BV via uint32");
     test_bv(uint32_t { 3 });
-    Utils::Log::Debug("Testing BV via uint64");
+    Utils::Log::debug("Testing BV via uint64");
     test_bv(uint64_t { 3 });
-    Utils::Log::Debug("Testing BV via BigInt");
+    Utils::Log::debug("Testing BV via BigInt");
     const boost::multiprecision::mpz_int big { 4 }; // NOLINT
     test_bv(BigInt { big, 200_ui });                // NOLINT
 }
