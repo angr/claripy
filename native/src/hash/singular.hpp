@@ -134,11 +134,8 @@ namespace Hash {
         static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
         static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
         const mpz_t &raw { arb.value.backend().data() };
-        return UTILS_FILE_LINE_HASH ^ arb.bit_length ^
-               fnv1a<mp_limb_t>(
-                   raw->_mp_d,
-                   sizeof(mp_limb_t) *
-                       Utils::widen<mp_limb_t, decltype(raw->_mp_size), true>(raw->_mp_size));
+        const auto len { Utils::widen<mp_limb_t, decltype(raw->_mp_size), true>(raw->_mp_size) };
+        return UTILS_FILE_LINE_HASH ^ arb.bit_length ^ fnv1a<mp_limb_t>(raw->_mp_d, len);
     }
 
     /** A specialization for T = Mode::FP::Rounding */
