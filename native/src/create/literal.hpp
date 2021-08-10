@@ -51,7 +51,7 @@ namespace Create {
     TRIVIAL_TYPE(BV, uint64_t);
 
     /** Create a BV Expression with a Literal op containing an arbitrary length int */
-    TRIVIAL_MOVE_TYPE(VS, BigInt);
+    TRIVIAL_MOVE_TYPE(BV, BigInt);
 
 // Cleanup
 #undef TRIVIAL_TYPE
