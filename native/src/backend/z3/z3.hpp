@@ -71,7 +71,7 @@ namespace Backend::Z3 {
                 solver->add(c);
             }
             // Check if the solver is in a satisfiable state, then pop the extra constraints
-            const auto ret { satisfiable(solver) };
+            const bool ret { satisfiable(solver) };
             solver->pop();
             return ret;
         }

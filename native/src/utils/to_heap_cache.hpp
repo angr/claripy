@@ -91,7 +91,7 @@ namespace Utils {
         /** Pop an item from the cache for use */
         inline T *pop() {
             if (data.size() > 0) {
-                const auto ret { data.back() };
+                T *const ret { data.back() };
                 data.pop_back();
                 return ret;
             }

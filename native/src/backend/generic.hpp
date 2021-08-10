@@ -205,7 +205,7 @@ namespace Backend {
             }
 
             // Convert b_obj then update various caches and return
-            const auto ret { dispatch_abstraction(b_obj, args) };
+            auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
 #if 0
             abstraction_cache.emplace(hash, ret);
 #endif

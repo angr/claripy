@@ -55,7 +55,7 @@ namespace Utils::Cast {
         template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
         constexpr auto down_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
-            const auto ret { down<Out>(in) };
+            auto ret { down<Out>(in) }; // Not const for possible move ret
             affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
             return ret;
         }
@@ -64,7 +64,7 @@ namespace Utils::Cast {
         template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
         constexpr auto side_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
-            const auto ret { side<Out>(in) };
+            auto ret { side<Out>(in) }; // Not const for possible move ret
             affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic pointer cast failed");
             return ret;
         }
