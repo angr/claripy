@@ -5,6 +5,8 @@
 #ifndef R_BIGINT_HPP_
 #define R_BIGINT_HPP_
 
+#include <ostream>
+
 #include <boost/multiprecision/gmp.hpp>
 
 
@@ -20,5 +22,11 @@ struct BigInt {
     /** The bit length */
     Constants::UInt bit_length;
 };
+
+/** Ostream overload for BigInt */
+inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
+    os << "BigInt{" << b.value << ", " << b.bit_length << "}";
+    return os;
+}
 
 #endif
