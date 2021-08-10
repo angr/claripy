@@ -37,21 +37,20 @@ namespace Backend::Z3 {
             symbol_annotation_translocation_data.clear();
         }
 
-        /** Create a tls solver */
-        [[nodiscard]] inline virtual std::shared_ptr<void> new_tls_solver() const override final {
-            return { std::make_shared<z3::solver>(Private::tl_ctx) };
-        }
-
         /** The name of this backend */
         [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
+
+        /** Create a tls solver */
+        inline virtual std::shared_ptr<z3::solver> new_tls_solver() const {
+            return std::make_shared<z3::solver>(Private::tl_ctx);
+        }
 
         /** Check to see if the solver is in a satisfiable state
          *  Warning: solver *must* be a valid solver pointer for this particular backend
          */
-        inline bool satisfiable(const std::shared_ptr<void> &solver) override final {
+        inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(solver);
-            auto real_solver { Utils::Cast::Static::from_void<z3::solver>(solver) };
-            return real_solver->check() == z3::check_result::sat;
+            return solver->check() == z3::check_result::sat;
             // @todo: model callback
         }
 
@@ -59,24 +58,22 @@ namespace Backend::Z3 {
          *  Temporarily adds the extra constraints to the solver
          *  Warning: solver *must* be a valid solver pointer for this particular backend
          */
-        inline bool
-        satisfiable(const std::shared_ptr<void> &solver,
-                    const std::set<Expression::BasePtr> &extra_constraints) override final {
+        inline bool satisfiable(const std::shared_ptr<z3::solver> &solver,
+                                const std::set<Expression::BasePtr> &extra_constraints) {
             // If extra constraints are empty, skip them
             if (extra_constraints.empty()) {
                 return satisfiable(solver);
             }
             // Load each extra constraint into the solver
             UTILS_AFFIRM_NOT_NULL_DEBUG(solver);
-            auto real_solver { Utils::Cast::Static::from_void<z3::solver>(solver) };
-            real_solver->push();
+            solver->push();
             for (const auto &i : extra_constraints) {
                 const auto c { convert(i) };
-                real_solver->add(c);
+                solver->add(c);
             }
             // Check if the solver is in a satisfiable state, then pop the extra constraints
             const auto ret { satisfiable(solver) };
-            real_solver->pop();
+            solver->pop();
             return ret;
         }
 
@@ -84,8 +81,8 @@ namespace Backend::Z3 {
          *  extra_constraints may be modified
          */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
-                             std::shared_ptr<void> &solver,
-                             std::set<Expression::BasePtr> &extra_constraints) override final {
+                             std::shared_ptr<z3::solver> &solver,
+                             std::set<Expression::BasePtr> &extra_constraints) {
             extra_constraints.emplace(to_eq(expr, sol));
             return satisfiable(solver, extra_constraints);
         }
@@ -93,7 +90,7 @@ namespace Backend::Z3 {
         /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
          */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
-                             std::shared_ptr<void> &solver) override final {
+                             std::shared_ptr<z3::solver> &solver) {
             static thread_local std::set<Expression::BasePtr> s;
             s.clear();
             return solution(expr, sol, solver, s);
@@ -101,7 +98,7 @@ namespace Backend::Z3 {
 
         /** The method used to simplify z3 boolean expressions */
         static inline z3::expr bool_simplify(const z3::expr &expr) {
-            thread_local BoolTactic bt;
+            thread_local BoolTactic bt {};
             return bt(expr);
         }
 
@@ -194,14 +191,16 @@ namespace Backend::Z3 {
          */
         template <typename T, typename... Args>
         inline void check_vec_usage(const T &c, const Constants::UInt n, Args &&...args) {
-            namespace Err = Utils::Error::Unexpected;
+            namespace Err = Utils::Error::Unexpected; // NOLINT (false positive)
             Utils::affirm<Err::Size>(c.size() >= n, std::forward<Args>(args)...,
                                      "container is too small to access ", n, " elements");
 #ifdef DEBUG
-            const auto last { c.size() - 1 };
-            for (Constants::UInt i { 0 }; i < n; ++i) {
-                Utils::affirm<Err::Null>(c[last - i] != nullptr, std::forward<Args>(args)...,
-                                         "container element cannot be nullptr");
+            if (n > 0) {
+                const auto last { c.size() - 1 };
+                for (Constants::UInt i { 0 }; i < n; ++i) {
+                    Utils::affirm<Err::Null>(c[last - i] != nullptr, std::forward<Args>(args)...,
+                                             "container element cannot be nullptr");
+                }
             }
 #endif
         }
