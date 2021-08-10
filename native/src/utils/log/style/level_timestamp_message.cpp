@@ -64,7 +64,7 @@ std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
 
     // Output
     std::ostringstream ret;
-    ret << color << lvl << ANSIColorCodes::blk << ": " << std::put_time(&tm, "%c %Z") << " -- "
+    ret << color << lvl << ANSIColorCodes::reset << ": " << std::put_time(&tm, "%c %Z") << " -- "
         << raw.str();
     return ret.str();
 }
