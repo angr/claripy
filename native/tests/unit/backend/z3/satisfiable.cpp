@@ -26,11 +26,12 @@ void satisfiable() {
     const auto maybe_false { Create::or_<B>({ x, f }) };
 
     // Create a solver
-    auto is_sat = [&x, &z3, &solver](const Ex::BasePtr &e, const Ex::BasePtr ec = nullptr) {
+    using EBP = Ex::BasePtr;
+    auto is_sat = [&x, &z3, &solver](const EBP &e, const EBP ec = nullptr) { // NOLINT
         solver->push();
         bool ret; // NOLINT
         if (ec != nullptr) {
-            std::set<Expression::BasePtr> ecs;
+            std::set<EBP> ecs;
             ecs.emplace(Create::eq<B>(x, ec));
             solver->add(z3.convert(e));
             ret = z3.satisfiable(solver, ecs);

@@ -48,7 +48,7 @@ namespace Backend::Z3 {
         /** Check to see if the solver is in a satisfiable state
          *  Warning: solver *must* be a valid solver pointer for this particular backend
          */
-        static inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
+        inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
             return solver->check() == z3::check_result::sat;
             // @todo: model callback
         }
@@ -96,7 +96,7 @@ namespace Backend::Z3 {
         }
 
         /** The method used to simplify z3 boolean expressions */
-        static inline z3::expr bool_simplify(const z3::expr &expr) {
+        inline z3::expr bool_simplify(const z3::expr &expr) {
             thread_local BoolTactic bt {};
             return bt(expr);
         }
@@ -235,7 +235,7 @@ namespace Backend::Z3 {
         inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
                                             std::vector<const z3::expr *> &args) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // NOLINT Sanity check
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
@@ -243,7 +243,7 @@ namespace Backend::Z3 {
 #define UNARY_CASE(OP, FN)                                                                        \
     case Op::OP::static_cuid: {                                                                   \
         check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
-        auto ret { (FN) (*args.back()) };                                                         \
+        auto ret { (FN)(*args.back()) };                                                          \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -251,7 +251,7 @@ namespace Backend::Z3 {
 #define BINARY_DISPATCH(FN)                                                                       \
     check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                              \
     const auto size { args.size() };                                                              \
-    auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                         \
+    auto ret { (FN)(*args[size - 2], *args[size - 1]) };                                          \
     args.resize(size - 2);                                                                        \
     return ret;
 
@@ -273,8 +273,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = Constants::CTSC<Op::UIntBinary>;                                               \
         check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
-        auto ret { (FN) (*args.back(),                                                            \
-                         Utils::checked_static_cast<To>(expr->op.get())->integer) };              \
+        auto ret { (FN)(*args.back(), Utils::checked_static_cast<To>(expr->op.get())->integer) }; \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -285,8 +284,8 @@ namespace Backend::Z3 {
         using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
         check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                          \
         const auto size { args.size() };                                                          \
-        auto ret { (FN) (Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],   \
-                         *args[size - 1]) };                                                      \
+        auto ret { (FN)(Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],    \
+                        *args[size - 1]) };                                                       \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
     }
@@ -307,7 +306,7 @@ namespace Backend::Z3 {
         const auto a_size { args.size() };                                                        \
         const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
         check_vec_usage(args, n, WHOAMI_WITH_SOURCE);                                             \
-        auto ret { (FN) (&(args.data()[a_size - n]), n) };                                        \
+        auto ret { (FN)(&(args.data()[a_size - n]), n) };                                         \
         args.resize(a_size - n);                                                                  \
         return ret;                                                                               \
     }

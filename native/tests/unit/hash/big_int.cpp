@@ -27,8 +27,8 @@ void big_int() {
     const M m5 { std::string(120, '9') };
 
     // Check if two literals contructed from BigInts constructed from the params are the same
-    auto check_same = [&](const M &m1, const L l1, const M &m2, const L l2) {
-        return Create::literal(BigInt { m1, l1 }) == Create::literal(BigInt { m2, l2 });
+    auto check_same = [&](const M &a1, const L a2, const M &b1, const L b2) {
+        return Create::literal(BigInt { a1, a2 }) == Create::literal(BigInt { b1, b2 });
     };
 
     // Basic same

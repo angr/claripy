@@ -12,8 +12,8 @@ void simplify() {
     namespace Ex = Expression;
 
     // Test function
-    const auto test = [&z3](const Ex::BasePtr &test, const Ex::BasePtr &sol) {
-        return Ex::inline_repr(z3.simplify(test)) == Ex::inline_repr(sol);
+    const auto test = [&z3](const Ex::BasePtr &t, const Ex::BasePtr &sol) {
+        return Ex::inline_repr(z3.simplify(t)) == Ex::inline_repr(sol);
     };
 
     // FP
