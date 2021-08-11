@@ -12,7 +12,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace Utils::Private {
+namespace Utils::Cast::Private {
 
     /** A const preserving static pointer cast */
     template <typename Out, typename In>
@@ -36,6 +36,6 @@ namespace Utils::Private {
         }
     }
 
-} // namespace Utils::Private
+} // namespace Utils::Cast::Private
 
 #endif

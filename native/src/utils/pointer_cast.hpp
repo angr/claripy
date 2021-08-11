@@ -30,7 +30,7 @@ namespace Utils::Cast {
         constexpr auto down(const std::shared_ptr<In> &in) noexcept {
             static_assert(is_ancestor<In, Out>,
                           "dynamic_down_cast passed invalid <In, Out> type pair");
-            return Utils::Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
+            return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
         }
 
         /** A dynamic side cast
@@ -38,7 +38,7 @@ namespace Utils::Cast {
          */
         template <typename Out, typename In>
         constexpr auto side(const std::shared_ptr<In> &in) noexcept {
-            return Utils::Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
+            return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
         }
 
         /** Return true if in is an Out; in may not be nullptr
@@ -86,7 +86,7 @@ namespace Utils::Cast {
         template <typename Out, typename In>
         constexpr auto up(const std::shared_ptr<In> &in) noexcept {
             static_assert(is_ancestor<Out, In>, "up_cast passed invalid <In, Out> type pair");
-            return Utils::Private::static_pointer_cast<Out>(in); // Does its own checks as well
+            return Private::static_pointer_cast<Out>(in); // Does its own checks as well
         }
 
         /** An static down cast
@@ -102,7 +102,7 @@ namespace Utils::Cast {
             noexcept {
             static_assert(is_ancestor<In, Out>,
                           "static_down_cast passed invalid <In, Out> type pair");
-            return Utils::Private::static_side_cast<Out>(in); // Does its own checks as well
+            return Private::static_pointer_cast<Out>(in); // Does its own checks as well
         }
 #endif
 
@@ -117,7 +117,7 @@ namespace Utils::Cast {
         }
 #else
             noexcept {
-            return Utils::Private::static_side_cast<Out>(in);
+            return Private::static_pointer_cast<Out>(in);
         }
 #endif
 
@@ -130,7 +130,7 @@ namespace Utils::Cast {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             static_assert(Utils::is_in_ignore_const<In, void>, "Will only cast from void type");
             static_assert(!Utils::is_same_ignore_cv<Out, void>, "Cannot cast to void");
-            return Utils::Private::static_pointer_cast<Out>(in);
+            return Private::static_pointer_cast<Out>(in);
         }
     } // namespace Static
 
