@@ -396,7 +396,7 @@ if(OPTIMIZE_FOR_NATIVE)
 endif()
 
 # Fix compile time logging
-if(CMAKE_BUILD_TYPE MATCHES Release AND CONSTANT_LOG_LEVEL)
+if(CMAKE_BUILD_TYPE MATCHES Rel AND CONSTANT_LOG_LEVEL)
     message("Runtime logging disabled!")
 	target_compile_definitions("${CLARICPP}" PUBLIC "CONSTANT_LOG_LEVEL") # Export this macro
 else()
@@ -434,7 +434,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	target_link_options("${CLARICPP}" PUBLIC
 		"-rdynamic"
 	)
-elseif(CMAKE_BUILD_TYPE MATCHES Release)
+elseif(CMAKE_BUILD_TYPE MATCHES Rel)
     message("Release Build enabled!")
 	target_compile_definitions("${CLARICPP}" PUBLIC  # Export this macro
 		"DEFAULT_LOG_LEVEL=${DEFAULT_RELEASE_LOG_LEVEL}"
@@ -485,7 +485,7 @@ endif()
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above
-if(CMAKE_BUILD_TYPE MATCHES Release)
+if(CMAKE_BUILD_TYPE MATCHES Rel)
 	set_property(TARGET "${CLARICPP}"
 		PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE
 	)
