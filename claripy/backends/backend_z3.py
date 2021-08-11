@@ -756,17 +756,16 @@ class BackendZ3(Backend):
             solver.add(*extra_constraints)
 
         try:
-
             l.debug("Doing a check! (satisfiable)")
             if solver.check() != z3.sat:
                 return False
-
             if model_callback is not None:
                 model_callback(self._generic_model(solver.model()))
+            return True
         finally:
             if len(extra_constraints) > 0:
                 solver.pop()
-        return True
+        return False
 
     def _eval(self, expr, n, extra_constraints=(), solver=None, model_callback=None):
         results = self._batch_eval(
