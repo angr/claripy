@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines a method to create an Expression with an Eq Op
  */
-#ifndef R_CREATE_FP_FROMNOT2SCOMPLEMENT_HPP_
-#define R_CREATE_FP_FROMNOT2SCOMPLEMENT_HPP_
+#ifndef R_CREATE_FP_FROMNOT2SCOMPLEMENTBV_HPP_
+#define R_CREATE_FP_FROMNOT2SCOMPLEMENTBV_HPP_
 
 #include "../constants.hpp"
 
