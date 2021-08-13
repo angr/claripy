@@ -285,11 +285,11 @@ class Base:
             return b'\x2e'
         elif type(arg) is int:
             if arg < 0:
-                if arg >= -0xffff:
+                if arg >= -0x7fff:
                     return b'-' + struct.pack("<h", arg)
-                elif arg >= -0xffff_ffff:
+                elif arg >= -0x7fff_ffff:
                     return b'-' + struct.pack("<i", arg)
-                elif arg >= -0xffff_ffff_ffff_ffff:
+                elif arg >= -0x7fff_ffff_ffff_ffff:
                     return b'-' + struct.pack("<q", arg)
                 return None
             else:
