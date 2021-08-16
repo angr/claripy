@@ -96,7 +96,7 @@ namespace Backend::Z3 {
 
         /** The method used to simplify z3 boolean expressions */
         inline z3::expr bool_simplify(const z3::expr &expr) {
-            thread_local BoolTactic bt {};
+            static thread_local BoolTactic bt {};
             return bt(expr);
         }
 
