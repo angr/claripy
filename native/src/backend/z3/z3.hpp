@@ -146,7 +146,7 @@ namespace Backend::Z3 {
       private:
         /** Abstract b_obj to a type in PrimVar */
         inline PrimVar abstract_to_prim(const z3::expr &b_obj) {
-#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             const auto hash { b_obj.hash() };
             if (const auto lookup { abstraction_prim_cache.find(hash) };
                 lookup != abstraction_prim_cache.end()) {
@@ -190,7 +190,7 @@ namespace Backend::Z3 {
         inline static thread_local std::map<std::string, Expression::Base::SPAV>
             symbol_annotation_translocation_data {};
 
-#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
         /** A cache for abstractions to primitives */
         inline static thread_local std::map<Hash::Hash, PrimVar> abstract_prim_cache;
 #endif

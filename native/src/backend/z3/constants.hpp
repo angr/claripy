@@ -11,9 +11,6 @@
 #include <string>
 #include <z3++.h>
 
-/** The abstraction cache is currently disabled */
-#define BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
-
 
 namespace Backend::Z3 {
 

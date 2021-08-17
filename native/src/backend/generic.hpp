@@ -14,6 +14,9 @@
 #include <variant>
 
 
+/** The abstraction cache is currently disabled */
+#define BACKEND_DISABLE_ABSTRACTION_CACHE
+
 namespace Backend {
 
     /** A subclass of Backend::Base which other backends should derive from for consistency
@@ -42,7 +45,9 @@ namespace Backend {
             errored_cache.scoped_unique().first.clear();
             // Thread locals
             conversion_cache.clear();
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             abstraction_cache.clear();
+#endif
         }
 
         /** Checks whether this backend can handle the expression
@@ -189,7 +194,8 @@ namespace Backend {
         AbstractionVariant abstract_helper(const BackendObj &b_obj) {
             const unsigned n = { b_obj.num_args() };
 
-#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            static_assert(false, "Better hashing needed");
             // Cache lookup
             const auto hash { b_obj.hash() };
             if (const auto lookup { abstraction_cache.find(hash) };
@@ -206,7 +212,7 @@ namespace Backend {
 
             // Convert b_obj then update various caches and return
             auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
-#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             abstraction_cache.emplace(hash, ret);
 #endif
             if (LIKELY(std::holds_alternative<Expression::BasePtr>(ret))) {
@@ -275,7 +281,7 @@ namespace Backend {
          */
         inline static thread_local std::map<Hash::Hash, const BackendObj> conversion_cache {};
 
-#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
         /** Thread local abstraction cache
          *  Map a backend object hash to an expression base pointer
          */
