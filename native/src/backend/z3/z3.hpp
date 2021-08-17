@@ -26,13 +26,8 @@ namespace Backend::Z3 {
         /** Destructor */
         ~Z3() noexcept override = default;
 
-        /** Clear caches to decrease memory pressure
-         *  Note: Does not clear translocation data
-         */
-        inline void downsize() override { Z3Super::downsize(); }
-
         /** Clears translocation data */
-        inline void clear_persistent_data() override {
+        inline void clear_persistent_data() override final {
             symbol_annotation_translocation_data.clear();
         }
 
@@ -44,9 +39,7 @@ namespace Backend::Z3 {
             return std::make_shared<z3::solver>(Private::tl_ctx);
         }
 
-        /** Check to see if the solver is in a satisfiable state
-         *  Warning: solver *must* be a valid solver pointer for this particular backend
-         */
+        /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
             return solver->check() == z3::check_result::sat;
             // @todo: model callback
@@ -54,7 +47,6 @@ namespace Backend::Z3 {
 
         /** Check to see if the solver is in a satisfiable state
          *  Temporarily adds the extra constraints to the solver
-         *  Warning: solver *must* be a valid solver pointer for this particular backend
          */
         inline bool satisfiable(const std::shared_ptr<z3::solver> &solver,
                                 const std::set<Expression::BasePtr> &extra_constraints) {
@@ -85,8 +77,7 @@ namespace Backend::Z3 {
             return satisfiable(solver, extra_constraints);
         }
 
-        /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
-         */
+        /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
                              std::shared_ptr<z3::solver> &solver) {
             static thread_local std::set<Expression::BasePtr> s;
@@ -130,6 +121,27 @@ namespace Backend::Z3 {
             }
         }
 
+        /** This dynamic dispatcher converts expr into a backend object
+         *  All arguments of expr that are not primitives have been
+         *  pre-converted into backend objects and are in args
+         *  Arguments must be popped off the args stack if used
+         *  expr may not be nullptr
+         *  Warning: This function may internally do unchecked static casting, we permit this
+         *  *only* if the cuid of the expression is of or derive from the type being cast to.
+         */
+        inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
+                                            std::vector<const z3::expr *> &args) override final {
+            return Private::dispatch_conversion(expr, args, symbol_annotation_translocation_data);
+        }
+
+        /** Abstract a backend object into a claricpp expression */
+        inline AbstractionVariant
+        dispatch_abstraction(const z3::expr &b_obj,
+                             std::vector<AbstractionVariant> &args) override final {
+            return Private::dispatch_abstraction(b_obj, args,
+                                                 symbol_annotation_translocation_data);
+        }
+
       private:
         /** Create a == b; neither may be nullptr */
         static Expression::BasePtr to_eq(const Expression::BasePtr &a,
@@ -154,8 +166,6 @@ namespace Backend::Z3 {
         /** An abbreviation for Utils::ThreadSafe::Mutable */
         template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
 
-        // Caches
-
         /** A helper function that tries to get an object from a cache
          *  Returns a pair; the first value is a boolean that stores if it was found
          *  The second value is the value that was found, or default constructed if not found
@@ -171,45 +181,15 @@ namespace Backend::Z3 {
             return { false, {} };
         }
 
-
         /********************************************************************/
         /*                          Representation                          */
         /********************************************************************/
-
 
         /** Stores a symbol's annotations to be translocated from the pre-conversion expression
          *  to the post-abstraction expression symbol of the same name.
          */
         inline static thread_local std::map<std::string, Expression::Base::SPAV>
             symbol_annotation_translocation_data {};
-
-
-        /********************************************************************/
-        /*                 Large Dispatch Function Overrides                */
-        /********************************************************************/
-
-
-      public:
-        /** This dynamic dispatcher converts expr into a backend object
-         *  All arguments of expr that are not primitives have been
-         *  pre-converted into backend objects and are in args
-         *  Arguments must be popped off the args stack if used
-         *  expr may not be nullptr
-         *  Warning: This function may internally do unchecked static casting, we permit this
-         *  *only* if the cuid of the expression is of or derive from the type being cast to.
-         */
-        inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
-                                            std::vector<const z3::expr *> &args) override final {
-            return Private::dispatch_conversion(expr, args, symbol_annotation_translocation_data);
-        }
-
-        /** Abstract a backend object into a claricpp expression */
-        inline AbstractionVariant
-        dispatch_abstraction(const z3::expr &b_obj,
-                             std::vector<AbstractionVariant> &args) override final {
-            return Private::dispatch_abstraction(b_obj, args,
-                                                 symbol_annotation_translocation_data);
-        }
     };
 
 } // namespace Backend::Z3
