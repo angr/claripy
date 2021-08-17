@@ -36,8 +36,14 @@ template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
     UNITTEST_ASSERT(test(z3, T { -0. }));
     UNITTEST_ASSERT(test(z3, std::numeric_limits<T>::infinity()));
     UNITTEST_ASSERT(test(z3, -std::numeric_limits<T>::infinity())); // safe for double / float
-    Utils::Log::debug("nan");
-    UNITTEST_ASSERT(test(z3, Backend::Z3::nan<T>));
+    // NaNs are never equal so:
+    auto var { UnitTest::ClaricppUnitTest::prep(z3, Backend::Z3::nan<T>) };
+    try {
+        UNITTEST_ASSERT(std::isnan(std::get<T>(var)));
+    }
+    catch (std::bad_variant_access &) {
+        UNITTEST_ERR("Variant is not a T");
+    };
 }
 
 
