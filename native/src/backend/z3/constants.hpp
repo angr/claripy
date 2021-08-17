@@ -11,17 +11,26 @@
 #include <string>
 #include <z3++.h>
 
+/** The abstraction cache is currently disabled */
+#define BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+
 
 namespace Backend::Z3 {
 
-    /** The 'Generic' superclass of z3
-     */
+    /** The 'Generic' superclass of z3 */
     using Z3Super = Generic<z3::expr, false>;
 
     /** A map used for translocating annotations between symbols
      *  It assists in translocations between pre-conversion and post-abstraction expressions
      */
     using SymAnTransData = std::map<std::string, Expression::Base::SPAV>;
+
+    /** The designated NaN for the given type that the Z3 backend uses */
+    template <typename T>
+    inline static const constexpr T nan { std::numeric_limits<T>::quiet_NaN() };
+
+    /** A variant of primitives the z3 backend uses */
+    using PrimVar = Op::Literal::Data;
 
 } // namespace Backend::Z3
 
