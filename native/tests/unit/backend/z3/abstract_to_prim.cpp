@@ -36,6 +36,7 @@ template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
     UNITTEST_ASSERT(test(z3, T { -0. }));
     UNITTEST_ASSERT(test(z3, std::numeric_limits<T>::infinity()));
     UNITTEST_ASSERT(test(z3, -std::numeric_limits<T>::infinity())); // safe for double / float
+    Utils::Log::debug("nan");
     UNITTEST_ASSERT(test(z3, Backend::Z3::nan<T>));
 }
 
@@ -54,7 +55,7 @@ void abstract_to_prim() {
     UNITTEST_ASSERT(test(z3, uint16_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint32_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint64_t { 10 }));
-    UNITTEST_ASSERT(test(z3, BigInt { 64, 64 }));
+    UNITTEST_ASSERT(test(z3, BigInt { 20, 128 })); // > 64
 
     Utils::Log::debug("Testing floats...");
     test_f<float>(z3);
