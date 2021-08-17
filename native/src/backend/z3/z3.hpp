@@ -16,6 +16,7 @@ namespace Backend::Z3 {
 
     /** The Z3 backend */
     class Z3 final : public Z3Super {
+        ENABLE_UNITTEST_FRIEND_ACCESS;
         static_assert(!use_apply_annotations, "Z3 objects do not support holding annotations");
 
       public:
@@ -143,9 +144,25 @@ namespace Backend::Z3 {
         }
 
       private:
+        /** Abstract b_obj to a type in PrimVar */
+        inline PrimVar abstract_to_prim(const z3::expr &b_obj) {
+#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+            const auto hash { b_obj.hash() };
+            if (const auto lookup { abstraction_prim_cache.find(hash) };
+                lookup != abstraction_prim_cache.end()) {
+                return lookup->second;
+            }
+            auto ret { Private::dispatch_abstraction_to_prim(b_obj) };
+            abstraction_prim_cache.emplace(hash, ret); // Not const for move ret purposes
+            return ret;
+#else
+            return Private::dispatch_abstraction_to_prim(b_obj);
+#endif
+        }
+
         /** Create a == b; neither may be nullptr */
-        static Expression::BasePtr to_eq(const Expression::BasePtr &a,
-                                         const Expression::BasePtr &b) {
+        static inline Expression::BasePtr to_eq(const Expression::BasePtr &a,
+                                                const Expression::BasePtr &b) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(a);
             namespace Ex = Expression;
             switch (a->cuid) {
@@ -163,24 +180,6 @@ namespace Backend::Z3 {
             }
         }
 
-        /** An abbreviation for Utils::ThreadSafe::Mutable */
-        template <typename T> using TSM = Utils::ThreadSafe::Mutable<T>;
-
-        /** A helper function that tries to get an object from a cache
-         *  Returns a pair; the first value is a boolean that stores if it was found
-         *  The second value is the value that was found, or default constructed if not found
-         *  Note that the second value is copied to ensure thread safety
-         */
-        template <typename Key, typename Value>
-        static std::pair<bool, Value> get_from_cache(const TSM<std::map<Key, Value>> &tsm_cache,
-                                                     const Key &key) {
-            auto [cache, _] = tsm_cache.scoped_shared();
-            if (const auto lookup { cache.find(key) }; lookup != cache.end()) {
-                return { true, lookup->second };
-            }
-            return { false, {} };
-        }
-
         /********************************************************************/
         /*                          Representation                          */
         /********************************************************************/
@@ -190,6 +189,11 @@ namespace Backend::Z3 {
          */
         inline static thread_local std::map<std::string, Expression::Base::SPAV>
             symbol_annotation_translocation_data {};
+
+#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
+        /** A cache for abstractions to primitives */
+        inline static thread_local std::map<Hash::Hash, PrimVar> abstract_prim_cache;
+#endif
     };
 
 } // namespace Backend::Z3
