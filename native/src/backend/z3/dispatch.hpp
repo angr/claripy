@@ -2,8 +2,8 @@
  * @file
  * @brief This file defines the Z3 backend's dispatch functions
  */
-#ifndef R_DISPATCH_HPP_
-#define R_DISPATCH_HPP_
+#ifndef R_BACKEND_Z3_DISPATCH_HPP_
+#define R_BACKEND_Z3_DISPATCH_HPP_
 
 #include "abstract.hpp"
 #include "constants.hpp"
@@ -584,6 +584,99 @@ namespace Backend::Z3::Private {
         }
     }
 
+    /** Return a T given the decl_kind */
+    template <typename T> T fp_const(const Z3_decl_kind &decl_kind) {
+        static_assert(Utils::qualified_is_in<T, float, double>, "Unsupported fp type");
+        switch (decl_kind) {
+            case Z3_OP_FPA_MINUS_ZERO:
+                return -0;
+            case Z3_OP_FPA_MINUS_INF:
+                return -std::numeric_limits<T>::infinity(); // defined for float and double
+            case Z3_OP_FPA_PLUS_ZERO:                       // fallthrough
+                return 0;
+            case Z3_OP_FPA_PLUS_INF: // fallthrough
+                return std::numeric_limits<T>::infinity();
+            case Z3_OP_FPA_NAN:
+                return nan<T>;
+            default:
+                throw Utils::Error::Unexpected::Usage(
+                    WHOAMI_WITH_SOURCE "called with ba;d decl_kind: ", decl_kind);
+        }
+    }
+
+    /** Abstract a backend object into a primitive stored in a PrimVar */
+    inline PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj) {
+        Utils::affirm<Utils::Error::Unexpected::Size>(b_obj.num_args() == 0, WHOAMI_WITH_SOURCE
+                                                      "Op should have no children");
+
+        // Get switching variables
+        const auto decl { b_obj.decl() };
+        const auto decl_kind { decl.decl_kind() };
+
+        // Switch on expr type
+        switch (decl_kind) {
+            default: {
+                throw Error::Backend::Abstraction(
+                    WHOAMI_WITH_SOURCE
+                    "Z3 backend cannot abstract given op to primitive; decl_kind: ",
+                    decl_kind, "\nThe z3 op with this sort is:\n\t", b_obj);
+            }
+
+            // @todo others
+
+            // Boolean
+            case Z3_OP_TRUE:
+                return true;
+            case Z3_OP_FALSE:
+                return false;
+
+            // Conversions
+            case Z3_OP_BNUM: {
+                const auto x { Abstract::BV::num_primtive(b_obj) };
+                /** A local helper macro */
+#define G_CASE(I)                                                                                 \
+    case I:                                                                                       \
+        return std::get<I>(x);
+                switch (x.index()) {
+                    G_CASE(0)
+                    G_CASE(1)
+                    G_CASE(2)
+                    G_CASE(3)
+                    G_CASE(4)
+                    default:
+                        throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE, "Bad variant");
+                }
+#undef G_CASE
+                static_assert(std::variant_size_v<decltype(x)> == 5,
+                              "Switch-case statement needs to be modified");
+            }
+            case Z3_OP_FPA_NUM: {
+                const std::variant<double, float> x { Abstract::FP::num_primitive(b_obj) };
+                if (LIKELY(x.index() == 0)) {
+                    return std::get<double>(x);
+                }
+                return std::get<float>(x);
+            }
+
+            // FP Constants
+            case Z3_OP_FPA_MINUS_ZERO: // fallthrough
+            case Z3_OP_FPA_MINUS_INF:  // fallthrough
+            case Z3_OP_FPA_PLUS_ZERO:  // fallthrough
+            case Z3_OP_FPA_PLUS_INF:   // fallthrough
+            case Z3_OP_FPA_NAN: {
+                const auto sort { b_obj.get_sort() };
+                const auto width { z3_sort_to_fp_width(sort) };
+                if (LIKELY(width == Mode::FP::dbl)) {
+                    return fp_const<double>(decl_kind);
+                }
+                if (LIKELY(width == Mode::FP::flt)) {
+                    return fp_const<float>(decl_kind);
+                }
+                throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
+            }
+        }
+    }
+
 } // namespace Backend::Z3::Private
 
-#endif // R_DISPATCH_HPP_
+#endif
