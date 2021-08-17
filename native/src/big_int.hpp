@@ -29,4 +29,10 @@ inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
     return os;
 }
 
+/** Equality operator */
+inline bool operator==(const BigInt &a, const BigInt &b) {
+    return (a.bit_length == b.bit_length) && (a.value == b.value);
+}
+
+
 #endif
