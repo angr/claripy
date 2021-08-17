@@ -189,7 +189,7 @@ namespace Backend {
         AbstractionVariant abstract_helper(const BackendObj &b_obj) {
             const unsigned n = { b_obj.num_args() };
 
-#if 0
+#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
             // Cache lookup
             const auto hash { b_obj.hash() };
             if (const auto lookup { abstraction_cache.find(hash) };
@@ -206,7 +206,7 @@ namespace Backend {
 
             // Convert b_obj then update various caches and return
             auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
-#if 0
+#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
             abstraction_cache.emplace(hash, ret);
 #endif
             if (LIKELY(std::holds_alternative<Expression::BasePtr>(ret))) {
@@ -275,11 +275,13 @@ namespace Backend {
          */
         inline static thread_local std::map<Hash::Hash, const BackendObj> conversion_cache {};
 
+#ifndef BACKEND_Z3_DISABLE_ABSTRACTION_CACHE
         /** Thread local abstraction cache
          *  Map a backend object hash to an expression base pointer
          */
         inline static thread_local std::map<Hash::Hash, const AbstractionVariant>
             abstraction_cache {};
+#endif
     };
 
 } // namespace Backend
