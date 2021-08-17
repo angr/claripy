@@ -674,6 +674,8 @@ namespace Backend::Z3::Private {
                 }
                 throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
             }
+
+                // @todo Concat, fpToIEEEBV, INTERNAL
         }
     }
 
