@@ -287,26 +287,28 @@ namespace Backend::Z3::Abstract {
 
     namespace BV {
 
-        /** Abstraction function for Z3_OP_BNUM */
-        inline Expression::BasePtr num(const z3::expr &b_obj) {
-            using Err = Utils::Error::Unexpected::Type;
+        /** The primitive variant BV functions use */
+        using PrimVar = std::variant<uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
 
-            // Get the bit length
+        /** Abstraction function for Z3_OP_BNUM to a primitive */
+        inline PrimVar num_primtive(const z3::expr &b_obj) {
+            using Err = Utils::Error::Unexpected::Type;
             const auto bl { b_obj.get_sort().bv_size() };
 
+            // Standard sizes
             if (bl <= 64) {
                 uint64_t u64;
                 Utils::affirm<Err>(b_obj.is_numeral_u64(u64),
                                    WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
                 switch (bl) {
                     case 8:
-                        return Create::literal(Utils::narrow<uint8_t>(u64));
+                        return Utils::narrow<uint8_t>(u64);
                     case 16:
-                        return Create::literal(Utils::narrow<uint16_t>(u64));
+                        return Utils::narrow<uint16_t>(u64);
                     case 32:
-                        return Create::literal(Utils::narrow<uint32_t>(u64));
+                        return Utils::narrow<uint32_t>(u64);
                     case 64:
-                        return Create::literal(u64);
+                        return u64;
                     default:
                         break;
                 };
@@ -316,7 +318,30 @@ namespace Backend::Z3::Abstract {
             std::string str;
             Utils::affirm<Err>(b_obj.is_numeral(str),
                                WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
-            return Create::literal(BigInt { BigInt::Value { str }, bl });
+            return BigInt { BigInt::Value { str }, bl };
+        }
+
+        /** Abstraction function for Z3_OP_BNUM */
+        inline Expression::BasePtr num(const z3::expr &b_obj) {
+            PrimVar x { num_primtive(b_obj) }; // Not const for move purposes
+                                               /** A local helper macro */
+#define G_CASE(I)                                                                                 \
+    case I:                                                                                       \
+        return Create::literal(std::get<I>(x));
+            switch (x.index()) {
+                G_CASE(0)
+                G_CASE(1)
+                G_CASE(2)
+                G_CASE(3)
+                case 4:
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(x, 4, BigInt);
+                    return Create::literal(std::move(std::get<BigInt>(x)));
+                default:
+                    throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE, "Bad variant");
+            }
+#undef G_CASE
+            static_assert(std::variant_size_v<PrimVar> == 5,
+                          "Switch-case statement needs to be modified");
         }
 
     } // namespace BV
@@ -386,8 +411,8 @@ namespace Backend::Z3::Abstract {
             throw Utils::Error::Unexpected::Base("This is not yet supported");
         }
 
-        /** Abstraction function for Z3_OP_FPA_NUM */
-        inline Expression::BasePtr num(const z3::expr &b_obj) {
+        /** Abstraction function for Z3_OP_FPA_NUM to a primtive type */
+        inline std::variant<double, float> num_primitive(const z3::expr &b_obj) {
             const auto &ctx { Private::tl_ctx };
 
             // Fp components
@@ -413,20 +438,29 @@ namespace Backend::Z3::Abstract {
                 const uint64_t to_val { (static_cast<uint64_t>(sign) << 63) | mantissa |
                                         (static_cast<uint64_t>(exp) << 52) };
                 // If nothing went wrong, this reinterpret_cast should be safe
-                return Create::literal(*reinterpret_cast<const double *>(&to_val));
+                return *reinterpret_cast<const double *>(&to_val);
             }
             if (LIKELY(width == Mode::FP::flt)) {
                 const uint32_t to_val { (static_cast<uint32_t>(sign) << 31) |
                                         static_cast<uint32_t>(mantissa) |
                                         (static_cast<uint32_t>(exp) << 23) };
                 // If nothing went wrong, this reinterpret_cast should be safe
-                return Create::literal(*reinterpret_cast<const float *>(&to_val));
+                return *reinterpret_cast<const float *>(&to_val);
             }
             throw Utils::Error::Unexpected::NotSupported(
                 WHOAMI_WITH_SOURCE
                 "Cannot create a value for this unknown floating point standard."
                 "\nZ3_sort: ",
                 sort);
+        }
+
+        /** Abstraction function for Z3_OP_FPA_NUM */
+        inline Expression::BasePtr num(const z3::expr &b_obj) {
+            const std::variant<double, float> x { num_primitive((b_obj)) };
+            if (LIKELY(x.index() == 0)) {
+                return Create::literal(std::get<double>(x));
+            }
+            return Create::literal(std::get<float>(x));
         }
 
         // Constants
@@ -487,11 +521,9 @@ namespace Backend::Z3::Abstract {
          *  We choose quiet as the type of nan we return
          */
         inline Expression::BasePtr nan(const z3::expr &b_obj) {
-            static_assert(std::numeric_limits<float>::has_quiet_NaN, "Unable to generate NaN");
-            static_assert(std::numeric_limits<double>::has_quiet_NaN, "Unable to generate NaN");
-            static const constexpr float nan_f { std::numeric_limits<float>::quiet_NaN() };
-            static const constexpr double nan_d { std::numeric_limits<double>::quiet_NaN() };
-            return Private::fpa_literal<Mode::Sign::Real::None>(b_obj, nan_d, nan_f);
+            namespace Z = ::Backend::Z3;
+            return Private::fpa_literal<Mode::Sign::Real::None>(b_obj, Z::nan<double>,
+                                                                Z::nan<float>);
         }
 
         // Comparisons
