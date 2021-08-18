@@ -693,7 +693,48 @@ namespace Backend::Z3::Private {
                 throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
             }
 
-            // @todo Concat, fpToIEEEBV
+            case Z3_OP_CONCAT: {
+                Utils::affirm<Error::Backend::Abstraction>(
+                    !Z3::rhfpu, WHOAMI_WITH_SOURCE
+                    "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
+                const auto n { b_obj.num_args() };
+                res = 0;
+                for (unsigned i { 0 }; i < n; ++i) {
+                    auto arg { b_obj.arg(i) };
+                    auto arg_decl { arg.decl() };
+                    auto arg_kind { arg_decl.kind() };
+                    const auto arg_size { arg.get_sort().bv_size() };
+
+                    bool neg { false };
+                    if (arg_kind == Z3_OP_BNEG) {
+                        arg = b_obj.arg(0);
+                        arg_decl = arg.decl();
+                        arg_kind = arg_decl.kind();
+                        neg = true;
+                    }
+                    if (arg_kind != Z3_OP_BNUM) {
+                        throw Error::Backend::Abstraction("Weird z3 model");
+                    }
+                    auto arg_int { Abstract::BV::num_primtive(arg) };
+                    if (neg) {
+                        arg_int = (1 << arg_size) - arg_int;
+                    }
+                    res <<= arg_size;
+                    res |= arg_int;
+                }
+                return res;
+            }
+            case Z3_OP_FPA_TO_IEEE_BV: {
+                Utils::affirm<Error::Backend::Abstraction>(
+                    Z3::rhfpu, WHOAMI_WITH_SOURCE
+                    "rewriter.hi_fp_unspecified is set to true, this should not be triggered");
+#ifdef DEBUG
+                Utils::affirm<Utils::Error::Unexpected::Size>(
+                    b_obj.num_args() > 0, WHOAMI_WITH_SOURCE "num_args should be at least one!");
+#endif
+                b_obj.arg(0);
+                // @todo fpToIEEEBV
+            }
 
             // String
             case Z3_OP_INTERNAL: {
