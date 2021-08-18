@@ -68,6 +68,11 @@ void abstract_to_prim() {
 
     Utils::Log::debug("Testing doubles...");
     test_f<double>(z3);
+
+#if 0
+    Utils::Log::debug("Testing strings...");
+    // @todo String testing
+#endif
 }
 
 // Define the test
