@@ -604,6 +604,24 @@ namespace Backend::Z3::Private {
         }
     }
 
+    /** Return true if the expression is a z3 string */
+    inline bool string_check(const z3::expr &b_obj) {
+        const auto sort { b_obj.get_sort() };
+        if (sort.is_seq()) {
+            return false;
+        }
+        // At this point we know b_obj encodes some kind of sequence
+        const auto &ctx { b_obj.ctx() };
+        const auto seq_basis_sort { Z3_get_seq_sort_basis(ctx, sort) };
+        if (Z3_get_sort_kind(ctx, seq_basis_sort) != Z3_BV_SORT) {
+            return false;
+        }
+        // At this point we know b_obj encodes a sequence of BVs
+        // If each BV is 8 bit, b_obj encodes a sequence of 8-bit BVs
+        // so we have a string! (per z3's definition of a string)
+        return Z3_get_bv_sort_size(ctx, seq_basis_sort) == 8;
+    }
+
     /** Abstract a backend object into a primitive stored in a PrimVar */
     inline PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj) {
         Utils::affirm<Utils::Error::Unexpected::Size>(b_obj.num_args() == 0, WHOAMI_WITH_SOURCE
@@ -675,7 +693,14 @@ namespace Backend::Z3::Private {
                 throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
             }
 
-                // @todo Concat, fpToIEEEBV, INTERNAL
+            // @todo Concat, fpToIEEEBV
+
+            // String
+            case Z3_OP_INTERNAL: {
+                Utils::affirm<Error::Backend::Abstraction>(string_check(b_obj), WHOAMI_WITH_SOURCE
+                                                           "b_obj is not a string as expected");
+                return Abstract::internal_primitive(b_obj, decl);
+            }
         }
     }
 
