@@ -698,18 +698,18 @@ namespace Backend::Z3::Private {
                     !Z3::rhfpu, WHOAMI_WITH_SOURCE
                     "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
                 const auto n { b_obj.num_args() };
-                res = 0;
+                int res = 0; // @todo wrong
                 for (unsigned i { 0 }; i < n; ++i) {
                     auto arg { b_obj.arg(i) };
                     auto arg_decl { arg.decl() };
-                    auto arg_kind { arg_decl.kind() };
+                    auto arg_kind { arg_decl.decl_kind() };
                     const auto arg_size { arg.get_sort().bv_size() };
 
                     bool neg { false };
                     if (arg_kind == Z3_OP_BNEG) {
                         arg = b_obj.arg(0);
                         arg_decl = arg.decl();
-                        arg_kind = arg_decl.kind();
+                        arg_kind = arg_decl.decl_kind();
                         neg = true;
                     }
                     if (arg_kind != Z3_OP_BNUM) {
