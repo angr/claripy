@@ -14,6 +14,9 @@
 
 namespace Backend::Z3 {
 
+    // Z3 global settings
+    UTILS_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
+
     /** The Z3 backend */
     class Z3 final : public Z3Super {
         ENABLE_UNITTEST_FRIEND_ACCESS;
