@@ -95,8 +95,8 @@ namespace Backend::Z3::Abstract {
     /*                        General                         */
     /**********************************************************/
 
-    /** Abstraction function for Z3_OP_INTERNAL */
-    inline Expression::BasePtr internal(const z3::expr &b, const z3::func_decl &decl) {
+    /** Abstraction function for Z3_OP_INTERNAL to a primitive */
+    inline Constants::CCSC internal_primitive(const z3::expr &b, const z3::func_decl &decl) {
         const auto &ctx { Private::tl_ctx };
         if (UNLIKELY((Z3_get_decl_num_parameters(ctx, decl) != 1) ||
                      (Z3_get_decl_parameter_kind(ctx, decl, 0) != Z3_PARAMETER_SYMBOL))) {
@@ -106,7 +106,12 @@ namespace Backend::Z3::Abstract {
         if (UNLIKELY(Z3_get_symbol_kind(ctx, symb) != Z3_STRING_SYMBOL)) {
             throw Error::Backend::Abstraction("Weird Z3 model (Type 2).", b);
         }
-        return Create::literal(Z3_get_symbol_string(ctx, symb));
+        return Z3_get_symbol_string(ctx, symb);
+    }
+
+    /** Abstraction function for Z3_OP_INTERNAL */
+    inline Expression::BasePtr internal(const z3::expr &b, const z3::func_decl &decl) {
+        return Create::literal(internal_primitive(b, decl));
     }
 
     /** Abstraction function for Z3_OP_UNINTERPRETED */
