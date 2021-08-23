@@ -416,9 +416,15 @@ namespace Backend::Z3::Abstract {
             throw Utils::Error::Unexpected::Base("This is not yet supported");
         }
 
-        /** Abstraction function for Z3_OP_FPA_NUM to a primtive type */
+        /** Abstraction function for Z3_OP_FPA_NUM to a primtive type
+         *  Note: this function can only handle 32 bit and 64 bit floats
+         */
         inline std::variant<double, float> num_primitive(const z3::expr &b_obj) {
             const auto &ctx { Private::tl_ctx };
+
+            // To extend this function to handle bigger floats, we need to use these functions:
+            //   z3.Z3_fpa_get_numeral_significand_string (has the leading 1. or 0.)
+            //   z3.Z3_fpa_get_numeral_exponent_string
 
             // Fp components
             int sign;          // NOLINT
@@ -435,7 +441,7 @@ namespace Backend::Z3::Abstract {
                 success,
                 WHOAMI_WITH_SOURCE
                 "something went wrong with fp component extraction.\nGiven fp: ",
-                b_obj, ". This function can only extract up to 64 bit floats.");
+                b_obj);
 
             const auto sort { b_obj.get_sort() };
             const auto width { z3_sort_to_fp_width(sort) };
