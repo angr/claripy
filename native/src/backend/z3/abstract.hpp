@@ -425,7 +425,7 @@ namespace Backend::Z3::Abstract {
             uint64_t mantissa; // NOLINT
             int64_t exp;       // NOLINT
 
-            // Extract fp components
+            // Extract fp components (success is false if the size is too large)
             bool success { Z3_fpa_get_numeral_sign(ctx, b_obj, &sign) };
             success &= Z3_fpa_get_numeral_significand_uint64(ctx, b_obj, &mantissa);
             success &= Z3_fpa_get_numeral_exponent_int64(ctx, b_obj, &exp, true);
@@ -435,7 +435,7 @@ namespace Backend::Z3::Abstract {
                 success,
                 WHOAMI_WITH_SOURCE
                 "something went wrong with fp component extraction.\nGiven fp: ",
-                b_obj);
+                b_obj, ". This function can only extract up to 64 bit floats.");
 
             const auto sort { b_obj.get_sort() };
             const auto width { z3_sort_to_fp_width(sort) };
