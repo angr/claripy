@@ -692,9 +692,17 @@ namespace Backend::Z3::Private {
                 }
                 throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
             }
-
-#if 0
             case Z3_OP_CONCAT: {
+                const auto sort { b_obj.get_sort() };
+                const auto width { z3_sort_to_fp_width(sort) };
+                if (LIKELY(width == Mode::FP::dbl)) {
+                    return nan<double>;
+                }
+                if (LIKELY(width == Mode::FP::flt)) {
+                    return nan<float>;
+                }
+                throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
+#if 0
                 Utils::affirm<Error::Backend::Abstraction>(
                     !Z3::rhfpu, WHOAMI_WITH_SOURCE
                     "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
@@ -724,8 +732,8 @@ namespace Backend::Z3::Private {
                     res |= arg_int;
                 }
                 return res;
-            }
 #endif
+            }
             case Z3_OP_FPA_TO_IEEE_BV: {
                 Utils::affirm<Error::Backend::Abstraction>(
                     Z3::rhfpu, WHOAMI_WITH_SOURCE
