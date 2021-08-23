@@ -693,12 +693,13 @@ namespace Backend::Z3::Private {
                 throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
             }
 
+#if 0
             case Z3_OP_CONCAT: {
                 Utils::affirm<Error::Backend::Abstraction>(
                     !Z3::rhfpu, WHOAMI_WITH_SOURCE
                     "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
                 const auto n { b_obj.num_args() };
-                int res = 0; // @todo wrong
+                uint64_t res = 0; // @todo wrong
                 for (unsigned i { 0 }; i < n; ++i) {
                     auto arg { b_obj.arg(i) };
                     auto arg_decl { arg.decl() };
@@ -724,6 +725,7 @@ namespace Backend::Z3::Private {
                 }
                 return res;
             }
+#endif
             case Z3_OP_FPA_TO_IEEE_BV: {
                 Utils::affirm<Error::Backend::Abstraction>(
                     Z3::rhfpu, WHOAMI_WITH_SOURCE
@@ -732,8 +734,17 @@ namespace Backend::Z3::Private {
                 Utils::affirm<Utils::Error::Unexpected::Size>(
                     b_obj.num_args() > 0, WHOAMI_WITH_SOURCE "num_args should be at least one!");
 #endif
-                b_obj.arg(0);
-                // @todo fpToIEEEBV
+                const auto a0 { b_obj.arg(0) };
+                const auto var { Abstract::FP::num_primitive(a0) };
+                static_assert(std::variant_size_v<decltype(var)> == 2, "Case needs updating");
+                switch (var.index()) {
+                    case 0:
+                        return std::get<0>(var);
+                    case 1:
+                        return std::get<1>(var);
+                    default:
+                        throw Utils::Error::Unexpected::Unknown("Bad variant index");
+                }
             }
 
             // String
