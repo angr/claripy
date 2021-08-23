@@ -12,13 +12,14 @@
 namespace Utils {
 
     /** Narrow X to an Out */
-    template <typename Out, typename In, bool AllowSignChange = false>
+    template <typename Out, bool AllowSignChange = false, typename In = void>
     constexpr Out narrow(const In in) noexcept {
         static_assert(std::is_integral_v<In>, "In must be a primitive");
         static_assert(std::is_integral_v<Out>, "Out must be a primitive");
         static_assert(std::is_convertible_v<In, Out>, "In must be convertible to Out");
         static_assert(sizeof(Out) < sizeof(In), "Nothing to narrow");
-        static_assert(std::is_signed_v<In> == std::is_signed_v<Out>, "Will not change sign");
+        static_assert(AllowSignChange || std::is_signed_v<In> == std::is_signed_v<Out>,
+                      "Will not change sign");
         return static_cast<Out>(in);
     }
 
