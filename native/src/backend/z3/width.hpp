@@ -34,6 +34,7 @@ namespace Backend::Z3 {
         if (LIKELY(w == Mode::FP::flt)) { // Not else so the LIKELYs don't conflict
             return z3_flt;
         }
+        Utils::Log::warning("Using non-standard fp sort: ", w);
         static thread_local z3::sort ret { Private::tl_ctx };
         ret = Private::tl_ctx.fpa_sort(w.exp, w.mantissa);
         return ret;
