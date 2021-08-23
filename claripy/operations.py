@@ -351,6 +351,15 @@ reversed_ops = {
     '__rxor__': '__xor__'
 }
 
+nonstandard_reversible_operations = {
+    '__lt__': '__gt__',
+    '__le__': '__ge__',
+    'ULT': 'UGT', 'ULE': 'UGE',
+    'SLT': 'SGT', 'SLE': 'SGE',
+}
+
+nonstandard_reversible_operations.update(reversed_ops)
+
 inverse_operations = {
     '__eq__': '__ne__',
     '__ne__': '__eq__',
@@ -485,7 +494,7 @@ op_precedence = {  # based on https://en.cppreference.com/w/c/language/operator_
     #'Concat': '..',
 }
 
-commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', 'And', 'Or', 'Xor', }
+commutative_operations = { '__and__', '__or__', '__xor__', '__add__', '__mul__', 'And', 'Or', 'Xor', '__eq__', '__ne__', }
 
 from .errors import ClaripyOperationError, ClaripyTypeError
 from . import simplifications
