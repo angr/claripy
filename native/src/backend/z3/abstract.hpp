@@ -58,7 +58,7 @@
  */
 #define UINT_BINARY(FUNC)                                                                         \
     ASSERT_ARG_LEN(args, 1);                                                                      \
-    return FUNC(GET_EARG(0), Utils::widen<Constants::UInt, int, true>(                            \
+    return FUNC(GET_EARG(0), Utils::widen<Constants::UInt, true>(                                 \
                                  Z3_get_decl_int_parameter(Private::tl_ctx, decl, 0)));
 
 /** A local macro used for calling a basic binary expression
@@ -439,16 +439,20 @@ namespace Backend::Z3::Abstract {
 
             const auto sort { b_obj.get_sort() };
             const auto width { z3_sort_to_fp_width(sort) };
-            if (LIKELY(width == Mode::FP::dbl)) {
-                const uint64_t to_val { (static_cast<uint64_t>(sign) << 63) | mantissa |
-                                        (static_cast<uint64_t>(exp) << 52) };
+            namespace FP = Mode::FP;
+            if (LIKELY(width == FP::dbl)) {
+                const uint64_t to_val {
+                    (Utils::widen<uint64_t, true>(sign) << FP::dbl.no_sign_width()) | mantissa |
+                    (Utils::unsign(exp) << FP::dbl.mantissa_raw())
+                };
                 // If nothing went wrong, this reinterpret_cast should be safe
                 return *reinterpret_cast<const double *>(&to_val);
             }
-            if (LIKELY(width == Mode::FP::flt)) {
-                const uint32_t to_val { (static_cast<uint32_t>(sign) << 31) |
-                                        static_cast<uint32_t>(mantissa) |
-                                        (static_cast<uint32_t>(exp) << 23) };
+            if (LIKELY(width == FP::flt)) {
+                const uint32_t to_val { (Utils::unsign(sign) << FP::flt.no_sign_width()) |
+                                        Utils::narrow<uint32_t>(mantissa) |
+                                        (Utils::narrow<uint32_t, true>(exp)
+                                         << FP::flt.mantissa_raw()) };
                 // If nothing went wrong, this reinterpret_cast should be safe
                 return *reinterpret_cast<const float *>(&to_val);
             }

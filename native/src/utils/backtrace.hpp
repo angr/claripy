@@ -62,15 +62,14 @@ namespace Utils {
             namespace Err = Utils::Error::Unexpected;
             Utils::affirm<Err::Usage>(max_frames > 0, "max_frames must be strictly positive");
             // Get a human read-able call stack
-            callstack =
-                Utils::Safe::malloc<void *>(Utils::widen<uint32_t, int16_t, true>(max_frames));
+            callstack = Utils::Safe::malloc<void *>(Utils::widen<uint32_t, true>(max_frames));
             const int n_frames { ::backtrace(callstack, max_frames) };
             Utils::affirm<Err::Unknown>(n_frames > 0, WHOAMI_WITH_SOURCE "backtrace failed");
             Utils::affirm<Err::Unknown>(n_frames <= max_frames,
                                         WHOAMI_WITH_SOURCE "backtrace overflow failure");
             Constants::CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
             // Used for formatting
-            const auto n_to_print { Utils::widen<Constants::UInt, int, true>(
+            const auto n_to_print { Utils::widen<Constants::UInt, true>(
                 Utils::Min::value(n_frames, 1 + static_cast<int>(max_frames))) };
             const auto lg_i { static_cast<int>(std::ceil(std::log10(n_to_print))) };
             // Print stack
