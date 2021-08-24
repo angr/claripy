@@ -144,35 +144,28 @@ namespace Backend::Z3 {
             return solution(expr, sol, solver, s);
         }
 
-        /** The method used to simplify z3 boolean expressions */
+        /** The method used to simplify z3 boolean expressions*/
         inline z3::expr bool_simplify(const z3::expr &expr) {
             static thread_local BoolTactic bt {};
             return bt(expr);
         }
 
-        /** @todo */
+        /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed> inline auto min(const z3::expr &expr, z3::solver &solver) {
-
-            // Return type
-            using Integer = std::conditional_t<Signed, Constants::Int, Constants::UInt>;
-
             // Check input
-            namespace Err = Utils::Error::Unexpected;
+            using Usage = Utils::Error::Unexpected::Usage;
 #ifdef DEBUG
-            Utils::affirm<Err::Usage>(expr.is_bv(),
-                                      WHOAMI_WITH_SOURCE "min can only be called on BVs");
+            Utils::affirm<Usage>(expr.is_bv(), WHOAMI_WITH_SOURCE "min can only be called on BVs");
 #endif
             const unsigned len { expr.get_sort().bv_size() };
-            Utils::affirm<Err::Usage>(len <= C_CHAR_BIT * sizeof(Integer), WHOAMI_WITH_SOURCE
-                                      "min cannot be called on BV wider than 64 bits");
+            Utils::affirm<Usage>(len <= 64, WHOAMI_WITH_SOURCE
+                                 "min cannot be called on BV wider than 64 bits");
 
-            // Starting interval
-            Integer lo { Signed ? -std::pow<Integer>(2, len - 1) : 0 };
-            Integer hi { (Signed ? std::pow<Integer>(2, len - 1) : std::pow<Integer>(2, len)) -
-                         1 };
-
-            auto ge { Signed ? };
-            auto le { Signed ? };
+            // Starting interval and comparators
+            using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
+            Integer lo { std::numeric_limits<Integer>::min() };
+            Integer hi { std::numeric_limits<Integer>::max() };
+            auto to_z3 { [](const Integer i) { return Private::tl_ctx.bv_val(i, 64_ui); } };
 
             // Binary search
             Integer min { hi };
@@ -185,10 +178,17 @@ namespace Backend::Z3 {
                 }
                 // Add new bounding constraints
                 const Integer middle { (hi / 2) + (lo / 2) }; // Not (hi+lo)/2 b/c overflow
-                solver.add(ge(expr, lo), le(expr, middle));
+                if constexpr (Signed) {
+                    solver.add(z3::sge(expr, to_z3(lo)), z3::sle(expr, to_z3(middle)));
+                }
+                else {
+                    solver.add(z3::uge(expr, to_z3(lo)), z3::ule(expr, to_z3(middle)));
+                }
                 // If the contraints are good, save the info; if bad reset the current solver frame
                 if (solver.check() == z3::sat) {
-                    min = std::min(min, val);
+                    const auto model { solver.get_model() };
+                    const auto val { std::get<uint64_t>(prim_from_model(model, expr)) };
+                    min = std::min(min, static_cast<Integer>(val)); // Changes sign if needed
                     hi = middle;
                 }
                 else {
@@ -205,12 +205,14 @@ namespace Backend::Z3 {
             // hi - lo == 1
             else {
                 ++n_push;
-                solver.push() solver.add(expr == lo);
+                solver.push();
+                solver.add(expr == to_z3(lo));
                 min = std::min(min, (solver.check() == z3::sat) ? lo : hi);
             }
 
-            // Restore the solver state
+            // Restore the solver state and return the min
             solver.pop(n_push);
+            return min;
         }
 
       private:
