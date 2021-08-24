@@ -8,6 +8,7 @@ simple_test(bool_tactic)
 simple_test(simplify)
 simple_test(satisfiable)
 simple_test(solution)
+simple_test(min_max)
 
 # Test ops
 simple_test(normal)
