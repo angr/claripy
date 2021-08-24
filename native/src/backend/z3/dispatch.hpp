@@ -652,9 +652,9 @@ namespace Backend::Z3::Private {
             case Z3_OP_BNUM: {
                 const auto x { Abstract::BV::num_primtive(b_obj) };
                 /** A local helper macro */
-#define G_CASE(I)                                                                                 \
-    case I:                                                                                       \
-        return std::get<I>(x);
+#define G_CASE(INDEX)                                                                             \
+    case INDEX:                                                                                   \
+        return std::get<INDEX>(x);
                 switch (x.index()) {
                     G_CASE(0)
                     G_CASE(1)
