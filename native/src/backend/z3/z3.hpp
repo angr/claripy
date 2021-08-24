@@ -23,9 +23,9 @@ namespace Backend::Z3 {
         static_assert(!use_apply_annotations, "Z3 objects do not support holding annotations");
 
       public:
-        /********************************************************************/
-        /*                     Small Function Overrides                     */
-        /********************************************************************/
+        /************************************************/
+        /*              Function Overrides              */
+        /************************************************/
 
         /** Destructor */
         ~Z3() noexcept override = default;
@@ -38,8 +38,63 @@ namespace Backend::Z3 {
         /** The name of this backend */
         [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
 
+        /** Simplify the given expression
+         *  expr may not be nullptr
+         */
+        inline Expression::BasePtr simplify_raw(const Expression::RawPtr expr) override final {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+            namespace Ex = Expression;
+            switch (expr->cuid) {
+                case Ex::Bool::static_cuid: {
+                    auto b_obj { convert(expr) };
+                    b_obj = bool_simplify(b_obj);
+                    return abstract(b_obj);
+                }
+                case Ex::BV::static_cuid: {
+                    auto b_obj = convert(expr);
+                    b_obj = b_obj.simplify();
+                    return abstract(b_obj);
+                }
+                default: {
+#ifdef DEBUG
+                    auto ret { Ex::find(expr->hash) };
+                    using Err = Utils::Error::Unexpected::HashCollision;
+                    Utils::affirm<Err>(ret.get() == expr, WHOAMI_WITH_SOURCE);
+                    return ret;
+#else
+                    return Ex::find(expr->hash);
+#endif
+                }
+            }
+        }
+
+        /** This dynamic dispatcher converts expr into a backend object
+         *  All arguments of expr that are not primitives have been
+         *  pre-converted into backend objects and are in args
+         *  Arguments must be popped off the args stack if used
+         *  expr may not be nullptr
+         *  Warning: This function may internally do unchecked static casting, we permit this
+         *  *only* if the cuid of the expression is of or derive from the type being cast to.
+         */
+        inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
+                                            std::vector<const z3::expr *> &args) override final {
+            return Private::dispatch_conversion(expr, args, symbol_annotation_translocation_data);
+        }
+
+        /** Abstract a backend object into a claricpp expression */
+        inline AbstractionVariant
+        dispatch_abstraction(const z3::expr &b_obj,
+                             std::vector<AbstractionVariant> &args) override final {
+            return Private::dispatch_abstraction(b_obj, args,
+                                                 symbol_annotation_translocation_data);
+        }
+
+        /************************************************/
+        /*               Member Function                */
+        /************************************************/
+
         /** Create a tls solver */
-        [[nodiscard]] inline virtual std::shared_ptr<z3::solver> new_tls_solver() const {
+        [[nodiscard]] inline std::shared_ptr<z3::solver> new_tls_solver() const {
             return std::make_shared<z3::solver>(Private::tl_ctx);
         }
 
@@ -95,58 +150,78 @@ namespace Backend::Z3 {
             return bt(expr);
         }
 
-        /** Simplify the given expression
-         *  expr may not be nullptr
-         */
-        inline Expression::BasePtr simplify_raw(const Expression::RawPtr expr) override final {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            namespace Ex = Expression;
-            switch (expr->cuid) {
-                case Ex::Bool::static_cuid: {
-                    auto b_obj { convert(expr) };
-                    b_obj = bool_simplify(b_obj);
-                    return abstract(b_obj);
-                }
-                case Ex::BV::static_cuid: {
-                    auto b_obj = convert(expr);
-                    b_obj = b_obj.simplify();
-                    return abstract(b_obj);
-                }
-                default: {
+        /** @todo */
+        template <bool Signed> inline auto min(const z3::expr &expr, z3::solver &solver) {
+
+            // Return type
+            using Integer = std::conditional_t<Signed, Constants::Int, Constants::UInt>;
+
+            // Check input
+            namespace Err = Utils::Error::Unexpected;
 #ifdef DEBUG
-                    auto ret { Ex::find(expr->hash) };
-                    using Err = Utils::Error::Unexpected::HashCollision;
-                    Utils::affirm<Err>(ret.get() == expr, WHOAMI_WITH_SOURCE);
-                    return ret;
-#else
-                    return Ex::find(expr->hash);
+            Utils::affirm<Err::Usage>(expr.is_bv(),
+                                      WHOAMI_WITH_SOURCE "min can only be called on BVs");
 #endif
+            const unsigned len { expr.get_sort().bv_size() };
+            Utils::affirm<Err::Usage>(len <= C_CHAR_BIT * sizeof(Integer), WHOAMI_WITH_SOURCE
+                                      "min cannot be called on BV wider than 64 bits");
+
+            // Starting interval
+            Integer lo { Signed ? -std::pow<Integer>(2, len - 1) : 0 };
+            Integer hi { (Signed ? std::pow<Integer>(2, len - 1) : std::pow<Integer>(2, len)) -
+                         1 };
+
+            auto ge { Signed ? };
+            auto le { Signed ? };
+
+            // Binary search
+            Integer min { hi };
+            unsigned n_push { 0 }; // The number of stack frames pushed
+            while (hi - lo > 1) {  // Difference of 1 instead of 0 to prevent infinite loop
+                // Protect the current solver state
+                if (n_push == 0) {
+                    solver.push();
+                    n_push = 1;
+                }
+                // Add new bounding constraints
+                const Integer middle { (hi / 2) + (lo / 2) }; // Not (hi+lo)/2 b/c overflow
+                solver.add(ge(expr, lo), le(expr, middle));
+                // If the contraints are good, save the info; if bad reset the current solver frame
+                if (solver.check() == z3::sat) {
+                    min = std::min(min, val);
+                    hi = middle;
+                }
+                else {
+                    lo = middle;
+                    solver.pop();
+                    n_push = 0;
                 }
             }
-        }
 
-        /** This dynamic dispatcher converts expr into a backend object
-         *  All arguments of expr that are not primitives have been
-         *  pre-converted into backend objects and are in args
-         *  Arguments must be popped off the args stack if used
-         *  expr may not be nullptr
-         *  Warning: This function may internally do unchecked static casting, we permit this
-         *  *only* if the cuid of the expression is of or derive from the type being cast to.
-         */
-        inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
-                                            std::vector<const z3::expr *> &args) override final {
-            return Private::dispatch_conversion(expr, args, symbol_annotation_translocation_data);
-        }
+            // Last step of binary search
+            if (hi == lo) {
+                min = std::min(min, lo);
+            }
+            // hi - lo == 1
+            else {
+                ++n_push;
+                solver.push() solver.add(expr == lo);
+                min = std::min(min, (solver.check() == z3::sat) ? lo : hi);
+            }
 
-        /** Abstract a backend object into a claricpp expression */
-        inline AbstractionVariant
-        dispatch_abstraction(const z3::expr &b_obj,
-                             std::vector<AbstractionVariant> &args) override final {
-            return Private::dispatch_abstraction(b_obj, args,
-                                                 symbol_annotation_translocation_data);
+            // Restore the solver state
+            solver.pop(n_push);
         }
 
       private:
+        /** Extract a primitive from a model
+         * @todo test
+         */
+        inline PrimVar prim_from_model(const z3::model &m, const z3::expr &e) {
+            const auto evaled { m.eval(e, true) };
+            return abstract_to_prim(evaled);
+        }
+
         /** Abstract b_obj to a type in PrimVar */
         inline PrimVar abstract_to_prim(const z3::expr &b_obj) {
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
