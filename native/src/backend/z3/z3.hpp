@@ -163,8 +163,11 @@ namespace Backend::Z3 {
 
             // Starting interval and comparators
             using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
-            Integer lo { std::numeric_limits<Integer>::min() }; // todo: 2^len and such
-            Integer hi { std::numeric_limits<Integer>::max() };
+/** A local macro for brevity */
+#define MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
+            Integer hi { Signed ? MAX_S(2) : MAX_S(1) };
+            Integer lo { Signed ? (-hi - 1) : 0 };
+#undef MAX_S
             auto to_z3 { [&len](const Integer i) { return Private::tl_ctx.bv_val(i, len); } };
 
             // Binary search
@@ -178,6 +181,8 @@ namespace Backend::Z3 {
                 }
                 // Add new bounding constraints
                 const Integer middle { Utils::avg(hi, lo) };
+                //                Utils::Log::warning(static_cast<Integer>(lo), " ",
+                //                static_cast<Integer>(middle), " ", static_cast<Integer>(hi));
                 if constexpr (Signed) {
                     solver.add(z3::sge(expr, to_z3(lo)));
                     solver.add(z3::sle(expr, to_z3(middle)));
@@ -189,8 +194,7 @@ namespace Backend::Z3 {
                 // If the contraints are good, save the info; if bad reset the current solver frame
                 if (solver.check() == z3::sat) {
                     const auto model { solver.get_model() };
-                    const auto val { std::get<uint64_t>(prim_from_model(model, expr)) };
-                    min = std::min(min, static_cast<Integer>(val)); // Changes sign if needed
+                    min = std::min(min, coerce_to<Integer>(prim_from_model(model, expr)));
                     hi = middle;
                 }
                 else {
@@ -199,6 +203,8 @@ namespace Backend::Z3 {
                     n_push = 0;
                 }
             }
+            //            Utils::Log::warning(static_cast<Integer>(lo), " ",
+            //            static_cast<Integer>(hi));
 
             // Last step of binary search
             solver.push();
@@ -232,6 +238,36 @@ namespace Backend::Z3 {
 #else
             return Private::dispatch_abstraction_to_prim(b_obj);
 #endif
+        }
+
+        /** Coerce a PrimVar into a T via static_cast-ing
+         *  This assumes the value of x will fit within T
+         *  This assumes the PrimVar is set to a BV type
+         */
+        template <typename T> T coerce_to(PrimVar &&p) {
+            using Usage = Utils::Error::Unexpected::Usage;
+            switch (p.index()) {
+/** A local macro used for consistency */
+#define CASE_B(INDEX, TYPE)                                                                       \
+    case INDEX: {                                                                                 \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                             \
+        return static_cast<T>(std::get<TYPE>(p));                                                 \
+    }
+                CASE_B(5, uint8_t)
+                CASE_B(6, uint16_t)
+                CASE_B(7, uint32_t)
+                CASE_B(8, uint64_t)
+#undef CASE_B
+                case 9: {
+                    UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
+                    const auto &bi = std::get<BigInt>(p);
+                    Utils::affirm<Usage>(bi.bit_length < 64, WHOAMI_WITH_SOURCE
+                                         "Bit length of given PrimVar is too long");
+                    return static_cast<T>(bi.value);
+                }
+                default:
+                    throw Usage(WHOAMI_WITH_SOURCE "Invalid PrimVar given");
+            }
         }
 
         /** Create a == b; neither may be nullptr */
