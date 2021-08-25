@@ -10,6 +10,7 @@ template <typename T, bool Signed = std::is_signed_v<T>>
 static void min_max_sign_t(Backend::Z3::Z3 &z3) {
     static_assert(std::is_integral_v<T>, "T must be an integral type");
     Utils::Log::debug("\tSigned: ", std::boolalpha, Signed);
+    z3.downsize(); // To avoid hash collisions of FNV1a @todo : make hashing better
 
     // For brevity
     namespace C = Create;
@@ -48,8 +49,6 @@ static void min_max_sign_t(Backend::Z3::Z3 &z3) {
     // Test x < 5 && x != int_min && x != int_min+1
     const auto plus2 { C::and_<E::Bool>({ xleq5, neq(int_min), neq(int_min + 1) }) };
     min = get_min(plus2);
-    //    Utils::Log::info(plus2);
-    //    Utils::Log::debug("Want: ", int_min + 2, " min: ", min);
     UNITTEST_ASSERT_MSG(min == int_min + 2, "min: ", min);
 
     // Test x == int_max
@@ -61,7 +60,6 @@ static void min_max_sign_t(Backend::Z3::Z3 &z3) {
 
 template <typename T> static void min_max_t(Backend::Z3::Z3 &z3) {
     static_assert(std::is_integral_v<T>, "T must be integral");
-    Utils::Log::debug("Testing for bit length: ", sizeof(T) * C_CHAR_BIT);
     min_max_sign_t<std::make_signed_t<T>>(z3);
     min_max_sign_t<std::make_unsigned_t<T>>(z3);
 }
