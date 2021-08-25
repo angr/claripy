@@ -153,63 +153,13 @@ namespace Backend::Z3 {
 
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed> inline auto min(const z3::expr &expr, z3::solver &solver) {
-            // Check input
-            using Usage = Utils::Error::Unexpected::Usage;
-#ifdef DEBUG
-            Utils::affirm<Usage>(expr.is_bv(), WHOAMI_WITH_SOURCE "min can only be called on BVs");
-#endif
-            const unsigned len { expr.get_sort().bv_size() };
-            Utils::affirm<Usage>(len <= 64, WHOAMI_WITH_SOURCE
-                                 "min cannot be called on BV wider than 64 bits");
+            return extrema<Signed, true>(expr, solver);
+        }
 
-            // Starting interval and comparators
-            using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
-/** A local macro for brevity */
-#define MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
-            Integer hi { Signed ? MAX_S(2) : MAX_S(1) };
-            Integer lo { Signed ? (-hi - 1) : 0 };
-#undef MAX_S
-            auto to_z3 { [&len](const Integer i) { return Private::tl_ctx.bv_val(i, len); } };
-
-            // Binary search
-            Integer min { hi };
-            unsigned n_push { 0 }; // The number of stack frames pushed
-            while (hi > lo + 1) {  // Difference of 1 instead of 0 to prevent infinite loop
-                // Protect the current solver state
-                if (n_push == 0) {
-                    solver.push();
-                    n_push = 1;
-                }
-                // Add new bounding constraints
-                const Integer middle { Utils::avg(hi, lo) };
-                if constexpr (Signed) {
-                    solver.add(z3::sge(expr, to_z3(lo)));
-                    solver.add(z3::sle(expr, to_z3(middle)));
-                }
-                else {
-                    solver.add(z3::uge(expr, to_z3(lo)));
-                    solver.add(z3::ule(expr, to_z3(middle)));
-                }
-                // If the constraints are good, save the info; if bad reset the solver frame
-                if (solver.check() == z3::sat) {
-                    const auto model { solver.get_model() };
-                    min = std::min(min, coerce_to<Integer>(prim_from_model(model, expr)));
-                    hi = middle;
-                }
-                else {
-                    lo = middle;
-                    solver.pop();
-                    n_push = 0;
-                }
-            }
-
-            // Last step of binary search
-            solver.push();
-            solver.add(expr == to_z3(lo));
-            min = std::min(min, (solver.check() == z3::sat) ? lo : hi);
-            // Restore the solver state and return the min
-            solver.pop(n_push + 1);
-            return min;
+        /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
+        template <bool Signed> inline auto max(const z3::expr &expr, z3::solver &solver) {
+            Utils::Log::info("Max");
+            return extrema<Signed, false>(expr, solver);
         }
 
       private:
@@ -287,21 +237,100 @@ namespace Backend::Z3 {
             }
         }
 
-        /********************************************************************/
-        /*                          Representation                          */
-        /********************************************************************/
+        /** Find the min/max value of expr that satisfies solver; returns an int64_t or uint64_t */
+        template <bool Signed, bool Minimize>
+        inline auto extrema(const z3::expr &expr, z3::solver &solver) {
+            // Check input
+            using Usage = Utils::Error::Unexpected::Usage;
+#ifdef DEBUG
+            Utils::affirm<Usage>(expr.is_bv(), WHOAMI_WITH_SOURCE "ret can only be called on BVs");
+#endif
+            const unsigned len { expr.get_sort().bv_size() };
+            Utils::affirm<Usage>(len <= 64, WHOAMI_WITH_SOURCE
+                                 "ret cannot be called on BV wider than 64 bits");
 
-        /** Stores a symbol's annotations to be translocated from the pre-conversion expression
-         *  to the post-abstraction expression symbol of the same name.
-         */
-        inline static thread_local std::map<std::string, Expression::Base::SPAV>
-            symbol_annotation_translocation_data {};
+            // Starting interval and comparators
+            using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
+            /** A local macro for brevity */
+#define MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
+            Integer hi { Signed ? MAX_S(2) : MAX_S(1) };
+            Integer lo { Signed ? (-hi - 1) : 0 };
+#undef MAX_S
+
+            // Inline-able lambdas to for clarity
+            const auto to_z3 { [&len](const Integer i) {
+                return Private::tl_ctx.bv_val(i, len);
+            } };
+            const auto ge { [](const z3::expr &a, const z3::expr &b) constexpr {
+                return (Signed ? z3::sge(a, b) : z3::uge(a, b));
+        }
+    };
+    const auto le { [](const z3::expr &a, const z3::expr &b) constexpr {
+        return (Signed ? z3::sle(a, b) : z3::ule(a, b));
+} // namespace Backend::Z3
+}
+;
+const auto extreme { [](const Integer a, const Integer b) constexpr {
+    return (Minimize ? std::min(a, b) : std::max(a, b));
+}
+}
+;
+
+// Binary search
+Integer ret { Minimize ? hi : lo };
+unsigned n_push { 0 }; // The number of stack frames pushed
+while (hi > lo + 1) {  // Difference of 1 instead of 0 to prevent infinite loop
+    // Protect the current solver state
+    if (n_push == 0) {
+        solver.push();
+        n_push = 1;
+    }
+    // Add new bounding constraints
+    const Integer middle { Utils::avg(hi, lo) };
+    solver.add(ge(expr, Minimize ? to_z3(lo) : to_z3(middle)));
+    solver.add(le(expr, Minimize ? to_z3(middle) : to_z3(hi)));
+
+    if (!Minimize)
+        Utils::Log::debug("\nlo: ", lo, "\nhi: ", hi, "\nmid: ", middle, "\nsolver: ", solver);
+    // If the constraints are good, save the info; if bad reset the solver frame
+    if (solver.check() == z3::sat) {
+        (Minimize ? hi : lo) = middle;
+        const auto model { solver.get_model() };
+        ret = extreme(ret, coerce_to<Integer>(prim_from_model(model, expr)));
+    }
+    else {
+        (Minimize ? lo : hi) = middle;
+        solver.pop();
+        n_push = 0;
+    }
+}
+
+// Last step of binary search
+solver.push();
+solver.add(expr == to_z3(lo));
+ret = extreme(ret, Minimize == (solver.check() == z3::sat) ? lo : hi);
+
+// Restore the solver state and return the ret
+solver.pop(n_push + 1);
+return ret;
+}
+
+/********************************************************************/
+/*                          Representation                          */
+/********************************************************************/
+
+/** Stores a symbol's annotations to be translocated from the pre-conversion expression
+ *  to the post-abstraction expression symbol of the same name.
+ */
+inline static thread_local std::map<std::string, Expression::Base::SPAV>
+    symbol_annotation_translocation_data {};
 
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-        /** A cache for abstractions to primitives */
-        inline static thread_local std::map<Hash::Hash, PrimVar> abstract_prim_cache;
+/** A cache for abstractions to primitives */
+inline static thread_local std::map<Hash::Hash, PrimVar> abstract_prim_cache;
 #endif
-    };
+}
+;
 
 } // namespace Backend::Z3
 
