@@ -32,6 +32,7 @@ namespace Backend::Z3 {
 
         /** Clears translocation data */
         inline void clear_persistent_data() override final {
+            Utils::Log::warning("Z3 backend clearing persistent data...");
             symbol_annotation_translocation_data.clear();
         }
 
@@ -181,8 +182,6 @@ namespace Backend::Z3 {
                 }
                 // Add new bounding constraints
                 const Integer middle { Utils::avg(hi, lo) };
-                //                Utils::Log::warning(static_cast<Integer>(lo), " ",
-                //                static_cast<Integer>(middle), " ", static_cast<Integer>(hi));
                 if constexpr (Signed) {
                     solver.add(z3::sge(expr, to_z3(lo)));
                     solver.add(z3::sle(expr, to_z3(middle)));
@@ -191,7 +190,7 @@ namespace Backend::Z3 {
                     solver.add(z3::uge(expr, to_z3(lo)));
                     solver.add(z3::ule(expr, to_z3(middle)));
                 }
-                // If the contraints are good, save the info; if bad reset the current solver frame
+                // If the constraints are good, save the info; if bad reset the solver frame
                 if (solver.check() == z3::sat) {
                     const auto model { solver.get_model() };
                     min = std::min(min, coerce_to<Integer>(prim_from_model(model, expr)));
@@ -203,8 +202,6 @@ namespace Backend::Z3 {
                     n_push = 0;
                 }
             }
-            //            Utils::Log::warning(static_cast<Integer>(lo), " ",
-            //            static_cast<Integer>(hi));
 
             // Last step of binary search
             solver.push();

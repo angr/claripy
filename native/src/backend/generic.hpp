@@ -42,6 +42,7 @@ namespace Backend {
          *  Note: if overriding this, it is advised to call this function from the derived version
          */
         void downsize() override {
+            Utils::Log::info("Z3 backend downsizing...");
             errored_cache.scoped_unique().first.clear();
             // Thread locals
             conversion_cache.clear();

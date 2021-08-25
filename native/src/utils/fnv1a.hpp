@@ -40,9 +40,9 @@ namespace Utils {
             }
             else {
                 return internal_hash<HashSize, Prime, Offset>(
-                    // Passes an invalid pointer of len == 1 (this is ok because we do not use it
-                    // when len = 0
-                    &s[1],
+                    // When len == 1, passes an invalid pointer.
+                    // This is ok because the next step will not dereference it
+                    s + 1,
                     // len >= 1, so this is safe
                     len - 1,
                     // s[0] is safe since len != 0
