@@ -163,26 +163,28 @@ namespace Backend::Z3 {
 
             // Starting interval and comparators
             using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
-            Integer lo { std::numeric_limits<Integer>::min() };
+            Integer lo { std::numeric_limits<Integer>::min() }; // todo: 2^len and such
             Integer hi { std::numeric_limits<Integer>::max() };
-            auto to_z3 { [](const Integer i) { return Private::tl_ctx.bv_val(i, 64_ui); } };
+            auto to_z3 { [&len](const Integer i) { return Private::tl_ctx.bv_val(i, len); } };
 
             // Binary search
             Integer min { hi };
             unsigned n_push { 0 }; // The number of stack frames pushed
-            while (hi - lo > 1) {  // Difference of 1 instead of 0 to prevent infinite loop
+            while (hi > lo + 1) {  // Difference of 1 instead of 0 to prevent infinite loop
                 // Protect the current solver state
                 if (n_push == 0) {
                     solver.push();
                     n_push = 1;
                 }
                 // Add new bounding constraints
-                const Integer middle { (hi / 2) + (lo / 2) }; // Not (hi+lo)/2 b/c overflow
+                const Integer middle { Utils::avg(hi, lo) };
                 if constexpr (Signed) {
-                    solver.add(z3::sge(expr, to_z3(lo)), z3::sle(expr, to_z3(middle)));
+                    solver.add(z3::sge(expr, to_z3(lo)));
+                    solver.add(z3::sle(expr, to_z3(middle)));
                 }
                 else {
-                    solver.add(z3::uge(expr, to_z3(lo)), z3::ule(expr, to_z3(middle)));
+                    solver.add(z3::uge(expr, to_z3(lo)));
+                    solver.add(z3::ule(expr, to_z3(middle)));
                 }
                 // If the contraints are good, save the info; if bad reset the current solver frame
                 if (solver.check() == z3::sat) {
@@ -199,19 +201,11 @@ namespace Backend::Z3 {
             }
 
             // Last step of binary search
-            if (hi == lo) {
-                min = std::min(min, lo);
-            }
-            // hi - lo == 1
-            else {
-                ++n_push;
-                solver.push();
-                solver.add(expr == to_z3(lo));
-                min = std::min(min, (solver.check() == z3::sat) ? lo : hi);
-            }
-
+            solver.push();
+            solver.add(expr == to_z3(lo));
+            min = std::min(min, (solver.check() == z3::sat) ? lo : hi);
             // Restore the solver state and return the min
-            solver.pop(n_push);
+            solver.pop(n_push + 1);
             return min;
         }
 
