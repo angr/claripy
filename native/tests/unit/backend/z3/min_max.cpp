@@ -6,6 +6,27 @@
 #include "testlib.hpp"
 
 
+/** Test min / max function */
+template <bool Signed, typename T, bool Minimize>
+static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
+                 const Expression::BasePtr &test_c, const std::set<Expression::BasePtr> ec = {}) {
+    // Get a solver and add constraint
+    const auto solver_ref { z3.new_tls_solver() };
+    auto &solver { *solver_ref };
+    solver.add(z3.convert(test_c));
+    // Min / max functions
+    auto f { [&z3](auto &&...args) {
+        return Minimize ? z3.min<Signed>(args...) : z3.max<Signed>(args...);
+    } };
+    auto f_ec { [&z3](auto &&...args) {
+        return Minimize ? z3.min<Signed>(args...) : z3.max<Signed>(args...);
+    } };
+    // Call the min / max function
+    const auto conv { z3.convert(x) };
+    return static_cast<T>((ec.size() == 0) ? f(conv, solver) : f_ec(conv, solver, ec));
+}
+
+
 /** Tests min and maxed for the chosen type */
 template <typename T, bool Signed = std::is_signed_v<T>>
 static void min_max_test(Backend::Z3::Z3 &z3) {
@@ -16,27 +37,25 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     namespace C = Create;
     using M = Mode::Compare;
     namespace E = Expression; // NOLINT (false positive)
+    using EC = std::set<E::BasePtr>;
 
     // Prep
     const auto &unsign { Utils::unsign<T, true> };
-    const auto x { C::symbol<E::BV>("x", C_CHAR_BIT * sizeof(T)) };
-    const auto five { C::literal(unsign(T { 5 })) };
+    const constexpr M neq_mask { M::Neq | (Signed ? M::Signed : M::Unsigned) };
     const auto int_max { std::numeric_limits<T>::max() };
     const auto int_min { std::numeric_limits<T>::min() };
-    const constexpr M neq_mask { M::Neq | (Signed ? M::Signed : M::Unsigned) };
+
+    // Exprs
+    const auto x { C::symbol<E::BV>("x", C_CHAR_BIT * sizeof(T)) };
+    const auto five { C::literal(unsign(T { 5 })) };
 
     // Test functions
-    const auto get_ext { [&x, &z3](E::BasePtr &&e, const bool min) {
-        const auto solver { z3.new_tls_solver() };
-        solver->add(z3.convert(e));
-        auto s { *solver.get() };
-        auto f { [&min, &z3](auto &&...args) {
-            return min ? z3.min<Signed>(args...) : z3.max<Signed>(args...);
-        } };
-        return static_cast<T>(f(z3.convert(x), s));
+    const auto get_min { [&z3, &x](auto e) {
+        return get_ext<Signed, T, true>(z3, x, std::move(e));
     } };
-    const auto get_min { [&get_ext](auto... x) { return get_ext(std::move(x)..., true); } };
-    const auto get_max { [&get_ext](auto... x) { return get_ext(std::move(x)..., false); } };
+    const auto get_max { [&z3, &x](auto e) {
+        return get_ext<Signed, T, false>(z3, x, std::move(e));
+    } };
 
     // Test bounds
 
@@ -50,6 +69,18 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     const auto xleq5 { C::compare<E::BV, M::Less | neq_mask>(x, five) };
     UNITTEST_ASSERT(get_min(xleq5) == int_min);
     UNITTEST_ASSERT(get_max(xleq5) == 4);
+
+    // Test extra constraints
+
+    // Test x > 5; ec: x < 10
+    Utils::Log::debug("\t\t- Extra constraints tests...");
+    const auto xleq10 { C::compare<E::BV, M::Less | neq_mask>(
+        x, Create::literal(unsigned(T { 10 }))) };
+    T res { get_ext<Signed, T, true>(z3, x, xgeq5, EC { xleq10 }) };
+    ;
+    UNITTEST_ASSERT(res == 6);
+    res = get_ext<Signed, T, false>(z3, x, xgeq5, EC { xleq10 });
+    UNITTEST_ASSERT(res == 9);
 
     // Test near extrema; i.e. last step of binary search
 
