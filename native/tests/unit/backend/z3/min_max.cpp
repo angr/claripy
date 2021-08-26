@@ -9,7 +9,8 @@
 /** Test min / max function */
 template <bool Signed, typename T, bool Minimize>
 static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
-                 const Expression::BasePtr &test_c, const std::set<Expression::BasePtr> ec = {}) {
+                 const Expression::BasePtr &test_c,
+                 const std::set<Expression::BasePtr> ec = {}) { // NOLINT
     // Get a solver and add constraint
     const auto solver_ref { z3.new_tls_solver() };
     auto &solver { *solver_ref };
@@ -23,7 +24,7 @@ static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
     } };
     // Call the min / max function
     const auto conv { z3.convert(x) };
-    return static_cast<T>((ec.size() == 0) ? f(conv, solver) : f_ec(conv, solver, ec));
+    return static_cast<T>(ec.empty() ? f(conv, solver) : f_ec(conv, solver, ec));
 }
 
 /** Tests min and maxed for the chosen type */
@@ -39,15 +40,17 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     using EC = std::set<E::BasePtr>;
 
     // Prep
-    const auto &unsign { Utils::unsign<T, true> };
+    const auto unsign { Utils::unsign<T, true> };
     const auto int_max { std::numeric_limits<T>::max() };
     const auto int_min { std::numeric_limits<T>::min() };
     const constexpr M neq_mask { M::Neq | (Signed ? M::Signed : M::Unsigned) };
 
     // x and expr generators
     const auto x { C::symbol<E::BV>("x", C_CHAR_BIT * sizeof(T)) };
-    const auto num { [](const T v) { return C::literal(unsign(T { v })); } };
-    const auto neq { [&x](const T y) { return C::neq<E::BV>(x, C::literal(unsign(y))); } };
+    const auto num { [&unsign](const T v) { return C::literal(unsign(T { v })); } };
+    const auto neq { [&x, &unsign](const T y) {
+        return C::neq<E::BV>(x, C::literal(unsign(y)));
+    } };
 
     // Exprs
     const auto xleq10 { C::compare<E::BV, M::Less | neq_mask>(x, num(10)) };
