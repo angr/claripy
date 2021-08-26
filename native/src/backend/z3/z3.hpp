@@ -141,7 +141,7 @@ namespace Backend::Z3 {
         template <bool Signed>
         inline auto min(const z3::expr &expr, z3::solver &solver,
                         const std::set<Expression::BasePtr> &extra_constraints) {
-            ECHelper(*this, solver, extra_constraints);
+            ECHelper ec { *this, solver, extra_constraints };
             return min<Signed>(expr, solver);
         }
 
@@ -154,7 +154,7 @@ namespace Backend::Z3 {
         template <bool Signed>
         inline auto max(const z3::expr &expr, z3::solver &solver,
                         const std::set<Expression::BasePtr> &extra_constraints) {
-            ECHelper(*this, solver, extra_constraints);
+            ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
         }
 
@@ -325,7 +325,7 @@ namespace Backend::Z3 {
              */
             inline ECHelper(Z3 &bk, z3::solver &s,
                             const std::set<Expression::BasePtr> &extra_constraints)
-                : z3 { bk }, solver { s }, act { extra_constraints.size() >= 0 } {
+                : z3 { bk }, solver { s }, act { extra_constraints.size() > 0 } {
                 if (act) {
                     solver.push();
                     for (auto &i : extra_constraints) {
