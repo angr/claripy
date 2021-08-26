@@ -158,7 +158,6 @@ namespace Backend::Z3 {
 
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed> inline auto max(const z3::expr &expr, z3::solver &solver) {
-            Utils::Log::info("Max");
             return extrema<Signed, false>(expr, solver);
         }
 
@@ -273,21 +272,17 @@ namespace Backend::Z3 {
 
             // Binary search
             Integer ret { Minimize ? hi : lo };
-            unsigned n_push { 0 }; // The number of stack frames pushed
+            bool pushed { false }; // The number of stack frames pushed
             while (hi > lo + 1) {  // Difference of 1 instead of 0 to prevent infinite loop
                 // Protect the current solver state
-                if (n_push == 0) {
+                if (!pushed) {
                     solver.push();
-                    n_push = 1;
+                    pushed = true;
                 }
                 // Add new bounding constraints
                 const Integer middle { Utils::avg(hi, lo) };
-                solver.add(ge(expr, Minimize ? to_z3(lo) : to_z3(middle)));
-                solver.add(le(expr, Minimize ? to_z3(middle) : to_z3(hi)));
-
-                if (!Minimize)
-                    Utils::Log::debug("\nlo: ", lo, "\nhi: ", hi, "\nmid: ", middle,
-                                      "\nsolver: ", solver);
+                solver.add(ge(expr, to_z3(Minimize ? lo : middle)));
+                solver.add(le(expr, to_z3(Minimize ? middle : hi)));
                 // If the constraints are good, save the info; if bad reset the solver frame
                 if (solver.check() == z3::sat) {
                     (Minimize ? hi : lo) = middle;
@@ -297,17 +292,17 @@ namespace Backend::Z3 {
                 else {
                     (Minimize ? lo : hi) = middle;
                     solver.pop();
-                    n_push = 0;
+                    pushed = false;
                 }
             }
 
             // Last step of binary search
-            solver.push();
-            solver.add(expr == to_z3(lo));
+            if (!pushed) {
+                solver.push();
+            }
+            solver.add(expr == to_z3(Minimize ? lo : hi));
             ret = extreme(ret, Minimize == (solver.check() == z3::sat) ? lo : hi);
-
-            // Restore the solver state and return the ret
-            solver.pop(n_push + 1);
+            solver.pop();
             return ret;
         }
 
