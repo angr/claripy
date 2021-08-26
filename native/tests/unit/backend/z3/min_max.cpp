@@ -6,11 +6,11 @@
 #include "testlib.hpp"
 
 
+/** Tests min and maxed for the chosen type */
 template <typename T, bool Signed = std::is_signed_v<T>>
-static void min_max_sign_t(Backend::Z3::Z3 &z3) {
+static void min_max_test(Backend::Z3::Z3 &z3) {
     static_assert(std::is_integral_v<T>, "T must be an integral type");
     Utils::Log::debug("\t- Signed: ", std::boolalpha, Signed);
-    z3.downsize(); // To avoid hash collisions of FNV1a @todo : make hashing better
 
     // For brevity
     namespace C = Create;
@@ -67,13 +67,13 @@ static void min_max_sign_t(Backend::Z3::Z3 &z3) {
 
     // Test x > 5 && x != int_max
     const auto minus1 { C::and_<E::Bool>({ xgeq5, neq(int_max) }) };
-    UNITTEST_ASSERT(get_max(plus1) == int_max - 1);
-    UNITTEST_ASSERT(get_min(plus1) == 6);
+    UNITTEST_ASSERT(get_max(minus1) == int_max - 1);
+    UNITTEST_ASSERT(get_min(minus1) == 6);
 
     // Test x > 5 && x != int_max && x != int_max-1
     const auto minus2 { C::and_<E::Bool>({ xgeq5, neq(int_max), neq(int_max - 1) }) };
-    UNITTEST_ASSERT(get_max(plus1) == int_max - 2);
-    UNITTEST_ASSERT(get_min(plus2) == 6);
+    UNITTEST_ASSERT(get_max(minus2) == int_max - 2);
+    UNITTEST_ASSERT(get_min(minus2) == 6);
 
     // Test tight extrema
 
@@ -89,21 +89,24 @@ static void min_max_sign_t(Backend::Z3::Z3 &z3) {
     UNITTEST_ASSERT(get_max(min) == int_min);
 }
 
-template <typename T> static void min_max_t(Backend::Z3::Z3 &z3) {
-    static_assert(std::is_integral_v<T>, "T must be integral");
-    min_max_sign_t<std::make_signed_t<T>>(z3);
-    //    min_max_sign_t<std::make_unsigned_t<T>>(z3);
+/** Returns a T that is signed / unsigned depending on Signed */
+template <bool Signed, typename T>
+using Wrap = std::conditional_t<Signed, std::make_signed_t<T>, std::make_unsigned_t<T>>;
+
+/** Tests min and max for the chosen sign */
+template <bool Signed> static void min_max_t(Backend::Z3::Z3 &z3) {
+    min_max_test<Wrap<Signed, int64_t>>(z3);
+    min_max_test<Wrap<Signed, int32_t>>(z3);
+    min_max_test<Wrap<Signed, int16_t>>(z3);
+    min_max_test<Wrap<Signed, int8_t>>(z3);
 }
 
-/** Test the backend min and max functions
- * @todo: max
- */
+/** Test the backend min and max functions */
 void min_max() {
     auto z3 { Backend::Z3::Z3 {} };
-    min_max_t<int64_t>(z3);
-    //    min_max_t<int32_t>(z3);
-    //    min_max_t<int16_t>(z3);
-    //    min_max_t<int8_t>(z3);
+    min_max_t<true>(z3);
+    z3.downsize(); // Prevent FNV1a hash collisions; @todo Improve hash algorithm
+    min_max_t<false>(z3);
 }
 
 // Define the test
