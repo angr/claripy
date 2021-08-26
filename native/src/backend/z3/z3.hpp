@@ -23,9 +23,9 @@ namespace Backend::Z3 {
         static_assert(!use_apply_annotations, "Z3 objects do not support holding annotations");
 
       public:
-        /************************************************/
-        /*              Function Overrides              */
-        /************************************************/
+        /********************************************************************/
+        /*                        Function Overrides                        */
+        /********************************************************************/
 
         /** Destructor */
         ~Z3() noexcept override = default;
@@ -90,9 +90,9 @@ namespace Backend::Z3 {
                                                  symbol_annotation_translocation_data);
         }
 
-        /************************************************/
-        /*               Member Function                */
-        /************************************************/
+        /********************************************************************/
+        /*                         Member Functions                         */
+        /********************************************************************/
 
         /** Create a tls solver */
         [[nodiscard]] inline std::shared_ptr<z3::solver> new_tls_solver() const {
@@ -100,55 +100,36 @@ namespace Backend::Z3 {
         }
 
         /** Check to see if the solver is in a satisfiable state */
-        inline bool satisfiable(const std::shared_ptr<z3::solver> &solver) {
-            return solver->check() == z3::check_result::sat;
+        inline bool satisfiable(z3::solver &solver) {
+            return solver.check() == z3::check_result::sat;
             // @todo: model callback
         }
 
-        /** Check to see if the solver is in a satisfiable state
-         *  Temporarily adds the extra constraints to the solver
-         */
-        inline bool satisfiable(const std::shared_ptr<z3::solver> &solver,
+        /** Check to see if the solver is in a satisfiable state */
+        inline bool satisfiable(z3::solver &solver,
                                 const std::set<Expression::BasePtr> &extra_constraints) {
-            // If extra constraints are empty, skip them
-            if (extra_constraints.empty()) {
-                return satisfiable(solver);
-            }
-            // Load each extra constraint into the solver
-            UTILS_AFFIRM_NOT_NULL_DEBUG(solver);
-            solver->push();
-            for (const auto &i : extra_constraints) {
-                const auto c { convert(i) };
-                solver->add(c);
-            }
-            // Check if the solver is in a satisfiable state, then pop the extra constraints
-            const bool ret { satisfiable(solver) };
-            solver->pop();
-            return ret;
+            ECHelper ec { *this, solver, extra_constraints };
+            return satisfiable(solver);
         }
 
-        /** Check to see if the sol is a solution to expr w.r.t the solver; neither may be nullptr
-         *  extra_constraints may be modified
-         */
+        /** Check if expr = sol is a solution to the given solver; none may be nullptr */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
-                             std::shared_ptr<z3::solver> &solver,
-                             std::set<Expression::BasePtr> &extra_constraints) {
-            extra_constraints.emplace(to_eq(expr, sol));
-            return satisfiable(solver, extra_constraints);
+                             z3::solver &solver,
+                             const std::set<Expression::BasePtr> &extra_constraints) {
+            ECHelper ec { *this, solver, extra_constraints };
+            if (!ec.pushed()) {
+                solver.push();
+                ec.pushed(true);
+            }
+            solver.add(convert(to_eq(expr, sol)));         // Debug verifies expr is not null
+            return satisfiable(solver, extra_constraints); // Debug verifies non-null
         }
 
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
-                             std::shared_ptr<z3::solver> &solver) {
+                             z3::solver &solver) {
             static thread_local std::set<Expression::BasePtr> s;
-            s.clear();
             return solution(expr, sol, solver, s);
-        }
-
-        /** The method used to simplify z3 boolean expressions*/
-        inline z3::expr bool_simplify(const z3::expr &expr) {
-            static thread_local BoolTactic bt {};
-            return bt(expr);
         }
 
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
@@ -156,12 +137,38 @@ namespace Backend::Z3 {
             return extrema<Signed, true>(expr, solver);
         }
 
+        /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
+        template <bool Signed>
+        inline auto min(const z3::expr &expr, z3::solver &solver,
+                        const std::set<Expression::BasePtr> &extra_constraints) {
+            ECHelper(*this, solver, extra_constraints);
+            return min<Signed>(expr, solver);
+        }
+
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed> inline auto max(const z3::expr &expr, z3::solver &solver) {
             return extrema<Signed, false>(expr, solver);
         }
 
+        /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
+        template <bool Signed>
+        inline auto max(const z3::expr &expr, z3::solver &solver,
+                        const std::set<Expression::BasePtr> &extra_constraints) {
+            ECHelper(*this, solver, extra_constraints);
+            return max<Signed>(expr, solver);
+        }
+
       private:
+        /********************************************************************/
+        /*                     Private Helper Functions                     */
+        /********************************************************************/
+
+        /** The method used to simplify z3 boolean expressions*/
+        inline z3::expr bool_simplify(const z3::expr &expr) {
+            static thread_local BoolTactic bt {};
+            return bt(expr);
+        }
+
         /** Extract a primitive from a model
          * @todo test
          */
@@ -305,6 +312,46 @@ namespace Backend::Z3 {
             solver.pop();
             return ret;
         }
+
+        /********************************************************************/
+        /*                      Private Helper Classes                      */
+        /********************************************************************/
+
+        /** Adds extra constraints to a z3 solver, pops them on destruction */
+        class ECHelper final {
+          public:
+            /** Constructor
+             *  solver may not be nullptr
+             */
+            inline ECHelper(Z3 &bk, z3::solver &s,
+                            const std::set<Expression::BasePtr> &extra_constraints)
+                : z3 { bk }, solver { s }, act { extra_constraints.size() >= 0 } {
+                if (act) {
+                    solver.push();
+                    for (auto &i : extra_constraints) {
+                        solver.add(z3.convert(i));
+                    }
+                }
+            }
+            /** Destructor */
+            inline ~ECHelper() {
+                if (act) {
+                    solver.pop();
+                }
+            }
+            /** Setter */
+            void pushed(const bool b) noexcept { act = b; }
+            /** Getter */
+            bool pushed() const noexcept { return act; }
+
+          private:
+            /** The z3 instance to use */
+            Z3 &z3;
+            /** The solver */
+            z3::solver &solver;
+            /** True if extra_constraints is non-empty */
+            bool act;
+        };
 
         /********************************************************************/
         /*                          Representation                          */
