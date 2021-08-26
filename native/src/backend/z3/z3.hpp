@@ -340,9 +340,9 @@ namespace Backend::Z3 {
                 }
             }
             /** Setter */
-            void pushed(const bool b) noexcept { act = b; }
+            inline void pushed(const bool b) noexcept { act = b; }
             /** Getter */
-            bool pushed() const noexcept { return act; }
+            inline bool pushed() const noexcept { return act; }
 
           private:
             /** The z3 instance to use */
