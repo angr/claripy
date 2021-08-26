@@ -12,7 +12,8 @@ void solution() {
     using B = Ex::Bool;
 
     auto z3 { Backend::Z3::Z3 {} };
-    auto solver { z3.new_tls_solver() };
+    auto solver_ref { z3.new_tls_solver() };
+    auto &solver { *solver_ref };
 
     // Leaves
     const auto x { Create::symbol("x") };
@@ -25,10 +26,10 @@ void solution() {
 
     // Create a solver
     auto is_sol = [&x, &z3, &solver](const Ex::BasePtr &start, const Ex::BasePtr &x_s) {
-        solver->push();
-        solver->add(z3.convert(start));
+        solver.push();
+        solver.add(z3.convert(start));
         const bool ret = z3.solution(x, x_s, solver);
-        solver->pop();
+        solver.pop();
         return ret;
     };
 

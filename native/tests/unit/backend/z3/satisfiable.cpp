@@ -12,7 +12,8 @@ void satisfiable() {
     using B = Ex::Bool;
 
     auto z3 { Backend::Z3::Z3 {} };
-    auto solver { z3.new_tls_solver() };
+    auto solver_ref { z3.new_tls_solver() };
+    auto &solver { *solver_ref };
 
     // Leaves
     const auto x { Create::symbol("x") };
@@ -28,19 +29,19 @@ void satisfiable() {
     // Create a solver
     using EBP = Ex::BasePtr;
     auto is_sat = [&x, &z3, &solver](const EBP &e, const EBP ec = nullptr) { // NOLINT
-        solver->push();
+        solver.push();
         bool ret; // NOLINT
         if (ec != nullptr) {
             std::set<EBP> ecs;
             ecs.emplace(Create::eq<B>(x, ec));
-            solver->add(z3.convert(e));
+            solver.add(z3.convert(e));
             ret = z3.satisfiable(solver, ecs);
         }
         else {
-            solver->add(z3.convert(e));
+            solver.add(z3.convert(e));
             ret = z3.satisfiable(solver);
         }
-        solver->pop();
+        solver.pop();
         return ret;
     };
 
