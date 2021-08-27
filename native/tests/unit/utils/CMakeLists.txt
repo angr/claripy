@@ -1,4 +1,5 @@
 # Add tests
+simple_test(avg)
 simple_test(bit_mask)
 simple_test(stack_limit)
 simple_test(is_same)
