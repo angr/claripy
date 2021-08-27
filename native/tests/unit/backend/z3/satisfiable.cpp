@@ -12,7 +12,7 @@ void satisfiable() {
     using B = Ex::Bool;
 
     auto z3 { Backend::Z3::Z3 {} };
-    auto solver_ref { z3.new_tls_solver() };
+    auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
 
     // Leaves

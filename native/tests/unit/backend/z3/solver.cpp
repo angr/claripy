@@ -12,7 +12,7 @@
 /** Try to create a new solver */
 void solver() {
     auto z3 { Backend::Z3::Z3 {} };
-    (void) z3.new_tls_solver();
+    (void) z3.tls_solver();
 }
 
 // Define the test

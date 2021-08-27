@@ -12,7 +12,7 @@ static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
                  const Expression::BasePtr &test_c,
                  const std::set<Expression::BasePtr> ec = {}) { // NOLINT
     // Get a solver and add constraint
-    const auto solver_ref { z3.new_tls_solver() };
+    const auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
     solver.add(z3.convert(test_c));
     // Min / max functions

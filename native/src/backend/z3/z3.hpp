@@ -94,9 +94,24 @@ namespace Backend::Z3 {
         /*                         Member Functions                         */
         /********************************************************************/
 
-        /** Create a tls solver */
-        [[nodiscard]] inline std::shared_ptr<z3::solver> new_tls_solver() const {
-            return std::make_shared<z3::solver>(Private::tl_ctx);
+        /** Return a tls solver
+         *  If timeout is not 0, timeouts will be configured for the solver
+         *  Warning: resets the tls solver if force_new is false
+         */
+        [[nodiscard]] inline std::shared_ptr<z3::solver>
+        tls_solver(const unsigned timeout = 0, const bool force_new = false) const {
+            auto ret { get_tls_solver(force_new) };
+            if (timeout != 0) {
+                if (ret->get_param_descrs().to_string().find("soft_timeout") !=
+                    std::string::npos) {
+                    ret->set("soft_timeout", timeout);
+                    ret->set("solver2_timeout", timeout);
+                }
+                else {
+                    ret->set("timeout", timeout);
+                }
+            }
+            return ret;
         }
 
         /** Check to see if the solver is in a satisfiable state */
@@ -162,6 +177,24 @@ namespace Backend::Z3 {
         /********************************************************************/
         /*                     Private Helper Functions                     */
         /********************************************************************/
+
+        /** Return a tls solver
+         *  Warning: resets the tls solver if force_new is false
+         */
+        [[nodiscard]] inline std::shared_ptr<z3::solver>
+        get_tls_solver(const bool force_new = false) const {
+            static thread_local std::shared_ptr<z3::solver> s {};
+            if (UNLIKELY(s == nullptr)) {
+                s.reset(new z3::solver { Private::tl_ctx }); // NOLINT
+            }
+            if (force_new) {
+                return std::make_shared<z3::solver>(Private::tl_ctx);
+            }
+            else {
+                s->reset();
+                return s;
+            }
+        }
 
         /** The method used to simplify z3 boolean expressions*/
         inline z3::expr bool_simplify(const z3::expr &expr) {
