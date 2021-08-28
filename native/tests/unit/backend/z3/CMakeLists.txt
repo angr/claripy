@@ -9,6 +9,7 @@ simple_test(simplify)
 simple_test(satisfiable)
 simple_test(solution)
 simple_test(min_max)
+simple_test(add)
 
 # Test ops
 simple_test(normal)
