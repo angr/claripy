@@ -55,7 +55,7 @@ namespace Backend {
          *  @todo Make this better than this simplistic way
          *  expr may not be nullptr
          */
-        bool handles_raw(const Expression::RawPtr expr) override {
+        bool handles(const Expression::RawPtr expr) override {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             try {
                 (void) convert(expr);
@@ -65,14 +65,6 @@ namespace Backend {
                 return false;
             }
         }
-
-        /** Convert a claricpp Expression to a backend object
-         *  This function does not deal with the lifetimes of Expressions
-         *  This function does deal with the lifetimes of backend objects
-         *  This is a worklist algorithm instead of recursion
-         *  input may not be nullptr
-         */
-        BackendObj convert(const Expression::BasePtr &input) { return convert(input.get()); }
 
         /** Convert a claricpp Expression to a backend object
          *  This function does not deal with the lifetimes of Expressions

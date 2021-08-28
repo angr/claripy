@@ -29,12 +29,12 @@ namespace Backend {
         /** Simplify the given expression
          *  expr may not be nullptr
          */
-        virtual Expression::BasePtr simplify_raw(const Expression::RawPtr expr) = 0;
+        virtual Expression::BasePtr simplify(const Expression::RawPtr expr) = 0;
 
         /** Check whether the backend can handle the given expression
          *  expr may not be nullptr
          */
-        virtual bool handles_raw(const Expression::RawPtr expr) = 0;
+        virtual bool handles(const Expression::RawPtr expr) = 0;
 
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
@@ -48,20 +48,6 @@ namespace Backend {
          *  backend that has implemented it! It may clear vital persistent data from memory.
          */
         virtual void clear_persistent_data() = 0;
-
-        // Concrete functions
-
-        /** Check whether the backend can handle the given expression
-         *  expr may not be nullptr
-         */
-        inline bool handles(const Expression::BasePtr &expr) { return handles_raw(expr.get()); }
-
-        /** Simplify the given expression
-         *  expr may not be nullptr
-         */
-        inline Expression::BasePtr simplify(const Expression::BasePtr &expr) {
-            return simplify_raw(expr.get());
-        }
 
       protected:
         /** Default destructor */
