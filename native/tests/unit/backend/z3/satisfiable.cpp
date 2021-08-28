@@ -32,8 +32,8 @@ void satisfiable() {
         solver.push();
         bool ret; // NOLINT
         if (ec != nullptr) {
-            std::set<EBP> ecs;
-            ecs.emplace(Create::eq<B>(x, ec));
+            std::vector<EBP> ecs;
+            ecs.emplace_back(Create::eq<B>(x, ec));
             solver.add(z3.convert(e));
             ret = z3.satisfiable(solver, ecs);
         }

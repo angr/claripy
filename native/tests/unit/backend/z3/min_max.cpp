@@ -10,7 +10,7 @@
 template <bool Signed, typename T, bool Minimize>
 static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
                  const Expression::BasePtr &test_c,
-                 const std::set<Expression::BasePtr> ec = {}) { // NOLINT
+                 const std::vector<Expression::BasePtr> ec = {}) { // NOLINT
     // Get a solver and add constraint
     const auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
@@ -37,7 +37,7 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     namespace C = Create;
     using M = Mode::Compare;
     namespace E = Expression; // NOLINT (false positive)
-    using EC = std::set<E::BasePtr>;
+    using EC = std::vector<E::BasePtr>;
 
     // Prep
     const auto unsign { Utils::unsign<T, true> };
