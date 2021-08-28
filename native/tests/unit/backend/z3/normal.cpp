@@ -27,7 +27,7 @@ void normal() {
 
     // Verify the round trip changes nothing
     const auto test_id = [&z3bk](const Expression::BasePtr &&x) {
-        return z3bk.abstract(z3bk.convert(x)) == x;
+        return z3bk.abstract(z3bk.convert(x.get())) == x;
     };
 
     /**************************************************/
@@ -81,7 +81,7 @@ void normal() {
 
     Utils::Log::debug("Testing reverse...");
     const auto also_x { C::reverse(C::reverse(bv_x)) };
-    UNITTEST_ASSERT(z3bk.simplify(also_x) == bv_x);
+    UNITTEST_ASSERT(z3bk.simplify(also_x.get()) == bv_x);
 
 
     // UInt Binary

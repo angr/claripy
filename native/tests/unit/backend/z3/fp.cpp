@@ -30,7 +30,7 @@ void fp() {
 
     // Verify the round trip changes nothing
     const auto test_id = [&z3bk](const Expression::BasePtr &&x) {
-        return z3bk.abstract(z3bk.convert(x)) == x;
+        return z3bk.abstract(z3bk.convert(x.get())) == x;
     };
 
     /**************************************************/
@@ -71,7 +71,7 @@ void fp() {
         const auto *const op_s { dynamic_cast<Constants::CTSC<Op::Literal>>(s->op.get()) };
         UNITTEST_ASSERT(op_s != nullptr);
         // Verify cycled expr
-        const auto cycled { z3bk.abstract(z3bk.convert(s)) };
+        const auto cycled { z3bk.abstract(z3bk.convert(s.get())) };
         UNITTEST_ASSERT(Ex::are_same_type<true>(cycled, s));
         // Verify cycled op
         const auto *const op { dynamic_cast<Constants::CTSC<Op::Literal>>(cycled->op.get()) };

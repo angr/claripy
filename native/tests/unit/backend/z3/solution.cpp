@@ -28,7 +28,7 @@ void solution() {
     auto is_sol = [&x, &z3, &solver](const Ex::BasePtr &start, const Ex::BasePtr &x_s) {
         solver.push();
         z3.add(solver, start.get());
-        const bool ret = z3.solution(x, x_s, solver);
+        const bool ret = z3.solution(x.get(), x_s.get(), solver);
         solver.pop();
         return ret;
     };

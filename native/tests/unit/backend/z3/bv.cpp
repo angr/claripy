@@ -9,7 +9,7 @@
 /** Test a BV created from x */
 template <typename B, typename T> static void test_bv_ctor(B &z3, T x) {
     const auto lit { Create::literal(std::move(x)) };
-    const auto simp { z3.simplify(lit) }; // Not erroring here is the main test
+    const auto simp { z3.simplify(lit.get()) }; // Not erroring here is the main test
     UNITTEST_ASSERT(lit == simp);
 }
 
@@ -37,7 +37,7 @@ void bv() {
     // Sizes same
     Utils::Log::debug("Testing x/x");
     const auto one_same { Create::div<false>(l1, l1) };
-    UNITTEST_ASSERT(l1 == z3.simplify(one_same));
+    UNITTEST_ASSERT(l1 == z3.simplify(one_same.get()));
 
     // Sizes differ
     Utils::Log::debug("Testing x/x with different sized x's");

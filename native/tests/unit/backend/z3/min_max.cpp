@@ -10,7 +10,7 @@
 template <bool Signed, typename T, bool Minimize>
 static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
                  const Expression::BasePtr &test_c,
-                 const std::vector<Expression::BasePtr> ec = {}) { // NOLINT
+                 const std::vector<Expression::RawPtr> ec = {}) { // NOLINT
     // Get a solver and add constraint
     const auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
@@ -23,7 +23,7 @@ static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
         return Minimize ? z3.min<Signed>(args...) : z3.max<Signed>(args...);
     } };
     // Call the min / max function
-    const auto conv { z3.convert(x) };
+    const auto conv { z3.convert(x.get()) };
     return static_cast<T>(ec.empty() ? f(conv, solver) : f_ec(conv, solver, ec));
 }
 
@@ -37,7 +37,7 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     namespace C = Create;
     using M = Mode::Compare;
     namespace E = Expression; // NOLINT (false positive)
-    using EC = std::vector<E::BasePtr>;
+    using EC = std::vector<E::RawPtr>;
 
     // Prep
     const auto unsign { Utils::unsign<T, true> };
@@ -88,11 +88,11 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
 
     // Test x < 10; ec: x > 5
     Utils::Log::debug("\t\t- Extra constraints tests...");
-    T res { get_ext<Signed, T, true>(z3, x, xleq10, EC { xgeq5 }) };
+    T res { get_ext<Signed, T, true>(z3, x, xleq10, EC { xgeq5.get() }) };
     UNITTEST_ASSERT(res == 6);
 
     // Test x > 5; ec: x < 10
-    res = get_ext<Signed, T, false>(z3, x, xgeq5, EC { xleq10 });
+    res = get_ext<Signed, T, false>(z3, x, xgeq5, EC { xleq10.get() });
     UNITTEST_ASSERT(res == 9);
 
     // Test near extrema; i.e. last step of binary search

@@ -28,7 +28,7 @@ void bool_tactic() {
     const auto statement { Create::and_<Ex::Bool>({ c1, c2, c3 }) };
 
     // Simplify
-    const auto simp { z3.simplify(statement) };
+    const auto simp { z3.simplify(statement.get()) };
 
     // Solution
     // x && y = x && true = x

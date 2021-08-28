@@ -19,7 +19,8 @@ template <typename T> static bool test_eq(const Backend::Z3::PrimVar x, const T 
 struct UnitTest::ClaricppUnitTest {
     /** A helper function for abstract_to_prim */
     template <typename T> static auto prep(Backend::Z3::Z3 &z3, T in) {
-        return z3.abstract_to_prim(z3.convert(Create::literal(std::move(in))));
+        const auto e { Create::literal(std::move(in)) };
+        return z3.abstract_to_prim(z3.convert(e.get()));
     }
 };
 

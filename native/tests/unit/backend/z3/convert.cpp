@@ -14,7 +14,7 @@ void convert() {
 
     // Test with if (4 == (x * 3)) then "Hello" else y
     const auto ite { make_ite("Hello") };
-    (void) z3.convert(ite); // Verify this runs
+    (void) z3.convert(ite.get()); // Verify this runs
 }
 
 // Define the test
