@@ -42,7 +42,7 @@ namespace Backend::Z3 {
         /** Simplify the given expression
          *  expr may not be nullptr
          */
-        inline Expression::BasePtr simplify_raw(const Expression::RawPtr expr) override final {
+        inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             namespace Ex = Expression;
             switch (expr->cuid) {
@@ -135,28 +135,29 @@ namespace Backend::Z3 {
 
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(z3::solver &solver,
-                                const std::vector<Expression::BasePtr> &extra_constraints) {
+                                const std::vector<Expression::RawPtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return satisfiable(solver);
         }
 
         /** Check if expr = sol is a solution to the given solver; none may be nullptr */
-        inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
+        inline bool solution(const Expression::RawPtr &expr, const Expression::RawPtr &sol,
                              z3::solver &solver,
-                             const std::vector<Expression::BasePtr> &extra_constraints) {
+                             const std::vector<Expression::RawPtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             if (!ec.pushed()) {
                 solver.push();
                 ec.pushed(true);
             }
-            solver.add(convert(to_eq(expr, sol)));         // Debug verifies expr is not null
+            const auto eq { to_eq(expr, sol) }; // Debug verifies expr is not null
+            solver.add(convert(eq.get()));
             return satisfiable(solver, extra_constraints); // Debug verifies non-null
         }
 
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
-        inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
+        inline bool solution(const Expression::RawPtr &expr, const Expression::RawPtr &sol,
                              z3::solver &solver) {
-            static thread_local std::vector<Expression::BasePtr> s;
+            static thread_local std::vector<Expression::RawPtr> s;
             return solution(expr, sol, solver, s);
         }
 
@@ -168,7 +169,7 @@ namespace Backend::Z3 {
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
         inline auto min(const z3::expr &expr, z3::solver &solver,
-                        const std::vector<Expression::BasePtr> &extra_constraints) {
+                        const std::vector<Expression::RawPtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return min<Signed>(expr, solver);
         }
@@ -181,7 +182,7 @@ namespace Backend::Z3 {
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
         inline auto max(const z3::expr &expr, z3::solver &solver,
-                        const std::vector<Expression::BasePtr> &extra_constraints) {
+                        const std::vector<Expression::RawPtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
         }
@@ -329,10 +330,13 @@ namespace Backend::Z3 {
         }
 
         /** Create a == b; neither may be nullptr */
-        static inline Expression::BasePtr to_eq(const Expression::BasePtr &a,
-                                                const Expression::BasePtr &b) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(a);
+        static inline Expression::BasePtr to_eq(const Expression::RawPtr &a_raw,
+                                                const Expression::RawPtr &b_raw) {
+            UTILS_AFFIRM_NOT_NULL_DEBUG(a_raw);
+            UTILS_AFFIRM_NOT_NULL_DEBUG(b_raw);
             namespace Ex = Expression;
+            const auto a { Ex::find(a_raw->hash) };
+            const auto b { Ex::find(b_raw->hash) };
             switch (a->cuid) {
                 case Ex::Bool::static_cuid:
                     return Create::eq<Ex::Bool>(a, b);
@@ -429,7 +433,7 @@ namespace Backend::Z3 {
              *  solver may not be nullptr
              */
             inline ECHelper(Z3 &bk, z3::solver &s,
-                            const std::vector<Expression::BasePtr> &extra_constraints)
+                            const std::vector<Expression::RawPtr> &extra_constraints)
                 : z3 { bk }, solver { s }, act { extra_constraints.size() > 0 } {
                 if (act) {
                     solver.push();
