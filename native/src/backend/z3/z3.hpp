@@ -114,6 +114,18 @@ namespace Backend::Z3 {
             return ret;
         }
 
+        /** Add constraint to the solver, track if Track */
+        template <bool Track> void add(z3::solver &solver, const Expression::RawPtr &constraint) {
+            const Expression::RawPtr arr[] { constraint };
+            add_helper<Track>(solver, arr, 1);
+        }
+
+        /** Add constraints to the solver, track if Track */
+        template <bool Track>
+        void add(z3::solver &solver, const std::vector<const Expression::RawPtr> &constraints) {
+            add_helper<Track>(solver, constraints.data(), constraints.size());
+        }
+
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(z3::solver &solver) {
             return solver.check() == z3::check_result::sat;
@@ -122,7 +134,7 @@ namespace Backend::Z3 {
 
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(z3::solver &solver,
-                                const std::set<Expression::BasePtr> &extra_constraints) {
+                                const std::vector<Expression::BasePtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return satisfiable(solver);
         }
@@ -130,7 +142,7 @@ namespace Backend::Z3 {
         /** Check if expr = sol is a solution to the given solver; none may be nullptr */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
                              z3::solver &solver,
-                             const std::set<Expression::BasePtr> &extra_constraints) {
+                             const std::vector<Expression::BasePtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             if (!ec.pushed()) {
                 solver.push();
@@ -143,7 +155,7 @@ namespace Backend::Z3 {
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
         inline bool solution(const Expression::BasePtr &expr, const Expression::BasePtr &sol,
                              z3::solver &solver) {
-            static thread_local std::set<Expression::BasePtr> s;
+            static thread_local std::vector<Expression::BasePtr> s;
             return solution(expr, sol, solver, s);
         }
 
@@ -155,7 +167,7 @@ namespace Backend::Z3 {
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
         inline auto min(const z3::expr &expr, z3::solver &solver,
-                        const std::set<Expression::BasePtr> &extra_constraints) {
+                        const std::vector<Expression::BasePtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return min<Signed>(expr, solver);
         }
@@ -168,7 +180,7 @@ namespace Backend::Z3 {
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
         inline auto max(const z3::expr &expr, z3::solver &solver,
-                        const std::set<Expression::BasePtr> &extra_constraints) {
+                        const std::vector<Expression::BasePtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
         }
@@ -193,6 +205,48 @@ namespace Backend::Z3 {
             else {
                 s->reset();
                 return s;
+            }
+        }
+
+        /** Returns the hashes of tracked constraints of solver
+         *  Assumes all hashes were inserted by add_helper and thus each name is a hash
+         */
+        inline std::set<Hash::Hash> get_tracked(z3::solver &solver) {
+            std::set<Hash::Hash> tracked;
+            const z3::expr_vector assertions { solver.assertions() };
+            const auto size { assertions.size() };
+            // For each assertion, extract the name (the first child as a string)
+            // Convert the name to a hash with stoi-like functions, and save the hash
+            for (unsigned i { 0 }; i < size; ++i) {
+                std::string hash_s { assertions[Utils::sign(i)].arg(0).to_string() };
+                static_assert(std::is_same_v<unsigned long long, Hash::Hash>,
+                              "stoull must be replaced with something which outpus a Hash");
+                tracked.emplace(std::stoull(hash_s));
+            }
+            return tracked;
+        }
+
+        /** Add constraints to the solver, track if Track
+         *  @todo See if we can cast the ull to a char * instead of convert?
+         */
+        template <bool Track>
+        void add_helper(z3::solver &solver, Constants::CTSC<Expression::RawPtr> constraints,
+                        const Constants::UInt c_len) {
+            if constexpr (!Track) {
+                for (Constants::UInt i { 0 }; i < c_len; ++i) {
+                    solver.add(convert(constraints[i]));
+                }
+            }
+            else {
+                const std::set<Hash::Hash> tracked { get_tracked(solver) };
+                for (Constants::UInt i { 0 }; i < c_len; ++i) {
+                    // If the new constraint is not track, track it
+                    const Hash::Hash c_hash { constraints[i]->hash };
+                    if (const auto lookup { tracked.find(c_hash) }; lookup == tracked.end()) {
+                        solver.add(convert(constraints[i]),
+                                   solver.ctx().bool_const(std::to_string(c_hash).c_str()));
+                    }
+                }
             }
         }
 
@@ -357,7 +411,7 @@ namespace Backend::Z3 {
              *  solver may not be nullptr
              */
             inline ECHelper(Z3 &bk, z3::solver &s,
-                            const std::set<Expression::BasePtr> &extra_constraints)
+                            const std::vector<Expression::BasePtr> &extra_constraints)
                 : z3 { bk }, solver { s }, act { extra_constraints.size() > 0 } {
                 if (act) {
                     solver.push();
