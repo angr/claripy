@@ -115,13 +115,14 @@ namespace Backend::Z3 {
         }
 
         /** Add constraint to the solver, track if Track */
-        template <bool Track> void add(z3::solver &solver, const Expression::RawPtr &constraint) {
+        template <bool Track = false>
+        void add(z3::solver &solver, const Expression::RawPtr &constraint) {
             const Expression::RawPtr arr[] { constraint };
             add_helper<Track>(solver, arr, 1);
         }
 
         /** Add constraints to the solver, track if Track */
-        template <bool Track>
+        template <bool Track = false>
         void add(z3::solver &solver, const std::vector<const Expression::RawPtr> &constraints) {
             add_helper<Track>(solver, constraints.data(), constraints.size());
         }
@@ -183,6 +184,17 @@ namespace Backend::Z3 {
                         const std::vector<Expression::BasePtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
+        }
+
+        /** Return the unsat core from the solver */
+        inline std::vector<Expression::BasePtr> unsat_core(z3::solver &s) {
+            std::vector<Expression::BasePtr> ret;
+            const auto cores { s.unsat_core() };
+            const auto len { cores.size() };
+            for (unsigned i { 0 }; i < len; ++i) {
+                ret.emplace_back(abstract(cores[static_cast<int>(i)]));
+            }
+            return ret;
         }
 
       private:
