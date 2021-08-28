@@ -193,7 +193,16 @@ namespace Backend::Z3 {
             const auto cores { s.unsat_core() };
             const auto len { cores.size() };
             for (unsigned i { 0 }; i < len; ++i) {
-                ret.emplace_back(abstract(cores[static_cast<int>(i)]));
+                const auto child { cores[static_cast<int>(i)] };
+                // First try to lookup the child by the hash
+                auto expr { child.arg(0) };
+                if (auto lookup { Expression::find(extract_hash(expr)) }; lookup != nullptr) {
+                    ret.emplace_back(std::move(lookup));
+                    continue;
+                }
+                else {
+                    ret.emplace_back(abstract(child.arg(1)));
+                }
             }
             return ret;
         }
@@ -221,6 +230,17 @@ namespace Backend::Z3 {
             }
         }
 
+        /** Extracts the hash from the boolean z3::expr expr named: |hash| */
+        inline Hash::Hash extract_hash(const z3::expr &expr) {
+            // Note that we use the lower level API so we can do a +1, otherwise
+            // we would need to erase the first character of the string, which is slow
+            std::string hash_s { Z3_ast_to_string(expr.ctx(), expr) + 1 };
+            hash_s.pop_back();
+            static_assert(std::is_same_v<unsigned long long, Hash::Hash>,
+                          "stoull must be replaced with something which outpus a Hash");
+            return std::stoull(hash_s);
+        }
+
         /** Returns the hashes of tracked constraints of solver
          *  Assumes all hashes were inserted by add_helper and thus each name is a hash
          */
@@ -231,14 +251,8 @@ namespace Backend::Z3 {
             // For each assertion, extract the name (the first child as a string)
             // Convert the name to a hash with stoi-like functions, and save the hash
             for (unsigned i { 0 }; i < size; ++i) {
-                z3::expr bool_name { assertions[Utils::sign(i)].arg(0) };
-                // Note that we use the lower level API so we can do a +1, otherwise
-                // we would need to erase the first character of the string, which is slow
-                std::string hash_s { Z3_ast_to_string(bool_name.ctx(), bool_name) + 1 };
-                hash_s.pop_back();
-                static_assert(std::is_same_v<unsigned long long, Hash::Hash>,
-                              "stoull must be replaced with something which outpus a Hash");
-                tracked.emplace(std::stoull(hash_s));
+                const auto bool_name { assertions[Utils::sign(i)].arg(0) };
+                tracked.emplace(extract_hash(bool_name));
             }
             return tracked;
         }
@@ -260,8 +274,6 @@ namespace Backend::Z3 {
                     // If the new constraint is not track, track it
                     const Hash::Hash c_hash { constraints[i]->hash };
                     if (const auto lookup { tracked.find(c_hash) }; lookup == tracked.end()) {
-                        Utils::Log::info("Adding, ", convert(constraints[i]), " and bool: ",
-                                         solver.ctx().bool_const(std::to_string(c_hash).c_str()));
                         solver.add(convert(constraints[i]),
                                    solver.ctx().bool_const(std::to_string(c_hash).c_str()));
                     }
