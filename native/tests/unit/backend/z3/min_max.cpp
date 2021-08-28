@@ -14,7 +14,7 @@ static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
     // Get a solver and add constraint
     const auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
-    solver.add(z3.convert(test_c));
+    z3.add(solver, test_c.get());
     // Min / max functions
     auto f { [&z3](auto &&...args) {
         return Minimize ? z3.min<Signed>(args...) : z3.max<Signed>(args...);

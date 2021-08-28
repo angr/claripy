@@ -15,7 +15,7 @@ void add() {
     auto &solver { *solver_ref };
 
     // Constraints
-    const auto x { Create::symbol<Ex::BV>("x", C_CHAR_BIT * sizeof(uint64_t)) };
+    const auto x { Create::symbol<Ex::BV>("x", 64) };
     const uint64_t umax { std::numeric_limits<uint64_t>::max() };
     auto x_not_max { Create::neq<Ex::BV>(x, Create::literal(umax)) };
 

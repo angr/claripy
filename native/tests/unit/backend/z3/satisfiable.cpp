@@ -34,11 +34,11 @@ void satisfiable() {
         if (ec != nullptr) {
             std::vector<EBP> ecs;
             ecs.emplace_back(Create::eq<B>(x, ec));
-            solver.add(z3.convert(e));
+            z3.add(solver, e.get());
             ret = z3.satisfiable(solver, ecs);
         }
         else {
-            solver.add(z3.convert(e));
+            z3.add(solver, e.get());
             ret = z3.satisfiable(solver);
         }
         solver.pop();
