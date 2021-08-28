@@ -187,22 +187,35 @@ namespace Backend::Z3 {
             return max<Signed>(expr, solver);
         }
 
-        /** Return the unsat core from the solver */
-        inline std::vector<Expression::BasePtr> unsat_core(z3::solver &s) {
+        /** Return the unsat core from the solver
+         *  Warning: This assumes all of solver's assertions were added by add<true>
+         */
+        inline std::vector<Expression::BasePtr> unsat_core(z3::solver &solver) {
             std::vector<Expression::BasePtr> ret;
-            const auto cores { s.unsat_core() };
+            const auto cores { solver.unsat_core() };
             const auto len { cores.size() };
+            ret.reserve(len);
+            Utils::Log::info("Len: ", len);
+            z3::expr_vector assertions { solver.ctx() };
+            std::map<Hash::Hash, int> indexes;
             for (unsigned i { 0 }; i < len; ++i) {
                 const auto child { cores[static_cast<int>(i)] };
+                const Hash::Hash h { extract_hash(child) };
                 // First try to lookup the child by the hash
-                auto expr { child.arg(0) };
-                if (auto lookup { Expression::find(extract_hash(expr)) }; lookup != nullptr) {
+                if (auto lookup { Expression::find(h) }; lookup != nullptr) {
+                    Utils::Log::info(__LINE__);
                     ret.emplace_back(std::move(lookup));
                     continue;
                 }
-                else {
-                    ret.emplace_back(abstract(child.arg(1)));
+                // Otherwise, abstract assertion object
+                if (assertions.size() == 0) {
+                    assertions = solver.assertions();
+                    const auto len_a { assertions.size() };
+                    for (int k = 0; k < static_cast<int>(len_a); ++k) {
+                        indexes.emplace(extract_hash(assertions[k]), k);
+                    }
                 }
+                ret.emplace_back(abstract(assertions[indexes[h]]));
             }
             return ret;
         }
