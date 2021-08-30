@@ -40,12 +40,13 @@ void bv() {
     UNITTEST_ASSERT(l1 == z3.simplify(one_same.get()));
 
     // Sizes differ
-    Utils::Log::debug("Testing x/x with different sized x's");
+    Utils::Log::debug("Testing x/x with different sized x's; this *should* error");
     try {
         const auto fail { Create::div<false>(l1, l2) };
         UNITTEST_ERR("It should not be possible to construct this: ", fail);
     }
     catch (Error::Expression::Type &) {
+        Utils::Log::info("Desired error detected: success.");
     }
 }
 
