@@ -136,7 +136,7 @@ namespace Backend::Z3 {
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(z3::solver &solver,
                                 const std::vector<Expression::RawPtr> &extra_constraints) {
-            ECHelper ec { *this, solver, extra_constraints };
+            const ECHelper ec { *this, solver, extra_constraints };
             return satisfiable(solver);
         }
 
@@ -170,7 +170,7 @@ namespace Backend::Z3 {
         template <bool Signed>
         inline auto min(const z3::expr &expr, z3::solver &solver,
                         const std::vector<Expression::RawPtr> &extra_constraints) {
-            ECHelper ec { *this, solver, extra_constraints };
+            const ECHelper ec { *this, solver, extra_constraints };
             return min<Signed>(expr, solver);
         }
 
@@ -183,7 +183,7 @@ namespace Backend::Z3 {
         template <bool Signed>
         inline auto max(const z3::expr &expr, z3::solver &solver,
                         const std::vector<Expression::RawPtr> &extra_constraints) {
-            ECHelper ec { *this, solver, extra_constraints };
+            const ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
         }
 
@@ -218,6 +218,38 @@ namespace Backend::Z3 {
                 ret.emplace_back(abstract(assertions[indexes[h]]));
             }
             return ret;
+        }
+
+#if 0
+        /** Evaluate expr, return n different solutions */
+        inline void eval(const Expression::RawPtr expr, z3::solver &s, const Constants::UInt n, std::vector<PrimVar>& output) {
+            static thread_local std::vector<std::vector<PrimVar>&> v;
+            v.emplace_back(output);
+            batch_eval_helper(&expr, 1, s, n, output);
+            v.pop_back();
+        }
+
+        /** Evaluate expr, return n different solutions */
+        inline void eval(const Expression::RawPtr expr, z3::solver &s, const Constants::UInt n, const std::vector<Expression::RawPtr> &extra_constraints, std::vector<PrimVar>& output) {
+            const ECHelper ech{s, extra_constraints};
+            eval(expr, s, n, output);
+        }
+#endif
+
+        /** Evaluate every expression, return n different solutions */
+        inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expression::RawPtr> &exprs, z3::solver &s, const Constants::UInt n) {
+            std::vector<z3::expr> converted;
+            converted.reserve(exprs.size());
+            for ( const Expression::RawPtr i : exprs ) {
+                converted.emplace_back(convert(i));
+            }
+            return batch_eval(converted, s, n);
+        }
+
+        /** Evaluate every expression, return n different solutions @todo: test */
+        inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expression::RawPtr> &exprs, z3::solver &s, const Constants::UInt n, const std::vector<Expression::RawPtr> &extra_constraints) {
+            const ECHelper ech { *this, s, extra_constraints };
+            return batch_eval(exprs, s, n);
         }
 
       private:
@@ -297,18 +329,53 @@ namespace Backend::Z3 {
             }
         }
 
+        /** Return up to n_sol different solutions of solver given exprs, where exprs.size() > 1 */
+        inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const Constants::UInt n_sol) {
+            Utils::affirm<Utils::Error::Unexpected::Usage>(exprs.size() > 1, WHOAMI_WITH_SOURCE "should only be called when exprs.size() > 1");
+            // Prep
+            solver.push();
+            std::vector<std::vector<PrimVar>> ret;
+            ret.reserve(n_sol); // We do not resize as we may return < n_sol
+            // Repeat for each new solution
+            std::vector<z3::expr> z3_sol;
+            for (Constants::UInt iter {0}; iter < n_sol; ++iter) {
+                if (!satisfiable(solver)) {
+                    // No point in search further, return what we have
+                    break;
+                }
+
+                // Init
+                if (iter != 0) {
+                    z3_sol.clear();
+                }
+                z3_sol.reserve(exprs.size());
+                ret.emplace_back(); // Create a new vector
+
+                // Extract solutions
+                z3::model model { solver.get_model() };
+                for (const auto & expr : exprs) {
+                    z3_sol.emplace_back(model.eval(expr, true));
+                    ret[iter].emplace_back(abstract_to_prim(z3_sol.back()));
+                }
+
+                // Construct extra constraints to prevent solution duplication
+                if (iter+1 != n_sol) {
+                    z3::expr current_sol { z3_sol[0] && z3_sol[1] }; // Safe since exprs.size() > 1
+                    for (Constants::UInt i {2}; i < exprs.size(); ++i) {
+                        current_sol = current_sol && z3_sol[i];
+                    }
+                    solver.add(!current_sol);
+                }
+            }
+            // Cleanup
+            solver.pop();
+            return ret;
+        }
+
         /** The method used to simplify z3 boolean expressions*/
         inline z3::expr bool_simplify(const z3::expr &expr) {
             static thread_local BoolTactic bt {};
             return bt(expr);
-        }
-
-        /** Extract a primitive from a model
-         * @todo test
-         */
-        inline PrimVar prim_from_model(const z3::model &m, const z3::expr &e) {
-            const auto evaled { m.eval(e, true) };
-            return abstract_to_prim(evaled);
         }
 
         /** Abstract b_obj to a type in PrimVar */
@@ -431,7 +498,8 @@ namespace Backend::Z3 {
                 if (solver.check() == z3::sat) {
                     (Minimize ? hi : lo) = middle;
                     const auto model { solver.get_model() };
-                    ret = extreme(ret, coerce_to<Integer>(prim_from_model(model, expr)));
+                    const auto evaled { model.eval(expr, true) };
+                    ret = extreme(ret, coerce_to<Integer>(abstract_to_prim(evaled)));
                 }
                 else {
                     (Minimize ? lo : hi) = middle;
