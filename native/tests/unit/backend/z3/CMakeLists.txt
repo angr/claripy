@@ -11,6 +11,7 @@ simple_test(satisfiable)
 simple_test(solution)
 simple_test(min_max)
 simple_test(unsat_core)
+simple_test(eval)
 
 # Test ops
 simple_test(normal)
