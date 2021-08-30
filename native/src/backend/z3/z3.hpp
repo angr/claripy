@@ -220,24 +220,51 @@ namespace Backend::Z3 {
             return ret;
         }
 
-#if 0
-        /** Evaluate expr, return n different solutions */
-        inline void eval(const Expression::RawPtr expr, z3::solver &s, const Constants::UInt n, std::vector<PrimVar>& output) {
-            static thread_local std::vector<std::vector<PrimVar>&> v;
-            v.emplace_back(output);
-            batch_eval_helper(&expr, 1, s, n, output);
-            v.pop_back();
+        /** Evaluate expr, return n different solutions
+         *  No pointers may be nullptr @todo:test
+         */
+        inline std::vector<PrimVar> eval(const Expression::RawPtr expr, z3::solver &solver, const Constants::UInt n_sol) {
+            std::vector<PrimVar> ret;
+            ret.reserve(n_sol); // We do not resize as we may return < n_sol
+            const z3::expr conv { convert(expr) };
+            // Repeat for each new solution
+            for (Constants::UInt iter {0}; iter < n_sol; ++iter) {
+                if (!satisfiable(solver)) {
+                    // No point in search further, return what we have
+                    break;
+                }
+                // Extract solutions
+                z3::model model { solver.get_model() };
+                ret.emplace_back(abstract_to_prim(model.eval(conv, true)));
+            }
+            return ret;
         }
 
-        /** Evaluate expr, return n different solutions */
-        inline void eval(const Expression::RawPtr expr, z3::solver &s, const Constants::UInt n, const std::vector<Expression::RawPtr> &extra_constraints, std::vector<PrimVar>& output) {
-            const ECHelper ech{s, extra_constraints};
-            eval(expr, s, n, output);
+        /** Evaluate expr, return n different solutions
+         *  No pointers may be nullptr
+         */
+        inline std::vector<PrimVar> eval(const Expression::RawPtr expr, z3::solver &s, const Constants::UInt n, const std::vector<Expression::RawPtr> &extra_constraints) {
+            const ECHelper ech{*this,s, extra_constraints};
+            return eval(expr, s, n);
         }
-#endif
 
-        /** Evaluate every expression, return n different solutions */
+        /** Evaluate every expression, return n different solutions
+         *  No pointers may be nullptr
+         */
         inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expression::RawPtr> &exprs, z3::solver &s, const Constants::UInt n) {
+            if (UNLIKELY(exprs.size() == 0)) {
+                return {};
+            }
+            if (UNLIKELY(exprs.size() == 1)) {
+                Utils::Log::info(WHOAMI_WITH_SOURCE "called on exprs of size 1; eval is more efficient for this");
+                const auto sols { eval(exprs[0], s, n) };
+                std::vector<std::vector<PrimVar>> ret;
+                ret.reserve(sols.size());
+                for ( const auto & i : sols ) {
+                    ret.emplace_back(std::vector<PrimVar>{i}); // Why we prefer eval to batch
+                }
+                return ret;
+            }
             std::vector<z3::expr> converted;
             converted.reserve(exprs.size());
             for ( const Expression::RawPtr i : exprs ) {
@@ -246,7 +273,9 @@ namespace Backend::Z3 {
             return batch_eval(converted, s, n);
         }
 
-        /** Evaluate every expression, return n different solutions @todo: test */
+        /** Evaluate every expression, return n different solutions @todo: test
+         *  No pointers may be nullptr
+         */
         inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expression::RawPtr> &exprs, z3::solver &s, const Constants::UInt n, const std::vector<Expression::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
             return batch_eval(exprs, s, n);
@@ -329,7 +358,9 @@ namespace Backend::Z3 {
             }
         }
 
-        /** Return up to n_sol different solutions of solver given exprs, where exprs.size() > 1 */
+        /** Return up to n_sol different solutions of solver given exprs, where exprs.size() > 1
+         *  No pointers may be nullptr
+         */
         inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const Constants::UInt n_sol) {
             Utils::affirm<Utils::Error::Unexpected::Usage>(exprs.size() > 1, WHOAMI_WITH_SOURCE "should only be called when exprs.size() > 1");
             // Prep
