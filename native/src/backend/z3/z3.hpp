@@ -116,7 +116,7 @@ namespace Backend::Z3 {
 
         /** Add constraint to the solver, track if Track */
         template <bool Track = false>
-        void add(z3::solver &solver, const Expression::RawPtr &constraint) {
+        void add(z3::solver &solver, const Expression::RawPtr constraint) {
             const Expression::RawPtr arr[] { constraint };
             add_helper<Track>(solver, arr, 1);
         }
@@ -141,7 +141,7 @@ namespace Backend::Z3 {
         }
 
         /** Check if expr = sol is a solution to the given solver; none may be nullptr */
-        inline bool solution(const Expression::RawPtr &expr, const Expression::RawPtr &sol,
+        inline bool solution(const Expression::RawPtr expr, const Expression::RawPtr sol,
                              z3::solver &solver,
                              const std::vector<Expression::RawPtr> &extra_constraints) {
             ECHelper ec { *this, solver, extra_constraints };
@@ -155,7 +155,7 @@ namespace Backend::Z3 {
         }
 
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
-        inline bool solution(const Expression::RawPtr &expr, const Expression::RawPtr &sol,
+        inline bool solution(const Expression::RawPtr expr, const Expression::RawPtr sol,
                              z3::solver &solver) {
             static thread_local std::vector<Expression::RawPtr> s;
             return solution(expr, sol, solver, s);
@@ -456,8 +456,8 @@ namespace Backend::Z3 {
         }
 
         /** Create a == b; neither may be nullptr */
-        static inline Expression::BasePtr to_eq(const Expression::RawPtr &a_raw,
-                                                const Expression::RawPtr &b_raw) {
+        static inline Expression::BasePtr to_eq(const Expression::RawPtr a_raw,
+                                                const Expression::RawPtr b_raw) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(a_raw);
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_raw);
             namespace Ex = Expression;
