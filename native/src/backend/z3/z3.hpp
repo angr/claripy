@@ -123,7 +123,7 @@ namespace Backend::Z3 {
 
         /** Add constraints to the solver, track if Track */
         template <bool Track = false>
-        void add(z3::solver &solver, const std::vector<const Expression::RawPtr> &constraints) {
+        void add(z3::solver &solver, const std::vector<Expression::RawPtr> &constraints) {
             add_helper<Track>(solver, constraints.data(), constraints.size());
         }
 
@@ -249,8 +249,11 @@ namespace Backend::Z3 {
             // we would need to erase the first character of the string, which is slow
             std::string hash_s { Z3_ast_to_string(expr.ctx(), expr) + 1 };
             hash_s.pop_back();
-            static_assert(std::is_same_v<unsigned long long, Hash::Hash>,
-                          "stoull must be replaced with something which outpus a Hash");
+            static_assert(std::is_same_v<Hash::Hash, uint64_t>,
+                          "stoull must be replaced with something which outputs a Hash");
+            static_assert(sizeof(unsigned long long) == sizeof(Hash::Hash),
+                          "stoull must be replaced with something which outputs a Hash");
+            // Technically uint64_t might be a ULL, but this should be fine given the above
             return std::stoull(hash_s);
         }
 
