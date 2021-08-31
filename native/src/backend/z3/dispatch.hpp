@@ -15,9 +15,6 @@ namespace Backend::Z3::Private {
     /** The Z3 Abstraction variant */
     using AbstractionVariant = Z3Super::AbstractionVariant;
 
-    /** The symbol_annotation_translocation_data type */
-    using SATD = std::map<std::string, Expression::Base::SPAV>;
-
     /** Verify the container contains at least n elements
      *  In debug mode verifies that the last n elements are not nullptr
      */
@@ -60,7 +57,8 @@ namespace Backend::Z3::Private {
      *  *only* if the cuid of the expression is of or derive from the type being cast to.
      */
     inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
-                                        std::vector<const z3::expr *> &args, SATD &satd) {
+                                        std::vector<const z3::expr *> &args,
+                                        SymAnTransData &satd) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
         UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // NOLINT Sanity check
 
@@ -373,7 +371,7 @@ namespace Backend::Z3::Private {
     /** Abstract a backend object into a claricpp expression */
     inline AbstractionVariant dispatch_abstraction(const z3::expr &b_obj,
                                                    std::vector<AbstractionVariant> &args,
-                                                   SATD &satd) {
+                                                   SymAnTransData &satd) {
 
         // For brevity
         using C = Mode::Compare;

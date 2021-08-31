@@ -356,9 +356,14 @@ namespace Backend::Z3::Convert {
                     Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr,
                     WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
-                // Store annotations for translocation
-                // We do this even if it is nullptr in case an old pointer exists
-                satd.emplace(name, expr->annotations);
+                // Update annotations for translocation
+                const uint64_t name_hash { Utils::FNV1a<char>::hash(name.c_str(), name.size()) };
+                if (expr->annotations != nullptr) {
+                    Utils::map_emplace(satd, name_hash, expr->annotations);
+                }
+                else {
+                    satd.erase(name_hash);
+                }
                 // Return the converted constant
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
