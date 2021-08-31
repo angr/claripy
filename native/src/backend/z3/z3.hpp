@@ -130,7 +130,6 @@ namespace Backend::Z3 {
         /** Check to see if the solver is in a satisfiable state */
         inline bool satisfiable(z3::solver &solver) {
             return solver.check() == z3::check_result::sat;
-            // @todo: model callback
         }
 
         /** Check to see if the solver is in a satisfiable state */
@@ -221,7 +220,7 @@ namespace Backend::Z3 {
         }
 
         /** Evaluate expr, return n different solutions
-         *  No pointers may be nullptr @todo:test
+         *  No pointers may be nullptr
          */
         inline std::vector<PrimVar> eval(const Expression::RawPtr expr, z3::solver &solver, const Constants::UInt n_sol) {
             std::vector<PrimVar> ret;
@@ -278,7 +277,7 @@ namespace Backend::Z3 {
             return batch_eval(converted, s, n);
         }
 
-        /** Evaluate every expression, return n different solutions @todo: test
+        /** Evaluate every expression, return n different solutions
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expression::RawPtr> &exprs, z3::solver &s, const Constants::UInt n, const std::vector<Expression::RawPtr> &extra_constraints) {
