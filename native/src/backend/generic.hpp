@@ -137,13 +137,8 @@ namespace Backend {
                     }
 
                     // Store the result in the arg stack and in the cache
-                    auto &&[iter, success] = conversion_cache.emplace(expr->hash, std::move(obj));
-#ifdef DEBUG
-                    Utils::affirm<UnknownErr>(success, WHOAMI_WITH_SOURCE
-                                              "Cache update failed for some reason.");
-#else
-                    (void) success;
-#endif
+                    const auto iter { Utils::map_emplace(conversion_cache, expr->hash,
+                                                         std::move(obj)) };
                     arg_stack.emplace_back(&(iter->second));
                 }
             }
@@ -206,7 +201,7 @@ namespace Backend {
             // Convert b_obj then update various caches and return
             auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-            abstraction_cache.emplace(hash, ret);
+            Utils::map_add(abstraction_cache, hash, ret);
 #endif
             if (LIKELY(std::holds_alternative<Expression::BasePtr>(ret))) {
                 const auto &tmp { std::get<Expression::BasePtr>(ret) };

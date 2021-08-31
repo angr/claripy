@@ -197,7 +197,7 @@ namespace Backend::Z3 {
             ret.reserve(len);
             Utils::Log::info("Len: ", len);
             z3::expr_vector assertions { solver.ctx() };
-            std::map<Hash::Hash, int> indexes;
+            std::map<Hash::Hash, const int> indexes;
             for (unsigned i { 0 }; i < len; ++i) {
                 const auto child { cores[static_cast<int>(i)] };
                 const Hash::Hash h { extract_hash(child) };
@@ -212,7 +212,7 @@ namespace Backend::Z3 {
                     assertions = solver.assertions();
                     const auto len_a { assertions.size() };
                     for (int k = 0; k < static_cast<int>(len_a); ++k) {
-                        indexes.emplace(extract_hash(assertions[k]), k);
+                        Utils::map_emplace(indexes, extract_hash(assertions[k]), k);
                     }
                 }
                 ret.emplace_back(abstract(assertions[indexes[h]]));
@@ -345,7 +345,14 @@ namespace Backend::Z3 {
             // Convert the name to a hash with stoi-like functions, and save the hash
             for (unsigned i { 0 }; i < size; ++i) {
                 const auto bool_name { assertions[Utils::sign(i)].arg(0) };
+#ifdef DEBUG
+                const auto [_, success] { tracked.emplace(extract_hash(bool_name)) };
+                Utils::affirm<Utils::Error::Unexpected::HashCollision>(success, WHOAMI_WITH_SOURCE
+                                                                       "Hash collision");
+                (void) _;
+#else
                 tracked.emplace(extract_hash(bool_name));
+#endif
             }
             return tracked;
         }
@@ -437,8 +444,8 @@ namespace Backend::Z3 {
                 lookup != abstraction_prim_cache.end()) {
                 return lookup->second;
             }
-            auto ret { Private::dispatch_abstraction_to_prim(b_obj) };
-            abstraction_prim_cache.emplace(hash, ret); // Not const for move ret purposes
+            auto ret { Private::dispatch_abstraction_to_prim(b_obj) }; // Not const for ret move
+            Utils::map_add(abstraction_prim_cache, hash, ret);
             return ret;
 #else
             return Private::dispatch_abstraction_to_prim(b_obj);
@@ -616,8 +623,7 @@ namespace Backend::Z3 {
         /** Stores a symbol's annotations to be translocated from the pre-conversion expression
          *  to the post-abstraction expression symbol of the same name.
          */
-        inline static thread_local std::map<std::string, Expression::Base::SPAV>
-            symbol_annotation_translocation_data {};
+        inline static thread_local SymAnTransData symbol_annotation_translocation_data {};
 
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
         /** A cache for abstractions to primitives */

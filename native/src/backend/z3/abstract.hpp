@@ -125,7 +125,9 @@ namespace Backend::Z3::Abstract {
             switch (sort.sort_kind()) {
                 case Z3_BV_SORT: {
                     const auto bl { sort.bv_size() };
-                    if (const auto lookup { satd.find(name) }; lookup != satd.end()) {
+                    const uint64_t name_hash { Utils::FNV1a<char>::hash(name.c_str(),
+                                                                        name.size()) };
+                    if (const auto lookup { satd.find(name_hash) }; lookup != satd.end()) {
                         return Create::symbol<Expression::BV>(
                             std::move(name), bl, Expression::Base::SPAV { lookup->second });
                     }
