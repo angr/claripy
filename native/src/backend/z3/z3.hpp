@@ -96,11 +96,12 @@ namespace Backend::Z3 {
 
         /** Return a tls solver
          *  If timeout is not 0, timeouts will be configured for the solver
-         *  Warning: resets the tls solver if force_new is false
+         *  Warning: resets the tls solver if ForceNew is false
          */
+        template <bool ForceNew = false>
         [[nodiscard]] inline std::shared_ptr<z3::solver>
-        tls_solver(const unsigned timeout = 0, const bool force_new = false) const {
-            auto ret { get_tls_solver(force_new) };
+        tls_solver(const unsigned timeout = 0) const {
+            auto ret { get_tls_solver<ForceNew>() };
             if (timeout != 0) {
                 if (ret->get_param_descrs().to_string().find("soft_timeout") !=
                     std::string::npos) {
@@ -302,17 +303,19 @@ namespace Backend::Z3 {
         /** Return a tls solver
          *  Warning: resets the tls solver if force_new is false
          */
-        [[nodiscard]] inline std::shared_ptr<z3::solver>
-        get_tls_solver(const bool force_new = false) const {
-            static thread_local std::shared_ptr<z3::solver> s {};
-            if (UNLIKELY(s == nullptr)) {
-                s.reset(new z3::solver { Private::tl_ctx }); // NOLINT
-            }
-            if (force_new) {
+        template <bool ForceNew>
+        [[nodiscard]] inline std::shared_ptr<z3::solver> get_tls_solver() const {
+            if constexpr (ForceNew) {
                 return std::make_shared<z3::solver>(Private::tl_ctx);
             }
             else {
-                s->reset();
+                static thread_local std::shared_ptr<z3::solver> s {};
+                if (UNLIKELY(s == nullptr)) {
+                    s.reset(new z3::solver { Private::tl_ctx }); // NOLINT
+                }
+                else {
+                    s->reset();
+                }
                 return s;
             }
         }

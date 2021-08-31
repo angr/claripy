@@ -238,6 +238,7 @@ set(CLARICPP_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 
 # Find Required
+# set(Boost_USE_STATIC_LIBS ON) This might matter if we link, we do not at the moment
 find_package(Boost 1.7 REQUIRED)
 include(GMP) # Boost multiprecision backend
 if(NOT GMP_FOUND)
