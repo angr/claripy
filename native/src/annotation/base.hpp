@@ -19,7 +19,9 @@ namespace Annotation {
     struct Base : public Factory::FactoryMade {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
-        /** Constructor */
+        /** Constructor
+         *  CUID must be passed if this is called by a subclass
+         */
         explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid) noexcept
             : FactoryMade { h, c } {}
 

@@ -15,7 +15,8 @@ namespace Annotation {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(Base, 0)
       public:
         /** Constructor */
-        SimplificationAvoidance();
+        explicit inline SimplificationAvoidance(const Hash::Hash &h) noexcept
+            : Base { h, static_cuid } {}
 
         /** Returns whether this annotation can be eliminated in a simplification. */
         inline bool eliminatable() const override final { return false; }

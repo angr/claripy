@@ -15,11 +15,12 @@ namespace Annotation {
     /* A class that represents a constant vector of annotations with a pre-computed hash */
     struct Vec final : public Hash::Hashed {
       public:
+        /** The raw vector type Vec holds */
+        using RawVec = std::vector<BasePtr>;
         /** Constructor
          *  in pointers may not be nullptr
          */
-        explicit inline Vec(std::vector<BasePtr> &&in)
-            : Hashed { Hash::hash(in) }, vec { std::move(in) } {
+        explicit inline Vec(RawVec &&in) : Hashed { Hash::hash(in) }, vec { std::move(in) } {
 #ifdef DEBUG
             for (auto &i : vec) {
                 UTILS_AFFIRM_NOT_NULL_DEBUG(i);
@@ -27,7 +28,7 @@ namespace Annotation {
 #endif
         }
         /** Internal vector */
-        const std::vector<BasePtr> vec;
+        const RawVec vec;
     };
 
 } // namespace Annotation
