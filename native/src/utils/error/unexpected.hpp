@@ -17,6 +17,9 @@ namespace Utils::Error::Unexpected {
      */
     DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
 
+    /** Hash Collision exception */
+    DEFINE_NONFINAL_EXCEPTION(Collision, Base);
+
     /** Null pointer exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(Null, Base);
 
@@ -33,7 +36,7 @@ namespace Utils::Error::Unexpected {
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Base);
 
     /** Hash Collision exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(HashCollision, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(HashCollision, Collision);
 
     /** Bad variant access exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Base);
