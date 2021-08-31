@@ -264,7 +264,7 @@ namespace Backend::Z3 {
             if (UNLIKELY(exprs.size() == 0)) {
                 return {};
             }
-            if (UNLIKELY(exprs.size() == 1)) {
+            if (UNLIKELY(exprs.size() == 1)) { // Why we prefer eval to batch
                 Utils::Log::info(WHOAMI_WITH_SOURCE
                                  "called on exprs of size 1; eval is more efficient for this");
                 const auto sols { eval(exprs[0], s, n) };
@@ -392,7 +392,7 @@ namespace Backend::Z3 {
                     break;
                 }
 
-                // Init
+                // Prep loop body
                 if (iter != 0) {
                     z3_sol.clear();
                 }
