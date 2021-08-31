@@ -235,7 +235,12 @@ namespace Backend::Z3 {
                 }
                 // Extract solutions
                 z3::model model { solver.get_model() };
-                ret.emplace_back(abstract_to_prim(model.eval(conv, true)));
+                const auto evaled { model.eval(conv, true) };
+                ret.emplace_back(abstract_to_prim(evaled));
+                // Construct extra constraints to prevent solution duplication
+                if (iter+1 != n_sol) {
+                    solver.add(conv != evaled);
+                }
             }
             return ret;
         }
@@ -391,9 +396,9 @@ namespace Backend::Z3 {
 
                 // Construct extra constraints to prevent solution duplication
                 if (iter+1 != n_sol) {
-                    z3::expr current_sol { z3_sol[0] && z3_sol[1] }; // Safe since exprs.size() > 1
-                    for (Constants::UInt i {2}; i < exprs.size(); ++i) {
-                        current_sol = current_sol && z3_sol[i];
+                    z3::expr current_sol { exprs[0] == z3_sol[0] };
+                    for (Constants::UInt i {1}; i < exprs.size(); ++i) {
+                        current_sol = current_sol && (exprs[i] == z3_sol[i]);
                     }
                     solver.add(!current_sol);
                 }
