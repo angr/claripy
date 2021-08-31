@@ -123,8 +123,9 @@ namespace Utils {
                 // Add to cache
 #ifdef DEBUG
                 auto &&[_, success] = cache.emplace(h, ret);
-                affirm<Error::Unexpected::Unknown>(success,
-                                                   WHOAMI_WITH_SOURCE "Cache emplacement failed.");
+                affirm<Error::Unexpected::Unknown>(
+                    success, WHOAMI_WITH_SOURCE
+                    "Cache emplacement failed after verifying item not already in cache.");
 #else
                 (void) cache.emplace(h, ret);
 #endif
