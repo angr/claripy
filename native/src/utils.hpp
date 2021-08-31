@@ -37,6 +37,7 @@
 #include "utils/log.hpp"
 #include "utils/macros.hpp"
 #include "utils/make_derived_shared.hpp"
+#include "utils/map_add.hpp"
 #include "utils/max.hpp"
 #include "utils/min.hpp"
 #include "utils/narrow.hpp"
