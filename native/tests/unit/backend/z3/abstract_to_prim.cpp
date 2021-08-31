@@ -50,7 +50,6 @@ template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
 
 /** Try to abstract_to_prim a claricpp expression from z3 */
 void abstract_to_prim() {
-    z3::context ctx;
     auto z3 { Backend::Z3::Z3 {} };
 
     Utils::Log::debug("Testing bool...");
