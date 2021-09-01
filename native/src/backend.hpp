@@ -6,6 +6,7 @@
 #define R_BACKEND_HPP_
 
 #include "backend/base.hpp"
+#include "backend/concrete.hpp"
 #include "backend/generic.hpp"
 #include "backend/z3.hpp"
 
