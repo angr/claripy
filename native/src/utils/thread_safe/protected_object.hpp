@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup utils
- * @brief This file ProtectedObject
+ * @brief This file defines ProtectedObject
  */
 #ifndef R_UTILS_THREADSAFE_PROTECTEDOBJECT_HPP_
 #define R_UTILS_THREADSAFE_PROTECTEDOBJECT_HPP_

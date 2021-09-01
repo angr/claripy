@@ -13,7 +13,7 @@ namespace Utils {
 
     /** Narrow X to an Out */
     template <typename Out, bool AllowSignChange = false, typename In = void>
-    constexpr Out widen(const In in) noexcept {
+    constexpr inline Out widen(const In in) noexcept {
         static_assert(std::is_integral_v<In>, "In must be a primitive");
         static_assert(std::is_integral_v<Out>, "Out must be a primitive");
         static_assert(std::is_convertible_v<In, Out>, "In must be convertible to Out");

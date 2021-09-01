@@ -13,10 +13,11 @@
 
 namespace Utils {
 
-    /** A noexcept method of converting a T into a hex string */
+    /** A noexcept method of converting a T into a hex string
+     *  If string allocation throws an exception, just crash
+     */
     template <typename T> inline std::string to_hex(const T val) noexcept {
         static_assert(std::is_integral_v<T>, "This will not work on non-integral types");
-        static_assert(sizeof(T) > 0, "T must be sized!");
         static_assert(CHAR_BIT % 2 == 0, "CHAR_BIT is not even");
         // Prep
         static const constexpr char syms[] = "0123456789abcdef"; // NOLINT
