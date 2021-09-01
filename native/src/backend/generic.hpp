@@ -52,6 +52,7 @@ namespace Backend {
         }
 
         /** Checks whether this backend can handle the expression
+         *  Note: If the backend will not simplify the expression, but will accept it, returns true
          *  @todo Make this better than this simplistic way
          *  expr may not be nullptr
          */

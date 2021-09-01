@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file Z3 backend constants
+ * @brief This file defines Z3 backend constants
  */
 #ifndef R_BACKEND_Z3_CONSTANTS_HPP_
 #define R_BACKEND_Z3_CONSTANTS_HPP_
@@ -15,7 +15,7 @@
 namespace Backend::Z3 {
 
     /** The 'Generic' superclass of z3 */
-    using Z3Super = Generic<z3::expr, false>;
+    using Super = Generic<z3::expr, false>;
 
     /** A map used for translocating annotations between symbols
      *  It assists in translocations between pre-conversion and post-abstraction expressions

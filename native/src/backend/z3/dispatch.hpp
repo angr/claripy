@@ -13,7 +13,7 @@
 namespace Backend::Z3::Private {
 
     /** The Z3 Abstraction variant */
-    using AbstractionVariant = Z3Super::AbstractionVariant;
+    using AbstractionVariant = Super::AbstractionVariant;
 
     /** Verify the container contains at least n elements
      *  In debug mode verifies that the last n elements are not nullptr

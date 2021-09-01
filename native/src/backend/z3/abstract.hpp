@@ -89,7 +89,7 @@
 namespace Backend::Z3::Abstract {
 
     /** The 'args' array type */
-    using ArgsVec = std::vector<Z3Super::AbstractionVariant>;
+    using ArgsVec = std::vector<Super::AbstractionVariant>;
 
     /**********************************************************/
     /*                        General                         */

@@ -18,11 +18,14 @@ namespace Backend::Z3 {
     UTILS_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
 
     /** The Z3 backend */
-    class Z3 final : public Z3Super {
+    class Z3 final : public Super {
         ENABLE_UNITTEST_FRIEND_ACCESS;
-        static_assert(!use_apply_annotations, "Z3 objects do not support holding annotations");
+        static_assert(!use_apply_annotations, "Z3 objects cannot hold annotations");
 
       public:
+        // Rule of 5
+        DEFINE_IMPLICITS_ALL_NOEXCEPT(Z3);
+
         /********************************************************************/
         /*                        Function Overrides                        */
         /********************************************************************/
@@ -57,6 +60,7 @@ namespace Backend::Z3 {
                     return abstract(b_obj);
                 }
                 default: {
+                    Utils::Log::info("Z3 Backend will not simplify expr with CUID: ", expr->cuid);
 #ifdef DEBUG
                     auto ret { Ex::find(expr->hash) };
                     using Err = Utils::Error::Unexpected::HashCollision;
@@ -358,7 +362,7 @@ namespace Backend::Z3 {
         }
 
         /** Add constraints to the solver, track if Track
-         *  @todo See if we can cast the ull to a char * instead of to_string converting
+         *  Note: The to_string conversion seems slow
          */
         template <bool Track>
         void add_helper(z3::solver &solver, Constants::CTSC<Expression::RawPtr> constraints,
