@@ -28,6 +28,7 @@
 #include "utils/full.hpp"
 #include "utils/function.hpp"
 #include "utils/has_constructor.hpp"
+#include "utils/hex_to_num.hpp"
 #include "utils/inc.hpp"
 #include "utils/internal_type.hpp"
 #include "utils/is_ancestor.hpp"
