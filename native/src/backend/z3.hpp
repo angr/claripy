@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file exposes all relevant public members of z3
+ * @brief This file exposes all relevant public members of the z3 backend
  */
 #ifndef R_BACKEND_Z3_HPP_
 #define R_BACKEND_Z3_HPP_
