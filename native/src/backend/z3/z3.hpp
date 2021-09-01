@@ -324,18 +324,20 @@ namespace Backend::Z3 {
             }
         }
 
-        /** Extracts the hash from the boolean z3::expr expr named: |hash| */
+        /** Extracts the hash from the boolean z3::expr expr named: |X|
+         *  X is a string output by Utils::to_hex
+         *  Warning if X is not an output of Utils::to_hex, an invalid result is returned
+         */
         inline Hash::Hash extract_hash(const z3::expr &expr) {
-            // Note that we use the lower level API so we can do a +1, otherwise
-            // we would need to erase the first character of the string, which is slow
-            std::string hash_s { Z3_ast_to_string(expr.ctx(), expr) + 1 };
-            hash_s.pop_back();
-            static_assert(std::is_same_v<Hash::Hash, uint64_t>,
-                          "stoull must be replaced with something which outputs a Hash");
-            static_assert(sizeof(unsigned long long) == sizeof(Hash::Hash),
-                          "stoull must be replaced with something which outputs a Hash");
-            // Technically uint64_t might be a ULL, but this should be fine given the above
-            return std::stoull(hash_s);
+            // Note that we use the lower level API to avoid a string allocation fpr speed
+            const char *str { Z3_ast_to_string(expr.ctx(), expr) + 3 }; // Remove prefix |0x
+            Hash::Hash ret { 0 };
+            while (str[1] != '\0') { // We want to stop one char short to skip the last '|'
+                ret <<= 4;
+                ret += Utils::hex_to_num(str[0]);
+                str += 1;
+            }
+            return ret;
         }
 
         /** Returns the hashes of tracked constraints of solver
@@ -361,9 +363,7 @@ namespace Backend::Z3 {
             return tracked;
         }
 
-        /** Add constraints to the solver, track if Track
-         *  Note: The to_string conversion seems slow
-         */
+        /** Add constraints to the solver, track if Track */
         template <bool Track>
         void add_helper(z3::solver &solver, Constants::CTSC<Expression::RawPtr> constraints,
                         const Constants::UInt c_len) {
@@ -374,12 +374,15 @@ namespace Backend::Z3 {
             }
             else {
                 const std::set<Hash::Hash> tracked { get_tracked(solver) };
+                char buf[Utils::to_hex_max_len<Hash::Hash>];
                 for (Constants::UInt i { 0 }; i < c_len; ++i) {
                     // If the new constraint is not track, track it
                     const Hash::Hash c_hash { constraints[i]->hash };
                     if (const auto lookup { tracked.find(c_hash) }; lookup == tracked.end()) {
-                        solver.add(convert(constraints[i]),
-                                   solver.ctx().bool_const(std::to_string(c_hash).c_str()));
+                        // We use to_hex to avoid heap allocations due to temporary strings
+                        // This also leads to avoiding much the same when converting back
+                        (void) Utils::to_hex(c_hash, buf); // Populates buf
+                        solver.add(convert(constraints[i]), solver.ctx().bool_const(buf));
                     }
                 }
             }

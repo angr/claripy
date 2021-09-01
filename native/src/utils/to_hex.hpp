@@ -18,7 +18,7 @@ namespace Utils {
      */
     template <typename T> static const constexpr std::size_t to_hex_max_len { 3 + 2 * sizeof(T) };
 
-    /** A noexcept method of converting a T into a hex string
+    /** A noexcept method of converting a T into a lowercase hex string
      *  Stores the resulting string in buf
      *  Warning: This method assumes buf is large enough to hold the string!
      *  Returns the number of bytes stored in buf, not including the null terminator
@@ -51,7 +51,7 @@ namespace Utils {
         return str_i;
     }
 
-    /** A noexcept method of converting a T into a hex string
+    /** A noexcept method of converting a T into a lowercase hex string
      *  If string allocation throws an exception, just crash
      */
     template <typename T> inline std::string to_hex(const T val) noexcept {
