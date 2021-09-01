@@ -3,7 +3,6 @@
  * \ingroup unittest
  */
 #include "testlib.hpp"
-#include "utils.hpp"
 
 
 /** A raw union for testing type punning */
