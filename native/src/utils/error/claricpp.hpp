@@ -34,7 +34,7 @@ namespace Utils::Error {
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
         template <typename... Args>
-        explicit Claricpp(const Args &...args) : msg(Utils::to_str(args...)) {
+        explicit Claricpp(Args &&...args) : msg(Utils::to_str(std::forward<Args>(args)...)) {
 #ifdef DEBUG
             Private::backtrace_if_debug();
 #endif

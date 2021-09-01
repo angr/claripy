@@ -17,11 +17,11 @@ namespace Utils::Log::Private {
 
     /** Prep the arguments then call the logging backend */
     template <typename... Args>
-    inline void send_to_backend(Constants::CCSC id, const Level::Level lvl, const Args &...args) {
+    inline void send_to_backend(Constants::CCSC id, const Level::Level lvl, Args &&...args) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(Style::get());   // Sanity check
         UTILS_AFFIRM_NOT_NULL_DEBUG(Backend::get()); // Sanity check
         std::ostringstream s;
-        (OStream(s, args), ...);
+        (OStream(s, std::forward<Args>(args)), ...);
         const std::string msg { Style::get()->str(id, lvl, s) };
         Backend::get()->log(id, lvl, msg);
     }

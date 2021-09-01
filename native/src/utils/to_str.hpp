@@ -21,10 +21,10 @@ namespace Utils {
      *  Note: While marked inline, this is often not inlined by the compiler when it is unlikely
      *  to be called, would cause massive stack growth, etc (the compiler is smarter than us here)
      */
-    template <typename T, typename... Args> inline T to_stream(const Args &...args) {
+    template <typename T, typename... Args> inline T to_stream(Args &&...args) {
         static_assert(Utils::is_ancestor<std::ostream, T>, "T must be an ostream");
         T s;
-        (OStream(s, args), ...);
+        (OStream(s, std::forward<Args>(args)), ...);
         return s;
     }
 
@@ -35,8 +35,8 @@ namespace Utils {
      *  Note: While marked inline, this is often not inlined by the compiler when it is unlikely
      *  to be called, would cause massive stack growth, etc (the compiler is smarter than us here)
      */
-    template <typename... Args> inline std::string to_str(const Args &...args) {
-        return to_stream<std::ostringstream>(args...).str();
+    template <typename... Args> inline std::string to_str(Args &&...args) {
+        return to_stream<std::ostringstream>(std::forward<Args>(args)...).str();
     }
 
 } // namespace Utils
