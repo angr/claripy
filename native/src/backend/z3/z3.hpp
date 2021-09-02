@@ -239,7 +239,7 @@ namespace Backend::Z3 {
                     break;
                 }
                 // Extract solutions
-                z3::model model { solver.get_model() };
+                const z3::model model { solver.get_model() };
                 const auto evaled { model.eval(conv, true) };
                 ret.emplace_back(abstract_to_prim(evaled));
                 // Construct extra constraints to prevent solution duplication
@@ -417,7 +417,7 @@ namespace Backend::Z3 {
                 ret.emplace_back(); // Create a new vector
 
                 // Extract solutions
-                z3::model model { solver.get_model() };
+                const z3::model model { solver.get_model() };
                 for (const auto &expr : exprs) {
                     z3_sol.emplace_back(model.eval(expr, true));
                     ret[iter].emplace_back(abstract_to_prim(z3_sol.back()));
@@ -526,7 +526,7 @@ namespace Backend::Z3 {
 
             // Starting interval and comparators
             using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
-            /** A local macro for brevity */
+/** A local macro for brevity */
 #define MAX_S(S) ((Integer { 1 } << (len - S)) - 1 + (Integer { 1 } << (len - S)))
             Integer hi { Signed ? MAX_S(2) : MAX_S(1) };
             Integer lo { Signed ? (-hi - 1) : 0 };
@@ -542,14 +542,10 @@ namespace Backend::Z3 {
             const auto le { [](const z3::expr &a, const z3::expr &b) {
                 return (Signed ? z3::sle(a, b) : z3::ule(a, b));
             } };
-            const auto extreme = [](const Integer a, const Integer b) constexpr {
-                return (Minimize ? std::min(a, b) : std::max(a, b));
-            }; // No {} initialization because clang-format has trouble with constexpr lambdas
 
             // Binary search
-            Integer ret { Minimize ? hi : lo };
-            bool pushed { false }; // The number of stack frames pushed
-            while (hi > lo + 1) {  // Difference of 1 instead of 0 to prevent infinite loop
+            bool pushed { false };
+            while (hi > lo + 1) { // Difference of 1 instead of 0 to prevent infinite loop
                 // Protect the current solver state
                 if (!pushed) {
                     solver.push();
@@ -559,15 +555,11 @@ namespace Backend::Z3 {
                 const Integer middle { Utils::avg(hi, lo) };
                 solver.add(ge(expr, to_z3(Minimize ? lo : middle)));
                 solver.add(le(expr, to_z3(Minimize ? middle : hi)));
-                // If the constraints are good, save the info; if bad reset the solver frame
-                if (solver.check() == z3::sat) {
-                    (Minimize ? hi : lo) = middle;
-                    const auto model { solver.get_model() };
-                    const auto evaled { model.eval(expr, true) };
-                    ret = extreme(ret, coerce_to<Integer>(abstract_to_prim(evaled)));
-                }
-                else {
-                    (Minimize ? lo : hi) = middle;
+                // Binary search
+                const bool sat { satisfiable(solver) };
+                (sat == Minimize ? hi : lo) = middle;
+                // If the constraints need to be removed for the next step do so
+                if (!sat) {
                     solver.pop();
                     pushed = false;
                 }
@@ -578,7 +570,7 @@ namespace Backend::Z3 {
                 solver.push();
             }
             solver.add(expr == to_z3(Minimize ? lo : hi));
-            ret = extreme(ret, Minimize == (solver.check() == z3::sat) ? lo : hi);
+            const Integer ret { Minimize == satisfiable(solver) ? lo : hi };
             solver.pop();
             return ret;
         }
