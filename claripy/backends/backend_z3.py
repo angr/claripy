@@ -832,8 +832,6 @@ class BackendZ3(Backend):
             lo = 0
             hi = 2**expr.size()-1
 
-        vals = set()
-
         if len(extra_constraints) > 0:
             solver.push()
             solver.add(*[self.convert(e) for e in extra_constraints])
@@ -860,7 +858,6 @@ class BackendZ3(Backend):
                 l.debug("... still sat")
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                vals.add(self._primitive_from_model(solver.model(), expr))
                 hi = middle
             else:
                 l.debug("... now unsat")
@@ -873,8 +870,9 @@ class BackendZ3(Backend):
 
         #l.debug("final hi/lo: %d, %d", hi, lo)
 
+        ret = None
         if hi == lo:
-            vals.add(lo)
+            ret = lo
         else:
             solver.push()
             solver.add(expr == lo)
@@ -882,16 +880,15 @@ class BackendZ3(Backend):
             if solver.check() == z3.sat:
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                vals.add(lo)
-                solver.pop()
+                ret = lo
             else:
-                vals.add(hi)
-                solver.pop()
+                ret = hi
+            solver.pop()
 
         if len(extra_constraints) > 0:
             solver.pop()
 
-        return min(vals)
+        return ret
 
     @condom
     def _max(self, expr, extra_constraints=(), signed=False, solver=None, model_callback=None):
@@ -903,7 +900,6 @@ class BackendZ3(Backend):
         else:
             lo = 0
             hi = 2**expr.size()-1
-        vals = set()
 
         if len(extra_constraints) > 0:
             solver.push()
@@ -929,10 +925,9 @@ class BackendZ3(Backend):
             l.debug("Doing a check! (max)")
             if solver.check() == z3.sat:
                 l.debug("... still sat")
-                lo = middle
-                vals.add(self._primitive_from_model(solver.model(), expr))
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
+                lo = middle
             else:
                 l.debug("... now unsat")
                 hi = middle
@@ -943,8 +938,9 @@ class BackendZ3(Backend):
         for _ in range(numpop):
             solver.pop()
 
+        ret = None
         if hi == lo:
-            vals.add(hi)
+            ret = hi
         else:
             solver.push()
             solver.add(expr == hi)
@@ -952,16 +948,15 @@ class BackendZ3(Backend):
             if solver.check() == z3.sat:
                 if model_callback is not None:
                     model_callback(self._generic_model(solver.model()))
-                vals.add(hi)
-                solver.pop()
+                ret = hi
             else:
-                vals.add(lo)
-                solver.pop()
+                ret = lo
+            solver.pop()
 
         if len(extra_constraints) > 0:
             solver.pop()
 
-        return max(vals)
+        return ret
 
     def _simplify(self, e): #pylint:disable=W0613,R0201
         raise Exception("This shouldn't be called. Bug Yan.")
