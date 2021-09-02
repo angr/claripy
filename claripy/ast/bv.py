@@ -355,9 +355,9 @@ SMod = operations.op('SMod', (BV, BV), BV, extra_check=operations.length_same_ch
 # bit stuff
 LShR = operations.op('LShR', (BV, BV), BV, extra_check=operations.length_same_check,
                      calc_length=operations.basic_length_calc, bound=False)
-SignExt = operations.op('SignExt', (int, BV), BV,
+SignExt = operations.op('SignExt', (int, BV), BV, extra_check=operations.extend_check,
                         calc_length=operations.ext_length_calc, bound=False)
-ZeroExt = operations.op('ZeroExt', (int, BV), BV,
+ZeroExt = operations.op('ZeroExt', (int, BV), BV, extra_check=operations.extend_check,
                         calc_length=operations.ext_length_calc, bound=False)
 Extract = operations.op('Extract', (int, int, BV),
                         BV, extra_check=operations.extract_check,

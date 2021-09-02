@@ -144,6 +144,9 @@ def extract_check(high, low, bv):
 
     return True, ""
 
+def extend_check(amount, value):
+    return amount >= 0, "Extension length must be nonnegative"
+
 def concat_length_calc(*args):
     return sum(arg.length for arg in args)
 
