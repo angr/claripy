@@ -55,7 +55,7 @@ namespace Utils {
      *  If string allocation throws an exception, just crash
      */
     template <typename T> inline std::string to_hex(const T val) noexcept {
-        std::string ret(to_hex_max_len<T>, NULL); // () not {}
+        std::string ret(to_hex_max_len<T>, 0); // () not {}
         ret.resize(to_hex(val, ret.data()));
         return ret;
     }

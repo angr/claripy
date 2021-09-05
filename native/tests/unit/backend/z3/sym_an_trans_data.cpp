@@ -15,13 +15,13 @@ class TestAnnotation final : public Annotation::Base {
         : Base { h, static_cuid }, str { std::move(s) } {}
 
     /** Returns whether this annotation can be eliminated in a simplification. */
-    inline bool eliminatable() const override final { return false; }
+    [[nodiscard]] inline bool eliminatable() const override final { return false; }
 
     /** Returns whether this annotation can be relocated in a simplification. */
-    inline bool relocatable() const override final { return false; }
+    [[nodiscard]] inline bool relocatable() const override final { return false; }
 
     /** Some data */
-    const std::string str;
+    const std::string str; // NOLINT
 };
 
 /** Test how the z3 backend handles sym_an_trans_data */
@@ -45,7 +45,9 @@ void sym_an_trans_data() {
     UNITTEST_ASSERT(sym->annotations == abs->annotations);
     const auto bptr { abs->annotations->vec[0] };
     UNITTEST_ASSERT(sym->annotations->vec[0] == bptr);
-    UNITTEST_ASSERT(static_cast<const TestAnnotation *>(bptr.get())->str == "Hello");
+    const auto *const cast { dynamic_cast<const TestAnnotation *>(bptr.get()) };
+    UNITTEST_ASSERT(cast != nullptr);
+    UNITTEST_ASSERT(cast->str == "Hello");
 
     // Verify data can be cleared
     z3.clear_persistent_data();

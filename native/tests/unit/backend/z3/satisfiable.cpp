@@ -27,7 +27,8 @@ void satisfiable() {
     const auto maybe_false { Create::or_<B>({ x, f }) };
 
     // Create a solver
-    auto is_sat = [&x, &z3, &solver](const Ex::BasePtr &e, const Ex::BasePtr ec = nullptr) {
+    auto is_sat = [&x, &z3, &solver](const Ex::BasePtr &e,
+                                     const Ex::BasePtr ec = nullptr) { // NOLINT
         solver.push();
         bool ret; // NOLINT
         if (ec != nullptr) {

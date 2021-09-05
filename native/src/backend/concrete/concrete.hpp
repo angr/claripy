@@ -39,6 +39,7 @@ namespace Backend::Concrete {
          */
         inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+            (void) expr;
             return nullptr; // todo
         }
 

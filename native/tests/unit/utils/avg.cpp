@@ -17,11 +17,11 @@ void avg() {
 
     // Unsigned
 
-    UNITTEST_ASSERT(test(1u, 3u, 2u));
-    UNITTEST_ASSERT(test(1u, 4u, 2u));
-    UNITTEST_ASSERT(test(1u, 5u, 3u));
+    UNITTEST_ASSERT(test(1U, 3U, 2U));
+    UNITTEST_ASSERT(test(1U, 4U, 2U));
+    UNITTEST_ASSERT(test(1U, 5U, 3U));
 
-    UNITTEST_ASSERT(test(0u, maxu, maxu / 2));
+    UNITTEST_ASSERT(test(0U, maxu, maxu / 2));
 
     // Int
     UNITTEST_ASSERT(test(1, 3, 2));

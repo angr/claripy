@@ -18,13 +18,13 @@ namespace Utils {
     constexpr inline uint8_t hex_to_num(const char h) noexcept {
         using U8 = uint8_t;
         if (h >= '0' && h <= '9') {
-            return static_cast<U8>(h) - '0';
+            return static_cast<U8>(h - '0');
         }
         else if (h >= 'a' && h <= 'f') {
-            return static_cast<U8>(h) - ('a' - U8 { 10 });
+            return static_cast<U8>(h - ('a' - char { 10 }));
         }
         else if (h >= 'A' && h <= 'F') {
-            return static_cast<U8>(h) - ('A' - U8 { 10 });
+            return static_cast<U8>(h - ('A' - char { 10 }));
         }
         return std::numeric_limits<U8>::max();
     }
