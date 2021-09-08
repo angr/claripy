@@ -1137,7 +1137,7 @@ def simplify(e):
         s._uninitialized = e.uninitialized
         s._uc_alloc_depth = e._uc_alloc_depth
         s._simplified = Base.FULL_SIMPLIFY
-        s = s.annotate(e.annotations)
+        s = s.annotate(*e.annotations)
 
         return s
 
