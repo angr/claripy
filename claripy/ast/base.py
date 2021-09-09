@@ -428,7 +428,11 @@ class Base:
             op = simplified.op
 
         all_operations = operations.leaf_operations_symbolic | {'union'}
-        if 'annotations' not in kwargs: kwargs['annotations'] = self.annotations
+        if 'annotations' not in kwargs:
+            # special case: if self is one of the args, we do not copy annotations over from self since child
+            # annotations will be re-processed during AST creation.
+            if not args or not any(self is arg for arg in args):
+                kwargs['annotations'] = self.annotations
         if 'variables' not in kwargs and op in all_operations: kwargs['variables'] = self.variables
         if 'uninitialized' not in kwargs: kwargs['uninitialized'] = self._uninitialized
         if 'symbolic' not in kwargs and op in all_operations: kwargs['symbolic'] = self.symbolic
@@ -1137,7 +1141,6 @@ def simplify(e):
         s._uninitialized = e.uninitialized
         s._uc_alloc_depth = e._uc_alloc_depth
         s._simplified = Base.FULL_SIMPLIFY
-        s = s.annotate(*e.annotations)
 
         return s
 
