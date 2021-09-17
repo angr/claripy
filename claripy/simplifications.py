@@ -198,6 +198,12 @@ class SimplificationManager:
         if a.op == "BVV" and b.op != "BVV":
             return b == a
 
+        if a.op == '__xor__' and isinstance(b.args[0], int) and b.args[0] == 0:
+            if a.args[0].op == 'If' and a.args[1].args[0] == 1:
+                return a.args[0] == 1
+            elif a.args[1].op == 'If' and a.args[0].args[0] == 1:
+                return a.args[1] == 1
+            
         # TODO: all these ==/!= might really slow things down...
         if a.op == "If":
             if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
