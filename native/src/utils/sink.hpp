@@ -16,7 +16,7 @@ namespace Utils {
      *  but this is not true for argument packs; Utils::sink can handle these.
      */
     template <typename... Args>
-    [[gnu::always_inline]] static inline void sink(const Args &...) noexcept {}
+    [[gnu::always_inline]] static inline void sink(Args &&...) noexcept {}
 
 } // namespace Utils
 

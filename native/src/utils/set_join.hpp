@@ -13,9 +13,9 @@ namespace Utils {
 
     /** Joins a set of std::set<T>'s into one */
     template <typename T, typename... Args>
-    inline std::set<T> set_join(const std::set<T> &first, const Args &...args) {
+    inline std::set<T> set_join(const std::set<T> &first, Args &&...args) {
         auto ret { std::set<T>(first) };
-        (Private::set_insert<T>(ret, args), ...);
+        (Private::set_insert<T>(ret, std::forward<Args>(args)), ...);
         return ret;
     }
 

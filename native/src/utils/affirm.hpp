@@ -9,14 +9,16 @@
 
 #include "../macros.hpp"
 
+#include <utility>
+
 
 namespace Utils {
 
-    /** If not b, throw T(args...); */
+    /** If not b, throw T{args...}; */
     template <typename T, typename B, typename... Args>
-    constexpr void affirm(const B b, const Args &...args) {
+    constexpr void affirm(const B b, Args &&...args) {
         if (UNLIKELY(!b)) {
-            throw T(args...);
+            throw T { std::forward<Args>(args)... };
         }
     }
 

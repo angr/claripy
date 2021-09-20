@@ -74,9 +74,9 @@ namespace Utils::Cast {
          *  Note: This requires the type of exception to be thrown to be passed
          */
         template <typename To, typename Err, typename In, typename... Args>
-        constexpr void test_throw_on_fail(const std::shared_ptr<In> &in, const Args &...args) {
+        constexpr void test_throw_on_fail(const std::shared_ptr<In> &in, Args &&...args) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
-            affirm<Err>(test<To>(in), args...);
+            affirm<Err>(test<To>(in), std::forward<Args>(args)...);
         }
     } // namespace Dynamic
 
