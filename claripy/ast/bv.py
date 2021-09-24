@@ -158,6 +158,24 @@ class BV(Bits):
     def _from_BVV(like, value): #pylint:disable=unused-argument
         return BVV(value.value, value.size())
 
+    @staticmethod
+    def _from_Func(like, value):
+        func = value.args[0]
+        # result = func
+        args = []
+        for i in range(1, len(value.args)):
+            arg = value.args[i]
+            arg_bv = arg
+            if not isinstance(arg, BV):
+                if hasattr(BV, '_from_' + type(arg).__name__):
+                    convert = getattr(BV, '_from_' + type(arg).__name__)
+                    arg_bv = convert(func, arg)
+            args.append(arg)
+            # result = BV.__and__(result, arg)
+
+        result = value.func_op(*args)
+        return result
+
     def val_to_fp(self, sort, signed=True, rm=None):
         """
         Interpret this bitvector as an integer, and return the floating-point representation of that integer.

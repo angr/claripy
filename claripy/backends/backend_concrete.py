@@ -17,6 +17,7 @@ class BackendConcrete(Backend):
         self._make_raw_ops(set(backend_operations) - { 'If' }, op_module=bv)
         self._make_raw_ops(backend_strings_operations, op_module=strings)
         self._make_raw_ops(backend_fp_operations, op_module=fp)
+        #self._make_raw_ops(backend_func_operations, op_module=func)
         self._op_raw['If'] = self._If
         self._op_raw['BVV'] = self.BVV
         self._op_raw['StringV'] = self.StringV
@@ -40,6 +41,9 @@ class BackendConcrete(Backend):
         self._op_raw['Xor'] = self._op_xor
         self._op_raw['Not'] = self._op_boolnot
 
+        # Func
+        #self._op_raw['FuncDecl'] = self.FuncDecl
+
         self._cache_objects = False
 
     @staticmethod
@@ -57,6 +61,10 @@ class BackendConcrete(Backend):
     @staticmethod
     def FPV(op, sort):
         return fp.FPV(op, sort)
+
+    #@staticmethod
+    #def FuncDecl(func_name, *args):
+    #    return func.FuncV(func_name, *args)
 
     @staticmethod
     def _op_add(*args):
@@ -217,8 +225,8 @@ class BackendConcrete(Backend):
     def _has_false(self, e, extra_constraints=(), solver=None, model_callback=None):
         return e == False
 
-from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
-from .. import bv, fp, strings
+from ..operations import backend_operations, backend_fp_operations, backend_strings_operations, backend_func_operations
+from .. import bv, fp, strings, func
 from ..ast import Base
 from ..ast.bv import BV, BVV
 from ..ast.strings import StringV

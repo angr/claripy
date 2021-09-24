@@ -113,7 +113,8 @@ class BackendZ3(Backend):
         # and the operations
         all_ops = backend_fp_operations | backend_operations
         all_ops |= backend_strings_operations - {'StrIsDigit'}
-        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV'}:
+        all_ops |= {'FuncDecl'}
+        for o in all_ops - {'BVV', 'BoolV', 'FPV', 'FPS', 'BitVec', 'StringV', 'FuncDecl'}:
             self._op_raw[o] = getattr(self, '_op_raw_' + o)
         self._op_raw['Xor'] = self._op_raw_Xor
 
@@ -134,6 +135,7 @@ class BackendZ3(Backend):
         self._op_expr['BoolS'] = self.BoolS
         self._op_expr['StringV'] = self.StringV
         self._op_expr['StringS'] = self.StringS
+        self._op_expr['FuncDecl'] = self.FuncDecl
 
         self._op_raw['__floordiv__'] = self._op_div
         self._op_raw['__mod__'] = self._op_mod
@@ -333,7 +335,20 @@ class BackendZ3(Backend):
     @condom
     def StringS(self, ast):
         return z3.String(ast.args[0], ctx=self._context)
-    #
+
+    @condom
+    def FuncDecl(self, ast):
+        #todo
+        func_name = ast.op
+        func_args = ast.args
+        print(func_name)
+        # (func_name, *func_sig)
+        func_args_z3 = self.convert_list(func_args)
+        func_sig = [arg.sort() for arg in func_args_z3]
+        func_sig.append(z3.BitVecSort(64, self._context))
+        result = z3.Function(func_name, *func_sig)
+        #result = z3.BitVec(name=func_name, bv=64, ctx=self._context)
+        return result
     # Conversions
     #
 
@@ -463,6 +478,34 @@ class BackendZ3(Backend):
                         length=sort.length)
             else:
                 raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
+
+        elif op_name == 'UNINTERPRETED' and _z3_decl_name_str(ctx, decl).decode().startswith('Func_'):
+            symbol_name = _z3_decl_name_str(ctx, decl)
+            symbol_str = symbol_name.decode()
+            symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
+
+            if symbol_ty == z3.Z3_BV_SORT:
+                bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
+                (ast_args, annots) = self.extra_bvs_data.get(symbol_name, (None, None))
+                if ast_args is None:
+                    ast_args = (symbol_str, None, None, None, False, False, None)
+                    # ast_args = children
+
+                func_bv = BV('BVS',
+                            ast_args,
+                            length=bv_size,
+                            variables={symbol_str},
+                            symbolic=True,
+                            encoded_name=symbol_name,
+                            annotations=annots)
+            else:
+                raise BackendError("Unknown z3 term type %d...?" % symbol_ty)
+
+            args = [func_bv]
+            args.extend(children)
+            # args = (children)
+            return Func(op=symbol_str, args=args)
+            # return result
 
         elif op_name == 'UNINTERPRETED':
             mystery_name = z3.Z3_get_symbol_string(ctx, z3.Z3_get_decl_name(ctx, decl))
@@ -1512,6 +1555,7 @@ from ..ast.bv import BV, BVV
 from ..ast.bool import BoolV, Bool
 from ..ast.fp import FP, FPV
 from ..ast.strings import StringV, StringS
+from ..ast.func import Func
 from ..operations import backend_operations, backend_fp_operations, backend_strings_operations
 from ..fp import FSort, RM, RM_NearestTiesEven, RM_NearestTiesAwayFromZero, RM_TowardsPositiveInf, RM_TowardsNegativeInf, RM_TowardsZero
 from ..errors import ClaripyError, BackendError, ClaripyOperationError
