@@ -1,5 +1,6 @@
 import itertools
 import logging
+import math
 import os
 import struct
 import weakref
