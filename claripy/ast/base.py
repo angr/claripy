@@ -1,5 +1,6 @@
 import itertools
 import logging
+import math
 import os
 import struct
 import weakref
@@ -212,7 +213,12 @@ class Base:
         if hash is not None:
             h = hash
         elif op in {'BVS', 'BVV', 'BoolS', 'BoolV', 'FPS', 'FPV'} and not annotations:
-            h = (op, kwargs.get('length', None), a_args)
+            if op == "FPV" and a_args[0] == 0.0 and math.copysign(1, a_args[0]) < 0:
+                # Python does not distinguish between +0.0 and -0.0 so we add sign to tuple to distinguish
+                h = (op, kwargs.get('length', None), ("-",) + a_args)
+            else:
+                h = (op, kwargs.get('length', None), a_args)
+
             cache = cls._leaf_cache
         else:
             h = Base._calc_hash(op, a_args, kwargs) if hash is None else hash
