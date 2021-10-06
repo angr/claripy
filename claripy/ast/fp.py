@@ -1,5 +1,8 @@
+import struct
+
 from .bits import Bits
 from ..ast.base import _make_name
+from ..fp import FSORT_FLOAT
 
 class FP(Bits):
     """
@@ -101,6 +104,11 @@ def FPV(value, sort):
 
     if type(sort) is not fp.FSort:
         raise TypeError("Must instanciate FPV with a FSort")
+
+    if sort == FSORT_FLOAT:
+        # By default, Python treats all floating-point numbers as double-precision. However, a single-precision float is
+        # being created here. Hence, we need to convert value to single-precision.
+        value = struct.unpack("f", struct.pack("f", value))[0]
 
     return FP('FPV', (value, sort), length=sort.length)
 
