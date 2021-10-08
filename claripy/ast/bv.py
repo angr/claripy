@@ -163,7 +163,7 @@ class BV(Bits):
         #func = value.args[0]
         # result = func
         args = []
-        for arg in ast.func_args:
+        for arg in ast.args:
             arg_bv = arg
             if not isinstance(arg, BV):
                 if hasattr(BV, '_from_' + type(arg).__name__):
