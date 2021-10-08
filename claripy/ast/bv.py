@@ -159,21 +159,19 @@ class BV(Bits):
         return BVV(value.value, value.size())
 
     @staticmethod
-    def _from_Func(like, value):
-        func = value.args[0]
+    def _from_Func(like, ast):
+        #func = value.args[0]
         # result = func
         args = []
-        for i in range(1, len(value.args)):
-            arg = value.args[i]
+        for arg in ast.func_args:
             arg_bv = arg
             if not isinstance(arg, BV):
                 if hasattr(BV, '_from_' + type(arg).__name__):
                     convert = getattr(BV, '_from_' + type(arg).__name__)
-                    arg_bv = convert(func, arg)
-            args.append(arg)
-            # result = BV.__and__(result, arg)
+                    arg_bv = convert(BV, arg)
+            args.append(arg_bv)
 
-        result = value.func_op(*args)
+        result = ast.func_op(*args)
         return result
 
     def val_to_fp(self, sort, signed=True, rm=None):
