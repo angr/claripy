@@ -1,6 +1,4 @@
-
 import os
-import z3
 import ctypes
 import logging
 import numbers
@@ -9,6 +7,7 @@ import threading
 import weakref
 from functools import reduce
 from decimal import Decimal
+import z3
 
 from cachetools import LRUCache
 
@@ -25,9 +24,9 @@ except ImportError:
     _is_pypy = False
 
 def z3_expr_to_smt2(f, status="unknown", name="benchmark", logic=""):
-      # from https://stackoverflow.com/a/14629021/9719920
-      v = (z3.Ast * 0)()
-      return z3.Z3_benchmark_to_smtlib_string(f.ctx_ref(), name, logic, status, "", 0, v, f.as_ast())
+    # from https://stackoverflow.com/a/14629021/9719920
+    v = (z3.Ast * 0)()
+    return z3.Z3_benchmark_to_smtlib_string(f.ctx_ref(), name, logic, status, "", 0, v, f.as_ast())
 
 def claripy_solver_to_smt2(s):
     return s._get_solver().to_smt2()
