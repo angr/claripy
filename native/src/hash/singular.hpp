@@ -163,7 +163,9 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Utils::to_underlying(b));
     }
 
-    /** A specialization for T = std::string */
+    /** A specialization for T = std::string
+     *  @todo: comapre speed to c++ hash for string when size_t is 8 bytes
+     */
     template <> inline Hash singular(const std::string &s) noexcept {
         return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s.c_str(), s.size());
     }
