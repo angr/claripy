@@ -15,7 +15,8 @@ void literal_t(const Data data, const Constants::UInt size = 0) {
     const auto lit { Create::literal(Data { data }) };
 
     // Pointer checks
-    UNITTEST_ASSERT(lit.use_count() == 1);
+    // Note: Bool true and false are used in the backend so their count should be 2
+    UNITTEST_ASSERT(lit.use_count() == (std::is_same_v<Data, bool> ? 2 : 1));
     UNITTEST_ASSERT(lit->op.use_count() == 1);
 
     // Symbolic check

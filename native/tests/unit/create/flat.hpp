@@ -31,9 +31,14 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     const auto exp { CreateF(std::move(input), nullptr) };
 
     // Pointer checks
+    constexpr const auto is_bool { [](const auto &x) {
+        return x == Create::literal(true) || x == Create::literal(false);
+    } };
     for (auto &i : input) {
+        const auto uc { static_cast<Constants::UInt>(i.use_count()) };
         // Since input has 4 identical items
-        UNITTEST_ASSERT(static_cast<Constants::UInt>(i.use_count()) == 2 * input.size());
+        // Note: Bool true and false are used in the backend so their count should be incremented
+        UNITTEST_ASSERT(uc == 2 * input.size() + (is_bool(i) ? 1 : 0));
     }
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 

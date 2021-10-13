@@ -19,22 +19,24 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     static_assert(Op::is_unary<OpT>, "unary requires a unary OpT");
 
     // Create input
-    const auto a { UnitTest::TestLib::Factories::t_literal<In>() };
+    const auto arg { UnitTest::TestLib::Factories::t_literal<In>() };
 
     // Test
-    const auto exp { CreateF(a, nullptr) };
+    const auto exp { CreateF(arg, nullptr) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2);
+    // Note: Bool true and false are used in the backend so their count should be 3
+    const bool is_bool { arg == Create::literal(true) || arg == Create::literal(false) };
+    UNITTEST_ASSERT(arg.use_count() == (is_bool ? 3 : 2));
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
     const auto exp_down { dcast<Out>(exp) };
-    const auto a_down { dcast<In>(a) };
+    const auto a_down { dcast<In>(arg) };
     const auto unary { dcast<OpT>(exp->op) };
 
     // Contains check
-    UNITTEST_ASSERT(unary->child == a);
+    UNITTEST_ASSERT(unary->child == arg);
 
     // Size test
     if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
