@@ -148,11 +148,7 @@ namespace Backend::Z3 {
         inline bool solution(const Expression::RawPtr expr, const Expression::RawPtr sol,
                              z3::solver &solver,
                              const std::vector<Expression::RawPtr> &extra_constraints) {
-            ECHelper ec { *this, solver, extra_constraints };
-            if (!ec.pushed()) {
-                solver.push();
-                ec.pushed(true);
-            }
+            ECHelper ec { *this, solver, extra_constraints, true };
             const auto eq { to_eq(expr, sol) }; // Debug verifies expr is not null
             solver.add(convert(eq.get()));
             return satisfiable(solver, extra_constraints); // Debug verifies non-null
@@ -199,7 +195,6 @@ namespace Backend::Z3 {
             const auto cores { solver.unsat_core() };
             const auto len { cores.size() };
             ret.reserve(len);
-            Utils::Log::info("Len: ", len);
             z3::expr_vector assertions { solver.ctx() };
             std::map<Hash::Hash, const int> indexes;
             for (unsigned i { 0 }; i < len; ++i) {
@@ -232,6 +227,9 @@ namespace Backend::Z3 {
             std::vector<PrimVar> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             const z3::expr conv { convert(expr) };
+            if (n_sol > 1) {
+                solver.push();
+            }
             // Repeat for each new solution
             for (Constants::UInt iter { 0 }; iter < n_sol; ++iter) {
                 if (!satisfiable(solver)) {
@@ -246,6 +244,9 @@ namespace Backend::Z3 {
                 if (iter + 1 != n_sol) {
                     solver.add(conv != evaled);
                 }
+            }
+            if (n_sol > 1) {
+                solver.pop();
             }
             return ret;
         }
@@ -586,8 +587,9 @@ namespace Backend::Z3 {
              *  solver may not be nullptr
              */
             inline ECHelper(Z3 &bk, z3::solver &s,
-                            const std::vector<Expression::RawPtr> &extra_constraints)
-                : z3 { bk }, solver { s }, act { extra_constraints.size() > 0 } {
+                            const std::vector<Expression::RawPtr> &extra_constraints,
+                            const bool force_push = false)
+                : z3 { bk }, solver { s }, act { force_push || extra_constraints.size() > 0 } {
                 if (act) {
                     solver.push();
                     for (auto &i : extra_constraints) {
