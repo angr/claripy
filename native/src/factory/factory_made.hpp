@@ -64,7 +64,7 @@ namespace Factory {
             // Constructor
             // Note: We use has_constructor to pass if the desired constructor is private
             static_assert(Utils::has_constructor<T, const Hash::Hash &, Args &&...>,
-                          "T does not have a constructor T(const Hash::Hash &, Args...");
+                          "T does not have a constructor T{const Hash::Hash &, Args...}");
         }
 
       protected:
