@@ -35,6 +35,7 @@
 #include "utils/is_ancestor.hpp"
 #include "utils/is_in.hpp"
 #include "utils/is_same.hpp"
+#include "utils/is_shared_ptr.hpp"
 #include "utils/is_strong_enum.hpp"
 #include "utils/log.hpp"
 #include "utils/macros.hpp"
