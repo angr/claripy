@@ -22,6 +22,11 @@ struct Moveable {
     const int x; // NOLINT (false positive)
 };
 
+/** A type which wraps Moveable */
+struct Wrapper {
+    Moveable m;
+};
+
 /** A macro used for consistency */
 #define NEW_MOVE                                                                                  \
     Moveable { 0x1234 }
@@ -31,7 +36,7 @@ struct UnitTest::ClaricppUnitTest {
     /** Constructor */
     ClaricppUnitTest() : c {}, data { c.data }, dsize { decltype(c)::dsize } {}
     /** The cache */
-    Utils::ToHeapCache<Moveable> c; // NOLINT (false positive)
+    Utils::CHeapCache<Moveable, Wrapper> c; // NOLINT (false positive)
     /** Extract data */
     const decltype(c.data) &data; // NOLINT (false positive)
     /** Extract dsize */
@@ -43,7 +48,7 @@ void to_heap_cache() {
 
     // Variables
     UnitTest::ClaricppUnitTest cache;
-    std::vector<Moveable *> heap;
+    std::vector<Wrapper *> heap;
 
     // Constructor test
     UNITTEST_ASSERT(cache.data.size() == cache.dsize);
@@ -76,7 +81,7 @@ void to_heap_cache() {
 
     // Read each item on the heap (for memory checker testing)
     for (auto &i : heap) {
-        UNITTEST_ASSERT(i->x == NEW_MOVE.x);
+        UNITTEST_ASSERT(i->m.x == NEW_MOVE.x);
     }
 
     // Make cache larger than reserve size
