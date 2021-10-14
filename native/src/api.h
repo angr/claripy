@@ -132,10 +132,11 @@ ClaricppExpr * claricpp_create_literal_bv_u64(const uint64_t value);
 ClaricppExpr * claricpp_create_literal_bv_u64(const uint64_t value);
 
 /** Create a literal double expression
- *  @todo : BigInt
- *  @param value The data held by the literal
+ *  @param value The data held by the literal represented in base 10 by a string
  */
-ClaricppExpr * claricpp_create_literal_bv_big_int(const ClaricppBigInt value);
+ClaricppExpr * claricpp_create_literal_bv_big_int(const char * const value, const SIZE_T bit_length);
+
+//maybe keep char * ?
 
 /********************************************************************/
 /*                            Expression                            */
