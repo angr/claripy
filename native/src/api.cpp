@@ -1,5 +1,7 @@
 /** @file */
-// #include "api.h"
+extern "C" {
+#include "api.h"
+}
 
 #include "annotation.hpp"
 #include "backend.hpp"
@@ -9,63 +11,119 @@
 #include "utils.hpp"
 
 
+/********************************************************************/
+/*                        Type Declarations                         */
+/********************************************************************/
+
+extern "C" {
+struct ClaricppAnnotation final {
+    Annotation::BasePtr ptr;
+};
+static_assert(std::is_standard_layout_v<ClaricppAnnotation>, "Struct must be trivial");
+}
+
+/********************************************************************/
+/*                             Private                              */
+/********************************************************************/
+
+namespace Private {
+
+    /** Maps a C++ type to its C analog */
+    template <typename T> struct InternalMap;
+    /** A local macro used to add a Map entry */
+#define MAP_ADD(CTYPE)                                                                            \
+    template <> struct InternalMap<decltype(std::declval<CTYPE>().ptr)> final {                   \
+        using Result = CTYPE;                                                                     \
+    };
+    // Populate InternalMap
+    MAP_ADD(ClaricppAnnotation)
+// Cleanup
+#undef MAP_ADD
+
+    /** A shortcut used to access InternalMap */
+    template <typename T> using Map = typename InternalMap<T>::Result;
+
+    static_assert(std::is_same_v<Map<Annotation::BasePtr>, ClaricppAnnotation>, "f");
+    /** Heap cache function */
+    template <typename In, typename Out = Map<In>> static inline Out *to_c(In &&x) {
+        static thread_local Utils::CHeapCache<In, Out> cache {};
+        return cache.move_to_heap(std::forward<In>(x));
+    }
+} // namespace Private
+
+/********************************************************************/
+/*                            Annotation                            */
+/********************************************************************/
+
+extern "C" {
+
+/** Return a new Annotation::Base */
+ClaricppAnnotation *claricpp_annotation_new_base() {
+    return Private::to_c(Annotation::factory<Annotation::Base>());
+}
+
+/** Return a new Annotation::SimplificationAvoidance */
+ClaricppAnnotation *claricpp_annotation_new_simplification_avoicance() {
+    return Private::to_c(Annotation::factory<Annotation::SimplificationAvoidance>());
+}
+}
+
+#if 0
 // Forward declarations
 namespace Expression {
-    class Base;
-    using BasePtr = std::shared_ptr<const Base>;
+class Base;
+using BasePtr = std::shared_ptr<const Base>;
 } // namespace Expression
 
 
 namespace C_API {
 
-    /** Annotation base pointer pointer abbreviation */
-    using AnPtrPtr = Annotation::BasePtr *;
+/** Annotation base pointer pointer abbreviation */
+using AnPtrPtr = Annotation::BasePtr *;
 
-    namespace Private {
-        /** Expression heap cache */
-        thread_local Utils::ToHeapCache<Expression::BasePtr> expression_heap_cache {};
+namespace Private {
+    /** Expression heap cache */
+    thread_local Utils::CHeapCache<Expression::BasePtr> expression_heap_cache {};
 
-        Create::EBasePtr claricpp_abs_helper(Constants::CTSC<AnPtrPtr> annotations,
-                                             const Constants::UInt size,
-                                             Constants::CTSC<Create::EBasePtr> x) {
-            const auto sx { *x };
-            if (size == 0) {
-                return Create::abs(sx);
-            }
-            else {
-                Annotation::Vec::RawVec vec;
-                vec.reserve(size);
-                for (Constants::UInt i { 0 }; i < size; ++i) {
-                    vec.emplace_back(*(annotations[i]));
-                }
-                return Create::abs(sx, std::make_shared<Annotation::Vec>(std::move(vec)));
-            }
+    Create::EBasePtr claricpp_abs_helper(Constants::CTSC<AnPtrPtr> annotations,
+                                         const Constants::UInt size,
+                                         Constants::CTSC<Create::EBasePtr> x) {
+        if (size == 0) {
+            return Create::abs(*x);
         }
-
-    }; // namespace Private
-
-    /** Enforce compatability with the C ABI
-     *  Note: Defining extern "C" within a namespace defines the functions
-     *  both within and outside of the namespace
-     */
-    extern "C" {
-
-    /** For freeing expressions */
-    void claricpp_expression_destructor(Expression::BasePtr *const ptr) {
-        Private::expression_heap_cache.free(ptr);
+        else {
+            Annotation::Vec::RawVec vec;
+            vec.reserve(size);
+            for (Constants::UInt i { 0 }; i < size; ++i) {
+                vec.emplace_back(*(annotations[i]));
+            }
+            return Create::abs(*x, std::make_shared<Annotation::Vec>(std::move(vec)));
+        }
     }
 
-    /** Create an ABS Expression with arguments: x
-     *  @param annotations: An array of size AnPtrs
-     *  @param size: The number of elements in annotations
-     *  @param x: The operand to ABS
-     */
-    Create::EBasePtr *claricpp_abs(Constants::CTSC<AnPtrPtr> annotations,
-                                   const Constants::UInt size,
-                                   Constants::CTSC<Create::EBasePtr> x) {
-        return Private::expression_heap_cache.move_to_heap(
-            Private::claricpp_abs_helper(annotations, size, x));
-    }
-    }
+}; // namespace Private
 
-} // namespace C_API
+/** Enforce compatability with the C ABI
+ *  Note: Defining extern "C" within a namespace defines the functions
+ *  both within and outside of the namespace
+ */
+extern "C" {
+
+/** For freeing expressions */
+void claricpp_expression_destructor(Expression::BasePtr *const ptr) {
+    Private::expression_heap_cache.free(ptr);
+}
+
+/** Create an ABS Expression with arguments: x
+ *  @param annotations: An array of size AnPtrs
+ *  @param size: The number of elements in annotations
+ *  @param x: The operand to ABS
+ */
+Create::EBasePtr *claricpp_abs(Constants::CTSC<AnPtrPtr> annotations,
+                               const Constants::UInt size,
+                               Constants::CTSC<Create::EBasePtr> x) {
+    return Private::expression_heap_cache.move_to_heap(
+        Private::claricpp_abs_helper(annotations, size, x));
+}
+}
+#endif
