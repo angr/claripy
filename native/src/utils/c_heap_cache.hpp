@@ -39,6 +39,11 @@ namespace Utils {
             return new (pop()) Wrap { std::forward<In>(x) }; // NOLINT
         }
 
+        /** Construct an In in a Wrap on the heap */
+        template <typename... Args> inline Wrap *emplace_on_heap(Args &&...args) {
+            return move_to_heap(In { std::forward<Args>(args)... });
+        }
+
         /** Reclaim the memory pointed to by non-null pointer x */
         inline void free(Wrap *const x) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(x);
