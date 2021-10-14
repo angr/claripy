@@ -16,10 +16,16 @@ extern "C" {
 /********************************************************************/
 
 extern "C" {
+
+// These types should be structs which contain only a single shared pointer named ptr
+
 struct ClaricppAnnotation final {
     Annotation::BasePtr ptr;
 };
-static_assert(std::is_standard_layout_v<ClaricppAnnotation>, "Struct must be trivial");
+
+struct ClaricppSPAV final {
+    Annotation::SPAV ptr;
+};
 }
 
 /********************************************************************/
@@ -32,11 +38,18 @@ namespace Private {
     template <typename T> struct InternalMap;
     /** A local macro used to add a Map entry */
 #define MAP_ADD(CTYPE)                                                                            \
+    static_assert(std::is_standard_layout_v<CTYPE>, "Struct must be trivial");                    \
     template <> struct InternalMap<decltype(std::declval<CTYPE>().ptr)> final {                   \
         using Result = CTYPE;                                                                     \
-    };
+    };                                                                                            \
+    static_assert(Utils::is_shared_ptr<decltype(std::declval<CTYPE>().ptr)>,                      \
+                  "C++ type must be a shared pointer.");                                          \
+    static_assert(sizeof(CTYPE) == sizeof(decltype(std::declval<CTYPE>().ptr)),                   \
+                  "Struct should only contain a shared pointer.");
+
     // Populate InternalMap
     MAP_ADD(ClaricppAnnotation)
+    MAP_ADD(ClaricppSPAV)
 // Cleanup
 #undef MAP_ADD
 
@@ -66,6 +79,9 @@ ClaricppAnnotation *claricpp_annotation_new_base() {
 ClaricppAnnotation *claricpp_annotation_new_simplification_avoicance() {
     return Private::to_c(Annotation::factory<Annotation::SimplificationAvoidance>());
 }
+/** Create an Expression::SPAV from a list of annotations */
+// ClaricppSPAV * claricpp_annotation_create_spav() {
+// }
 }
 
 #if 0
