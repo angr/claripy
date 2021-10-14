@@ -15,9 +15,11 @@ namespace PyObj {
 
     /** A class containing a ref to some python object and a hash */
     struct Base : public Hash::Hashed {
+        /** The python reference type PyObj uses */
+        using Ref = Constants::UInt;
 
         /** Constructor */
-        explicit inline Base(const Hash::Hash &h, const Constants::UInt r) noexcept
+        explicit inline Base(const Hash::Hash &h, const Ref r) noexcept
             : Hashed { h }, ref { r } {}
 
         /** Pure virtual destructor */
@@ -27,7 +29,7 @@ namespace PyObj {
         DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Base);
 
         /** The reference to the python object */
-        const Constants::UInt ref;
+        const Ref ref;
     };
 
     /** Default destructor */
