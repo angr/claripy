@@ -17,7 +17,7 @@
 namespace Create {
 
     /** A shortcut for SPAV */
-    using SPAV = Expression::Base::SPAV;
+    using SPAV = Annotation::SPAV;
 
     /** A shortcut for Ptr<Expression::Base> */
     using EBasePtr = Expression::BasePtr;

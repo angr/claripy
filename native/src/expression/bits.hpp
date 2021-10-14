@@ -19,7 +19,7 @@ namespace Expression {
         /** Protected Constructor */
         explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
                              Op::BasePtr &&op_, const Constants::UInt bit_length_,
-                             SPAV &&sp) noexcept
+                             Annotation::SPAV &&sp) noexcept
             : Base { h, c, sym, std::move(op_), std::move(sp) }, BitLength { bit_length_ } {}
 
         /** Pure virtual destructor */

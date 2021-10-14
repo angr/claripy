@@ -15,7 +15,7 @@ namespace Expression {
     /** Copy the expression, but use the newly provided annotation vector
      *  in may not be nullptr
      */
-    inline Expression::BasePtr copy(const Expression::BasePtr &in, Base::SPAV &&sp) {
+    inline Expression::BasePtr copy(const Expression::BasePtr &in, Annotation::SPAV &&sp) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(in);
         auto op { in->op };
         switch (in->cuid) {

@@ -20,7 +20,7 @@
       private:                                                                                    \
         /** Private Constructor */                                                                \
         explicit inline CLASS(const Hash::Hash h, const bool sym, Op::BasePtr &&op_,              \
-                              const Constants::UInt bit_length_, SPAV &&sp) noexcept              \
+                              const Constants::UInt bit_length_, Annotation::SPAV &&sp) noexcept  \
             : Bits { h, static_cuid, sym, std::move(op_), bit_length_, std::move(sp) } {}         \
         /* Disable other methods of construction */                                               \
         SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                               \
@@ -39,7 +39,7 @@ namespace Expression {
       private:
         /** Private Constructor */
         explicit inline Bool(const Hash::Hash h, const bool sym, Op::BasePtr &&op_,
-                             SPAV &&sp) noexcept
+                             Annotation::SPAV &&sp) noexcept
             : Base { h, static_cuid, sym, std::move(op_), std::move(sp) } {}
         /* Disable other methods of construction */
         SET_IMPLICITS_CONST_MEMBERS(Bool, delete);

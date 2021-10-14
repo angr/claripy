@@ -242,7 +242,7 @@ namespace Backend {
         /** This applies the given annotations to the backend object
          *  If the given backend does not support this, this function will never be called
          */
-        BackendObj apply_annotations(const BackendObj &o, Expression::Base::SPAV &&sp) const {
+        BackendObj apply_annotations(const BackendObj &o, Annotation::SPAV &&sp) const {
             static_assert(ApplyAnnotations, "ApplyAnnotations is not enabled");
             return apply_annotations_helper(o, std::move(sp));
         }
@@ -251,7 +251,7 @@ namespace Backend {
          *  If the given backend does not support this, this function will never be called
          */
         virtual BackendObj apply_annotations_helper(const BackendObj &,
-                                                    Expression::Base::SPAV &&) const {
+                                                    Annotation::SPAV &&) const {
             throw Utils::Error::Unexpected::NotSupported(
                 "The backend has failed to implement this method. Please report this");
         }

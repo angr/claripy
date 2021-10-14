@@ -128,8 +128,8 @@ namespace Backend::Z3::Abstract {
                     const uint64_t name_hash { Utils::FNV1a<char>::hash(name.c_str(),
                                                                         name.size()) };
                     if (const auto lookup { satd.find(name_hash) }; lookup != satd.end()) {
-                        return Create::symbol<Expression::BV>(
-                            std::move(name), bl, Expression::Base::SPAV { lookup->second });
+                        return Create::symbol<Expression::BV>(std::move(name), bl,
+                                                              Annotation::SPAV { lookup->second });
                     }
                     return Create::symbol<Expression::BV>(std::move(name), bl);
                 }

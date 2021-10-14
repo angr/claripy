@@ -20,7 +20,7 @@ namespace Backend::Z3 {
     /** A map used for translocating annotations between symbols
      *  It assists in translocations between pre-conversion and post-abstraction expressions
      */
-    using SymAnTransData = std::map<uint64_t, Expression::Base::SPAV>;
+    using SymAnTransData = std::map<uint64_t, Annotation::SPAV>;
 
     /** The designated NaN for the given type that the Z3 backend uses */
     template <typename T>

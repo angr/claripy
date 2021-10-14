@@ -31,6 +31,9 @@ namespace Annotation {
         const RawVec vec;
     };
 
+    /** A shared pointer to a const annotation vector */
+    using SPAV = std::shared_ptr<const Annotation::Vec>;
+
 } // namespace Annotation
 
 #endif
