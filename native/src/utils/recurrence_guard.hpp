@@ -86,7 +86,7 @@ namespace Utils {
 #endif
 
         /** Static map to keep track of recurrences */
-        inline static thread_local std::map<std::string, Constants::UInt> count {};
+        static thread_local std::map<std::string, Constants::UInt> count;
 
         // Disable other creation methods
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RecurrenceGuard, delete)
