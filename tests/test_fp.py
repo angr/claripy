@@ -41,7 +41,16 @@ def test_fp_ops():
     s = claripy.Solver()
     assert s.eval(b, 1)[0] == 2
 
+def test_fp_precision_loss():
+    dd = claripy.FPV(101817237862.0, claripy.FSORT_DOUBLE)
+    s = claripy.Solver()
+    edd = s.eval(dd.to_bv(), 1)[0]
+    edd2 = s.eval(dd.to_fp(claripy.FSORT_FLOAT).to_fp(claripy.FSORT_DOUBLE).to_bv(), 1)[0]
+    assert edd != edd2
+    assert edd2 == 0x4237b4c7c0000000
+
 if __name__ == '__main__':
     test_fp_ops()
     test_nan()
     test_negative_zero()
+    test_fp_precision_loss()
