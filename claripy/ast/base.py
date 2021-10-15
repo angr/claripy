@@ -197,10 +197,10 @@ class Base:
                 tuple(a for a in annotations if not a.eliminatable and not a.relocatable)
             ))
 
-            relocatable_annotations = OrderedDict((e, True) for e in tuple(itertools.chain(
+            relocatable_annotations = tuple(OrderedDict((e, True) for e in tuple(itertools.chain(
                 itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
                 tuple(a for a in annotations if not a.eliminatable and a.relocatable)
-            ))).keys()
+            ))).keys())
 
             annotations = tuple(itertools.chain(
                 itertools.chain.from_iterable(a._relocatable_annotations for a in ast_args) if not skip_child_annotations else tuple(),
