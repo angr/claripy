@@ -13,7 +13,7 @@
 
 namespace Expression {
 
-    /** A factory used to construct Expression subclasses
+    /** A factory used to construct Expression::Base subclasses
      *  Arguments are passed by non-const forwarding reference
      *  @todo update eager_backends functionality
      */
