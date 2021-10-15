@@ -15,7 +15,7 @@ template <typename B, typename T> static void test_bv_ctor(B &z3, T x) {
 
 /** Test is_true and is_false */
 void bv() {
-    auto z3 { Backend::Z3::Z3 {} };
+    auto z3 { Backend::Z3::Z3 { Mode::BigInt::Int } }; // Z3 defaults to mode Str, we want Int
 
     // Constants
     const boost::multiprecision::mpz_int big_one { 1 };            // NOLINT
@@ -31,8 +31,14 @@ void bv() {
     test_bv_ctor(z3, uint32_t { 3 });
     Utils::Log::debug("Testing BV constructor via uint64");
     test_bv_ctor(z3, uint64_t { 3 });
-    Utils::Log::debug("Testing BV constructor via BigInt");
+    Utils::Log::debug("Testing BV constructor via BigInt with mode Int");
     test_bv_ctor(z3, BigInt { big_one, 300_ui }); // NOLINT
+
+    // BigInt abstraction mode
+    const auto old { z3.big_int_mode(Mode::BigInt::Str) };
+    Utils::Log::debug("Testing BV constructor via BigInt with mode Str");
+    test_bv_ctor(z3, BigInt { big_one.str(), 300_ui }); // NOLINT
+    (void) z3.big_int_mode(old);                        // Reset
 
     // Sizes same
     Utils::Log::debug("Testing x/x");
