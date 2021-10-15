@@ -7,3 +7,4 @@ target_sources("${CLARICPP}" PRIVATE
 add_subdirectory(utils)
 add_subdirectory(expression)
 add_subdirectory(simplification)
+add_subdirectory(backend)
