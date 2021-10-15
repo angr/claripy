@@ -27,7 +27,8 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     // Pointer checks
     // Note: Bool true and false are used in the backend so their count should be 3
     const bool is_bool { arg == Create::literal(true) || arg == Create::literal(false) };
-    UNITTEST_ASSERT(arg.use_count() == (is_bool ? 3 : 2));
+    const bool uc { is_bool ? (arg.use_count() > 2) : (arg.use_count() == 2) };
+    UNITTEST_ASSERT(uc);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check

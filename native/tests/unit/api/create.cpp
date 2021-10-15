@@ -26,6 +26,7 @@ static void symbol(Constants::CTSC<ClaricppExpr> in, PyStr name, const SIZE_T bi
     if constexpr (!std::is_same_v<T, Expression::Bool>) {
         UNITTEST_ASSERT(expr->bit_length == bit_length);
     }
+    (void) bit_length;
 }
 
 /** Used to verify the literals API
@@ -44,6 +45,7 @@ static void literal(Constants::CTSC<ClaricppExpr> in, const Val value, const SIZ
     if constexpr (!std::is_same_v<T, Expression::Bool>) {
         UNITTEST_ASSERT(expr->bit_length == bit_length);
     }
+    (void) bit_length;
 }
 
 /** Verify the Create API works */

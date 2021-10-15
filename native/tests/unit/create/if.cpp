@@ -18,21 +18,19 @@ template <typename T> void if_t() {
     const auto b { F::t_literal<T>(1) };
     const auto cond { F::t_literal<Ex::Bool>(1) };
 
-    // Note that if T = bool, b == c; both bools exist in the backend as well so increment counts
-    const Constants::UInt offset { std::is_same_v<T, Ex::Bool> ? 1 : 0 };
-
-    // Sanity checks
-    UNITTEST_ASSERT(a.use_count() == 1 + offset);     // a + backend?
-    UNITTEST_ASSERT(b.use_count() == 1 + 2 * offset); // b + c? + backend?
-    UNITTEST_ASSERT(cond.use_count() == 2 + offset);  // b? + c + backend
+    // Gather stats
+    const auto a_uc { a.use_count() };
+    const auto b_uc { b.use_count() };
+    const auto cond_uc { cond.use_count() };
 
     // Test
     const auto exp { Create::if_<T>(cond, a, b) };
 
     // Pointer checks
-    UNITTEST_ASSERT(a.use_count() == 2 + offset);        // prev + new.a
-    UNITTEST_ASSERT(b.use_count() == 2 + 3 * offset);    // prev + new.b + new.c?
-    UNITTEST_ASSERT(cond.use_count() == 3 + 2 * offset); // prev + new.b? + new.c
+    const decltype(a_uc) offset { std::is_same_v<T, Ex::Bool> ? 1 : 0 };
+    UNITTEST_ASSERT(a.use_count() == a_uc + 1);
+    UNITTEST_ASSERT(b.use_count() == b_uc + 1 + offset);
+    UNITTEST_ASSERT(cond.use_count() == cond_uc + 1 + offset);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
