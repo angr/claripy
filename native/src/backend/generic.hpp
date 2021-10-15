@@ -60,9 +60,9 @@ namespace Backend {
             Utils::Log::info("Z3 backend downsizing...");
             errored_cache.scoped_unique().first.clear();
             // Thread locals
-            conversion_cache.clear();
+            conversion_cache_g().clear();
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-            abstraction_cache.clear();
+            abstraction_cache_g().clear();
 #endif
         }
 
@@ -89,6 +89,7 @@ namespace Backend {
          *  input may not be nullptr
          */
         BackendObj convert(const Expression::RawPtr input) {
+            auto &conversion_cache { conversion_cache_g() };
 #ifdef DEBUG
             using UnknownErr = Utils::Error::Unexpected::Unknown;
             UTILS_AFFIRM_NOT_NULL_DEBUG(input);
@@ -193,6 +194,7 @@ namespace Backend {
             const unsigned n = { b_obj.num_args() };
 
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            auto &abstraction_cache { abstraction_cache_g() };
             static_assert(false, "Better hashing needed");
             // Cache lookup
             const auto hash { b_obj.hash() };
@@ -278,15 +280,23 @@ namespace Backend {
 
         /** Thread local conversion cache
          *  Map an expression hash to a backend object representing it
+         *  A function because of this bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66944
          */
-        inline static thread_local std::map<Hash::Hash, const BackendObj> conversion_cache {};
+        inline static auto &conversion_cache_g() noexcept {
+            static thread_local std::map<Hash::Hash, const BackendObj> conversion_cache {};
+            return conversion_cache;
+        }
 
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
         /** Thread local abstraction cache
          *  Map a backend object hash to an expression base pointer
+         *  A function because of this bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66944
          */
-        inline static thread_local std::map<Hash::Hash, const AbstractionVariant>
-            abstraction_cache {};
+        inline static auto &abstraction_cache_g() noexcept {
+            static thread_local std::map<Hash::Hash, const AbstractionVariant>
+                abstraction_cache {};
+            return abstraction_cache;
+        }
 #endif
       private:
         /** The BigInt abstraction mode this thread should use */

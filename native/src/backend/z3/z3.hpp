@@ -318,7 +318,7 @@ namespace Backend::Z3 {
             else {
                 static thread_local std::shared_ptr<z3::solver> s {};
                 if (UNLIKELY(s == nullptr)) {
-                    s.reset(new z3::solver { Private::tl_ctx }); // NOLINT
+                    s = std::make_shared<z3::solver>(Private::tl_ctx);
                 }
                 else {
                     s->reset();

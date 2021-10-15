@@ -15,12 +15,12 @@ namespace Backend::Z3 {
     /** A z3 fpa single precision sort
      *  We prefer this to z3's pre-defined to ensure that exp and mantissa match
      */
-    inline thread_local z3::sort z3_flt { Private::tl_ctx.template fpa_sort<32>() };
+    const inline thread_local z3::sort z3_flt { Private::tl_ctx.template fpa_sort<32>() };
 
     /** A z3 fpa single precision sort
      *  We prefer this to z3's pre-defined to ensure that exp and mantissa match
      */
-    inline thread_local z3::sort z3_dbl { Private::tl_ctx.template fpa_sort<64>() };
+    const inline thread_local z3::sort z3_dbl { Private::tl_ctx.template fpa_sort<64>() };
 
     /** A function that returns a reference to an internal thread_local z3 fpa sort
      *  This sort is the z3 analog of the given Mode::FP::Width
