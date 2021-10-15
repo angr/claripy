@@ -61,7 +61,7 @@ void abstract_to_prim() {
     UNITTEST_ASSERT(test(z3, uint16_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint32_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint64_t { 10 }));
-    UNITTEST_ASSERT(test(z3, BigInt { 20, 128 })); // > 64
+    UNITTEST_ASSERT(test(z3, BigInt { "20", 128 })); // > 64
 
     Utils::Log::debug("Testing floats...");
     test_f<float>(z3);

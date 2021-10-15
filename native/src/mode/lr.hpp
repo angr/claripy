@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines LR mask
+ * @brief This file defines LR mode
  */
 #ifndef R_MODE_LR_HPP_
 #define R_MODE_LR_HPP_
