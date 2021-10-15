@@ -6,7 +6,14 @@
 #ifndef R_UNIT_TESTLIB_TESTLIB_INCLUDES_HPP_
 #define R_UNIT_TESTLIB_TESTLIB_INCLUDES_HPP_
 
-// @todo : clean up other test case includes
+#include "api_private.hpp"
+#include "backend.hpp"
+#include "create.hpp"
+#include "cuid.hpp"
+#include "factory.hpp"
+#include "hash.hpp"
+#include "op.hpp"
+
 extern "C" {
 #include "api.h"
 };
