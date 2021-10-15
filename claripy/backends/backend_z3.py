@@ -774,12 +774,13 @@ class BackendZ3(Backend):
 
         result_values = [ ]
 
-        accumulated_constraints = []
+        if n > 1:
+            solver.push()
 
         for i in range(n):
             solve_count += 1
             l.debug("Doing a check! (batch_eval)")
-            if solver.check(extra_constraints + accumulated_constraints) != z3.sat:
+            if solver.check(extra_constraints) != z3.sat:
                 break
             model = solver.model()
 
@@ -794,16 +795,19 @@ class BackendZ3(Backend):
 
             # Append the solution to the result list
             if model_callback is not None:
-                model_callback(self._generic_model(solver.model()))
+                model_callback(self._generic_model(model))
             result_values.append(tuple(r))
 
             # Construct the extra constraint so we don't get the same result anymore
             if i + 1 != n:
                 if len(exprs) == 1:
-                    accumulated_constraints.append(exprs[0] != r[0])
+                    solver.add(exprs[0] != r[0])
                 else:
-                    accumulated_constraints.append(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
+                    solver.add(self._op_raw_Not(self._op_raw_And(*[(ex == ex_v) for ex, ex_v in zip(exprs, r)])))
                 model = None
+
+        if n > 1:
+            solver.pop()
 
         return result_values
 
