@@ -13,7 +13,7 @@ namespace Backend::Z3::Private {
     /** A thread local context all Z3 exprs should use
      *  This might be inline-able, but the tests cases might violate the ODR rules
      */
-    thread_local z3::context tl_ctx;
+    extern thread_local z3::context tl_ctx;
 
 } // namespace Backend::Z3::Private
 
