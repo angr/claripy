@@ -308,10 +308,16 @@ namespace Backend::Z3::Convert {
                 case 9: {
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 9, BigInt);
                     const auto &big { std::get<BigInt>(data) };
-                    std::ostringstream s;
-                    s << big.value;
-                    return Private::tl_ctx.bv_val(s.str().c_str(),
-                                                  Private::to_z3u(big.bit_length));
+                    if (std::holds_alternative<BigInt::Str>(big.value)) {
+                        return Private::tl_ctx.bv_val(std::get<BigInt::Str>(big.value).c_str(),
+                                                      Private::to_z3u(big.bit_length));
+                    }
+                    else {
+                        std::ostringstream s;
+                        big.write_value(s);
+                        return Private::tl_ctx.bv_val(s.str().c_str(),
+                                                      Private::to_z3u(big.bit_length));
+                    }
                 }
                     // Error handling
                 default:

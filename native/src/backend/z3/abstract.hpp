@@ -298,7 +298,7 @@ namespace Backend::Z3::Abstract {
         using PrimVar = std::variant<uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
 
         /** Abstraction function for Z3_OP_BNUM to a primitive */
-        inline PrimVar num_primtive(const z3::expr &b_obj) {
+        inline PrimVar num_primtive(const z3::expr &b_obj, const Super &bk) {
             using Err = Utils::Error::Unexpected::Type;
             const auto bl { b_obj.get_sort().bv_size() };
 
@@ -325,16 +325,19 @@ namespace Backend::Z3::Abstract {
             std::string str;
             Utils::affirm<Err>(b_obj.is_numeral(str),
                                WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
-            return BigInt { BigInt::Value { str }, bl };
+            return (bk.big_int_mode() == Mode::BigInt::Int)
+                     ? BigInt { BigInt::Int(std::move(str)), bl }
+                     : BigInt { std::move(str), bl };
         }
 
         /** Abstraction function for Z3_OP_BNUM */
-        inline Expression::BasePtr num(const z3::expr &b_obj) {
-            PrimVar x { num_primtive(b_obj) }; // Not const for move purposes
-                                               /** A local helper macro */
+        inline Expression::BasePtr num(const z3::expr &b_obj, const Super &bk) {
+            PrimVar x { num_primtive(b_obj, bk) }; // Not const for move purposes
+/** A local helper macro */
 #define G_CASE(I)                                                                                 \
     case I:                                                                                       \
         return Create::literal(std::get<I>(x));
+            // Switch on the type of x
             switch (x.index()) {
                 G_CASE(0)
                 G_CASE(1)

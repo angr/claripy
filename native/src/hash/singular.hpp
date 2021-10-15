@@ -125,19 +125,6 @@ namespace Hash {
     /*                Specializations                 */
     /**************************************************/
 
-    /** A specialization for T = boost::multiprecision::mpz_int */
-    template <> inline Hash singular(const BigInt &arb) noexcept {
-        // mp_limb_t is assumed to be a standard integral type, typically unsigned long
-        // This basic idea will work for a different type, but the hash will have to
-        // be on a char * rather than an mp_limb_t * directly, which would be much slower
-        // as it would hash one character at a time rather than one mp_limb_t at a time
-        static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
-        static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
-        const mpz_t &raw { arb.value.backend().data() };
-        const auto len { Utils::widen<mp_limb_t, true>(raw->_mp_size) };
-        return UTILS_FILE_LINE_HASH ^ arb.bit_length ^ fnv1a<mp_limb_t>(raw->_mp_d, len);
-    }
-
     /** A specialization for T = Mode::FP::Rounding */
     template <> constexpr Hash singular(const Mode::FP::Rounding &m) noexcept {
         using U = std::underlying_type_t<Mode::FP::Rounding>;
@@ -168,6 +155,28 @@ namespace Hash {
      */
     template <> inline Hash singular(const std::string &s) noexcept {
         return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s.c_str(), s.size());
+    }
+
+    /** A specialization for T = boost::multiprecision::mpz_int */
+    template <> inline Hash singular(const BigInt &arb) noexcept {
+        // mp_limb_t is assumed to be a standard integral type, typically unsigned long
+        // This basic idea will work for a different type, but the hash will have to
+        // be on a char * rather than an mp_limb_t * directly, which would be much slower
+        // as it would hash one character at a time rather than one mp_limb_t at a time
+        static_assert(std::is_integral_v<mp_limb_t>, "gmp assumptions violated");
+        static_assert(std::is_unsigned_v<mp_limb_t>, "gmp assumptions violated");
+        // We do not care how BigInt stores its data as long as they
+        // represent the same thing we should hash them identically
+        // Unfortunately, doing so would require converting on to the other which defeats
+        // the purpose of allowing them to be represented as they please... @todo Improve me
+        if (std::holds_alternative<BigInt::Int>(arb.value)) {
+            const mpz_t &raw { std::get<BigInt::Int>(arb.value).backend().data() };
+            const auto len { Utils::widen<mp_limb_t, true>(raw->_mp_size) };
+            return UTILS_FILE_LINE_HASH ^ arb.bit_length ^ fnv1a<mp_limb_t>(raw->_mp_d, len);
+        }
+        else {
+            return UTILS_FILE_LINE_HASH ^ singular(std::get<BigInt::Str>(arb.value));
+        }
     }
 
     /** A specialization for shared pointers to pre-hashed types */

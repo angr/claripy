@@ -91,7 +91,8 @@ namespace Op {
                 VCASE(7, uint32_t);
                 VCASE(8, uint64_t);
                 VCASE_PRE(9, BigInt);
-                out << got.value << R"|(", "Bit length":)|" << got.bit_length;
+                got.write_value(out);
+                out << R"|(, "Bit length":)|" << got.bit_length;
                 VCASE_POST;
                     // Bad variant
                 default:

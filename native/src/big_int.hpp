@@ -12,21 +12,34 @@
 
 /** The arbitrary precision type claricpp uses */
 struct BigInt {
-
+    /** The type of the value when represented as an int */
+    using Int = boost::multiprecision::mpz_int;
+    /** The type of the value when represented as a string */
+    using Str = std::string;
     /** The type of the value */
-    using Value = boost::multiprecision::mpz_int;
+    using Value = std::variant<Int, Str>;
+
+    /** Writes value to the ostream */
+    inline void write_value(std::ostream &os) const {
+        if (std::holds_alternative<BigInt::Int>(value)) {
+            os << std::get<BigInt::Int>(value);
+        }
+        else {
+            os << '"' << std::get<BigInt::Str>(value) << '"';
+        }
+    }
 
     /** The value */
     Value value;
-
     /** The bit length */
     Constants::UInt bit_length;
 };
 
 /** Ostream overload for BigInt */
 inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
-    os << "BigInt{" << b.value << ", " << b.bit_length << "}";
-    return os;
+    os << "BigInt{";
+    b.write_value(os);
+    return os << ", " << b.bit_length << "}";
 }
 
 /** Equality operator */
