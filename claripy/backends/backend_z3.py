@@ -795,7 +795,7 @@ class BackendZ3(Backend):
 
             # Append the solution to the result list
             if model_callback is not None:
-                model_callback(self._generic_model(model))
+                model_callback(self._generic_model(solver.model()))
             result_values.append(tuple(r))
 
             # Construct the extra constraint so we don't get the same result anymore
