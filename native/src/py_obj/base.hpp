@@ -21,10 +21,6 @@ namespace PyObj {
         /** Constructor */
         explicit inline Base(const Hash::Hash &h, const Ref r) noexcept
             : Hashed { h }, ref { r } {}
-
-        /** Pure virtual destructor */
-        virtual inline ~Base() noexcept = 0;
-
         // Default implicits
         DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Base);
 
@@ -32,11 +28,25 @@ namespace PyObj {
         const Ref ref;
     };
 
-    /** Default destructor */
-    Base::~Base() noexcept = default;
+    namespace Private {
+        /** If not DEBUG, returns ret; else if ret and not cond report user error detected */
+        inline bool eq(const bool ret, const bool cond) {
+#ifdef DEBUG
+            if (!cond) {
+                using Err = Utils::Error::Unexpected::HashCollision;
+                Utils::affirm<Err>(WHOAMI_WITH_SOURCE
+                                   "PyObjects differ but have identical hashes; this is probably "
+                                   "due to user error");
+            }
+#endif
+            return ret;
+        }
+    } // namespace Private
 
-    /** Define base pointer alias */
-    using BasePtr = std::shared_ptr<const Base>;
+    /** Equality operator */
+    inline bool operator==(const Base &a, const Base &b) {
+        return Private::eq(a.hash == b.hash, a.ref == b.ref);
+    }
 
 } // namespace PyObj
 

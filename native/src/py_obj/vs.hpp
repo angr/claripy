@@ -14,14 +14,24 @@ namespace PyObj {
 
     /** A Value Set PyObj */
     struct VS final : public Base, public BitLength {
-
         /** Constructor */
         explicit inline VS(const Hash::Hash &h, const Ref r, const Constants::UInt bl) noexcept
             : Base { h, r }, BitLength { bl } {}
     };
 
-    /** Define VS pointer alias */
+    /** Shared pointer to a const VS */
     using VSPtr = std::shared_ptr<const VS>;
+
+    /** Equality operator */
+    inline bool operator==(const VS &a, const VS &b) {
+        return Private::eq(static_cast<const Base &>(a) == b, a.bit_length == b.bit_length);
+    }
+
+    /** Stream operator */
+    inline std::ostream &operator<<(std::ostream &os, const VS &vs) {
+        return os << "VS{hash = " << vs.hash << ", ref = " << vs.ref
+                  << ", bit_length = " << vs.bit_length << "}";
+    }
 
 } // namespace PyObj
 
