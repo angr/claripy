@@ -4,7 +4,8 @@ import os
 
 from claripy.ast.bv import BV
 
-from .. import BackendError, BackendSMTLibBase
+from .. import BackendError
+from ..backend_smtlib import BackendSMTLibBase
 from ...smtlib_utils import SMTParser, make_pysmt_const_from_type
 from six.moves import cStringIO
 
