@@ -28,8 +28,12 @@ namespace Backend {
         using BORCPtr = const BackendObj *;
 
       public:
-        // Define implicits
-        DEFINE_IMPLICITS_ALL_NOEXCEPT(Generic);
+        // Disable implicits
+        SET_IMPLICITS(Generic, delete);
+
+        /** Constructor */
+        inline Generic(const Mode::BigInt m) noexcept : big_int_abstract_mode(m) {}
+
         /** Destructor */
         ~Generic() noexcept override = default;
 
@@ -37,6 +41,17 @@ namespace Backend {
         using AbstractionVariant = std::variant<Expression::BasePtr, Mode::FP::Rounding>;
 
         // Virtual and Concrete Functions
+
+        /** Set the BigInt abstraction mode for this backend
+         *
+         */
+        inline Mode::BigInt big_int_mode(const Mode::BigInt m) noexcept {
+            Utils::Log::debug("Setting BitInt abstraction mode to ", m);
+            return big_int_abstract_mode.exchange(m);
+        }
+
+        /** Get the BigInt abstraction mode for this backend */
+        inline Mode::BigInt big_int_mode() const noexcept { return big_int_abstract_mode; }
 
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
@@ -127,12 +142,6 @@ namespace Backend {
                     // Convert the expression to a backend object
                     // Note: No need for a cache lookup, op_stack contains only cache misses
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
-#ifdef DEBUG
-                    if (UNLIKELY(!bool(obj))) {
-                        Utils::Log::warning(
-                            "Backend returned a nullptr as an expression when converting: ", expr);
-                    }
-#endif
                     if constexpr (ApplyAnnotations) {
                         obj = std::move(apply_annotations(obj, expr->annotations));
                     }
@@ -200,7 +209,8 @@ namespace Backend {
             }
 
             // Convert b_obj then update various caches and return
-            auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
+            auto ret { dispatch_abstraction(*this, b_obj,
+                                            args) }; // Not const for move ret purposes
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             Utils::map_add(abstraction_cache, hash, ret);
 #endif
@@ -234,8 +244,9 @@ namespace Backend {
          *  Note: We use a raw vector instead of a stack for efficiency
          *  Note: This function should not edit the Simplification cache
          */
-        virtual AbstractionVariant dispatch_abstraction(const BackendObj &b_obj,
-                                                        std::vector<AbstractionVariant> &args) = 0;
+        virtual AbstractionVariant
+        dispatch_abstraction(const Generic<BackendObj, ApplyAnnotations> &bk,
+                             const BackendObj &b_obj, std::vector<AbstractionVariant> &args) = 0;
 
         // Virtual Functions
 
@@ -277,6 +288,9 @@ namespace Backend {
         inline static thread_local std::map<Hash::Hash, const AbstractionVariant>
             abstraction_cache {};
 #endif
+      private:
+        /** The BigInt abstraction mode this thread should use */
+        std::atomic<Mode::BigInt> big_int_abstract_mode;
     };
 
 } // namespace Backend

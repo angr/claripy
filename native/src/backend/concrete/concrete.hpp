@@ -16,8 +16,10 @@ namespace Backend::Concrete {
         static_assert(!use_apply_annotations, "Concrete objects cannot hold annotations");
 
       public:
-        // Rule of 5
-        DEFINE_IMPLICITS_ALL_NOEXCEPT(Concrete);
+        /** Constructor */
+        inline Concrete(const Mode::BigInt m = Mode::BigInt::Int) noexcept : Generic { m } {}
+        // Disable implicits
+        SET_IMPLICITS_NONDEFAULT_CTORS(Concrete, delete);
 
         /********************************************************************/
         /*                        Function Overrides                        */
@@ -59,9 +61,9 @@ namespace Backend::Concrete {
 
         /** Abstract a backend object into a claricpp expression */
         inline AbstractionVariant
-        dispatch_abstraction(const PrimVar &b_obj,
+        dispatch_abstraction(const Super &bk, const PrimVar &b_obj,
                              std::vector<AbstractionVariant> &args) override final {
-            Utils::sink(b_obj, args);
+            Utils::sink(bk, b_obj, args);
             return Mode::FP::Rounding::NearestTiesAwayFromZero; // todo
         }
 

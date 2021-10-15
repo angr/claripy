@@ -23,8 +23,10 @@ namespace Backend::Z3 {
         static_assert(!use_apply_annotations, "Z3 objects cannot hold annotations");
 
       public:
-        // Rule of 5
-        DEFINE_IMPLICITS_ALL_NOEXCEPT(Z3);
+        /** Constructor */
+        inline Z3(const Mode::BigInt m = Mode::BigInt::Str) noexcept : Generic { m } {}
+        // Disable implicits
+        SET_IMPLICITS_NONDEFAULT_CTORS(Z3, delete);
 
         /********************************************************************/
         /*                        Function Overrides                        */
@@ -88,9 +90,9 @@ namespace Backend::Z3 {
 
         /** Abstract a backend object into a claricpp expression */
         inline AbstractionVariant
-        dispatch_abstraction(const z3::expr &b_obj,
+        dispatch_abstraction(const Super &bk, const z3::expr &b_obj,
                              std::vector<AbstractionVariant> &args) override final {
-            return Private::dispatch_abstraction(b_obj, args,
+            return Private::dispatch_abstraction(bk, b_obj, args,
                                                  symbol_annotation_translocation_data);
         }
 
@@ -456,7 +458,7 @@ namespace Backend::Z3 {
             Utils::map_add(abstraction_prim_cache, hash, ret);
             return ret;
 #else
-            return Private::dispatch_abstraction_to_prim(b_obj);
+            return Private::dispatch_abstraction_to_prim(b_obj, *this);
 #endif
         }
 

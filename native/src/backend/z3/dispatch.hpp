@@ -369,7 +369,7 @@ namespace Backend::Z3::Private {
     }
 
     /** Abstract a backend object into a claricpp expression */
-    inline AbstractionVariant dispatch_abstraction(const z3::expr &b_obj,
+    inline AbstractionVariant dispatch_abstraction(const Super &bk, const z3::expr &b_obj,
                                                    std::vector<AbstractionVariant> &args,
                                                    SymAnTransData &satd) {
 
@@ -453,7 +453,7 @@ namespace Backend::Z3::Private {
                 // Bit-vectors
             case Z3_OP_BNUM:
                 ASSERT_ARG_EMPTY(args);
-                return Abstract::BV::num(b_obj);
+                return Abstract::BV::num(b_obj, bk);
             case Z3_OP_BNEG:
                 return Abstract::neg<Ex::BV>(args);
             case Z3_OP_BADD:
@@ -621,7 +621,7 @@ namespace Backend::Z3::Private {
     }
 
     /** Abstract a backend object into a primitive stored in a PrimVar */
-    inline PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj) {
+    inline PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj, const Super &bk) {
         Utils::affirm<Utils::Error::Unexpected::Size>(b_obj.num_args() == 0, WHOAMI_WITH_SOURCE
                                                       "Op should have no children");
 
@@ -648,7 +648,7 @@ namespace Backend::Z3::Private {
 
             // Conversions
             case Z3_OP_BNUM: {
-                const auto x { Abstract::BV::num_primtive(b_obj) };
+                const auto x { Abstract::BV::num_primtive(b_obj, bk) };
                 /** A local helper macro */
 #define G_CASE(INDEX)                                                                             \
     case INDEX:                                                                                   \
