@@ -13,11 +13,9 @@
 #include "simplification.hpp"
 #include "utils.hpp"
 
-
 /********************************************************************/
 /*                            extern "C"                            */
 /********************************************************************/
-
 
 // These types should be structs which contain only a single shared pointer named ptr
 extern "C" {
@@ -34,12 +32,9 @@ struct ClaricppExpr final {
     Expression::BasePtr ptr;
 };
 }
-
-
 /********************************************************************/
 /*                               C++                                */
 /********************************************************************/
-
 
 namespace API {
 

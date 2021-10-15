@@ -75,19 +75,24 @@ CREATE_SYM(BV, bv);
     }
 
 CREATE_LIT(bool, bool);
-CREATE_LIT(char *const, string);
-CREATE_LIT(float, float);
-CREATE_LIT(double, double);
+CREATE_LIT(float, fp_float);
+CREATE_LIT(double, fp_double);
+CREATE_LIT(uint8_t, bv_u8);
+CREATE_LIT(uint16_t, bv_u16);
+CREATE_LIT(uint32_t, bv_u32);
+CREATE_LIT(uint64_t, bv_u64);
+
+// Cleanup
+#undef CREATE_LIT
+
+ClaricppExpr *claricpp_create_literal_string(PyStr str) {
+    return API::to_c(Create::literal(std::string { str }));
+}
 
 ClaricppExpr *claricpp_create_literal_vs(const HASH_T hash, const VS_T value,
                                          const SIZE_T bit_length) {
     return API::to_c(Create::literal(std::make_shared<PyObj::VS>(hash, value, bit_length)));
 }
-
-CREATE_LIT(uint8_t, u8);
-CREATE_LIT(uint16_t, u16);
-CREATE_LIT(uint32_t, u32);
-CREATE_LIT(uint64_t, u64);
 
 ClaricppExpr *claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length) {
     return API::to_c(Create::literal(BigInt { value, bit_length }));
@@ -96,7 +101,4 @@ ClaricppExpr *claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZ
 ClaricppExpr *claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length) {
     return API::to_c(Create::literal(BigInt { BigInt::Int { value }, bit_length }));
 }
-
-// Cleanup
-#undef CREATE_LIT
 }
