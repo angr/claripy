@@ -433,7 +433,7 @@ class Base:
         if simplified is not None:
             op = simplified.op
 
-        all_operations = operations.leaf_operations_symbolic | {'union'}
+        all_operations = operations.leaf_operations_symbolic_with_union
         if 'annotations' not in kwargs:
             # special case: if self is one of the args, we do not copy annotations over from self since child
             # annotations will be re-processed during AST creation.

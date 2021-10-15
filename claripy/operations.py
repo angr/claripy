@@ -367,6 +367,7 @@ inverse_operations = {
 leaf_operations = backend_symbol_creation_operations | backend_creation_operations
 leaf_operations_concrete = backend_creation_operations
 leaf_operations_symbolic = backend_symbol_creation_operations
+leaf_operations_symbolic_with_union = leaf_operations_symbolic | {'union'}
 
 #
 # Reversibility
