@@ -2,8 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "backend.hpp"
 #include "testlib.hpp"
+
 
 /** Return true if x is a T equal to sol */
 template <typename T> static bool test_eq(const Backend::Z3::PrimVar x, const T y) {

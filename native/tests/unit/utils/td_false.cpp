@@ -3,7 +3,6 @@
  * \ingroup unittest
  */
 #include "testlib.hpp"
-#include "utils.hpp"
 
 
 // Invoking this function with the default template argument should compile

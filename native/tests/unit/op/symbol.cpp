@@ -2,7 +2,6 @@
  * @file
  * \ingroup unittest
  */
-#include "op.hpp"
 #include "testlib.hpp"
 
 

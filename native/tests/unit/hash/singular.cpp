@@ -2,7 +2,6 @@
  * @file
  * \ingroup unittest
  */
-#include "hash.hpp"
 #include "testlib.hpp"
 
 #include <set>

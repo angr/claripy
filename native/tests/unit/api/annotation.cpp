@@ -2,11 +2,7 @@
  * @file
  * \ingroup unittest
  */
-#include "api_private.hpp"
 #include "testlib.hpp"
-extern "C" {
-#include "api.h"
-}
 
 
 /** Verify the Annotation API works */

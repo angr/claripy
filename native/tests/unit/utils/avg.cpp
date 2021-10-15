@@ -4,6 +4,7 @@
  */
 #include "testlib.hpp"
 
+
 /** Test if a and b average to c */
 template <typename T> static bool test(const T a, const T b, const T c) {
     return c == Utils::avg(a, b);

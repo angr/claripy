@@ -2,8 +2,8 @@
  * @file
  * \ingroup unittest
  */
-#include "backend.hpp"
 #include "testlib.hpp"
+
 
 /** Test the backend unsat_core function */
 void unsat_core() {
