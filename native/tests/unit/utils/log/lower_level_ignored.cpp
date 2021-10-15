@@ -4,14 +4,13 @@
  */
 #include "test_each_level.hpp"
 #include "testlib.hpp"
-#include "utils.hpp"
 
 #include <iostream>
 #include <sstream>
 
 
-using namespace Utils::Log;
-using Lvl = Level::Level;
+namespace L = Utils::Log;
+using Lvl = L::Level::Level;
 using namespace UnitTest::TestLib;
 
 
@@ -46,12 +45,12 @@ void lower_level_ignored() {
     auto s { std::make_shared<std::ostringstream>() };
     s->str("");
     UNITTEST_ASSERT_MSG(s->str().empty(), "Sanity check");
-    Backend::set<Backend::OStream>(Utils::Cast::Static::up<std::ostream>(s), true, false);
+    L::Backend::set<L::Backend::OStream>(Utils::Cast::Static::up<std::ostream>(s), true, false);
 
     // Change the log level if needed
 #ifndef CONSTANT_LOG_LEVEL
-    if (const auto lvl { Level::get() }; lvl == Lvl::Verbose) {
-        Level::set(Lvl::Warning);
+    if (const auto lvl { L::Level::get() }; lvl == Lvl::Verbose) {
+        L::Level::set(Lvl::Warning);
     }
 #endif
 

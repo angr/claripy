@@ -3,7 +3,6 @@
  * \ingroup unittest
  */
 #include "testlib.hpp"
-#include "utils.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -16,8 +15,8 @@ UTILS_LOG_DEFINE_LOG_CLASS(Custom)
 #include "test_each_level.hpp"
 
 
-using namespace Utils::Log;
-using Lvl = Level::Level;
+namespace L = Utils::Log;
+using Lvl = L::Level::Level;
 using namespace UnitTest::TestLib;
 
 
@@ -30,7 +29,7 @@ void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
 }
 
 /** Create a style class */
-struct CustomSty final : Style::Base {
+struct CustomSty final : L::Style::Base {
     /** The style function */
     std::string str(Constants::CCSC, const Lvl &,
                     const std::ostringstream &) const override final {
@@ -43,7 +42,7 @@ void custom() {
     // Configure backend and style to output to with all relevant info
     auto s { std::make_shared<std::ostringstream>() };
     Style::set<CustomSty>();
-    Backend::set<Backend::OStream>(Utils::Cast::Static::up<std::ostream>(s), true);
+    L::Backend::set<L::Backend::OStream>(Utils::Cast::Static::up<std::ostream>(s), true);
 
     // Test each level
     UnitTest::test_each_level(s, test, "");

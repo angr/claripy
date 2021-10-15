@@ -4,7 +4,6 @@
  */
 #include "test_each_level.hpp"
 #include "testlib.hpp"
-#include "utils.hpp"
 
 #include <iostream>
 #include <memory>
@@ -12,8 +11,8 @@
 #include <sstream>
 
 
-using namespace Utils::Log;
 using Lvl = Level::Level;
+namespace L = Utils::Log;
 using namespace UnitTest::TestLib;
 
 
@@ -26,9 +25,9 @@ void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
 /** Each construction should have a unique pointer */
 void levels() {
     // Configure backend and style to output to with all relevant info
-    Style::set<Style::LevelTimestampMessage>();
+    L::Style::set<L::Style::LevelTimestampMessage>();
     auto s { std::make_shared<std::ostringstream>() };
-    Backend::set<Backend::OStream>(Utils::Cast::Static::up<std::ostream>(s), true);
+    L::Backend::set<L::Backend::OStream>(Utils::Cast::Static::up<std::ostream>(s), true);
 
     // Test each level
     UnitTest::test_each_level(s, test, "Log test");

@@ -3,24 +3,23 @@
  * \ingroup unittest
  */
 #include "testlib.hpp"
-#include "utils.hpp"
 
 #include <iostream>
 
 
-using namespace Utils::Log;
+namespace L = Utils::Log;
 using namespace UnitTest::TestLib;
 
 
 /** Create a backend class */
-struct Cout final : Backend::OStream {
-    Cout() : Backend::OStream(std::make_shared<std::ostream>(std::cout.rdbuf()), true, false) {}
+struct Cout final : L::Backend::OStream {
+    Cout() : OStream(std::make_shared<std::ostream>(std::cout.rdbuf()), true, false) {}
 };
 
 /** Verify our set backend was indeed set */
 void backend_access() {
-    Backend::set<Cout>();
-    const bool success { dynamic_cast<const Cout *>(Backend::get().get()) != nullptr };
+    L::Backend::set<Cout>();
+    const bool success { dynamic_cast<const Cout *>(L::Backend::get().get()) != nullptr };
     UNITTEST_ASSERT(success);
 }
 

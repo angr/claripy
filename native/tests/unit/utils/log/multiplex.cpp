@@ -4,7 +4,6 @@
  */
 #include "test_each_level.hpp"
 #include "testlib.hpp"
-#include "utils.hpp"
 
 #include <iostream>
 #include <memory>
@@ -14,15 +13,15 @@
 
 
 // For brevity
-using namespace Utils::Log;
-using namespace Backend;
-using Lvl = Level::Level;
+namespace L = Utils::Log;
+namespace B = L::Backend;
+using Lvl = L::Level::Level;
 using namespace UnitTest::TestLib;
 
 
 /** Test the given logging function */
 void test(std::vector<std::shared_ptr<std::ostringstream>> &v, Lvl l) {
-    if (Level::enabled(l)) {
+    if (L::Level::enabled(l)) {
         UNITTEST_ASSERT(v.size() == 2)
         for (auto &s : v) {
             const auto str { s->str() };
@@ -46,14 +45,14 @@ void multiplex() {
     auto ptr2 { Utils::Cast::Static::up<std::ostream>(s[1]) };
 
     // Create the real backend
-    Multiplex multi;
+    B::Multiplex multi;
 
     // Install the backends
-    multi.backends.emplace_back(std::make_shared<OStream>(ptr1, true));
-    multi.backends.emplace_back(std::make_shared<OStream>(ptr2, true));
+    multi.backends.emplace_back(std::make_shared<B::OStream>(ptr1, true));
+    multi.backends.emplace_back(std::make_shared<B::OStream>(ptr2, true));
 
     // Install the multi backend
-    copy<Multiplex>(multi);
+    B::copy<B::Multiplex>(multi);
 
     // Test each level
     UnitTest::test_each_level(s, test, "");
