@@ -21,6 +21,9 @@ struct ClaricppExpr;
 /** Holds a BigInt */
 struct ClaricppBigInt;
 
+/** The type a Python string argument is */
+typedef const char * const PyStr;
+
 /** Define SIZE_T as Constants::UInt without polluting the global namespace */
 #define SIZE_T unsigned long long
 /** Define Hash::Hash without polluting the global namespace */
@@ -53,31 +56,31 @@ ClaricppSPAV * claricpp_annotation_create_spav(const ClaricppAnnotation * const 
 /** Create an symbolic boolean expression
  *  @param name The name of the symbol
  */
-ClaricppExpr * claricpp_create_symbol_bool(const char * const name);
+ClaricppExpr * claricpp_create_symbol_bool(PyStr name);
 
 /** Create an symbolic string expression
  *  @param name The name of the symbol
  *  @param bit_length The bit length of the symbol
  */
-ClaricppExpr * claricpp_create_symbol_string(const char * const name, const SIZE_T bit_length);
+ClaricppExpr * claricpp_create_symbol_string(PyStr name, const SIZE_T bit_length);
 
 /** Create an symbolic VS expression
  *  @param name The name of the symbol
  *  @param bit_length The bit length of the symbol
  */
-ClaricppExpr * claricpp_create_symbol_vs(const char * const name, const SIZE_T bit_length);
+ClaricppExpr * claricpp_create_symbol_vs(PyStr name, const SIZE_T bit_length);
 
 /** Create an symbolic FP expression
  *  @param name The name of the symbol
  *  @param bit_length The bit length of the symbol
  */
-ClaricppExpr * claricpp_create_symbol_fp(const char * const name, const SIZE_T bit_length);
+ClaricppExpr * claricpp_create_symbol_fp(PyStr name, const SIZE_T bit_length);
 
 /** Create an symbolic BV expression
  *  @param name The name of the symbol
  *  @param bit_length The bit length of the symbol
  */
-ClaricppExpr * claricpp_create_symbol_bv(const char * const name, const SIZE_T bit_length);
+ClaricppExpr * claricpp_create_symbol_bv(PyStr name, const SIZE_T bit_length);
 
 // Literal
 
@@ -89,7 +92,7 @@ ClaricppExpr * claricpp_create_literal_bool(const bool value);
 /** Create a literal string expression
  *  @param value The data held by the literal
  */
-ClaricppExpr * claricpp_create_literal_string(const char * const value);
+ClaricppExpr * claricpp_create_literal_string(PyStr value);
 
 /** Create a literal float expression
  *  @param value The data held by the literal
@@ -131,12 +134,15 @@ ClaricppExpr * claricpp_create_literal_bv_u64(const uint64_t value);
  */
 ClaricppExpr * claricpp_create_literal_bv_u64(const uint64_t value);
 
-/** Create a literal double expression
+/** Create a literal BigInt expression with the BigInt in Str mode
  *  @param value The data held by the literal represented in base 10 by a string
  */
-ClaricppExpr * claricpp_create_literal_bv_big_int(const char * const value, const SIZE_T bit_length);
+ClaricppExpr * claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length);
 
-//maybe keep char * ?
+/** Create a literal BigInt expression with the BigInt in Int mode
+ *  @param value The data held by the literal represented in base 10 by a string
+ */
+ClaricppExpr * claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length);
 
 /********************************************************************/
 /*                            Expression                            */

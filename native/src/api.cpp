@@ -89,9 +89,12 @@ CREATE_LIT(uint16_t, u16);
 CREATE_LIT(uint32_t, u32);
 CREATE_LIT(uint64_t, u64);
 
-ClaricppExpr *claricpp_create_literal_bv_big_int(const char *const value,
-                                                 const SIZE_T bit_length) {
-    return API::to_c(Create::literal(BigInt { BigInt::Value { value }, bit_length }));
+ClaricppExpr *claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length) {
+    return API::to_c(Create::literal(BigInt { value, bit_length }));
+}
+
+ClaricppExpr *claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length) {
+    return API::to_c(Create::literal(BigInt { BigInt::Int { value }, bit_length }));
 }
 
 // Cleanup
