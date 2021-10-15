@@ -22,10 +22,10 @@ namespace Backend::Z3::Convert {
     z3::expr concat(const z3::expr &l, const z3::expr &r);
     z3::expr extract(const Constants::UInt high, const Constants::UInt low, const z3::expr &e);
 
-    namespace Private {
+/** A local macro to make refencing Z3's Private tl_ctx easier */
+#define TL_CTX ::Backend::Z3::Private::tl_ctx
 
-        /** A thread_local reference to tl_ctx for brevity */
-        auto &tl_ctx { ::Backend::Z3::Private::tl_ctx };
+    namespace Private {
 
         /** The size of a float
          *  Note that constexpr may not imply inline here so we are explicit
@@ -199,7 +199,7 @@ namespace Backend::Z3::Convert {
     }
 
     /** Concat converter */
-    z3::expr concat(const z3::expr &l, const z3::expr &r) { return z3::concat(l, r); }
+    inline z3::expr concat(const z3::expr &l, const z3::expr &r) { return z3::concat(l, r); }
 
     // Flat
 
@@ -280,16 +280,16 @@ namespace Backend::Z3::Convert {
             switch (data.index()) {
                 case 0:
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 0, bool);
-                    return Private::tl_ctx.bool_val(std::get<bool>(data));
+                    return TL_CTX.bool_val(std::get<bool>(data));
                 case 1:
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 1, std::string);
-                    return Private::tl_ctx.string_val(std::get<std::string>(data));
+                    return TL_CTX.string_val(std::get<std::string>(data));
                 case 2:
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 2, float);
-                    return Private::tl_ctx.fpa_val(std::get<float>(data));
+                    return TL_CTX.fpa_val(std::get<float>(data));
                 case 3:
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 3, double);
-                    return Private::tl_ctx.fpa_val(std::get<double>(data));
+                    return TL_CTX.fpa_val(std::get<double>(data));
                 case 4:
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
@@ -298,7 +298,7 @@ namespace Backend::Z3::Convert {
 #define STD_INT(INDEX, TYPE, BL)                                                                  \
     case INDEX:                                                                                   \
         UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                          \
-        return Private::tl_ctx.bv_val(std::get<TYPE>(data), BL);
+        return TL_CTX.bv_val(std::get<TYPE>(data), BL);
                     STD_INT(5, uint8_t, 8);
                     STD_INT(6, uint16_t, 16);
                     STD_INT(7, uint32_t, 32);
@@ -309,14 +309,13 @@ namespace Backend::Z3::Convert {
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 9, BigInt);
                     const auto &big { std::get<BigInt>(data) };
                     if (std::holds_alternative<BigInt::Str>(big.value)) {
-                        return Private::tl_ctx.bv_val(std::get<BigInt::Str>(big.value).c_str(),
-                                                      Private::to_z3u(big.bit_length));
+                        return TL_CTX.bv_val(std::get<BigInt::Str>(big.value).c_str(),
+                                             Private::to_z3u(big.bit_length));
                     }
                     else {
                         std::ostringstream s;
                         big.write_value(s);
-                        return Private::tl_ctx.bv_val(s.str().c_str(),
-                                                      Private::to_z3u(big.bit_length));
+                        return TL_CTX.bv_val(s.str().c_str(), Private::to_z3u(big.bit_length));
                     }
                 }
                     // Error handling
@@ -344,16 +343,16 @@ namespace Backend::Z3::Convert {
         const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
         switch (expr->cuid) {
             case Expression::Bool::static_cuid:
-                return Private::tl_ctx.bool_const(name.c_str());
+                return TL_CTX.bool_const(name.c_str());
             case Expression::String::static_cuid:
-                return Private::tl_ctx.string_const(name.c_str());
+                return TL_CTX.string_const(name.c_str());
             case Expression::FP::static_cuid: {
                 using FPP = Constants::CTSC<Expression::FP>;
                 const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length ==
                                   Private::flt_size)
                                      ? Mode::FP::flt
                                      : Mode::FP::dbl };
-                return Private::tl_ctx.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
+                return TL_CTX.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
             }
             case Expression::BV::static_cuid: {
                 using BVP = Constants::CTSC<Expression::BV>;
@@ -374,7 +373,7 @@ namespace Backend::Z3::Convert {
                 const Constants::UInt bit_length {
                     Utils::checked_static_cast<BVP>(expr)->bit_length
                 };
-                return Private::tl_ctx.bv_const(name.c_str(), Private::to_z3u(bit_length));
+                return TL_CTX.bv_const(name.c_str(), Private::to_z3u(bit_length));
             }
                 // Error handling
             case Expression::VS::static_cuid:
@@ -562,6 +561,9 @@ namespace Backend::Z3::Convert {
         }
 
     } // namespace String
+
+// Cleanup
+#undef TL_CTX
 
 } // namespace Backend::Z3::Convert
 
