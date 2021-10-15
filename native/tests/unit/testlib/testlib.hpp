@@ -12,6 +12,7 @@
 
 #include "testlib/error.hpp"
 #include "testlib/factories.hpp"
+#include "testlib/includes.hpp"
 #include "testlib/main.hpp"
 #include "testlib/test_func.hpp"
 

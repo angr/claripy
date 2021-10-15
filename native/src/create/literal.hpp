@@ -10,6 +10,13 @@
 
 namespace Create {
 
+    /** This function exists to prevent accidental use by explicit rejection */
+    inline EBasePtr literal(Constants::CCSC, SPAV && = nullptr) {
+        throw Utils::Error::Unexpected::Usage(WHOAMI_WITH_SOURCE
+                                              "Do not pass a char * to literal(); C++ casts it to "
+                                              "bool; did you mean to use std::string?");
+    }
+
 /** A local macro used for consistency */
 #define TRIVIAL_TYPE(EXP, INPUT)                                                                  \
     inline EBasePtr literal(const INPUT data, SPAV &&sp = nullptr) {                              \
