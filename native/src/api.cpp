@@ -6,12 +6,16 @@ extern "C" {
 
 // @todo: Handle exceptions
 
+
 // Static checks
-static_assert(sizeof(std::size_t) == sizeof(Constants::UInt) && std::is_unsigned_v<std::size_t>,
-              "Constants::UInt needs to be changed");
-static_assert(std::is_same_v<SIZE_T, Constants::UInt>, "SIZE_T needs to be changed");
-static_assert(std::is_same_v<VS_T, PyObj::Base::Ref>, "VS_T needs to be changed");
-static_assert(std::is_same_v<HASH_T, Hash::Hash>, "HASH_T needs to be changed");
+/** A local macro used for static tests */
+#define SAME_U(A, B) (sizeof(A) == sizeof(B) && std::is_unsigned_v<A> && std::is_unsigned_v<B>)
+static_assert(SAME_U(std::size_t, Constants::UInt), "Constants::UInt needs to be changed");
+static_assert(SAME_U(SIZE_T, Constants::UInt), "Constants::UInt needs to be changed");
+static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");
+static_assert(SAME_U(HASH_T, Hash::Hash), "HASH_T needs to be changed");
+// Cleanup
+#undef SAME_U
 
 /********************************************************************/
 /*                            Annotation                            */
@@ -32,7 +36,7 @@ ClaricppSPAV *claricpp_annotation_create_spav(const ClaricppAnnotation *const *c
     Annotation::Vec::RawVec raw;
     raw.reserve(len);
     for (SIZE_T i = 0; i < len; ++i) {
-        raw.emplace_back(list[i]->ptr);
+        raw.emplace_back(list[i]->ptr); // NOLINT
     }
     using CV = Utils::InternalType<Annotation::SPAV>;
     return API::to_c(std::make_shared<CV>(std::move(raw)));
