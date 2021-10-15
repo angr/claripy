@@ -6,6 +6,7 @@
 #ifndef R_MODE_HPP_
 #define R_MODE_HPP_
 
+#include "mode/big_int.hpp"
 #include "mode/compare.hpp"
 #include "mode/fp.hpp"
 #include "mode/lr.hpp"
