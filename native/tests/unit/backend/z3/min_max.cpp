@@ -10,8 +10,8 @@ template <bool Signed, typename T, bool Minimize>
 static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
                  const Expression::BasePtr &test_c,
                  const std::vector<Expression::RawPtr> ec = {}) { // NOLINT
-    // Get a solver and add constraint
-    const auto solver_ref { z3.tls_solver() };
+    // Get a new solver and add constraint
+    const auto solver_ref { z3.template tls_solver<true>() };
     auto &solver { *solver_ref };
     z3.add(solver, test_c.get());
     // Min / max functions
@@ -75,7 +75,6 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     // Test bounds
 
     // Test x > 5
-    Utils::Log::debug("\t\t- Standard tests...");
     UNITTEST_ASSERT(get_min(xgeq5) == 6);
     UNITTEST_ASSERT(get_max(xgeq5) == int_max);
 
