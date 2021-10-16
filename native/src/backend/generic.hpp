@@ -20,10 +20,10 @@
 namespace Backend {
 
     /** A subclass of Backend::Base which other backends should derive from for consistency
-     *  If ApplyAnnotations, convert will invoke apply_annotations() on newly converted backend
+     *  If apply_annotations, convert will invoke apply_annotations() on newly converted backend
      *  objects, passing the expressions' annotation vector to the function as it does
      */
-    template <typename BackendObj, bool ApplyAnnotations> class Generic : public Base {
+    template <typename Derived, typename BackendObj> class Generic : public Base {
         /** A raw pointer to a backend object */
         using BORCPtr = const BackendObj *;
 
@@ -143,7 +143,7 @@ namespace Backend {
                     // Convert the expression to a backend object
                     // Note: No need for a cache lookup, op_stack contains only cache misses
                     BackendObj obj { dispatch_conversion(expr, arg_stack) };
-                    if constexpr (ApplyAnnotations) {
+                    if constexpr (Derived::apply_annotations) {
                         obj = std::move(apply_annotations(obj, expr->annotations));
                     }
 
@@ -211,8 +211,7 @@ namespace Backend {
             }
 
             // Convert b_obj then update various caches and return
-            auto ret { dispatch_abstraction(*this, b_obj,
-                                            args) }; // Not const for move ret purposes
+            auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             Utils::map_add(abstraction_cache, hash, ret);
 #endif
@@ -224,9 +223,6 @@ namespace Backend {
         }
 
       protected:
-        /** Allow subclasses access to the apply_annotations template parameter */
-        static UTILS_ICCBOOL use_apply_annotations { ApplyAnnotations };
-
         // Pure Virtual Functions
 
         /** This dynamic dispatcher converts an expression into a backend object
@@ -246,9 +242,8 @@ namespace Backend {
          *  Note: We use a raw vector instead of a stack for efficiency
          *  Note: This function should not edit the Simplification cache
          */
-        virtual AbstractionVariant
-        dispatch_abstraction(const Generic<BackendObj, ApplyAnnotations> &bk,
-                             const BackendObj &b_obj, std::vector<AbstractionVariant> &args) = 0;
+        virtual AbstractionVariant dispatch_abstraction(const BackendObj &b_obj,
+                                                        std::vector<AbstractionVariant> &args) = 0;
 
         // Virtual Functions
 
@@ -256,7 +251,7 @@ namespace Backend {
          *  If the given backend does not support this, this function will never be called
          */
         BackendObj apply_annotations(const BackendObj &o, Annotation::SPAV &&sp) const {
-            static_assert(ApplyAnnotations, "ApplyAnnotations is not enabled");
+            static_assert(Derived::apply_annotations, "Derived::apply_annotations is not enabled");
             return apply_annotations_helper(o, std::move(sp));
         }
 
