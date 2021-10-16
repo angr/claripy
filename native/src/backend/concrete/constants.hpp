@@ -12,9 +12,6 @@ namespace Backend::Concrete {
     /** The data type to be used as the BackendObject */
     using PrimVar = Op::Literal::Data;
 
-    /** The 'Generic' superclass of z3 */
-    using Super = Generic<PrimVar, false>;
-
 } // namespace Backend::Concrete
 
 #endif
