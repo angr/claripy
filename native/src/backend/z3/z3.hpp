@@ -17,14 +17,28 @@ namespace Backend::Z3 {
     // Z3 global settings
     UTILS_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
 
-    /** The Z3 backend */
-    class Z3 final : public Super {
+    /** The Z3 backend
+     *  Warning: Only one Z3 backend should exist per thread
+     */
+    class Z3 final : public Generic<Z3, z3::expr> {
         ENABLE_UNITTEST_FRIEND_ACCESS;
-        static_assert(!use_apply_annotations, "Z3 objects cannot hold annotations");
+        /** Allow Dispatch friend access */
+        friend struct Dispatch<Z3>;
 
       public:
+        /** Used for static error checking in template injection */
+        using IsZ3Bk = std::true_type;
+        /** Z3 objects cannot hold annotations */
+        static UTILS_CCBOOL apply_annotations = false;
+
         /** Constructor */
-        inline Z3(const Mode::BigInt m = Mode::BigInt::Str) noexcept : Generic { m } {}
+        inline Z3(const Mode::BigInt m = Mode::BigInt::Str) noexcept : Generic { m } {
+            using Err = Utils::Error::Unexpected::Usage;
+            Utils::affirm<Err>(!tls.exists,
+                               WHOAMI_WITH_SOURCE "Only one Z3 backend should exist per thread");
+            tls.exists = true;
+        }
+
         // Disable implicits
         SET_IMPLICITS_NONDEFAULT_CTORS(Z3, delete);
 
@@ -38,7 +52,7 @@ namespace Backend::Z3 {
         /** Clears translocation data */
         inline void clear_persistent_data() override final {
             Utils::Log::warning("Z3 backend clearing persistent data...");
-            symbol_annotation_translocation_data.clear();
+            tls.symbol_annotation_translocation_data.clear();
         }
 
         /** The name of this backend */
@@ -85,15 +99,16 @@ namespace Backend::Z3 {
          */
         inline z3::expr dispatch_conversion(const Expression::RawPtr expr,
                                             std::vector<const z3::expr *> &args) override final {
-            return Private::dispatch_conversion(expr, args, symbol_annotation_translocation_data);
+            return Dispatch<Z3>::dispatch_conversion(
+                expr, args, tls.symbol_annotation_translocation_data, *this);
         }
 
         /** Abstract a backend object into a claricpp expression */
         inline AbstractionVariant
-        dispatch_abstraction(const Super &bk, const z3::expr &b_obj,
+        dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<AbstractionVariant> &args) override final {
-            return Private::dispatch_abstraction(bk, b_obj, args,
-                                                 symbol_annotation_translocation_data);
+            return Dispatch<Z3>::dispatch_abstraction(
+                b_obj, args, tls.symbol_annotation_translocation_data, *this);
         }
 
         /********************************************************************/
@@ -102,11 +117,10 @@ namespace Backend::Z3 {
 
         /** Return a tls solver
          *  If timeout is not 0, timeouts will be configured for the solver
-         *  Warning: resets the tls solver if ForceNew is false
+         *  Warning: solver is not saved locally if force_new is false
          */
         template <bool ForceNew = false>
-        [[nodiscard]] inline std::shared_ptr<z3::solver>
-        tls_solver(const unsigned timeout = 0) const {
+        [[nodiscard]] inline std::shared_ptr<z3::solver> tls_solver(const unsigned timeout = 0) {
             auto ret { get_tls_solver<ForceNew>() };
             if (timeout != 0) {
                 if (ret->get_param_descrs().to_string().find("soft_timeout") !=
@@ -159,7 +173,7 @@ namespace Backend::Z3 {
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
         inline bool solution(const Expression::RawPtr expr, const Expression::RawPtr sol,
                              z3::solver &solver) {
-            static thread_local std::vector<Expression::RawPtr> s;
+            const static thread_local std::vector<Expression::RawPtr> s {};
             return solution(expr, sol, solver, s);
         }
 
@@ -308,23 +322,17 @@ namespace Backend::Z3 {
         /********************************************************************/
 
         /** Return a tls solver
-         *  Warning: resets the tls solver if force_new is false
+         *  Warning: solver is not saved locally if force_new is false
          */
         template <bool ForceNew>
-        [[nodiscard]] inline std::shared_ptr<z3::solver> get_tls_solver() const {
+        [[nodiscard]] inline std::shared_ptr<z3::solver> get_tls_solver() {
             if constexpr (ForceNew) {
-                return std::make_shared<z3::solver>(Private::tl_ctx);
+                return std::make_shared<z3::solver>(tls.ctx);
             }
-            else {
-                static thread_local std::shared_ptr<z3::solver> s {};
-                if (UNLIKELY(s == nullptr)) {
-                    s = std::make_shared<z3::solver>(Private::tl_ctx);
-                }
-                else {
-                    s->reset();
-                }
-                return s;
+            else if (UNLIKELY(tls.solver == nullptr)) {
+                tls.solver = std::make_shared<z3::solver>(tls.ctx);
             }
+            return tls.solver;
         }
 
         /** Extracts the hash from the boolean z3::expr expr named: |X|
@@ -441,24 +449,23 @@ namespace Backend::Z3 {
         }
 
         /** The method used to simplify z3 boolean expressions*/
-        inline z3::expr bool_simplify(const z3::expr &expr) {
-            static thread_local BoolTactic bt {};
-            return bt(expr);
-        }
+        inline z3::expr bool_simplify(const z3::expr &expr) { return tls.bt(expr); }
 
         /** Abstract b_obj to a type in PrimVar */
         inline PrimVar abstract_to_prim(const z3::expr &b_obj) {
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            auto &abstraction_prim_cache { tls.abstract_prim_cache };
             const auto hash { b_obj.hash() };
             if (const auto lookup { abstraction_prim_cache.find(hash) };
                 lookup != abstraction_prim_cache.end()) {
                 return lookup->second;
             }
-            auto ret { Private::dispatch_abstraction_to_prim(b_obj) }; // Not const for ret move
+            auto ret { Dispatch<Z3>::dispatch_abstraction_to_prim(
+                b_obj) }; // Not const for ret move
             Utils::map_add(abstraction_prim_cache, hash, ret);
             return ret;
 #else
-            return Private::dispatch_abstraction_to_prim(b_obj, *this);
+            return Dispatch<Z3>::dispatch_abstraction_to_prim(b_obj, *this);
 #endif
         }
 
@@ -536,9 +543,7 @@ namespace Backend::Z3 {
 #undef MAX_S
 
             // Inline-able lambdas to for clarity
-            const auto to_z3 { [&len](const Integer i) {
-                return Private::tl_ctx.bv_val(i, len);
-            } };
+            const auto to_z3 { [&len](const Integer i) { return tls.ctx.bv_val(i, len); } };
             const auto ge { [](const z3::expr &a, const z3::expr &b) {
                 return (Signed ? z3::sge(a, b) : z3::uge(a, b));
             } };
@@ -619,19 +624,34 @@ namespace Backend::Z3 {
             bool act;
         };
 
+        /** Holds and initalizes the thread_local z3 data */
+        struct TLS final {
+            /** True if a Z3 instance exists in this thread */
+            bool exists { false };
+
+            /** The z3 context this uses */
+            z3::context ctx {};
+            /** The BoolTactic the z3 backend will use */
+            BoolTactic bt { ctx };
+            /** The z3 solver to be used by this backend */
+            std::shared_ptr<z3::solver> solver { nullptr };
+
+            /** Stores a symbol's annotations to be translocated from the pre-conversion expression
+             *  to the post-abstraction expression symbol of the same name.
+             */
+            SymAnTransData symbol_annotation_translocation_data {};
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            /** A cache for abstractions to primitives */
+            std::map<Hash::Hash, PrimVar> abstract_prim_cache {};
+#endif
+        };
+
         /********************************************************************/
         /*                          Representation                          */
         /********************************************************************/
 
-        /** Stores a symbol's annotations to be translocated from the pre-conversion expression
-         *  to the post-abstraction expression symbol of the same name.
-         */
-        inline static thread_local SymAnTransData symbol_annotation_translocation_data {};
-
-#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-        /** A cache for abstractions to primitives */
-        inline static thread_local std::map<Hash::Hash, PrimVar> abstract_prim_cache;
-#endif
+        /** Thread local data the Z3 backend uses */
+        static thread_local TLS tls;
     };
 
 } // namespace Backend::Z3
