@@ -38,6 +38,8 @@ namespace PyObj {
                                    "PyObjects differ but have identical hashes; this is probably "
                                    "due to user error");
             }
+#else
+            (void) cond;
 #endif
             return ret;
         }
