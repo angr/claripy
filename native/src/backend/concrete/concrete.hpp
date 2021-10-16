@@ -11,9 +11,12 @@
 namespace Backend::Concrete {
 
     /** The Concrete backend */
-    class Concrete final : Super {
+    class Concrete final : Generic<Concrete> {
         ENABLE_UNITTEST_FRIEND_ACCESS;
-        static_assert(!use_apply_annotations, "Concrete objects cannot hold annotations");
+        /** The backend object type */
+        using BackendObj = PrimVar;
+        /** Concrete objects cannot hold annotations */
+        using ApplyAnnotations = std::false_type;
 
       public:
         /** Constructor */
@@ -54,16 +57,17 @@ namespace Backend::Concrete {
          *  *only* if the cuid of the expression is of or derive from the type being cast to.
          */
         inline PrimVar dispatch_conversion(const Expression::RawPtr expr,
-                                           std::vector<const PrimVar *> &args) override final {
-            Utils::sink(expr, args);
+                                           std::vector<const PrimVar *> &args,
+                                           Super &bk) override final {
+            Utils::sink(expr, args, bk);
             return 0.; // todo
         }
 
         /** Abstract a backend object into a claricpp expression */
-        inline AbstractionVariant
-        dispatch_abstraction(const Super &bk, const PrimVar &b_obj,
-                             std::vector<AbstractionVariant> &args) override final {
-            Utils::sink(bk, b_obj, args);
+        inline AbstractionVariant dispatch_abstraction(const PrimVar &b_obj,
+                                                       std::vector<AbstractionVariant> &args,
+                                                       Super &bk) override final {
+            Utils::sink(bk, b_obj, args, bk);
             return Mode::FP::Rounding::NearestTiesAwayFromZero; // todo
         }
 

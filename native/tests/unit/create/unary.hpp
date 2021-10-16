@@ -25,10 +25,7 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     const auto exp { CreateF(arg, nullptr) };
 
     // Pointer checks
-    // Note: Bool true and false are used in the backend so their count should be 3
-    const bool is_bool { arg == Create::literal(true) || arg == Create::literal(false) };
-    const bool uc { is_bool ? (arg.use_count() > 2) : (arg.use_count() == 2) };
-    UNITTEST_ASSERT(uc);
+    UNITTEST_ASSERT(exp.use_count() == 1);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check

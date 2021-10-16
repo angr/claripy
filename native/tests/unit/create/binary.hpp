@@ -35,12 +35,8 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     const auto exp { CreateF(a, b, nullptr) };
 
     // Pointer checks
-    const auto uc_check { [](const auto &x, const auto y) {
-        return (x == Create::literal(true) || x == Create::literal(false)) ? (x.use_count() > y)
-                                                                           : (x.use_count() == y);
-    } };
-    UNITTEST_ASSERT(uc_check(a, 2));
-    UNITTEST_ASSERT(uc_check(a, 2));
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(a.use_count() == 2);
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check

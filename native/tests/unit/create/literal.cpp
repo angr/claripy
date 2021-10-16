@@ -14,8 +14,7 @@ void literal_t(const Data data, const Constants::UInt size = 0) {
     const auto lit { Create::literal(Data { data }) };
 
     // Pointer checks
-    const bool uc { std::is_same_v<Data, bool> ? (lit.use_count() > 1) : (lit.use_count() == 1) };
-    UNITTEST_ASSERT(uc);
+    UNITTEST_ASSERT(lit.use_count() == 1);
     UNITTEST_ASSERT(lit->op.use_count() == 1);
 
     // Symbolic check

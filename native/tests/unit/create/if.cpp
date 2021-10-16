@@ -19,18 +19,18 @@ template <typename T> void if_t() {
     const auto cond { F::t_literal<Ex::Bool>(1) };
 
     // Gather stats
-    const auto a_uc { a.use_count() };
-    const auto b_uc { b.use_count() };
-    const auto cond_uc { cond.use_count() };
+    const long offset { std::is_same_v<T, Ex::Bool> ? 1 : 0 };
+    UNITTEST_ASSERT(a.use_count() == 1);
+    UNITTEST_ASSERT(b.use_count() == 1 + offset);
+    UNITTEST_ASSERT(cond.use_count() == 1 + offset);
 
     // Test
     const auto exp { Create::if_<T>(cond, a, b) };
 
     // Pointer checks
-    const decltype(a_uc) offset { std::is_same_v<T, Ex::Bool> ? 1 : 0 };
-    UNITTEST_ASSERT(a.use_count() == a_uc + 1);
-    UNITTEST_ASSERT(b.use_count() == b_uc + 1 + offset);
-    UNITTEST_ASSERT(cond.use_count() == cond_uc + 1 + offset);
+    UNITTEST_ASSERT(a.use_count() == 2);
+    UNITTEST_ASSERT(b.use_count() == 2 * (1 + offset));
+    UNITTEST_ASSERT(cond.use_count() == 2 * (1 + offset));
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check

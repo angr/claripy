@@ -31,14 +31,9 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     const auto exp { CreateF(std::move(input), nullptr) };
 
     // Pointer checks
-    const auto uc_check { [](const auto &x, const Constants::UInt y) {
-        const auto use { static_cast<Constants::UInt>(x.use_count()) };
-        return (x == Create::literal(true) || x == Create::literal(false)) ? (use > y)
-                                                                           : (use == y);
-    } };
     for (auto &i : input) {
         // Since input has 4 identical items
-        UNITTEST_ASSERT(uc_check(i, 2 * input.size()));
+        UNITTEST_ASSERT(Utils::unsign(i.use_count()) == 2 * input.size());
     }
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
