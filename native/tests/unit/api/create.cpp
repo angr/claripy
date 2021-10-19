@@ -6,8 +6,8 @@
 
 
 /** Used to try to get valid expr and op pointers */
-template <typename E, typename O> static auto get_pointers(Constants::CTSC<ClaricppExpr> in) {
-    const Expression::RawPtr exp { in->ptr.get() };
+template <typename E, typename O> static auto get_pointers(const ClaricppExpr in) {
+    const Expression::RawPtr exp { API::to_cpp_ref(in).get() };
     UNITTEST_ASSERT(exp != nullptr);
     Constants::CTSC<E> cast { dynamic_cast<Constants::CTSC<E>>(exp) };
     UNITTEST_ASSERT(cast != nullptr);
@@ -20,7 +20,7 @@ template <typename E, typename O> static auto get_pointers(Constants::CTSC<Clari
  *  bit_length is checked if T is not a Bool
  */
 template <typename T>
-static void symbol(Constants::CTSC<ClaricppExpr> in, PyStr name, const SIZE_T bit_length) {
+static void symbol(const ClaricppExpr in, PyStr name, const SIZE_T bit_length) {
     const auto [expr, op] { get_pointers<T, Op::Symbol>(in) };
     UNITTEST_ASSERT(op->name == name);
     if constexpr (!std::is_same_v<T, Expression::Bool>) {
@@ -33,7 +33,7 @@ static void symbol(Constants::CTSC<ClaricppExpr> in, PyStr name, const SIZE_T bi
  *  bit_length is checked if T is not a Bool
  */
 template <typename T, typename Val>
-static void literal(Constants::CTSC<ClaricppExpr> in, const Val value, const SIZE_T bit_length) {
+static void literal(const ClaricppExpr in, const Val value, const SIZE_T bit_length) {
     const auto [expr, op] { get_pointers<T, Op::Literal>(in) };
     UNITTEST_ASSERT(std::holds_alternative<Val>(op->value));
     if constexpr (std::is_same_v<PyObj::VSPtr, Val>) {
@@ -48,7 +48,9 @@ static void literal(Constants::CTSC<ClaricppExpr> in, const Val value, const SIZ
     (void) bit_length;
 }
 
-/** Verify the Create API works */
+/** Verify the Create API works
+ * @todo test spav
+ */
 void create() {
     namespace Ex = Expression;
 
@@ -60,28 +62,28 @@ void create() {
 
     // Symbol
     Utils::Log::debug("Testing symbol creation functions...");
-    symbol<Ex::Bool>(claricpp_create_symbol_bool(name), name, 0);
-    symbol<Ex::String>(claricpp_create_symbol_string(name, bl), name, bl);
-    symbol<Ex::VS>(claricpp_create_symbol_vs(name, bl), name, bl);
-    symbol<Ex::FP>(claricpp_create_symbol_fp(name, bl), name, bl);
-    symbol<Ex::BV>(claricpp_create_symbol_bv(name, bl), name, bl);
+    symbol<Ex::Bool>(claricpp_create_symbol_bool(name, { nullptr }), name, 0);
+    symbol<Ex::String>(claricpp_create_symbol_string(name, bl, { nullptr }), name, bl);
+    symbol<Ex::VS>(claricpp_create_symbol_vs(name, bl, { nullptr }), name, bl);
+    symbol<Ex::FP>(claricpp_create_symbol_fp(name, bl, { nullptr }), name, bl);
+    symbol<Ex::BV>(claricpp_create_symbol_bv(name, bl, { nullptr }), name, bl);
 
     // Literal
     Utils::Log::debug("Testing literal creation functions...");
-    literal<Ex::Bool, bool>(claricpp_create_literal_bool(true), true, 0);
-    literal<Ex::String, std::string>(claricpp_create_literal_string(name), name,
+    literal<Ex::Bool, bool>(claricpp_create_literal_bool(true, { nullptr }), true, 0);
+    literal<Ex::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
                                      std::strlen(name) * C_CHAR_BIT);
-    literal<Ex::FP, float>(claricpp_create_literal_fp_float(3.f), 3.f, 32); // NOLINT
-    literal<Ex::FP, double>(claricpp_create_literal_fp_double(3.), 3., 64); // NOLINT
-    literal<Ex::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n), pyobj, n);
-    literal<Ex::BV, uint8_t>(claricpp_create_literal_bv_u8(n), n, 8);    // NOLINT
-    literal<Ex::BV, uint16_t>(claricpp_create_literal_bv_u16(n), n, 16); // NOLINT
-    literal<Ex::BV, uint32_t>(claricpp_create_literal_bv_u32(n), n, 32); // NOLINT
-    literal<Ex::BV, uint64_t>(claricpp_create_literal_bv_u64(n), n, 64); // NOLINT
-    literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_str("10", n),
+    literal<Ex::FP, float>(claricpp_create_literal_fp_float(3.f, { nullptr }), 3.f, 32); // NOLINT
+    literal<Ex::FP, double>(claricpp_create_literal_fp_double(3., { nullptr }), 3., 64); // NOLINT
+    literal<Ex::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n, { nullptr }), pyobj, n);
+    literal<Ex::BV, uint8_t>(claricpp_create_literal_bv_u8(n, { nullptr }), n, 8);    // NOLINT
+    literal<Ex::BV, uint16_t>(claricpp_create_literal_bv_u16(n, { nullptr }), n, 16); // NOLINT
+    literal<Ex::BV, uint32_t>(claricpp_create_literal_bv_u32(n, { nullptr }), n, 32); // NOLINT
+    literal<Ex::BV, uint64_t>(claricpp_create_literal_bv_u64(n, { nullptr }), n, 64); // NOLINT
+    literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_str("10", n, { nullptr }),
                             BigInt { "10", n }, n);
-    literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_int("10", n), BigInt { 10, n },
-                            n);
+    literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr }),
+                            BigInt { 10, n }, n);
 }
 
 // Define the test
