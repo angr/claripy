@@ -15,7 +15,7 @@
 #include "op.hpp"
 
 extern "C" {
-#include "api.h"
+#include "api_public.h"
 };
 
 #endif
