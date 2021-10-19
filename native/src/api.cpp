@@ -139,7 +139,24 @@ ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const 
 
 ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left,
                                 const ClaricppExpr right, ClaricppSPAV spav) {
-    return make(Create::if_, spav, API::to_cpp_ref(cond), API::to_cpp_ref(left),
-                API::to_cpp_ref(right));
+    const Expression::BasePtr &raw_left { API::to_cpp_ref(left) };
+    switch (raw_left->cuid) {
+/** A local helper */
+#define CASE(T)                                                                                   \
+    case Expression::T::static_cuid:                                                              \
+        return make(Create::if_<Expression::T>, spav, API::to_cpp_ref(cond),                      \
+                    API::to_cpp_ref(left), API::to_cpp_ref(right))
+        CASE(Bool);
+        CASE(String);
+        CASE(FP);
+        CASE(BV);
+        CASE(VS);
+        // Should never happen
+        default:
+            throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
+                                                    "Unsupported CUID: ", raw_left);
+// Cleanup
+#undef CASE
+    }
 }
 }
