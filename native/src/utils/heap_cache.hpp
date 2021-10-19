@@ -19,35 +19,30 @@
 
 namespace Utils {
 
-    /** A heap cache for objects of type In stored in C struct wrappers of type Wrap
-     *  This is used to move stack objects onto the heap
-     *  This assumes a Wrap's constructors work for In and In &&
-     */
-    template <typename In, typename Wrap> class CHeapCache {
+    /** A heap cache for objects of type T */
+    template <typename T> class HeapCache {
         ENABLE_UNITTEST_FRIEND_ACCESS
-        static_assert(!std::is_same_v<In, Wrap>, "In and Wrap should differ");
-
       public:
         /** Constructor */
-        inline CHeapCache() { reserve(); }
+        inline HeapCache() { reserve(); }
 
         /** Move x onto the heap
-         * \todo: Wrap return value in std::launder? I don't think it is needed
+         * \todo: T return value in std::launder? I don't think it is needed
          */
-        inline Wrap *move_to_heap(In &&x) {
+        inline T *move_to_heap(T &&x) {
             // Construct our new T on pop()'s memory
-            return new (pop()) Wrap { std::forward<In>(x) }; // NOLINT
+            return new (pop()) T { std::move(x) }; // NOLINT
         }
 
-        /** Construct an In in a Wrap on the heap */
-        template <typename... Args> inline Wrap *emplace_on_heap(Args &&...args) {
-            return move_to_heap(In { std::forward<Args>(args)... });
+        /** Construct a T on the heap */
+        template <typename... Args> inline T *emplace_on_heap(Args &&...args) {
+            return new (pop()) T { std::forward<Args>(args)... };
         }
 
-        /** Reclaim the memory pointed to by non-null pointer x */
-        inline void free(Wrap *const x) {
+        /** Reclaim the memory pointed to by non-null pointer x, calls x's destructor */
+        inline void free(T *const x) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(x);
-            x->~Wrap(); // Invoke destructor
+            x->~T(); // Destruct x
             data.emplace_back(x);
         }
 
@@ -65,7 +60,7 @@ namespace Utils {
 
       private:
         /** Disable implicits */
-        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(CHeapCache, delete);
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(HeapCache, delete);
 
         /** Called if alloc fails */
         [[noreturn, gnu::cold]] void alloc_failed() noexcept {
@@ -74,10 +69,10 @@ namespace Utils {
         }
 
         /** The allocation method */
-        inline Wrap *alloc() noexcept {
-            void *const ret { std::malloc(sizeof(Wrap)) }; // NOLINT
+        inline T *alloc() noexcept {
+            void *const ret { std::malloc(sizeof(T)) }; // NOLINT
             if (ret != nullptr) {
-                return static_cast<Wrap *const>(ret);
+                return static_cast<T *const>(ret);
             }
             alloc_failed();
         }
@@ -97,9 +92,9 @@ namespace Utils {
         }
 
         /** Pop an item from the cache for use */
-        inline Wrap *pop() {
+        inline T *pop() {
             if (data.size() > 0) {
-                Wrap *const ret { data.back() };
+                T *const ret { data.back() };
                 data.pop_back();
                 return ret;
             }
@@ -113,7 +108,7 @@ namespace Utils {
         static const constexpr Constants::UInt dsize { 0x1000 };
 
         /** Internal data storage */
-        std::vector<Wrap *> data {};
+        std::vector<T *> data {};
 
         /** Error checking */
         static_assert(sizeof(Constants::UInt) == sizeof(typename decltype(data)::size_type),
