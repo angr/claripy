@@ -18,14 +18,12 @@ using SM = Create::Private::SizeMode;
 /** Test an int uint_binary op */
 template <typename Out, typename In, typename OpT, SM Mode, auto CreateF, typename IntT = UInt>
 inline void uint_binary() {
-    static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                  "uint_binary requires Out be an Expression");
-    static_assert(Utils::is_ancestor<Expression::Base, In>,
-                  "uint_binary requires In be an Expression");
+    static_assert(Util::is_ancestor<Expr::Base, Out>, "uint_binary requires Out be an Expr");
+    static_assert(Util::is_ancestor<Expr::Base, In>, "uint_binary requires In be an Expr");
     static_assert(Op::is_uint_binary<OpT>, "uint_binary requires a uint_binary OpT");
-    if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-        const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
-        static_assert(Utils::TD::boolean<sized_in, In>,
+    if constexpr (Util::is_ancestor<Expr::Bits, Out>) {
+        const constexpr bool sized_in { Util::is_ancestor<Expr::Bits, In> };
+        static_assert(Util::TD::boolean<sized_in, In>,
                       "uint_binary does not support sized output types without sized input types");
     }
 
@@ -50,13 +48,13 @@ inline void uint_binary() {
     UNITTEST_ASSERT(uint_binary->integer == b);
 
     // Size test
-    if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
+    if constexpr (Util::is_ancestor<Expr::Bits, Out>) {
         UInt new_bit_length { uint_binary->integer };
         if constexpr (Mode == SM::Add) {
             new_bit_length += a_down->bit_length;
         }
         else if constexpr (Mode != SM::Second) {
-            static_assert(Utils::TD::false_<Out>,
+            static_assert(Util::TD::false_<Out>,
                           "uint_binary does not support the given SizeMode");
         }
         UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);

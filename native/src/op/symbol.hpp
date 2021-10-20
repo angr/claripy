@@ -22,7 +22,7 @@ namespace Op {
             out << R"|({ "name":")|" << op_name() << R"|(", "symbol":")|" << name << "\" }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &) const noexcept override final {}

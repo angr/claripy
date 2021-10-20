@@ -15,17 +15,17 @@ static UInt id_ref(const UInt &id) {
 #define TEST_TYPE(X)                                                                              \
     {                                                                                             \
         namespace F = UnitTest::TestLib::Factories;                                               \
-        const auto s { Expression::X::static_cuid };                                              \
-        UNITTEST_ASSERT(s == id_ref(Expression::X::static_cuid));                                 \
-        UNITTEST_ASSERT(s == F::t_literal<Expression::X>(0)->cuid);                               \
+        const auto s { Expr::X::static_cuid };                                                    \
+        UNITTEST_ASSERT(s == id_ref(Expr::X::static_cuid));                                       \
+        UNITTEST_ASSERT(s == F::t_literal<Expr::X>(0)->cuid);                                     \
     }
 
 /** A struct used to give friend access to unittests */
 struct UnitTest::ClaricppUnitTest {
     /** Cache Type */
-    using Cache = Utils::WeakCache<Hash::Hash, const Expression::Base>;
+    using Cache = Util::WeakCache<Hash::Hash, const Expr::Base>;
     /** The cache */
-    const Cache &cache { Factory::Private::gcache<Expression::Base>() }; // NOLINT
+    const Cache &cache { Factory::Private::gcache<Expr::Base>() }; // NOLINT
     /** Get the cache gc_resize */
     [[nodiscard]] auto gc_resize() const { return cache.gc_resize; }
     /** Get the default cache gc_resize */
@@ -36,7 +36,7 @@ struct UnitTest::ClaricppUnitTest {
 /** Test sanity checks */
 void sanity_check() {
 
-    // Expression::X::static_cuid is defined at compile time of the shared library
+    // Expr::X::static_cuid is defined at compile time of the shared library
     // by template meta-programming. Since it is calculated only within header files
     // when this test is compiled the compiler will independent calculate a value
     // for it when included by this test case. Since this value is not calculated
@@ -50,7 +50,7 @@ void sanity_check() {
     TEST_TYPE(BV);
     TEST_TYPE(FP);
 
-    // Verify that the expression cache has been instantiated
+    // Verify that the expr cache has been instantiated
     // If it was, the constructor sets gc_resize to gc_resize_default
     UnitTest::ClaricppUnitTest wrapper;
     UNITTEST_ASSERT_MSG(wrapper.gc_resize() == wrapper.def(), "Cache failed to instantiate.");

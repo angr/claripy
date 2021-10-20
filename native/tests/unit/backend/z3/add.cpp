@@ -7,7 +7,7 @@
 
 /** Test add */
 void add() {
-    namespace Ex = Expression;
+    namespace Ex = Expr;
 
     auto z3 { Backend::Z3::Z3 {} };
     auto solver_ref { z3.tls_solver() };
@@ -40,7 +40,7 @@ void add() {
     // Verify solver lines
     is.str("");
     is << solver;
-    const std::string bool_name { '|' + Utils::to_hex(x_not_max->hash) + '|' };
+    const std::string bool_name { '|' + Util::to_hex(x_not_max->hash) + '|' };
     UNITTEST_ASSERT(is.str() == prefix + "(declare-fun " + bool_name + " () Bool)\n(assert (=> " +
                                     bool_name + ' ' + distinct + "))\n");
 }

@@ -8,17 +8,17 @@
 
 
 /** Return true iff p evaluates to true */
-inline bool is_true(Backend::Z3::Z3 &z3, const Expression::BasePtr &p) {
+inline bool is_true(Backend::Z3::Z3 &z3, const Expr::BasePtr &p) {
     return z3.convert(p.get()).simplify().is_true();
 }
 
 /** Return true iff p evaluates to false */
-inline bool is_false(Backend::Z3::Z3 &z3, const Expression::BasePtr &p) {
+inline bool is_false(Backend::Z3::Z3 &z3, const Expr::BasePtr &p) {
     return z3.convert(p.get()).simplify().is_false();
 }
 
 
-/** Try to convert a claricpp expression to z3 */
+/** Try to convert a claricpp expr to z3 */
 void fp_convert() {
     namespace C = Create;
 

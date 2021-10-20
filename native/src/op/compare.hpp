@@ -14,12 +14,12 @@ namespace Op {
      *  Requires equal sized inputs
      */
     template <Mode::Compare Mask> class Compare final : public Binary<true> {
-        OP_FINAL_INIT(Compare, Utils::to_underlying(Mask), "");
+        OP_FINAL_INIT(Compare, Util::to_underlying(Mask), "");
 
       private:
         /** Private constructor */
-        explicit inline Compare(const ::Hash::Hash &h, const ::Expression::BasePtr &l,
-                                const ::Expression::BasePtr &r)
+        explicit inline Compare(const ::Hash::Hash &h, const ::Expr::BasePtr &l,
+                                const ::Expr::BasePtr &r)
             : Binary { h, static_cuid, l, r } {}
 
         /** Python's repr function (outputs json) */

@@ -13,7 +13,7 @@ extern "C" {
 #include "create.hpp"
 #include "py_obj.hpp"
 #include "simplification.hpp"
-#include "utils.hpp"
+#include "util.hpp"
 
 /********************************************************************/
 /*                               C++                                */
@@ -30,14 +30,14 @@ namespace API {
     static_assert(std::is_pod_v<CTYPE>, "Struct must be of the structure { void * ptr };");       \
     static_assert(sizeof(CTYPE) == sizeof(void *), "Struct should only contain a void *");        \
     static_assert(std::is_same_v<void *, decltype(std::declval<CTYPE>().ptr)>, "Bad ptr type");   \
-    static_assert(Utils::is_shared_ptr<CPPTYPE>, "CPPTYPE should be a shared pointer");           \
+    static_assert(Util::is_shared_ptr<CPPTYPE>, "CPPTYPE should be a shared pointer");            \
     template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                      \
     template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; }
 
         // Populate InternalMap
         MAP_ADD(ClaricppAnnotation, Annotation::BasePtr);
         MAP_ADD(ClaricppSPAV, Annotation::SPAV);
-        MAP_ADD(ClaricppExpr, Expression::BasePtr);
+        MAP_ADD(ClaricppExpr, Expr::BasePtr);
 
 // Cleanup
 #undef MAP_ADD
@@ -46,7 +46,7 @@ namespace API {
         template <typename T> using Map = typename InternalMap<T>::Result;
 
         /** Heap cache; key type is in C++ */
-        template <typename T> static thread_local Utils::HeapCache<T> cache {};
+        template <typename T> static thread_local Util::HeapCache<T> cache {};
 
     } // namespace Private
 

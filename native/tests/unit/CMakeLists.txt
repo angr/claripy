@@ -19,11 +19,11 @@ simple_test(simple_test)
 simple_test(sanity_check)
 
 # Add actual test cases
-add_subdirectory(utils)
+add_subdirectory(util)
 add_subdirectory(cuid)
 add_subdirectory(hash)
 add_subdirectory(factory)
-add_subdirectory(expression)
+add_subdirectory(expr)
 add_subdirectory(op)
 add_subdirectory(create)
 add_subdirectory(backend)

@@ -7,7 +7,7 @@
 
 #include "macros.hpp"
 
-#include "../expression.hpp" // For subclasses
+#include "../expr.hpp" // For subclasses
 #include "../factory.hpp"
 
 #include <stack>
@@ -15,20 +15,20 @@
 
 namespace Op {
 
-    /** Base operation expression
-     *  All op expressions must subclass this
+    /** Base operation expr
+     *  All op exprs must subclass this
      */
     class Base : public Factory::FactoryMade {
         OP_PURE_INIT(Base);
 
       public:
         /** The type of the stack usd in the add_reversed_children function */
-        using Stack = std::stack<Expression::RawPtr, std::vector<Expression::RawPtr>>;
+        using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
         /** Python's repr function (outputs json) */
         virtual inline void repr(std::ostream &out, const bool verbose = false) const = 0;
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         virtual inline void add_reversed_children(Stack &) const = 0;

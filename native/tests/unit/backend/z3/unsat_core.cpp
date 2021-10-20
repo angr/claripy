@@ -8,14 +8,14 @@
 /** Test the backend unsat_core function */
 void unsat_core() {
     auto z3 { Backend::Z3::Z3 {} };
-    namespace Ex = Expression;
+    namespace Ex = Expr;
 
     // Prep
     auto lt { [](const uint64_t c) { return Create::literal(c); } };
     const auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
 
-    // Two contradictory expressions and one other
+    // Two contradictory exprs and one other
     const auto x { Create::symbol<Ex::BV>("x", 64) };
     const auto xneq0 { Create::neq<Ex::BV>(x, lt(0)) };
     const auto xeq1 { Create::eq<Ex::BV>(x, lt(1)) };

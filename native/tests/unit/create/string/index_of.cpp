@@ -13,13 +13,12 @@ void index_of() {
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
     namespace CS = Create::String;
-    namespace Ex = Expression;
     namespace OS = Op::String;
 
     // Create distinct inputs
-    const auto a { F::t_literal<Expression::String>(0) };
-    const auto b { F::t_literal<Expression::String>(1) };
-    const auto c { F::t_literal<Expression::BV>(2) };
+    const auto a { F::t_literal<Expr::String>(0) };
+    const auto b { F::t_literal<Expr::String>(1) };
+    const auto c { F::t_literal<Expr::BV>(2) };
     const UInt bit_length { 16 };
 
     // Test

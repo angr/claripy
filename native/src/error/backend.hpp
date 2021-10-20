@@ -8,17 +8,17 @@
 #ifndef R_ERROR_BACKEND_HPP_
 #define R_ERROR_BACKEND_HPP_
 
-#include "../utils.hpp"
+#include "../util.hpp"
 
 
 namespace Error::Backend {
 
-    /** Claripy Expression exception */
-    using Claripy = Utils::Error::Python::Claripy;
+    /** Claripy Expr exception */
+    using Claripy = Util::Error::Python::Claripy;
 
     // Intermediate classes
 
-    /** Expression Balance exception */
+    /** Expr Balance exception */
     DEFINE_NONFINAL_EXCEPTION(Base, Claripy);
 
     // Final classes

@@ -33,7 +33,7 @@ namespace Op {
         const Data value;
 
         /** Returns the bit_length of the value stored in Data
-         *  If Data contains a type that doesn't correspond to an Expression that is a subclass
+         *  If Data contains a type that doesn't correspond to an Expr that is a subclass
          *  of BitLength then an Usage exception is thrown
          */
         constexpr UInt bit_length() const {
@@ -96,8 +96,8 @@ namespace Op {
                 VCASE_POST;
                     // Bad variant
                 default:
-                    throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
-                                                            "unknown type in variant");
+                    throw Util::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
+                                                           "unknown type in variant");
             }
             out << " }";
 
@@ -107,7 +107,7 @@ namespace Op {
 #undef VCASE
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &) const noexcept override final {}
@@ -139,7 +139,7 @@ namespace Op {
 #undef P_CTOR
 
         /** Returns the byte_length of the value stored in Data
-         *  If Data contains a type that doesn't correspond to an Expression that is a subclass
+         *  If Data contains a type that doesn't correspond to an Expr that is a subclass
          *  of BitLength then an Usage exception is thrown
          *  This function requires that if value is a shared_ptr is be non-null
          *  This function may not be called on a BigInt
@@ -174,7 +174,7 @@ namespace Op {
 #ifdef DEBUG
                 UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
-                Utils::affirm<Utils::Error::Unexpected::Size>(
+                Util::affirm<Util::Error::Unexpected::Size>(
                     bl % C_CHAR_BIT == 0, WHOAMI_WITH_SOURCE "VS of bit length ", bl,
                     " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
 #endif
@@ -186,10 +186,10 @@ namespace Op {
                 VCASE(8, uint64_t);
                 // Bool
                 default: {
-                    using Err = Utils::Error::Unexpected::Usage;
+                    using Err = Util::Error::Unexpected::Usage;
                     throw Err(WHOAMI_WITH_SOURCE,
                               "invoked when internal type does not correspond"
-                              " to an Expression which subclasses BitLength."
+                              " to an Expr which subclasses BitLength."
                               " Current variant index is: ",
                               value.index());
                 };

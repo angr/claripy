@@ -14,7 +14,7 @@ template <bool Signed> void from_2s_complement_bv_v() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression; // NOLINT (false positive)
+    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create distinct inputs
     const auto mode { Mode::FP::Rounding::TowardsZero };

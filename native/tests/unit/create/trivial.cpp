@@ -10,8 +10,8 @@
 
 /** Test the trivial create functions */
 void trivial() {
-    namespace Log = Utils::Log;
-    namespace Ex = Expression;
+    namespace Log = Util::Log;
+    namespace Ex = Expr;
     namespace Cr = Create;
 
     /********************************************************************/
@@ -22,8 +22,8 @@ void trivial() {
     unary<Ex::FP, Op::Abs, Cr::abs>();
 
     Log::debug("Testing neg...");
-    unary<Ex::BV, Op::Neg, Cr::neg<Expression::BV>>();
-    unary<Ex::FP, Op::Neg, Cr::neg<Expression::FP>>();
+    unary<Ex::BV, Op::Neg, Cr::neg<Expr::BV>>();
+    unary<Ex::FP, Op::Neg, Cr::neg<Expr::FP>>();
 
     Log::debug("Testing not...");
     unary<Ex::Bool, Op::Not, Cr::not_>();
@@ -51,10 +51,10 @@ void trivial() {
     // Comparisons
 
     Log::debug("Testing eq...");
-    binary<Ex::Bool, Ex::FP, Op::Eq, SM::First, Cr::eq<Expression::FP>>();
-    binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq<Expression::BV>>();
-    binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq<Expression::Bool>>();
-    binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq<Expression::String>>();
+    binary<Ex::Bool, Ex::FP, Op::Eq, SM::First, Cr::eq<Expr::FP>>();
+    binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq<Expr::BV>>();
+    binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq<Expr::Bool>>();
+    binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq<Expr::String>>();
 
 /** A local macro used to test a comparison function */
 #define TEST_COMPARE(T_, MASK)                                                                    \
@@ -121,12 +121,12 @@ void trivial() {
     binary<Ex::BV, Op::Union, SM::First, Cr::union_>();
 
     Log::debug("Testing intersection...");
-    binary<Ex::BV, Op::Intersection, SM::First, Cr::intersection_<Expression::BV>>();
-    binary<Ex::Bool, Op::Intersection, SM::First, Cr::intersection_<Expression::Bool>>();
+    binary<Ex::BV, Op::Intersection, SM::First, Cr::intersection_<Expr::BV>>();
+    binary<Ex::Bool, Op::Intersection, SM::First, Cr::intersection_<Expr::Bool>>();
 
     Log::debug("Testing concat...");
-    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expression::BV>>();
-    binary<Ex::String, Op::Concat, SM::Add, Cr::concat<Expression::String>>();
+    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expr::BV>>();
+    binary<Ex::String, Op::Concat, SM::Add, Cr::concat<Expr::String>>();
 
     /********************************************************************/
     /*                               Flat                               */
@@ -143,12 +143,12 @@ void trivial() {
     // Logical
 
     Log::debug("Testing or...");
-    flat<Ex::BV, Op::Or, SM::First, Cr::or_<Expression::BV>>();
-    flat<Ex::Bool, Op::Or, SM::First, Cr::or_<Expression::Bool>>();
+    flat<Ex::BV, Op::Or, SM::First, Cr::or_<Expr::BV>>();
+    flat<Ex::Bool, Op::Or, SM::First, Cr::or_<Expr::Bool>>();
 
     Log::debug("Testing and...");
-    flat<Ex::BV, Op::And, SM::First, Cr::and_<Expression::BV>>();
-    flat<Ex::Bool, Op::And, SM::First, Cr::and_<Expression::Bool>>();
+    flat<Ex::BV, Op::And, SM::First, Cr::and_<Expr::BV>>();
+    flat<Ex::Bool, Op::And, SM::First, Cr::and_<Expr::Bool>>();
 
     Log::debug("Testing xor...");
     flat<Ex::BV, Op::Xor, SM::First, Cr::xor_>();

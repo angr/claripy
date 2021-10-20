@@ -5,10 +5,10 @@
 #include "testlib.hpp"
 
 
-/** Try to simplify a claricpp expression via z3 */
+/** Try to simplify a claricpp expr via z3 */
 void simplify() {
     auto z3 { Backend::Z3::Z3 {} };
-    namespace Ex = Expression;
+    namespace Ex = Expr;
 
     // Test function
     const auto test = [&z3](const Ex::BasePtr &t, const Ex::BasePtr &sol) {

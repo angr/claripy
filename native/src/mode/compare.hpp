@@ -5,7 +5,7 @@
 #ifndef R_MODE_COMPARE_HPP_
 #define R_MODE_COMPARE_HPP_
 
-#include "../utils.hpp"
+#include "../util.hpp"
 
 #include <ostream>
 
@@ -22,7 +22,7 @@ namespace Mode {
 
     /** Return true only if Compare is in a valid state */
     constexpr bool compare_is_valid(const Compare c) {
-        namespace B = Utils::BitMask;
+        namespace B = Util::BitMask;
         using C = Compare;
         return (B::has(c, C::Signed) ^ B::has(c, C::Unsigned)) &&
                (B::has(c, C::Less) ^ B::has(c, C::Greater)) &&
@@ -31,7 +31,7 @@ namespace Mode {
 
     /** Stream operator */
     inline std::ostream &operator<<(std::ostream &os, const Compare &c) {
-        namespace B = Utils::BitMask;
+        namespace B = Util::BitMask;
         using C = Compare;
         os << "Mode::Compare: ";
         if (LIKELY(compare_is_valid(c))) {
@@ -40,7 +40,7 @@ namespace Mode {
             os << (B::has(c, C::Eq) ? "Eq" : "Neq");
         }
         else {
-            os << "Invalid value: " << Utils::to_underlying(c) << ". Flags: " << std::boolalpha
+            os << "Invalid value: " << Util::to_underlying(c) << ". Flags: " << std::boolalpha
                << "{ Signed: " << B::has(c, C::Signed) << ", Unsigned: " << B::has(c, C::Unsigned)
                << ", Less: " << B::has(c, C::Less) << ", Greater: " << B::has(c, C::Greater)
                << ", Eq: " << B::has(c, C::Eq) << ", Neq: " << B::has(c, C::Neq) << " }";

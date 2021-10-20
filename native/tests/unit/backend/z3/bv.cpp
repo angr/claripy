@@ -22,36 +22,36 @@ void bv() {
     const auto l2 { Create::literal(BigInt { big_one, 100_ui }) }; // NOLINT
 
     // Constructors
-    Utils::Log::debug("Testing BV constructor via uint8");
+    Util::Log::debug("Testing BV constructor via uint8");
     test_bv_ctor(z3, uint8_t { 3 });
-    Utils::Log::debug("Testing BV constructor via uint16");
+    Util::Log::debug("Testing BV constructor via uint16");
     test_bv_ctor(z3, uint16_t { 3 });
-    Utils::Log::debug("Testing BV constructor via uint32");
+    Util::Log::debug("Testing BV constructor via uint32");
     test_bv_ctor(z3, uint32_t { 3 });
-    Utils::Log::debug("Testing BV constructor via uint64");
+    Util::Log::debug("Testing BV constructor via uint64");
     test_bv_ctor(z3, uint64_t { 3 });
-    Utils::Log::debug("Testing BV constructor via BigInt with mode Int");
+    Util::Log::debug("Testing BV constructor via BigInt with mode Int");
     test_bv_ctor(z3, BigInt { big_one, 300_ui }); // NOLINT
 
     // BigInt abstraction mode
     const auto old { z3.big_int_mode(Mode::BigInt::Str) };
-    Utils::Log::debug("Testing BV constructor via BigInt with mode Str");
+    Util::Log::debug("Testing BV constructor via BigInt with mode Str");
     test_bv_ctor(z3, BigInt { big_one.str(), 300_ui }); // NOLINT
     (void) z3.big_int_mode(old);                        // Reset
 
     // Sizes same
-    Utils::Log::debug("Testing x/x");
+    Util::Log::debug("Testing x/x");
     const auto one_same { Create::div<false>(l1, l1) };
     UNITTEST_ASSERT(l1 == z3.simplify(one_same.get()));
 
     // Sizes differ
-    Utils::Log::debug("Testing x/x with different sized x's; this *should* error");
+    Util::Log::debug("Testing x/x with different sized x's; this *should* error");
     try {
         const auto fail { Create::div<false>(l1, l2) };
         UNITTEST_ERR("It should not be possible to construct this: ", fail);
     }
-    catch (Error::Expression::Type &) {
-        Utils::Log::info("Desired error detected: success.");
+    catch (Error::Expr::Type &) {
+        Util::Log::info("Desired error detected: success.");
     }
 }
 

@@ -1,16 +1,16 @@
 /**
  * @file
- * @brief This file defines modes for how Expression sizes are computed
+ * @brief This file defines modes for how Expr sizes are computed
  */
 #ifndef R_CREATE_PRIVATE_SIZEMODE_HPP_
 #define R_CREATE_PRIVATE_SIZEMODE_HPP_
 
-#include "../../expression.hpp"
+#include "../../expr.hpp"
 
 
 namespace Create::Private {
 
-    /** Modes that determine how Expression sizes are computed */
+    /** Modes that determine how Expr sizes are computed */
     enum class SizeMode {
         /** Not Applicable */
         NA,
@@ -25,7 +25,7 @@ namespace Create::Private {
     /** A shortcut for selecting First if T is a subclass of Bits, else NA */
     template <typename T>
     inline const constexpr SizeMode first_or_na {
-        Utils::select<Utils::is_ancestor<Expression::Bits, T>, SizeMode::First, SizeMode::NA>
+        Util::select<Util::is_ancestor<Expr::Bits, T>, SizeMode::First, SizeMode::NA>
     };
 
 } // namespace Create::Private

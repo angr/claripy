@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief An op that takes in one Expression and one integer
+ * @brief An op that takes in one Expr and one integer
  */
 #ifndef R_OP_UINTBINARY_HPP_
 #define R_OP_UINTBINARY_HPP_
@@ -28,32 +28,31 @@
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &e,              \
-                              const UInt i)                                                       \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &e, const UInt i)      \
             : UIntBinary { h, static_cuid, e, i } {}                                              \
     };
 
 
 namespace Op {
 
-    /** An Op class that has an Expression operand and an int operand */
+    /** An Op class that has an Expr operand and an int operand */
     class UIntBinary : public Base {
         OP_PURE_INIT(UIntBinary);
 
       public:
-        /** Expression operand */
-        const Expression::BasePtr expr;
+        /** Expr operand */
+        const Expr::BasePtr expr;
         /* Integer operand */
         const UInt integer;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "expr":)|";
-            Expression::repr(expr, out, verbose);
+            Expr::repr(expr, out, verbose);
             out << R"|(, "integer":)|" << integer << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final { s.emplace(expr.get()); }
@@ -61,7 +60,7 @@ namespace Op {
       protected:
         /** Protected constructor */
         explicit inline UIntBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                   const Expression::BasePtr &e, const UInt i)
+                                   const Expr::BasePtr &e, const UInt i)
             : Base { h, cuid_ }, expr { e }, integer { i } {}
     };
 
@@ -69,7 +68,7 @@ namespace Op {
     UIntBinary::~UIntBinary() noexcept = default;
 
     /** Returns true if T is int binary */
-    template <typename T> UTILS_ICCBOOL is_uint_binary { Utils::is_ancestor<UIntBinary, T> };
+    template <typename T> UTILS_ICCBOOL is_uint_binary { Util::is_ancestor<UIntBinary, T> };
 
 } // namespace Op
 

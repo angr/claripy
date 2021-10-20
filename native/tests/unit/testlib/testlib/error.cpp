@@ -4,7 +4,7 @@
  */
 #include "error.hpp"
 
-using namespace Utils::Log;
+using namespace Util::Log;
 namespace T = UnitTest::TestLib;
 
 thread_local std::shared_ptr<const Backend::Base> T::original_bk { nullptr };

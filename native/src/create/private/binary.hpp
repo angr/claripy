@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create Expressions with standard binary ops
+ * @brief This file defines a method to create Exprs with standard binary ops
  */
 #ifndef R_CREATE_PRIVATE_BINARY_HPP_
 #define R_CREATE_PRIVATE_BINARY_HPP_
@@ -12,67 +12,67 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a binary op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with a binary op
+     *  Expr pointers may not be nullptr
      */
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr binary(const EBasePtr &left, const EBasePtr &right, Annotation::SPAV &&sp) {
-        namespace Ex = Expression;
+        namespace Ex = Expr;
         using namespace Simplification;
-        namespace Err = Error::Expression;
+        namespace Err = Error::Expr;
 
         // Static checks
-        static_assert(Utils::is_ancestor<Ex::Base, Out>,
-                      "Create::Private::binary requires Out be an Expression");
-        static_assert(Utils::is_ancestor<Ex::Base, In>,
-                      "Create::Private::binary requires In be an Expression");
+        static_assert(Util::is_ancestor<Ex::Base, Out>,
+                      "Create::Private::binary requires Out be an Expr");
+        static_assert(Util::is_ancestor<Ex::Base, In>,
+                      "Create::Private::binary requires In be an Expr");
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
-        if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
-            const constexpr bool sized_in { Utils::is_ancestor<Ex::Bits, In> };
-            static_assert(Utils::TD::boolean<sized_in, In>,
+        if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
+            const constexpr bool sized_in { Util::is_ancestor<Ex::Bits, In> };
+            static_assert(Util::TD::boolean<sized_in, In>,
                           "Create::Private::binary does not support sized output types without "
                           "sized input types");
         }
-        static_assert(Utils::qualified_is_in<In, Allowed...>,
+        static_assert(Util::qualified_is_in<In, Allowed...>,
                       "Create::Private::binary requires In is in Allowed");
 
         // Dynamic checks
-        Utils::affirm<Err::Usage>(left != nullptr && right != nullptr, WHOAMI_WITH_SOURCE
-                                  "Expression pointer arguments may not be nullptr");
-        Utils::affirm<Err::Type>(CUID::is_t<In>(left),
-                                 WHOAMI_WITH_SOURCE "left operand of incorrect type");
+        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
+                                 WHOAMI_WITH_SOURCE "Expr pointer arguments may not be nullptr");
+        Util::affirm<Err::Type>(CUID::is_t<In>(left),
+                                WHOAMI_WITH_SOURCE "left operand of incorrect type");
 
-        // Construct expression (static casts are safe because of previous checks)
-        if constexpr (Utils::is_ancestor<Ex::Bits, Out>) {
-            static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
+        // Construct expr (static casts are safe because of previous checks)
+        if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
+            static_assert(Util::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
             UInt new_bit_length { Ex::get_bit_length(left) };
             if constexpr (Mode == SizeMode::Add) {
                 // Type check before size extraction
-                Utils::affirm<Err::Type>(CUID::is_t<In>(right),
-                                         WHOAMI_WITH_SOURCE "right operand of incorrect type");
+                Util::affirm<Err::Type>(CUID::is_t<In>(right),
+                                        WHOAMI_WITH_SOURCE "right operand of incorrect type");
                 new_bit_length += Ex::get_bit_length(right);
             }
             else if constexpr (Mode != SizeMode::First) {
-                static_assert(Utils::TD::false_<Out>,
+                static_assert(Util::TD::false_<Out>,
                               "Create::Private::binary does not support the given SizeMode");
             }
-            // Actually construct expression
+            // Actually construct expr
             return simplify(Ex::factory<Out>(left->symbolic || right->symbolic,
                                              Op::factory<OpT>(left, right), new_bit_length,
                                              std::move(sp)));
         }
         else {
-            static_assert(Mode == Utils::TD::id<SizeMode::NA>,
+            static_assert(Mode == Util::TD::id<SizeMode::NA>,
                           "SizeMode should be NA for non-sized type");
             return simplify(Ex::factory<Out>(left->symbolic || right->symbolic,
                                              Op::factory<OpT>(left, right), std::move(sp)));
         }
     }
 
-    /** Create a Expression with a binary op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with a binary op
+     *  Expr pointers may not be nullptr
      *  A specialization where In = Out
      */
     template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>

@@ -24,8 +24,8 @@
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &a,              \
-                              const ::Expression::BasePtr &b, const ::Expression::BasePtr &c)     \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &a,                    \
+                              const ::Expr::BasePtr &b, const ::Expr::BasePtr &c)                 \
             : Ternary { h, static_cuid, a, b, c } {}                                              \
     };
 
@@ -41,25 +41,25 @@ namespace Op {
 
       public:
         /** First operand */
-        const Expression::BasePtr first;
+        const Expr::BasePtr first;
         /** Second operand */
-        const Expression::BasePtr second;
+        const Expr::BasePtr second;
         /** Third operand */
-        const Expression::BasePtr third;
+        const Expr::BasePtr third;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "first":)|";
-            Expression::repr(first, out, verbose);
+            Expr::repr(first, out, verbose);
             out << R"|(, "second":)|";
-            Expression::repr(second, out, verbose);
+            Expr::repr(second, out, verbose);
             out << R"|(, "third":)|";
-            Expression::repr(third, out, verbose);
+            Expr::repr(third, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -71,23 +71,23 @@ namespace Op {
       protected:
         /** Protected constructor */
         explicit inline Ternary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                const Expression::BasePtr &one, const Expression::BasePtr &two,
-                                const Expression::BasePtr &three)
+                                const Expr::BasePtr &one, const Expr::BasePtr &two,
+                                const Expr::BasePtr &three)
             : Base { h, cuid_ }, first { one }, second { two }, third { three } {
-            using Err = Error::Expression::Type;
+            using Err = Error::Expr::Type;
 
             // Type / size checking
             if constexpr (ConsiderSize) {
-                Utils::affirm<Err>(Expression::are_same_type<true>(first, second),
-                                   WHOAMI_WITH_SOURCE "first and second types or sizes differ");
-                Utils::affirm<Err>(Expression::are_same_type<true>(first, third),
-                                   WHOAMI_WITH_SOURCE "first and third types or sizes differ");
+                Util::affirm<Err>(Expr::are_same_type<true>(first, second),
+                                  WHOAMI_WITH_SOURCE "first and second types or sizes differ");
+                Util::affirm<Err>(Expr::are_same_type<true>(first, third),
+                                  WHOAMI_WITH_SOURCE "first and third types or sizes differ");
             }
             else {
-                Utils::affirm<Err>(Expression::are_same_type<false>(first, second),
-                                   WHOAMI_WITH_SOURCE "first and second types differ");
-                Utils::affirm<Err>(Expression::are_same_type<false>(first, third),
-                                   WHOAMI_WITH_SOURCE "first and third types differ");
+                Util::affirm<Err>(Expr::are_same_type<false>(first, second),
+                                  WHOAMI_WITH_SOURCE "first and second types differ");
+                Util::affirm<Err>(Expr::are_same_type<false>(first, third),
+                                  WHOAMI_WITH_SOURCE "first and third types differ");
             }
         }
     };
@@ -97,8 +97,8 @@ namespace Op {
 
     /** Returns true if T is ternary */
     template <typename T>
-    UTILS_ICCBOOL is_ternary { Utils::is_ancestor<Ternary<true>, T> ||
-                               Utils::is_ancestor<Ternary<false>, T> };
+    UTILS_ICCBOOL is_ternary { Util::is_ancestor<Ternary<true>, T> ||
+                               Util::is_ancestor<Ternary<false>, T> };
 
 } // namespace Op
 

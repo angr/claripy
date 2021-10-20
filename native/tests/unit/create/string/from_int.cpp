@@ -12,7 +12,7 @@ void from_int() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression;
+    namespace Ex = Expr;
 
     // Create input
     const auto a { F::t_literal<Ex::BV>(0) };

@@ -7,7 +7,7 @@
 
 /** Used to try to get valid expr and op pointers */
 template <typename E, typename O> static auto get_pointers(const ClaricppExpr in) {
-    const Expression::RawPtr exp { API::to_cpp_ref(in).get() };
+    const Expr::RawPtr exp { API::to_cpp_ref(in).get() };
     UNITTEST_ASSERT(exp != nullptr);
     CTSC<E> cast { dynamic_cast<CTSC<E>>(exp) };
     UNITTEST_ASSERT(cast != nullptr);
@@ -23,7 +23,7 @@ template <typename T>
 static void symbol(const ClaricppExpr in, PyStr name, const SIZE_T bit_length) {
     const auto [expr, op] { get_pointers<T, Op::Symbol>(in) };
     UNITTEST_ASSERT(op->name == name);
-    if constexpr (!std::is_same_v<T, Expression::Bool>) {
+    if constexpr (!std::is_same_v<T, Expr::Bool>) {
         UNITTEST_ASSERT(expr->bit_length == bit_length);
     }
     (void) bit_length;
@@ -42,7 +42,7 @@ static void literal(const ClaricppExpr in, const Val value, const SIZE_T bit_len
     else {
         UNITTEST_ASSERT(std::get<Val>(op->value) == value);
     }
-    if constexpr (!std::is_same_v<T, Expression::Bool>) {
+    if constexpr (!std::is_same_v<T, Expr::Bool>) {
         UNITTEST_ASSERT(expr->bit_length == bit_length);
     }
     (void) bit_length;
@@ -52,7 +52,7 @@ static void literal(const ClaricppExpr in, const Val value, const SIZE_T bit_len
  * @todo test spav
  */
 void create() {
-    namespace Ex = Expression;
+    namespace Ex = Expr;
 
     // Constants
     const char name[] { "name" };
@@ -61,7 +61,7 @@ void create() {
     const auto pyobj { std::make_shared<PyObj::VS>(1, 2, 3) };
 
     // Symbol
-    Utils::Log::debug("Testing symbol creation functions...");
+    Util::Log::debug("Testing symbol creation functions...");
     symbol<Ex::Bool>(claricpp_create_symbol_bool(name, { nullptr }), name, 0);
     symbol<Ex::String>(claricpp_create_symbol_string(name, bl, { nullptr }), name, bl);
     symbol<Ex::VS>(claricpp_create_symbol_vs(name, bl, { nullptr }), name, bl);
@@ -69,7 +69,7 @@ void create() {
     symbol<Ex::BV>(claricpp_create_symbol_bv(name, bl, { nullptr }), name, bl);
 
     // Literal
-    Utils::Log::debug("Testing literal creation functions...");
+    Util::Log::debug("Testing literal creation functions...");
     literal<Ex::Bool, bool>(claricpp_create_literal_bool(true, { nullptr }), true, 0);
     literal<Ex::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
                                      std::strlen(name) * C_CHAR_BIT);

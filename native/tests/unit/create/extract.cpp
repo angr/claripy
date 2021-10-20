@@ -8,7 +8,7 @@
 
 /** Verify that the extract function compiles and can be run without issue */
 void extract() {
-    namespace Ex = Expression; // NOLINT (false positive)
+    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create distinct inputs
     const UInt high { 2 };

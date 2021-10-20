@@ -1,11 +1,11 @@
 /**
  * @file
- * @brief This file defines the base expression
+ * @brief This file defines the base expr
  */
 #ifndef R_BACKEND_BASE_HPP_
 #define R_BACKEND_BASE_HPP_
 
-#include "../expression.hpp"
+#include "../expr.hpp"
 
 #include <memory>
 #include <vector>
@@ -26,15 +26,15 @@ namespace Backend {
         /** Backend name */
         [[nodiscard]] virtual const char *name() const noexcept = 0;
 
-        /** Simplify the given expression
+        /** Simplify the given expr
          *  expr may not be nullptr
          */
-        virtual Expression::BasePtr simplify(const Expression::RawPtr expr) = 0;
+        virtual Expr::BasePtr simplify(const Expr::RawPtr expr) = 0;
 
-        /** Check whether the backend can handle the given expression
+        /** Check whether the backend can handle the given expr
          *  expr may not be nullptr
          */
-        virtual bool handles(const Expression::RawPtr expr) = 0;
+        virtual bool handles(const Expr::RawPtr expr) = 0;
 
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version

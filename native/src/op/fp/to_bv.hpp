@@ -18,20 +18,20 @@ namespace Op::FP {
       public:
         /** The FP mode */
         const Mode::FP::Rounding mode;
-        /** The fp to convert: This must be an Expression::BV pointer
+        /** The fp to convert: This must be an Expr::BV pointer
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr fp;
+        const Expr::BasePtr fp;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha
-                << Signed << R"|(, "mode":)|" << Utils::to_underlying(mode) << R"|(, "fp":)|";
-            Expression::repr(fp, out, verbose);
+                << Signed << R"|(, "mode":)|" << Util::to_underlying(mode) << R"|(, "fp":)|";
+            Expr::repr(fp, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final { s.emplace(fp.get()); }
@@ -41,11 +41,10 @@ namespace Op::FP {
          *  Ensure that fp is an FP
          */
         explicit inline ToBV(const Hash::Hash &h, const Mode::FP::Rounding m,
-                             const Expression::BasePtr &f)
+                             const Expr::BasePtr &f)
             : Base { h, static_cuid }, mode { m }, fp { f } {
-            Utils::affirm<Error::Expression::Type>(CUID::is_t<Expression::FP>(fp),
-                                                   WHOAMI_WITH_SOURCE
-                                                   "Operand fp must be an Expression::FP");
+            Util::affirm<Error::Expr::Type>(CUID::is_t<Expr::FP>(fp),
+                                            WHOAMI_WITH_SOURCE "Operand fp must be an Expr::FP");
         }
     };
 

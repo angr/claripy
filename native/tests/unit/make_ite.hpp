@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Define a function used to construct an ITE Expression
+ * @brief Define a function used to construct an ITE Expr
  * \ingroup unittest
  */
 #ifndef R_UNIT_MAKEITE_HPP_
@@ -9,9 +9,9 @@
 #include "create.hpp"
 
 
-/** Construct the ite expression: if (4 == (x * 3)) then str else y */
+/** Construct the ite expr: if (4 == (x * 3)) then str else y */
 inline auto make_ite(std::string str) {
-    namespace Ex = Expression;
+    namespace Ex = Expr;
     namespace C = Create;
 
     // Constants

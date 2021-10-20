@@ -9,8 +9,8 @@
 
 /** Test the trivial create functions */
 void trivial() {
-    namespace Log = Utils::Log;
-    namespace Ex = Expression;
+    namespace Log = Util::Log;
+    namespace Ex = Expr;
     namespace Cr = Create;
 
     /********************************************************************/

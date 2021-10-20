@@ -5,7 +5,7 @@
 #ifndef R_MODE_SIGN_HPP_
 #define R_MODE_SIGN_HPP_
 
-#include "../utils.hpp"
+#include "../util.hpp"
 
 
 namespace Mode::Sign {
@@ -21,7 +21,7 @@ namespace Mode::Sign {
     enum class Real : char { Minus = -1, None = 0, Plus = 1 };
 
     /** Convert an FP to a Real */
-    constexpr Real to_real(const FP f) { return static_cast<Real>(Utils::to_underlying(f)); }
+    constexpr Real to_real(const FP f) { return static_cast<Real>(Util::to_underlying(f)); }
 
 } // namespace Mode::Sign
 

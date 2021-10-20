@@ -11,7 +11,7 @@ template <typename T> void if_t() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression; // NOLINT (false positive)
+    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create distinct inputs
     const auto a { F::t_literal<T>(0) };
@@ -48,7 +48,7 @@ template <typename T> void if_t() {
 
 /** Verify that the if_ function works */
 void if_() {
-    namespace Ex = Expression;
+    namespace Ex = Expr;
     if_t<Ex::BV>();
     if_t<Ex::Bool>();
     if_t<Ex::String>();

@@ -18,11 +18,11 @@ namespace Create::FP {
     /*                   Unary Passthrough Functions                    */
     /********************************************************************/
 
-    /** Create a Expression with an FP::ToIEEEBV op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with an FP::ToIEEEBV op
+     *  Expr pointers may not be nullptr
      */
     inline EBasePtr to_ieee_bv(const EBasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
+        namespace Ex = Expr;
         return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
     }
 
@@ -38,20 +38,20 @@ namespace Create::FP {
                                                                           std::move(sp));         \
     }
 
-    /** Create a Expression with an FP::Add op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with an FP::Add op
+     *  Expr pointers may not be nullptr
      */
     FP_MB_SMF_ARITH(add, Add);
-    /** Create a Expression with an FP::Sub op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with an FP::Sub op
+     *  Expr pointers may not be nullptr
      */
     FP_MB_SMF_ARITH(sub, Sub);
-    /** Create a Expression with an FP::Mul op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with an FP::Mul op
+     *  Expr pointers may not be nullptr
      */
     FP_MB_SMF_ARITH(mul, Mul);
-    /** Create a Expression with an FP::Div op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with an FP::Div op
+     *  Expr pointers may not be nullptr
      */
     FP_MB_SMF_ARITH(div, Div);
 
@@ -62,12 +62,12 @@ namespace Create::FP {
     /*                  Ternary Passthrough Functions                   */
     /********************************************************************/
 
-    /** Create an Expression with an FP::FP op
-     *  Expression pointers may not be nullptr
+    /** Create an Expr with an FP::FP op
+     *  Expr pointers may not be nullptr
      */
     inline EBasePtr fp(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
                        Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
+        namespace Ex = Expr;
         return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
             first, second, third, std::move(sp));
     }

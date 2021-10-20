@@ -27,7 +27,7 @@ template <typename T, typename Data> void literal_t(const Data data, const UInt 
     UNITTEST_ASSERT(std::get<Data>(op_down->value) == data);
 
     // Size check
-    if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
+    if constexpr (Util::is_ancestor<Expr::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size)
     }
 
@@ -40,20 +40,20 @@ void literal() {
     static_assert(sizeof(std::byte) == sizeof(char), "std::byte is wonky");
 
     // Bool
-    literal_t<Expression::Bool>(true);
+    literal_t<Expr::Bool>(true);
 
     // String
     std::string data_s { "This is a test" };
-    literal_t<Expression::String>(data_s, C_CHAR_BIT * data_s.size());
+    literal_t<Expr::String>(data_s, C_CHAR_BIT * data_s.size());
 
     // FP
-    literal_t<Expression::FP>(3.4, 64_ui);  // NOLINT
-    literal_t<Expression::FP>(3.4f, 32_ui); // NOLINT
+    literal_t<Expr::FP>(3.4, 64_ui);  // NOLINT
+    literal_t<Expr::FP>(3.4f, 32_ui); // NOLINT
 
     // VS
     auto ptr { std::make_shared<const PyObj::VS>(1, 1, C_CHAR_BIT) };
     const auto bl { ptr->bit_length };
-    literal_t<Expression::VS>(std::move(ptr), bl);
+    literal_t<Expr::VS>(std::move(ptr), bl);
 
     // BV
     Create::literal(uint8_t { 3 });

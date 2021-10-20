@@ -7,7 +7,7 @@
 
 #include "../constants.hpp"
 #include "../unittest.hpp"
-#include "../utils.hpp"
+#include "../util.hpp"
 
 
 /** Initialize a non-base pure abstract op class

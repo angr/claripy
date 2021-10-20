@@ -29,7 +29,7 @@ void singular() {
     constexpr auto c = Hash::singular(msg);
     constexpr auto cui = Hash::singular(0_ui);
     constexpr auto ci = Hash::singular(0_i);
-    Utils::sink(c, cui, ci);
+    Util::sink(c, cui, ci);
 
     // Non-constexpr compilation tests
     (void) Hash::singular(std::vector<Int> { 0_i, 1_i });

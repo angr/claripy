@@ -38,8 +38,8 @@ void eval() {
     auto solver_ref { z3.tls_solver() };
     z3::solver solver { *solver_ref };
 
-    // Expressions
-    namespace Ex = Expression; // NOLINT (false positive)
+    // Exprs
+    namespace Ex = Expr; // NOLINT (false positive)
     const auto x { Create::symbol<Ex::BV>("x", 64) };
     const auto y { Create::symbol<Ex::BV>("y", 64) };
     const auto neq { [&x](const uint64_t z) {
@@ -72,7 +72,7 @@ void eval() {
     } };
     // Test early and exact cutoffs (i.e. desired solutions >= found solutions)
     // Late cutoff comes free with early since late also occurs when no more solutions exist
-    Utils::Log::debug("Testing eval...");
+    Util::Log::debug("Testing eval...");
     UNITTEST_ASSERT(
         test_eval(xs.size() + 1)); // Early cutoff, also verifies late cutoff b/c early happens
     UNITTEST_ASSERT(test_eval(xs.size()));
@@ -98,7 +98,7 @@ void eval() {
     } };
     // Test early and exact cutoffs (i.e. desired solutions >= found solutions)
     // Late cutoff comes free with early since late also occurs when no more solutions exist
-    Utils::Log::debug("Testing batch_eval...");
+    Util::Log::debug("Testing batch_eval...");
     UNITTEST_ASSERT(
         test_batch(dot.size() + 1)); // Early cutoff, also verifies late cutoff b/c early happens
     UNITTEST_ASSERT(test_batch(dot.size()));

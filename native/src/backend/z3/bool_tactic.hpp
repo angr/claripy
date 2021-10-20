@@ -39,7 +39,7 @@ namespace Backend::Z3 {
                     return ctx.bool_val(false);
                 case 1:
                     return ar[0].as_expr();
-                // len > 1; or each goal as expressions
+                // len > 1; or each goal as exprs
                 default: {
                     z3::expr ret { ar[0].as_expr() };
                     for (int i = 0; i < static_cast<int>(len); ++i) {

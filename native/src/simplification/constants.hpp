@@ -5,7 +5,7 @@
 #ifndef R_SIMPLIFICATION_CONSTANTS_HPP_
 #define R_SIMPLIFICATION_CONSTANTS_HPP_
 
-#include "../expression.hpp"
+#include "../expr.hpp"
 
 
 namespace Simplification {
@@ -16,7 +16,7 @@ namespace Simplification {
     /** The type each top level simplifier must have
      *  Note: takes in a Factory::Ptr (as opposed to a raw pointer) since it may return the input
      */
-    using SimplifierFunc = Expression::BasePtr(const Expression::BasePtr &);
+    using SimplifierFunc = Expr::BasePtr(const Expr::BasePtr &);
 
 } // namespace Simplification
 

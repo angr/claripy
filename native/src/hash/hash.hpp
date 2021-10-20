@@ -7,7 +7,7 @@
 
 #include "singular.hpp"
 
-#include "../utils.hpp"
+#include "../util.hpp"
 
 #include <sstream>
 #include <type_traits>
@@ -37,13 +37,13 @@ namespace Hash {
 
 #ifdef DEBUG
         // Verify no memory corruption
-        Utils::affirm<Utils::Error::Unexpected::Unknown>(size == i + 1, WHOAMI_WITH_SOURCE
-                                                         "Incorrect value of i within Hash::hash");
+        Util::affirm<Util::Error::Unexpected::Unknown>(size == i + 1, WHOAMI_WITH_SOURCE
+                                                       "Incorrect value of i within Hash::hash");
 #endif
 
         // Return a hash of the array of hashes
         // Since Hash is a fundamental numeric type, we specify the size as Hash
-        return Utils::FNV1a<Hash>::hash<Hash>(hashes, size);
+        return Util::FNV1a<Hash>::hash<Hash>(hashes, size);
     }
 
 } // namespace Hash

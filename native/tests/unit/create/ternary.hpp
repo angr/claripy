@@ -17,14 +17,12 @@ using SM = Create::Private::SizeMode;
 
 /** Test a ternary op */
 template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline void ternary() {
-    static_assert(Utils::is_ancestor<Expression::Base, Out>,
-                  "ternary requires Out be an Expression");
-    static_assert(Utils::is_ancestor<Expression::Base, In>,
-                  "ternary requires In be an Expression");
+    static_assert(Util::is_ancestor<Expr::Base, Out>, "ternary requires Out be an Expr");
+    static_assert(Util::is_ancestor<Expr::Base, In>, "ternary requires In be an Expr");
     static_assert(Op::is_ternary<OpT>, "ternary requires a ternary OpT");
-    if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
-        const constexpr bool sized_in { Utils::is_ancestor<Expression::Bits, In> };
-        static_assert(Utils::TD::boolean<sized_in, In>,
+    if constexpr (Util::is_ancestor<Expr::Bits, Out>) {
+        const constexpr bool sized_in { Util::is_ancestor<Expr::Bits, In> };
+        static_assert(Util::TD::boolean<sized_in, In>,
                       "ternary does not support sized output types without sized input types");
     }
 
@@ -55,14 +53,14 @@ template <typename Out, typename In, typename OpT, SM Mode, auto CreateF> inline
     UNITTEST_ASSERT(ternary->third == c);
 
     // Size test
-    if constexpr (Utils::is_ancestor<Expression::Bits, Out>) {
+    if constexpr (Util::is_ancestor<Expr::Bits, Out>) {
         // Because of previous static asserts we know In must also be sized
         UInt new_bit_length { a_down->bit_length };
         if constexpr (Mode == SM::Add) {
             new_bit_length += b_down->bit_length + c_down->bit_length;
         }
         else {
-            static_assert(Utils::CD::false_<Mode>, "Unsupported mode for ternary");
+            static_assert(Util::CD::false_<Mode>, "Unsupported mode for ternary");
         }
         UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }

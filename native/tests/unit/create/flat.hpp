@@ -17,11 +17,11 @@ using SM = Create::Private::SizeMode;
 
 /** Test a flat op */
 template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
-    static_assert(Utils::is_ancestor<Expression::Base, T>, "flat requires T be an Expression");
+    static_assert(Util::is_ancestor<Expr::Base, T>, "flat requires T be an Expr");
     static_assert(Op::is_flat<OpT>, "flat requires a flat OpT");
 
     // Create input
-    std::vector<Factory::Ptr<Expression::Base>> input {
+    std::vector<Factory::Ptr<Expr::Base>> input {
         4,
         // Temporary so that it looses the reference after construction
         UnitTest::TestLib::Factories::t_literal<T>()
@@ -33,7 +33,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     // Pointer checks
     for (auto &i : input) {
         // Since input has 4 identical items
-        UNITTEST_ASSERT(Utils::unsign(i.use_count()) == 2 * input.size());
+        UNITTEST_ASSERT(Util::unsign(i.use_count()) == 2 * input.size());
     }
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
@@ -48,8 +48,8 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     }
 
     // Size test
-    if constexpr (Utils::is_ancestor<Expression::Bits, T>) {
-        static_assert(Mode == Utils::TD::id<SM::First>, "Unsupported mode for flat");
+    if constexpr (Util::is_ancestor<Expr::Bits, T>) {
+        static_assert(Mode == Util::TD::id<SM::First>, "Unsupported mode for flat");
         const auto i0 { dcast<T>(flat->operands[0]) };
         UNITTEST_ASSERT(exp_down->bit_length == i0->bit_length);
     }

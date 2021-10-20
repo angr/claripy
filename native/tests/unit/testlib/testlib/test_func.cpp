@@ -6,7 +6,7 @@
 
 #include "error.hpp"
 #include "private/verify.hpp"
-#include "utils.hpp"
+#include "util.hpp"
 
 #include <exception>
 
@@ -28,12 +28,12 @@ int UnitTest::TestLib::test_func(TestFN &f) {
     }
     // UnitTest error
     catch (Error &e) {
-        Utils::Log::error(e.what());
+        Util::Log::error(e.what());
         return EXIT_FAILURE;
     }
     // If there was an different error, note so and fail
-    CATCH_ERROR(Utils::Error::Unexpected::Base)
-    CATCH_ERROR(Utils::Error::Python::Base)
-    CATCH_ERROR(Utils::Error::Claricpp)
+    CATCH_ERROR(Util::Error::Unexpected::Base)
+    CATCH_ERROR(Util::Error::Python::Base)
+    CATCH_ERROR(Util::Error::Claricpp)
     CATCH_ERROR(std::exception)
 }

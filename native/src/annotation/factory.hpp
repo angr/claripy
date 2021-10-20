@@ -8,7 +8,7 @@
 #include "base.hpp"
 
 #include "../factory.hpp"
-#include "../utils.hpp"
+#include "../util.hpp"
 
 #include <memory>
 #include <utility>
@@ -20,7 +20,7 @@ namespace Annotation {
      *  Arguments are passed by non-const forwarding reference
      */
     template <typename T, typename... Args> inline BasePtr factory(Args &&...args) {
-        static_assert(Utils::is_ancestor<Base, T>, "T must derive from Annotation::Base");
+        static_assert(Util::is_ancestor<Base, T>, "T must derive from Annotation::Base");
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 

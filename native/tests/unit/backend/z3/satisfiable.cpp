@@ -7,7 +7,7 @@
 
 /** Test is_true and is_false */
 void satisfiable() {
-    namespace Ex = Expression;
+    namespace Ex = Expr;
     using B = Ex::Bool;
 
     auto z3 { Backend::Z3::Z3 {} };

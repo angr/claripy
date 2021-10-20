@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief This file exposes all relevant public members of Create
- * Create contains a set of functions that wrap expression and op constructors
+ * Create contains a set of functions that wrap expr and op constructors
  */
 #ifndef R_CREATE_HPP_
 #define R_CREATE_HPP_

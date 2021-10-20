@@ -20,17 +20,17 @@ namespace Op {
         /** Low index */
         const UInt low;
         /** What we extract from */
-        const Expression::BasePtr from;
+        const Expr::BasePtr from;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "high":)|" << high << R"|(, "low":)|"
                 << low << R"|(, "from":)|";
-            Expression::repr(from, out, verbose);
+            Expr::repr(from, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final { s.emplace(from.get()); }
@@ -38,7 +38,7 @@ namespace Op {
       private:
         /** Protected constructor */
         explicit inline Extract(const Hash::Hash &h, const UInt hi, const UInt lo,
-                                const Expression::BasePtr &f)
+                                const Expr::BasePtr &f)
             : Base { h, static_cuid }, high { hi }, low { lo }, from { f } {}
     };
 

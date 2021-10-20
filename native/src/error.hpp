@@ -6,6 +6,6 @@
 #define R_ERROR_HPP_
 
 #include "error/backend.hpp"
-#include "error/expression.hpp"
+#include "error/expr.hpp"
 
 #endif

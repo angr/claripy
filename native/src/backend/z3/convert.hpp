@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines how the Z3 backend converts Claricpp Expressions into Z3 ASTs
+ * @brief This file defines how the Z3 backend converts Claricpp Exprs into Z3 ASTs
  */
 #ifndef R_BACKEND_Z3_CONVERT_HPP_
 #define R_BACKEND_Z3_CONVERT_HPP_
@@ -18,7 +18,7 @@
 
 namespace Backend::Z3 {
 
-    /** Used to convert Claricpp expressions into Z3 ASTs */
+    /** Used to convert Claricpp exprs into Z3 ASTs */
     template <typename Z3> struct Convert final {
         static_assert(typename Z3::IsZ3Bk(), "Z3 should be the Z3 backend");
 
@@ -27,7 +27,7 @@ namespace Backend::Z3 {
         static constexpr inline const auto flt_size { 4_ui * BitLength::char_bit };
 
         /** A function that narrows a UInt to Z3's unsigned type */
-        static constexpr auto to_z3u(const UInt x) { return Utils::narrow<unsigned>(x); }
+        static constexpr auto to_z3u(const UInt x) { return Util::narrow<unsigned>(x); }
 
       public:
         // Unary
@@ -54,8 +54,8 @@ namespace Backend::Z3 {
             }
 
             // Error checking
-            using Err = Error::Expression::Operation;
-            Utils::affirm<Err>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
+            using Err = Error::Expr::Operation;
+            Util::affirm<Err>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
 
             // Reverse byte by byte
             auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
@@ -87,7 +87,7 @@ namespace Backend::Z3 {
         static z3::expr compare(const z3::expr &l, const z3::expr &r) {
             using C = Mode::Compare;
             static_assert(Mode::compare_is_valid(Mask), "Invalid mask mode");
-            if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Less | C::Eq)) {
+            if constexpr (Util::BitMask::has(Mask, C::Signed | C::Less | C::Eq)) {
                 if (l.is_fpa()) {
                     return l <= r;
                 }
@@ -95,7 +95,7 @@ namespace Backend::Z3 {
                     return z3::sle(l, r);
                 }
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Less | C::Neq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Signed | C::Less | C::Neq)) {
                 if (l.is_fpa()) {
                     return l < r;
                 }
@@ -103,7 +103,7 @@ namespace Backend::Z3 {
                     return z3::slt(l, r);
                 }
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Greater | C::Eq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Signed | C::Greater | C::Eq)) {
                 if (l.is_fpa()) {
                     return l >= r;
                 }
@@ -111,7 +111,7 @@ namespace Backend::Z3 {
                     return z3::sge(l, r);
                 }
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Signed | C::Greater | C::Neq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Signed | C::Greater | C::Neq)) {
                 if (l.is_fpa()) {
                     return l > r;
                 }
@@ -119,20 +119,20 @@ namespace Backend::Z3 {
                     return z3::sgt(l, r);
                 }
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Less | C::Eq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Less | C::Eq)) {
                 return z3::ule(l, r);
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Less | C::Neq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Less | C::Neq)) {
                 return z3::ult(l, r);
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Greater | C::Eq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Greater | C::Eq)) {
                 return z3::uge(l, r);
             }
-            else if constexpr (Utils::BitMask::has(Mask, C::Unsigned | C::Greater | C::Neq)) {
+            else if constexpr (Util::BitMask::has(Mask, C::Unsigned | C::Greater | C::Neq)) {
                 return z3::ugt(l, r);
             }
             else {
-                static_assert(Utils::CD::false_<Mask>, "Unsupported mask mode");
+                static_assert(Util::CD::false_<Mask>, "Unsupported mask mode");
             }
         }
 
@@ -174,7 +174,7 @@ namespace Backend::Z3 {
                 return z3::lshr(l, r);
             }
             else {
-                static_assert(Utils::CD::false_<Mask>, "Unsupported mask mode");
+                static_assert(Util::CD::false_<Mask>, "Unsupported mask mode");
             }
         }
 
@@ -202,9 +202,8 @@ namespace Backend::Z3 {
         template <typename FunctorType>
         static z3::expr ptr_accumulate(FlatArr arr, const UInt size) {
 #ifdef DEBUG
-            Utils::affirm<Utils::Error::Unexpected::Size>(
-                size >= 2,
-                "size < 2; this probably resulted from an invalid claricpp expression.");
+            Util::affirm<Util::Error::Unexpected::Size>(
+                size >= 2, "size < 2; this probably resulted from an invalid claricpp expr.");
             UTILS_AFFIRM_NOT_NULL_DEBUG(arr[0]);
             UTILS_AFFIRM_NOT_NULL_DEBUG(arr[1]);
 #endif
@@ -261,11 +260,11 @@ namespace Backend::Z3 {
         /** Literal converter
          *  expr may not be nullptr
          */
-        static z3::expr literal(const Expression::RawPtr expr, z3::context &ctx) {
+        static z3::expr literal(const Expr::RawPtr expr, z3::context &ctx) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
             using To = CTSC<Op::Literal>;
-            const auto &data { Utils::checked_static_cast<To>(expr->op.get())->value };
+            const auto &data { Util::checked_static_cast<To>(expr->op.get())->value };
             try {
                 switch (data.index()) {
                     case 0:
@@ -310,14 +309,14 @@ namespace Backend::Z3 {
                     }
                         // Error handling
                     default:
-                        throw Utils::Error::Unexpected::NotSupported(
+                        throw Util::Error::Unexpected::NotSupported(
                             WHOAMI_WITH_SOURCE
                             "Unknown variant type in literal op given to z3 backend");
                 }
             }
             // Re-emit these exceptions with additional info and wrapped as a Claricpp exception
             catch (const std::bad_variant_access &ex) {
-                throw Utils::Error::Unexpected::BadVariantAccess(WHOAMI_WITH_SOURCE, ex.what());
+                throw Util::Error::Unexpected::BadVariantAccess(WHOAMI_WITH_SOURCE, ex.what());
             }
         }
 
@@ -325,66 +324,64 @@ namespace Backend::Z3 {
          *  This saves symbol annotation for later translocation
          *  expr may not be nullptr
          */
-        static z3::expr symbol(const Expression::RawPtr expr, SymAnTransData &satd,
-                               z3::context &ctx) {
+        static z3::expr symbol(const Expr::RawPtr expr, SymAnTransData &satd, z3::context &ctx) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
             using To = CTSC<Op::Symbol>;
-            const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
+            const std::string &name { Util::checked_static_cast<To>(expr->op.get())->name };
             switch (expr->cuid) {
-                case Expression::Bool::static_cuid:
+                case Expr::Bool::static_cuid:
                     return ctx.bool_const(name.c_str());
-                case Expression::String::static_cuid:
+                case Expr::String::static_cuid:
                     return ctx.string_const(name.c_str());
-                case Expression::FP::static_cuid: {
-                    using FPP = CTSC<Expression::FP>;
-                    const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length ==
-                                      flt_size)
+                case Expr::FP::static_cuid: {
+                    using FPP = CTSC<Expr::FP>;
+                    const auto fpw { (Util::checked_static_cast<FPP>(expr)->bit_length == flt_size)
                                          ? Mode::FP::flt
                                          : Mode::FP::dbl };
                     return ctx.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
                 }
-                case Expression::BV::static_cuid: {
-                    using BVP = CTSC<Expression::BV>;
+                case Expr::BV::static_cuid: {
+                    using BVP = CTSC<Expr::BV>;
 #ifdef DEBUG // @todo Double check if I am strill right
-                    Utils::affirm<Utils::Error::Unexpected::Unknown>(
-                        Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr,
+                    Util::affirm<Util::Error::Unexpected::Unknown>(
+                        Factory::Private::gcache<Expr::Base>().find(expr->hash) != nullptr,
                         WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
                     // Update annotations for translocation
-                    const uint64_t name_hash { Utils::FNV1a<char>::hash(name.c_str(),
-                                                                        name.size()) };
+                    const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(),
+                                                                       name.size()) };
                     if (expr->annotations != nullptr) {
-                        Utils::map_emplace(satd, name_hash, expr->annotations);
+                        Util::map_emplace(satd, name_hash, expr->annotations);
                     }
                     else {
                         satd.erase(name_hash);
                     }
                     // Return the converted constant
-                    const UInt bit_length { Utils::checked_static_cast<BVP>(expr)->bit_length };
+                    const UInt bit_length { Util::checked_static_cast<BVP>(expr)->bit_length };
                     return ctx.bv_const(name.c_str(), to_z3u(bit_length));
                 }
                 // Error handling
-                case Expression::VS::static_cuid:
+                case Expr::VS::static_cuid:
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
                                                       "VSA is not supported by the Z3 backend");
                 default:
-                    throw Utils::Error::Unexpected::NotSupported(
-                        WHOAMI_WITH_SOURCE "Unknown expression CUID given to z3 backend");
+                    throw Util::Error::Unexpected::NotSupported(
+                        WHOAMI_WITH_SOURCE "Unknown expr CUID given to z3 backend");
             }
         }
 
         /** A struct meant for certain FP conversions */
         struct FP final {
           private:
-            /** Verifies 2 expressions are FPs with the same context */
+            /** Verifies 2 exprs are FPs with the same context */
             static void assert_are_compatible(const z3::expr &a, const z3::expr &b) {
 #ifdef DEBUG
                 z3::check_context(a, b);
-                Utils::affirm<Utils::Error::Unexpected::Type>(
+                Util::affirm<Util::Error::Unexpected::Type>(
                     a.is_fpa() && b.is_fpa(), WHOAMI_WITH_SOURCE " called non-FP ops");
 #else
-                Utils::sink(a, b);
+                Util::sink(a, b);
 #endif
             }
 
@@ -402,7 +399,7 @@ namespace Backend::Z3 {
                     case Mode::FP::Rounding::TowardsZero:
                         return z3::RTZ;
                     default:
-                        throw Utils::Error::Unexpected::NotSupported(
+                        throw Util::Error::Unexpected::NotSupported(
                             WHOAMI_WITH_SOURCE "Unable to map Mode::FP::Rounding ", mode,
                             " to z3::rounding_mode");
                 };

@@ -18,28 +18,28 @@ namespace Op::String {
         /** The start index of the substring stored as a BV
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr start_index;
+        const Expr::BasePtr start_index;
         /** The count of the substring stored as a BV
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr count;
+        const Expr::BasePtr count;
         /** The count of the substring stored as a String
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr full_string;
+        const Expr::BasePtr full_string;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "start_index":)|";
-            Expression::repr(start_index, out, verbose);
+            Expr::repr(start_index, out, verbose);
             out << R"|(, "count":)|";
-            Expression::repr(count, out, verbose);
+            Expr::repr(count, out, verbose);
             out << R"|(, "full_string":)|";
-            Expression::repr(full_string, out, verbose);
+            Expr::repr(full_string, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -52,16 +52,16 @@ namespace Op::String {
         /** Protected constructor
          *  Ensure that each argument is of the proper type
          */
-        explicit inline SubString(const Hash::Hash &h, const Expression::BasePtr &si,
-                                  const Expression::BasePtr &c, const Expression::BasePtr &s)
+        explicit inline SubString(const Hash::Hash &h, const Expr::BasePtr &si,
+                                  const Expr::BasePtr &c, const Expr::BasePtr &s)
             : Base { h, static_cuid }, start_index { si }, count { c }, full_string { s } {
-            using Err = Error::Expression::Type;
-            Utils::affirm<Err>(CUID::is_t<Expression::BV>(start_index),
-                               WHOAMI_WITH_SOURCE "start_index expression must be a BV");
-            Utils::affirm<Err>(CUID::is_t<Expression::BV>(count),
-                               WHOAMI_WITH_SOURCE "count expression must be a BV");
-            Utils::affirm<Err>(CUID::is_t<Expression::String>(full_string),
-                               WHOAMI_WITH_SOURCE "full_string expression must be a String");
+            using Err = Error::Expr::Type;
+            Util::affirm<Err>(CUID::is_t<Expr::BV>(start_index),
+                              WHOAMI_WITH_SOURCE "start_index expr must be a BV");
+            Util::affirm<Err>(CUID::is_t<Expr::BV>(count),
+                              WHOAMI_WITH_SOURCE "count expr must be a BV");
+            Util::affirm<Err>(CUID::is_t<Expr::String>(full_string),
+                              WHOAMI_WITH_SOURCE "full_string expr must be a String");
         }
     };
 

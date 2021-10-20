@@ -33,7 +33,7 @@ void sym_an_trans_data() {
 
     // Create an BV symbol
     const auto an_vec { std::make_shared<A::Vec>(A::Vec::RawVec { an }) };
-    const auto sym { Create::symbol<Expression::BV>(std::string { "x" }, 32, an_vec) };
+    const auto sym { Create::symbol<Expr::BV>(std::string { "x" }, 32, an_vec) };
 
     // Round trip it through z3
     const auto conv { z3.convert(sym.get()) };

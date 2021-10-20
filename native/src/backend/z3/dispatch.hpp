@@ -12,7 +12,7 @@
 
 namespace Backend::Z3 {
 
-    /** Used to dispatch conversions and abstractions between Claricpp expressions and Z3 ASTs */
+    /** Used to dispatch conversions and abstractions between Claricpp exprs and Z3 ASTs */
     template <typename Z3> struct Dispatch final {
         static_assert(typename Z3::IsZ3Bk(), "Z3 should be the Z3 backend");
 
@@ -22,9 +22,9 @@ namespace Backend::Z3 {
          *  Arguments must be popped off the args stack if used
          *  expr may not be nullptr
          *  Warning: This function may internally do unchecked static casting, we permit this
-         *  *only* if the cuid of the expression is of or derive from the type being cast to.
+         *  *only* if the cuid of the expr is of or derive from the type being cast to.
          */
-        static z3::expr dispatch_conversion(const Expression::RawPtr expr,
+        static z3::expr dispatch_conversion(const Expr::RawPtr expr,
                                             std::vector<const z3::expr *> &args,
                                             SymAnTransData &satd, Z3 &bk) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
@@ -66,8 +66,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
         using To = CTSC<Op::UIntBinary>;                                                          \
         check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
-        auto ret { (FN) (*args.back(),                                                            \
-                         Utils::checked_static_cast<To>(expr->op.get())->integer) };              \
+        auto ret { (FN) (*args.back(), Util::checked_static_cast<To>(expr->op.get())->integer) }; \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -78,7 +77,7 @@ namespace Backend::Z3 {
         using To = CTSC<Op::FP::ModeBinary>;                                                      \
         check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                          \
         const auto size { args.size() };                                                          \
-        auto ret { (FN) (Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],   \
+        auto ret { (FN) (Util::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],    \
                          *args[size - 1]) };                                                      \
         args.resize(size - 2);                                                                    \
         return ret;                                                                               \
@@ -98,7 +97,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                            \
         using To = CTSC<Op::AbstractFlat>;                                                        \
         const auto a_size { args.size() };                                                        \
-        const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
+        const auto n { Util::checked_static_cast<To>(expr->op.get())->operands.size() };          \
         check_vec_usage(args, n, WHOAMI_WITH_SOURCE);                                             \
         auto ret { (FN) (&(args.data()[a_size - n]), n) };                                        \
         args.resize(a_size - n);                                                                  \
@@ -114,9 +113,8 @@ namespace Backend::Z3 {
 
                 // This should never be hit
                 default: {
-                    throw Utils::Error::Unexpected::NotSupported(
-                        WHOAMI_WITH_SOURCE "Unknown expression op given.\nOp CUID: ",
-                        expr->op->cuid);
+                    throw Util::Error::Unexpected::NotSupported(
+                        WHOAMI_WITH_SOURCE "Unknown expr op given.\nOp CUID: ", expr->op->cuid);
                 }
 
                     // Unsupported ops
@@ -125,9 +123,9 @@ namespace Backend::Z3 {
                 case Op::FP::FP::static_cuid:          // fallthrough
                 case Op::String::IsDigit::static_cuid: // fallthrough
                 case Op::Intersection::static_cuid: {
-                    throw Error::Backend::Unsupported(
-                        WHOAMI_WITH_SOURCE "Unsupported expression op given.\nOp CUID: ",
-                        expr->op->cuid);
+                    throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
+                                                      "Unsupported expr op given.\nOp CUID: ",
+                                                      expr->op->cuid);
                 }
 
                     /************************************************/
@@ -202,7 +200,7 @@ namespace Backend::Z3 {
                 case Op::Extract::static_cuid: {
                     using To = CTSC<Op::Extract>;
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
-                    const auto *const op { Utils::checked_static_cast<To>(expr->op.get()) };
+                    const auto *const op { Util::checked_static_cast<To>(expr->op.get()) };
                     auto ret { Conv::extract(op->high, op->low, *args.back()) };
                     args.pop_back();
                     return ret;
@@ -234,12 +232,12 @@ namespace Backend::Z3 {
                     /** A local macro used for consistency */
 #define TO_BV_CASE(TF)                                                                            \
     case Op::FP::ToBV<TF>::static_cuid: {                                                         \
-        debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE "FP::ToBV has no length");  \
+        debug_assert_dcast<Expr::Bits>(expr, WHOAMI_WITH_SOURCE "FP::ToBV has no length");        \
         using ToBV = CTSC<Op::FP::ToBV<TF>>;                                                      \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
         auto ret { Conv::FP::template to_bv<TF>(                                                  \
-            Utils::checked_static_cast<ToBV>(expr->op.get())->mode, *args.back(),                 \
-            Expression::get_bit_length(expr)) };                                                  \
+            Util::checked_static_cast<ToBV>(expr->op.get())->mode, *args.back(),                  \
+            Expr::get_bit_length(expr)) };                                                        \
         args.pop_back();                                                                          \
         return ret;                                                                               \
     }
@@ -249,7 +247,7 @@ namespace Backend::Z3 {
     case Op::FP::From2sComplementBV<TF>::static_cuid: {                                           \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
         using OpT = CTSC<Op::FP::From2sComplementBV<TF>>;                                         \
-        const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };                    \
+        const OpT cast_op { Util::checked_static_cast<OpT>(expr->op.get()) };                     \
         auto ret { Conv::FP::template from_2s_complement_bv<TF>(cast_op->mode, *args.back(),      \
                                                                 cast_op->width) };                \
         args.pop_back();                                                                          \
@@ -272,7 +270,7 @@ namespace Backend::Z3 {
                 case Op::FP::FromFP::static_cuid: {
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
                     using FromFP = CTSC<Op::FP::FromFP>;
-                    const FromFP cast_op { Utils::checked_static_cast<FromFP>(expr->op.get()) };
+                    const FromFP cast_op { Util::checked_static_cast<FromFP>(expr->op.get()) };
                     auto ret { Conv::FP::from_fp(cast_op->mode, *args.back(), cast_op->width) };
                     args.pop_back();
                     return ret;
@@ -282,7 +280,7 @@ namespace Backend::Z3 {
                 case Op::FP::FromNot2sComplementBV::static_cuid: {
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
                     using OpT = CTSC<Op::FP::FromNot2sComplementBV>;
-                    const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };
+                    const OpT cast_op { Util::checked_static_cast<OpT>(expr->op.get()) };
                     auto ret { Conv::FP::from_not_2s_complement_bv(*args.back(), cast_op->width) };
                     args.pop_back();
                     return ret;
@@ -318,9 +316,9 @@ namespace Backend::Z3 {
                 case Op::String::IndexOf::static_cuid: {
                     check_vec_usage(args, 2, WHOAMI_WITH_SOURCE);
                     const auto size { args.size() };
-                    debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE
-                                                         "String::IndexOf has no length");
-                    const auto bl { Expression::get_bit_length(expr) };
+                    debug_assert_dcast<Expr::Bits>(expr, WHOAMI_WITH_SOURCE
+                                                   "String::IndexOf has no length");
+                    const auto bl { Expr::get_bit_length(expr) };
                     auto ret { Conv::String::index_of(*args[size - 3], *args[size - 2],
                                                       *args[size - 1], bl) };
                     args.resize(size - 2);
@@ -339,7 +337,7 @@ namespace Backend::Z3 {
 #undef FLAT_CASE
         }
 
-        /** Abstract a backend object into a claricpp expression */
+        /** Abstract a backend object into a claricpp expr */
         static typename Z3::AbstractionVariant
         dispatch_abstraction(const z3::expr &b_obj,
                              std::vector<typename Z3::AbstractionVariant> &args,
@@ -349,7 +347,7 @@ namespace Backend::Z3 {
             using C = Mode::Compare;
             using Shift = Mode::Shift;
             using Sign = Mode::Sign::FP;
-            namespace Ex = Expression;
+            namespace Ex = Expr;
 
             // Get switching variables
             const auto decl { b_obj.decl() };
@@ -357,8 +355,8 @@ namespace Backend::Z3 {
 
             /** A local macro used for error checking */
 #define ASSERT_ARG_EMPTY(X)                                                                       \
-    Utils::affirm<Utils::Error::Unexpected::Size>((X).empty(), WHOAMI_WITH_SOURCE                 \
-                                                  "Op should have no children");
+    Util::affirm<Util::Error::Unexpected::Size>((X).empty(),                                      \
+                                                WHOAMI_WITH_SOURCE "Op should have no children");
 
             // Switch on expr type
             switch (decl_kind) {
@@ -556,8 +554,8 @@ namespace Backend::Z3 {
 
         /** Abstract a backend object into a primitive stored in a PrimVar */
         static PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj, const Z3 &bk) {
-            Utils::affirm<Utils::Error::Unexpected::Size>(b_obj.num_args() == 0, WHOAMI_WITH_SOURCE
-                                                          "Op should have no children");
+            Util::affirm<Util::Error::Unexpected::Size>(b_obj.num_args() == 0, WHOAMI_WITH_SOURCE
+                                                        "Op should have no children");
 
             // Get switching variables
             const auto decl { b_obj.decl() };
@@ -592,8 +590,8 @@ namespace Backend::Z3 {
                         G_CASE(3)
                         G_CASE(4)
                         default:
-                            throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
-                                                                    "Bad variant");
+                            throw Util::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
+                                                                   "Bad variant");
                     }
 #undef G_CASE
                     static_assert(std::variant_size_v<decltype(x)> == 5,
@@ -621,7 +619,7 @@ namespace Backend::Z3 {
                     if (LIKELY(width == Mode::FP::flt)) {
                         return fp_const<float>(decl_kind);
                     }
-                    throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
+                    throw Util::Error::Unexpected::NotSupported("Unsupported fp primitive width");
                 }
                 case Z3_OP_CONCAT: {
                     const auto sort { b_obj.get_sort() };
@@ -632,10 +630,10 @@ namespace Backend::Z3 {
                     if (LIKELY(width == Mode::FP::flt)) {
                         return nan<float>;
                     }
-                    throw Utils::Error::Unexpected::NotSupported("Unsupported fp primitive width");
+                    throw Util::Error::Unexpected::NotSupported("Unsupported fp primitive width");
                     // @todo: Fill in
 #if 0
-                    Utils::affirm<Error::Backend::Abstraction>(
+                    Util::affirm<Error::Backend::Abstraction>(
                             !Z3::rhfpu, WHOAMI_WITH_SOURCE
                             "rewriter.hi_fp_unspecified is set to false, this should not be triggered");
                         const auto n { b_obj.num_args() };
@@ -667,11 +665,11 @@ namespace Backend::Z3 {
 #endif
                 }
                 case Z3_OP_FPA_TO_IEEE_BV: {
-                    Utils::affirm<Error::Backend::Abstraction>(
+                    Util::affirm<Error::Backend::Abstraction>(
                         rhfpu, WHOAMI_WITH_SOURCE
                         "rewriter.hi_fp_unspecified is set to true, this should not be triggered");
 #ifdef DEBUG
-                    Utils::affirm<Utils::Error::Unexpected::Size>(
+                    Util::affirm<Util::Error::Unexpected::Size>(
                         b_obj.num_args() > 0,
                         WHOAMI_WITH_SOURCE "num_args should be at least one!");
 #endif
@@ -684,15 +682,15 @@ namespace Backend::Z3 {
                         case 1:
                             return std::get<1>(var);
                         default:
-                            throw Utils::Error::Unexpected::Unknown("Bad variant index");
+                            throw Util::Error::Unexpected::Unknown("Bad variant index");
                     }
                 }
 
                     // String
                 case Z3_OP_INTERNAL: {
-                    Utils::affirm<Error::Backend::Abstraction>(
-                        string_check(b_obj),
-                        WHOAMI_WITH_SOURCE "b_obj is not a string as expected");
+                    Util::affirm<Error::Backend::Abstraction>(string_check(b_obj),
+                                                              WHOAMI_WITH_SOURCE
+                                                              "b_obj is not a string as expected");
                     return Abs::internal_primitive(b_obj, decl);
                 }
             }
@@ -708,13 +706,13 @@ namespace Backend::Z3 {
          *  If not, a type exception prefixed by with message args... will be raised
          */
         template <typename T, typename... Args>
-        static constexpr void debug_assert_dcast(const Expression::RawPtr e, Args &&...args) {
+        static constexpr void debug_assert_dcast(const Expr::RawPtr e, Args &&...args) {
 #ifdef DEBUG
             using Ptr = CTSC<T>;
-            using Err = Utils::Error::Unexpected::Type;
-            Utils::affirm<Err>(dynamic_cast<Ptr>(e) != nullptr, std::forward<Args>(args)...);
+            using Err = Util::Error::Unexpected::Type;
+            Util::affirm<Err>(dynamic_cast<Ptr>(e) != nullptr, std::forward<Args>(args)...);
 #else
-            Utils::sink(e, args...);
+            Util::sink(e, args...);
 #endif
         }
 
@@ -723,15 +721,15 @@ namespace Backend::Z3 {
          */
         template <typename T, typename... Args>
         static void check_vec_usage(const T &c, const UInt n, Args &&...args) {
-            namespace Err = Utils::Error::Unexpected; // NOLINT (false positive)
-            Utils::affirm<Err::Size>(c.size() >= n, std::forward<Args>(args)...,
-                                     "container is too small to access ", n, " elements");
+            namespace Err = Util::Error::Unexpected; // NOLINT (false positive)
+            Util::affirm<Err::Size>(c.size() >= n, std::forward<Args>(args)...,
+                                    "container is too small to access ", n, " elements");
 #ifdef DEBUG
             if (n > 0) {
                 const auto last { c.size() - 1 };
                 for (UInt i { 0 }; i < n; ++i) {
-                    Utils::affirm<Err::Null>(c[last - i] != nullptr, std::forward<Args>(args)...,
-                                             "container element cannot be nullptr");
+                    Util::affirm<Err::Null>(c[last - i] != nullptr, std::forward<Args>(args)...,
+                                            "container element cannot be nullptr");
                 }
             }
 #endif
@@ -739,7 +737,7 @@ namespace Backend::Z3 {
 
         /** Return a T given the decl_kind */
         template <typename T> static T fp_const(const Z3_decl_kind &decl_kind) {
-            static_assert(Utils::qualified_is_in<T, float, double>, "Unsupported fp type");
+            static_assert(Util::qualified_is_in<T, float, double>, "Unsupported fp type");
             switch (decl_kind) {
                 case Z3_OP_FPA_MINUS_ZERO:
                     return -0;
@@ -752,12 +750,12 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_NAN:
                     return nan<T>;
                 default:
-                    throw Utils::Error::Unexpected::Usage(
+                    throw Util::Error::Unexpected::Usage(
                         WHOAMI_WITH_SOURCE "called with ba;d decl_kind: ", decl_kind);
             }
         }
 
-        /** Return true if the expression is a z3 string */
+        /** Return true if the expr is a z3 string */
         static bool string_check(const z3::expr &b_obj) {
             const auto sort { b_obj.get_sort() };
             if (sort.is_seq()) {

@@ -13,7 +13,7 @@
 /** Toggle claricpp backtrace */
 static inline void toggle_backtrace() {
 #ifdef DEBUG
-    Utils::Error::Claricpp::toggle_backtrace(true);
+    Util::Error::Claricpp::toggle_backtrace(true);
 #endif
 }
 
@@ -22,8 +22,8 @@ static inline void toggle_backtrace() {
     /** Main function: test TFUNC */                                                              \
     int main() {                                                                                  \
         using namespace UnitTest::TestLib;                                                        \
-        original_bk = Utils::Log::Backend::get();                                                 \
-        original_sty = Utils::Log::Style::get();                                                  \
+        original_bk = Util::Log::Backend::get();                                                  \
+        original_sty = Util::Log::Style::get();                                                   \
         toggle_backtrace();                                                                       \
         return test_func((TFUNC));                                                                \
     }

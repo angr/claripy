@@ -31,7 +31,7 @@ template <typename T> static bool test(Backend::Z3::Z3 &z3, const T in) {
 
 /** Verify that abstract_to_primitive is working for floating point type T */
 template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
-    static_assert(Utils::qualified_is_in<T, float, double>, "Unsupported floating point type");
+    static_assert(Util::qualified_is_in<T, float, double>, "Unsupported floating point type");
     UNITTEST_ASSERT(test(z3, T { 10. }));
     UNITTEST_ASSERT(test(z3, T { 0. }));
     UNITTEST_ASSERT(test(z3, T { -0. }));
@@ -48,29 +48,29 @@ template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
 }
 
 
-/** Try to abstract_to_prim a claricpp expression from z3 */
+/** Try to abstract_to_prim a claricpp expr from z3 */
 void abstract_to_prim() {
     auto z3 { Backend::Z3::Z3 {} };
 
-    Utils::Log::debug("Testing bool...");
+    Util::Log::debug("Testing bool...");
     UNITTEST_ASSERT(test(z3, true));
     UNITTEST_ASSERT(test(z3, false));
 
-    Utils::Log::debug("Testing BV...");
+    Util::Log::debug("Testing BV...");
     UNITTEST_ASSERT(test(z3, uint8_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint16_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint32_t { 10 }));
     UNITTEST_ASSERT(test(z3, uint64_t { 10 }));
     UNITTEST_ASSERT(test(z3, BigInt { "20", 128 })); // > 64
 
-    Utils::Log::debug("Testing floats...");
+    Util::Log::debug("Testing floats...");
     test_f<float>(z3);
 
-    Utils::Log::debug("Testing doubles...");
+    Util::Log::debug("Testing doubles...");
     test_f<double>(z3);
 
 #if 0
-    Utils::Log::debug("Testing strings...");
+    Util::Log::debug("Testing strings...");
     // @todo String testing
 #endif
 }

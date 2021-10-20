@@ -8,13 +8,13 @@
 
 
 /** Create a BV using either name or val depending on Literal */
-template <bool Literal> Expression::BasePtr create_bv(std::string name, const Int val) {
+template <bool Literal> Expr::BasePtr create_bv(std::string name, const Int val) {
     if constexpr (Literal) {
-        return UnitTest::TestLib::Factories::t_literal<Expression::BV>(val);
+        return UnitTest::TestLib::Factories::t_literal<Expr::BV>(val);
     }
     else {
         (void) val;
-        return Create::symbol<Expression::BV>(std::move(name), name.size() * BitLength::char_bit);
+        return Create::symbol<Expr::BV>(std::move(name), name.size() * BitLength::char_bit);
     }
 }
 
@@ -24,13 +24,13 @@ template <bool Literal> void sub_string_b() {
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
     namespace CS = Create::String;
-    namespace Ex = Expression; // NOLINT (false positive)
+    namespace Ex = Expr;       // NOLINT (false positive)
     namespace OS = Op::String; // NOLINT (false positive)
 
     // Create distinct inputs
-    const auto a { F::t_literal<Expression::BV>(0) };
+    const auto a { F::t_literal<Expr::BV>(0) };
     const Ex::BasePtr b { create_bv<Literal>("named", 1) };
-    const auto c { F::t_literal<Expression::String>(2) };
+    const auto c { F::t_literal<Expr::String>(2) };
 
     // Test
     const auto exp { CS::sub_string(a, b, c) };

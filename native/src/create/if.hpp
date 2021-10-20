@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create an Expression with an Eq Op
+ * @brief This file defines a method to create an Expr with an Eq Op
  */
 #ifndef R_CREATE_IF_HPP_
 #define R_CREATE_IF_HPP_
@@ -10,27 +10,27 @@
 
 namespace Create {
 
-    /** Create an Expression with an If op
-     *  Expression pointers may not be nullptr
+    /** Create an Expr with an If op
+     *  Expr pointers may not be nullptr
      */
     template <typename T>
     EBasePtr if_(const EBasePtr &cond, const EBasePtr &left, const EBasePtr &right,
                  Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expression;
-        namespace Err = Error::Expression;
+        namespace Ex = Expr;
+        namespace Err = Error::Expr;
         using namespace Simplification;
 
         // Checks
-        static_assert(Utils::is_ancestor<Ex::Base, T>, "T must subclass Expression::Base");
-        Utils::affirm<Err::Usage>(cond != nullptr && left != nullptr && right != nullptr,
-                                  WHOAMI_WITH_SOURCE " arguments may not be nullptr");
-        Utils::affirm<Err::Type>(CUID::is_t<T>(left),
-                                 WHOAMI_WITH_SOURCE "left operand must be a T");
+        static_assert(Util::is_ancestor<Ex::Base, T>, "T must subclass Expr::Base");
+        Util::affirm<Err::Usage>(cond != nullptr && left != nullptr && right != nullptr,
+                                 WHOAMI_WITH_SOURCE " arguments may not be nullptr");
+        Util::affirm<Err::Type>(CUID::is_t<T>(left),
+                                WHOAMI_WITH_SOURCE "left operand must be a T");
 
-        // Construct expression
+        // Construct expr
         const bool sym { cond->symbolic || left->symbolic || right->symbolic };
         auto op { Op::factory<Op::If>(cond, left, right) };
-        if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
+        if constexpr (Util::is_ancestor<Ex::Bits, T>) {
             return simplify(
                 Ex::factory<T>(sym, std::move(op), Ex::get_bit_length(left), std::move(sp)));
         }

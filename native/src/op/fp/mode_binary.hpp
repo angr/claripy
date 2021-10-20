@@ -21,8 +21,8 @@
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
-                              const ::Expression::BasePtr &r, const ::Mode::FP::Rounding m)       \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                    \
+                              const ::Expr::BasePtr &r, const ::Mode::FP::Rounding m)             \
             : ModeBinary { h, static_cuid, l, r, m } {}                                           \
     };
 
@@ -39,21 +39,21 @@ namespace Op::FP {
         /** FP Mode */
         const Mode::FP::Rounding mode;
         /** Left operand */
-        const Expression::BasePtr left;
+        const Expr::BasePtr left;
         /** Right operand */
-        const Expression::BasePtr right;
+        const Expr::BasePtr right;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
-            out << R"|({ "name":")|" << op_name() << R"|(", "mode":)|"
-                << Utils::to_underlying(mode) << R"|(, "left":)|";
-            Expression::repr(left, out, verbose);
+            out << R"|({ "name":")|" << op_name() << R"|(", "mode":)|" << Util::to_underlying(mode)
+                << R"|(, "left":)|";
+            Expr::repr(left, out, verbose);
             out << R"|(, "right":)|";
-            Expression::repr(right, out, verbose);
+            Expr::repr(right, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -64,12 +64,12 @@ namespace Op::FP {
       protected:
         /** Protected constructor */
         explicit inline ModeBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                   const Expression::BasePtr &l, const Expression::BasePtr &r,
+                                   const Expr::BasePtr &l, const Expr::BasePtr &r,
                                    const Mode::FP::Rounding m)
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
-            using Err = Error::Expression::Type;
-            Utils::affirm<Err>(Expression::are_same_type<true>(left, right),
-                               WHOAMI_WITH_SOURCE "left and right types or sizes differ");
+            using Err = Error::Expr::Type;
+            Util::affirm<Err>(Expr::are_same_type<true>(left, right),
+                              WHOAMI_WITH_SOURCE "left and right types or sizes differ");
         }
     };
 
@@ -77,7 +77,7 @@ namespace Op::FP {
     ModeBinary::~ModeBinary() noexcept = default;
 
     /** Returns true if T is ModeBinary */
-    template <typename T> UTILS_ICCBOOL is_mode_binary { Utils::is_ancestor<ModeBinary, T> };
+    template <typename T> UTILS_ICCBOOL is_mode_binary { Util::is_ancestor<ModeBinary, T> };
 
 } // namespace Op::FP
 

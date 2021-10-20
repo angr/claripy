@@ -8,8 +8,8 @@
 namespace Constants {}
 
 
-/** A namespace used for the utils directory */
-namespace Utils {
+/** A namespace used for the util directory */
+namespace Util {
 
     /** A namespace that contains the max functions */
     namespace Max {}
@@ -17,9 +17,9 @@ namespace Utils {
     /** A namespace that contains members used to ensure thread safety */
     namespace ThreadSafe {}
 
-    /** A namespace that contains private members of Utils
+    /** A namespace that contains private members of Util
      *
-     *  These members should not be called outside of the utils directory
+     *  These members should not be called outside of the util directory
      *  This is useful for helper functions templated functions call
      */
     namespace Private {}
@@ -69,9 +69,9 @@ namespace Utils {
      */
     namespace Log {
 
-        /** A namespace used to designate certain items in Utils::Log as private
+        /** A namespace used to designate certain items in Util::Log as private
          *
-         *  These members should not be called outside of Utils::Log members
+         *  These members should not be called outside of Util::Log members
          */
         namespace Private {}
 
@@ -113,7 +113,7 @@ namespace Utils {
     /** A namespace used for constant dependent constants */
     namespace CD {}
 
-} // namespace Utils
+} // namespace Util
 
 /** A namespace used for the CUID related members */
 namespace CUID {}
@@ -135,16 +135,16 @@ namespace Mode {}
 /** A namespace used for the error directory */
 namespace Error {
 
-    /** A namespace used for Expression errors */
-    namespace Expression {}
+    /** A namespace used for Expr errors */
+    namespace Expr {}
 
     /** A namespace used for Backend errors */
     namespace Backend {}
 
 } // namespace Error
 
-/** A namespace used for the expression directory */
-namespace Expression {}
+/** A namespace used for the expr directory */
+namespace Expr {}
 
 /** a namespace used for the backend directory */
 namespace Backend {
@@ -152,19 +152,19 @@ namespace Backend {
     /** A namespace used for the z3 backend */
     namespace Z3 {
 
-        /** A namespace used for z3::expr->Expression abstraction functions */
+        /** A namespace used for z3::expr->Expr abstraction functions */
         namespace Abstract {}
 
-        /** A namespace used for Expression->z3::expr conversion functions */
+        /** A namespace used for Expr->z3::expr conversion functions */
         namespace Convert {
 
-            /** A namespace used for String specific Expression->z3::expr conversion functions */
+            /** A namespace used for String specific Expr->z3::expr conversion functions */
             namespace String {}
 
             /** A namespace used for private members of Backend::Z3::Convert */
             namespace Private {}
 
-            /** A namespace used for FP specific Expression->z3::expr conversion functions */
+            /** A namespace used for FP specific Expr->z3::expr conversion functions */
             namespace FP {
 
                 /** A namespace used for private members of Backend::Z3::Convert::FP */
@@ -224,10 +224,10 @@ namespace Simplification {
 
 } // namespace Simplification
 
-/** A namespace used for members which create expressions with ops
+/** A namespace used for members which create exprs with ops
  *
  *  These are analogous to functions like __add__ in claripy; they create
- *  an op via a factory, then create an expression with said op
+ *  an op via a factory, then create an expr with said op
  */
 namespace Create {
 

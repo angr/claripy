@@ -39,10 +39,10 @@ namespace Backend::Concrete {
             return "concrete";
         }
 
-        /** Simplify the given expression
+        /** Simplify the given expr
          *  expr may not be nullptr
          */
-        inline Expression::BasePtr simplify(const Expression::RawPtr expr) override final {
+        inline Expr::BasePtr simplify(const Expr::RawPtr expr) override final {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             (void) expr;
             return nullptr; // todo
@@ -54,20 +54,20 @@ namespace Backend::Concrete {
          *  Arguments must be popped off the args stack if used
          *  expr may not be nullptr
          *  Warning: This function may internally do unchecked static casting, we permit this
-         *  *only* if the cuid of the expression is of or derive from the type being cast to.
+         *  *only* if the cuid of the expr is of or derive from the type being cast to.
          */
-        inline PrimVar dispatch_conversion(const Expression::RawPtr expr,
+        inline PrimVar dispatch_conversion(const Expr::RawPtr expr,
                                            std::vector<const PrimVar *> &args,
                                            Super &bk) override final {
-            Utils::sink(expr, args, bk);
+            Util::sink(expr, args, bk);
             return 0.; // todo
         }
 
-        /** Abstract a backend object into a claricpp expression */
+        /** Abstract a backend object into a claricpp expr */
         inline AbstractionVariant dispatch_abstraction(const PrimVar &b_obj,
                                                        std::vector<AbstractionVariant> &args,
                                                        Super &bk) override final {
-            Utils::sink(bk, b_obj, args, bk);
+            Util::sink(bk, b_obj, args, bk);
             return Mode::FP::Rounding::NearestTiesAwayFromZero; // todo
         }
 

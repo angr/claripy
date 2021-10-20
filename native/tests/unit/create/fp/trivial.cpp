@@ -11,8 +11,8 @@
 
 /** Test the trivial create fp functions */
 void trivial() {
-    namespace Log = Utils::Log;
-    namespace Ex = ::Expression;
+    namespace Log = Util::Log;
+    namespace Ex = ::Expr;
 
     // Unary
 

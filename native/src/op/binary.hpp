@@ -27,8 +27,8 @@
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &l,              \
-                              const ::Expression::BasePtr &r)                                     \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                    \
+                              const ::Expr::BasePtr &r)                                           \
             : Binary { h, static_cuid, l, r } {}                                                  \
     };
 
@@ -44,11 +44,11 @@ namespace Op {
 
       public:
         /** Left operand */
-        const Expression::BasePtr left;
+        const Expr::BasePtr left;
         /** Right operand */
-        const Expression::BasePtr right;
+        const Expr::BasePtr right;
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -65,18 +65,18 @@ namespace Op {
       protected:
         /** Protected constructor */
         explicit inline Binary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                               const Expression::BasePtr &l, const Expression::BasePtr &r)
+                               const Expr::BasePtr &l, const Expr::BasePtr &r)
             : Base { h, cuid_ }, left { l }, right { r } {
-            using Err = Error::Expression::Type;
+            using Err = Error::Expr::Type;
 
             // Type / size checking
             if constexpr (ConsiderSize) {
-                Utils::affirm<Err>(Expression::are_same_type<true>(left, right),
-                                   WHOAMI_WITH_SOURCE "left and right types or sizes differ");
+                Util::affirm<Err>(Expr::are_same_type<true>(left, right),
+                                  WHOAMI_WITH_SOURCE "left and right types or sizes differ");
             }
             else {
-                Utils::affirm<Err>(Expression::are_same_type<false>(left, right),
-                                   WHOAMI_WITH_SOURCE "left and right types differ");
+                Util::affirm<Err>(Expr::are_same_type<false>(left, right),
+                                  WHOAMI_WITH_SOURCE "left and right types differ");
             }
         }
 
@@ -84,9 +84,9 @@ namespace Op {
         inline void repr_helper(std::ostream &out, const bool verbose = false) const {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "left":)|";
-            Expression::repr(left, out, verbose);
+            Expr::repr(left, out, verbose);
             out << R"|(, "right":)|";
-            Expression::repr(right, out, verbose);
+            Expr::repr(right, out, verbose);
         }
     };
 
@@ -95,8 +95,8 @@ namespace Op {
 
     /** Returns true if T is binary */
     template <typename T>
-    UTILS_ICCBOOL is_binary { Utils::is_ancestor<Binary<true>, T> ||
-                              Utils::is_ancestor<Binary<false>, T> };
+    UTILS_ICCBOOL is_binary { Util::is_ancestor<Binary<true>, T> ||
+                              Util::is_ancestor<Binary<false>, T> };
 
 } // namespace Op
 

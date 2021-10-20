@@ -15,27 +15,27 @@ namespace Op {
         OP_FINAL_INIT(If, 0);
 
       public:
-        /** If condition: This must be an Expression::Bool pointer
+        /** If condition: This must be an Expr::Bool pointer
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr cond;
-        /** If true expression */
-        const Expression::BasePtr if_true;
-        /** If false expression */
-        const Expression::BasePtr if_false;
+        const Expr::BasePtr cond;
+        /** If true expr */
+        const Expr::BasePtr if_true;
+        /** If false expr */
+        const Expr::BasePtr if_false;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "cond":)|";
-            Expression::repr(cond, out, verbose);
+            Expr::repr(cond, out, verbose);
             out << R"|(, "if_true":)|";
-            Expression::repr(if_true, out, verbose);
+            Expr::repr(if_true, out, verbose);
             out << R"|(, "if_false":)|";
-            Expression::repr(if_false, out, verbose);
+            Expr::repr(if_false, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -48,17 +48,17 @@ namespace Op {
         /** Protected constructor
          *  Ensure that cond is a bool
          */
-        explicit inline If(const Hash::Hash &h, const Expression::BasePtr &c,
-                           const Expression::BasePtr &if_tru, const Expression::BasePtr &if_fal)
+        explicit inline If(const Hash::Hash &h, const Expr::BasePtr &c,
+                           const Expr::BasePtr &if_tru, const Expr::BasePtr &if_fal)
             : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {
             // For brevity
-            namespace Err = Error::Expression;
+            namespace Err = Error::Expr;
             // Error checking
-            Utils::affirm<Err::Type>(CUID::is_t<Expression::Bool>(cond),
-                                     WHOAMI_WITH_SOURCE "Condition expression must be a boolean");
-            Utils::affirm<Err::Type>(Expression::are_same_type<true>(if_true, if_false),
-                                     WHOAMI_WITH_SOURCE
-                                     "if_true must be of the same type and size as if_false");
+            Util::affirm<Err::Type>(CUID::is_t<Expr::Bool>(cond),
+                                    WHOAMI_WITH_SOURCE "Condition expr must be a boolean");
+            Util::affirm<Err::Type>(Expr::are_same_type<true>(if_true, if_false),
+                                    WHOAMI_WITH_SOURCE
+                                    "if_true must be of the same type and size as if_false");
         }
     };
 

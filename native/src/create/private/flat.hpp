@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create Expressions with standard flat ops
+ * @brief This file defines a method to create Exprs with standard flat ops
  */
 #ifndef R_CREATE_PRIVATE_FLAT_HPP_
 #define R_CREATE_PRIVATE_FLAT_HPP_
@@ -12,28 +12,28 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with a flat op
+    /** Create a Expr with a flat op
      *  operands' pointers may not be nullptr
      */
     template <typename T, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr flat(typename OpT::OpContainer &&operands, Annotation::SPAV &&sp) {
-        namespace Ex = Expression;
+        namespace Ex = Expr;
         using namespace Simplification;
-        namespace Err = Error::Expression;
+        namespace Err = Error::Expr;
 
         // Checks
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
-        static_assert(Utils::qualified_is_in<T, Allowed...>,
+        static_assert(Util::qualified_is_in<T, Allowed...>,
                       "Create::Private::flat argument types must be in Allowed");
 #ifdef DEBUG
         for (const auto &i : operands) {
-            Utils::affirm<Err::Usage>(i != nullptr,
-                                      WHOAMI_WITH_SOURCE "operands' pointers cannot be nullptrs");
+            Util::affirm<Err::Usage>(i != nullptr,
+                                     WHOAMI_WITH_SOURCE "operands' pointers cannot be nullptrs");
         }
 #endif
-        Utils::affirm<Err::Size>(operands.size() >= 2, WHOAMI_WITH_SOURCE "operands are empty.");
-        Utils::affirm<Err::Type>(CUID::is_t<T>(operands[0]),
-                                 WHOAMI_WITH_SOURCE "operands[0] is the wrong type");
+        Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI_WITH_SOURCE "operands are empty.");
+        Util::affirm<Err::Type>(CUID::is_t<T>(operands[0]),
+                                WHOAMI_WITH_SOURCE "operands[0] is the wrong type");
 
         // Calculate simple sym
         bool sym { false };
@@ -41,15 +41,15 @@ namespace Create::Private {
             sym |= i->symbolic;
         }
 
-        // Construct expression (static casts are safe because of previous checks)
-        if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
-            static_assert(Mode == Utils::TD::id<SizeMode::First>,
+        // Construct expr (static casts are safe because of previous checks)
+        if constexpr (Util::is_ancestor<Ex::Bits, T>) {
+            static_assert(Mode == Util::TD::id<SizeMode::First>,
                           "Create::Private::flat does not support the given SizeMode");
             return simplify(Ex::factory<T>(sym, Op::factory<OpT>(std::move(operands)),
                                            Ex::get_bit_length(operands[0]), std::move(sp)));
         }
         else {
-            static_assert(Mode == Utils::TD::id<SizeMode::NA>,
+            static_assert(Mode == Util::TD::id<SizeMode::NA>,
                           "SizeMode should be NA for non-sized type");
             return simplify(
                 Ex::factory<T>(sym, Op::factory<OpT>(std::move(operands)), std::move(sp)));

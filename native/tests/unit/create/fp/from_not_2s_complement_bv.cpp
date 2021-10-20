@@ -12,7 +12,7 @@ void from_not_2s_complement_bv() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expression; // NOLINT (false positive)
+    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create distinct inputs
     const auto bv { F::t_literal<Ex::BV>(0) };

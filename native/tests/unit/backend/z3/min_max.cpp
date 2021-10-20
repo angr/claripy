@@ -7,9 +7,8 @@
 
 /** Test min / max function */
 template <bool Signed, typename T, bool Minimize>
-static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
-                 const Expression::BasePtr &test_c,
-                 const std::vector<Expression::RawPtr> ec = {}) { // NOLINT
+static T get_ext(Backend::Z3::Z3 &z3, const Expr::BasePtr &x, const Expr::BasePtr &test_c,
+                 const std::vector<Expr::RawPtr> ec = {}) { // NOLINT
     // Get a new solver and add constraint
     const auto solver_ref { z3.template tls_solver<true>() };
     auto &solver { *solver_ref };
@@ -30,16 +29,16 @@ static T get_ext(Backend::Z3::Z3 &z3, const Expression::BasePtr &x,
 template <typename T, bool Signed = std::is_signed_v<T>>
 static void min_max_test(Backend::Z3::Z3 &z3) {
     static_assert(std::is_integral_v<T>, "T must be an integral type");
-    Utils::Log::debug("\t- Signed: ", std::boolalpha, Signed);
+    Util::Log::debug("\t- Signed: ", std::boolalpha, Signed);
 
     // For brevity
     namespace C = Create;
     using M = Mode::Compare;
-    namespace E = Expression; // NOLINT (false positive)
+    namespace E = Expr; // NOLINT (false positive)
     using EC = std::vector<E::RawPtr>;
 
     // Prep
-    const auto unsign { Utils::unsign<T, true> };
+    const auto unsign { Util::unsign<T, true> };
     const auto int_max { std::numeric_limits<T>::max() };
     const auto int_min { std::numeric_limits<T>::min() };
     const constexpr M neq_mask { M::Neq | (Signed ? M::Signed : M::Unsigned) };
@@ -85,7 +84,7 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     // Test extra constraints
 
     // Test x < 10; ec: x > 5
-    Utils::Log::debug("\t\t- Extra constraints tests...");
+    Util::Log::debug("\t\t- Extra constraints tests...");
     T res { get_ext<Signed, T, true>(z3, x, xleq10, EC { xgeq5.get() }) };
     UNITTEST_ASSERT(res == 6);
 
@@ -96,7 +95,7 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     // Test near extrema; i.e. last step of binary search
 
     // Test x < 5 && x != int_min
-    Utils::Log::debug("\t\t- Testing final step...");
+    Util::Log::debug("\t\t- Testing final step...");
     UNITTEST_ASSERT(get_min(plus1) == int_min + 1);
     UNITTEST_ASSERT(get_max(plus1) == 4);
 
@@ -115,7 +114,7 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     // Test tight extrema
 
     // Test x == int_max
-    Utils::Log::debug("\t\t- Testing extrema...");
+    Util::Log::debug("\t\t- Testing extrema...");
     UNITTEST_ASSERT(get_min(max) == int_max);
     UNITTEST_ASSERT(get_max(max) == int_max);
 

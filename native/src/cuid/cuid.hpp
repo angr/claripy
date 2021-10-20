@@ -9,7 +9,7 @@
 
 #include "../constants.hpp"
 #include "../macros.hpp"
-#include "../utils.hpp"
+#include "../util.hpp"
 
 /** Used to define a possible unused static_cuid in a class
  *  Leaves the class in a public state
@@ -23,8 +23,7 @@
                   "X should be convertible to an int!");                                          \
     /** Define a static_cuid */                                                                   \
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                            \
-        UTILS_FILE_LINE_HASH ^                                                                    \
-        Utils::FNV1a<int>::hash(&Utils::ref<int, static_cast<int>((X))>, 1)                       \
+        UTILS_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)  \
     };
 
 

@@ -7,7 +7,7 @@
 #include "../../make_ite.hpp"
 
 
-/** Try to convert a claricpp expression to z3 */
+/** Try to convert a claricpp expr to z3 */
 void convert() {
     auto z3 { Backend::Z3::Z3 {} };
 

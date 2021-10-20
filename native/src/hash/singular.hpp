@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines the underling hash function for Expressions
+ * @brief This file defines the underling hash function for Exprs
  */
 #ifndef R_HASH_SINGULAR_HPP_
 #define R_HASH_SINGULAR_HPP_
@@ -10,7 +10,7 @@
 
 #include "../big_int.hpp"
 #include "../mode.hpp"
-#include "../utils.hpp"
+#include "../util.hpp"
 
 #include <exception>
 #include <memory>
@@ -27,13 +27,12 @@ namespace Hash {
      *  Note: we want to avoid inter-type hash collisions so we often xor with a file line hash
      */
     template <typename T> constexpr Hash singular(const T &) noexcept {
-        static_assert(Utils::TD::false_<T>,
-                      "Given value of T is not supported for Hash::singular");
+        static_assert(Util::TD::false_<T>, "Given value of T is not supported for Hash::singular");
         return std::declval<Hash>(); // Satisfy the compiler
     }
 
     /** The FNV1a hash function to be invoked for for size sizeof(Hash) */
-    template <typename Type> constexpr auto fnv1a { Utils::FNV1a<Type>::template hash<Hash> };
+    template <typename Type> constexpr auto fnv1a { Util::FNV1a<Type>::template hash<Hash> };
 
     /**************************************************/
     /*           Primitive Specializations            */
@@ -113,7 +112,7 @@ namespace Hash {
 
     /** A specialization for T = CCSC */
     template <> constexpr Hash singular(CCSC &s) noexcept {
-        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Utils::strlen(s));
+        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Util::strlen(s));
     }
 
     /** A specialization for T = char[] */
@@ -131,7 +130,7 @@ namespace Hash {
         static_assert(sizeof(m) <= sizeof(Hash), "singular(Mode::FP) must be modified");
         static_assert(std::is_fundamental_v<U> && std::is_fundamental_v<Hash>,
                       "singular(Mode::FP::Rounding) must be modified");
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Utils::to_underlying(m));
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Util::to_underlying(m));
     }
 
     /** A specialization for T = Mode::FP::Width */
@@ -147,7 +146,7 @@ namespace Hash {
 
     /** A specialization for T = std::byte */
     template <> constexpr Hash singular(const std::byte &b) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Utils::to_underlying(b));
+        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Util::to_underlying(b));
     }
 
     /** A specialization for T = std::string
@@ -171,7 +170,7 @@ namespace Hash {
         // the purpose of allowing them to be represented as they please... @todo Improve me
         if (std::holds_alternative<BigInt::Int>(arb.value)) {
             const mpz_t &raw { std::get<BigInt::Int>(arb.value).backend().data() };
-            const auto len { Utils::widen<mp_limb_t, true>(raw->_mp_size) };
+            const auto len { Util::widen<mp_limb_t, true>(raw->_mp_size) };
             return UTILS_FILE_LINE_HASH ^ arb.bit_length ^ fnv1a<mp_limb_t>(raw->_mp_d, len);
         }
         else {
@@ -191,12 +190,12 @@ namespace Hash {
     /** A specialization for shared pointers of strict subclasses of Hashed types */
     template <typename Internal,
               // Require to prevent infinite recursion
-              std::enable_if_t<!Utils::is_wrap_same<Hashed, Internal, std::remove_cv_t>, int> = 0,
+              std::enable_if_t<!Util::is_wrap_same<Hashed, Internal, std::remove_cv_t>, int> = 0,
               // Ensure Internal derives from Hashed
-              std::enable_if_t<Utils::is_ancestor<Hashed, Internal>, int> = 0> // Allows primitives
+              std::enable_if_t<Util::is_ancestor<Hashed, Internal>, int> = 0> // Allows primitives
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit conversion is dangerous / impossible
-        return singular(Utils::Cast::Static::up<Hashed>(h));
+        return singular(Util::Cast::Static::up<Hashed>(h));
     }
 
     /** A specialization for T = std::vector<Internal> */
@@ -208,8 +207,8 @@ namespace Hash {
         }
 #ifdef DEBUG
         // Verify no memory corruption
-        Utils::affirm<Utils::Error::Unexpected::Unknown>(v.size() == i + 1, WHOAMI_WITH_SOURCE
-                                                         "Incorrect value of i within Hash::hash");
+        Util::affirm<Util::Error::Unexpected::Unknown>(v.size() == i + 1, WHOAMI_WITH_SOURCE
+                                                       "Incorrect value of i within Hash::hash");
 #endif
         // Return hash
         return fnv1a<UInt>(hashes, v.size());

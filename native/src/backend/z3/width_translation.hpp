@@ -22,13 +22,13 @@ namespace Backend::Z3 {
         if (LIKELY(w == Mode::FP::flt)) { // Not else so the LIKELYs don't conflict
             return ctx.template fpa_sort<32>();
         }
-        Utils::Log::warning("Using non-standard fp sort: ", w);
+        Util::Log::warning("Using non-standard fp sort: ", w);
         return ctx.fpa_sort(w.exp, w.mantissa);
     }
 
     /** Returns a Mode::FP::Width constructed from the given z3 sort */
     static inline const Mode::FP::Width z3_sort_to_fp_width(const z3::sort &s) {
-        Utils::affirm<Utils::Error::Unexpected::Usage>(
+        Util::affirm<Util::Error::Unexpected::Usage>(
             s.is_fpa(),
             WHOAMI_WITH_SOURCE "called on z3::sort that is not of a floating point type");
         return { s.fpa_ebits(), s.fpa_sbits() };

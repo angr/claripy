@@ -15,31 +15,31 @@ namespace Op::String {
         OP_FINAL_INIT(IndexOf, 0, "String::");
 
       public:
-        /** String to search: This must be an Expression::String pointer
+        /** String to search: This must be an Expr::String pointer
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr str;
-        /** Pattern to search for: This must be an Expression::String pointer
+        const Expr::BasePtr str;
+        /** Pattern to search for: This must be an Expr::String pointer
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr pattern;
+        const Expr::BasePtr pattern;
         /** Start Index
          *  Note: We leave it as a base for optimizations purposes
          */
-        const Expression::BasePtr start_index;
+        const Expr::BasePtr start_index;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "str":)|";
-            Expression::repr(str, out, verbose);
+            Expr::repr(str, out, verbose);
             out << R"|(, "pattern":)|";
-            Expression::repr(pattern, out, verbose);
+            Expr::repr(pattern, out, verbose);
             out << R"|(, "start_index":)|";
-            Expression::repr(start_index, out, verbose);
+            Expr::repr(start_index, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -52,16 +52,16 @@ namespace Op::String {
         /** Protected constructor
          *  Ensure that str and pattern are of type String
          */
-        explicit inline IndexOf(const Hash::Hash &h, const Expression::BasePtr &s,
-                                const Expression::BasePtr &pat, const Expression::BasePtr &si)
+        explicit inline IndexOf(const Hash::Hash &h, const Expr::BasePtr &s,
+                                const Expr::BasePtr &pat, const Expr::BasePtr &si)
             : Base { h, static_cuid }, str { s }, pattern { pat }, start_index { si } {
-            using Err = Error::Expression::Type;
-            Utils::affirm<Err>(CUID::is_t<Expression::String>(str),
-                               WHOAMI_WITH_SOURCE "str expression must be a String");
-            Utils::affirm<Err>(CUID::is_t<Expression::String>(pattern),
-                               WHOAMI_WITH_SOURCE "pattern expression must be a String");
-            Utils::affirm<Err>(CUID::is_t<Expression::BV>(start_index),
-                               WHOAMI_WITH_SOURCE "start_index expression must be a BV");
+            using Err = Error::Expr::Type;
+            Util::affirm<Err>(CUID::is_t<Expr::String>(str),
+                              WHOAMI_WITH_SOURCE "str expr must be a String");
+            Util::affirm<Err>(CUID::is_t<Expr::String>(pattern),
+                              WHOAMI_WITH_SOURCE "pattern expr must be a String");
+            Util::affirm<Err>(CUID::is_t<Expr::BV>(start_index),
+                              WHOAMI_WITH_SOURCE "start_index expr must be a BV");
         }
     };
 

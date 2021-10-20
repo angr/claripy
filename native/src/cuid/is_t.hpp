@@ -18,14 +18,14 @@ namespace CUID {
      */
     template <typename T, bool AllowKin, typename Base>
     constexpr bool is_t(const std::shared_ptr<Base> &x) {
-        static_assert(Utils::is_ancestor<HasCUID, Base>, "Base must subclass HasCUID");
-        static_assert(Utils::is_ancestor<Base, T>, "T must subclass Base");
+        static_assert(Util::is_ancestor<HasCUID, Base>, "Base must subclass HasCUID");
+        static_assert(Util::is_ancestor<Base, T>, "T must subclass Base");
         UTILS_AFFIRM_NOT_NULL_DEBUG(x);
         if constexpr (std::is_final_v<T>) {
             return x->cuid == T::static_cuid;
         }
         else if constexpr (AllowKin) {
-            return Utils::Cast::Dynamic::test<T>(x);
+            return Util::Cast::Dynamic::test<T>(x);
         }
         else {
             return false;

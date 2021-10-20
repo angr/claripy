@@ -11,7 +11,7 @@ template <typename T> void symbol_t() {
     static int n_runs = 0;
 
     // For brevity
-    namespace Ex = Expression; // NOLINT (false positive)
+    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create name
     std::string name { std::to_string(++n_runs) };
@@ -19,8 +19,8 @@ template <typename T> void symbol_t() {
     const UInt size { 0x10 };
 
     // Test
-    Expression::BasePtr sym;
-    if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
+    Expr::BasePtr sym;
+    if constexpr (Util::is_ancestor<Ex::Bits, T>) {
         sym = Create::symbol<T>(std::move(name), size);
     }
     else {
@@ -42,7 +42,7 @@ template <typename T> void symbol_t() {
     UNITTEST_ASSERT(op_down->name == name_copy);
 
     // Size check
-    if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
+    if constexpr (Util::is_ancestor<Ex::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size);
     }
 
@@ -52,11 +52,11 @@ template <typename T> void symbol_t() {
 
 /** Test the symbol create function */
 void symbol() {
-    symbol_t<Expression::Bool>();
-    symbol_t<Expression::String>();
-    symbol_t<Expression::BV>();
-    symbol_t<Expression::VS>();
-    symbol_t<Expression::FP>();
+    symbol_t<Expr::Bool>();
+    symbol_t<Expr::String>();
+    symbol_t<Expr::BV>();
+    symbol_t<Expr::VS>();
+    symbol_t<Expr::FP>();
 }
 
 // Define the test

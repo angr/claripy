@@ -16,7 +16,7 @@ void replace() {
 
     // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    using ES = Expression::String;
+    using ES = Expr::String;
 
     // Create distinct inputs
     const auto a { F::t_literal<ES>(0) };

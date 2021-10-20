@@ -5,7 +5,7 @@
 #ifndef R_FACTORY_PRIVATE_HASSTATICCUID_HPP_
 #define R_FACTORY_PRIVATE_HASSTATICCUID_HPP_
 
-#include "../../utils.hpp"
+#include "../../util.hpp"
 
 
 namespace Factory::Private {

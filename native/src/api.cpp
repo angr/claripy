@@ -36,7 +36,7 @@ ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list, 
     for (SIZE_T i = 0; i < len; ++i) {
         raw.emplace_back(API::to_cpp_ref(list[i])); // NOLINT
     }
-    using CV = Utils::InternalType<Annotation::SPAV>;
+    using CV = Util::InternalType<Annotation::SPAV>;
     return API::to_c(std::make_shared<CV>(std::move(raw)));
 }
 }
@@ -62,8 +62,8 @@ extern "C" {
 // Symbol
 
 ClaricppExpr claricpp_create_symbol_bool(PyStr name, ClaricppSPAV spav) {
-    static constexpr Expression::BasePtr (*const f)(std::string &&,
-                                                    Annotation::SPAV &&) { Create::symbol };
+    static constexpr Expr::BasePtr (*const f)(std::string &&,
+                                              Annotation::SPAV &&) { Create::symbol };
     return make(f, spav, std::string { name });
 }
 
@@ -71,7 +71,7 @@ ClaricppExpr claricpp_create_symbol_bool(PyStr name, ClaricppSPAV spav) {
 #define CREATE_SYM(TYPE, NAME)                                                                    \
     ClaricppExpr claricpp_create_symbol_##NAME(PyStr name, const SIZE_T bit_length,               \
                                                ClaricppSPAV spav) {                               \
-        return make(Create::symbol<Expression::TYPE>, spav, std::string { name }, bit_length);    \
+        return make(Create::symbol<Expr::TYPE>, spav, std::string { name }, bit_length);          \
     }
 
 CREATE_SYM(String, string);
@@ -87,8 +87,7 @@ CREATE_SYM(BV, bv);
 /** A local macro used for consistency */
 #define CREATE_LIT(TYPE, NAME)                                                                    \
     ClaricppExpr claricpp_create_literal_##NAME(const TYPE value, ClaricppSPAV spav) {            \
-        static constexpr Expression::BasePtr (*const f)(TYPE,                                     \
-                                                        Annotation::SPAV &&) { Create::literal }; \
+        static constexpr Expr::BasePtr (*const f)(TYPE, Annotation::SPAV &&) { Create::literal }; \
         return make(f, spav, value);                                                              \
     }
 
@@ -104,29 +103,27 @@ CREATE_LIT(uint64_t, bv_u64);
 #undef CREATE_LIT
 
 ClaricppExpr claricpp_create_literal_string(PyStr str, ClaricppSPAV spav) {
-    static constexpr Expression::BasePtr (*const f)(std::string &&,
-                                                    Annotation::SPAV &&) { Create::literal };
+    static constexpr Expr::BasePtr (*const f)(std::string &&,
+                                              Annotation::SPAV &&) { Create::literal };
     return make(f, spav, std::string { str });
 }
 
 ClaricppExpr claricpp_create_literal_vs(const HASH_T hash, const VS_T value,
                                         const SIZE_T bit_length, ClaricppSPAV spav) {
-    static constexpr Expression::BasePtr (*const f)(PyObj::VSPtr &&,
-                                                    Annotation::SPAV &&) { Create::literal };
+    static constexpr Expr::BasePtr (*const f)(PyObj::VSPtr &&,
+                                              Annotation::SPAV &&) { Create::literal };
     return make(f, spav, std::make_shared<PyObj::VS>(hash, value, bit_length));
 }
 
 ClaricppExpr claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length,
                                                          ClaricppSPAV spav) {
-    static constexpr Expression::BasePtr (*const f)(BigInt &&,
-                                                    Annotation::SPAV &&) { Create::literal };
+    static constexpr Expr::BasePtr (*const f)(BigInt &&, Annotation::SPAV &&) { Create::literal };
     return make(f, spav, BigInt { BigInt::Str { value }, bit_length });
 }
 
 ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length,
                                                          ClaricppSPAV spav) {
-    static constexpr Expression::BasePtr (*const f)(BigInt &&,
-                                                    Annotation::SPAV &&) { Create::literal };
+    static constexpr Expr::BasePtr (*const f)(BigInt &&, Annotation::SPAV &&) { Create::literal };
     return make(f, spav, BigInt { BigInt::Int { value }, bit_length });
 }
 
@@ -139,13 +136,13 @@ ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const 
 
 ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left,
                                 const ClaricppExpr right, ClaricppSPAV spav) {
-    const Expression::BasePtr &raw_left { API::to_cpp_ref(left) };
+    const Expr::BasePtr &raw_left { API::to_cpp_ref(left) };
     switch (raw_left->cuid) {
 /** A local helper */
 #define CASE(T)                                                                                   \
-    case Expression::T::static_cuid:                                                              \
-        return make(Create::if_<Expression::T>, spav, API::to_cpp_ref(cond),                      \
-                    API::to_cpp_ref(left), API::to_cpp_ref(right))
+    case Expr::T::static_cuid:                                                                    \
+        return make(Create::if_<Expr::T>, spav, API::to_cpp_ref(cond), API::to_cpp_ref(left),     \
+                    API::to_cpp_ref(right))
         CASE(Bool);
         CASE(String);
         CASE(FP);
@@ -153,8 +150,8 @@ ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left
         CASE(VS);
         // Should never happen
         default:
-            throw Utils::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
-                                                    "Unsupported CUID: ", raw_left);
+            throw Util::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
+                                                   "Unsupported CUID: ", raw_left);
 // Cleanup
 #undef CASE
     }

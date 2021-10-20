@@ -23,7 +23,7 @@
                                                                                                   \
       private:                                                                                    \
         /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &x)              \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &x)                    \
             : Unary { h, static_cuid, x } {}                                                      \
     };
 
@@ -36,16 +36,16 @@ namespace Op {
 
       public:
         /** The operand */
-        const Expression::BasePtr child;
+        const Expr::BasePtr child;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
             out << R"|({ "name":")|" << op_name() << R"|(", "child":)|";
-            Expression::repr(child, out, verbose);
+            Expr::repr(child, out, verbose);
             out << " }";
         }
 
-        /** Adds the raw expression children of the expression to the given stack in reverse
+        /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
         inline void add_reversed_children(Stack &s) const override final {
@@ -54,8 +54,7 @@ namespace Op {
 
       protected:
         /** Protected constructor */
-        explicit inline Unary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                              const Expression::BasePtr &x)
+        explicit inline Unary(const Hash::Hash &h, const CUID::CUID &cuid_, const Expr::BasePtr &x)
             : Base { h, cuid_ }, child { x } {}
     };
 
@@ -63,7 +62,7 @@ namespace Op {
     Unary::~Unary() noexcept = default;
 
     /** Returns true if T is unary */
-    template <typename T> UTILS_ICCBOOL is_unary { Utils::is_ancestor<Unary, T> };
+    template <typename T> UTILS_ICCBOOL is_unary { Util::is_ancestor<Unary, T> };
 
 } // namespace Op
 

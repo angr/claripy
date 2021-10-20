@@ -11,9 +11,9 @@ using namespace Simplification;
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::if_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::if_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
-    /* Expression::Bool { Expression::cast_throw_on_fail<Expression::Bool>(original->args[0]) }; */
+    /* Expr::Bool { Expr::cast_throw_on_fail<Expr::Bool>(original->args[0]) }; */
 
     /* if (cond->is_true()) { */
     /* return if_true; */
@@ -30,7 +30,7 @@ Expression::BasePtr Simplifier::if_(const Expression::BasePtr &original) {
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::concat(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::concat(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -38,7 +38,7 @@ Expression::BasePtr Simplifier::concat(const Expression::BasePtr &original) {
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::BV::reverse(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::BV::reverse(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -50,7 +50,7 @@ Expression::BasePtr Simplifier::BV::reverse(const Expression::BasePtr &original)
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Shift::r(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Shift::r(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -58,14 +58,14 @@ Expression::BasePtr Simplifier::Shift::r(const Expression::BasePtr &original) {
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Shift::l(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Shift::l(const Expr::BasePtr &original) {
     return original; // todo
 }
 
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Shift::lshr(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Shift::lshr(const Expr::BasePtr &original) {
     return original; // todo
 }
 
@@ -76,20 +76,20 @@ Expression::BasePtr Simplifier::Shift::lshr(const Expression::BasePtr &original)
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::eq(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::eq(const Expr::BasePtr &original) {
 #ifdef DEBUG
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
-    Utils::Cast::Dynamic::test_throw_on_fail<Op::Eq, Utils::Error::Unexpected::Type>(
-        original->op, "Simplifer::eq's Expression's op must be an Op::Eq");
+    Util::Cast::Dynamic::test_throw_on_fail<Op::Eq, Util::Error::Unexpected::Type>(
+        original->op, "Simplifer::eq's Expr's op must be an Op::Eq");
 #endif
-    Utils::Log::verbose("Eq simplifier invoked");
+    Util::Log::verbose("Eq simplifier invoked");
     return original; // todo
 }
 
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::ne(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::ne(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -101,7 +101,7 @@ Expression::BasePtr Simplifier::ne(const Expression::BasePtr &original) {
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Boolean::and_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Boolean::and_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -109,7 +109,7 @@ Expression::BasePtr Simplifier::Boolean::and_(const Expression::BasePtr &origina
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Boolean::or_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Boolean::or_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -117,7 +117,7 @@ Expression::BasePtr Simplifier::Boolean::or_(const Expression::BasePtr &original
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Boolean::not_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Boolean::not_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -129,7 +129,7 @@ Expression::BasePtr Simplifier::Boolean::not_(const Expression::BasePtr &origina
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::add(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::add(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -137,7 +137,7 @@ Expression::BasePtr Simplifier::Bitwise::add(const Expression::BasePtr &original
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::mul(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::mul(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -145,7 +145,7 @@ Expression::BasePtr Simplifier::Bitwise::mul(const Expression::BasePtr &original
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::sub(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::sub(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -153,7 +153,7 @@ Expression::BasePtr Simplifier::Bitwise::sub(const Expression::BasePtr &original
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::xor_minmax(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::xor_minmax(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -161,7 +161,7 @@ Expression::BasePtr Simplifier::Bitwise::xor_minmax(const Expression::BasePtr &o
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::or_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::or_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -169,7 +169,7 @@ Expression::BasePtr Simplifier::Bitwise::or_(const Expression::BasePtr &original
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::and_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::and_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
@@ -177,7 +177,7 @@ Expression::BasePtr Simplifier::Bitwise::and_(const Expression::BasePtr &origina
 /** @todo
  *  original may not be nullptr
  */
-Expression::BasePtr Simplifier::Bitwise::xor_(const Expression::BasePtr &original) {
+Expr::BasePtr Simplifier::Bitwise::xor_(const Expr::BasePtr &original) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }

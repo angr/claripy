@@ -5,8 +5,8 @@
 #ifndef R_SIMPLIFICATION_CACHE_HPP_
 #define R_SIMPLIFICATION_CACHE_HPP_
 
-#include "../expression.hpp"
-#include "../utils.hpp"
+#include "../expr.hpp"
+#include "../util.hpp"
 
 
 namespace Simplification {
@@ -14,14 +14,14 @@ namespace Simplification {
     namespace Private {
 
         /** The simplification cache */
-        inline Utils::WeakCache<Hash::Hash, Expression::Base> cache {};
+        inline Util::WeakCache<Hash::Hash, Expr::Base> cache {};
 
     } // namespace Private
 
     /** A method for adding to the simplification cache
-     *  Record that an Expression with Hash h simplifies to non-null Expression pointer e
+     *  Record that an Expr with Hash h simplifies to non-null Expr pointer e
      */
-    inline void cache(const Hash::Hash h, const Expression::BasePtr &e) {
+    inline void cache(const Hash::Hash h, const Expr::BasePtr &e) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(e);
         Private::cache.insert(h, e);
     }

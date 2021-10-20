@@ -5,7 +5,7 @@
 #ifndef R_CREATE_CONSTANTS_HPP_
 #define R_CREATE_CONSTANTS_HPP_
 
-#include "../expression.hpp"
+#include "../expr.hpp"
 
 
 // For files that include this
@@ -16,8 +16,8 @@
 
 namespace Create {
 
-    /** A shortcut for Ptr<Expression::Base> */
-    using EBasePtr = Expression::BasePtr;
+    /** A shortcut for Ptr<Expr::Base> */
+    using EBasePtr = Expr::BasePtr;
 
 } // namespace Create
 

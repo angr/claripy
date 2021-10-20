@@ -8,7 +8,7 @@
 #include "factory_made.hpp"
 
 #include "../hash.hpp"
-#include "../utils.hpp"
+#include "../util.hpp"
 
 
 namespace Factory {
@@ -24,7 +24,7 @@ namespace Factory {
          *  function linked executables may get an incorrect address when using this.
          */
         template <typename Base> inline auto &gcache() noexcept {
-            static Utils::WeakCache<Hash::Hash, const Base> cache {};
+            static Util::WeakCache<Hash::Hash, const Base> cache {};
             return cache;
         }
     } // namespace Private

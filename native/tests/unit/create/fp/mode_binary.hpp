@@ -17,8 +17,8 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     static_assert(Op::FP::is_mode_binary<OpT>, "mode_binary requires a mode_binary OpT");
 
     // Create distinct inputs
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expression::FP>(0) };
-    const auto b { UnitTest::TestLib::Factories::t_literal<Expression::FP>(1) };
+    const auto a { UnitTest::TestLib::Factories::t_literal<Expr::FP>(0) };
+    const auto b { UnitTest::TestLib::Factories::t_literal<Expr::FP>(1) };
 
     // Test
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
@@ -30,10 +30,10 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto exp_down { dcast<Expression::FP>(exp) };
-    const auto a_down { dcast<Expression::FP>(a) };
+    const auto exp_down { dcast<Expr::FP>(exp) };
+    const auto a_down { dcast<Expr::FP>(a) };
     const auto mbinary { dcast<OpT>(exp->op) };
-    (void) dcast<Expression::FP>(b);
+    (void) dcast<Expr::FP>(b);
 
     // Contains check
     UNITTEST_ASSERT(mbinary->left == a);

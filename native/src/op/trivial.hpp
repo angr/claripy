@@ -82,13 +82,12 @@ namespace Op {
     /** The bitwise binary op class: Shift
      *  Requires equal sized inputs
      */
-    template <Mode::Shift Mask>
-    OP_BINARY_TRIVIAL_SUBCLASS(Shift, true, Utils::to_underlying(Mask));
+    template <Mode::Shift Mask> OP_BINARY_TRIVIAL_SUBCLASS(Shift, true, Util::to_underlying(Mask));
 
     /** The bitwise binary op class: Rotate
      *  Requires equal sized inputs
      */
-    template <Mode::LR LR> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, Utils::to_underlying(LR));
+    template <Mode::LR LR> OP_BINARY_TRIVIAL_SUBCLASS(Rotate, true, Util::to_underlying(LR));
 
     // Misc
 

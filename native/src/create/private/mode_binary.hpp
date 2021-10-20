@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief This file defines a method to create Expressions with standard fp mode binary ops
+ * @brief This file defines a method to create Exprs with standard fp mode binary ops
  */
 #ifndef R_CREATE_PRIVATE_MODEBINARY_HPP_
 #define R_CREATE_PRIVATE_MODEBINARY_HPP_
@@ -13,27 +13,27 @@
 
 namespace Create::Private {
 
-    /** Create a Expression with an mode binary op
-     *  Expression pointers may not be nullptr
+    /** Create a Expr with an mode binary op
+     *  Expr pointers may not be nullptr
      */
     template <typename OpT, SizeMode Mode>
     inline EBasePtr mode_binary(const EBasePtr &left, const EBasePtr &right,
                                 const Mode::FP::Rounding mode, Annotation::SPAV &&sp) {
-        namespace Ex = Expression;
+        namespace Ex = Expr;
         using namespace Simplification;
-        namespace Err = Error::Expression;
+        namespace Err = Error::Expr;
 
         // Checks
         static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
         static_assert(Mode == SizeMode::First,
                       "Create::Private::mode_binary does not support the given SizeMode");
-        Utils::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                  WHOAMI_WITH_SOURCE "Expression pointers cannot be nullptr");
-        Utils::affirm<Err::Type>(CUID::is_t<Ex::FP>(left), WHOAMI_WITH_SOURCE
-                                 "left operands must be of type Expression::FP");
+        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
+                                 WHOAMI_WITH_SOURCE "Expr pointers cannot be nullptr");
+        Util::affirm<Err::Type>(CUID::is_t<Ex::FP>(left),
+                                WHOAMI_WITH_SOURCE "left operands must be of type Expr::FP");
 
-        // Create expression
+        // Create expr
         return simplify(Ex::factory<Ex::FP>(left->symbolic || right->symbolic,
                                             Op::factory<OpT>(left, right, mode),
                                             Ex::get_bit_length(left), std::move(sp)));
