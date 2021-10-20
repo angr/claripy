@@ -37,8 +37,8 @@ namespace Hash {
 
 #ifdef DEBUG
         // Verify no memory corruption
-        Util::affirm<Util::Error::Unexpected::Unknown>(size == i + 1, WHOAMI_WITH_SOURCE
-                                                       "Incorrect value of i within Hash::hash");
+        Util::affirm<Util::Error::Unknown>(size == i + 1, WHOAMI_WITH_SOURCE
+                                           "Incorrect value of i within Hash::hash");
 #endif
 
         // Return a hash of the array of hashes

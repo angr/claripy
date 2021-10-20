@@ -10,8 +10,7 @@
 
 
 void Expr::repr(const Expr::RawPtr e, std::ostream &out, const bool verbose) {
-    Util::affirm<Util::Error::Unexpected::NotSupported>(!verbose,
-                                                        "verbose repr not yet implemented");
+    Util::affirm<Util::Error::NotSupported>(!verbose, "verbose repr not yet implemented");
     UTILS_AFFIRM_NOT_NULL_DEBUG(e);
     UTILS_AFFIRM_NOT_NULL_DEBUG(e->op); // Sanity check
     // Null check

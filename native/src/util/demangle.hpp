@@ -23,7 +23,7 @@ namespace Util {
     inline std::string demangle(CCSC mangled) {
         int status { -1 }; // NOLINT Status: Failure
         auto *buf { abi::__cxa_demangle(mangled, nullptr, nullptr, &status) };
-        namespace Err = Util::Error::Unexpected;
+        namespace Err = Util::Error;
         if (status == 0) {
             std::string ret { buf };
             std::free(buf); // NOLINT

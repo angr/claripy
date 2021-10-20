@@ -91,7 +91,7 @@ namespace Backend {
         BackendObj convert(const Expr::RawPtr input) {
             auto &conversion_cache { conversion_cache_g() };
 #ifdef DEBUG
-            using UnknownErr = Util::Error::Unexpected::Unknown;
+            using UnknownErr = Util::Error::Unknown;
             UTILS_AFFIRM_NOT_NULL_DEBUG(input);
 #endif
 
@@ -179,7 +179,7 @@ namespace Backend {
                 return std::get<Expr::BasePtr>(variant);
             }
             catch (std::bad_variant_access &) {
-                throw Util::Error::Unexpected::Unknown(
+                throw Util::Error::Unknown(
                     WHOAMI_WITH_SOURCE,
                     "Abstraction culminated in a non-Expr object.\nVariant index: ",
                     variant.index(), "\nPlease report this.");
@@ -260,7 +260,7 @@ namespace Backend {
          */
         virtual BackendObj apply_annotations_helper(const BackendObj &,
                                                     Annotation::SPAV &&) const {
-            throw Util::Error::Unexpected::NotSupported(
+            throw Util::Error::NotSupported(
                 "The backend has failed to implement this method. Please report this");
         }
 

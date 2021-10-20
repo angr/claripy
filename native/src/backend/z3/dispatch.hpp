@@ -113,7 +113,7 @@ namespace Backend::Z3 {
 
                 // This should never be hit
                 default: {
-                    throw Util::Error::Unexpected::NotSupported(
+                    throw Util::Error::NotSupported(
                         WHOAMI_WITH_SOURCE "Unknown expr op given.\nOp CUID: ", expr->op->cuid);
                 }
 
@@ -355,8 +355,8 @@ namespace Backend::Z3 {
 
             /** A local macro used for error checking */
 #define ASSERT_ARG_EMPTY(X)                                                                       \
-    Util::affirm<Util::Error::Unexpected::Size>((X).empty(),                                      \
-                                                WHOAMI_WITH_SOURCE "Op should have no children");
+    Util::affirm<Util::Error::Size>((X).empty(), WHOAMI_WITH_SOURCE "Op should have no "          \
+                                                                    "children");
 
             // Switch on expr type
             switch (decl_kind) {
@@ -554,8 +554,8 @@ namespace Backend::Z3 {
 
         /** Abstract a backend object into a primitive stored in a PrimVar */
         static PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj, const Z3 &bk) {
-            Util::affirm<Util::Error::Unexpected::Size>(b_obj.num_args() == 0, WHOAMI_WITH_SOURCE
-                                                        "Op should have no children");
+            Util::affirm<Util::Error::Size>(b_obj.num_args() == 0,
+                                            WHOAMI_WITH_SOURCE "Op should have no children");
 
             // Get switching variables
             const auto decl { b_obj.decl() };
@@ -590,8 +590,7 @@ namespace Backend::Z3 {
                         G_CASE(3)
                         G_CASE(4)
                         default:
-                            throw Util::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
-                                                                   "Bad variant");
+                            throw Util::Error::Unknown(WHOAMI_WITH_SOURCE, "Bad variant");
                     }
 #undef G_CASE
                     static_assert(std::variant_size_v<decltype(x)> == 5,
@@ -619,7 +618,7 @@ namespace Backend::Z3 {
                     if (LIKELY(width == Mode::FP::flt)) {
                         return fp_const<float>(decl_kind);
                     }
-                    throw Util::Error::Unexpected::NotSupported("Unsupported fp primitive width");
+                    throw Util::Error::NotSupported("Unsupported fp primitive width");
                 }
                 case Z3_OP_CONCAT: {
                     const auto sort { b_obj.get_sort() };
@@ -630,7 +629,7 @@ namespace Backend::Z3 {
                     if (LIKELY(width == Mode::FP::flt)) {
                         return nan<float>;
                     }
-                    throw Util::Error::Unexpected::NotSupported("Unsupported fp primitive width");
+                    throw Util::Error::NotSupported("Unsupported fp primitive width");
                     // @todo: Fill in
 #if 0
                     Util::affirm<Error::Backend::Abstraction>(
@@ -669,9 +668,8 @@ namespace Backend::Z3 {
                         rhfpu, WHOAMI_WITH_SOURCE
                         "rewriter.hi_fp_unspecified is set to true, this should not be triggered");
 #ifdef DEBUG
-                    Util::affirm<Util::Error::Unexpected::Size>(
-                        b_obj.num_args() > 0,
-                        WHOAMI_WITH_SOURCE "num_args should be at least one!");
+                    Util::affirm<Util::Error::Size>(b_obj.num_args() > 0, WHOAMI_WITH_SOURCE
+                                                    "num_args should be at least one!");
 #endif
                     const auto a0 { b_obj.arg(0) };
                     const auto var { Abs::FP::num_primitive(a0) };
@@ -682,7 +680,7 @@ namespace Backend::Z3 {
                         case 1:
                             return std::get<1>(var);
                         default:
-                            throw Util::Error::Unexpected::Unknown("Bad variant index");
+                            throw Util::Error::Unknown("Bad variant index");
                     }
                 }
 
@@ -709,7 +707,7 @@ namespace Backend::Z3 {
         static constexpr void debug_assert_dcast(const Expr::RawPtr e, Args &&...args) {
 #ifdef DEBUG
             using Ptr = CTSC<T>;
-            using Err = Util::Error::Unexpected::Type;
+            using Err = Util::Error::Type;
             Util::affirm<Err>(dynamic_cast<Ptr>(e) != nullptr, std::forward<Args>(args)...);
 #else
             Util::sink(e, args...);
@@ -721,7 +719,7 @@ namespace Backend::Z3 {
          */
         template <typename T, typename... Args>
         static void check_vec_usage(const T &c, const UInt n, Args &&...args) {
-            namespace Err = Util::Error::Unexpected; // NOLINT (false positive)
+            namespace Err = Util::Error; // NOLINT (false positive)
             Util::affirm<Err::Size>(c.size() >= n, std::forward<Args>(args)...,
                                     "container is too small to access ", n, " elements");
 #ifdef DEBUG
@@ -750,8 +748,8 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_NAN:
                     return nan<T>;
                 default:
-                    throw Util::Error::Unexpected::Usage(
-                        WHOAMI_WITH_SOURCE "called with ba;d decl_kind: ", decl_kind);
+                    throw Util::Error::Usage(WHOAMI_WITH_SOURCE "called with ba;d decl_kind: ",
+                                             decl_kind);
             }
         }
 

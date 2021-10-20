@@ -31,8 +31,8 @@ int UnitTest::TestLib::test_func(TestFN &f) {
         Util::Log::error(e.what());
         return EXIT_FAILURE;
     }
-    // If there was an different error, note so and fail
-    CATCH_ERROR(Util::Error::Unexpected::Base)
+    // If there was a different error, note so and fail
+    CATCH_ERROR(Util::Error::Unexpected)
     CATCH_ERROR(Util::Error::Python::Base)
     CATCH_ERROR(Util::Error::Claricpp)
     CATCH_ERROR(std::exception)

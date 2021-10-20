@@ -34,8 +34,7 @@ namespace Expr {
 #undef BITS_SUB
             // Should never be hit
             default:
-                throw Util::Error::Unexpected::Unknown(WHOAMI_WITH_SOURCE,
-                                                       "given an unknown cuid");
+                throw Util::Error::Unknown(WHOAMI_WITH_SOURCE, "given an unknown cuid");
         }
     }
 

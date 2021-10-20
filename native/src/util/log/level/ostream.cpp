@@ -5,7 +5,7 @@
 #include "ostream.hpp"
 
 #include "../../affirm.hpp"
-#include "../../error/unexpected.hpp"
+#include "../../error.hpp"
 
 #include <map>
 
@@ -13,7 +13,6 @@
 // For brevity
 using namespace Util;
 using namespace Log;
-using namespace Error::Unexpected;
 using Lvl = Level::Level;
 
 
@@ -31,7 +30,7 @@ static const std::map<Lvl, std::string> names { MAP_ENTRY(Verbose), MAP_ENTRY(De
 
 std::ostream &Level::operator<<(std::ostream &os, const Lvl &l) {
     const auto it { names.find(l) };
-    Util::affirm<Usage>(it != names.end(), WHOAMI "Unknown level passed to << operator");
+    Util::affirm<Error::Usage>(it != names.end(), WHOAMI "Unknown level passed to << operator");
     os << it->second;
     return os;
 }

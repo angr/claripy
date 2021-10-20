@@ -6,7 +6,7 @@
 #ifndef R_UTIL_WEAKCACHE_HPP_
 #define R_UTIL_WEAKCACHE_HPP_
 
-#include "error/unexpected.hpp"
+#include "error.hpp"
 #include "log.hpp"
 #include "make_derived_shared.hpp"
 #include "max.hpp"
@@ -123,7 +123,7 @@ namespace Util {
                 // Add to cache
 #ifdef DEBUG
                 auto &&[_, success] = cache.emplace(h, ret);
-                affirm<Error::Unexpected::Unknown>(
+                affirm<Error::Unknown>(
                     success, WHOAMI_WITH_SOURCE
                     "Cache emplacement failed after verifying item not already in cache.");
 #else

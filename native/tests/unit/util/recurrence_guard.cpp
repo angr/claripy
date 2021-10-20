@@ -6,7 +6,7 @@
 
 
 // For brevity
-using namespace Util::Error::Unexpected;
+using namespace Util::Error;
 
 // For consistency
 #define LIMIT 10

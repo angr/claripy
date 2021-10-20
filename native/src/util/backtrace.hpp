@@ -58,7 +58,7 @@ namespace Util {
         void **callstack { nullptr };
         // Try to get a back trace
         try {
-            namespace Err = Util::Error::Unexpected;
+            namespace Err = Util::Error;
             Util::affirm<Err::Usage>(max_frames > 0, "max_frames must be strictly positive");
             // Get a human read-able call stack
             callstack = Util::Safe::malloc<void *>(Util::widen<uint32_t, true>(max_frames));

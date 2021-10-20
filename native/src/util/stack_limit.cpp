@@ -15,8 +15,8 @@ namespace US = Util::StackLimit;
 
 /** A helper function which reports that StackLimit operations are not supported on this system */
 static void not_supported() {
-    throw Util::Error::Unexpected::NotSupported(
-        WHOAMI_WITH_SOURCE "This system does not support StackLimit operations");
+    throw Util::Error::NotSupported(WHOAMI_WITH_SOURCE
+                                    "This system does not support StackLimit operations");
 }
 
 US::ULL US::get() {
@@ -61,9 +61,8 @@ US::ULL US::max() {
 
 void US::set(const US::ULL to) {
     auto rl { getr() };
-    affirm<Error::Unexpected::Usage>(to <= rl.rlim_max, WHOAMI_WITH_SOURCE,
-                                     "selected stack limit of ", to,
-                                     " is greater than the max of: ", rl.rlim_max);
+    affirm<Error::Usage>(to <= rl.rlim_max, WHOAMI_WITH_SOURCE, "selected stack limit of ", to,
+                         " is greater than the max of: ", rl.rlim_max);
     rl.rlim_cur = to;
     const auto rv { setrlimit(RLIMIT_STACK, &rl) };
     verify_syscall(rv);

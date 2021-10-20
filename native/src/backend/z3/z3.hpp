@@ -79,7 +79,7 @@ namespace Backend::Z3 {
                     Util::Log::info("Z3 Backend will not simplify expr with CUID: ", expr->cuid);
 #ifdef DEBUG
                     auto ret { Ex::find(expr->hash) };
-                    using Err = Util::Error::Unexpected::HashCollision;
+                    using Err = Util::Error::HashCollision;
                     Util::affirm<Err>(ret.get() == expr, WHOAMI_WITH_SOURCE);
                     return ret;
 #else
@@ -358,8 +358,8 @@ namespace Backend::Z3 {
                 const auto bool_name { assertions[Util::sign(i)].arg(0) };
 #ifdef DEBUG
                 const auto [_, success] { tracked.emplace(extract_hash(bool_name)) };
-                Util::affirm<Util::Error::Unexpected::HashCollision>(success, WHOAMI_WITH_SOURCE
-                                                                     "Hash collision");
+                Util::affirm<Util::Error::HashCollision>(success,
+                                                         WHOAMI_WITH_SOURCE "Hash collision");
                 (void) _;
 #else
                 tracked.emplace(extract_hash(bool_name));
@@ -397,9 +397,8 @@ namespace Backend::Z3 {
          */
         inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<z3::expr> exprs,
                                                             z3::solver &solver, const UInt n_sol) {
-            Util::affirm<Util::Error::Unexpected::Usage>(
-                exprs.size() > 1,
-                WHOAMI_WITH_SOURCE "should only be called when exprs.size() > 1");
+            Util::affirm<Util::Error::Usage>(exprs.size() > 1, WHOAMI_WITH_SOURCE
+                                             "should only be called when exprs.size() > 1");
             // Prep
             solver.push();
             std::vector<std::vector<PrimVar>> ret;
@@ -466,7 +465,7 @@ namespace Backend::Z3 {
          *  This assumes the PrimVar is set to a BV type
          */
         template <typename T> T coerce_to(PrimVar &&p) {
-            using Usage = Util::Error::Unexpected::Usage;
+            using Usage = Util::Error::Usage;
             switch (p.index()) {
                 /** A local macro used for consistency */
 #define CASE_B(INDEX, TYPE)                                                                       \
@@ -508,8 +507,7 @@ namespace Backend::Z3 {
                 case Ex::String::static_cuid:
                     return Create::eq<Ex::String>(a, b);
                 default:
-                    throw Util::Error::Unexpected::Type(WHOAMI_WITH_SOURCE
-                                                        "Unsupported expr type");
+                    throw Util::Error::Type(WHOAMI_WITH_SOURCE "Unsupported expr type");
             }
         }
 
@@ -517,7 +515,7 @@ namespace Backend::Z3 {
         template <bool Signed, bool Minimize>
         inline auto extrema(const z3::expr &expr, z3::solver &solver) {
             // Check input
-            using Usage = Util::Error::Unexpected::Usage;
+            using Usage = Util::Error::Usage;
 #ifdef DEBUG
             Util::affirm<Usage>(expr.is_bv(), WHOAMI_WITH_SOURCE "ret can only be called on BVs");
 #endif
@@ -639,7 +637,9 @@ namespace Backend::Z3 {
         /*                          Representation                          */
         /********************************************************************/
 
-        /** Thread local data the Z3 backend uses */
+        /** Thread local data the Z3 backend uses
+         *  All Z3 backends share this
+         */
         static thread_local TLS tls;
     };
 

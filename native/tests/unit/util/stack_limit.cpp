@@ -12,7 +12,7 @@ template <typename Fn, typename... Args> static bool is_not_supported(const Fn f
     try {
         f(std::forward<Args>(args)...);
     }
-    catch (Util::Error::Unexpected::NotSupported &) {
+    catch (Util::Error::NotSupported &) {
         return true;
     }
     return false;

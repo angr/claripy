@@ -80,8 +80,8 @@ namespace Util {
             if (str_prefix(s, "../")) {
                 ADVANCE(3)
                 // Rewinding segments
-                affirm<Error::Unexpected::BadPath>(n_seg > 0, WHOAMI_WITH_SOURCE,
-                                                   "given path that goes outside of / or ./");
+                affirm<Error::BadPath>(n_seg > 0, WHOAMI_WITH_SOURCE,
+                                       "given path that goes outside of / or ./");
                 n_seg -= 1;
                 continue;
             }

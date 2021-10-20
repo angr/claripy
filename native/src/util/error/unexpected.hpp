@@ -10,36 +10,36 @@
 #include "claricpp.hpp"
 
 
-namespace Util::Error::Unexpected {
+namespace Util::Error {
 
     /** Base unexpected exception
      *  All unexpected exceptions must derive from this
      */
-    DEFINE_NONFINAL_EXCEPTION(Base, Claricpp);
+    DEFINE_NONFINAL_EXCEPTION(Unexpected, Claricpp);
 
     /** Hash Collision exception */
-    DEFINE_NONFINAL_EXCEPTION(Collision, Base);
+    DEFINE_NONFINAL_EXCEPTION(Collision, Unexpected);
 
     /** Null pointer exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Null, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Null, Unexpected);
 
     /** Invalid path exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadPath, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadPath, Unexpected);
 
     /** Syscall failure exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Syscall, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Syscall, Unexpected);
 
     /** Bad size exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Unexpected);
 
     /** Bad cast exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Unexpected);
 
     /** Hash Collision exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(HashCollision, Collision);
 
     /** Bad variant access exception */
-    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Base);
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(BadVariantAccess, Unexpected);
 
     /** Raised when a virtual function that should have been overridden was called */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(MissingVirtualFunction, Claricpp);
@@ -59,6 +59,6 @@ namespace Util::Error::Unexpected {
     /** Raised when a dynamic type error occurs */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(Type, Claricpp);
 
-} // namespace Util::Error::Unexpected
+} // namespace Util::Error
 
 #endif

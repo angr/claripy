@@ -50,12 +50,6 @@ namespace Util {
         /** A namespace used exceptions to be passed back to python */
         namespace Python {}
 
-        /** A namespace used for unexpected errors
-         *
-         *  These should never be thrown; they indicate an error with the code
-         */
-        namespace Unexpected {}
-
     } // namespace Error
 
     /** A namespace used for logging functions

@@ -111,7 +111,7 @@ namespace Util::ThreadSafe {
 
       private:
         /** Throws an exception if ptr is nullptr */
-        template <typename Err = Util::Error::Unexpected::Usage> void throw_if_null() const {
+        template <typename Err = Util::Error::Usage> void throw_if_null() const {
             Util::affirm<Err>(pointer,
                               WHOAMI_WITH_SOURCE "attempted to dereference a null pointer");
         }

@@ -52,7 +52,7 @@ namespace Util::Cast {
         }
 
         /** Dynamic down-cast that throws on failure; in may not be nullptr */
-        template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
+        template <typename Out, typename In, typename Err = Error::BadCast>
         constexpr auto down_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { down<Out>(in) }; // Not const for possible move ret
@@ -61,7 +61,7 @@ namespace Util::Cast {
         }
 
         /** A dynamic side cast that throws on failure; in may not be nullptr */
-        template <typename Out, typename In, typename Err = Error::Unexpected::BadCast>
+        template <typename Out, typename In, typename Err = Error::BadCast>
         constexpr auto side_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { side<Out>(in) }; // Not const for possible move ret

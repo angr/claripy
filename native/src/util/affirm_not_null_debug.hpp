@@ -14,8 +14,8 @@
 
     /** A macro that null checks (X) iff DEBUG is defined */
     #define UTILS_AFFIRM_NOT_NULL_DEBUG(X)                                                        \
-        ::Util::affirm<::Util::Error::Unexpected::Null>((X) != nullptr,                           \
-                                                        WHOAMI_WITH_SOURCE "Nullptr detected.");
+        ::Util::affirm<::Util::Error::Null>((X) != nullptr,                                       \
+                                            WHOAMI_WITH_SOURCE "Nullptr detected.");
 
 #else
 
