@@ -23,11 +23,11 @@ void hash() {
     const PT a0 { std::make_shared<const TestHashed>(0_ui) };
     const PT a1 { std::make_shared<const TestHashed>(1_ui) };
     const std::string hi_s { "hi" };
-    const Constants::CCSC hi_c { "hi" };
+    const CCSC hi_c { "hi" };
     const std::vector<PT> vec1 { PT { a0 }, PT { a1 } };
     const std::vector<PT> vec2 { PT { a1 }, PT { a0 } };
-    const Constants::UInt uz { 0_ui };
-    const Constants::Int z { 0_i };
+    const UInt uz { 0_ui };
+    const Int z { 0_i };
 
     // Hash multiple things
 

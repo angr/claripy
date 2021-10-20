@@ -17,7 +17,7 @@ template <bool Signed> void to_bv_b() {
     // Create distinct inputs
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
     const auto fp { F::t_literal<Ex::FP>(0) };
-    const Constants::UInt bit_length { 16 };
+    const UInt bit_length { 16 };
 
     // Test
     const auto exp { Create::FP::to_bv<Signed>(mode, fp, bit_length) };

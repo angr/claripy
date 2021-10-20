@@ -64,7 +64,7 @@ namespace Backend::Z3 {
 #define UINT_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
-        using To = Constants::CTSC<Op::UIntBinary>;                                               \
+        using To = CTSC<Op::UIntBinary>;                                                          \
         check_vec_usage(args, 1_ui, WHOAMI_WITH_SOURCE);                                          \
         auto ret { (FN) (*args.back(),                                                            \
                          Utils::checked_static_cast<To>(expr->op.get())->integer) };              \
@@ -75,7 +75,7 @@ namespace Backend::Z3 {
 #define MODE_BINARY_CASE(OP, FN)                                                                  \
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");           \
-        using To = Constants::CTSC<Op::FP::ModeBinary>;                                           \
+        using To = CTSC<Op::FP::ModeBinary>;                                                      \
         check_vec_usage(args, 2_ui, WHOAMI_WITH_SOURCE);                                          \
         const auto size { args.size() };                                                          \
         auto ret { (FN) (Utils::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],   \
@@ -96,7 +96,7 @@ namespace Backend::Z3 {
 #define FLAT_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                   \
         static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                            \
-        using To = Constants::CTSC<Op::AbstractFlat>;                                             \
+        using To = CTSC<Op::AbstractFlat>;                                                        \
         const auto a_size { args.size() };                                                        \
         const auto n { Utils::checked_static_cast<To>(expr->op.get())->operands.size() };         \
         check_vec_usage(args, n, WHOAMI_WITH_SOURCE);                                             \
@@ -200,7 +200,7 @@ namespace Backend::Z3 {
                     TERNARY_CASE(If, Conv::if_);
 
                 case Op::Extract::static_cuid: {
-                    using To = Constants::CTSC<Op::Extract>;
+                    using To = CTSC<Op::Extract>;
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
                     const auto *const op { Utils::checked_static_cast<To>(expr->op.get()) };
                     auto ret { Conv::extract(op->high, op->low, *args.back()) };
@@ -235,7 +235,7 @@ namespace Backend::Z3 {
 #define TO_BV_CASE(TF)                                                                            \
     case Op::FP::ToBV<TF>::static_cuid: {                                                         \
         debug_assert_dcast<Expression::Bits>(expr, WHOAMI_WITH_SOURCE "FP::ToBV has no length");  \
-        using ToBV = Constants::CTSC<Op::FP::ToBV<TF>>;                                           \
+        using ToBV = CTSC<Op::FP::ToBV<TF>>;                                                      \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
         auto ret { Conv::FP::template to_bv<TF>(                                                  \
             Utils::checked_static_cast<ToBV>(expr->op.get())->mode, *args.back(),                 \
@@ -248,7 +248,7 @@ namespace Backend::Z3 {
 #define FROM_2CBV_CASE(TF)                                                                        \
     case Op::FP::From2sComplementBV<TF>::static_cuid: {                                           \
         check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);                                             \
-        using OpT = Constants::CTSC<Op::FP::From2sComplementBV<TF>>;                              \
+        using OpT = CTSC<Op::FP::From2sComplementBV<TF>>;                                         \
         const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };                    \
         auto ret { Conv::FP::template from_2s_complement_bv<TF>(cast_op->mode, *args.back(),      \
                                                                 cast_op->width) };                \
@@ -271,7 +271,7 @@ namespace Backend::Z3 {
                     // FromFP
                 case Op::FP::FromFP::static_cuid: {
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
-                    using FromFP = Constants::CTSC<Op::FP::FromFP>;
+                    using FromFP = CTSC<Op::FP::FromFP>;
                     const FromFP cast_op { Utils::checked_static_cast<FromFP>(expr->op.get()) };
                     auto ret { Conv::FP::from_fp(cast_op->mode, *args.back(), cast_op->width) };
                     args.pop_back();
@@ -281,7 +281,7 @@ namespace Backend::Z3 {
                     // FromNot2sComplementBV
                 case Op::FP::FromNot2sComplementBV::static_cuid: {
                     check_vec_usage(args, 1, WHOAMI_WITH_SOURCE);
-                    using OpT = Constants::CTSC<Op::FP::FromNot2sComplementBV>;
+                    using OpT = CTSC<Op::FP::FromNot2sComplementBV>;
                     const OpT cast_op { Utils::checked_static_cast<OpT>(expr->op.get()) };
                     auto ret { Conv::FP::from_not_2s_complement_bv(*args.back(), cast_op->width) };
                     args.pop_back();
@@ -710,7 +710,7 @@ namespace Backend::Z3 {
         template <typename T, typename... Args>
         static constexpr void debug_assert_dcast(const Expression::RawPtr e, Args &&...args) {
 #ifdef DEBUG
-            using Ptr = Constants::CTSC<T>;
+            using Ptr = CTSC<T>;
             using Err = Utils::Error::Unexpected::Type;
             Utils::affirm<Err>(dynamic_cast<Ptr>(e) != nullptr, std::forward<Args>(args)...);
 #else
@@ -722,14 +722,14 @@ namespace Backend::Z3 {
          *  In debug mode verifies that the last n elements are not nullptr
          */
         template <typename T, typename... Args>
-        static void check_vec_usage(const T &c, const Constants::UInt n, Args &&...args) {
+        static void check_vec_usage(const T &c, const UInt n, Args &&...args) {
             namespace Err = Utils::Error::Unexpected; // NOLINT (false positive)
             Utils::affirm<Err::Size>(c.size() >= n, std::forward<Args>(args)...,
                                      "container is too small to access ", n, " elements");
 #ifdef DEBUG
             if (n > 0) {
                 const auto last { c.size() - 1 };
-                for (Constants::UInt i { 0 }; i < n; ++i) {
+                for (UInt i { 0 }; i < n; ++i) {
                     Utils::affirm<Err::Null>(c[last - i] != nullptr, std::forward<Args>(args)...,
                                              "container element cannot be nullptr");
                 }

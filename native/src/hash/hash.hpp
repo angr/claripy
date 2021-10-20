@@ -20,7 +20,7 @@ namespace Hash {
      *  Note: types may want to pass in some sort of typeid if their hashes matter
      */
     template <typename... Args> constexpr Hash hash(Args &&...args) {
-        constexpr Constants::UInt size { sizeof...(Args) };
+        constexpr UInt size { sizeof...(Args) };
         static_assert(size > 0, "hash needs arguments");
 
         // Single item case
@@ -30,7 +30,7 @@ namespace Hash {
 
         // Variables
         Hash hashes[size]; // NOLINT
-        Constants::UInt i { -1_ui };
+        UInt i { -1_ui };
 
         // Basically: hashes[i] = singular(args[i]) for each arg
         (static_cast<void>(hashes[++i] = singular(std::forward<Args>(args))), ...);

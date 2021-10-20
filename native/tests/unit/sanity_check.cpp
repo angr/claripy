@@ -7,7 +7,7 @@
 
 
 /** Returns the passed argument by reference */
-static Constants::UInt id_ref(const Constants::UInt &id) {
+static UInt id_ref(const UInt &id) {
     return id;
 }
 

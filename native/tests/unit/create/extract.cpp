@@ -11,8 +11,8 @@ void extract() {
     namespace Ex = Expression; // NOLINT (false positive)
 
     // Create distinct inputs
-    const Constants::UInt high { 2 };
-    const Constants::UInt low { 2 };
+    const UInt high { 2 };
+    const UInt low { 2 };
     const auto a { UnitTest::TestLib::Factories::t_literal<Ex::BV>(0) };
 
     // Test

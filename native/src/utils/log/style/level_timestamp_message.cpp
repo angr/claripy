@@ -29,8 +29,7 @@ static auto get_time() {
 }
 
 // Return "<level>: <timestamp>: <raw>"
-std::string LevelTimestampMessage::str(Constants::CCSC, const Lvl &lvl,
-                                       const std::ostringstream &raw) const {
+std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, const std::ostringstream &raw) const {
     // Color label
     const char *color { nullptr };
     switch (lvl) {

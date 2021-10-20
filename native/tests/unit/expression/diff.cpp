@@ -10,7 +10,7 @@ namespace Ex = Expression;
 using namespace UnitTest::TestLib;
 
 /** Construct a t_literal<T> and up-cast it */
-template <typename T> Ex::BasePtr construct(const Constants::Int i) {
+template <typename T> Ex::BasePtr construct(const Int i) {
     return Factories::t_literal<T>(i);
 }
 

@@ -29,7 +29,7 @@ namespace Utils::Log::Style {
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         /** Format the log message */
-        virtual std::string str(Constants::CCSC log_id, const Level::Level &lvl,
+        virtual std::string str(CCSC log_id, const Level::Level &lvl,
                                 const std::ostringstream &raw) const = 0;
     };
 

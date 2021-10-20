@@ -13,7 +13,7 @@ namespace Hash {
     /** The Hash type
      *  Guaranteed to be never throw
      */
-    using Hash = Constants::UInt;
+    using Hash = UInt;
 
 } // namespace Hash
 

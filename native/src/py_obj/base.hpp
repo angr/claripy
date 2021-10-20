@@ -16,7 +16,7 @@ namespace PyObj {
     /** A class containing a ref to some python object and a hash */
     struct Base : public Hash::Hashed {
         /** The python reference type PyObj uses */
-        using Ref = Constants::UInt;
+        using Ref = UInt;
 
         /** Constructor */
         explicit inline Base(const Hash::Hash &h, const Ref r) noexcept

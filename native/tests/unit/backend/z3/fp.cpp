@@ -67,13 +67,13 @@ void fp() {
     const auto test_snan = [&z3bk](const bool is_double) {
         const auto s { is_double ? C::literal(NLD::signaling_NaN())
                                  : C::literal(NLF::signaling_NaN()) };
-        const auto *const op_s { dynamic_cast<Constants::CTSC<Op::Literal>>(s->op.get()) };
+        const auto *const op_s { dynamic_cast<CTSC<Op::Literal>>(s->op.get()) };
         UNITTEST_ASSERT(op_s != nullptr);
         // Verify cycled expr
         const auto cycled { z3bk.abstract(z3bk.convert(s.get())) };
         UNITTEST_ASSERT(Ex::are_same_type<true>(cycled, s));
         // Verify cycled op
-        const auto *const op { dynamic_cast<Constants::CTSC<Op::Literal>>(cycled->op.get()) };
+        const auto *const op { dynamic_cast<CTSC<Op::Literal>>(cycled->op.get()) };
         UNITTEST_ASSERT(op != nullptr);
         // Verify cycled value
         if (is_double) {

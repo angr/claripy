@@ -9,9 +9,9 @@
 template <typename E, typename O> static auto get_pointers(const ClaricppExpr in) {
     const Expression::RawPtr exp { API::to_cpp_ref(in).get() };
     UNITTEST_ASSERT(exp != nullptr);
-    Constants::CTSC<E> cast { dynamic_cast<Constants::CTSC<E>>(exp) };
+    CTSC<E> cast { dynamic_cast<CTSC<E>>(exp) };
     UNITTEST_ASSERT(cast != nullptr);
-    Constants::CTSC<O> lit { dynamic_cast<Constants::CTSC<O>>(cast->op.get()) };
+    CTSC<O> lit { dynamic_cast<CTSC<O>>(cast->op.get()) };
     UNITTEST_ASSERT(lit != nullptr);
     return std::make_pair(cast, lit);
 }

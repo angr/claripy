@@ -87,7 +87,7 @@ namespace Op {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "args":[ )|";
             Expression::repr(operands[0], out, verbose);
-            for (Constants::UInt i = 1; i < operands.size(); ++i) {
+            for (UInt i = 1; i < operands.size(); ++i) {
                 out << ", ";
                 Expression::repr(operands[i], out, verbose);
             }

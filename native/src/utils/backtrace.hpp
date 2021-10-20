@@ -26,9 +26,8 @@ namespace Utils {
     namespace Private {
 
         /** A private helper function used to print a backtrace line */
-        inline void print_bt_line(std::ostream &o, const int lg_i, const Constants::UInt line_num,
-                                  const Constants::UInt addr, Constants::CCSC mangled,
-                                  const std::uintptr_t offset) {
+        inline void print_bt_line(std::ostream &o, const int lg_i, const UInt line_num,
+                                  const UInt addr, CCSC mangled, const std::uintptr_t offset) {
             const constexpr unsigned ptr_width { 2 + 2 * sizeof(void *) };
             o << std::setw(lg_i) << std::left << line_num << " : " << std::setw(ptr_width)
               << std::left << to_hex(addr) << " : " << try_demangle(mangled) << " + " << offset
@@ -36,14 +35,14 @@ namespace Utils {
         }
 
         /** A private helper function used to print a backtrace line */
-        inline void print_raw_bt_line(std::ostream &o, const int lg_i,
-                                      const Constants::UInt line_num, Constants::CCSC line) {
+        inline void print_raw_bt_line(std::ostream &o, const int lg_i, const UInt line_num,
+                                      CCSC line) {
             o << std::setw(lg_i) << std::left << line_num << " : " << line << '\n';
         }
 
     } // namespace Private
 
-    inline void backtrace(std::ostream &o, const Constants::UInt ignore_frames = 0,
+    inline void backtrace(std::ostream &o, const UInt ignore_frames = 0,
                           const int16_t max_frames = 0x1000) noexcept {
 #ifdef DEBUG
         // Prevent infinite recursion if something goes wrong
@@ -67,16 +66,16 @@ namespace Utils {
             Utils::affirm<Err::Unknown>(n_frames > 0, WHOAMI_WITH_SOURCE "backtrace failed");
             Utils::affirm<Err::Unknown>(n_frames <= max_frames,
                                         WHOAMI_WITH_SOURCE "backtrace overflow failure");
-            Constants::CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
+            CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
             // Used for formatting
-            const auto n_to_print { Utils::widen<Constants::UInt, true>(
+            const auto n_to_print { Utils::widen<UInt, true>(
                 Utils::Min::value(n_frames, 1 + static_cast<int>(max_frames))) };
             const auto lg_i { static_cast<int>(std::ceil(std::log10(n_to_print))) };
             // Print stack
             Dl_info data { nullptr, nullptr, nullptr, nullptr };
 
-            for (Constants::UInt i { ignore_frames + 1 }; i < n_to_print; ++i) { // utils widen
-                const bool matched { ::dladdr(callstack[i], &data) != 0 };       // NOLINT
+            for (UInt i { ignore_frames + 1 }; i < n_to_print; ++i) {      // utils widen
+                const bool matched { ::dladdr(callstack[i], &data) != 0 }; // NOLINT
                 // Check to see if we can resolve the symbol name
                 if (matched && data.dli_sname != nullptr) {
                     const uintptr_t addr { reinterpret_cast<uintptr_t>(callstack[i]) }; // NOLINT
@@ -86,7 +85,7 @@ namespace Utils {
                 }
                 // Name not found
                 else {
-                    Constants::UInt addr;  // NOLINT
+                    UInt addr;             // NOLINT
                     std::uintptr_t offset; // NOLINT
                     // Try to parse the line
                     std::istringstream line { symbols[i] }; // NOLINT

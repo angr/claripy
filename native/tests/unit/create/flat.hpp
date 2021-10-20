@@ -43,7 +43,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
 
     // Contains check
     UNITTEST_ASSERT(flat->operands.size() == input.size());
-    for (Constants::UInt i = 0; i < input.size(); ++i) {
+    for (UInt i = 0; i < input.size(); ++i) {
         UNITTEST_ASSERT(flat->operands[i] == input[i]);
     }
 

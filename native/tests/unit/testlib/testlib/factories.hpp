@@ -12,8 +12,7 @@
 namespace UnitTest::TestLib::Factories {
 
     /** Make it easier to create expressions */
-    template <typename T = Expression::Bool>
-    Expression::BasePtr t_literal(const Constants::Int i = 0) {
+    template <typename T = Expression::Bool> Expression::BasePtr t_literal(const Int i = 0) {
         namespace Ex = Expression;
         static_assert(std::is_base_of_v<Ex::Base, T>, "T must derive from Expression::Base");
 
@@ -24,7 +23,7 @@ namespace UnitTest::TestLib::Factories {
             return Create::literal(std::to_string(i));
         }
         else if constexpr (std::is_same_v<T, Ex::BV>) {
-            return Create::literal(static_cast<Constants::UInt>(i));
+            return Create::literal(static_cast<UInt>(i));
         }
         else if constexpr (std::is_same_v<T, Ex::FP>) {
             return Create::literal(static_cast<double>(i));

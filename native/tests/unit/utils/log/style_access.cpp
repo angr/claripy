@@ -12,8 +12,7 @@ using namespace UnitTest::TestLib;
 /** Create a style class */
 struct Plain final : Style::Base {
     /** The style function */
-    std::string str(Constants::CCSC, const Level::Level &,
-                    const std::ostringstream &s) const override final {
+    std::string str(CCSC, const Level::Level &, const std::ostringstream &s) const override final {
         return s.str();
     }
 };

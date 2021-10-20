@@ -26,10 +26,8 @@ namespace Backend::Z3 {
         /** The size of a float */
         static constexpr inline const auto flt_size { 4_ui * BitLength::char_bit };
 
-        /** A function that narrows a Constants::UInt to Z3's unsigned type */
-        static constexpr auto to_z3u(const Constants::UInt x) {
-            return Utils::narrow<unsigned>(x);
-        }
+        /** A function that narrows a UInt to Z3's unsigned type */
+        static constexpr auto to_z3u(const UInt x) { return Utils::narrow<unsigned>(x); }
 
       public:
         // Unary
@@ -61,7 +59,7 @@ namespace Backend::Z3 {
 
             // Reverse byte by byte
             auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
-            for (Constants::UInt i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
+            for (UInt i = C_CHAR_BIT; i < size; i += C_CHAR_BIT) {
                 const auto tmp { extract(to_z3u(i + C_CHAR_BIT - 1), to_z3u(i), e) };
                 ret = concat(ret, tmp);
             }
@@ -71,14 +69,10 @@ namespace Backend::Z3 {
         // UIntBinary
 
         /** Sign Extension converter */
-        static z3::expr signext(const z3::expr &e, const Constants::UInt i) {
-            return z3::sext(e, to_z3u(i));
-        }
+        static z3::expr signext(const z3::expr &e, const UInt i) { return z3::sext(e, to_z3u(i)); }
 
         /** Zero Extension converter */
-        static z3::expr zeroext(const z3::expr &e, const Constants::UInt i) {
-            return z3::zext(e, to_z3u(i));
-        }
+        static z3::expr zeroext(const z3::expr &e, const UInt i) { return z3::zext(e, to_z3u(i)); }
 
         // Binary
 
@@ -201,12 +195,12 @@ namespace Backend::Z3 {
         // Flat
 
         /** The type of argument a flat function takes in */
-        using FlatArr = Constants::CTSC<z3::expr> *const;
+        using FlatArr = CTSC<z3::expr> *const;
 
       private:
         /** Like C++20's version of std::accumulate, except it works with pointers */
         template <typename FunctorType>
-        static z3::expr ptr_accumulate(FlatArr arr, const Constants::UInt size) {
+        static z3::expr ptr_accumulate(FlatArr arr, const UInt size) {
 #ifdef DEBUG
             Utils::affirm<Utils::Error::Unexpected::Size>(
                 size >= 2,
@@ -216,7 +210,7 @@ namespace Backend::Z3 {
 #endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
-            for (Constants::UInt i { 2 }; i < size; ++i) {
+            for (UInt i { 2 }; i < size; ++i) {
                 UTILS_AFFIRM_NOT_NULL_DEBUG(arr[i]);
                 ret = std::move(fn(std::move(ret), *arr[i]));
             }
@@ -225,37 +219,36 @@ namespace Backend::Z3 {
 
       public:
         /** Add converter */
-        static z3::expr add(FlatArr arr, const Constants::UInt size) {
+        static z3::expr add(FlatArr arr, const UInt size) {
             return ptr_accumulate<std::plus<z3::expr>>(arr, size);
         }
 
         /** Mul converter */
-        static z3::expr mul(FlatArr arr, const Constants::UInt size) {
+        static z3::expr mul(FlatArr arr, const UInt size) {
             return ptr_accumulate<std::multiplies<z3::expr>>(arr, size);
         }
 
         /** Or converter */
-        static z3::expr or_(FlatArr arr, const Constants::UInt size) {
+        static z3::expr or_(FlatArr arr, const UInt size) {
             // Note that Z3's bit or auto switched to logical or for booleans
             return ptr_accumulate<std::bit_or<z3::expr>>(arr, size);
         }
 
         /** And converter */
-        static z3::expr and_(FlatArr arr, const Constants::UInt size) {
+        static z3::expr and_(FlatArr arr, const UInt size) {
             // Note that Z3's bit and auto switched to logical and for booleans
             return ptr_accumulate<std::bit_and<z3::expr>>(arr, size);
         }
 
         /** Xor converter */
-        static z3::expr xor_(FlatArr arr, const Constants::UInt size) {
+        static z3::expr xor_(FlatArr arr, const UInt size) {
             return ptr_accumulate<std::bit_xor<z3::expr>>(arr, size);
         }
 
         // Other
 
         /** Extract converter */
-        static z3::expr extract(const Constants::UInt high, const Constants::UInt low,
-                                const z3::expr &e) {
+        static z3::expr extract(const UInt high, const UInt low, const z3::expr &e) {
             return e.extract(to_z3u(high), to_z3u(low));
         }
 
@@ -271,7 +264,7 @@ namespace Backend::Z3 {
         static z3::expr literal(const Expression::RawPtr expr, z3::context &ctx) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
-            using To = Constants::CTSC<Op::Literal>;
+            using To = CTSC<Op::Literal>;
             const auto &data { Utils::checked_static_cast<To>(expr->op.get())->value };
             try {
                 switch (data.index()) {
@@ -336,7 +329,7 @@ namespace Backend::Z3 {
                                z3::context &ctx) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
             UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
-            using To = Constants::CTSC<Op::Symbol>;
+            using To = CTSC<Op::Symbol>;
             const std::string &name { Utils::checked_static_cast<To>(expr->op.get())->name };
             switch (expr->cuid) {
                 case Expression::Bool::static_cuid:
@@ -344,7 +337,7 @@ namespace Backend::Z3 {
                 case Expression::String::static_cuid:
                     return ctx.string_const(name.c_str());
                 case Expression::FP::static_cuid: {
-                    using FPP = Constants::CTSC<Expression::FP>;
+                    using FPP = CTSC<Expression::FP>;
                     const auto fpw { (Utils::checked_static_cast<FPP>(expr)->bit_length ==
                                       flt_size)
                                          ? Mode::FP::flt
@@ -352,7 +345,7 @@ namespace Backend::Z3 {
                     return ctx.fpa_const(name.c_str(), fpw.exp, fpw.mantissa);
                 }
                 case Expression::BV::static_cuid: {
-                    using BVP = Constants::CTSC<Expression::BV>;
+                    using BVP = CTSC<Expression::BV>;
 #ifdef DEBUG // @todo Double check if I am strill right
                     Utils::affirm<Utils::Error::Unexpected::Unknown>(
                         Factory::Private::gcache<Expression::Base>().find(expr->hash) != nullptr,
@@ -368,9 +361,7 @@ namespace Backend::Z3 {
                         satd.erase(name_hash);
                     }
                     // Return the converted constant
-                    const Constants::UInt bit_length {
-                        Utils::checked_static_cast<BVP>(expr)->bit_length
-                    };
+                    const UInt bit_length { Utils::checked_static_cast<BVP>(expr)->bit_length };
                     return ctx.bv_const(name.c_str(), to_z3u(bit_length));
                 }
                 // Error handling
@@ -454,7 +445,7 @@ namespace Backend::Z3 {
             /** FP::ToBV converter */
             template <bool Signed>
             static z3::expr to_bv(const Mode::FP::Rounding mode, const z3::expr &e,
-                                  const Constants::UInt bit_length) {
+                                  const UInt bit_length) {
                 e.ctx().set_rounding_mode(to_z3_rm(mode));
                 if constexpr (Signed) {
                     return z3::fpa_to_sbv(e, to_z3u(bit_length));
@@ -504,13 +495,13 @@ namespace Backend::Z3 {
             // Int Binary
 
             /** ToInt converter */
-            static z3::expr to_int(const z3::expr &e, const Constants::UInt len) {
+            static z3::expr to_int(const z3::expr &e, const UInt len) {
                 const auto a { e.stoi() };
                 return z3::int2bv(to_z3u(len), a);
             }
 
             /** Len converter */
-            static z3::expr len(const z3::expr &e, const Constants::UInt len) {
+            static z3::expr len(const z3::expr &e, const UInt len) {
                 const auto a { e.length() };
                 return z3::int2bv(to_z3u(len), a);
             }
@@ -552,8 +543,7 @@ namespace Backend::Z3 {
 
             /** IndexOf converter */
             static z3::expr index_of(const z3::expr &str, const z3::expr &pattern,
-                                     const z3::expr &start_index,
-                                     const Constants::UInt bit_length) {
+                                     const z3::expr &start_index, const UInt bit_length) {
                 const auto a { z3::indexof(str, pattern, start_index) };
                 return z3::int2bv(to_z3u(bit_length), a);
             }

@@ -20,7 +20,7 @@ void index_of() {
     const auto a { F::t_literal<Expression::String>(0) };
     const auto b { F::t_literal<Expression::String>(1) };
     const auto c { F::t_literal<Expression::BV>(2) };
-    const Constants::UInt bit_length { 16 };
+    const UInt bit_length { 16 };
 
     // Test
     const auto exp { CS::index_of(a, b, c, bit_length) };

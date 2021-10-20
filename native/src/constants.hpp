@@ -29,47 +29,39 @@
     #error "Compiler unknown. If your compiler supports RTTI define RTTI_OVERRIDE"
 #endif
 
+/** A signed integer type that is consistent across all of claricpp
+ *  Note that python does not have an integer maximum, C++ is bounded by this restriction
+ *  Guaranteed to be a primitive (noexcept construction, for example, can be assumed)
+ */
+using Int = int_fast64_t;
 
-namespace Constants {
+/** An unsigned integer type that is consistent across all of claricpp
+ *  Note that python does not have an integer maximum, C++ is bounded by this restriction
+ *  Guaranteed to be a primitive (noexcept construction, for example, can be assumed)
+ */
+using UInt = uint_fast64_t;
 
-    /** A signed integer type that is consistent across all of claricpp
-     *  Note that python does not have an integer maximum, C++ is bounded by this restriction
-     *  Guaranteed to be a primitive (noexcept construction, for example, can be assumed)
-     */
-    using Int = int_fast64_t;
+/** A shortcut for a const Type * const */
+template <typename T> using CTSC = const T *const;
 
-    /** An unsigned integer type that is consistent across all of claricpp
-     *  Note that python does not have an integer maximum, C++ is bounded by this restriction
-     *  Guaranteed to be a primitive (noexcept construction, for example, can be assumed)
-     */
-    using UInt = uint_fast64_t;
+/** An abbreviation for const char * const */
+using CCSC = CTSC<char>;
 
-    /** A shortcut for a const Type * const */
-    template <typename T> using CTSC = const T *const;
-
-    /** An abbreviation for const char * const */
-    using CCSC = CTSC<char>;
-
-} // namespace Constants
-
-
-/** Verify Constants::Int is a primitive */
-static_assert(std::is_arithmetic_v<Constants::Int>,
-              "Constants::Int must be an arithmetic primitive");
-/** Verify Constants::UInt is a primitive */
-static_assert(std::is_arithmetic_v<Constants::UInt>,
-              "Constants::UInt must be an arithmetic primitive");
+/** Verify Int is a primitive */
+static_assert(std::is_arithmetic_v<Int>, "Int must be an arithmetic primitive");
+/** Verify UInt is a primitive */
+static_assert(std::is_arithmetic_v<UInt>, "UInt must be an arithmetic primitive");
 
 
-/** Create a literal prefix for Constants::Int
+/** Create a literal prefix for Int
  *  This assumes the max of
  */
-constexpr Constants::Int operator"" _i(const unsigned long long i) {
+constexpr Int operator"" _i(const unsigned long long i) {
     // If it is safe, cast
-    const constexpr auto max { std::numeric_limits<Constants::Int>::max() };
+    const constexpr auto max { std::numeric_limits<Int>::max() };
     const constexpr auto lim { static_cast<unsigned long long>(max) };
-    if ((i <= lim) && (static_cast<Constants::Int>(i) <= max)) {
-        return static_cast<Constants::Int>(i);
+    if ((i <= lim) && (static_cast<Int>(i) <= max)) {
+        return static_cast<Int>(i);
     }
     // Otherwise we would have to narrow
     else {
@@ -79,8 +71,8 @@ constexpr Constants::Int operator"" _i(const unsigned long long i) {
 }
 
 
-/** Create a literal prefix for Constants::UInt */
-constexpr Constants::UInt operator"" _ui(const unsigned long long u) noexcept {
+/** Create a literal prefix for UInt */
+constexpr UInt operator"" _ui(const unsigned long long u) noexcept {
     return u; // The compiler will error if this is narrowing
 }
 

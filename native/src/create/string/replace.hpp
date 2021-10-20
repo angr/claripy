@@ -29,7 +29,7 @@ namespace Create::String {
                                  "operands must be each be of type Expression::String");
 
         // Construct size
-        Constants::UInt new_bit_length { Ex::get_bit_length(first) };
+        UInt new_bit_length { Ex::get_bit_length(first) };
         const auto s2 { Ex::get_bit_length(second) };
         Utils::affirm<Err::Size>(
             new_bit_length >= s2, WHOAMI_WITH_SOURCE

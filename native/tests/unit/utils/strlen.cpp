@@ -9,7 +9,7 @@
 
 /** Verify the file line hash macros work */
 void strlen() {
-    constexpr Constants::CCSC msg { "This is a test" };
+    constexpr CCSC msg { "This is a test" };
     const constexpr auto n { Utils::strlen(msg) };
     UNITTEST_ASSERT(n == std::strlen(msg));
 }

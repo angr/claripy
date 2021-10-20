@@ -23,7 +23,7 @@ void Expression::repr(const Expression::RawPtr e, std::ostream &out, const bool 
     // Normal operation
     out << R"|({ "type":")|" << Expression::type_name(e) << R"|(", "symbolic":)|" << std::boolalpha
         << e->symbolic << ", ";
-    if (dynamic_cast<Constants::CTSC<Expression::Bits>>(e) != nullptr) {
+    if (dynamic_cast<CTSC<Expression::Bits>>(e) != nullptr) {
         out << R"|("bit_length":)|" << Expression::get_bit_length(e) << ", ";
     }
     out << R"|("op":)|";

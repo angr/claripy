@@ -18,7 +18,7 @@ namespace Expression {
       protected:
         /** Protected Constructor */
         explicit inline Bits(const Hash::Hash h, const CUID::CUID &c, const bool sym,
-                             Op::BasePtr &&op_, const Constants::UInt bit_length_,
+                             Op::BasePtr &&op_, const UInt bit_length_,
                              Annotation::SPAV &&sp) noexcept
             : Base { h, c, sym, std::move(op_), std::move(sp) }, BitLength { bit_length_ } {}
 
@@ -37,7 +37,7 @@ namespace Expression {
      *  p may not be nullptr
      *  Warning: This static casts, the user must ensure that p is a Bits
      */
-    constexpr Constants::UInt get_bit_length(const Expression::RawPtr &p) {
+    constexpr UInt get_bit_length(const Expression::RawPtr &p) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(p);
         using To = const Expression::Bits *;
         return Utils::checked_static_cast<To>(p)->bit_length;
@@ -47,7 +47,7 @@ namespace Expression {
      *  p may not be nullptr
      *  Warning: This static casts, the user must ensure that p.get() is a Bits
      */
-    inline Constants::UInt get_bit_length(const Expression::BasePtr &p) {
+    inline UInt get_bit_length(const Expression::BasePtr &p) {
         UTILS_AFFIRM_NOT_NULL_DEBUG(p);
         return get_bit_length(p.get());
     }

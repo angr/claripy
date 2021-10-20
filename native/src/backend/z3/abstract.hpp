@@ -57,8 +57,7 @@
  */
 #define UINT_BINARY(FUNC)                                                                         \
     ASSERT_ARG_LEN(args, 1);                                                                      \
-    return FUNC(GET_EARG(0),                                                                      \
-                Utils::widen<Constants::UInt, true>(Z3_get_decl_int_parameter(ctx, decl, 0)));
+    return FUNC(GET_EARG(0), Utils::widen<UInt, true>(Z3_get_decl_int_parameter(ctx, decl, 0)));
 
 /** A local macro used for calling a basic binary expression
  *  Assumes the arguments array is called args
@@ -451,7 +450,7 @@ namespace Backend::Z3 {
                 ASSERT_ARG_LEN(args, 2);
                 return Create::FP::to_bv<Signed>(
                     std::get<Mode::FP::Rounding>(args[0]), GET_EARG(1),
-                    static_cast<Constants::UInt>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)));
+                    static_cast<UInt>(Z3_get_decl_int_parameter(decl.ctx(), decl, 0)));
             }
 
             /** Abstraction function for Z3_OP_FPA_TO_IEEE_BV */

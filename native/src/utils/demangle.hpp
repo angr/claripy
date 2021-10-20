@@ -20,7 +20,7 @@
 namespace Utils {
 
     /** Demangle a C++ name-mangled symbol */
-    inline std::string demangle(Constants::CCSC mangled) {
+    inline std::string demangle(CCSC mangled) {
         int status { -1 }; // NOLINT Status: Failure
         auto *buf { abi::__cxa_demangle(mangled, nullptr, nullptr, &status) };
         namespace Err = Utils::Error::Unexpected;
@@ -43,7 +43,7 @@ namespace Utils {
     }
 
     /** noexcept Demangle a C++ name-mangled symbol, on failure returns mangled */
-    inline std::string try_demangle(Constants::CCSC mangled) noexcept {
+    inline std::string try_demangle(CCSC mangled) noexcept {
         try {
             return demangle(mangled);
         }

@@ -13,8 +13,8 @@ namespace Create {
     /** Create an Expression with an Extract op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr extract(const Constants::UInt high, const Constants::UInt low,
-                            const EBasePtr &from, Annotation::SPAV &&sp = nullptr) {
+    inline EBasePtr extract(const UInt high, const UInt low, const EBasePtr &from,
+                            Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace Err = Error::Expression;
         using namespace Simplification;

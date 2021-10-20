@@ -7,8 +7,7 @@
 
 
 /** Test the literal create function with type T */
-template <typename T, typename Data>
-void literal_t(const Data data, const Constants::UInt size = 0) {
+template <typename T, typename Data> void literal_t(const Data data, const UInt size = 0) {
 
     // Test
     const auto lit { Create::literal(Data { data }) };

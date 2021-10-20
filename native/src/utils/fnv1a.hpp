@@ -28,7 +28,7 @@ namespace Utils {
         using u64T = uint64_t;
 
         /** const Input type */
-        using CInput = Constants::CTSC<TypeToHash>;
+        using CInput = CTSC<TypeToHash>;
 
       private:
         /** FNV-1a hash body */
@@ -66,10 +66,10 @@ namespace Utils {
         }
 
         /** Any HashSize version
-         *  Default: Constants::UInt
+         *  Default: UInt
          */
-        template <typename HashSize = Constants::UInt>
-        static constexpr Constants::UInt hash(CInput s, const Constants::UInt len) noexcept {
+        template <typename HashSize = UInt>
+        static constexpr UInt hash(CInput s, const UInt len) noexcept {
             static_assert(sizeof(HashSize) >= sizeof(TypeToHash),
                           "FNV1a::hash given a size too small for the given TypeToHash");
             if constexpr (is_same_ignore_cv<HashSize, u64T>) {

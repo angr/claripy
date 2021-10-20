@@ -8,7 +8,7 @@
 
 
 /** Create a BV using either name or val depending on Literal */
-template <bool Literal> Expression::BasePtr create_bv(std::string name, const Constants::Int val) {
+template <bool Literal> Expression::BasePtr create_bv(std::string name, const Int val) {
     if constexpr (Literal) {
         return UnitTest::TestLib::Factories::t_literal<Expression::BV>(val);
     }

@@ -36,7 +36,7 @@ namespace Op {
          *  If Data contains a type that doesn't correspond to an Expression that is a subclass
          *  of BitLength then an Usage exception is thrown
          */
-        constexpr Constants::UInt bit_length() const {
+        constexpr UInt bit_length() const {
             if (std::holds_alternative<BigInt>(value)) {
                 return std::get<BigInt>(value).bit_length;
             }
@@ -144,7 +144,7 @@ namespace Op {
          *  This function requires that if value is a shared_ptr is be non-null
          *  This function may not be called on a BigInt
          */
-        constexpr Constants::UInt byte_length() const {
+        constexpr UInt byte_length() const {
 
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                    \

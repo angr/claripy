@@ -29,8 +29,7 @@ namespace Utils::Log::Backend {
         DEFINE_IMPLICITS_ALL_NOEXCEPT(Base);
 
         /** Log the given message, level, to the correct log given by log_id */
-        virtual void log(Constants::CCSC id, const Level::Level &lvl,
-                         const std::string &msg) const = 0;
+        virtual void log(CCSC id, const Level::Level &lvl, const std::string &msg) const = 0;
     };
 
     /** Default virtual destructor */

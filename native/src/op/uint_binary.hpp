@@ -29,7 +29,7 @@
       private:                                                                                    \
         /** Private constructor */                                                                \
         explicit inline CLASS(const ::Hash::Hash &h, const ::Expression::BasePtr &e,              \
-                              const Constants::UInt i)                                            \
+                              const UInt i)                                                       \
             : UIntBinary { h, static_cuid, e, i } {}                                              \
     };
 
@@ -44,7 +44,7 @@ namespace Op {
         /** Expression operand */
         const Expression::BasePtr expr;
         /* Integer operand */
-        const Constants::UInt integer;
+        const UInt integer;
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
@@ -61,7 +61,7 @@ namespace Op {
       protected:
         /** Protected constructor */
         explicit inline UIntBinary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                   const Expression::BasePtr &e, const Constants::UInt i)
+                                   const Expression::BasePtr &e, const UInt i)
             : Base { h, cuid_ }, expr { e }, integer { i } {}
     };
 

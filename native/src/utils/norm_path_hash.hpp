@@ -23,7 +23,7 @@ namespace Utils {
      *  Will throw in noexcept context if s goes outside of '/' or './' (depending on the prefix)
      *  For example /../foo is not ok; likewise ./../foo is not ok. But /bar/../foo is fine
      */
-    template <Constants::UInt Len> constexpr uint64_t norm_path_hash(const char *s) noexcept {
+    template <UInt Len> constexpr uint64_t norm_path_hash(const char *s) noexcept {
 
         // Trivial case
         auto len { Len };
@@ -48,12 +48,12 @@ namespace Utils {
 
         // Store path segments
         std::array<const char *, Len> segments {};
-        std::array<Constants::UInt, Len> segment_lengths {};
-        Constants::UInt n_seg { 0 };
+        std::array<UInt, Len> segment_lengths {};
+        UInt n_seg { 0 };
 
         // Current segment info
-        Constants::UInt offset { 0 };
-        Constants::UInt current_seg_length { 0 };
+        UInt offset { 0 };
+        UInt current_seg_length { 0 };
 
         // Repeat for all of s
         while (len) {
@@ -100,13 +100,13 @@ namespace Utils {
 
         // Construct norm path
         std::array<char, Len + 3> norm {};
-        Constants::UInt n_len { 0 };
+        UInt n_len { 0 };
         if (!absolute) {
             norm[n_len++] = '.';
         }
         norm[n_len++] = '/';
-        for (Constants::UInt i { 0 }; i < n_seg; ++i) {
-            for (Constants::UInt k { 0 }; k < segment_lengths[i]; ++k) {
+        for (UInt i { 0 }; i < n_seg; ++i) {
+            for (UInt k { 0 }; k < segment_lengths[i]; ++k) {
                 norm[n_len++] = segments[i][k];
             }
             norm[n_len++] = '/';

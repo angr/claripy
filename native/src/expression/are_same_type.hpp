@@ -25,7 +25,7 @@ namespace Expression {
         }
         // Size check, skip if unsized
         if constexpr (ConsiderSize) {
-            if (dynamic_cast<Constants::CTSC<Expression::Bits>>(x.get()) != nullptr) {
+            if (dynamic_cast<CTSC<Expression::Bits>>(x.get()) != nullptr) {
                 if (Expression::get_bit_length(x) != Expression::get_bit_length(y)) {
                     Utils::Log::warning(WHOAMI_WITH_SOURCE "failed due to size difference: ",
                                         Expression::get_bit_length(x), " vs ",

@@ -23,9 +23,9 @@ namespace Create::Private {
         namespace Err = Error::Expression;
 
         // Static checks
-        static_assert(Utils::qualified_is_in<IntT, Constants::UInt, Constants::Int>,
-                      "Create::Private::uint_binary requires IntT be either Constants::UInt or "
-                      "Constants::Int");
+        static_assert(Utils::qualified_is_in<IntT, UInt, Int>,
+                      "Create::Private::uint_binary requires IntT be either UInt or "
+                      "Int");
         static_assert(Utils::is_ancestor<Ex::Base, Out>,
                       "Create::Private::uint_binary requires Out be an Expression");
         static_assert(Utils::is_ancestor<Ex::Base, In>,
@@ -52,7 +52,7 @@ namespace Create::Private {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
-            Constants::UInt new_bit_length { integer };
+            UInt new_bit_length { integer };
             if constexpr (Mode == SizeMode::Add) {
                 new_bit_length += Ex::get_bit_length(expr);
             }

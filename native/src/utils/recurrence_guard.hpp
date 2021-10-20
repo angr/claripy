@@ -38,7 +38,7 @@ namespace Utils {
          *  Takes in optional recurrence limit argument
          *  Default argument value: 1000
          */
-        explicit inline RecurrenceGuard(Constants::CCSC f, const Constants::UInt lim = 1000)
+        explicit inline RecurrenceGuard(CCSC f, const UInt lim = 1000)
             : func(f)
 #ifdef DEBUG
               ,
@@ -86,7 +86,7 @@ namespace Utils {
 #endif
 
         /** Static map to keep track of recurrences */
-        static thread_local std::map<std::string, Constants::UInt> count;
+        static thread_local std::map<std::string, UInt> count;
 
         // Disable other creation methods
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(RecurrenceGuard, delete)

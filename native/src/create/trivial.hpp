@@ -65,21 +65,21 @@ namespace Create {
     /** Create an Expression with an SignExt op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr sign_ext(const EBasePtr &expr, const Constants::UInt integer,
+    inline EBasePtr sign_ext(const EBasePtr &expr, const UInt integer,
                              Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::uint_binary<Constants::UInt, Ex::BV, Op::SignExt, Private::SizeMode::Add,
-                                    Ex::BV>(expr, integer, std::move(sp));
+        return Private::uint_binary<UInt, Ex::BV, Op::SignExt, Private::SizeMode::Add, Ex::BV>(
+            expr, integer, std::move(sp));
     }
 
     /** Create an Expression with an ZeroExt op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr zero_ext(const EBasePtr &expr, const Constants::UInt integer,
+    inline EBasePtr zero_ext(const EBasePtr &expr, const UInt integer,
                              Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
-        return Private::uint_binary<Constants::UInt, Ex::BV, Op::ZeroExt, Private::SizeMode::Add,
-                                    Ex::BV>(expr, integer, std::move(sp));
+        return Private::uint_binary<UInt, Ex::BV, Op::ZeroExt, Private::SizeMode::Add, Ex::BV>(
+            expr, integer, std::move(sp));
     }
 
     /********************************************************************/

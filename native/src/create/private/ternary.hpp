@@ -49,7 +49,7 @@ namespace Create::Private {
             static_assert(Utils::TD::boolean<Mode != SizeMode::NA, Out>,
                           "SizeMode::NA not allowed with sized output type");
             // Construct size
-            Constants::UInt new_bit_length { Ex::get_bit_length(first) };
+            UInt new_bit_length { Ex::get_bit_length(first) };
             if constexpr (Mode == SizeMode::Add) {
                 Utils::affirm<Err::Type>(CUID::is_t<In>(second),
                                          WHOAMI_WITH_SOURCE "second operand of incorrect type");

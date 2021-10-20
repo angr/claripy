@@ -31,7 +31,7 @@
 namespace CUID {
 
     /** The CUID type */
-    using CUID = Constants::UInt;
+    using CUID = UInt;
 
     /** A type that has a class unique id
      *  This has the benefits of a virtual function as inherited classes

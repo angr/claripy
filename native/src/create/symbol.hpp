@@ -20,8 +20,7 @@ namespace Create {
      *  This override is for sized Expression types
      */
     template <typename T>
-    EBasePtr symbol(std::string &&name, const Constants::UInt bit_length,
-                    Annotation::SPAV &&sp = nullptr) {
+    EBasePtr symbol(std::string &&name, const UInt bit_length, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
 
         // Type checks

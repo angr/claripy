@@ -33,24 +33,24 @@ namespace Create::String {
      *  Note: Currently Ints are taken in as BVs
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr to_int(const EBasePtr &expr, const Constants::UInt integer,
+    inline EBasePtr to_int(const EBasePtr &expr, const UInt integer,
                            Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
-        return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
-                               CP::SizeMode::Second, Ex::String>(expr, integer, std::move(sp));
+        return CP::uint_binary<UInt, Ex::BV, Ex::String, Op::String::ToInt, CP::SizeMode::Second,
+                               Ex::String>(expr, integer, std::move(sp));
     }
 
     /** Create an Expression with an String::Len op
      *  Note: Currently Ints are output as BVs
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr len(const EBasePtr &expr, const Constants::UInt integer,
+    inline EBasePtr len(const EBasePtr &expr, const UInt integer,
                         Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
-        return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
-                               CP::SizeMode::Second, Ex::String>(expr, integer, std::move(sp));
+        return CP::uint_binary<UInt, Ex::BV, Ex::String, Op::String::Len, CP::SizeMode::Second,
+                               Ex::String>(expr, integer, std::move(sp));
     }
 
     /********************************************************************/

@@ -13,14 +13,14 @@
 struct BitLength {
   public:
     /** The size */
-    const Constants::UInt bit_length;
+    const UInt bit_length;
 
     /** The number of bits in a byte */
-    static inline const constexpr Constants::UInt char_bit { C_CHAR_BIT };
+    static inline const constexpr UInt char_bit { C_CHAR_BIT };
 
   protected:
     /** Protected constructor */
-    explicit inline BitLength(const Constants::UInt bl) noexcept : bit_length { bl } {}
+    explicit inline BitLength(const UInt bl) noexcept : bit_length { bl } {}
 
     /** Virtual destructor */
     virtual inline ~BitLength() noexcept = 0;

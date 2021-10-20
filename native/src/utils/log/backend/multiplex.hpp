@@ -25,7 +25,7 @@ namespace Utils::Log::Backend {
     struct Multiplex final : public Base {
 
         /** Log the given message, level, to the correct log given by log_id with each backend */
-        inline void log(Constants::CCSC id, const Level::Level &lvl,
+        inline void log(CCSC id, const Level::Level &lvl,
                         const std::string &msg) const override final {
             for (const auto &i : backends) {
                 UTILS_AFFIRM_NOT_NULL_DEBUG(i);

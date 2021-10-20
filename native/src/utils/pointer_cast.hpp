@@ -47,7 +47,7 @@ namespace Utils::Cast {
          */
         template <typename Out, typename In> constexpr bool test(const std::shared_ptr<In> &in) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
-            using Ptr = Constants::CTSC<TransferConst<Out, In>>;
+            using Ptr = CTSC<TransferConst<Out, In>>;
             return dynamic_cast<Ptr>(in.get()) != nullptr;
         }
 

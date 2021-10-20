@@ -11,7 +11,7 @@
 namespace Create {
 
     /** This function exists to prevent accidental use by explicit rejection */
-    inline EBasePtr literal(Constants::CCSC, Annotation::SPAV && = nullptr) {
+    inline EBasePtr literal(CCSC, Annotation::SPAV && = nullptr) {
         throw Utils::Error::Unexpected::Usage(WHOAMI_WITH_SOURCE
                                               "Do not pass a char * to literal(); C++ casts it to "
                                               "bool; did you mean to use std::string?");

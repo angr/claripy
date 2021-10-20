@@ -16,9 +16,9 @@ namespace Op {
 
       public:
         /** High index */
-        const Constants::UInt high;
+        const UInt high;
         /** Low index */
-        const Constants::UInt low;
+        const UInt low;
         /** What we extract from */
         const Expression::BasePtr from;
 
@@ -37,8 +37,8 @@ namespace Op {
 
       private:
         /** Protected constructor */
-        explicit inline Extract(const Hash::Hash &h, const Constants::UInt hi,
-                                const Constants::UInt lo, const Expression::BasePtr &f)
+        explicit inline Extract(const Hash::Hash &h, const UInt hi, const UInt lo,
+                                const Expression::BasePtr &f)
             : Base { h, static_cuid }, high { hi }, low { lo }, from { f } {}
     };
 

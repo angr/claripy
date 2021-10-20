@@ -12,7 +12,7 @@ void big_int() {
 
     // For Brevity
     using M = boost::multiprecision::mpz_int;
-    using L = Constants::UInt;
+    using L = UInt;
 
     // Different L's
     const L l1 { 0x100000 };

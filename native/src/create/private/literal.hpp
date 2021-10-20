@@ -24,7 +24,7 @@ namespace Create::Private {
 
         // Construct expression
         if constexpr (Utils::is_ancestor<Ex::Bits, T>) {
-            using To = Constants::CTSC<Op::Literal>;
+            using To = CTSC<Op::Literal>;
             const auto bl { Utils::checked_static_cast<To>(op.get())->bit_length() };
             return Ex::factory<T>(false, std::move(op), bl, std::move(sp));
         }

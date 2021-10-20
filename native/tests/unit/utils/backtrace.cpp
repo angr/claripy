@@ -56,9 +56,7 @@ void backtrace() {
     Utils::Log::debug(backtrace);
 
 #ifdef DEBUG
-    const auto contains = [&backtrace](Constants::CCSC x) {
-        return backtrace.find(x) != std::string::npos;
-    };
+    const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
     // Ensure the backtrace is valid
     UNITTEST_ASSERT(contains("generate_bt() + "));
     // Note: we do not check the wrappers because of static / anon namespaces

@@ -13,7 +13,7 @@ using namespace UnitTest::TestLib;
 
 
 /** Construct a t_literal<T> and up-cast it */
-template <typename T> Ex::BasePtr construct(const Constants::Int i = 0) {
+template <typename T> Ex::BasePtr construct(const Int i = 0) {
     auto ret { Factories::t_literal<T>(i) };
     return Utils::Cast::Static::up<Ex::Base>(ret);
 }

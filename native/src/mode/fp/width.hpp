@@ -22,9 +22,9 @@ namespace Mode::FP {
         /** The width of the mantissa, excluding the implicit 1 bit */
         constexpr uint32_t mantissa_raw() const noexcept { return mantissa - 1; }
         /** The full width of the fp */
-        constexpr Constants::UInt width() const noexcept { return 1 + no_sign_width(); }
+        constexpr UInt width() const noexcept { return 1 + no_sign_width(); }
         /** The full width of the fp */
-        constexpr Constants::UInt no_sign_width() const noexcept { return exp + mantissa - 1; }
+        constexpr UInt no_sign_width() const noexcept { return exp + mantissa - 1; }
     };
 
     /** A single wide fp width */

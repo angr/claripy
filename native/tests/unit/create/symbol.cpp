@@ -16,7 +16,7 @@ template <typename T> void symbol_t() {
     // Create name
     std::string name { std::to_string(++n_runs) };
     const std::string name_copy { name };
-    const Constants::UInt size { 0x10 };
+    const UInt size { 0x10 };
 
     // Test
     Expression::BasePtr sym;

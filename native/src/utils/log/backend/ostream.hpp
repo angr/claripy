@@ -54,8 +54,7 @@ namespace Utils::Log::Backend {
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(OStream, delete)
 
         /** Log the message */
-        inline void log(Constants::CCSC, const Level::Level &,
-                        const std::string &msg) const override final {
+        inline void log(CCSC, const Level::Level &, const std::string &msg) const override final {
             std::lock_guard<decltype(m)> lock(m);
             *stream << msg << "\n";
             if (flush) {

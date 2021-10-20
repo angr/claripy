@@ -22,7 +22,7 @@ namespace Annotation {
         /** Constructor
          *  CUID must be passed if this is called by a subclass
          */
-        explicit inline Base(const Hash::Hash &h, const Constants::UInt c = static_cuid) noexcept
+        explicit inline Base(const Hash::Hash &h, const UInt c = static_cuid) noexcept
             : FactoryMade { h, c } {}
 
         /** Virtual destructor */
@@ -42,7 +42,7 @@ namespace Annotation {
         virtual bool relocatable() const { return false; }
 
         /** The default hash of an Annotation::Base */
-        static const constexpr Constants::UInt default_hash { UTILS_FILE_LINE_HASH };
+        static const constexpr UInt default_hash { UTILS_FILE_LINE_HASH };
     };
 
     /** An alias for Factory::Ptr<Annotation::Base> */

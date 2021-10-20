@@ -111,8 +111,8 @@ namespace Hash {
         return UTILS_FILE_LINE_HASH ^ (b ? 1ULL : 0ULL);
     }
 
-    /** A specialization for T = Constants::CCSC */
-    template <> constexpr Hash singular(Constants::CCSC &s) noexcept {
+    /** A specialization for T = CCSC */
+    template <> constexpr Hash singular(CCSC &s) noexcept {
         return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Utils::strlen(s));
     }
 
@@ -201,8 +201,8 @@ namespace Hash {
 
     /** A specialization for T = std::vector<Internal> */
     template <typename Internal> inline Hash singular(const std::vector<Internal> &v) noexcept {
-        Constants::UInt hashes[v.size()]; // NOLINT
-        Constants::UInt i { -1_ui };
+        UInt hashes[v.size()]; // NOLINT
+        UInt i { -1_ui };
         for (const auto &p : v) {
             hashes[++i] = singular(p);
         }
@@ -212,7 +212,7 @@ namespace Hash {
                                                          "Incorrect value of i within Hash::hash");
 #endif
         // Return hash
-        return fnv1a<Constants::UInt>(hashes, v.size());
+        return fnv1a<UInt>(hashes, v.size());
     }
 
 } // namespace Hash

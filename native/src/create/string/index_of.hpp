@@ -14,7 +14,7 @@ namespace Create::String {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr index_of(const EBasePtr &str, const EBasePtr &pattern,
-                             const EBasePtr &start_index, const Constants::UInt bit_length,
+                             const EBasePtr &start_index, const UInt bit_length,
                              Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         Utils::affirm<Error::Expression::Usage>(

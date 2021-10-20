@@ -65,7 +65,7 @@ void eval() {
     const std::vector<Ex::RawPtr> ec { n3.get() };
     const std::set<uint64_t> xs { 1, 4, 5 };
     // Test function
-    const auto test_eval { [&](const Constants::UInt n) {
+    const auto test_eval { [&](const UInt n) {
         const auto e_results { z3.eval(x.get(), solver, n, ec) }; // only 3 should work
         UNITTEST_ASSERT(e_results.size() == xs.size());
         return to_set(e_results) == xs;
@@ -91,7 +91,7 @@ void eval() {
         return ret;
     }() };
     // Test function
-    const auto test_batch { [&](const Constants::UInt n) {
+    const auto test_batch { [&](const UInt n) {
         const auto b_results { z3.batch_eval(inp, solver, n, ec) };
         UNITTEST_ASSERT(b_results.size() == dot.size());
         return to_set(b_results) == dot;

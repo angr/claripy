@@ -15,7 +15,7 @@ namespace Factory::Private {
      */
     template <typename T, typename = int> struct HasStaticCUID final : std::false_type {};
 
-    /** Used to determine if T has a static Constants::UInt called static_cuid
+    /** Used to determine if T has a static UInt called static_cuid
      *  True case
      *  The comma operator returns the second item, so "(A, B)" returns B
      *  If static_cuid does not exist, T::static_cuid fails is not resolvable so this

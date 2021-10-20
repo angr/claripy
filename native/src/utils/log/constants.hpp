@@ -12,7 +12,7 @@
 namespace Utils::Log {
 
     /** The log id type */
-    using LogID = Constants::CCSC;
+    using LogID = CCSC;
 
 } // namespace Utils::Log
 

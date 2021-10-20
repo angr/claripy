@@ -32,7 +32,7 @@ struct BigInt {
     /** The value */
     Value value;
     /** The bit length */
-    Constants::UInt bit_length;
+    UInt bit_length;
 };
 
 /** Ostream overload for BigInt */
