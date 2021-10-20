@@ -6,8 +6,8 @@
 #ifndef R_UTIL_HEAPCACHE_HPP_
 #define R_UTIL_HEAPCACHE_HPP_
 
-#include "error/unexpected.hpp"
 #include "log.hpp"
+#include "safe_alloc.hpp"
 
 #include "../constants.hpp"
 #include "../macros.hpp"
@@ -62,20 +62,8 @@ namespace Util {
         /** Disable implicits */
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(HeapCache, delete);
 
-        /** Called if alloc fails */
-        [[noreturn, gnu::cold]] void alloc_failed() noexcept {
-            Util::Log::critical("Allocation failed.");
-            std::terminate(); // Crash the program
-        }
-
         /** The allocation method */
-        inline T *alloc() noexcept {
-            void *const ret { std::malloc(sizeof(T)) }; // NOLINT
-            if (ret != nullptr) {
-                return static_cast<T *const>(ret);
-            }
-            alloc_failed();
-        }
+        inline T *alloc() noexcept { return static_cast<T *const>(Safe::malloc<T>(1)); }
 
         /** Expand data to a size of at least dsize
          *  This will *not* shrink the data
