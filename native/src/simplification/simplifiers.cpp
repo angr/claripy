@@ -79,7 +79,7 @@ Expr::BasePtr Simplifier::Shift::lshr(const Expr::BasePtr &original) {
 Expr::BasePtr Simplifier::eq(const Expr::BasePtr &original) {
 #ifdef DEBUG
     UTILS_AFFIRM_NOT_NULL_DEBUG(original);
-    Util::Cast::Dynamic::test_throw_on_fail<Op::Eq, Util::Error::Type>(
+    Util::Cast::Dynamic::test_throw_on_fail<Op::Eq, Util::Err::Type>(
         original->op, "Simplifer::eq's Expr's op must be an Op::Eq");
 #endif
     Util::Log::verbose("Eq simplifier invoked");

@@ -55,13 +55,13 @@ namespace Op::String {
         explicit inline SubString(const Hash::Hash &h, const Expr::BasePtr &si,
                                   const Expr::BasePtr &c, const Expr::BasePtr &s)
             : Base { h, static_cuid }, start_index { si }, count { c }, full_string { s } {
-            using Err = Error::Expr::Type;
-            Util::affirm<Err>(CUID::is_t<Expr::BV>(start_index),
-                              WHOAMI_WITH_SOURCE "start_index expr must be a BV");
-            Util::affirm<Err>(CUID::is_t<Expr::BV>(count),
-                              WHOAMI_WITH_SOURCE "count expr must be a BV");
-            Util::affirm<Err>(CUID::is_t<Expr::String>(full_string),
-                              WHOAMI_WITH_SOURCE "full_string expr must be a String");
+            using E = Error::Expr::Type;
+            Util::affirm<E>(CUID::is_t<Expr::BV>(start_index),
+                            WHOAMI_WITH_SOURCE "start_index expr must be a BV");
+            Util::affirm<E>(CUID::is_t<Expr::BV>(count),
+                            WHOAMI_WITH_SOURCE "count expr must be a BV");
+            Util::affirm<E>(CUID::is_t<Expr::String>(full_string),
+                            WHOAMI_WITH_SOURCE "full_string expr must be a String");
         }
     };
 

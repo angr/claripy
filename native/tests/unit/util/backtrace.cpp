@@ -9,7 +9,7 @@
 
 /** A non-static function which generates a backtrace */
 void generate_bt() {
-    using Err = Util::Error::Claricpp;
+    using Err = Util::Err::Claricpp;
     try {
         throw Err("Test");
     }

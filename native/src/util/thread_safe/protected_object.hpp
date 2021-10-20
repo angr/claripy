@@ -10,7 +10,7 @@
 #include "move_lock.hpp"
 
 #include "../affirm.hpp"
-#include "../error.hpp"
+#include "../err.hpp"
 #include "../is_same.hpp"
 #include "../macros.hpp"
 
@@ -111,9 +111,8 @@ namespace Util::ThreadSafe {
 
       private:
         /** Throws an exception if ptr is nullptr */
-        template <typename Err = Util::Error::Usage> void throw_if_null() const {
-            Util::affirm<Err>(pointer,
-                              WHOAMI_WITH_SOURCE "attempted to dereference a null pointer");
+        template <typename E = Util::Err::Usage> void throw_if_null() const {
+            Util::affirm<E>(pointer, WHOAMI_WITH_SOURCE "attempted to dereference a null pointer");
         }
 
         /** Return a T pointer */

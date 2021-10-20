@@ -9,7 +9,7 @@
 #include "base.hpp"
 
 #include "../../affirm.hpp"
-#include "../../error.hpp"
+#include "../../err.hpp"
 
 #include <exception>
 #include <memory>
@@ -34,8 +34,8 @@ namespace Util::Log::Backend {
         explicit inline OStream(std::shared_ptr<std::ostream> stream_, const bool flush_,
                                 const bool flush_on_exit_ = true) noexcept
             : stream(std::move(stream_)), flush(flush_), flush_on_exit(flush_on_exit_) {
-            Util::affirm<Util::Error::Usage>(stream != nullptr, WHOAMI_WITH_SOURCE,
-                                             "stream may not be a null shared_ptr");
+            Util::affirm<Util::Err::Usage>(stream != nullptr, WHOAMI_WITH_SOURCE,
+                                           "stream may not be a null shared_ptr");
         }
 
         /** A virtual destructor */

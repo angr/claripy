@@ -4,13 +4,13 @@
  * @brief This file contains the possible exceptions that indicate an internal claricpp failure
  * These exceptions are not expected to be raised if claricpp is operating as intended
  */
-#ifndef R_UTIL_ERROR_UNEXPECTED_HPP_
-#define R_UTIL_ERROR_UNEXPECTED_HPP_
+#ifndef R_UTIL_ERR_UNEXPECTED_HPP_
+#define R_UTIL_ERR_UNEXPECTED_HPP_
 
 #include "claricpp.hpp"
 
 
-namespace Util::Error {
+namespace Util::Err {
 
     /** Base unexpected exception
      *  All unexpected exceptions must derive from this
@@ -59,6 +59,6 @@ namespace Util::Error {
     /** Raised when a dynamic type error occurs */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(Type, Claricpp);
 
-} // namespace Util::Error
+} // namespace Util::Err
 
 #endif

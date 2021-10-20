@@ -96,7 +96,7 @@ namespace Op {
                 VCASE_POST;
                     // Bad variant
                 default:
-                    throw Util::Error::Unknown(WHOAMI_WITH_SOURCE, "unknown type in variant");
+                    throw Util::Err::Unknown(WHOAMI_WITH_SOURCE, "unknown type in variant");
             }
             out << " }";
 
@@ -173,7 +173,7 @@ namespace Op {
 #ifdef DEBUG
                 UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
-                Util::affirm<Util::Error::Size>(
+                Util::affirm<Util::Err::Size>(
                     bl % C_CHAR_BIT == 0, WHOAMI_WITH_SOURCE "VS of bit length ", bl,
                     " which is not divisible by ", C_CHAR_BIT, " aka C_CHAR_BIT");
 #endif
@@ -185,12 +185,11 @@ namespace Op {
                 VCASE(8, uint64_t);
                 // Bool
                 default: {
-                    using Err = Util::Error::Usage;
-                    throw Err(WHOAMI_WITH_SOURCE,
-                              "invoked when internal type does not correspond"
-                              " to an Expr which subclasses BitLength."
-                              " Current variant index is: ",
-                              value.index());
+                    throw Util::Err::Usage(WHOAMI_WITH_SOURCE,
+                                           "invoked when internal type does not correspond"
+                                           " to an Expr which subclasses BitLength."
+                                           " Current variant index is: ",
+                                           value.index());
                 };
             }
 

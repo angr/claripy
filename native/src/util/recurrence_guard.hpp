@@ -7,7 +7,7 @@
 #define R_UTIL_RECURRENCEGUARD_HPP_
 
 #include "affirm.hpp"
-#include "error.hpp"
+#include "err.hpp"
 
 #include "../constants.hpp"
 #include "../macros.hpp"
@@ -46,8 +46,8 @@ namespace Util {
 #endif
         {
             const auto num { ++count[func] };
-            affirm<Error::RecurrenceLimit>(num <= lim, WHOAMI_WITH_SOURCE, func,
-                                           " has reached its recurrence limit of: ", lim);
+            affirm<Err::RecurrenceLimit>(num <= lim, WHOAMI_WITH_SOURCE, func,
+                                         " has reached its recurrence limit of: ", lim);
         }
 
         /** Destructor
@@ -60,7 +60,7 @@ namespace Util {
             // Check for stack unwinding
             if (n_except == std::uncaught_exceptions()) {
                 // Error checking
-                affirm<Error::Unknown>(
+                affirm<Err::Unknown>(
                     num != 0, WHOAMI_WITH_SOURCE
                     "RecurrenceGuard is trying to decrement a count of 0."
                     "\nThis probably happened because something went wrong with control flow."

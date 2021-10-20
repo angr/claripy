@@ -5,8 +5,8 @@
  * These exceptions have python analogs and must be caught and sent to python
  * via a different method.
  */
-#ifndef R_UTIL_ERROR_CLARICPP_HPP_
-#define R_UTIL_ERROR_CLARICPP_HPP_
+#ifndef R_UTIL_ERR_CLARICPP_HPP_
+#define R_UTIL_ERR_CLARICPP_HPP_
 
 #include "../../macros.hpp"
 #include "../to_str.hpp"
@@ -15,7 +15,7 @@
 #include <exception>
 #include <string>
 
-namespace Util::Error {
+namespace Util::Err {
 
 #ifdef DEBUG
     namespace Private {
@@ -77,6 +77,6 @@ namespace Util::Error {
         template <typename T, typename S> friend T factory(const S msg);
     };
 
-} // namespace Util::Error
+} // namespace Util::Err
 
 #endif

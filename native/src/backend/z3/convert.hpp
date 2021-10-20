@@ -54,8 +54,8 @@ namespace Backend::Z3 {
             }
 
             // Error checking
-            using Err = Error::Expr::Operation;
-            Util::affirm<Err>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
+            using E = Error::Expr::Operation;
+            Util::affirm<E>(size % C_CHAR_BIT == 0, "Can't reverse non-byte sized bitvectors");
 
             // Reverse byte by byte
             auto ret { extract(C_CHAR_BIT - 1u, 0u, e) };
@@ -202,7 +202,7 @@ namespace Backend::Z3 {
         template <typename FunctorType>
         static z3::expr ptr_accumulate(FlatArr arr, const UInt size) {
 #ifdef DEBUG
-            Util::affirm<Util::Error::Size>(
+            Util::affirm<Util::Err::Size>(
                 size >= 2, "size < 2; this probably resulted from an invalid claricpp expr.");
             UTILS_AFFIRM_NOT_NULL_DEBUG(arr[0]);
             UTILS_AFFIRM_NOT_NULL_DEBUG(arr[1]);
@@ -309,14 +309,14 @@ namespace Backend::Z3 {
                     }
                         // Error handling
                     default:
-                        throw Util::Error::NotSupported(
+                        throw Util::Err::NotSupported(
                             WHOAMI_WITH_SOURCE
                             "Unknown variant type in literal op given to z3 backend");
                 }
             }
             // Re-emit these exceptions with additional info and wrapped as a Claricpp exception
             catch (const std::bad_variant_access &ex) {
-                throw Util::Error::BadVariantAccess(WHOAMI_WITH_SOURCE, ex.what());
+                throw Util::Err::BadVariantAccess(WHOAMI_WITH_SOURCE, ex.what());
             }
         }
 
@@ -344,7 +344,7 @@ namespace Backend::Z3 {
                 case Expr::BV::static_cuid: {
                     using BVP = CTSC<Expr::BV>;
 #ifdef DEBUG // @todo Double check if I am strill right
-                    Util::affirm<Util::Error::Unknown>(
+                    Util::affirm<Util::Err::Unknown>(
                         Factory::Private::gcache<Expr::Base>().find(expr->hash) != nullptr,
                         WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
 #endif
@@ -366,8 +366,8 @@ namespace Backend::Z3 {
                     throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
                                                       "VSA is not supported by the Z3 backend");
                 default:
-                    throw Util::Error::NotSupported(WHOAMI_WITH_SOURCE
-                                                    "Unknown expr CUID given to z3 backend");
+                    throw Util::Err::NotSupported(WHOAMI_WITH_SOURCE
+                                                  "Unknown expr CUID given to z3 backend");
             }
         }
 
@@ -378,8 +378,8 @@ namespace Backend::Z3 {
             static void assert_are_compatible(const z3::expr &a, const z3::expr &b) {
 #ifdef DEBUG
                 z3::check_context(a, b);
-                Util::affirm<Util::Error::Type>(a.is_fpa() && b.is_fpa(),
-                                                WHOAMI_WITH_SOURCE " called non-FP ops");
+                Util::affirm<Util::Err::Type>(a.is_fpa() && b.is_fpa(),
+                                              WHOAMI_WITH_SOURCE " called non-FP ops");
 #else
                 Util::sink(a, b);
 #endif
@@ -399,9 +399,9 @@ namespace Backend::Z3 {
                     case Mode::FP::Rounding::TowardsZero:
                         return z3::RTZ;
                     default:
-                        throw Util::Error::NotSupported(WHOAMI_WITH_SOURCE
-                                                        "Unable to map Mode::FP::Rounding ",
-                                                        mode, " to z3::rounding_mode");
+                        throw Util::Err::NotSupported(WHOAMI_WITH_SOURCE
+                                                      "Unable to map Mode::FP::Rounding ",
+                                                      mode, " to z3::rounding_mode");
                 };
             }
 

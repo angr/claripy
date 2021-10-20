@@ -7,7 +7,7 @@
 #define R_UTIL_DEMANGLE_HPP_
 
 #include "affirm.hpp"
-#include "error.hpp"
+#include "err.hpp"
 
 #include "../constants.hpp"
 
@@ -23,7 +23,7 @@ namespace Util {
     inline std::string demangle(CCSC mangled) {
         int status { -1 }; // NOLINT Status: Failure
         auto *buf { abi::__cxa_demangle(mangled, nullptr, nullptr, &status) };
-        namespace Err = Util::Error;
+        namespace Err = Util::Err;
         if (status == 0) {
             std::string ret { buf };
             std::free(buf); // NOLINT
@@ -47,7 +47,7 @@ namespace Util {
         try {
             return demangle(mangled);
         }
-        catch (Util::Error::Claricpp &) {
+        catch (Util::Err::Claricpp &) {
             return mangled;
         }
         catch (std::runtime_error &) {

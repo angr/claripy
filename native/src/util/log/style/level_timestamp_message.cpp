@@ -52,9 +52,9 @@ std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, const std::ostrings
             color = ANSIColorCodes::blk;
             break;
         case Lvl::Disabled: // Should not be possible
-            throw Error::Usage("Log backend given disabled level");
+            throw Err::Usage("Log backend given disabled level");
         default: // Should not be possible
-            throw Error::Unknown("Logger was given unknown level");
+            throw Err::Unknown("Logger was given unknown level");
     }
     UTILS_AFFIRM_NOT_NULL_DEBUG(color);
 

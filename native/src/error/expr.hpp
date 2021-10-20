@@ -14,7 +14,7 @@
 namespace Error::Expr {
 
     /** Claripy Expr exception */
-    using Claripy = Util::Error::Python::Claripy;
+    using Claripy = Util::Err::Python::Claripy;
 
     // Intermediate classes
 

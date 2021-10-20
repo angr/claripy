@@ -8,7 +8,7 @@
 
 #include "affirm.hpp"
 #include "demangle.hpp"
-#include "error.hpp"
+#include "err.hpp"
 #include "min.hpp"
 #include "safe_alloc.hpp"
 #include "to_hex.hpp"
@@ -46,7 +46,7 @@ namespace Util {
                           const int16_t max_frames = 0x1000) noexcept {
 #ifdef DEBUG
         // Prevent infinite recursion if something goes wrong
-        const auto old { Util::Error::Claricpp::toggle_backtrace(false) };
+        const auto old { Util::Err::Claricpp::toggle_backtrace(false) };
 #endif
         // Dummy variables
         int _ignore_int;   // NOLINT
@@ -58,7 +58,7 @@ namespace Util {
         void **callstack { nullptr };
         // Try to get a back trace
         try {
-            namespace Err = Util::Error;
+            namespace Err = Util::Err;
             Util::affirm<Err::Usage>(max_frames > 0, "max_frames must be strictly positive");
             // Get a human read-able call stack
             callstack = Util::Safe::malloc<void *>(Util::widen<uint32_t, true>(max_frames));
@@ -106,7 +106,7 @@ namespace Util {
         // Cleanup
         std::free(callstack); // NOLINT
 #ifdef DEBUG
-        Util::Error::Claricpp::toggle_backtrace(old);
+        Util::Err::Claricpp::toggle_backtrace(old);
 #endif
     }
 

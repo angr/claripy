@@ -16,9 +16,8 @@
 
 /** A local macro used for length checking the number of children in a container */
 #define ASSERT_ARG_LEN(X, N)                                                                      \
-    Util::affirm<Util::Error::Size>(                                                              \
-        (X).size() == (N), WHOAMI_WITH_SOURCE "Op ", __func__,                                    \
-        " should have " #N " children, but instead has: ", (X).size());
+    Util::affirm<Util::Err::Size>((X).size() == (N), WHOAMI_WITH_SOURCE "Op ", __func__,          \
+                                  " should have " #N " children, but instead has: ", (X).size());
 
 /** A local macro used for adding a case for a given type
  *  Func must be take in T as its only template argument
@@ -30,8 +29,7 @@
 /** A local macro used for adding a default type case that throws an exception */
 #define DEFAULT_TYPE_CASE(BAD_CUID)                                                               \
     default:                                                                                      \
-        throw Util::Error::Type(WHOAMI_WITH_SOURCE,                                               \
-                                "Unexpected type detected. CUID: ", (BAD_CUID));
+        throw Util::Err::Type(WHOAMI_WITH_SOURCE, "Unexpected type detected. CUID: ", (BAD_CUID));
 
 /** A string explaining why this file refuses to abstract unknown floating point values */
 #define REFUSE_FP_STANDARD                                                                        \
@@ -308,14 +306,14 @@ namespace Backend::Z3 {
 
             /** Abstraction function for Z3_OP_BNUM to a primitive */
             static PrimVar num_primtive(const z3::expr &b_obj, const Z3 &bk) {
-                using Err = Util::Error::Type;
+                using E = Util::Err::Type;
                 const auto bl { b_obj.get_sort().bv_size() };
 
                 // Standard sizes
                 if (bl <= 64) {
                     uint64_t u64;
-                    Util::affirm<Err>(b_obj.is_numeral_u64(u64),
-                                      WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
+                    Util::affirm<E>(b_obj.is_numeral_u64(u64),
+                                    WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
                     switch (bl) {
                         case 8:
                             return Util::narrow<uint8_t>(u64);
@@ -332,8 +330,8 @@ namespace Backend::Z3 {
 
                 // Get the BV as a BigInt
                 std::string str;
-                Util::affirm<Err>(b_obj.is_numeral(str),
-                                  WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
+                Util::affirm<E>(b_obj.is_numeral(str),
+                                WHOAMI_WITH_SOURCE "given z3 object is not a numeral");
                 return (bk.big_int_mode() == Mode::BigInt::Int)
                          ? BigInt { BigInt::Int(std::move(str)), bl }
                          : BigInt { std::move(str), bl };
@@ -356,7 +354,7 @@ namespace Backend::Z3 {
                         UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(x, 4, BigInt);
                         return Create::literal(std::move(std::get<BigInt>(x)));
                     default:
-                        throw Util::Error::Unknown(WHOAMI_WITH_SOURCE, "Bad variant");
+                        throw Util::Err::Unknown(WHOAMI_WITH_SOURCE, "Bad variant");
                 }
 #undef G_CASE
                 static_assert(std::variant_size_v<PrimVar> == 5,
@@ -458,7 +456,7 @@ namespace Backend::Z3 {
              */
             static Expr::BasePtr to_fp(const ArgsVec &args) {
                 (void) args;
-                throw Util::Error::NotSupported("This is not yet supported");
+                throw Util::Err::NotSupported("This is not yet supported");
             }
 
             /** Abstraction function for Z3_OP_FPA_NUM to a primtive type
@@ -482,7 +480,7 @@ namespace Backend::Z3 {
                 success &= Z3_fpa_get_numeral_exponent_int64(ctx, b_obj, &exp, true);
 
                 // Error check
-                Util::affirm<Util::Error::Unknown>(
+                Util::affirm<Util::Err::Unknown>(
                     success,
                     WHOAMI_WITH_SOURCE
                     "something went wrong with fp component extraction.\nGiven fp: ",
@@ -507,7 +505,7 @@ namespace Backend::Z3 {
                     // If nothing went wrong, this reinterpret_cast should be safe
                     return *reinterpret_cast<const float *>(&to_val);
                 }
-                throw Util::Error::NotSupported(
+                throw Util::Err::NotSupported(
                     WHOAMI_WITH_SOURCE
                     "Cannot create a value for this unknown floating point standard."
                     "\nZ3_sort: ",

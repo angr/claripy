@@ -7,15 +7,15 @@
 #define R_UTIL_AFFIRMNOTNULLDEBUG_HPP_
 
 #include "affirm.hpp"
-#include "error.hpp"
+#include "err.hpp"
 
 
 #ifdef DEBUG
 
     /** A macro that null checks (X) iff DEBUG is defined */
     #define UTILS_AFFIRM_NOT_NULL_DEBUG(X)                                                        \
-        ::Util::affirm<::Util::Error::Null>((X) != nullptr,                                       \
-                                            WHOAMI_WITH_SOURCE "Nullptr detected.");
+        ::Util::affirm<::Util::Err::Null>((X) != nullptr, WHOAMI_WITH_SOURCE "Nullptr "           \
+                                                                             "detected.");
 
 #else
 

@@ -150,7 +150,7 @@ ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left
         CASE(VS);
         // Should never happen
         default:
-            throw Util::Error::Unknown(WHOAMI_WITH_SOURCE, "Unsupported CUID: ", raw_left);
+            throw Util::Err::Unknown(WHOAMI_WITH_SOURCE, "Unsupported CUID: ", raw_left);
 // Cleanup
 #undef CASE
     }

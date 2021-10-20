@@ -74,20 +74,20 @@ namespace Op {
                                 const Expr::BasePtr &one, const Expr::BasePtr &two,
                                 const Expr::BasePtr &three)
             : Base { h, cuid_ }, first { one }, second { two }, third { three } {
-            using Err = Error::Expr::Type;
+            using E = Error::Expr::Type;
 
             // Type / size checking
             if constexpr (ConsiderSize) {
-                Util::affirm<Err>(Expr::are_same_type<true>(first, second),
-                                  WHOAMI_WITH_SOURCE "first and second types or sizes differ");
-                Util::affirm<Err>(Expr::are_same_type<true>(first, third),
-                                  WHOAMI_WITH_SOURCE "first and third types or sizes differ");
+                Util::affirm<E>(Expr::are_same_type<true>(first, second),
+                                WHOAMI_WITH_SOURCE "first and second types or sizes differ");
+                Util::affirm<E>(Expr::are_same_type<true>(first, third),
+                                WHOAMI_WITH_SOURCE "first and third types or sizes differ");
             }
             else {
-                Util::affirm<Err>(Expr::are_same_type<false>(first, second),
-                                  WHOAMI_WITH_SOURCE "first and second types differ");
-                Util::affirm<Err>(Expr::are_same_type<false>(first, third),
-                                  WHOAMI_WITH_SOURCE "first and third types differ");
+                Util::affirm<E>(Expr::are_same_type<false>(first, second),
+                                WHOAMI_WITH_SOURCE "first and second types differ");
+                Util::affirm<E>(Expr::are_same_type<false>(first, third),
+                                WHOAMI_WITH_SOURCE "first and third types differ");
             }
         }
     };

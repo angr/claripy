@@ -13,7 +13,7 @@
 /** Toggle claricpp backtrace */
 static inline void toggle_backtrace() {
 #ifdef DEBUG
-    Util::Error::Claricpp::toggle_backtrace(true);
+    Util::Err::Claricpp::toggle_backtrace(true);
 #endif
 }
 

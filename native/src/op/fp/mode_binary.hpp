@@ -67,9 +67,9 @@ namespace Op::FP {
                                    const Expr::BasePtr &l, const Expr::BasePtr &r,
                                    const Mode::FP::Rounding m)
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
-            using Err = Error::Expr::Type;
-            Util::affirm<Err>(Expr::are_same_type<true>(left, right),
-                              WHOAMI_WITH_SOURCE "left and right types or sizes differ");
+            using E = Error::Expr::Type;
+            Util::affirm<E>(Expr::are_same_type<true>(left, right),
+                            WHOAMI_WITH_SOURCE "left and right types or sizes differ");
         }
     };
 

@@ -7,7 +7,7 @@
 #define R_UTIL_NORMPATHHASH_HPP_
 
 #include "affirm.hpp"
-#include "error.hpp"
+#include "err.hpp"
 #include "fnv1a.hpp"
 #include "str_prefix.hpp"
 
@@ -80,8 +80,8 @@ namespace Util {
             if (str_prefix(s, "../")) {
                 ADVANCE(3)
                 // Rewinding segments
-                affirm<Error::BadPath>(n_seg > 0, WHOAMI_WITH_SOURCE,
-                                       "given path that goes outside of / or ./");
+                affirm<Err::BadPath>(n_seg > 0, WHOAMI_WITH_SOURCE,
+                                     "given path that goes outside of / or ./");
                 n_seg -= 1;
                 continue;
             }

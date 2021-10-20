@@ -33,10 +33,10 @@ namespace PyObj {
         inline bool eq(const bool ret, const bool cond) {
 #ifdef DEBUG
             if (!cond) {
-                using Err = Util::Error::HashCollision;
-                Util::affirm<Err>(WHOAMI_WITH_SOURCE
-                                  "PyObjects differ but have identical hashes; this is probably "
-                                  "due to user error");
+                using E = Util::Err::HashCollision;
+                Util::affirm<E>(WHOAMI_WITH_SOURCE
+                                "PyObjects differ but have identical hashes; this is probably "
+                                "due to user error");
             }
 #else
             (void) cond;

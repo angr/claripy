@@ -7,7 +7,7 @@
 #define R_UTIL_CHECKEDSTATICCAST_HPP_
 
 #include "affirm.hpp"
-#include "error.hpp"
+#include "err.hpp"
 
 #include "../macros.hpp"
 
@@ -20,8 +20,8 @@ namespace Util {
 #ifndef DEBUG
         return static_cast<Out>(i);
 #else
-        affirm<Error::BadCast>(dynamic_cast<Out>(i) != nullptr,
-                               WHOAMI_WITH_SOURCE "static cast failed.");
+        affirm<Err::BadCast>(dynamic_cast<Out>(i) != nullptr,
+                             WHOAMI_WITH_SOURCE "static cast failed.");
         return dynamic_cast<Out>(i);
 #endif
     }

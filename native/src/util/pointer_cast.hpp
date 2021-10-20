@@ -9,7 +9,7 @@
 
 #include "affirm.hpp"
 #include "affirm_not_null_debug.hpp"
-#include "error.hpp"
+#include "err.hpp"
 #include "full.hpp"
 #include "is_ancestor.hpp"
 #include "is_in.hpp"
@@ -52,20 +52,20 @@ namespace Util::Cast {
         }
 
         /** Dynamic down-cast that throws on failure; in may not be nullptr */
-        template <typename Out, typename In, typename Err = Error::BadCast>
+        template <typename Out, typename In, typename E = Err::BadCast>
         constexpr auto down_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { down<Out>(in) }; // Not const for possible move ret
-            affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
+            affirm<E>(full(ret), WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
             return ret;
         }
 
         /** A dynamic side cast that throws on failure; in may not be nullptr */
-        template <typename Out, typename In, typename Err = Error::BadCast>
+        template <typename Out, typename In, typename E = Err::BadCast>
         constexpr auto side_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { side<Out>(in) }; // Not const for possible move ret
-            affirm<Err>(full(ret), WHOAMI_WITH_SOURCE "Dynamic pointer cast failed");
+            affirm<E>(full(ret), WHOAMI_WITH_SOURCE "Dynamic pointer cast failed");
             return ret;
         }
 

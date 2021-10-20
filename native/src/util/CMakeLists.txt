@@ -5,5 +5,5 @@ target_sources("${CLARICPP}" PRIVATE
 )
 
 # Add subdirectories
-add_subdirectory(error)
+add_subdirectory(err)
 add_subdirectory(log)

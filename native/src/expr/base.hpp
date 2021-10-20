@@ -44,7 +44,7 @@ namespace Expr {
               symbolic { sym },
               op { std::move(op_) },
               annotations { std::move(sp) } {
-            Util::affirm<Util::Error::Usage>(op != nullptr, "op may not be nullptr");
+            Util::affirm<Util::Err::Usage>(op != nullptr, "op may not be nullptr");
 #ifdef DEBUG
             ctor_debug_checks();
 #endif

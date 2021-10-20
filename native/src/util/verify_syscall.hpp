@@ -6,7 +6,7 @@
 #ifndef R_UTIL_VERIFYSYSCALL_HPP_
 #define R_UTIL_VERIFYSYSCALL_HPP_
 
-#include "error.hpp"
+#include "err.hpp"
 
 #include <cstring>
 
@@ -18,8 +18,8 @@ namespace Util {
      */
     inline void verify_syscall(const int rv) {
         if (rv != 0) {
-            throw Util::Error::Syscall(WHOAMI_WITH_SOURCE,
-                                       "getrlimit() failed with error: ", std::strerror(errno));
+            throw Util::Err::Syscall(WHOAMI_WITH_SOURCE,
+                                     "getrlimit() failed with error: ", std::strerror(errno));
         }
     }
 

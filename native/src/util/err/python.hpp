@@ -6,13 +6,13 @@
  * via a different method.
  * @todo Document method when known
  */
-#ifndef R_UTIL_ERROR_PYTHON_HPP_
-#define R_UTIL_ERROR_PYTHON_HPP_
+#ifndef R_UTIL_ERR_PYTHON_HPP_
+#define R_UTIL_ERR_PYTHON_HPP_
 
 #include "claricpp.hpp"
 
 
-namespace Util::Error::Python {
+namespace Util::Err::Python {
 
     /** Base Python exception
      *  All Python exceptions must derive from this
@@ -27,6 +27,6 @@ namespace Util::Error::Python {
     /** Analogous to python's ValueError exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(ValueError, Base);
 
-} // namespace Util::Error::Python
+} // namespace Util::Err::Python
 
 #endif
