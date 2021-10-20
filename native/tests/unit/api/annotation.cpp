@@ -10,13 +10,14 @@ void annotation() {
     namespace A = Annotation;
     using SA = A::SimplificationAvoidance;
 
-    const ClaricppAnnotation *const arr[] = { claricpp_annotation_new_base(),
-                                              claricpp_annotation_new_simplification_avoicance() };
+    const ClaricppAnnotation arr[] = { claricpp_annotation_new_base(),
+                                       claricpp_annotation_new_simplification_avoicance() };
+    const ClaricppSPAV spav { claricpp_annotation_create_spav(arr, 2) };
 
-    const A::BasePtr base { arr[0]->ptr };
-    const A::BasePtr sa { arr[1]->ptr };
-    Constants::CTSC<SA> sa_raw { dynamic_cast<Constants::CTSC<SA>>(sa.get()) };
-    const A::SPAV vec { claricpp_annotation_create_spav(arr, 2)->ptr };
+    const A::BasePtr base { API::to_cpp_ref(arr[0]) };
+    const A::BasePtr sa { API::to_cpp_ref(arr[1]) };
+    CTSC<SA> sa_raw { dynamic_cast<CTSC<SA>>(sa.get()) };
+    const A::SPAV vec { API::to_cpp_ref(spav) };
     const auto &raw_vec { vec.get()->vec };
 
     // Technically 0 can be a hash but more likely it's due to a failure so:
