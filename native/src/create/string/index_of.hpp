@@ -15,7 +15,7 @@ namespace Create::String {
      */
     inline EBasePtr index_of(const EBasePtr &str, const EBasePtr &pattern,
                              const EBasePtr &start_index, const Constants::UInt bit_length,
-                             SPAV &&sp = nullptr) {
+                             Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         Utils::affirm<Error::Expression::Usage>(
             str != nullptr && pattern != nullptr && start_index != nullptr,

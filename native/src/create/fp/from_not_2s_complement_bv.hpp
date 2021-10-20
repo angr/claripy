@@ -14,7 +14,7 @@ namespace Create::FP {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr from_not_2s_complement(const EBasePtr &bv, const Mode::FP::Width &w,
-                                           SPAV &&sp = nullptr) {
+                                           Annotation::SPAV &&sp = nullptr) {
         Utils::affirm<Error::Expression::Usage>(bv != nullptr,
                                                 WHOAMI_WITH_SOURCE "bv may not be nullptr");
         using Not2s = Op::FP::FromNot2sComplementBV;

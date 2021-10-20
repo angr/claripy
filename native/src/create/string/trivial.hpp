@@ -19,7 +19,7 @@ namespace Create::String {
     /** Create a bool Expression with an String::IsDigit op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr is_digit(const EBasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr is_digit(const EBasePtr &x, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(x, std::move(sp));
@@ -34,7 +34,7 @@ namespace Create::String {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr to_int(const EBasePtr &expr, const Constants::UInt integer,
-                           SPAV &&sp = nullptr) {
+                           Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::ToInt,
@@ -45,7 +45,8 @@ namespace Create::String {
      *  Note: Currently Ints are output as BVs
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr len(const EBasePtr &expr, const Constants::UInt integer, SPAV &&sp = nullptr) {
+    inline EBasePtr len(const EBasePtr &expr, const Constants::UInt integer,
+                        Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::uint_binary<Constants::UInt, Ex::BV, Ex::String, Op::String::Len,
@@ -59,7 +60,8 @@ namespace Create::String {
     /** Create an Expression with a String::Contains op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr contains(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
+    inline EBasePtr contains(const EBasePtr &left, const EBasePtr &right,
+                             Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::Contains, CP::SizeMode::NA,
@@ -69,7 +71,8 @@ namespace Create::String {
     /** Create an Expression with a String::PrefixOf op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr prefix_of(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
+    inline EBasePtr prefix_of(const EBasePtr &left, const EBasePtr &right,
+                              Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, CP::SizeMode::NA,
@@ -79,7 +82,8 @@ namespace Create::String {
     /** Create an Expression with a String::SuffixOf op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr suffix_of(const EBasePtr &left, const EBasePtr &right, SPAV &&sp = nullptr) {
+    inline EBasePtr suffix_of(const EBasePtr &left, const EBasePtr &right,
+                              Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, CP::SizeMode::NA,

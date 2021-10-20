@@ -11,7 +11,7 @@
 namespace Create {
 
     /** Create a Bool Expression with an symbol op */
-    inline EBasePtr symbol(std::string &&name, SPAV &&sp = nullptr) {
+    inline EBasePtr symbol(std::string &&name, Annotation::SPAV &&sp = nullptr) {
         return Expression::factory<Expression::Bool>(
             true, Op::factory<Op::Symbol>(std::move(name)), std::move(sp));
     }
@@ -20,7 +20,8 @@ namespace Create {
      *  This override is for sized Expression types
      */
     template <typename T>
-    EBasePtr symbol(std::string &&name, const Constants::UInt bit_length, SPAV &&sp = nullptr) {
+    EBasePtr symbol(std::string &&name, const Constants::UInt bit_length,
+                    Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
 
         // Type checks

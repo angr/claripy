@@ -21,7 +21,7 @@ namespace Create::FP {
     /** Create a Expression with an FP::ToIEEEBV op
      *  Expression pointers may not be nullptr
      */
-    inline EBasePtr to_ieee_bv(const EBasePtr &x, SPAV &&sp = nullptr) {
+    inline EBasePtr to_ieee_bv(const EBasePtr &x, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
     }
@@ -33,7 +33,7 @@ namespace Create::FP {
 /** A local macro used for fp mode binary math ops with size mode first */
 #define FP_MB_SMF_ARITH(FN, OP)                                                                   \
     inline EBasePtr FN(const EBasePtr &left, const EBasePtr &right,                               \
-                       const Mode::FP::Rounding mode, SPAV &&sp = nullptr) {                      \
+                       const Mode::FP::Rounding mode, Annotation::SPAV &&sp = nullptr) {          \
         return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,      \
                                                                           std::move(sp));         \
     }
@@ -66,7 +66,7 @@ namespace Create::FP {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr fp(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                       SPAV &&sp = nullptr) {
+                       Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
             first, second, third, std::move(sp));

@@ -15,7 +15,7 @@ namespace Create::FP {
      */
     template <bool Signed>
     EBasePtr from_2s_complement(const Mode::FP::Rounding m, const EBasePtr &bv,
-                                const Mode::FP::Width &w, SPAV &&sp = nullptr) {
+                                const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
         Utils::affirm<Error::Expression::Usage>(bv != nullptr,
                                                 WHOAMI_WITH_SOURCE "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBV<Signed>;

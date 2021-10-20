@@ -18,7 +18,7 @@ namespace Create::Private {
      */
     template <typename OpT, SizeMode Mode>
     inline EBasePtr mode_binary(const EBasePtr &left, const EBasePtr &right,
-                                const Mode::FP::Rounding mode, SPAV &&sp) {
+                                const Mode::FP::Rounding mode, Annotation::SPAV &&sp) {
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;

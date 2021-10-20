@@ -15,7 +15,7 @@ namespace Create {
      */
     template <typename T>
     EBasePtr if_(const EBasePtr &cond, const EBasePtr &left, const EBasePtr &right,
-                 SPAV &&sp = nullptr) {
+                 Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         namespace Err = Error::Expression;
         using namespace Simplification;

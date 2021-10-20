@@ -16,7 +16,7 @@ namespace Create::Private {
      *  operands' pointers may not be nullptr
      */
     template <typename T, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr flat(typename OpT::OpContainer &&operands, SPAV &&sp) {
+    inline EBasePtr flat(typename OpT::OpContainer &&operands, Annotation::SPAV &&sp) {
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;

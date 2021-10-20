@@ -42,7 +42,7 @@ namespace Create::String {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr sub_string(const EBasePtr &start_index, const EBasePtr &count,
-                               const EBasePtr &full_string, SPAV &&sp = nullptr) {
+                               const EBasePtr &full_string, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         Utils::affirm<Error::Expression::Usage>(
             start_index != nullptr && count != nullptr && full_string != nullptr,

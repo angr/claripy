@@ -17,7 +17,7 @@ namespace Create::Private {
      */
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr ternary(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                            SPAV &&sp) {
+                            Annotation::SPAV &&sp) {
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
@@ -81,7 +81,7 @@ namespace Create::Private {
      */
     template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
     inline EBasePtr ternary(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                            SPAV &&sp) {
+                            Annotation::SPAV &&sp) {
         return ternary<InOut, InOut, OpT, Mode, Allowed...>(first, second, third, std::move(sp));
     }
 

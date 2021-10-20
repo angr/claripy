@@ -15,7 +15,7 @@ namespace Create::String {
      *  Expression pointers may not be nullptr
      */
     inline EBasePtr replace(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                            SPAV &&sp = nullptr) {
+                            Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expression;
         using namespace Simplification;
         namespace Err = Error::Expression;
