@@ -14,8 +14,8 @@ namespace Create::FP {
      *  Expr pointers may not be nullptr
      */
     template <bool Signed>
-    EBasePtr to_bv(const Mode::FP::Rounding mode, const EBasePtr &fp, const UInt bit_length,
-                   Annotation::SPAV &&sp = nullptr) {
+    Expr::BasePtr to_bv(const Mode::FP::Rounding mode, const Expr::BasePtr &fp,
+                        const UInt bit_length, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         Util::affirm<Error::Expr::Usage>(fp != nullptr,
                                          WHOAMI_WITH_SOURCE "fp may not be nullptr");

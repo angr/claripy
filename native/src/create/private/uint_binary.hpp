@@ -17,7 +17,8 @@ namespace Create::Private {
      */
     template <typename IntT, typename Out, typename In, typename OpT, SizeMode Mode,
               typename... Allowed>
-    inline EBasePtr uint_binary(const EBasePtr &expr, const IntT integer, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr uint_binary(const Expr::BasePtr &expr, const IntT integer,
+                                     Annotation::SPAV &&sp) {
         namespace Ex = Expr;
         using namespace Simplification;
         namespace Err = Error::Expr;
@@ -77,7 +78,8 @@ namespace Create::Private {
      *  A specialization where In = Out
      */
     template <typename IntT, typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr uint_binary(const EBasePtr &expr, const IntT integer, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr uint_binary(const Expr::BasePtr &expr, const IntT integer,
+                                     Annotation::SPAV &&sp) {
         return uint_binary<IntT, InOut, InOut, OpT, Mode, Allowed...>(expr, integer,
                                                                       std::move(sp));
     }

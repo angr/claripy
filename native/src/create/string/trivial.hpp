@@ -19,7 +19,7 @@ namespace Create::String {
     /** Create a bool Expr with an String::IsDigit op
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr is_digit(const EBasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr is_digit(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace CP = ::Create::Private;
         return CP::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(x, std::move(sp));
@@ -33,8 +33,8 @@ namespace Create::String {
      *  Note: Currently Ints are taken in as BVs
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr to_int(const EBasePtr &expr, const UInt integer,
-                           Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const UInt integer,
+                                Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace CP = ::Create::Private;
         return CP::uint_binary<UInt, Ex::BV, Ex::String, Op::String::ToInt, CP::SizeMode::Second,
@@ -45,8 +45,8 @@ namespace Create::String {
      *  Note: Currently Ints are output as BVs
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr len(const EBasePtr &expr, const UInt integer,
-                        Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr len(const Expr::BasePtr &expr, const UInt integer,
+                             Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace CP = ::Create::Private;
         return CP::uint_binary<UInt, Ex::BV, Ex::String, Op::String::Len, CP::SizeMode::Second,
@@ -60,8 +60,8 @@ namespace Create::String {
     /** Create an Expr with a String::Contains op
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr contains(const EBasePtr &left, const EBasePtr &right,
-                             Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr contains(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                  Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::Contains, CP::SizeMode::NA,
@@ -71,8 +71,8 @@ namespace Create::String {
     /** Create an Expr with a String::PrefixOf op
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr prefix_of(const EBasePtr &left, const EBasePtr &right,
-                              Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr prefix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                   Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, CP::SizeMode::NA,
@@ -82,8 +82,8 @@ namespace Create::String {
     /** Create an Expr with a String::SuffixOf op
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr suffix_of(const EBasePtr &left, const EBasePtr &right,
-                              Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr suffix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                   Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace CP = ::Create::Private;
         return CP::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, CP::SizeMode::NA,

@@ -31,9 +31,9 @@ void index_of() {
 
     // Type check
     const auto ido { dcast<OS::IndexOf>(exp->op) };
-    const auto exp_down { dcast<Ex::BV>(exp) };
-    const auto a_down { dcast<Ex::String>(a) };
-    const auto b_down { dcast<Ex::String>(b) };
+    const auto exp_down { dcast<Expr::BV>(exp) };
+    const auto a_down { dcast<Expr::String>(a) };
+    const auto b_down { dcast<Expr::String>(b) };
 
     // Contains check
     UNITTEST_ASSERT(ido->str == a);

@@ -11,7 +11,7 @@
 namespace Create {
 
     /** This function exists to prevent accidental use by explicit rejection */
-    inline EBasePtr literal(CCSC, Annotation::SPAV && = nullptr) {
+    inline Expr::BasePtr literal(CCSC, Annotation::SPAV && = nullptr) {
         throw Util::Error::Unexpected::Usage(WHOAMI_WITH_SOURCE
                                              "Do not pass a char * to literal(); C++ casts it to "
                                              "bool; did you mean to use std::string?");
@@ -19,13 +19,13 @@ namespace Create {
 
 /** A local macro used for consistency */
 #define TRIVIAL_TYPE(EXP, INPUT)                                                                  \
-    inline EBasePtr literal(const INPUT data, Annotation::SPAV &&sp = nullptr) {                  \
+    inline Expr::BasePtr literal(const INPUT data, Annotation::SPAV &&sp = nullptr) {             \
         return Private::literal<Expr::EXP, INPUT>(INPUT { data }, std::move(sp));                 \
     }
 
 /** A local macro used for consistency */
 #define TRIVIAL_MOVE_TYPE(EXP, INPUT)                                                             \
-    inline EBasePtr literal(INPUT &&data, Annotation::SPAV &&sp = nullptr) {                      \
+    inline Expr::BasePtr literal(INPUT &&data, Annotation::SPAV &&sp = nullptr) {                 \
         return Private::literal<Expr::EXP, INPUT>(std::move(data), std::move(sp));                \
     }
 

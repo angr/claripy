@@ -14,7 +14,7 @@ namespace Create::Private {
      *  Expr pointers may not be nullptr
      */
     template <typename Out, typename In, typename OpT, typename... Allowed>
-    inline EBasePtr unary(const EBasePtr &x, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr unary(const Expr::BasePtr &x, Annotation::SPAV &&sp) {
         namespace Ex = Expr;
         using namespace Simplification;
         namespace Err = Error::Expr;

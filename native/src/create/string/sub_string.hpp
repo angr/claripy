@@ -15,7 +15,8 @@ namespace Create::String {
          *  Expr pointers may not be nullptr
          *  @todo Adjust as we edit concrete
          */
-        static inline UInt sub_string_length(const EBasePtr &count, const EBasePtr &full_string) {
+        static inline UInt sub_string_length(const Expr::BasePtr &count,
+                                             const Expr::BasePtr &full_string) {
             using Err = Error::Expr::Type;
             // If symbolic, use full_string's length
             if (count->symbolic) {
@@ -40,8 +41,9 @@ namespace Create::String {
     /** Create an Expr with a String::SubString op
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr sub_string(const EBasePtr &start_index, const EBasePtr &count,
-                               const EBasePtr &full_string, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr sub_string(const Expr::BasePtr &start_index, const Expr::BasePtr &count,
+                                    const Expr::BasePtr &full_string,
+                                    Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         Util::affirm<Error::Expr::Usage>(start_index != nullptr && count != nullptr &&
                                              full_string != nullptr,

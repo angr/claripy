@@ -16,8 +16,8 @@ namespace Create::Private {
      *  Expr pointers may not be nullptr
      */
     template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr ternary(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                            Annotation::SPAV &&sp) {
+    inline Expr::BasePtr ternary(const Expr::BasePtr &first, const Expr::BasePtr &second,
+                                 const Expr::BasePtr &third, Annotation::SPAV &&sp) {
         namespace Ex = Expr;
         using namespace Simplification;
         namespace Err = Error::Expr;
@@ -79,8 +79,8 @@ namespace Create::Private {
      *  A specialization where In = Out
      */
     template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
-    inline EBasePtr ternary(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                            Annotation::SPAV &&sp) {
+    inline Expr::BasePtr ternary(const Expr::BasePtr &first, const Expr::BasePtr &second,
+                                 const Expr::BasePtr &third, Annotation::SPAV &&sp) {
         return ternary<InOut, InOut, OpT, Mode, Allowed...>(first, second, third, std::move(sp));
     }
 

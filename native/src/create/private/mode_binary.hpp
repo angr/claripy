@@ -17,8 +17,8 @@ namespace Create::Private {
      *  Expr pointers may not be nullptr
      */
     template <typename OpT, SizeMode Mode>
-    inline EBasePtr mode_binary(const EBasePtr &left, const EBasePtr &right,
-                                const Mode::FP::Rounding mode, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr mode_binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                     const Mode::FP::Rounding mode, Annotation::SPAV &&sp) {
         namespace Ex = Expr;
         using namespace Simplification;
         namespace Err = Error::Expr;

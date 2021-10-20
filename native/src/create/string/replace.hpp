@@ -14,8 +14,8 @@ namespace Create::String {
      *  Despite being ternary, this is not a trivial op because of the unique length calculation
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr replace(const EBasePtr &first, const EBasePtr &second, const EBasePtr &third,
-                            Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr replace(const Expr::BasePtr &first, const Expr::BasePtr &second,
+                                 const Expr::BasePtr &third, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         using namespace Simplification;
         namespace Err = Error::Expr;

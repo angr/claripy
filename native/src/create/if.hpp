@@ -14,8 +14,8 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     template <typename T>
-    EBasePtr if_(const EBasePtr &cond, const EBasePtr &left, const EBasePtr &right,
-                 Annotation::SPAV &&sp = nullptr) {
+    Expr::BasePtr if_(const Expr::BasePtr &cond, const Expr::BasePtr &left,
+                      const Expr::BasePtr &right, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace Err = Error::Expr;
         using namespace Simplification;

@@ -16,7 +16,7 @@ namespace Create::String {
      *  This should be large-enough, and isn't as bad an over-estimation as INT_MAX or anything
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr from_int(const EBasePtr &x, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr from_int(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         namespace Err = Error::Expr;
         Util::affirm<Err::Usage>(x != nullptr,

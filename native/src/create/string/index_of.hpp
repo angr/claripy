@@ -13,9 +13,9 @@ namespace Create::String {
     /** Create an Expr with a String::IndexOf op
      *  Expr pointers may not be nullptr
      */
-    inline EBasePtr index_of(const EBasePtr &str, const EBasePtr &pattern,
-                             const EBasePtr &start_index, const UInt bit_length,
-                             Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr index_of(const Expr::BasePtr &str, const Expr::BasePtr &pattern,
+                                  const Expr::BasePtr &start_index, const UInt bit_length,
+                                  Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         Util::affirm<Error::Expr::Usage>(str != nullptr && pattern != nullptr &&
                                              start_index != nullptr,

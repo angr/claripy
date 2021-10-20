@@ -14,8 +14,8 @@ namespace Create::FP {
      *  Expr pointers may not be nullptr
      */
     template <bool Signed>
-    EBasePtr from_2s_complement(const Mode::FP::Rounding m, const EBasePtr &bv,
-                                const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
+    Expr::BasePtr from_2s_complement(const Mode::FP::Rounding m, const Expr::BasePtr &bv,
+                                     const Mode::FP::Width &w, Annotation::SPAV &&sp = nullptr) {
         Util::affirm<Error::Expr::Usage>(bv != nullptr,
                                          WHOAMI_WITH_SOURCE "bv may not be nullptr");
         using FromBV = Op::FP::From2sComplementBV<Signed>;
