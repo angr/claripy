@@ -30,7 +30,7 @@ inline auto make_ite(std::string str) {
     // Composite
     const auto prod { C::FP::mul(x, fp3, Mode::FP::Rounding::NearestTiesEven) };
     const auto eq { C::eq<Ex::FP>(fp4, prod) };
-    return C::if_<Ex::String>(eq, hello, y);
+    return C::if_(eq, hello, y);
 }
 
 

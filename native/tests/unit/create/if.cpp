@@ -25,7 +25,7 @@ template <typename T> void if_t() {
     UNITTEST_ASSERT(cond.use_count() == 1 + offset);
 
     // Test
-    const auto exp { Create::if_<T>(cond, a, b) };
+    const auto exp { Create::if_(cond, a, b) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);

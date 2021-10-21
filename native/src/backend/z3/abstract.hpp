@@ -226,14 +226,7 @@ namespace Backend::Z3 {
         /** Abstraction function for Z3_OP_ITE */
         static Expr::BasePtr ite(const ArgsVec &args) {
             ASSERT_ARG_LEN(args, 3);
-            switch (GET_EARG(1)->cuid) {
-                TYPE_CASE(Bool, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
-                TYPE_CASE(String, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
-                TYPE_CASE(BV, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
-                TYPE_CASE(FP, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
-                TYPE_CASE(VS, Create::if_, GET_EARG(0), GET_EARG(1), GET_EARG(2));
-                DEFAULT_TYPE_CASE(GET_EARG(1)->cuid);
-            };
+            return Create::if_(GET_EARG(0), GET_EARG(1), GET_EARG(2));
         }
 
         /** Abstraction function for z3 and ops */

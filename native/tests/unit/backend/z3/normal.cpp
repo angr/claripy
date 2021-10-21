@@ -34,10 +34,10 @@ void normal() {
     /**************************************************/
 
     Util::Log::debug("Testing if...");
-    UNITTEST_ASSERT(test_id(C::if_<Ex::BV>(bool_x, bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::if_<Ex::FP>(bool_x, fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::if_<Ex::Bool>(bool_x, bool_x, bool_y)));
-    /* UNITTEST_ASSERT(test_id(C::if_<Ex::String>(bool_x, string_x, string_y))); */
+    UNITTEST_ASSERT(test_id(C::if_(bool_x, bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::if_(bool_x, fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::if_(bool_x, bool_x, bool_y)));
+    /* UNITTEST_ASSERT(test_id(C::if_(bool_x, string_x, string_y))); */
 
     Util::Log::debug("Testing extract...");
     UNITTEST_ASSERT(test_id(C::extract(2, 1, bv_x)));
