@@ -22,8 +22,7 @@ namespace Create::FP {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr to_ieee_bv(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::unary<Ex::BV, Ex::FP, Op::FP::ToIEEEBV, Ex::FP>(x, std::move(sp));
+        return Private::unary_explicit<Expr::BV, Op::FP::ToIEEEBV, Expr::FP>(x, std::move(sp));
     }
 
     /********************************************************************/

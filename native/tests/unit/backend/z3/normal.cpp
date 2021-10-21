@@ -75,8 +75,8 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::invert(bv_x)));
 
     Util::Log::debug("Testing neg...");
-    UNITTEST_ASSERT(test_id(C::neg<Ex::FP>(fp_x)));
-    UNITTEST_ASSERT(test_id(C::neg<Ex::BV>(bv_x)));
+    UNITTEST_ASSERT(test_id(C::neg(fp_x)));
+    UNITTEST_ASSERT(test_id(C::neg(bv_x)));
 
     Util::Log::debug("Testing reverse...");
     const auto also_x { C::reverse(C::reverse(bv_x)) };

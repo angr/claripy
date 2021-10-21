@@ -22,8 +22,8 @@ void trivial() {
     unary<Ex::FP, Op::Abs, Cr::abs>();
 
     Log::debug("Testing neg...");
-    unary<Ex::BV, Op::Neg, Cr::neg<Expr::BV>>();
-    unary<Ex::FP, Op::Neg, Cr::neg<Expr::FP>>();
+    unary<Ex::BV, Op::Neg, Cr::neg>();
+    unary<Ex::FP, Op::Neg, Cr::neg>();
 
     Log::debug("Testing not...");
     unary<Ex::Bool, Op::Not, Cr::not_>();

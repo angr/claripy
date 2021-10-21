@@ -259,9 +259,7 @@ namespace Backend::Z3 {
         /**********************************************************/
 
         /** Abstraction function for z3 negation ops */
-        template <typename T> static Expr::BasePtr neg(const ArgsVec &args) {
-            UNARY(Create::neg<T>);
-        }
+        static Expr::BasePtr neg(const ArgsVec &args) { UNARY(Create::neg); }
 
         /** Abstraction function for Z3_OP_BADD */
         static Expr::BasePtr abs(const ArgsVec &args) { UNARY(Create::abs) }

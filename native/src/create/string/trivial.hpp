@@ -20,9 +20,8 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr is_digit(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace CP = ::Create::Private;
-        return CP::unary<Ex::Bool, Ex::String, Op::String::IsDigit, Ex::String>(x, std::move(sp));
+        return CP::unary_explicit<Expr::Bool, Op::String::IsDigit, Expr::String>(x, std::move(sp));
     }
 
     /********************************************************************/

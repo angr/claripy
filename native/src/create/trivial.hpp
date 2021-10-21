@@ -22,41 +22,35 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr abs(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::unary<Ex::FP, Ex::FP, Op::Abs, Ex::FP>(x, std::move(sp));
+        return Private::unary<Op::Abs, Expr::FP>(x, std::move(sp));
     }
 
     /** Create an Expr with an Neg op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr neg(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::unary<T, T, Op::Neg, Ex::BV, Ex::FP>(x, std::move(sp));
+        return Private::unary<Op::Neg, Expr::BV, Expr::FP>(x, std::move(sp));
     }
 
     /** Create an Expr with an Not op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr not_(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::unary<Ex::Bool, Ex::Bool, Op::Not, Ex::Bool>(x, std::move(sp));
+        return Private::unary<Op::Not, Expr::Bool>(x, std::move(sp));
     }
 
     /** Create an Expr with an Invert op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr invert(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::unary<Ex::BV, Ex::BV, Op::Invert, Ex::BV>(x, std::move(sp));
+        return Private::unary<Op::Invert, Expr::BV>(x, std::move(sp));
     }
 
     /** Create an Expr with an Reverse op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr reverse(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::unary<Ex::BV, Ex::BV, Op::Reverse, Ex::BV>(x, std::move(sp));
+        return Private::unary<Op::Reverse, Expr::BV>(x, std::move(sp));
     }
 
     /********************************************************************/

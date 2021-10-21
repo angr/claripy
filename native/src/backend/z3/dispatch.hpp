@@ -423,7 +423,7 @@ namespace Backend::Z3 {
                     ASSERT_ARG_EMPTY(args);
                     return Abs::BV::num(b_obj, bk);
                 case Z3_OP_BNEG:
-                    return Abs::template neg<Ex::BV>(args);
+                    return Abs::neg(args);
                 case Z3_OP_BADD:
                     return Abs::add(args);
                 case Z3_OP_BSUB:
@@ -524,7 +524,7 @@ namespace Backend::Z3 {
                 case Z3_OP_FPA_ABS:
                     return Abs::abs(args);
                 case Z3_OP_FPA_NEG:
-                    return Abs::template neg<Ex::FP>(args);
+                    return Abs::neg(args);
                 case Z3_OP_FPA_ADD:
                     return Abs::FP::add(args);
                 case Z3_OP_FPA_SUB:
