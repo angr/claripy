@@ -156,16 +156,16 @@ namespace Backend {
 #ifdef DEBUG
             // Sanity checks
             constexpr auto chk { [](const auto &...x) { Util::affirm<UnknownErr>(x...); } };
-            chk(op_stack.empty(), WHOAMI_WITH_SOURCE "op_stack should be empty");
-            chk(expr_stack.empty(), WHOAMI_WITH_SOURCE "expr_stack should be empty");
-            chk(arg_stack.size() == 1, WHOAMI_WITH_SOURCE "arg_stack should be of size: 1");
+            chk(op_stack.empty(), WHOAMI "op_stack should be empty");
+            chk(expr_stack.empty(), WHOAMI "expr_stack should be empty");
+            chk(arg_stack.size() == 1, WHOAMI "arg_stack should be of size: 1");
             const auto lookup { conversion_cache.find(input->hash) };
             chk(lookup != conversion_cache.end(),
-                WHOAMI_WITH_SOURCE "conversion_cache does not contain expr hash");
+                WHOAMI "conversion_cache does not contain expr hash");
             chk(&lookup->second == arg_stack.back(),
-                WHOAMI_WITH_SOURCE "conversion_cache lookup does not match arg_stack back()");
+                WHOAMI "conversion_cache lookup does not match arg_stack back()");
             chk(arg_stack.back() == &conversion_cache.find(input->hash)->second,
-                WHOAMI_WITH_SOURCE "arg_stack / conversion_cache mismatch at end of convert");
+                WHOAMI "arg_stack / conversion_cache mismatch at end of convert");
             UTILS_AFFIRM_NOT_NULL_DEBUG(arg_stack.back());
 #endif
             // Return result
@@ -180,8 +180,7 @@ namespace Backend {
             }
             catch (std::bad_variant_access &) {
                 throw Util::Err::Unknown(
-                    WHOAMI_WITH_SOURCE,
-                    "Abstraction culminated in a non-Expr object.\nVariant index: ",
+                    WHOAMI, "Abstraction culminated in a non-Expr object.\nVariant index: ",
                     variant.index(), "\nPlease report this.");
             }
         }

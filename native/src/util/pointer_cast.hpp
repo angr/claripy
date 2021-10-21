@@ -56,7 +56,7 @@ namespace Util::Cast {
         constexpr auto down_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { down<Out>(in) }; // Not const for possible move ret
-            affirm<E>(full(ret), WHOAMI_WITH_SOURCE "Dynamic down-cast failed");
+            affirm<E>(full(ret), WHOAMI "Dynamic down-cast failed");
             return ret;
         }
 
@@ -65,7 +65,7 @@ namespace Util::Cast {
         constexpr auto side_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
             UTILS_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { side<Out>(in) }; // Not const for possible move ret
-            affirm<E>(full(ret), WHOAMI_WITH_SOURCE "Dynamic pointer cast failed");
+            affirm<E>(full(ret), WHOAMI "Dynamic pointer cast failed");
             return ret;
         }
 

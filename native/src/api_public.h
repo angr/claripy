@@ -188,6 +188,13 @@ ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const 
 ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
 
 // Trivial
+#if 0
+inline Expr::BasePtr abs(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr)
+template <typename T> inline Expr::BasePtr neg(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr)
+inline Expr::BasePtr not_(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr)
+inline Expr::BasePtr invert(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr)
+inline Expr::BasePtr reverse(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr)
+#endif
 
 // String
 

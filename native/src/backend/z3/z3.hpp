@@ -79,7 +79,7 @@ namespace Backend::Z3 {
                     Util::Log::info("Z3 Backend will not simplify expr with CUID: ", expr->cuid);
 #ifdef DEBUG
                     auto ret { Ex::find(expr->hash) };
-                    Util::affirm<Util::Err::HashCollision>(ret.get() == expr, WHOAMI_WITH_SOURCE);
+                    Util::affirm<Util::Err::HashCollision>(ret.get() == expr, WHOAMI);
                     return ret;
 #else
                     return Ex::find(expr->hash);
@@ -281,7 +281,7 @@ namespace Backend::Z3 {
                 return {};
             }
             if (UNLIKELY(exprs.size() == 1)) { // Why we prefer eval to batch
-                Util::Log::info(WHOAMI_WITH_SOURCE
+                Util::Log::info(WHOAMI
                                 "called on exprs of size 1; eval is more efficient for this");
                 const auto sols { eval(exprs[0], s, n) };
                 std::vector<std::vector<PrimVar>> ret;
@@ -357,8 +357,7 @@ namespace Backend::Z3 {
                 const auto bool_name { assertions[Util::sign(i)].arg(0) };
 #ifdef DEBUG
                 const auto [_, success] { tracked.emplace(extract_hash(bool_name)) };
-                Util::affirm<Util::Err::HashCollision>(success,
-                                                       WHOAMI_WITH_SOURCE "Hash collision");
+                Util::affirm<Util::Err::HashCollision>(success, WHOAMI "Hash collision");
                 (void) _;
 #else
                 tracked.emplace(extract_hash(bool_name));
@@ -396,8 +395,8 @@ namespace Backend::Z3 {
          */
         inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<z3::expr> exprs,
                                                             z3::solver &solver, const UInt n_sol) {
-            Util::affirm<Util::Err::Usage>(exprs.size() > 1, WHOAMI_WITH_SOURCE
-                                           "should only be called when exprs.size() > 1");
+            Util::affirm<Util::Err::Usage>(exprs.size() > 1,
+                                           WHOAMI "should only be called when exprs.size() > 1");
             // Prep
             solver.push();
             std::vector<std::vector<PrimVar>> ret;
@@ -480,12 +479,12 @@ namespace Backend::Z3 {
                 case 9: {
                     UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
                     const auto &bi = std::get<BigInt>(p);
-                    Util::affirm<Usage>(bi.bit_length < 64, WHOAMI_WITH_SOURCE
-                                        "Bit length of given PrimVar is too long");
+                    Util::affirm<Usage>(bi.bit_length < 64,
+                                        WHOAMI "Bit length of given PrimVar is too long");
                     return static_cast<T>(bi.value);
                 }
                 default:
-                    throw Usage(WHOAMI_WITH_SOURCE "Invalid PrimVar given");
+                    throw Usage(WHOAMI "Invalid PrimVar given");
             }
         }
 
@@ -506,7 +505,7 @@ namespace Backend::Z3 {
                 case Ex::String::static_cuid:
                     return Create::eq<Ex::String>(a, b);
                 default:
-                    throw Util::Err::Type(WHOAMI_WITH_SOURCE "Unsupported expr type");
+                    throw Util::Err::Type(WHOAMI "Unsupported expr type");
             }
         }
 
@@ -516,11 +515,10 @@ namespace Backend::Z3 {
             // Check input
             using Usage = Util::Err::Usage;
 #ifdef DEBUG
-            Util::affirm<Usage>(expr.is_bv(), WHOAMI_WITH_SOURCE "ret can only be called on BVs");
+            Util::affirm<Usage>(expr.is_bv(), WHOAMI "ret can only be called on BVs");
 #endif
             const unsigned len { expr.get_sort().bv_size() };
-            Util::affirm<Usage>(len <= 64, WHOAMI_WITH_SOURCE
-                                "ret cannot be called on BV wider than 64 bits");
+            Util::affirm<Usage>(len <= 64, WHOAMI "ret cannot be called on BV wider than 64 bits");
 
             // Starting interval and comparators
             using Integer = std::conditional_t<Signed, int64_t, uint64_t>;

@@ -34,7 +34,7 @@ namespace PyObj {
 #ifdef DEBUG
             if (!cond) {
                 using E = Util::Err::HashCollision;
-                Util::affirm<E>(WHOAMI_WITH_SOURCE
+                Util::affirm<E>(WHOAMI
                                 "PyObjects differ but have identical hashes; this is probably "
                                 "due to user error");
             }

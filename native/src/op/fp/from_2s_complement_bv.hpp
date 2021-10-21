@@ -45,7 +45,7 @@ namespace Op::FP {
                                            const Expr::BasePtr &b, const Mode::FP::Width w)
             : Base { h, static_cuid }, mode { m }, bv { b }, width { w } {
             Util::affirm<Error::Expr::Type>(CUID::is_t<Expr::BV>(bv),
-                                            WHOAMI_WITH_SOURCE "Operand fp must be an Expr::BV");
+                                            WHOAMI "Operand fp must be an Expr::BV");
         }
     };
 

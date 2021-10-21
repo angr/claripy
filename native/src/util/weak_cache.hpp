@@ -124,8 +124,8 @@ namespace Util {
 #ifdef DEBUG
                 auto &&[_, success] = cache.emplace(h, ret);
                 affirm<Err::Unknown>(
-                    success, WHOAMI_WITH_SOURCE
-                    "Cache emplacement failed after verifying item not already in cache.");
+                    success,
+                    WHOAMI "Cache emplacement failed after verifying item not already in cache.");
 #else
                 (void) cache.emplace(h, ret);
 #endif

@@ -35,9 +35,8 @@ namespace Create::Private {
                       "Create::Private::unary argument types must be in Allowed");
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(x != nullptr, WHOAMI_WITH_SOURCE "x cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<In>(x),
-                                WHOAMI_WITH_SOURCE "operand must be of type In");
+        Util::affirm<Err::Usage>(x != nullptr, WHOAMI "x cannot be nullptr");
+        Util::affirm<Err::Type>(CUID::is_t<In>(x), WHOAMI "operand must be of type In");
 
         // Construct expr
         if constexpr (Util::is_ancestor<Ex::Bits, Out>) {

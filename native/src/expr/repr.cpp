@@ -15,7 +15,7 @@ void Expr::repr(const Expr::RawPtr e, std::ostream &out, const bool verbose) {
     UTILS_AFFIRM_NOT_NULL_DEBUG(e->op); // Sanity check
     // Null check
     if (e == nullptr) {
-        Util::Log::warning(WHOAMI_WITH_SOURCE "called on nullptr");
+        Util::Log::warning(WHOAMI "called on nullptr");
         out << R"|({ "ptr":"nullptr" })|";
         return;
     }

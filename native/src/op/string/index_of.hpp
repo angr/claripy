@@ -56,12 +56,11 @@ namespace Op::String {
                                 const Expr::BasePtr &pat, const Expr::BasePtr &si)
             : Base { h, static_cuid }, str { s }, pattern { pat }, start_index { si } {
             using E = Error::Expr::Type;
-            Util::affirm<E>(CUID::is_t<Expr::String>(str),
-                            WHOAMI_WITH_SOURCE "str expr must be a String");
+            Util::affirm<E>(CUID::is_t<Expr::String>(str), WHOAMI "str expr must be a String");
             Util::affirm<E>(CUID::is_t<Expr::String>(pattern),
-                            WHOAMI_WITH_SOURCE "pattern expr must be a String");
+                            WHOAMI "pattern expr must be a String");
             Util::affirm<E>(CUID::is_t<Expr::BV>(start_index),
-                            WHOAMI_WITH_SOURCE "start_index expr must be a BV");
+                            WHOAMI "start_index expr must be a BV");
         }
     };
 

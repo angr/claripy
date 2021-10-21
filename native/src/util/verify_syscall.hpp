@@ -18,7 +18,7 @@ namespace Util {
      */
     inline void verify_syscall(const int rv) {
         if (rv != 0) {
-            throw Util::Err::Syscall(WHOAMI_WITH_SOURCE,
+            throw Util::Err::Syscall(WHOAMI,
                                      "getrlimit() failed with error: ", std::strerror(errno));
         }
     }

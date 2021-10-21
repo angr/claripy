@@ -20,8 +20,7 @@ namespace Util {
 #ifndef DEBUG
         return static_cast<Out>(i);
 #else
-        affirm<Err::BadCast>(dynamic_cast<Out>(i) != nullptr,
-                             WHOAMI_WITH_SOURCE "static cast failed.");
+        affirm<Err::BadCast>(dynamic_cast<Out>(i) != nullptr, WHOAMI "static cast failed.");
         return dynamic_cast<Out>(i);
 #endif
     }

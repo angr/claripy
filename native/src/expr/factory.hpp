@@ -46,10 +46,10 @@ namespace Expr {
             CASE(VS);
             CASE(BV);
             case Bool::static_cuid:
-                throw Util::Err::Usage(WHOAMI_WITH_SOURCE
+                throw Util::Err::Usage(WHOAMI
                                        "Cannot construct a Bool; use factory<Expr::Bool instead");
             default:
-                throw Util::Err::Usage(WHOAMI_WITH_SOURCE "Unknown cuid: ", cuid);
+                throw Util::Err::Usage(WHOAMI "Unknown cuid: ", cuid);
 // Cleanup
 #undef CASE
         }

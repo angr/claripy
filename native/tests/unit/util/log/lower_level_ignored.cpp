@@ -21,7 +21,7 @@ void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
         UNITTEST_ASSERT(str.find("Logged data") != std::string::npos);
     }
     else {
-        UNITTEST_ASSERT_MSG(str.empty(), WHOAMI);
+        UNITTEST_ASSERT_MSG(str.empty(), WHOAMI_HEADER_ONLY);
     }
     s->str(""); // clear the log for the next test
 }

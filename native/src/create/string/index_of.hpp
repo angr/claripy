@@ -19,7 +19,7 @@ namespace Create::String {
         namespace Ex = Expr;
         Util::affirm<Error::Expr::Usage>(str != nullptr && pattern != nullptr &&
                                              start_index != nullptr,
-                                         WHOAMI_WITH_SOURCE "Exprs pointers cannot be nullptr");
+                                         WHOAMI "Exprs pointers cannot be nullptr");
         return Simplification::simplify(
             Ex::factory<Ex::BV>(str->symbolic || pattern->symbolic,
                                 Op::factory<Op::String::IndexOf>(str, pattern, start_index),

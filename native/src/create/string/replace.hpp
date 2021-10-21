@@ -22,18 +22,17 @@ namespace Create::String {
 
         // Checks
         Util::affirm<Err::Usage>(first != nullptr && second != nullptr && third != nullptr,
-                                 WHOAMI_WITH_SOURCE "Expr pointers cannot be nullptr");
+                                 WHOAMI "Expr pointers cannot be nullptr");
         Util::affirm<Err::Type>(CUID::is_t<Ex::String>(first) && CUID::is_t<Ex::String>(second) &&
                                     CUID::is_t<Ex::String>(third),
-                                WHOAMI_WITH_SOURCE
-                                "operands must be each be of type Expr::String");
+                                WHOAMI "operands must be each be of type Expr::String");
 
         // Construct size
         UInt new_bit_length { Ex::get_bit_length(first) };
         const auto s2 { Ex::get_bit_length(second) };
         Util::affirm<Err::Size>(
-            new_bit_length >= s2, WHOAMI_WITH_SOURCE
-            "The pattern that has to be replaced is longer than the string itself");
+            new_bit_length >= s2,
+            WHOAMI "The pattern that has to be replaced is longer than the string itself");
         const auto s3 { Ex::get_bit_length(third) };
         if (s2 < s3) {
             new_bit_length += s3 - s2;

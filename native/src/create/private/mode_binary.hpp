@@ -29,9 +29,9 @@ namespace Create::Private {
         static_assert(Mode == SizeMode::First,
                       "Create::Private::mode_binary does not support the given SizeMode");
         Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                 WHOAMI_WITH_SOURCE "Expr pointers cannot be nullptr");
+                                 WHOAMI "Expr pointers cannot be nullptr");
         Util::affirm<Err::Type>(CUID::is_t<Ex::FP>(left),
-                                WHOAMI_WITH_SOURCE "left operands must be of type Expr::FP");
+                                WHOAMI "left operands must be of type Expr::FP");
 
         // Create expr
         return simplify(Ex::factory<Ex::FP>(left->symbolic || right->symbolic,

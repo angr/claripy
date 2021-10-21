@@ -207,8 +207,8 @@ namespace Hash {
         }
 #ifdef DEBUG
         // Verify no memory corruption
-        Util::affirm<Util::Err::Unknown>(v.size() == i + 1, WHOAMI_WITH_SOURCE
-                                         "Incorrect value of i within Hash::hash");
+        Util::affirm<Util::Err::Unknown>(v.size() == i + 1,
+                                         WHOAMI "Incorrect value of i within Hash::hash");
 #endif
         // Return hash
         return fnv1a<UInt>(hashes, v.size());

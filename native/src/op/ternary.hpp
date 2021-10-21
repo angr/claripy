@@ -79,15 +79,15 @@ namespace Op {
             // Type / size checking
             if constexpr (ConsiderSize) {
                 Util::affirm<E>(Expr::are_same_type<true>(first, second),
-                                WHOAMI_WITH_SOURCE "first and second types or sizes differ");
+                                WHOAMI "first and second types or sizes differ");
                 Util::affirm<E>(Expr::are_same_type<true>(first, third),
-                                WHOAMI_WITH_SOURCE "first and third types or sizes differ");
+                                WHOAMI "first and third types or sizes differ");
             }
             else {
                 Util::affirm<E>(Expr::are_same_type<false>(first, second),
-                                WHOAMI_WITH_SOURCE "first and second types differ");
+                                WHOAMI "first and second types differ");
                 Util::affirm<E>(Expr::are_same_type<false>(first, third),
-                                WHOAMI_WITH_SOURCE "first and third types differ");
+                                WHOAMI "first and third types differ");
             }
         }
     };

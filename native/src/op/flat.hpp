@@ -103,18 +103,18 @@ namespace Op {
             namespace Err = Error::Expr;
 
             // Operands size
-            Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI_WITH_SOURCE
-                                    "constructor requires at least two arguments");
+            Util::affirm<Err::Size>(operands.size() >= 2,
+                                    WHOAMI "constructor requires at least two arguments");
 
             // Verify all inputs are the same type
             for (const auto &i : operands) {
                 if constexpr (ConsiderSize) {
                     Util::affirm<Err::Type>(Expr::are_same_type<true>(operands[0], i),
-                                            WHOAMI_WITH_SOURCE "operands differ by size or type");
+                                            WHOAMI "operands differ by size or type");
                 }
                 else {
                     Util::affirm<Err::Type>(Expr::are_same_type<false>(operands[0], i),
-                                            WHOAMI_WITH_SOURCE "operands differ by size");
+                                            WHOAMI "operands differ by size");
                 }
             }
         }

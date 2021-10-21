@@ -36,8 +36,7 @@ namespace Util {
                 }
                 else {
                     throw Util::Err::Collision(
-                        WHOAMI_WITH_SOURCE,
-                        "Key collision during addition to map with const value type");
+                        WHOAMI, "Key collision during addition to map with const value type");
                 }
             }
             return iter;

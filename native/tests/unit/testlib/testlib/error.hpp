@@ -15,14 +15,13 @@
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT(B)                                                                        \
     if (!(B)) {                                                                                   \
-        UnitTest::TestLib::ut_fail(WHOAMI_WITH_SOURCE, "UnitTest Assertion failed.");             \
+        UnitTest::TestLib::ut_fail(WHOAMI, "UnitTest Assertion failed.");                         \
     }
 
 /** A unittest assertion macro */
 #define UNITTEST_ASSERT_MSG(B, ...)                                                               \
     if (!(B)) {                                                                                   \
-        UnitTest::TestLib::ut_fail(WHOAMI_WITH_SOURCE, "UnitTest Assertion failed.",              \
-                                   __VA_ARGS__);                                                  \
+        UnitTest::TestLib::ut_fail(WHOAMI, "UnitTest Assertion failed.", __VA_ARGS__);            \
     }
 
 

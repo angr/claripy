@@ -36,9 +36,9 @@ namespace Util {
             case -2:
                 throw std::runtime_error("Demangling failed.");
             case -3:
-                throw Err::Usage(WHOAMI_WITH_SOURCE);
+                throw Err::Usage(WHOAMI);
             default:
-                throw Err::Unknown(WHOAMI_WITH_SOURCE "Impossible return value");
+                throw Err::Unknown(WHOAMI "Impossible return value");
         };
     }
 

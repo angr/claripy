@@ -55,9 +55,8 @@ namespace Op {
             namespace Err = Error::Expr;
             // Error checking
             Util::affirm<Err::Type>(CUID::is_t<Expr::Bool>(cond),
-                                    WHOAMI_WITH_SOURCE "Condition expr must be a boolean");
-            Util::affirm<Err::Type>(Expr::are_same_type<true>(if_true, if_false),
-                                    WHOAMI_WITH_SOURCE
+                                    WHOAMI "Condition expr must be a boolean");
+            Util::affirm<Err::Type>(Expr::are_same_type<true>(if_true, if_false), WHOAMI
                                     "if_true must be of the same type and size as if_false");
         }
     };

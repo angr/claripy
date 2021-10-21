@@ -25,7 +25,7 @@ namespace Expr {
             case VS::static_cuid:
                 return "VS";
             default:
-                throw Util::Err::Type(WHOAMI_WITH_SOURCE "CUID unknown; unknown type.");
+                throw Util::Err::Type(WHOAMI "CUID unknown; unknown type.");
         }
     }
 

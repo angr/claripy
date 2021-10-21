@@ -21,18 +21,17 @@ namespace Create::String {
             // If symbolic, use full_string's length
             if (count->symbolic) {
                 Util::affirm<E>(CUID::is_t<Expr::String>(full_string),
-                                WHOAMI_WITH_SOURCE "full_string expr must be a String");
+                                WHOAMI "full_string expr must be a String");
                 return Expr::get_bit_length(full_string);
             }
             // If concrete, use Concrete Op's length
             else {
 #ifdef DEBUG
-                Util::affirm<E>(CUID::is_t<Expr::BV>(count),
-                                WHOAMI_WITH_SOURCE "count expr must be a BV");
+                Util::affirm<E>(CUID::is_t<Expr::BV>(count), WHOAMI "count expr must be a BV");
 #endif
-                Util::affirm<E>(CUID::is_t<Op::Literal>(count->op), WHOAMI_WITH_SOURCE
-                                "count op must be a Literal. More than likely, this means "
-                                "that some simplifiers are unimplemented / failing.");
+                Util::affirm<E>(CUID::is_t<Op::Literal>(count->op),
+                                WHOAMI "count op must be a Literal. More than likely, this means "
+                                       "that some simplifiers are unimplemented / failing.");
                 return 0x1000; // NOLINT TODO
             }
         }
@@ -46,7 +45,7 @@ namespace Create::String {
                                     Annotation::SPAV &&sp = nullptr) {
         Util::affirm<Error::Expr::Usage>(start_index != nullptr && count != nullptr &&
                                              full_string != nullptr,
-                                         WHOAMI_WITH_SOURCE "Expr pointers cannot be nullptr");
+                                         WHOAMI "Expr pointers cannot be nullptr");
         const UInt bit_length { Private::sub_string_length(count, full_string) };
         return Simplification::simplify(Expr::factory<Expr::String>(
             start_index->symbolic || count->symbolic || full_string->symbolic,

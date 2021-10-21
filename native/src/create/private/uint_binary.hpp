@@ -44,9 +44,8 @@ namespace Create::Private {
                       "Create::Private::uint_binary requires In is in Allowed");
 
         // Dynamic checks
-        Util::affirm<Err::Usage>(expr != nullptr, WHOAMI_WITH_SOURCE "expr cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<In>(expr),
-                                WHOAMI_WITH_SOURCE "Expr operand of incorrect type");
+        Util::affirm<Err::Usage>(expr != nullptr, WHOAMI "expr cannot be nullptr");
+        Util::affirm<Err::Type>(CUID::is_t<In>(expr), WHOAMI "Expr operand of incorrect type");
 
         // Construct expr (static casts are safe because of previous checks)
         if constexpr (Util::is_ancestor<Ex::Bits, Out>) {

@@ -39,9 +39,8 @@ namespace Create::Private {
 
         // Dynamic checks
         Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                 WHOAMI_WITH_SOURCE "Expr pointer arguments may not be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<In>(left),
-                                WHOAMI_WITH_SOURCE "left operand of incorrect type");
+                                 WHOAMI "Expr pointer arguments may not be nullptr");
+        Util::affirm<Err::Type>(CUID::is_t<In>(left), WHOAMI "left operand of incorrect type");
 
         // Construct expr (static casts are safe because of previous checks)
         if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
@@ -52,7 +51,7 @@ namespace Create::Private {
             if constexpr (Mode == SizeMode::Add) {
                 // Type check before size extraction
                 Util::affirm<Err::Type>(CUID::is_t<In>(right),
-                                        WHOAMI_WITH_SOURCE "right operand of incorrect type");
+                                        WHOAMI "right operand of incorrect type");
                 new_bit_length += Ex::get_bit_length(right);
             }
             else if constexpr (Mode != SizeMode::First) {

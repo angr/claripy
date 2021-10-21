@@ -12,9 +12,8 @@ namespace Create {
 
     /** This function exists to prevent accidental use by explicit rejection */
     inline Expr::BasePtr literal(CCSC, Annotation::SPAV && = nullptr) {
-        throw Util::Err::Usage(WHOAMI_WITH_SOURCE
-                               "Do not pass a char * to literal(); C++ casts it to "
-                               "bool; did you mean to use std::string?");
+        throw Util::Err::Usage(WHOAMI "Do not pass a char * to literal(); C++ casts it to "
+                                      "bool; did you mean to use std::string?");
     }
 
 /** A local macro used for consistency */

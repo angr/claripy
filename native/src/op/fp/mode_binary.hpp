@@ -69,7 +69,7 @@ namespace Op::FP {
             : Base { h, cuid_ }, mode { m }, left { l }, right { r } {
             using E = Error::Expr::Type;
             Util::affirm<E>(Expr::are_same_type<true>(left, right),
-                            WHOAMI_WITH_SOURCE "left and right types or sizes differ");
+                            WHOAMI "left and right types or sizes differ");
         }
     };
 

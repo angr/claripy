@@ -282,7 +282,7 @@ namespace Backend::Z3 {
                     case 4:
                         UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
                         throw Error::Backend::Unsupported(
-                            WHOAMI_WITH_SOURCE "VSA is not supported by the Z3 backend");
+                            WHOAMI "VSA is not supported by the Z3 backend");
 /** A local macro used for consistency */
 #define STD_INT(INDEX, TYPE, BL)                                                                  \
     case INDEX:                                                                                   \
@@ -310,13 +310,12 @@ namespace Backend::Z3 {
                         // Error handling
                     default:
                         throw Util::Err::NotSupported(
-                            WHOAMI_WITH_SOURCE
-                            "Unknown variant type in literal op given to z3 backend");
+                            WHOAMI "Unknown variant type in literal op given to z3 backend");
                 }
             }
             // Re-emit these exceptions with additional info and wrapped as a Claricpp exception
             catch (const std::bad_variant_access &ex) {
-                throw Util::Err::BadVariantAccess(WHOAMI_WITH_SOURCE, ex.what());
+                throw Util::Err::BadVariantAccess(WHOAMI, ex.what());
             }
         }
 
@@ -346,7 +345,7 @@ namespace Backend::Z3 {
 #ifdef DEBUG // @todo Double check if I am strill right
                     Util::affirm<Util::Err::Unknown>(
                         Factory::Private::gcache<Expr::Base>().find(expr->hash) != nullptr,
-                        WHOAMI_WITH_SOURCE "cache lookup failed for existing object");
+                        WHOAMI "cache lookup failed for existing object");
 #endif
                     // Update annotations for translocation
                     const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(),
@@ -363,11 +362,10 @@ namespace Backend::Z3 {
                 }
                 // Error handling
                 case Expr::VS::static_cuid:
-                    throw Error::Backend::Unsupported(WHOAMI_WITH_SOURCE
+                    throw Error::Backend::Unsupported(WHOAMI
                                                       "VSA is not supported by the Z3 backend");
                 default:
-                    throw Util::Err::NotSupported(WHOAMI_WITH_SOURCE
-                                                  "Unknown expr CUID given to z3 backend");
+                    throw Util::Err::NotSupported(WHOAMI "Unknown expr CUID given to z3 backend");
             }
         }
 
@@ -379,7 +377,7 @@ namespace Backend::Z3 {
 #ifdef DEBUG
                 z3::check_context(a, b);
                 Util::affirm<Util::Err::Type>(a.is_fpa() && b.is_fpa(),
-                                              WHOAMI_WITH_SOURCE " called non-FP ops");
+                                              WHOAMI " called non-FP ops");
 #else
                 Util::sink(a, b);
 #endif
@@ -399,8 +397,7 @@ namespace Backend::Z3 {
                     case Mode::FP::Rounding::TowardsZero:
                         return z3::RTZ;
                     default:
-                        throw Util::Err::NotSupported(WHOAMI_WITH_SOURCE
-                                                      "Unable to map Mode::FP::Rounding ",
+                        throw Util::Err::NotSupported(WHOAMI "Unable to map Mode::FP::Rounding ",
                                                       mode, " to z3::rounding_mode");
                 };
             }

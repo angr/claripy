@@ -27,13 +27,12 @@ namespace Create::Private {
                       "Create::Private::flat argument types must be in Allowed");
 #ifdef DEBUG
         for (const auto &i : operands) {
-            Util::affirm<Err::Usage>(i != nullptr,
-                                     WHOAMI_WITH_SOURCE "operands' pointers cannot be nullptrs");
+            Util::affirm<Err::Usage>(i != nullptr, WHOAMI "operands' pointers cannot be nullptrs");
         }
 #endif
-        Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI_WITH_SOURCE "operands are empty.");
+        Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
         Util::affirm<Err::Type>(CUID::is_t<T>(operands[0]),
-                                WHOAMI_WITH_SOURCE "operands[0] is the wrong type");
+                                WHOAMI "operands[0] is the wrong type");
 
         // Calculate simple sym
         bool sym { false };
