@@ -1,69 +1,11 @@
 /**
  * @file
- * @brief This header exposes the public C API for claricpp
- * Unless otherwise specified, arguments may not contain nullptr
+ * @brief This header defines the C API for Create
  */
-#ifndef R_APIPUBLIC_H_
-#define R_APIPUBLIC_H_
+#ifndef R_API_CREATE_H_
+#define R_API_CREATE_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
-
-/********************************************************************/
-/*                        Type Declarations                         */
-/********************************************************************/
-
-
-/** Used to declare a C wrapper for a C++ type */
-#define DECLARE_WRAPPER(NAME) \
-    /** A C wrapper for a C++ type */ \
-    struct NAME { void * ptr; }
-
-DECLARE_WRAPPER(ClaricppAnnotation);
-DECLARE_WRAPPER(ClaricppSPAV);
-DECLARE_WRAPPER(ClaricppExpr);
-DECLARE_WRAPPER(ClaricppBigInt);
-
-/** Return the type of an input array of type T */
-#define ARRAY_IN(T) const T * const
-
-/** The type a Python string argument is */
-typedef ARRAY_IN(char) PyStr;
-
-/** Define SIZE_T as UInt without polluting the global namespace */
-#define SIZE_T unsigned long long
-/** Define Hash::Hash without polluting the global namespace */
-#define HASH_T unsigned long long
-/** Define a type python can pass to represent a VS within claricpp */
-#define VS_T unsigned long long
-
-// Cleanup
-#undef DECLARE_WRAPPER
-
-
-/********************************************************************/
-/*                            Annotation                            */
-/********************************************************************/
-
-
-/** Return a new Annotation::Base */
-ClaricppAnnotation claricpp_annotation_new_base();
-
-/** Return a new Annotation::SimplificationAvoidance */
-ClaricppAnnotation claricpp_annotation_new_simplification_avoicance();
-
-/** Create an Annotation::SPAV from a list of annotations
- *  @param list An array of ClaricppAnnotation pointers
- *  @param len The length of list
- *  @return A ClaricppSPAV constructed from list and len
- */
-ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list, const SIZE_T len);
-
-
-/********************************************************************/
-/*                              Create                              */
-/********************************************************************/
+#include "constants.h"
 
 
 // Symbol
@@ -246,21 +188,5 @@ ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav);
 // String
 
 // FP
-
-
-
-
-
-
-/********************************************************************/
-/*                               Expr                               */
-/********************************************************************/
-
-
-/********************************************************************/
-/*                             Backend                              */
-/********************************************************************/
-
-
 
 #endif

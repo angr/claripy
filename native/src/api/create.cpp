@@ -1,49 +1,7 @@
 /** @file */
-#include "api_private.hpp"
+#include "../create.hpp"
 
-// @todo: Handle exceptions
-
-
-// Static checks
-/** A local macro used for static tests */
-#define SAME_U(A, B) (sizeof(A) == sizeof(B) && std::is_unsigned_v<A> && std::is_unsigned_v<B>)
-static_assert(SAME_U(std::size_t, UInt), "UInt needs to be changed");
-static_assert(SAME_U(SIZE_T, UInt), "UInt needs to be changed");
-static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");
-static_assert(SAME_U(HASH_T, Hash::Hash), "HASH_T needs to be changed");
-static_assert(std::is_same_v<CCSC, PyStr>, "PyStr needs to be changed");
-static_assert(std::is_same_v<PyStr, ARRAY_IN(char)>, "ARRAY_IN needs to be changed");
-// Cleanup
-#undef SAME_U
-
-/********************************************************************/
-/*                            Annotation                            */
-/********************************************************************/
-
-extern "C" {
-
-ClaricppAnnotation claricpp_annotation_new_base() {
-    return API::to_c(Annotation::factory<Annotation::Base>());
-}
-
-ClaricppAnnotation claricpp_annotation_new_simplification_avoicance() {
-    return API::to_c(Annotation::factory<Annotation::SimplificationAvoidance>());
-}
-
-ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list, const SIZE_T len) {
-    Annotation::Vec::RawVec raw;
-    raw.reserve(len);
-    for (SIZE_T i = 0; i < len; ++i) {
-        raw.emplace_back(API::to_cpp_ref(list[i])); // NOLINT
-    }
-    using CV = Util::InternalType<Annotation::SPAV>;
-    return API::to_c(std::make_shared<CV>(std::move(raw)));
-}
-}
-
-/********************************************************************/
-/*                              Create                              */
-/********************************************************************/
+#include "cpp.hpp"
 
 
 /** A local helper function for create methods */

@@ -6,16 +6,12 @@
 #ifndef R_UNIT_TESTLIB_TESTLIB_INCLUDES_HPP_
 #define R_UNIT_TESTLIB_TESTLIB_INCLUDES_HPP_
 
-#include "api_private.hpp"
+#include "api.hpp"
 #include "backend.hpp"
 #include "create.hpp"
 #include "cuid.hpp"
 #include "factory.hpp"
 #include "hash.hpp"
 #include "op.hpp"
-
-extern "C" {
-#include "api_public.h"
-};
 
 #endif
