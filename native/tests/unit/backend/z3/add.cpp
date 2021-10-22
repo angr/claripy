@@ -16,7 +16,7 @@ void add() {
     // Constraints
     const auto x { Create::symbol<Ex::BV>("x", 64) };
     const uint64_t umax { std::numeric_limits<uint64_t>::max() };
-    auto x_not_max { Create::neq<Ex::BV>(x, Create::literal(umax)) };
+    auto x_not_max { Create::neq(x, Create::literal(umax)) };
 
     // Desired output string components
     const std::string prefix { "(declare-fun x () (_ BitVec 64))\n" };

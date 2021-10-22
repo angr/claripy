@@ -17,9 +17,9 @@ void unsat_core() {
 
     // Two contradictory exprs and one other
     const auto x { Create::symbol<Ex::BV>("x", 64) };
-    const auto xneq0 { Create::neq<Ex::BV>(x, lt(0)) };
-    const auto xeq1 { Create::eq<Ex::BV>(x, lt(1)) };
-    const auto xeq2 { Create::eq<Ex::BV>(x, lt(2)) };
+    const auto xneq0 { Create::neq(x, lt(0)) };
+    const auto xeq1 { Create::eq(x, lt(1)) };
+    const auto xeq2 { Create::eq(x, lt(2)) };
 
     // Add all three constraints
     z3.add<true>(solver, xneq0.get());

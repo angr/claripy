@@ -32,7 +32,7 @@ void satisfiable() {
         bool ret; // NOLINT
         if (ec != nullptr) {
             std::vector<Ex::RawPtr> ecs;
-            const auto c { Create::eq<B>(x, ec) };
+            const auto c { Create::eq(x, ec) };
             ecs.emplace_back(c.get());
             z3.add(solver, e.get());
             ret = z3.satisfiable(solver, ecs);

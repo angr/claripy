@@ -46,22 +46,20 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     // x and expr generators
     const auto x { C::symbol<E::BV>("x", C_CHAR_BIT * sizeof(T)) };
     const auto num { [&unsign](const T v) { return C::literal(unsign(T { v })); } };
-    const auto neq { [&x, &unsign](const T y) {
-        return C::neq<E::BV>(x, C::literal(unsign(y)));
-    } };
+    const auto neq { [&x, &unsign](const T y) { return C::neq(x, C::literal(unsign(y))); } };
 
     // Exprs
-    const auto xleq10 { C::compare<E::BV, M::Less | neq_mask>(x, num(10)) };
-    const auto xleq5 { C::compare<E::BV, M::Less | neq_mask>(x, num(5)) };
-    const auto xgeq5 { C::compare<E::BV, M::Greater | neq_mask>(x, num(5)) };
+    const auto xleq10 { C::compare<M::Less | neq_mask>(x, num(10)) };
+    const auto xleq5 { C::compare<M::Less | neq_mask>(x, num(5)) };
+    const auto xgeq5 { C::compare<M::Greater | neq_mask>(x, num(5)) };
 
     const auto plus1 { C::and_<E::Bool>({ xleq5, neq(int_min) }) };
     const auto plus2 { C::and_<E::Bool>({ xleq5, neq(int_min), neq(int_min + 1) }) };
     const auto minus1 { C::and_<E::Bool>({ xgeq5, neq(int_max) }) };
     const auto minus2 { C::and_<E::Bool>({ xgeq5, neq(int_max), neq(int_max - 1) }) };
 
-    const auto max { C::eq<E::BV>(x, Create::literal(unsign(int_max))) };
-    const auto min { C::eq<E::BV>(x, Create::literal(unsign(int_min))) };
+    const auto max { C::eq(x, Create::literal(unsign(int_max))) };
+    const auto min { C::eq(x, Create::literal(unsign(int_min))) };
 
     // Test functions
     const auto get_min { [&z3, &x](auto e) {

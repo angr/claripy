@@ -51,14 +51,14 @@ void trivial() {
     // Comparisons
 
     Log::debug("Testing eq...");
-    binary<Ex::Bool, Ex::FP, Op::Eq, SM::First, Cr::eq<Expr::FP>>();
-    binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq<Expr::BV>>();
-    binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq<Expr::Bool>>();
-    binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq<Expr::String>>();
+    binary<Ex::Bool, Ex::FP, Op::Eq, SM::First, Cr::eq>();
+    binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq>();
+    binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq>();
+    binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq>();
 
 /** A local macro used to test a comparison function */
 #define TEST_COMPARE(T_, MASK)                                                                    \
-    binary<Ex::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<T_, MASK>>();
+    binary<Ex::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
 
 /** A local macro used to test a comparison function for all values of Less and Equals */
 #define TEST_COMPARE_MULTI(T_, S_)                                                                \
@@ -121,12 +121,12 @@ void trivial() {
     binary<Ex::BV, Op::Union, SM::First, Cr::union_>();
 
     Log::debug("Testing intersection...");
-    binary<Ex::BV, Op::Intersection, SM::First, Cr::intersection_<Expr::BV>>();
-    binary<Ex::Bool, Op::Intersection, SM::First, Cr::intersection_<Expr::Bool>>();
+    binary<Ex::BV, Op::Intersection, SM::First, Cr::intersection_>();
+    binary<Ex::Bool, Op::Intersection, SM::First, Cr::intersection_>();
 
     Log::debug("Testing concat...");
-    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat<Expr::BV>>();
-    binary<Ex::String, Op::Concat, SM::Add, Cr::concat<Expr::String>>();
+    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat>();
+    binary<Ex::String, Op::Concat, SM::Add, Cr::concat>();
 
     /********************************************************************/
     /*                               Flat                               */

@@ -42,18 +42,16 @@ void eval() {
     namespace Ex = Expr; // NOLINT (false positive)
     const auto x { Create::symbol<Ex::BV>("x", 64) };
     const auto y { Create::symbol<Ex::BV>("y", 64) };
-    const auto neq { [&x](const uint64_t z) {
-        return Create::neq<Ex::BV>(x, Create::literal(z));
-    } };
+    const auto neq { [&x](const uint64_t z) { return Create::neq(x, Create::literal(z)); } };
     const auto n0 { neq(0) };
     const auto n2 { neq(2) };
     const auto n3 { neq(3) };
 
     // Bound to make testing more precise
     using M = Mode::Compare;
-    const auto xleq5 { Create::compare<Ex::BV, M::Unsigned | M::Less | M::Eq>(
+    const auto xleq5 { Create::compare<M::Unsigned | M::Less | M::Eq>(
         x, Create::literal(uint64_t { 5 })) };
-    const auto yleq2 { Create::compare<Ex::BV, M::Unsigned | M::Less | M::Eq>(
+    const auto yleq2 { Create::compare<M::Unsigned | M::Less | M::Eq>(
         y, Create::literal(uint64_t { 2 })) };
     z3.add(solver, xleq5.get());
     z3.add(solver, yleq2.get());

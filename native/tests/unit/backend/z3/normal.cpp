@@ -95,34 +95,34 @@ void normal() {
     // Binary
 
     Util::Log::debug("Testing eq...");
-    UNITTEST_ASSERT(test_id(C::eq<Ex::FP>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::eq<Ex::Bool>(bool_x, bool_y)));
+    UNITTEST_ASSERT(test_id(C::eq(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::eq(bool_x, bool_y)));
     /* UNITTEST_ASSERT(test_id(C::eq<Ex::String>(string_x, string_y))); */
 
     Util::Log::debug("Testing neq...");
-    UNITTEST_ASSERT(test_id(C::neq<Ex::FP>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::neq<Ex::Bool>(bool_x, bool_y)));
+    UNITTEST_ASSERT(test_id(C::neq(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::neq(bool_x, bool_y)));
     /* UNITTEST_ASSERT(test_id(C::neq<Ex::String>(string_x, string_y))); */
 
     using Cmp = Mode::Compare;
     Util::Log::debug("Testing compare...");
     const auto sl { Cmp::Signed | Cmp::Less };
     const auto sg { Cmp::Signed | Cmp::Less };
-    UNITTEST_ASSERT(test_id(C::compare<Ex::FP, sl | Cmp::Eq>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::FP, sl | Cmp::Neq>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::FP, sg | Cmp::Eq>(fp_x, fp_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::FP, sg | Cmp::Neq>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Eq>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Neq>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Eq>(fp_x, fp_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Neq>(fp_x, fp_y)));
 
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, sl | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, sl | Cmp::Neq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, sg | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, sg | Cmp::Neq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Eq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sl | Cmp::Neq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Eq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<sg | Cmp::Neq>(bv_x, bv_y)));
     const auto ul { Cmp::Unsigned | Cmp::Less };
     const auto ug { Cmp::Unsigned | Cmp::Less };
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, ul | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, ul | Cmp::Neq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, ug | Cmp::Eq>(bv_x, bv_y)));
-    UNITTEST_ASSERT(test_id(C::compare<Ex::BV, ug | Cmp::Neq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<ul | Cmp::Eq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<ul | Cmp::Neq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<ug | Cmp::Eq>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::compare<ug | Cmp::Neq>(bv_x, bv_y)));
 
     Util::Log::debug("Testing sub...");
     UNITTEST_ASSERT(test_id(C::sub(bv_x, bv_y)));
@@ -147,7 +147,7 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::rotate<LR::Right>(bv_x, bv_y)));
 
     Util::Log::debug("Testing concat...");
-    UNITTEST_ASSERT(test_id(C::concat<Ex::BV>(bv_x, bv_y)));
+    UNITTEST_ASSERT(test_id(C::concat(bv_x, bv_y)));
     /* UNITTEST_ASSERT(test_id(C::concat<Ex::String>(string_x, string_y))); */
 
     // Flat
