@@ -17,7 +17,7 @@ namespace Create::Private {
      *  Assumes left is of type Bits, as is right
      */
     template <SizeMode Mode>
-    UInt length_calc(const Expr::BasePtr &left, const Expr::BasePtr &right) {
+    UInt binary_len(const Expr::BasePtr &left, const Expr::BasePtr &right) {
         if constexpr (Mode == SizeMode::First) {
             return Expr::get_bit_length(left);
         }
@@ -61,10 +61,9 @@ namespace Create::Private {
         else {
             return simplify(Expr::factory<Out>(left->symbolic || right->symbolic,
                                                Op::factory<OpT>(left, right),
-                                               length_calc<Mode>(left, right), std::move(sp)));
+                                               binary_len<Mode>(left, right), std::move(sp)));
         }
     }
-
 
     /** Create a Expr with a binary op
      *  Out type is the same as left
@@ -99,7 +98,7 @@ namespace Create::Private {
         }
         return simplify(Expr::factory_cuid(left->cuid, left->symbolic || right->symbolic,
                                            Op::factory<OpT>(left, right),
-                                           length_calc<Mode>(left, right), std::move(sp)));
+                                           binary_len<Mode>(left, right), std::move(sp)));
     }
 
 } // namespace Create::Private

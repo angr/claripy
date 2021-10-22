@@ -66,9 +66,8 @@ namespace Create::FP {
      */
     inline Expr::BasePtr fp(const Expr::BasePtr &first, const Expr::BasePtr &second,
                             const Expr::BasePtr &third, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::ternary<Ex::FP, Ex::BV, Op::FP::FP, Private::SizeMode::Add, Ex::BV>(
-            first, second, third, std::move(sp));
+        return Private::ternary_explicit<Expr::FP, Op::FP::FP, Expr::BV>(first, second, third,
+                                                                         std::move(sp));
     }
 
 } // namespace Create::FP
