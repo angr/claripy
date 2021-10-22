@@ -11,7 +11,7 @@ void annotation() {
     using SA = A::SimplificationAvoidance;
 
     const ClaricppAnnotation arr[] = { claricpp_annotation_new_base(),
-                                       claricpp_annotation_new_simplification_avoicance() };
+                                       claricpp_annotation_new_simplification_avoidance() };
     const ClaricppSPAV spav { claricpp_annotation_create_spav(arr, 2) };
 
     const A::BasePtr base { API::to_cpp_ref(arr[0]) };
