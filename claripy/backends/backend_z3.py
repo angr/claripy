@@ -342,7 +342,7 @@ class BackendZ3(Backend):
         print(func_name)
         func_args_z3 = self.convert_list(func_args)
         func_sig = [arg.sort() for arg in func_args_z3]
-        func_sig.append(z3.BitVecSort(64, self._context))
+        func_sig.append(z3.BitVecSort(ast.length, self._context))
         func = z3.Function(func_name, *func_sig)
         func_result = func(*func_args_z3)
         return func_result
@@ -446,6 +446,7 @@ class BackendZ3(Backend):
             symbol_name = _z3_decl_name_str(ctx, decl)
             symbol_str = symbol_name.decode()
             symbol_ty = z3.Z3_get_sort_kind(ctx, z3_sort)
+            bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
 
             # if len(children) == 0:
             #     bv_size = z3.Z3_get_bv_sort_size(ctx, z3_sort)
@@ -460,7 +461,7 @@ class BackendZ3(Backend):
             # else:
             args = [symbol_str]
             args.extend(children)
-            func = Func(op=symbol_str, args=args)
+            func = Func(op=symbol_str, args=args, _ret_size = bv_size)
             func_result = func.func_op(*args)
             return func_result
 

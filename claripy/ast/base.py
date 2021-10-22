@@ -87,7 +87,7 @@ class Base:
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
                   'depth', '__weakref__',
                   '_uc_alloc_depth', 'annotations', 'simplifiable', '_uneliminatable_annotations', '_relocatable_annotations',
-                  '_variable_paths', '_canonical_hash']
+                  '_variable_paths', '_canonical_hash', '_ret_size']
     _hash_cache = weakref.WeakValueDictionary()
     _leaf_cache = weakref.WeakValueDictionary()
 
@@ -424,7 +424,7 @@ class Base:
     #pylint:disable=attribute-defined-outside-init
     def __a_init__(self, op, args, variables=None, symbolic=None, length=None, simplified=0, errored=None,
                    eager_backends=None, uninitialized=None, uc_alloc_depth=None, annotations=None,
-                   encoded_name=None, depth=None, uneliminatable_annotations=None, relocatable_annotations=None):  #pylint:disable=unused-argument
+                   encoded_name=None, depth=None, uneliminatable_annotations=None, relocatable_annotations=None, _ret_size=None):  #pylint:disable=unused-argument
         """
         Initializes an AST. Takes the same arguments as ``Base.__new__()``
 
@@ -461,6 +461,7 @@ class Base:
 
         self._variable_paths = None
         self._canonical_hash = None
+        self._ret_size = _ret_size
 
         if len(self.args) == 0:
             raise ClaripyOperationError("AST with no arguments!")
