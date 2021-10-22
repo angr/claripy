@@ -34,10 +34,9 @@ namespace Create::String {
      */
     inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const UInt integer,
                                 Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace CP = ::Create::Private;
-        return CP::uint_binary<UInt, Ex::BV, Ex::String, Op::String::ToInt, CP::SizeMode::Second,
-                               Ex::String>(expr, integer, std::move(sp));
+        return CP::uint_binary<UInt, Op::String::ToInt, CP::SizeMode::Second, Expr::String>(
+            expr, integer, std::move(sp));
     }
 
     /** Create an Expr with an String::Len op
@@ -46,10 +45,9 @@ namespace Create::String {
      */
     inline Expr::BasePtr len(const Expr::BasePtr &expr, const UInt integer,
                              Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace CP = ::Create::Private;
-        return CP::uint_binary<UInt, Ex::BV, Ex::String, Op::String::Len, CP::SizeMode::Second,
-                               Ex::String>(expr, integer, std::move(sp));
+        return CP::uint_binary<UInt, Op::String::Len, CP::SizeMode::Second, Expr::String>(
+            expr, integer, std::move(sp));
     }
 
     /********************************************************************/

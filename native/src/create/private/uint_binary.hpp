@@ -12,75 +12,43 @@
 
 namespace Create::Private {
 
-    /** Create a Expr with a uint binary op
-     *  Expr pointers may not be nullptr
-     */
-    template <typename IntT, typename Out, typename In, typename OpT, SizeMode Mode,
-              typename... Allowed>
-    inline Expr::BasePtr uint_binary(const Expr::BasePtr &expr, const IntT integer,
-                                     Annotation::SPAV &&sp) {
-        namespace Ex = Expr;
-        using namespace Simplification;
-        namespace Err = Error::Expr;
-
-        // Static checks
-        static_assert(Util::qualified_is_in<IntT, UInt, Int>,
-                      "Create::Private::uint_binary requires IntT be either UInt or "
-                      "Int");
-        static_assert(Util::is_ancestor<Ex::Base, Out>,
-                      "Create::Private::uint_binary requires Out be an Expr");
-        static_assert(Util::is_ancestor<Ex::Base, In>,
-                      "Create::Private::uint_binary requires In be an Expr");
-        static_assert(Op::is_uint_binary<OpT>,
-                      "Create::Private::uint_binary requires a int binary OpT");
-        if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
-            const constexpr bool sized_in { Util::is_ancestor<Ex::Bits, In> };
-            static_assert(
-                Util::TD::boolean<sized_in, In>,
-                "Create::Private::uint_binary does not support sized output types without "
-                "sized input types");
+    /** Calculates the length a uint binary expression should have */
+    template <SizeMode Mode, typename IntT> UInt uint_len(const IntT i, const Expr::BasePtr &e) {
+        if constexpr (Mode == SizeMode::Second) {
+            return i;
         }
-        static_assert(Util::qualified_is_in<In, Allowed...>,
-                      "Create::Private::uint_binary requires In is in Allowed");
-
-        // Dynamic checks
-        Util::affirm<Err::Usage>(expr != nullptr, WHOAMI "expr cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<In>(expr), WHOAMI "Expr operand of incorrect type");
-
-        // Construct expr (static casts are safe because of previous checks)
-        if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
-            static_assert(Util::TD::boolean<Mode != SizeMode::NA, Out>,
-                          "SizeMode::NA not allowed with sized output type");
-            // Construct size
-            UInt new_bit_length { integer };
-            if constexpr (Mode == SizeMode::Add) {
-                new_bit_length += Ex::get_bit_length(expr);
-            }
-            else if constexpr (Mode != SizeMode::Second) {
-                static_assert(Util::TD::false_<Out>,
-                              "Create::Private::uint_binary does not support the given SizeMode");
-            }
-            // Actually construct expr
-            return simplify(Ex::factory<Out>(expr->symbolic, Op::factory<OpT>(expr, integer),
-                                             new_bit_length, std::move(sp)));
+        else if constexpr (Mode == SizeMode::Add) {
+            return i + Expr::get_bit_length(e);
         }
         else {
-            static_assert(Mode == Util::TD::id<SizeMode::NA>,
-                          "SizeMode should be NA for non-sized type");
-            return simplify(
-                Ex::factory<Out>(expr->symbolic, Op::factory<OpT>(expr, integer), std::move(sp)));
+            static_assert(Util::CD::false_<Mode>, "Unsupported SizeMode");
         }
     }
 
     /** Create a Expr with a uint binary op
      *  Expr pointers may not be nullptr
-     *  A specialization where In = Out
+     *  Output type is assumed to be BV
      */
-    template <typename IntT, typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
+    template <typename IntT, typename OpT, SizeMode Mode, typename... Allowed>
     inline Expr::BasePtr uint_binary(const Expr::BasePtr &expr, const IntT integer,
                                      Annotation::SPAV &&sp) {
-        return uint_binary<IntT, InOut, InOut, OpT, Mode, Allowed...>(expr, integer,
-                                                                      std::move(sp));
+        using namespace Simplification;
+        namespace Err = Error::Expr;
+
+        // Static checks
+        static_assert(Util::qualified_is_in<IntT, UInt, Int>,
+                      "Create::Private::uint_binary requires IntT be either UInt or Int");
+        static_assert(Op::is_uint_binary<OpT>,
+                      "Create::Private::uint_binary requires a int binary OpT");
+
+        // Dynamic checks
+        Util::affirm<Err::Usage>(expr != nullptr, WHOAMI "expr cannot be nullptr");
+        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(expr),
+                                WHOAMI "Expr operand of incorrect type");
+
+        // Construct expr (static casts are safe because of previous checks)
+        return simplify(Expr::factory<Expr::BV>(expr->symbolic, Op::factory<OpT>(expr, integer),
+                                                uint_len<Mode>(integer, expr), std::move(sp)));
     }
 
 } // namespace Create::Private

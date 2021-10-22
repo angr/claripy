@@ -62,8 +62,7 @@ namespace Create {
      */
     inline Expr::BasePtr sign_ext(const Expr::BasePtr &expr, const UInt integer,
                                   Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::uint_binary<UInt, Ex::BV, Op::SignExt, Private::SizeMode::Add, Ex::BV>(
+        return Private::uint_binary<UInt, Op::SignExt, Private::SizeMode::Add, Expr::BV>(
             expr, integer, std::move(sp));
     }
 
@@ -72,8 +71,7 @@ namespace Create {
      */
     inline Expr::BasePtr zero_ext(const Expr::BasePtr &expr, const UInt integer,
                                   Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::uint_binary<UInt, Ex::BV, Op::ZeroExt, Private::SizeMode::Add, Ex::BV>(
+        return Private::uint_binary<UInt, Op::ZeroExt, Private::SizeMode::Add, Expr::BV>(
             expr, integer, std::move(sp));
     }
 
