@@ -16,27 +16,24 @@ namespace Create::Private {
     /** Create a Expr with an mode binary op
      *  Expr pointers may not be nullptr
      */
-    template <typename OpT, SizeMode Mode>
+    template <typename OpT>
     inline Expr::BasePtr mode_binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                      const Mode::FP::Rounding mode, Annotation::SPAV &&sp) {
-        namespace Ex = Expr;
         using namespace Simplification;
         namespace Err = Error::Expr;
 
         // Checks
         static_assert(Op::FP::is_mode_binary<OpT>,
                       "Create::Private::mode_binary requires OpT to be Op::FP::ModeBinary");
-        static_assert(Mode == SizeMode::First,
-                      "Create::Private::mode_binary does not support the given SizeMode");
         Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
                                  WHOAMI "Expr pointers cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<Ex::FP>(left),
+        Util::affirm<Err::Type>(CUID::is_t<Expr::FP>(left),
                                 WHOAMI "left operands must be of type Expr::FP");
 
         // Create expr
-        return simplify(Ex::factory<Ex::FP>(left->symbolic || right->symbolic,
-                                            Op::factory<OpT>(left, right, mode),
-                                            Ex::get_bit_length(left), std::move(sp)));
+        return simplify(Expr::factory<Expr::FP>(left->symbolic || right->symbolic,
+                                                Op::factory<OpT>(left, right, mode),
+                                                Expr::get_bit_length(left), std::move(sp)));
     }
 
 } // namespace Create::Private

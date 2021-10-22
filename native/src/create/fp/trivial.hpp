@@ -33,8 +33,7 @@ namespace Create::FP {
 #define FP_MB_SMF_ARITH(FN, OP)                                                                   \
     inline Expr::BasePtr FN(const Expr::BasePtr &left, const Expr::BasePtr &right,                \
                             const Mode::FP::Rounding mode, Annotation::SPAV &&sp = nullptr) {     \
-        return Private::mode_binary<Op::FP::OP, Private::SizeMode::First>(left, right, mode,      \
-                                                                          std::move(sp));         \
+        return Private::mode_binary<Op::FP::OP>(left, right, mode, std::move(sp));                \
     }
 
     /** Create a Expr with an FP::Add op

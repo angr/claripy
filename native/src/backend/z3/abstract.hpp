@@ -19,18 +19,6 @@
     Util::affirm<Util::Err::Size>((X).size() == (N), WHOAMI "Op ", __func__,                      \
                                   " should have " #N " children, but instead has: ", (X).size());
 
-/** A local macro used for adding a case for a given type
- *  Func must be take in T as its only template argument
- */
-#define TYPE_CASE(TYPE, FUNC, ...)                                                                \
-    case Expr::TYPE::static_cuid:                                                                 \
-        return FUNC<Expr::TYPE>(__VA_ARGS__);
-
-/** A local macro used for adding a default type case that throws an exception */
-#define DEFAULT_TYPE_CASE(BAD_CUID)                                                               \
-    default:                                                                                      \
-        throw Util::Err::Type(WHOAMI, "Unexpected type detected. CUID: ", (BAD_CUID));
-
 /** A string explaining why this file refuses to abstract unknown floating point values */
 #define REFUSE_FP_STANDARD                                                                        \
     "Refusing to use unknown point standard as the rules about bit manipulation on this "         \
@@ -205,19 +193,13 @@ namespace Backend::Z3 {
         }
 
         /** Abstraction function for z3 and ops */
-        template <typename T> static Expr::BasePtr and_(ArgsVec &args) {
-            FLAT_BINARY(Create::and_<T>);
-        }
+        static Expr::BasePtr and_(ArgsVec &args) { FLAT_BINARY(Create::and_); }
 
         /** Abstraction function for z3 or ops */
-        template <typename T> static Expr::BasePtr or_(const ArgsVec &args) {
-            FLAT_BINARY(Create::or_<T>);
-        }
+        static Expr::BasePtr or_(const ArgsVec &args) { FLAT_BINARY(Create::or_); }
 
         /** Abstraction function for z3 xor ops */
-        template <typename T> static Expr::BasePtr xor_(const ArgsVec &args) {
-            FLAT_BINARY(Create::xor_);
-        }
+        static Expr::BasePtr xor_(const ArgsVec &args) { FLAT_BINARY(Create::xor_); }
 
         /** Abstraction function for z3 not/inversion ops */
         template <typename T> static Expr::BasePtr not_(const ArgsVec &args) {
@@ -523,9 +505,7 @@ namespace Backend::Z3 {
         };
 
 // Cleanup
-#undef DEFAULT_TYPE_CASE
 #undef ASSERT_ARG_LEN
-#undef TYPE_CASE
 #undef FLAT_BINARY
 #undef MODE_BINARY
 #undef UINT_BINARY
