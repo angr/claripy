@@ -8,7 +8,7 @@
 /** Used to try to get valid expr and op pointers */
 template <typename E, typename O> static auto get_pointers(const ClaricppExpr in) {
     const Expr::RawPtr exp { API::to_cpp_ref(in).get() };
-    UNITTEST_ASSERT(exp != nullptr);
+    UNITTEST_ASSERT(exp != nullptr)
     CTSC<E> cast { dynamic_cast<CTSC<E>>(exp) };
     UNITTEST_ASSERT(cast != nullptr);
     CTSC<O> lit { dynamic_cast<CTSC<O>>(cast->op.get()) };
@@ -109,6 +109,7 @@ void create() {
 
     // Trivial Unary
 
+/** A local macro used for testing */
 #define UNARY(NAME, FUN, TYPE, OTHER)                                                             \
     Util::Log::debug("Testing " #NAME "...");                                                     \
     const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym), { nullptr }) };           \
@@ -124,6 +125,7 @@ void create() {
 // Cleanup
 #undef UNARY
 
+/** A local macro used for testing */
 #define UINT_BINARY(FUN)                                                                          \
     Util::Log::debug("Testing " #FUN "...");                                                      \
     const auto FUN { claricpp_create_##FUN(API::copy_to_c(bv_sym), 4, { nullptr }) };             \
@@ -136,11 +138,32 @@ void create() {
 // Cleanup
 #undef UINT_BINARY
 
-#define BINARY(NAME, FUN, TYPE, HASH)                                                             \
-    Util::Log::debug("Testing " #NAME "...");                                                     \
-    const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym),                           \
-                                            API::copy_to_c(TYPE##_sym), { nullptr }) };           \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == HASH);
+/** A local macro used for testing */
+#define BINARY(FUN, ARG, REAL_FUN)                                                                \
+    Util::Log::debug("Testing " #FUN "...");                                                      \
+    const auto FUN##_test { claricpp_create_##FUN(API::copy_to_c(ARG), API::copy_to_c(ARG),       \
+                                                  { nullptr }) };                                 \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash);
+
+    // Comparisons
+    using C = Mode::Compare;
+    BINARY(eq, bv_64, Create::eq);
+    BINARY(neq, bv_64, Create::neq);
+    BINARY(slt, bv_64, Create::compare<C::Signed | C::Less | C::Neq>);
+    BINARY(sle, bv_64, Create::compare<C::Signed | C::Less | C::Eq>);
+    BINARY(sgt, bv_64, Create::compare<C::Signed | C::Greater | C::Neq>);
+    BINARY(sge, bv_64, Create::compare<C::Signed | C::Greater | C::Eq>);
+    BINARY(ult, bv_64, Create::compare<C::Unsigned | C::Less | C::Neq>);
+    BINARY(ule, bv_64, Create::compare<C::Unsigned | C::Less | C::Eq>);
+    BINARY(ugt, bv_64, Create::compare<C::Unsigned | C::Greater | C::Neq>);
+    BINARY(uge, bv_64, Create::compare<C::Unsigned | C::Greater | C::Eq>);
+
+    // Math
+    BINARY(sub, bv_64, Create::sub);
+    BINARY(sdiv, bv_64, Create::div<true>);
+    BINARY(udiv, bv_64, Create::div<false>);
+    BINARY(smod, bv_64, Create::mod<true>);
+    BINARY(umod, bv_64, Create::mod<false>);
 
     // String
 

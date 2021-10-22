@@ -245,5 +245,24 @@ extern "C" {
 
     // Bitwise
 
+    ClaricppExpr claricpp_create_shift_left(const ClaricppExpr left, const ClaricppExpr right,
+                                            ClaricppSPAV spav) {
+        return make(Create::shift<Mode::Shift::Left>, spav, API::to_cpp_ref(left),
+                    API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_shift_logical_right(const ClaricppExpr left,
+                                                     const ClaricppExpr right, ClaricppSPAV spav) {
+        return make(Create::shift<Mode::Shift::LogicalRight>, spav, API::to_cpp_ref(left),
+                    API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_shift_arithmetic_right(const ClaricppExpr left,
+                                                        const ClaricppExpr right,
+                                                        ClaricppSPAV spav) {
+        return make(Create::shift<Mode::Shift::ArithmeticRight>, spav, API::to_cpp_ref(left),
+                    API::to_cpp_ref(right));
+    }
+
     // Misc
 }

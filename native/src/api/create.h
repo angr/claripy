@@ -343,6 +343,31 @@ ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr ri
 
 // Bitwise
 
+enum class Shift { Left, LogicalRight, ArithmeticRight };
+/** Create a shift left Expr
+ *  @param left The left operands of the shift Expr
+ *  @param right The left operands of the shift Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a left shift expression
+ */
+ClaricppExpr claricpp_create_shift_left(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a shift logical right Expr
+ *  @param left The left operands of the shift Expr
+ *  @param right The left operands of the shift Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a logical right shift expression
+ */
+ClaricppExpr claricpp_create_shift_logical_right(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a shift arithmetic right Expr
+ *  @param left The left operands of the shift Expr
+ *  @param right The left operands of the shift Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a left shift expression
+ */
+ClaricppExpr claricpp_create_shift_arithmetic_right(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
 // Misc
 
 
