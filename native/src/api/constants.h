@@ -25,6 +25,8 @@ DECLARE_WRAPPER(ClaricppBigInt);
 /** The type a Python string argument is */
 typedef ARRAY_IN(char) PyStr;
 
+/** Define UINT as UInt without polluting the global namespace */
+#define UINT unsigned long long
 /** Define SIZE_T as UInt without polluting the global namespace */
 #define SIZE_T unsigned long long
 /** Define Hash::Hash without polluting the global namespace */

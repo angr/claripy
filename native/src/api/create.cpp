@@ -17,7 +17,9 @@ static inline auto make(const F &f, ClaricppSPAV &spav, Args &&...args) {
 
 extern "C" {
 
-    // Symbol
+    /********************************************************************/
+    /*                              Symbol                              */
+    /********************************************************************/
 
     ClaricppExpr claricpp_create_symbol_bool(PyStr name, ClaricppSPAV spav) {
         static constexpr Expr::BasePtr (*const f)(std::string &&,
@@ -40,7 +42,9 @@ extern "C" {
 // Cleanup
 #undef CREATE_SYM
 
-// Literal
+    /********************************************************************/
+    /*                             Literal                              */
+    /********************************************************************/
 
 /** A local macro used for consistency */
 #define CREATE_LIT(TYPE, NAME)                                                                    \
@@ -87,7 +91,9 @@ extern "C" {
         return make(f, spav, BigInt { BigInt::Int { value }, bit_length });
     }
 
-    // Non Trivial
+    /********************************************************************/
+    /*                           Non-Trivial                            */
+    /********************************************************************/
 
     ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low,
                                          const ClaricppExpr from, ClaricppSPAV spav) {
@@ -100,7 +106,9 @@ extern "C" {
                     API::to_cpp_ref(right));
     }
 
-    // Trivial unary
+    /********************************************************************/
+    /*                          Trivial Unary                           */
+    /********************************************************************/
 
     ClaricppExpr claricpp_create_abs(const ClaricppExpr x, ClaricppSPAV spav) {
         return make(Create::abs, spav, API::to_cpp_ref(x));
@@ -121,4 +129,22 @@ extern "C" {
     ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav) {
         return make(Create::reverse, spav, API::to_cpp_ref(x));
     }
+
+    /********************************************************************/
+    /*                        Trivial UInt Binary                       */
+    /********************************************************************/
+
+    ClaricppExpr claricpp_create_sign_ext(const ClaricppExpr expr, const UINT integer,
+                                          ClaricppSPAV spav) {
+        return make(Create::sign_ext, spav, API::to_cpp_ref(expr), integer);
+    }
+
+    ClaricppExpr claricpp_create_zero_ext(const ClaricppExpr expr, const UINT integer,
+                                          ClaricppSPAV spav) {
+        return make(Create::zero_ext, spav, API::to_cpp_ref(expr), integer);
+    }
+
+    /********************************************************************/
+    /*                          Trivial Binary                          */
+    /********************************************************************/
 }

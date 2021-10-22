@@ -8,8 +8,6 @@
 extern "C" {
 #include "c.h"
 };
-#include "../annotation.hpp"
-#include "../expr.hpp"
 #include "../op.hpp"
 #include "../py_obj.hpp"
 
@@ -18,6 +16,7 @@ extern "C" {
 // Static checks
 /** A local macro used for static tests */
 #define SAME_U(A, B) (sizeof(A) == sizeof(B) && std::is_unsigned_v<A> && std::is_unsigned_v<B>)
+static_assert(SAME_U(UINT, UInt), "UINT needs to be changed");
 static_assert(SAME_U(std::size_t, UInt), "UInt needs to be changed");
 static_assert(SAME_U(SIZE_T, UInt), "UInt needs to be changed");
 static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");

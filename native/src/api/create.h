@@ -8,7 +8,9 @@
 #include "constants.h"
 
 
-// Symbol
+/********************************************************************/
+/*                              Symbol                              */
+/********************************************************************/
 
 /** Create an symbolic boolean expr
  *  @param name The name of the symbol
@@ -49,7 +51,9 @@ ClaricppExpr claricpp_create_symbol_fp(PyStr name, const SIZE_T bit_length, Clar
  */
 ClaricppExpr claricpp_create_symbol_bv(PyStr name, const SIZE_T bit_length, ClaricppSPAV spav);
 
-// Literal
+/********************************************************************/
+/*                             Literal                              */
+/********************************************************************/
 
 /** Create a literal bool expr
  *  @param value The data held by the literal
@@ -128,7 +132,9 @@ ClaricppExpr claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE
  */
 ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length, ClaricppSPAV spav);
 
-// Non Trivial
+/********************************************************************/
+/*                           Non-Trivial                            */
+/********************************************************************/
 
 /** Create an Extract Expr
  *  @param high The high index for the Extract op
@@ -148,7 +154,9 @@ ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const 
  */
 ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
 
-// Trivial unary
+/********************************************************************/
+/*                          Trivial Unary                           */
+/********************************************************************/
 
 /** Create an abs Expr
  *  @param x The expression take the absolute value of
@@ -184,6 +192,111 @@ ClaricppExpr claricpp_create_invert(const ClaricppExpr x, ClaricppSPAV spav);
  *  @return A ClaricppExpr containing an abs expression
  */
 ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav);
+
+/********************************************************************/
+/*                        Trivial UInt Binary                       */
+/********************************************************************/
+
+/** Create a sign extension Expr
+ *  @param expr The expression to be reversed
+ *  @param integer The number of bits to extend expr by
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an abs expression
+ */
+ClaricppExpr claricpp_create_sign_ext(const ClaricppExpr expr, const UINT integer, ClaricppSPAV spav);
+
+/** Create a zero extension Expr
+ *  @param expr The expression to be reversed
+ *  @param integer The number of bits to extend expr by
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an abs expression
+ */
+ClaricppExpr claricpp_create_zero_ext(const ClaricppExpr expr, const UINT integer, ClaricppSPAV spav);
+
+
+/********************************************************************/
+/*                          Trivial Binary                          */
+/********************************************************************/
+
+#if 0
+// Comparisons
+
+/** Create a Bool Expr with an Eq op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr eq(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                        Annotation::SPAV &&sp = nullptr);
+/** Create a Bool Expr with an Neq op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr neq(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                         Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with a Compare op
+     *  Expr pointers may not be nullptr
+ */
+template <Mode::Compare Mask>
+inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                             Annotation::SPAV &&sp = nullptr);
+// Math
+
+/** Create an Expr with an Sub op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr sub(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                         Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with an Div op
+     *  Expr pointers may not be nullptr
+ */
+template <bool Signed>
+inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                         Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with an Mod op
+     *  Expr pointers may not be nullptr
+ */
+template <bool Signed>
+inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                         Annotation::SPAV &&sp = nullptr);
+// Bitwise
+
+/** Create an Expr with a Shift op
+     *  Expr pointers may not be nullptr
+ */
+template <Mode::Shift Mask>
+inline Expr::BasePtr shift(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                           Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with a Rotate op
+     *  Expr pointers may not be nullptr
+ */
+template <Mode::LR LR>
+inline Expr::BasePtr rotate(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                            Annotation::SPAV &&sp = nullptr);
+// Misc
+
+/** Create an Expr with an Widen op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr widen(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                           Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with an Union op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr union_(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                            Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with an Intersection op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr intersection_(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                   Annotation::SPAV &&sp = nullptr);
+/** Create an Expr with an Concat op
+     *  Expr pointers may not be nullptr
+ */
+inline Expr::BasePtr concat(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                            Annotation::SPAV &&sp = nullptr);
+#endif
+
+/********************************************************************/
+/*                         Trivial Trinary                          */
+/********************************************************************/
 
 // String
 
