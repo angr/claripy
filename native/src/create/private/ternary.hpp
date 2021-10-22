@@ -5,8 +5,6 @@
 #ifndef R_CREATE_PRIVATE_TERNARY_HPP_
 #define R_CREATE_PRIVATE_TERNARY_HPP_
 
-#include "size_mode.hpp"
-
 #include "../constants.hpp"
 
 

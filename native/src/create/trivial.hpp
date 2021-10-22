@@ -219,8 +219,7 @@ namespace Create {
      */
     inline Expr::BasePtr add(Op::Add::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
-        return Private::flat<Ex::BV, Op::Add, Private::SizeMode::First, Ex::BV>(
-            std::move(operands), std::move(sp));
+        return Private::flat_explicit<Ex::BV, Op::Add, Ex::BV>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an Mul op
@@ -228,8 +227,7 @@ namespace Create {
      */
     inline Expr::BasePtr mul(Op::Mul::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
-        return Private::flat<Ex::BV, Op::Mul, Private::SizeMode::First, Ex::BV>(
-            std::move(operands), std::move(sp));
+        return Private::flat_explicit<Ex::BV, Op::Mul, Ex::BV>(std::move(operands), std::move(sp));
     }
 
     // Logical
@@ -237,30 +235,23 @@ namespace Create {
     /** Create an Expr with an Or op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr or_(Op::Or::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::flat<T, Op::Or, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
-            std::move(operands), std::move(sp));
+        return Private::flat<Op::Or, Expr::BV, Expr::Bool>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an And op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr and_(Op::And::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::flat<T, Op::And, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
-            std::move(operands), std::move(sp));
+        return Private::flat<Op::And, Expr::BV, Expr::Bool>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an Xor op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr xor_(Op::Xor::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::flat<Ex::BV, Op::Xor, Private::SizeMode::First, Ex::BV>(
-            std::move(operands), std::move(sp));
+        return Private::flat_explicit<Expr::BV, Op::Xor, Expr::BV>(std::move(operands),
+                                                                   std::move(sp));
     }
 
 } // namespace Create

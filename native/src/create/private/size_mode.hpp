@@ -22,12 +22,6 @@ namespace Create::Private {
         Add
     };
 
-    /** A shortcut for selecting First if T is a subclass of Bits, else NA */
-    template <typename T>
-    inline const constexpr SizeMode first_or_na {
-        Util::select<Util::is_ancestor<Expr::Bits, T>, SizeMode::First, SizeMode::NA>
-    };
-
 } // namespace Create::Private
 
 #endif

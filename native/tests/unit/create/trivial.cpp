@@ -143,12 +143,12 @@ void trivial() {
     // Logical
 
     Log::debug("Testing or...");
-    flat<Ex::BV, Op::Or, SM::First, Cr::or_<Expr::BV>>();
-    flat<Ex::Bool, Op::Or, SM::First, Cr::or_<Expr::Bool>>();
+    flat<Ex::BV, Op::Or, SM::First, Cr::or_>();
+    flat<Ex::Bool, Op::Or, SM::First, Cr::or_>();
 
     Log::debug("Testing and...");
-    flat<Ex::BV, Op::And, SM::First, Cr::and_<Expr::BV>>();
-    flat<Ex::Bool, Op::And, SM::First, Cr::and_<Expr::Bool>>();
+    flat<Ex::BV, Op::And, SM::First, Cr::and_>();
+    flat<Ex::Bool, Op::And, SM::First, Cr::and_>();
 
     Log::debug("Testing xor...");
     flat<Ex::BV, Op::Xor, SM::First, Cr::xor_>();

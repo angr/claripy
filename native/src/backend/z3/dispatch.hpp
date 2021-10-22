@@ -390,13 +390,13 @@ namespace Backend::Z3 {
                 case Z3_OP_ITE:
                     return Abs::ite(args);
                 case Z3_OP_AND:
-                    return Abs::template and_<Ex::Bool>(args);
+                    return Abs::and_(args);
                 case Z3_OP_OR:
-                    return Abs::template or_<Ex::Bool>(args);
+                    return Abs::or_(args);
                 case Z3_OP_IFF:
                     return Abs::eq(args);
                 case Z3_OP_XOR:
-                    return Abs::template xor_<Ex::Bool>(args);
+                    return Abs::xor_(args);
                 case Z3_OP_NOT:
                     return Abs::template not_<Ex::Bool>(args);
 
@@ -449,13 +449,13 @@ namespace Backend::Z3 {
 
                     // BV Logic
                 case Z3_OP_BAND:
-                    return Abs::template and_<Ex::BV>(args);
+                    return Abs::and_(args);
                 case Z3_OP_BOR:
-                    return Abs::template or_<Ex::BV>(args);
+                    return Abs::or_(args);
                 case Z3_OP_BNOT:
                     return Abs::template not_<Ex::BV>(args);
                 case Z3_OP_BXOR:
-                    return Abs::template xor_<Ex::BV>(args);
+                    return Abs::xor_(args);
 
                     // BV Bitwise Ops
                 case Z3_OP_BSHL:
