@@ -21,15 +21,15 @@
  *  X can be any int but it must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                   \
-    class CLASS final : public ::Op::Binary<(CONSIDERSIZE)> {                                     \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
-                                                                                                  \
-      private:                                                                                    \
-        /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                    \
-                              const ::Expr::BasePtr &r)                                           \
-            : Binary { h, static_cuid, l, r } {}                                                  \
+#define OP_BINARY_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                    \
+    class CLASS final : public ::Op::Binary<(CONSIDERSIZE)> {                                      \
+        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+                                                                                                   \
+      private:                                                                                     \
+        /** Private constructor */                                                                 \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                     \
+                              const ::Expr::BasePtr &r)                                            \
+            : Binary { h, static_cuid, l, r } {}                                                   \
     };
 
 
@@ -64,8 +64,8 @@ namespace Op {
 
       protected:
         /** Protected constructor */
-        explicit inline Binary(const Hash::Hash &h, const CUID::CUID &cuid_,
-                               const Expr::BasePtr &l, const Expr::BasePtr &r)
+        explicit inline Binary(const Hash::Hash &h, const CUID::CUID &cuid_, const Expr::BasePtr &l,
+                               const Expr::BasePtr &r)
             : Base { h, cuid_ }, left { l }, right { r } {
             using E = Error::Expr::Type;
 

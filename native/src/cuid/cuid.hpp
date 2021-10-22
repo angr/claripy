@@ -17,13 +17,13 @@
  *  X can be any int, but must be different between different templates of the same class
  *  For example, Foo<int> must give a different X than Foo<bool> gives
  */
-#define CUID_DEFINE_MAYBE_UNUSED(X)                                                               \
-  public:                                                                                         \
-    static_assert(std::is_convertible_v<decltype((X)), int>,                                      \
-                  "X should be convertible to an int!");                                          \
-    /** Define a static_cuid */                                                                   \
-    [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                            \
-        UTILS_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)  \
+#define CUID_DEFINE_MAYBE_UNUSED(X)                                                                \
+  public:                                                                                          \
+    static_assert(std::is_convertible_v<decltype((X)), int>,                                       \
+                  "X should be convertible to an int!");                                           \
+    /** Define a static_cuid */                                                                    \
+    [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                             \
+        UTILS_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)   \
     };
 
 

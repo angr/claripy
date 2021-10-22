@@ -48,16 +48,16 @@ namespace Op {
         /** Protected constructor
          *  Ensure that cond is a bool
          */
-        explicit inline If(const Hash::Hash &h, const Expr::BasePtr &c,
-                           const Expr::BasePtr &if_tru, const Expr::BasePtr &if_fal)
+        explicit inline If(const Hash::Hash &h, const Expr::BasePtr &c, const Expr::BasePtr &if_tru,
+                           const Expr::BasePtr &if_fal)
             : Base { h, static_cuid }, cond { c }, if_true { if_tru }, if_false { if_fal } {
             // For brevity
             namespace Err = Error::Expr;
             // Error checking
             Util::affirm<Err::Type>(CUID::is_t<Expr::Bool>(cond),
                                     WHOAMI "Condition expr must be a boolean");
-            Util::affirm<Err::Type>(Expr::are_same_type<true>(if_true, if_false), WHOAMI
-                                    "if_true must be of the same type and size as if_false");
+            Util::affirm<Err::Type>(Expr::are_same_type<true>(if_true, if_false),
+                                    WHOAMI "if_true must be of the same type and size as if_false");
         }
     };
 

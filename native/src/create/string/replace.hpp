@@ -39,10 +39,9 @@ namespace Create::String {
         }
 
         // Construct expr
-        return simplify(
-            Ex::factory<Ex::String>(first->symbolic || second->symbolic || third->symbolic,
-                                    Op::factory<Op::String::Replace>(first, second, third),
-                                    new_bit_length, std::move(sp)));
+        return simplify(Ex::factory<Ex::String>(
+            first->symbolic || second->symbolic || third->symbolic,
+            Op::factory<Op::String::Replace>(first, second, third), new_bit_length, std::move(sp)));
     }
 
 } // namespace Create::String

@@ -64,8 +64,7 @@ namespace Util {
             callstack = Util::Safe::malloc<void *>(Util::widen<uint32_t, true>(max_frames));
             const int n_frames { ::backtrace(callstack, max_frames) };
             Util::affirm<Err::Unknown>(n_frames > 0, WHOAMI "backtrace failed");
-            Util::affirm<Err::Unknown>(n_frames <= max_frames,
-                                       WHOAMI "backtrace overflow failure");
+            Util::affirm<Err::Unknown>(n_frames <= max_frames, WHOAMI "backtrace overflow failure");
             CCSC *const symbols { ::backtrace_symbols(callstack, n_frames) };
             // Used for formatting
             const auto n_to_print { Util::widen<UInt, true>(

@@ -28,10 +28,10 @@ extern "C" {
     }
 
 /** A local macro used for consistency */
-#define CREATE_SYM(TYPE, NAME)                                                                    \
-    ClaricppExpr claricpp_create_symbol_##NAME(PyStr name, const SIZE_T bit_length,               \
-                                               ClaricppSPAV spav) {                               \
-        return make(Create::symbol<Expr::TYPE>, spav, std::string { name }, bit_length);          \
+#define CREATE_SYM(TYPE, NAME)                                                                     \
+    ClaricppExpr claricpp_create_symbol_##NAME(PyStr name, const SIZE_T bit_length,                \
+                                               ClaricppSPAV spav) {                                \
+        return make(Create::symbol<Expr::TYPE>, spav, std::string { name }, bit_length);           \
     }
 
     CREATE_SYM(String, string);
@@ -47,10 +47,10 @@ extern "C" {
     /********************************************************************/
 
 /** A local macro used for consistency */
-#define CREATE_LIT(TYPE, NAME)                                                                    \
-    ClaricppExpr claricpp_create_literal_##NAME(const TYPE value, ClaricppSPAV spav) {            \
-        static constexpr Expr::BasePtr (*const f)(TYPE, Annotation::SPAV &&) { Create::literal }; \
-        return make(f, spav, value);                                                              \
+#define CREATE_LIT(TYPE, NAME)                                                                     \
+    ClaricppExpr claricpp_create_literal_##NAME(const TYPE value, ClaricppSPAV spav) {             \
+        static constexpr Expr::BasePtr (*const f)(TYPE, Annotation::SPAV &&) { Create::literal };  \
+        return make(f, spav, value);                                                               \
     }
 
     CREATE_LIT(bool, bool);

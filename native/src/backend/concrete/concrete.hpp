@@ -35,9 +35,7 @@ namespace Backend::Concrete {
         inline void clear_persistent_data() override final {}
 
         /** The name of this backend */
-        [[nodiscard]] inline const char *name() const noexcept override final {
-            return "concrete";
-        }
+        [[nodiscard]] inline const char *name() const noexcept override final { return "concrete"; }
 
         /** Simplify the given expr
          *  expr may not be nullptr

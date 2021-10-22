@@ -18,14 +18,14 @@ static inline void toggle_backtrace() {
 }
 
 /** Define the main function and use it to test a given function */
-#define UNITTEST_DEFINE_MAIN_TEST(TFUNC)                                                          \
-    /** Main function: test TFUNC */                                                              \
-    int main() {                                                                                  \
-        using namespace UnitTest::TestLib;                                                        \
-        original_bk = Util::Log::Backend::get();                                                  \
-        original_sty = Util::Log::Style::get();                                                   \
-        toggle_backtrace();                                                                       \
-        return test_func((TFUNC));                                                                \
+#define UNITTEST_DEFINE_MAIN_TEST(TFUNC)                                                           \
+    /** Main function: test TFUNC */                                                               \
+    int main() {                                                                                   \
+        using namespace UnitTest::TestLib;                                                         \
+        original_bk = Util::Log::Backend::get();                                                   \
+        original_sty = Util::Log::Style::get();                                                    \
+        toggle_backtrace();                                                                        \
+        return test_func((TFUNC));                                                                 \
     }
 
 

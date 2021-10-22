@@ -54,8 +54,7 @@ inline void uint_binary() {
             new_bit_length += a_down->bit_length;
         }
         else if constexpr (Mode != SM::Second) {
-            static_assert(Util::TD::false_<Out>,
-                          "uint_binary does not support the given SizeMode");
+            static_assert(Util::TD::false_<Out>, "uint_binary does not support the given SizeMode");
         }
         UNITTEST_ASSERT(exp_down->bit_length == new_bit_length);
     }

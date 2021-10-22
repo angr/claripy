@@ -35,10 +35,9 @@ namespace Expr {
      */
     template <typename... Args> BasePtr factory_cuid(const CUID::CUID cuid, Args &&...args) {
 /** A local macro used for consistency */
-#define CASE(T)                                                                                   \
-    case T::static_cuid: /* This static_assert is why we disallow Bools */                        \
-        static_assert(Util::has_constructor<T, Hash::Hash, Args...>,                              \
-                      #T " cannot be constructed");                                               \
+#define CASE(T)                                                                                    \
+    case T::static_cuid: /* This static_assert is why we disallow Bools */                         \
+        static_assert(Util::has_constructor<T, Hash::Hash, Args...>, #T " cannot be constructed"); \
         return ::Expr::factory<T, Args...>(std::forward<Args>(args)...)
         switch (cuid) {
             CASE(String);

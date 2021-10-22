@@ -17,15 +17,15 @@ namespace Create {
     }
 
 /** A local macro used for consistency */
-#define TRIVIAL_TYPE(EXP, INPUT)                                                                  \
-    inline Expr::BasePtr literal(const INPUT data, Annotation::SPAV &&sp = nullptr) {             \
-        return Private::literal<Expr::EXP, INPUT>(INPUT { data }, std::move(sp));                 \
+#define TRIVIAL_TYPE(EXP, INPUT)                                                                   \
+    inline Expr::BasePtr literal(const INPUT data, Annotation::SPAV &&sp = nullptr) {              \
+        return Private::literal<Expr::EXP, INPUT>(INPUT { data }, std::move(sp));                  \
     }
 
 /** A local macro used for consistency */
-#define TRIVIAL_MOVE_TYPE(EXP, INPUT)                                                             \
-    inline Expr::BasePtr literal(INPUT &&data, Annotation::SPAV &&sp = nullptr) {                 \
-        return Private::literal<Expr::EXP, INPUT>(std::move(data), std::move(sp));                \
+#define TRIVIAL_MOVE_TYPE(EXP, INPUT)                                                              \
+    inline Expr::BasePtr literal(INPUT &&data, Annotation::SPAV &&sp = nullptr) {                  \
+        return Private::literal<Expr::EXP, INPUT>(std::move(data), std::move(sp));                 \
     }
 
     /** Create a Bool Expr with a Literal op */

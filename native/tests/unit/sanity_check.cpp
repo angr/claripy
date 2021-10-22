@@ -12,12 +12,12 @@ static UInt id_ref(const UInt &id) {
 }
 
 /** A macro to help with testing */
-#define TEST_TYPE(X)                                                                              \
-    {                                                                                             \
-        namespace F = UnitTest::TestLib::Factories;                                               \
-        const auto s { Expr::X::static_cuid };                                                    \
-        UNITTEST_ASSERT(s == id_ref(Expr::X::static_cuid));                                       \
-        UNITTEST_ASSERT(s == F::t_literal<Expr::X>(0)->cuid);                                     \
+#define TEST_TYPE(X)                                                                               \
+    {                                                                                              \
+        namespace F = UnitTest::TestLib::Factories;                                                \
+        const auto s { Expr::X::static_cuid };                                                     \
+        UNITTEST_ASSERT(s == id_ref(Expr::X::static_cuid));                                        \
+        UNITTEST_ASSERT(s == F::t_literal<Expr::X>(0)->cuid);                                      \
     }
 
 /** A struct used to give friend access to unittests */

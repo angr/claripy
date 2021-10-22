@@ -17,14 +17,14 @@
  *  X can be anything, but must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define OP_UNARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                                  \
-    class CLASS final : public ::Op::Unary {                                                      \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
-                                                                                                  \
-      private:                                                                                    \
-        /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &x)                    \
-            : Unary { h, static_cuid, x } {}                                                      \
+#define OP_UNARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                                   \
+    class CLASS final : public ::Op::Unary {                                                       \
+        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+                                                                                                   \
+      private:                                                                                     \
+        /** Private constructor */                                                                 \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &x)                     \
+            : Unary { h, static_cuid, x } {}                                                       \
     };
 
 
@@ -48,9 +48,7 @@ namespace Op {
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        inline void add_reversed_children(Stack &s) const override final {
-            s.emplace(child.get());
-        }
+        inline void add_reversed_children(Stack &s) const override final { s.emplace(child.get()); }
 
       protected:
         /** Protected constructor */

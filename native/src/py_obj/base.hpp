@@ -19,8 +19,7 @@ namespace PyObj {
         using Ref = UInt;
 
         /** Constructor */
-        explicit inline Base(const Hash::Hash &h, const Ref r) noexcept
-            : Hashed { h }, ref { r } {}
+        explicit inline Base(const Hash::Hash &h, const Ref r) noexcept : Hashed { h }, ref { r } {}
         // Default implicits
         DEFINE_IMPLICITS_CONST_MEMBERS_ALL_NOEXCEPT(Base);
 

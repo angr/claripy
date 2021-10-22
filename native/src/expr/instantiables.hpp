@@ -9,21 +9,21 @@
 
 
 /** Local: A macro to declare trivial subclasses of Bits */
-#define BITS_SUBCLASS(CLASS)                                                                      \
-    /** An Expr::Bits subclass */                                                                 \
-    class CLASS final : public Bits {                                                             \
-        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)                                    \
-      public:                                                                                     \
-        /** Default destructor */                                                                 \
-        inline ~CLASS() noexcept override final = default;                                        \
-                                                                                                  \
-      private:                                                                                    \
-        /** Private Constructor */                                                                \
-        explicit inline CLASS(const Hash::Hash h, const bool sym, Op::BasePtr &&op_,              \
-                              const UInt bit_length_, Annotation::SPAV &&sp) noexcept             \
-            : Bits { h, static_cuid, sym, std::move(op_), bit_length_, std::move(sp) } {}         \
-        /* Disable other methods of construction */                                               \
-        SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                               \
+#define BITS_SUBCLASS(CLASS)                                                                       \
+    /** An Expr::Bits subclass */                                                                  \
+    class CLASS final : public Bits {                                                              \
+        FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)                                     \
+      public:                                                                                      \
+        /** Default destructor */                                                                  \
+        inline ~CLASS() noexcept override final = default;                                         \
+                                                                                                   \
+      private:                                                                                     \
+        /** Private Constructor */                                                                 \
+        explicit inline CLASS(const Hash::Hash h, const bool sym, Op::BasePtr &&op_,               \
+                              const UInt bit_length_, Annotation::SPAV &&sp) noexcept              \
+            : Bits { h, static_cuid, sym, std::move(op_), bit_length_, std::move(sp) } {}          \
+        /* Disable other methods of construction */                                                \
+        SET_IMPLICITS_CONST_MEMBERS(CLASS, delete);                                                \
     };
 
 

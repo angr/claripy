@@ -63,12 +63,12 @@ namespace Util::ThreadSafe {
         inline bool ref_is_const() const noexcept { return std::is_const_v<T>; }
 
 /** A local macro that will enable a function if T is not const */
-#define ENABLE_IF_T_MUTABLE(RET)                                                                  \
+#define ENABLE_IF_T_MUTABLE(RET)                                                                   \
     template <typename U = T> std::enable_if_t<sizeof(U) && !std::is_const_v<T>, RET>
 
 /** A local macro that will enable a function if T is not const */
-#define ENABLE_OP_IF_T_MUTABLE(TYPE)                                                              \
-    template <typename U = T>                                                                     \
+#define ENABLE_OP_IF_T_MUTABLE(TYPE)                                                               \
+    template <typename U = T>                                                                      \
     ProtectedObject &operator=(std::enable_if_t<sizeof(U) && !std::is_const_v<T>, TYPE> o)
 
         /** Get the internal pointer; generally the -> operator should be preferred

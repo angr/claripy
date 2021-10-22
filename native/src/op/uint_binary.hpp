@@ -22,14 +22,14 @@
  *  X can be anything, but must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                             \
-    class CLASS final : public ::Op::UIntBinary {                                                 \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
-                                                                                                  \
-      private:                                                                                    \
-        /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &e, const UInt i)      \
-            : UIntBinary { h, static_cuid, e, i } {}                                              \
+#define OP_UINTBINARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                              \
+    class CLASS final : public ::Op::UIntBinary {                                                  \
+        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+                                                                                                   \
+      private:                                                                                     \
+        /** Private constructor */                                                                 \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &e, const UInt i)       \
+            : UIntBinary { h, static_cuid, e, i } {}                                               \
     };
 
 

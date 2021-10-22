@@ -257,8 +257,7 @@ namespace Backend {
         /** This applies the given annotations to the backend object
          *  If the given backend does not support this, this function will never be called
          */
-        virtual BackendObj apply_annotations_helper(const BackendObj &,
-                                                    Annotation::SPAV &&) const {
+        virtual BackendObj apply_annotations_helper(const BackendObj &, Annotation::SPAV &&) const {
             throw Util::Err::NotSupported(
                 "The backend has failed to implement this method. Please report this");
         }
@@ -287,8 +286,7 @@ namespace Backend {
          *  A function because of this bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66944
          */
         inline static auto &abstraction_cache_g() noexcept {
-            static thread_local std::map<Hash::Hash, const AbstractionVariant>
-                abstraction_cache {};
+            static thread_local std::map<Hash::Hash, const AbstractionVariant> abstraction_cache {};
             return abstraction_cache;
         }
 #endif

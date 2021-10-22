@@ -8,13 +8,13 @@
 #define R_UTIL_DOONCE_HPP_
 
 /** A macro that ensures X will be run only once */
-#define UTILS_DOONCE(X)                                                                           \
-    {                                                                                             \
-        static bool todo { true };                                                                \
-        if (todo) {                                                                               \
-            X;                                                                                    \
-            todo = false;                                                                         \
-        }                                                                                         \
+#define UTILS_DOONCE(X)                                                                            \
+    {                                                                                              \
+        static bool todo { true };                                                                 \
+        if (todo) {                                                                                \
+            X;                                                                                     \
+            todo = false;                                                                          \
+        }                                                                                          \
     }
 
 #endif

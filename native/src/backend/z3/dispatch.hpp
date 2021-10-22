@@ -33,75 +33,75 @@ namespace Backend::Z3 {
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.
 
-#define UNARY_CASE(OP, FN)                                                                        \
-    case Op::OP::static_cuid: {                                                                   \
-        check_vec_usage(args, 1_ui, WHOAMI);                                                      \
-        auto ret { (FN) (*args.back()) };                                                         \
-        args.pop_back();                                                                          \
-        return ret;                                                                               \
+#define UNARY_CASE(OP, FN)                                                                         \
+    case Op::OP::static_cuid: {                                                                    \
+        check_vec_usage(args, 1_ui, WHOAMI);                                                       \
+        auto ret { (FN) (*args.back()) };                                                          \
+        args.pop_back();                                                                           \
+        return ret;                                                                                \
     }
 
-#define BINARY_DISPATCH(FN)                                                                       \
-    check_vec_usage(args, 2_ui, WHOAMI);                                                          \
-    const auto size { args.size() };                                                              \
-    auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                         \
-    args.resize(size - 2);                                                                        \
+#define BINARY_DISPATCH(FN)                                                                        \
+    check_vec_usage(args, 2_ui, WHOAMI);                                                           \
+    const auto size { args.size() };                                                               \
+    auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                          \
+    args.resize(size - 2);                                                                         \
     return ret;
 
-#define BINARY_CASE(OP, FN)                                                                       \
-    case Op::OP::static_cuid: {                                                                   \
-        BINARY_DISPATCH((FN));                                                                    \
+#define BINARY_CASE(OP, FN)                                                                        \
+    case Op::OP::static_cuid: {                                                                    \
+        BINARY_DISPATCH((FN));                                                                     \
     }
 
 // Passing templated objects to macros can be messy since ','s are in both
 // For simplicity and consistency we define a binary op macro for this case
-#define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                         \
-    case Op::OP<__VA_ARGS__>::static_cuid: {                                                      \
-        const constexpr auto func { FN<__VA_ARGS__> };                                            \
-        BINARY_DISPATCH(func);                                                                    \
+#define BINARY_TEMPLATE_CASE(OP, FN, ...)                                                          \
+    case Op::OP<__VA_ARGS__>::static_cuid: {                                                       \
+        const constexpr auto func { FN<__VA_ARGS__> };                                             \
+        BINARY_DISPATCH(func);                                                                     \
     }
 
-#define UINT_BINARY_CASE(OP, FN)                                                                  \
-    case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");               \
-        using To = CTSC<Op::UIntBinary>;                                                          \
-        check_vec_usage(args, 1_ui, WHOAMI);                                                      \
-        auto ret { (FN) (*args.back(), Util::checked_static_cast<To>(expr->op.get())->integer) }; \
-        args.pop_back();                                                                          \
-        return ret;                                                                               \
+#define UINT_BINARY_CASE(OP, FN)                                                                   \
+    case Op::OP::static_cuid: {                                                                    \
+        static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");                \
+        using To = CTSC<Op::UIntBinary>;                                                           \
+        check_vec_usage(args, 1_ui, WHOAMI);                                                       \
+        auto ret { (FN) (*args.back(), Util::checked_static_cast<To>(expr->op.get())->integer) };  \
+        args.pop_back();                                                                           \
+        return ret;                                                                                \
     }
 
-#define MODE_BINARY_CASE(OP, FN)                                                                  \
-    case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");           \
-        using To = CTSC<Op::FP::ModeBinary>;                                                      \
-        check_vec_usage(args, 2_ui, WHOAMI);                                                      \
-        const auto size { args.size() };                                                          \
-        auto ret { (FN) (Util::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],    \
-                         *args[size - 1]) };                                                      \
-        args.resize(size - 2);                                                                    \
-        return ret;                                                                               \
+#define MODE_BINARY_CASE(OP, FN)                                                                   \
+    case Op::OP::static_cuid: {                                                                    \
+        static_assert(Op::FP::is_mode_binary<Op::OP>, "Op::" #OP " is not ModeBinary");            \
+        using To = CTSC<Op::FP::ModeBinary>;                                                       \
+        check_vec_usage(args, 2_ui, WHOAMI);                                                       \
+        const auto size { args.size() };                                                           \
+        auto ret { (FN) (Util::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],     \
+                         *args[size - 1]) };                                                       \
+        args.resize(size - 2);                                                                     \
+        return ret;                                                                                \
     }
 
-#define TERNARY_CASE(OP, FN)                                                                      \
-    case Op::OP::static_cuid: {                                                                   \
-        const auto size { args.size() };                                                          \
-        check_vec_usage(args, 3_ui, WHOAMI);                                                      \
-        auto ret { FN(*args[size - 3], *args[size - 2], *args[size - 1]) };                       \
-        args.resize(size - 3);                                                                    \
-        return ret;                                                                               \
+#define TERNARY_CASE(OP, FN)                                                                       \
+    case Op::OP::static_cuid: {                                                                    \
+        const auto size { args.size() };                                                           \
+        check_vec_usage(args, 3_ui, WHOAMI);                                                       \
+        auto ret { FN(*args[size - 3], *args[size - 2], *args[size - 1]) };                        \
+        args.resize(size - 3);                                                                     \
+        return ret;                                                                                \
     }
 
-#define FLAT_CASE(OP, FN)                                                                         \
-    case Op::OP::static_cuid: {                                                                   \
-        static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                            \
-        using To = CTSC<Op::AbstractFlat>;                                                        \
-        const auto a_size { args.size() };                                                        \
-        const auto n { Util::checked_static_cast<To>(expr->op.get())->operands.size() };          \
-        check_vec_usage(args, n, WHOAMI);                                                         \
-        auto ret { (FN) (&(args.data()[a_size - n]), n) };                                        \
-        args.resize(a_size - n);                                                                  \
-        return ret;                                                                               \
+#define FLAT_CASE(OP, FN)                                                                          \
+    case Op::OP::static_cuid: {                                                                    \
+        static_assert(Op::is_flat<Op::OP>, "Op::" #OP " is not Flat");                             \
+        using To = CTSC<Op::AbstractFlat>;                                                         \
+        const auto a_size { args.size() };                                                         \
+        const auto n { Util::checked_static_cast<To>(expr->op.get())->operands.size() };           \
+        check_vec_usage(args, n, WHOAMI);                                                          \
+        auto ret { (FN) (&(args.data()[a_size - n]), n) };                                         \
+        args.resize(a_size - n);                                                                   \
+        return ret;                                                                                \
     }
 
             // For brevity
@@ -229,28 +229,28 @@ namespace Backend::Z3 {
                     // Other
 
                     /** A local macro used for consistency */
-#define TO_BV_CASE(TF)                                                                            \
-    case Op::FP::ToBV<TF>::static_cuid: {                                                         \
-        debug_assert_dcast<Expr::Bits>(expr, WHOAMI "FP::ToBV has no length");                    \
-        using ToBV = CTSC<Op::FP::ToBV<TF>>;                                                      \
-        check_vec_usage(args, 1, WHOAMI);                                                         \
-        auto ret { Conv::FP::template to_bv<TF>(                                                  \
-            Util::checked_static_cast<ToBV>(expr->op.get())->mode, *args.back(),                  \
-            Expr::get_bit_length(expr)) };                                                        \
-        args.pop_back();                                                                          \
-        return ret;                                                                               \
+#define TO_BV_CASE(TF)                                                                             \
+    case Op::FP::ToBV<TF>::static_cuid: {                                                          \
+        debug_assert_dcast<Expr::Bits>(expr, WHOAMI "FP::ToBV has no length");                     \
+        using ToBV = CTSC<Op::FP::ToBV<TF>>;                                                       \
+        check_vec_usage(args, 1, WHOAMI);                                                          \
+        auto ret { Conv::FP::template to_bv<TF>(                                                   \
+            Util::checked_static_cast<ToBV>(expr->op.get())->mode, *args.back(),                   \
+            Expr::get_bit_length(expr)) };                                                         \
+        args.pop_back();                                                                           \
+        return ret;                                                                                \
     }
 
                     /** A local macro used for consistency */
-#define FROM_2CBV_CASE(TF)                                                                        \
-    case Op::FP::From2sComplementBV<TF>::static_cuid: {                                           \
-        check_vec_usage(args, 1, WHOAMI);                                                         \
-        using OpT = CTSC<Op::FP::From2sComplementBV<TF>>;                                         \
-        const OpT cast_op { Util::checked_static_cast<OpT>(expr->op.get()) };                     \
-        auto ret { Conv::FP::template from_2s_complement_bv<TF>(cast_op->mode, *args.back(),      \
-                                                                cast_op->width) };                \
-        args.pop_back();                                                                          \
-        return ret;                                                                               \
+#define FROM_2CBV_CASE(TF)                                                                         \
+    case Op::FP::From2sComplementBV<TF>::static_cuid: {                                            \
+        check_vec_usage(args, 1, WHOAMI);                                                          \
+        using OpT = CTSC<Op::FP::From2sComplementBV<TF>>;                                          \
+        const OpT cast_op { Util::checked_static_cast<OpT>(expr->op.get()) };                      \
+        auto ret { Conv::FP::template from_2s_complement_bv<TF>(cast_op->mode, *args.back(),       \
+                                                                cast_op->width) };                 \
+        args.pop_back();                                                                           \
+        return ret;                                                                                \
     }
 
                     // ToBV
@@ -352,8 +352,8 @@ namespace Backend::Z3 {
             const auto decl_kind { decl.decl_kind() };
 
             /** A local macro used for error checking */
-#define ASSERT_ARG_EMPTY(X)                                                                       \
-    Util::affirm<Util::Err::Size>((X).empty(), WHOAMI "Op should have no "                        \
+#define ASSERT_ARG_EMPTY(X)                                                                        \
+    Util::affirm<Util::Err::Size>((X).empty(), WHOAMI "Op should have no "                         \
                                                       "children");
 
             // Switch on expr type
@@ -577,8 +577,8 @@ namespace Backend::Z3 {
                 case Z3_OP_BNUM: {
                     const auto x { Abs::BV::num_primtive(b_obj, bk) };
                     /** A local helper macro */
-#define G_CASE(INDEX)                                                                             \
-    case INDEX:                                                                                   \
+#define G_CASE(INDEX)                                                                              \
+    case INDEX:                                                                                    \
         return std::get<INDEX>(x);
                     switch (x.index()) {
                         G_CASE(0)

@@ -23,7 +23,7 @@ struct Moveable {
 };
 
 /** A macro used for consistency */
-#define NEW_MOVE                                                                                  \
+#define NEW_MOVE                                                                                   \
     Moveable { 0x1234 }
 
 struct UnitTest::ClaricppUnitTest {

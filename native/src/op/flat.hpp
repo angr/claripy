@@ -17,14 +17,14 @@
  *  X can be anything, but must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                     \
-    class CLASS final : public ::Op::Flat<(CONSIDERSIZE)> {                                       \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
-                                                                                                  \
-      private:                                                                                    \
-        /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, OpContainer &&input)                         \
-            : Flat { h, static_cuid, std::move(input) } {}                                        \
+#define OP_FLAT_TRIVIAL_SUBCLASS(CLASS, CONSIDERSIZE, X, ...)                                      \
+    class CLASS final : public ::Op::Flat<(CONSIDERSIZE)> {                                        \
+        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+                                                                                                   \
+      private:                                                                                     \
+        /** Private constructor */                                                                 \
+        explicit inline CLASS(const ::Hash::Hash &h, OpContainer &&input)                          \
+            : Flat { h, static_cuid, std::move(input) } {}                                         \
     };
 
 
@@ -126,8 +126,7 @@ namespace Op {
 
     /** Returns true if T is flat */
     template <typename T>
-    UTILS_ICCBOOL is_flat { Util::is_ancestor<Flat<true>, T> ||
-                            Util::is_ancestor<Flat<false>, T> };
+    UTILS_ICCBOOL is_flat { Util::is_ancestor<Flat<true>, T> || Util::is_ancestor<Flat<false>, T> };
 
 } // namespace Op
 

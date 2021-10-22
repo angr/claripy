@@ -122,8 +122,7 @@ namespace Backend::Z3 {
         [[nodiscard]] inline std::shared_ptr<z3::solver> tls_solver(const unsigned timeout = 0) {
             auto ret { get_tls_solver<ForceNew>() };
             if (timeout != 0) {
-                if (ret->get_param_descrs().to_string().find("soft_timeout") !=
-                    std::string::npos) {
+                if (ret->get_param_descrs().to_string().find("soft_timeout") != std::string::npos) {
                     ret->set("soft_timeout", timeout);
                     ret->set("solver2_timeout", timeout);
                 }
@@ -317,8 +316,7 @@ namespace Backend::Z3 {
         /** Return a tls solver
          *  Warning: solver is not saved locally if force_new is false
          */
-        template <bool ForceNew>
-        [[nodiscard]] inline std::shared_ptr<z3::solver> get_tls_solver() {
+        template <bool ForceNew> [[nodiscard]] inline std::shared_ptr<z3::solver> get_tls_solver() {
             if constexpr (ForceNew) {
                 return std::make_shared<z3::solver>(tls.ctx);
             }
@@ -466,10 +464,10 @@ namespace Backend::Z3 {
             using Usage = Util::Err::Usage;
             switch (p.index()) {
                 /** A local macro used for consistency */
-#define CASE_B(INDEX, TYPE)                                                                       \
-    case INDEX: {                                                                                 \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                             \
-        return static_cast<T>(std::get<TYPE>(p));                                                 \
+#define CASE_B(INDEX, TYPE)                                                                        \
+    case INDEX: {                                                                                  \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                              \
+        return static_cast<T>(std::get<TYPE>(p));                                                  \
     }
                 CASE_B(5, uint8_t)
                 CASE_B(6, uint16_t)

@@ -10,8 +10,8 @@
 #else
 
     /** Allows the friend access for unittests */
-    #define ENABLE_UNITTEST_FRIEND_ACCESS                                                         \
-        /** Allows the friend access for unittests */                                             \
+    #define ENABLE_UNITTEST_FRIEND_ACCESS                                                          \
+        /** Allows the friend access for unittests */                                              \
         friend struct UnitTest::ClaricppUnitTest;
 
 namespace UnitTest {

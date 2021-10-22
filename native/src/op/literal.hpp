@@ -51,20 +51,20 @@ namespace Op {
         inline void repr(std::ostream &out, const bool) const override final {
 
 /** A local macro used for consistency */
-#define VCASE_PRE(INDEX, TYPE)                                                                    \
-    case (INDEX): {                                                                               \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                          \
+#define VCASE_PRE(INDEX, TYPE)                                                                     \
+    case (INDEX): {                                                                                \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                           \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
-#define VCASE_POST                                                                                \
-    break;                                                                                        \
+#define VCASE_POST                                                                                 \
+    break;                                                                                         \
     }
 
 /** A local macro used for consistency */
-#define VCASE(INDEX, TYPE)                                                                        \
-    VCASE_PRE(INDEX, TYPE);                                                                       \
-    out << got;                                                                                   \
+#define VCASE(INDEX, TYPE)                                                                         \
+    VCASE_PRE(INDEX, TYPE);                                                                        \
+    out << got;                                                                                    \
     VCASE_POST;
 
             // Repr depending on type
@@ -113,11 +113,11 @@ namespace Op {
 
       private:
 /** A local macro used to define a private constructor for Literal */
-#define P_CTOR(TYPE)                                                                              \
-    /** Private constructor                                                                       \
-     *  Literal constructors should never be given shared pointers to nulllptr                    \
-     */                                                                                           \
-    explicit inline Literal(const Hash::Hash &h, TYPE &&data)                                     \
+#define P_CTOR(TYPE)                                                                               \
+    /** Private constructor                                                                        \
+     *  Literal constructors should never be given shared pointers to nulllptr                     \
+     */                                                                                            \
+    explicit inline Literal(const Hash::Hash &h, TYPE &&data)                                      \
         : Base { h, static_cuid }, value { std::move(data) }
 
         // The different private constructors we allow
@@ -146,19 +146,19 @@ namespace Op {
         constexpr UInt byte_length() const {
 
 /** A local macro used for consistency */
-#define VCASE_PRE(INDEX, TYPE)                                                                    \
-    case (INDEX): {                                                                               \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                          \
+#define VCASE_PRE(INDEX, TYPE)                                                                     \
+    case (INDEX): {                                                                                \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                           \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
-#define RET(X)                                                                                    \
-    return (X);                                                                                   \
+#define RET(X)                                                                                     \
+    return (X);                                                                                    \
     }
 
 /** A local macro used for consistency */
-#define VCASE(INDEX, TYPE)                                                                        \
-    VCASE_PRE(INDEX, TYPE);                                                                       \
+#define VCASE(INDEX, TYPE)                                                                         \
+    VCASE_PRE(INDEX, TYPE);                                                                        \
     RET(sizeof(got));
 
             switch (value.index()) {

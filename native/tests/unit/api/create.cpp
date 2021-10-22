@@ -110,10 +110,10 @@ void create() {
     // Trivial Unary
 
 /** A local macro used for testing */
-#define UNARY(NAME, FUN, TYPE, OTHER)                                                             \
-    Util::Log::debug("Testing " #NAME "...");                                                     \
-    const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym), { nullptr }) };           \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(TYPE##_sym)->hash);                 \
+#define UNARY(NAME, FUN, TYPE, OTHER)                                                              \
+    Util::Log::debug("Testing " #NAME "...");                                                      \
+    const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym), { nullptr }) };            \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(TYPE##_sym)->hash);                  \
     UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash != Create::FUN(TYPE##_##OTHER)->hash)
 
     UNARY(abs, abs, fp, 64);
@@ -126,10 +126,10 @@ void create() {
 #undef UNARY
 
 /** A local macro used for testing */
-#define UINT_BINARY(FUN)                                                                          \
-    Util::Log::debug("Testing " #FUN "...");                                                      \
-    const auto FUN { claricpp_create_##FUN(API::copy_to_c(bv_sym), 4, { nullptr }) };             \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(bv_sym, 4)->hash);                  \
+#define UINT_BINARY(FUN)                                                                           \
+    Util::Log::debug("Testing " #FUN "...");                                                       \
+    const auto FUN { claricpp_create_##FUN(API::copy_to_c(bv_sym), 4, { nullptr }) };              \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(bv_sym, 4)->hash);                   \
     UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash != Create::FUN(bv_sym, 5)->hash)
 
     UINT_BINARY(sign_ext);
@@ -139,10 +139,10 @@ void create() {
 #undef UINT_BINARY
 
 /** A local macro used for testing */
-#define BINARY(FUN, ARG, REAL_FUN)                                                                \
-    Util::Log::debug("Testing " #FUN "...");                                                      \
-    const auto FUN##_test { claricpp_create_##FUN(API::copy_to_c(ARG), API::copy_to_c(ARG),       \
-                                                  { nullptr }) };                                 \
+#define BINARY(FUN, ARG, REAL_FUN)                                                                 \
+    Util::Log::debug("Testing " #FUN "...");                                                       \
+    const auto FUN##_test { claricpp_create_##FUN(API::copy_to_c(ARG), API::copy_to_c(ARG),        \
+                                                  { nullptr }) };                                  \
     UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash);
 
     // Comparisons

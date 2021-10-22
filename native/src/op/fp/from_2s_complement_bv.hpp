@@ -25,9 +25,8 @@ namespace Op::FP {
 
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override final {
-            out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha
-                << Signed << R"|(, "rounding mode":)|" << Util::to_underlying(mode)
-                << R"|(, "bv":)|";
+            out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha << Signed
+                << R"|(, "rounding mode":)|" << Util::to_underlying(mode) << R"|(, "bv":)|";
             Expr::repr(bv, out, verbose);
             out << R"|(, "width":)|" << width << " }";
         }

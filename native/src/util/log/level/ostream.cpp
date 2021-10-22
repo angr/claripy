@@ -17,7 +17,7 @@ using Lvl = Level::Level;
 
 
 /** Create a map entry for a log level */
-#define MAP_ENTRY(X)                                                                              \
+#define MAP_ENTRY(X)                                                                               \
     { Lvl::X, std::string(#X) }
 
 

@@ -17,22 +17,22 @@
  *  This also has the nice side effect that, if a static_assert fails, the compiler will
  *  likely print out the passed types which can help with debugging
  */
-#define DEPCONST(METATYPE)                                                                        \
-    /** A dependent constant variable */                                                          \
-    template <typename T, T value, METATYPE...> inline const constexpr T constant { value };      \
-                                                                                                  \
-    /** A dependent id variable */                                                                \
-    template <auto value> inline const constexpr auto id { value };                               \
-                                                                                                  \
-    /* Abbreviations */                                                                           \
-                                                                                                  \
-    /** A dependent boolean */                                                                    \
-    template <bool Value, METATYPE... _> UTILS_ICCBOOL boolean { constant<bool, Value, _...> };   \
-                                                                                                  \
-    /** A dependent false boolean */                                                              \
-    template <METATYPE... _> UTILS_ICCBOOL false_ { boolean<false, _...> };                       \
-                                                                                                  \
-    /** A dependent true boolean */                                                               \
+#define DEPCONST(METATYPE)                                                                         \
+    /** A dependent constant variable */                                                           \
+    template <typename T, T value, METATYPE...> inline const constexpr T constant { value };       \
+                                                                                                   \
+    /** A dependent id variable */                                                                 \
+    template <auto value> inline const constexpr auto id { value };                                \
+                                                                                                   \
+    /* Abbreviations */                                                                            \
+                                                                                                   \
+    /** A dependent boolean */                                                                     \
+    template <bool Value, METATYPE... _> UTILS_ICCBOOL boolean { constant<bool, Value, _...> };    \
+                                                                                                   \
+    /** A dependent false boolean */                                                               \
+    template <METATYPE... _> UTILS_ICCBOOL false_ { boolean<false, _...> };                        \
+                                                                                                   \
+    /** A dependent true boolean */                                                                \
     template <METATYPE... _> UTILS_ICCBOOL true_ { boolean<true, _...> };
 
 // Type dependent constants

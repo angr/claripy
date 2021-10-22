@@ -15,15 +15,15 @@
  *  X can be anything, but must be different between different templates of the same class
  *  For example, Foo<int> must give a different X from Foo<bool>
  */
-#define OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                          \
-    class CLASS final : public ModeBinary {                                                       \
-        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                \
-                                                                                                  \
-      private:                                                                                    \
-        /** Private constructor */                                                                \
-        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                    \
-                              const ::Expr::BasePtr &r, const ::Mode::FP::Rounding m)             \
-            : ModeBinary { h, static_cuid, l, r, m } {}                                           \
+#define OP_FP_MODEBINARY_TRIVIAL_SUBCLASS(CLASS, X, ...)                                           \
+    class CLASS final : public ModeBinary {                                                        \
+        OP_FINAL_INIT(CLASS, (X), "" __VA_ARGS__);                                                 \
+                                                                                                   \
+      private:                                                                                     \
+        /** Private constructor */                                                                 \
+        explicit inline CLASS(const ::Hash::Hash &h, const ::Expr::BasePtr &l,                     \
+                              const ::Expr::BasePtr &r, const ::Mode::FP::Rounding m)              \
+            : ModeBinary { h, static_cuid, l, r, m } {}                                            \
     };
 
 

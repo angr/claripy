@@ -15,13 +15,13 @@
 
 
 /** A local macro used for length checking the number of children in a container */
-#define ASSERT_ARG_LEN(X, N)                                                                      \
-    Util::affirm<Util::Err::Size>((X).size() == (N), WHOAMI "Op ", __func__,                      \
+#define ASSERT_ARG_LEN(X, N)                                                                       \
+    Util::affirm<Util::Err::Size>((X).size() == (N), WHOAMI "Op ", __func__,                       \
                                   " should have " #N " children, but instead has: ", (X).size());
 
 /** A string explaining why this file refuses to abstract unknown floating point values */
-#define REFUSE_FP_STANDARD                                                                        \
-    "Refusing to use unknown point standard as the rules about bit manipulation on this "         \
+#define REFUSE_FP_STANDARD                                                                         \
+    "Refusing to use unknown point standard as the rules about bit manipulation on this "          \
     "standard may differ from expected."
 
 /** A local macro for getting the X'th element of 'args' as an expr */
@@ -33,40 +33,40 @@
  *  Assumes the arguments array is called args
  *  FUNC may *not* have commas in it
  */
-#define UNARY(FUNC)                                                                               \
-    ASSERT_ARG_LEN(args, 1);                                                                      \
+#define UNARY(FUNC)                                                                                \
+    ASSERT_ARG_LEN(args, 1);                                                                       \
     return FUNC(GET_EARG(0));
 
 /** A local macro used for calling a basic binary expr
  *  Assumes the arguments array is called args and decl is called decl
  *  FUNC may *not* have commas in it
  */
-#define UINT_BINARY(FUNC)                                                                         \
-    ASSERT_ARG_LEN(args, 1);                                                                      \
+#define UINT_BINARY(FUNC)                                                                          \
+    ASSERT_ARG_LEN(args, 1);                                                                       \
     return FUNC(GET_EARG(0), Util::widen<UInt, true>(Z3_get_decl_int_parameter(ctx, decl, 0)));
 
 /** A local macro used for calling a basic binary expr
  *  Assumes the arguments array is called args
  *  FUNC may *not* have commas in it
  */
-#define BINARY(FUNC)                                                                              \
-    ASSERT_ARG_LEN(args, 2);                                                                      \
+#define BINARY(FUNC)                                                                               \
+    ASSERT_ARG_LEN(args, 2);                                                                       \
     return FUNC(GET_EARG(0), GET_EARG(1));
 
 /** A local macro used for calling a basic mode binary expr
  *  Assumes the arguments array is called args
  *  FUNC may *not* have commas in it
  */
-#define MODE_BINARY(FUNC)                                                                         \
-    ASSERT_ARG_LEN(args, 3);                                                                      \
+#define MODE_BINARY(FUNC)                                                                          \
+    ASSERT_ARG_LEN(args, 3);                                                                       \
     return FUNC(GET_EARG(1), GET_EARG(2), std::get<Mode::FP::Rounding>(args[0]));
 
 /** A local macro used for calling a basic flat expr generated from only 2 arguments
  *  Assumes the arguments array is called args
  *  FUNC may *not* have commas in it
  */
-#define FLAT_BINARY(FUNC)                                                                         \
-    ASSERT_ARG_LEN(args, 2);                                                                      \
+#define FLAT_BINARY(FUNC)                                                                          \
+    ASSERT_ARG_LEN(args, 2);                                                                       \
     return FUNC({ std::move(GET_EARG(0)), std::move(GET_EARG(1)) });
 
 
@@ -127,12 +127,10 @@ namespace Backend::Z3 {
                     case Z3_FLOATING_POINT_SORT: {
                         const auto width { z3_sort_to_fp_width(sort) };
                         if (LIKELY(width == Mode::FP::dbl)) {
-                            return Create::symbol<Expr::FP>(std::move(name),
-                                                            Mode::FP::dbl.width());
+                            return Create::symbol<Expr::FP>(std::move(name), Mode::FP::dbl.width());
                         }
                         if (LIKELY(width == Mode::FP::flt)) {
-                            return Create::symbol<Expr::FP>(std::move(name),
-                                                            Mode::FP::flt.width());
+                            return Create::symbol<Expr::FP>(std::move(name), Mode::FP::flt.width());
                         }
                         throw Error::Backend::Unsupported(WHOAMI REFUSE_FP_STANDARD "\nWidth: ",
                                                           width);
@@ -288,8 +286,8 @@ namespace Backend::Z3 {
             static Expr::BasePtr num(const z3::expr &b_obj, const Z3 &bk) {
                 PrimVar x { num_primtive(b_obj, bk) }; // Not const for move purposes
 /** A local helper macro */
-#define G_CASE(I)                                                                                 \
-    case I:                                                                                       \
+#define G_CASE(I)                                                                                  \
+    case I:                                                                                        \
         return Create::literal(std::get<I>(x));
                 // Switch on the type of x
                 switch (x.index()) {
@@ -428,8 +426,7 @@ namespace Backend::Z3 {
                 // Error check
                 Util::affirm<Util::Err::Unknown>(
                     success,
-                    WHOAMI "something went wrong with fp component extraction.\nGiven fp: ",
-                    b_obj);
+                    WHOAMI "something went wrong with fp component extraction.\nGiven fp: ", b_obj);
 
                 const auto sort { b_obj.get_sort() };
                 const auto width { z3_sort_to_fp_width(sort) };

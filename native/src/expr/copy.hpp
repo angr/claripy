@@ -22,9 +22,9 @@ namespace Expr {
             case Bool::static_cuid:
                 return ::Expr::factory<Bool>(in->symbolic, std::move(op), std::move(sp));
 /** A local macro used for consistency */
-#define BITS_SUB(TYPE)                                                                            \
-    case TYPE::static_cuid:                                                                       \
-        return ::Expr::factory<TYPE>(in->symbolic, std::move(op), Expr::get_bit_length(in),       \
+#define BITS_SUB(TYPE)                                                                             \
+    case TYPE::static_cuid:                                                                        \
+        return ::Expr::factory<TYPE>(in->symbolic, std::move(op), Expr::get_bit_length(in),        \
                                      std::move(sp));
                 BITS_SUB(String);
                 BITS_SUB(FP);

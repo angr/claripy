@@ -12,9 +12,9 @@
 
 
 /** Catch and print an error before exiting */
-#define CATCH_ERROR(ERROR)                                                                        \
-    catch (const ERROR &e) {                                                                      \
-        UNITTEST_ERR(#ERROR, ": ", e.what())                                                      \
+#define CATCH_ERROR(ERROR)                                                                         \
+    catch (const ERROR &e) {                                                                       \
+        UNITTEST_ERR(#ERROR, ": ", e.what())                                                       \
     }
 
 

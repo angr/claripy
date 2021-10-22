@@ -13,8 +13,8 @@
  *  Warning: Because of compiler bugs, if this isn't invoked
  *  from the global namespace the compiler might throw an error
  */
-#define UTILS_BITMASK_ENABLE(ENUM)                                                                \
-    /** Enable bitmask functionality for the enum given */                                        \
+#define UTILS_BITMASK_ENABLE(ENUM)                                                                 \
+    /** Enable bitmask functionality for the enum given */                                         \
     template <> UTILS_ICCBOOL ::Util::BitMask::Private::enabled<ENUM> { true };
 
 

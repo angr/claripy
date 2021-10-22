@@ -281,12 +281,12 @@ namespace Backend::Z3 {
                         return ctx.fpa_val(std::get<double>(data));
                     case 4:
                         UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
-                        throw Error::Backend::Unsupported(
-                            WHOAMI "VSA is not supported by the Z3 backend");
+                        throw Error::Backend::Unsupported(WHOAMI
+                                                          "VSA is not supported by the Z3 backend");
 /** A local macro used for consistency */
-#define STD_INT(INDEX, TYPE, BL)                                                                  \
-    case INDEX:                                                                                   \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                          \
+#define STD_INT(INDEX, TYPE, BL)                                                                   \
+    case INDEX:                                                                                    \
+        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                           \
         return ctx.bv_val(std::get<TYPE>(data), BL);
                         STD_INT(5, uint8_t, 8);
                         STD_INT(6, uint16_t, 16);
@@ -348,8 +348,7 @@ namespace Backend::Z3 {
                         WHOAMI "cache lookup failed for existing object");
 #endif
                     // Update annotations for translocation
-                    const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(),
-                                                                       name.size()) };
+                    const uint64_t name_hash { Util::FNV1a<char>::hash(name.c_str(), name.size()) };
                     if (expr->annotations != nullptr) {
                         Util::map_emplace(satd, name_hash, expr->annotations);
                     }

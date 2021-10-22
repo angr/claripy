@@ -47,8 +47,8 @@ namespace Create::Private {
         }
         else {
             const UInt len { Expr::get_bit_length(operands[0]) }; // Before move
-            return simplify(Expr::factory<Out>(sym, Op::factory<OpT>(std::move(operands)), len,
-                                               std::move(sp)));
+            return simplify(
+                Expr::factory<Out>(sym, Op::factory<OpT>(std::move(operands)), len, std::move(sp)));
         }
     }
 

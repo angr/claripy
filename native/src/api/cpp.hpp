@@ -37,12 +37,12 @@ namespace API {
         template <typename T> struct InternalMap;
 
 /** A local macro used to add a Map entry */
-#define MAP_ADD(CTYPE, CPPTYPE)                                                                   \
-    static_assert(std::is_pod_v<CTYPE>, "Struct must be of the structure { void * ptr };");       \
-    static_assert(sizeof(CTYPE) == sizeof(void *), "Struct should only contain a void *");        \
-    static_assert(std::is_same_v<void *, decltype(std::declval<CTYPE>().ptr)>, "Bad ptr type");   \
-    static_assert(Util::is_shared_ptr<CPPTYPE>, "CPPTYPE should be a shared pointer");            \
-    template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                      \
+#define MAP_ADD(CTYPE, CPPTYPE)                                                                    \
+    static_assert(std::is_pod_v<CTYPE>, "Struct must be of the structure { void * ptr };");        \
+    static_assert(sizeof(CTYPE) == sizeof(void *), "Struct should only contain a void *");         \
+    static_assert(std::is_same_v<void *, decltype(std::declval<CTYPE>().ptr)>, "Bad ptr type");    \
+    static_assert(Util::is_shared_ptr<CPPTYPE>, "CPPTYPE should be a shared pointer");             \
+    template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                       \
     template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; }
 
         // Populate InternalMap
@@ -82,8 +82,7 @@ namespace API {
     /** Heap cache function; prefer to_c! Use this when x cannot be moved for some reason. */
     template <typename InCpp> static inline auto copy_to_c(const InCpp &x) {
         InCpp tmp { x };
-        return Private::Map<InCpp> { Private::cache<InCpp>.template emplace_on_heap(
-            std::move(x)) };
+        return Private::Map<InCpp> { Private::cache<InCpp>.template emplace_on_heap(std::move(x)) };
     }
 
     /** Heap cache function with emplacement */

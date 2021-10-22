@@ -30,10 +30,10 @@ namespace Create::FP {
     /********************************************************************/
 
 /** A local macro used for fp mode binary math ops with size mode first */
-#define FP_MB_SMF_ARITH(FN, OP)                                                                   \
-    inline Expr::BasePtr FN(const Expr::BasePtr &left, const Expr::BasePtr &right,                \
-                            const Mode::FP::Rounding mode, Annotation::SPAV &&sp = nullptr) {     \
-        return Private::mode_binary<Op::FP::OP>(left, right, mode, std::move(sp));                \
+#define FP_MB_SMF_ARITH(FN, OP)                                                                    \
+    inline Expr::BasePtr FN(const Expr::BasePtr &left, const Expr::BasePtr &right,                 \
+                            const Mode::FP::Rounding mode, Annotation::SPAV &&sp = nullptr) {      \
+        return Private::mode_binary<Op::FP::OP>(left, right, mode, std::move(sp));                 \
     }
 
     /** Create a Expr with an FP::Add op

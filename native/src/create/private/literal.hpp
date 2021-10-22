@@ -13,8 +13,7 @@ namespace Create::Private {
     /** Create a Expr with a Literal op
      *  data may not be nullptr
      */
-    template <typename T, typename Data>
-    Expr::BasePtr literal(Data &&data, Annotation::SPAV &&sp) {
+    template <typename T, typename Data> Expr::BasePtr literal(Data &&data, Annotation::SPAV &&sp) {
         namespace Ex = Expr;
         static_assert(Util::is_ancestor<Ex::Base, T>,
                       "argument types must be a subclass of Expr::Base");

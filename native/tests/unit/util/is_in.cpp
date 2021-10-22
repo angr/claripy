@@ -40,9 +40,7 @@ void is_in() {
     const constexpr bool true3 { Util::is_in_ignore_const<const int, unsigned, bool, const int> };
     UNITTEST_ASSERT(true3);
     // Ancestor failure
-    const constexpr bool false5 {
-        Util::is_in_ignore_const<TestDerived, unsigned, bool, TestBase>
-    };
+    const constexpr bool false5 { Util::is_in_ignore_const<TestDerived, unsigned, bool, TestBase> };
     UNITTEST_ASSERT(!false5);
 
     // Ancestor

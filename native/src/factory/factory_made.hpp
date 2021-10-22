@@ -21,13 +21,13 @@
  *  X can be any int, but must be different between different templates of the same class
  *  For example, Foo<int> must give a different X than Foo<bool> gives
  */
-#define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE, X)                                            \
-    /* The CUID does not need to be used in non-instantiated classes */                           \
-    CUID_DEFINE_MAYBE_UNUSED((X))                                                                 \
-  private:                                                                                        \
-    /** Allow verification to have friend access */                                               \
-    template <typename, typename...> friend class ::Util::HasConstructor;                         \
-    /** Allow cache friend access for factory construction */                                     \
+#define FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(BASE, X)                                             \
+    /* The CUID does not need to be used in non-instantiated classes */                            \
+    CUID_DEFINE_MAYBE_UNUSED((X))                                                                  \
+  private:                                                                                         \
+    /** Allow verification to have friend access */                                                \
+    template <typename, typename...> friend class ::Util::HasConstructor;                          \
+    /** Allow cache friend access for factory construction */                                      \
     friend class ::Util::WeakCache<Hash::Hash, const BASE>;
 
 

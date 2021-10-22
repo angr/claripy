@@ -32,10 +32,10 @@ namespace Util {
         }
 
 /** A local macro used to advance s */
-#define ADVANCE(X)                                                                                \
-    {                                                                                             \
-        s += (X);                                                                                 \
-        len -= (X);                                                                               \
+#define ADVANCE(X)                                                                                 \
+    {                                                                                              \
+        s += (X);                                                                                  \
+        len -= (X);                                                                                \
     }
 
         // Determine if absolute or relative path

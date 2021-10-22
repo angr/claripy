@@ -57,14 +57,14 @@ void trivial() {
     binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq>();
 
 /** A local macro used to test a comparison function */
-#define TEST_COMPARE(T_, MASK)                                                                    \
+#define TEST_COMPARE(T_, MASK)                                                                     \
     binary<Ex::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
 
 /** A local macro used to test a comparison function for all values of Less and Equals */
-#define TEST_COMPARE_MULTI(T_, S_)                                                                \
-    TEST_COMPARE(T_, S_ | C::Less | C::Eq);                                                       \
-    TEST_COMPARE(T_, S_ | C::Less | C::Neq);                                                      \
-    TEST_COMPARE(T_, S_ | C::Greater | C::Eq);                                                    \
+#define TEST_COMPARE_MULTI(T_, S_)                                                                 \
+    TEST_COMPARE(T_, S_ | C::Less | C::Eq);                                                        \
+    TEST_COMPARE(T_, S_ | C::Less | C::Neq);                                                       \
+    TEST_COMPARE(T_, S_ | C::Greater | C::Eq);                                                     \
     TEST_COMPARE(T_, S_ | C::Greater | C::Neq);
 
     Log::debug("Testing compare...");

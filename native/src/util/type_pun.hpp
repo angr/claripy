@@ -24,10 +24,10 @@
  *  of the type being punned to.
  *  Warning: If you want to type-pun with an array, use std::memcpy
  */
-#define UTILS_TYPE_PUN_ONTO(OUT_TYPE, OUT_ONTO_PTR, IN_OBJ)                                       \
-    static_assert(sizeof(OUT_TYPE) <= sizeof(*(IN_OBJ)),                                          \
-                  "cannot pun to a size larger than the input object");                           \
-    /* Not memmove since compilers seem to be more capable of no-op-ing memcpy with -O3 */        \
+#define UTILS_TYPE_PUN_ONTO(OUT_TYPE, OUT_ONTO_PTR, IN_OBJ)                                        \
+    static_assert(sizeof(OUT_TYPE) <= sizeof(*(IN_OBJ)),                                           \
+                  "cannot pun to a size larger than the input object");                            \
+    /* Not memmove since compilers seem to be more capable of no-op-ing memcpy with -O3 */         \
     std::memcpy((OUT_ONTO_PTR), (IN_OBJ), sizeof(OUT_TYPE));
 
 
