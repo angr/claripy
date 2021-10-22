@@ -68,6 +68,13 @@ namespace API {
         return Private::Map<InCpp> { Private::cache<InCpp>.move_to_heap(std::move(x)) };
     }
 
+    /** Heap cache function; prefer to_c! Use this when x cannot be moved for some reason. */
+    template <typename InCpp> static inline auto copy_to_c(const InCpp &x) {
+        InCpp tmp { x };
+        return Private::Map<InCpp> { Private::cache<InCpp>.template emplace_on_heap(
+            std::move(x)) };
+    }
+
     /** Heap cache function with emplacement */
     template <typename InCpp, typename... Args> static inline auto emplace_to_c(Args &&...args) {
         return Private::Map<InCpp> { Private::cache<InCpp>.emplace_on_heap(

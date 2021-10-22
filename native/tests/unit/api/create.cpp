@@ -58,7 +58,15 @@ void create() {
     const char name[] { "name" };
     const SIZE_T bl { 64_ui };
     const uint8_t n { 8 };
+
+    // Non-trivial constants
     const auto pyobj { std::make_shared<PyObj::VS>(1, 2, 3) };
+    const auto bool_sym { Create::symbol("test") };
+    const auto bool_true { Create::literal(true) };
+    const auto bv_sym { Create::symbol<Expr::BV>("bv", 64) };
+    const auto fp_sym { Create::symbol<Expr::FP>("fp", 64) };
+    const auto bv_64 { Create::literal(UInt { 64 }) };
+    const auto fp_64 { Create::literal(64.) };
 
     // Symbol
     Util::Log::debug("Testing symbol creation functions...");
@@ -84,6 +92,40 @@ void create() {
                             BigInt { "10", n }, n);
     literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr }),
                             BigInt { 10, n }, n);
+
+    // Non-Trivial
+
+    Util::Log::debug("Testing extract...");
+    const auto extract { claricpp_create_extract(2, 1, API::copy_to_c(bv_sym), { nullptr }) };
+    UNITTEST_ASSERT(API::to_cpp_ref(extract)->hash == Create::extract(2, 1, bv_sym)->hash);
+    UNITTEST_ASSERT(API::to_cpp_ref(extract)->hash != Create::extract(1, 0, bv_sym)->hash);
+
+    Util::Log::debug("Testing if...");
+    const auto if_ { claricpp_create_if(API::copy_to_c(bool_sym), API::copy_to_c(bv_sym),
+                                        API::copy_to_c(bv_64), { nullptr }) };
+    UNITTEST_ASSERT(API::to_cpp_ref(if_)->hash == Create::if_(bool_sym, bv_sym, bv_64)->hash);
+    UNITTEST_ASSERT(API::to_cpp_ref(if_)->hash != Create::if_(bool_sym, bv_64, bv_64)->hash);
+
+    // Trivial Unary
+
+#define UNARY(NAME, FUN, TYPE, OTHER)                                                             \
+    Util::Log::debug("Testing " #NAME "...");                                                     \
+    const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym), { nullptr }) };           \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(TYPE##_sym)->hash);                 \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash != Create::FUN(TYPE##_##OTHER)->hash)
+
+    UNARY(abs, abs, fp, 64);
+    UNARY(neg, neg, bv, 64);
+    UNARY(not, not_, bool, true);
+    UNARY(invert, invert, bv, 64);
+    UNARY(reverse, reverse, bv, 64);
+
+// Cleanup
+#undef UNARY
+
+    // String
+
+    // FP
 }
 
 // Define the test

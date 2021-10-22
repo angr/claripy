@@ -139,4 +139,26 @@ ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left
     return make(Create::if_, spav, API::to_cpp_ref(cond), API::to_cpp_ref(left),
                 API::to_cpp_ref(right));
 }
+
+// Trivial unary
+
+ClaricppExpr claricpp_create_abs(const ClaricppExpr x, ClaricppSPAV spav) {
+    return make(Create::abs, spav, API::to_cpp_ref(x));
+}
+
+ClaricppExpr claricpp_create_neg(const ClaricppExpr x, ClaricppSPAV spav) {
+    return make(Create::neg, spav, API::to_cpp_ref(x));
+}
+
+ClaricppExpr claricpp_create_not(const ClaricppExpr x, ClaricppSPAV spav) {
+    return make(Create::not_, spav, API::to_cpp_ref(x));
+}
+
+ClaricppExpr claricpp_create_invert(const ClaricppExpr x, ClaricppSPAV spav) {
+    return make(Create::invert, spav, API::to_cpp_ref(x));
+}
+
+ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav) {
+    return make(Create::reverse, spav, API::to_cpp_ref(x));
+}
 }
