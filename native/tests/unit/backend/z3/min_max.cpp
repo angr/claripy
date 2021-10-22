@@ -53,10 +53,10 @@ static void min_max_test(Backend::Z3::Z3 &z3) {
     const auto xleq5 { C::compare<M::Less | neq_mask>(x, num(5)) };
     const auto xgeq5 { C::compare<M::Greater | neq_mask>(x, num(5)) };
 
-    const auto plus1 { C::and_<E::Bool>({ xleq5, neq(int_min) }) };
-    const auto plus2 { C::and_<E::Bool>({ xleq5, neq(int_min), neq(int_min + 1) }) };
-    const auto minus1 { C::and_<E::Bool>({ xgeq5, neq(int_max) }) };
-    const auto minus2 { C::and_<E::Bool>({ xgeq5, neq(int_max), neq(int_max - 1) }) };
+    const auto plus1 { C::and_({ xleq5, neq(int_min) }) };
+    const auto plus2 { C::and_({ xleq5, neq(int_min), neq(int_min + 1) }) };
+    const auto minus1 { C::and_({ xgeq5, neq(int_max) }) };
+    const auto minus2 { C::and_({ xgeq5, neq(int_max), neq(int_max - 1) }) };
 
     const auto max { C::eq(x, Create::literal(unsign(int_max))) };
     const auto min { C::eq(x, Create::literal(unsign(int_min))) };

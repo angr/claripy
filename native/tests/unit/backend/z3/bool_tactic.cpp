@@ -19,12 +19,12 @@ void bool_tactic() {
     const auto not_y { Create::not_(y) };
 
     // Ors
-    const auto c1 { Create::or_<Ex::Bool>({ x, not_y }) };
-    const auto c2 { Create::or_<Ex::Bool>({ x, y }) };
-    const auto c3 { Create::or_<Ex::Bool>({ not_x, y }) };
+    const auto c1 { Create::or_({ x, not_y }) };
+    const auto c2 { Create::or_({ x, y }) };
+    const auto c3 { Create::or_({ not_x, y }) };
 
     // And
-    const auto statement { Create::and_<Ex::Bool>({ c1, c2, c3 }) };
+    const auto statement { Create::and_({ c1, c2, c3 }) };
 
     // Simplify
     const auto simp { z3.simplify(statement.get()) };

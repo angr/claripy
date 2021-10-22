@@ -159,12 +159,12 @@ void normal() {
     UNITTEST_ASSERT(test_id(C::mul({ bv_x, bv_y })));
 
     Util::Log::debug("Testing or...");
-    UNITTEST_ASSERT(test_id(C::or_<Ex::BV>({ bv_x, bv_y })));
-    UNITTEST_ASSERT(test_id(C::or_<Ex::Bool>({ bool_x, bool_y })));
+    UNITTEST_ASSERT(test_id(C::or_({ bv_x, bv_y })));
+    UNITTEST_ASSERT(test_id(C::or_({ bool_x, bool_y })));
 
     Util::Log::debug("Testing and...");
-    UNITTEST_ASSERT(test_id(C::and_<Ex::BV>({ bv_x, bv_y })));
-    UNITTEST_ASSERT(test_id(C::and_<Ex::Bool>({ bool_x, bool_y })));
+    UNITTEST_ASSERT(test_id(C::and_({ bv_x, bv_y })));
+    UNITTEST_ASSERT(test_id(C::and_({ bool_x, bool_y })));
 
     Util::Log::debug("Testing xor...");
     UNITTEST_ASSERT(test_id(C::xor_({ bv_x, bv_y })));

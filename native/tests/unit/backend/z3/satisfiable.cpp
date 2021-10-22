@@ -7,8 +7,6 @@
 
 /** Test is_true and is_false */
 void satisfiable() {
-    namespace Ex = Expr;
-    using B = Ex::Bool;
 
     auto z3 { Backend::Z3::Z3 {} };
     auto solver_ref { z3.tls_solver() };
@@ -20,18 +18,18 @@ void satisfiable() {
     const auto f { Create::literal(false) };
 
     // Statements
-    const auto true_ { Create::or_<B>({ x, t }) };
-    const auto false_ { Create::and_<B>({ x, f }) };
-    const auto maybe_true { Create::and_<B>({ x, t }) };
-    const auto maybe_false { Create::or_<B>({ x, f }) };
+    const auto true_ { Create::or_({ x, t }) };
+    const auto false_ { Create::and_({ x, f }) };
+    const auto maybe_true { Create::and_({ x, t }) };
+    const auto maybe_false { Create::or_({ x, f }) };
 
     // Create a solver
-    auto is_sat = [&x, &z3, &solver](const Ex::BasePtr &e,
-                                     const Ex::BasePtr ec = nullptr) { // NOLINT
+    auto is_sat = [&x, &z3, &solver](const Expr::BasePtr &e,
+                                     const Expr::BasePtr ec = nullptr) { // NOLINT
         solver.push();
         bool ret; // NOLINT
         if (ec != nullptr) {
-            std::vector<Ex::RawPtr> ecs;
+            std::vector<Expr::RawPtr> ecs;
             const auto c { Create::eq(x, ec) };
             ecs.emplace_back(c.get());
             z3.add(solver, e.get());

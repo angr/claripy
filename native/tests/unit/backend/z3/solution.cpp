@@ -7,8 +7,6 @@
 
 /** Test is_true and is_false */
 void solution() {
-    namespace Ex = Expr;
-    using B = Ex::Bool;
 
     auto z3 { Backend::Z3::Z3 {} };
     auto solver_ref { z3.tls_solver() };
@@ -20,11 +18,11 @@ void solution() {
     const auto f { Create::literal(false) };
 
     // Statements
-    const auto maybe_true { Create::and_<B>({ x, t }) };
-    const auto maybe_false { Create::or_<B>({ x, f }) };
+    const auto maybe_true { Create::and_({ x, t }) };
+    const auto maybe_false { Create::or_({ x, f }) };
 
     // Create a solver
-    auto is_sol = [&x, &z3, &solver](const Ex::BasePtr &start, const Ex::BasePtr &x_s) {
+    auto is_sol = [&x, &z3, &solver](const Expr::BasePtr &start, const Expr::BasePtr &x_s) {
         solver.push();
         z3.add(solver, start.get());
         const bool ret = z3.solution(x.get(), x_s.get(), solver);
