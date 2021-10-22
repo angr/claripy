@@ -168,28 +168,28 @@ ClaricppExpr claricpp_create_abs(const ClaricppExpr x, ClaricppSPAV spav);
 /** Create a neg Expr
  *  @param x The expression to be negated
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an abs expression
+ *  @return A ClaricppExpr containing a neg expression
  */
 ClaricppExpr claricpp_create_neg(const ClaricppExpr x, ClaricppSPAV spav);
 
 /** Create a not Expr
  *  @param x The expression to be not-ed
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an abs expression
+ *  @return A ClaricppExpr containing a not expression
  */
 ClaricppExpr claricpp_create_not(const ClaricppExpr x, ClaricppSPAV spav);
 
 /** Create a not Expr
  *  @param x The expression to be inverted
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an abs expression
+ *  @return A ClaricppExpr containing an invert expression
  */
 ClaricppExpr claricpp_create_invert(const ClaricppExpr x, ClaricppSPAV spav);
 
 /** Create a not Expr
  *  @param x The expression to be reversed
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an abs expression
+ *  @return A ClaricppExpr containing a reverse expression
  */
 ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav);
 
@@ -201,7 +201,7 @@ ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav);
  *  @param expr The expression to be reversed
  *  @param integer The number of bits to extend expr by
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an abs expression
+ *  @return A ClaricppExpr containing a sign_ext expression
  */
 ClaricppExpr claricpp_create_sign_ext(const ClaricppExpr expr, const UINT integer, ClaricppSPAV spav);
 
@@ -209,55 +209,144 @@ ClaricppExpr claricpp_create_sign_ext(const ClaricppExpr expr, const UINT intege
  *  @param expr The expression to be reversed
  *  @param integer The number of bits to extend expr by
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an abs expression
+ *  @return A ClaricppExpr containing a zero_ext expression
  */
 ClaricppExpr claricpp_create_zero_ext(const ClaricppExpr expr, const UINT integer, ClaricppSPAV spav);
-
 
 /********************************************************************/
 /*                          Trivial Binary                          */
 /********************************************************************/
 
-#if 0
 // Comparisons
 
-/** Create a Bool Expr with an Eq op
-     *  Expr pointers may not be nullptr
+/** Create an eq Expr
+ *  @param left The left operands of the == Expr
+ *  @param right The left operands of the == Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an eq expression
  */
-inline Expr::BasePtr eq(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                        Annotation::SPAV &&sp = nullptr);
-/** Create a Bool Expr with an Neq op
-     *  Expr pointers may not be nullptr
+ClaricppExpr claricpp_create_eq(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create an neq Expr
+ *  @param left The left operands of the != Expr
+ *  @param right The left operands of the != Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an neq expression
  */
-inline Expr::BasePtr neq(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                         Annotation::SPAV &&sp = nullptr);
-/** Create an Expr with a Compare op
-     *  Expr pointers may not be nullptr
+ClaricppExpr claricpp_create_neq(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a signed less than Expr
+ *  @param left The left operands of the signed < Expr
+ *  @param right The left operands of the signed < Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed less than expression
  */
-template <Mode::Compare Mask>
-inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                             Annotation::SPAV &&sp = nullptr);
+ClaricppExpr claricpp_create_slt(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a signed less or equal Expr
+ *  @param left The left operands of the signed <= Expr
+ *  @param right The left operands of the signed <= Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed less or equal expression
+ */
+ClaricppExpr claricpp_create_sle(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a signed greater than Expr
+ *  @param left The left operands of the signed > Expr
+ *  @param right The left operands of the signed > Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed greater than expression
+ */
+ClaricppExpr claricpp_create_sgt(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a signed greater or equal Expr
+ *  @param left The left operands of the signed >= Expr
+ *  @param right The left operands of the signed >= Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed greater or equal expression
+ */
+ClaricppExpr claricpp_create_sge(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a unsigned less than Expr
+ *  @param left The left operands of the unsigned < Expr
+ *  @param right The left operands of the unsigned < Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned less than expression
+ */
+ClaricppExpr claricpp_create_ult(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a unsigned less or equal Expr
+ *  @param left The left operands of the unsigned <= Expr
+ *  @param right The left operands of the unsigned <= Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned less or equal expression
+ */
+ClaricppExpr claricpp_create_ule(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a unsigned greater than Expr
+ *  @param left The left operands of the unsigned > Expr
+ *  @param right The left operands of the unsigned > Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned greater than expression
+ */
+ClaricppExpr claricpp_create_ugt(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a unsigned greater or equal Expr
+ *  @param left The left operands of the unsigned >= Expr
+ *  @param right The left operands of the unsigned >= Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned greater or equal expression
+ */
+ClaricppExpr claricpp_create_uge(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
 // Math
 
-/** Create an Expr with an Sub op
-     *  Expr pointers may not be nullptr
+/** Create a subtraction Expr
+ *  @param left The left operands of the subtraction Expr
+ *  @param right The left operands of the subtraction Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a subtraction expression
  */
-inline Expr::BasePtr sub(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                         Annotation::SPAV &&sp = nullptr);
-/** Create an Expr with an Div op
-     *  Expr pointers may not be nullptr
+ClaricppExpr claricpp_create_sub(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a signed division Expr
+ *  @param left The left operands of the signed division Expr
+ *  @param right The left operands of the signed division Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed division expression
  */
-template <bool Signed>
-inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                         Annotation::SPAV &&sp = nullptr);
-/** Create an Expr with an Mod op
-     *  Expr pointers may not be nullptr
+ClaricppExpr claricpp_create_sdiv(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a unsigned division Expr
+ *  @param left The left operands of the unsigned division Expr
+ *  @param right The left operands of the unsigned division Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned division expression
  */
-template <bool Signed>
-inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                         Annotation::SPAV &&sp = nullptr);
+ClaricppExpr claricpp_create_udiv(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a signed mod Expr
+ *  @param left The left operands of the signed mod Expr
+ *  @param right The left operands of the signed mod Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a signed mod expression
+ */
+ClaricppExpr claricpp_create_smod(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
+/** Create a unsigned mod Expr
+ *  @param left The left operands of the unsigned mod Expr
+ *  @param right The left operands of the unsigned mod Expr
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a unsigned mod expression
+ */
+ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+
 // Bitwise
 
+// Misc
+
+
+#if 0
 /** Create an Expr with a Shift op
      *  Expr pointers may not be nullptr
  */

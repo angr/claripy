@@ -52,7 +52,6 @@ static void literal(const ClaricppExpr in, const Val value, const SIZE_T bit_len
  * @todo test spav
  */
 void create() {
-    namespace Ex = Expr;
 
     // Constants
     const char name[] { "name" };
@@ -70,28 +69,30 @@ void create() {
 
     // Symbol
     Util::Log::debug("Testing symbol creation functions...");
-    symbol<Ex::Bool>(claricpp_create_symbol_bool(name, { nullptr }), name, 0);
-    symbol<Ex::String>(claricpp_create_symbol_string(name, bl, { nullptr }), name, bl);
-    symbol<Ex::VS>(claricpp_create_symbol_vs(name, bl, { nullptr }), name, bl);
-    symbol<Ex::FP>(claricpp_create_symbol_fp(name, bl, { nullptr }), name, bl);
-    symbol<Ex::BV>(claricpp_create_symbol_bv(name, bl, { nullptr }), name, bl);
+    symbol<Expr::Bool>(claricpp_create_symbol_bool(name, { nullptr }), name, 0);
+    symbol<Expr::String>(claricpp_create_symbol_string(name, bl, { nullptr }), name, bl);
+    symbol<Expr::VS>(claricpp_create_symbol_vs(name, bl, { nullptr }), name, bl);
+    symbol<Expr::FP>(claricpp_create_symbol_fp(name, bl, { nullptr }), name, bl);
+    symbol<Expr::BV>(claricpp_create_symbol_bv(name, bl, { nullptr }), name, bl);
 
     // Literal
     Util::Log::debug("Testing literal creation functions...");
-    literal<Ex::Bool, bool>(claricpp_create_literal_bool(true, { nullptr }), true, 0);
-    literal<Ex::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
-                                     std::strlen(name) * C_CHAR_BIT);
-    literal<Ex::FP, float>(claricpp_create_literal_fp_float(3.f, { nullptr }), 3.f, 32); // NOLINT
-    literal<Ex::FP, double>(claricpp_create_literal_fp_double(3., { nullptr }), 3., 64); // NOLINT
-    literal<Ex::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n, { nullptr }), pyobj, n);
-    literal<Ex::BV, uint8_t>(claricpp_create_literal_bv_u8(n, { nullptr }), n, 8);    // NOLINT
-    literal<Ex::BV, uint16_t>(claricpp_create_literal_bv_u16(n, { nullptr }), n, 16); // NOLINT
-    literal<Ex::BV, uint32_t>(claricpp_create_literal_bv_u32(n, { nullptr }), n, 32); // NOLINT
-    literal<Ex::BV, uint64_t>(claricpp_create_literal_bv_u64(n, { nullptr }), n, 64); // NOLINT
-    literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_str("10", n, { nullptr }),
-                            BigInt { "10", n }, n);
-    literal<Ex::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr }),
-                            BigInt { 10, n }, n);
+    literal<Expr::Bool, bool>(claricpp_create_literal_bool(true, { nullptr }), true, 0);
+    literal<Expr::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
+                                       std::strlen(name) * C_CHAR_BIT);
+    literal<Expr::FP, float>(claricpp_create_literal_fp_float(3.f, { nullptr }), 3.f,
+                             32); // NOLINT
+    literal<Expr::FP, double>(claricpp_create_literal_fp_double(3., { nullptr }), 3.,
+                              64); // NOLINT
+    literal<Expr::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n, { nullptr }), pyobj, n);
+    literal<Expr::BV, uint8_t>(claricpp_create_literal_bv_u8(n, { nullptr }), n, 8);    // NOLINT
+    literal<Expr::BV, uint16_t>(claricpp_create_literal_bv_u16(n, { nullptr }), n, 16); // NOLINT
+    literal<Expr::BV, uint32_t>(claricpp_create_literal_bv_u32(n, { nullptr }), n, 32); // NOLINT
+    literal<Expr::BV, uint64_t>(claricpp_create_literal_bv_u64(n, { nullptr }), n, 64); // NOLINT
+    literal<Expr::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_str("10", n, { nullptr }),
+                              BigInt { "10", n }, n);
+    literal<Expr::BV, BigInt>(claricpp_create_literal_bv_big_int_mode_int("10", n, { nullptr }),
+                              BigInt { 10, n }, n);
 
     // Non-Trivial
 
@@ -122,6 +123,24 @@ void create() {
 
 // Cleanup
 #undef UNARY
+
+#define UINT_BINARY(FUN)                                                                          \
+    Util::Log::debug("Testing " #FUN "...");                                                      \
+    const auto FUN { claricpp_create_##FUN(API::copy_to_c(bv_sym), 4, { nullptr }) };             \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(bv_sym, 4)->hash);                  \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash != Create::FUN(bv_sym, 5)->hash)
+
+    UINT_BINARY(sign_ext);
+    UINT_BINARY(zero_ext);
+
+// Cleanup
+#undef UINT_BINARY
+
+#define BINARY(NAME, FUN, TYPE, HASH)                                                             \
+    Util::Log::debug("Testing " #NAME "...");                                                     \
+    const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym),                           \
+                                            API::copy_to_c(TYPE##_sym), { nullptr }) };           \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == HASH);
 
     // String
 

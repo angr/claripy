@@ -147,4 +147,103 @@ extern "C" {
     /********************************************************************/
     /*                          Trivial Binary                          */
     /********************************************************************/
+
+    // Comparisons
+
+    ClaricppExpr claricpp_create_eq(const ClaricppExpr left, const ClaricppExpr right,
+                                    ClaricppSPAV spav) {
+        return make(Create::eq, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_neq(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        return make(Create::neq, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_slt(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Signed | C::Less | C::Neq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_sle(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Signed | C::Less | C::Eq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_sgt(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Signed | C::Greater | C::Neq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_sge(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Signed | C::Greater | C::Eq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_ult(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Unsigned | C::Less | C::Neq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_ule(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Unsigned | C::Less | C::Eq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_ugt(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Unsigned | C::Greater | C::Neq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_uge(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        using C = Mode::Compare;
+        static constexpr auto mask { C::Unsigned | C::Greater | C::Eq };
+        return make(Create::compare<mask>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    // Math
+
+    ClaricppExpr claricpp_create_sub(const ClaricppExpr left, const ClaricppExpr right,
+                                     ClaricppSPAV spav) {
+        return make(Create::sub, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_sdiv(const ClaricppExpr left, const ClaricppExpr right,
+                                      ClaricppSPAV spav) {
+        return make(Create::div<true>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_udiv(const ClaricppExpr left, const ClaricppExpr right,
+                                      ClaricppSPAV spav) {
+        return make(Create::div<false>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_smod(const ClaricppExpr left, const ClaricppExpr right,
+                                      ClaricppSPAV spav) {
+        return make(Create::mod<true>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr right,
+                                      ClaricppSPAV spav) {
+        return make(Create::mod<false>, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    // Bitwise
+
+    // Misc
 }
