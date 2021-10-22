@@ -12,73 +12,94 @@
 
 namespace Create::Private {
 
-    /** Create a Expr with a binary op
-     *  Expr pointers may not be nullptr
+    /** Calculate the size of a new expression given Mode
+     *  Assumes left and right are not null
+     *  Assumes left is of type Bits, as is right
      */
-    template <typename Out, typename In, typename OpT, SizeMode Mode, typename... Allowed>
-    inline Expr::BasePtr binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                                Annotation::SPAV &&sp) {
-        namespace Ex = Expr;
-        using namespace Simplification;
-        namespace Err = Error::Expr;
-
-        // Static checks
-        static_assert(Util::is_ancestor<Ex::Base, Out>,
-                      "Create::Private::binary requires Out be an Expr");
-        static_assert(Util::is_ancestor<Ex::Base, In>,
-                      "Create::Private::binary requires In be an Expr");
-        static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
-        if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
-            const constexpr bool sized_in { Util::is_ancestor<Ex::Bits, In> };
-            static_assert(Util::TD::boolean<sized_in, In>,
-                          "Create::Private::binary does not support sized output types without "
-                          "sized input types");
+    template <SizeMode Mode>
+    UInt length_calc(const Expr::BasePtr &left, const Expr::BasePtr &right) {
+        if constexpr (Mode == SizeMode::First) {
+            return Expr::get_bit_length(left);
         }
-        static_assert(Util::qualified_is_in<In, Allowed...>,
-                      "Create::Private::binary requires In is in Allowed");
-
-        // Dynamic checks
-        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
-                                 WHOAMI "Expr pointer arguments may not be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<In>(left), WHOAMI "left operand of incorrect type");
-
-        // Construct expr (static casts are safe because of previous checks)
-        if constexpr (Util::is_ancestor<Ex::Bits, Out>) {
-            static_assert(Util::TD::boolean<Mode != SizeMode::NA, Out>,
-                          "SizeMode::NA not allowed with sized output type");
-            // Construct size
-            UInt new_bit_length { Ex::get_bit_length(left) };
-            if constexpr (Mode == SizeMode::Add) {
-                // Type check before size extraction
-                Util::affirm<Err::Type>(CUID::is_t<In>(right),
-                                        WHOAMI "right operand of incorrect type");
-                new_bit_length += Ex::get_bit_length(right);
-            }
-            else if constexpr (Mode != SizeMode::First) {
-                static_assert(Util::TD::false_<Out>,
-                              "Create::Private::binary does not support the given SizeMode");
-            }
-            // Actually construct expr
-            return simplify(Ex::factory<Out>(left->symbolic || right->symbolic,
-                                             Op::factory<OpT>(left, right), new_bit_length,
-                                             std::move(sp)));
+        else if constexpr (Mode == SizeMode::Add) {
+            // Type check before size extraction
+            Util::affirm<Util::Err::Type>(left->cuid == right->cuid,
+                                          WHOAMI "right operand of incorrect type");
+            return Expr::get_bit_length(left) + Expr::get_bit_length(right);
         }
         else {
-            static_assert(Mode == Util::TD::id<SizeMode::NA>,
-                          "SizeMode should be NA for non-sized type");
-            return simplify(Ex::factory<Out>(left->symbolic || right->symbolic,
-                                             Op::factory<OpT>(left, right), std::move(sp)));
+            static_assert(Util::CD::false_<Mode>, "Invalid SizeMode");
         }
     }
 
     /** Create a Expr with a binary op
      *  Expr pointers may not be nullptr
-     *  A specialization where In = Out
+     *  Mode is ignored if left is a Bool
      */
-    template <typename InOut, typename OpT, SizeMode Mode, typename... Allowed>
+    template <typename Out, typename OpT, SizeMode Mode, typename... Allowed>
+    inline Expr::BasePtr binary_explicit(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                                         Annotation::SPAV &&sp) {
+        using namespace Simplification;
+        namespace Err = Error::Expr;
+
+        // Static checks
+        static_assert(Util::is_ancestor<Expr::Base, Out>,
+                      "Create::Private::binary requires Out be an Expr");
+        static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
+
+        // Dynamic checks
+        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
+                                 WHOAMI "Expr pointer arguments may not be nullptr");
+        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(left),
+                                WHOAMI "left operand of incorrect type");
+
+        // Construct expr
+        if constexpr (std::is_same_v<Expr::Bool, Out>) {
+            return simplify(Expr::factory<Out>(left->symbolic || right->symbolic,
+                                               Op::factory<OpT>(left, right), std::move(sp)));
+        }
+        else {
+            return simplify(Expr::factory<Out>(left->symbolic || right->symbolic,
+                                               Op::factory<OpT>(left, right),
+                                               length_calc<Mode>(left, right), std::move(sp)));
+        }
+    }
+
+
+    /** Create a Expr with a binary op
+     *  Out type is the same as left
+     *  Expr pointers may not be nullptr
+     *  Mode is ignored if left is a Bool
+     */
+    template <typename OpT, SizeMode Mode, typename... Allowed>
     inline Expr::BasePtr binary(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                 Annotation::SPAV &&sp) {
-        return binary<InOut, InOut, OpT, Mode, Allowed...>(left, right, std::move(sp));
+        static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
+        using namespace Simplification;
+        namespace Err = Error::Expr;
+
+        // For speed
+        if constexpr (sizeof...(Allowed) == 1) {
+            return binary_explicit<Allowed..., OpT, Mode, Allowed...>(left, right, std::move(sp));
+        }
+
+        // Dynamic checks
+        Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
+                                 WHOAMI "Expr pointer arguments may not be nullptr");
+        Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(left),
+                                WHOAMI "left operand of incorrect type");
+
+        // Create Expr
+        if constexpr (Util::qualified_is_in<Expr::Bool, Allowed...>) {
+            if (CUID::is_t<Expr::Bool>(left)) {
+                return simplify(Expr::factory<Expr::Bool>(left->symbolic || right->symbolic,
+                                                          Op::factory<OpT>(left, right),
+                                                          std::move(sp)));
+            }
+        }
+        return simplify(Expr::factory_cuid(left->cuid, left->symbolic || right->symbolic,
+                                           Op::factory<OpT>(left, right),
+                                           length_calc<Mode>(left, right), std::move(sp)));
     }
 
 } // namespace Create::Private

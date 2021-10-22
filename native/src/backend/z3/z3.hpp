@@ -492,21 +492,7 @@ namespace Backend::Z3 {
         static inline Expr::BasePtr to_eq(const Expr::RawPtr a_raw, const Expr::RawPtr b_raw) {
             UTILS_AFFIRM_NOT_NULL_DEBUG(a_raw);
             UTILS_AFFIRM_NOT_NULL_DEBUG(b_raw);
-            namespace Ex = Expr;
-            const auto a { Ex::find(a_raw->hash) };
-            const auto b { Ex::find(b_raw->hash) };
-            switch (a->cuid) {
-                case Ex::Bool::static_cuid:
-                    return Create::eq<Ex::Bool>(a, b);
-                case Ex::BV::static_cuid:
-                    return Create::eq<Ex::BV>(a, b);
-                case Ex::FP::static_cuid:
-                    return Create::eq<Ex::FP>(a, b);
-                case Ex::String::static_cuid:
-                    return Create::eq<Ex::String>(a, b);
-                default:
-                    throw Util::Err::Type(WHOAMI "Unsupported expr type");
-            }
+            return Create::eq(Expr::find(a_raw->hash), Expr::find(b_raw->hash));
         }
 
         /** Find the min/max value of expr that satisfies solver; returns an int64_t or uint64_t */

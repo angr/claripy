@@ -394,7 +394,7 @@ namespace Backend::Z3 {
                 case Z3_OP_OR:
                     return Abs::template or_<Ex::Bool>(args);
                 case Z3_OP_IFF:
-                    return Abs::template eq<Ex::Bool>(args);
+                    return Abs::eq(args);
                 case Z3_OP_XOR:
                     return Abs::template xor_<Ex::Bool>(args);
                 case Z3_OP_NOT:
@@ -402,21 +402,21 @@ namespace Backend::Z3 {
 
                     // Comparisons
                 case Z3_OP_ULEQ:
-                    return Abs::template compare<Ex::BV, C::Unsigned | C::Less | C::Eq>(args);
+                    return Abs::template compare<C::Unsigned | C::Less | C::Eq>(args);
                 case Z3_OP_SLEQ:
-                    return Abs::template compare<Ex::BV, C::Signed | C::Less | C::Eq>(args);
+                    return Abs::template compare<C::Signed | C::Less | C::Eq>(args);
                 case Z3_OP_UGEQ:
-                    return Abs::template compare<Ex::BV, C::Unsigned | C::Greater | C::Eq>(args);
+                    return Abs::template compare<C::Unsigned | C::Greater | C::Eq>(args);
                 case Z3_OP_SGEQ:
-                    return Abs::template compare<Ex::BV, C::Signed | C::Greater | C::Eq>(args);
+                    return Abs::template compare<C::Signed | C::Greater | C::Eq>(args);
                 case Z3_OP_ULT:
-                    return Abs::template compare<Ex::BV, C::Unsigned | C::Less | C::Neq>(args);
+                    return Abs::template compare<C::Unsigned | C::Less | C::Neq>(args);
                 case Z3_OP_SLT:
-                    return Abs::template compare<Ex::BV, C::Signed | C::Less | C::Neq>(args);
+                    return Abs::template compare<C::Signed | C::Less | C::Neq>(args);
                 case Z3_OP_UGT:
-                    return Abs::template compare<Ex::BV, C::Unsigned | C::Greater | C::Neq>(args);
+                    return Abs::template compare<C::Unsigned | C::Greater | C::Neq>(args);
                 case Z3_OP_SGT:
-                    return Abs::template compare<Ex::BV, C::Signed | C::Greater | C::Neq>(args);
+                    return Abs::template compare<C::Signed | C::Greater | C::Neq>(args);
 
                     // Bit-vectors
                 case Z3_OP_BNUM:
@@ -510,15 +510,15 @@ namespace Backend::Z3 {
 
                     // FP Comparisons
                 case Z3_OP_FPA_EQ:
-                    return Abs::template eq<Ex::FP>(args);
+                    return Abs::eq(args);
                 case Z3_OP_FPA_GT:
-                    return Abs::template compare<Ex::FP, C::Signed | C::Greater | C::Neq>(args);
+                    return Abs::template compare<C::Signed | C::Greater | C::Neq>(args);
                 case Z3_OP_FPA_GE:
-                    return Abs::template compare<Ex::FP, C::Signed | C::Greater | C::Eq>(args);
+                    return Abs::template compare<C::Signed | C::Greater | C::Eq>(args);
                 case Z3_OP_FPA_LT:
-                    return Abs::template compare<Ex::FP, C::Signed | C::Less | C::Neq>(args);
+                    return Abs::template compare<C::Signed | C::Less | C::Neq>(args);
                 case Z3_OP_FPA_LE:
-                    return Abs::template compare<Ex::FP, C::Signed | C::Less | C::Eq>(args);
+                    return Abs::template compare<C::Signed | C::Less | C::Eq>(args);
 
                     // FP Arithmetic
                 case Z3_OP_FPA_ABS:

@@ -61,10 +61,9 @@ namespace Create::String {
      */
     inline Expr::BasePtr contains(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                   Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace CP = ::Create::Private;
-        return CP::binary<Ex::Bool, Ex::String, Op::String::Contains, CP::SizeMode::NA,
-                          Ex::String>(left, right, std::move(sp));
+        return CP::binary_explicit<Expr::Bool, Op::String::Contains, CP::SizeMode::NA,
+                                   Expr::String>(left, right, std::move(sp));
     }
 
     /** Create an Expr with a String::PrefixOf op
@@ -72,10 +71,9 @@ namespace Create::String {
      */
     inline Expr::BasePtr prefix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                    Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace CP = ::Create::Private;
-        return CP::binary<Ex::Bool, Ex::String, Op::String::PrefixOf, CP::SizeMode::NA,
-                          Ex::String>(left, right, std::move(sp));
+        return CP::binary_explicit<Expr::Bool, Op::String::PrefixOf, CP::SizeMode::NA,
+                                   Expr::String>(left, right, std::move(sp));
     }
 
     /** Create an Expr with a String::SuffixOf op
@@ -83,10 +81,9 @@ namespace Create::String {
      */
     inline Expr::BasePtr suffix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                    Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace CP = ::Create::Private;
-        return CP::binary<Ex::Bool, Ex::String, Op::String::SuffixOf, CP::SizeMode::NA,
-                          Ex::String>(left, right, std::move(sp));
+        return CP::binary_explicit<Expr::Bool, Op::String::SuffixOf, CP::SizeMode::NA,
+                                   Expr::String>(left, right, std::move(sp));
     }
 
 } // namespace Create::String

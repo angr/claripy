@@ -175,10 +175,9 @@ namespace Backend::Z3 {
         }
 
         /** Abstraction function ofr various Z3 comparison ops */
-        template <typename T, Mode::Compare Mask>
-        static Expr::BasePtr compare(const ArgsVec &args) {
+        template <Mode::Compare Mask> static Expr::BasePtr compare(const ArgsVec &args) {
             ASSERT_ARG_LEN(args, 2);
-            return Create::compare<T, Mask>(GET_EARG(0), GET_EARG(1));
+            return Create::compare<Mask>(GET_EARG(0), GET_EARG(1));
         }
 
         /**********************************************************/
@@ -188,39 +187,15 @@ namespace Backend::Z3 {
         /** Abstraction function for z3 equality ops
          *  Will warn the user if called on Expr::FP while T is not that.
          */
-        template <typename T = Expr::Base> static Expr::BasePtr eq(const ArgsVec &args) {
+        static Expr::BasePtr eq(const ArgsVec &args) {
             ASSERT_ARG_LEN(args, 2);
-            if constexpr (std::is_same_v<T, Expr::FP>) {
-                return Create::eq<T>(GET_EARG(0), GET_EARG(1));
-            }
-            if constexpr (std::is_same_v<T, Expr::Bool>) {
-                return Create::eq<T>(GET_EARG(0), GET_EARG(1));
-            }
-            switch (GET_EARG(0)->cuid) {
-                TYPE_CASE(Bool, Create::eq, GET_EARG(0), GET_EARG(1));
-                TYPE_CASE(BV, Create::eq, GET_EARG(0), GET_EARG(1));
-                TYPE_CASE(String, Create::eq, GET_EARG(0), GET_EARG(1));
-                DEFAULT_TYPE_CASE(GET_EARG(0)->cuid);
-                // This case should never be hit if used correctly
-                // We can recover, but we will warn the user!
-                case Expr::FP::static_cuid: {
-                    Util::Log::warning(WHOAMI,
-                                       "called on FP but without setting T to Ex::FP as expected."
-                                       "\nIf you see this, please report it or correct your usage"
-                                       " if you are using this function directly.");
-                    return Create::eq<Expr::FP>(GET_EARG(0), GET_EARG(1));
-                }
-            };
+            return Create::eq(GET_EARG(0), GET_EARG(1));
         }
 
         /** Abstraction function for Z3_OP_DISTINCT */
         static Expr::BasePtr distinct(const ArgsVec &args) {
             ASSERT_ARG_LEN(args, 2);
-            switch (GET_EARG(0)->cuid) {
-                TYPE_CASE(FP, Create::neq, GET_EARG(0), GET_EARG(1));
-                TYPE_CASE(Bool, Create::neq, GET_EARG(0), GET_EARG(1));
-                DEFAULT_TYPE_CASE(GET_EARG(0)->cuid);
-            };
+            return Create::neq(GET_EARG(0), GET_EARG(1));
         }
 
         /** Abstraction function for Z3_OP_ITE */
@@ -368,7 +343,7 @@ namespace Backend::Z3 {
         // BV Misc
 
         /** Abstraction function for Z3_OP_CONCAT */
-        static Expr::BasePtr concat(const ArgsVec &args) { BINARY(Create::concat<Expr::BV>); }
+        static Expr::BasePtr concat(const ArgsVec &args) { BINARY(Create::concat); }
 
         /** Abstraction function for Z3_OP_SIGN_EXT */
         static Expr::BasePtr sign_ext(const ArgsVec &args, const z3::func_decl &decl) {

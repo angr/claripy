@@ -86,38 +86,35 @@ namespace Create {
     /** Create a Bool Expr with an Eq op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr eq(const Expr::BasePtr &left, const Expr::BasePtr &right,
                             Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::Bool, T, Op::Eq, Private::SizeMode::NA, Ex::FP, Ex::Bool,
-                               Ex::BV, Ex::String>(left, right, std::move(sp));
+        return Private::binary_explicit<Expr::Bool, Op::Eq, Private::SizeMode::NA, Expr::FP,
+                                        Expr::Bool, Expr::BV, Expr::String>(left, right,
+                                                                            std::move(sp));
     }
 
     /** Create a Bool Expr with an Neq op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr neq(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::Bool, T, Op::Neq, Private::SizeMode::NA, Ex::FP, Ex::Bool,
-                               Ex::BV, Ex::String>(left, right, std::move(sp));
+        return Private::binary_explicit<Expr::Bool, Op::Neq, Private::SizeMode::NA, Expr::FP,
+                                        Expr::Bool, Expr::BV, Expr::String>(left, right,
+                                                                            std::move(sp));
     }
 
     /** Create an Expr with a Compare op
      *  Expr pointers may not be nullptr
      */
-    template <typename In, Mode::Compare Mask>
+    template <Mode::Compare Mask>
     inline Expr::BasePtr compare(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                  Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         static_assert(Mode::compare_is_valid(Mask), "Invalid Compare Mode");
-        static_assert(Util::BitMask::has(Mask, Mode::Compare::Signed) ||
-                          !Util::is_same_ignore_const<In, Ex::FP>,
-                      "FP comparisons must be signed");
-        return Private::binary<Ex::Bool, In, Op::Compare<Mask>, Private::SizeMode::NA, Ex::FP,
-                               Ex::BV>(left, right, std::move(sp));
+        Util::affirm<Util::Err::Usage>(Util::BitMask::has(Mask, Mode::Compare::Signed) ||
+                                           !CUID::is_t<Expr::FP>(left),
+                                       WHOAMI "FP comparisons must be signed");
+        return Private::binary_explicit<Expr::Bool, Op::Compare<Mask>, Private::SizeMode::NA,
+                                        Expr::FP, Expr::BV>(left, right, std::move(sp));
     }
 
     // Math
@@ -127,9 +124,8 @@ namespace Create {
      */
     inline Expr::BasePtr sub(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Sub, Private::SizeMode::First, Ex::BV>(left, right,
-                                                                                  std::move(sp));
+        return Private::binary<Op::Sub, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                            std::move(sp));
     }
 
     /** Create an Expr with an Div op
@@ -138,9 +134,8 @@ namespace Create {
     template <bool Signed>
     inline Expr::BasePtr div(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Div<Signed>, Private::SizeMode::First, Ex::BV>(
-            left, right, std::move(sp));
+        return Private::binary<Op::Div<Signed>, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                    std::move(sp));
     }
 
     /** Create an Expr with an Mod op
@@ -149,9 +144,8 @@ namespace Create {
     template <bool Signed>
     inline Expr::BasePtr mod(const Expr::BasePtr &left, const Expr::BasePtr &right,
                              Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Mod<Signed>, Private::SizeMode::First, Ex::BV>(
-            left, right, std::move(sp));
+        return Private::binary<Op::Mod<Signed>, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                    std::move(sp));
     }
 
     // Bitwise
@@ -162,9 +156,8 @@ namespace Create {
     template <Mode::Shift Mask>
     inline Expr::BasePtr shift(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Shift<Mask>, Private::SizeMode::First, Ex::BV>(
-            left, right, std::move(sp));
+        return Private::binary<Op::Shift<Mask>, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                    std::move(sp));
     }
 
     /** Create an Expr with a Rotate op
@@ -173,9 +166,8 @@ namespace Create {
     template <Mode::LR LR>
     inline Expr::BasePtr rotate(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                 Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Rotate<LR>, Private::SizeMode::First, Ex::BV>(
-            left, right, std::move(sp));
+        return Private::binary<Op::Rotate<LR>, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                                   std::move(sp));
     }
 
     // Misc
@@ -185,9 +177,8 @@ namespace Create {
      */
     inline Expr::BasePtr widen(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Widen, Private::SizeMode::First, Ex::BV>(left, right,
-                                                                                    std::move(sp));
+        return Private::binary<Op::Widen, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                              std::move(sp));
     }
 
     /** Create an Expr with an Union op
@@ -195,30 +186,25 @@ namespace Create {
      */
     inline Expr::BasePtr union_(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                 Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<Ex::BV, Op::Union, Private::SizeMode::First, Ex::BV>(left, right,
-                                                                                    std::move(sp));
+        return Private::binary<Op::Union, Private::SizeMode::First, Expr::BV>(left, right,
+                                                                              std::move(sp));
     }
 
     /** Create an Expr with an Intersection op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr intersection_(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                        Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<T, Op::Intersection, Private::first_or_na<T>, Ex::BV, Ex::Bool>(
+        return Private::binary<Op::Intersection, Private::SizeMode::First, Expr::BV, Expr::Bool>(
             left, right, std::move(sp));
     }
 
     /** Create an Expr with an Concat op
      *  Expr pointers may not be nullptr
      */
-    template <typename T>
     inline Expr::BasePtr concat(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                 Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::binary<T, Op::Concat, Private::SizeMode::Add, Ex::BV, Ex::String>(
+        return Private::binary<Op::Concat, Private::SizeMode::Add, Expr::BV, Expr::String>(
             left, right, std::move(sp));
     }
 
