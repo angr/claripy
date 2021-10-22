@@ -340,7 +340,6 @@ class BackendZ3(Backend):
     def FuncDecl(self, ast):
         func_name = ast.op
         func_args = ast.args[1:]
-        print(func_name)
         func_args_z3 = self.convert_list(func_args)
         func_sig = [arg.sort() for arg in func_args_z3]
         func_sig.append(z3.BitVecSort(ast.length, self._context))
