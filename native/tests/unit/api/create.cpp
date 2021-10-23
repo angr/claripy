@@ -143,7 +143,7 @@ void create() {
     Util::Log::debug("Testing " #FUN "...");                                                       \
     const auto FUN##_test { claricpp_create_##FUN(API::copy_to_c(ARG), API::copy_to_c(ARG),        \
                                                   { nullptr }) };                                  \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash);
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash)
 
     // Comparisons
     using C = Mode::Compare;
@@ -176,6 +176,29 @@ void create() {
     BINARY(intersection, bv_64, Create::intersection_);
     BINARY(concat, bv_64, Create::concat);
 
+// Cleanup
+#undef BINARY
+
+/** A local macro used for testing */
+#define FLAT(FUN, INP, REAL_FUN, REAL_INP)                                                         \
+    Util::Log::debug("Testing " #FUN "...");                                                       \
+    const auto FUN##_test { claricpp_create_##FUN(INP, (REAL_INP).size(), { nullptr }) };          \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN((REAL_INP))->hash)
+
+    // Math
+    const ClaricppExpr flat_bv_entry { API::to_c(Expr::BasePtr { bv_64 }) };
+    const ClaricppExpr flat_bv[] { flat_bv_entry, flat_bv_entry, flat_bv_entry };
+    const auto real_flat_bv { [&bv_64]() { return Op::FlatArgs { bv_64, bv_64, bv_64 }; } };
+    FLAT(add, flat_bv, Create::add, real_flat_bv());
+    FLAT(mul, flat_bv, Create::mul, real_flat_bv());
+
+    // Logical
+    FLAT(or, flat_bv, Create::or_, real_flat_bv());
+    FLAT(and, flat_bv, Create::and_, real_flat_bv());
+    FLAT(xor, flat_bv, Create::xor_, real_flat_bv());
+
+    // Cleanup
+#undef FLAT
 
     // String
 
