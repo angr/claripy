@@ -23,7 +23,7 @@
                                                                                                    \
       private:                                                                                     \
         /** Private constructor */                                                                 \
-        explicit inline CLASS(const ::Hash::Hash &h, OpContainer &&input)                          \
+        explicit inline CLASS(const ::Hash::Hash &h, FlatArgs &&input)                             \
             : Flat { h, static_cuid, std::move(input) } {}                                         \
     };
 
