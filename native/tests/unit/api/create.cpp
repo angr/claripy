@@ -54,7 +54,7 @@ static void literal(const ClaricppExpr in, const Val value, const SIZE_T bit_len
 void create() {
 
     // Constants
-    const char name[] { "name" };
+    const char name[] { "name" }; // NOLINT
     const SIZE_T bl { 64_ui };
     const uint8_t n { 8 };
 
@@ -80,11 +80,12 @@ void create() {
     literal<Expr::Bool, bool>(claricpp_create_literal_bool(true, { nullptr }), true, 0);
     literal<Expr::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
                                        std::strlen(name) * C_CHAR_BIT);
-    literal<Expr::FP, float>(claricpp_create_literal_fp_float(3.f, { nullptr }), 3.f,
+    literal<Expr::FP, float>(claricpp_create_literal_fp_float(3.F, { nullptr }), 3.F,
                              32); // NOLINT
     literal<Expr::FP, double>(claricpp_create_literal_fp_double(3., { nullptr }), 3.,
                               64); // NOLINT
-    literal<Expr::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n, { nullptr }), pyobj, n);
+    literal<Expr::VS, PyObj::VSPtr>(claricpp_create_literal_vs(1, 2, n, { nullptr }), pyobj,
+                                    n);                                                 // NOLINT
     literal<Expr::BV, uint8_t>(claricpp_create_literal_bv_u8(n, { nullptr }), n, 8);    // NOLINT
     literal<Expr::BV, uint16_t>(claricpp_create_literal_bv_u16(n, { nullptr }), n, 16); // NOLINT
     literal<Expr::BV, uint32_t>(claricpp_create_literal_bv_u32(n, { nullptr }), n, 32); // NOLINT
@@ -189,7 +190,7 @@ void create() {
 
     // Math
     const ClaricppExpr flat_bv_entry { API::to_c(Expr::BasePtr { bv_64 }) };
-    const ClaricppExpr flat_bv[] { flat_bv_entry, flat_bv_entry, flat_bv_entry };
+    const ClaricppExpr flat_bv[] { flat_bv_entry, flat_bv_entry, flat_bv_entry }; // NOLINT
     const auto real_flat_bv { [&bv_64]() { return Op::FlatArgs { bv_64, bv_64, bv_64 }; } };
     const auto bad_flat_bv { [&bv_64, &bv_sym]() {
         return Op::FlatArgs { bv_64, bv_64, bv_sym };
