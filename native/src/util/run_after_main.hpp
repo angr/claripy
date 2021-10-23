@@ -10,6 +10,11 @@
 #include "../macros.hpp"
 
 
+// Verify counter is supported
+static_assert(((__COUNTER__ + 1) == __COUNTER__) && ((__COUNTER__ + 2) != __COUNTER__),
+              "Counter not supported");
+
+
 /** Define a macro to allow running a literal statement
  *  This must be used outside of a function as it works by declaring global variables
  */
