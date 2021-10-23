@@ -165,6 +165,18 @@ void create() {
     BINARY(smod, bv_64, Create::mod<true>);
     BINARY(umod, bv_64, Create::mod<false>);
 
+    // Bitwise
+    BINARY(shift_left, bv_64, Create::shift<Mode::Shift::Left>);
+    BINARY(shift_logical_right, bv_64, Create::shift<Mode::Shift::LogicalRight>);
+    BINARY(shift_arithmetic_right, bv_64, Create::shift<Mode::Shift::ArithmeticRight>);
+
+    // Misc
+    BINARY(widen, bv_64, Create::widen);
+    BINARY(union, bv_64, Create::union_);
+    BINARY(intersection, bv_64, Create::intersection_);
+    BINARY(concat, bv_64, Create::concat);
+
+
     // String
 
     // FP

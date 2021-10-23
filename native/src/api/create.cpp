@@ -265,4 +265,57 @@ extern "C" {
     }
 
     // Misc
+
+    ClaricppExpr claricpp_create_widen(const ClaricppExpr left, const ClaricppExpr right,
+                                       ClaricppSPAV spav) {
+        return make(Create::widen, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_union(const ClaricppExpr left, const ClaricppExpr right,
+                                       ClaricppSPAV spav) {
+        return make(Create::union_, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_intersection(const ClaricppExpr left, const ClaricppExpr right,
+                                              ClaricppSPAV spav) {
+        return make(Create::intersection_, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    ClaricppExpr claricpp_create_concat(const ClaricppExpr left, const ClaricppExpr right,
+                                        ClaricppSPAV spav) {
+        return make(Create::concat, spav, API::to_cpp_ref(left), API::to_cpp_ref(right));
+    }
+
+    /********************************************************************/
+    /*                               Flat                               */
+    /********************************************************************/
+
+    // Math
+
+    ClaricppExpr claricpp_create_add(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                     ClaricppSPAV spav) {
+        return make(Create::add, spav, API::to_op_args(operands, len));
+    }
+
+    ClaricppExpr claricpp_create_mul(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                     ClaricppSPAV spav) {
+        return make(Create::mul, spav, API::to_op_args(operands, len));
+    }
+
+    // Logical
+
+    ClaricppExpr claricpp_create_or(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                    ClaricppSPAV spav) {
+        return make(Create::or_, spav, API::to_op_args(operands, len));
+    }
+
+    ClaricppExpr claricpp_create_and(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                     ClaricppSPAV spav) {
+        return make(Create::and_, spav, API::to_op_args(operands, len));
+    }
+
+    ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                     ClaricppSPAV spav) {
+        return make(Create::xor_, spav, API::to_op_args(operands, len));
+    }
 }

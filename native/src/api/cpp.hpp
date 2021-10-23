@@ -61,6 +61,8 @@ namespace API {
 
     } // namespace Private
 
+    // To CPP
+
     /** Returns a pointer to the C++ type held by the C type x */
     template <typename InC> static inline auto *to_cpp_ptr(const InC &x) noexcept {
         UTILS_AFFIRM_NOT_NULL_DEBUG(x.ptr);
@@ -73,6 +75,18 @@ namespace API {
     template <typename InC> static inline auto &to_cpp_ref(const InC &x) noexcept {
         return *to_cpp_ptr(x);
     }
+
+    /** Returns an op container containing len operands */
+    static inline Op::FlatArgs to_op_args(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len) {
+        Op::FlatArgs ops;
+        ops.reserve(len);
+        for (UInt i = 0; i < len; ++i) {
+            ops.emplace_back(to_cpp_ref(operands[i]));
+        }
+        return ops;
+    }
+
+    // To C
 
     /** Heap cache function */
     template <typename InCpp> static inline auto to_c(InCpp &&x) {
@@ -90,6 +104,8 @@ namespace API {
         return Private::Map<InCpp> { Private::cache<InCpp>.emplace_on_heap(
             std::forward<Args>(args)...) };
     }
+
+    // Cleanup
 
     /** Heap cache free function */
     template <typename InC> static inline void free(InC &x) {
