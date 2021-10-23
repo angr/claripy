@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This header defines the C API for Create
+ * \ingroup api
  */
 #ifndef R_API_CREATE_H_
 #define R_API_CREATE_H_
@@ -449,19 +450,57 @@ ClaricppExpr claricpp_create_and(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
  */
 ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len, ClaricppSPAV spav);
 
-
-
-
-
-
-
-
-// String
-
 /********************************************************************/
-/*                         Trivial Trinary                          */
+/*                              String                              */
 /********************************************************************/
 
-// FP
+// Unary
+
+/** Create an is_digit Expr
+ *  @param x The String to be checked if it is a digit or not
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an is_digit expression
+ */
+ClaricppExpr claricpp_create_string_is_digit(const ClaricppExpr x, ClaricppSPAV spav);
+
+// UInt Binary
+
+#if 0
+inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const UInt integer,
+                            Annotation::SPAV &&sp = nullptr) {
+inline Expr::BasePtr len(const Expr::BasePtr &expr, const UInt integer,
+                         Annotation::SPAV &&sp = nullptr) {
+
+// Binary
+
+inline Expr::BasePtr contains(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                              Annotation::SPAV &&sp = nullptr) {
+inline Expr::BasePtr prefix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                               Annotation::SPAV &&sp = nullptr) {
+inline Expr::BasePtr suffix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
+                               Annotation::SPAV &&sp = nullptr) {
+
+#endif
+
+/********************************************************************/
+/*                                FP                                */
+/********************************************************************/
+
+// Unary
+#if 0
+inline Expr::BasePtr to_ieee_bv(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+
+// Mode Binary
+
+FP_MB_SMF_ARITH(add, Add);
+FP_MB_SMF_ARITH(sub, Sub);
+FP_MB_SMF_ARITH(mul, Mul);
+FP_MB_SMF_ARITH(div, Div);
+
+// Ternary
+
+inline Expr::BasePtr fp(const Expr::BasePtr &first, const Expr::BasePtr &second,
+                        const Expr::BasePtr &third, Annotation::SPAV &&sp = nullptr) {
+#endif
 
 #endif
