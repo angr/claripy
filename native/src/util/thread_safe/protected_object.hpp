@@ -34,8 +34,10 @@ namespace Util::ThreadSafe {
 
         // Constructors / destructors
 
-        /** Constructor */
-        ProtectedObject(T &r, Lock &&l) noexcept : pointer { &r }, lock { std::move(l) } {}
+        /** Constructor
+         *  Warning: This assumes l is already locked
+         */
+        explicit ProtectedObject(T &r, Lock &&l) noexcept : pointer { &r }, lock { std::move(l) } {}
 
         /** Move Constructor */
         ProtectedObject(ProtectedObject &&o) noexcept

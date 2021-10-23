@@ -44,8 +44,7 @@ namespace Util::ThreadSafe {
         /** Destructor */
         ~Mutable() noexcept override final = default;
 
-        /** Request read-write access
-         */
+        /** Request read-write access */
         [[nodiscard]] auto unique() { return ProtectedObject { obj, UniqueLock { m } }; }
 
         /** Request scoped read-write access
@@ -54,8 +53,7 @@ namespace Util::ThreadSafe {
          */
         [[nodiscard]] auto scoped_unique() { return std::pair<T &, const UniqueLock> { obj, m }; }
 
-        /** Request read-only access
-         */
+        /** Request read-only access */
         [[nodiscard]] auto shared() { return ProtectedObject { obj, SharedLock { m } }; }
 
         /** Request scoped read-only access
