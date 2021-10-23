@@ -437,7 +437,9 @@ namespace Backend::Z3 {
                         (Util::unsign(exp) << FP::dbl.mantissa_raw())
                     };
                     // If nothing went wrong, this reinterpret_cast should be safe
-                    return *reinterpret_cast<const double *>(&to_val);
+                    double ret; // NOLINT
+                    UTILS_TYPE_PUN_ONTO(&ret, &to_val);
+                    return ret;
                 }
                 if (LIKELY(width == FP::flt)) {
                     const uint32_t to_val { (Util::unsign(sign) << FP::flt.no_sign_width()) |
@@ -445,7 +447,9 @@ namespace Backend::Z3 {
                                             (Util::narrow<uint32_t, true>(exp)
                                              << FP::flt.mantissa_raw()) };
                     // If nothing went wrong, this reinterpret_cast should be safe
-                    return *reinterpret_cast<const float *>(&to_val);
+                    float ret; // NOLINT
+                    UTILS_TYPE_PUN_ONTO(&ret, &to_val);
+                    return ret;
                 }
                 throw Util::Err::NotSupported(
                     WHOAMI "Cannot create a value for this unknown floating point standard."

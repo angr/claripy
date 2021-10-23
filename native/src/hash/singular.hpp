@@ -92,7 +92,7 @@ namespace Hash {
         static_assert(sizeof(float) == sizeof(uint32_t),
                       "Numeric type must have the same size as float");
         uint32_t tmp; // NOLINT
-        UTILS_TYPE_PUN_ONTO(uint32_t, &tmp, &f);
+        UTILS_TYPE_PUN_ONTO(&tmp, &f);
         return UTILS_FILE_LINE_HASH ^ tmp;
     }
 
@@ -101,7 +101,7 @@ namespace Hash {
      */
     template <> inline Hash singular(const double &d) noexcept {
         Hash tmp; // NOLINT
-        UTILS_TYPE_PUN_ONTO(Hash, &tmp, &d);
+        UTILS_TYPE_PUN_ONTO(&tmp, &d);
         return UTILS_FILE_LINE_HASH ^ tmp;
     }
 
@@ -140,7 +140,7 @@ namespace Hash {
         static_assert(sizeof(Mode::FP::Width) == sizeof(Hash),
                       "singular(Mode::FP::Width) must be modified.");
         Hash tmp; // NOLINT
-        UTILS_TYPE_PUN_ONTO(Hash, &tmp, &w);
+        UTILS_TYPE_PUN_ONTO(&tmp, &w);
         return UTILS_FILE_LINE_HASH ^ tmp;
     }
 

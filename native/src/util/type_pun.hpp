@@ -16,7 +16,7 @@
 #include <cstring>
 
 
-/** Type puns IN_OBJ onto OUT_ONTO_PTR of type (& OUT_TYPE).
+/** Type puns *IN_OBJ_PTR onto *OUT_ONTO_PTR
  *  This is a safe way to type pun in C++ provided that the Out type is well formed no matter
  *  what arrangement of bits its representation has. For example, ints are safe, doubles are
  *  not since they have some undefined forms. In this case, it is up to the user to ensure
@@ -24,11 +24,11 @@
  *  of the type being punned to.
  *  Warning: If you want to type-pun with an array, use std::memcpy
  */
-#define UTILS_TYPE_PUN_ONTO(OUT_TYPE, OUT_ONTO_PTR, IN_OBJ)                                        \
-    static_assert(sizeof(OUT_TYPE) <= sizeof(*(IN_OBJ)),                                           \
+#define UTILS_TYPE_PUN_ONTO(OUT_ONTO_PTR, IN_OBJ_PTR)                                              \
+    static_assert(sizeof(*OUT_ONTO_PTR) <= sizeof(*(IN_OBJ_PTR)),                                  \
                   "cannot pun to a size larger than the input object");                            \
     /* Not memmove since compilers seem to be more capable of no-op-ing memcpy with -O3 */         \
-    std::memcpy((OUT_ONTO_PTR), (IN_OBJ), sizeof(OUT_TYPE));
+    std::memcpy((OUT_ONTO_PTR), (IN_OBJ_PTR), sizeof(*OUT_ONTO_PTR));
 
 
 #endif
