@@ -21,7 +21,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     static_assert(Op::is_flat<OpT>, "flat requires a flat OpT");
 
     // Create input
-    std::vector<Factory::Ptr<Expr::Base>> input {
+    std::vector<Expr::BasePtr> input {
         4,
         // Temporary so that it looses the reference after construction
         UnitTest::TestLib::Factories::t_literal<T>()

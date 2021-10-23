@@ -30,6 +30,9 @@
 
 namespace Op {
 
+    /** Operand container type used for flat ops */
+    using FlatArgs = std::vector<Expr::BasePtr>;
+
     /** An abstract flattened Op class
      *  Operands must all be of the same type and there must be at least 2
      *  These conditions are *not* validated
@@ -38,11 +41,8 @@ namespace Op {
         OP_PURE_INIT(AbstractFlat);
 
       public:
-        /** Operand container type */
-        using OpContainer = std::vector<Expr::BasePtr>;
-
         /** Operands */
-        const OpContainer operands;
+        const FlatArgs operands;
 
         /** Return true if this class requires each operand be of the same size */
         virtual bool consider_size() const noexcept = 0;
@@ -61,8 +61,7 @@ namespace Op {
         /** Protected constructor
          *  Verify that all operands are of the same type and that there are at least 2
          */
-        explicit inline AbstractFlat(const Hash::Hash &h, const CUID::CUID &cuid_,
-                                     OpContainer &&input)
+        explicit inline AbstractFlat(const Hash::Hash &h, const CUID::CUID &cuid_, FlatArgs &&input)
             : Base { h, cuid_ }, operands { input } {}
     };
 
@@ -98,7 +97,7 @@ namespace Op {
         /** Protected constructor
          *  Verify that all operands are of the same type and that there are at least 2
          */
-        explicit inline Flat(const Hash::Hash &h, const CUID::CUID &cuid_, OpContainer &&input)
+        explicit inline Flat(const Hash::Hash &h, const CUID::CUID &cuid_, FlatArgs &&input)
             : AbstractFlat { h, cuid_, std::move(input) } {
             namespace Err = Error::Expr;
 

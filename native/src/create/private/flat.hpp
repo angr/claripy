@@ -26,8 +26,7 @@ namespace Create::Private {
      *  operands' pointers may not be nullptr
      */
     template <typename Out, typename OpT, typename... Allowed>
-    inline Expr::BasePtr flat_explicit(typename OpT::OpContainer &&operands,
-                                       Annotation::SPAV &&sp) {
+    inline Expr::BasePtr flat_explicit(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
         using namespace Simplification;
         namespace Err = Error::Expr;
 
@@ -57,7 +56,7 @@ namespace Create::Private {
      *  Expr pointers may not be nullptr
      */
     template <typename OpT, typename... Allowed>
-    inline Expr::BasePtr flat(typename OpT::OpContainer &&operands, Annotation::SPAV &&sp) {
+    inline Expr::BasePtr flat(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
         using namespace Simplification;
         namespace Err = Error::Expr;
 

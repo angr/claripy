@@ -215,7 +215,7 @@ namespace Create {
     /** Create an Expr with an Add op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr add(Op::Add::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr add(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         return Private::flat_explicit<Ex::BV, Op::Add, Ex::BV>(std::move(operands), std::move(sp));
     }
@@ -223,7 +223,7 @@ namespace Create {
     /** Create an Expr with an Mul op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr mul(Op::Mul::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr mul(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
         namespace Ex = Expr;
         return Private::flat_explicit<Ex::BV, Op::Mul, Ex::BV>(std::move(operands), std::move(sp));
     }
@@ -233,21 +233,21 @@ namespace Create {
     /** Create an Expr with an Or op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr or_(Op::Or::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr or_(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
         return Private::flat<Op::Or, Expr::BV, Expr::Bool>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an And op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr and_(Op::And::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr and_(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
         return Private::flat<Op::And, Expr::BV, Expr::Bool>(std::move(operands), std::move(sp));
     }
 
     /** Create an Expr with an Xor op
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr xor_(Op::Xor::OpContainer &&operands, Annotation::SPAV &&sp = nullptr) {
+    inline Expr::BasePtr xor_(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
         return Private::flat_explicit<Expr::BV, Op::Xor, Expr::BV>(std::move(operands),
                                                                    std::move(sp));
     }
