@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup api
+ */
 #include "../create.hpp"
 
 #include "cpp.hpp"

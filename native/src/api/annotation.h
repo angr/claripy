@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This header defines the C API for Annotation
+ * \ingroup api
  */
 #ifndef R_API_ANNOTATION_H_
 #define R_API_ANNOTATION_H_

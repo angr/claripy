@@ -1,4 +1,7 @@
-/** @file */
+/**
+ * @file
+ * \ingroup api
+ */
 #include "../annotation.hpp"
 
 #include "cpp.hpp"

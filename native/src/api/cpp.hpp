@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This header exposes the C API and C++ API helper functions
+ * \ingroup api
  */
 #ifndef R_API_CPP_HPP_
 #define R_API_CPP_HPP_

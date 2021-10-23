@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief This header defines C constants to be used by the API
+ * \ingroup api
  */
 #ifndef R_API_CONSTANTS_H_
 #define R_API_CONSTANTS_H_

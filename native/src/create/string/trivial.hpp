@@ -25,7 +25,7 @@ namespace Create::String {
     }
 
     /********************************************************************/
-    /*                 Int Binary Passthrough Functions                 */
+    /*                UInt Binary Passthrough Functions                 */
     /********************************************************************/
 
     /** Create an Expr with an String::SignExt op
