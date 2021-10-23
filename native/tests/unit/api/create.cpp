@@ -139,63 +139,68 @@ void create() {
 #undef UINT_BINARY
 
 /** A local macro used for testing */
-#define BINARY(FUN, ARG, REAL_FUN)                                                                 \
+#define BINARY(FUN, ARG, BAD_ARG, REAL_FUN)                                                        \
     Util::Log::debug("Testing " #FUN "...");                                                       \
     const auto FUN##_test { claricpp_create_##FUN(API::copy_to_c(ARG), API::copy_to_c(ARG),        \
                                                   { nullptr }) };                                  \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash)
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash);                \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash != REAL_FUN(ARG, BAD_ARG)->hash)
 
     // Comparisons
     using C = Mode::Compare;
-    BINARY(eq, bv_64, Create::eq);
-    BINARY(neq, bv_64, Create::neq);
-    BINARY(slt, bv_64, Create::compare<C::Signed | C::Less | C::Neq>);
-    BINARY(sle, bv_64, Create::compare<C::Signed | C::Less | C::Eq>);
-    BINARY(sgt, bv_64, Create::compare<C::Signed | C::Greater | C::Neq>);
-    BINARY(sge, bv_64, Create::compare<C::Signed | C::Greater | C::Eq>);
-    BINARY(ult, bv_64, Create::compare<C::Unsigned | C::Less | C::Neq>);
-    BINARY(ule, bv_64, Create::compare<C::Unsigned | C::Less | C::Eq>);
-    BINARY(ugt, bv_64, Create::compare<C::Unsigned | C::Greater | C::Neq>);
-    BINARY(uge, bv_64, Create::compare<C::Unsigned | C::Greater | C::Eq>);
+    BINARY(eq, bv_64, bv_sym, Create::eq);
+    BINARY(neq, bv_64, bv_sym, Create::neq);
+    BINARY(slt, bv_64, bv_sym, Create::compare<C::Signed | C::Less | C::Neq>);
+    BINARY(sle, bv_64, bv_sym, Create::compare<C::Signed | C::Less | C::Eq>);
+    BINARY(sgt, bv_64, bv_sym, Create::compare<C::Signed | C::Greater | C::Neq>);
+    BINARY(sge, bv_64, bv_sym, Create::compare<C::Signed | C::Greater | C::Eq>);
+    BINARY(ult, bv_64, bv_sym, Create::compare<C::Unsigned | C::Less | C::Neq>);
+    BINARY(ule, bv_64, bv_sym, Create::compare<C::Unsigned | C::Less | C::Eq>);
+    BINARY(ugt, bv_64, bv_sym, Create::compare<C::Unsigned | C::Greater | C::Neq>);
+    BINARY(uge, bv_64, bv_sym, Create::compare<C::Unsigned | C::Greater | C::Eq>);
 
     // Math
-    BINARY(sub, bv_64, Create::sub);
-    BINARY(sdiv, bv_64, Create::div<true>);
-    BINARY(udiv, bv_64, Create::div<false>);
-    BINARY(smod, bv_64, Create::mod<true>);
-    BINARY(umod, bv_64, Create::mod<false>);
+    BINARY(sub, bv_64, bv_sym, Create::sub);
+    BINARY(sdiv, bv_64, bv_sym, Create::div<true>);
+    BINARY(udiv, bv_64, bv_sym, Create::div<false>);
+    BINARY(smod, bv_64, bv_sym, Create::mod<true>);
+    BINARY(umod, bv_64, bv_sym, Create::mod<false>);
 
     // Bitwise
-    BINARY(shift_left, bv_64, Create::shift<Mode::Shift::Left>);
-    BINARY(shift_logical_right, bv_64, Create::shift<Mode::Shift::LogicalRight>);
-    BINARY(shift_arithmetic_right, bv_64, Create::shift<Mode::Shift::ArithmeticRight>);
+    BINARY(shift_left, bv_64, bv_sym, Create::shift<Mode::Shift::Left>);
+    BINARY(shift_logical_right, bv_64, bv_sym, Create::shift<Mode::Shift::LogicalRight>);
+    BINARY(shift_arithmetic_right, bv_64, bv_sym, Create::shift<Mode::Shift::ArithmeticRight>);
 
     // Misc
-    BINARY(widen, bv_64, Create::widen);
-    BINARY(union, bv_64, Create::union_);
-    BINARY(intersection, bv_64, Create::intersection_);
-    BINARY(concat, bv_64, Create::concat);
+    BINARY(widen, bv_64, bv_sym, Create::widen);
+    BINARY(union, bv_64, bv_sym, Create::union_);
+    BINARY(intersection, bv_64, bv_sym, Create::intersection_);
+    BINARY(concat, bv_64, bv_sym, Create::concat);
 
 // Cleanup
 #undef BINARY
 
 /** A local macro used for testing */
-#define FLAT(FUN, INP, REAL_FUN, REAL_INP)                                                         \
+#define FLAT(FUN, INP, REAL_FUN, REAL_INP, BAD_INP)                                                \
     Util::Log::debug("Testing " #FUN "...");                                                       \
     const auto FUN##_test { claricpp_create_##FUN(INP, (REAL_INP).size(), { nullptr }) };          \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN((REAL_INP))->hash)
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN((REAL_INP))->hash);              \
+    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash != REAL_FUN((BAD_INP))->hash)
 
     // Math
     const ClaricppExpr flat_bv_entry { API::to_c(Expr::BasePtr { bv_64 }) };
     const ClaricppExpr flat_bv[] { flat_bv_entry, flat_bv_entry, flat_bv_entry };
     const auto real_flat_bv { [&bv_64]() { return Op::FlatArgs { bv_64, bv_64, bv_64 }; } };
-    FLAT(add, flat_bv, Create::add, real_flat_bv());
-    FLAT(mul, flat_bv, Create::mul, real_flat_bv());
+    const auto bad_flat_bv { [&bv_64, &bv_sym]() {
+        return Op::FlatArgs { bv_64, bv_64, bv_sym };
+    } };
+    FLAT(add, flat_bv, Create::add, real_flat_bv(), bad_flat_bv());
+    FLAT(mul, flat_bv, Create::mul, real_flat_bv(), bad_flat_bv());
 
     // Logical
-    FLAT(or, flat_bv, Create::or_, real_flat_bv());
-    FLAT(and, flat_bv, Create::and_, real_flat_bv());
-    FLAT(xor, flat_bv, Create::xor_, real_flat_bv());
+    FLAT(or, flat_bv, Create::or_, real_flat_bv(), bad_flat_bv());
+    FLAT(and, flat_bv, Create::and_, real_flat_bv(), bad_flat_bv());
+    FLAT(xor, flat_bv, Create::xor_, real_flat_bv(), bad_flat_bv());
 
     // Cleanup
 #undef FLAT
