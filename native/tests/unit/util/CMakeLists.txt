@@ -13,8 +13,8 @@ simple_test(heap_cache)
 simple_test(internal_type)
 simple_test(recurrence_guard)
 simple_test(run_on_destruction)
-simple_test(run_function_before_main)
-simple_test(run_statement_before_main)
+simple_test(run_before_main)
+simple_test(run_after_main)
 
 # Add tests with multiple compilation files / extra flags
 simple_test(file_line_hash file_line_hash_helper.cpp)
