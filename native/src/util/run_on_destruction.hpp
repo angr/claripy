@@ -25,6 +25,13 @@ namespace Util {
         /** Constructor */
         explicit RunOnDestruction(const F &func) : f(func) {}
 
+        /** Move Constructor */
+        explicit RunOnDestruction(RunOnDestruction &&old)
+            : enabled(old.enabled), f(std::move(old.f)) {
+            old.f = nullptr;
+            old.disable();
+        }
+
         /** Destructor */
         ~RunOnDestruction() noexcept(NoExcept) {
             if (enabled) {
@@ -42,6 +49,20 @@ namespace Util {
             }
         }
 
+        /** Move Assignment Operator */
+        RunOnDestruction &operator=(RunOnDestruction &&old) {
+            if (this != &old) {
+                old.enabled() ? enable() : disable();
+                old.disable();
+                f = old.f;
+                old.f = nullptr;
+            }
+            return *this;
+        }
+
+        /** Return true iff enabled */
+        bool status() const noexcept { return enabled; }
+
         /** Enable f on destruction */
         void enable() noexcept { enabled = true; }
 
@@ -49,8 +70,10 @@ namespace Util {
         void disable() noexcept { enabled = false; }
 
       private:
-        // Disable all other methods of construction
-        SET_IMPLICITS(RunOnDestruction, delete)
+        /** Disable copy construction */
+        RunOnDestruction(const RunOnDestruction &) = delete;
+        /** Disable copy assignment */
+        RunOnDestruction &operator=(const RunOnDestruction &) = delete;
 
         /** Determine if f should be run on destruction or not
          *  Default: enabled
@@ -58,7 +81,7 @@ namespace Util {
         bool enabled { true };
 
         /** The function to be invoked on destruction */
-        const std::function<void()> f;
+        std::function<void()> f;
     };
 
 } // namespace Util
