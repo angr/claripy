@@ -16,10 +16,10 @@ void annotation() {
     };
     const ClaricppSPAV spav { claricpp_annotation_create_spav(arr, 2) };
 
-    const A::BasePtr base { API::to_cpp_ref(arr[0]) };
-    const A::BasePtr sa { API::to_cpp_ref(arr[1]) };
+    const A::BasePtr base { API::to_cpp(arr[0]) };
+    const A::BasePtr sa { API::to_cpp(arr[1]) };
     CTSC<SA> sa_raw { dynamic_cast<CTSC<SA>>(sa.get()) };
-    const A::SPAV vec { API::to_cpp_ref(spav) };
+    const A::SPAV vec { API::to_cpp(spav) };
     const auto &raw_vec { vec.get()->vec };
 
     // Technically 0 can be a hash but more likely it's due to a failure so:
