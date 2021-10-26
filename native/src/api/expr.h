@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief This header defines the C API for Expr
+ * \ingroup api
+ */
 #ifndef R_EXPR_H_
 #define R_EXPR_H_
 
