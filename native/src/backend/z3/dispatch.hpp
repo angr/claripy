@@ -117,7 +117,7 @@ namespace Backend::Z3 {
                                                   expr->op->cuid);
                 }
 
-                    // Unsupported ops
+                    // Unsupported ops @todo
                 case Op::Widen::static_cuid:           // fallthrough
                 case Op::Union::static_cuid:           // fallthrough
                 case Op::FP::FP::static_cuid:          // fallthrough
