@@ -22,7 +22,7 @@ extern "C" {
         Annotation::Vec::RawVec raw;
         raw.reserve(len);
         for (SIZE_T i = 0; i < len; ++i) {
-            raw.emplace_back(API::to_cpp_ref(list[i])); // NOLINT
+            raw.emplace_back(API::to_cpp(list[i])); // NOLINT
         }
         using CV = Util::InternalType<Annotation::SPAV>;
         return API::to_c(std::make_shared<CV>(std::move(raw)));
