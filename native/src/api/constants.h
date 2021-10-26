@@ -35,6 +35,15 @@ typedef ARRAY_IN(char) PyStr;
 /** Define a type python can pass to represent a VS within claricpp */
 #define VS_T unsigned long long
 
+/** Claricpp rounding modes */
+enum ClaricppRM {
+    CLARICPP_NEAREST_TIES_EVEN = 0,
+    CLARICPP_NEAREST_TIES_AWAY_FROM_ZERO,
+    CLARICPP_TOWARDS_ZERO,
+    CLARICPP_TOWARDS_POSITIVEINF,
+    CLARICPP_TOWARDS_NEGATIVEINF
+};
+
 // Cleanup
 #undef DECLARE_WRAPPER
 

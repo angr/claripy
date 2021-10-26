@@ -44,9 +44,9 @@ namespace API {
     static_assert(std::is_same_v<void *, decltype(std::declval<CTYPE>().ptr)>, "Bad ptr type");    \
     static_assert(Util::is_shared_ptr<CPPTYPE>, "CPPTYPE should be a shared pointer");             \
     template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                       \
-    template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; }
+    template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; };
 
-        // Populate InternalMap
+        // Populate internal maps
         MAP_ADD(ClaricppAnnotation, Annotation::BasePtr);
         MAP_ADD(ClaricppSPAV, Annotation::SPAV);
         MAP_ADD(ClaricppExpr, Expr::BasePtr);
@@ -64,17 +64,12 @@ namespace API {
 
     // To CPP
 
-    /** Returns a pointer to the C++ type held by the C type x */
-    template <typename InC> static inline auto *to_cpp_ptr(const InC &x) noexcept {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(x.ptr);
-        return static_cast<Private::Map<InC> *const>(x.ptr);
-    }
-
     /** Returns a reference to the C++ type held by the C type x
      *  Warning: Returns a reference to part of x
      */
-    template <typename InC> static inline auto &to_cpp_ref(const InC &x) noexcept {
-        return *to_cpp_ptr(x);
+    template <typename InC> static inline auto &to_cpp(const InC &x) noexcept {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(x.ptr);
+        return *static_cast<Private::Map<InC> *const>(x.ptr);
     }
 
     /** Returns an op container containing len operands */
@@ -82,7 +77,7 @@ namespace API {
         Op::FlatArgs ops;
         ops.reserve(len);
         for (UInt i = 0; i < len; ++i) {
-            ops.emplace_back(to_cpp_ref(operands[i]));
+            ops.emplace_back(to_cpp(operands[i]));
         }
         return ops;
     }
@@ -110,8 +105,22 @@ namespace API {
 
     /** Heap cache free function */
     template <typename InC> static inline void free(InC &x) {
-        Private::cache<Private::Map<InC>>.free(to_cpp_ptr(x));
+        Private::cache<Private::Map<InC>>.free(&to_cpp(x));
         x.ptr = nullptr;
+    }
+
+    // Rounding mode
+
+    /** Converts between a C++ strong enums and C weak enums
+     *  Currently supported conversions:
+     *  1. Mode::FP::Rounding <-> ClaricppRM
+     */
+    template <typename In> static inline auto mode(const In in) noexcept {
+        using Cpp = Mode::FP::Rounding;
+        using C = ClaricppRM;
+        static_assert(Util::qualified_is_in<In, C, Cpp>, "Unknown type.");
+        using Ret = std::conditional_t<std::is_same_v<In, C>, Cpp, C>;
+        return Ret(in); // Must be (), not {}
     }
 
 } // namespace API
