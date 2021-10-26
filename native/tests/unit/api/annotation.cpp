@@ -16,6 +16,7 @@ void annotation() {
     };
     const ClaricppSPAV spav { claricpp_annotation_create_spav(arr, 2) };
 
+    // Constants
     const A::BasePtr base { API::to_cpp(arr[0]) };
     const A::BasePtr sa { API::to_cpp(arr[1]) };
     CTSC<SA> sa_raw { dynamic_cast<CTSC<SA>>(sa.get()) };

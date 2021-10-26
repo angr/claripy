@@ -31,16 +31,15 @@ void loop(unsigned n) {
 void recurrence_guard() {
 
     // Test recurrence guard
-    bool caught { false };
     try {
         loop(20); // NOLINT
+        UNITTEST_ERR("The recurrence guard failed to trigger")
     }
     catch (const RecurrenceLimit &e) {
-        caught = true;
+        Util::Log::info("Desired error detected: success.");
     }
 
-    // Verify recurrence guard worked
-    UNITTEST_ASSERT(caught);
+    // Verify recurrence guard worked as expected
     UNITTEST_ASSERT(count == LIMIT);
 }
 

@@ -65,8 +65,6 @@ void repr() {
     s << ite;
 
     // Compare
-    Util::Log::warning(s.str());
-    Util::Log::warning(make_solution(str, str.size()));
     UNITTEST_ASSERT(s.str() == make_solution(str, str.size()));
 }
 

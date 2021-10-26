@@ -48,7 +48,7 @@ namespace Util {
 
         /** Save space by freeing extra cache items */
         inline void downsize() {
-            Util::Log::info("CHeapCache: ", __func__, "Downsizing");
+            Util::Log::info("HeapCache: downsizing");
             if (data.size() <= dsize) {
                 return;
             }

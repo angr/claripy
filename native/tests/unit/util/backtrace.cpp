@@ -53,9 +53,11 @@ void backtrace() {
 
     // Log the backtrace
     B::unsafe_set(std::move(old));
-    Util::Log::debug(backtrace);
+    Util::Log::verbose("Logging caught backtrace");
+    Util::Log::verbose(backtrace);
 
 #ifdef DEBUG
+    Util::Log::verbose("Checking backtrace...");
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
     // Ensure the backtrace is valid
     UNITTEST_ASSERT(contains("generate_bt() + "));
