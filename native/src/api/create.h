@@ -148,12 +148,12 @@ ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const 
 
 /** Create an if-then-else Expr
  *  @param cond The condition expr
- *  @param left The 'if true' expr in the if then else statement
- *  @param right The 'if false' expr in the if then else statement
+ *  @param if_true The 'if true' expr in the if then else statement
+ *  @param if_false The 'if false' expr in the if then else statement
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an if-then-else expression
  */
-ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr if_true, const ClaricppExpr if_false, ClaricppSPAV spav);
 
 /********************************************************************/
 /*                          Trivial Unary                           */
@@ -200,19 +200,19 @@ ClaricppExpr claricpp_create_reverse(const ClaricppExpr x, ClaricppSPAV spav);
 
 /** Create a sign extension Expr
  *  @param expr The expression to be reversed
- *  @param integer The number of bits to extend expr by
+ *  @param add The number of bits to extend expr by
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a sign_ext expression
  */
-ClaricppExpr claricpp_create_sign_ext(const ClaricppExpr expr, const UINT integer, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_sign_ext(const ClaricppExpr expr, const UINT add, ClaricppSPAV spav);
 
 /** Create a zero extension Expr
  *  @param expr The expression to be reversed
- *  @param integer The number of bits to extend expr by
+ *  @param add The number of bits to extend expr by
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a zero_ext expression
  */
-ClaricppExpr claricpp_create_zero_ext(const ClaricppExpr expr, const UINT integer, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_zero_ext(const ClaricppExpr expr, const UINT add, ClaricppSPAV spav);
 
 /********************************************************************/
 /*                          Trivial Binary                          */
@@ -456,51 +456,106 @@ ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
 
 // Unary
 
-/** Create an is_digit Expr
+/** Create a String::is_digit Expr
  *  @param x The String to be checked if it is a digit or not
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
- *  @return A ClaricppExpr containing an is_digit expression
+ *  @return A ClaricppExpr containing a String::is_digit expression
  */
 ClaricppExpr claricpp_create_string_is_digit(const ClaricppExpr x, ClaricppSPAV spav);
 
 // UInt Binary
 
-#if 0
-inline Expr::BasePtr to_int(const Expr::BasePtr &expr, const UInt integer,
-                            Annotation::SPAV &&sp = nullptr) {
-inline Expr::BasePtr len(const Expr::BasePtr &expr, const UInt integer,
-                         Annotation::SPAV &&sp = nullptr) {
+/** Create a String::to_int Expr
+ *  @param expr The String to be converted to a BV
+ *  @param len The bit length of the resulting BV
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::to_int expression
+ */
+ClaricppExpr claricpp_create_string_to_int(const ClaricppExpr expr, const UINT len, ClaricppSPAV spav);
+
+/** Create a String::len Expr
+ *  @param expr The String to measure the length of
+ *  @param len The bit length of the resulting BV
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::len expression
+ */
+ClaricppExpr claricpp_create_string_len(const ClaricppExpr expr, const UINT len, ClaricppSPAV spav);
 
 // Binary
 
-inline Expr::BasePtr contains(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                              Annotation::SPAV &&sp = nullptr) {
-inline Expr::BasePtr prefix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                               Annotation::SPAV &&sp = nullptr) {
-inline Expr::BasePtr suffix_of(const Expr::BasePtr &left, const Expr::BasePtr &right,
-                               Annotation::SPAV &&sp = nullptr) {
+/** Create a String::contains Expr
+ *  @param left The String to be searched
+ *  @param right The String to search for
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::contains expression
+ */
+ClaricppExpr claricpp_create_string_contains(const ClaricppExpr full, const ClaricppExpr sub, ClaricppSPAV spav);
 
-#endif
+/** Create a String::prefix_of Expr
+ *  @param left The String to be searched
+ *  @param right The String prefix to check for
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::prefix_of expression
+ */
+ClaricppExpr claricpp_create_string_prefix_of(const ClaricppExpr full, const ClaricppExpr prefix, ClaricppSPAV spav);
+
+/** Create a String::suffix_of Expr
+ *  @param left The String to be searched
+ *  @param right The String suffix to check for
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a String::suffix_of expression
+ */
+ClaricppExpr claricpp_create_string_suffix_of(const ClaricppExpr full, const ClaricppExpr suffix, ClaricppSPAV spav);
 
 /********************************************************************/
 /*                                FP                                */
 /********************************************************************/
 
 // Unary
-#if 0
-inline Expr::BasePtr to_ieee_bv(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
+
+/** Create an FP::to_ieee_bv Expr
+ *  @param x The FP to be converted into a BV
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing a FP::to_ieee_bv expression
+ */
+ClaricppExpr claricpp_create_fp_to_ieee_bv(const ClaricppExpr x, ClaricppSPAV spav);
 
 // Mode Binary
 
-FP_MB_SMF_ARITH(add, Add);
-FP_MB_SMF_ARITH(sub, Sub);
-FP_MB_SMF_ARITH(mul, Mul);
-FP_MB_SMF_ARITH(div, Div);
+/** Create an FP::add Expr
+ *  @param left The left FP operand of the add function
+ *  @param right The left FP operand of the add function
+ *  @param mode The FP rounding mode to be used while adding
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an FP::add expression
+ */
+ClaricppExpr claricpp_create_fp_add(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
 
-// Ternary
+/** Create an FP::sub Expr
+ *  @param left The left FP operand of the sub function
+ *  @param right The left FP operand of the sub function
+ *  @param mode The FP rounding mode to be used while adding
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an FP::sub expression
+ */
+ClaricppExpr claricpp_create_fp_sub(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
 
-inline Expr::BasePtr fp(const Expr::BasePtr &first, const Expr::BasePtr &second,
-                        const Expr::BasePtr &third, Annotation::SPAV &&sp = nullptr) {
-#endif
+/** Create an FP::mul Expr
+ *  @param left The left FP operand of the mul function
+ *  @param right The left FP operand of the mul function
+ *  @param mode The FP rounding mode to be used while adding
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an FP::mul expression
+ */
+ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
+
+/** Create an FP::div Expr
+ *  @param left The left FP operand of the div function
+ *  @param right The left FP operand of the div function
+ *  @param mode The FP rounding mode to be used while adding
+ *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
+ *  @return A ClaricppExpr containing an FP::div expression
+ */
+ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
 
 #endif
