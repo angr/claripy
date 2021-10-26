@@ -19,10 +19,12 @@ extern "C" {
 
     ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list,
                                                  const SIZE_T len) {
+        UTILS_AFFIRM_NOT_NULL_DEBUG(list);
         Annotation::Vec::RawVec raw;
         raw.reserve(len);
         for (SIZE_T i = 0; i < len; ++i) {
             raw.emplace_back(API::to_cpp(list[i])); // NOLINT
+            UTILS_AFFIRM_NOT_NULL_DEBUG(raw.back());
         }
         using CV = Util::InternalType<Annotation::SPAV>;
         return API::to_c(std::make_shared<CV>(std::move(raw)));
