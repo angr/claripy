@@ -7,7 +7,7 @@
 
 /** Used to try to get valid expr and op pointers */
 template <typename E, typename O> static auto get_pointers(const ClaricppExpr in) {
-    const Expr::RawPtr exp { API::to_cpp_ref(in).get() };
+    const Expr::RawPtr exp { API::to_cpp(in).get() };
     UNITTEST_ASSERT(exp != nullptr)
     CTSC<E> cast { dynamic_cast<CTSC<E>>(exp) };
     UNITTEST_ASSERT(cast != nullptr);
@@ -64,6 +64,8 @@ void create() {
     const auto bool_true { Create::literal(true) };
     const auto bv_sym { Create::symbol<Expr::BV>("bv", 64) };
     const auto fp_sym { Create::symbol<Expr::FP>("fp", 64) };
+    const auto string_sym { Create::symbol<Expr::String>("string", 64) };
+    const auto string_sym2 { Create::symbol<Expr::String>("string2", 64) };
     const auto bv_64 { Create::literal(UInt { 64 }) };
     const auto fp_64 { Create::literal(64.) };
 
@@ -99,23 +101,47 @@ void create() {
 
     Util::Log::debug("Testing extract...");
     const auto extract { claricpp_create_extract(2, 1, API::copy_to_c(bv_sym), { nullptr }) };
-    UNITTEST_ASSERT(API::to_cpp_ref(extract)->hash == Create::extract(2, 1, bv_sym)->hash);
-    UNITTEST_ASSERT(API::to_cpp_ref(extract)->hash != Create::extract(1, 0, bv_sym)->hash);
+    UNITTEST_ASSERT(API::to_cpp(extract)->hash == Create::extract(2, 1, bv_sym)->hash);
+    UNITTEST_ASSERT(API::to_cpp(extract)->hash != Create::extract(1, 0, bv_sym)->hash);
 
     Util::Log::debug("Testing if...");
     const auto if_ { claricpp_create_if(API::copy_to_c(bool_sym), API::copy_to_c(bv_sym),
                                         API::copy_to_c(bv_64), { nullptr }) };
-    UNITTEST_ASSERT(API::to_cpp_ref(if_)->hash == Create::if_(bool_sym, bv_sym, bv_64)->hash);
-    UNITTEST_ASSERT(API::to_cpp_ref(if_)->hash != Create::if_(bool_sym, bv_64, bv_64)->hash);
+    UNITTEST_ASSERT(API::to_cpp(if_)->hash == Create::if_(bool_sym, bv_sym, bv_64)->hash);
+    UNITTEST_ASSERT(API::to_cpp(if_)->hash != Create::if_(bool_sym, bv_64, bv_64)->hash);
 
-    // Trivial Unary
+    // Macros
+
+    /** A local macro used for testing */
+#define UNARY(CF, CPPF, TYPE, OTHER)                                                               \
+    Util::Log::debug("Testing " #CPPF "...");                                                      \
+    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(TYPE##_sym), { nullptr }) };        \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(TYPE##_sym)->hash);               \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(TYPE##_##OTHER)->hash)
+
+    /** A local macro used for testing */
+#define UINT_BINARY(CF, CPPF)                                                                      \
+    Util::Log::debug("Testing " #CPPF "...");                                                      \
+    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(bv_sym), 4, { nullptr }) };         \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(bv_sym, 4)->hash);                \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(bv_sym, 5)->hash)
 
 /** A local macro used for testing */
-#define UNARY(NAME, FUN, TYPE, OTHER)                                                              \
-    Util::Log::debug("Testing " #NAME "...");                                                      \
-    const auto FUN { claricpp_create_##NAME(API::copy_to_c(TYPE##_sym), { nullptr }) };            \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(TYPE##_sym)->hash);                  \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash != Create::FUN(TYPE##_##OTHER)->hash)
+#define BINARY(CF, CPPF, ARG, BAD_ARG)                                                             \
+    Util::Log::debug("Testing " #CPPF "...");                                                      \
+    const auto test_##CF { claricpp_create_##CF(API::copy_to_c(ARG), API::copy_to_c(ARG),          \
+                                                { nullptr }) };                                    \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF(ARG, ARG)->hash);                 \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF(ARG, BAD_ARG)->hash)
+
+/** A local macro used for testing */
+#define FLAT(CF, CPPF, INP, REAL_INP, BAD_INP)                                                     \
+    Util::Log::debug("Testing " #CPPF "...");                                                      \
+    const auto test_##CF { claricpp_create_##CF(INP, (REAL_INP).size(), { nullptr }) };            \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash == Create::CPPF((REAL_INP))->hash);               \
+    UNITTEST_ASSERT(API::to_cpp(test_##CF)->hash != Create::CPPF((BAD_INP))->hash)
+
+    // Trivial
 
     UNARY(abs, abs, fp, 64);
     UNARY(neg, neg, bv, 64);
@@ -123,70 +149,39 @@ void create() {
     UNARY(invert, invert, bv, 64);
     UNARY(reverse, reverse, bv, 64);
 
-// Cleanup
-#undef UNARY
-
-/** A local macro used for testing */
-#define UINT_BINARY(FUN)                                                                           \
-    Util::Log::debug("Testing " #FUN "...");                                                       \
-    const auto FUN { claricpp_create_##FUN(API::copy_to_c(bv_sym), 4, { nullptr }) };              \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash == Create::FUN(bv_sym, 4)->hash);                   \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN)->hash != Create::FUN(bv_sym, 5)->hash)
-
-    UINT_BINARY(sign_ext);
-    UINT_BINARY(zero_ext);
-
-// Cleanup
-#undef UINT_BINARY
-
-/** A local macro used for testing */
-#define BINARY(FUN, ARG, BAD_ARG, REAL_FUN)                                                        \
-    Util::Log::debug("Testing " #FUN "...");                                                       \
-    const auto FUN##_test { claricpp_create_##FUN(API::copy_to_c(ARG), API::copy_to_c(ARG),        \
-                                                  { nullptr }) };                                  \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN(ARG, ARG)->hash);                \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash != REAL_FUN(ARG, BAD_ARG)->hash)
+    UINT_BINARY(sign_ext, sign_ext);
+    UINT_BINARY(zero_ext, zero_ext);
 
     // Comparisons
-    using C = Mode::Compare;
-    BINARY(eq, bv_64, bv_sym, Create::eq);
-    BINARY(neq, bv_64, bv_sym, Create::neq);
-    BINARY(slt, bv_64, bv_sym, Create::compare<C::Signed | C::Less | C::Neq>);
-    BINARY(sle, bv_64, bv_sym, Create::compare<C::Signed | C::Less | C::Eq>);
-    BINARY(sgt, bv_64, bv_sym, Create::compare<C::Signed | C::Greater | C::Neq>);
-    BINARY(sge, bv_64, bv_sym, Create::compare<C::Signed | C::Greater | C::Eq>);
-    BINARY(ult, bv_64, bv_sym, Create::compare<C::Unsigned | C::Less | C::Neq>);
-    BINARY(ule, bv_64, bv_sym, Create::compare<C::Unsigned | C::Less | C::Eq>);
-    BINARY(ugt, bv_64, bv_sym, Create::compare<C::Unsigned | C::Greater | C::Neq>);
-    BINARY(uge, bv_64, bv_sym, Create::compare<C::Unsigned | C::Greater | C::Eq>);
+    BINARY(eq, eq, bv_64, bv_sym);
+    BINARY(neq, neq, bv_64, bv_sym);
+    using Cmp = Mode::Compare;
+    BINARY(slt, compare<Cmp::Signed | Cmp::Less | Cmp::Neq>, bv_64, bv_sym);
+    BINARY(sle, compare<Cmp::Signed | Cmp::Less | Cmp::Eq>, bv_64, bv_sym);
+    BINARY(sgt, compare<Cmp::Signed | Cmp::Greater | Cmp::Neq>, bv_64, bv_sym);
+    BINARY(sge, compare<Cmp::Signed | Cmp::Greater | Cmp::Eq>, bv_64, bv_sym);
+    BINARY(ult, compare<Cmp::Unsigned | Cmp::Less | Cmp::Neq>, bv_64, bv_sym);
+    BINARY(ule, compare<Cmp::Unsigned | Cmp::Less | Cmp::Eq>, bv_64, bv_sym);
+    BINARY(ugt, compare<Cmp::Unsigned | Cmp::Greater | Cmp::Neq>, bv_64, bv_sym);
+    BINARY(uge, compare<Cmp::Unsigned | Cmp::Greater | Cmp::Eq>, bv_64, bv_sym);
 
     // Math
-    BINARY(sub, bv_64, bv_sym, Create::sub);
-    BINARY(sdiv, bv_64, bv_sym, Create::div<true>);
-    BINARY(udiv, bv_64, bv_sym, Create::div<false>);
-    BINARY(smod, bv_64, bv_sym, Create::mod<true>);
-    BINARY(umod, bv_64, bv_sym, Create::mod<false>);
+    BINARY(sub, sub, bv_64, bv_sym);
+    BINARY(sdiv, div<true>, bv_64, bv_sym);
+    BINARY(udiv, div<false>, bv_64, bv_sym);
+    BINARY(smod, mod<true>, bv_64, bv_sym);
+    BINARY(umod, mod<false>, bv_64, bv_sym);
 
     // Bitwise
-    BINARY(shift_left, bv_64, bv_sym, Create::shift<Mode::Shift::Left>);
-    BINARY(shift_logical_right, bv_64, bv_sym, Create::shift<Mode::Shift::LogicalRight>);
-    BINARY(shift_arithmetic_right, bv_64, bv_sym, Create::shift<Mode::Shift::ArithmeticRight>);
+    BINARY(shift_left, shift<Mode::Shift::Left>, bv_64, bv_sym);
+    BINARY(shift_logical_right, shift<Mode::Shift::LogicalRight>, bv_64, bv_sym);
+    BINARY(shift_arithmetic_right, shift<Mode::Shift::ArithmeticRight>, bv_64, bv_sym);
 
     // Misc
-    BINARY(widen, bv_64, bv_sym, Create::widen);
-    BINARY(union, bv_64, bv_sym, Create::union_);
-    BINARY(intersection, bv_64, bv_sym, Create::intersection_);
-    BINARY(concat, bv_64, bv_sym, Create::concat);
-
-// Cleanup
-#undef BINARY
-
-/** A local macro used for testing */
-#define FLAT(FUN, INP, REAL_FUN, REAL_INP, BAD_INP)                                                \
-    Util::Log::debug("Testing " #FUN "...");                                                       \
-    const auto FUN##_test { claricpp_create_##FUN(INP, (REAL_INP).size(), { nullptr }) };          \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash == REAL_FUN((REAL_INP))->hash);              \
-    UNITTEST_ASSERT(API::to_cpp_ref(FUN##_test)->hash != REAL_FUN((BAD_INP))->hash)
+    BINARY(widen, widen, bv_64, bv_sym);
+    BINARY(union, union_, bv_64, bv_sym);
+    BINARY(intersection, intersection_, bv_64, bv_sym);
+    BINARY(concat, concat, bv_64, bv_sym);
 
     // Math
     const ClaricppExpr flat_bv_entry { API::to_c(Expr::BasePtr { bv_64 }) };
@@ -195,20 +190,41 @@ void create() {
     const auto bad_flat_bv { [&bv_64, &bv_sym]() {
         return Op::FlatArgs { bv_64, bv_64, bv_sym };
     } };
-    FLAT(add, flat_bv, Create::add, real_flat_bv(), bad_flat_bv());
-    FLAT(mul, flat_bv, Create::mul, real_flat_bv(), bad_flat_bv());
+    FLAT(add, add, flat_bv, real_flat_bv(), bad_flat_bv());
+    FLAT(mul, mul, flat_bv, real_flat_bv(), bad_flat_bv());
 
     // Logical
-    FLAT(or, flat_bv, Create::or_, real_flat_bv(), bad_flat_bv());
-    FLAT(and, flat_bv, Create::and_, real_flat_bv(), bad_flat_bv());
-    FLAT(xor, flat_bv, Create::xor_, real_flat_bv(), bad_flat_bv());
-
-    // Cleanup
-#undef FLAT
+    FLAT(or, or_, flat_bv, real_flat_bv(), bad_flat_bv());
+    FLAT(and, and_, flat_bv, real_flat_bv(), bad_flat_bv());
+    FLAT(xor, xor_, flat_bv, real_flat_bv(), bad_flat_bv());
 
     // String
+#if 0
+    UNARY(string_is_digit, String::is_digit, string, sym2);
+    UINT_BINARY()
+    ClaricppExpr claricpp_create_string_to_int(const ClaricppExpr expr, const UINT len,
+                                               ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_string_len(const ClaricppExpr expr, const UINT len,
+                                            ClaricppSPAV spav);
+    BINARY()
+    ClaricppExpr claricpp_create_string_contains(const ClaricppExpr full, const ClaricppExpr sub,
+                                                 ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_string_prefix_of(const ClaricppExpr full,
+                                                  const ClaricppExpr prefix, ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_string_suffix_of(const ClaricppExpr full,
+                                                  const ClaricppExpr suffix, ClaricppSPAV spav);
 
     // FP
+    ClaricppExpr claricpp_create_fp_to_ieee_bv(const ClaricppExpr x, ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_fp_add(const ClaricppExpr left, const ClaricppExpr right,
+                                        const enum ClaricppRM mode, ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_fp_sub(const ClaricppExpr left, const ClaricppExpr right,
+                                        const enum ClaricppRM mode, ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr right,
+                                        const enum ClaricppRM mode, ClaricppSPAV spav);
+    ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right,
+                                        const enum ClaricppRM mode, ClaricppSPAV spav);
+#endif
 }
 
 // Define the test
