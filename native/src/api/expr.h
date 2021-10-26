@@ -9,6 +9,6 @@
  *  @param ans The annotations this new base should have
  *  @return A ClaricppExpr that is a copy of old, except for its annotations
  */
-ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, ClaricppAnnotation ans);
+ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, ClaricppSPAV spav);
 
 #endif
