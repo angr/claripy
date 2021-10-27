@@ -21,7 +21,7 @@ static UInt id_ref(const UInt &id) {
     }
 
 /** A struct used to give friend access to unittests */
-struct UnitTest::ClaricppUnitTest {
+struct UnitTest::Friend {
     /** Cache Type */
     using Cache = Util::WeakCache<Hash::Hash, const Expr::Base>;
     /** The cache */
@@ -52,7 +52,7 @@ void sanity_check() {
 
     // Verify that the expr cache has been instantiated
     // If it was, the constructor sets gc_resize to gc_resize_default
-    UnitTest::ClaricppUnitTest wrapper;
+    UnitTest::Friend wrapper;
     UNITTEST_ASSERT_MSG(wrapper.gc_resize() == wrapper.def(), "Cache failed to instantiate.");
 }
 

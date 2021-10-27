@@ -14,7 +14,7 @@ static Util::WeakCache<UInt, UInt> cache;
 
 
 /** A struct used to give friend access to unittests */
-struct UnitTest::ClaricppUnitTest {
+struct UnitTest::Friend {
     /** size_type abbreviation */
     using SizeType = decltype(cache)::CacheMap::size_type;
     /** Get the cache gc_resize */
@@ -37,7 +37,7 @@ auto construct_range(const UInt lb, const UInt ub) {
 
 /** Ensure weak_ptrs are properly invalidated and removed by both gc and find */
 void gc() {
-    UnitTest::ClaricppUnitTest ut_cache;
+    UnitTest::Friend ut_cache;
     const auto init { ut_cache.gc_resize };
     UInt n { 0 };
 

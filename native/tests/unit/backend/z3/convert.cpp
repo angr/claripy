@@ -10,7 +10,7 @@
 
 /** Try to convert a claricpp expr to z3 */
 void convert() {
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
 
     // Test with if (4 == (x * 3)) then "Hello" else y
     const auto ite { make_ite("Hello") };

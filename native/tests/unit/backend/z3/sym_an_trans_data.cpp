@@ -26,7 +26,7 @@ class TestAnnotation final : public Annotation::Base {
 
 /** Test how the z3 backend handles sym_an_trans_data */
 void sym_an_trans_data() {
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
     namespace A = Annotation;
 
     // Create an annotation

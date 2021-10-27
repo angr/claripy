@@ -16,7 +16,7 @@ template <typename T> static bool test_eq(const Backend::Z3::PrimVar x, const T 
     };
 }
 
-struct UnitTest::ClaricppUnitTest {
+struct UnitTest::Friend {
     /** A helper function for abstract_to_prim */
     template <typename T> static auto prep(Backend::Z3::Z3 &z3, T in) {
         const auto e { Create::literal(std::move(in)) };
@@ -26,7 +26,7 @@ struct UnitTest::ClaricppUnitTest {
 
 /** Verify that abstract_to_primitive is working for input in of type T */
 template <typename T> static bool test(Backend::Z3::Z3 &z3, const T in) {
-    return test_eq(UnitTest::ClaricppUnitTest::prep(z3, in), in);
+    return test_eq(UnitTest::Friend::prep(z3, in), in);
 }
 
 /** Verify that abstract_to_primitive is working for floating point type T */
@@ -38,7 +38,7 @@ template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
     UNITTEST_ASSERT(test(z3, std::numeric_limits<T>::infinity()));
     UNITTEST_ASSERT(test(z3, -std::numeric_limits<T>::infinity())); // safe for double / float
     // NaNs are never equal so:
-    auto var { UnitTest::ClaricppUnitTest::prep(z3, Backend::Z3::nan<T>) };
+    auto var { UnitTest::Friend::prep(z3, Backend::Z3::nan<T>) };
     try {
         UNITTEST_ASSERT(std::isnan(std::get<T>(var)));
     }

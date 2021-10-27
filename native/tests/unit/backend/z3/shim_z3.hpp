@@ -9,7 +9,7 @@
 #include "testlib.hpp"
 
 
-struct UnitTest::ClaricppUnitTest {
+struct UnitTest::Friend {
     /** A Shim of the Z3 backend which exposes private variables */
     struct ShimZ3 {
         /** The Z3 backend */

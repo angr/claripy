@@ -26,10 +26,9 @@ struct Moveable {
 #define NEW_MOVE                                                                                   \
     Moveable { 0x1234 }
 
-struct UnitTest::ClaricppUnitTest {
-  public:
+struct UnitTest::Friend {
     /** Constructor */
-    ClaricppUnitTest() : c {}, data { c.data }, dsize { decltype(c)::dsize } {}
+    Friend() : c {}, data { c.data }, dsize { decltype(c)::dsize } {}
     /** The cache */
     Util::HeapCache<Moveable> c; // NOLINT (false positive)
     /** Extract data */
@@ -42,7 +41,7 @@ struct UnitTest::ClaricppUnitTest {
 void to_heap_cache() {
 
     // Variables
-    UnitTest::ClaricppUnitTest cache;
+    UnitTest::Friend cache;
     std::vector<Moveable *> heap;
 
     // Constructor test

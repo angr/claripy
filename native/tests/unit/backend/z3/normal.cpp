@@ -12,7 +12,7 @@ void normal() {
     namespace C = Create;
 
     // The backend
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
 
     /* const auto string_x { C::symbol<Expr::String>("string_x", 64_ui) }; */
     /* const auto string_y { C::symbol<Expr::String>("string_y", 64_ui) }; */

@@ -10,7 +10,7 @@ static Util::WeakCache<int, int> cache;
 
 
 /** A struct used to give friend access to unittests */
-struct UnitTest::ClaricppUnitTest {
+struct UnitTest::Friend {
     /** Get the cache size */
     decltype(cache)::CacheMap::size_type size() { return cache.cache.size(); }
     /** Passthrough unsafe_find */
@@ -20,7 +20,7 @@ struct UnitTest::ClaricppUnitTest {
 
 /** Ensure weak_ptrs are properly invalidated and removed by find */
 void weak_ptr_invalidation_find() {
-    UnitTest::ClaricppUnitTest ut_cache;
+    UnitTest::Friend ut_cache;
 
     // Create and destroy an int
     const constexpr int hash { 1 };

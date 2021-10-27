@@ -8,8 +8,8 @@
 
 /** Test min / max function */
 template <bool Signed, typename T, bool Minimize>
-static T get_ext(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &x,
-                 const Expr::BasePtr &test_c, const std::vector<Expr::RawPtr> ec = {}) { // NOLINT
+static T get_ext(UnitTest::Friend::ShimZ3 &z3, const Expr::BasePtr &x, const Expr::BasePtr &test_c,
+                 const std::vector<Expr::RawPtr> ec = {}) { // NOLINT
     // Get a new solver and add constraint
     const auto solver_ref { z3.bk.template tls_solver<true>() };
     auto &solver { *solver_ref };
@@ -27,7 +27,7 @@ static T get_ext(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &x,
 
 /** Tests min and maxed for the chosen type */
 template <typename T, bool Signed = std::is_signed_v<T>>
-static void min_max_test(UnitTest::ClaricppUnitTest::ShimZ3 &z3) {
+static void min_max_test(UnitTest::Friend::ShimZ3 &z3) {
     static_assert(std::is_integral_v<T>, "T must be an integral type");
     Util::Log::debug("\t- Signed: ", std::boolalpha, Signed);
 
@@ -126,7 +126,7 @@ template <bool Signed, typename T>
 using Wrap = std::conditional_t<Signed, std::make_signed_t<T>, std::make_unsigned_t<T>>;
 
 /** Tests min and max for the chosen sign */
-template <bool Signed> static void min_max_t(UnitTest::ClaricppUnitTest::ShimZ3 &z3) {
+template <bool Signed> static void min_max_t(UnitTest::Friend::ShimZ3 &z3) {
     min_max_test<Wrap<Signed, int64_t>>(z3);
     min_max_test<Wrap<Signed, int32_t>>(z3);
     min_max_test<Wrap<Signed, int16_t>>(z3);
@@ -135,7 +135,7 @@ template <bool Signed> static void min_max_t(UnitTest::ClaricppUnitTest::ShimZ3 
 
 /** Test the backend min and max functions */
 void min_max() {
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
     min_max_t<true>(z3);
     z3.bk.downsize(); // Prevent FNV1a hash collisions; @todo Improve hash algorithm
     min_max_t<false>(z3);

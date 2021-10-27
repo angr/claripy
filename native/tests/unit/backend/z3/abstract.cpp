@@ -9,7 +9,7 @@
 /** Try to abstract a claricpp expression from z3 */
 void abstract() {
     z3::context ctx;
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
     const auto abs { z3.abstract(ctx.bool_val(true)) };
     UNITTEST_ASSERT(abs == Create::literal(true));
 }

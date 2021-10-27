@@ -16,7 +16,7 @@ void fp() {
     namespace C = Create;
 
     // The backend
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
 
     // For brevity
     using NLF = std::numeric_limits<float>;

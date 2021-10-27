@@ -9,12 +9,12 @@
 
 
 /** Return true iff p evaluates to true */
-inline bool is_true(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &p) {
+inline bool is_true(UnitTest::Friend::ShimZ3 &z3, const Expr::BasePtr &p) {
     return z3.convert(p.get()).simplify().is_true();
 }
 
 /** Return true iff p evaluates to false */
-inline bool is_false(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &p) {
+inline bool is_false(UnitTest::Friend::ShimZ3 &z3, const Expr::BasePtr &p) {
     return z3.convert(p.get()).simplify().is_false();
 }
 
@@ -23,7 +23,7 @@ inline bool is_false(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr
 void fp_convert() {
     namespace C = Create;
 
-    UnitTest::ClaricppUnitTest::ShimZ3 z3;
+    UnitTest::Friend::ShimZ3 z3;
     const auto flt { C::literal(0.f) }; // NOLINT
     const auto flt_conv { z3.convert(flt.get()) };
     const auto srt { flt_conv.get_sort() };
