@@ -16,8 +16,7 @@ namespace CUID {
      *  x may not be nullptr
      *  Verifies that the static type of what x is pointing to is a superclass of T
      */
-    template <typename T, bool AllowKin, typename Base>
-    constexpr bool is_t(const std::shared_ptr<Base> &x) {
+    template <typename T, bool AllowKin, typename Base> constexpr bool is_t(CTSC<Base> x) {
         static_assert(Util::is_ancestor<HasCUID, Base>, "Base must subclass HasCUID");
         static_assert(Util::is_ancestor<Base, T>, "T must subclass Base");
         UTILS_AFFIRM_NOT_NULL_DEBUG(x);
@@ -32,11 +31,25 @@ namespace CUID {
         }
     }
 
+    /** Return true if x points to a T
+     *  x may not be nullptr
+     *  Verifies that the static type of what x is pointing to is a superclass of T
+     */
+    template <typename T, bool AllowKin, typename Base>
+    constexpr bool is_t(const std::shared_ptr<Base> &x) {
+        return is_t<T, AllowKin, Base>(x.get());
+    }
+
     /** Return true if x is a T */
-    template <typename T, typename Base> bool is_t(const std::shared_ptr<Base> &x) {
+    template <typename T, typename Base> bool is_t(CTSC<Base> x) {
         static_assert(std::is_final_v<T>,
                       "is_t only allowed without AllowKin defined if T is final");
         return is_t<T, false, Base>(x);
+    }
+
+    /** Return true if x is a T */
+    template <typename T, typename Base> bool is_t(const std::shared_ptr<Base> &x) {
+        return is_t<T, false, Base>(x.get());
     }
 
     namespace Private {
