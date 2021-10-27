@@ -88,28 +88,7 @@ namespace Backend::Z3 {
             }
         }
 
-        /** This dynamic dispatcher converts expr into a backend object
-         *  All arguments of expr that are not primitives have been
-         *  pre-converted into backend objects and are in args
-         *  Arguments must be popped off the args stack if used
-         *  expr may not be nullptr
-         *  Warning: This function may internally do unchecked static casting, we permit this
-         *  *only* if the cuid of the expr is of or derive from the type being cast to.
-         */
-        inline z3::expr dispatch_conversion(const Expr::RawPtr expr,
-                                            std::vector<const z3::expr *> &args) override final {
-            return Dispatch<Z3>::dispatch_conversion(
-                expr, args, tls.symbol_annotation_translocation_data, *this);
-        }
-
-        /** Abstract a backend object into a claricpp expr */
-        inline AbstractionVariant
-        dispatch_abstraction(const z3::expr &b_obj,
-                             std::vector<AbstractionVariant> &args) override final {
-            return Dispatch<Z3>::dispatch_abstraction(
-                b_obj, args, tls.symbol_annotation_translocation_data, *this);
-        }
-
+      public:
         /********************************************************************/
         /*                         Member Functions                         */
         /********************************************************************/
@@ -173,26 +152,26 @@ namespace Backend::Z3 {
         }
 
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
-        template <bool Signed> inline auto min(const z3::expr &expr, z3::solver &solver) {
+        template <bool Signed> inline auto min(const Expr::RawPtr expr, z3::solver &solver) {
             return extrema<Signed, true>(expr, solver);
         }
 
         /** Find the min value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
-        inline auto min(const z3::expr &expr, z3::solver &solver,
+        inline auto min(const Expr::RawPtr expr, z3::solver &solver,
                         const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ec { *this, solver, extra_constraints };
             return min<Signed>(expr, solver);
         }
 
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
-        template <bool Signed> inline auto max(const z3::expr &expr, z3::solver &solver) {
+        template <bool Signed> inline auto max(const Expr::RawPtr expr, z3::solver &solver) {
             return extrema<Signed, false>(expr, solver);
         }
 
         /** Find the max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed>
-        inline auto max(const z3::expr &expr, z3::solver &solver,
+        inline auto max(const Expr::RawPtr expr, z3::solver &solver,
                         const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ec { *this, solver, extra_constraints };
             return max<Signed>(expr, solver);
@@ -309,6 +288,28 @@ namespace Backend::Z3 {
         }
 
       private:
+        /** This dynamic dispatcher converts expr into a backend object
+         *  All arguments of expr that are not primitives have been
+         *  pre-converted into backend objects and are in args
+         *  Arguments must be popped off the args stack if used
+         *  expr may not be nullptr
+         *  Warning: This function may internally do unchecked static casting, we permit this
+         *  *only* if the cuid of the expr is of or derive from the type being cast to.
+         */
+        inline z3::expr dispatch_conversion(const Expr::RawPtr expr,
+                                            std::vector<const z3::expr *> &args) override final {
+            return Dispatch<Z3>::dispatch_conversion(
+                expr, args, tls.symbol_annotation_translocation_data, *this);
+        }
+
+        /** Abstract a backend object into a claricpp expr */
+        inline AbstractionVariant
+        dispatch_abstraction(const z3::expr &b_obj,
+                             std::vector<AbstractionVariant> &args) override final {
+            return Dispatch<Z3>::dispatch_abstraction(
+                b_obj, args, tls.symbol_annotation_translocation_data, *this);
+        }
+
         /********************************************************************/
         /*                     Private Helper Functions                     */
         /********************************************************************/
@@ -495,14 +496,16 @@ namespace Backend::Z3 {
 
         /** Find the min/max value of expr that satisfies solver; returns an int64_t or uint64_t */
         template <bool Signed, bool Minimize>
-        inline auto extrema(const z3::expr &expr, z3::solver &solver) {
+        inline auto extrema(const Expr::RawPtr raw_expr, z3::solver &solver) {
             // Check input
             using Usage = Util::Err::Usage;
+            UTILS_AFFIRM_NOT_NULL_DEBUG(raw_expr);
 #ifdef DEBUG
-            Util::affirm<Usage>(expr.is_bv(), WHOAMI "ret can only be called on BVs");
+            Util::affirm<Usage>(CUID::is_t<Expr::BV>(raw_expr), WHOAMI "expr must be a BV");
 #endif
-            const unsigned len { expr.get_sort().bv_size() };
+            const auto len { Expr::get_bit_length(raw_expr) };
             Util::affirm<Usage>(len <= 64, WHOAMI "ret cannot be called on BV wider than 64 bits");
+            z3::expr expr { convert(raw_expr) };
 
             // Starting interval and comparators
             using Integer = std::conditional_t<Signed, int64_t, uint64_t>;
@@ -513,7 +516,9 @@ namespace Backend::Z3 {
 #undef MAX_S
 
             // Inline-able lambdas to for clarity
-            const auto to_z3 { [&len](const Integer i) { return tls.ctx.bv_val(i, len); } };
+            const auto to_z3 { [&len](const Integer i) {
+                return tls.ctx.bv_val(i, Util::narrow<unsigned>(len));
+            } };
             const auto ge { [](const z3::expr &a, const z3::expr &b) {
                 return (Signed ? z3::sge(a, b) : z3::uge(a, b));
             } };

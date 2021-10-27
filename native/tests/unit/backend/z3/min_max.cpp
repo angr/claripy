@@ -22,8 +22,7 @@ static T get_ext(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &x,
         return Minimize ? z3.bk.min<Signed>(args...) : z3.bk.max<Signed>(args...);
     } };
     // Call the min / max function
-    const auto conv { z3.convert(x.get()) };
-    return static_cast<T>(ec.empty() ? f(conv, solver) : f_ec(conv, solver, ec));
+    return static_cast<T>(ec.empty() ? f(x.get(), solver) : f_ec(x.get(), solver, ec));
 }
 
 /** Tests min and maxed for the chosen type */
