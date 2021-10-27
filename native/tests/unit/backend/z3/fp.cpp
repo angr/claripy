@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
 
 #include <limits>
@@ -12,24 +13,23 @@
  */
 void fp() {
     const auto tz { Mode::FP::Rounding::TowardsZero };
-    namespace Ex = Expr;
     namespace C = Create;
 
     // The backend
-    Backend::Z3::Z3 z3bk;
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
 
     // For brevity
     using NLF = std::numeric_limits<float>;
     using NLD = std::numeric_limits<double>;
 
-    const auto bv_x { C::symbol<Ex::BV>("bv_x", Mode::FP::dbl.width()) };
-    const auto fp_x { C::symbol<Ex::FP>("fp_x", Mode::FP::dbl.width()) };
-    const auto fp_y { C::symbol<Ex::FP>("fp_y", Mode::FP::dbl.width()) };
+    const auto bv_x { C::symbol<Expr::BV>("bv_x", Mode::FP::dbl.width()) };
+    const auto fp_x { C::symbol<Expr::FP>("fp_x", Mode::FP::dbl.width()) };
+    const auto fp_y { C::symbol<Expr::FP>("fp_y", Mode::FP::dbl.width()) };
     const auto nan { C::literal(std::numeric_limits<double>::quiet_NaN()) };
 
     // Verify the round trip changes nothing
-    const auto test_id = [&z3bk](const Expr::BasePtr &&x) {
-        return z3bk.abstract(z3bk.convert(x.get())) == x;
+    const auto test_id = [&z3](const Expr::BasePtr &&x) {
+        return z3.abstract(z3.convert(x.get())) == x;
     };
 
     /**************************************************/
@@ -64,14 +64,14 @@ void fp() {
     UNITTEST_ASSERT(test_id(C::literal(NLD::quiet_NaN())));
     UNITTEST_ASSERT(test_id(C::literal(NLF::quiet_NaN())));
 
-    const auto test_snan = [&z3bk](const bool is_double) {
+    const auto test_snan = [&z3](const bool is_double) {
         const auto s { is_double ? C::literal(NLD::signaling_NaN())
                                  : C::literal(NLF::signaling_NaN()) };
         const auto *const op_s { dynamic_cast<CTSC<Op::Literal>>(s->op.get()) };
         UNITTEST_ASSERT(op_s != nullptr);
         // Verify cycled expr
-        const auto cycled { z3bk.abstract(z3bk.convert(s.get())) };
-        UNITTEST_ASSERT(Ex::are_same_type<true>(cycled, s));
+        const auto cycled { z3.abstract(z3.convert(s.get())) };
+        UNITTEST_ASSERT(Expr::are_same_type<true>(cycled, s));
         // Verify cycled op
         const auto *const op { dynamic_cast<CTSC<Op::Literal>>(cycled->op.get()) };
         UNITTEST_ASSERT(op != nullptr);
@@ -113,8 +113,8 @@ void fp() {
     /**************************************************/
 
     Util::Log::debug("Testing to_bv...");
-    UNITTEST_ASSERT(test_id(C::FP::to_bv<true>(tz, fp_x, Ex::get_bit_length(fp_x))));
-    UNITTEST_ASSERT(test_id(C::FP::to_bv<false>(tz, fp_x, Ex::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv<true>(tz, fp_x, Expr::get_bit_length(fp_x))));
+    UNITTEST_ASSERT(test_id(C::FP::to_bv<false>(tz, fp_x, Expr::get_bit_length(fp_x))));
 
     Util::Log::debug("Testing from_fp...");
     /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */

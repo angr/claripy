@@ -2,31 +2,30 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
-
 
 /** Test normal ops in claricpp
  *  @todo: Enable string symbol testing
  */
 void normal() {
-    namespace Ex = Expr;
     namespace C = Create;
 
     // The backend
-    Backend::Z3::Z3 z3bk;
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
 
-    /* const auto string_x { C::symbol<Ex::String>("string_x", 64_ui) }; */
-    /* const auto string_y { C::symbol<Ex::String>("string_y", 64_ui) }; */
-    const auto fp_x { C::symbol<Ex::FP>("fp_x", Mode::FP::dbl.width()) };
-    const auto fp_y { C::symbol<Ex::FP>("fp_y", Mode::FP::dbl.width()) };
-    const auto bv_x { C::symbol<Ex::BV>("bv_x", 64_ui) };
-    const auto bv_y { C::symbol<Ex::BV>("bv_y", 64_ui) };
+    /* const auto string_x { C::symbol<Expr::String>("string_x", 64_ui) }; */
+    /* const auto string_y { C::symbol<Expr::String>("string_y", 64_ui) }; */
+    const auto fp_x { C::symbol<Expr::FP>("fp_x", Mode::FP::dbl.width()) };
+    const auto fp_y { C::symbol<Expr::FP>("fp_y", Mode::FP::dbl.width()) };
+    const auto bv_x { C::symbol<Expr::BV>("bv_x", 64_ui) };
+    const auto bv_y { C::symbol<Expr::BV>("bv_y", 64_ui) };
     const auto bool_x { C::symbol("bool_x") };
     const auto bool_y { C::symbol("bool_y") };
 
     // Verify the round trip changes nothing
-    const auto test_id = [&z3bk](const Expr::BasePtr &&x) {
-        return z3bk.abstract(z3bk.convert(x.get())) == x;
+    const auto test_id = [&z3](const Expr::BasePtr &&x) {
+        return z3.abstract(z3.convert(x.get())) == x;
     };
 
     /**************************************************/
@@ -80,8 +79,7 @@ void normal() {
 
     Util::Log::debug("Testing reverse...");
     const auto also_x { C::reverse(C::reverse(bv_x)) };
-    UNITTEST_ASSERT(z3bk.simplify(also_x.get()) == bv_x);
-
+    UNITTEST_ASSERT(z3.bk.simplify(also_x.get()) == bv_x);
 
     // UInt Binary
 
@@ -97,12 +95,12 @@ void normal() {
     Util::Log::debug("Testing eq...");
     UNITTEST_ASSERT(test_id(C::eq(fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(C::eq(bool_x, bool_y)));
-    /* UNITTEST_ASSERT(test_id(C::eq<Ex::String>(string_x, string_y))); */
+    /* UNITTEST_ASSERT(test_id(C::eq<Expr::String>(string_x, string_y))); */
 
     Util::Log::debug("Testing neq...");
     UNITTEST_ASSERT(test_id(C::neq(fp_x, fp_y)));
     UNITTEST_ASSERT(test_id(C::neq(bool_x, bool_y)));
-    /* UNITTEST_ASSERT(test_id(C::neq<Ex::String>(string_x, string_y))); */
+    /* UNITTEST_ASSERT(test_id(C::neq<Expr::String>(string_x, string_y))); */
 
     using Cmp = Mode::Compare;
     Util::Log::debug("Testing compare...");
@@ -148,7 +146,7 @@ void normal() {
 
     Util::Log::debug("Testing concat...");
     UNITTEST_ASSERT(test_id(C::concat(bv_x, bv_y)));
-    /* UNITTEST_ASSERT(test_id(C::concat<Ex::String>(string_x, string_y))); */
+    /* UNITTEST_ASSERT(test_id(C::concat<Expr::String>(string_x, string_y))); */
 
     // Flat
 

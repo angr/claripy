@@ -2,23 +2,24 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
 
 
 /** Test min / max function */
 template <bool Signed, typename T, bool Minimize>
-static T get_ext(Backend::Z3::Z3 &z3, const Expr::BasePtr &x, const Expr::BasePtr &test_c,
-                 const std::vector<Expr::RawPtr> ec = {}) { // NOLINT
+static T get_ext(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &x,
+                 const Expr::BasePtr &test_c, const std::vector<Expr::RawPtr> ec = {}) { // NOLINT
     // Get a new solver and add constraint
-    const auto solver_ref { z3.template tls_solver<true>() };
+    const auto solver_ref { z3.bk.template tls_solver<true>() };
     auto &solver { *solver_ref };
-    z3.add(solver, test_c.get());
+    z3.bk.add(solver, test_c.get());
     // Min / max functions
     auto f { [&z3](auto &&...args) {
-        return Minimize ? z3.min<Signed>(args...) : z3.max<Signed>(args...);
+        return Minimize ? z3.bk.min<Signed>(args...) : z3.bk.max<Signed>(args...);
     } };
     auto f_ec { [&z3](auto &&...args) {
-        return Minimize ? z3.min<Signed>(args...) : z3.max<Signed>(args...);
+        return Minimize ? z3.bk.min<Signed>(args...) : z3.bk.max<Signed>(args...);
     } };
     // Call the min / max function
     const auto conv { z3.convert(x.get()) };
@@ -27,7 +28,7 @@ static T get_ext(Backend::Z3::Z3 &z3, const Expr::BasePtr &x, const Expr::BasePt
 
 /** Tests min and maxed for the chosen type */
 template <typename T, bool Signed = std::is_signed_v<T>>
-static void min_max_test(Backend::Z3::Z3 &z3) {
+static void min_max_test(UnitTest::ClaricppUnitTest::ShimZ3 &z3) {
     static_assert(std::is_integral_v<T>, "T must be an integral type");
     Util::Log::debug("\t- Signed: ", std::boolalpha, Signed);
 
@@ -126,7 +127,7 @@ template <bool Signed, typename T>
 using Wrap = std::conditional_t<Signed, std::make_signed_t<T>, std::make_unsigned_t<T>>;
 
 /** Tests min and max for the chosen sign */
-template <bool Signed> static void min_max_t(Backend::Z3::Z3 &z3) {
+template <bool Signed> static void min_max_t(UnitTest::ClaricppUnitTest::ShimZ3 &z3) {
     min_max_test<Wrap<Signed, int64_t>>(z3);
     min_max_test<Wrap<Signed, int32_t>>(z3);
     min_max_test<Wrap<Signed, int16_t>>(z3);
@@ -135,9 +136,9 @@ template <bool Signed> static void min_max_t(Backend::Z3::Z3 &z3) {
 
 /** Test the backend min and max functions */
 void min_max() {
-    auto z3 { Backend::Z3::Z3 {} };
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
     min_max_t<true>(z3);
-    z3.downsize(); // Prevent FNV1a hash collisions; @todo Improve hash algorithm
+    z3.bk.downsize(); // Prevent FNV1a hash collisions; @todo Improve hash algorithm
     min_max_t<false>(z3);
 }
 

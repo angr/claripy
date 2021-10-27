@@ -2,18 +2,19 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
 
 #include <cmath>
 
 
 /** Return true iff p evaluates to true */
-inline bool is_true(Backend::Z3::Z3 &z3, const Expr::BasePtr &p) {
+inline bool is_true(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &p) {
     return z3.convert(p.get()).simplify().is_true();
 }
 
 /** Return true iff p evaluates to false */
-inline bool is_false(Backend::Z3::Z3 &z3, const Expr::BasePtr &p) {
+inline bool is_false(UnitTest::ClaricppUnitTest::ShimZ3 &z3, const Expr::BasePtr &p) {
     return z3.convert(p.get()).simplify().is_false();
 }
 
@@ -22,7 +23,7 @@ inline bool is_false(Backend::Z3::Z3 &z3, const Expr::BasePtr &p) {
 void fp_convert() {
     namespace C = Create;
 
-    auto z3 { Backend::Z3::Z3 {} };
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
     const auto flt { C::literal(0.f) }; // NOLINT
     const auto flt_conv { z3.convert(flt.get()) };
     const auto srt { flt_conv.get_sort() };

@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
 
 
@@ -25,7 +26,7 @@ class TestAnnotation final : public Annotation::Base {
 
 /** Test how the z3 backend handles sym_an_trans_data */
 void sym_an_trans_data() {
-    auto z3 { Backend::Z3::Z3 {} };
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
     namespace A = Annotation;
 
     // Create an annotation
@@ -49,7 +50,7 @@ void sym_an_trans_data() {
     UNITTEST_ASSERT(cast->str == "Hello");
 
     // Verify data can be cleared
-    z3.clear_persistent_data();
+    z3.bk.clear_persistent_data();
     const auto abs2 { z3.abstract(conv) };
     UNITTEST_ASSERT(sym != abs2);
     UNITTEST_ASSERT(abs != abs2);

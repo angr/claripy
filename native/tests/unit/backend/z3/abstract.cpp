@@ -2,13 +2,14 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
 
 
 /** Try to abstract a claricpp expression from z3 */
 void abstract() {
     z3::context ctx;
-    auto z3 { Backend::Z3::Z3 {} };
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
     const auto abs { z3.abstract(ctx.bool_val(true)) };
     UNITTEST_ASSERT(abs == Create::literal(true));
 }

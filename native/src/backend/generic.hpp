@@ -24,6 +24,7 @@ namespace Backend {
      *  objects, passing the exprs' annotation vector to the function as it does
      */
     template <typename Derived, typename BackendObj> class Generic : public Base {
+        ENABLE_UNITTEST_FRIEND_ACCESS;
         /** A raw pointer to a backend object */
         using BORCPtr = const BackendObj *;
 
@@ -82,6 +83,7 @@ namespace Backend {
             }
         }
 
+      protected:
         /** Convert a claricpp Expr to a backend object
          *  This function does not deal with the lifetimes of Exprs
          *  This function does deal with the lifetimes of backend objects

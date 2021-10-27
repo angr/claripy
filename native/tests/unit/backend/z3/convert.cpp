@@ -2,6 +2,7 @@
  * @file
  * \ingroup unittest
  */
+#include "shim_z3.hpp"
 #include "testlib.hpp"
 
 #include "../../make_ite.hpp"
@@ -9,7 +10,7 @@
 
 /** Try to convert a claricpp expr to z3 */
 void convert() {
-    auto z3 { Backend::Z3::Z3 {} };
+    UnitTest::ClaricppUnitTest::ShimZ3 z3;
 
     // Test with if (4 == (x * 3)) then "Hello" else y
     const auto ite { make_ite("Hello") };
