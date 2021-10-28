@@ -18,12 +18,14 @@ namespace Backend::Z3 {
     UTILS_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
 
     /** The Z3 backend
-     *  Warning: Only one Z3 backend should exist per thread
+     *  Warning: All Z3 backends within a given thread share their data
      */
     class Z3 final : public Generic<Z3, z3::expr> {
         ENABLE_UNITTEST_FRIEND_ACCESS;
         /** Allow Dispatch friend access */
         friend struct Dispatch<Z3>;
+        // Disable implicits
+        SET_IMPLICITS_NONDEFAULT_CTORS(Z3, delete);
 
       public:
         /** Used for static error checking in template injection */
@@ -31,19 +33,10 @@ namespace Backend::Z3 {
         /** Z3 objects cannot hold annotations */
         static UTILS_CCBOOL apply_annotations = false;
 
-        /** Constructor
-         *  We only permit one instance of Z3 to exist at a time
-         *  If a previous instance existed we need to reconstruct the TLS at &tls
-         *  We do this since thread_local member variables are not allowed
-         *  Furthermore, TLS destructing after main() ends can cause issues with the Z3 library
-         */
-        inline Z3(const Mode::BigInt m = Mode::BigInt::Str) noexcept : Generic { m } {}
-
+        /** Constructor */
+        inline Z3() noexcept = default;
         /** Destructor */
         inline ~Z3() noexcept = default;
-
-        // Disable implicits
-        SET_IMPLICITS_NONDEFAULT_CTORS(Z3, delete);
 
         /********************************************************************/
         /*                        Function Overrides                        */
