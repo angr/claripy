@@ -27,14 +27,12 @@ namespace Backend {
         ENABLE_UNITTEST_FRIEND_ACCESS;
         /** A raw pointer to a backend object */
         using BORCPtr = const BackendObj *;
+        // Disable implicits
+        SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(Generic, delete);
 
       public:
-        // Disable implicits
-        SET_IMPLICITS(Generic, delete);
-
         /** Constructor */
-        inline Generic(const Mode::BigInt m) noexcept : big_int_abstract_mode(m) {}
-
+        inline Generic() noexcept = default;
         /** Destructor */
         ~Generic() noexcept override = default;
 
@@ -42,17 +40,6 @@ namespace Backend {
         using AbstractionVariant = std::variant<Expr::BasePtr, Mode::FP::Rounding>;
 
         // Virtual and Concrete Functions
-
-        /** Set the BigInt abstraction mode for this backend
-         *
-         */
-        inline Mode::BigInt big_int_mode(const Mode::BigInt m) noexcept {
-            Util::Log::debug("Setting BitInt abstraction mode to ", m);
-            return big_int_abstract_mode.exchange(m);
-        }
-
-        /** Get the BigInt abstraction mode for this backend */
-        inline Mode::BigInt big_int_mode() const noexcept { return big_int_abstract_mode; }
 
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
@@ -92,10 +79,7 @@ namespace Backend {
          */
         BackendObj convert(const Expr::RawPtr input) {
             auto &conversion_cache { conversion_cache_g() };
-#ifdef DEBUG
-            using UnknownErr = Util::Err::Unknown;
             UTILS_AFFIRM_NOT_NULL_DEBUG(input);
-#endif
 
             // Functionally a stack of lists of exprs to be converted
             // We flatten and reverse this list for performance reasons
@@ -157,7 +141,7 @@ namespace Backend {
             }
 #ifdef DEBUG
             // Sanity checks
-            constexpr auto chk { [](const auto &...x) { Util::affirm<UnknownErr>(x...); } };
+            constexpr auto chk { [](const auto &...x) { Util::affirm<Util::Err::Unknown>(x...); } };
             chk(op_stack.empty(), WHOAMI "op_stack should be empty");
             chk(expr_stack.empty(), WHOAMI "expr_stack should be empty");
             chk(arg_stack.size() == 1, WHOAMI "arg_stack should be of size: 1");
@@ -187,43 +171,6 @@ namespace Backend {
             }
         }
 
-      private:
-        /** Abstract a backend object into a type claricpp understands
-         *  @todo: Enable abstraction cache-ing
-         */
-        AbstractionVariant abstract_helper(const BackendObj &b_obj) {
-            const unsigned n = { b_obj.num_args() };
-
-#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-            auto &abstraction_cache { abstraction_cache_g() };
-            static_assert(false, "Better hashing needed");
-            // Cache lookup
-            const auto hash { b_obj.hash() };
-            if (const auto lookup { abstraction_cache.find(hash) };
-                lookup != abstraction_cache.end()) {
-                return lookup->second;
-            }
-#endif
-
-            // Convert b_obj args
-            std::vector<AbstractionVariant> args;
-            for (unsigned i { 0 }; i < n; ++i) {
-                args.emplace_back(abstract_helper(b_obj.arg(i)));
-            }
-
-            // Convert b_obj then update various caches and return
-            auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
-#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-            Util::map_add(abstraction_cache, hash, ret);
-#endif
-            if (LIKELY(std::holds_alternative<Expr::BasePtr>(ret))) {
-                const auto &tmp { std::get<Expr::BasePtr>(ret) };
-                Simplification::cache(tmp->hash, tmp);
-            }
-            return ret;
-        }
-
-      protected:
         // Pure Virtual Functions
 
         /** This dynamic dispatcher converts an expr into a backend object
@@ -293,8 +240,40 @@ namespace Backend {
         }
 #endif
       private:
-        /** The BigInt abstraction mode this thread should use */
-        std::atomic<Mode::BigInt> big_int_abstract_mode;
+        /** Abstract a backend object into a type claricpp understands
+         *  @todo: Enable abstraction cache-ing
+         */
+        AbstractionVariant abstract_helper(const BackendObj &b_obj) {
+            const unsigned n = { b_obj.num_args() };
+
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            auto &abstraction_cache { abstraction_cache_g() };
+            static_assert(false, "Better hashing needed");
+            // Cache lookup
+            const auto hash { b_obj.hash() };
+            if (const auto lookup { abstraction_cache.find(hash) };
+                lookup != abstraction_cache.end()) {
+                return lookup->second;
+            }
+#endif
+
+            // Convert b_obj args
+            std::vector<AbstractionVariant> args;
+            for (unsigned i { 0 }; i < n; ++i) {
+                args.emplace_back(abstract_helper(b_obj.arg(i)));
+            }
+
+            // Convert b_obj then update various caches and return
+            auto ret { dispatch_abstraction(b_obj, args) }; // Not const for move ret purposes
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            Util::map_add(abstraction_cache, hash, ret);
+#endif
+            if (LIKELY(std::holds_alternative<Expr::BasePtr>(ret))) {
+                const auto &tmp { std::get<Expr::BasePtr>(ret) };
+                Simplification::cache(tmp->hash, tmp);
+            }
+            return ret;
+        }
     };
 
 } // namespace Backend

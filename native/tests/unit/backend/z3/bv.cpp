@@ -14,7 +14,8 @@ template <typename B, typename T> static void test_bv_ctor(B &z3, T x) {
 
 /** Test is_true and is_false */
 void bv() {
-    auto z3 { Backend::Z3::Z3 { Mode::BigInt::Int } }; // Z3 defaults to mode Str, we want Int
+    Backend::Z3::Z3 z3;
+    z3.big_int_mode(Mode::BigInt::Int);
 
     // Constants
     const boost::multiprecision::mpz_int big_one { 1 };            // NOLINT
