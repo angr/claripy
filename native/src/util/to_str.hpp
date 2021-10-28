@@ -25,7 +25,7 @@ namespace Util {
         static_assert(Util::is_ancestor<std::ostream, T>, "T must be an ostream");
         T s;
         (OStream(s, std::forward<Args>(args)), ...);
-        return s;
+        return s; // Copy elision or std::move (no copy ctor exists)
     }
 
     /** This function takes in a set of arguments, and returns a string that comprises them
