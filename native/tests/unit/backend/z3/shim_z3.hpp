@@ -3,8 +3,8 @@
  * @brief A shim of the z3 backend which exposes private members
  * \ingroup unittest
  */
-#ifndef R_SHIM_Z3_HPP_
-#define R_SHIM_Z3_HPP_
+#ifndef R_UNIT_BACKEND_Z3_SHIMZ3_HPP_
+#define R_UNIT_BACKEND_Z3_SHIMZ3_HPP_
 
 #include "testlib.hpp"
 
@@ -21,4 +21,4 @@ struct UnitTest::Friend {
     };
 };
 
-#endif // R_SHIM_Z3_HPP_
+#endif

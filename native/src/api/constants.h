@@ -39,12 +39,12 @@ typedef ARRAY_IN(char) PyStr;
 #define VS_T unsigned long long
 
 /** Claricpp rounding modes
- *  See mode/fp/rounding.hpp for more info
+ *  See mode/fp/rounding.h for more info
  */
 enum ClaricppRM { MODE_FP_ROUNDING_VALS(ClaricppRm) };
 
 /** Claricpp BigInt modes
- *  See mode/big_int.hpp for more info
+ *  See mode/big_int.h for more info
  */
 enum ClaricppBIM { MODE_BIGINT_VALS(ClaricppBim) };
 
