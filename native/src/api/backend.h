@@ -18,19 +18,19 @@
  */
 PyStr claricpp_backend_name(ClaricppBackend bk);
 
-/** Use the backend to simplify expr
- *  @param bk The backend to use
- *  @param expr The Expr to simplify
- *  @return A bk simplified version of expr
- */
-ClaricppExpr claricpp_backend_simplify(const ClaricppBackend bk, const ClaricppExpr expr);
-
 /** Determine if bk supports expr
  *  @param bk The backend to use
  *  @param expr The Expr to check if bk supports
  *  @return true if and only if bk supports expr
  */
 bool claricpp_backend_handles(const ClaricppBackend bk, const ClaricppExpr expr);
+
+/** Use the backend to simplify expr
+ *  @param bk The backend to use
+ *  @param expr The Expr to simplify
+ *  @return A bk simplified version of expr
+ */
+ClaricppExpr claricpp_backend_simplify(const ClaricppBackend bk, const ClaricppExpr expr);
 
 /** Clear some caches in order to reclaim excess memory
  *  @param bk The backend to reclaim memory from
