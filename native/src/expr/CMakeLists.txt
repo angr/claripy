@@ -2,4 +2,5 @@
 target_sources("${CLARICPP}" PRIVATE
 	base.cpp
 	repr.cpp
+	make_like.cpp
 )
