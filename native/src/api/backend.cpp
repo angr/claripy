@@ -8,7 +8,7 @@
 /*                               Base                               */
 /********************************************************************/
 
-PyStr claricpp_backend_name(ClaricppBackend bk) {
+const char *claricpp_backend_name(ClaricppBackend bk) {
     return API::to_cpp(bk)->name();
 }
 
@@ -41,7 +41,7 @@ ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
 /********************************************************************/
 
 ClaricppBackend claricpp_backend_z3_new() {
-    return { static_cast<Backend::Base *const>(new Backend::Z3::Z3 {}) }; // NOLINT
+    return { static_cast<Backend::Base *>(new Backend::Z3::Z3 {}) }; // NOLINT
 }
 
 /********************************************************************/

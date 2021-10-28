@@ -26,7 +26,7 @@ namespace Util {
         explicit RunOnDestruction(const F &func) : f(func) {}
 
         /** Move Constructor */
-        explicit RunOnDestruction(RunOnDestruction &&old)
+        explicit RunOnDestruction(RunOnDestruction &&old) noexcept
             : enabled(old.enabled), f(std::move(old.f)) {
             old.f = nullptr;
             old.disable();
@@ -50,7 +50,7 @@ namespace Util {
         }
 
         /** Move Assignment Operator */
-        RunOnDestruction &operator=(RunOnDestruction &&old) {
+        RunOnDestruction &operator=(RunOnDestruction &&old) noexcept {
             if (this != &old) {
                 old.enabled() ? enable() : disable();
                 old.disable();

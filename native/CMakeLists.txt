@@ -477,12 +477,8 @@ target_include_directories("${CLARICPP}"
 target_link_libraries("${CLARICPP}"
 	PRIVATE "${Z3_LIB_PRIVATE_TARGET}"
 	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
+	PRIVATE dl
 )
-
-# For debugging
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-	target_link_libraries("${CLARICPP}" PRIVATE dl)
-endif()
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above

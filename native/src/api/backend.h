@@ -16,7 +16,7 @@
 /** Get the name of the backend
  *  @return The name of the backend
  */
-PyStr claricpp_backend_name(ClaricppBackend bk);
+const char * claricpp_backend_name(ClaricppBackend bk);
 
 /** Determine if bk supports expr
  *  @param bk The backend to use
