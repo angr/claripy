@@ -9,8 +9,7 @@
 extern "C" {
 #include "c.h"
 };
-#include "../op.hpp"
-#include "../py_obj.hpp"
+#include "../backend.hpp"
 
 // @todo: Handle exceptions
 
@@ -42,7 +41,8 @@ namespace API {
     static_assert(std::is_pod_v<CTYPE>, "Struct must be of the structure { void * ptr };");        \
     static_assert(sizeof(CTYPE) == sizeof(void *), "Struct should only contain a void *");         \
     static_assert(std::is_same_v<void *, decltype(std::declval<CTYPE>().ptr)>, "Bad ptr type");    \
-    static_assert(Util::is_shared_ptr<CPPTYPE>, "CPPTYPE should be a shared pointer");             \
+    static_assert(Util::is_shared_ptr<CPPTYPE> || std::is_pointer_v<CPPTYPE>,                      \
+                  "CPPTYPE should be a shared or raw pointer");                                    \
     template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                       \
     template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; };
 
@@ -50,6 +50,7 @@ namespace API {
         MAP_ADD(ClaricppAnnotation, Annotation::BasePtr);
         MAP_ADD(ClaricppSPAV, Annotation::SPAV);
         MAP_ADD(ClaricppExpr, Expr::BasePtr);
+        MAP_ADD(ClaricppBackend, ::Backend::Base *);
 
 // Cleanup
 #undef MAP_ADD

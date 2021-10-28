@@ -19,6 +19,7 @@ DECLARE_WRAPPER(ClaricppAnnotation);
 DECLARE_WRAPPER(ClaricppSPAV);
 DECLARE_WRAPPER(ClaricppExpr);
 DECLARE_WRAPPER(ClaricppBigInt);
+DECLARE_WRAPPER(ClaricppBackend);
 
 /** Return the type of an input array of type T */
 #define ARRAY_IN(T) const T * const
