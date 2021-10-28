@@ -12,7 +12,6 @@ void expr() {
 
     // Create an expr
     const auto e { Create::sub(Create::symbol<Expr::BV>("bv", 64), Create::literal(64_ui)) };
-    auto e_copy { e };
 
     // Create a few annotations
     Annotation::SPAV ans { std::make_shared<A::Vec>(std::vector<A::BasePtr> {
@@ -22,7 +21,7 @@ void expr() {
 
     // Make like
     const auto f { claricpp_expr_make_like_annotations };
-    const auto ml_c { f(API::to_c(std::move(e_copy)), API::to_c(std::move(ans))) };
+    const auto ml_c { f(API::copy_to_c(e_copy), API::to_c(std::move(ans))) };
     const auto ml { API::to_cpp(ml_c) };
 
     // Test make like
@@ -40,8 +39,7 @@ void expr() {
     UNITTEST_ASSERT(e->symbolic == ml->symbolic);
 
     // Test bit length
-    e_copy = e;
-    UNITTEST_ASSERT(claricpp_expr_bit_length(API::to_c(std::move(e_copy))) == e_len);
+    UNITTEST_ASSERT(claricpp_expr_bit_length(API::copy_to_c(e)) == e_len);
 }
 
 // Define the test

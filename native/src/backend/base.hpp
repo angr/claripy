@@ -35,15 +35,15 @@ namespace Backend {
         /** Backend name */
         [[nodiscard]] virtual const char *name() const noexcept = 0;
 
-        /** Simplify the given expr
-         *  expr may not be nullptr
-         */
-        virtual Expr::BasePtr simplify(const Expr::RawPtr expr) = 0;
-
         /** Check whether the backend can handle the given expr
          *  expr may not be nullptr
          */
         virtual bool handles(const Expr::RawPtr expr) = 0;
+
+        /** Simplify the given expr
+         *  expr may not be nullptr
+         */
+        virtual Expr::BasePtr simplify(const Expr::RawPtr expr) = 0;
 
         /** Clear caches to decrease memory pressure
          *  Note: if overriding this, it is advised to call this function from the derived version
