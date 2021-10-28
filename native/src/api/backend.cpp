@@ -28,6 +28,14 @@ void claricpp_backend_clear_persistent_data(const ClaricppBackend bk) {
     return API::to_cpp(bk)->clear_persistent_data();
 }
 
+ClaricppBIM claricpp_backend_get_big_int_mode() {
+    return API::mode(Backend::Base::big_int_mode());
+}
+
+ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
+    return API::mode(Backend::Base::big_int_mode(API::mode(m)));
+}
+
 /********************************************************************/
 /*                                Z3                                */
 /********************************************************************/

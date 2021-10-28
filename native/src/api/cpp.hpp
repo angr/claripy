@@ -35,6 +35,10 @@ namespace API {
     namespace Private {
         /** Bidirectionally maps between C++ and C types */
         template <typename T> struct InternalMap;
+        /** Bidirectionally maps between C++ and C types
+         *  Warning: Enums are assumed to have the same values between both
+         */
+        template <typename T> struct InternalEnumMap;
 
 /** A local macro used to add a Map entry */
 #define MAP_ADD(CTYPE, CPPTYPE)                                                                    \
@@ -46,11 +50,21 @@ namespace API {
     template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                       \
     template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; };
 
+/** A local macro used to add an Enum Map entry */
+#define ENUM_MAP_ADD(CTYPE, CPPTYPE)                                                               \
+    static_assert(std::is_enum_v<CTYPE>, "Must be an enum");                                       \
+    static_assert(Util::is_strong_enum<CPPTYPE>, "Must be a strong enum");                         \
+    template <> struct InternalEnumMap<CPPTYPE> final { using Result = CTYPE; };                   \
+    template <> struct InternalEnumMap<CTYPE> final { using Result = CPPTYPE; };
+
         // Populate internal maps
         MAP_ADD(ClaricppAnnotation, Annotation::BasePtr);
         MAP_ADD(ClaricppSPAV, Annotation::SPAV);
         MAP_ADD(ClaricppExpr, Expr::BasePtr);
         MAP_ADD(ClaricppBackend, ::Backend::Base *);
+
+        ENUM_MAP_ADD(ClaricppRM, Mode::FP::Rounding);
+        ENUM_MAP_ADD(ClaricppBIM, Mode::BigInt);
 
 // Cleanup
 #undef MAP_ADD
@@ -117,11 +131,7 @@ namespace API {
      *  1. Mode::FP::Rounding <-> ClaricppRM
      */
     template <typename In> static inline auto mode(const In in) noexcept {
-        using Cpp = Mode::FP::Rounding;
-        using C = ClaricppRM;
-        static_assert(Util::qualified_is_in<In, C, Cpp>, "Unknown type.");
-        using Ret = std::conditional_t<std::is_same_v<In, C>, Cpp, C>;
-        return Ret(in); // Must be (), not {}
+        return typename Private::InternalEnumMap<In>::Result(in); // Must be (), not {}
     }
 
 } // namespace API

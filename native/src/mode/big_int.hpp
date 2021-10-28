@@ -8,7 +8,7 @@
 namespace Mode {
 
     /** A mask used to define the type of comparison to be used */
-    enum class BigInt { Int, Str };
+    enum class BigInt { Str = 0, Int };
 
     /** Ostream operator for Mode::BigInt */
     inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {

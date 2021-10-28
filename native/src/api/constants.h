@@ -18,7 +18,6 @@
 DECLARE_WRAPPER(ClaricppAnnotation);
 DECLARE_WRAPPER(ClaricppSPAV);
 DECLARE_WRAPPER(ClaricppExpr);
-DECLARE_WRAPPER(ClaricppBigInt);
 DECLARE_WRAPPER(ClaricppBackend);
 
 /** Return the type of an input array of type T */
@@ -38,11 +37,17 @@ typedef ARRAY_IN(char) PyStr;
 
 /** Claricpp rounding modes */
 enum ClaricppRM {
-    CLARICPP_NEAREST_TIES_EVEN = 0,
-    CLARICPP_NEAREST_TIES_AWAY_FROM_ZERO,
-    CLARICPP_TOWARDS_ZERO,
-    CLARICPP_TOWARDS_POSITIVEINF,
-    CLARICPP_TOWARDS_NEGATIVEINF
+    CLARICPP_RM_NEAREST_TIES_EVEN = 0,
+    CLARICPP_RM_NEAREST_TIES_AWAY_FROM_ZERO,
+    CLARICPP_RM_TOWARDS_ZERO,
+    CLARICPP_RM_TOWARDS_POSITIVEINF,
+    CLARICPP_RM_TOWARDS_NEGATIVEINF
+};
+
+/** Claricpp BigInt modes */
+enum ClaricppBIM {
+    CLARICPP_BIM_STR = 0,
+    CLARICPP_BIM_INT
 };
 
 // Cleanup
