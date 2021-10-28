@@ -17,13 +17,6 @@
 
 namespace Util::Err {
 
-#ifdef DEBUG
-    namespace Private {
-        /** A function that prints the backtrace if in debug mode, else is a no-op */
-        void backtrace_if_debug();
-    }; // namespace Private
-#endif
-
     /** The base claricpp exception class
      *  Any exception thrown intentionally must subclass this
      *  Note: Since exceptions do not need to be super fast and since we have const date members:
@@ -34,30 +27,26 @@ namespace Util::Err {
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
         template <typename... Args>
-        explicit Claricpp(Args &&...args) : msg(Util::to_str(std::forward<Args>(args)...)) {
-#ifdef DEBUG
-            Private::backtrace_if_debug();
-#endif
-        }
+        explicit Claricpp(Args &&...args)
+            : msg(Util::to_str(std::forward<Args>(args)...)), bt { save_backtrace() } {}
 
-#ifdef DEBUG
+        /** Default virtual destructor */
+        ~Claricpp() noexcept override = default;
+
+        // Rule of 5
+        SET_IMPLICITS_NONDEFAULT_CTORS(Claricpp, delete);
+
+        inline std::string backtrace() noexcept { return bt.str(); }
+
         /** Enable / disable backtraces
          *  Returns the old state
          */
         static inline bool toggle_backtrace(bool set) noexcept {
-            enable_backtraces.exchange(set, std::memory_order::memory_order_relaxed);
-            return set;
+            return enable_backtraces.exchange(set);
         }
 
         /** Return true if and only if backtraces are enabled */
         static inline bool backtraces_enabled() noexcept { return enable_backtraces; }
-#endif
-
-        // Rule of 5 (note that std::string is not noexcept constructible)
-        SET_IMPLICITS_CONST_MEMBERS(Claricpp, default, noexcept);
-
-        /** Default virtual destructor */
-        ~Claricpp() noexcept override = default;
 
         /** Message getter */
         [[nodiscard]] inline const char *what() const noexcept override final {
@@ -65,13 +54,17 @@ namespace Util::Err {
         }
 
       private:
+        /** Saves a backtrace */
+        static std::ostringstream save_backtrace() noexcept;
+
         /** The message */
         const std::string msg;
 
-#ifdef DEBUG
+        /** The backtrace */
+        const std::ostringstream bt;
+
         /** True if backtraces should be enabled */
-        static thread_local std::atomic_bool enable_backtraces;
-#endif
+        static std::atomic_bool enable_backtraces;
 
         /** Allow all error factories friend access */
         template <typename T, typename S> friend T factory(const S msg);

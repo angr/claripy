@@ -72,7 +72,7 @@
  */
 #define DEFINE_NONFINAL_EXCEPTION(DERIVED, SUPER)                                                  \
     struct DERIVED : public SUPER {                                                                \
-        SET_IMPLICITS_CONST_MEMBERS(DERIVED, default);                                             \
+        SET_IMPLICITS_NONDEFAULT_CTORS(DERIVED, delete);                                           \
         /** Inherit constructors */                                                                \
         using SUPER::SUPER;                                                                        \
         /** Default virtual destructor */                                                          \

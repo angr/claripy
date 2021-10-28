@@ -28,7 +28,7 @@ int UnitTest::TestLib::test_func(TestFN &f) {
     }
     // UnitTest error
     catch (Error &e) {
-        Util::Log::error(e.what());
+        Util::Log::error(e.backtrace(), "\n", e.what());
         return EXIT_FAILURE;
     }
     // If there was a different error, note so and fail

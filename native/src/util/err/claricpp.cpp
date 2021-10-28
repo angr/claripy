@@ -9,16 +9,16 @@
 
 #ifdef DEBUG
 
-thread_local std::atomic_bool Util::Err::Claricpp::enable_backtraces { false };
+std::atomic_bool Util::Err::Claricpp::enable_backtraces { false };
 
-
-void Util::Err::Private::backtrace_if_debug() {
-    if (Util::Err::Claricpp::backtraces_enabled()) {
-        std::ostringstream s;
-        s << "Backtrace:\n";
-        Util::backtrace(s, 1);
-        Util::Log::error(s.str());
+std::ostringstream Util::Err::Claricpp::save_backtrace() noexcept {
+    if (!backtraces_enabled()) {
+        return std::ostringstream {};
     }
+    std::ostringstream o;
+    o << "Backtrace:\n";
+    ::Util::backtrace(o, 1);
+    return o; // Copy elision or compile error :)
 }
 
 #endif
