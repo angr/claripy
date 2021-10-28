@@ -1,0 +1,21 @@
+/**
+ * @file
+ * \ingroup unittest
+ */
+#include "testlib.hpp"
+
+
+/** Verify z3's handles() works */
+void handles() {
+    Backend::Z3::Z3 z3;
+
+    const auto one { Create::literal(1_ui) };
+    UNITTEST_ASSERT(z3.handles(one.get()));
+
+    const auto vs { Create::literal(std::make_shared<PyObj::VS>(1, 2, 8)) };
+    UNITTEST_ASSERT(!z3.handles(vs.get()));
+    Util::Log::info("Desired error detected: success.");
+}
+
+// Define the test
+UNITTEST_DEFINE_MAIN_TEST(handles)
