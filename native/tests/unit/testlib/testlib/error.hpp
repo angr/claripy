@@ -36,7 +36,7 @@ namespace UnitTest::TestLib {
     /** The UnitTest error struct */
     DEFINE_NAMESPACED_FINAL_EXCEPTION(Error, Claricpp, Util::Err)
 
-    /** A function used to test a boolean value */
+    /** A function used to test a boolean value; the thrown exception should *not* be caught */
     template <typename... Args> void ut_fail(Args &&...args) {
         if (original_bk != nullptr) {
             auto copy { original_bk }; // Just in case someone is dumb and catches the error

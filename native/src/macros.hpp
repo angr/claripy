@@ -33,9 +33,12 @@
 #ifndef DEBUG
     /** Defined to noexcept when DEBUG is not defined */
     #define NOEXCEPT_UNLESS_DEBUG noexcept
+    /** True is DEBUG else false */
+    #define TRUE_IF_DEBUG false
 #else
     // DEBUG defined case
     #define NOEXCEPT_UNLESS_DEBUG
+    #define TRUE_IF_DEBUG true
 #endif
 
 

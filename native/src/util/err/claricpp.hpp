@@ -15,6 +15,7 @@
 #include <exception>
 #include <string>
 
+
 namespace Util::Err {
 
     /** The base claricpp exception class

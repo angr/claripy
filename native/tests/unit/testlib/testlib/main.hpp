@@ -12,10 +12,8 @@
 
 /** Toggle claricpp backtrace */
 static inline void toggle_backtrace() {
-#ifdef DEBUG
     Util::Log::info("Enabling backtrace...");
     Util::Err::Claricpp::toggle_backtrace(true);
-#endif
 }
 
 /** Define the main function and use it to test a given function */

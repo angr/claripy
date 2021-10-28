@@ -21,7 +21,7 @@ void expr() {
 
     // Make like
     const auto f { claricpp_expr_make_like_annotations };
-    const auto ml_c { f(API::copy_to_c(e_copy), API::to_c(std::move(ans))) };
+    const auto ml_c { f(API::copy_to_c(e), API::to_c(std::move(ans))) };
     const auto ml { API::to_cpp(ml_c) };
 
     // Test make like

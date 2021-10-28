@@ -7,9 +7,8 @@
 #include "../backtrace.hpp"
 #include "../log.hpp"
 
-#ifdef DEBUG
 
-std::atomic_bool Util::Err::Claricpp::enable_backtraces { false };
+std::atomic_bool Util::Err::Claricpp::enable_backtraces { TRUE_IF_DEBUG };
 
 std::ostringstream Util::Err::Claricpp::save_backtrace() noexcept {
     if (!backtraces_enabled()) {
@@ -20,5 +19,3 @@ std::ostringstream Util::Err::Claricpp::save_backtrace() noexcept {
     ::Util::backtrace(o, 1);
     return o; // Copy elision or compile error :)
 }
-
-#endif

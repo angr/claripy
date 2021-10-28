@@ -17,9 +17,14 @@ void generate_bt() {
     }
 }
 
+/** A non-static wrapper function */
+[[gnu::noinline]] void wrapper3() {
+    generate_bt();
+}
+
 namespace {
     /** A wrapper in an anonymous namespace */
-    void wrapper2() { generate_bt(); }
+    void wrapper2() { wrapper3(); }
 } // namespace
 
 /** A static wrapper that has no symbol in the global symbol table */
@@ -54,9 +59,8 @@ void backtrace() {
     // Log the backtrace
     B::unsafe_set(std::move(old));
     Util::Log::verbose("Logging caught backtrace");
-    Util::Log::verbose(backtrace);
+    Util::Log::critical(backtrace);
 
-#ifdef DEBUG
     Util::Log::verbose("Checking backtrace...");
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
     // Ensure the backtrace is valid
@@ -66,9 +70,6 @@ void backtrace() {
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
     UNITTEST_ASSERT(contains("main + "));
     UNITTEST_ASSERT(contains("start + "));
-#else
-    UNITTEST_ASSERT(backtrace.empty());
-#endif
 }
 
 // Define the test
