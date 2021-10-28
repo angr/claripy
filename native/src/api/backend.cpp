@@ -40,6 +40,10 @@ ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
 /*                                Z3                                */
 /********************************************************************/
 
+ClaricppBackend claricpp_backend_z3_new() {
+    return { static_cast<Backend::Base *const>(new Backend::Z3::Z3 {}) }; // NOLINT
+}
+
 /********************************************************************/
 /*                             Concrete                             */
 /********************************************************************/

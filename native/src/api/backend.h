@@ -61,17 +61,10 @@ ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m);
 /*                                Z3                                */
 /********************************************************************/
 
-#if 0
-/** Set the BigInt abstraction mode for this backend */
-inline Mode::BigInt big_int_mode(const Mode::BigInt m) noexcept {
-    Util::Log::debug("Setting BitInt abstraction mode to ", m);
-    return big_int_abstract_mode.exchange(m);
-}
-
-/** Get the BigInt abstraction mode for this backend */
-inline Mode::BigInt big_int_mode() const noexcept { return big_int_abstract_mode; }
-#endif
-
+/** Create a Z3 backend
+ *  @return A new Z3 backend
+ */
+ClaricppBackend claricpp_backend_z3_new();
 
 /********************************************************************/
 /*                             Concrete                             */
