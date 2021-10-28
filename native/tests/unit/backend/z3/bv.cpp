@@ -52,7 +52,6 @@ void bv() {
         UNITTEST_ERR("It should not be possible to construct this: ", fail);
     }
     catch (Error::Expr::Type &) {
-        Util::Log::info("Desired error detected: success.");
     }
 }
 

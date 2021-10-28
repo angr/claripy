@@ -36,7 +36,6 @@ void recurrence_guard() {
         UNITTEST_ERR("The recurrence guard failed to trigger")
     }
     catch (const RecurrenceLimit &e) {
-        Util::Log::info("Desired error detected: success.");
     }
 
     // Verify recurrence guard worked as expected

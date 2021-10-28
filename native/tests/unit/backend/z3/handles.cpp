@@ -14,7 +14,6 @@ void handles() {
 
     const auto vs { Create::literal(std::make_shared<PyObj::VS>(1, 2, 8)) };
     UNITTEST_ASSERT(!z3.handles(vs.get()));
-    Util::Log::info("Desired error detected: success.");
 }
 
 // Define the test
