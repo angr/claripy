@@ -9,3 +9,7 @@ ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, Claricp
     API::free(spav);
     return ret;
 }
+
+SIZE_T claricpp_expr_bit_length(const ClaricppExpr expr) {
+    return Expr::get_bit_length(API::to_cpp(expr));
+}
