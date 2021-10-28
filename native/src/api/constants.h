@@ -9,6 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// Copy enum generation macros
+#include "../mode.h"
+
 
 /** Used to declare a C wrapper for a C++ type */
 #define DECLARE_WRAPPER(NAME) \
@@ -35,20 +38,15 @@ typedef ARRAY_IN(char) PyStr;
 /** Define a type python can pass to represent a VS within claricpp */
 #define VS_T unsigned long long
 
-/** Claricpp rounding modes */
-enum ClaricppRM {
-    CLARICPP_RM_NEAREST_TIES_EVEN = 0,
-    CLARICPP_RM_NEAREST_TIES_AWAY_FROM_ZERO,
-    CLARICPP_RM_TOWARDS_ZERO,
-    CLARICPP_RM_TOWARDS_POSITIVEINF,
-    CLARICPP_RM_TOWARDS_NEGATIVEINF
-};
+/** Claricpp rounding modes
+ *  See mode/fp/rounding.hpp for more info
+ */
+enum ClaricppRM { MODE_FP_ROUNDING_VALS(ClaricppRm) };
 
-/** Claricpp BigInt modes */
-enum ClaricppBIM {
-    CLARICPP_BIM_STR = 0,
-    CLARICPP_BIM_INT
-};
+/** Claricpp BigInt modes
+ *  See mode/big_int.hpp for more info
+ */
+enum ClaricppBIM { MODE_BIGINT_VALS(ClaricppBim) };
 
 // Cleanup
 #undef DECLARE_WRAPPER

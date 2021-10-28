@@ -5,10 +5,12 @@
 #ifndef R_MODE_BIGINT_HPP_
 #define R_MODE_BIGINT_HPP_
 
+#include "big_int.h"
+
 namespace Mode {
 
     /** A mask used to define the type of comparison to be used */
-    enum class BigInt { Str = 0, Int };
+    enum class BigInt { MODE_BIGINT_VALS() };
 
     /** Ostream operator for Mode::BigInt */
     inline std::ostream &operator<<(std::ostream &os, const BigInt &b) {
