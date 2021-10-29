@@ -62,21 +62,29 @@ namespace Util::Err {
         /** Saves a backtrace */
         static std::ostringstream save_backtrace() noexcept;
 
-        // Statics
-
-        /** True if backtraces should be enabled */
-        static std::atomic_bool enable_backtraces;
-        /** The frame offset used when generating the backtrace
-         *  This prevents Claricpp's internals from showing up in the backtrace
-         */
-        static const constexpr UInt frame_offset { 3 }; // NOLINT
-
         // Representation
 
         /** The message */
         const std::string msg;
         /** The backtrace */
         const std::ostringstream bt;
+
+        // Statics
+
+        /** True if backtraces should be enabled */
+        static std::atomic_bool enable_backtraces;
+        /** The frame offset used when generating the backtrace
+         *  This prevents Claricpp's internals from showing up in the backtrace
+         *  This is found expirimentally; there is no issue if it is too small
+         *  Being too small simply makes the backtraces messier as they contain this constructor
+         */
+        static const constexpr UInt frame_offset {
+#if defined(__APPLE__) || defined(__MACH__)
+            3
+#else
+            2
+#endif
+        }; // NOLINT
     };
 
 } // namespace Util::Err

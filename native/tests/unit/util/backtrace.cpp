@@ -12,8 +12,8 @@
     throw Util::Err::Claricpp { "Test" };
 }
 
-/** A non-static wrapper function */
-[[noreturn, gnu::noinline]] void wrapper3() {
+/** A static wrapper that has no symbol in the global symbol table */
+[[noreturn, gnu::noinline]] static void wrapper3() {
     generate_bt();
 }
 
@@ -22,8 +22,8 @@ namespace {
     [[noreturn, gnu::noinline]] void wrapper2() { wrapper3(); }
 } // namespace
 
-/** A static wrapper that has no symbol in the global symbol table */
-[[noreturn, gnu::noinline]] static void wrapper1() {
+/** A non-static wrapper function */
+[[noreturn, gnu::noinline]] void wrapper1() {
     wrapper2();
 }
 
@@ -61,7 +61,7 @@ void backtrace() {
     // Log the backtrace
     B::unsafe_set(std::move(old));
     Util::Log::verbose("Logging caught backtrace");
-    Util::Log::critical(__LINE__, " ", backtrace);
+    Util::Log::verbose(__LINE__, " ", backtrace);
 
     Util::Log::verbose("Checking backtrace...");
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
