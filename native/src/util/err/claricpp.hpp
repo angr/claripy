@@ -8,6 +8,7 @@
 #ifndef R_UTIL_ERR_CLARICPP_HPP_
 #define R_UTIL_ERR_CLARICPP_HPP_
 
+#include "../../constants.hpp"
 #include "../../macros.hpp"
 #include "../to_str.hpp"
 
@@ -25,6 +26,9 @@ namespace Util::Err {
      *  of Claricpp should feel free to do the same unless they have non-const data members
      */
     class Claricpp : public std::exception {
+        /** Allow all error factories friend access */
+        template <typename T, typename S> friend T factory(const S msg);
+
       public:
         /** Constructor: This constructor consumes its arguments via const reference */
         template <typename... Args>
@@ -58,17 +62,21 @@ namespace Util::Err {
         /** Saves a backtrace */
         static std::ostringstream save_backtrace() noexcept;
 
-        /** The message */
-        const std::string msg;
-
-        /** The backtrace */
-        const std::ostringstream bt;
+        // Statics
 
         /** True if backtraces should be enabled */
         static std::atomic_bool enable_backtraces;
+        /** The frame offset used when generating the backtrace
+         *  This prevents Claricpp's internals from showing up in the backtrace
+         */
+        static const constexpr UInt frame_offset { 3 }; // NOLINT
 
-        /** Allow all error factories friend access */
-        template <typename T, typename S> friend T factory(const S msg);
+        // Representation
+
+        /** The message */
+        const std::string msg;
+        /** The backtrace */
+        const std::ostringstream bt;
     };
 
 } // namespace Util::Err
