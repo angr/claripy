@@ -42,12 +42,6 @@ namespace Backend::Z3 {
         /*                        Function Overrides                        */
         /********************************************************************/
 
-        /** Clears translocation data */
-        inline void clear_persistent_data() override final {
-            Util::Log::warning("Z3 backend clearing persistent data...");
-            tls.symbol_annotation_translocation_data.clear();
-        }
-
         /** The name of this backend */
         [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
 
@@ -81,13 +75,18 @@ namespace Backend::Z3 {
             }
         }
 
-      public:
+        /** Clears translocation data */
+        inline void clear_persistent_data() override final {
+            Util::Log::warning("Z3 backend clearing persistent data...");
+            tls.symbol_annotation_translocation_data.clear();
+        }
+
         /********************************************************************/
         /*                         Member Functions                         */
         /********************************************************************/
 
         /** Return a tls solver
-         *  If timeout is not 0, timeouts will be configured for the solver
+         *  If timeout is not 0, timeouts will be configured for the solver, new or reused
          *  Warning: solver is not saved locally if force_new is false
          */
         template <bool ForceNew = false>

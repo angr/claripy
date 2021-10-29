@@ -41,19 +41,6 @@ namespace Backend {
 
         // Virtual and Concrete Functions
 
-        /** Clear caches to decrease memory pressure
-         *  Note: if overriding this, it is advised to call this function from the derived version
-         */
-        void downsize() override {
-            Util::Log::info("Z3 backend downsizing...");
-            errored_cache.scoped_unique().first.clear();
-            // Thread locals
-            conversion_cache_g().clear();
-#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
-            abstraction_cache_g().clear();
-#endif
-        }
-
         /** Checks whether this backend can handle the expr
          *  Note: If the backend will not simplify the expr, but will accept it, returns true
          *  @todo Make this better than this simplistic way
@@ -69,6 +56,19 @@ namespace Backend {
             catch (Error::Backend::Unsupported &) {
                 return false;
             }
+        }
+
+        /** Clear caches to decrease memory pressure
+         *  Note: if overriding this, it is advised to call this function from the derived version
+         */
+        void downsize() override {
+            Util::Log::info("Z3 backend downsizing...");
+            errored_cache.scoped_unique().first.clear();
+            // Thread locals
+            conversion_cache_g().clear();
+#ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
+            abstraction_cache_g().clear();
+#endif
         }
 
       protected:
