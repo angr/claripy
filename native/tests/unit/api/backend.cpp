@@ -36,8 +36,8 @@ void backend() {
     const auto bv_sym_with_ans { Create::symbol<Expr::BV>("bv_sym", 64, make_an_vec()) };
 
     // Backend Constants
-    auto &z3_cpp { *new Backend::Z3::Z3 }; // NOLINT
-    const auto z3_manual { API::to_c(&static_cast<Backend::Base &>(z3_cpp)) };
+    auto z3_cpp { std::make_shared<Backend::Z3::Z3>() };
+    const auto z3_manual { API::to_c(Util::Cast::Static::up<Backend::Base>(z3_cpp)) };
 
     // Tests
     Util::Log::debug("Testing base funtions");
@@ -61,13 +61,13 @@ void backend() {
     claricpp_backend_set_big_int_mode(old_mode); // Restore for future tests
 
     // Test downsizing backend data
-    UnitTest::Friend priv { z3_cpp };
+    UnitTest::Friend priv { *z3_cpp };
     UNITTEST_ASSERT(priv.conv_cache_size() != 0);
     claricpp_backend_downsize(z3_manual);
     UNITTEST_ASSERT(priv.conv_cache_size() == 0);
 
     // Test clearing persistent data
-    (void) z3_cpp.simplify(bv_sym_with_ans.get()); // Populate satd
+    (void) z3_cpp->simplify(bv_sym_with_ans.get()); // Populate satd
     UNITTEST_ASSERT(priv.satd_cache_size() != 0);
     claricpp_backend_clear_persistent_data(z3_manual);
     UNITTEST_ASSERT(priv.satd_cache_size() == 0);
@@ -80,7 +80,15 @@ void backend() {
 
     // Test creating a z3 backend
     const auto z3 { claricpp_backend_z3_new() };
-    (void) z3;
+
+    // Test creating solvers
+    const auto fst_solver { claricpp_backend_z3_tls_solver(z3, 0) };
+    UNITTEST_ASSERT(API::to_cpp(fst_solver) != nullptr);
+    const auto new_solver { claricpp_backend_z3_new_tls_solver(z3, 0) };
+    UNITTEST_ASSERT(API::to_cpp(new_solver) != nullptr);
+    UNITTEST_ASSERT(API::to_cpp(new_solver) != API::to_cpp(fst_solver));
+    const auto fst_solver_dup { claricpp_backend_z3_tls_solver(z3, 0) };
+    UNITTEST_ASSERT(API::to_cpp(fst_solver) == API::to_cpp(fst_solver_dup));
 
     /********************************************************************/
     /*                             Concrete                             */

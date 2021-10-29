@@ -22,6 +22,7 @@ DECLARE_WRAPPER(ClaricppAnnotation);
 DECLARE_WRAPPER(ClaricppSPAV);
 DECLARE_WRAPPER(ClaricppExpr);
 DECLARE_WRAPPER(ClaricppBackend);
+DECLARE_WRAPPER(ClaricppSolver);
 
 /** Return the type of an input array of type T */
 #define ARRAY_IN(T) const T * const
@@ -31,6 +32,8 @@ typedef ARRAY_IN(char) PyStr;
 
 /** Define UINT as UInt without polluting the global namespace */
 #define UINT unsigned long long
+/** Define the unisigned type z3 uses */
+#define Z3U unsigned
 /** Define SIZE_T as UInt without polluting the global namespace */
 #define SIZE_T unsigned long long
 /** Define Hash::Hash without polluting the global namespace */

@@ -41,7 +41,19 @@ ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
 /********************************************************************/
 
 ClaricppBackend claricpp_backend_z3_new() {
-    return { static_cast<Backend::Base *>(new Backend::Z3::Z3 {}) }; // NOLINT
+    return { API::to_c(Util::make_derived_shared<Backend::Base, Backend::Z3::Z3>()) };
+}
+
+ClaricppSolver claricpp_backend_z3_tls_solver(const ClaricppBackend z3, const Z3U timeout) {
+    auto z3_cpp { dynamic_cast<Backend::Z3::Z3 *>(API::to_cpp(z3).get()) };
+    UTILS_AFFIRM_NOT_NULL_DEBUG(z3_cpp);
+    return API::to_c(z3_cpp->tls_solver<false>(timeout));
+}
+
+ClaricppSolver claricpp_backend_z3_new_tls_solver(const ClaricppBackend z3, const Z3U timeout) {
+    auto z3_cpp { dynamic_cast<Backend::Z3::Z3 *>(API::to_cpp(z3).get()) };
+    UTILS_AFFIRM_NOT_NULL_DEBUG(z3_cpp);
+    return API::to_c(z3_cpp->tls_solver<true>(timeout));
 }
 
 /********************************************************************/

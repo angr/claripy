@@ -21,6 +21,7 @@ static_assert(SAME_U(std::size_t, UInt), "UInt needs to be changed");
 static_assert(SAME_U(SIZE_T, UInt), "UInt needs to be changed");
 static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");
 static_assert(SAME_U(HASH_T, Hash::Hash), "HASH_T needs to be changed");
+static_assert(std::is_same_v<Z3U, unsigned>, "Z3U needs to be changed");
 static_assert(std::is_same_v<CCSC, PyStr>, "PyStr needs to be changed");
 static_assert(std::is_same_v<PyStr, ARRAY_IN(char)>, "ARRAY_IN needs to be changed");
 // Cleanup
@@ -61,7 +62,8 @@ namespace API {
         MAP_ADD(ClaricppAnnotation, Annotation::BasePtr);
         MAP_ADD(ClaricppSPAV, Annotation::SPAV);
         MAP_ADD(ClaricppExpr, Expr::BasePtr);
-        MAP_ADD(ClaricppBackend, ::Backend::Base *);
+        MAP_ADD(ClaricppBackend, std::shared_ptr<::Backend::Base>);
+        MAP_ADD(ClaricppSolver, std::shared_ptr<z3::solver>);
 
         ENUM_MAP_ADD(ClaricppRM, Mode::FP::Rounding);
         ENUM_MAP_ADD(ClaricppBIM, Mode::BigInt);
