@@ -47,16 +47,30 @@ void backtrace() {
         UNITTEST_ERR("Error failed to be caught");
     }() };
 
-    /* In DEBUG mode the backtrace should be something like this:
-            4  : 0x40f6c6           : generate_bt() + 38
-            5  : /path/to/claripy/native/build/tests/unit/util/util-backtrace.test() [0x40f949]
-            6  : /path/to/claripy/native/build/tests/unit/util/util-backtrace.test() [0x40f829]
-            7  : 0x40f76a           : backtrace() + 58
-            8  : 0x7f0b106ecb7a     : UnitTest::TestLib::test_func(void (&)()) + 26
-            9  : 0x40f85b           : main + 43
-            10 : 0x7f0b0f11f0b3     : __libc_start_main + 243
-            11 : 0x40f5de           : _start + 46
-    */
+    /* In DEBUG mode the backtrace should be something like this.
+     * Linux:
+        3  : 0x558d4698d795     : generate_bt() + 39
+        4  : /path/to/build/tests/unit/util/util-backtrace.test(+0x157d2) [0x558d4698d7d2]
+        5  : 0x558d4698d7df     : wrapper1() + 0
+        6  : /path/to/build/tests/unit/util/util-backtrace.test(+0x157ec) [0x558d4698d7ec]
+        7  : /path/to/build/tests/unit/util/util-backtrace.test(+0x15810) [0x558d4698d810]
+        8  : 0x558d4698d8f4     : backtrace() + 94
+        9  : 0x7f6012a86386     : UnitTest::TestLib::test_func(void (&)()) + 45
+        10 : 0x558d4698dbeb     : main + 139
+        11 : 0x7f60113490b3     : __libc_start_main + 243
+        12 : 0x558d4698d5ee     : _start + 46
+     * MacOS:
+        4  : 0x10bc35d08        : generate_bt() + 40
+        5  : 0x10bc385f9        : wrapper3() + 9
+        6  : 0x10bc35db9        : (anonymous namespace)::wrapper2() + 9
+        7  : 0x10bc35da9        : wrapper1() + 9
+        8  : 0x10bc362b0        : backtrace()::$_0::operator()() const + 32
+        9  : 0x10bc35e05        : backtrace() + 69
+        10 : 0x10bd0cb78        : UnitTest::TestLib::test_func(void (&)()) + 24
+        11 : 0x10bc36676        : main + 102
+        12 : 0x7fff20503f3d     : start + 1
+        13 : 0x1                : 0x0 + 1
+     */
 
     // Log the backtrace
     B::unsafe_set(std::move(old));
@@ -67,7 +81,8 @@ void backtrace() {
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
     // Ensure the backtrace is valid
     UNITTEST_ASSERT(contains("generate_bt() + "));
-    // Note: we do not check the wrappers because of static / anon namespaces
+    // Note: we do not check the other wrappers because of lambdas / static / anon namespaces
+    UNITTEST_ASSERT(contains("wrapper1() + "));
     UNITTEST_ASSERT(contains("backtrace() + "));
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
     UNITTEST_ASSERT(contains("main + "));
