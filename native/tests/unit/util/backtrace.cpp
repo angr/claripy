@@ -8,27 +8,22 @@
 
 
 /** A non-static function which generates a backtrace */
-void generate_bt() {
-    using Err = Util::Err::Claricpp;
-    try {
-        throw Err("Test");
-    }
-    catch (Err &) {
-    }
+[[noreturn]] void generate_bt() {
+    throw Util::Err::Claricpp { "Test" };
 }
 
 /** A non-static wrapper function */
-[[gnu::noinline]] void wrapper3() {
+[[noreturn, gnu::noinline]] void wrapper3() {
     generate_bt();
 }
 
 namespace {
     /** A wrapper in an anonymous namespace */
-    void wrapper2() { wrapper3(); }
+    [[noreturn, gnu::noinline]] void wrapper2() { wrapper3(); }
 } // namespace
 
 /** A static wrapper that has no symbol in the global symbol table */
-static void wrapper1() {
+[[noreturn, gnu::noinline]] static void wrapper1() {
     wrapper2();
 }
 
@@ -42,24 +37,31 @@ void backtrace() {
     B::set<B::OStream>(s, true);
 
     // Generate a backtrace
-    wrapper1();
-    const auto backtrace { s->str() };
+    const auto backtrace { []() {
+        try {
+            wrapper1();
+        }
+        catch (Util::Err::Claricpp &e) {
+            return e.backtrace();
+        }
+        UNITTEST_ERR("Error failed to be caught");
+    }() };
 
     /* In DEBUG mode the backtrace should be something like this:
-            3  : 0x40f6c6           : generate_bt() + 38
-            4  : /path/to/claripy/native/build/tests/unit/util/util-backtrace.test() [0x40f949]
-            5  : /path/to/claripy/native/build/tests/unit/util/util-backtrace.test() [0x40f829]
-            6  : 0x40f76a           : backtrace() + 58
-            7  : 0x7f0b106ecb7a     : UnitTest::TestLib::test_func(void (&)()) + 26
-            8  : 0x40f85b           : main + 43
-            9  : 0x7f0b0f11f0b3     : __libc_start_main + 243
-            10 : 0x40f5de           : _start + 46
+            4  : 0x40f6c6           : generate_bt() + 38
+            5  : /path/to/claripy/native/build/tests/unit/util/util-backtrace.test() [0x40f949]
+            6  : /path/to/claripy/native/build/tests/unit/util/util-backtrace.test() [0x40f829]
+            7  : 0x40f76a           : backtrace() + 58
+            8  : 0x7f0b106ecb7a     : UnitTest::TestLib::test_func(void (&)()) + 26
+            9  : 0x40f85b           : main + 43
+            10 : 0x7f0b0f11f0b3     : __libc_start_main + 243
+            11 : 0x40f5de           : _start + 46
     */
 
     // Log the backtrace
     B::unsafe_set(std::move(old));
     Util::Log::verbose("Logging caught backtrace");
-    Util::Log::critical(backtrace);
+    Util::Log::critical(__LINE__, " ", backtrace);
 
     Util::Log::verbose("Checking backtrace...");
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
