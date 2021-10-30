@@ -2,7 +2,7 @@
  * @file
  * @brief This header defines the C API for Backend
  * \ingroup api
-*/
+ */
 #ifndef R_BACKEND_H_
 #define R_BACKEND_H_
 
@@ -16,14 +16,14 @@
 /** Get the name of the backend
  *  @return The name of the backend
  */
-const char * claricpp_backend_name(ClaricppBackend bk);
+const char *claricpp_backend_name(ClaricppBackend bk);
 
 /** Determine if bk supports expr
  *  @param bk The backend to use
  *  @param expr The Expr to check if bk supports
  *  @return true if and only if bk supports expr
  */
-bool claricpp_backend_handles(const ClaricppBackend bk, const ClaricppExpr expr);
+BOOL claricpp_backend_handles(const ClaricppBackend bk, const ClaricppExpr expr);
 
 /** Use the backend to simplify expr
  *  @param bk The backend to use
@@ -66,30 +66,96 @@ ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m);
  */
 ClaricppBackend claricpp_backend_z3_new();
 
+/** Get a solver from the Z3 backend that should never be shared between threads
+ *  @param z3 The Z3 backend to use
+ *  @param timeout A timeout to apply to the got solver, even if the solver is being reused
+ *  @return A solver of the Z3 backend that should never be shared between threads
+ */
 ClaricppSolver claricpp_backend_z3_tls_solver(const ClaricppBackend z3, const Z3U timeout);
 
+/** Get a new solver from the Z3 backend that should never be shared between threads
+ *  Note: This solver will not be reused by the Z3 backend anywhere
+ *  @param z3 The Z3 backend to use
+ *  @param timeout A timeout to apply to the new solver
+ *  @return A new, not internally saved, solver that should never be shared between threads
+ */
 ClaricppSolver claricpp_backend_z3_new_tls_solver(const ClaricppBackend z3, const Z3U timeout);
 
+/** Add a constraint to the solver and track it
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to be added to
+ *  @param constraint The constraint to add to solver
+ */
+void claricpp_backend_z3_add_tracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                     const ClaricppExpr constraint);
+
+/** Add an array of constraints to the solver and track them
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to be added to
+ *  @param constraints The array of constraints to add to solver and track
+ *  @param len The length of constraints
+ */
+void claricpp_backend_z3_add_vec_tracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                         ARRAY_IN(ClaricppExpr) constraints, const SIZE_T len);
+
+/** Add a constraint to the solver
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to be added to
+ *  @param constraint The constraint to add to solver
+ */
+void claricpp_backend_z3_add_untracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                       const ClaricppExpr constraint);
+
+/** Add an array of constraints to the solver
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to be added to
+ *  @param constraints The array of constraints to add to solver
+ *  @param len The length of constraints
+ */
+void claricpp_backend_z3_add_vec_untracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                           ARRAY_IN(ClaricppExpr) constraints, const SIZE_T len);
+
+/** Determine if a solver is satisfiable
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to check the satisfiability of
+ *  @return True if solver is satisfiable
+ */
+BOOL claricpp_backend_z3_satisfiable(const ClaricppBackend z3, const ClaricppSolver solver);
+
+/** Determine if a solver is satisfiable given extra constraints
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to check the satisfiability of
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return True if and only if solver and extra_constraints are simultaneously satisfiable
+ */
+BOOL claricpp_backend_z3_satisfiable_ec(const ClaricppBackend z3, const ClaricppSolver solver,
+                                        ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len);
+
+/** Determine if an expression is a solution to the given solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to which we are providing a solution for
+ *  @param sol The solution we are providing for expr
+ *  @param solver The solver the solution must satisfy
+ *  @return True if and only if solver is satisfiable given the extra constraint (expr == sol)
+ */
+BOOL claricpp_backend_z3_solution(const ClaricppBackend z3, const ClaricppExpr expr,
+                                  const ClaricppExpr sol, const ClaricppSolver solver);
+
+/** Determine if an expression is a solution to the given solver given extra constraints
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to which we are providing a solution for
+ *  @param sol The solution we are providing for expr
+ *  @param solver The solver the solution must satisfy
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return True if and only if solver and extra_constraints are satisfiable given (expr == sol)
+ */
+BOOL claricpp_backend_z3_solution_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                     const ClaricppExpr sol, const ClaricppSolver solver,
+                                     ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len);
+
 #if 0
-void claricpp_backend_z3_add_tracked(const ClaricppSolver, const ClaricppExpr constraint);
-
-void claricpp_backend_z3_add_vec_tracked(const ClaricppSolver, const ClaricppExpr constraint); // todo
-
-void claricpp_backend_z3_add_vec_untracked(const ClaricppSolver, const ClaricppExpr constraint); // todo
-
-void claricpp_backend_z3_add_untracked(const ClaricppSolver, const ClaricppExpr constraint);
-
-bool claricpp_backend_z3_satisfiable(const ClaricppSolver, const ClaricppExpr constraint);
-
-bool claricpp_backend_z3_satisfiable_ec(const ClaricppSolver, const ClaricppExpr constraint); // todo
-#endif
-
-#if 0
-inline bool solution(const Expr::RawPtr expr, const Expr::RawPtr sol, z3::solver &solver,
-                     const std::vector<Expr::RawPtr> &extra_constraints) {}
-
-inline bool solution(const Expr::RawPtr expr, const Expr::RawPtr sol, z3::solver &solver) {}
-
 template <bool Signed> inline auto min(const Expr::RawPtr expr, z3::solver &solver) {}
 
 template <bool Signed>
