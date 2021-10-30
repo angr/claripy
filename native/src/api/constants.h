@@ -14,9 +14,11 @@
 
 
 /** Used to declare a C wrapper for a C++ type */
-#define DECLARE_WRAPPER(NAME) \
-    /** A C wrapper for a C++ type */ \
-    struct NAME { void * ptr; }
+#define DECLARE_WRAPPER(NAME)                                                                      \
+    /** A C wrapper for a C++ type */                                                              \
+    struct NAME {                                                                                  \
+        void *ptr;                                                                                 \
+    }
 
 DECLARE_WRAPPER(ClaricppAnnotation);
 DECLARE_WRAPPER(ClaricppSPAV);
@@ -25,7 +27,7 @@ DECLARE_WRAPPER(ClaricppBackend);
 DECLARE_WRAPPER(ClaricppSolver);
 
 /** Return the type of an input array of type T */
-#define ARRAY_IN(T) const T * const
+#define ARRAY_IN(T) const T *const
 
 /** The type a Python string argument is */
 typedef ARRAY_IN(char) PyStr;
@@ -41,15 +43,20 @@ typedef ARRAY_IN(char) PyStr;
 /** Define a type python can pass to represent a VS within claricpp */
 #define VS_T unsigned long long
 
+/** Define a boolean type */
+#define BOOL int_fast8_t
+#define TRUE 1
+#define FALSE 0
+
 /** Claricpp rounding modes
  *  See mode/fp/rounding.h for more info
  */
-enum ClaricppRM { MODE_FP_ROUNDING_VALS(ClaricppRm) };
+typedef enum { MODE_FP_ROUNDING_VALS(ClaricppRm) } ClaricppRM;
 
 /** Claricpp BigInt modes
  *  See mode/big_int.h for more info
  */
-enum ClaricppBIM { MODE_BIGINT_VALS(ClaricppBim) };
+typedef enum { MODE_BIGINT_VALS(ClaricppBim) } ClaricppBIM;
 
 // Cleanup
 #undef DECLARE_WRAPPER

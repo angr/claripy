@@ -8,8 +8,8 @@
 #define R_API_C_H_
 
 #include "annotation.h"
+#include "backend.h"
 #include "create.h"
 #include "expr.h"
-#include "backend.h"
 
 #endif
