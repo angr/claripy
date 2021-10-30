@@ -21,11 +21,13 @@ static_assert(SAME_U(std::size_t, UInt), "UInt needs to be changed");
 static_assert(SAME_U(SIZE_T, UInt), "UInt needs to be changed");
 static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");
 static_assert(SAME_U(HASH_T, Hash::Hash), "HASH_T needs to be changed");
+// Cleanup
+#undef SAME_U
 static_assert(std::is_same_v<Z3U, unsigned>, "Z3U needs to be changed");
 static_assert(std::is_same_v<CCSC, PyStr>, "PyStr needs to be changed");
 static_assert(std::is_same_v<PyStr, ARRAY_IN(char)>, "ARRAY_IN needs to be changed");
-// Cleanup
-#undef SAME_U
+static_assert((FALSE == false) && (false == FALSE) && (TRUE == true) && (true == TRUE),
+              "BOOL values need to be fixed");
 
 /********************************************************************/
 /*                               C++                                */
@@ -87,6 +89,30 @@ namespace API {
     template <typename InC> static inline auto &to_cpp(const InC &x) noexcept {
         UTILS_AFFIRM_NOT_NULL_DEBUG(x.ptr);
         return *static_cast<Private::Map<InC> *const>(x.ptr);
+    }
+
+    /** Returns a reference to the dereference of the C++ type held by the C type x
+     *  Warning: Returns a reference to part of x
+     */
+    template <typename InC> static inline auto &to_cpp_ref(const InC &x) noexcept {
+        auto ptr { to_cpp(x) };
+        UTILS_AFFIRM_NOT_NULL_DEBUG(ptr);
+        return *ptr;
+    }
+
+    /** Dereferences in after converting it to its C++ type; then down casts it to Out
+     *  If the dynmaic_cast fails, an exception is thrown
+     *  If *(in.ptr) == nullptr, an exception is thrown
+     *  Constness is applied as needed to out
+     */
+    template <typename Out, typename CType> inline auto &to_cpp_down_ref(const CType &in) {
+        try {
+            auto &ref { to_cpp_ref(in) };
+            return dynamic_cast<Util::TransferConst<Out, decltype(ref)> &>(ref);
+        }
+        catch (std::bad_cast &e) {
+            throw Util::Err::BadCast(WHOAMI, e.what());
+        }
     }
 
     /** Returns an op container containing len operands */
