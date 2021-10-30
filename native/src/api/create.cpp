@@ -49,6 +49,11 @@ extern "C" {
     /*                             Literal                              */
     /********************************************************************/
 
+    ClaricppExpr claricpp_create_literal_bool(const BOOL value, ClaricppSPAV spav) {
+        static constexpr Expr::BasePtr (*const f)(bool, Annotation::SPAV &&) { Create::literal };
+        return make(f, spav, static_cast<bool>(value));
+    }
+
 /** A local macro used for consistency */
 #define CREATE_LIT(TYPE, NAME)                                                                     \
     ClaricppExpr claricpp_create_literal_##NAME(const TYPE value, ClaricppSPAV spav) {             \
@@ -56,7 +61,6 @@ extern "C" {
         return make(f, spav, value);                                                               \
     }
 
-    CREATE_LIT(bool, bool);
     CREATE_LIT(float, fp_float);
     CREATE_LIT(double, fp_double);
     CREATE_LIT(uint8_t, bv_u8);
@@ -363,22 +367,22 @@ extern "C" {
     }
 
     ClaricppExpr claricpp_create_fp_add(const ClaricppExpr left, const ClaricppExpr right,
-                                        const enum ClaricppRM mode, ClaricppSPAV spav) {
+                                        const ClaricppRM mode, ClaricppSPAV spav) {
         return make(Create::FP::add, spav, API::to_cpp(left), API::to_cpp(right), API::mode(mode));
     }
 
     ClaricppExpr claricpp_create_fp_sub(const ClaricppExpr left, const ClaricppExpr right,
-                                        const enum ClaricppRM mode, ClaricppSPAV spav) {
+                                        const ClaricppRM mode, ClaricppSPAV spav) {
         return make(Create::FP::sub, spav, API::to_cpp(left), API::to_cpp(right), API::mode(mode));
     }
 
     ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr right,
-                                        const enum ClaricppRM mode, ClaricppSPAV spav) {
+                                        const ClaricppRM mode, ClaricppSPAV spav) {
         return make(Create::FP::mul, spav, API::to_cpp(left), API::to_cpp(right), API::mode(mode));
     }
 
     ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right,
-                                        const enum ClaricppRM mode, ClaricppSPAV spav) {
+                                        const ClaricppRM mode, ClaricppSPAV spav) {
         return make(Create::FP::div, spav, API::to_cpp(left), API::to_cpp(right), API::mode(mode));
     }
 }

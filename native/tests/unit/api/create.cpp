@@ -79,7 +79,7 @@ void create() {
 
     // Literal
     Util::Log::debug("Testing literal creation functions...");
-    literal<Expr::Bool, bool>(claricpp_create_literal_bool(true, { nullptr }), true, 0);
+    literal<Expr::Bool, bool>(claricpp_create_literal_bool(TRUE, { nullptr }), true, 0);
     literal<Expr::String, std::string>(claricpp_create_literal_string(name, { nullptr }), name,
                                        std::strlen(name) * C_CHAR_BIT);
     literal<Expr::FP, float>(claricpp_create_literal_fp_float(3.F, { nullptr }), 3.F,
