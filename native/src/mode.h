@@ -6,7 +6,7 @@
 #ifndef R_MODE_H_
 #define R_MODE_H_
 
-#include "mode/fp.h"
 #include "mode/big_int.h"
+#include "mode/fp.h"
 
 #endif

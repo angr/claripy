@@ -61,7 +61,7 @@ ClaricppExpr claricpp_create_symbol_bv(PyStr name, const SIZE_T bit_length, Clar
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a bool constant
  */
-ClaricppExpr claricpp_create_literal_bool(const bool value, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_literal_bool(const BOOL value, ClaricppSPAV spav);
 
 /** Create a literal string expr
  *  @param value The data held by the literal
@@ -89,7 +89,8 @@ ClaricppExpr claricpp_create_literal_fp_double(const double value, ClaricppSPAV 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a value set constant
  */
-ClaricppExpr claricpp_create_literal_vs(const HASH_T hash, const VS_T value, const SIZE_T bit_length, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_literal_vs(const HASH_T hash, const VS_T value,
+                                        const SIZE_T bit_length, ClaricppSPAV spav);
 
 /** Create a literal uint8_t expr
  *  @param value The data held by the literal
@@ -124,14 +125,16 @@ ClaricppExpr claricpp_create_literal_bv_u64(const uint64_t value, ClaricppSPAV s
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a BigInt bit vector constant stored in string form
  */
-ClaricppExpr claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_literal_bv_big_int_mode_str(PyStr value, const SIZE_T bit_length,
+                                                         ClaricppSPAV spav);
 
 /** Create a literal BigInt expr with the BigInt in Int mode
  *  @param value The data held by the literal represented in base 10 by a string
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a BigInt bit vector constant stored in int form
  */
-ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE_T bit_length,
+                                                         ClaricppSPAV spav);
 
 /********************************************************************/
 /*                           Non-Trivial                            */
@@ -144,7 +147,8 @@ ClaricppExpr claricpp_create_literal_bv_big_int_mode_int(PyStr value, const SIZE
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an Extract expression
  */
-ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const ClaricppExpr from, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const ClaricppExpr from,
+                                     ClaricppSPAV spav);
 
 /** Create an if-then-else Expr
  *  @param cond The condition expr
@@ -153,7 +157,8 @@ ClaricppExpr claricpp_create_extract(const SIZE_T high, const SIZE_T low, const 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an if-then-else expression
  */
-ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr if_true, const ClaricppExpr if_false, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_if(const ClaricppExpr cond, const ClaricppExpr if_true,
+                                const ClaricppExpr if_false, ClaricppSPAV spav);
 
 /********************************************************************/
 /*                          Trivial Unary                           */
@@ -226,7 +231,8 @@ ClaricppExpr claricpp_create_zero_ext(const ClaricppExpr expr, const UINT add, C
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an eq expression
  */
-ClaricppExpr claricpp_create_eq(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_eq(const ClaricppExpr left, const ClaricppExpr right,
+                                ClaricppSPAV spav);
 
 /** Create an neq Expr
  *  @param left The left operand of the != Expr
@@ -234,7 +240,8 @@ ClaricppExpr claricpp_create_eq(const ClaricppExpr left, const ClaricppExpr righ
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an neq expression
  */
-ClaricppExpr claricpp_create_neq(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_neq(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a signed less than Expr
  *  @param left The left operand of the signed < Expr
@@ -242,7 +249,8 @@ ClaricppExpr claricpp_create_neq(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a signed less than expression
  */
-ClaricppExpr claricpp_create_slt(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_slt(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a signed less or equal Expr
  *  @param left The left operand of the signed <= Expr
@@ -250,7 +258,8 @@ ClaricppExpr claricpp_create_slt(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a signed less or equal expression
  */
-ClaricppExpr claricpp_create_sle(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_sle(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a signed greater than Expr
  *  @param left The left operand of the signed > Expr
@@ -258,7 +267,8 @@ ClaricppExpr claricpp_create_sle(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a signed greater than expression
  */
-ClaricppExpr claricpp_create_sgt(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_sgt(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a signed greater or equal Expr
  *  @param left The left operand of the signed >= Expr
@@ -266,7 +276,8 @@ ClaricppExpr claricpp_create_sgt(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a signed greater or equal expression
  */
-ClaricppExpr claricpp_create_sge(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_sge(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a unsigned less than Expr
  *  @param left The left operand of the unsigned < Expr
@@ -274,7 +285,8 @@ ClaricppExpr claricpp_create_sge(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a unsigned less than expression
  */
-ClaricppExpr claricpp_create_ult(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_ult(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a unsigned less or equal Expr
  *  @param left The left operand of the unsigned <= Expr
@@ -282,7 +294,8 @@ ClaricppExpr claricpp_create_ult(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a unsigned less or equal expression
  */
-ClaricppExpr claricpp_create_ule(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_ule(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a unsigned greater than Expr
  *  @param left The left operand of the unsigned > Expr
@@ -290,7 +303,8 @@ ClaricppExpr claricpp_create_ule(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a unsigned greater than expression
  */
-ClaricppExpr claricpp_create_ugt(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_ugt(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a unsigned greater or equal Expr
  *  @param left The left operand of the unsigned >= Expr
@@ -298,7 +312,8 @@ ClaricppExpr claricpp_create_ugt(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a unsigned greater or equal expression
  */
-ClaricppExpr claricpp_create_uge(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_uge(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 // Math
 
@@ -308,7 +323,8 @@ ClaricppExpr claricpp_create_uge(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a subtraction expression
  */
-ClaricppExpr claricpp_create_sub(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_sub(const ClaricppExpr left, const ClaricppExpr right,
+                                 ClaricppSPAV spav);
 
 /** Create a signed division Expr
  *  @param left The left operand of the signed division Expr
@@ -316,7 +332,8 @@ ClaricppExpr claricpp_create_sub(const ClaricppExpr left, const ClaricppExpr rig
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a signed division expression
  */
-ClaricppExpr claricpp_create_sdiv(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_sdiv(const ClaricppExpr left, const ClaricppExpr right,
+                                  ClaricppSPAV spav);
 
 /** Create a unsigned division Expr
  *  @param left The left operand of the unsigned division Expr
@@ -324,7 +341,8 @@ ClaricppExpr claricpp_create_sdiv(const ClaricppExpr left, const ClaricppExpr ri
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a unsigned division expression
  */
-ClaricppExpr claricpp_create_udiv(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_udiv(const ClaricppExpr left, const ClaricppExpr right,
+                                  ClaricppSPAV spav);
 
 /** Create a signed mod Expr
  *  @param left The left operand of the signed mod Expr
@@ -332,7 +350,8 @@ ClaricppExpr claricpp_create_udiv(const ClaricppExpr left, const ClaricppExpr ri
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a signed mod expression
  */
-ClaricppExpr claricpp_create_smod(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_smod(const ClaricppExpr left, const ClaricppExpr right,
+                                  ClaricppSPAV spav);
 
 /** Create a unsigned mod Expr
  *  @param left The left operand of the unsigned mod Expr
@@ -340,7 +359,8 @@ ClaricppExpr claricpp_create_smod(const ClaricppExpr left, const ClaricppExpr ri
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a unsigned mod expression
  */
-ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr right,
+                                  ClaricppSPAV spav);
 
 // Bitwise
 
@@ -350,7 +370,8 @@ ClaricppExpr claricpp_create_umod(const ClaricppExpr left, const ClaricppExpr ri
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a left shift expression
  */
-ClaricppExpr claricpp_create_shift_left(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_shift_left(const ClaricppExpr left, const ClaricppExpr right,
+                                        ClaricppSPAV spav);
 
 /** Create a shift logical right Expr
  *  @param left The left operand of the shift Expr
@@ -358,7 +379,8 @@ ClaricppExpr claricpp_create_shift_left(const ClaricppExpr left, const ClaricppE
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a logical right shift expression
  */
-ClaricppExpr claricpp_create_shift_logical_right(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_shift_logical_right(const ClaricppExpr left, const ClaricppExpr right,
+                                                 ClaricppSPAV spav);
 
 /** Create a shift arithmetic right Expr
  *  @param left The left operand of the shift Expr
@@ -366,7 +388,8 @@ ClaricppExpr claricpp_create_shift_logical_right(const ClaricppExpr left, const 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an arithmetic right shift expression
  */
-ClaricppExpr claricpp_create_shift_arithmetic_right(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_shift_arithmetic_right(const ClaricppExpr left,
+                                                    const ClaricppExpr right, ClaricppSPAV spav);
 
 // Misc
 
@@ -376,7 +399,8 @@ ClaricppExpr claricpp_create_shift_arithmetic_right(const ClaricppExpr left, con
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a widen expression
  */
-ClaricppExpr claricpp_create_widen(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_widen(const ClaricppExpr left, const ClaricppExpr right,
+                                   ClaricppSPAV spav);
 
 /** Create a union Expr
  *  @param left The left operand of the union Expr
@@ -384,7 +408,8 @@ ClaricppExpr claricpp_create_widen(const ClaricppExpr left, const ClaricppExpr r
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a union expression
  */
-ClaricppExpr claricpp_create_union(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_union(const ClaricppExpr left, const ClaricppExpr right,
+                                   ClaricppSPAV spav);
 
 /** Create a intersection Expr
  *  @param left The left operand of the intersection Expr
@@ -392,7 +417,8 @@ ClaricppExpr claricpp_create_union(const ClaricppExpr left, const ClaricppExpr r
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a intersection expression
  */
-ClaricppExpr claricpp_create_intersection(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_intersection(const ClaricppExpr left, const ClaricppExpr right,
+                                          ClaricppSPAV spav);
 
 /** Create a concat Expr
  *  @param left The left operand of the concat Expr
@@ -400,7 +426,8 @@ ClaricppExpr claricpp_create_intersection(const ClaricppExpr left, const Claricp
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a concat expression
  */
-ClaricppExpr claricpp_create_concat(const ClaricppExpr left, const ClaricppExpr right, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_concat(const ClaricppExpr left, const ClaricppExpr right,
+                                    ClaricppSPAV spav);
 
 /********************************************************************/
 /*                               Flat                               */
@@ -414,7 +441,8 @@ ClaricppExpr claricpp_create_concat(const ClaricppExpr left, const ClaricppExpr 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an add expression
  */
-ClaricppExpr claricpp_create_add(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_add(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                 ClaricppSPAV spav);
 
 /** Create an mul Expr
  *  @param operands A list of ClaricppExprs that are the operands to mul
@@ -422,7 +450,8 @@ ClaricppExpr claricpp_create_add(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an mul expression
  */
-ClaricppExpr claricpp_create_mul(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_mul(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                 ClaricppSPAV spav);
 
 // Logical
 
@@ -432,7 +461,8 @@ ClaricppExpr claricpp_create_mul(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an or expression
  */
-ClaricppExpr claricpp_create_or(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_or(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                ClaricppSPAV spav);
 
 /** Create an and Expr
  *  @param operands A list of ClaricppExprs that are the operands to and
@@ -440,7 +470,8 @@ ClaricppExpr claricpp_create_or(ARRAY_IN(ClaricppExpr) operands, const SIZE_T le
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an and expression
  */
-ClaricppExpr claricpp_create_and(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_and(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                 ClaricppSPAV spav);
 
 /** Create an xor Expr
  *  @param operands A list of ClaricppExprs that are the operands to xor
@@ -448,7 +479,8 @@ ClaricppExpr claricpp_create_and(ARRAY_IN(ClaricppExpr) operands, const SIZE_T l
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an xor expression
  */
-ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_xor(ARRAY_IN(ClaricppExpr) operands, const SIZE_T len,
+                                 ClaricppSPAV spav);
 
 /********************************************************************/
 /*                              String                              */
@@ -471,7 +503,8 @@ ClaricppExpr claricpp_create_string_is_digit(const ClaricppExpr x, ClaricppSPAV 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a String::to_int expression
  */
-ClaricppExpr claricpp_create_string_to_int(const ClaricppExpr expr, const UINT len, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_string_to_int(const ClaricppExpr expr, const UINT len,
+                                           ClaricppSPAV spav);
 
 /** Create a String::len Expr
  *  @param expr The String to measure the length of
@@ -489,7 +522,8 @@ ClaricppExpr claricpp_create_string_len(const ClaricppExpr expr, const UINT len,
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a String::contains expression
  */
-ClaricppExpr claricpp_create_string_contains(const ClaricppExpr full, const ClaricppExpr sub, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_string_contains(const ClaricppExpr full, const ClaricppExpr sub,
+                                             ClaricppSPAV spav);
 
 /** Create a String::prefix_of Expr
  *  @param left The String to be searched
@@ -497,7 +531,8 @@ ClaricppExpr claricpp_create_string_contains(const ClaricppExpr full, const Clar
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a String::prefix_of expression
  */
-ClaricppExpr claricpp_create_string_prefix_of(const ClaricppExpr full, const ClaricppExpr prefix, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_string_prefix_of(const ClaricppExpr full, const ClaricppExpr prefix,
+                                              ClaricppSPAV spav);
 
 /** Create a String::suffix_of Expr
  *  @param left The String to be searched
@@ -505,7 +540,8 @@ ClaricppExpr claricpp_create_string_prefix_of(const ClaricppExpr full, const Cla
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing a String::suffix_of expression
  */
-ClaricppExpr claricpp_create_string_suffix_of(const ClaricppExpr full, const ClaricppExpr suffix, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_string_suffix_of(const ClaricppExpr full, const ClaricppExpr suffix,
+                                              ClaricppSPAV spav);
 
 /********************************************************************/
 /*                                FP                                */
@@ -529,7 +565,8 @@ ClaricppExpr claricpp_create_fp_to_ieee_bv(const ClaricppExpr x, ClaricppSPAV sp
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an FP::add expression
  */
-ClaricppExpr claricpp_create_fp_add(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_fp_add(const ClaricppExpr left, const ClaricppExpr right,
+                                    const ClaricppRM mode, ClaricppSPAV spav);
 
 /** Create an FP::sub Expr
  *  @param left The left FP operand of the sub function
@@ -538,7 +575,8 @@ ClaricppExpr claricpp_create_fp_add(const ClaricppExpr left, const ClaricppExpr 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an FP::sub expression
  */
-ClaricppExpr claricpp_create_fp_sub(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_fp_sub(const ClaricppExpr left, const ClaricppExpr right,
+                                    const ClaricppRM mode, ClaricppSPAV spav);
 
 /** Create an FP::mul Expr
  *  @param left The left FP operand of the mul function
@@ -547,7 +585,8 @@ ClaricppExpr claricpp_create_fp_sub(const ClaricppExpr left, const ClaricppExpr 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an FP::mul expression
  */
-ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr right,
+                                    const ClaricppRM mode, ClaricppSPAV spav);
 
 /** Create an FP::div Expr
  *  @param left The left FP operand of the div function
@@ -556,6 +595,7 @@ ClaricppExpr claricpp_create_fp_mul(const ClaricppExpr left, const ClaricppExpr 
  *  @param spav A ClaricppSPAV; spav.ptr may be nullptr
  *  @return A ClaricppExpr containing an FP::div expression
  */
-ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right, const enum ClaricppRM mode, ClaricppSPAV spav);
+ClaricppExpr claricpp_create_fp_div(const ClaricppExpr left, const ClaricppExpr right,
+                                    const ClaricppRM mode, ClaricppSPAV spav);
 
 #endif
