@@ -473,6 +473,9 @@ class SimplificationManager:
         if filter_func: new_args = filter_func(new_args)
         if not new_args and 'initial_value' in kwargs:
             return kwargs['initial_value']
+        # if a single arg is left, don't create an op for it
+        if len(new_args) == 1:
+            return new_args[0]
         return next(a for a in args if isinstance(a, ast.Base)).make_like(op_name, new_args,
                                                                           variables=variables,
                                                                           simplify=False)
