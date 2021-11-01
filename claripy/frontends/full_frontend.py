@@ -54,15 +54,15 @@ class FullFrontend(ConstrainedFrontend):
             self._tls.solver = self._solver_backend.solver(timeout=self.timeout)
             self._add_constraints()
         elif self._finalized and len(self._to_add) > 0:
-            if self._solver_backend.reuse_z3_solver:
+            if not hasattr(self._solver_backend, 'clone_solver') or self._solver_backend.reuse_z3_solver:
                 self._tls.solver = self._solver_backend.solver(timeout=self.timeout)
-            else: 
-                self._tls.solver = self._solver_backend.clone_solver(self._tls.solver)            
+            else:
+                self._tls.solver = self._solver_backend.clone_solver(self._tls.solver)
             self._add_constraints()
-            
+
         if len(self._to_add) > 0:
             self._add_constraints()
-            
+
         return self._tls.solver
 
     def _add_constraints(self):
