@@ -81,6 +81,9 @@ void backend() {
 
     // Test creating a z3 backend
     const auto z3 { claricpp_backend_z3_new() };
+    const auto z3_ptr { dynamic_cast<Backend::Z3::Z3 *const>(API::to_cpp(z3).get()) };
+    UNITTEST_ASSERT(z3_ptr != nullptr);
+    auto &raw_z3 { *z3_ptr };
 
     // Test creating solvers
     const auto solver { claricpp_backend_z3_tls_solver(z3, 0) };
@@ -104,14 +107,18 @@ void backend() {
     const auto geq3_len { 2 };
 
     // Test add tracked
+    [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
     claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1)));
-    UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
-    //    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
+    UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
+    (void) z3_solver.check(); // Generate unsat_core
+    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
     z3_solver.reset();
 
+    [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
     claricpp_backend_z3_add_vec_tracked(z3, solver, geq3, 2);
-    UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
-    //    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 2);
+    UNITTEST_ASSERT(z3_solver.assertions().size() == 3);
+    (void) z3_solver.check(); // Generate unsat_core
+    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
     z3_solver.reset();
 
     // Test add untracked
