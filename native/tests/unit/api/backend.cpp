@@ -13,8 +13,6 @@ struct UnitTest::Friend final {
     auto conv_cache_size() { return z3.conversion_cache_g().size(); }
     /** Get the satd cache size */
     auto satd_cache_size() { return z3.tls.symbol_annotation_translocation_data.size(); }
-    /** Get tracked constraints */
-    auto tracked(z3::solver &s) { return z3.get_tracked(s); }
 };
 
 /** Verify the Backend API works */
@@ -108,26 +106,24 @@ void backend() {
     // Test add tracked
     claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1)));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
-    UNITTEST_ASSERT(z3_priv.tracked(z3_solver).size() == 1);
+    //    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
     z3_solver.reset();
 
     claricpp_backend_z3_add_vec_tracked(z3, solver, geq3, 2);
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
-    UNITTEST_ASSERT(z3_priv.tracked(z3_solver).size() == 2);
+    //    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 2);
     z3_solver.reset();
 
-#if 0
     // Test add untracked
     claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1)));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
-    UNITTEST_ASSERT(z3_priv.tracked(z3_solver).size() == 0);
+    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
     z3_solver.reset();
 
     claricpp_backend_z3_add_vec_untracked(z3, solver, geq3, 2);
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
-    UNITTEST_ASSERT(z3_priv.tracked(z3_solver).size() == 0);
+    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
     z3_solver.reset();
-#endif
 
     const auto cl { [](const UInt i) { return API::to_c(Create::literal(i)); } };
     const auto add { [&z3_cpp](z3::solver &s, Expr::BasePtr e) {

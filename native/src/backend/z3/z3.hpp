@@ -173,12 +173,10 @@ namespace Backend::Z3 {
          *  Warning: This assumes all of solver's assertions were added by add<true>
          */
         inline std::vector<Expr::BasePtr> unsat_core(const z3::solver &solver) {
-            // Extract cores
-            const auto raw_cores { solver.unsat_core() };
-            const auto tracked_cores { get_tracked<false>(raw_cores) };
+            const auto cores { get_tracked<false>(solver.unsat_core()) };
             // Create ret, reserve tracked.size() (probably larger than needed)
             std::vector<Expr::BasePtr> ret;
-            const auto len { tracked_cores.size() };
+            const auto len { cores.size() };
             ret.reserve(len);
             // For each assertion
             const auto assertions { solver.assertions() };
@@ -186,25 +184,23 @@ namespace Backend::Z3 {
             for (int i { 0 }; i < Util::sign(a_len); ++i) {
                 // Extract the hash of the next assertion
                 const auto a_i { assertions[i] };
-                const auto name { a_i.arg(0) };
-                const auto [hash, tracked] { extract_hash(name) };
+                const auto [hash, tracked] { extract_hash(a_i.arg(0)) }; // Get hash from name
                 // Skip untracked / non-core assertions
-                if (!tracked || tracked_cores.find(hash) == tracked_cores.end()) {
-                    continue;
-                }
-                // Try a hash lookup first to find the expr corresponding to hash
-                else if (auto lookup { Expr::find(hash) }; lookup != nullptr) {
-                    ret.emplace_back(std::move(lookup));
-                }
-                // Otherwise abstract the object
-                else {
-                    ret.emplace_back(abstract(a_i));
-#ifdef DEBUG
-                    if (ret.back()->hash == hash) {
-                        Util::Log::warning(WHOAMI "Reconstruction had a different hash. Perhaps "
-                                                  "this is caused by changing BigInt modes?");
+                if (tracked && cores.find(hash) == cores.end()) {
+                    // Get the object either by a hash lookup or by constructing it if that fails
+                    if (auto lookup { Expr::find(hash) }; lookup != nullptr) {
+                        ret.emplace_back(std::move(lookup));
                     }
+                    else {
+                        ret.emplace_back(abstract(a_i));
+#ifdef DEBUG
+                        if (ret.back()->hash == hash) {
+                            Util::Log::warning(WHOAMI
+                                               "Reconstruction had a different hash. "
+                                               "Perhaps this is caused by changing BigInt modes?");
+                        }
 #endif
+                    }
                 }
             }
             return ret;
@@ -388,8 +384,7 @@ namespace Backend::Z3 {
                 }
             }
             else {
-                const auto assertions { solver.assertions() };
-                const std::set<Hash::Hash> tracked { get_tracked<true>(assertions) };
+                const std::set<Hash::Hash> tracked { get_tracked<true>(solver.assertions()) };
                 char buf[1 + Util::to_hex_max_len<Hash::Hash>];
                 for (UInt i { 0 }; i < c_len; ++i) {
                     // If the new constraint is not track, track it
