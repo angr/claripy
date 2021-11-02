@@ -23,7 +23,7 @@ namespace Backend {
 
         /** Set the BigInt abstraction mode for this backend */
         static inline Mode::BigInt big_int_mode(const Mode::BigInt m) noexcept {
-            Util::Log::debug("Setting BitInt abstraction mode to ", m);
+            Util::Log::info("Setting BitInt abstraction mode to ", m);
             return big_int_abstract_mode.exchange(m);
         }
 
