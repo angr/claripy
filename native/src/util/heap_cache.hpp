@@ -63,7 +63,7 @@ namespace Util {
         SET_IMPLICITS_EXCLUDE_DEFAULT_CTOR(HeapCache, delete);
 
         /** The allocation method */
-        inline T *alloc() noexcept { return static_cast<T *const>(Safe::malloc<T>(1)); }
+        inline T *alloc() noexcept { return Safe::malloc<T>(1); }
 
         /** Expand data to a size of at least dsize
          *  This will *not* shrink the data

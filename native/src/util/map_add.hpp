@@ -53,7 +53,7 @@ namespace Util {
         return Private::map_add<false>(map, std::forward<Key>(key), std::forward<Args>(args)...);
     }
 
-    /** Quickly put Key, Value{foward(args)...} into map
+    /** Quickly put Key, Value{forward(args)...} into map
      *  Note: This assumes the map type has a Key type that is Key with no const or reference
      *  Note: If emplacement fails, this function throws an exception
      */
