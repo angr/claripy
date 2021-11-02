@@ -18,12 +18,17 @@ void unsat_core() {
     const auto x { Create::symbol<Expr::BV>("x", 64) };
     const auto xneq0 { Create::neq(x, lt(0)) };
     const auto xeq1 { Create::eq(x, lt(1)) };
-    const auto xeq2 { Create::eq(x, lt(2)) };
+    const auto make_xeq2 { [&x, &lt]() { return Create::eq(x, lt(2)); } };
 
     // Add all three constraints
+    auto tmp { make_xeq2() };
     z3.add<true>(solver, xneq0.get());
     z3.add<true>(solver, xeq1.get());
-    z3.add<true>(solver, xeq2.get());
+    z3.add<true>(solver, tmp.get()); // xgeq2
+
+    // Release xeq2 to force reconstruction of it later
+    UNITTEST_ASSERT(tmp.use_count() == 1);
+    tmp.reset();
 
     // Verify unsatisfiability
     // Note: this should call solver.check(), which *must* be done before calling unsat_core
@@ -32,7 +37,7 @@ void unsat_core() {
     // Test unsat core
     const auto vec { z3.unsat_core(solver) };
     UNITTEST_ASSERT(vec.size() == 2);
-    UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == xeq2);
+    UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == make_xeq2());
 }
 
 // Define the test

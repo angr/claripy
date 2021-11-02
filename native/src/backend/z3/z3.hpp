@@ -184,17 +184,20 @@ namespace Backend::Z3 {
             for (int i { 0 }; i < Util::sign(a_len); ++i) {
                 // Extract the hash of the next assertion
                 const auto a_i { assertions[i] };
+#ifdef DEBUG
+                Util::affirm<Util::Err::Unknown>(a_i.num_args() >= 2, "Malformed assertion: ", a_i);
+#endif
                 const auto [hash, tracked] { extract_hash(a_i.arg(0)) }; // Get hash from name
                 // Skip untracked / non-core assertions
-                if (tracked && cores.find(hash) == cores.end()) {
+                if (tracked && cores.find(hash) != cores.end()) {
                     // Get the object either by a hash lookup or by constructing it if that fails
                     if (auto lookup { Expr::find(hash) }; lookup != nullptr) {
                         ret.emplace_back(std::move(lookup));
                     }
                     else {
-                        ret.emplace_back(abstract(a_i));
+                        ret.emplace_back(abstract(a_i.arg(1)));
 #ifdef DEBUG
-                        if (ret.back()->hash == hash) {
+                        if (ret.back()->hash != hash) {
                             Util::Log::warning(WHOAMI
                                                "Reconstruction had a different hash. "
                                                "Perhaps this is caused by changing BigInt modes?");
