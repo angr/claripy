@@ -17,7 +17,7 @@
 /** A macro that contains the information about the current line
  *  Useful for debugging
  */
-#define WHOAMI __FILE__ ": ", __LINE__, " (", __func__, ")  via " __BASE_FILE__ ": "
+#define WHOAMI __FILE__ ": ", __LINE__, " (", __func__, ") via " __BASE_FILE__ ": "
 
 
 /** A macro to convert the value of a macro into a string */
@@ -30,15 +30,20 @@
 /** A macro to concat the two macro evaluations */
 #define MACRO_CONCAT(A, B) MACRO_VALUE_CONCAT(A, B)
 
-#ifndef DEBUG
+
+#ifdef DEBUG
     /** Defined to noexcept when DEBUG is not defined */
-    #define NOEXCEPT_UNLESS_DEBUG noexcept
-    /** True is DEBUG else false */
-    #define TRUE_IF_DEBUG false
-#else
-    // DEBUG defined case
     #define NOEXCEPT_UNLESS_DEBUG
+    /** True is DEBUG else false */
     #define TRUE_IF_DEBUG true
+#else
+    #define NOEXCEPT_UNLESS_DEBUG noexcept
+    #define TRUE_IF_DEBUG false
+#endif
+
+#ifdef DEBUG
+    /** Define a macro used to help with debugging */
+    #define HERE(LOG) Util::Log::LOG(WHOAMI);
 #endif
 
 
