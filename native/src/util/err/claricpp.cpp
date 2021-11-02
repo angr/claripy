@@ -10,6 +10,8 @@
 
 std::atomic_bool Util::Err::Claricpp::enable_backtraces { TRUE_IF_DEBUG };
 
+std::atomic_bool Util::Err::Claricpp::append_backtrace { false };
+
 std::ostringstream Util::Err::Claricpp::save_backtrace() noexcept {
     if (!backtraces_enabled()) {
         return std::ostringstream {};

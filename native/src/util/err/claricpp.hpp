@@ -41,7 +41,7 @@ namespace Util::Err {
         // Rule of 5
         SET_IMPLICITS_NONDEFAULT_CTORS(Claricpp, delete);
 
-        inline std::string backtrace() noexcept { return bt.str(); }
+        inline std::string backtrace() const noexcept { return bt.str(); }
 
         /** Enable / disable backtraces
          *  Returns the old state
@@ -53,9 +53,41 @@ namespace Util::Err {
         /** Return true if and only if backtraces are enabled */
         static inline bool backtraces_enabled() noexcept { return enable_backtraces; }
 
-        /** Message getter */
+        /** Enable / disable appending backtraces
+         *  Returns the old state
+         */
+        static inline bool toggle_append_backtrace(bool set) noexcept {
+            return append_backtrace.exchange(set);
+        }
+
+        /** Return true if and only if backtraces are enabled */
+        static inline bool append_backtraces_enabled() noexcept { return append_backtrace; }
+
+        /** Message getter
+         *  If enable_backtraces and append_backtraces, appends a backtrace
+         */
+        [[nodiscard]] inline const char *raw_what() const noexcept { return msg.c_str(); }
+
+        /** Message getter
+         *  If enable_backtraces and append_backtraces, appends a backtrace
+         *  Warning: Will return dynamically allocated memory if a backtrace is included
+         *  Note: If something goes wrong trying to print the backtrace, skips it
+         */
         [[nodiscard]] inline const char *what() const noexcept override final {
-            return msg.c_str();
+            if (enable_backtraces && append_backtrace) {
+                try {
+                    auto out { backtrace() };
+                    out + "\n\n" + msg;
+                    char *const ret { static_cast<char *const>(std::malloc(out.size() + 1)) };
+                    if (ret != nullptr) {
+                        std::strcpy(ret, out.c_str());
+                        return ret;
+                    }
+                }
+                catch (std::exception &) {
+                }
+            }
+            return raw_what();
         }
 
       private:
@@ -73,6 +105,8 @@ namespace Util::Err {
 
         /** True if backtraces should be enabled */
         static std::atomic_bool enable_backtraces;
+        /** If true and if enable_backtraces, what() will contain a backtrace */
+        static std::atomic_bool append_backtrace;
         /** The frame offset used when generating the backtrace
          *  This prevents Claricpp's internals from showing up in the backtrace
          *  This is found expirimentally; there is no issue if it is too small
