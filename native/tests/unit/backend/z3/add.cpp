@@ -7,14 +7,12 @@
 
 /** Test add */
 void add() {
-    namespace Ex = Expr;
-
     auto z3 { Backend::Z3::Z3 {} };
     auto solver_ref { z3.tls_solver() };
     auto &solver { *solver_ref };
 
     // Constraints
-    const auto x { Create::symbol<Ex::BV>("x", 64) };
+    const auto x { Create::symbol<Expr::BV>("x", 64) };
     const uint64_t umax { std::numeric_limits<uint64_t>::max() };
     auto x_not_max { Create::neq(x, Create::literal(umax)) };
 
@@ -40,7 +38,7 @@ void add() {
     // Verify solver lines
     is.str("");
     is << solver;
-    const std::string bool_name { '|' + Util::to_hex(x_not_max->hash) + '|' };
+    const std::string bool_name { 'H' + Util::to_hex(x_not_max->hash) };
     UNITTEST_ASSERT(is.str() == prefix + "(declare-fun " + bool_name + " () Bool)\n(assert (=> " +
                                     bool_name + ' ' + distinct + "))\n");
 }
