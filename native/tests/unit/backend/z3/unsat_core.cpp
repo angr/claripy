@@ -21,23 +21,33 @@ void unsat_core() {
     const auto make_xeq2 { [&x, &lt]() { return Create::eq(x, lt(2)); } };
 
     // Add all three constraints
-    auto tmp { make_xeq2() };
-    z3.add<true>(solver, xneq0.get());
+    auto tmp_xeq2 { make_xeq2() };
+    z3.add<true>(solver, xneq0.get()); // Should not end up in unsat-core
     z3.add<true>(solver, xeq1.get());
-    z3.add<true>(solver, tmp.get()); // xgeq2
+    z3.add<true>(solver, tmp_xeq2.get());
 
     // Release xeq2 to force reconstruction of it later
-    UNITTEST_ASSERT(tmp.use_count() == 1);
-    tmp.reset();
+    UNITTEST_ASSERT(tmp_xeq2.use_count() == 1);
+    tmp_xeq2.reset();
 
     // Verify unsatisfiability
     // Note: this should call solver.check(), which *must* be done before calling unsat_core
     UNITTEST_ASSERT(!z3.satisfiable(solver));
 
     // Test unsat core
-    const auto vec { z3.unsat_core(solver) };
+    auto vec { z3.unsat_core(solver) };
+    tmp_xeq2 = make_xeq2(); // Re-make
     UNITTEST_ASSERT(vec.size() == 2);
-    UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == make_xeq2());
+    UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == tmp_xeq2);
+
+    // Verify that untracked constraints don't end up in unsat_core
+    solver.reset();
+    z3.add<true>(solver, xeq1.get());
+    z3.add<false>(solver, tmp_xeq2.get()); // xgeq2
+    UNITTEST_ASSERT(!z3.satisfiable(solver));
+    vec = z3.unsat_core(solver);
+    UNITTEST_ASSERT(vec.size() == 1);
+    UNITTEST_ASSERT(vec[0] = xeq1);
 }
 
 // Define the test
