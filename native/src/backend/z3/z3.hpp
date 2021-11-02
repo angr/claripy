@@ -134,7 +134,7 @@ namespace Backend::Z3 {
             ECHelper ec { *this, solver, extra_constraints, true };
             const auto eq { to_eq(expr, sol) }; // Debug verifies expr is not null
             solver.add(convert(eq.get()));
-            return satisfiable(solver, extra_constraints); // Debug verifies non-null
+            return satisfiable(solver); // Debug verifies non-null
         }
 
         /** Check to see if sol is a solution to expr w.r.t the solver; neither may be nullptr */
@@ -172,31 +172,40 @@ namespace Backend::Z3 {
         /** Return the unsat core from the solver
          *  Warning: This assumes all of solver's assertions were added by add<true>
          */
-        inline std::vector<Expr::BasePtr> unsat_core(z3::solver &solver) {
+        inline std::vector<Expr::BasePtr> unsat_core(const z3::solver &solver) {
+            // Extract cores
+            const auto raw_cores { solver.unsat_core() };
+            const auto tracked_cores { get_tracked<false>(raw_cores) };
+            // Create ret, reserve tracked.size() (probably larger than needed)
             std::vector<Expr::BasePtr> ret;
-            const auto cores { solver.unsat_core() };
-            const auto len { cores.size() };
+            const auto len { tracked_cores.size() };
             ret.reserve(len);
-            z3::expr_vector assertions { solver.ctx() };
-            std::map<Hash::Hash, const int> indexes;
-            for (unsigned i { 0 }; i < len; ++i) {
-                const auto child { cores[static_cast<int>(i)] };
-                const Hash::Hash h { extract_hash(child) };
-                // First try to lookup the child by the hash
-                if (auto lookup { Expr::find(h) }; lookup != nullptr) {
-                    Util::Log::info(__LINE__);
-                    ret.emplace_back(std::move(lookup));
+            // For each assertion
+            const auto assertions { solver.assertions() };
+            const auto a_len { assertions.size() };
+            for (int i { 0 }; i < Util::sign(a_len); ++i) {
+                // Extract the hash of the next assertion
+                const auto a_i { assertions[i] };
+                const auto name { a_i.arg(0) };
+                const auto [hash, tracked] { extract_hash(name) };
+                // Skip untracked / non-core assertions
+                if (!tracked || tracked_cores.find(hash) == tracked_cores.end()) {
                     continue;
                 }
-                // Otherwise, abstract assertion object
-                if (assertions.size() == 0) {
-                    assertions = solver.assertions();
-                    const auto len_a { assertions.size() };
-                    for (int k = 0; k < static_cast<int>(len_a); ++k) {
-                        Util::map_emplace(indexes, extract_hash(assertions[k]), k);
-                    }
+                // Try a hash lookup first to find the expr corresponding to hash
+                else if (auto lookup { Expr::find(hash) }; lookup != nullptr) {
+                    ret.emplace_back(std::move(lookup));
                 }
-                ret.emplace_back(abstract(assertions[indexes[h]]));
+                // Otherwise abstract the object
+                else {
+                    ret.emplace_back(abstract(a_i));
+#ifdef DEBUG
+                    if (ret.back()->hash == hash) {
+                        Util::Log::warning(WHOAMI "Reconstruction had a different hash. Perhaps "
+                                                  "this is caused by changing BigInt modes?");
+                    }
+#endif
+                }
             }
             return ret;
         }
@@ -319,45 +328,58 @@ namespace Backend::Z3 {
             return tls.solver;
         }
 
-        /** Extracts the hash from the boolean z3::expr expr named: |X|
-         *  X is a string output by Util::to_hex
-         *  Warning if X is not an output of Util::to_hex, an invalid result is returned
+        /** Extracts the hash from the boolean z3::expr expr named: 'H' + X
+         *  Returns {<Hash>, <Success>}
+         *  If the name does not start with H0x, success is set to false
+         *  Assumes X is a string output by Util::to_hex
+         *  Warning: If X is not a string output by Util::hex, we have undefined behavior
+         *  Note: This function must be updated in tandem with add_helper
          */
-        inline Hash::Hash extract_hash(const z3::expr &expr) {
-            // Note that we use the lower level API to avoid a string allocation fpr speed
-            const char *str { Z3_ast_to_string(expr.ctx(), expr) + 3 }; // Remove prefix |0x
+        inline std::pair<Hash::Hash, bool> extract_hash(const z3::expr &expr) {
+            // Note that we use the lower level API to avoid a string allocation for speed
+            const char *str { Z3_ast_to_string(expr.ctx(), expr) };
+            if (std::strncmp(str, "H0x", 3) != 0) { // Prefix test
+                return { 0, false };
+            }
             Hash::Hash ret { 0 };
-            while (str[1] != '\0') { // We want to stop one char short to skip the last '|'
+            for (str += 3; str[0] != '\0'; ++str) { // Remove prefix H0x then convert the hex
                 ret <<= 4;
                 ret += Util::hex_to_num(str[0]);
-                str += 1;
+            }
+            return { ret, true };
+        }
+
+        /** Returns the hashes of tracked constraints in input
+         *  Assumes all hashes were inserted by add_helper
+         *  If Arg0 is true, assumes arg(0) of each element is what stores the name
+         *  If Arg0 is false, assumes the element itself is the name.
+         */
+        template <bool Arg0> std::set<Hash::Hash> get_tracked(const z3::expr_vector &input) {
+            std::set<Hash::Hash> ret;
+            // For each assertion, extract the name (the first child as a string)
+            // Convert the name to a hash with stoi-like functions, and save the hash
+            for (int i { 0 }; i < Util::sign(input.size()); ++i) {
+                const auto bool_name { Arg0 ? input[i].arg(0) : input[i] };
+                const auto [hash, tracked] { extract_hash(bool_name) };
+                if (tracked) {
+#ifdef DEBUG
+                    const auto [_, success] { ret.emplace(hash) };
+                    if (!success) {
+                        Util::Log::warning(WHOAMI " potential hash collision detected.");
+                        (void) _;
+                    }
+#else
+                    (void) ret.emplace(hash);
+#endif
+                }
             }
             return ret;
         }
 
-        /** Returns the hashes of tracked constraints of solver
-         *  Assumes all hashes were inserted by add_helper and thus each name is a hash
+        /** Add constraints to the solver, track if Track
+         *  Note: Each constraint is tracked with the name 'H' + str(c->hash)
+         *  Note: This function must be updated in tandem with extract_hash
          */
-        inline std::set<Hash::Hash> get_tracked(z3::solver &solver) {
-            std::set<Hash::Hash> tracked;
-            const z3::expr_vector assertions { solver.assertions() };
-            const auto size { assertions.size() };
-            // For each assertion, extract the name (the first child as a string)
-            // Convert the name to a hash with stoi-like functions, and save the hash
-            for (unsigned i { 0 }; i < size; ++i) {
-                const auto bool_name { assertions[Util::sign(i)].arg(0) };
-#ifdef DEBUG
-                const auto [_, success] { tracked.emplace(extract_hash(bool_name)) };
-                Util::affirm<Util::Err::HashCollision>(success, WHOAMI "Hash collision");
-                (void) _;
-#else
-                tracked.emplace(extract_hash(bool_name));
-#endif
-            }
-            return tracked;
-        }
-
-        /** Add constraints to the solver, track if Track */
         template <bool Track>
         void add_helper(z3::solver &solver, CTSC<Expr::RawPtr> constraints, const UInt c_len) {
             if constexpr (!Track) {
@@ -366,15 +388,17 @@ namespace Backend::Z3 {
                 }
             }
             else {
-                const std::set<Hash::Hash> tracked { get_tracked(solver) };
-                char buf[Util::to_hex_max_len<Hash::Hash>];
+                const auto assertions { solver.assertions() };
+                const std::set<Hash::Hash> tracked { get_tracked<true>(assertions) };
+                char buf[1 + Util::to_hex_max_len<Hash::Hash>];
                 for (UInt i { 0 }; i < c_len; ++i) {
                     // If the new constraint is not track, track it
                     const Hash::Hash c_hash { constraints[i]->hash };
                     if (const auto lookup { tracked.find(c_hash) }; lookup == tracked.end()) {
                         // We use to_hex to avoid heap allocations due to temporary strings
                         // This also leads to avoiding much the same when converting back
-                        (void) Util::to_hex(c_hash, buf); // Populates buf
+                        buf[0] = 'H';
+                        (void) Util::to_hex(c_hash, &buf[1]); // Populates buf
                         solver.add(convert(constraints[i]), solver.ctx().bool_const(buf));
                     }
                 }

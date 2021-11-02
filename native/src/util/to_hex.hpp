@@ -13,7 +13,7 @@
 
 namespace Util {
 
-    /** Returns the maximum length string that to_hex_buf can generate give n type T
+    /** Returns the maximum length string that to_hex_buf can generate given type T
      * '0x' + 2 characters per byte, each representing a nibble + null terminator
      */
     template <typename T> static const constexpr std::size_t to_hex_max_len { 3 + 2 * sizeof(T) };
