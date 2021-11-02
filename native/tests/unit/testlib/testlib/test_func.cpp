@@ -14,7 +14,7 @@
 /** Catch and print an error before exiting */
 #define CATCH_ERROR(ERROR)                                                                         \
     catch (const ERROR &e) {                                                                       \
-        UNITTEST_ERR(#ERROR, ": ", e.what())                                                       \
+        UNITTEST_ERR(e.backtrace(), "\n", #ERROR ": ", e.raw_what());                              \
     }
 
 
@@ -24,16 +24,19 @@ int UnitTest::TestLib::test_func(TestFN &f) {
     // Test f
     try {
         f();
+        Util::Log::info("Test case passed!");
         return EXIT_SUCCESS;
     }
     // UnitTest error
     catch (Error &e) {
-        Util::Log::error(e.backtrace(), "\n", e.what());
+        Util::Log::error(e.backtrace(), "\n", e.raw_what());
         return EXIT_FAILURE;
     }
     // If there was a different error, note so and fail
     CATCH_ERROR(Util::Err::Unexpected)
     CATCH_ERROR(Util::Err::Python::Base)
     CATCH_ERROR(Util::Err::Claricpp)
-    CATCH_ERROR(std::exception)
+    catch (std::exception &e) {
+        UNITTEST_ERR("std::exception: ", e.what());
+    }
 }
