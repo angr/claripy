@@ -35,10 +35,10 @@ void unsat_core() {
     UNITTEST_ASSERT(!z3.satisfiable(solver));
 
     // Test unsat core
-    auto vec { z3.unsat_core(solver) };
-    tmp_xeq2 = make_xeq2(); // Re-make
-    UNITTEST_ASSERT(vec.size() == 2);
-    UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == tmp_xeq2);
+    auto vec { z3.unsat_core(solver) }; // Should also reconstruct xeq1 via abstraction
+    tmp_xeq2 = make_xeq2();             // Re-make
+    UNITTEST_ASSERT(vec.size() == 2);   // Verify unsat core
+    UNITTEST_ASSERT(vec[0] == xeq1 && vec[1] == tmp_xeq2); // Verify reconstruction + unsat core
 
     // Verify that untracked constraints don't end up in unsat_core
     solver.reset();
