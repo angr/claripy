@@ -40,20 +40,25 @@ void backend() {
     const auto bv_sym { Create::symbol<Expr::BV>("bv_sym", 64) };
     const auto vs { Create::literal(std::make_shared<PyObj::VS>(1, 2, 8)) };
     const auto bv_sym_with_ans { Create::symbol<Expr::BV>("bv_sym_with_ans", 64, make_an_vec()) };
+    const auto bv_neq_bv { Create::neq(bv_sym, bv_sym) };
 
     // Tests
     Util::Log::debug("Testing base funtions");
+    Util::Log::debug("  - name");
     UNITTEST_ASSERT(std::string { "z3" } == claricpp_backend_name(z3_manual));
 
     // Test handles
+    Util::Log::debug("  - handles");
     const auto sum_c { API::copy_to_c(sum) };
     UNITTEST_ASSERT(claricpp_backend_handles(z3_manual, sum_c));
     UNITTEST_ASSERT(not claricpp_backend_handles(z3_manual, API::copy_to_c(vs)));
 
     // Test simplify
+    Util::Log::debug("  - simplify");
     UNITTEST_ASSERT(API::to_cpp(claricpp_backend_simplify(z3_manual, sum_c))->hash == two->hash);
 
     // Test BigInt mode functions
+    Util::Log::debug("  - big int");
     const auto old_mode { claricpp_backend_get_big_int_mode() };
     const auto got_mode { claricpp_backend_set_big_int_mode(ClaricppBimInt) };
     const auto new_mode { claricpp_backend_get_big_int_mode() };
@@ -63,11 +68,13 @@ void backend() {
     claricpp_backend_set_big_int_mode(old_mode); // Restore for future tests
 
     // Test downsizing backend data
+    Util::Log::debug("  - downsize");
     UNITTEST_ASSERT(z3_priv.conv_cache_size() != 0);
     claricpp_backend_downsize(z3_manual);
     UNITTEST_ASSERT(z3_priv.conv_cache_size() == 0);
 
     // Test clearing persistent data
+    Util::Log::debug("  - clear_persistent_data");
     (void) z3_cpp->simplify(bv_sym_with_ans.get()); // Populate satd
     UNITTEST_ASSERT(z3_priv.satd_cache_size() != 0);
     claricpp_backend_clear_persistent_data(z3_manual);
@@ -80,12 +87,14 @@ void backend() {
     Util::Log::debug("Testing Z3 functions");
 
     // Test creating a z3 backend
+    Util::Log::debug("  - new");
     const auto z3 { claricpp_backend_z3_new() };
     const auto z3_ptr { dynamic_cast<Backend::Z3::Z3 *const>(API::to_cpp(z3).get()) };
     UNITTEST_ASSERT(z3_ptr != nullptr);
     auto &raw_z3 { *z3_ptr };
 
     // Test creating solvers
+    Util::Log::debug("  - new solver");
     const auto solver { claricpp_backend_z3_tls_solver(z3, 0) };
     UNITTEST_ASSERT(API::to_cpp(solver) != nullptr);
     const auto new_solver { claricpp_backend_z3_new_tls_solver(z3, 0) };
@@ -94,6 +103,7 @@ void backend() {
     const auto fst_solver_dup { claricpp_backend_z3_tls_solver(z3, 0) };
     UNITTEST_ASSERT(API::to_cpp(solver) == API::to_cpp(fst_solver_dup));
 
+    // Prep
     const auto ugeq { [&bv_sym](const UInt i) {
         using C = Mode::Compare;
         return Create::compare<C::Unsigned | C::Greater | C::Eq>(bv_sym, Create::literal(i));
@@ -107,6 +117,7 @@ void backend() {
     const auto geq3_len { 2 };
 
     // Test add tracked
+    Util::Log::debug("  - add tracked");
     [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
     claricpp_backend_z3_add_tracked(z3, solver, API::to_c(ugeq(1)));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
@@ -122,6 +133,7 @@ void backend() {
     z3_solver.reset();
 
     // Test add untracked
+    Util::Log::debug("  - add untracked");
     claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1)));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
@@ -132,12 +144,14 @@ void backend() {
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
     z3_solver.reset();
 
+    // Prep
     const auto cl { [](const UInt i) { return API::to_c(Create::literal(i)); } };
     const auto add { [&z3_cpp](z3::solver &s, Expr::BasePtr e) {
         z3_cpp->add<false>(s, e.get());
     } };
 
     // Test satisfiable
+    Util::Log::debug("  - satisfiable");
     add(z3_solver, Create::eq(one, one));
     UNITTEST_ASSERT(claricpp_backend_z3_satisfiable(z3, solver));
     z3_solver.push();
@@ -150,6 +164,7 @@ void backend() {
     z3_solver.reset();
 
     // Test solution
+    Util::Log::debug("  - solution");
     add(z3_solver, uleq(2));
     const auto bv_sym_c { API::copy_to_c(bv_sym) };
     UNITTEST_ASSERT(claricpp_backend_z3_solution(z3, bv_sym_c, cl(1), solver));
@@ -157,6 +172,23 @@ void backend() {
     UNITTEST_ASSERT(!claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, geq3, geq3_len));
     z3_solver.reset();
     UNITTEST_ASSERT(claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, geq3, geq3_len));
+
+    // Test min
+    // @todo
+
+    // Test max
+    // @todo
+
+    // Test unsat_core
+    Util::Log::debug("  - unsat core");
+    z3_cpp->add<true>(z3_solver, bv_neq_bv.get());
+    UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable(z3, solver)); // Generate unsat core
+    const auto ucore { claricpp_backend_z3_unsat_core(z3, solver) };
+    UNITTEST_ASSERT(ucore.len == 1);
+    auto &ucore_0 { API::to_cpp(ucore.arr[0]) };
+    UNITTEST_ASSERT(ucore_0 != nullptr);
+    UNITTEST_ASSERT(ucore_0->hash == bv_neq_bv->hash);
+
 
     /********************************************************************/
     /*                             Concrete                             */
