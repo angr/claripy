@@ -155,21 +155,105 @@ BOOL claricpp_backend_z3_solution_ec(const ClaricppBackend z3, const ClaricppExp
                                      const ClaricppExpr sol, const ClaricppSolver solver,
                                      ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len);
 
+/** Minimize a signed z3 expr subjects to the constraints of a solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to minimize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @return The value of expr when it is minimized subject to the solver
+ */
+int64_t claricpp_backend_z3_min_signed(const ClaricppBackend z3, const ClaricppExpr expr,
+                                       const ClaricppSolver solver);
+
+/** Minimize a signed z3 expr subjects to the constraints of a solver and extra constraints
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to minimize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return The value of expr when it is minimized subject to the solver and extra constraints
+ */
+int64_t claricpp_backend_z3_min_signed_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                          const ClaricppSolver solver,
+                                          ARRAY_IN(ClaricppExpr) extra_constraints,
+                                          const SIZE_T len);
+
+/** Minimize a unsigned z3 expr subjects to the constraints of a solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to minimize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @return The value of expr when it is minimized subject to the solver
+ */
+uint64_t claricpp_backend_z3_min_unsigned(const ClaricppBackend z3, const ClaricppExpr expr,
+                                          const ClaricppSolver solver);
+
+/** Minimize a unsigned z3 expr subjects to the constraints of a solver and extra constraints
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to minimize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return The value of expr when it is minimized subject to the solver and extra constraints
+ */
+uint64_t claricpp_backend_z3_min_unsigned_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                             const ClaricppSolver solver,
+                                             ARRAY_IN(ClaricppExpr) extra_constraints,
+                                             const SIZE_T len);
+
+
+/** Maximize a signed z3 expr subjects to the constraints of a solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to maximize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @return The value of expr when it is maximized subject to the solver
+ */
+int64_t claricpp_backend_z3_max_signed(const ClaricppBackend z3, const ClaricppExpr expr,
+                                       const ClaricppSolver solver);
+
+/** Maximize a signed z3 expr subjects to the constraints of a solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to maximize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return The value of expr when it is maximized subject to the solver
+ */
+int64_t claricpp_backend_z3_max_signed_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                          const ClaricppSolver solver,
+                                          ARRAY_IN(ClaricppExpr) extra_constraints,
+                                          const SIZE_T len);
+
+/** Maximize a unsigned z3 expr subjects to the constraints of a solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to maximize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @return The value of expr when it is maximized subject to the solver
+ */
+uint64_t claricpp_backend_z3_max_unsigned(const ClaricppBackend z3, const ClaricppExpr expr,
+                                          const ClaricppSolver solver);
+
+/** Maximize a unsigned z3 expr subjects to the constraints of a solver
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expr to maximize
+ *  @param solver The solver whose constraints expr must be subject to
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return The value of expr when it is maximized subject to the solver
+ */
+uint64_t claricpp_backend_z3_max_unsigned_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                             const ClaricppSolver solver,
+                                             ARRAY_IN(ClaricppExpr) extra_constraints,
+                                             const SIZE_T len);
+
+/** Retrieves the unsat core of the solver
+ *  Note: .arr of the return value points to a dynamically allocated array
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to retrieve the unsat core from
+ *  @return The array of constraints extract from the unsat core of solver and its size
+ */
+ARRAY_OUT(ClaricppExpr)
+claricpp_backend_z3_unsat_core(const ClaricppBackend z3, const ClaricppSolver solver);
+
 #if 0
-template <bool Signed> inline auto min(const Expr::RawPtr expr, z3::solver &solver) {}
-
-template <bool Signed>
-inline auto min(const Expr::RawPtr expr, z3::solver &solver,
-                const std::vector<Expr::RawPtr> &extra_constraints) {}
-
-template <bool Signed> inline auto max(const Expr::RawPtr expr, z3::solver &solver) {}
-
-template <bool Signed>
-inline auto max(const Expr::RawPtr expr, z3::solver &solver,
-                const std::vector<Expr::RawPtr> &extra_constraints) {}
-
-inline std::vector<Expr::BasePtr> unsat_core(z3::solver &solver) {}
-
 inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &solver,
                                  const UInt n_sol)
 

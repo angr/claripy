@@ -20,97 +20,164 @@ static inline auto to_con_vec(ARRAY_IN(ClaricppExpr) constraints, const SIZE_T l
 /*                               Base                               */
 /********************************************************************/
 
-const char *claricpp_backend_name(ClaricppBackend bk) {
-    return API::to_cpp(bk)->name();
-}
+extern "C" {
 
-BOOL claricpp_backend_handles(const ClaricppBackend bk, const ClaricppExpr expr) {
-    return API::to_cpp(bk)->handles(API::to_cpp(expr).get());
-}
+    const char *claricpp_backend_name(ClaricppBackend bk) { return API::to_cpp(bk)->name(); }
 
-ClaricppExpr claricpp_backend_simplify(const ClaricppBackend bk, const ClaricppExpr expr) {
-    return API::to_c(API::to_cpp(bk)->simplify(API::to_cpp(expr).get()));
-}
+    BOOL claricpp_backend_handles(const ClaricppBackend bk, const ClaricppExpr expr) {
+        return API::to_cpp(bk)->handles(API::to_cpp(expr).get());
+    }
 
-void claricpp_backend_downsize(const ClaricppBackend bk) {
-    return API::to_cpp(bk)->downsize();
-}
+    ClaricppExpr claricpp_backend_simplify(const ClaricppBackend bk, const ClaricppExpr expr) {
+        return API::to_c(API::to_cpp(bk)->simplify(API::to_cpp(expr).get()));
+    }
 
-void claricpp_backend_clear_persistent_data(const ClaricppBackend bk) {
-    return API::to_cpp(bk)->clear_persistent_data();
-}
+    void claricpp_backend_downsize(const ClaricppBackend bk) { return API::to_cpp(bk)->downsize(); }
 
-ClaricppBIM claricpp_backend_get_big_int_mode() {
-    return API::mode(Backend::Base::big_int_mode());
-}
+    void claricpp_backend_clear_persistent_data(const ClaricppBackend bk) {
+        return API::to_cpp(bk)->clear_persistent_data();
+    }
 
-ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
-    return API::mode(Backend::Base::big_int_mode(API::mode(m)));
+    ClaricppBIM claricpp_backend_get_big_int_mode() {
+        return API::mode(Backend::Base::big_int_mode());
+    }
+
+    ClaricppBIM claricpp_backend_set_big_int_mode(const ClaricppBIM m) {
+        return API::mode(Backend::Base::big_int_mode(API::mode(m)));
+    }
 }
 
 /********************************************************************/
 /*                                Z3                                */
 /********************************************************************/
 
-ClaricppBackend claricpp_backend_z3_new() {
-    return { API::to_c(Util::make_derived_shared<Backend::Base, Backend::Z3::Z3>()) };
-}
+extern "C" {
 
-ClaricppSolver claricpp_backend_z3_tls_solver(const ClaricppBackend z3, const Z3U timeout) {
-    return API::to_c(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).tls_solver<false>(timeout));
-}
+    ClaricppBackend claricpp_backend_z3_new() {
+        return { API::to_c(Util::make_derived_shared<Backend::Base, Backend::Z3::Z3>()) };
+    }
 
-ClaricppSolver claricpp_backend_z3_new_tls_solver(const ClaricppBackend z3, const Z3U timeout) {
-    return API::to_c(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).tls_solver<true>(timeout));
-}
+    ClaricppSolver claricpp_backend_z3_tls_solver(const ClaricppBackend z3, const Z3U timeout) {
+        return API::to_c(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).tls_solver<false>(timeout));
+    }
 
-void claricpp_backend_z3_add_tracked(const ClaricppBackend z3, const ClaricppSolver solver,
-                                     const ClaricppExpr constraint) {
-    API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<true>(API::to_cpp_ref(solver),
-                                                        API::to_cpp(constraint).get());
-}
+    ClaricppSolver claricpp_backend_z3_new_tls_solver(const ClaricppBackend z3, const Z3U timeout) {
+        return API::to_c(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).tls_solver<true>(timeout));
+    }
 
-void claricpp_backend_z3_add_vec_tracked(const ClaricppBackend z3, const ClaricppSolver solver,
-                                         ARRAY_IN(ClaricppExpr) constraints, const SIZE_T len) {
-    API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<true>(API::to_cpp_ref(solver),
-                                                        to_con_vec(constraints, len));
-}
+    void claricpp_backend_z3_add_tracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                         const ClaricppExpr constraint) {
+        API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<true>(API::to_cpp_ref(solver),
+                                                            API::to_cpp(constraint).get());
+    }
 
-void claricpp_backend_z3_add_untracked(const ClaricppBackend z3, const ClaricppSolver solver,
-                                       const ClaricppExpr constraint) {
-    API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<false>(API::to_cpp_ref(solver),
-                                                         API::to_cpp(constraint).get());
-}
+    void claricpp_backend_z3_add_vec_tracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                             ARRAY_IN(ClaricppExpr) constraints, const SIZE_T len) {
+        API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<true>(API::to_cpp_ref(solver),
+                                                            to_con_vec(constraints, len));
+    }
 
-void claricpp_backend_z3_add_vec_untracked(const ClaricppBackend z3, const ClaricppSolver solver,
-                                           ARRAY_IN(ClaricppExpr) constraints, const SIZE_T len) {
-    API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<false>(API::to_cpp_ref(solver),
-                                                         to_con_vec(constraints, len));
-}
+    void claricpp_backend_z3_add_untracked(const ClaricppBackend z3, const ClaricppSolver solver,
+                                           const ClaricppExpr constraint) {
+        API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<false>(API::to_cpp_ref(solver),
+                                                             API::to_cpp(constraint).get());
+    }
 
-BOOL claricpp_backend_z3_satisfiable(const ClaricppBackend z3, const ClaricppSolver solver) {
-    return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).satisfiable(API::to_cpp_ref(solver));
-}
+    void claricpp_backend_z3_add_vec_untracked(const ClaricppBackend z3,
+                                               const ClaricppSolver solver,
+                                               ARRAY_IN(ClaricppExpr) constraints,
+                                               const SIZE_T len) {
+        API::to_cpp_down_ref<Backend::Z3::Z3>(z3).add<false>(API::to_cpp_ref(solver),
+                                                             to_con_vec(constraints, len));
+    }
 
-BOOL claricpp_backend_z3_satisfiable_ec(const ClaricppBackend z3, const ClaricppSolver solver,
-                                        ARRAY_IN(ClaricppExpr) extra_constraints,
-                                        const SIZE_T len) {
-    return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).satisfiable(
-        API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
-}
+    BOOL claricpp_backend_z3_satisfiable(const ClaricppBackend z3, const ClaricppSolver solver) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).satisfiable(API::to_cpp_ref(solver));
+    }
 
-BOOL claricpp_backend_z3_solution(const ClaricppBackend z3, const ClaricppExpr expr,
-                                  const ClaricppExpr sol, const ClaricppSolver solver) {
-    return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).solution(
-        API::to_cpp(expr).get(), API::to_cpp(sol).get(), API::to_cpp_ref(solver));
-}
+    BOOL claricpp_backend_z3_satisfiable_ec(const ClaricppBackend z3, const ClaricppSolver solver,
+                                            ARRAY_IN(ClaricppExpr) extra_constraints,
+                                            const SIZE_T len) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).satisfiable(
+            API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
+    }
 
-BOOL claricpp_backend_z3_solution_ec(const ClaricppBackend z3, const ClaricppExpr expr,
-                                     const ClaricppExpr sol, const ClaricppSolver solver,
-                                     ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len) {
-    return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).solution(
-        API::to_cpp(expr).get(), API::to_cpp(sol).get(), API::to_cpp_ref(solver),
-        to_con_vec(extra_constraints, len));
+    BOOL claricpp_backend_z3_solution(const ClaricppBackend z3, const ClaricppExpr expr,
+                                      const ClaricppExpr sol, const ClaricppSolver solver) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).solution(
+            API::to_cpp(expr).get(), API::to_cpp(sol).get(), API::to_cpp_ref(solver));
+    }
+
+    BOOL claricpp_backend_z3_solution_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                         const ClaricppExpr sol, const ClaricppSolver solver,
+                                         ARRAY_IN(ClaricppExpr) extra_constraints,
+                                         const SIZE_T len) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).solution(
+            API::to_cpp(expr).get(), API::to_cpp(sol).get(), API::to_cpp_ref(solver),
+            to_con_vec(extra_constraints, len));
+    }
+
+    int64_t claricpp_backend_z3_min_signed(const ClaricppBackend z3, const ClaricppExpr expr,
+                                           const ClaricppSolver solver) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<true>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver));
+    }
+
+    int64_t claricpp_backend_z3_min_signed_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                              const ClaricppSolver solver,
+                                              ARRAY_IN(ClaricppExpr) extra_constraints,
+                                              const SIZE_T len) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<true>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
+    }
+
+    uint64_t claricpp_backend_z3_min_unsigned(const ClaricppBackend z3, const ClaricppExpr expr,
+                                              const ClaricppSolver solver) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<false>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver));
+    }
+
+    uint64_t claricpp_backend_z3_min_unsigned_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                                 const ClaricppSolver solver,
+                                                 ARRAY_IN(ClaricppExpr) extra_constraints,
+                                                 const SIZE_T len) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<false>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
+    }
+
+    int64_t claricpp_backend_z3_max_signed(const ClaricppBackend z3, const ClaricppExpr expr,
+                                           const ClaricppSolver solver) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<true>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver));
+    }
+
+    int64_t claricpp_backend_z3_max_signed_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                              const ClaricppSolver solver,
+                                              ARRAY_IN(ClaricppExpr) extra_constraints,
+                                              const SIZE_T len) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<true>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
+    }
+
+    uint64_t claricpp_backend_z3_max_unsigned(const ClaricppBackend z3, const ClaricppExpr expr,
+                                              const ClaricppSolver solver) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<false>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver));
+    }
+
+    uint64_t claricpp_backend_z3_max_unsigned_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                                 const ClaricppSolver solver,
+                                                 ARRAY_IN(ClaricppExpr) extra_constraints,
+                                                 const SIZE_T len) {
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<false>(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
+    }
+
+    ARRAY_OUT(ClaricppExpr)
+    claricpp_backend_z3_unsat_core(const ClaricppBackend z3, const ClaricppSolver solver) {
+        return API::to_arr(
+            API::to_cpp_down_ref<Backend::Z3::Z3>(z3).unsat_core(API::to_cpp_ref(solver)));
+    }
 }
 
 /********************************************************************/
