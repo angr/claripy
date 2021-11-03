@@ -119,7 +119,7 @@ extern "C" {
 
     int64_t claricpp_backend_z3_min_signed(const ClaricppBackend z3, const ClaricppExpr expr,
                                            const ClaricppSolver solver) {
-        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<true>(
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template min<true>(
             API::to_cpp(expr).get(), API::to_cpp_ref(solver));
     }
 
@@ -127,13 +127,13 @@ extern "C" {
                                               const ClaricppSolver solver,
                                               ARRAY_IN(ClaricppExpr) extra_constraints,
                                               const SIZE_T len) {
-        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<true>(
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template min<true>(
             API::to_cpp(expr).get(), API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
     }
 
     uint64_t claricpp_backend_z3_min_unsigned(const ClaricppBackend z3, const ClaricppExpr expr,
                                               const ClaricppSolver solver) {
-        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<false>(
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template min<false>(
             API::to_cpp(expr).get(), API::to_cpp_ref(solver));
     }
 
@@ -141,7 +141,7 @@ extern "C" {
                                                  const ClaricppSolver solver,
                                                  ARRAY_IN(ClaricppExpr) extra_constraints,
                                                  const SIZE_T len) {
-        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template max<false>(
+        return API::to_cpp_down_ref<Backend::Z3::Z3>(z3).template min<false>(
             API::to_cpp(expr).get(), API::to_cpp_ref(solver), to_con_vec(extra_constraints, len));
     }
 

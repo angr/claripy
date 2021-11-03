@@ -113,8 +113,8 @@ void backend() {
         return Create::compare<C::Unsigned | C::Less | C::Eq>(bv_sym, Create::literal(i));
     } };
     z3::solver &z3_solver { API::to_cpp_ref(solver) };
-    const ClaricppExpr geq3[] { API::to_c(ugeq(2)), API::to_c(ugeq(3)) }; // NOLINT
-    const auto geq3_len { 2 };
+    const ClaricppExpr ugeq3[] { API::to_c(ugeq(2)), API::to_c(ugeq(3)) }; // NOLINT
+    const auto ugeq3_len { 2 };
 
     // Test add tracked
     Util::Log::debug("  - add tracked");
@@ -126,7 +126,7 @@ void backend() {
     z3_solver.reset();
 
     [&raw_z3, &z3_solver](auto x) { raw_z3.add(z3_solver, x.get()); }(uleq(0));
-    claricpp_backend_z3_add_vec_tracked(z3, solver, geq3, 2);
+    claricpp_backend_z3_add_vec_tracked(z3, solver, ugeq3, 2);
     UNITTEST_ASSERT(z3_solver.assertions().size() == 3);
     (void) z3_solver.check(); // Generate unsat_core
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 1);
@@ -139,7 +139,7 @@ void backend() {
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
     z3_solver.reset();
 
-    claricpp_backend_z3_add_vec_untracked(z3, solver, geq3, 2);
+    claricpp_backend_z3_add_vec_untracked(z3, solver, ugeq3, 2);
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
     UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
     z3_solver.reset();
@@ -158,9 +158,9 @@ void backend() {
     add(z3_solver, Create::neq(one, one));
     UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable(z3, solver));
     z3_solver.pop();
-    UNITTEST_ASSERT(claricpp_backend_z3_satisfiable_ec(z3, solver, geq3, geq3_len));
+    UNITTEST_ASSERT(claricpp_backend_z3_satisfiable_ec(z3, solver, ugeq3, ugeq3_len));
     add(z3_solver, Create::eq(bv_sym, one));
-    UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable_ec(z3, solver, geq3, geq3_len));
+    UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable_ec(z3, solver, ugeq3, ugeq3_len));
     z3_solver.reset();
 
     // Test solution
@@ -169,15 +169,48 @@ void backend() {
     const auto bv_sym_c { API::copy_to_c(bv_sym) };
     UNITTEST_ASSERT(claricpp_backend_z3_solution(z3, bv_sym_c, cl(1), solver));
     UNITTEST_ASSERT(!claricpp_backend_z3_solution(z3, bv_sym_c, cl(3), solver));
-    UNITTEST_ASSERT(!claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, geq3, geq3_len));
+    UNITTEST_ASSERT(
+        !claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, ugeq3, ugeq3_len));
     z3_solver.reset();
-    UNITTEST_ASSERT(claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, geq3, geq3_len));
+    UNITTEST_ASSERT(claricpp_backend_z3_solution_ec(z3, bv_sym_c, cl(3), solver, ugeq3, ugeq3_len));
+
+    // Prep
+    const auto sgeq { [&bv_sym](const Int i) {
+        using C = Mode::Compare;
+        return Create::compare<C::Signed | C::Greater | C::Eq>(
+            bv_sym, Create::literal(static_cast<UInt>(i)));
+    } };
+    const auto sleq { [&bv_sym](const Int i) {
+        using C = Mode::Compare;
+        return Create::compare<C::Signed | C::Less | C::Eq>(bv_sym,
+                                                            Create::literal(static_cast<UInt>(i)));
+    } };
+    const ClaricppExpr sugeq3[] { API::to_c(sgeq(2)), API::to_c(sgeq(3)) }; // NOLINT
+    const auto sugeq3_len { 2 };
+    const auto uleq5c { API::to_c(uleq(5)) };
+    const auto sleq5c { API::to_c(sleq(5)) };
 
     // Test min
-    // @todo
+    Util::Log::debug("  - min");
+    add(z3_solver, sgeq(1));
+    UNITTEST_ASSERT(claricpp_backend_z3_min_signed(z3, bv_sym_c, solver) == 1);
+    UNITTEST_ASSERT(claricpp_backend_z3_min_signed_ec(z3, bv_sym_c, solver, sugeq3, sugeq3_len) ==
+                    3);
+    z3_solver.reset();
+    add(z3_solver, ugeq(1));
+    UNITTEST_ASSERT(claricpp_backend_z3_min_unsigned(z3, bv_sym_c, solver) == 1);
+    UNITTEST_ASSERT(claricpp_backend_z3_min_unsigned_ec(z3, bv_sym_c, solver, ugeq3, ugeq3_len) ==
+                    3);
 
     // Test max
-    // @todo
+    Util::Log::debug("  - max");
+    add(z3_solver, sleq(10));
+    UNITTEST_ASSERT(claricpp_backend_z3_max_signed(z3, bv_sym_c, solver) == 10);
+    UNITTEST_ASSERT(claricpp_backend_z3_max_signed_ec(z3, bv_sym_c, solver, &sleq5c, 1) == 5);
+    z3_solver.reset();
+    add(z3_solver, uleq(10));
+    UNITTEST_ASSERT(claricpp_backend_z3_max_unsigned(z3, bv_sym_c, solver) == 10);
+    UNITTEST_ASSERT(claricpp_backend_z3_max_unsigned_ec(z3, bv_sym_c, solver, &uleq5c, 1) == 5);
 
     // Test unsat_core
     Util::Log::debug("  - unsat core");
