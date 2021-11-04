@@ -22,16 +22,24 @@ namespace Op {
         OP_PURE_INIT(Base);
 
       public:
-        /** The type of the stack usd in the add_reversed_children function */
+        /** The type of the stack usd in the unsafe_add_reversed_children function */
         using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
+        /** A variant containing every type an op can hold */
+        using ArgVar = std::variant<Expr::BasePtr>;
+
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
         /** Python's repr function (outputs json) */
         virtual inline void repr(std::ostream &out, const bool verbose = false) const = 0;
+
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        virtual inline void add_reversed_children(Stack &) const = 0;
+        virtual inline void unsafe_add_reversed_children(Stack &) const = 0;
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        //        virtual inline void python_children(std::vector<ArgVar> &) const = 0; @todo
 
       protected:
         /** Protected constructor */

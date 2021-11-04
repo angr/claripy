@@ -7,7 +7,7 @@
 
 /** Convert x to a set; if each element is itself a vector, convert it into a vector */
 template <typename T> static auto to_set(const std::vector<T> &inp) {
-    const bool is_prim { std::is_same_v<std::remove_cv_t<T>, Backend::Z3::PrimVar> };
+    const bool is_prim { std::is_same_v<std::remove_cv_t<T>, Op::PrimVar> };
     std::set<std::conditional_t<is_prim, uint64_t, std::vector<uint64_t>>> ret;
     try {
         for (const T &i : inp) {

@@ -6,12 +6,7 @@
 #define R_OP_LITERAL_HPP_
 
 #include "base.hpp"
-
-#include "../big_int.hpp"
-#include "../py_obj.hpp"
-
-#include <cstddef>
-#include <variant>
+#include "constants.hpp"
 
 
 namespace Op {
@@ -21,16 +16,8 @@ namespace Op {
         OP_FINAL_INIT(Literal, 0);
 
       public:
-        /** The value type */
-        using Data = std::variant<bool,          // Bool
-                                  std::string,   // String
-                                  float, double, // FP
-                                  PyObj::VSPtr,  // VS
-                                  // BV
-                                  uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
-
         /** Representation */
-        const Data value;
+        const PrimVar value;
 
         /** Returns the bit_length of the value stored in Data
          *  If Data contains a type that doesn't correspond to an Expr that is a subclass
@@ -109,7 +96,7 @@ namespace Op {
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        inline void add_reversed_children(Stack &) const noexcept override final {}
+        inline void unsafe_add_reversed_children(Stack &) const noexcept override final {}
 
       private:
 /** A local macro used to define a private constructor for Literal */

@@ -551,7 +551,7 @@ namespace Backend::Z3 {
         }
 
         /** Abstract a backend object into a primitive stored in a PrimVar */
-        static PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj, const Z3 &bk) {
+        static Op::PrimVar dispatch_abstraction_to_prim(const z3::expr &b_obj, const Z3 &bk) {
             Util::affirm<Util::Err::Size>(b_obj.num_args() == 0,
                                           WHOAMI "Op should have no children");
 

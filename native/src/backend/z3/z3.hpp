@@ -212,9 +212,9 @@ namespace Backend::Z3 {
         /** Evaluate expr, return n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &solver,
-                                         const UInt n_sol) {
-            std::vector<PrimVar> ret;
+        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, z3::solver &solver,
+                                             const UInt n_sol) {
+            std::vector<Op::PrimVar> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             const z3::expr conv { convert(expr) };
             if (n_sol > 1) {
@@ -244,8 +244,8 @@ namespace Backend::Z3 {
         /** Evaluate expr, return n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,
-                                         const std::vector<Expr::RawPtr> &extra_constraints) {
+        inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,
+                                             const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
             return eval(expr, s, n);
         }
@@ -253,8 +253,8 @@ namespace Backend::Z3 {
         /** Evaluate every expr, return n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expr::RawPtr> &exprs,
-                                                            z3::solver &s, const UInt n) {
+        inline std::vector<std::vector<Op::PrimVar>>
+        batch_eval(const std::vector<Expr::RawPtr> &exprs, z3::solver &s, const UInt n) {
             if (UNLIKELY(exprs.size() == 0)) {
                 return {};
             }
@@ -262,10 +262,10 @@ namespace Backend::Z3 {
                 Util::Log::info(WHOAMI
                                 "called on exprs of size 1; eval is more efficient for this");
                 const auto sols { eval(exprs[0], s, n) };
-                std::vector<std::vector<PrimVar>> ret;
+                std::vector<std::vector<Op::PrimVar>> ret;
                 ret.reserve(sols.size());
                 for (const auto &i : sols) {
-                    ret.emplace_back(std::vector<PrimVar> { i }); // Why we prefer eval to batch
+                    ret.emplace_back(std::vector<Op::PrimVar> { i }); // Why we prefer eval to batch
                 }
                 return ret;
             }
@@ -280,7 +280,7 @@ namespace Backend::Z3 {
         /** Evaluate every expr, return n different solutions
          *  No pointers may be nullptr
          */
-        inline std::vector<std::vector<PrimVar>>
+        inline std::vector<std::vector<Op::PrimVar>>
         batch_eval(const std::vector<Expr::RawPtr> &exprs, z3::solver &s, const UInt n,
                    const std::vector<Expr::RawPtr> &extra_constraints) {
             const ECHelper ech { *this, s, extra_constraints };
@@ -406,13 +406,13 @@ namespace Backend::Z3 {
         /** Return up to n_sol different solutions of solver given exprs, where exprs.size() > 1
          *  No pointers may be nullptr
          */
-        inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<z3::expr> exprs,
-                                                            z3::solver &solver, const UInt n_sol) {
+        inline std::vector<std::vector<Op::PrimVar>>
+        batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const UInt n_sol) {
             Util::affirm<Util::Err::Usage>(exprs.size() > 1,
                                            WHOAMI "should only be called when exprs.size() > 1");
             // Prep
             solver.push();
-            std::vector<std::vector<PrimVar>> ret;
+            std::vector<std::vector<Op::PrimVar>> ret;
             ret.reserve(n_sol); // We do not resize as we may return < n_sol
             // Repeat for each new solution
             std::vector<z3::expr> z3_sol;
@@ -454,7 +454,7 @@ namespace Backend::Z3 {
         inline z3::expr bool_simplify(const z3::expr &expr) { return tls.bt(expr); }
 
         /** Abstract b_obj to a type in PrimVar */
-        inline PrimVar abstract_to_prim(const z3::expr &b_obj) {
+        inline Op::PrimVar abstract_to_prim(const z3::expr &b_obj) {
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             auto &abstraction_prim_cache { tls.abstract_prim_cache };
             const auto hash { b_obj.hash() };
@@ -475,7 +475,7 @@ namespace Backend::Z3 {
          *  This assumes the value of x will fit within T
          *  This assumes the PrimVar is set to a BV type
          */
-        template <typename T> T coerce_to(PrimVar &&p) {
+        template <typename T> T coerce_to(Op::PrimVar &&p) {
             using Usage = Util::Err::Usage;
             switch (p.index()) {
                 /** A local macro used for consistency */

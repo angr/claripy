@@ -50,7 +50,7 @@ namespace Op {
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        inline void add_reversed_children(Stack &s) const override final {
+        inline void unsafe_add_reversed_children(Stack &s) const override final {
             for (auto i { operands.crbegin() }; i != operands.crend(); ++i) {
                 UTILS_AFFIRM_NOT_NULL_DEBUG(i->get());
                 s.emplace(i->get());
