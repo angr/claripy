@@ -5,9 +5,10 @@
 #ifndef R_OP_BASE_HPP_
 #define R_OP_BASE_HPP_
 
+#include "constants.hpp"
 #include "macros.hpp"
 
-#include "../expr.hpp" // For subclasses
+#include "../expr.hpp"
 #include "../factory.hpp"
 
 #include <stack>
@@ -24,8 +25,6 @@ namespace Op {
       public:
         /** The type of the stack usd in the unsafe_add_reversed_children function */
         using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
-        /** A variant containing every type an op can hold */
-        using ArgVar = std::variant<Expr::BasePtr>;
 
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
