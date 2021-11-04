@@ -248,10 +248,10 @@ namespace Backend::Z3 {
         struct BV final {
 
             /** The primitive variant BV functions use */
-            using PrimVar = std::variant<uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
+            using BVVar = Op::BVTL::Apply<std::variant>;
 
             /** Abstraction function for Z3_OP_BNUM to a primitive */
-            static PrimVar num_primtive(const z3::expr &b_obj, const Z3 &bk) {
+            static BVVar num_primtive(const z3::expr &b_obj, const Z3 &bk) {
                 using E = Util::Err::Type;
                 const auto bl { b_obj.get_sort().bv_size() };
 
@@ -284,7 +284,7 @@ namespace Backend::Z3 {
 
             /** Abstraction function for Z3_OP_BNUM */
             static Expr::BasePtr num(const z3::expr &b_obj, const Z3 &bk) {
-                PrimVar x { num_primtive(b_obj, bk) }; // Not const for move purposes
+                BVVar x { num_primtive(b_obj, bk) }; // Not const for move purposes
 /** A local helper macro */
 #define G_CASE(I)                                                                                  \
     case I:                                                                                        \
@@ -302,7 +302,7 @@ namespace Backend::Z3 {
                         throw Util::Err::Unknown(WHOAMI, "Bad variant");
                 }
 #undef G_CASE
-                static_assert(std::variant_size_v<PrimVar> == 5,
+                static_assert(std::variant_size_v<BVVar> == 5,
                               "Switch-case statement needs to be modified");
             }
 
