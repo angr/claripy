@@ -37,6 +37,15 @@ namespace Op {
             s.emplace(from.get());
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(high);
+            v.emplace_back(low);
+            v.emplace_back(from);
+        }
+
       private:
         /** Protected constructor */
         explicit inline Extract(const Hash::Hash &h, const UInt hi, const UInt lo,

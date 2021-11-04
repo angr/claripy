@@ -98,6 +98,33 @@ namespace Op {
          */
         inline void unsafe_add_reversed_children(Stack &) const noexcept override final {}
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+/** A local macro used for consistency */
+#define CASE(INDEX)                                                                                \
+    case (INDEX):                                                                                  \
+        v.emplace_back(std::get<INDEX>(value))
+            static_assert(std::variant_size_v<decltype(value)> == 10);
+            switch (value.index()) {
+                CASE(0);
+                CASE(1);
+                CASE(2);
+                CASE(3);
+                CASE(4);
+                CASE(5);
+                CASE(6);
+                CASE(7);
+                CASE(8);
+                CASE(9);
+                default:
+                    throw Util::Err::Unknown(WHOAMI "Broken variant detected");
+            }
+// Cleanup
+#undef CASE
+        }
+
       private:
 /** A local macro used to define a private constructor for Literal */
 #define P_CTOR(TYPE)                                                                               \

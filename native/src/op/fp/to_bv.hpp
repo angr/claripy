@@ -38,6 +38,14 @@ namespace Op::FP {
             s.emplace(fp.get());
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(mode);
+            v.emplace_back(fp);
+        }
+
       private:
         /** Protected constructor
          *  Ensure that fp is an FP

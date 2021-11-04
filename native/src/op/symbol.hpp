@@ -27,6 +27,13 @@ namespace Op {
          */
         inline void unsafe_add_reversed_children(Stack &) const noexcept override final {}
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(name);
+        }
+
       private:
         /** A protected constructor to disallow public creation */
         explicit inline Symbol(const Hash::Hash &h, const std::string &n)

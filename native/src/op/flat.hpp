@@ -57,6 +57,17 @@ namespace Op {
             }
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.reserve(v.size() + operands.size());
+            for (const auto &i : operands) {
+                UTILS_AFFIRM_NOT_NULL_DEBUG(i);
+                v.emplace_back(i);
+            }
+        }
+
       protected:
         /** Protected constructor
          *  Verify that all operands are of the same type and that there are at least 2

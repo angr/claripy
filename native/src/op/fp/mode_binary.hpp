@@ -61,6 +61,15 @@ namespace Op::FP {
             s.emplace(left.get());
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(mode);
+            v.emplace_back(left);
+            v.emplace_back(right);
+        }
+
       protected:
         /** Protected constructor */
         explicit inline ModeBinary(const Hash::Hash &h, const CUID::CUID &cuid_,

@@ -52,6 +52,13 @@ namespace Op {
             s.emplace(child.get());
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(child);
+        }
+
       protected:
         /** Protected constructor */
         explicit inline Unary(const Hash::Hash &h, const CUID::CUID &cuid_, const Expr::BasePtr &x)

@@ -48,6 +48,15 @@ namespace Op::String {
             s.emplace(str.get());
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(str);
+            v.emplace_back(pattern);
+            v.emplace_back(start_index);
+        }
+
       private:
         /** Protected constructor
          *  Ensure that str and pattern are of type String

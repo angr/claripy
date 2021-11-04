@@ -56,6 +56,14 @@ namespace Op {
             s.emplace(left.get());
         }
 
+        /** Appends the expr children of the expr to the given vector
+         *  Note: This should only be used when returning children to python
+         */
+        inline void python_children(std::vector<ArgVar> &v) const override final {
+            v.emplace_back(left);
+            v.emplace_back(right);
+        }
+
         /** Python's repr function (outputs json) */
         inline void repr(std::ostream &out, const bool verbose = false) const override {
             repr_helper(out, verbose);

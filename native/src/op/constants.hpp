@@ -30,6 +30,12 @@ namespace Op {
     /** A variant of the types a primitive can support */
     using PrimVar = PrimTL::Apply<std::variant>;
 
+    /** Every type a claricpp public data member may be */
+    using ArgTL = PrimTL::Append<Expr::BasePtr, Mode::FP::Rounding, Mode::FP::Width>;
+
+    /** A variant of the every type a claricpp data member may be */
+    using ArgVar = ArgTL::Apply<std::variant>;
+
 } // namespace Op
 
 #endif
