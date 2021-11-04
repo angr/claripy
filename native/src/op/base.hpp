@@ -8,10 +8,7 @@
 #include "constants.hpp"
 #include "macros.hpp"
 
-#include "../expr.hpp"
 #include "../factory.hpp"
-
-#include <stack>
 
 
 namespace Op {
@@ -23,9 +20,6 @@ namespace Op {
         OP_PURE_INIT(Base);
 
       public:
-        /** The type of the stack usd in the unsafe_add_reversed_children function */
-        using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
-
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
         /** Python's repr function (outputs json) */

@@ -87,8 +87,8 @@ namespace Backend {
             // To denote the end of a list we prefix its elements with a nullptr
             // Note prefix because we reversed the list, thus the 'end' must come first
             // Each list represents the arguments of an expr
-            Op::Base::Stack expr_stack { std::vector<Expr::RawPtr> { nullptr, input } };
-            Op::Base::Stack op_stack;       // Exprs to give to the conversion dispatcher
+            Op::Stack expr_stack { std::vector<Expr::RawPtr> { nullptr, input } };
+            Op::Stack op_stack;             // Exprs to give to the conversion dispatcher
                                             // We leave this as a vector for performance
                                             // reasons within the dispatcher
             std::vector<BORCPtr> arg_stack; // Converted backend objects

@@ -6,13 +6,18 @@
 #define R_OP_CONSTANTS_HPP_
 
 #include "../big_int.hpp"
+#include "../expr.hpp"
 #include "../py_obj.hpp"
 
 #include <cstddef>
+#include <stack>
 #include <variant>
 
 
 namespace Op {
+
+    /** A vector back stacked of raw expression pointers which Op uses */
+    using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
 
     /** The primitive types a claricpp BV will support */
     using BVTL = Util::TypeList<uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
