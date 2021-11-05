@@ -72,7 +72,7 @@ namespace Op {
                 VCASE(4, PyObj::VSPtr);
                 // BV
                 VCASE_PRE(5, uint8_t);
-                out << static_cast<uint16_t>(got); // To avoid printing as a char
+                out << uint16_t { got }; // To avoid printing as a char
                 VCASE_POST;
                 VCASE(6, uint16_t);
                 VCASE(7, uint32_t);

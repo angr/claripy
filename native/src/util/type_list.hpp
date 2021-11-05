@@ -2,6 +2,7 @@
 #define R_UTIL_TYPELIST_HPP_
 
 #include "macros.hpp"
+#include "unconstructable.hpp"
 
 #include "../constants.hpp"
 
@@ -9,7 +10,7 @@
 namespace Util {
 
     /** An uninstantiable type list class */
-    template <typename... Args> struct TypeList {
+    template <typename... Args> struct TypeList : public Unconstructable {
         struct Private; // Forward declare
 
         // Conversions
@@ -50,10 +51,10 @@ namespace Util {
              */
             template <typename... Remove> static auto diff(TypeList<Remove...> &&) {
                 if constexpr (sizeof...(Remove) == 0 || sizeof...(Args) == 0) {
-                    return std::declval<TypeList<Args...>>();
+                    return std::declval<TypeList<Args...>>(); // Nothing to remove
                 }
                 else {
-                    return diff_helper<TypeList<Remove...>, Args...>();
+                    return diff_helper<TypeList<Remove...>, Args...>(); // Remove items from Args
                 }
             }
 
