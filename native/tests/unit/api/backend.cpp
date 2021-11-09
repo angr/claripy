@@ -222,6 +222,20 @@ void backend() {
     UNITTEST_ASSERT(ucore_0 != nullptr);
     UNITTEST_ASSERT(ucore_0->hash == bv_neq_bv->hash);
 
+    // Test eval
+    z3_solver.reset();
+    Util::Log::debug("  - eval");
+    add(z3_solver, uleq(1)); // 0, 1 possible
+    // Test n_sol too big
+    ARRAY_OUT(ClaricppPrim) evald { claricpp_backend_z3_eval(z3, bv_sym_c, solver, 10) };
+    UNITTEST_ASSERT(evald.len == 2); // Only 0, 1 should have been found
+    for (UInt i { 0 }; i < 2; ++i) {
+        UNITTEST_ASSERT(evald.arr[i].type == ClaricppPrimEnumU64);
+        UNITTEST_ASSERT(evald.arr[i].data.u64 == i);
+    }
+    // Test n_sol too small
+    evald = claricpp_backend_z3_eval(z3, bv_sym_c, solver, 1);
+    UNITTEST_ASSERT(evald.len == 1);
 
     /********************************************************************/
     /*                             Concrete                             */

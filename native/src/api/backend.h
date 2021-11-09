@@ -255,13 +255,14 @@ claricpp_backend_z3_unsat_core(const ClaricppBackend z3, const ClaricppSolver so
 
 /** Evaluates expr with solver and returns the n_sol primitive value(s) it corresponds to
  *  @param z3 The Z3 backend to use
- *  @param solver The solver to use
  *  @param expr The expression to evaluate
+ *  @param solver The solver to use
  *  @param n_sol The number of solutions to attempt to find, fewer may be found
  *  @return An array of up to n_sol solution (containing primitives) to expr found via solver
  */
-ARRAY_OUT(ClaricppExpr)
-claricpp_backend_z3_eval(const ClaricppBackend z3, const ClaricppSolver solver, const ClaricppExpr expr, const SIZE_T n_sol);
+ARRAY_OUT(ClaricppPrim)
+claricpp_backend_z3_eval(const ClaricppBackend z3, const ClaricppExpr expr,
+                         const ClaricppSolver solver, const SIZE_T n_sol);
 
 #if 0
 inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,

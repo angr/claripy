@@ -178,6 +178,13 @@ extern "C" {
         return API::to_arr(
             API::to_cpp_down_ref<Backend::Z3::Z3>(z3).unsat_core(API::to_cpp_ref(solver)));
     }
+
+    ARRAY_OUT(ClaricppPrim)
+    claricpp_backend_z3_eval(const ClaricppBackend z3, const ClaricppExpr expr,
+                             const ClaricppSolver solver, const SIZE_T n_sol) {
+        return API::to_arr(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).eval(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), n_sol));
+    }
 }
 
 /********************************************************************/
