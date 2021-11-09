@@ -35,7 +35,7 @@ namespace Create::Private {
         static_assert(Util::qualified_is_in<Out, Allowed...>,
                       "Create::Private::flat argument types must be in Allowed");
         Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
-        UTILS_AFFIRM_NOT_NULL_DEBUG(operands[0]);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(operands[0]);
         Util::affirm<Err::Type>(CUID::is_t<Out>(operands[0]),
                                 WHOAMI "operands[0] is the wrong type");
 
@@ -68,7 +68,7 @@ namespace Create::Private {
         // Checks
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
         Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
-        UTILS_AFFIRM_NOT_NULL_DEBUG(operands[0]);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(operands[0]);
         Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(operands[0]),
                                 WHOAMI "operands[0] is the wrong type");
 

@@ -27,7 +27,7 @@ namespace Factory::Private {
     struct HasStaticCUID<T, decltype((void) T::static_cuid, 0)> final : std::true_type {};
 
     /** Used to determine of T has a static_cuid variable */
-    template <typename T> UTILS_ICCBOOL has_static_cuid = HasStaticCUID<T>::value;
+    template <typename T> UTIL_ICCBOOL has_static_cuid = HasStaticCUID<T>::value;
 
 } // namespace Factory::Private
 

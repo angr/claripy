@@ -12,10 +12,10 @@ static std::set<int> test_set {};
 
 // Insert values to test_set
 // Note that we do each one twice to check for namespace collisions
-UTILS_RUN_STATEMENT_BEFORE_MAIN(test_set.insert(0));
-UTILS_RUN_STATEMENT_BEFORE_MAIN(test_set.insert(1));
-UTILS_RUN_FUNCTION_BEFORE_MAIN([]() { test_set.insert(2); });
-UTILS_RUN_FUNCTION_BEFORE_MAIN([]() { test_set.insert(3); });
+UTIL_RUN_STATEMENT_BEFORE_MAIN(test_set.insert(0));
+UTIL_RUN_STATEMENT_BEFORE_MAIN(test_set.insert(1));
+UTIL_RUN_FUNCTION_BEFORE_MAIN([]() { test_set.insert(2); });
+UTIL_RUN_FUNCTION_BEFORE_MAIN([]() { test_set.insert(3); });
 
 
 /** Test running statements before main */

@@ -102,7 +102,7 @@ namespace API {
      *  Warning: Returns a reference to part of x
      */
     template <typename InC> inline auto &to_cpp(const InC &x) noexcept {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(x.ptr);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(x.ptr);
         return *static_cast<Private::Map<InC> *const>(x.ptr);
     }
 
@@ -111,7 +111,7 @@ namespace API {
      */
     template <typename InC> inline auto &to_cpp_ref(const InC &x) noexcept {
         auto ptr { to_cpp(x) };
-        UTILS_AFFIRM_NOT_NULL_DEBUG(ptr);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(ptr);
         return *ptr;
     }
 
@@ -192,7 +192,7 @@ namespace API {
 /** A local macro used for consistency */
 #define CASE(INDEX, TYPE)                                                                          \
     case INDEX: {                                                                                  \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(in, INDEX, TYPE);                             \
+        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(in, INDEX, TYPE);                              \
         TYPE &got { std::get<INDEX>(in) };
 /** A local macro used for consistency */
 #define CASE_END }

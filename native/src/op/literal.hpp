@@ -40,7 +40,7 @@ namespace Op {
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                     \
     case (INDEX): {                                                                                \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                           \
+        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                            \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
@@ -140,7 +140,7 @@ namespace Op {
         P_CTOR(std::string) {};
         P_CTOR(float) {};
         P_CTOR(double) {};
-        P_CTOR(PyObj::VSPtr) { UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
+        P_CTOR(PyObj::VSPtr) { UTIL_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value)); }
         // BV constructors
         P_CTOR(uint8_t) {};
         P_CTOR(uint16_t) {};
@@ -162,7 +162,7 @@ namespace Op {
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                     \
     case (INDEX): {                                                                                \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                           \
+        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(value, INDEX, TYPE)                            \
         const auto &got { std::get<TYPE>(value) };
 
 /** A local macro used for consistency */
@@ -185,7 +185,7 @@ namespace Op {
                 // VS
                 VCASE_PRE(4, PyObj::VSPtr);
 #ifdef DEBUG
-                UTILS_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
+                UTIL_AFFIRM_NOT_NULL_DEBUG(std::get<PyObj::VSPtr>(value));
                 const auto bl { std::get<PyObj::VSPtr>(value)->bit_length };
                 Util::affirm<Util::Err::Size>(bl % C_CHAR_BIT == 0, WHOAMI "VS of bit length ", bl,
                                               " which is not divisible by ", C_CHAR_BIT,

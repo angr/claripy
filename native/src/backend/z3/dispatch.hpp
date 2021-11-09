@@ -27,8 +27,8 @@ namespace Backend::Z3 {
         static z3::expr dispatch_conversion(const Expr::RawPtr expr,
                                             std::vector<const z3::expr *> &args,
                                             SymAnTransData &satd, Z3 &bk) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // NOLINT Sanity check
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr->op); // NOLINT Sanity check
 
             // We define local macros below to enforce consistency
             // across 'trivial' ops to reduce copy-paste errors.

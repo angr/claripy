@@ -34,7 +34,7 @@ namespace Expr {
 
     /** Return the type name of the expr pointed to by non-nullptr e */
     constexpr const char *type_name(const Expr::RawPtr e) {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(e);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(e);
         return type_name(e->cuid);
     }
 

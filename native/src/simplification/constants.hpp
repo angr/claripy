@@ -11,7 +11,7 @@
 namespace Simplification {
 
     // Define a custom log class for simplifications
-    UTILS_LOG_DEFINE_LOG_CLASS(SLog)
+    UTIL_LOG_DEFINE_LOG_CLASS(SLog)
 
     /** The type each top level simplifier must have
      *  Note: takes in a Factory::Ptr (as opposed to a raw pointer) since it may return the input

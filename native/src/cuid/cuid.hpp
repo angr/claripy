@@ -23,7 +23,7 @@
                   "X should be convertible to an int!");                                           \
     /** Define a static_cuid */                                                                    \
     [[maybe_unused]] static const constexpr ::CUID::CUID static_cuid {                             \
-        UTILS_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)   \
+        UTIL_FILE_LINE_HASH ^ Util::FNV1a<int>::hash(&Util::ref<int, static_cast<int>((X))>, 1)    \
     };
 
 

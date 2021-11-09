@@ -48,7 +48,7 @@ namespace Backend {
          *  expr may not be nullptr
          */
         bool handles(const Expr::RawPtr expr) override {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
             try {
                 (void) convert(expr);
                 return true;
@@ -80,7 +80,7 @@ namespace Backend {
          */
         BackendObj convert(const Expr::RawPtr input) {
             auto &conversion_cache { conversion_cache_g() };
-            UTILS_AFFIRM_NOT_NULL_DEBUG(input);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(input);
 
             // Functionally a stack of lists of exprs to be converted
             // We flatten and reverse this list for performance reasons
@@ -101,7 +101,7 @@ namespace Backend {
                 // If the expr does not represent the end of a list
                 if (expr != nullptr) {
                     const auto *const op { expr->op.get() };
-                    UTILS_AFFIRM_NOT_NULL_DEBUG(op);
+                    UTIL_AFFIRM_NOT_NULL_DEBUG(op);
 
                     // Cache lookups
                     if (const auto lookup = conversion_cache.find(expr->hash);
@@ -153,7 +153,7 @@ namespace Backend {
                 WHOAMI "conversion_cache lookup does not match arg_stack back()");
             chk(arg_stack.back() == &conversion_cache.find(input->hash)->second,
                 WHOAMI "arg_stack / conversion_cache mismatch at end of convert");
-            UTILS_AFFIRM_NOT_NULL_DEBUG(arg_stack.back());
+            UTIL_AFFIRM_NOT_NULL_DEBUG(arg_stack.back());
 #endif
             // Return result
             return *arg_stack.back(); // shortcut for conversion_cache.find(input->hash)->second;

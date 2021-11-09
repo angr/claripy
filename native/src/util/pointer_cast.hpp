@@ -46,7 +46,7 @@ namespace Util::Cast {
          *  Note: this does not do any static assertion verification
          */
         template <typename Out, typename In> constexpr bool test(const std::shared_ptr<In> &in) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(in);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(in);
             using Ptr = CTSC<TransferConst<Out, In>>;
             return dynamic_cast<Ptr>(in.get()) != nullptr;
         }
@@ -54,7 +54,7 @@ namespace Util::Cast {
         /** Dynamic down-cast that throws on failure; in may not be nullptr */
         template <typename Out, typename In, typename E = Err::BadCast>
         constexpr auto down_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(in);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { down<Out>(in) }; // Not const for possible move ret
             affirm<E>(full(ret), WHOAMI "Dynamic down-cast failed");
             return ret;
@@ -63,7 +63,7 @@ namespace Util::Cast {
         /** A dynamic side cast that throws on failure; in may not be nullptr */
         template <typename Out, typename In, typename E = Err::BadCast>
         constexpr auto side_throw_on_fail(const std::shared_ptr<In> &in) noexcept {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(in);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(in);
             auto ret { side<Out>(in) }; // Not const for possible move ret
             affirm<E>(full(ret), WHOAMI "Dynamic pointer cast failed");
             return ret;
@@ -75,7 +75,7 @@ namespace Util::Cast {
          */
         template <typename To, typename Err, typename In, typename... Args>
         constexpr void test_throw_on_fail(const std::shared_ptr<In> &in, Args &&...args) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(in);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(in);
             affirm<Err>(test<To>(in), std::forward<Args>(args)...);
         }
     } // namespace Dynamic
@@ -127,7 +127,7 @@ namespace Util::Cast {
          */
         template <typename Out, typename In>
         constexpr auto from_void(const std::shared_ptr<In> &in) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(in);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(in);
             static_assert(Util::is_in_ignore_const<In, void>, "Will only cast from void type");
             static_assert(!Util::is_same_ignore_cv<Out, void>, "Cannot cast to void");
             return Private::static_pointer_cast<Out>(in);

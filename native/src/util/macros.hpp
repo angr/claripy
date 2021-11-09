@@ -8,12 +8,12 @@
 
 
 /** An abbreviation for 'const constexpr bool' to enforce consistency */
-#define UTILS_CCBOOL const constexpr bool
+#define UTIL_CCBOOL const constexpr bool
 
 /** An abbreviation for 'inline const constexpr bool' to enforce consistency
  *  Note that constexpr may not imply inline here so we are explicit
  */
-#define UTILS_ICCBOOL const inline constexpr bool
+#define UTIL_ICCBOOL const inline constexpr bool
 
 
 #endif

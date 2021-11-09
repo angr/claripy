@@ -1,7 +1,7 @@
 /**
  * @file
  * \ingroup util
- * @brief This file defines UTILS_TYPE_PUN and related macros
+ * @brief This file defines UTIL_TYPE_PUN and related macros
  * We use this instead of unions as unions can have undefined behavior when type punning.
  * Likewise, due to 'strict anti-aliasing' rules, type punning via casting can have
  * undefined behavior, especially with -O2 or higher level optimizations.
@@ -24,7 +24,7 @@
  *  of the type being punned to.
  *  Warning: If you want to type-pun with an array, use std::memcpy
  */
-#define UTILS_TYPE_PUN_ONTO(OUT_ONTO_PTR, IN_OBJ_PTR)                                              \
+#define UTIL_TYPE_PUN_ONTO(OUT_ONTO_PTR, IN_OBJ_PTR)                                               \
     static_assert(sizeof(*OUT_ONTO_PTR) <= sizeof(*(IN_OBJ_PTR)),                                  \
                   "cannot pun to a size larger than the input object");                            \
     /* Not memmove since compilers seem to be more capable of no-op-ing memcpy with -O3 */         \

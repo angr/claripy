@@ -22,10 +22,10 @@ std::vector<Util::RunOnDestruction<decltype(err)>> errors {};
 
 // Prevent errors from triggering after main
 // Note that we do each one twice to check for namespace collisions
-UTILS_RUN_STATEMENT_AFTER_MAIN(errors[0].disable());
-UTILS_RUN_STATEMENT_AFTER_MAIN(errors[1].disable());
-UTILS_RUN_FUNCTION_AFTER_MAIN([]() { errors[2].disable(); });
-UTILS_RUN_FUNCTION_AFTER_MAIN([]() { errors[3].disable(); });
+UTIL_RUN_STATEMENT_AFTER_MAIN(errors[0].disable());
+UTIL_RUN_STATEMENT_AFTER_MAIN(errors[1].disable());
+UTIL_RUN_FUNCTION_AFTER_MAIN([]() { errors[2].disable(); });
+UTIL_RUN_FUNCTION_AFTER_MAIN([]() { errors[3].disable(); });
 
 
 /** Test running statements after main */

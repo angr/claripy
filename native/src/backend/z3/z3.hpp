@@ -15,7 +15,7 @@
 namespace Backend::Z3 {
 
     // Z3 global settings
-    UTILS_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
+    UTIL_RUN_FUNCTION_BEFORE_MAIN(z3::set_param, "rewriter.hi_fp_unspecified", rhfpu);
 
     /** The Z3 backend
      *  Warning: All Z3 backends within a given thread share their data
@@ -31,7 +31,7 @@ namespace Backend::Z3 {
         /** Used for static error checking in template injection */
         using IsZ3Bk = std::true_type;
         /** Z3 objects cannot hold annotations */
-        static UTILS_CCBOOL apply_annotations = false;
+        static UTIL_CCBOOL apply_annotations = false;
 
         /** Constructor */
         inline Z3() noexcept = default;
@@ -49,7 +49,7 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          */
         inline Expr::BasePtr simplify(const Expr::RawPtr expr) override final {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
             namespace Ex = Expr;
             switch (expr->cuid) {
                 case Ex::Bool::static_cuid: {
@@ -481,7 +481,7 @@ namespace Backend::Z3 {
                 /** A local macro used for consistency */
 #define CASE_B(INDEX, TYPE)                                                                        \
     case INDEX: {                                                                                  \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                              \
+        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, INDEX, TYPE);                               \
         return static_cast<T>(std::get<TYPE>(p));                                                  \
     }
                 CASE_B(5, uint8_t)
@@ -490,7 +490,7 @@ namespace Backend::Z3 {
                 CASE_B(8, uint64_t)
 #undef CASE_B
                 case 9: {
-                    UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
+                    UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(p, 9, BigInt);
                     const auto &bi = std::get<BigInt>(p);
                     Util::affirm<Usage>(bi.bit_length < 64,
                                         WHOAMI "Bit length of given PrimVar is too long");
@@ -503,8 +503,8 @@ namespace Backend::Z3 {
 
         /** Create a == b; neither may be nullptr */
         static inline Expr::BasePtr to_eq(const Expr::RawPtr a_raw, const Expr::RawPtr b_raw) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(a_raw);
-            UTILS_AFFIRM_NOT_NULL_DEBUG(b_raw);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(a_raw);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(b_raw);
             return Create::eq(Expr::find(a_raw->hash), Expr::find(b_raw->hash));
         }
 
@@ -513,7 +513,7 @@ namespace Backend::Z3 {
         inline auto extrema(const Expr::RawPtr raw_expr, z3::solver &solver) {
             // Check input
             using Usage = Util::Err::Usage;
-            UTILS_AFFIRM_NOT_NULL_DEBUG(raw_expr);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(raw_expr);
 #ifdef DEBUG
             Util::affirm<Usage>(CUID::is_t<Expr::BV>(raw_expr), WHOAMI "expr must be a BV");
 #endif

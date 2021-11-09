@@ -42,47 +42,47 @@ namespace Hash {
 
     /** A specialization for T = int8_t */
     template <> constexpr Hash singular(const int8_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = int16_t */
     template <> constexpr Hash singular(const int16_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = int32_t */
     template <> constexpr Hash singular(const int32_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = int64_t */
     template <> constexpr Hash singular(const int64_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = uint8_t */
     template <> constexpr Hash singular(const uint8_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = uint16_t */
     template <> constexpr Hash singular(const uint16_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = uint32_t */
     template <> constexpr Hash singular(const uint32_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = uint64_t */
     template <> constexpr Hash singular(const uint64_t &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = char */
     template <> constexpr Hash singular(const char &c) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(c);
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(c);
     }
 
     /** A specialization for T = float
@@ -92,8 +92,8 @@ namespace Hash {
         static_assert(sizeof(float) == sizeof(uint32_t),
                       "Numeric type must have the same size as float");
         uint32_t tmp; // NOLINT
-        UTILS_TYPE_PUN_ONTO(&tmp, &f);
-        return UTILS_FILE_LINE_HASH ^ tmp;
+        UTIL_TYPE_PUN_ONTO(&tmp, &f);
+        return UTIL_FILE_LINE_HASH ^ tmp;
     }
 
     /** A specialization for T = double
@@ -101,23 +101,23 @@ namespace Hash {
      */
     template <> inline Hash singular(const double &d) noexcept {
         Hash tmp; // NOLINT
-        UTILS_TYPE_PUN_ONTO(&tmp, &d);
-        return UTILS_FILE_LINE_HASH ^ tmp;
+        UTIL_TYPE_PUN_ONTO(&tmp, &d);
+        return UTIL_FILE_LINE_HASH ^ tmp;
     }
 
     /** A specialization for T = bool */
     template <> constexpr Hash singular(const bool &b) noexcept {
-        return UTILS_FILE_LINE_HASH ^ (b ? 1ULL : 0ULL);
+        return UTIL_FILE_LINE_HASH ^ (b ? 1ULL : 0ULL);
     }
 
     /** A specialization for T = CCSC */
     template <> constexpr Hash singular(CCSC &s) noexcept {
-        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, Util::strlen(s));
+        return UTIL_FILE_LINE_HASH ^ fnv1a<char>(s, Util::strlen(s));
     }
 
     /** A specialization for T = char[] */
     template <std::size_t N> constexpr Hash singular(const char (&s)[N]) noexcept { // NOLINT
-        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s, N);
+        return UTIL_FILE_LINE_HASH ^ fnv1a<char>(s, N);
     }
 
     /**************************************************/
@@ -130,7 +130,7 @@ namespace Hash {
         static_assert(sizeof(m) <= sizeof(Hash), "singular(Mode::FP) must be modified");
         static_assert(std::is_fundamental_v<U> && std::is_fundamental_v<Hash>,
                       "singular(Mode::FP::Rounding) must be modified");
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Util::to_underlying(m));
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(Util::to_underlying(m));
     }
 
     /** A specialization for T = Mode::FP::Width */
@@ -140,20 +140,20 @@ namespace Hash {
         static_assert(sizeof(Mode::FP::Width) == sizeof(Hash),
                       "singular(Mode::FP::Width) must be modified.");
         Hash tmp; // NOLINT
-        UTILS_TYPE_PUN_ONTO(&tmp, &w);
-        return UTILS_FILE_LINE_HASH ^ tmp;
+        UTIL_TYPE_PUN_ONTO(&tmp, &w);
+        return UTIL_FILE_LINE_HASH ^ tmp;
     }
 
     /** A specialization for T = std::byte */
     template <> constexpr Hash singular(const std::byte &b) noexcept {
-        return UTILS_FILE_LINE_HASH ^ static_cast<Hash>(Util::to_underlying(b));
+        return UTIL_FILE_LINE_HASH ^ static_cast<Hash>(Util::to_underlying(b));
     }
 
     /** A specialization for T = std::string
      *  @todo: comapre speed to c++ hash for string when size_t is 8 bytes
      */
     template <> inline Hash singular(const std::string &s) noexcept {
-        return UTILS_FILE_LINE_HASH ^ fnv1a<char>(s.c_str(), s.size());
+        return UTIL_FILE_LINE_HASH ^ fnv1a<char>(s.c_str(), s.size());
     }
 
     /** A specialization for T = boost::multiprecision::mpz_int */
@@ -171,17 +171,17 @@ namespace Hash {
         if (std::holds_alternative<BigInt::Int>(arb.value)) {
             const mpz_t &raw { std::get<BigInt::Int>(arb.value).backend().data() };
             const auto len { Util::widen<mp_limb_t, true>(raw->_mp_size) };
-            return UTILS_FILE_LINE_HASH ^ arb.bit_length ^ fnv1a<mp_limb_t>(raw->_mp_d, len);
+            return UTIL_FILE_LINE_HASH ^ arb.bit_length ^ fnv1a<mp_limb_t>(raw->_mp_d, len);
         }
         else {
-            return UTILS_FILE_LINE_HASH ^ singular(std::get<BigInt::Str>(arb.value));
+            return UTIL_FILE_LINE_HASH ^ singular(std::get<BigInt::Str>(arb.value));
         }
     }
 
     /** A specialization for shared pointers to pre-hashed types */
     template <> inline Hash singular(const std::shared_ptr<const Hashed> &h) noexcept {
         if (h == nullptr) {
-            return UTILS_FILE_LINE_HASH;
+            return UTIL_FILE_LINE_HASH;
         }
         // Will warn if types are different or implicit conversion is dangerous / impossible
         return h->hash;

@@ -18,7 +18,7 @@ static unsigned count { 0 };
  *  Increments count each time
  */
 void loop(unsigned n) {
-    UTILS_RECURRENCE_GUARD_LIM(LIMIT);
+    UTIL_RECURRENCE_GUARD_LIM(LIMIT);
     count += 1;
     if (n == 0) {
         return;

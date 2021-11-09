@@ -27,13 +27,13 @@
     /* Abbreviations */                                                                            \
                                                                                                    \
     /** A dependent boolean */                                                                     \
-    template <bool Value, METATYPE... _> UTILS_ICCBOOL boolean { constant<bool, Value, _...> };    \
+    template <bool Value, METATYPE... _> UTIL_ICCBOOL boolean { constant<bool, Value, _...> };     \
                                                                                                    \
     /** A dependent false boolean */                                                               \
-    template <METATYPE... _> UTILS_ICCBOOL false_ { boolean<false, _...> };                        \
+    template <METATYPE... _> UTIL_ICCBOOL false_ { boolean<false, _...> };                         \
                                                                                                    \
     /** A dependent true boolean */                                                                \
-    template <METATYPE... _> UTILS_ICCBOOL true_ { boolean<true, _...> };
+    template <METATYPE... _> UTIL_ICCBOOL true_ { boolean<true, _...> };
 
 // Type dependent constants
 namespace Util::TD {

@@ -12,7 +12,7 @@ using namespace Simplification;
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::if_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     /* Expr::Bool { Expr::cast_throw_on_fail<Expr::Bool>(original->args[0]) }; */
 
     /* if (cond->is_true()) { */
@@ -31,7 +31,7 @@ Expr::BasePtr Simplifier::if_(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::concat(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -39,7 +39,7 @@ Expr::BasePtr Simplifier::concat(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::BV::reverse(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -51,7 +51,7 @@ Expr::BasePtr Simplifier::BV::reverse(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Shift::r(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -78,7 +78,7 @@ Expr::BasePtr Simplifier::Shift::lshr(const Expr::BasePtr &original) {
  */
 Expr::BasePtr Simplifier::eq(const Expr::BasePtr &original) {
 #ifdef DEBUG
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     Util::Cast::Dynamic::test_throw_on_fail<Op::Eq, Util::Err::Type>(
         original->op, "Simplifer::eq's Expr's op must be an Op::Eq");
 #endif
@@ -90,7 +90,7 @@ Expr::BasePtr Simplifier::eq(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::ne(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -102,7 +102,7 @@ Expr::BasePtr Simplifier::ne(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Boolean::and_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -110,7 +110,7 @@ Expr::BasePtr Simplifier::Boolean::and_(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Boolean::or_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -118,7 +118,7 @@ Expr::BasePtr Simplifier::Boolean::or_(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Boolean::not_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -130,7 +130,7 @@ Expr::BasePtr Simplifier::Boolean::not_(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::add(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -138,7 +138,7 @@ Expr::BasePtr Simplifier::Bitwise::add(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::mul(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -146,7 +146,7 @@ Expr::BasePtr Simplifier::Bitwise::mul(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::sub(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -154,7 +154,7 @@ Expr::BasePtr Simplifier::Bitwise::sub(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::xor_minmax(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -162,7 +162,7 @@ Expr::BasePtr Simplifier::Bitwise::xor_minmax(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::or_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -170,7 +170,7 @@ Expr::BasePtr Simplifier::Bitwise::or_(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::and_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }
 
@@ -178,6 +178,6 @@ Expr::BasePtr Simplifier::Bitwise::and_(const Expr::BasePtr &original) {
  *  original may not be nullptr
  */
 Expr::BasePtr Simplifier::Bitwise::xor_(const Expr::BasePtr &original) {
-    UTILS_AFFIRM_NOT_NULL_DEBUG(original);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(original);
     return original; // todo
 }

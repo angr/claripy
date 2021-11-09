@@ -13,14 +13,14 @@
 #ifdef DEBUG
 
     /** A macro that null checks (X) iff DEBUG is defined */
-    #define UTILS_AFFIRM_NOT_NULL_DEBUG(X)                                                         \
+    #define UTIL_AFFIRM_NOT_NULL_DEBUG(X)                                                          \
         ::Util::affirm<::Util::Err::Null>((X) != nullptr, WHOAMI "Nullptr "                        \
                                                                  "detected.");
 
 #else
 
     /** A macro that nullchecks (X) iff DEBUG is defined */
-    #define UTILS_AFFIRM_NOT_NULL_DEBUG(X)
+    #define UTIL_AFFIRM_NOT_NULL_DEBUG(X)
 
 #endif
 

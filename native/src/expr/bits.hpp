@@ -38,7 +38,7 @@ namespace Expr {
      *  Warning: This static casts, the user must ensure that p is a Bits
      */
     constexpr UInt get_bit_length(const Expr::RawPtr &p) {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(p);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(p);
         using To = const Expr::Bits *;
         return Util::checked_static_cast<To>(p)->bit_length;
     }
@@ -48,7 +48,7 @@ namespace Expr {
      *  Warning: This static casts, the user must ensure that p.get() is a Bits
      */
     inline UInt get_bit_length(const Expr::BasePtr &p) {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(p);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(p);
         return get_bit_length(p.get());
     }
 

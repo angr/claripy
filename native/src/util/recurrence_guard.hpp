@@ -17,10 +17,10 @@
 
 
 /** A macro to make creating a recurrence guard easier */
-#define UTILS_RECURRENCE_GUARD ::Util::RecurrenceGuard __recurrence_guard(__func__);
+#define UTIL_RECURRENCE_GUARD ::Util::RecurrenceGuard __recurrence_guard(__func__);
 
 /** A macro to make creating a recurrence guard with a custom limit easier */
-#define UTILS_RECURRENCE_GUARD_LIM(LIM) ::Util::RecurrenceGuard __recurrence_guard(__func__, (LIM));
+#define UTIL_RECURRENCE_GUARD_LIM(LIM) ::Util::RecurrenceGuard __recurrence_guard(__func__, (LIM));
 
 
 namespace Util {

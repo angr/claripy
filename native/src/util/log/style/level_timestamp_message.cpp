@@ -56,7 +56,7 @@ std::string LevelTimestampMessage::str(CCSC, const Lvl &lvl, const std::ostrings
         default: // Should not be possible
             throw Err::Unknown("Logger was given unknown level");
     }
-    UTILS_AFFIRM_NOT_NULL_DEBUG(color);
+    UTIL_AFFIRM_NOT_NULL_DEBUG(color);
 
     // Get time
     const auto tm { get_time() };

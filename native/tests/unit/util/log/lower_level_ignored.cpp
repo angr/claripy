@@ -27,7 +27,7 @@ void test(std::shared_ptr<std::ostringstream> &s, const Lvl l) {
 }
 
 /** A custom log type */
-UTILS_LOG_DEFINE_LOG_CLASS(Custom)
+UTIL_LOG_DEFINE_LOG_CLASS(Custom)
 
 
 /** Log levels lower than the set level should be no-op's */

@@ -34,7 +34,7 @@ namespace Util {
         template <typename... Other> using Append = TypeList<Args..., Other...>;
 
         /** Return true if T in Args */
-        template <typename T> static UTILS_ICCBOOL contains { (std::is_same_v<T, Args> || ...) };
+        template <typename T> static UTIL_ICCBOOL contains { (std::is_same_v<T, Args> || ...) };
 
         /** Return a TypeList containing Args... set minus the types in the type list TL */
         template <typename TL> using TLDiff = decltype(Private::diff(std::declval<TL>()));
@@ -64,7 +64,7 @@ namespace Util {
             template <typename RemoveTL, typename Head, typename... Tail>
             static auto diff_helper() {
                 // Either an empty TypeList or a list containing only Head
-                UTILS_CCBOOL no_head_out { RemoveTL::template contains<Head> };
+                UTIL_CCBOOL no_head_out { RemoveTL::template contains<Head> };
                 // Base case
                 if constexpr (sizeof...(Tail) == 0) {
                     // Either return an empty typelist of a typelist just containing Head

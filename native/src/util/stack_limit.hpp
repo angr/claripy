@@ -14,7 +14,7 @@
 namespace Util::StackLimit {
 
     /** true iff stack limit operations are supported */
-    UTILS_ICCBOOL supported {
+    UTIL_ICCBOOL supported {
 #if __has_include(<sys/resource.h>)
         true
 #else

@@ -16,7 +16,7 @@ namespace Mode {
 } // namespace Mode
 
 // Enable bit masking
-UTILS_BITMASK_ENABLE(Mode::Compare)
+UTIL_BITMASK_ENABLE(Mode::Compare)
 
 namespace Mode {
 

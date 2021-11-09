@@ -24,4 +24,4 @@ void fail_if_unverified() {
 
 
 /** Run fail_if_unverified after main */
-UTILS_RUN_FUNCTION_AFTER_MAIN(fail_if_unverified)
+UTIL_RUN_FUNCTION_AFTER_MAIN(fail_if_unverified)

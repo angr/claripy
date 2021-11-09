@@ -8,7 +8,7 @@
 #include <sstream>
 
 /** A custom log type */
-UTILS_LOG_DEFINE_LOG_CLASS(Custom)
+UTIL_LOG_DEFINE_LOG_CLASS(Custom)
 
 /** Define test_each_level with the custom log type */
 #define TEMPLATE_MACRO <Custom>

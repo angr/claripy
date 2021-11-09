@@ -78,7 +78,7 @@ namespace Op {
     UIntBinary::~UIntBinary() noexcept = default;
 
     /** Returns true if T is int binary */
-    template <typename T> UTILS_ICCBOOL is_uint_binary { Util::is_ancestor<UIntBinary, T> };
+    template <typename T> UTIL_ICCBOOL is_uint_binary { Util::is_ancestor<UIntBinary, T> };
 
 } // namespace Op
 

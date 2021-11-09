@@ -28,7 +28,7 @@ namespace Util::Log::Backend {
         inline void log(CCSC id, const Level::Level &lvl,
                         const std::string &msg) const override final {
             for (const auto &i : backends) {
-                UTILS_AFFIRM_NOT_NULL_DEBUG(i);
+                UTIL_AFFIRM_NOT_NULL_DEBUG(i);
                 i->log(id, lvl, msg);
             }
         }

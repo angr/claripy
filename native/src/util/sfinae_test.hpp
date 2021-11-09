@@ -18,7 +18,7 @@
  *  Note: The first template argument *must* exist and be named T
  *  Note: In the CONDITION use U instead of T as we have to redeclare it as U
  */
-#define UTILS_SFINAETEST(WRAPPER_NAME, CLASS_NAME, CONDITION, ...)                                 \
+#define UTIL_SFINAETEST(WRAPPER_NAME, CLASS_NAME, CONDITION, ...)                                  \
     template <__VA_ARGS__> class CLASS_NAME final {                                                \
         /** Define a unique class */                                                               \
         struct Unique {};                                                                          \
@@ -39,12 +39,12 @@
                                                                                                    \
       public:                                                                                      \
         /** Compare the return types to determine if the condition was resolvable and valid */     \
-        static UTILS_CCBOOL value { !Util::is_exactly_same<Unique, Ret> };                         \
+        static UTIL_CCBOOL value { !Util::is_exactly_same<Unique, Ret> };                          \
     };                                                                                             \
                                                                                                    \
     /** A shortcut for running the SFINAE test and checking the result                             \
      *  Note: this wrapper accepts any arguments it relies on the associated class to type check.  \
      */                                                                                            \
-    template <typename... Args> UTILS_ICCBOOL WRAPPER_NAME { CLASS_NAME<Args...>::value };
+    template <typename... Args> UTIL_ICCBOOL WRAPPER_NAME { CLASS_NAME<Args...>::value };
 
 #endif

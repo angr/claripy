@@ -22,12 +22,12 @@ namespace Util {
 
     /** Return true if T is an X */
     template <template <typename...> typename X, typename T>
-    UTILS_ICCBOOL is_x { Private::IsX<X, T>::value };
+    UTIL_ICCBOOL is_x { Private::IsX<X, T>::value };
 
     // Common uses
 
     /** Return true if T is a shared_ptr */
-    template <typename T> UTILS_ICCBOOL is_shared_ptr { is_x<std::shared_ptr, T> };
+    template <typename T> UTIL_ICCBOOL is_shared_ptr { is_x<std::shared_ptr, T> };
 
 } // namespace Util
 #endif

@@ -52,7 +52,7 @@ namespace Op {
          */
         inline void unsafe_add_reversed_children(Stack &s) const override final {
             for (auto i { operands.crbegin() }; i != operands.crend(); ++i) {
-                UTILS_AFFIRM_NOT_NULL_DEBUG(i->get());
+                UTIL_AFFIRM_NOT_NULL_DEBUG(i->get());
                 s.emplace(i->get());
             }
         }
@@ -63,7 +63,7 @@ namespace Op {
         inline void python_children(std::vector<ArgVar> &v) const override final {
             v.reserve(v.size() + operands.size());
             for (const auto &i : operands) {
-                UTILS_AFFIRM_NOT_NULL_DEBUG(i);
+                UTIL_AFFIRM_NOT_NULL_DEBUG(i);
                 v.emplace_back(i);
             }
         }
@@ -136,7 +136,7 @@ namespace Op {
 
     /** Returns true if T is flat */
     template <typename T>
-    UTILS_ICCBOOL is_flat { Util::is_ancestor<Flat<true>, T> || Util::is_ancestor<Flat<false>, T> };
+    UTIL_ICCBOOL is_flat { Util::is_ancestor<Flat<true>, T> || Util::is_ancestor<Flat<false>, T> };
 
 } // namespace Op
 

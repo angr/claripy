@@ -16,8 +16,8 @@ namespace Expr {
      *  x and y may not be null pointers
      */
     template <bool ConsiderSize> bool are_same_type(const BasePtr &x, const BasePtr &y) {
-        UTILS_AFFIRM_NOT_NULL_DEBUG(x);
-        UTILS_AFFIRM_NOT_NULL_DEBUG(y);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(x);
+        UTIL_AFFIRM_NOT_NULL_DEBUG(y);
         // Type check
         if (x->cuid != y->cuid) {
             Util::Log::warning(WHOAMI "failed due to cuid difference");

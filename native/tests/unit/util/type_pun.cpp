@@ -20,7 +20,7 @@ void type_pun() {
     uint64_t onto = 0;
 
     // Safe pun
-    UTILS_TYPE_PUN_ONTO(&onto, &d); // NOLINT
+    UTIL_TYPE_PUN_ONTO(&onto, &d); // NOLINT
 
     // Unsafe pun
     UnsafePun p; // NOLINT

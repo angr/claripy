@@ -44,7 +44,7 @@ namespace Util {
         WeakCache() = default;
 
         // Enable custom logging
-        UTILS_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
+        UTIL_LOG_ENABLE_CUSTOM_LOGGING("HashCache")
 
         /** The type of the cache used internally */
         using CacheMap = std::map<Hash, std::weak_ptr<const Cached>>;

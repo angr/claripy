@@ -18,7 +18,7 @@ static_assert(((__COUNTER__ + 1) == __COUNTER__) && ((__COUNTER__ + 2) != __COUN
 /** Define a macro to allow running a literal statement
  *  This must be used outside of a function as it works by declaring global variables
  */
-#define UTILS_RUN_STATEMENT_BEFORE_MAIN(STATEMENT)                                                 \
+#define UTIL_RUN_STATEMENT_BEFORE_MAIN(STATEMENT)                                                  \
     /** Declare an anonymous namespace to obscure internals  */                                    \
     namespace MACRO_CONCAT(__RBM_, __COUNTER__) {                                                  \
         /** Declare a class that will run F(args...) before main */                                \
@@ -37,7 +37,7 @@ static_assert(((__COUNTER__ + 1) == __COUNTER__) && ((__COUNTER__ + 2) != __COUN
 /** Define a macro to allow running a function before main
  *  This must be used outside of a function as it works by declaring global variables
  */
-#define UTILS_RUN_FUNCTION_BEFORE_MAIN(F, ...)                                                     \
+#define UTIL_RUN_FUNCTION_BEFORE_MAIN(F, ...)                                                      \
     /** Declare an anonymous namespace to obscure internals */                                     \
     namespace MACRO_CONCAT(__RBM_, __COUNTER__) {                                                  \
         /** Declare a class that will run F(args...) before main */                                \

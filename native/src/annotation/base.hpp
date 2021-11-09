@@ -42,7 +42,7 @@ namespace Annotation {
         virtual bool relocatable() const { return false; }
 
         /** The default hash of an Annotation::Base */
-        static const constexpr UInt default_hash { UTILS_FILE_LINE_HASH };
+        static const constexpr UInt default_hash { UTIL_FILE_LINE_HASH };
     };
 
     /** An alias for Factory::Ptr<Annotation::Base> */

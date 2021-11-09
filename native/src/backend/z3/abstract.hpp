@@ -296,7 +296,7 @@ namespace Backend::Z3 {
                     G_CASE(2)
                     G_CASE(3)
                     case 4:
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(x, 4, BigInt);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(x, 4, BigInt);
                         return Create::literal(std::move(std::get<BigInt>(x)));
                     default:
                         throw Util::Err::Unknown(WHOAMI, "Bad variant");
@@ -438,7 +438,7 @@ namespace Backend::Z3 {
                     };
                     // If nothing went wrong, this reinterpret_cast should be safe
                     double ret; // NOLINT
-                    UTILS_TYPE_PUN_ONTO(&ret, &to_val);
+                    UTIL_TYPE_PUN_ONTO(&ret, &to_val);
                     return ret;
                 }
                 if (LIKELY(width == FP::flt)) {
@@ -448,7 +448,7 @@ namespace Backend::Z3 {
                                              << FP::flt.mantissa_raw()) };
                     // If nothing went wrong, this reinterpret_cast should be safe
                     float ret; // NOLINT
-                    UTILS_TYPE_PUN_ONTO(&ret, &to_val);
+                    UTIL_TYPE_PUN_ONTO(&ret, &to_val);
                     return ret;
                 }
                 throw Util::Err::NotSupported(

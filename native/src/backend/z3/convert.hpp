@@ -204,13 +204,13 @@ namespace Backend::Z3 {
 #ifdef DEBUG
             Util::affirm<Util::Err::Size>(
                 size >= 2, "size < 2; this probably resulted from an invalid claricpp expr.");
-            UTILS_AFFIRM_NOT_NULL_DEBUG(arr[0]);
-            UTILS_AFFIRM_NOT_NULL_DEBUG(arr[1]);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(arr[0]);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(arr[1]);
 #endif
             const FunctorType fn {};
             z3::expr ret { fn(*arr[0], *arr[1]) };
             for (UInt i { 2 }; i < size; ++i) {
-                UTILS_AFFIRM_NOT_NULL_DEBUG(arr[i]);
+                UTIL_AFFIRM_NOT_NULL_DEBUG(arr[i]);
                 ret = std::move(fn(std::move(ret), *arr[i]));
             }
             return ret;
@@ -261,32 +261,32 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          */
         static z3::expr literal(const Expr::RawPtr expr, z3::context &ctx) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
             using To = CTSC<Op::Literal>;
             const auto &data { Util::checked_static_cast<To>(expr->op.get())->value };
             try {
                 switch (data.index()) {
                     case 0:
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 0, bool);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 0, bool);
                         return ctx.bool_val(std::get<bool>(data));
                     case 1:
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 1, std::string);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 1, std::string);
                         return ctx.string_val(std::get<std::string>(data));
                     case 2:
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 2, float);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 2, float);
                         return ctx.fpa_val(std::get<float>(data));
                     case 3:
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 3, double);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 3, double);
                         return ctx.fpa_val(std::get<double>(data));
                     case 4:
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 4, PyObj::VSPtr);
                         throw Error::Backend::Unsupported(WHOAMI
                                                           "VSA is not supported by the Z3 backend");
 /** A local macro used for consistency */
 #define STD_INT(INDEX, TYPE, BL)                                                                   \
     case INDEX:                                                                                    \
-        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                           \
+        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, INDEX, TYPE);                            \
         return ctx.bv_val(std::get<TYPE>(data), BL);
                         STD_INT(5, uint8_t, 8);
                         STD_INT(6, uint16_t, 16);
@@ -295,7 +295,7 @@ namespace Backend::Z3 {
 // Cleanup
 #undef STD_INT
                     case 9: {
-                        UTILS_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 9, BigInt);
+                        UTIL_VARIANT_VERIFY_INDEX_TYPE_IGNORE_CONST(data, 9, BigInt);
                         const auto &big { std::get<BigInt>(data) };
                         if (std::holds_alternative<BigInt::Str>(big.value)) {
                             return ctx.bv_val(std::get<BigInt::Str>(big.value).c_str(),
@@ -324,8 +324,8 @@ namespace Backend::Z3 {
          *  expr may not be nullptr
          */
         static z3::expr symbol(const Expr::RawPtr expr, SymAnTransData &satd, z3::context &ctx) {
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr);
-            UTILS_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
+            UTIL_AFFIRM_NOT_NULL_DEBUG(expr->op); // Sanity check
             using To = CTSC<Op::Symbol>;
             const std::string &name { Util::checked_static_cast<To>(expr->op.get())->name };
             switch (expr->cuid) {
