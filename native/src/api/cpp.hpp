@@ -24,6 +24,8 @@ static_assert(SAME_U(SIZE_T, UInt), "UInt needs to be changed");
 static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");
 static_assert(SAME_U(HASH_T, Hash::Hash), "HASH_T needs to be changed");
 
+static_assert(std::is_same_v<const decltype(ClaricppPrimUnion::vs), decltype(PyObj::Base::ref)>,
+              "Z3U needs to be changed");
 static_assert(std::is_same_v<Z3U, unsigned>, "Z3U needs to be changed");
 static_assert(std::is_same_v<CCSC, PyStr>, "PyStr needs to be changed");
 static_assert(std::is_same_v<PyStr, ARRAY_IN(char)>, "ARRAY_IN needs to be changed");
@@ -166,7 +168,7 @@ namespace API {
         typename Private::InternalArrMap<CType>::Result ret;
         // Array allocation
         ret.len = arr.size();
-        Util::Log::debug("Allocating an array C types of length: ", ret.len);
+        Util::Log::verbose("Allocating an array of C types of length: ", ret.len);
         ret.arr = Util::Safe::malloc<CType>(ret.len);
         // Array population
         for (SIZE_T i { 0 }; i < ret.len; ++i) {
@@ -211,29 +213,29 @@ namespace API {
             success = true;
             switch (in.index()) {
                 // Literal types
-                TRIVIAL_CASE(0, bool, boolean, ClaricppPrimEnumBool)
+                TRIVIAL_CASE(0, bool, boolean, ClaricppTypeEnumBool)
                 CASE(1, std::string) {
                     char *const ret { Util::Safe::malloc<char>(got.size() + 1) };
                     std::strcpy(ret, got.c_str());
-                    return { { .str = ret }, ClaricppPrimEnumStr };
+                    return { { .str = ret }, ClaricppTypeEnumStr };
                 }
                 CASE_END
-                TRIVIAL_CASE(2, float, flt, ClaricppPrimEnumFloat)
-                TRIVIAL_CASE(3, double, dbl, ClaricppPrimEnumDouble)
-                CASE(4, PyObj::VSPtr) { return { { .vs = got->ref }, ClaricppPrimEnumVS }; }
+                TRIVIAL_CASE(2, float, flt, ClaricppTypeEnumFloat)
+                TRIVIAL_CASE(3, double, dbl, ClaricppTypeEnumDouble)
+                CASE(4, PyObj::VSPtr) { return { { .vs = got->ref }, ClaricppTypeEnumVS }; }
                 CASE_END
                 /* Literal BV types */
-                TRIVIAL_CASE(5, uint8_t, u8, ClaricppPrimEnumU8)
-                TRIVIAL_CASE(6, uint16_t, u16, ClaricppPrimEnumU16)
-                TRIVIAL_CASE(7, uint32_t, u32, ClaricppPrimEnumU32)
-                TRIVIAL_CASE(8, uint64_t, u64, ClaricppPrimEnumU64)
+                TRIVIAL_CASE(5, uint8_t, u8, ClaricppTypeEnumU8)
+                TRIVIAL_CASE(6, uint16_t, u16, ClaricppTypeEnumU16)
+                TRIVIAL_CASE(7, uint32_t, u32, ClaricppTypeEnumU32)
+                TRIVIAL_CASE(8, uint64_t, u64, ClaricppTypeEnumU64)
                 /* Other */
                 CASE(9, BigInt) {
                     got.to<BigInt::Str>();
                     const std::string &gstr { std::get<std::string>(got.value) };
                     char *const ret { Util::Safe::malloc<char>(gstr.size() + 1) };
                     std::strcpy(ret, gstr.c_str());
-                    return { { .big_int = ret }, ClaricppPrimEnumBigInt };
+                    return { { .big_int = ret }, ClaricppTypeEnumBigInt };
                 }
                 CASE_END
             }
@@ -263,20 +265,20 @@ namespace API {
         bool success; // NOLINT
         const auto ret { Private::prim_var<Op::ArgVar, true>(in, success) };
         if (success) {
-            return ClaricppArg { { .prim = ret.data }, static_cast<ClaricppArgEnum>(ret.type) };
+            return ClaricppArg { { .prim = ret.data }, ret.type };
         }
         switch (in.index()) {
             CASE(10, Expr::BasePtr) {
-                return ClaricppArg { { .expr = to_c(std::move(got)) }, ClaricppArgEnumExpr };
+                return ClaricppArg { { .expr = to_c(std::move(got)) }, ClaricppTypeEnumExpr };
             }
             CASE_END
             CASE(11, Mode::FP::Rounding) {
-                return ClaricppArg { { .rounding_mode = API::mode(got) }, ClaricppArgEnumRM };
+                return ClaricppArg { { .rounding_mode = API::mode(got) }, ClaricppTypeEnumRM };
             }
             CASE_END
             CASE(12, Mode::FP::Width) {
                 const auto w { (got == Mode::FP::dbl) ? ClaricppWidthDouble : ClaricppWidthFloat };
-                return ClaricppArg { { .width = w }, ClaricppArgEnumWidth };
+                return ClaricppArg { { .width = w }, ClaricppTypeEnumWidth };
             }
             CASE_END
         }

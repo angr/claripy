@@ -230,7 +230,7 @@ void backend() {
     ARRAY_OUT(ClaricppPrim) evald { claricpp_backend_z3_eval(z3, bv_sym_c, solver, 10) };
     UNITTEST_ASSERT(evald.len == 2); // Only 0, 1 should have been found
     for (UInt i { 0 }; i < 2; ++i) {
-        UNITTEST_ASSERT(evald.arr[i].type == ClaricppPrimEnumU64);
+        UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64);
         UNITTEST_ASSERT(evald.arr[i].data.u64 == i);
     }
     // Test n_sol too small
