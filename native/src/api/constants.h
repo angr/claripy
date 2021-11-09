@@ -88,4 +88,70 @@ typedef enum { MODE_FP_ROUNDING_VALS(ClaricppRm) } ClaricppRM;
  */
 typedef enum { MODE_BIGINT_VALS(ClaricppBim) } ClaricppBIM;
 
+/** Claricpp Width modes */
+typedef enum { ClaricppWidthFloat, ClaricppWidthDouble } ClaricppWidth;
+
+// Unions
+
+/** A C union containing the primitive types an Expr can hold */
+union ClaricppPrimUnion {
+    // Literal types
+    BOOL boolean; // Bool
+    PyStr str;    // String
+    float flt;    // FP
+    double dbl;   // FP
+    uint64_t vs;  // VS  @todo
+    // Literal BV types
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint64_t u64;
+    PyStr big_int;
+};
+
+/** A C union containing the types an Expr can hold */
+union ClaricppArgUnion {
+    union ClaricppPrimUnion prim;
+    struct ClaricppExpr expr;
+    ClaricppRM rounding_mode;
+    ClaricppWidth width; // @todo
+};
+
+/** A local macro used for consistency */
+#define PRIM_ENUM(NAME)                                                                            \
+    Claricpp##NAME##Bool = 0, Claricpp##NAME##Str, Claricpp##NAME##Float, Claricpp##NAME##Double,  \
+    Claricpp##NAME##VS, Claricpp##NAME##U8, Claricpp##NAME##U16, Claricpp##NAME##U32,              \
+    Claricpp##NAME##U64, Claricpp##NAME##BigInt
+
+/** A C enum noting the primitive types an Expr can hold */
+enum ClaricppPrimEnum { PRIM_ENUM(PrimEnum) }; // @ todo
+
+/** A C enum noting the types an Expr can hold */
+enum ClaricppArgEnum {
+    PRIM_ENUM(ArgEnum),
+    ClaricppArgEnumExpr,
+    ClaricppArgEnumRM,
+    ClaricppArgEnumWidth
+}; // @ todo
+
+// Cleanup
+#undef PRIM_ENUM
+
+/** A safer C union containing the primitive types an Expr can hold */
+struct ClaricppPrim {
+    /** The data this union holds */
+    union ClaricppPrimUnion data;
+    /** The type of this data */
+    enum ClaricppPrimEnum type;
+};
+
+/** A safer C union containing the types an Expr can hold */
+struct ClaricppArg {
+    /** The data this union holds */
+    union ClaricppArgUnion data;
+    /** The type of this data */
+    enum ClaricppArgEnum type;
+};
+
+
 #endif

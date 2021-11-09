@@ -253,10 +253,17 @@ uint64_t claricpp_backend_z3_max_unsigned_ec(const ClaricppBackend z3, const Cla
 ARRAY_OUT(ClaricppExpr)
 claricpp_backend_z3_unsat_core(const ClaricppBackend z3, const ClaricppSolver solver);
 
-#if 0
-inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &solver,
-                                 const UInt n_sol)
+/** Evaluates expr with solver and returns the n_sol primitive value(s) it corresponds to
+ *  @param z3 The Z3 backend to use
+ *  @param solver The solver to use
+ *  @param expr The expression to evaluate
+ *  @param n_sol The number of solutions to attempt to find, fewer may be found
+ *  @return An array of up to n_sol solution (containing primitives) to expr found via solver
+ */
+ARRAY_OUT(ClaricppExpr)
+claricpp_backend_z3_eval(const ClaricppBackend z3, const ClaricppSolver solver, const ClaricppExpr expr, const SIZE_T n_sol);
 
+#if 0
 inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,
                                  const std::vector<Expr::RawPtr> &extra_constraints)
 
