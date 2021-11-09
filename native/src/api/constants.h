@@ -67,11 +67,7 @@ DECLARE_WRAPPER(ClaricppExpr);
 DECLARE_WRAPPER(ClaricppBackend);
 DECLARE_WRAPPER(ClaricppSolver);
 
-DECLARE_OUT_ARRAY(ClaricppExpr);
-
-// Cleanup
 #undef DECLARE_WRAPPER
-#undef DECLARE_OUT_ARRAY
 
 // Other C types
 
@@ -96,17 +92,17 @@ typedef enum { ClaricppWidthFloat, ClaricppWidthDouble } ClaricppWidth;
 /** A C union containing the primitive types an Expr can hold */
 union ClaricppPrimUnion {
     // Literal types
-    BOOL boolean; // Bool
-    PyStr str;    // String
-    float flt;    // FP
-    double dbl;   // FP
-    uint64_t vs;  // VS  @todo
+    BOOL boolean;    // Bool
+    const char *str; // String
+    float flt;       // FP
+    double dbl;      // FP
+    uint64_t vs;     // VS  @todo
     // Literal BV types
     uint8_t u8;
     uint16_t u16;
     uint32_t u32;
     uint64_t u64;
-    PyStr big_int;
+    const char *big_int;
 };
 
 /** A C union containing the types an Expr can hold */
@@ -153,5 +149,11 @@ struct ClaricppArg {
     enum ClaricppArgEnum type;
 };
 
+// Array types
+
+DECLARE_OUT_ARRAY(ClaricppPrim);
+DECLARE_OUT_ARRAY(ClaricppExpr);
+
+#undef DECLARE_OUT_ARRAY
 
 #endif
