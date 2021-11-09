@@ -29,6 +29,20 @@ struct BigInt {
         }
     }
 
+    /** Converts the BigInt to the given mode */
+    template <typename Mode> void to() {
+        static_assert(Util::qualified_is_in<Mode, Int, Str>, "Mode may only be Int or Str");
+        if (std::holds_alternative<Mode>(value)) {
+            return;
+        }
+        if constexpr (std::is_same_v<Mode, Int>) {
+            value = Int { std::get<Str>(value) };
+        }
+        else {
+            value = std::get<Int>(value).str();
+        }
+    }
+
     /** The value */
     Value value;
     /** The bit length */
