@@ -209,7 +209,7 @@ namespace Backend::Z3 {
             return ret;
         }
 
-        /** Evaluate expr, return n different solutions
+        /** Evaluate expr, return up to n different solutions
          *  No pointers may be nullptr
          */
         inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, z3::solver &solver,
@@ -241,7 +241,7 @@ namespace Backend::Z3 {
             return ret;
         }
 
-        /** Evaluate expr, return n different solutions
+        /** Evaluate expr, return up to n different solutions
          *  No pointers may be nullptr
          */
         inline std::vector<Op::PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,
@@ -250,7 +250,7 @@ namespace Backend::Z3 {
             return eval(expr, s, n);
         }
 
-        /** Evaluate every expr, return n different solutions
+        /** Evaluate every expr, return up to n different solutions
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
@@ -277,7 +277,7 @@ namespace Backend::Z3 {
             return batch_eval(converted, s, n);
         }
 
-        /** Evaluate every expr, return n different solutions
+        /** Evaluate every expr, return up to n different solutions
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
