@@ -108,9 +108,12 @@ void backend() {
         using C = Mode::Compare;
         return Create::compare<C::Unsigned | C::Greater | C::Eq>(bv_sym, Create::literal(i));
     } };
-    const auto uleq { [&bv_sym](const UInt i) {
+    const auto raw_uleq { [](const Expr::BasePtr &left, const Expr::BasePtr &right) {
         using C = Mode::Compare;
-        return Create::compare<C::Unsigned | C::Less | C::Eq>(bv_sym, Create::literal(i));
+        return Create::compare<C::Unsigned | C::Less | C::Eq>(left, right);
+    } };
+    const auto uleq { [&bv_sym, &raw_uleq](const UInt i) {
+        return raw_uleq(bv_sym, Create::literal(i));
     } };
     z3::solver &z3_solver { API::to_cpp_ref(solver) };
     const ClaricppExpr ugeq3[] { API::to_c(ugeq(2)), API::to_c(ugeq(3)) }; // NOLINT
@@ -185,8 +188,8 @@ void backend() {
         return Create::compare<C::Signed | C::Less | C::Eq>(bv_sym,
                                                             Create::literal(static_cast<UInt>(i)));
     } };
-    const ClaricppExpr sugeq3[] { API::to_c(sgeq(2)), API::to_c(sgeq(3)) }; // NOLINT
-    const auto sugeq3_len { 2 };
+    const ClaricppExpr sgeq3[] { API::to_c(sgeq(2)), API::to_c(sgeq(3)) }; // NOLINT
+    const auto sgeq3_len { 2 };
     const auto uleq5c { API::to_c(uleq(5)) };
     const auto sleq5c { API::to_c(sleq(5)) };
 
@@ -194,8 +197,7 @@ void backend() {
     Util::Log::debug("  - min");
     add(z3_solver, sgeq(1));
     UNITTEST_ASSERT(claricpp_backend_z3_min_signed(z3, bv_sym_c, solver) == 1);
-    UNITTEST_ASSERT(claricpp_backend_z3_min_signed_ec(z3, bv_sym_c, solver, sugeq3, sugeq3_len) ==
-                    3);
+    UNITTEST_ASSERT(claricpp_backend_z3_min_signed_ec(z3, bv_sym_c, solver, sgeq3, sgeq3_len) == 3);
     z3_solver.reset();
     add(z3_solver, ugeq(1));
     UNITTEST_ASSERT(claricpp_backend_z3_min_unsigned(z3, bv_sym_c, solver) == 1);
@@ -223,19 +225,71 @@ void backend() {
     UNITTEST_ASSERT(ucore_0->hash == bv_neq_bv->hash);
 
     // Test eval
-    z3_solver.reset();
     Util::Log::debug("  - eval");
+    z3_solver.reset();
     add(z3_solver, uleq(1)); // 0, 1 possible
-    // Test n_sol too big
+    // Test n too big
     ARRAY_OUT(ClaricppPrim) evald { claricpp_backend_z3_eval(z3, bv_sym_c, solver, 10) };
     UNITTEST_ASSERT(evald.len == 2); // Only 0, 1 should have been found
-    for (UInt i { 0 }; i < 2; ++i) {
+    for (UInt i { 0 }; i < evald.len; ++i) {
         UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64);
         UNITTEST_ASSERT(evald.arr[i].data.u64 == i);
     }
-    // Test n_sol too small
+    // Test n too small
     evald = claricpp_backend_z3_eval(z3, bv_sym_c, solver, 1);
     UNITTEST_ASSERT(evald.len == 1);
+
+    z3_solver.reset();
+    add(z3_solver, uleq(4)); // 0, 1, 2, 3, 4 possible
+    // Test n = 2 with constraint >= 3
+    evald = claricpp_backend_z3_eval_ec(z3, bv_sym_c, solver, 2, ugeq3, ugeq3_len);
+    UNITTEST_ASSERT(evald.len == 2); // Only 3, 4 should have been found
+    for (UInt i { 0 }; i < evald.len; ++i) {
+        UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64);
+        UNITTEST_ASSERT(evald.arr[i].data.u64 == 4 - i);
+    }
+
+    // Prep
+    const auto bv_sym2 { Create::symbol<Expr::BV>("bv_sym2", 64) };
+    const ClaricppExpr both_bv_syms[] = { bv_sym_c, API::copy_to_c(bv_sym2) };
+    const auto to_pairs { [](const DOUBLE_ARRAY_OUT(ClaricppPrim) in) {
+        std::set<std::pair<UInt, UInt>> ret;
+        for (UInt i { 0 }; i < in.len; ++i) {
+            const auto a { in.arr[i] };
+            UNITTEST_ASSERT(a.len == 2);
+            UNITTEST_ASSERT(a.arr[0].type == ClaricppTypeEnumU64);
+            UNITTEST_ASSERT(a.arr[1].type == ClaricppTypeEnumU64);
+            ret.insert(std::make_pair(a.arr[0].data.u64, a.arr[1].data.u64));
+        }
+        return ret;
+    } };
+
+    // Test batch eval
+    Util::Log::debug("  - batch_eval");
+    z3_solver.reset();
+    add(z3_solver, uleq(1));
+    add(z3_solver, raw_uleq(bv_sym2, Create::literal(UInt(1)))); // 4 solutions
+    // Test n too big
+    DOUBLE_ARRAY_OUT(ClaricppPrim)
+    batch_evald { claricpp_backend_z3_batch_eval(z3, both_bv_syms, 2, solver, 10) };
+    UNITTEST_ASSERT(batch_evald.len == 4); // 4 solutions should be found
+    const std::set<std::pair<UInt, UInt>> be_solutions { { 0, 0 }, { 0, 1 }, { 1, 0 }, { 1, 1 } };
+    auto eval_got { to_pairs(batch_evald) };
+    UNITTEST_ASSERT(be_solutions == eval_got);
+    // Test n too small
+    batch_evald = claricpp_backend_z3_batch_eval(z3, both_bv_syms, 2, solver, 1);
+    UNITTEST_ASSERT(batch_evald.len == 1);
+    eval_got = to_pairs(batch_evald);
+    UNITTEST_ASSERT(eval_got.size() == 1);
+    UNITTEST_ASSERT(be_solutions.find(*eval_got.begin()) != be_solutions.end());
+
+    const auto disjoint_syms_c { API::to_c(Create::neq(bv_sym, bv_sym2)) };
+    batch_evald =
+        claricpp_backend_z3_batch_eval_ec(z3, both_bv_syms, 2, solver, 10, &disjoint_syms_c, 1);
+    UNITTEST_ASSERT(batch_evald.len == 2);
+    eval_got = to_pairs(batch_evald);
+    const std::set<std::pair<UInt, UInt>> be_solutions_ec { { 0, 1 }, { 1, 0 } };
+    UNITTEST_ASSERT(be_solutions_ec == eval_got);
 
     /********************************************************************/
     /*                             Concrete                             */

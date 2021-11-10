@@ -253,29 +253,59 @@ uint64_t claricpp_backend_z3_max_unsigned_ec(const ClaricppBackend z3, const Cla
 ARRAY_OUT(ClaricppExpr)
 claricpp_backend_z3_unsat_core(const ClaricppBackend z3, const ClaricppSolver solver);
 
-/** Evaluates expr with solver and returns the n_sol primitive value(s) it corresponds to
+/** Evaluates expr with solver and returns the n primitive value(s) it corresponds to
  *  @param z3 The Z3 backend to use
  *  @param expr The expression to evaluate
  *  @param solver The solver to use
- *  @param n_sol The number of solutions to attempt to find, fewer may be found
- *  @return An array of up to n_sol solution (containing primitives) to expr found via solver
+ *  @param n The number of solutions to attempt to find, fewer may be found
+ *  @return An array of up to n primitive solutions to expr found via solver
  */
 ARRAY_OUT(ClaricppPrim)
 claricpp_backend_z3_eval(const ClaricppBackend z3, const ClaricppExpr expr,
-                         const ClaricppSolver solver, const SIZE_T n_sol);
+                         const ClaricppSolver solver, const SIZE_T n);
 
-#if 0
-inline std::vector<PrimVar> eval(const Expr::RawPtr expr, z3::solver &s, const UInt n,
-                                 const std::vector<Expr::RawPtr> &extra_constraints)
+/** Evaluates expr with solver and returns up to the n primitive value(s) it corresponds to
+ *  Also considers extra_constraints when solving
+ *  @param z3 The Z3 backend to use
+ *  @param expr The expression to evaluate
+ *  @param solver The solver to use
+ *  @param n The number of solutions to attempt to find, fewer may be found
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param len The length of the extra_constraints array
+ *  @return An array of up to n primitive solutions to expr found via solver + extra_constraints
+ */
+ARRAY_OUT(ClaricppPrim)
+claricpp_backend_z3_eval_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                            const ClaricppSolver solver, const SIZE_T n,
+                            ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len);
 
-inline std::vector<std::vector<PrimVar>> batch_eval(const std::vector<Expr::RawPtr> &exprs,
-                                                    z3::solver &s, const UInt n)
+/** Evaluates the exprs expr with solver and returns up to n primitive value(s) they corresponds to
+ *  @param z3 The Z3 backend to use
+ *  @param exprs The array of expressions to evaluate
+ *  @param exprs_len The length of the exprs array
+ *  @param solver The solver to use
+ *  @param n The number of solutions to attempt to find, fewer may be found
+ *  @return An array of up to n primitive solutions to expr found via solver
+ */
+DOUBLE_ARRAY_OUT(ClaricppPrim)
+claricpp_backend_z3_batch_eval(const ClaricppBackend z3, ARRAY_IN(ClaricppExpr) exprs,
+                               const SIZE_T exprs_len, const ClaricppSolver solver, const SIZE_T n);
 
-inline std::vector<std::vector<PrimVar>>
-batch_eval(const std::vector<Expr::RawPtr> &exprs, z3::solver &s, const UInt n,
-           const std::vector<Expr::RawPtr> &extra_constraints)
-#endif
-
+/** Evaluates the exprs expr with solver and returns up to n primitive value(s) they corresponds to
+ *  @param z3 The Z3 backend to use
+ *  @param exprs The array of expressions to evaluate
+ *  @param exprs_len The length of the exprs array
+ *  @param solver The solver to use
+ *  @param n The number of solutions to attempt to find, fewer may be found
+ *  @param extra_constraints An array of extra constraints required be simultaneously satisfiable
+ *  @param ec_len The length of the extra_constraints array
+ *  @return An array of up to n primitive solutions to expr found via solver
+ */
+DOUBLE_ARRAY_OUT(ClaricppPrim)
+claricpp_backend_z3_batch_eval_ec(const ClaricppBackend z3, ARRAY_IN(ClaricppExpr) exprs,
+                                  const SIZE_T exprs_len, const ClaricppSolver solver,
+                                  const SIZE_T n, ARRAY_IN(ClaricppExpr) extra_constraints,
+                                  const SIZE_T ec_len);
 
 /********************************************************************/
 /*                             Concrete                             */

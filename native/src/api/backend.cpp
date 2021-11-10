@@ -181,9 +181,36 @@ extern "C" {
 
     ARRAY_OUT(ClaricppPrim)
     claricpp_backend_z3_eval(const ClaricppBackend z3, const ClaricppExpr expr,
-                             const ClaricppSolver solver, const SIZE_T n_sol) {
+                             const ClaricppSolver solver, const SIZE_T n) {
         return API::to_arr(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).eval(
-            API::to_cpp(expr).get(), API::to_cpp_ref(solver), n_sol));
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), n));
+    }
+
+    ARRAY_OUT(ClaricppPrim)
+    claricpp_backend_z3_eval_ec(const ClaricppBackend z3, const ClaricppExpr expr,
+                                const ClaricppSolver solver, const SIZE_T n,
+                                ARRAY_IN(ClaricppExpr) extra_constraints, const SIZE_T len) {
+        return API::to_arr(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).eval(
+            API::to_cpp(expr).get(), API::to_cpp_ref(solver), n,
+            to_con_vec(extra_constraints, len)));
+    }
+
+    DOUBLE_ARRAY_OUT(ClaricppPrim)
+    claricpp_backend_z3_batch_eval(const ClaricppBackend z3, ARRAY_IN(ClaricppExpr) exprs,
+                                   const SIZE_T exprs_len, const ClaricppSolver solver,
+                                   const SIZE_T n) {
+        return API::to_double_arr(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).batch_eval(
+            to_con_vec(exprs, exprs_len), API::to_cpp_ref(solver), n));
+    }
+
+    DOUBLE_ARRAY_OUT(ClaricppPrim)
+    claricpp_backend_z3_batch_eval_ec(const ClaricppBackend z3, ARRAY_IN(ClaricppExpr) exprs,
+                                      const SIZE_T exprs_len, const ClaricppSolver solver,
+                                      const SIZE_T n, ARRAY_IN(ClaricppExpr) extra_constraints,
+                                      const SIZE_T ec_len) {
+        return API::to_double_arr(API::to_cpp_down_ref<Backend::Z3::Z3>(z3).batch_eval(
+            to_con_vec(exprs, exprs_len), API::to_cpp_ref(solver), n,
+            to_con_vec(extra_constraints, ec_len)));
     }
 }
 
