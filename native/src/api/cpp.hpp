@@ -82,6 +82,7 @@ namespace API {
         ARR_MAP_ADD(ClaricppExpr);
         ARR_MAP_ADD(ClaricppPrim);
         ARR_MAP_ADD(ARRAY_OUT(ClaricppPrim));
+        ARR_MAP_ADD(ClaricppArg);
 
         ENUM_MAP_ADD(ClaricppRM, Mode::FP::Rounding);
         ENUM_MAP_ADD(ClaricppBIM, Mode::BigInt);

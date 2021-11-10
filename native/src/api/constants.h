@@ -45,9 +45,6 @@
         SIZE_T len;                                                                                \
     }
 
-/** A local macro used to declare a double out array of a C type */
-#define DECLARE_DOUBLE_OUT_ARRAY(NAME) DECLARE_OUT_ARRAY(NAME);
-
 // Primitives
 
 /** Define UINT as UInt without polluting the global namespace */
@@ -160,9 +157,9 @@ struct ClaricppArg {
 DECLARE_OUT_ARRAY(ClaricppExpr);
 DECLARE_OUT_ARRAY(ClaricppPrim);
 DECLARE_OUT_ARRAY(ARRAY_OUT(ClaricppPrim));
+DECLARE_OUT_ARRAY(ClaricppArg);
 
 // Cleanup
 #undef DECLARE_OUT_ARRAY
-#undef DECLARE_DOUBLE_OUT_ARRAY
 
 #endif
