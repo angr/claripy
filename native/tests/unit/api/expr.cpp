@@ -11,7 +11,8 @@ void expr() {
     using SA = A::SimplificationAvoidance;
 
     // Create an expr
-    const auto e { Create::sub(Create::symbol<Expr::BV>("bv", 64), Create::literal(64_ui)) };
+    const auto bv_sym { Create::symbol<Expr::BV>("bv", 64) };
+    const auto e { Create::sub(bv_sym, Create::literal(64_ui)) };
 
     // Create a few annotations
     Annotation::SPAV ans { std::make_shared<A::Vec>(std::vector<A::BasePtr> {
@@ -40,6 +41,14 @@ void expr() {
 
     // Test bit length
     UNITTEST_ASSERT(claricpp_expr_bit_length(API::copy_to_c(e)) == e_len);
+
+    // Test args of zero extend
+    const auto args { claricpp_expr_args(API::to_c(Create::zero_ext(bv_sym, 3))) };
+    UNITTEST_ASSERT(args.len == 2);
+    UNITTEST_ASSERT(args.arr[0].type == ClaricppTypeEnumExpr);
+    UNITTEST_ASSERT(API::to_cpp(args.arr[0].data.expr) == bv_sym);
+    UNITTEST_ASSERT(args.arr[1].type == ClaricppTypeEnumU64);
+    UNITTEST_ASSERT(args.arr[1].data.prim.u64 == 3);
 }
 
 // Define the test

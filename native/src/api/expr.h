@@ -21,4 +21,10 @@ ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, Claricp
  */
 SIZE_T claricpp_expr_bit_length(const ClaricppExpr expr);
 
+/** Gets the args of expr
+ *  @param expr The Expr to get the args of
+ *  @return The args of expr
+ */
+ARRAY_OUT(ClaricppArg) claricpp_expr_args(const ClaricppExpr expr);
+
 #endif
