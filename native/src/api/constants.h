@@ -21,6 +21,12 @@
 /** An array of X; can only be used by types that have corresponding array types */
 #define ARRAY_OUT(X) X##OutArray
 
+/** A forced eager evaluation of ARRAY_OUT */
+#define EAGER_ARRAY_OUT(X) ARRAY_OUT(X)
+
+/** An array of an array of X; can only be used by types that have double array types */
+#define DOUBLE_ARRAY_OUT(X) EAGER_ARRAY_OUT(ARRAY_OUT(X))
+
 /** A local macro used to declare a C wrapper for a C++ type */
 #define DECLARE_WRAPPER(NAME)                                                                      \
     /** A C wrapper for a C++ type */                                                              \
@@ -38,6 +44,9 @@
         /** The length of the array */                                                             \
         SIZE_T len;                                                                                \
     }
+
+/** A local macro used to declare a double out array of a C type */
+#define DECLARE_DOUBLE_OUT_ARRAY(NAME) DECLARE_OUT_ARRAY(NAME);
 
 // Primitives
 
@@ -148,9 +157,12 @@ struct ClaricppArg {
 
 // Array types
 
-DECLARE_OUT_ARRAY(ClaricppPrim);
 DECLARE_OUT_ARRAY(ClaricppExpr);
+DECLARE_OUT_ARRAY(ClaricppPrim);
+DECLARE_OUT_ARRAY(ARRAY_OUT(ClaricppPrim));
 
+// Cleanup
 #undef DECLARE_OUT_ARRAY
+#undef DECLARE_DOUBLE_OUT_ARRAY
 
 #endif

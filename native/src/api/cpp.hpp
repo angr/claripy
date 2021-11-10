@@ -81,6 +81,7 @@ namespace API {
 
         ARR_MAP_ADD(ClaricppExpr);
         ARR_MAP_ADD(ClaricppPrim);
+        ARR_MAP_ADD(ARRAY_OUT(ClaricppPrim));
 
         ENUM_MAP_ADD(ClaricppRM, Mode::FP::Rounding);
         ENUM_MAP_ADD(ClaricppBIM, Mode::BigInt);
@@ -162,21 +163,36 @@ namespace API {
             std::forward<Args>(args)...) };
     }
 
+    namespace Private {
+        /** Return a corresponding array-type of CTypes of size len */
+        template <typename CType> auto new_arr(const SIZE_T len) {
+            Util::Log::verbose("Allocating an array of C types of length: ", len);
+            return typename Private::InternalArrMap<CType>::Result { Util::Safe::malloc<CType>(len),
+                                                                     len };
+        }
+
+        /** Convert a C++ vector to a C array */
+        template <typename InCpp, typename CType, typename ToC>
+        inline auto to_arr(std::vector<InCpp> &&arr, const ToC &to_c) {
+            auto ret { Private::new_arr<CType>(arr.size()) };
+            for (SIZE_T i { 0 }; i < ret.len; ++i) {
+                ret.arr[i] = to_c(std::move(arr[i]));
+            }
+            arr.clear();
+            return ret;
+        }
+    } // namespace Private
+
     /** Convert a C++ vector to a C array */
     template <typename InCpp> inline auto to_arr(std::vector<InCpp> &&arr) {
         using CType = decltype(API::to_c(std::move(arr[0])));
-        typename Private::InternalArrMap<CType>::Result ret;
-        // Array allocation
-        ret.len = arr.size();
-        Util::Log::verbose("Allocating an array of C types of length: ", ret.len);
-        ret.arr = Util::Safe::malloc<CType>(ret.len);
-        // Array population
-        for (SIZE_T i { 0 }; i < ret.len; ++i) {
-            ret.arr[i] = API::to_c(std::move(arr[i]));
-        }
-        // Cleanup and return
-        arr.clear();
-        return ret;
+        return Private::to_arr<InCpp, CType>(std::move(arr), API::to_c<InCpp>);
+    }
+
+    /** Convert a C++ vector of vectors to a C array of arrays */
+    template <typename InCpp> inline auto to_double_arr(std::vector<std::vector<InCpp>> &&arr) {
+        using CType = decltype(API::to_arr(std::move(arr[0])));
+        return Private::to_arr<std::vector<InCpp>, CType>(std::move(arr), API::to_arr<InCpp>);
     }
 
     // Rounding mode
