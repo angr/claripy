@@ -39,7 +39,7 @@ namespace Op {
         const Expr::BasePtr child;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "child":)|";
             Expr::repr(child, out, verbose);
             out << " }";
@@ -48,16 +48,12 @@ namespace Op {
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        inline void unsafe_add_reversed_children(Stack &s) const override final {
-            s.emplace(child.get());
-        }
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(child.get()); }
 
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const override final {
-            v.emplace_back(child);
-        }
+        inline void python_children(std::vector<ArgVar> &v) const final { v.emplace_back(child); }
 
       protected:
         /** Protected constructor */

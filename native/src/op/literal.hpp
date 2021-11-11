@@ -35,7 +35,7 @@ namespace Op {
         /** Python's repr function (outputs json)
          *  @todo This could be a switch-case statement; do when more stable
          */
-        inline void repr(std::ostream &out, const bool) const override final {
+        inline void repr(std::ostream &out, const bool) const final {
 
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                     \
@@ -96,12 +96,12 @@ namespace Op {
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        inline void unsafe_add_reversed_children(Stack &) const noexcept override final {}
+        inline void unsafe_add_reversed_children(Stack &) const noexcept final {}
 
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const override final {
+        inline void python_children(std::vector<ArgVar> &v) const final {
 /** A local macro used for consistency */
 #define CASE(INDEX)                                                                                \
     case (INDEX):                                                                                  \

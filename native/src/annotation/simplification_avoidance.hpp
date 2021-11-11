@@ -19,10 +19,10 @@ namespace Annotation {
             : Base { h, static_cuid } {}
 
         /** Returns whether this annotation can be eliminated in a simplification. */
-        inline bool eliminatable() const override final { return false; }
+        inline bool eliminatable() const final { return false; }
 
         /** Returns whether this annotation can be relocated in a simplification. */
-        inline bool relocatable() const override final { return false; }
+        inline bool relocatable() const final { return false; }
     };
 
 } // namespace Annotation

@@ -43,12 +43,12 @@ namespace Backend::Z3 {
         /********************************************************************/
 
         /** The name of this backend */
-        [[nodiscard]] inline const char *name() const noexcept override final { return "z3"; }
+        [[nodiscard]] inline const char *name() const noexcept final { return "z3"; }
 
         /** Simplify the given expr
          *  expr may not be nullptr
          */
-        inline Expr::BasePtr simplify(const Expr::RawPtr expr) override final {
+        inline Expr::BasePtr simplify(const Expr::RawPtr expr) final {
             UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
             namespace Ex = Expr;
             switch (expr->cuid) {
@@ -76,7 +76,7 @@ namespace Backend::Z3 {
         }
 
         /** Clears translocation data */
-        inline void clear_persistent_data() override final {
+        inline void clear_persistent_data() final {
             Util::Log::warning("Z3 backend clearing persistent data...");
             tls.symbol_annotation_translocation_data.clear();
         }
@@ -297,15 +297,14 @@ namespace Backend::Z3 {
          *  *only* if the cuid of the expr is of or derive from the type being cast to.
          */
         inline z3::expr dispatch_conversion(const Expr::RawPtr expr,
-                                            std::vector<const z3::expr *> &args) override final {
+                                            std::vector<const z3::expr *> &args) final {
             return Dispatch<Z3>::dispatch_conversion(
                 expr, args, tls.symbol_annotation_translocation_data, *this);
         }
 
         /** Abstract a backend object into a claricpp expr */
         inline AbstractionVariant
-        dispatch_abstraction(const z3::expr &b_obj,
-                             std::vector<AbstractionVariant> &args) override final {
+        dispatch_abstraction(const z3::expr &b_obj, std::vector<AbstractionVariant> &args) final {
             return Dispatch<Z3>::dispatch_abstraction(
                 b_obj, args, tls.symbol_annotation_translocation_data, *this);
         }

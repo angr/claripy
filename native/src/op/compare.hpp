@@ -23,7 +23,7 @@ namespace Op {
             : Binary { h, static_cuid, l, r } {}
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const final {
             repr_helper(out, verbose);
             out << R"|(, "extra":")|" << Mask << "\" }";
         }

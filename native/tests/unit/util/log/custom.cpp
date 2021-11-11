@@ -31,9 +31,7 @@ void test(std::shared_ptr<std::ostringstream> &s, Lvl) {
 /** Create a style class */
 struct CustomSty final : L::Style::Base {
     /** The style function */
-    std::string str(CCSC, const Lvl &, const std::ostringstream &) const override final {
-        return "Custom";
-    }
+    std::string str(CCSC, const Lvl &, const std::ostringstream &) const final { return "Custom"; }
 };
 
 /** Each construction should have a unique pointer */

@@ -71,7 +71,7 @@
         /** Inherit constructors */                                                                \
         using SUPER::SUPER;                                                                        \
         /** Default virtual destructor */                                                          \
-        inline ~DERIVED() noexcept override final = default;                                       \
+        inline ~DERIVED() noexcept final = default;                                                \
     };
 
 /** A macro used to define a non-final derived exception class
@@ -95,7 +95,7 @@
         /** Inherit constructors */                                                                \
         using NS::SUPER::SUPER;                                                                    \
         /** Default virtual destructor */                                                          \
-        inline ~DERIVED() noexcept override final = default;                                       \
+        inline ~DERIVED() noexcept final = default;                                                \
     };
 
 

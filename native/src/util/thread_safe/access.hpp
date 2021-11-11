@@ -74,7 +74,7 @@ namespace Util::ThreadSafe {
         }
 
         /** Destructor */
-        ~Access() noexcept override final = default;
+        ~Access() noexcept final = default;
 
         /** Disable Move constructor */
         Access(Access &&old) = delete;

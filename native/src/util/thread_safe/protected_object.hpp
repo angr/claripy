@@ -57,7 +57,7 @@ namespace Util::ThreadSafe {
         }
 
         /** Default destructor */
-        ~ProtectedObject() noexcept override final = default;
+        ~ProtectedObject() noexcept final = default;
 
         // Getters
 

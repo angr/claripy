@@ -42,7 +42,7 @@ namespace Util::ThreadSafe {
         Mutable(T &&o) : Base { std::forward<Base>(o) }, obj { o } {}
 
         /** Destructor */
-        ~Mutable() noexcept override final = default;
+        ~Mutable() noexcept final = default;
 
         /** Request read-write access */
         [[nodiscard]] auto unique() { return ProtectedObject { obj, UniqueLock { m } }; }

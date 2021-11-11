@@ -22,7 +22,7 @@ CheckOptions:
   - key:             cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues
     value:           '1;2;3;4;'
   - key:             cppcoreguidelines-explicit-virtual-functions.AllowOverrideAndFinal
-    value:           'true'
+    value:           'false'
   - key:             cppcoreguidelines-explicit-virtual-functions.FinalSpelling
     value:           final
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
@@ -144,7 +144,7 @@ CheckOptions:
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
   - key:             modernize-use-override.AllowOverrideAndFinal
-    value:           'true'
+    value:           'false'
   - key:             modernize-use-override.FinalSpelling
     value:           final
   - key:             modernize-use-override.IgnoreDestructors

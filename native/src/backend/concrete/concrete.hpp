@@ -32,15 +32,15 @@ namespace Backend::Concrete {
         ~Concrete() noexcept override = default;
 
         /** Clears translocation data */
-        inline void clear_persistent_data() override final {}
+        inline void clear_persistent_data() final {}
 
         /** The name of this backend */
-        [[nodiscard]] inline const char *name() const noexcept override final { return "concrete"; }
+        [[nodiscard]] inline const char *name() const noexcept final { return "concrete"; }
 
         /** Simplify the given expr
          *  expr may not be nullptr
          */
-        inline Expr::BasePtr simplify(const Expr::RawPtr expr) override final {
+        inline Expr::BasePtr simplify(const Expr::RawPtr expr) final {
             UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
             (void) expr;
             return nullptr; // todo
@@ -55,8 +55,7 @@ namespace Backend::Concrete {
          *  *only* if the cuid of the expr is of or derive from the type being cast to.
          */
         inline PrimVar dispatch_conversion(const Expr::RawPtr expr,
-                                           std::vector<const PrimVar *> &args,
-                                           Super &bk) override final {
+                                           std::vector<const PrimVar *> &args, Super &bk) final {
             Util::sink(expr, args, bk);
             return 0.; // todo
         }
@@ -64,7 +63,7 @@ namespace Backend::Concrete {
         /** Abstract a backend object into a claricpp expr */
         inline AbstractionVariant dispatch_abstraction(const PrimVar &b_obj,
                                                        std::vector<AbstractionVariant> &args,
-                                                       Super &bk) override final {
+                                                       Super &bk) final {
             Util::sink(bk, b_obj, args, bk);
             return Mode::FP::Rounding::NearestTiesAwayFromZero; // todo
         }

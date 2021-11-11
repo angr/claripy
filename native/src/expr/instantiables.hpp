@@ -15,7 +15,7 @@
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)                                     \
       public:                                                                                      \
         /** Default destructor */                                                                  \
-        inline ~CLASS() noexcept override final = default;                                         \
+        inline ~CLASS() noexcept final = default;                                                  \
                                                                                                    \
       private:                                                                                     \
         /** Private Constructor */                                                                 \
@@ -34,7 +34,7 @@ namespace Expr {
         FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Expr::Base, 0)
       public:
         /** Default destructor */
-        inline ~Bool() noexcept override final = default;
+        inline ~Bool() noexcept final = default;
 
       private:
         /** Private Constructor */

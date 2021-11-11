@@ -22,7 +22,7 @@ namespace Op::FP {
         const Mode::FP::Width width;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const override final {
+        inline void repr(std::ostream &out, const bool verbose = false) const final {
             out << R"|({ "name":")|" << op_name() << R"|(, "bv":)|";
             Expr::repr(bv, out, verbose);
             out << R"|(, "width":)|" << width << " }";
@@ -31,14 +31,12 @@ namespace Op::FP {
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers
          */
-        inline void unsafe_add_reversed_children(Stack &s) const override final {
-            s.emplace(bv.get());
-        }
+        inline void unsafe_add_reversed_children(Stack &s) const final { s.emplace(bv.get()); }
 
         /** Appends the expr children of the expr to the given vector
          *  Note: This should only be used when returning children to python
          */
-        inline void python_children(std::vector<ArgVar> &v) const override final {
+        inline void python_children(std::vector<ArgVar> &v) const final {
             v.emplace_back(bv);
             v.emplace_back(width);
         }

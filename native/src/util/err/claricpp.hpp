@@ -73,7 +73,7 @@ namespace Util::Err {
          *  Warning: Will return dynamically allocated memory if a backtrace is included
          *  Note: If something goes wrong trying to print the backtrace, skips it
          */
-        [[nodiscard]] inline const char *what() const noexcept override final {
+        [[nodiscard]] inline const char *what() const noexcept final {
             if (enable_backtraces && append_backtrace) {
                 try {
                     auto out { backtrace() };

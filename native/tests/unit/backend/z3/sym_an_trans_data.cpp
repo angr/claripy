@@ -15,10 +15,10 @@ class TestAnnotation final : public Annotation::Base {
         : Base { h, static_cuid }, str { std::move(s) } {}
 
     /** Returns whether this annotation can be eliminated in a simplification. */
-    [[nodiscard]] inline bool eliminatable() const override final { return false; }
+    [[nodiscard]] inline bool eliminatable() const final { return false; }
 
     /** Returns whether this annotation can be relocated in a simplification. */
-    [[nodiscard]] inline bool relocatable() const override final { return false; }
+    [[nodiscard]] inline bool relocatable() const final { return false; }
 
     /** Some data */
     const std::string str; // NOLINT
