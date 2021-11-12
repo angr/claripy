@@ -10,8 +10,7 @@
 
 
 /** Construct the ite expr: if (4 == (x * 3)) then str else y */
-inline auto make_ite(std::string str) {
-    namespace Ex = Expr;
+inline Expr::BasePtr make_ite(std::string str) {
     namespace C = Create;
 
     // Constants
@@ -19,8 +18,8 @@ inline auto make_ite(std::string str) {
     const auto flt_size { 64_ui };
 
     // Symbols
-    const auto x { C::symbol<Ex::FP>("x", flt_size) };
-    const auto y { C::symbol<Ex::String>("y", C_CHAR_BIT * len) };
+    const auto x { C::symbol<Expr::FP>("x", flt_size) };
+    const auto y { C::symbol<Expr::String>("y", C_CHAR_BIT * len) };
 
     // Literals
     const auto fp3 { C::literal(3.) };

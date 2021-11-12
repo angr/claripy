@@ -34,7 +34,7 @@ void bool_tactic() {
     const auto sol { x }; // NOLINT
 
     // Verify equality
-    UNITTEST_ASSERT(Ex::inline_repr(simp) == Ex::inline_repr(sol));
+    UNITTEST_ASSERT(simp->repr() == sol->repr());
 }
 
 // Define the test

@@ -12,7 +12,7 @@ void simplify() {
 
     // Test function
     const auto test = [&z3](const Ex::BasePtr &t, const Ex::BasePtr &sol) {
-        return Ex::inline_repr(z3.simplify(t.get())) == Ex::inline_repr(sol);
+        return z3.simplify(t.get())->repr() == sol->repr();
     };
 
     // FP

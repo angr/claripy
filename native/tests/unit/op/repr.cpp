@@ -55,17 +55,15 @@ static std::string make_solution(const std::string &str, const UInt len) {
 
 /** Print the repr of the expr: if (4 == (x * 3)) then "Hello" else y */
 void repr() {
-
-    // Make the ite
     std::string str { "Hello" };
     const auto ite { make_ite(str) };
+    const auto solution { make_solution(str, str.size()) };
 
-    // repr
+    UNITTEST_ASSERT(ite->repr() == solution);
+
     std::ostringstream s;
     s << ite;
-
-    // Compare
-    UNITTEST_ASSERT(s.str() == make_solution(str, str.size()));
+    UNITTEST_ASSERT(s.str() == solution);
 }
 
 // Define the test
