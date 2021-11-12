@@ -154,6 +154,7 @@ struct ClaricppArg {
 
 // Array types
 
+DECLARE_OUT_ARRAY(ClaricppAnnotation);
 DECLARE_OUT_ARRAY(ClaricppExpr);
 DECLARE_OUT_ARRAY(ClaricppPrim);
 DECLARE_OUT_ARRAY(ARRAY_OUT(ClaricppPrim));

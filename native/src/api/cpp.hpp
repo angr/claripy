@@ -79,6 +79,7 @@ namespace API {
         MAP_ADD(ClaricppBackend, std::shared_ptr<::Backend::Base>);
         MAP_ADD(ClaricppSolver, std::shared_ptr<z3::solver>);
 
+        ARR_MAP_ADD(ClaricppAnnotation);
         ARR_MAP_ADD(ClaricppExpr);
         ARR_MAP_ADD(ClaricppPrim);
         ARR_MAP_ADD(ARRAY_OUT(ClaricppPrim));
@@ -188,6 +189,11 @@ namespace API {
     template <typename InCpp> inline auto to_arr(std::vector<InCpp> &&arr) {
         using CType = decltype(API::to_c(std::move(arr[0])));
         return Private::to_arr<InCpp, CType>(std::move(arr), API::to_c<InCpp>);
+    }
+
+    /** Convert a C++ vector to a C array */
+    template <typename InCpp> inline auto copy_to_arr(const std::vector<InCpp> &arr) {
+        return to_arr(std::vector<InCpp> { arr });
     }
 
     /** Convert a C++ vector of vectors to a C array of arrays */
