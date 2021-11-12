@@ -9,6 +9,7 @@ build/*
 Build/*
 
 # Build artifacts
+.cache/clangd
 Doxyfile
 compile_commands.json
 z3/*
