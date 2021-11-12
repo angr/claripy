@@ -55,7 +55,7 @@ namespace Expr {
 
       private:
         /** Used during debugging for extra checks
-         *  These need access to the internals of op so the cannot be inlined
+         *  These need access to the internals of op so it cannot be inlined
          */
         void ctor_debug_checks() const;
 
