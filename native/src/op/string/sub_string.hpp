@@ -29,13 +29,13 @@ namespace Op::String {
         const Expr::BasePtr full_string;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "start_index":)|";
-            Expr::repr(start_index, out, verbose);
+            start_index->repr(out);
             out << R"|(, "count":)|";
-            Expr::repr(count, out, verbose);
+            count->repr(out);
             out << R"|(, "full_string":)|";
-            Expr::repr(full_string, out, verbose);
+            full_string->repr(out);
             out << " }";
         }
 

@@ -65,8 +65,8 @@ namespace Op {
         }
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const override {
-            repr_helper(out, verbose);
+        inline void repr(std::ostream &out) const override {
+            repr_helper(out);
             out << " }";
         }
 
@@ -89,12 +89,12 @@ namespace Op {
         }
 
         /** Python's repr function (outputs json), but without the closing '}' */
-        inline void repr_helper(std::ostream &out, const bool verbose = false) const {
+        inline void repr_helper(std::ostream &out) const {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "left":)|";
-            Expr::repr(left, out, verbose);
+            left->repr(out);
             out << R"|(, "right":)|";
-            Expr::repr(right, out, verbose);
+            right->repr(out);
         }
     };
 

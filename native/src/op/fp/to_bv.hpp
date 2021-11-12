@@ -24,10 +24,10 @@ namespace Op::FP {
         const Expr::BasePtr fp;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "signed":)|" << std::boolalpha << Signed
                 << R"|(, "mode":)|" << Util::to_underlying(mode) << R"|(, "fp":)|";
-            Expr::repr(fp, out, verbose);
+            fp->repr(out);
             out << " }";
         }
 

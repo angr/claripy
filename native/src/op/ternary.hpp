@@ -48,14 +48,14 @@ namespace Op {
         const Expr::BasePtr third;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "first":)|";
-            Expr::repr(first, out, verbose);
+            first->repr(out);
             out << R"|(, "second":)|";
-            Expr::repr(second, out, verbose);
+            second->repr(out);
             out << R"|(, "third":)|";
-            Expr::repr(third, out, verbose);
+            third->repr(out);
             out << " }";
         }
 

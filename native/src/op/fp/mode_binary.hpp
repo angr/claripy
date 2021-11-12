@@ -44,12 +44,12 @@ namespace Op::FP {
         const Expr::BasePtr right;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "mode":)|" << Util::to_underlying(mode)
                 << R"|(, "left":)|";
-            Expr::repr(left, out, verbose);
+            left->repr(out);
             out << R"|(, "right":)|";
-            Expr::repr(right, out, verbose);
+            right->repr(out);
             out << " }";
         }
 

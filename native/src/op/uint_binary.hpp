@@ -46,9 +46,9 @@ namespace Op {
         const UInt integer;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "expr":)|";
-            Expr::repr(expr, out, verbose);
+            expr->repr(out);
             out << R"|(, "integer":)|" << integer << " }";
         }
 

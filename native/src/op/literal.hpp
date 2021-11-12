@@ -35,7 +35,7 @@ namespace Op {
         /** Python's repr function (outputs json)
          *  @todo This could be a switch-case statement; do when more stable
          */
-        inline void repr(std::ostream &out, const bool) const final {
+        inline void repr(std::ostream &out) const final {
 
 /** A local macro used for consistency */
 #define VCASE_PRE(INDEX, TYPE)                                                                     \

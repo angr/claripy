@@ -25,13 +25,13 @@ namespace Op {
         const Expr::BasePtr if_false;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "cond":)|";
-            Expr::repr(cond, out, verbose);
+            cond->repr(out);
             out << R"|(, "if_true":)|";
-            Expr::repr(if_true, out, verbose);
+            if_true->repr(out);
             out << R"|(, "if_false":)|";
-            Expr::repr(if_false, out, verbose);
+            if_false->repr(out);
             out << " }";
         }
 

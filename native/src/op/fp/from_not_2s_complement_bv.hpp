@@ -22,9 +22,9 @@ namespace Op::FP {
         const Mode::FP::Width width;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(, "bv":)|";
-            Expr::repr(bv, out, verbose);
+            bv->repr(out);
             out << R"|(, "width":)|" << width << " }";
         }
 

@@ -23,7 +23,7 @@ namespace Op {
         /** The name of the op */
         virtual inline const char *op_name() const noexcept = 0;
         /** Python's repr function (outputs json) */
-        virtual inline void repr(std::ostream &out, const bool verbose = false) const = 0;
+        virtual inline void repr(std::ostream &out) const = 0;
 
         /** Adds the raw expr children of the expr to the given stack in reverse
          *  Warning: This does *not* give ownership, it transfers raw pointers

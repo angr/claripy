@@ -18,7 +18,7 @@ namespace Op {
         const std::string name;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "symbol":")|" << name << "\" }";
         }
 

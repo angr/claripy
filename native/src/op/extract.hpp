@@ -23,10 +23,10 @@ namespace Op {
         const Expr::BasePtr from;
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "high":)|" << high << R"|(, "low":)|"
                 << low << R"|(, "from":)|";
-            Expr::repr(from, out, verbose);
+            from->repr(out);
             out << " }";
         }
 

@@ -93,13 +93,13 @@ namespace Op {
         inline bool consider_size() const noexcept final { return ConsiderSize; }
 
         /** Python's repr function (outputs json) */
-        inline void repr(std::ostream &out, const bool verbose = false) const final {
+        inline void repr(std::ostream &out) const final {
             out << R"|({ "name":")|" << op_name() << R"|(", "consider_size":)|" << std::boolalpha
                 << ConsiderSize << R"|(, "args":[ )|";
-            Expr::repr(operands[0], out, verbose);
+            operands[0]->repr(out);
             for (UInt i = 1; i < operands.size(); ++i) {
                 out << ", ";
-                Expr::repr(operands[i], out, verbose);
+                operands[i]->repr(out);
             }
             out << " ] }";
         }
