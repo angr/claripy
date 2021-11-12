@@ -13,3 +13,22 @@ void Expr::Base::ctor_debug_checks() const {
         Util::affirm<E>(!symbolic, WHOAMI_HEADER_ONLY "Literal Op may not be symbolic");
     }
 }
+
+void Expr::Base::repr(std::ostream &out) const {
+    UTIL_AFFIRM_NOT_NULL_DEBUG(op); // Sanity check
+    // Normal operation
+    out << R"|({ "type":")|" << type_name() << R"|(", "symbolic":)|" << std::boolalpha << symbolic
+        << ", ";
+    if (const auto *const bits { dynamic_cast<CTSC<Expr::Bits>>(this) }; bits != nullptr) {
+        out << R"|("bit_length":)|" << bits->bit_length << ", ";
+    }
+    out << R"|("op":)|";
+    op->repr(out);
+    out << " }";
+}
+
+std::string Expr::Base::repr() const {
+    std::ostringstream o;
+    repr(o);
+    return o.str();
+}

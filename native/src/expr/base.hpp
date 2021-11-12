@@ -29,15 +29,19 @@ namespace Expr {
       public:
         /** Return true if and only if this expr is symbolic */
         const bool symbolic;
-
         /** The Expr Op */
         const Op::BasePtr op;
-
         /** A set of annotations applied onto this Expr */
         const Annotation::SPAV annotations;
 
+        // Functions
+
         /** Get the type name */
         virtual inline const char *type_name() const noexcept = 0;
+        /** Get the Expr's repr */
+        void repr(std::ostream &out) const;
+        /** Get the Expr's repr */
+        std::string repr() const;
 
       protected:
         /** Protected Constructor */
@@ -74,6 +78,15 @@ namespace Expr {
 
     /** Default virtual destructor */
     Base::~Base() noexcept = default;
+
+    /** Overload the << stream operator to use repr */
+    inline std::ostream &operator<<(std::ostream &os, const RawPtr &p) {
+        p->repr(os);
+        return os;
+    }
+
+    /** Overload the << stream operator to use repr */
+    inline std::ostream &operator<<(std::ostream &os, const BasePtr &p) { return (os << p.get()); }
 
 } // namespace Expr
 
