@@ -154,15 +154,20 @@ namespace API {
     }
 
     /** Heap cache function; prefer to_c! Use this when x cannot be moved for some reason. */
-    template <typename InCpp> inline auto copy_to_c(const InCpp &x) {
-        InCpp tmp { x };
-        return Private::Map<InCpp> { Private::cache<InCpp>.template emplace_on_heap(std::move(x)) };
-    }
+    template <typename InCpp> inline auto copy_to_c(const InCpp &x) { return to_c(InCpp { x }); }
 
     /** Heap cache function with emplacement */
     template <typename InCpp, typename... Args> inline auto emplace_to_c(Args &&...args) {
         return Private::Map<InCpp> { Private::cache<InCpp>.emplace_on_heap(
             std::forward<Args>(args)...) };
+    }
+
+    /** Return a dynamically allocated string containing s */
+    inline const char *c_str(const std::string &s) {
+        char *const ret { Util::Safe::malloc<char>(s.size() + 1) };
+        std::memcpy(ret, s.data(), s.size());
+        ret[s.size()] = 0;
+        return ret;
     }
 
     namespace Private {
@@ -237,11 +242,7 @@ namespace API {
             switch (in.index()) {
                 // Literal types
                 TRIVIAL_CASE(0, bool, boolean, ClaricppTypeEnumBool)
-                CASE(1, std::string) {
-                    char *const ret { Util::Safe::malloc<char>(got.size() + 1) };
-                    std::strcpy(ret, got.c_str());
-                    return { { .str = ret }, ClaricppTypeEnumStr };
-                }
+                CASE(1, std::string) { return { { .str = API::c_str(got) }, ClaricppTypeEnumStr }; }
                 CASE_END
                 TRIVIAL_CASE(2, float, flt, ClaricppTypeEnumFloat)
                 TRIVIAL_CASE(3, double, dbl, ClaricppTypeEnumDouble)
