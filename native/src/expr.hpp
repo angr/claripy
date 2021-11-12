@@ -12,6 +12,5 @@
 #include "expr/instantiables.hpp"
 #include "expr/make_like.hpp"
 #include "expr/repr.hpp"
-#include "expr/type_name.hpp"
 
 #endif

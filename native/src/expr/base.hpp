@@ -36,6 +36,9 @@ namespace Expr {
         /** A set of annotations applied onto this Expr */
         const Annotation::SPAV annotations;
 
+        /** Get the type name */
+        virtual inline const char *type_name() const noexcept = 0;
+
       protected:
         /** Protected Constructor */
         explicit inline Base(const Hash::Hash h, const CUID::CUID &c, const bool sym,
