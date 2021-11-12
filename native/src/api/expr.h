@@ -15,6 +15,18 @@
  */
 ClaricppExpr claricpp_expr_make_like_annotations(const ClaricppExpr old, ClaricppSPAV spav);
 
+/** Return true iff expr is symbolic
+ * @param expr The Expr to determine if it is symbolic
+ * @return True if expr is symbolic
+ */
+bool claricpp_expr_symbolic(const ClaricppExpr expr);
+
+/** Return the SPAV expr holds
+ * @param expr The Expr to get the SPAV of
+ * @return The SPAV Expr holds, .ptr is set to NULL if the SPAV is nullptr
+ */
+ClaricppSPAV claricpp_expr_annotations(const ClaricppExpr expr);
+
 /** Gets the bit length of expr
  *  @param expr The Expr to check the length of
  *  @return The bit length of expr

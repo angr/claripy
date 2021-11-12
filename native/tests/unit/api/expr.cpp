@@ -10,19 +10,19 @@ void expr() {
     namespace A = Annotation;
     using SA = A::SimplificationAvoidance;
 
-    // Create an expr
+    // Constants
     const auto bv_sym { Create::symbol<Expr::BV>("bv", 64) };
     const auto e { Create::sub(bv_sym, Create::literal(64_ui)) };
+    const auto e_c { API::copy_to_c(e) };
 
     // Create a few annotations
-    Annotation::SPAV ans { std::make_shared<A::Vec>(std::vector<A::BasePtr> {
-        A::factory<A::Base>(),
-        A::factory<SA>(),
-    }) };
+    const auto ans { []() {
+        return std::make_shared<const A::Vec>(
+            std::vector<A::BasePtr> { A::factory<A::Base>(), A::factory<SA>() });
+    } };
 
     // Make like
-    const auto f { claricpp_expr_make_like_annotations };
-    const auto ml_c { f(API::copy_to_c(e), API::to_c(std::move(ans))) };
+    const auto ml_c { claricpp_expr_make_like_annotations(e_c, API::to_c(ans())) };
     const auto ml { API::to_cpp(ml_c) };
 
     // Test make like
@@ -40,7 +40,15 @@ void expr() {
     UNITTEST_ASSERT(e->symbolic == ml->symbolic);
 
     // Test bit length
-    UNITTEST_ASSERT(claricpp_expr_bit_length(API::copy_to_c(e)) == e_len);
+    UNITTEST_ASSERT(claricpp_expr_bit_length(e_c) == e_len);
+
+    // Test symbolic
+    UNITTEST_ASSERT(claricpp_expr_symbolic(e_c));
+    UNITTEST_ASSERT(!claricpp_expr_symbolic(API::copy_to_c(Create::literal(true))));
+
+    // Test annotations
+    UNITTEST_ASSERT(claricpp_expr_annotations(e_c).ptr == nullptr);
+    UNITTEST_ASSERT(API::to_cpp_ref(claricpp_expr_annotations(ml_c)).hash == ans()->hash);
 
     // Test args of zero extend
     const auto args { claricpp_expr_args(API::to_c(Create::zero_ext(bv_sym, 3))) };
