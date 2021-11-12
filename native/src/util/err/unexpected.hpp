@@ -32,6 +32,9 @@ namespace Util::Err {
     /** Bad size exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(Size, Unexpected);
 
+    /** Bad index exception */
+    DEFINE_FINAL_SUBCLASS_USING_CTOR(Index, Unexpected);
+
     /** Bad cast exception */
     DEFINE_FINAL_SUBCLASS_USING_CTOR(BadCast, Unexpected);
 
