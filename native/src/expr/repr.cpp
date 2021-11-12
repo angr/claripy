@@ -2,7 +2,6 @@
 #include "repr.hpp"
 
 #include "bits.hpp"
-#include "type_name.hpp"
 
 #include "../op.hpp"
 
@@ -20,7 +19,7 @@ void Expr::repr(const Expr::RawPtr e, std::ostream &out, const bool verbose) {
         return;
     }
     // Normal operation
-    out << R"|({ "type":")|" << Expr::type_name(e) << R"|(", "symbolic":)|" << std::boolalpha
+    out << R"|({ "type":")|" << e->type_name() << R"|(", "symbolic":)|" << std::boolalpha
         << e->symbolic << ", ";
     if (dynamic_cast<CTSC<Expr::Bits>>(e) != nullptr) {
         out << R"|("bit_length":)|" << Expr::get_bit_length(e) << ", ";
