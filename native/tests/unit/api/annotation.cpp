@@ -10,6 +10,7 @@ void annotation() {
     namespace A = Annotation;
     using SA = A::SimplificationAvoidance;
 
+    // Use API to create annotations
     const ClaricppAnnotation arr[] = { // NOLINT
                                        claricpp_annotation_new_base(),
                                        claricpp_annotation_new_simplification_avoidance()
@@ -32,6 +33,22 @@ void annotation() {
     UNITTEST_ASSERT(raw_vec.size() == 2)
     UNITTEST_ASSERT(raw_vec[0] == base);
     UNITTEST_ASSERT(raw_vec[1] == sa);
+
+    // Accessors
+
+    // Array
+    const auto spav_arr { claricpp_annotation_spav_array(spav) };
+    const Annotation::BasePtr cpp_arr[] { API::to_cpp(arr[0]), API::to_cpp(arr[1]) };
+    UNITTEST_ASSERT(spav_arr.len == 2);
+    UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[0]) == cpp_arr[0]);
+    UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[1]) == cpp_arr[1]);
+
+    // Len
+    UNITTEST_ASSERT(claricpp_annotation_spav_len(spav) == 2);
+
+    // Get
+    UNITTEST_ASSERT(API::to_cpp(claricpp_annotation_spav_get(spav, 0)) == cpp_arr[0]);
+    UNITTEST_ASSERT(API::to_cpp(claricpp_annotation_spav_get(spav, 1)) == cpp_arr[1]);
 }
 
 // Define the test

@@ -29,4 +29,26 @@ extern "C" {
         using CV = Util::InternalType<Annotation::SPAV>;
         return API::to_c(std::make_shared<CV>(std::move(raw)));
     }
+
+    ARRAY_OUT(ClaricppAnnotation) claricpp_annotation_spav_array(const ClaricppSPAV spav) {
+        if (spav.ptr == nullptr) {
+            return { .arr = nullptr, .len = 0 };
+        }
+        return API::copy_to_arr(API::to_cpp_ref(spav).vec);
+    }
+
+    SIZE_T claricpp_annotation_spav_len(const ClaricppSPAV spav) {
+        if (spav.ptr == nullptr) {
+            return 0;
+        }
+        return API::to_cpp_ref(spav).vec.size();
+    }
+
+    ClaricppAnnotation claricpp_annotation_spav_get(const ClaricppSPAV spav, const SIZE_T i) {
+#ifdef DEBUG
+        Util::affirm<Util::Err::Index>(i < API::to_cpp_ref(spav).vec.size(),
+                                       WHOAMI "Index out of bounds");
+#endif
+        return API::copy_to_c(API::to_cpp_ref(spav).vec[i]);
+    }
 }
