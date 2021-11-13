@@ -22,7 +22,7 @@ namespace Create {
         Util::affirm<E::Usage>(from != nullptr, WHOAMI "from may not be nullptr");
         Util::affirm<E::Type>(CUID::is_t<Expr::BV>(from),
                               WHOAMI "from operands must be an Expr::BV");
-        Util::affirm<E::Type>(high >= low, WHOAMI "high should not be lower than low");
+        Util::affirm<E::Type>(high >= low, WHOAMI "high must be >= low");
 
         // Construct expr
         return simplify(Expr::factory<Expr::BV>(from->symbolic,

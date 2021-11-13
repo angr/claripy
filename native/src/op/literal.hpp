@@ -105,7 +105,8 @@ namespace Op {
 /** A local macro used for consistency */
 #define CASE(INDEX)                                                                                \
     case (INDEX):                                                                                  \
-        v.emplace_back(std::get<INDEX>(value))
+        v.emplace_back(std::get<INDEX>(value));                                                    \
+        break
             static_assert(std::variant_size_v<decltype(value)> == 10);
             switch (value.index()) {
                 CASE(0);

@@ -25,6 +25,7 @@ static void test_op(const Op::BasePtr &op) {
         catch (std::bad_variant_access &) {
         }
     }
+    HERE(info);
 
     // Compare
     UNITTEST_ASSERT(stack.size() == filtered.size());
@@ -37,13 +38,22 @@ static void test_op(const Op::BasePtr &op) {
 
 /** Verify that the two arg getter functions do not contradict each other */
 void args() {
+    namespace C = Create;
 
-    // For each op
+    // Constants
+    const auto true_ { C::literal(true) };
+    const auto bv_sym { C::symbol<Expr::BV>("bv_sym", 64) };
 
-    const auto op { Create::if_(Create::literal(true), Create::literal(4_ui),
-                                Create::symbol<Expr::BV>("s", 64))
-                        ->op };
-    test_op(op);
+    // Functions
+    const auto u64 { [](const UInt i) { return C::literal(i); } };
+    const auto test { [](const Expr::BasePtr e) { return test_op(e->op); } };
+
+    // Non-trivial
+    test(u64(4));
+    test(bv_sym);
+    test(C::if_(true_, u64(4), bv_sym));
+    test(C::extract(1, 0, bv_sym));
+
     // @ todo
 }
 

@@ -8,12 +8,11 @@
 
 /** Verify that the extract function compiles and can be run without issue */
 void extract() {
-    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create distinct inputs
     const UInt high { 2 };
     const UInt low { 2 };
-    const auto a { UnitTest::TestLib::Factories::t_literal<Ex::BV>(0) };
+    const auto a { Create::literal(0_ui) };
 
     // Test
     const auto exp { Create::extract(high, low, a) };
@@ -24,8 +23,8 @@ void extract() {
 
     // Type check
     const auto op_down { dcast<Op::Extract>(exp->op) };
-    const auto exp_down { dcast<Ex::BV>(exp) };
-    const auto a_down { dcast<Ex::BV>(a) };
+    const auto exp_down { dcast<Expr::BV>(exp) };
+    const auto a_down { dcast<Expr::BV>(a) };
 
     // Contains check
     UNITTEST_ASSERT(op_down->from == a);
