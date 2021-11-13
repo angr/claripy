@@ -25,7 +25,6 @@ static void test_op(const Op::BasePtr &op) {
         catch (std::bad_variant_access &) {
         }
     }
-    HERE(info);
 
     // Compare
     UNITTEST_ASSERT(stack.size() == filtered.size());
