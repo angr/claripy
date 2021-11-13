@@ -33,4 +33,20 @@ extern "C" {
         op->python_children(ret);
         return API::to_arr(std::move(ret));
     }
+
+    const char *claricpp_expr_repr(const ClaricppExpr expr) {
+        return API::c_str(API::to_cpp_ref(expr).repr());
+    }
+
+    const char *claricpp_expr_type_name(const ClaricppExpr expr) {
+        return API::c_str(API::to_cpp_ref(expr).type_name());
+    }
+
+    const char *claricpp_expr_op_name(const ClaricppExpr expr) {
+        return API::c_str(API::to_cpp_ref(expr).op->op_name());
+    }
+
+    CUID_T claricpp_expr_cuid(const ClaricppExpr expr) { return API::to_cpp_ref(expr).cuid; }
+
+    CUID_T claricpp_expr_op_cuid(const ClaricppExpr expr) { return API::to_cpp_ref(expr).op->cuid; }
 }
