@@ -24,6 +24,7 @@ static_assert(SAME_U(SIZE_T, UInt), "UInt needs to be changed");
 static_assert(SAME_U(VS_T, PyObj::Base::Ref), "VS_T needs to be changed");
 static_assert(SAME_U(HASH_T, Hash::Hash), "HASH_T needs to be changed");
 
+static_assert(std::is_same_v<UINT, CUID_T>, "CUID_T needs to be changed");
 static_assert(std::is_same_v<const decltype(ClaricppPrimUnion::vs), decltype(PyObj::Base::ref)>,
               "Z3U needs to be changed");
 static_assert(std::is_same_v<Z3U, unsigned>, "Z3U needs to be changed");
