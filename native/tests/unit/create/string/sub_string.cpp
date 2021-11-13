@@ -10,7 +10,7 @@
 /** Create a BV using either name or val depending on Literal */
 template <bool Literal> Expr::BasePtr create_bv(std::string name, const Int val) {
     if constexpr (Literal) {
-        return UnitTest::TestLib::Factories::t_literal<Expr::BV>(val);
+        return Create::literal(Util::unsign(val));
     }
     else {
         (void) val;
@@ -22,15 +22,13 @@ template <bool Literal> Expr::BasePtr create_bv(std::string name, const Int val)
 template <bool Literal> void sub_string_b() {
 
     // For brevity
-    namespace F = UnitTest::TestLib::Factories;
     namespace CS = Create::String;
-    namespace Ex = Expr;       // NOLINT (false positive)
-    namespace OS = Op::String; // NOLINT (false positive)
+    namespace OS = Op::String;
 
     // Create distinct inputs
-    const auto a { F::t_literal<Expr::BV>(0) };
-    const Ex::BasePtr b { create_bv<Literal>("named", 1) };
-    const auto c { F::t_literal<Expr::String>(2) };
+    const auto a { Create::literal(0_ui) };
+    const auto b { create_bv<Literal>("named", 1) };
+    const auto c { Create::literal("2"s) };
 
     // Test
     const auto exp { CS::sub_string(a, b, c) };
@@ -43,10 +41,10 @@ template <bool Literal> void sub_string_b() {
 
     // Type check
     const auto ss_op { dcast<OS::SubString>(exp->op) };
-    const auto exp_down { dcast<Ex::String>(exp) };
-    const auto a_down { dcast<Ex::BV>(a) };
-    const auto b_down { dcast<Ex::BV>(b) };
-    const auto c_down { dcast<Ex::String>(c) };
+    const auto exp_down { dcast<Expr::String>(exp) };
+    const auto a_down { dcast<Expr::BV>(a) };
+    const auto b_down { dcast<Expr::BV>(b) };
+    const auto c_down { dcast<Expr::String>(c) };
 
     // Contains check
     UNITTEST_ASSERT(ss_op->start_index == a);

@@ -8,7 +8,6 @@
 /** Try to simplify a claricpp expr via BoolTactic */
 void bool_tactic() {
     auto z3 { Backend::Z3::Z3 {} };
-    namespace Ex = Expr;
 
     // Leaves
     const auto x { Create::symbol("x") };

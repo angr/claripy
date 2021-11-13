@@ -17,8 +17,8 @@ template <typename OpT, auto CreateF> inline void mode_binary() {
     static_assert(Op::FP::is_mode_binary<OpT>, "mode_binary requires a mode_binary OpT");
 
     // Create distinct inputs
-    const auto a { UnitTest::TestLib::Factories::t_literal<Expr::FP>(0) };
-    const auto b { UnitTest::TestLib::Factories::t_literal<Expr::FP>(1) };
+    const auto a { Create::literal(0.) };
+    const auto b { Create::literal(1.) };
 
     // Test
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };

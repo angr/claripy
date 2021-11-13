@@ -10,16 +10,12 @@
 /** Verify that the from_fp function compiles and can be run without issue */
 void from_fp() {
 
-    // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expr; // NOLINT (false positive)
-
     // Create distinct inputs
     const auto mode { Mode::FP::Rounding::TowardsZero };
-    const auto fp { F::t_literal<Ex::FP>(0) };
+    const auto fp { Create::literal(0.) };
 
     // Size check
-    UNITTEST_ASSERT(dcast<Ex::FP>(fp)->bit_length == Mode::FP::dbl.width());
+    UNITTEST_ASSERT(dcast<Expr::FP>(fp)->bit_length == Mode::FP::dbl.width());
 
     // Test
     const auto exp { Create::FP::from_fp(mode, fp, Mode::FP::flt) };
@@ -30,7 +26,7 @@ void from_fp() {
 
     // Type check
     const auto op_down { dcast<Op::FP::FromFP>(exp->op) };
-    const auto exp_down { dcast<Ex::FP>(exp) };
+    const auto exp_down { dcast<Expr::FP>(exp) };
 
     // Contains check
     UNITTEST_ASSERT(op_down->fp == fp);

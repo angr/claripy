@@ -10,7 +10,6 @@
 /** Test the trivial create functions */
 void trivial() {
     namespace Log = Util::Log;
-    namespace Ex = Expr;
     namespace Cr = Create;
 
     /********************************************************************/
@@ -18,30 +17,30 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing String::is_digit...");
-    unary<Ex::Bool, Ex::String, Op::String::IsDigit, Cr::String::is_digit>();
+    unary<Expr::Bool, Expr::String, Op::String::IsDigit, Cr::String::is_digit>();
 
     /********************************************************************/
     /*                            Int Binary                            */
     /********************************************************************/
 
     Log::debug("Testing to_int...");
-    uint_binary<Ex::BV, Ex::String, Op::String::ToInt, SM::Second, Cr::String::to_int>();
+    uint_binary<Expr::BV, Expr::String, Op::String::ToInt, SM::Second, Cr::String::to_int>();
 
     Log::debug("Testing str_len...");
-    uint_binary<Ex::BV, Ex::String, Op::String::Len, SM::Second, Cr::String::len>();
+    uint_binary<Expr::BV, Expr::String, Op::String::Len, SM::Second, Cr::String::len>();
 
     /********************************************************************/
     /*                              Binary                              */
     /********************************************************************/
 
     Log::debug("Testing String::contains...");
-    binary<Ex::Bool, Ex::String, Op::String::Contains, SM::NA, Cr::String::contains>();
+    binary<Expr::Bool, Expr::String, Op::String::Contains, SM::NA, Cr::String::contains>();
 
     Log::debug("Testing String::prefix_of...");
-    binary<Ex::Bool, Ex::String, Op::String::PrefixOf, SM::NA, Cr::String::prefix_of>();
+    binary<Expr::Bool, Expr::String, Op::String::PrefixOf, SM::NA, Cr::String::prefix_of>();
 
     Log::debug("Testing String::suffix_of...");
-    binary<Ex::Bool, Ex::String, Op::String::SuffixOf, SM::NA, Cr::String::suffix_of>();
+    binary<Expr::Bool, Expr::String, Op::String::SuffixOf, SM::NA, Cr::String::suffix_of>();
 }
 
 // Define the test

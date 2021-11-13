@@ -10,14 +10,8 @@
 /** Test the from_int create functions */
 void from_int() {
 
-    // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expr;
-
-    // Create input
-    const auto a { F::t_literal<Ex::BV>(0) };
-
     // Test
+    const auto a { Create::literal(0_ui) };
     const auto exp { Create::String::from_int(a) };
 
     // Pointer checks
@@ -26,8 +20,8 @@ void from_int() {
 
     // Type check
     const auto op_down { dcast<Op::String::FromInt>(exp->op) };
-    const auto exp_down { dcast<Ex::String>(exp) };
-    const auto a_down { dcast<Ex::BV>(a) };
+    const auto exp_down { dcast<Expr::String>(exp) };
+    const auto a_down { dcast<Expr::BV>(a) };
 
     // Contains check
     UNITTEST_ASSERT(op_down->child == a);

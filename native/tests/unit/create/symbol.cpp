@@ -10,9 +10,6 @@
 template <typename T> void symbol_t() {
     static int n_runs = 0;
 
-    // For brevity
-    namespace Ex = Expr; // NOLINT (false positive)
-
     // Create name
     std::string name { std::to_string(++n_runs) };
     const std::string name_copy { name };
@@ -20,7 +17,7 @@ template <typename T> void symbol_t() {
 
     // Test
     Expr::BasePtr sym;
-    if constexpr (Util::is_ancestor<Ex::Bits, T>) {
+    if constexpr (Util::is_ancestor<Expr::Bits, T>) {
         sym = Create::symbol<T>(std::move(name), size);
     }
     else {
@@ -42,7 +39,7 @@ template <typename T> void symbol_t() {
     UNITTEST_ASSERT(op_down->name == name_copy);
 
     // Size check
-    if constexpr (Util::is_ancestor<Ex::Bits, T>) {
+    if constexpr (Util::is_ancestor<Expr::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size);
     }
 

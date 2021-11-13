@@ -10,16 +10,12 @@
 /** Verify that the from_not_2s_complement_bv function compiles and can be run without issue */
 void from_not_2s_complement_bv() {
 
-    // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expr; // NOLINT (false positive)
-
     // Create distinct inputs
-    const auto bv { F::t_literal<Ex::BV>(0) };
+    const auto bv { Create::literal(0_ui) };
 
     // Size check
     UNITTEST_ASSERT_MSG(
-        dcast<Ex::BV>(bv)->bit_length >= Mode::FP::dbl.width(),
+        dcast<Expr::BV>(bv)->bit_length >= Mode::FP::dbl.width(),
         "This is not a test failure; but rather the test function itself needs to be fixed");
 
     // Test
@@ -31,7 +27,7 @@ void from_not_2s_complement_bv() {
 
     // Type check
     const auto op_down { dcast<Op::FP::FromNot2sComplementBV>(exp->op) };
-    const auto exp_down { dcast<Ex::FP>(exp) };
+    const auto exp_down { dcast<Expr::FP>(exp) };
 
     // Contains check
     UNITTEST_ASSERT(op_down->bv == bv);

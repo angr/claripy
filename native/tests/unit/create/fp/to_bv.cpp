@@ -10,13 +10,9 @@
 /** Verify that the to_bv<Signed> function compiles and can be run without issue */
 template <bool Signed> void to_bv_b() {
 
-    // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expr; // NOLINT (false positive)
-
     // Create distinct inputs
     const Mode::FP::Rounding mode { Mode::FP::Rounding::TowardsZero };
-    const auto fp { F::t_literal<Ex::FP>(0) };
+    const auto fp { Create::literal(0.) };
     const UInt bit_length { 16 };
 
     // Test
@@ -28,7 +24,7 @@ template <bool Signed> void to_bv_b() {
 
     // Type check
     const auto op_down { dcast<Op::FP::ToBV<Signed>>(exp->op) };
-    const auto exp_down { dcast<Ex::BV>(exp) };
+    const auto exp_down { dcast<Expr::BV>(exp) };
 
     // Contains check
     UNITTEST_ASSERT(op_down->fp == fp);

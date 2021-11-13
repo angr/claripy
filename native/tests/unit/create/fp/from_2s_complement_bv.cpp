@@ -12,17 +12,13 @@
  */
 template <bool Signed> void from_2s_complement_bv_v() {
 
-    // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expr; // NOLINT (false positive)
-
     // Create distinct inputs
     const auto mode { Mode::FP::Rounding::TowardsZero };
-    const auto bv { F::t_literal<Ex::BV>(0) };
+    const auto bv { Create::literal(0_ui) };
 
     // Size check
     UNITTEST_ASSERT_MSG(
-        dcast<Ex::BV>(bv)->bit_length >= Mode::FP::dbl.width(),
+        dcast<Expr::BV>(bv)->bit_length >= Mode::FP::dbl.width(),
         "This is not a test failure; but rather the test function itself needs to be fixed");
 
     // Test
@@ -34,7 +30,7 @@ template <bool Signed> void from_2s_complement_bv_v() {
 
     // Type check
     const auto op_down { dcast<Op::FP::From2sComplementBV<Signed>>(exp->op) };
-    const auto exp_down { dcast<Ex::FP>(exp) };
+    const auto exp_down { dcast<Expr::FP>(exp) };
 
     // Contains check
     UNITTEST_ASSERT(op_down->bv == bv);

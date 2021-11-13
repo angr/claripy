@@ -11,7 +11,6 @@
 /** Test the trivial create functions */
 void trivial() {
     namespace Log = Util::Log;
-    namespace Ex = Expr;
     namespace Cr = Create;
 
     /********************************************************************/
@@ -19,30 +18,30 @@ void trivial() {
     /********************************************************************/
 
     Log::debug("Testing abs...");
-    unary<Ex::FP, Op::Abs, Cr::abs>();
+    unary<Expr::FP, Op::Abs, Cr::abs>();
 
     Log::debug("Testing neg...");
-    unary<Ex::BV, Op::Neg, Cr::neg>();
-    unary<Ex::FP, Op::Neg, Cr::neg>();
+    unary<Expr::BV, Op::Neg, Cr::neg>();
+    unary<Expr::FP, Op::Neg, Cr::neg>();
 
     Log::debug("Testing not...");
-    unary<Ex::Bool, Op::Not, Cr::not_>();
+    unary<Expr::Bool, Op::Not, Cr::not_>();
 
     Log::debug("Testing invert...");
-    unary<Ex::BV, Op::Invert, Cr::invert>();
+    unary<Expr::BV, Op::Invert, Cr::invert>();
 
     Log::debug("Testing reverse...");
-    unary<Ex::BV, Op::Reverse, Cr::reverse>();
+    unary<Expr::BV, Op::Reverse, Cr::reverse>();
 
     /********************************************************************/
     /*                            Int Binary                            */
     /********************************************************************/
 
     Log::debug("Testing sign_ext...");
-    uint_binary<Ex::BV, Op::SignExt, SM::Add, Cr::sign_ext>();
+    uint_binary<Expr::BV, Op::SignExt, SM::Add, Cr::sign_ext>();
 
     Log::debug("Testing zero_ext...");
-    uint_binary<Ex::BV, Op::ZeroExt, SM::Add, Cr::zero_ext>();
+    uint_binary<Expr::BV, Op::ZeroExt, SM::Add, Cr::zero_ext>();
 
     /********************************************************************/
     /*                              Binary                              */
@@ -51,14 +50,14 @@ void trivial() {
     // Comparisons
 
     Log::debug("Testing eq...");
-    binary<Ex::Bool, Ex::FP, Op::Eq, SM::First, Cr::eq>();
-    binary<Ex::Bool, Ex::BV, Op::Eq, SM::First, Cr::eq>();
-    binary<Ex::Bool, Ex::Bool, Op::Eq, SM::First, Cr::eq>();
-    binary<Ex::Bool, Ex::String, Op::Eq, SM::First, Cr::eq>();
+    binary<Expr::Bool, Expr::FP, Op::Eq, SM::First, Cr::eq>();
+    binary<Expr::Bool, Expr::BV, Op::Eq, SM::First, Cr::eq>();
+    binary<Expr::Bool, Expr::Bool, Op::Eq, SM::First, Cr::eq>();
+    binary<Expr::Bool, Expr::String, Op::Eq, SM::First, Cr::eq>();
 
 /** A local macro used to test a comparison function */
 #define TEST_COMPARE(T_, MASK)                                                                     \
-    binary<Ex::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
+    binary<Expr::Bool, T_, Op::Compare<MASK>, SM::First, Cr::compare<MASK>>();
 
 /** A local macro used to test a comparison function for all values of Less and Equals */
 #define TEST_COMPARE_MULTI(T_, S_)                                                                 \
@@ -70,9 +69,9 @@ void trivial() {
     Log::debug("Testing compare...");
     {
         using C = Mode::Compare;
-        TEST_COMPARE_MULTI(Ex::FP, C::Signed)   // FP comparisons must be signed
-        TEST_COMPARE_MULTI(Ex::BV, C::Unsigned) // BV can be either
-        TEST_COMPARE_MULTI(Ex::BV, C::Unsigned)
+        TEST_COMPARE_MULTI(Expr::FP, C::Signed)   // FP comparisons must be signed
+        TEST_COMPARE_MULTI(Expr::BV, C::Unsigned) // BV can be either
+        TEST_COMPARE_MULTI(Expr::BV, C::Unsigned)
     }
 
 // Cleanup
@@ -82,20 +81,20 @@ void trivial() {
     // Math
 
     Log::debug("Testing sub...");
-    binary<Ex::BV, Op::Sub, SM::First, Cr::sub>();
+    binary<Expr::BV, Op::Sub, SM::First, Cr::sub>();
 
     Log::debug("Testing div...");
-    binary<Ex::BV, Op::Div<true>, SM::First, Cr::div<true>>();
-    binary<Ex::BV, Op::Div<false>, SM::First, Cr::div<false>>();
+    binary<Expr::BV, Op::Div<true>, SM::First, Cr::div<true>>();
+    binary<Expr::BV, Op::Div<false>, SM::First, Cr::div<false>>();
 
     Log::debug("Testing mod...");
-    binary<Ex::BV, Op::Mod<true>, SM::First, Cr::mod<true>>();
-    binary<Ex::BV, Op::Mod<false>, SM::First, Cr::mod<false>>();
+    binary<Expr::BV, Op::Mod<true>, SM::First, Cr::mod<true>>();
+    binary<Expr::BV, Op::Mod<false>, SM::First, Cr::mod<false>>();
 
     // Bitwise
 
 /** A local macro used for testing a shift function */
-#define TEST_SHIFT(MASK) binary<Ex::BV, Op::Shift<MASK>, SM::First, Cr::shift<MASK>>();
+#define TEST_SHIFT(MASK) binary<Expr::BV, Op::Shift<MASK>, SM::First, Cr::shift<MASK>>();
 
     Log::debug("Testing shift...");
     {
@@ -109,24 +108,24 @@ void trivial() {
 #undef TEST_SHIFT
 
     Log::debug("Testing rotate...");
-    binary<Ex::BV, Op::Rotate<Mode::LR::Left>, SM::First, Cr::rotate<Mode::LR::Left>>();
-    binary<Ex::BV, Op::Rotate<Mode::LR::Right>, SM::First, Cr::rotate<Mode::LR::Right>>();
+    binary<Expr::BV, Op::Rotate<Mode::LR::Left>, SM::First, Cr::rotate<Mode::LR::Left>>();
+    binary<Expr::BV, Op::Rotate<Mode::LR::Right>, SM::First, Cr::rotate<Mode::LR::Right>>();
 
     // Misc
 
     Log::debug("Testing widen...");
-    binary<Ex::BV, Op::Widen, SM::First, Cr::widen>();
+    binary<Expr::BV, Op::Widen, SM::First, Cr::widen>();
 
     Log::debug("Testing union...");
-    binary<Ex::BV, Op::Union, SM::First, Cr::union_>();
+    binary<Expr::BV, Op::Union, SM::First, Cr::union_>();
 
     Log::debug("Testing intersection...");
-    binary<Ex::BV, Op::Intersection, SM::First, Cr::intersection_>();
-    binary<Ex::Bool, Op::Intersection, SM::First, Cr::intersection_>();
+    binary<Expr::BV, Op::Intersection, SM::First, Cr::intersection_>();
+    binary<Expr::Bool, Op::Intersection, SM::First, Cr::intersection_>();
 
     Log::debug("Testing concat...");
-    binary<Ex::BV, Op::Concat, SM::Add, Cr::concat>();
-    binary<Ex::String, Op::Concat, SM::Add, Cr::concat>();
+    binary<Expr::BV, Op::Concat, SM::Add, Cr::concat>();
+    binary<Expr::String, Op::Concat, SM::Add, Cr::concat>();
 
     /********************************************************************/
     /*                               Flat                               */
@@ -135,23 +134,23 @@ void trivial() {
     // Math
 
     Log::debug("Testing add...");
-    flat<Ex::BV, Op::Add, SM::First, Cr::add>();
+    flat<Expr::BV, Op::Add, SM::First, Cr::add>();
 
     Log::debug("Testing mul...");
-    flat<Ex::BV, Op::Mul, SM::First, Cr::mul>();
+    flat<Expr::BV, Op::Mul, SM::First, Cr::mul>();
 
     // Logical
 
     Log::debug("Testing or...");
-    flat<Ex::BV, Op::Or, SM::First, Cr::or_>();
-    flat<Ex::Bool, Op::Or, SM::First, Cr::or_>();
+    flat<Expr::BV, Op::Or, SM::First, Cr::or_>();
+    flat<Expr::Bool, Op::Or, SM::First, Cr::or_>();
 
     Log::debug("Testing and...");
-    flat<Ex::BV, Op::And, SM::First, Cr::and_>();
-    flat<Ex::Bool, Op::And, SM::First, Cr::and_>();
+    flat<Expr::BV, Op::And, SM::First, Cr::and_>();
+    flat<Expr::Bool, Op::And, SM::First, Cr::and_>();
 
     Log::debug("Testing xor...");
-    flat<Ex::BV, Op::Xor, SM::First, Cr::xor_>();
+    flat<Expr::BV, Op::Xor, SM::First, Cr::xor_>();
 }
 
 // Define the test

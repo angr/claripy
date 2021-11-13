@@ -39,9 +39,8 @@ void eval() {
     z3::solver solver { *solver_ref };
 
     // Exprs
-    namespace Ex = Expr; // NOLINT (false positive)
-    const auto x { Create::symbol<Ex::BV>("x", 64) };
-    const auto y { Create::symbol<Ex::BV>("y", 64) };
+    const auto x { Create::symbol<Expr::BV>("x", 64) };
+    const auto y { Create::symbol<Expr::BV>("y", 64) };
     const auto neq { [&x](const uint64_t z) { return Create::neq(x, Create::literal(z)); } };
     const auto n0 { neq(0) };
     const auto n2 { neq(2) };
@@ -60,7 +59,7 @@ void eval() {
     // Ask for solutions to x <= 5 but x != 0, 2; extra constraints x != 3
     z3.add(solver, n0.get());
     z3.add(solver, n2.get());
-    const std::vector<Ex::RawPtr> ec { n3.get() };
+    const std::vector<Expr::RawPtr> ec { n3.get() };
     const std::set<uint64_t> xs { 1, 4, 5 };
     // Test function
     const auto test_eval { [&](const UInt n) {
@@ -77,7 +76,7 @@ void eval() {
 
     // Prep batch_eval
     // Ask for solutions to y <= 2 and x <= 5 but x != 0, 2; extra constraints x != 3
-    const std::vector<Ex::RawPtr> inp { x.get(), y.get() };
+    const std::vector<Expr::RawPtr> inp { x.get(), y.get() };
     const auto dot { [&xs]() {
         const std::set<uint64_t> ys { 0, 1, 2 };
         std::set<std::vector<uint64_t>> ret;

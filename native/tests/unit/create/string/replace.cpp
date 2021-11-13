@@ -14,14 +14,10 @@
 void replace() {
     static_assert(Op::is_ternary<Op::String::Replace>, "ternary requires a ternary OpT");
 
-    // For brevity
-    namespace F = UnitTest::TestLib::Factories;
-    using ES = Expr::String;
-
     // Create distinct inputs
-    const auto a { F::t_literal<ES>(0) };
-    const auto b { F::t_literal<ES>(1) };
-    const auto c { F::t_literal<ES>(2) };
+    const auto a { Create::literal("0"s) };
+    const auto b { Create::literal("1"s) };
+    const auto c { Create::literal("2"s) };
 
     // Test
     const auto exp { Create::String::replace(a, b, c) };
@@ -34,10 +30,10 @@ void replace() {
 
     // Type check
     const auto ternary { dcast<Op::String::Replace>(exp->op) };
-    const auto exp_down { dcast<ES>(exp) };
-    const auto a_down { dcast<ES>(a) };
-    const auto b_down { dcast<ES>(b) };
-    const auto c_down { dcast<ES>(c) };
+    const auto exp_down { dcast<Expr::String>(exp) };
+    const auto a_down { dcast<Expr::String>(a) };
+    const auto b_down { dcast<Expr::String>(b) };
+    const auto c_down { dcast<Expr::String>(c) };
 
     // Contains check
     UNITTEST_ASSERT(ternary->first == a);

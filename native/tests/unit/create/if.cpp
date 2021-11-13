@@ -8,18 +8,15 @@
 
 /** Verify that the if_<T> function works */
 template <typename T> void if_t() {
-
-    // For brevity
     namespace F = UnitTest::TestLib::Factories;
-    namespace Ex = Expr; // NOLINT (false positive)
 
     // Create distinct inputs
     const auto a { F::t_literal<T>(0) };
     const auto b { F::t_literal<T>(1) };
-    const auto cond { F::t_literal<Ex::Bool>(1) };
+    const auto cond { Create::literal(true) };
 
     // Gather stats
-    const long offset { std::is_same_v<T, Ex::Bool> ? 1 : 0 };
+    const long offset { std::is_same_v<T, Expr::Bool> ? 1 : 0 };
     UNITTEST_ASSERT(a.use_count() == 1);
     UNITTEST_ASSERT(b.use_count() == 1 + offset);
     UNITTEST_ASSERT(cond.use_count() == 1 + offset);
@@ -35,7 +32,7 @@ template <typename T> void if_t() {
 
     // Type check
     const auto op { dcast<Op::If>(exp->op) };
-    const auto c_down { dcast<Ex::Bool>(cond) };
+    const auto c_down { dcast<Expr::Bool>(cond) };
     const auto a_down { dcast<T>(a) };
     const auto b_down { dcast<T>(b) };
     (void) dcast<T>(exp);
@@ -48,12 +45,11 @@ template <typename T> void if_t() {
 
 /** Verify that the if_ function works */
 void if_() {
-    namespace Ex = Expr;
-    if_t<Ex::BV>();
-    if_t<Ex::Bool>();
-    if_t<Ex::String>();
-    if_t<Ex::FP>();
-    if_t<Ex::VS>();
+    if_t<Expr::BV>();
+    if_t<Expr::Bool>();
+    if_t<Expr::String>();
+    if_t<Expr::FP>();
+    if_t<Expr::VS>();
 }
 
 // Define the test
