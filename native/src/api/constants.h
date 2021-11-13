@@ -51,8 +51,10 @@
 #define UINT unsigned long long
 /** Define the unisigned type z3 uses */
 #define Z3U unsigned
+/** Define CUID_T as UInt without polluting the global namespace */
+#define CUID_T UINT
 /** Define SIZE_T as UInt without polluting the global namespace */
-#define SIZE_T unsigned long long
+#define SIZE_T UINT
 /** Define Hash::Hash without polluting the global namespace */
 #define HASH_T unsigned long long
 /** Define a type python can pass to represent a VS within claricpp */
