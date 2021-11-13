@@ -23,6 +23,9 @@ namespace Annotation {
 
         /** Returns whether this annotation can be relocated in a simplification. */
         inline bool relocatable() const final { return false; }
+
+        /** name */
+        virtual inline const char *name() const final { return "SimplificationAvoidance"; }
     };
 
 } // namespace Annotation

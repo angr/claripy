@@ -29,6 +29,14 @@ namespace Annotation {
         }
         /** Internal vector */
         const RawVec vec;
+        /** repr */
+        inline void repr(std::ostream &o) const {
+            o << R"|({"size":)|" << vec.size() << R"|(, "values": [)|";
+            for (UInt i { 0 }; i < vec.size(); ++i) {
+                o << (i == 0 ? " \"" : ", \"") << vec[i]->name() << '"';
+            }
+            o << " ] }";
+        }
     };
 
     /** A shared pointer to a const annotation vector */
