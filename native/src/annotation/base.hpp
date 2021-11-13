@@ -39,7 +39,10 @@ namespace Annotation {
         /** Returns whether this annotation can be relocated in a simplification.
          *  True if it can be relocated, false otherwise.
          */
-        virtual bool relocatable() const { return false; }
+        virtual inline bool relocatable() const { return false; }
+
+        /** Name */
+        virtual inline const char *name() const { return "Base"; }
 
         /** The default hash of an Annotation::Base */
         static const constexpr UInt default_hash { UTIL_FILE_LINE_HASH };

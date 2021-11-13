@@ -16,14 +16,17 @@ void Expr::Base::ctor_debug_checks() const {
 
 void Expr::Base::repr(std::ostream &out) const {
     UTIL_AFFIRM_NOT_NULL_DEBUG(op); // Sanity check
-    // Normal operation
-    out << R"|({ "type":")|" << type_name() << R"|(", "symbolic":)|" << std::boolalpha << symbolic
-        << ", ";
+    out << R"|({ "type":")|" << type_name();
+    out << R"|(", "symbolic":)|" << std::boolalpha << symbolic << ", ";
     if (const auto *const bits { dynamic_cast<CTSC<Expr::Bits>>(this) }; bits != nullptr) {
         out << R"|("bit_length":)|" << bits->bit_length << ", ";
     }
     out << R"|("op":)|";
     op->repr(out);
+    if (annotations != nullptr) {
+        out << R"|(, "annotations":)|";
+        annotations->repr(out);
+    }
     out << " }";
 }
 
