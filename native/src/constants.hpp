@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 
 
@@ -82,5 +83,8 @@ constexpr UInt operator"" _ui(const unsigned long long u) noexcept {
 constexpr const char *operator"" _c(const char *s, unsigned long) noexcept {
     return s;
 }
+
+// A way to get an std::string from a char[]
+using ::std::string_literals::operator""s;
 
 #endif
