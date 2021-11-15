@@ -30,7 +30,7 @@ extern "C" {
         return API::to_c(std::make_shared<CV>(std::move(raw)));
     }
 
-    ARRAY_OUT(ClaricppAnnotation) claricpp_annotation_spav_array(const ClaricppSPAV spav) {
+    ARRAY_OUT(ClaricppAnnotation) claricpp_annotation_spav_to_array(const ClaricppSPAV spav) {
         if (spav.ptr == nullptr) {
             return { .arr = nullptr, .len = 0 };
         }

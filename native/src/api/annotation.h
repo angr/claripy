@@ -30,7 +30,7 @@ ClaricppSPAV claricpp_annotation_create_spav(ARRAY_IN(ClaricppAnnotation) list, 
  *  @param spav The SPAV to get the annotations of, .ptr may be nullptr
  *  @return The annotations held by spav, .arr will be nullptr if .ptr is nullptr
  */
-ARRAY_OUT(ClaricppAnnotation) claricpp_annotation_spav_array(const ClaricppSPAV spav);
+ARRAY_OUT(ClaricppAnnotation) claricpp_annotation_spav_to_array(const ClaricppSPAV spav);
 
 /** Get the length of spav
  *  @param spav The SPAV to get the length of, .ptr may be nullptr
