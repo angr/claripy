@@ -50,26 +50,25 @@ namespace Backend::Z3 {
          */
         inline Expr::BasePtr simplify(const Expr::RawPtr expr) final {
             UTIL_AFFIRM_NOT_NULL_DEBUG(expr);
-            namespace Ex = Expr;
             switch (expr->cuid) {
-                case Ex::Bool::static_cuid: {
+                case Expr::Bool::static_cuid: {
                     auto b_obj { convert(expr) };
                     b_obj = bool_simplify(b_obj);
                     return abstract(b_obj);
                 }
-                case Ex::BV::static_cuid: {
-                    auto b_obj = convert(expr);
+                case Expr::BV::static_cuid: {
+                    auto b_obj { convert(expr) };
                     b_obj = b_obj.simplify();
                     return abstract(b_obj);
                 }
                 default: {
                     Util::Log::info("Z3 Backend will not simplify expr with CUID: ", expr->cuid);
 #ifdef DEBUG
-                    auto ret { Ex::find(expr->hash) };
+                    auto ret { Expr::find(expr->hash) };
                     Util::affirm<Util::Err::HashCollision>(ret.get() == expr, WHOAMI);
                     return ret;
 #else
-                    return Ex::find(expr->hash);
+                    return Expr::find(expr->hash);
 #endif
                 }
             }
@@ -106,8 +105,7 @@ namespace Backend::Z3 {
 
         /** Add constraint to the solver, track if Track */
         template <bool Track = false> void add(z3::solver &solver, const Expr::RawPtr constraint) {
-            const Expr::RawPtr arr[] { constraint };
-            add_helper<Track>(solver, arr, 1);
+            add_helper<Track>(solver, &constraint, 1);
         }
 
         /** Add constraints to the solver, track if Track */
@@ -117,7 +115,7 @@ namespace Backend::Z3 {
         }
 
         /** Check to see if the solver is in a satisfiable state */
-        inline bool satisfiable(z3::solver &solver) {
+        inline bool satisfiable(z3::solver &solver) const {
             return solver.check() == z3::check_result::sat;
         }
 
@@ -333,7 +331,7 @@ namespace Backend::Z3 {
          *  Warning: If X is not a string output by Util::hex, we have undefined behavior
          *  Note: This function must be updated in tandem with add_helper
          */
-        inline std::pair<Hash::Hash, bool> extract_hash(const z3::expr &expr) {
+        inline std::pair<Hash::Hash, bool> extract_hash(const z3::expr &expr) const {
             // Note that we use the lower level API to avoid a string allocation for speed
             const char *str { Z3_ast_to_string(expr.ctx(), expr) };
             if (std::strncmp(str, "H0x", 3) != 0) { // Prefix test
@@ -352,7 +350,7 @@ namespace Backend::Z3 {
          *  If Arg0 is true, assumes arg(0) of each element is what stores the name
          *  If Arg0 is false, assumes the element itself is the name.
          */
-        template <bool Arg0> std::set<Hash::Hash> get_tracked(const z3::expr_vector &input) {
+        template <bool Arg0> std::set<Hash::Hash> get_tracked(const z3::expr_vector &input) const {
             std::set<Hash::Hash> ret;
             // For each assertion, extract the name (the first child as a string)
             // Convert the name to a hash with stoi-like functions, and save the hash
@@ -406,7 +404,7 @@ namespace Backend::Z3 {
          *  No pointers may be nullptr
          */
         inline std::vector<std::vector<Op::PrimVar>>
-        batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const UInt n_sol) {
+        batch_eval(const std::vector<z3::expr> exprs, z3::solver &solver, const UInt n_sol) const {
             Util::affirm<Util::Err::Usage>(exprs.size() > 1,
                                            WHOAMI "should only be called when exprs.size() > 1");
             // Prep
@@ -450,10 +448,10 @@ namespace Backend::Z3 {
         }
 
         /** The method used to simplify z3 boolean exprs*/
-        inline z3::expr bool_simplify(const z3::expr &expr) { return tls.bt(expr); }
+        inline z3::expr bool_simplify(const z3::expr &expr) const { return tls.bt(expr); }
 
         /** Abstract b_obj to a type in PrimVar */
-        inline Op::PrimVar abstract_to_prim(const z3::expr &b_obj) {
+        inline Op::PrimVar abstract_to_prim(const z3::expr &b_obj) const {
 #ifndef BACKEND_DISABLE_ABSTRACTION_CACHE
             auto &abstraction_prim_cache { tls.abstract_prim_cache };
             const auto hash { b_obj.hash() };
@@ -474,7 +472,7 @@ namespace Backend::Z3 {
          *  This assumes the value of x will fit within T
          *  This assumes the PrimVar is set to a BV type
          */
-        template <typename T> T coerce_to(Op::PrimVar &&p) {
+        template <typename T> static T coerce_to(Op::PrimVar &&p) {
             using Usage = Util::Err::Usage;
             switch (p.index()) {
                 /** A local macro used for consistency */
