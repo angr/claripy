@@ -15,7 +15,7 @@ void api() {
     // C
     auto moved_c { API::to_c(std::remove_const_t<decltype(lit)> { lit }) };
     auto copied_c { API::copy_to_c(lit) };
-    UNITTEST_ASSERT(lit.use_count() == old_uc + 2);
+    UNITTEST_ASSERT(lit.use_count() == old_uc + 2); // NOLINT (false positive)
 
     // New scope for references
     {
@@ -28,13 +28,13 @@ void api() {
         UNITTEST_ASSERT(moved == lit);
         UNITTEST_ASSERT(copied == lit);
 
-        // Free
-        claricpp_free_expr(&moved_c);
-        claricpp_free_expr(&copied_c);
-
         // moved and copied should be dangling references now
         // We get rid of them via scope
     }
+
+    // Free
+    claricpp_free_expr(&moved_c);
+    claricpp_free_expr(&copied_c);
 
     // Checks
     UNITTEST_ASSERT(moved_c.ptr == nullptr);
@@ -44,13 +44,13 @@ void api() {
     // Create Array
     const std::vector<Expr::BasePtr> vec { lit, lit };
     old_uc = lit.use_count();
-    auto arr_c { API::to_arr(std::remove_const_t<decltype(vec)> { vec }) };
+    auto arr_c { API::to_arr(std::remove_const_t<decltype(vec)> { vec }) }; // NOLINT
 
     // Test array
     UNITTEST_ASSERT(lit.use_count() == old_uc + static_cast<decltype(old_uc)>(vec.size()));
     UNITTEST_ASSERT(arr_c.len == vec.size());
     for (SIZE_T i { 0 }; i < vec.size(); ++i) {
-        UNITTEST_ASSERT(API::to_cpp(arr_c.arr[i]) == vec[i]);
+        UNITTEST_ASSERT(API::to_cpp(arr_c.arr[i]) == vec[i]); // NOLINT (false positive)
     }
 
     // Free array

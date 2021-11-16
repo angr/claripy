@@ -38,10 +38,10 @@ void annotation() {
 
     // Array
     const auto spav_arr { claricpp_annotation_spav_to_array(spav) };
-    const Annotation::BasePtr cpp_arr[] { API::to_cpp(arr[0]), API::to_cpp(arr[1]) };
+    const Annotation::BasePtr cpp_arr[] { API::to_cpp(arr[0]), API::to_cpp(arr[1]) }; // NOLINT
     UNITTEST_ASSERT(spav_arr.len == 2);
-    UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[0]) == cpp_arr[0]);
-    UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[1]) == cpp_arr[1]);
+    UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[0]) == cpp_arr[0]); // NOLINT (not pointer arith)
+    UNITTEST_ASSERT(API::to_cpp(spav_arr.arr[1]) == cpp_arr[1]); // NOLINT (not pointer arith)
 
     // Len
     UNITTEST_ASSERT(claricpp_annotation_spav_len(spav) == 2);

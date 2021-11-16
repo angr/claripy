@@ -15,7 +15,7 @@ template <typename B, typename T> static void test_bv_ctor(B &z3, T x) {
 /** Test is_true and is_false */
 void bv() {
     Backend::Z3::Z3 z3;
-    z3.big_int_mode(Mode::BigInt::Int);
+    Backend::Base::big_int_mode(Mode::BigInt::Int);
 
     // Constants
     const boost::multiprecision::mpz_int big_one { 1 };            // NOLINT
@@ -35,10 +35,10 @@ void bv() {
     test_bv_ctor(z3, BigInt { big_one, 300_ui }); // NOLINT
 
     // BigInt abstraction mode
-    const auto old { z3.big_int_mode(Mode::BigInt::Str) };
+    const auto old { Backend::Base::big_int_mode(Mode::BigInt::Str) };
     Util::Log::debug("Testing BV constructor via BigInt with mode Str");
     test_bv_ctor(z3, BigInt { big_one.str(), 300_ui }); // NOLINT
-    (void) z3.big_int_mode(old);                        // Reset
+    (void) Backend::Base::big_int_mode(old);            // Reset
 
     // Sizes same
     Util::Log::debug("Testing x/x");

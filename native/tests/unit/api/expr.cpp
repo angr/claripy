@@ -7,6 +7,10 @@
 
 /** Verify the Expr API works */
 void expr() {
+
+    // Note: Below is full of memory leaks (this is a test so that's fine)
+    // Because of it though there are multiple no lint statements
+
     namespace A = Annotation;
     using SA = A::SimplificationAvoidance;
 
@@ -22,7 +26,7 @@ void expr() {
     } };
 
     // Make like
-    const auto ml_c { claricpp_expr_make_like_annotations(e_c, API::to_c(ans())) };
+    const auto ml_c { claricpp_expr_make_like_annotations(e_c, API::to_c(ans())) }; // NOLINT
     const auto ml { API::to_cpp(ml_c) };
 
     // make like
@@ -44,19 +48,19 @@ void expr() {
 
     // symbolic
     UNITTEST_ASSERT(claricpp_expr_symbolic(e_c));
-    UNITTEST_ASSERT(!claricpp_expr_symbolic(API::copy_to_c(Create::literal(true))));
+    UNITTEST_ASSERT(!claricpp_expr_symbolic(API::copy_to_c(Create::literal(true)))); // NOLINT
 
     // annotations
     UNITTEST_ASSERT(claricpp_expr_annotations(e_c).ptr == nullptr);
     UNITTEST_ASSERT(API::to_cpp_ref(claricpp_expr_annotations(ml_c)).hash == ans()->hash);
 
     // args of zero extend
-    const auto args { claricpp_expr_args(API::to_c(Create::zero_ext(bv_sym, 3))) };
+    const auto args { claricpp_expr_args(API::to_c(Create::zero_ext(bv_sym, 3))) }; // NOLINT
     UNITTEST_ASSERT(args.len == 2);
-    UNITTEST_ASSERT(args.arr[0].type == ClaricppTypeEnumExpr);
-    UNITTEST_ASSERT(API::to_cpp(args.arr[0].data.expr) == bv_sym);
-    UNITTEST_ASSERT(args.arr[1].type == ClaricppTypeEnumU64);
-    UNITTEST_ASSERT(args.arr[1].data.prim.u64 == 3);
+    UNITTEST_ASSERT(args.arr[0].type == ClaricppTypeEnumExpr);     // NOLINT (union ok)
+    UNITTEST_ASSERT(API::to_cpp(args.arr[0].data.expr) == bv_sym); // NOLINT (union ok)
+    UNITTEST_ASSERT(args.arr[1].type == ClaricppTypeEnumU64);      // NOLINT (union ok)
+    UNITTEST_ASSERT(args.arr[1].data.prim.u64 == 3);               // NOLINT (union ok)
 
     // repr
     const std::string ml_c_repr { claricpp_expr_repr(ml_c) };

@@ -45,7 +45,7 @@ void args() {
 
     // Functions
     const auto u64 { [](const UInt i) { return C::literal(i); } };
-    const auto test { [](const Expr::BasePtr e) { return test_op(e->op); } };
+    const auto test { [](Expr::BasePtr e) { return test_op(e->op); } }; // NOLINT (copy is ok)
 
     // Non-trivial
     test(u64(4));

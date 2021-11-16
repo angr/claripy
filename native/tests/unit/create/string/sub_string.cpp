@@ -21,17 +21,13 @@ template <bool Literal> Expr::BasePtr create_bv(std::string name, const Int val)
 /** Test the sub_string create function */
 template <bool Literal> void sub_string_b() {
 
-    // For brevity
-    namespace CS = Create::String;
-    namespace OS = Op::String;
-
     // Create distinct inputs
     const auto a { Create::literal(0_ui) };
     const auto b { create_bv<Literal>("named", 1) };
     const auto c { Create::literal("2"s) };
 
     // Test
-    const auto exp { CS::sub_string(a, b, c) };
+    const auto exp { Create::String::sub_string(a, b, c) };
 
     // Pointer checks
     UNITTEST_ASSERT(a.use_count() == 2);
@@ -40,7 +36,7 @@ template <bool Literal> void sub_string_b() {
     UNITTEST_ASSERT(exp->op.use_count() == 1);
 
     // Type check
-    const auto ss_op { dcast<OS::SubString>(exp->op) };
+    const auto ss_op { dcast<Op::String::SubString>(exp->op) };
     const auto exp_down { dcast<Expr::String>(exp) };
     const auto a_down { dcast<Expr::BV>(a) };
     const auto b_down { dcast<Expr::BV>(b) };

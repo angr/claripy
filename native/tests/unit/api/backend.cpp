@@ -8,11 +8,11 @@
 /** A class which can check Z3's private internals */
 struct UnitTest::Friend final {
     /** The z3 backend to extract data from */
-    Backend::Z3::Z3 &z3;
+    Backend::Z3::Z3 &z3; // NOLINT (intentional exposure)
     /** Get the conversion cache size */
-    auto conv_cache_size() { return z3.conversion_cache_g().size(); }
+    auto conv_cache_size() { return z3.conversion_cache_g().size(); } // NOLINT
     /** Get the satd cache size */
-    auto satd_cache_size() { return z3.tls.symbol_annotation_translocation_data.size(); }
+    auto satd_cache_size() { return z3.tls.symbol_annotation_translocation_data.size(); } // NOLINT
 };
 
 /** Verify the Backend API works */
@@ -88,8 +88,8 @@ void backend() {
 
     // Test creating a z3 backend
     Util::Log::debug("  - new");
-    const auto z3 { claricpp_backend_z3_new() };
-    const auto z3_ptr { dynamic_cast<Backend::Z3::Z3 *const>(API::to_cpp(z3).get()) };
+    auto z3 { claricpp_backend_z3_new() };
+    auto *const z3_ptr { dynamic_cast<Backend::Z3::Z3 *const>(API::to_cpp(z3).get()) };
     UNITTEST_ASSERT(z3_ptr != nullptr);
     auto &raw_z3 { *z3_ptr };
 
@@ -139,17 +139,17 @@ void backend() {
     Util::Log::debug("  - add untracked");
     claricpp_backend_z3_add_untracked(z3, solver, API::to_c(ugeq(1)));
     UNITTEST_ASSERT(z3_solver.assertions().size() == 1);
-    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
+    UNITTEST_ASSERT(z3_solver.unsat_core().empty());
     z3_solver.reset();
 
     claricpp_backend_z3_add_vec_untracked(z3, solver, ugeq3, 2);
     UNITTEST_ASSERT(z3_solver.assertions().size() == 2);
-    UNITTEST_ASSERT(z3_solver.unsat_core().size() == 0);
+    UNITTEST_ASSERT(z3_solver.unsat_core().empty());
     z3_solver.reset();
 
     // Prep
     const auto cl { [](const UInt i) { return API::to_c(Create::literal(i)); } };
-    const auto add { [&z3_cpp](z3::solver &s, Expr::BasePtr e) {
+    const auto add { [&z3_cpp](z3::solver &s, Expr::BasePtr e) { // NOLINT (copy ok)
         z3_cpp->add<false>(s, e.get());
     } };
 
@@ -220,7 +220,7 @@ void backend() {
     UNITTEST_ASSERT(!claricpp_backend_z3_satisfiable(z3, solver)); // Generate unsat core
     const auto ucore { claricpp_backend_z3_unsat_core(z3, solver) };
     UNITTEST_ASSERT(ucore.len == 1);
-    auto &ucore_0 { API::to_cpp(ucore.arr[0]) };
+    auto &ucore_0 { API::to_cpp(ucore.arr[0]) }; // NOLINT (not pointer arith)
     UNITTEST_ASSERT(ucore_0 != nullptr);
     UNITTEST_ASSERT(ucore_0->hash == bv_neq_bv->hash);
 
@@ -232,8 +232,8 @@ void backend() {
     ARRAY_OUT(ClaricppPrim) evald { claricpp_backend_z3_eval(z3, bv_sym_c, solver, 10) };
     UNITTEST_ASSERT(evald.len == 2); // Only 0, 1 should have been found
     for (UInt i { 0 }; i < evald.len; ++i) {
-        UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64);
-        UNITTEST_ASSERT(evald.arr[i].data.u64 == i);
+        UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64); // NOLINT (not pointer arith)
+        UNITTEST_ASSERT(evald.arr[i].data.u64 == i);               // NOLINT (union ok)
     }
     // Test n too small
     evald = claricpp_backend_z3_eval(z3, bv_sym_c, solver, 1);
@@ -245,21 +245,21 @@ void backend() {
     evald = claricpp_backend_z3_eval_ec(z3, bv_sym_c, solver, 2, ugeq3, ugeq3_len);
     UNITTEST_ASSERT(evald.len == 2); // Only 3, 4 should have been found
     for (UInt i { 0 }; i < evald.len; ++i) {
-        UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64);
-        UNITTEST_ASSERT(evald.arr[i].data.u64 == 4 - i);
+        UNITTEST_ASSERT(evald.arr[i].type == ClaricppTypeEnumU64); // NOLINT (not pointer arith)
+        UNITTEST_ASSERT(evald.arr[i].data.u64 == 4 - i);           // NOLINT (union ok)
     }
 
     // Prep
     const auto bv_sym2 { Create::symbol<Expr::BV>("bv_sym2", 64) };
-    const ClaricppExpr both_bv_syms[] = { bv_sym_c, API::copy_to_c(bv_sym2) };
+    const ClaricppExpr both_bv_syms[] = { bv_sym_c, API::copy_to_c(bv_sym2) }; // NOLINT
     const auto to_pairs { [](const DOUBLE_ARRAY_OUT(ClaricppPrim) in) {
         std::set<std::pair<UInt, UInt>> ret;
         for (UInt i { 0 }; i < in.len; ++i) {
-            const auto a { in.arr[i] };
+            const auto a { in.arr[i] }; // NOLINT (not pointer arith)
             UNITTEST_ASSERT(a.len == 2);
-            UNITTEST_ASSERT(a.arr[0].type == ClaricppTypeEnumU64);
-            UNITTEST_ASSERT(a.arr[1].type == ClaricppTypeEnumU64);
-            ret.insert(std::make_pair(a.arr[0].data.u64, a.arr[1].data.u64));
+            UNITTEST_ASSERT(a.arr[0].type == ClaricppTypeEnumU64); // NOLINT (not pointer arith)
+            UNITTEST_ASSERT(a.arr[1].type == ClaricppTypeEnumU64); // NOLINT (not pointer arith)
+            ret.insert(std::make_pair(a.arr[0].data.u64, a.arr[1].data.u64)); // NOLINT (union ok)
         }
         return ret;
     } };
