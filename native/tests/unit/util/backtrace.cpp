@@ -75,10 +75,11 @@ void backtrace() {
     // Log the backtrace
     B::unsafe_set(std::move(old));
     Util::Log::verbose("Logging caught backtrace");
-    Util::Log::verbose(__LINE__, " ", backtrace);
+    Util::Log::verbose(WHOAMI, backtrace);
 
     Util::Log::verbose("Checking backtrace...");
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
+#ifdef DEBUG
     // Ensure the backtrace is valid
     UNITTEST_ASSERT(contains("generate_bt() + "));
     // Note: we do not check the other wrappers because of lambdas / static / anon namespaces
@@ -87,6 +88,11 @@ void backtrace() {
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
     UNITTEST_ASSERT(contains("main + "));
     UNITTEST_ASSERT(contains("start + "));
+#else
+    UNITTEST_ASSERT(contains("util-backtrace.test"));
+    UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
+    UNITTEST_ASSERT(contains("__libc_start_main"))
+#endif
 }
 
 // Define the test
