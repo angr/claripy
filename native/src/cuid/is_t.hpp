@@ -21,7 +21,7 @@ namespace CUID {
         static_assert(Util::is_ancestor<Base, T>, "T must subclass Base");
         UTIL_AFFIRM_NOT_NULL_DEBUG(x);
         if constexpr (std::is_final_v<T>) {
-            return x->cuid == T::static_cuid;
+            return x->cuid == T::static_cuid; // NOLINT (*null possible in release mode)
         }
         else if constexpr (AllowKin) {
             return Util::Cast::Dynamic::test<T>(x);

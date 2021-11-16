@@ -175,8 +175,8 @@ namespace API {
         /** Return a corresponding array-type of CTypes of size len */
         template <typename CType> auto new_arr(const SIZE_T len) {
             Util::Log::verbose("Allocating an array of C types of length: ", len);
-            return typename Private::InternalArrMap<CType>::Result { Util::Safe::malloc<CType>(len),
-                                                                     len };
+            using Wrapper = typename Private::InternalArrMap<CType>::Result;
+            return Wrapper { .arr = Util::Safe::malloc<CType>(len), .len = len };
         }
 
         /** Convert a C++ vector to a C array */
@@ -208,7 +208,7 @@ namespace API {
         return Private::to_arr<std::vector<InCpp>, CType>(std::move(arr), API::to_arr<InCpp>);
     }
 
-    // Rounding mode
+    // Other conversionts
 
     /** Converts between a C++ strong enums and C weak enums
      *  Currently supported conversions:
@@ -216,6 +216,11 @@ namespace API {
      */
     template <typename In> inline auto mode(const In in) noexcept {
         return typename Private::InternalEnumMap<In>::Result(in); // Must be (), not {}
+    }
+
+    /** Converts between a C and C++ bool */
+    template <typename In> inline auto bool_(const In in) noexcept {
+        return static_cast<std::conditional_t<std::is_same_v<In, bool>, BOOL, bool>>(in);
     }
 
     // Variants / Unions
@@ -259,17 +264,19 @@ namespace API {
                     got.to<BigInt::Str>();
                     const std::string &gstr { std::get<std::string>(got.value) };
                     char *const ret { Util::Safe::malloc<char>(gstr.size() + 1) };
-                    std::strcpy(ret, gstr.c_str());
+                    std::memcpy(ret, gstr.c_str(), gstr.size());
                     return { { .big_int = ret }, ClaricppTypeEnumBigInt };
                 }
                 CASE_END
+                default: {
+                    // Failure
+                    success = false;
+                    if constexpr (MayFail) {
+                        return ClaricppPrim {}; // Garbage data
+                    }
+                    throw Util::Err::Unknown(WHOAMI "Variant shouldn't have this index");
+                }
             }
-            // Failure
-            success = false;
-            if constexpr (MayFail) {
-                return ClaricppPrim {}; // Garbage data
-            }
-            throw Util::Err::Unknown(WHOAMI "Variant shouldn't have this index");
         };
     } // namespace Private
 
@@ -290,7 +297,7 @@ namespace API {
         bool success; // NOLINT
         const auto ret { Private::prim_var<Op::ArgVar, true>(in, success) };
         if (success) {
-            return ClaricppArg { { .prim = ret.data }, ret.type };
+            return ClaricppArg { { .prim = ret.data }, ret.type }; // NOLINT (not a memory leak)
         }
         switch (in.index()) {
             CASE(10, Expr::BasePtr) {
@@ -306,8 +313,9 @@ namespace API {
                 return ClaricppArg { { .width = w }, ClaricppTypeEnumWidth };
             }
             CASE_END
+            default:
+                throw Util::Err::Unknown(WHOAMI "Variant shouldn't have this index");
         }
-        throw Util::Err::Unknown(WHOAMI "Variant shouldn't have this index");
     }
 
 // Cleanup
