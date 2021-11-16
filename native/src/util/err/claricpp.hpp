@@ -13,6 +13,7 @@
 #include "../to_str.hpp"
 
 #include <atomic>
+#include <cstring>
 #include <exception>
 #include <string>
 
@@ -78,9 +79,11 @@ namespace Util::Err {
                 try {
                     auto out { backtrace() };
                     out + "\n\n" + msg;
-                    char *const ret { static_cast<char *const>(std::malloc(out.size() + 1)) };
+                    // Since we cannot use Safe::malloc as it uses this, use malloc
+                    char *const ret { static_cast<char *>(std::malloc(out.size() + 1)) };
                     if (ret != nullptr) {
-                        std::strcpy(ret, out.c_str());
+                        std::memcpy(ret, out.c_str(), out.size());
+                        ret[out.size()] = 0;
                         return ret;
                     }
                 }
