@@ -28,7 +28,7 @@
 #define DOUBLE_ARRAY_OUT(X) EAGER_ARRAY_OUT(ARRAY_OUT(X))
 
 /** A local macro used to declare a C wrapper for a C++ type */
-#define DECLARE_WRAPPER(NAME) \
+#define DECLARE_WRAPPER(NAME)                                                                      \
     /** A C wrapper for a C++ type */                                                              \
     struct NAME {                                                                                  \
         /** An obscure point to a C++ type */                                                      \
