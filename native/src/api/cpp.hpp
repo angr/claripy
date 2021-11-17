@@ -43,59 +43,39 @@ static_assert((FALSE == false) && (false == FALSE) && (TRUE == true) && (true ==
 namespace API {
 
     namespace Private {
-        /** Bidirectionally maps between C++ and C types */
-        template <typename T> struct InternalMap;
-        /** Maps a C type to a C array type */
-        template <typename T> struct InternalArrMap;
+        /** Bidirectionally maps between C++ and C types
+         *  CTypes are keys which must be defined in constants.h via DECLARE_WRAPPER
+         *  CppTypes must be either std::shared_ptr's or raw pointers
+         */
+        using TypeMap = Util::Type::Map<                       //
+            ClaricppAnnotation, Annotation::BasePtr,           // Annotations
+            ClaricppSPAV, Annotation::SPAV,                    // SPAVs
+            ClaricppExpr, Expr::BasePtr,                       // Exprs
+            ClaricppBackend, std::shared_ptr<::Backend::Base>, // Backends
+            ClaricppSolver, std::shared_ptr<z3::solver>        // Solvers
+            >;
+
+        /** Maps a C type to a C array type
+         *  Values must be ARRAY_OUT() of their Keys
+         */
+        using ArrMap = Util::Type::Map<                             //
+            ClaricppAnnotation, ARRAY_OUT(ClaricppAnnotation),      // Annotation
+            ClaricppExpr, ARRAY_OUT(ClaricppExpr),                  // Expr
+            ClaricppArg, ARRAY_OUT(ClaricppArg),                    // Arg
+            ClaricppPrim, ARRAY_OUT(ClaricppPrim),                  // Prim
+            ARRAY_OUT(ClaricppPrim), DOUBLE_ARRAY_OUT(ClaricppPrim) // Prim array
+            >;
+
         /** Bidirectionally maps between C++ and C types
          *  Warning: Enums are assumed to have the same values between both
          */
-        template <typename T> struct InternalEnumMap;
+        using EnumMap = Util::Type::Map<    //
+            ClaricppRM, Mode::FP::Rounding, // Rounding Mode
+            ClaricppBIM, Mode::BigInt       // Big Int
+            >;
 
-/** A local macro used to add a Map entry */
-#define MAP_ADD(CTYPE, CPPTYPE)                                                                    \
-    static_assert(std::is_pod_v<CTYPE>, "Struct must be of the structure { void * ptr };");        \
-    static_assert(sizeof(CTYPE) == sizeof(void *), "Struct should only contain a void *");         \
-    static_assert(std::is_same_v<void *, decltype(std::declval<CTYPE>().ptr)>, "Bad ptr type");    \
-    static_assert(Util::is_shared_ptr<CPPTYPE> || std::is_pointer_v<CPPTYPE>,                      \
-                  "CPPTYPE should be a shared or raw pointer");                                    \
-    template <> struct InternalMap<CPPTYPE> final { using Result = CTYPE; };                       \
-    template <> struct InternalMap<CTYPE> final { using Result = CPPTYPE; };
-
-/** A local macro used to add an array Map entry */
-#define ARR_MAP_ADD(CTYPE)                                                                         \
-    template <> struct InternalArrMap<CTYPE> final { using Result = ARRAY_OUT(CTYPE); };
-
-/** A local macro used to add an Enum Map entry */
-#define ENUM_MAP_ADD(CTYPE, CPPTYPE)                                                               \
-    static_assert(std::is_enum_v<CTYPE>, "Must be an enum");                                       \
-    static_assert(Util::is_strong_enum<CPPTYPE>, "Must be a strong enum");                         \
-    template <> struct InternalEnumMap<CPPTYPE> final { using Result = CTYPE; };                   \
-    template <> struct InternalEnumMap<CTYPE> final { using Result = CPPTYPE; };
-
-        // Populate internal maps
-        MAP_ADD(ClaricppAnnotation, Annotation::BasePtr);
-        MAP_ADD(ClaricppSPAV, Annotation::SPAV);
-        MAP_ADD(ClaricppExpr, Expr::BasePtr);
-        MAP_ADD(ClaricppBackend, std::shared_ptr<::Backend::Base>);
-        MAP_ADD(ClaricppSolver, std::shared_ptr<z3::solver>);
-
-        ARR_MAP_ADD(ClaricppAnnotation);
-        ARR_MAP_ADD(ClaricppExpr);
-        ARR_MAP_ADD(ClaricppPrim);
-        ARR_MAP_ADD(ARRAY_OUT(ClaricppPrim));
-        ARR_MAP_ADD(ClaricppArg);
-
-        ENUM_MAP_ADD(ClaricppRM, Mode::FP::Rounding);
-        ENUM_MAP_ADD(ClaricppBIM, Mode::BigInt);
-
-// Cleanup
-#undef MAP_ADD
-#undef ARR_MAP_ADD
-#undef ENUM_MAP_ADD
-
-        /** A shortcut used to access InternalMap */
-        template <typename T> using Map = typename InternalMap<T>::Result;
+        /** A TypeMap abbreviation */
+        template <typename T> using Map = TypeMap::template Get<T>;
 
         /** Heap cache; key type is in C++ */
         template <typename T> static thread_local Util::HeapCache<T> cache {};
@@ -175,7 +155,7 @@ namespace API {
         /** Return a corresponding array-type of CTypes of size len */
         template <typename CType> auto new_arr(const SIZE_T len) {
             Util::Log::verbose("Allocating an array of C types of length: ", len);
-            using Wrapper = typename Private::InternalArrMap<CType>::Result;
+            using Wrapper = typename Private::ArrMap::template GetValue<CType>;
             return Wrapper { .arr = Util::Safe::malloc<CType>(len), .len = len };
         }
 
@@ -215,7 +195,8 @@ namespace API {
      *  1. Mode::FP::Rounding <-> ClaricppRM
      */
     template <typename In> inline auto mode(const In in) noexcept {
-        return typename Private::InternalEnumMap<In>::Result(in); // Must be (), not {}
+        using Ret = typename Private::EnumMap::template Get<In>;
+        return Ret(in); // Must be (), not {}
     }
 
     /** Converts between a C and C++ bool */
@@ -325,23 +306,24 @@ namespace API {
 
     // Cleanup functions
 
-    /** Heap cache free function */
-    template <typename InC> inline void free(InC &x) {
-        Private::cache<Private::Map<InC>>.free(&to_cpp(x));
-        x.ptr = nullptr;
+    /** Multi-array-optional Heap cache free function */
+    template <unsigned ArrayLayer, typename InC> inline void free(InC &x) {
+        if constexpr (ArrayLayer == 0) {
+            Private::cache<Private::Map<InC>>.free(&to_cpp(x));
+            x.ptr = nullptr;
+        }
+        else {
+            for (SIZE_T i { 0 }; i < x.len; ++i) {
+                API::free<ArrayLayer - 1>(x.arr[i]);
+            }
+            std::free(x.arr);
+            x.arr = nullptr;
+            x.len = 0;
+        }
     }
 
-    /** Array free function */
-    template <typename InC> inline void free_array(InC &x) {
-        using CType = std::remove_pointer_t<decltype(x.arr)>;
-        static_assert(Util::TD::true_<Private::Map<CType>>, "Unknown array type");
-        for (SIZE_T i { 0 }; i < x.len; ++i) {
-            API::free(x.arr[i]);
-        }
-        std::free(x.arr);
-        x.arr = nullptr;
-        x.len = 0;
-    }
+    /** Non-array Heap cache free function */
+    template <typename InC> inline void free(InC &x) { free<0, InC>(x); }
 
 } // namespace API
 
