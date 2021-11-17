@@ -10,7 +10,7 @@ using Internal = const char;
 /** A container of Internals */
 using Container = std::shared_ptr<Internal>;
 /** The extracted type */
-using Extracted = Util::InternalType<Container>;
+using Extracted = Util::Type::Internal<Container>;
 
 
 /** Verify InternalType works */
