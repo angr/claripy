@@ -66,13 +66,16 @@ namespace API {
             ARRAY_OUT(ClaricppPrim), DOUBLE_ARRAY_OUT(ClaricppPrim) // Prim array
             >;
 
-        /** Bidirectionally maps between C++ and C types
+        /** Bidirectionally maps between C++ and C strong / weak enums
          *  Warning: Enums are assumed to have the same values between both
          */
         using EnumMap = Util::Type::Map<    //
             ClaricppRM, Mode::FP::Rounding, // Rounding Mode
             ClaricppBIM, Mode::BigInt       // Big Int
             >;
+
+        /** Bidirectionally maps between C++ and C variants / unions */
+        using UnionMap = Util::Type::Map<ClaricppPrim, Op::PrimVar, ClaricppArg, Op::ArgVar>;
 
         /** A TypeMap abbreviation */
         template <typename T> using Map = TypeMap::template Get<T>;
@@ -145,7 +148,7 @@ namespace API {
 
     /** Return a dynamically allocated string containing s */
     inline const char *c_str(const std::string &s) {
-        char *const ret { Util::Safe::malloc<char>(s.size() + 1) };
+        char *ret { new char[s.size() + 1] };
         std::memcpy(ret, s.data(), s.size());
         ret[s.size()] = 0;
         return ret;
@@ -183,9 +186,15 @@ namespace API {
     }
 
     /** Convert a C++ vector of vectors to a C array of arrays */
-    template <typename InCpp> inline auto to_double_arr(std::vector<std::vector<InCpp>> &&arr) {
-        using CType = decltype(API::to_arr(std::move(arr[0])));
-        return Private::to_arr<std::vector<InCpp>, CType>(std::move(arr), API::to_arr<InCpp>);
+    template <typename InCpp> inline auto to_double_arr(std::vector<std::vector<InCpp>> &&d_arr) {
+        using CType = decltype(API::to_arr(std::move(d_arr[0])));
+        return Private::to_arr<std::vector<InCpp>, CType>(std::move(d_arr), API::to_arr<InCpp>);
+    }
+
+    /** Convert a C++ vector of vectors to a C array of arrays */
+    template <typename InCpp>
+    inline auto copy_to_double_arr(const std::vector<std::vector<InCpp>> &d_arr) {
+        return to_double_arr(std::vector<std::vector<InCpp>> { d_arr });
     }
 
     // Other conversionts
@@ -306,11 +315,19 @@ namespace API {
 
     // Cleanup functions
 
+    // Forward declaration
+    template <typename InC> inline void free_union(InC &x);
+
     /** Multi-array-optional Heap cache free function */
     template <unsigned ArrayLayer, typename InC> inline void free(InC &x) {
         if constexpr (ArrayLayer == 0) {
-            Private::cache<Private::Map<InC>>.free(&to_cpp(x));
-            x.ptr = nullptr;
+            if constexpr (Private::TypeMap::template contains<InC>) {
+                Private::cache<Private::Map<InC>>.free(&to_cpp(x));
+                x.ptr = nullptr;
+            }
+            else {
+                free_union(x);
+            }
         }
         else {
             for (SIZE_T i { 0 }; i < x.len; ++i) {
@@ -324,6 +341,33 @@ namespace API {
 
     /** Non-array Heap cache free function */
     template <typename InC> inline void free(InC &x) { free<0, InC>(x); }
+
+    /** Used to free a C type in UnionMap */
+    template <typename InC> inline void free_union(InC &x) {
+        static_assert(Private::UnionMap::template contains<InC>, "Can't free this");
+        if constexpr (std::is_same_v<InC, ClaricppArg>) {
+            if (x.type == ClaricppTypeEnumExpr) {
+                free(x.data.expr);
+            }
+            else if (x.type == ClaricppTypeEnumBigInt) {
+                delete[](x.data.prim.big_int); // Safe b/c memory is from new
+                x.data.prim.big_int = nullptr;
+            }
+            else if (x.type == ClaricppTypeEnumStr) {
+                delete[](x.data.prim.str); // Safe b/c memory is from new
+                x.data.prim.str = nullptr;
+            }
+        }
+        else if constexpr (std::is_same_v<InC, ClaricppPrim>) {
+            if (x.type == ClaricppTypeEnumStr) {
+                delete[](x.data.str); // Safe b/c memory is from new
+                x.data.str = nullptr;
+            }
+        }
+        else {
+            static_assert(Util::TD::false_<InC>, "Needs implementation");
+        }
+    }
 
 } // namespace API
 
