@@ -20,7 +20,7 @@ namespace Op {
     using Stack = std::stack<Expr::RawPtr, std::vector<Expr::RawPtr>>;
 
     /** The primitive types a claricpp BV will support */
-    using BVTL = Util::TypeList<uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
+    using BVTL = Util::Type::List<uint8_t, uint16_t, uint32_t, uint64_t, BigInt>;
 
     /** A variant of the types a claricpp BV can hold */
     using BVVar = BVTL::Apply<std::variant>;

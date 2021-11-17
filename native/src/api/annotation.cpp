@@ -26,7 +26,7 @@ extern "C" {
             raw.emplace_back(API::to_cpp(list[i])); // NOLINT
             UTIL_AFFIRM_NOT_NULL_DEBUG(raw.back());
         }
-        using CV = Util::InternalType<Annotation::SPAV>;
+        using CV = Util::Type::Internal<Annotation::SPAV>;
         return API::to_c(std::make_shared<CV>(std::move(raw)));
     }
 

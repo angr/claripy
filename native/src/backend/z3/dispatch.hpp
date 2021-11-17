@@ -36,7 +36,7 @@ namespace Backend::Z3 {
 #define UNARY_CASE(OP, FN)                                                                         \
     case Op::OP::static_cuid: {                                                                    \
         check_vec_usage(args, 1_ui, WHOAMI);                                                       \
-        auto ret { (FN)(*args.back()) };                                                           \
+        auto ret { (FN) (*args.back()) };                                                          \
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
@@ -44,7 +44,7 @@ namespace Backend::Z3 {
 #define BINARY_DISPATCH(FN)                                                                        \
     check_vec_usage(args, 2_ui, WHOAMI);                                                           \
     const auto size { args.size() };                                                               \
-    auto ret { (FN)(*args[size - 2], *args[size - 1]) };                                           \
+    auto ret { (FN) (*args[size - 2], *args[size - 1]) };                                          \
     args.resize(size - 2);                                                                         \
     return ret;
 
@@ -66,7 +66,7 @@ namespace Backend::Z3 {
         static_assert(Op::is_uint_binary<Op::OP>, "Op::" #OP " is not UIntBinary");                \
         using To = CTSC<Op::UIntBinary>;                                                           \
         check_vec_usage(args, 1_ui, WHOAMI);                                                       \
-        auto ret { (FN)(*args.back(), Util::checked_static_cast<To>(expr->op.get())->integer) };   \
+        auto ret { (FN) (*args.back(), Util::checked_static_cast<To>(expr->op.get())->integer) };  \
         args.pop_back();                                                                           \
         return ret;                                                                                \
     }
@@ -77,8 +77,8 @@ namespace Backend::Z3 {
         using To = CTSC<Op::FP::ModeBinary>;                                                       \
         check_vec_usage(args, 2_ui, WHOAMI);                                                       \
         const auto size { args.size() };                                                           \
-        auto ret { (FN)(Util::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],      \
-                        *args[size - 1]) };                                                        \
+        auto ret { (FN) (Util::checked_static_cast<To>(expr->op.get())->mode, *args[size - 2],     \
+                         *args[size - 1]) };                                                       \
         args.resize(size - 2);                                                                     \
         return ret;                                                                                \
     }
@@ -99,7 +99,7 @@ namespace Backend::Z3 {
         const auto a_size { args.size() };                                                         \
         const auto n { Util::checked_static_cast<To>(expr->op.get())->operands.size() };           \
         check_vec_usage(args, n, WHOAMI);                                                          \
-        auto ret { (FN)(&(args.data()[a_size - n]), n) };                                          \
+        auto ret { (FN) (&(args.data()[a_size - n]), n) };                                         \
         args.resize(a_size - n);                                                                   \
         return ret;                                                                                \
     }
