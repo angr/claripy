@@ -29,6 +29,12 @@ namespace Util::Type {
         using Values = typename Private::template Half<false>;
         static_assert(Keys::len == Values::len, "Should be equal");
 
+        // Bools
+
+        /** Return true if T is in the map */
+        template <typename T>
+        static UTIL_ICCBOOL contains { Keys::template contains<T> || Values::template contains<T> };
+
         // Getters
 
         /** Key -> Value */
@@ -73,10 +79,10 @@ namespace Util::Type {
 
             /** A getter, will check keys and values, cannot be used if T exists in both */
             template <typename T> static constexpr auto get() {
-                const bool is_key { Keys::template contains<T> };
-                const bool is_value { Values::template contains<T> };
+                UTIL_CCBOOL is_key { Keys::template contains<T> };
+                UTIL_CCBOOL is_value { Values::template contains<T> };
                 // Safety
-                static_assert(is_key || is_value, "T is not a key nor value");
+                static_assert(is_key || is_value, "T is not anywhere in this map");
                 static_assert(!is_key || !is_value,
                               "T is both a key and a value; use either GetKey or GetValue");
                 // Return desired type
