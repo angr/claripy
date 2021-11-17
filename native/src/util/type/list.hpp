@@ -50,7 +50,7 @@ namespace Util::Type {
          *  Requires T in Args...
          */
         template <typename T>
-        static inline constexpr const UInt find { Private::template find<T, Args...>() };
+        static inline constexpr const UInt find { Private::template find<T>() };
 
         // List generators
 
@@ -111,16 +111,16 @@ namespace Util::Type {
             /** PopFront */
             template <UInt N> using Pop = std::remove_pointer_t<decltype(pop<N>())>;
 
-            /** Return the index of T in X...
-             *  Requires T in X...
+            /** Return the index of T in Args...
+             *  Requires T in Args...
              */
-            template <typename T, typename... X> static constexpr UInt find() {
-                static_assert(len > 0, "Cannot find type T");
+            template <typename T> static constexpr UInt find() {
+                static_assert(List<Args...>::contains<T>, "T is not in X");
                 if constexpr (std::is_same_v<Get<0>, T>) {
                     return 0;
                 }
                 else {
-                    return 1 + find<T, PopFront>();
+                    return 1 + PopFront::template find<T>;
                 }
             }
 
