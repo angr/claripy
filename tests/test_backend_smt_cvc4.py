@@ -1,11 +1,12 @@
 import unittest
+from unittest import skipIf
 import claripy
-import nose
 from claripy.backends.backend_smtlib_solvers.cvc4_popen import SolverBackendCVC4
 import common_backend_smt_solver
 
 
 class SmtLibSolverTest_CVC4(common_backend_smt_solver.SmtLibSolverTestBase):
+    @skipIf('smtlib_abc' not in claripy.backends._backends_by_name)
     def get_solver(self):
         if 'smtlib_cvc4' not in claripy.backends._backends_by_name:
             raise nose.SkipTest()

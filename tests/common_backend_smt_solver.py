@@ -1,8 +1,9 @@
-import nose
+from unittest import skip
 from decorator import decorator
 
 import claripy
 from test_backend_smt import TestSMTLibBackend
+
 
 # use of decorator instead of the usual pattern is important because nose2 will check the argspec and wraps does not
 # preserve that!
@@ -11,14 +12,16 @@ def if_installed(f, *args, **kwargs):
     try:
         return f(*args, **kwargs)
     except claripy.errors.MissingSolverError:
-        raise nose.SkipTest()
+        return skip('Missing Solver')(f)
+
 
 KEEP_TEST_PERFORMANT = True
 
 
 class SmtLibSolverTestBase(TestSMTLibBackend):
+    @skip
     def get_solver(self):
-        raise nose.SkipTest()
+        pass
         # raise NotImplementedError
 
     @if_installed
@@ -135,7 +138,6 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         self.assertEqual(['concrete'], list(result))
         for r in result:
             self.assertTrue(len(r) == 8)
-
 
     @if_installed
     def test_or(self):
@@ -286,7 +288,7 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
 
         solutions = solver.eval(str_symb, 4 if KEEP_TEST_PERFORMANT else 100)
         for sol in solutions:
-            self.assertEqual('an', sol[target_idx:target_idx+2])
+            self.assertEqual('an', sol[target_idx:target_idx + 2])
 
         self.assertEqual((target_idx,), solver.eval(res, 2))
 
@@ -320,7 +322,6 @@ class SmtLibSolverTestBase(TestSMTLibBackend):
         strs = solver.eval(str_symb, 10 if KEEP_TEST_PERFORMANT else 100)
         for s in strs:
             self.assertTrue(32 < s.index('an') < 38)
-
 
     @if_installed
     def test_str_to_int(self):

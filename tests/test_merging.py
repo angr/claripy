@@ -1,5 +1,4 @@
 import claripy
-import nose
 
 def test_simple_merging():
     yield raw_simple_merging, claripy.Solver
@@ -19,53 +18,53 @@ def raw_simple_merging(solver_type):
     s2.add([x == 2, z == 20, w == 5])
     _, sm = s1.merge([s2], [ m == 0, m == 1 ])
 
-    nose.tools.assert_equal(s1.eval(x, 1), (1,))
-    nose.tools.assert_equal(s2.eval(x, 1), (2,))
+    assert s1.eval(x, 1) == (1,)
+    assert s2.eval(x, 1) == (2,)
 
     sm1 = sm.branch()
     sm1.add(x == 1)
-    nose.tools.assert_equal(sm1.eval(x, 1), (1,))
-    nose.tools.assert_equal(sm1.eval(y, 1), (10,))
-    nose.tools.assert_equal(sm1.eval(z, 1), (0,))
-    nose.tools.assert_equal(sm1.eval(w, 1), (0,))
+    assert sm1.eval(x, 1) == (1,)
+    assert sm1.eval(y, 1) == (10,)
+    assert sm1.eval(z, 1) == (0,)
+    assert sm1.eval(w, 1) == (0,)
 
     sm2 = sm.branch()
     sm2.add(x == 2)
-    nose.tools.assert_equal(sm2.eval(x, 1), (2,))
-    nose.tools.assert_equal(sm2.eval(y, 1), (0,))
-    nose.tools.assert_equal(sm2.eval(z, 1), (20,))
-    nose.tools.assert_equal(sm2.eval(w, 1), (5,))
+    assert sm2.eval(x, 1) == (2,)
+    assert sm2.eval(y, 1) == (0,)
+    assert sm2.eval(z, 1) == (20,)
+    assert sm2.eval(w, 1) == (5,)
 
     sm1 = sm.branch()
     sm1.add(m == 0)
-    nose.tools.assert_equal(sm1.eval(x, 1), (1,))
-    nose.tools.assert_equal(sm1.eval(y, 1), (10,))
-    nose.tools.assert_equal(sm1.eval(z, 1), (0,))
-    nose.tools.assert_equal(sm1.eval(w, 1), (0,))
+    assert sm1.eval(x, 1) == (1,)
+    assert sm1.eval(y, 1) == (10,)
+    assert sm1.eval(z, 1) == (0,)
+    assert sm1.eval(w, 1) == (0,)
 
     sm2 = sm.branch()
     sm2.add(m == 1)
-    nose.tools.assert_equal(sm2.eval(x, 1), (2,))
-    nose.tools.assert_equal(sm2.eval(y, 1), (0,))
-    nose.tools.assert_equal(sm2.eval(z, 1), (20,))
-    nose.tools.assert_equal(sm2.eval(w, 1), (5,))
+    assert sm2.eval(x, 1) == (2,)
+    assert sm2.eval(y, 1) == (0,)
+    assert sm2.eval(z, 1) == (20,)
+    assert sm2.eval(w, 1) == (5,)
 
     m2 = claripy.BVS("m2", 32)
     _, smm = sm1.merge([sm2], [ m2 == 0, m2 == 1 ])
 
     smm_1 = smm.branch()
     smm_1.add(x == 1)
-    nose.tools.assert_equal(smm_1.eval(x, 1), (1,))
-    nose.tools.assert_equal(smm_1.eval(y, 1), (10,))
-    nose.tools.assert_equal(smm_1.eval(z, 1), (0,))
-    nose.tools.assert_equal(smm_1.eval(w, 1), (0,))
+    assert smm_1.eval(x, 1) == (1,)
+    assert smm_1.eval(y, 1) == (10,)
+    assert smm_1.eval(z, 1) == (0,)
+    assert smm_1.eval(w, 1) == (0,)
 
     smm_2 = smm.branch()
     smm_2.add(m == 1)
-    nose.tools.assert_equal(smm_2.eval(x, 1), (2,))
-    nose.tools.assert_equal(smm_2.eval(y, 1), (0,))
-    nose.tools.assert_equal(smm_2.eval(z, 1), (20,))
-    nose.tools.assert_equal(smm_2.eval(w, 1), (5,))
+    assert smm_2.eval(x, 1) == (2,)
+    assert smm_2.eval(y, 1) == (0,)
+    assert smm_2.eval(z, 1) == (20,)
+    assert smm_2.eval(w, 1) == (5,)
 
     so = solver_type()
     so.add(w == 0)
@@ -86,26 +85,26 @@ def raw_simple_merging(solver_type):
 
     smm_1 = smm.branch()
     smm_1.add(wxy == 0x000103)
-    nose.tools.assert_true(smm_1.satisfiable())
+    assert smm_1.satisfiable()
 
     smm_1 = smm.branch()
     smm_1.add(wxy == 0x000104)
-    nose.tools.assert_true(smm_1.satisfiable())
+    assert smm_1.satisfiable()
 
     smm_1 = smm.branch()
     smm_1.add(wxy == 0x000203)
-    nose.tools.assert_true(smm_1.satisfiable())
+    assert smm_1.satisfiable()
 
     smm_1 = smm.branch()
     smm_1.add(wxy == 0x000204)
-    nose.tools.assert_true(smm_1.satisfiable())
+    assert smm_1.satisfiable()
 
     smm_1 = smm.branch()
     smm_1.add(wxy != 0x000103)
     smm_1.add(wxy != 0x000104)
     smm_1.add(wxy != 0x000203)
     smm_1.add(wxy != 0x000204)
-    nose.tools.assert_false(smm_1.satisfiable())
+    assert not smm_1.satisfiable()
 
 if __name__ == '__main__':
     for func, param in test_simple_merging():
