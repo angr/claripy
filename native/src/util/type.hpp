@@ -20,5 +20,6 @@
 #include "type/to_type.hpp"
 #include "type/transfer_const.hpp"
 #include "type/unconstructable.hpp"
+#include "type/unique.hpp"
 
 #endif
