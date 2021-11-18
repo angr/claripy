@@ -14,11 +14,9 @@
 namespace Util::Type::Has {
 
     /** A struct which determines if T has a << stream op defined */
-    UTIL_TYPE_SFINAETEST(ostream_op,                           // Invoke this
-                         OStreamOp,                            // Internal class name
-                         *static_cast<std::ostream *>(nullptr) // declval is buggy so we cast
-                             << std::declval<U>(),             // Condition we are checking
-                         typename T                            // Template arguments
+    UTIL_TYPE_SFINAETEST(ostream_op,                                        // Name
+                         std::declval<std::ostream>() << std::declval<T>(), // Condition
+                         typename T                                         // Template arguments
     )
 
 } // namespace Util::Type::Has

@@ -15,9 +15,8 @@ namespace Util::Type::Has {
     /** A struct which determines if the constructor T(Args...) is visible and exists
      *  Basically std::is_constructible but can be friended to allow private constructor access
      */
-    UTIL_TYPE_SFINAETEST(constructor,                 // Invoke this
-                         Constructor,                 // Internal class name
-                         U(std::declval<Args>()...),  // Condition we are checking
+    UTIL_TYPE_SFINAETEST(constructor,                 // Name
+                         T(std::declval<Args>()...),  // Condition we are checking
                          typename T, typename... Args // Template arguments
     )
 

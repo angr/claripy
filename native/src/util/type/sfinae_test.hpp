@@ -7,46 +7,35 @@
 #ifndef R_UTIL_TYPE_SFINAETEST_HPP_
 #define R_UTIL_TYPE_SFINAETEST_HPP_
 
+#include "unique.hpp"
+
 #include "../macros.hpp"
 
 #include <type_traits>
 
 
 /** This macro allows easy SFINAE testing of a specified condition
- *  The macro defines a class named CLASS_NAME which uses SFINAE to test CONDITION
- *  This macro defines a constexpr boolean WRAPPER_NAME which can be used to obtain
- *  the whether or not CONDITION was resolvable and valid.
- *  The template arguments the condition requires must be passed in after condition
- *  Note: The first template argument *must* exist and be named T
- *  Note: In the CONDITION use U instead of T as we have to redeclare it as U
+ *  This macro defines a constexpr boolean NAME which can be used to test CONDITION
+ *  Template argumnets, which must exist, may be passed in via variadic marco arguments
  */
-#define UTIL_TYPE_SFINAETEST(WRAPPER_NAME, CLASS_NAME, CONDITION, ...)                             \
-    template <__VA_ARGS__> class CLASS_NAME final {                                                \
-        /** Define a unique class */                                                               \
-        struct Unique {};                                                                          \
-                                                                                                   \
-        /** This overload returns a T if CONDITION is resolvable and valid */                      \
-        template <typename U> static constexpr decltype(CONDITION) test(U *);                      \
-                                                                                                   \
-        /** Otherwise we choose this overload, that returns a Unique */                            \
-        template <typename> static constexpr Unique test(...);                                     \
-                                                                                                   \
-        /** The return type of whichever version of test the compiler selects                      \
-         *  The compiler will attempt to use the closest matching overload                         \
-         *  Our wildcard overload will be attempted last, so our condition test                    \
-         *  will be attempted first. If the condition is resolvable and valid,                     \
-         *  the first overload will be selected, otherwise the wildcard overload will              \
-         */                                                                                        \
-        using Ret = decltype(test<T>(nullptr));                                                    \
-                                                                                                   \
-      public:                                                                                      \
-        /** Compare the return types to determine if the condition was resolvable and valid */     \
-        static UTIL_CCBOOL value { !::std::is_same_v<Unique, Ret> };                               \
+#define UTIL_TYPE_SFINAETEST(NAME, CONDITION, ...)                                                 \
+    /** A struct used to test CONDITION */                                                         \
+    struct NAME##_class {                                                                          \
+        /** This overload can be used if CONDITION is resolvable and valid */                      \
+        template <__VA_ARGS__> static constexpr decltype(CONDITION) test(int);                     \
+        /** This overload is low priority but will be a fallback if CONDITION is invalid */        \
+        template <typename...> static constexpr ::Util::Type::Unique test(...);                    \
     };                                                                                             \
-                                                                                                   \
-    /** A shortcut for running the SFINAE test and checking the result                             \
-     *  Note: this wrapper accepts any arguments it relies on the associated class to type check.  \
+    /** Determine if CONDITION is resolvable and valid                                             \
+     *  Call the NAME##_class test functions.                                                      \
+     *  If CONDITION is resolvable and valid, the return type will be decltype(CONDITION).         \
+     *  If CONDITION is invalid, the return type will be Unique                                    \
+     *  We compare the return types to determine which overload was called.                        \
+     *  By doing so we effectively determine if CONDITION is resolvable and valid                  \
      */                                                                                            \
-    template <typename... Args> UTIL_ICCBOOL WRAPPER_NAME { CLASS_NAME<Args...>::value };
+    template <typename... Args>                                                                    \
+    static UTIL_CCBOOL NAME {                                                                      \
+        !::std::is_same_v<::Util::Type::Unique, decltype(NAME##_class::test<Args...>(0))>          \
+    };
 
 #endif

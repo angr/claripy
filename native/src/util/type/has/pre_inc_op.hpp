@@ -13,12 +13,10 @@
 
 namespace Util::Type::Has {
 
-    /** A struct which determines if T has an ++T op defined */
-    UTIL_TYPE_SFINAETEST(pre_inc_op,          // Invoke this
-                         PreIncOp,            // Internal class name
-                         ++std::declval<U>(), // Condition we are checking
-                         typename T           // Template arguments
-    )
+    /** A struct which determines if T has an ++T op defined
+     *  template <typename T> constexpr bool pre_inc_op = is_this_valid(++std::declval<T>());
+     */
+    UTIL_TYPE_SFINAETEST(pre_inc_op, ++std::declval<T>(), typename T)
 
 } // namespace Util::Type::Has
 

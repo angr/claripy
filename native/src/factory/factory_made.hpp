@@ -26,7 +26,7 @@
     CUID_DEFINE_MAYBE_UNUSED((X))                                                                  \
   private:                                                                                         \
     /** Allow verification to have friend access */                                                \
-    template <typename, typename...> friend class ::Util::Type::Has::Constructor;                  \
+    friend struct ::Util::Type::Has::constructor_class;                                            \
     /** Allow cache friend access for factory construction */                                      \
     friend class ::Util::WeakCache<Hash::Hash, const BASE>;
 
