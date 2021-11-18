@@ -6,7 +6,7 @@
 #ifndef R_UTIL_INC_HPP_
 #define R_UTIL_INC_HPP_
 
-#include "private/has_pre_inc_op.hpp"
+#include "type.hpp"
 
 #include "../constants.hpp"
 
@@ -23,7 +23,7 @@ namespace Util {
      *  The template Args are used as a map key to allow this function to be reused as needed
      *  This function is primarily meant to run before main to help configure things
      */
-    template <typename... Args, std::enable_if_t<Private::has_pre_inc_op<ATOM_T>, int> = 0>
+    template <typename... Args, std::enable_if_t<Type::has_pre_inc_op<ATOM_T>, int> = 0>
     inline UInt inc() noexcept {
         // If an exception is thrown, we *should* crash
         static ATOM_T ret(0);

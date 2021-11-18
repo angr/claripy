@@ -7,9 +7,9 @@
 
 // Invoking this function with the default template argument should compile
 template <typename T = bool> void check() {
-    if constexpr (Util::is_exactly_same<T, int *>) {
+    if constexpr (std::is_same_v<T, int *>) {
         // This should not fail compilation because of TD::false_
-        static_assert(Util::TD::false_<T>);
+        static_assert(Util::TD::false_<T>, "Should not trigger");
     }
 }
 

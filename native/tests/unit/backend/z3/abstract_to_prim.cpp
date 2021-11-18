@@ -31,7 +31,7 @@ template <typename T> static bool test(Backend::Z3::Z3 &z3, const T in) {
 
 /** Verify that abstract_to_primitive is working for floating point type T */
 template <typename T> static void test_f(Backend::Z3::Z3 &z3) {
-    static_assert(Util::qualified_is_in<T, float, double>, "Unsupported floating point type");
+    static_assert(Util::Type::is_in<T, float, double>, "Unsupported floating point type");
     UNITTEST_ASSERT(test(z3, T { 10. }));
     UNITTEST_ASSERT(test(z3, T { 0. }));
     UNITTEST_ASSERT(test(z3, T { -0. }));

@@ -106,8 +106,8 @@ namespace Op {
 
     /** Returns true if T is ternary */
     template <typename T>
-    UTIL_ICCBOOL is_ternary { Util::is_ancestor<Ternary<true>, T> ||
-                              Util::is_ancestor<Ternary<false>, T> };
+    UTIL_ICCBOOL is_ternary { Util::Type::is_ancestor<Ternary<true>, T> ||
+                              Util::Type::is_ancestor<Ternary<false>, T> };
 
 } // namespace Op
 

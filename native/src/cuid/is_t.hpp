@@ -17,8 +17,8 @@ namespace CUID {
      *  Verifies that the static type of what x is pointing to is a superclass of T
      */
     template <typename T, bool AllowKin, typename Base> constexpr bool is_t(CTSC<Base> x) {
-        static_assert(Util::is_ancestor<HasCUID, Base>, "Base must subclass HasCUID");
-        static_assert(Util::is_ancestor<Base, T>, "T must subclass Base");
+        static_assert(Util::Type::is_ancestor<HasCUID, Base>, "Base must subclass HasCUID");
+        static_assert(Util::Type::is_ancestor<Base, T>, "T must subclass Base");
         UTIL_AFFIRM_NOT_NULL_DEBUG(x);
         if constexpr (std::is_final_v<T>) {
             return x->cuid == T::static_cuid; // NOLINT (*null possible in release mode)

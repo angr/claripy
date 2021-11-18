@@ -65,7 +65,7 @@ namespace Op {
     Unary::~Unary() noexcept = default;
 
     /** Returns true if T is unary */
-    template <typename T> UTIL_ICCBOOL is_unary { Util::is_ancestor<Unary, T> };
+    template <typename T> UTIL_ICCBOOL is_unary { Util::Type::is_ancestor<Unary, T> };
 
 } // namespace Op
 

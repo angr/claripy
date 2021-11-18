@@ -3,13 +3,13 @@
  * \ingroup util
  * @brief This file define type traits for functions
  */
-#ifndef R_UTIL_FUNCTION_HPP_
-#define R_UTIL_FUNCTION_HPP_
+#ifndef R_UTIL_TYPE_FUNCTION_HPP_
+#define R_UTIL_TYPE_FUNCTION_HPP_
 
 #include <tuple>
 
 
-namespace Util {
+namespace Util::Type {
 
     /** This class is used to get function type traits */
     template <typename...> struct Function;
@@ -23,6 +23,6 @@ namespace Util {
         template <std::size_t i> using Arg = std::tuple_element_t<i, std::tuple<Args...>>;
     };
 
-} // namespace Util
+} // namespace Util::Type
 
 #endif

@@ -20,7 +20,7 @@ namespace Create::Private {
         namespace Err = Error::Expr;
 
         // Static checks
-        static_assert(Util::is_ancestor<Expr::Base, Out>,
+        static_assert(Util::Type::is_ancestor<Expr::Base, Out>,
                       "Create::Private::ternary requires Out be an Expr");
         static_assert(Op::is_ternary<OpT>, "Create::Private::ternary requires a ternary OpT");
 

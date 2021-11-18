@@ -7,9 +7,8 @@
 #define R_UTIL_FNV1A_HPP_
 
 #include "dependent_constant.hpp"
-#include "is_same.hpp"
 #include "pow.hpp"
-#include "unconstructable.hpp"
+#include "type.hpp"
 
 #include "../constants.hpp"
 
@@ -20,7 +19,7 @@
 namespace Util {
 
     /** FNV-1a class of hashes */
-    template <typename TypeToHash> struct FNV1a final : public Unconstructable {
+    template <typename TypeToHash> struct FNV1a final : public Type::Unconstructable {
 
         /** 32-bit type */
         using u32T = uint32_t;
@@ -72,10 +71,10 @@ namespace Util {
         static constexpr UInt hash(CInput s, const UInt len) noexcept {
             static_assert(sizeof(HashSize) >= sizeof(TypeToHash),
                           "FNV1a::hash given a size too small for the given TypeToHash");
-            if constexpr (is_same_ignore_cv<HashSize, u64T>) {
+            if constexpr (Type::is_same_ignore_cv<HashSize, u64T>) {
                 return u64(s, len);
             }
-            else if constexpr (Util::is_same_ignore_cv<HashSize, u32T>) {
+            else if constexpr (Type::is_same_ignore_cv<HashSize, u32T>) {
                 return u32(s, len);
             }
             else {

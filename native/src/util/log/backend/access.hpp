@@ -26,13 +26,13 @@ namespace Util::Log::Backend {
 
     /** Set the Log Backend to a new T constructed with arguments: args	*/
     template <typename T, typename... Args> inline void set(Args &&...args) {
-        static_assert(is_ancestor<Base, T>, "T must subclass log backend Base");
+        static_assert(Type::is_ancestor<Base, T>, "T must subclass log backend Base");
         unsafe_set(std::move(make_derived_shared<const Base, T>(std::forward<Args>(args)...)));
     }
 
     /** Set the Log Backend to a new T copy constructed from c */
     template <typename T, typename... Args> inline void copy(const T &c) {
-        static_assert(is_ancestor<Base, T>, "T must subclass log backend Base");
+        static_assert(Type::is_ancestor<Base, T>, "T must subclass log backend Base");
         unsafe_set(std::move(make_derived_shared<const Base, T>(c)));
     }
 

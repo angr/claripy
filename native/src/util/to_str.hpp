@@ -6,8 +6,8 @@
 #ifndef R_UTIL_TOSTR_HPP_
 #define R_UTIL_TOSTR_HPP_
 
-#include "is_ancestor.hpp"
 #include "ostream.hpp"
+#include "type.hpp"
 
 #include <sstream>
 
@@ -22,7 +22,7 @@ namespace Util {
      *  to be called, would cause massive stack growth, etc (the compiler is smarter than us here)
      */
     template <typename T, typename... Args> inline T to_stream(Args &&...args) {
-        static_assert(Util::is_ancestor<std::ostream, T>, "T must be an ostream");
+        static_assert(Type::is_ancestor<std::ostream, T>, "T must be an ostream");
         T s;
         (OStream(s, std::forward<Args>(args)), ...);
         return s; // Copy elision or std::move (no copy ctor exists)

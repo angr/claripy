@@ -3,13 +3,13 @@
  * \ingroup util
  * @brief This file defines an unconstructable class
  */
-#ifndef R_UTIL_UNCONSTRUCTABLE_HPP_
-#define R_UTIL_UNCONSTRUCTABLE_HPP_
+#ifndef R_UTIL_TYPE_UNCONSTRUCTABLE_HPP_
+#define R_UTIL_TYPE_UNCONSTRUCTABLE_HPP_
 
 #include "../macros.hpp"
 
 
-namespace Util {
+namespace Util::Type {
 
     /** An unconstructable class */
     class Unconstructable {
@@ -19,6 +19,6 @@ namespace Util {
         ~Unconstructable() = delete;
     };
 
-} // namespace Util
+} // namespace Util::Type
 
 #endif

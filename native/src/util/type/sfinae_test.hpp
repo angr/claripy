@@ -4,10 +4,12 @@
  * @brief This file defines a macro which uses a common SFINAE trick
  * to determine if some condition is met by its template arguments
  */
-#ifndef R_UTIL_SFINAETEST_HPP_
-#define R_UTIL_SFINAETEST_HPP_
+#ifndef R_UTIL_TYPE_SFINAETEST_HPP_
+#define R_UTIL_TYPE_SFINAETEST_HPP_
 
-#include "is_same.hpp"
+#include "../macros.hpp"
+
+#include <type_traits>
 
 
 /** This macro allows easy SFINAE testing of a specified condition
@@ -18,7 +20,7 @@
  *  Note: The first template argument *must* exist and be named T
  *  Note: In the CONDITION use U instead of T as we have to redeclare it as U
  */
-#define UTIL_SFINAETEST(WRAPPER_NAME, CLASS_NAME, CONDITION, ...)                                  \
+#define UTIL_TYPE_SFINAETEST(WRAPPER_NAME, CLASS_NAME, CONDITION, ...)                             \
     template <__VA_ARGS__> class CLASS_NAME final {                                                \
         /** Define a unique class */                                                               \
         struct Unique {};                                                                          \
@@ -39,7 +41,7 @@
                                                                                                    \
       public:                                                                                      \
         /** Compare the return types to determine if the condition was resolvable and valid */     \
-        static UTIL_CCBOOL value { !Util::is_exactly_same<Unique, Ret> };                          \
+        static UTIL_CCBOOL value { !::std::is_same_v<Unique, Ret> };                               \
     };                                                                                             \
                                                                                                    \
     /** A shortcut for running the SFINAE test and checking the result                             \

@@ -112,7 +112,8 @@ namespace API {
     template <typename Out, typename CType> inline auto &to_cpp_down_ref(const CType &in) {
         try {
             auto &ref { to_cpp_ref(in) };
-            return dynamic_cast<Util::TransferConst<Out, decltype(ref)> &>(ref);
+            using RealOut = Util::Type::TransferConst<Out, decltype(ref)>;
+            return dynamic_cast<RealOut &>(ref);
         }
         catch (std::bad_cast &e) {
             throw Util::Err::BadCast(WHOAMI, e.what());

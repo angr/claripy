@@ -36,7 +36,7 @@ namespace Create::Private {
         namespace Err = Error::Expr;
 
         // Static checks
-        static_assert(Util::qualified_is_in<IntT, UInt, Int>,
+        static_assert(Util::Type::is_in<IntT, UInt, Int>,
                       "Create::Private::uint_binary requires IntT be either UInt or Int");
         static_assert(Op::is_uint_binary<OpT>,
                       "Create::Private::uint_binary requires a int binary OpT");

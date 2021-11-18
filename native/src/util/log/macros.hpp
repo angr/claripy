@@ -8,7 +8,7 @@
 
 #include "constants.hpp"
 
-#include "../unconstructable.hpp"
+#include "../type.hpp"
 
 
 /** A macro used to give a class a custom log (instead of using the default log)
@@ -24,7 +24,7 @@
  */
 #define UTIL_LOG_DEFINE_LOG_CLASS(NAME)                                                            \
     /** Define a custom logging class */                                                           \
-    struct NAME final : private ::Util::Unconstructable {                                          \
+    struct NAME final : private ::Util::Type::Unconstructable {                                    \
         UTIL_LOG_ENABLE_CUSTOM_LOGGING(#NAME)                                                      \
     };
 

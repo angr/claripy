@@ -7,9 +7,8 @@
 #ifndef R_UTIL_OSTREAM_HPP_
 #define R_UTIL_OSTREAM_HPP_
 
-#include "is_strong_enum.hpp"
-#include "private/has_ostream_op.hpp"
 #include "to_underlying.hpp"
+#include "type.hpp"
 
 
 namespace Util {
@@ -18,7 +17,7 @@ namespace Util {
      *  If the strong enum already has a << operator defined, this is a passthrough
      */
     template <typename T, typename U> inline void OStream(T &left, const U &right) {
-        if constexpr (is_strong_enum<U> && !Private::has_ostream_op<U>) {
+        if constexpr (Type::is_strong_enum<U> && !Type::has_ostream_op<U>) {
             left << to_underlying(right);
         }
         else {

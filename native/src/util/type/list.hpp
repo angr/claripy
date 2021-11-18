@@ -6,9 +6,10 @@
 #ifndef R_UTIL_TYPE_LIST_HPP_
 #define R_UTIL_TYPE_LIST_HPP_
 
+#include "unconstructable.hpp"
+
 #include "../../constants.hpp"
 #include "../macros.hpp"
-#include "../unconstructable.hpp"
 
 
 namespace Util::Type {
@@ -16,8 +17,11 @@ namespace Util::Type {
     /** An uninstantiable type list class
      *  Warning: This list may drop type qualifiers
      */
-    template <typename... Args> struct List { // @ todo : public Unconstructable
-        struct Private;                       // Forward declare
+    template <typename... Args> struct List : public Unconstructable {
+        struct Private; // Forward declare
+
+        /** Allow copy construction in unevaluated contexts */
+        List(const List &);
 
         // Conversions
 

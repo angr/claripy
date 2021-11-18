@@ -43,7 +43,7 @@ namespace Create::Private {
         namespace Err = Error::Expr;
 
         // Static checks
-        static_assert(Util::is_ancestor<Expr::Base, Out>,
+        static_assert(Util::Type::is_ancestor<Expr::Base, Out>,
                       "Create::Private::binary requires Out be an Expr");
         static_assert(Op::is_binary<OpT>, "Create::Private::binary requires a binary OpT");
 
@@ -89,7 +89,7 @@ namespace Create::Private {
                                 WHOAMI "left operand of incorrect type");
 
         // Create Expr
-        if constexpr (Util::qualified_is_in<Expr::Bool, Allowed...>) {
+        if constexpr (Util::Type::is_in<Expr::Bool, Allowed...>) {
             if (CUID::is_t<Expr::Bool>(left)) {
                 return simplify(Expr::factory<Expr::Bool>(left->symbolic || right->symbolic,
                                                           Op::factory<OpT>(left, right),

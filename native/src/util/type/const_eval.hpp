@@ -3,10 +3,10 @@
  * \ingroup util
  * @brief This file defines const_eval
  */
-#ifndef R_UTIL_CONSTEVAL_HPP_
-#define R_UTIL_CONSTEVAL_HPP_
+#ifndef R_UTIL_TYPE_CONSTEVAL_HPP_
+#define R_UTIL_TYPE_CONSTEVAL_HPP_
 
-namespace Util {
+namespace Util::Type {
 
     /** Force compile-time evaluation of T V
      *  Technically const_eval itself may not be evaluated at compile time
@@ -15,6 +15,6 @@ namespace Util {
      */
     template <typename T, T V> inline const constexpr T const_eval { V };
 
-} // namespace Util
+} // namespace Util::Type
 
 #endif

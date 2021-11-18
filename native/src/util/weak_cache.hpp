@@ -93,7 +93,7 @@ namespace Util {
         Ptr find_or_emplace(const Hash &h, Args &&...args) {
 
             // Static check
-            static_assert(is_ancestor<Cached, Derived>,
+            static_assert(Type::is_ancestor<Cached, Derived>,
                           "Derived must derive from Cached or be a Cached");
 
             // Initial cache lookup

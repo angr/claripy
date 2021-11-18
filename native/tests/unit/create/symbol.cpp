@@ -17,7 +17,7 @@ template <typename T> void symbol_t() {
 
     // Test
     Expr::BasePtr sym;
-    if constexpr (Util::is_ancestor<Expr::Bits, T>) {
+    if constexpr (Util::Type::is_ancestor<Expr::Bits, T>) {
         sym = Create::symbol<T>(std::move(name), size);
     }
     else {
@@ -39,7 +39,7 @@ template <typename T> void symbol_t() {
     UNITTEST_ASSERT(op_down->name == name_copy);
 
     // Size check
-    if constexpr (Util::is_ancestor<Expr::Bits, T>) {
+    if constexpr (Util::Type::is_ancestor<Expr::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size);
     }
 

@@ -7,7 +7,7 @@
 #ifndef R_UTIL_PRIVATE_POINTERCAST_HPP_
 #define R_UTIL_PRIVATE_POINTERCAST_HPP_
 
-#include "../transfer_const.hpp"
+#include "../type.hpp"
 
 #include <memory>
 #include <type_traits>
@@ -17,22 +17,22 @@ namespace Util::Cast::Private {
     /** A const preserving static pointer cast */
     template <typename Out, typename In>
     constexpr auto static_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        if constexpr (is_exactly_same<In, Out>) {
+        if constexpr (std::is_same_v<In, Out>) {
             return in;
         }
         else {
-            return std::static_pointer_cast<TransferConst<Out, In>>(in);
+            return std::static_pointer_cast<Type::TransferConst<Out, In>>(in);
         }
     }
 
     /** An unchecked dynamic pointer cast */
     template <typename Out, typename In>
     constexpr auto dynamic_pointer_cast(const std::shared_ptr<In> &in) noexcept {
-        if constexpr (is_same_ignore_const<In, Out>) {
+        if constexpr (Type::is_same_ignore_const<In, Out>) {
             return Private::static_pointer_cast<Out>(in);
         }
         else {
-            return std::dynamic_pointer_cast<TransferConst<Out, In>>(in);
+            return std::dynamic_pointer_cast<Type::TransferConst<Out, In>>(in);
         }
     }
 

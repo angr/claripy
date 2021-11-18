@@ -3,14 +3,14 @@
  * \ingroup util
  * @brief Defines is_x and related functions
  */
-#ifndef R_UTIL_ISX_HPP_
-#define R_UTIL_ISX_HPP_
+#ifndef R_UTIL_TYPE_ISX_HPP_
+#define R_UTIL_TYPE_ISX_HPP_
 
 #include <memory>
 #include <type_traits>
 
 
-namespace Util {
+namespace Util::Type {
 
     namespace Private {
         /** Returns true if T is a shared pointer */
@@ -29,5 +29,5 @@ namespace Util {
     /** Return true if T is a shared_ptr */
     template <typename T> UTIL_ICCBOOL is_shared_ptr { is_x<std::shared_ptr, T> };
 
-} // namespace Util
+} // namespace Util::Type
 #endif

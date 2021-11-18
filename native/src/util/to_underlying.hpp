@@ -1,13 +1,13 @@
 /**
  * @file
  * \ingroup util
- * @brief This file defines to_underlying
+ * @brief This file defines underlying
  * We use the word affirm since C libraries like to define assert as a macro
  */
 #ifndef R_UTIL_TOUNDERLYING_HPP_
 #define R_UTIL_TOUNDERLYING_HPP_
 
-#include "is_strong_enum.hpp"
+#include "type.hpp"
 
 
 namespace Util {
@@ -15,7 +15,7 @@ namespace Util {
     /** Convert e to its underlying type */
     template <typename E> constexpr std::underlying_type_t<E> to_underlying(const E e) noexcept {
         static_assert(std::is_enum_v<E>, "Requires E be an enum");
-        static_assert(is_strong_enum<E>, "Strong enums are preferred to weak enums");
+        static_assert(Type::is_strong_enum<E>, "Strong enums are preferred to weak enums");
         return static_cast<std::underlying_type_t<E>>(e);
     }
 

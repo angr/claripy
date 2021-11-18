@@ -8,7 +8,7 @@
 #define R_UTIL_MAKEDERIVEDSHARED_HPP_
 
 #include "pointer_cast.hpp"
-#include "transfer_const.hpp"
+#include "type.hpp"
 
 #include <memory>
 #include <type_traits>
@@ -22,13 +22,13 @@ namespace Util {
     template <typename Base, typename Derived, typename... Args>
     inline std::shared_ptr<Base> make_derived_shared(Args &&...args) {
         // Static verification
-        static_assert(is_ancestor<Base, Derived>, "Derived must derive from Base");
+        static_assert(Type::is_ancestor<Base, Derived>, "Derived must derive from Base");
         if constexpr (std::is_const_v<Derived>) {
             static_assert(std::is_const_v<Base>, "Derived is const, so Base must also be const");
         }
         // Transfer const-ness
-        using TrueDerived = TransferConst<Derived, Base>;
-        if constexpr (is_same_ignore_const<Base, Derived>) {
+        using TrueDerived = Type::TransferConst<Derived, Base>;
+        if constexpr (Type::is_same_ignore_const<Base, Derived>) {
             return std::make_shared<TrueDerived>(std::forward<Args>(args)...);
         }
         else {

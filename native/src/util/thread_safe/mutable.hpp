@@ -10,8 +10,6 @@
 #include "move_lock.hpp"
 #include "protected_object.hpp"
 
-#include "../is_same.hpp"
-
 #include <shared_mutex>
 
 

@@ -731,7 +731,7 @@ namespace Backend::Z3 {
 
         /** Return a T given the decl_kind */
         template <typename T> static T fp_const(const Z3_decl_kind &decl_kind) {
-            static_assert(Util::qualified_is_in<T, float, double>, "Unsupported fp type");
+            static_assert(Util::Type::is_in<T, float, double>, "Unsupported fp type");
             switch (decl_kind) {
                 case Z3_OP_FPA_MINUS_ZERO:
                     return -0;

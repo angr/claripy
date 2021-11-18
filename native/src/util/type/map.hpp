@@ -6,10 +6,9 @@
 #ifndef R_UTIL_TYPE_MAP_HPP_
 #define R_UTIL_TYPE_MAP_HPP_
 
+#include "is_x.hpp"
 #include "list.hpp"
 #include "pair.hpp"
-
-#include "../is_x.hpp"
 
 
 namespace Util::Type {
@@ -56,7 +55,7 @@ namespace Util::Type {
             /** Split TL into two Lists of alternating types */
             template <bool Left, typename TL> static constexpr auto half() {
                 static_assert(TL::len % 2 == 0, "There must be an even number of input types");
-                static_assert(Util::is_x<List, TL>, "TL must be a type list");
+                static_assert(is_x<List, TL>, "TL must be a type list");
                 // Base Case
                 if constexpr (TL::len == 0) {
                     return std::declval<List<>>();

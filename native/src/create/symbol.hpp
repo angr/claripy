@@ -22,16 +22,14 @@ namespace Create {
     template <typename T>
     Expr::BasePtr symbol(std::string &&name, const UInt bit_length,
                          Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-
         // Type checks
-        static_assert(Util::is_ancestor<Ex::Bits, T>,
+        static_assert(Util::Type::is_ancestor<Expr::Bits, T>,
                       "Create::symbol argument types must be a subclass of Bits");
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
 
         // Construct expr
-        return Ex::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), bit_length,
-                              std::move(sp));
+        return Expr::factory<T>(true, Op::factory<Op::Symbol>(std::move(name)), bit_length,
+                                std::move(sp));
     }
 
 } // namespace Create

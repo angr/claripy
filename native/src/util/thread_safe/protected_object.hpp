@@ -11,7 +11,6 @@
 
 #include "../affirm.hpp"
 #include "../err.hpp"
-#include "../is_same.hpp"
 #include "../macros.hpp"
 
 #include <shared_mutex>

@@ -13,8 +13,8 @@
 
 /** Test a unary op */
 template <typename Out, typename In, typename OpT, auto CreateF> inline void unary() {
-    static_assert(Util::is_ancestor<Expr::Base, Out>, "unary requires Out be an Expr");
-    static_assert(Util::is_ancestor<Expr::Base, In>, "unary requires In be an Expr");
+    static_assert(Util::Type::is_ancestor<Expr::Base, Out>, "unary requires Out be an Expr");
+    static_assert(Util::Type::is_ancestor<Expr::Base, In>, "unary requires In be an Expr");
     static_assert(Op::is_unary<OpT>, "unary requires a unary OpT");
 
     // Create input
@@ -36,8 +36,8 @@ template <typename Out, typename In, typename OpT, auto CreateF> inline void una
     UNITTEST_ASSERT(unary->child == arg);
 
     // Size test
-    if constexpr (Util::is_ancestor<Expr::Bits, Out>) {
-        static_assert(Util::TD::boolean<Util::is_ancestor<Expr::Bits, In>, In>,
+    if constexpr (Util::Type::is_ancestor<Expr::Bits, Out>) {
+        static_assert(Util::TD::boolean<Util::Type::is_ancestor<Expr::Bits, In>, In>,
                       "unary requires a sized input type for a sized output type");
         UNITTEST_ASSERT(a_down->bit_length == exp_down->bit_length)
     }

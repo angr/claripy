@@ -26,7 +26,7 @@
     CUID_DEFINE_MAYBE_UNUSED((X))                                                                  \
   private:                                                                                         \
     /** Allow verification to have friend access */                                                \
-    template <typename, typename...> friend class ::Util::HasConstructor;                          \
+    template <typename, typename...> friend class ::Util::Type::HasConstructor;                    \
     /** Allow cache friend access for factory construction */                                      \
     friend class ::Util::WeakCache<Hash::Hash, const BASE>;
 
@@ -52,18 +52,18 @@ namespace Factory {
         template <typename Base, typename T, typename... Args>
         [[gnu::always_inline]] static constexpr void static_type_check() noexcept {
             // Inheritance
-            static_assert(Util::is_ancestor<FactoryMade, Base>,
+            static_assert(Util::Type::is_ancestor<FactoryMade, Base>,
                           "Base must derive from FactoryMade");
-            static_assert(Util::is_ancestor<Base, T>,
+            static_assert(Util::Type::is_ancestor<Base, T>,
                           "T must derive from Base"); // Allow equality
             // Verify static_cuid
             static_assert(Private::has_static_cuid<T>,
                           "Factory cannot construct anything without a static_cuid");
-            static_assert(Util::is_exactly_same<const CUID::CUID, decltype(T::static_cuid)>,
+            static_assert(std::is_same_v<const CUID::CUID, decltype(T::static_cuid)>,
                           "T::static_cuid must be of type const CUID::CUID");
             // Constructor
             // Note: We use has_constructor to pass if the desired constructor is private
-            static_assert(Util::has_constructor<T, const Hash::Hash &, Args &&...>,
+            static_assert(Util::Type::has_constructor<T, const Hash::Hash &, Args &&...>,
                           "T does not have a constructor T{const Hash::Hash &, Args...}");
         }
 
