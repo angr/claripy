@@ -27,7 +27,7 @@ template <typename T, typename Data> void literal_t(const Data data, const UInt 
     UNITTEST_ASSERT(std::get<Data>(op_down->value) == data);
 
     // Size check
-    if constexpr (Util::Type::is_ancestor<Expr::Bits, T>) {
+    if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
         UNITTEST_ASSERT(exp_down->bit_length == size)
     }
 

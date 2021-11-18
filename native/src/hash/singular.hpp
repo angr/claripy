@@ -191,9 +191,9 @@ namespace Hash {
     template <
         typename Internal,
         // Require to prevent infinite recursion
-        std::enable_if_t<!Util::Type::is_wrap_same<Hashed, Internal, std::remove_cv_t>, int> = 0,
+        std::enable_if_t<!Util::Type::Is::wrap_same<Hashed, Internal, std::remove_cv_t>, int> = 0,
         // Ensure Internal derives from Hashed
-        std::enable_if_t<Util::Type::is_ancestor<Hashed, Internal>, int> = 0> // Allows prims
+        std::enable_if_t<Util::Type::Is::ancestor<Hashed, Internal>, int> = 0> // Allows prims
     inline Hash singular(const std::shared_ptr<const Internal> &h) noexcept {
         // Will warn if types are different or implicit conversion is dangerous / impossible
         return singular(Util::Cast::Static::up<Hashed>(h));

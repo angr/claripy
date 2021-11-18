@@ -20,7 +20,7 @@ namespace Annotation {
      *  Arguments are passed by non-const forwarding reference
      */
     template <typename T, typename... Args> inline BasePtr factory(Args &&...args) {
-        static_assert(Util::Type::is_ancestor<Base, T>, "T must derive from Annotation::Base");
+        static_assert(Util::Type::Is::ancestor<Base, T>, "T must derive from Annotation::Base");
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 

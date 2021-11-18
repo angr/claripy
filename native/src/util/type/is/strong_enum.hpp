@@ -3,15 +3,15 @@
  * \ingroup util
  * @brief An implementation of C++23's std::is_scoped_enum
  */
-#ifndef R_UTIL_TYPE_ISSTRONGENUM_HPP_
-#define R_UTIL_TYPE_ISSTRONGENUM_HPP_
+#ifndef R_UTIL_TYPE_IS_STRONGENUM_HPP_
+#define R_UTIL_TYPE_IS_STRONGENUM_HPP_
 
-#include "../macros.hpp"
+#include "../../macros.hpp"
 
 #include <type_traits>
 
 
-namespace Util::Type {
+namespace Util::Type::Is {
 
     namespace Private {
 
@@ -19,20 +19,20 @@ namespace Util::Type {
          *  We implicitly leverage SFINAE here
          */
         template <typename T, bool = std::is_enum_v<T>>
-        struct IsStrongEnum final : std::false_type {};
+        struct StrongEnum final : std::false_type {};
 
         /** Determine if T is a strong enum: possible true case
          *  We implicitly leverage SFINAE here
          */
         template <typename T>
-        struct IsStrongEnum<T, true> final :
+        struct StrongEnum<T, true> final :
             std::bool_constant<!std::is_convertible_v<T, std::underlying_type_t<T>>> {};
 
     } // namespace Private
 
     /** True if T is a strong enum */
-    template <typename T> UTIL_ICCBOOL is_strong_enum { Private::IsStrongEnum<T>::value };
+    template <typename T> UTIL_ICCBOOL strong_enum { Private::StrongEnum<T>::value };
 
-} // namespace Util::Type
+} // namespace Util::Type::Is
 
 #endif

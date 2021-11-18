@@ -19,7 +19,7 @@ namespace Create::Private {
         namespace Err = Error::Expr;
 
         // Static checks
-        static_assert(Util::Type::is_ancestor<Expr::Base, Out>,
+        static_assert(Util::Type::Is::ancestor<Expr::Base, Out>,
                       "Create::Private::unary requires Out be an Expr");
         static_assert(Op::is_unary<OpT>, "Create::Private::unary requires OpT to be unary");
 
@@ -59,7 +59,7 @@ namespace Create::Private {
                                 WHOAMI "operand of wrong type");
 
         // Construct expr
-        if constexpr (Util::Type::is_in<Expr::Bool, Allowed...>) {
+        if constexpr (Util::Type::Is::in<Expr::Bool, Allowed...>) {
             if (CUID::is_t<Expr::Bool>(x)) {
                 return simplify(
                     Expr::factory<Expr::Bool>(x->symbolic, Op::factory<OpT>(x), std::move(sp)));

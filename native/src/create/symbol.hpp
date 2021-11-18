@@ -23,7 +23,7 @@ namespace Create {
     Expr::BasePtr symbol(std::string &&name, const UInt bit_length,
                          Annotation::SPAV &&sp = nullptr) {
         // Type checks
-        static_assert(Util::Type::is_ancestor<Expr::Bits, T>,
+        static_assert(Util::Type::Is::ancestor<Expr::Bits, T>,
                       "Create::symbol argument types must be a subclass of Bits");
         static_assert(std::is_final_v<T>, "Create::symbol's T must be a final type");
 

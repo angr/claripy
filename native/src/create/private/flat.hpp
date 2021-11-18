@@ -32,7 +32,7 @@ namespace Create::Private {
 
         // Checks
         static_assert(Op::is_flat<OpT>, "Create::Private::flat requires OpT to be flat");
-        static_assert(Util::Type::is_in<Out, Allowed...>,
+        static_assert(Util::Type::Is::in<Out, Allowed...>,
                       "Create::Private::flat argument types must be in Allowed");
         Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
         UTIL_AFFIRM_NOT_NULL_DEBUG(operands[0]);
@@ -74,7 +74,7 @@ namespace Create::Private {
 
         // Create Expr
         const bool sym { flat_sym(operands) };
-        if constexpr (Util::Type::is_in<Expr::Bool, Allowed...>) {
+        if constexpr (Util::Type::Is::in<Expr::Bool, Allowed...>) {
             if (CUID::is_t<Expr::Bool>(operands[0])) {
                 return simplify(Expr::factory<Expr::Bool>(
                     sym, Op::factory<OpT>(std::move(operands)), std::move(sp)));

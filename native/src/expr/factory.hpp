@@ -19,7 +19,7 @@ namespace Expr {
      *  @todo update eager_backends functionality
      */
     template <typename T, typename... Args> BasePtr factory(Args &&...args) {
-        static_assert(Util::Type::is_ancestor<Base, T>, "T must derive from Expr::Base");
+        static_assert(Util::Type::Is::ancestor<Base, T>, "T must derive from Expr::Base");
         return ::Factory::factory<Base, T>(std::forward<Args>(args)...);
     }
 
@@ -37,7 +37,7 @@ namespace Expr {
 /** A local macro used for consistency */
 #define CASE(T)                                                                                    \
     case T::static_cuid: /* This static_assert is why we disallow Bools */                         \
-        static_assert(Util::Type::has_constructor<T, Hash::Hash, Args...>,                         \
+        static_assert(Util::Type::Has::constructor<T, Hash::Hash, Args...>,                        \
                       "Cannot construct " #T);                                                     \
         return ::Expr::factory<T, Args...>(std::forward<Args>(args)...)
         switch (cuid) {

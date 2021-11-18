@@ -17,7 +17,7 @@ using SM = Create::Private::SizeMode;
 
 /** Test a flat op */
 template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
-    static_assert(Util::Type::is_ancestor<Expr::Base, T>, "flat requires T be an Expr");
+    static_assert(Util::Type::Is::ancestor<Expr::Base, T>, "flat requires T be an Expr");
     static_assert(Op::is_flat<OpT>, "flat requires a flat OpT");
 
     // Create input
@@ -48,7 +48,7 @@ template <typename T, typename OpT, SM Mode, auto CreateF> inline void flat() {
     }
 
     // Size test
-    if constexpr (Util::Type::is_ancestor<Expr::Bits, T>) {
+    if constexpr (Util::Type::Is::ancestor<Expr::Bits, T>) {
         static_assert(Mode == Util::TD::id<SM::First>, "Unsupported mode for flat");
         const auto i0 { dcast<T>(flat->operands[0]) };
         UNITTEST_ASSERT(exp_down->bit_length == i0->bit_length);

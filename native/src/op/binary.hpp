@@ -103,8 +103,8 @@ namespace Op {
 
     /** Returns true if T is binary */
     template <typename T>
-    UTIL_ICCBOOL is_binary { Util::Type::is_ancestor<Binary<true>, T> ||
-                             Util::Type::is_ancestor<Binary<false>, T> };
+    UTIL_ICCBOOL is_binary { Util::Type::Is::ancestor<Binary<true>, T> ||
+                             Util::Type::Is::ancestor<Binary<false>, T> };
 
 } // namespace Op
 

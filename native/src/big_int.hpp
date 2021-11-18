@@ -31,7 +31,7 @@ struct BigInt {
 
     /** Converts the BigInt to the given mode */
     template <typename Mode> void to() {
-        static_assert(Util::Type::is_in<Mode, Int, Str>, "Mode may only be Int or Str");
+        static_assert(Util::Type::Is::in<Mode, Int, Str>, "Mode may only be Int or Str");
         if (std::holds_alternative<Mode>(value)) {
             return;
         }

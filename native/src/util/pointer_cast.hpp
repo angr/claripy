@@ -27,7 +27,7 @@ namespace Util::Cast {
         /** A dynamic down cast */
         template <typename Out, typename In>
         constexpr auto down(const std::shared_ptr<In> &in) noexcept {
-            static_assert(Type::is_ancestor<In, Out>,
+            static_assert(Type::Is::ancestor<In, Out>,
                           "dynamic_down_cast passed invalid <In, Out> type pair");
             return Private::dynamic_pointer_cast<Out>(in); // Does its own checks as well
         }
@@ -84,7 +84,8 @@ namespace Util::Cast {
         /** An up cast */
         template <typename Out, typename In>
         constexpr auto up(const std::shared_ptr<In> &in) noexcept {
-            static_assert(Type::is_ancestor<Out, In>, "up_cast passed invalid <In, Out> type pair");
+            static_assert(Type::Is::ancestor<Out, In>,
+                          "up_cast passed invalid <In, Out> type pair");
             return Private::static_pointer_cast<Out>(in); // Does its own checks as well
         }
 
@@ -99,7 +100,7 @@ namespace Util::Cast {
         }
 #else
             noexcept {
-            static_assert(Type::is_ancestor<In, Out>,
+            static_assert(Type::Is::ancestor<In, Out>,
                           "static_down_cast passed invalid <In, Out> type pair");
             return Private::static_pointer_cast<Out>(in); // Does its own checks as well
         }
@@ -127,8 +128,8 @@ namespace Util::Cast {
         template <typename Out, typename In>
         constexpr auto from_void(const std::shared_ptr<In> &in) {
             UTIL_AFFIRM_NOT_NULL_DEBUG(in);
-            static_assert(Type::is_in_ignore_const<In, void>, "Will only cast from void type");
-            static_assert(!Type::is_same_ignore_cv<Out, void>, "Cannot cast to void");
+            static_assert(Type::Is::in_ignore_const<In, void>, "Will only cast from void type");
+            static_assert(!Type::Is::same_ignore_cv<Out, void>, "Cannot cast to void");
             return Private::static_pointer_cast<Out>(in);
         }
     } // namespace Static

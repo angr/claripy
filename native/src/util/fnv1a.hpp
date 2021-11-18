@@ -71,10 +71,10 @@ namespace Util {
         static constexpr UInt hash(CInput s, const UInt len) noexcept {
             static_assert(sizeof(HashSize) >= sizeof(TypeToHash),
                           "FNV1a::hash given a size too small for the given TypeToHash");
-            if constexpr (Type::is_same_ignore_cv<HashSize, u64T>) {
+            if constexpr (Type::Is::same_ignore_cv<HashSize, u64T>) {
                 return u64(s, len);
             }
-            else if constexpr (Type::is_same_ignore_cv<HashSize, u32T>) {
+            else if constexpr (Type::Is::same_ignore_cv<HashSize, u32T>) {
                 return u32(s, len);
             }
             else {

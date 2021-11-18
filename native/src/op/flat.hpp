@@ -136,8 +136,8 @@ namespace Op {
 
     /** Returns true if T is flat */
     template <typename T>
-    UTIL_ICCBOOL is_flat { Util::Type::is_ancestor<Flat<true>, T> ||
-                           Util::Type::is_ancestor<Flat<false>, T> };
+    UTIL_ICCBOOL is_flat { Util::Type::Is::ancestor<Flat<true>, T> ||
+                           Util::Type::Is::ancestor<Flat<false>, T> };
 
 } // namespace Op
 

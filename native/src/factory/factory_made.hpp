@@ -26,7 +26,7 @@
     CUID_DEFINE_MAYBE_UNUSED((X))                                                                  \
   private:                                                                                         \
     /** Allow verification to have friend access */                                                \
-    template <typename, typename...> friend class ::Util::Type::HasConstructor;                    \
+    template <typename, typename...> friend class ::Util::Type::Has::Constructor;                  \
     /** Allow cache friend access for factory construction */                                      \
     friend class ::Util::WeakCache<Hash::Hash, const BASE>;
 
@@ -52,9 +52,9 @@ namespace Factory {
         template <typename Base, typename T, typename... Args>
         [[gnu::always_inline]] static constexpr void static_type_check() noexcept {
             // Inheritance
-            static_assert(Util::Type::is_ancestor<FactoryMade, Base>,
+            static_assert(Util::Type::Is::ancestor<FactoryMade, Base>,
                           "Base must derive from FactoryMade");
-            static_assert(Util::Type::is_ancestor<Base, T>,
+            static_assert(Util::Type::Is::ancestor<Base, T>,
                           "T must derive from Base"); // Allow equality
             // Verify static_cuid
             static_assert(Private::has_static_cuid<T>,
@@ -63,7 +63,7 @@ namespace Factory {
                           "T::static_cuid must be of type const CUID::CUID");
             // Constructor
             // Note: We use has_constructor to pass if the desired constructor is private
-            static_assert(Util::Type::has_constructor<T, const Hash::Hash &, Args &&...>,
+            static_assert(Util::Type::Has::constructor<T, const Hash::Hash &, Args &&...>,
                           "T does not have a constructor T{const Hash::Hash &, Args...}");
         }
 
