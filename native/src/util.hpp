@@ -17,7 +17,6 @@
 #include "util/backtrace.hpp"
 #include "util/bitmask.hpp"
 #include "util/checked_static_cast.hpp"
-#include "util/declare.hpp"
 #include "util/demangle.hpp"
 #include "util/dependent_constant.hpp"
 #include "util/do_once.hpp"
