@@ -203,7 +203,12 @@ class SimplificationManager:
                 return a.args[0] == 1
             elif a.args[1].op == 'If' and a.args[0].args[0] == 1:
                 return a.args[1] == 1
-            
+
+        if a.op == 'Concat' and isinstance(b.args[0], int) and b.args[0] == 0 and \
+                a.args[0].args[0] == 0 and a.args[1].op == '__invert__':
+            return a.args[1].args[0] == 1
+
+
         # TODO: all these ==/!= might really slow things down...
         if a.op == "If":
             if a.args[1] is b and ast.all_operations.is_true(a.args[2] != b):
