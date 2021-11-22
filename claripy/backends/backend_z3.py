@@ -974,7 +974,7 @@ class BackendZ3(Backend):
         #l.debug("... after:\n%s", z3_expr_to_smt2(s))
 
         o = self._abstract(s)
-        self.downsize()
+        self._ast_cache.clear()
         o._simplified = Base.FULL_SIMPLIFY
 
         if self._enable_simplification_cache:
