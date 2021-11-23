@@ -6,7 +6,7 @@
 
 
 /** Verify the is_same members work */
-void is_same() {
+void same() {
 
     // Wrap
     const constexpr bool true3 {
@@ -30,4 +30,4 @@ void is_same() {
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(is_same)
+UNITTEST_DEFINE_MAIN_TEST(same)

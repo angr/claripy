@@ -14,10 +14,10 @@ using Extracted = Util::Type::Internal<Container>;
 
 
 /** Verify InternalType works */
-void internal_type() {
+void internal() {
     const bool true_ { std::is_same_v<Internal, Extracted> };
     UNITTEST_ASSERT(true_);
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(internal_type)
+UNITTEST_DEFINE_MAIN_TEST(internal)

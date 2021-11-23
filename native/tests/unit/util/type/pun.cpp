@@ -15,7 +15,7 @@ static_assert(sizeof(uint64_t) == sizeof(double), "type_pun test needs to be cha
 
 
 /** Verify the file line hash macros work */
-void type_pun() {
+void pun() {
     constexpr double d { 432.5241342 }; // NOLINT
     uint64_t onto = 0;
 
@@ -31,4 +31,4 @@ void type_pun() {
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(type_pun)
+UNITTEST_DEFINE_MAIN_TEST(pun)

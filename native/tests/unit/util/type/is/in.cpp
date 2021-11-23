@@ -13,7 +13,7 @@ struct TestDerived : public TestBase {};
 
 
 /** Verify the is_in members work */
-void is_in() {
+void in() {
 
     // Trivial
     const constexpr bool empty { Util::Type::Is::in<int> };
@@ -55,4 +55,4 @@ void is_in() {
 }
 
 // Define the test
-UNITTEST_DEFINE_MAIN_TEST(is_in)
+UNITTEST_DEFINE_MAIN_TEST(in)
