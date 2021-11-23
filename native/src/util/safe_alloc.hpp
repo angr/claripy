@@ -15,12 +15,6 @@
 
 namespace Util::Safe {
 
-    /** Called if a safe method fails */
-    [[noreturn, gnu::cold]] inline void terminate(CCSC msg) noexcept {
-        Log::critical(msg);
-        std::terminate();
-    };
-
     /** Malloc, but raises an exception if the allocation fails */
     template <typename T> T *malloc(const std::size_t count) {
         T *const ret { static_cast<T *const>(std::malloc(count * sizeof(T))) }; // NOLINT
