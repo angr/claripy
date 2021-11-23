@@ -18,6 +18,6 @@ std::ostringstream Util::Err::Claricpp::save_backtrace() noexcept {
     }
     std::ostringstream o;
     o << "Backtrace:\n";
-    ::Util::backtrace(o, frame_offset);
+    ::Util::Backtrace::backward(o, frame_offset);
     return o; // Copy elision or compile error :)
 }
