@@ -246,7 +246,10 @@ if(NOT GMP_FOUND)
 endif()
 include(z3)
 
-# Static Anaylsis
+# Backward
+include(Backward)
+
+# Static Analysis
 include(StaticAnalsis)
 
 # Documentation
@@ -479,6 +482,9 @@ target_link_libraries("${CLARICPP}"
 	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
 	PRIVATE dl
 )
+
+# Allow building with Backward
+add_backward("${CLARICPP}")
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above

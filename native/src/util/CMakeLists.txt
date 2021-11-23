@@ -6,4 +6,5 @@ target_sources("${CLARICPP}" PRIVATE
 
 # Add subdirectories
 add_subdirectory(err)
+add_subdirectory(backtrace)
 add_subdirectory(log)
