@@ -1,0 +1,3 @@
+[submodule "native/backward-cpp"]
+	path = native/backward-cpp
+	url = https://github.com/bombela/backward-cpp/
