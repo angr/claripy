@@ -484,7 +484,7 @@ target_link_libraries("${CLARICPP}"
 )
 
 # Allow building with Backward
-add_backward("${CLARICPP}")
+add_backward("${CLARICPP}" TRUE)
 
 # Configure library compilation and linking
 # This is just in case we missed any flags above

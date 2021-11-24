@@ -73,6 +73,9 @@ RUN pip3 install cmake
 RUN test -n "${Z3_HEADER_REL_PATH}" && INST='z3' || INST='git'; \
 	apt-get install -yq "${INST}"
 
+# Backward (optional)
+RUN apt-get install -yq libdw-dev
+
 ##################################################
 #                  Config Stage                  #
 ##################################################
