@@ -1,10 +1,10 @@
 import unittest
-from unittest import skipIf
 import claripy
 import common_backend_smt_solver
 
+from common_backend_smt_solver import if_installed
 
-@skipIf('smtlib_abc' not in claripy.backends._backends_by_name)
+@if_installed
 class SmtLibSolverTest_ABC(common_backend_smt_solver.SmtLibSolverTestBase):
     def get_solver(self):
         from claripy.backends.backend_smtlib_solvers.abc_popen import SolverBackendABC
