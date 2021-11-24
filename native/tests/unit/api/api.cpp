@@ -63,10 +63,10 @@ void api() {
     const Op::PrimVar prim { std::string("Hello") };
     auto prim_c { API::copy_to_c(prim) }; // Should dynamically allocate memory
     UNITTEST_ASSERT(prim_c.type == ClaricppTypeEnumStr);
-    UNITTEST_ASSERT(std::strlen(prim_c.data.str) == std::get<std::string>(prim).size());
-    UNITTEST_ASSERT(std::string(prim_c.data.str) == std::get<std::string>(prim));
+    UNITTEST_ASSERT(std::strlen(prim_c.data.str) == std::get<std::string>(prim).size()); // NOLINT
+    UNITTEST_ASSERT(std::string(prim_c.data.str) == std::get<std::string>(prim));        // NOLINT
     claricpp_free_prim(&prim_c);
-    UNITTEST_ASSERT(prim_c.data.str == nullptr);
+    UNITTEST_ASSERT(prim_c.data.str == nullptr); // NOLINT
 
     // Repeat Arg and expr
     old_uc = lit.use_count();
@@ -76,7 +76,7 @@ void api() {
     auto arg_c { API::copy_to_c(arg) };
     UNITTEST_ASSERT(lit.use_count() == old_uc + 1);
     UNITTEST_ASSERT(arg_c.type == ClaricppTypeEnumExpr);
-    UNITTEST_ASSERT(API::to_cpp(arg_c.data.expr) == lit);
+    UNITTEST_ASSERT(API::to_cpp(arg_c.data.expr) == lit); // NOLINT
     old_uc = lit.use_count();
     claricpp_free_arg(&arg_c);
     UNITTEST_ASSERT(lit.use_count() + 1 == old_uc);
@@ -88,8 +88,8 @@ void api() {
     UNITTEST_ASSERT(lit.use_count() == old_uc + 2);
     UNITTEST_ASSERT(arg_vec_c.len == 2);
     for (UInt i { 0 }; i < arg_vec_c.len; ++i) {
-        UNITTEST_ASSERT(arg_vec_c.arr[i].type == ClaricppTypeEnumExpr);
-        UNITTEST_ASSERT(API::to_cpp(arg_vec_c.arr[i].data.expr) == lit);
+        UNITTEST_ASSERT(arg_vec_c.arr[i].type == ClaricppTypeEnumExpr);  // NOLINT
+        UNITTEST_ASSERT(API::to_cpp(arg_vec_c.arr[i].data.expr) == lit); // NOLINT
     }
     old_uc = lit.use_count();
     claricpp_free_array_arg(&arg_vec_c);
@@ -106,11 +106,11 @@ void api() {
     auto double_prim_vec_c { API::copy_to_double_arr(double_prim_vec) }; // NOLINT
     UNITTEST_ASSERT(double_prim_vec_c.len == double_prim_vec.size());
     for (UInt i { 0 }; i < double_prim_vec.size(); ++i) {
-        auto &dpvci { double_prim_vec_c.arr[i] };
+        auto &dpvci { double_prim_vec_c.arr[i] }; // NOLINT
         UNITTEST_ASSERT(dpvci.len == double_prim_vec[i].size());
         for (UInt k { 0 }; k < dpvci.len; ++k) {
-            UNITTEST_ASSERT(dpvci.arr[k].type == ClaricppTypeEnumStr);
-            const std::string str { dpvci.arr[k].data.str };
+            UNITTEST_ASSERT(dpvci.arr[k].type == ClaricppTypeEnumStr); // NOLINT
+            const std::string str { dpvci.arr[k].data.str };           // NOLINT
             const auto &var { std::get<std::string>(double_prim_vec[i][k]) };
             UNITTEST_ASSERT(str.size() == var.size());
             UNITTEST_ASSERT(str == var);
