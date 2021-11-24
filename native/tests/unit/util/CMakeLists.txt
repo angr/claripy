@@ -3,14 +3,10 @@ simple_test(avg)
 simple_test(to_hex)
 simple_test(bit_mask)
 simple_test(stack_limit)
-simple_test(is_same)
-simple_test(is_in)
-simple_test(type_pun)
 simple_test(fnv1a)
 simple_test(strlen)
 simple_test(td_false)
 simple_test(heap_cache)
-simple_test(internal_type)
 simple_test(recurrence_guard)
 simple_test(run_on_destruction)
 simple_test(run_before_main)
@@ -21,6 +17,7 @@ simple_test(file_line_hash file_line_hash_helper.cpp)
 
 # Add other tests
 add_subdirectory(log)
+add_subdirectory(type)
 add_subdirectory(weak_cache)
 
 # Add more local tests

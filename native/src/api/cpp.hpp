@@ -323,19 +323,26 @@ namespace API {
     template <unsigned ArrayLayer, typename InC> inline void free(InC &x) {
         if constexpr (ArrayLayer == 0) {
             if constexpr (Private::TypeMap::template contains<InC>) {
-                Private::cache<Private::Map<InC>>.free(&to_cpp(x));
-                x.ptr = nullptr;
+                if (x.ptr != nullptr) {
+                    Private::cache<Private::Map<InC>>.free(&to_cpp(x));
+                    x.ptr = nullptr;
+                }
             }
             else {
                 free_union(x);
             }
         }
         else {
-            for (SIZE_T i { 0 }; i < x.len; ++i) {
-                API::free<ArrayLayer - 1>(x.arr[i]);
+            if (x.arr != nullptr) {
+                for (SIZE_T i { 0 }; i < x.len; ++i) {
+                    API::free<ArrayLayer - 1>(x.arr[i]);
+                }
+                std::free(x.arr); // NOLINT (false positive)
+                x.arr = nullptr;
             }
-            std::free(x.arr);
-            x.arr = nullptr;
+            else if (x.len > 0) {
+                Util::Log::error(WHOAMI, "Array being freed has null data but non-zero length");
+            }
             x.len = 0;
         }
     }
@@ -348,7 +355,7 @@ namespace API {
         static_assert(Private::UnionMap::template contains<InC>, "Can't free this");
         if constexpr (std::is_same_v<InC, ClaricppArg>) {
             if (x.type == ClaricppTypeEnumExpr) {
-                free(x.data.expr);
+                API::free(x.data.expr);
             }
             else if (x.type == ClaricppTypeEnumBigInt) {
                 delete[](x.data.prim.big_int); // Safe b/c memory is from new
