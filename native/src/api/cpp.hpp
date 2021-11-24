@@ -160,7 +160,7 @@ namespace API {
         template <typename CType> auto new_arr(const SIZE_T len) {
             Util::Log::verbose("Allocating an array of C types of length: ", len);
             using Wrapper = typename Private::ArrMap::template GetValue<CType>;
-            return Wrapper { .arr = Util::Safe::malloc<CType>(len), .len = len };
+            return Wrapper { .arr = new CType[len], .len = len };
         }
 
         /** Convert a C++ vector to a C array */
@@ -335,9 +335,9 @@ namespace API {
         else {
             if (x.arr != nullptr) {
                 for (SIZE_T i { 0 }; i < x.len; ++i) {
-                    API::free<ArrayLayer - 1>(x.arr[i]);
+                    API::free<ArrayLayer - 1>(x.arr[i]); // NOLINT (false positive)
                 }
-                std::free(x.arr); // NOLINT (false positive)
+                delete[](x.arr); // NOLINT (false positive)
                 x.arr = nullptr;
             }
             else if (x.len > 0) {
