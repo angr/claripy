@@ -25,6 +25,9 @@ namespace Util::Type {
 
         // Conversions
 
+        /** The type of this list */
+        using This = List<Args...>;
+
         /** Return a Container<Args..., Other...> */
         template <template <typename...> typename Container, typename... Other>
         using ApplyWith = Container<Args..., Other...>;
@@ -37,10 +40,11 @@ namespace Util::Type {
         /** Returns the length of the typelist */
         static inline constexpr const UInt len { sizeof...(Args) };
 
+        /** Returns a pointer to the type to get */
         template <UInt I, typename Head, typename... Tail> static constexpr auto get_helper() {
             static_assert(I < len, "Get index out of bounds");
             if constexpr (I == 0) {
-                return std::declval<Head>();
+                return (Head *) { nullptr }; // Can't use declval here :(
             }
             else {
                 return get_helper<I - 1, Tail...>();
@@ -48,7 +52,7 @@ namespace Util::Type {
         }
 
         /** Returns the i'th element of the typelist */
-        template <UInt i> using Get = decltype(get_helper<i, Args...>());
+        template <UInt i> using Get = std::remove_pointer_t<decltype(get_helper<i, Args...>())>;
 
         /** Returns the index of T in Args...
          *  Requires T in Args...
@@ -82,27 +86,39 @@ namespace Util::Type {
          *  static access among other things; i.e. make them psuedo private
          */
         struct Private {
+
+            // Note: there are much cleaner ways to do a lot of this, however this
+            // way should be fully in spec and doesn't rely on a 'nice' compiler
+
+            /** Return List<X...> */
+            template <typename, typename... X> struct Split { using Tail = List<X...>; };
+
             /** Returns a List<Args[1:]...>*
-             *  Note: We use pointers since List {} is still being defined by this file
+             *  We use a function instead of a struct here since we are
+             *  not at namespace scope and thus cannot do specializations
+             *  Note: we use List<> *'s here since List<> hasn't been fully defined yet
              */
-            template <UInt> static constexpr auto pop_front() {
-                return decltype(pop_front_helper<Args...>()) { nullptr };
-            }
-            /** Returns List<>
-             *  Note: We use pointers since List {} is still being defined by this file
-             */
-            template <> static constexpr auto pop_front<0>() { return (List<> *) { nullptr }; }
+            template <UInt N> static constexpr auto pop_front_helper() {
+                if constexpr (N == 0) {
+                    return (List<> *) { nullptr };
+                }
+                else {
+                    using Tail = typename Split<Args...>::Tail;
+                    return (Tail *) { nullptr };
+                }
+            };
 
-            /** Return List<X...>* */
-            template <typename, typename... X> constexpr static List<X...> *pop_front_helper();
+            /** List<Args[1:]...> */
+            using PopFront = std::remove_pointer_t<decltype(pop_front_helper<len>())>;
 
-            /** PopFront */
-            using PopFront = std::remove_pointer_t<decltype(pop_front<sizeof...(Args)>())>;
-
-            /** Pop multiple items */
+            /** Pop multiple items
+             *  We use a function instead of a struct here since we are
+             *  not at namespace scope and thus cannot do specializations
+             *  Note: we use List<> *'s here since List<> hasn't been fully defined yet
+             * */
             template <UInt N> static constexpr auto pop() {
                 if constexpr (N == 0) {
-                    return (List<Args...> *) { nullptr };
+                    return (This *) { nullptr };
                 }
                 else if constexpr (N == 1) {
                     return (PopFront *) { nullptr };
@@ -119,7 +135,7 @@ namespace Util::Type {
              *  Requires T in Args...
              */
             template <typename T> static constexpr UInt find() {
-                static_assert(List<Args...>::contains<T>, "T is not in X");
+                static_assert(contains<T>, "T is not in X");
                 if constexpr (std::is_same_v<Get<0>, T>) {
                     return 0;
                 }
@@ -133,8 +149,8 @@ namespace Util::Type {
              *  Note: This function must be called only in an unevaluated context
              */
             template <typename... Remove> static auto diff(List<Remove...> &&) {
-                if constexpr (sizeof...(Remove) == 0 || sizeof...(Args) == 0) {
-                    return std::declval<List<Args...>>(); // Nothing to remove
+                if constexpr (sizeof...(Remove) == 0 || len == 0) {
+                    return std::declval<This>(); // Nothing to remove
                 }
                 else {
                     return diff_helper<List<Remove...>, Args...>(); // Remove items from Args

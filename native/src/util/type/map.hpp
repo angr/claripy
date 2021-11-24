@@ -41,7 +41,8 @@ namespace Util::Type {
         /** Value -> Key */
         template <typename T> using GetKey = typename Private::template Getter<T, Keys, Values>;
         /** A getter, will check keys and values, cannot be used if T exists in both */
-        template <typename T> using Get = decltype(Private::template get<T>());
+        template <typename T>
+        using Get = std::remove_pointer_t<decltype(Private::template get<T>())>;
 
         // Map Generators
 
@@ -52,31 +53,37 @@ namespace Util::Type {
          *  static access among other things; i.e. make them psuedo private
          */
         struct Private {
-            /** Split TL into two Lists of alternating types */
+            /** Split TL into two Lists of alternating types
+             *  We return pointers to the type lists since declval won't work here
+             */
             template <bool Left, typename TL> static constexpr auto half() {
                 static_assert(TL::len % 2 == 0, "There must be an even number of input types");
                 static_assert(Is::container<List, TL>, "TL must be a type list");
                 // Base Case
                 if constexpr (TL::len == 0) {
-                    return std::declval<List<>>();
+                    return (List<> *) { nullptr };
                 }
                 // Recursive case
                 else {
                     // Tail = TL[2:].prepend(Left ? TL[0] : TL[1])
                     using Head = typename TL::template Get<Left ? 0 : 1>;
-                    using Tail = decltype(half<Left, typename TL::template Pop<2>>());
-                    return std::declval<typename Tail::template Prepend<Head>>();
+                    using PopFrontTwo = typename TL::template Pop<2>;
+                    using Tail = std::remove_pointer_t<decltype(half<Left, PopFrontTwo>())>;
+                    return (typename Tail::template Prepend<Head> *) { nullptr };
                 }
             }
 
             /** Get half of the Args */
-            template <bool Left> using Half = decltype(half<Left, List<Args...>>());
+            template <bool Left>
+            using Half = std::remove_pointer_t<decltype(half<Left, List<Args...>>())>;
 
             /** Get T from Out using the Index found from In */
             template <typename T, typename Out, typename In>
             using Getter = typename Out::template Get<In::template find<T>>;
 
-            /** A getter, will check keys and values, cannot be used if T exists in both */
+            /** A getter, will check keys and values, cannot be used if T exists in both
+             *  We return pointers here since we can't use declval
+             */
             template <typename T> static constexpr auto get() {
                 UTIL_CCBOOL is_key { Keys::template contains<T> };
                 UTIL_CCBOOL is_value { Values::template contains<T> };
@@ -86,10 +93,10 @@ namespace Util::Type {
                               "T is both a key and a value; use either GetKey or GetValue");
                 // Return desired type
                 if constexpr (is_key) {
-                    return std::declval<GetValue<T>>();
+                    return (GetValue<T> *) { nullptr };
                 }
                 else {
-                    return std::declval<GetKey<T>>();
+                    return (GetKey<T> *) { nullptr };
                 }
             }
         };
