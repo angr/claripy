@@ -4,11 +4,18 @@
  */
 #include "backward.hpp"
 
+#include "../do_once.hpp"
+
 #include <backward.hpp>
 
 
+static void init() {
+    backward::SourceFile::add_paths_to_env_variable_impl("/claripy/native"); // @todo
+}
+
 void Util::Backtrace::backward(std::ostream &o, const UInt ignore_frames,
                                const int16_t max_frames) noexcept {
+    UTIL_DOONCE(init());
     namespace B = backward;
     // Backtrace
     B::StackTrace st;
