@@ -49,6 +49,7 @@ namespace Util::Backtrace {
         // Prevent infinite recursion if something goes wrong
         const auto old { Util::Err::Claricpp::toggle_backtrace(false) };
 #endif
+        o << "Backtrace:\n";
         // Dummy variables
         int _ignore_int;   // NOLINT
         char _ignore_char; // NOLINT

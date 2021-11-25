@@ -116,7 +116,13 @@ namespace Util::Err {
          *  Being too small simply makes the backtraces messier as they contain this constructor
          */
         static const constexpr UInt frame_offset {
-#if defined(__APPLE__) || defined(__MACH__)
+#ifdef __linux__
+    #ifdef DEBUG
+            5
+    #else
+            3
+    #endif
+#elif defined(__APPLE__) || defined(__MACH__)
             3
 #else
             2

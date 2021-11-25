@@ -47,7 +47,9 @@ void backtrace() {
         UNITTEST_ERR("Error failed to be caught");
     }() };
 
-    /* In DEBUG mode the backtrace should be something like this.
+    /* In DEBUG mode the backtrace **might** be something like this.
+     * We support multiple back trace options; some with source snippets some with file names
+     * etc; regardless, the tests below should pass for *every* backtrace format we support
      * Linux:
         3  : 0x558d4698d795     : generate_bt() + 39
         4  : /path/to/build/tests/unit/util/util-backtrace.test(+0x157d2) [0x558d4698d7d2]
@@ -74,20 +76,20 @@ void backtrace() {
 
     // Log the backtrace
     B::unsafe_set(std::move(old));
-    Util::Log::verbose("Logging caught backtrace");
-    Util::Log::verbose(WHOAMI, backtrace);
+    Util::Log::info("Logging caught backtrace");
+    Util::Log::debug(WHOAMI, backtrace);
 
-    Util::Log::verbose("Checking backtrace...");
+    Util::Log::info("Checking backtrace...");
     const auto contains = [&backtrace](CCSC x) { return backtrace.find(x) != std::string::npos; };
-#ifdef DEBUG
     // Ensure the backtrace is valid
-    UNITTEST_ASSERT(contains("generate_bt() + "));
+#if defined(DEBUG) || defined(__linux__)
+    UNITTEST_ASSERT(contains("generate_bt()"));
     // Note: we do not check the other wrappers because of lambdas / static / anon namespaces
-    UNITTEST_ASSERT(contains("wrapper1() + "));
-    UNITTEST_ASSERT(contains("backtrace() + "));
+    UNITTEST_ASSERT(contains("wrapper1()"));
+    UNITTEST_ASSERT(contains("backtrace()"));
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
-    UNITTEST_ASSERT(contains("main + "));
-    UNITTEST_ASSERT(contains("start + "));
+    UNITTEST_ASSERT(contains("main"));
+    UNITTEST_ASSERT(contains("start"));
 #else
     UNITTEST_ASSERT(contains("util-backtrace.test"));
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));

@@ -1,5 +1,8 @@
 cmake_minimum_required( VERSION 3.16 )
 
+# Allow an earlier set to override a later option default
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
 # Append to the cmake search path
 # This allows for simple invoking of cmake files in this path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -480,7 +483,7 @@ target_include_directories("${CLARICPP}"
 target_link_libraries("${CLARICPP}"
 	PRIVATE "${Z3_LIB_PRIVATE_TARGET}"
 	PRIVATE "${GMP_LIBRARIES}" # Boost multiprecision backend
-	PRIVATE dl
+	# PRIVATE dl (only necessary if using native backtraces; not needed for Backward backtraces)
 )
 
 # Allow building with Backward
