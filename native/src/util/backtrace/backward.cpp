@@ -8,6 +8,7 @@
 
 #include <backward.hpp>
 
+// @todo: Add segfault handling
 
 static void init() {
     backward::SourceFile::add_paths_to_env_variable_impl("/claripy/native"); // @todo
