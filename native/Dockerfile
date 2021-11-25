@@ -11,7 +11,7 @@
 
 
 FROM ubuntu:20.04 AS base
-LABEL claricpp=base
+LABEL stage=base
 SHELL [ "/bin/bash", "-ecux" ]
 
 # Optional build args
@@ -82,7 +82,7 @@ RUN apt-get install -yq libdw-dev
 
 
 FROM base AS config
-LABEL claricpp=config
+LABEL stage=config
 
 # Required build args
 ARG VERSION=""
@@ -115,11 +115,12 @@ RUN if [[ "${FORMAT}" == True ]]; then \
 
 
 FROM config as cmake
-LABEL claricpp=cmake
+LABEL stage=cmake
 
 # Optional build args
 ARG CMAKE_BUILD_TYPE="Debug"
 ARG CMAKE_VERBOSE_MAKEFILE="OFF"
+ARG CLANG_TIDY="OFF"
 ARG NUM_CORES=1
 
 # Move build args into env
@@ -136,7 +137,8 @@ RUN echo \
 		-DCMAKE_VERBOSE_MAKEFILE="${CMAKE_VERBOSE_MAKEFILE}" \
 		-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
 		-DCMAKE_CXX_COMPILER="${CXX_COMPILER}" \
-		-D"Z3_NUM_CORES"="${NUM_CORES}" \
+		-DZ3_NUM_CORES="${NUM_CORES}" \
+		-DCLANG_TIDY="${CLANG_TIDY}" \
 	> "${CMAKE_SH}"
 RUN if [ -n "${Z3_HEADER_REL_PATH}" ]; then \
 	echo \
@@ -162,7 +164,7 @@ RUN "${CMAKE_SH}"
 
 
 FROM cmake as acquire_z3
-LABEL claricpp=acquire_z3
+LABEL stage=acquire_z3
 
 # Make
 RUN make z3
@@ -178,7 +180,7 @@ RUN if [ -z "${Z3_HEADER_REL_PATH}" ]; then "${CMAKE_SH}"; fi
 
 
 FROM acquire_z3 as build
-LABEL claricpp=build
+LABEL stage=build
 
 # Make
 RUN make -j "${NUM_CORES}" claricpp
@@ -190,7 +192,7 @@ RUN make -j "${NUM_CORES}" claricpp
 
 
 FROM build as test_build
-LABEL claricpp=test_build
+LABEL stage=test_build
 
 # Build the test cases
 RUN make -j "${NUM_CORES}" all
@@ -202,7 +204,7 @@ RUN make -j "${NUM_CORES}" all
 
 
 FROM test_build as test
-LABEL claricpp=test
+LABEL stage=test
 
 # Optional build args
 ARG VERBOSE_TEST="False"
@@ -221,7 +223,7 @@ RUN if [[ "${VERBOSE_TEST}" == True ]]; then \
 
 
 FROM test_build as docs
-LABEL claricpp=docs
+LABEL stage=docs
 
 # Make docs
 RUN make docs
