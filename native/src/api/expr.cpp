@@ -21,7 +21,7 @@ extern "C" {
     ClaricppSPAV claricpp_expr_annotations(const ClaricppExpr expr) {
         const auto &ret { API::to_cpp_ref(expr).annotations };
         if (LIKELY(ret == nullptr)) {
-            return {};
+            return { nullptr };
         }
         return API::copy_to_c(ret); // Can't move a reference to a const object
     }
