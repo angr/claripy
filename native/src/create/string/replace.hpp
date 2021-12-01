@@ -14,34 +14,36 @@ namespace Create::String {
      *  Despite being ternary, this is not a trivial op because of the unique length calculation
      *  Expr pointers may not be nullptr
      */
-    inline Expr::BasePtr replace(const Expr::BasePtr &first, const Expr::BasePtr &second,
-                                 const Expr::BasePtr &third, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
+    inline Expr::BasePtr replace(const Expr::BasePtr &full, const Expr::BasePtr &search,
+                                 const Expr::BasePtr &replacement,
+                                 Annotation::SPAV &&sp = nullptr) {
         using namespace Simplification;
         namespace Err = Error::Expr;
 
         // Checks
-        Util::affirm<Err::Usage>(first != nullptr && second != nullptr && third != nullptr,
+        Util::affirm<Err::Usage>(full != nullptr && search != nullptr && replacement != nullptr,
                                  WHOAMI "Expr pointers cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<Ex::String>(first) && CUID::is_t<Ex::String>(second) &&
-                                    CUID::is_t<Ex::String>(third),
+        Util::affirm<Err::Type>(CUID::is_t<Expr::String>(full) &&
+                                    CUID::is_t<Expr::String>(search) &&
+                                    CUID::is_t<Expr::String>(replacement),
                                 WHOAMI "operands must be each be of type Expr::String");
 
         // Construct size
-        UInt new_bit_length { Ex::get_bit_length(first) };
-        const auto s2 { Ex::get_bit_length(second) };
+        UInt new_bit_length { Expr::get_bit_length(full) };
+        const auto s2 { Expr::get_bit_length(search) };
         Util::affirm<Err::Size>(
             new_bit_length >= s2,
             WHOAMI "The pattern that has to be replaced is longer than the string itself");
-        const auto s3 { Ex::get_bit_length(third) };
+        const auto s3 { Expr::get_bit_length(replacement) };
         if (s2 < s3) {
             new_bit_length += s3 - s2;
         }
 
         // Construct expr
-        return simplify(Ex::factory<Ex::String>(
-            first->symbolic || second->symbolic || third->symbolic,
-            Op::factory<Op::String::Replace>(first, second, third), new_bit_length, std::move(sp)));
+        return simplify(
+            Expr::factory<Expr::String>(full->symbolic || search->symbolic || replacement->symbolic,
+                                        Op::factory<Op::String::Replace>(full, search, replacement),
+                                        new_bit_length, std::move(sp)));
     }
 
 } // namespace Create::String
