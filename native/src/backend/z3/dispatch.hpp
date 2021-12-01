@@ -345,7 +345,6 @@ namespace Backend::Z3 {
             using C = Mode::Compare;
             using Shift = Mode::Shift;
             using Sign = Mode::Sign::FP;
-            namespace Ex = Expr;
 
             // Get switching variables
             const auto decl { b_obj.decl() };
@@ -398,7 +397,7 @@ namespace Backend::Z3 {
                 case Z3_OP_XOR:
                     return Abs::xor_(args);
                 case Z3_OP_NOT:
-                    return Abs::template not_<Ex::Bool>(args);
+                    return Abs::template not_<Expr::Bool>(args);
 
                     // Comparisons
                 case Z3_OP_ULEQ:
@@ -453,7 +452,7 @@ namespace Backend::Z3 {
                 case Z3_OP_BOR:
                     return Abs::or_(args);
                 case Z3_OP_BNOT:
-                    return Abs::template not_<Ex::BV>(args);
+                    return Abs::template not_<Expr::BV>(args);
                 case Z3_OP_BXOR:
                     return Abs::xor_(args);
 

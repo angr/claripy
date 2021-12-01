@@ -216,16 +216,16 @@ namespace Create {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr add(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::flat_explicit<Ex::BV, Op::Add, Ex::BV>(std::move(operands), std::move(sp));
+        return Private::flat_explicit<Expr::BV, Op::Add, Expr::BV>(std::move(operands),
+                                                                   std::move(sp));
     }
 
     /** Create an Expr with an Mul op
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr mul(Op::FlatArgs &&operands, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
-        return Private::flat_explicit<Ex::BV, Op::Mul, Ex::BV>(std::move(operands), std::move(sp));
+        return Private::flat_explicit<Expr::BV, Op::Mul, Expr::BV>(std::move(operands),
+                                                                   std::move(sp));
     }
 
     // Logical

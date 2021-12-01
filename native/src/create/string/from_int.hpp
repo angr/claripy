@@ -17,14 +17,13 @@ namespace Create::String {
      *  Expr pointers may not be nullptr
      */
     inline Expr::BasePtr from_int(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
-        namespace Ex = Expr;
         namespace Err = Error::Expr;
         Util::affirm<Err::Usage>(x != nullptr, WHOAMI "Expr pointers cannot be nullptr");
-        Util::affirm<Err::Type>(CUID::is_t<Ex::BV>(x),
+        Util::affirm<Err::Type>(CUID::is_t<Expr::BV>(x),
                                 WHOAMI "operand must be each be of type Expr::BV");
-        return Simplification::simplify(Ex::factory<Ex::String>(
+        return Simplification::simplify(Expr::factory<Expr::String>(
             x->symbolic, Op::factory<Op::String::FromInt>(x),
-            Ex::get_bit_length(x) + 2_ui * BitLength::char_bit, std::move(sp)));
+            Expr::get_bit_length(x) + 2_ui * BitLength::char_bit, std::move(sp)));
     }
 
 } // namespace Create::String
