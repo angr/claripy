@@ -16,8 +16,10 @@
       public:                                                                                      \
         /** Default destructor */                                                                  \
         inline ~CLASS() noexcept final = default;                                                  \
+        /** The type name */                                                                       \
+        static constexpr const char *static_type_name { #CLASS };                                  \
         /** Get the type name */                                                                   \
-        virtual inline const char *type_name() const noexcept final { return #CLASS; }             \
+        virtual inline const char *type_name() const noexcept final { return static_type_name; }   \
                                                                                                    \
       private:                                                                                     \
         /** Private Constructor */                                                                 \
@@ -37,8 +39,10 @@ namespace Expr {
       public:
         /** Default destructor */
         inline ~Bool() noexcept final = default;
+        /** The type name */
+        static constexpr const char *static_type_name { "Bool" };
         /** Get the type name */
-        virtual inline const char *type_name() const noexcept final { return "Bool"; }
+        virtual inline const char *type_name() const noexcept final { return static_type_name; }
 
       private:
         /** Private Constructor */

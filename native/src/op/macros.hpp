@@ -39,7 +39,9 @@
     ~CLASS() noexcept final = default;                                                             \
     FACTORY_ENABLE_CONSTRUCTION_FROM_BASE(::Op::Base, (X));                                        \
     /** The name of the op */                                                                      \
-    inline const char *op_name() const noexcept final { return __VA_ARGS__ #CLASS; };              \
+    static constexpr const char *static_op_name { __VA_ARGS__ #CLASS };                            \
+    /** The name of the op */                                                                      \
+    inline const char *op_name() const noexcept final { return static_op_name; };                  \
                                                                                                    \
   private:                                                                                         \
     ENABLE_UNITTEST_FRIEND_ACCESS;
