@@ -15,6 +15,7 @@ namespace Create::String {
      *  Note: For now, we just set the size to 2 bytes larger than the input
      *  This should be large-enough, and isn't as bad an over-estimation as INT_MAX or anything
      *  Expr pointers may not be nullptr
+     *  Note: This is not trivial due to its length calculation
      */
     inline Expr::BasePtr from_int(const Expr::BasePtr &x, Annotation::SPAV &&sp = nullptr) {
         namespace Err = Error::Expr;
