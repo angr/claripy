@@ -22,7 +22,7 @@ template <bool Signed> void from_2s_complement_bv_v() {
         "This is not a test failure; but rather the test function itself needs to be fixed");
 
     // Test
-    const auto exp { Create::FP::from_2s_complement<Signed>(mode, bv, Mode::FP::dbl) };
+    const auto exp { Create::FP::from_2s_complement_bv<Signed>(mode, bv, Mode::FP::dbl) };
 
     // Pointer checks
     UNITTEST_ASSERT(bv.use_count() == 2);

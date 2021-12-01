@@ -119,12 +119,12 @@ void fp() {
     Util::Log::debug("Testing from_fp...");
     /* UNITTEST_ASSERT(test_id(C::FP::from_fp(tz, fp_x, Mode::FP::dbl))); */
 
-    Util::Log::debug("Testing from_2s_complement...");
-    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement<true>(tz, bv_x, Mode::FP::dbl))); */
-    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement<false>(tz, bv_x, Mode::FP::dbl))); */
+    Util::Log::debug("Testing from_2s_complement_bv...");
+    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<true>(tz, bv_x, Mode::FP::dbl))); */
+    /* UNITTEST_ASSERT(test_id(C::FP::from_2s_complement_bv<false>(tz, bv_x, Mode::FP::dbl))); */
 
-    Util::Log::debug("Testing from_not_2s_complement...");
-    /* UNITTEST_ASSERT(test_id(C::FP::from_not_2s_complement(bv_x, Mode::FP::dbl))); */
+    Util::Log::debug("Testing from_not_2s_complement_bv...");
+    /* UNITTEST_ASSERT(test_id(C::FP::from_not_2s_complement_bv(bv_x, Mode::FP::dbl))); */
 
     /**************************************************/
     /*                    Trivial                     */
