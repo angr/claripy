@@ -92,7 +92,6 @@ void backtrace() {
 #else
     UNITTEST_ASSERT(contains("util-backtrace.test"));
     UNITTEST_ASSERT(contains("UnitTest::TestLib::test_func(void"));
-    UNITTEST_ASSERT(contains("__libc_start_main"))
 #endif
 }
 
