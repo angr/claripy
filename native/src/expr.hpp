@@ -11,5 +11,6 @@
 #include "expr/factory.hpp"
 #include "expr/instantiables.hpp"
 #include "expr/make_like.hpp"
+#include "expr/type_names.hpp"
 
 #endif
