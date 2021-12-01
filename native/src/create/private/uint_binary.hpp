@@ -32,6 +32,7 @@ namespace Create::Private {
     template <typename IntT, typename OpT, SizeMode Mode, typename... Allowed>
     inline Expr::BasePtr uint_binary(const Expr::BasePtr &expr, const IntT integer,
                                      Annotation::SPAV &&sp) {
+        static const Expr::TypeNames<Allowed...> allowed;
         using namespace Simplification;
         namespace Err = Error::Expr;
 
@@ -44,7 +45,7 @@ namespace Create::Private {
         // Dynamic checks
         Util::affirm<Err::Usage>(expr != nullptr, WHOAMI "expr cannot be nullptr");
         Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(expr),
-                                WHOAMI "Expr operand of incorrect type");
+                                WHOAMI "Expr operand of invalid type; allowed types: ", allowed);
 
         // Construct expr (static casts are safe because of previous checks)
         return simplify(Expr::factory<Expr::BV>(expr->symbolic, Op::factory<OpT>(expr, integer),

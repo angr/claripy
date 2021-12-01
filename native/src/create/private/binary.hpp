@@ -39,6 +39,7 @@ namespace Create::Private {
     template <typename Out, typename OpT, SizeMode Mode, typename... Allowed>
     inline Expr::BasePtr binary_explicit(const Expr::BasePtr &left, const Expr::BasePtr &right,
                                          Annotation::SPAV &&sp) {
+        static const Expr::TypeNames<Allowed...> allowed;
         using namespace Simplification;
         namespace Err = Error::Expr;
 
@@ -51,7 +52,7 @@ namespace Create::Private {
         Util::affirm<Err::Usage>(left != nullptr && right != nullptr,
                                  WHOAMI "Expr pointer arguments may not be nullptr");
         Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(left),
-                                WHOAMI "left operand of incorrect type");
+                                WHOAMI "left operand of invalid type; allowed types: ", allowed);
 
         // Construct expr
         if constexpr (std::is_same_v<Expr::Bool, Out>) {

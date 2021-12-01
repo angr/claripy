@@ -15,6 +15,7 @@ namespace Create::Private {
      */
     template <typename Out, typename OpT, typename... Allowed>
     inline Expr::BasePtr unary_explicit(const Expr::BasePtr &x, Annotation::SPAV &&sp) {
+        static const Expr::TypeNames<Allowed...> allowed;
         using namespace Simplification;
         namespace Err = Error::Expr;
 
@@ -26,7 +27,7 @@ namespace Create::Private {
         // Dynamic checks
         Util::affirm<Err::Usage>(x != nullptr, WHOAMI "x cannot be nullptr");
         Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(x),
-                                WHOAMI "operand must be of type In");
+                                WHOAMI "operand of invalid type; allowed types: ", allowed);
 
         // Construct expr
         if constexpr (std::is_same_v<Expr::Bool, Out>) {

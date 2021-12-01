@@ -27,6 +27,7 @@ namespace Create::Private {
      */
     template <typename Out, typename OpT, typename... Allowed>
     inline Expr::BasePtr flat_explicit(Op::FlatArgs &&operands, Annotation::SPAV &&sp) {
+        static const Expr::TypeNames<Allowed...> allowed;
         using namespace Simplification;
         namespace Err = Error::Expr;
 
@@ -37,7 +38,7 @@ namespace Create::Private {
         Util::affirm<Err::Size>(operands.size() >= 2, WHOAMI "operands are empty.");
         UTIL_AFFIRM_NOT_NULL_DEBUG(operands[0]);
         Util::affirm<Err::Type>(CUID::is_t<Out>(operands[0]),
-                                WHOAMI "operands[0] is the wrong type");
+                                WHOAMI "operands[0] of invalid type; allowed types: ", allowed);
 
         const bool sym { flat_sym(operands) };
         if constexpr (std::is_same_v<Expr::Bool, Out>) {

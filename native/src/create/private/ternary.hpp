@@ -16,6 +16,7 @@ namespace Create::Private {
     template <typename Out, typename OpT, typename... Allowed>
     inline Expr::BasePtr ternary_explicit(const Expr::BasePtr &first, const Expr::BasePtr &second,
                                           const Expr::BasePtr &third, Annotation::SPAV &&sp) {
+        static const Expr::TypeNames<Allowed...> allowed;
         using namespace Simplification;
         namespace Err = Error::Expr;
 
@@ -28,7 +29,7 @@ namespace Create::Private {
         Util::affirm<Err::Usage>(first != nullptr, second != nullptr && third != nullptr,
                                  WHOAMI "Expr pointer arguments may not be nullptr");
         Util::affirm<Err::Type>(CUID::is_any_t<const Expr::Base, Allowed...>(first),
-                                WHOAMI "first operand of incorrect type");
+                                WHOAMI "first operand of invalid type; allowed types: ", allowed);
 
         // Construct expr (static casts are safe because of previous checks)
         const bool sym { first->symbolic || second->symbolic || third->symbolic };
