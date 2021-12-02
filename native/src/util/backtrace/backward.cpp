@@ -10,8 +10,11 @@
 
 // @todo: Add segfault handling
 
-static void init() {
-    backward::SourceFile::add_paths_to_env_variable_impl("/claripy/native"); // @todo
+
+static inline void init() {
+#ifdef SOURCE_ROOT_FOR_BACKTRACE
+    backward::SourceFile::add_paths_to_env_variable_impl(SOURCE_ROOT_FOR_BACKTRACE);
+#endif
 }
 
 void Util::Backtrace::backward(std::ostream &o, const UInt ignore_frames,
