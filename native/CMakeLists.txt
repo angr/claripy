@@ -59,6 +59,9 @@ set( DEFAULT_OTHER_LOG_LEVEL "Info" )
 
 ### Config Options ###
 
+# The VERSION file (we normalize it for cleaner logging purposes)
+file( TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/../VERSION" VERSION_FILE )
+
 # Static Analysis Options
 option( IWYU "Enable iwyu" OFF )
 option( LWYU "Enable lwyu" ON )
@@ -107,7 +110,7 @@ set( Z3_LIB_PRIVATE_TARGET "lib-z3" )
 # Note that for all modes, the output must be a directory containing a 'bin' and 'include' directory
 # The 'bin' directory should include the shared library claricpp can link to
 # The 'include' directory should include the header files claricpp can use
-set_prefer_cli( Z3_ACQUISITION_MODE BUILD )
+set_prefer_cli( Z3_ACQUISITION_MODE SYSTEM )
 
 # This option is used to help locate the Z3 library.
 # If left undefined cmake will attempt to locate it automatically
@@ -224,9 +227,20 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Define the version
-file(READ "../VERSION" VERSION)
-string(STRIP "${VERSION}" VERSION)
+# Define the version (allow overrides by setting VERSION)
+if (DEFINED VERSION)
+	message(STATUS "Loading version from existing definition.")
+else()
+	if (EXISTS "${VERSION_FILE}")
+		message(STATUS "Loading version from version file: ${VERSION_FILE}")
+		file(READ "${VERSION_FILE}" VERSION)
+		string(STRIP "${VERSION}" VERSION)
+	else()
+		message(WARNING "Version file ${VERSION_FILE} missing.")
+		set(VERSION "Unknown")
+	endif()
+endif()
+message(STATUS "Version: ${VERSION}")
 
 # Library source
 # Used for compilation and header lookup for tests

@@ -6,6 +6,7 @@ message(STATUS "Configuring Backward...")
 
 # Config
 set(BACKWARD_DIR "${CMAKE_SOURCE_DIR}/backward-cpp/")
+option(WARN_BACKWARD_LIMITATIONS "Warn about any limitations due to missing dependencies" ON)
 
 # Error checking
 if (NOT EXISTS "${BACKWARD_DIR}")
@@ -30,6 +31,10 @@ if (LIBDW_FOUND OR LIBBFD_FOUND OR LIBDWARF_FOUND)
 		message(STATUS "Backward backend library: Dwarf")
 	endif()
 else()
-	message(WARNING "Backward backend not library found; backtraces will be limited.")
+	if ("${WARN_BACKWARD_LIMITATIONS}")
+		message(WARNING "Backward backend not library found; backtraces will be limited.")
+	else()
+		message("Backward backend not library found; backtraces will be limited.")
+	endif()
 endif()
 message(STATUS "Backward config complete")

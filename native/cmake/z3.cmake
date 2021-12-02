@@ -6,6 +6,7 @@
 #  Z3_MAKE_TARGET - The name of the z3 make target that buils the z3 library internal target
 #  Z3_LIB_EXTENSION (Optional) - The extension used by shared libraries on this OS
 # All variables required by the the selected mode, define in the respective cmake/z3/z3_<mode> file
+# Except those that are defined in this file and thus do not need to be defined earlier
 #
 # This file defines the following variables:
 #  Z3_INCLUDE_DIR - The directory containing the headers linked targets may wish to include
