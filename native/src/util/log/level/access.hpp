@@ -9,13 +9,17 @@
 
 #include "level.hpp"
 
+#ifdef CONSTANT_LOG_LEVEL
+    #include "default.hpp"
+#endif
+
 
 namespace Util::Log::Level {
 
 #ifdef CONSTANT_LOG_LEVEL
 
     /** Return the log level */
-    constexpr Level get() noexcept;
+    constexpr Level get() noexcept { return default_; }
 
 #else
 

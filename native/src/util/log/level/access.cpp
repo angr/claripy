@@ -2,36 +2,23 @@
  * @file
  * \ingroup util
  */
-#include "access.hpp"
+#ifndef CONSTANT_LOG_LEVEL
 
-#include "default.hpp"
+    #include "access.hpp"
 
-#include <atomic>
+    #include "default.hpp"
 
+    #include <atomic>
 
-// For brevity
-using namespace Util;
-using namespace Log;
-using Lvl = Level::Level;
+namespace Level = Util::Log::Level;
 
-
-#ifdef CONSTANT_LOG_LEVEL
-
-static const constexpr Lvl lvl { Level::default_ };
-
-constexpr Lvl Level::get() noexcept {
-    return lvl;
-}
-
-#else
-
-static std::atomic<Lvl> lvl(Level::default_);
+static std::atomic<Level::Level> lvl { Level::default_ };
 
 void Level::set(Level l) noexcept {
     lvl.store(l);
 }
 
-Lvl Level::get() noexcept {
+Level::Level Level::get() noexcept {
     return lvl.load();
 }
 
